@@ -1,2 +1,7 @@
-custom: ["mailto:contact@techspokes.com"]
-
+github: TechSpokes
+# You can also add other platforms:
+# open_collective: your-collective
+# patreon: your-patreon
+# ko_fi: your-kofi
+# custom:
+#   - 'https://buymeacoffee.com/yourname'

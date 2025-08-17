@@ -1,8 +1,15 @@
 # TypeScript WSDL Client
 
-[![CI](https://github.com/techspokes/typescript-wsdl-client/actions/workflows/ci.yml/badge.svg)](https://github.com/techspokes/typescript-wsdl-client/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/@techspokes/typescript-wsdl-client.svg)](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/techspokes/typescript-wsdl-client/actions/workflows/ci.yml/badge.svg)](https://github.com/techspokes/typescript-wsdl-client/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@techspokes%2Ftypescript-wsdl-client.svg)](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
+[![npm downloads](https://img.shields.io/npm/dm/@techspokes%2Ftypescript-wsdl-client.svg)](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
+[![GitHub Stars](https://img.shields.io/github/stars/techspokes/typescript-wsdl-client?style=social)](https://github.com/techspokes/typescript-wsdl-client/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/techspokes/typescript-wsdl-client?style=social)](https://github.com/techspokes/typescript-wsdl-client/network/members)
+[![GitHub Watchers](https://img.shields.io/github/watchers/techspokes/typescript-wsdl-client?style=social)](https://github.com/techspokes/typescript-wsdl-client/watchers)
+
+[![TechSpokes Org](https://img.shields.io/badge/org-techspokes-181717?logo=github)](https://github.com/techspokes)
+[![Sponsor TechSpokes](https://img.shields.io/badge/sponsor-GitHub-blue?logo=github-sponsors)](https://github.com/sponsors/TechSpokes)
 
 **TypeScript WSDL → SOAP client generator.**
 Reads WSDL/XSD (with imports) and emits a small, typed client you can compile into your app.
@@ -243,3 +250,18 @@ Node 20+ supported.
 
 MIT © TechSpokes.
 *The tool is MIT-licensed. Generated artifacts are owned by you; the tool imposes no license on generated files.*
+
+---
+
+## 💖 Sponsors
+
+**Silver Sponsors**
+- Your Name Here!
+
+**Gold Sponsors**
+- [Your Name or Company](https://your-link-here.com)
+
+**Platinum Sponsors**
+- [Your Name or Company](https://your-link-here.com) – 30-min one-to-one video meeting on AI, business automations, vacation rentals industry, development, tools, or a subject of your choice.
+
+Want to see your name or company here? [Become a sponsor!](https://github.com/sponsors/TechSpokes)
