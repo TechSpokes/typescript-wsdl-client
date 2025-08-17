@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
   "keywords": [
     "wsdl",
@@ -51,7 +51,7 @@
     "watch": "tsx watch src/cli.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run clean && npm run build",
-    "test": "node -e \"console.log('No tests yet')\"",
+    "test": "exit 0",
     "smoke": "tsx src/cli.ts --help",
     "smoke:gen": "rimraf tmp && tsx src/cli.ts --wsdl examples/minimal/echo.wsdl --out tmp && tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 tmp/types.ts tmp/meta.ts tmp/operations.ts tmp/runtime.ts tmp/client.ts src/types/soap.d.ts",
     "ci": "npm run build && npm run typecheck && npm run smoke && npm run smoke:gen"
@@ -68,7 +68,7 @@
     "yargs": "^18.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
+    "@techspokes:registry": "https://npm.pkg.github.com",
     "access": "public"
   },
   "funding": {

@@ -2,8 +2,6 @@
 generated/
 scratches/
 
-/.npmrc
-
 # Logs
 logs
 *.log
