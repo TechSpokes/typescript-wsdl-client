@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "fast-xml-parser": "^5.2.5",
-    "yargs": "^17.7.2"
+    "yargs": "^18.0.0"
   },
   "publishConfig": {
     "access": "public",
