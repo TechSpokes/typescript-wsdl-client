@@ -57,7 +57,7 @@
     "ci": "npm run build && npm run typecheck && npm run smoke && npm run smoke:gen"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
+    "@types/node": "^24.3.0",
     "@types/yargs": "^17.0.33",
     "rimraf": "^6.0.0",
     "tsx": "^4.20.0",
