@@ -140,8 +140,14 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-/src/tmp/client.ts
-/src/tmp/meta.ts
-/src/tmp/operations.ts
-/src/tmp/runtime.ts
-/src/tmp/types.ts
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+# Temporary files created by the TypeScript compiler
+/tmp/client.ts
+/tmp/meta.ts
+/tmp/operations.ts
+/tmp/runtime.ts
+/tmp/types.ts

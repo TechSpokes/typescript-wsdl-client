@@ -70,10 +70,22 @@ function makeInlineTypeName(
 ): string {
   const base = pascal(parentTypeName || "AnonParent");
   const prop = pascal(propName || "");
-  if (prop) return prop;
+  if (prop) {
+    return prop;
+  }
   return `${base}Anon`;
 }
 
+/**
+ * Compile a WSDL catalog into an internal representation (CompiledCatalog).
+ * Steps:
+ * 1. Collect and index complexType, simpleType, and element definitions across all schemas.
+ * 2. Recursively compile each named type to a TS interface or alias, handling inheritance,
+ *    inline definitions, and XSD primitives.
+ * 3. Build metadata maps for runtime marshalling (attributes, children, nillable, occurrence).
+ * 4. Extract WSDL operations: pick the appropriate SOAP binding (v1.1 or v1.2), resolve its
+ *    portType reference, then enumerate operations and their soapAction URIs.
+ */
 export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): CompiledCatalog {
   // symbol tables discovered across all schemas
   const complexTypes = new Map<string, { node: any; tns: string; prefixes: Record<string, string> }>();
@@ -84,15 +96,21 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     const tns = s.targetNS;
     for (const n of getChildrenWithLocalName(s.xml, "complexType")) {
       const name = n["@_name"];
-      if (name) complexTypes.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+      if (name) {
+        complexTypes.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+      }
     }
     for (const n of getChildrenWithLocalName(s.xml, "simpleType")) {
       const name = n["@_name"];
-      if (name) simpleTypes.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+      if (name) {
+        simpleTypes.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+      }
     }
     for (const n of getChildrenWithLocalName(s.xml, "element")) {
       const name = n["@_name"];
-      if (name) elements.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+      if (name) {
+        elements.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+      }
     }
   }
 
@@ -145,7 +163,9 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
   ): CompiledAlias {
     const key = `${schemaNS}|${name}`;
     const present = aliasMap.get(key);
-    if (present) return present;
+    if (present) {
+      return present;
+    }
 
     const { tsType, declared, jsdoc } = compileSimpleTypeNode(sNode, schemaNS, prefixes);
     const alias: CompiledAlias = { name: pascal(name), ns: schemaNS, tsType, declared, jsdoc };
@@ -159,7 +179,9 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     schemaNS: string,
     prefixes: Record<string, string>
   ): { tsType: string; declared: string } {
-    if (!q.ns) q = resolveQName(q.local, schemaNS, prefixes);
+    if (!q.ns) {
+      q = resolveQName(q.local, schemaNS, prefixes);
+    }
     if (q.ns === XS) {
       const label = `xs:${q.local}`;
       return { tsType: xsdToTsPrimitive(label, (_opts as any)?.primitive), declared: label };
@@ -193,27 +215,33 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     const outName = pascal(name);
     const key = `${schemaNS}|${outName}`;
     const present = compiledMap.get(key);
-    if (present) return present;
+    if (present) {
+      return present;
+    }
     if (inProgress.has(key)) {
       // minimal cycle break
       return { name: outName, ns: schemaNS, attrs: [], elems: [] };
     }
     inProgress.add(key);
 
+    // mergeAttrs: combine base attributes with local ones, overriding duplicates by name
     const mergeAttrs = (into: CompiledType["attrs"], list: CompiledType["attrs"]) => {
+      // build index of existing attribute names
       const idx = new Map<string, number>();
       into.forEach((a, i) => idx.set(a.name, i));
+      // for each new attr, add or override existing
       for (const a of list) {
         const pos = idx.get(a.name);
         if (pos == null) {
           idx.set(a.name, into.length);
           into.push(a);
         } else {
-          into[pos] = a; // override
+          into[pos] = a; // override existing attribute details
         }
       }
     };
 
+    // mergeElems: combine base elements (particles) with local ones, preserving unique names and overriding duplicates
     const mergeElems = (into: CompiledType["elems"], list: CompiledType["elems"]) => {
       const idx = new Map<string, number>();
       into.forEach((e, i) => idx.set(e.name, i));
@@ -223,41 +251,40 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
           idx.set(e.name, into.length);
           into.push(e);
         } else {
-          into[pos] = e; // override
+          into[pos] = e; // override existing element details
         }
       }
     };
 
+    // collectAttributes: read all <attribute> children, handle inline simpleType vs named type references
+    // maps each attribute to a TS type, tracks required vs optional via @use, and records the original declared XSD type
     const collectAttributes = (node: any): CompiledType["attrs"] => {
       const out: CompiledType["attrs"] = [];
       const attrs = getChildrenWithLocalName(node, "attribute");
       for (const a of attrs) {
         const an = a["@_name"];
-        if (!an) continue;
+        if (!an) {
+          continue;
+        }
         const inlineSimple = getFirstWithLocalName(a, "simpleType");
         if (inlineSimple) {
+          // inline enumeration or restriction inside attribute
           const r = compileSimpleTypeNode(inlineSimple, schemaNS, prefixes);
-          out.push({
-            name: an,
-            tsType: r.tsType,
-            use: a["@_use"] === "required" ? "required" : "optional",
-            declaredType: r.declared,
-          });
+          out.push({ name: an, tsType: r.tsType, use: a["@_use"] === "required" ? "required" : "optional", declaredType: r.declared });
         } else {
+          // named type or default xs:string
           const t = a["@_type"];
           const q = t ? resolveQName(t, schemaNS, prefixes) : { ns: XS, local: "string" };
           const r = resolveTypeRef(q, schemaNS, prefixes);
-          out.push({
-            name: an,
-            tsType: r.tsType,
-            use: a["@_use"] === "required" ? "required" : "optional",
-            declaredType: r.declared,
-          });
+          out.push({ name: an, tsType: r.tsType, use: a["@_use"] === "required" ? "required" : "optional", declaredType: r.declared });
         }
       }
       return out;
     };
 
+    // collectParticles: parse compositor elements (sequence, all, choice), extract <element> definitions
+    // handles inline complex/simple definitions by generating a unique inline type name
+    // resolves type refs or @ref, applies min/max occurrence and nillable flags
     const collectParticles = (ownerTypeName: string, node: any): CompiledType["elems"] => {
       const out: CompiledType["elems"] = [];
       const groups = [
@@ -268,53 +295,33 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
       for (const grp of groups) {
         for (const e of getChildrenWithLocalName(grp, "element")) {
           const nameOrRef = e["@_name"] || e["@_ref"];
-          if (!nameOrRef) continue;
-
-          let propName = e["@_name"] || undefined;
+          if (!nameOrRef) {
+            continue;
+          }
+          const propName = e["@_name"];
           const min = e["@_minOccurs"] ? Number(e["@_minOccurs"]) : 1;
           const maxAttr = e["@_maxOccurs"];
-          const max: number | "unbounded" =
-            maxAttr === "unbounded" ? "unbounded" : maxAttr ? Number(maxAttr) : 1;
+          const max = maxAttr === "unbounded" ? "unbounded" : maxAttr ? Number(maxAttr) : 1;
           const nillable = e["@_nillable"] === "true";
 
-          // inline complex/simple types
+          // inline complexType: create a nested interface with a generated name
           const inlineComplex = getFirstWithLocalName(e, "complexType");
           const inlineSimple = getFirstWithLocalName(e, "simpleType");
 
           if (inlineComplex) {
             const inlineName = makeInlineTypeName(ownerTypeName, propName || nameOrRef, max);
             const rec = getOrCompileComplex(inlineName, inlineComplex, schemaNS, prefixes);
-            out.push({
-              name: propName || nameOrRef,
-              tsType: rec.name,
-              min,
-              max,
-              nillable,
-              declaredType: `{${schemaNS}}${rec.name}`,
-            });
+            out.push({ name: propName || nameOrRef, tsType: rec.name, min, max, nillable, declaredType: `{${schemaNS}}${rec.name}` });
           } else if (inlineSimple) {
+            // inline simpleType (e.g., list or enumeration)
             const r = compileSimpleTypeNode(inlineSimple, schemaNS, prefixes);
-            out.push({
-              name: propName || nameOrRef,
-              tsType: r.tsType,
-              min,
-              max,
-              nillable,
-              declaredType: r.declared,
-            });
+            out.push({ name: propName || nameOrRef, tsType: r.tsType, min, max, nillable, declaredType: r.declared });
           } else {
-            // normal ref/type
+            // named type or ref: resolve via QName
             const t = e["@_type"] || e["@_ref"];
             const q = t ? resolveQName(t, schemaNS, prefixes) : { ns: XS, local: "string" };
             const r = resolveTypeRef(q, schemaNS, prefixes);
-            out.push({
-              name: propName || nameOrRef,
-              tsType: r.tsType,
-              min,
-              max,
-              nillable,
-              declaredType: r.declared,
-            });
+            out.push({ name: propName || nameOrRef, tsType: r.tsType, min, max, nillable, declaredType: r.declared });
           }
         }
       }
@@ -364,7 +371,7 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
         if (baseAttr) {
           r = resolveTypeRef(resolveQName(baseAttr, schemaNS, prefixes), schemaNS, prefixes);
         }
-        // 👇👇 text node is modeled as "$value" (not "value")
+        // text node is modeled as "$value" (not "value")
         mergeElems(elems, [{
           name: "$value",
           tsType: r.tsType,
@@ -379,8 +386,12 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
         inProgress.delete(key);
         return result;
       };
-      if (ext) return model(ext);
-      if (res) return model(res);
+      if (ext) {
+        return model(ext);
+      }
+      if (res) {
+        return model(res);
+      }
     }
 
     // Attributes + particles
@@ -396,7 +407,9 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
   // compile every discovered complex type
   for (const rec of complexTypes.values()) {
     const name = rec.node["@_name"];
-    if (!name) continue;
+    if (!name) {
+      continue;
+    }
     getOrCompileComplex(name, rec.node, rec.tns, rec.prefixes);
   }
 
@@ -423,32 +436,42 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
   }
 
   // operations / soapAction (minimal)
+  // 1) Gather all binding definitions and select the SOAP binding (soap:binding or soap12:binding child).
+  // 2) Use the binding's @type to locate the matching portType in definitions.
+  // 3) Enumerate operations on that portType (wsdl:operation) for input/output WSDL messages.
+  // 4) In the chosen binding, extract the <soap:operation> child to read SOAP action URIs.
   const defs = cat.wsdlXml["wsdl:definitions"] || cat.wsdlXml["definitions"];
-  const portType = defs?.["wsdl:portType"] || defs?.["portType"];
-  const binding  = defs?.["wsdl:binding"] || defs?.["binding"];
-  const pOps = normalizeArray(portType?.["wsdl:operation"] || portType?.["operation"]);
+  const tns = defs?.["@_targetNamespace"] || "";
+  const bindingDefs = normalizeArray(defs?.["wsdl:binding"] || defs?.["binding"]);
+  const soapBinding = bindingDefs.find(b => Object.keys(b).some(k => k === "soap:binding" || k === "soap12:binding")) || bindingDefs[0];
+  // binding @type typically looks like "tns:MyPortType", so resolve via prefixes map
+  const portTypeAttr = soapBinding?.["@_type"] as string | undefined;
+  const portTypeQName = portTypeAttr ? resolveQName(portTypeAttr, tns, cat.prefixMap) : undefined;
+  const portTypeDefs = normalizeArray(defs?.["wsdl:portType"] || defs?.["portType"]);
+  const targetPortType = portTypeQName
+    ? portTypeDefs.find(pt => pt?.["@_name"] === portTypeQName.local)
+    : portTypeDefs[0];
+  // operations listed under <wsdl:portType>
+  const pOps = targetPortType ? getChildrenWithLocalName(targetPortType, "operation") : [];
   const bOps = new Map<string, string>();
-  const bindingOps = normalizeArray(binding?.["wsdl:operation"] || binding?.["operation"]);
-  const bindingOpsAny = bindingOps.length ? bindingOps : getChildrenWithLocalName(binding || {}, "operation");
-  for (const bo of bindingOpsAny) {
-    const name = bo?.["@_name"];
-    if (!name) continue;
-    let action = "";
-    for (const [k, v] of Object.entries(bo || {})) {
-      if (k === "operation" || k.endsWith(":operation")) {
-        const node = Array.isArray(v) ? v[0] : v;
-        action = node?.["@_soapAction"] || node?.["@_soapActionURI"] || node?.["@_soapActionUrl"] || "";
-        if (action) break;
-      }
-    }
+  // in the <wsdl:binding>, each operation has a nested <soap:operation> child
+  const opsNodes = getChildrenWithLocalName(soapBinding, "operation").filter(o => o["@_name"]);
+  for (const bo of opsNodes) {
+    // operation name must match portType operation name
+    const name = bo["@_name"] as string;
+    // find nested soap:operation node for the soapAction attribute
+    const soapOps = getChildrenWithLocalName(bo, "operation");
+    const soapOp = soapOps[0];
+    const action = soapOp?.["@_soapAction"] || soapOp?.["@_soapActionURI"] || soapOp?.["@_soapActionUrl"] || "";
     bOps.set(name, action);
   }
-  const ops: CompiledCatalog["operations"] = [];
-  for (const po of pOps) {
-    const name = po?.["@_name"];
-    if (!name) continue;
-    ops.push({ name, soapAction: bOps.get(name) || "" });
-  }
+  // build operations list
+  const ops = pOps
+    .map(po => {
+      const name = po?.["@_name"];
+      return name ? { name, soapAction: bOps.get(name) || "" } : undefined;
+    })
+    .filter((x): x is { name: string; soapAction: string } => !!x);
 
   return {
     types: typesList,

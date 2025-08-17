@@ -1,5 +1,7 @@
 # Copilot Instructions for This Repository
 
+> This file guides GitHub Copilot Chat on how to interact with the `typescript-wsdl-client` codebase, providing project context, conventions, and best practices.
+
 ## Project context (read this first)
 - Runtime/tooling: **Node.js ≥ 20**, **TypeScript (strict)**, **ES2022**, **ESM/NodeNext**. 
 - CLI binary: `wsdl-tsc` (exposed from `dist/cli.js`). Build artifacts live in `dist/`.
@@ -25,7 +27,10 @@
 
 
 ## Commit message format (required)
-**Always prefix the title with the current version** from `package.json`:
+- Use **Conventional Commits** style for commit messages.
+- **Always include the current version** from `package.json` in the title.
+- **Always prefix the title with `Version: <version>`**.
+- Check the CHANGELOG.md for the unreleased or current version changes for additional context (when available).
 
 ```
 Version: <version> <type>(<optional-scope>): <imperative summary>
@@ -75,6 +80,7 @@ Version: <version> <type>(<optional-scope>): <imperative summary>
 
 
 ## Quick references
+
 - Build: `npm run build` · Typecheck: `npm run typecheck` · Smoke: `npm run smoke` / `npm run smoke:gen`
 - Readme (CLI & workflow details): see **README.md**.
 - Contributing (dev workflow): see **CONTRIBUTING.md**.

@@ -84,6 +84,11 @@ const compiled = compileCatalog(catalog, {
     },
 });
 
+// Report counts of types and operations for user visibility
+console.log(`Schemas discovered: ${catalog.schemas.length}`);
+console.log(`Compiled types: ${compiled.types.length}`);
+console.log(`Operations: ${compiled.operations.length}`);
+
 // Emit files
 const importExt = argv.imports === "js" ? ".js" : argv.imports === "ts" ? ".ts" : "";
 emitTypes(path.join(outDir, "types.ts"), compiled);

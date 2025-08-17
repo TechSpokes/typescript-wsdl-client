@@ -23,7 +23,7 @@ Reads WSDL/XSD (with imports) and emits a small, typed client you can compile in
 * Deterministic metadata (`ATTR_SPEC`, `PROP_META`) for clean JSON ⇄ SOAP mapping
 * ESM **and** CommonJS friendly output
 
-Vendor: **[TechSpokes](https://www.techspokes.com)** · Contact: **[contact@techspokes.com](mailto:contact@techspokes.com)**
+Vendor: **[TechSpokes](https://www.techspokes.com)** · Contact: **[contact page](https://www.techspokes.com/contact/)"**
 Maintainer: **Serge Liatko** ([@sergeliatko](https://github.com/sergeliatko)) · GitHub org: [@techspokes](https://github.com/techspokes)
 
 ---
@@ -73,6 +73,25 @@ console.log(rs);
 ## CLI
 
 ```
+wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
+```
+
+### Local development
+
+By default, `npx wsdl-tsc` invokes the published npm version. To run the CLI from your local source (with your latest changes), use one of these approaches:
+
+```bash
+# Directly via tsx (requires tsx in devDependencies)
+npx tsx src/cli.ts --wsdl <path-or-url> --out <dir> [options]
+
+# Via npm script
+git clone ... then:
+npm install
+git checkout <branch>
+npm run dev -- --wsdl <path-or-url> --out <dir> [options]
+
+# Using npm link to symlink your working copy
+npm link
 wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
 ```
 
