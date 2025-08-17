@@ -24,6 +24,12 @@ Thanks for your interest in improving typescript-wsdl-client!
   - Or run against a local WSDL path/URL and `--out ./tmp`.
 - Keep changes focused; prefer small PRs with clear motivation.
 
+## Commit message format
+
+Always prefix the title with the current version from package.json.
+Use Conventional Commit style (type: summary, optional scope). Title ≤ 72 chars.
+See .github/copilot-instructions.md for full details and examples.
+
 ## Commit and PR guidelines
 
 - Include a minimal WSDL/XSD fixture (or link to a gist) that reproduces a bug.

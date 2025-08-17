@@ -81,32 +81,29 @@ wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
 * `--wsdl` — WSDL path or URL
 * `--out` — output directory (created if missing)
 
-**Useful options**
+**Options**
 
-* `--imports js|ts|bare` (default: `js`)
-  How intra-generated imports are written:
-
-    * `js` → `./file.js` (best for ESM/NodeNext apps)
-    * `ts` → `./file.ts` (use with `allowImportingTsExtensions`)
-    * `bare` → `./file` (nice for CommonJS builds)
-* `--ops-ts` (default: `true`)
-  Emit `operations.ts` instead of JSON.
+| Flag                | Type      | Choices                        | Default      | Description                                                      |
+|---------------------|-----------|--------------------------------|--------------|------------------------------------------------------------------|
+| `--imports`         | string    | js, ts, bare                   | js           | Intra-generated import specifiers: '.js', '.ts', or bare         |
+| `--ops-ts`          | boolean   | true, false                    | true         | Emit `operations.ts` instead of JSON                             |
+| `--attributes-key`  | string    | any                            | $attributes  | Key used by runtime marshaller for XML attributes                |
+| `--int64-as`        | string    | string, number, bigint         | string       | How to map xs:long/xs:unsignedLong                               |
+| `--bigint-as`       | string    | string, number                 | string       | How to map xs:integer family (positive/nonNegative/etc.)         |
+| `--decimal-as`      | string    | string, number                 | string       | How to map xs:decimal (money/precision)                          |
+| `--date-as`         | string    | string, Date                   | string       | How to map date/time/duration types                              |
 
 **Primitive mapping (safe defaults)**
 
-* `--int64-as string|number|bigint` (default `string`) — `xs:long`, `xs:unsignedLong`
-* `--bigint-as string|number` (default `string`) — `xs:integer` family
-* `--decimal-as string|number` (default `string`) — `xs:decimal` (money/precision)
-* `--date-as string|Date` (default `string`) — `xs:date`, `xs:dateTime`, `xs:time`, `g*`, durations
+Defaults are **string-first** to avoid precision & timezone surprises:
 
-**Other**
+* `xs:decimal` → `string` (money/precision safe)
+* 64-bit integers → `string` (you can opt into `bigint` or `number`)
+* dates/times → `string` (transport-friendly, no implicit tz conversion)
 
-* `--attributes-key <string>` (default: `$attributes`)
-  The key used by the runtime marshaller when serializing attributes.
+Override these defaults using the CLI flags above as needed for your use case.
 
----
-
-## What gets generated
+# What gets generated
 
 ```
 <out>/

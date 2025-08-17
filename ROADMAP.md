@@ -1,5 +1,7 @@
 # Roadmap
 
+> All roadmap items assume Node.js 20+ (see package.json and SECURITY.md).
+
 Short-term
 - Stabilize CLI flags and help text
 - Expand XSD coverage (groups, attributeGroup, any/anyAttribute handling)
@@ -15,4 +17,3 @@ Medium-term
 Long-term
 - Pluggable transports (bypass node-soap) and XML serializer
 - WSDL 2.0 exploration (if demand exists)
-
