@@ -1,7 +1,7 @@
 # TypeScript WSDL Client
 
 [![CI](https://github.com/techspokes/typescript-wsdl-client/actions/workflows/ci.yml/badge.svg)](https://github.com/techspokes/typescript-wsdl-client/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/typescript-wsdl-client.svg)](https://www.npmjs.com/package/typescript-wsdl-client)
+[![npm version](https://img.shields.io/npm/v/@techspokes/typescript-wsdl-client.svg)](https://www.npmjs.com/package/@techspokes/typescript-wsdl-client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **TypeScript WSDL → SOAP client generator.**
