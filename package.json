@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
   "keywords": [
     "wsdl",
@@ -68,7 +68,8 @@
     "yargs": "^18.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
   },
   "funding": {
     "type": "contact",
