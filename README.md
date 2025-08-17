@@ -220,7 +220,7 @@ npx tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 .
 ## Contributing
 
 Issues and PRs welcome. Please include a **minimal WSDL/XSD** fixture that reproduces the case.
-Node 18/20 supported.
+Node 20+ supported.
 
 - See CONTRIBUTING.md for setup and workflow.
 - See CODE_OF_CONDUCT.md for community expectations.

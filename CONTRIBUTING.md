@@ -2,7 +2,7 @@
 
 Thanks for your interest in improving typescript-wsdl-client!
 
-- Node.js: 18+ (LTS) — repo is ESM (NodeNext)
+- Node.js: 20+ (LTS) — repo is ESM (NodeNext)
 - Language: TypeScript (strict), target ES2022
 
 ## Getting started
@@ -43,4 +43,3 @@ Please report potential vulnerabilities privately — see SECURITY.md.
 ## Code of Conduct
 
 Participating in this project means you agree to uphold our Code of Conduct (see CODE_OF_CONDUCT.md).
-

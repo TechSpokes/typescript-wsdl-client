@@ -1,6 +1,6 @@
 {
   "name": "typescript-wsdl-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
   "keywords": [
     "wsdl",
@@ -26,7 +26,7 @@
   ],
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "bin": {
     "wsdl-tsc": "dist/cli.js"
