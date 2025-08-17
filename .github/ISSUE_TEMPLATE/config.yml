@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/techspokes/typescript-wsdl-client#readme
+    about: Start here for usage, CLI flags, and troubleshooting.
+  - name: Security policy
+    url: https://github.com/techspokes/typescript-wsdl-client/security/policy
+    about: Please report vulnerabilities privately.
+

@@ -1,0 +1,62 @@
+name: Bug report
+description: File a bug report with a minimal WSDL/XSD fixture
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug! Please include a minimal WSDL/XSD that reproduces the issue.
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: e.g. 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: e.g. 18.20.3 or 20.14.0
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: textarea
+    id: wsdl
+    attributes:
+      label: Minimal WSDL/XSD
+      description: Inline or link to a gist. Please remove proprietary parts; keep just enough to reproduce.
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1. Command you ran (wsdl-tsc ...)
+        2. What you expected
+        3. What happened
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / output
+      description: CLI output or stack traces
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Extra context
+      description: Any other info that might help
+

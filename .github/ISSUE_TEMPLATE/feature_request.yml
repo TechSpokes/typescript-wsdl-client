@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest an idea or enhancement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem would this feature solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the change, CLI flags, or API shape. Include a minimal WSDL/XSD if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+

@@ -1,3 +1,7 @@
+.idea/
+generated/
+scratches/
+
 # Logs
 logs
 *.log
@@ -93,7 +97,6 @@ dist
 
 # vuepress v2.x temp and cache directory
 .temp
-.cache
 
 # Sveltekit cache directory
 .svelte-kit/
@@ -137,3 +140,8 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+/src/tmp/client.ts
+/src/tmp/meta.ts
+/src/tmp/operations.ts
+/src/tmp/runtime.ts
+/src/tmp/types.ts

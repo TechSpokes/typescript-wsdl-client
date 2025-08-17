@@ -1,0 +1,17 @@
+name: Question
+description: Ask a question or get help using the generator
+labels: [question]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: Describe what you're trying to do and where you’re stuck.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Node version, OS, CLI command, and a minimal WSDL/XSD if relevant.
+
