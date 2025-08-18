@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import type { CompiledCatalog } from "../compiler/schemaCompiler.js";
 import type { CompilerOptions } from "../config.js";
+import { pascal } from "../util/xml.js";
 
 export function emitClient(outFile: string, compiled: CompiledCatalog, opts: CompilerOptions & { importExt?: string }) {
     const ext = opts.importExt ?? ".js";
@@ -17,14 +18,20 @@ export function emitClient(outFile: string, compiled: CompiledCatalog, opts: Com
     lines.push(`  }`);
     for (const op of compiled.operations) {
         const m = op.name;
+        const inTypeName = op.inputElement ? pascal(op.inputElement.local) : undefined;
+        const outTypeName = op.outputElement ? pascal(op.outputElement.local) : undefined;
+        const inTs = inTypeName ? `T.${inTypeName}` : `any`;
+        const outTs = outTypeName ? `T.${outTypeName}` : `any`;
+        const inMetaKey = inTypeName ?? m;
+        const outMetaKey = outTypeName ?? m;
         lines.push(`  /** SOAPAction: ${op.soapAction} */`);
-        lines.push(`  async ${m}(args: any): Promise<any> {`);
+        lines.push(`  async ${m}(args: ${inTs}): Promise<${outTs}> {`);
         lines.push(`    const c: any = await this._client();`);
         lines.push(`    const meta = { ATTR_SPEC, CHILD_TYPE, PROP_META } as const;`);
-        lines.push(`    const soapArgs = toSoapArgs(args, "${m}", meta, this.attributesKey);`);
+        lines.push(`    const soapArgs = toSoapArgs(args as any, "${inMetaKey}", meta, this.attributesKey);`);
         lines.push(`    return new Promise((resolve, reject) => {`);
         lines.push(`      c['${m}'](soapArgs, (err: any, result: any) => {`);
-        lines.push(`        if (err) reject(err); else resolve(fromSoapResult(result, "${m}", meta, this.attributesKey));`);
+        lines.push(`        if (err) reject(err); else resolve(fromSoapResult(result, "${outMetaKey}", meta, this.attributesKey));`);
         lines.push(`      });`);
         lines.push(`    });`);
         lines.push(`  }`);

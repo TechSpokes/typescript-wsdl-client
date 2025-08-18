@@ -8,6 +8,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.2.0] – 2025-08-18
+- Enrich schemaCompiler operations by extracting SOAP action URIs from WSDL `<soap:operation>` bindings.
+
 ## [0.1.91] – 2025-08-17
 - Update copilot-instructions to include best practices for naming and commenting.
 - Improve variable naming and comments in index.ts and config.ts for clarity and maintainability.

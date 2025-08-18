@@ -94,22 +94,24 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
 
   for (const s of cat.schemas) {
     const tns = s.targetNS;
+    // merge WSDL-level prefixes with schema-level (schema wins)
+    const mergedPrefixes = { ...cat.prefixMap, ...s.prefixes };
     for (const n of getChildrenWithLocalName(s.xml, "complexType")) {
       const name = n["@_name"];
       if (name) {
-        complexTypes.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+        complexTypes.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: mergedPrefixes });
       }
     }
     for (const n of getChildrenWithLocalName(s.xml, "simpleType")) {
       const name = n["@_name"];
       if (name) {
-        simpleTypes.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+        simpleTypes.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: mergedPrefixes });
       }
     }
     for (const n of getChildrenWithLocalName(s.xml, "element")) {
       const name = n["@_name"];
       if (name) {
-        elements.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: s.prefixes });
+        elements.set(qkey({ ns: tns, local: name }), { node: n, tns, prefixes: mergedPrefixes });
       }
     }
   }
@@ -404,6 +406,75 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     return result;
   }
 
+  // Helper: compile a global element into a surface type (wrapper)
+  function compileElementAsType(
+    name: string,
+    enode: any,
+    schemaNS: string,
+    prefixes: Record<string, string>
+  ): CompiledType {
+    const outName = pascal(name);
+    const key = `${schemaNS}|${outName}`;
+    const present = compiledMap.get(key);
+    if (present) return present;
+
+    const inlineComplex = getFirstWithLocalName(enode, "complexType");
+    if (inlineComplex) {
+      return getOrCompileComplex(name, inlineComplex, schemaNS, prefixes);
+    }
+    const inlineSimple = getFirstWithLocalName(enode, "simpleType");
+    if (inlineSimple) {
+      const r = compileSimpleTypeNode(inlineSimple, schemaNS, prefixes);
+      const t: CompiledType = {
+        name: outName,
+        ns: schemaNS,
+        attrs: [],
+        elems: [{ name: "$value", tsType: r.tsType, min: 0, max: 1, nillable: false, declaredType: r.declared }],
+      };
+      compiledMap.set(key, t);
+      return t;
+    }
+    const tAttr = enode["@_type"];
+    if (tAttr) {
+      const q = resolveQName(tAttr, schemaNS, prefixes);
+      // If references a simple type → $value; if complex type → copy members
+      if (q.ns === XS) {
+        const label = `xs:${q.local}`;
+        const t: CompiledType = {
+          name: outName,
+          ns: schemaNS,
+          attrs: [],
+          elems: [{ name: "$value", tsType: xsdToTsPrimitive(label, (_opts as any)?.primitive), min: 0, max: 1, nillable: false, declaredType: label }],
+        };
+        compiledMap.set(key, t);
+        return t;
+      }
+      const baseRec = complexTypes.get(qkey(q));
+      if (baseRec) {
+        const base = getOrCompileComplex(baseRec.node["@_name"], baseRec.node, baseRec.tns, baseRec.prefixes);
+        const t: CompiledType = { name: outName, ns: schemaNS, attrs: [...(base.attrs||[])], elems: [...(base.elems||[])] };
+        compiledMap.set(key, t);
+        return t;
+      }
+      const srec = simpleTypes.get(qkey(q));
+      if (srec) {
+        const a = getOrCompileAlias(q.local, srec.node, srec.tns, srec.prefixes);
+        const t: CompiledType = {
+          name: outName,
+          ns: schemaNS,
+          attrs: [],
+          elems: [{ name: "$value", tsType: a.name, min: 0, max: 1, nillable: false, declaredType: `{${a.ns}}${q.local}` }],
+        };
+        compiledMap.set(key, t);
+        return t;
+      }
+    }
+    // default empty wrapper
+    const t: CompiledType = { name: outName, ns: schemaNS, attrs: [], elems: [] };
+    compiledMap.set(key, t);
+    return t;
+  }
+
   // compile every discovered complex type
   for (const rec of complexTypes.values()) {
     const name = rec.node["@_name"];
@@ -411,6 +482,13 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
       continue;
     }
     getOrCompileComplex(name, rec.node, rec.tns, rec.prefixes);
+  }
+
+  // compile global element wrappers, so metadata contains operation wrappers
+  for (const rec of elements.values()) {
+    const name = rec.node["@_name"];
+    if (!name) continue;
+    compileElementAsType(name, rec.node, rec.tns, rec.prefixes);
   }
 
   // emit lists
@@ -435,7 +513,7 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     propMeta[t.name] = meta;
   }
 
-  // operations / soapAction (minimal)
+  // operations / soapAction (enriched)
   // 1) Gather all binding definitions and select the SOAP binding (soap:binding or soap12:binding child).
   // 2) Use the binding's @type to locate the matching portType in definitions.
   // 3) Enumerate operations on that portType (wsdl:operation) for input/output WSDL messages.
@@ -465,13 +543,36 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     const action = soapOp?.["@_soapAction"] || soapOp?.["@_soapActionURI"] || soapOp?.["@_soapActionUrl"] || "";
     bOps.set(name, action);
   }
+
+  const msgDefs = normalizeArray(defs?.["wsdl:message"] || defs?.["message"]);
+  const findMessage = (qstr: string | undefined) => {
+    if (!qstr) return undefined;
+    const q = resolveQName(qstr, tns, cat.prefixMap);
+    return msgDefs.find(m => m?.["@_name"] === q.local);
+  };
+  const elementOfMessage = (msg: any): QName | undefined => {
+    if (!msg) return undefined;
+    const parts = getChildrenWithLocalName(msg, "part");
+    // Prefer element-based part (doc/literal)
+    const withElem = parts.find(p => p?.["@_element"]);
+    const el = withElem?.["@_element"] as string | undefined;
+    if (!el) return undefined;
+    const q = resolveQName(el, tns, cat.prefixMap);
+    return { ns: q.ns, local: q.local };
+  };
+
   // build operations list
-  const ops = pOps
+  const ops = (pOps
     .map(po => {
-      const name = po?.["@_name"];
-      return name ? { name, soapAction: bOps.get(name) || "" } : undefined;
+      const name = po?.["@_name"] as string | undefined;
+      if (!name) return undefined;
+      const inMsg = findMessage((getFirstWithLocalName(po, "input") as any)?.["@_message"]);
+      const outMsg = findMessage((getFirstWithLocalName(po, "output") as any)?.["@_message"]);
+      const inputElement = elementOfMessage(inMsg);
+      const outputElement = elementOfMessage(outMsg);
+      return { name, soapAction: bOps.get(name) || "", inputElement, outputElement };
     })
-    .filter((x): x is { name: string; soapAction: string } => !!x);
+    .filter((x): x is NonNullable<typeof x> => x != null)) as Array<{ name: string; soapAction: string; inputElement?: QName; outputElement?: QName }>;
 
   return {
     types: typesList,

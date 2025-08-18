@@ -27,10 +27,10 @@
 
 
 ## Commit message format (required)
-- Use **Conventional Commits** style for commit messages.
 - **Always include the current version** from `package.json` in the title.
 - **Always prefix the title with `Version: <version>`**.
 - Check the CHANGELOG.md for the unreleased or current version changes for additional context (when available).
+- When multiple items are changed in a single commit, provide a single summary that captures the essence of the changes.
 
 ```
 Version: <version> <type>(<optional-scope>): <imperative summary>
