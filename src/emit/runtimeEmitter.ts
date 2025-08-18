@@ -10,6 +10,7 @@ export type CreateSoapClientOptions = {
   endpoint?: string;
   wsdlOptions?: Record<string, any>;
   requestOptions?: Record<string, any>;
+  security?: any; // pass an instance of a node-soap security class, e.g., new soap.WSSecurity("user","pass")
 }
 export type AttrSpec = Record<string, readonly string[]>;
 export type ChildType = Record<string, Readonly<Record<string, string>>>;
@@ -18,12 +19,8 @@ export type PropMeta = Record<string, Readonly<Record<string, any>>>;
 export async function createSoapClient(opts: CreateSoapClientOptions): Promise<any> {
   const client = await soap.createClientAsync(opts.wsdlUrl, opts.wsdlOptions || {});
   if (opts.endpoint) client.setEndpoint(opts.endpoint);
-  if (opts.requestOptions) {
-    const { wsdlUrl, endpoint, wsdlOptions, ...req } = opts as any;
-    if (client.setSecurity && req) {
-      // security is caller's responsibility (if needed)
-    }
-  }
+  if (opts.security) client.setSecurity(opts.security);
+  // security and any request-specific configuration are the caller's responsibility
   return client;
 }
 

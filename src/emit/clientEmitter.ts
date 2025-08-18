@@ -24,9 +24,13 @@ export function emitClient(outFile: string, compiled: CompiledCatalog, opts: Com
         const outTs = outTypeName ? `T.${outTypeName}` : `any`;
         const inMetaKey = inTypeName ?? m;
         const outMetaKey = outTypeName ?? m;
-        lines.push(`  /** SOAPAction: ${op.soapAction} */`);
+        const secHints = Array.isArray((op as any).security) && (op as any).security!.length ? (op as any).security as string[] : [];
+        lines.push(`  /** SOAPAction: ${op.soapAction}${secHints.length ? `\n   * Security (WSDL policy hint): ${secHints.join(", ")}` : ""} */`);
         lines.push(`  async ${m}(args: ${inTs}): Promise<${outTs}> {`);
         lines.push(`    const c: any = await this._client();`);
+        if (secHints.length) {
+            lines.push(`    if (!c || !c.security) { console.warn("[wsdl-client] Operation '${m}' may require security: ${secHints.join(", ")}. Configure client.setSecurity(...) or pass { security } to createSoapClient()."); }`);
+        }
         lines.push(`    const meta = { ATTR_SPEC, CHILD_TYPE, PROP_META } as const;`);
         lines.push(`    const soapArgs = toSoapArgs(args as any, "${inMetaKey}", meta, this.attributesKey);`);
         lines.push(`    return new Promise((resolve, reject) => {`);

@@ -52,6 +52,7 @@ export type CompiledCatalog = {
     soapAction: string;
     inputElement?: QName;
     outputElement?: QName;
+    security?: string[]; // minimal WS-Policy-derived hints (e.g., ["usernameToken", "https"])
   }>;
   wsdlTargetNS: string;
 };
@@ -74,6 +75,45 @@ function makeInlineTypeName(
     return prop;
   }
   return `${base}Anon`;
+}
+
+// --- Minimal WS-Policy scanning (inline policies only; PolicyReference not resolved) ---
+function collectSecurityFromPolicyNodes(policyNodes: any[]): string[] {
+  const found = new Set<string>();
+  const targets = new Set([
+    "UsernameToken",
+    "TransportBinding",
+    "HttpsToken",
+    "TransportToken",
+    "AsymmetricBinding",
+    "SymmetricBinding",
+    "SignedSupportingTokens",
+    "X509Token",
+  ]);
+  const visit = (n: any) => {
+    if (n == null || typeof n !== "object") return;
+    for (const [k, v] of Object.entries(n)) {
+      if (k.startsWith("@_")) continue; // attribute
+      // localName match (prefix-agnostic) by checking tail after ':' or whole key if no ':'
+      const ln = k.includes(":") ? k.split(":").pop()! : k;
+      if (targets.has(ln)) {
+        switch (ln) {
+          case "UsernameToken": found.add("usernameToken"); break;
+          case "HttpsToken":
+          case "TransportBinding":
+          case "TransportToken": found.add("https"); break;
+          case "X509Token": found.add("x509"); break;
+          case "AsymmetricBinding":
+          case "SymmetricBinding":
+          case "SignedSupportingTokens": found.add("messageSecurity"); break;
+        }
+      }
+      // recurse
+      if (v && typeof v === "object") visit(v);
+    }
+  };
+  for (const p of policyNodes) visit(p);
+  return Array.from(found);
 }
 
 /**
@@ -573,6 +613,17 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
       return { name, soapAction: bOps.get(name) || "", inputElement, outputElement };
     })
     .filter((x): x is NonNullable<typeof x> => x != null)) as Array<{ name: string; soapAction: string; inputElement?: QName; outputElement?: QName }>;
+
+  // --- WS-Policy: scan for security requirements (inline policies only) ---
+  const bindingPolicies = getChildrenWithLocalName(soapBinding || {}, "Policy");
+  const bindingSec = collectSecurityFromPolicyNodes(bindingPolicies);
+  for (const op of ops) {
+    const bo = opsNodes.find(o => o?.["@_name"] === op.name) || {} as any;
+    const opPolicies = getChildrenWithLocalName(bo, "Policy");
+    const opSec = collectSecurityFromPolicyNodes(opPolicies);
+    const secSet = new Set<string>([...bindingSec, ...opSec]);
+    (op as any).security = Array.from(secSet);
+  }
 
   return {
     types: typesList,

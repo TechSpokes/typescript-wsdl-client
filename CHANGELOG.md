@@ -8,6 +8,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.2.1] – 2025-08-18
+- Add WS-Policy parsing to detect security requirements (e.g., usernameToken, https) from WSDL bindings and operations.
+- Include security hints in generated client JSDoc and runtime warnings if security is missing.
+- Extend runtime factory to accept and apply a `security` option for node-soap clients.
+- Update README with examples and documentation for security configuration and WS-Policy hints.
+- Fix README install instructions to use correct package name (@techspokes/typescript-wsdl-client) to prevent 404 errors.
+
 ## [0.2.0] – 2025-08-18
 - Enrich schemaCompiler operations by extracting SOAP action URIs from WSDL `<soap:operation>` bindings.
 
@@ -22,3 +29,4 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ## [0.1.9] – 2025-08-17
 - Replace email links in public markdown files with link to contact page.
 - Initial community scaffolding: CI, issue/PR templates, docs.
+

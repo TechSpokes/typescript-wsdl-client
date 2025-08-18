@@ -23,7 +23,7 @@ Reads WSDL/XSD (with imports) and emits a small, typed client you can compile in
 * Deterministic metadata (`ATTR_SPEC`, `PROP_META`) for clean JSON ⇄ SOAP mapping
 * ESM **and** CommonJS friendly output
 
-Vendor: **[TechSpokes](https://www.techspokes.com)** · Contact: **[contact page](https://www.techspokes.com/contact/)"**
+Vendor: **[TechSpokes](https://www.techspokes.com)** · Contact: **[contact page](https://www.techspokes.com/contact/)**
 Maintainer: **Serge Liatko** ([@sergeliatko](https://github.com/sergeliatko)) · GitHub org: [@techspokes](https://github.com/techspokes)
 
 ---
@@ -33,7 +33,7 @@ Maintainer: **Serge Liatko** ([@sergeliatko](https://github.com/sergeliatko)) ·
 Install the generator (dev-time) in your project:
 
 ```bash
-npm i -D typescript-wsdl-client
+npm i -D @techspokes/typescript-wsdl-client
 # your app will use node-soap at runtime:
 npm i soap
 ```
@@ -51,15 +51,20 @@ Use the generated client:
 import { createSoapClient } from "./generated/my/runtime.js";
 import { GeneratedSoapClient } from "./generated/my/client.js";
 
-const soap = await createSoapClient({ wsdlUrl: "https://example.com/MyService?wsdl" });
-const client = new GeneratedSoapClient(soap, "$attributes"); // attributes key optional
+// optional: pass security straight into createSoapClient (node-soap security instance)
+import soap from "soap";
+const security = new soap.WSSecurity("user", "pass");
+
+const soapClient = await createSoapClient({
+  wsdlUrl: "https://example.com/MyService?wsdl",
+  security, // or configure after creation: (await createSoapClient(...)).setSecurity(security)
+});
+const client = new GeneratedSoapClient(soapClient, "$attributes"); // attributes key optional
 
 const rs = await client.MyOperation({
   MyOperationRQ: {
     MyAttribute: "passed as attribute",
     MyElement: "passed as child element",
-    // ...other fields
-    // attributes appear as top-level props; child elements as nested objects
   }
 });
 
@@ -67,6 +72,17 @@ console.log(rs);
 ```
 
 > The generator always emits TypeScript sources (`*.ts`). You compile them with your app.
+
+---
+
+## Security and WS-Policy hints
+
+- node-soap leaves security up to you. Create a security instance (e.g., `new soap.BasicAuthSecurity(...)`, `new soap.WSSecurity(...)`, `new soap.ClientSSLSecurity(...)`) and set it on the client via `client.setSecurity(...)`.
+- The runtime factory `createSoapClient({ wsdlUrl, endpoint?, wsdlOptions?, security? })` accepts an optional `security` and will call `client.setSecurity(security)` for you.
+- The generated client includes minimal WS-Policy hints if your WSDL embeds inline `wsp:Policy` under `wsdl:binding` or `wsdl:binding/wsdl:operation`.
+  - Hints are surfaced in method JSDoc as “Security (WSDL policy hint): …” and in `operations.json`/`operations.ts` as a `security: string[]` field (e.g., `usernameToken`, `https`, `x509`, `messageSecurity`).
+  - These hints are best-effort and not authoritative (no `wsp:PolicyReference` dereferencing yet). They’re intended to nudge you to configure the right security.
+  - At runtime, if an operation has hints and your client has no `security` configured, a console warning is emitted.
 
 ---
 
@@ -195,8 +211,8 @@ TypeScript will compile to `require("./runtime")` cleanly.
 ## Programmatic API (optional)
 
 ```ts
-import { compileCatalog, xsdToTsPrimitive, type CompilerOptions } from "typescript-wsdl-client";
-import { loadWsdlCatalog } from "typescript-wsdl-client/internal-or-your-loader"; // if you expose it
+import { compileCatalog, xsdToTsPrimitive, type CompilerOptions } from "@techspokes/typescript-wsdl-client";
+import { loadWsdlCatalog } from "@techspokes/typescript-wsdl-client/internal-or-your-loader"; // if you expose it
 
 const catalog = await loadWsdlCatalog("./spec/wsdl/MyService.wsdl");
 const compiled = compileCatalog(catalog, {
@@ -237,6 +253,7 @@ npx tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 .
 * **“Cannot find './runtime.js'”** — Your app must be `module: "NodeNext"` when using `--imports js`.
   Use `--imports bare` for CommonJS apps.
 * **“node-soap not found”** — Install it in your **app**: `npm i soap`.
+* **“Security required?”** — If your generated client warns or JSDoc shows a security hint, configure node-soap security: `client.setSecurity(new soap.WSSecurity(...))` or pass `security` to `createSoapClient`.
 
 ---
 
