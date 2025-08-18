@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
+import type {CompiledCatalog, CompiledType} from "../compiler/schemaCompiler.js";
 
 /**
  * Emit TypeScript types from a compiled XSD catalog.
@@ -34,8 +34,9 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
   // sort types by name to ensure consistent order
   compiled.types.sort((a, b) => a.name.localeCompare(b.name));
   for (const t of compiled.types) {
-    // Detect mis-mapped simpleContent extension:
-    //   single "$value" whose tsType is another named interface ⇒ extend that interface
+    // Detect complexContent extension via compiled metadata or mis-mapped simpleContent extension
+    const complexBase = (t as any).base as string | undefined;
+    // Detect mis-mapped simpleContent extension: single "$value" whose tsType is another named interface
     const valueElems = (t.elems || []).filter(
       (e) =>
         e.name === "$value" &&
@@ -43,23 +44,29 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
         typeof e.tsType === "string" &&
         typeNames.has(e.tsType as string)
     );
+    const isSimpleContentExtension = !complexBase && (t.elems?.length || 0) === 1 && valueElems.length === 1;
+    const baseName = complexBase ?? (isSimpleContentExtension ? (valueElems[0].tsType as string) : undefined);
 
-    const isSimpleContentExtension =
-      (t.elems?.length || 0) === 1 && valueElems.length === 1;
-
-    const baseName = isSimpleContentExtension ? (valueElems[0].tsType as string) : undefined;
-
-    // Header
+    // Header: extend base type if applicable
     if (baseName) {
       lines.push(`export interface ${t.name} extends ${baseName} {`);
     } else {
       lines.push(`export interface ${t.name} {`);
     }
 
+    // Prepare lists: for complexContent extension use only local additions
+    const attrsToEmit: CompiledType["attrs"] = complexBase ? ((t as any).localAttrs || []) : (t.attrs || []);
+    // Elements list similar
+    let elementsToEmit: CompiledType["elems"] = complexBase ? ((t as any).localElems || []) : (t.elems || []);
+    // SimpleContent extension special handling drops synthetic $value
+    if (isSimpleContentExtension && !complexBase) {
+      const idx = elementsToEmit.findIndex(e => e.name === "$value");
+      if (idx >= 0) elementsToEmit.splice(idx, 1);
+    }
     //
     // Attributes — with JSDoc on every attribute
     //
-    if (0 < t?.attrs?.length) {
+    if (0 < attrsToEmit.length) {
       // add attributes header comment
       lines.push("");
       lines.push("  /**");
@@ -67,7 +74,7 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
       lines.push("   */");
 
       // Sort the elements with the following logic: required first (sorted a-z), then optional (sorted a-z)
-      t.attrs?.sort((a, b) => {
+      attrsToEmit.sort((a, b) => {
         // Required attributes come before optional attributes
         if (a.use === "required" && b.use !== "required") return -1; // `a` is required, b is optional
         if (a.use !== "required" && b.use === "required") return 1;  // `a` is optional, b is required
@@ -76,7 +83,7 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
         return a.name.localeCompare(b.name);
       });
     }
-    for (const a of t.attrs || []) {
+    for (const a of attrsToEmit) {
       const opt = a.use === "required" ? "" : "?";
       const annObj = {
         kind: "attribute" as const,
@@ -92,13 +99,7 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
     //
     // Elements — with JSDoc on every element
     //
-    const elementsToEmit = [...(t.elems || [])];
-
-    // If we detected simpleContent extension, drop the synthetic $value (we're extending instead).
-    if (isSimpleContentExtension) {
-      const idx = elementsToEmit.findIndex((e) => e.name === "$value");
-      if (idx >= 0) elementsToEmit.splice(idx, 1);
-    }
+    // elementsToEmit already prepared above
 
     if (0 < elementsToEmit.length) {
       // add elements header comment
@@ -123,9 +124,7 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
     }
 
     for (const e of elementsToEmit) {
-      const isArray =
-        e.max === "unbounded" ||
-        (typeof e.max === "number" && e.max > 1);
+      const isArray = e.max === "unbounded" ||  (e.max > 1);
       const arr = isArray ? "[]" : "";
       const opt = (e.min ?? 0) === 0 ? "?" : "";
       const annObj = {

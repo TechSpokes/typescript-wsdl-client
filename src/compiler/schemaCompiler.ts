@@ -29,6 +29,23 @@ export type CompiledType = {
     declaredType: string;
   }>;
   jsdoc?: string;
+  base?: string;        // optional base type name for complexContent extension
+  // attributes introduced locally in extension (only those not inherited)
+  localAttrs?: Array<{
+    name: string;
+    tsType: string;
+    use?: "required" | "optional";
+    declaredType: string;
+  }>;
+  // elements introduced locally in extension (only those not inherited)
+  localElems?: Array<{
+    name: string;
+    tsType: string;
+    min: number;
+    max: number | "unbounded";
+    nillable?: boolean;
+    declaredType: string;
+  }>;
 };
 
 export type CompiledAlias = {
@@ -332,44 +349,41 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     // resolves type refs or @ref, applies min/max occurrence and nillable flags
     const collectParticles = (ownerTypeName: string, node: any): CompiledType["elems"] => {
       const out: CompiledType["elems"] = [];
-      const groups = [
-        ...getChildrenWithLocalName(node, "sequence"),
-        ...getChildrenWithLocalName(node, "all"),
-        ...getChildrenWithLocalName(node, "choice"),
-      ];
-      for (const grp of groups) {
-        for (const e of getChildrenWithLocalName(grp, "element")) {
+      // process a compositor or element container recursively
+      const recurse = (groupNode: any) => {
+        // handle direct element children
+        for (const e of getChildrenWithLocalName(groupNode, "element")) {
           const nameOrRef = e["@_name"] || e["@_ref"];
-          if (!nameOrRef) {
-            continue;
-          }
+          if (!nameOrRef) continue;
           const propName = e["@_name"];
           const min = e["@_minOccurs"] ? Number(e["@_minOccurs"]) : 1;
           const maxAttr = e["@_maxOccurs"];
           const max = maxAttr === "unbounded" ? "unbounded" : maxAttr ? Number(maxAttr) : 1;
           const nillable = e["@_nillable"] === "true";
-
-          // inline complexType: create a nested interface with a generated name
           const inlineComplex = getFirstWithLocalName(e, "complexType");
           const inlineSimple = getFirstWithLocalName(e, "simpleType");
-
           if (inlineComplex) {
             const inlineName = makeInlineTypeName(ownerTypeName, propName || nameOrRef, max);
             const rec = getOrCompileComplex(inlineName, inlineComplex, schemaNS, prefixes);
             out.push({ name: propName || nameOrRef, tsType: rec.name, min, max, nillable, declaredType: `{${schemaNS}}${rec.name}` });
           } else if (inlineSimple) {
-            // inline simpleType (e.g., list or enumeration)
             const r = compileSimpleTypeNode(inlineSimple, schemaNS, prefixes);
             out.push({ name: propName || nameOrRef, tsType: r.tsType, min, max, nillable, declaredType: r.declared });
           } else {
-            // named type or ref: resolve via QName
             const t = e["@_type"] || e["@_ref"];
             const q = t ? resolveQName(t, schemaNS, prefixes) : { ns: XS, local: "string" };
             const r = resolveTypeRef(q, schemaNS, prefixes);
             out.push({ name: propName || nameOrRef, tsType: r.tsType, min, max, nillable, declaredType: r.declared });
           }
         }
-      }
+        // recurse into nested compositor groups
+        for (const comp of ["sequence", "all", "choice"]) {
+          for (const sub of getChildrenWithLocalName(groupNode, comp)) {
+            recurse(sub);
+          }
+        }
+      };
+      recurse(node);
       return out;
     };
 
@@ -384,21 +398,26 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
       const res = getFirstWithLocalName(complexContent, "restriction");
       const node = ext || res;
       if (node) {
+        // handle complexContent extension: record base and separate local additions
+        let baseName: string | undefined;
         const baseAttr = node["@_base"];
         if (baseAttr) {
           const baseQ = resolveQName(baseAttr, schemaNS, prefixes);
           const baseRec = findComplexRec(baseQ);
           if (baseRec) {
-            const base = getOrCompileComplex(baseRec.node["@_name"], baseRec.node, baseRec.tns, baseRec.prefixes);
-            // inherit base
-            mergeAttrs(attrs, base.attrs);
-            mergeElems(elems, base.elems);
+            const baseType = getOrCompileComplex(baseRec.node["@_name"], baseRec.node, baseRec.tns, baseRec.prefixes);
+            baseName = baseType.name;
+            // inherit base members
+            attrs.push(...baseType.attrs);
+            elems.push(...baseType.elems);
           }
         }
-        // local additions/overrides
-        mergeAttrs(attrs, collectAttributes(node));
-        mergeElems(elems, collectParticles(outName, node));
-        const result: CompiledType = { name: outName, ns: schemaNS, attrs, elems };
+        // collect local additions/overrides
+        const locals = collectAttributes(node);
+        const localElems = collectParticles(outName, node);
+        attrs.push(...locals);
+        elems.push(...localElems);
+        const result: CompiledType = { name: outName, ns: schemaNS, attrs, elems, base: baseName, localAttrs: locals, localElems };
         compiledMap.set(key, result);
         inProgress.delete(key);
         return result;

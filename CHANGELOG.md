@@ -9,7 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-## [0.2.4] – 2024-06-09
+## [0.2.5] – 2025-08-18
+- fix(schemaCompiler): recursively traverse nested `<sequence>`, `<choice>`, and `<all>` groups so inner `<element>` declarations (e.g., BookingChannels, Errors, Success, TPA_Extensions, Warnings) are correctly emitted in generated interfaces
+
+## [0.2.4] – 2025-08-18
 - fix(util/pascal): only prefix '_' when the whole identifier equals a reserved word; stop over-prefixing names that merely start with one (e.g., Aspect, AsyncJob).
 - feat(emitter/types): add explanatory comments for attributes/elements and sort them for clarity in generated interfaces.
 
