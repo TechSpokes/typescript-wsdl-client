@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.2.71] – 2025-08-18
+- refactor(schemaCompiler): inclined redundant variable
+
 ## [0.2.7] – 2025-08-18
 - refactor(schemaCompiler): stop inlining element @type complex types; emit TS type aliases and add meta synonyms to avoid duplication and preserve element↔type mapping
 

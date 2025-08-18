@@ -1,13 +1,7 @@
-import type { CompilerOptions } from "../config.js";
-import type { WsdlCatalog } from "../loader/wsdlLoader.js";
-import {
-  getChildrenWithLocalName,
-  getFirstWithLocalName,
-  normalizeArray,
-  pascal,
-  resolveQName,
-} from "../util/xml.js";
-import { xsdToTsPrimitive } from "../xsd/primitives.js";
+import type {CompilerOptions} from "../config.js";
+import type {WsdlCatalog} from "../loader/wsdlLoader.js";
+import {getChildrenWithLocalName, getFirstWithLocalName, normalizeArray, pascal, resolveQName,} from "../util/xml.js";
+import {xsdToTsPrimitive} from "../xsd/primitives.js";
 
 export type QName = { ns: string; local: string };
 
@@ -503,9 +497,8 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
           const aliasKey = key;
           const existingAlias = aliasMap.get(aliasKey);
           const declared = `{${base.ns}}${base.name}`;
-          const aliasName = outName;
           if (!existingAlias) {
-            aliasMap.set(aliasKey, { name: aliasName, ns: schemaNS, tsType: base.name, declared });
+            aliasMap.set(aliasKey, { name: outName, ns: schemaNS, tsType: base.name, declared });
           } else {
             // if an alias exists but points elsewhere, keep the first one (stable) and ignore
           }
