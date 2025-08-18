@@ -481,7 +481,7 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     const tAttr = enode["@_type"];
     if (tAttr) {
       const q = resolveQName(tAttr, schemaNS, prefixes);
-      // If references a simple type → $value; if complex type → copy members
+      // If references a simple type → $value; if complex type → prefer alias to avoid duplication
       if (q.ns === XS) {
         const label = `xs:${q.local}`;
         const t: CompiledType = {
@@ -495,10 +495,23 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
       }
       const baseRec = complexTypes.get(qkey(q));
       if (baseRec) {
+        // Ensure base type is compiled
         const base = getOrCompileComplex(baseRec.node["@_name"], baseRec.node, baseRec.tns, baseRec.prefixes);
-        const t: CompiledType = { name: outName, ns: schemaNS, attrs: [...(base.attrs||[])], elems: [...(base.elems||[])] };
-        compiledMap.set(key, t);
-        return t;
+        // If a concrete type with the same name already exists, avoid aliasing conflict
+        if (!compiledMap.has(key)) {
+          // record alias: ElementName -> BaseTypeName
+          const aliasKey = key;
+          const existingAlias = aliasMap.get(aliasKey);
+          const declared = `{${base.ns}}${base.name}`;
+          const aliasName = outName;
+          if (!existingAlias) {
+            aliasMap.set(aliasKey, { name: aliasName, ns: schemaNS, tsType: base.name, declared });
+          } else {
+            // if an alias exists but points elsewhere, keep the first one (stable) and ignore
+          }
+        }
+        // Return base so callers have a CompiledType, but do not duplicate in compiledMap for wrapper
+        return base;
       }
       const srec = simpleTypes.get(qkey(q));
       if (srec) {
@@ -555,6 +568,18 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     }
     childType[t.name] = child;
     propMeta[t.name] = meta;
+  }
+
+  // Add meta synonyms for element aliases that point to complex types, so runtime can use either name
+  if (aliasList.length) {
+    const typeNameSet = new Set(typesList.map(t => t.name));
+    for (const a of aliasList) {
+      if (typeNameSet.has(a.tsType) && !(a.name in childType)) {
+        childType[a.name] = childType[a.tsType];
+        propMeta[a.name] = propMeta[a.tsType];
+        attrSpec[a.name] = attrSpec[a.tsType];
+      }
+    }
   }
 
   // operations / soapAction (enriched)

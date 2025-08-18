@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.2.7] – 2025-08-18
+- refactor(schemaCompiler): stop inlining element @type complex types; emit TS type aliases and add meta synonyms to avoid duplication and preserve element↔type mapping
+
 ## [0.2.6] – 2025-08-18
 - fix(schemaCompiler): merge duplicate complexType definitions by consolidating attributes and elements
 
