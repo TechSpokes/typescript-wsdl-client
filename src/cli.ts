@@ -41,6 +41,10 @@ const argv = await yargs(hideBin(process.argv))
         default: "$attributes",
         desc: "Key used by runtime marshaller for XML attributes",
     })
+    .option("client-name", {
+        type: "string",
+        desc: "Override the generated client class name (exact export name)",
+    })
     // Primitive mapping knobs (safe defaults)
     .option("int64-as", {
         type: "string",
@@ -101,6 +105,7 @@ emitClient(path.join(outDir, "client.ts"), compiled, {
     // @ts-ignore runtime-only options for emitter
     importExt,
     attributesKey: String(argv["attributes-key"]),
+    clientName: argv["client-name"] as any,
 } as any);
 
 console.log(`✅ Generated TypeScript client in ${outDir}`);

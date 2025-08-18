@@ -55,6 +55,9 @@ export type CompiledCatalog = {
     security?: string[]; // minimal WS-Policy-derived hints (e.g., ["usernameToken", "https"])
   }>;
   wsdlTargetNS: string;
+  // Newly added: used for naming the generated client and potential diagnostics
+  serviceName?: string;
+  wsdlUri: string;
 };
 
 const XS = "http://www.w3.org/2001/XMLSchema";
@@ -625,11 +628,28 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     (op as any).security = Array.from(secSet);
   }
 
+  // --- Service discovery (for client naming) ---
+  let serviceName: string | undefined;
+  const soapBindingName = soapBinding?.["@_name"] as string | undefined;
+  const serviceDefs = normalizeArray(defs?.["wsdl:service"] || defs?.["service"]);
+  const serviceUsingBinding = serviceDefs.find(s => {
+    const ports = getChildrenWithLocalName(s, "port");
+    return ports.some(p => {
+      const bq = p?.["@_binding"] as string | undefined;
+      if (!bq || !soapBindingName) return false;
+      const q = resolveQName(bq, tns, cat.prefixMap);
+      return q.local === soapBindingName; // match by local name
+    });
+  });
+  serviceName = (serviceUsingBinding?.["@_name"] as string | undefined) || (serviceDefs[0]?.["@_name"] as string | undefined);
+
   return {
     types: typesList,
     aliases: aliasList,
     meta: { attrSpec, childType, propMeta },
     operations: ops,
     wsdlTargetNS: defs?.["@_targetNamespace"] || "",
+    serviceName,
+    wsdlUri: cat.wsdlUri,
   };
 }

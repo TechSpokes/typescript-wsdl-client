@@ -50,15 +50,16 @@ Version: <version> <type>(<optional-scope>): <imperative summary>
 
 ## CHANGELOG rules
 - Keep an **“Unreleased”** section at the top. New entries go there.
+- All file modifications performed during a Copilot session or in code edits must be captured as bullets under **Unreleased** before concluding.
 - For each change:
-  1) If interactive (local commit), **ask for confirmation** to append a concise bullet to **Unreleased** based on the commit title (without the `Version: <…>` prefix).
-  2) If non-interactive (e.g., CI), append automatically.
-- On release: promote **Unreleased** → `## [<version>] – YYYY-MM-DD`, then start a fresh **Unreleased**.
-
-**Entry style**
-- Aim for one-line bullets that mirror the commit title’s core intent.
-- Avoid file lists; avoid vague phrasing like “update code”.
-
+   1) If interactive (local commit), **ask for confirmation** to append a concise bullet to **Unreleased** based on the commit title (without the `Version: <…>` prefix).
+   2) If non-interactive (e.g., CI), append automatically.
+- On release:
+   1) Read the current version from `package.json`.
+   2) Decide the semver bump (patch/minor/major).
+    3) Update the `"version"` field in `package.json` to the new release version.
+   4) Promote **Unreleased** → `## [<version>] – YYYY-MM-DD` (today’s date) in CHANGELOG.md.
+   5) Start a fresh **Unreleased** section at the top of CHANGELOG.md.
 
 ## What to generate (guidance for Copilot Chat & edits)
 - When asked to **create a commit message**:
@@ -67,6 +68,10 @@ Version: <version> <type>(<optional-scope>): <imperative summary>
   3) Produce a Conventional Commit style summary + (optional) body with context/risks/refs.
 - When asked to **update the CHANGELOG**:
   - Propose a single bullet under **Unreleased** derived from the commit title (minus the version prefix), then request confirmation to insert it.
+- When asked to **prepare a release**:
+  - Bump the version in `package.json`, 
+  - Promote **Unreleased** to a new version header with today’s date (`## [x.y.z] – YYYY-MM-DD`), 
+  - Then reset an empty **Unreleased** at the top.
 - When editing code:
   - Keep TypeScript strict and NodeNext module settings intact.
   - If changing CLI behavior or flags, update README’s CLI section/examples accordingly. 

@@ -10,7 +10,18 @@ export function emitClient(outFile: string, compiled: CompiledCatalog, opts: Com
     lines.push(`import { ATTR_SPEC, CHILD_TYPE, PROP_META } from "./meta${ext}";`);
     lines.push(`import type * as T from "./types${ext}";`);
     lines.push("");
-    lines.push(`export class GeneratedSoapClient {`);
+    // Derive class name: prefer explicit override, else WSDL service name, else base filename, else default
+    const overrideName = (opts.clientName || "").trim();
+    const svcName = compiled.serviceName && pascal(compiled.serviceName);
+    const fileBase = (() => {
+        const uri = compiled.wsdlUri || "";
+        // extract last path segment and strip extension for both URL and file path
+        const seg = uri.split(/[\\/]/).pop() || "";
+        const noExt = seg.replace(/\.[^.]+$/, "");
+        return noExt ? pascal(noExt) : "";
+    })();
+    const className = overrideName || ((svcName || fileBase) ? `${svcName || fileBase}SoapClient` : "GeneratedSoapClient");
+    lines.push(`export class ${className} {`);
     lines.push(`  constructor(private source: string | any, private attributesKey: string = "${opts.attributesKey || "$attributes"}") {}`);
     lines.push(`  async _client() {`);
     lines.push(`    if (typeof this.source === 'string') return createSoapClient({ wsdlUrl: this.source });`);

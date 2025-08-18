@@ -25,6 +25,11 @@ export type CompilerOptions = {
      */
     attributesKey?: string;
     /**
+     * Optional override for the generated client class name.
+     * If provided, the emitter will export this exact class name.
+     */
+    clientName?: string;
+    /**
      * Controls low-level mapping of XSD primitives to TypeScript types. Safe defaults are provided.
      */
     primitive?: PrimitiveOptions;

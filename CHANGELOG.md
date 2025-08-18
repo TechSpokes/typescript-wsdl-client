@@ -8,6 +8,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.2.2] – 2025-08-18
+- Name generated client class after WSDL service (e.g., Weather → WeatherSoapClient); fallback to WSDL filename or GeneratedSoapClient.
+- Add CLI flag --client-name to override the exported client class name.
+- Document client naming behavior and --client-name in README (generation section).
+- Update copilot-instructions to enforce capturing session edits under Unreleased and add release-prep workflow steps.
+- Clarify and demonstrate the reserved `$value` key for literal XML content in README usage example.
+
 ## [0.2.1] – 2025-08-18
 - Add WS-Policy parsing to detect security requirements (e.g., usernameToken, https) from WSDL bindings and operations.
 - Include security hints in generated client JSDoc and runtime warnings if security is missing.
@@ -29,4 +36,3 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ## [0.1.9] – 2025-08-17
 - Replace email links in public markdown files with link to contact page.
 - Initial community scaffolding: CI, issue/PR templates, docs.
-

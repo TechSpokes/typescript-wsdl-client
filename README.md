@@ -49,7 +49,8 @@ Use the generated client:
 ```ts
 // ESM / NodeNext app
 import { createSoapClient } from "./generated/my/runtime.js";
-import { GeneratedSoapClient } from "./generated/my/client.js";
+// class name defaults to <ServiceName>SoapClient (from WSDL), e.g., MyServiceSoapClient
+import { MyServiceSoapClient } from "./generated/my/client.js";
 
 // optional: pass security straight into createSoapClient (node-soap security instance)
 import soap from "soap";
@@ -59,12 +60,17 @@ const soapClient = await createSoapClient({
   wsdlUrl: "https://example.com/MyService?wsdl",
   security, // or configure after creation: (await createSoapClient(...)).setSecurity(security)
 });
-const client = new GeneratedSoapClient(soapClient, "$attributes"); // attributes key optional
 
+const client = new MyServiceSoapClient(soapClient, "$attributes"); // attributes key optional
+
+// Example: To set literal text content for an XML element, use the reserved `$value` key.
+// Other keys in the object represent XML attributes (e.g. `MyAttribute`) and child elements (e.g. `MyElement`).
+// This lets you build mixed-content XML: `$value` for text, attribute keys for XML attributes, and element keys for nested elements.
 const rs = await client.MyOperation({
   MyOperationRQ: {
     MyAttribute: "passed as attribute",
     MyElement: "passed as child element",
+    $value: "passed text content here",
   }
 });
 
@@ -123,10 +129,18 @@ wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
 | `--imports`         | string    | js, ts, bare                   | js           | Intra-generated import specifiers: '.js', '.ts', or bare         |
 | `--ops-ts`          | boolean   | true, false                    | true         | Emit `operations.ts` instead of JSON                             |
 | `--attributes-key`  | string    | any                            | $attributes  | Key used by runtime marshaller for XML attributes                |
+| `--client-name`     | string    | any                            | —            | Override the exported client class name (exact)                  |
 | `--int64-as`        | string    | string, number, bigint         | string       | How to map xs:long/xs:unsignedLong                               |
 | `--bigint-as`       | string    | string, number                 | string       | How to map xs:integer family (positive/nonNegative/etc.)         |
 | `--decimal-as`      | string    | string, number                 | string       | How to map xs:decimal (money/precision)                          |
 | `--date-as`         | string    | string, Date                   | string       | How to map date/time/duration types                              |
+
+### Client naming
+
+- By default, the generated client class is named after the WSDL service: `<ServiceName>SoapClient`.
+- If the service name can’t be determined, we fall back to the WSDL filename: `<WsdlFileBaseName>SoapClient`.
+- If neither is available, we fall back to `GeneratedSoapClient`.
+- You can override the name entirely with `--client-name MyCustomClient` (the exact export name will be used).
 
 **Primitive mapping (safe defaults)**
 
