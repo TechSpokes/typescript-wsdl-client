@@ -39,7 +39,7 @@ export function pascal(s: string): string {
     if (!out) out = "_"; // fallback
     if (/^[0-9]/.test(out)) out = `_${out}`; // ensure valid identifier start
 
-    // guard against TypeScript reserved keywords at the start of the identifier
+    // guard against TypeScript reserved keywords when the identifier equals them exactly
     const reserved = [
       "break","case","catch","class","const","continue","debugger","default","delete",
       "do","else","enum","export","extends","false","finally","for","function","if",
@@ -50,7 +50,7 @@ export function pascal(s: string): string {
       "type","from","of"
     ];
     const lower = out.toLowerCase();
-    if (reserved.some(r => lower === r || lower.startsWith(r))) {
+    if (reserved.includes(lower)) {
       out = `_${out}`;
     }
     return out;

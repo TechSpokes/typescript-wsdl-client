@@ -59,6 +59,23 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
     //
     // Attributes — with JSDoc on every attribute
     //
+    if (0 < t?.attrs?.length) {
+      // add attributes header comment
+      lines.push("");
+      lines.push("  /**");
+      lines.push((1 === t.attrs.length) ? "   * Attribute." : "   * Attributes.");
+      lines.push("   */");
+
+      // Sort the elements with the following logic: required first (sorted a-z), then optional (sorted a-z)
+      t.attrs?.sort((a, b) => {
+        // Required attributes come before optional attributes
+        if (a.use === "required" && b.use !== "required") return -1; // `a` is required, b is optional
+        if (a.use !== "required" && b.use === "required") return 1;  // `a` is optional, b is required
+
+        // Within the same group (required or optional), sort alphabetically
+        return a.name.localeCompare(b.name);
+      });
+    }
     for (const a of t.attrs || []) {
       const opt = a.use === "required" ? "" : "?";
       const annObj = {
@@ -67,9 +84,9 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
         use: a.use || "optional",
       };
       const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
+      lines.push("");
       lines.push(ann);
       lines.push(`  ${emitPropName(a.name)}${opt}: ${a.tsType};`);
-      lines.push("");
     }
 
     //
@@ -83,12 +100,27 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
       if (idx >= 0) elementsToEmit.splice(idx, 1);
     }
 
-    // Ensure "$value" is last if present
-    elementsToEmit.sort((a, b) => {
-      if (a.name === "$value" && b.name !== "$value") return 1;
-      if (a.name !== "$value" && b.name === "$value") return -1;
-      return 0;
-    });
+    if (0 < elementsToEmit.length) {
+      // add elements header comment
+      lines.push("");
+      lines.push("  /**");
+      lines.push((1 === elementsToEmit.length) ? "   * Child element." : "   * Children elements.");
+      lines.push("   */");
+
+      // Sort the elements with the following logic: required first (sorted a-z), then optional (sorted a-z), and finally "$value" if present.
+      elementsToEmit.sort((a, b) => {
+        // Special case: $value is always last
+        if (a.name === "$value") return 1;
+        if (b.name === "$value") return -1;
+
+        // Required elements come before optional elements
+        if (a.min !== 0 && b.min === 0) return -1; // `a` is required, b is optional
+        if (a.min === 0 && b.min !== 0) return 1;  // `a` is optional, b is required
+
+        // Within the same group (required or optional), sort alphabetically
+        return a.name.localeCompare(b.name);
+      });
+    }
 
     for (const e of elementsToEmit) {
       const isArray =
@@ -97,19 +129,21 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
       const arr = isArray ? "[]" : "";
       const opt = (e.min ?? 0) === 0 ? "?" : "";
       const annObj = {
-        kind: "element" as const,
+        // if a.name === "$value", the kind should be "scalar value"
+        kind: e.name === "$value" ? "scalar value" : "element" as const,
         type: e.declaredType,
         occurs: {min: e.min, max: e.max, nillable: e.nillable ?? false},
       };
+      // if the a.name === "$value" and we have more child elements, add an empty line before the annotation
+      if ((e.name === "$value") && (1 < elementsToEmit.length)) {
+        lines.push("");
+      }
       const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
+      lines.push("");
       lines.push(ann);
       lines.push(`  ${emitPropName(e.name)}${opt}: ${e.tsType}${arr};`);
-      lines.push("");
     }
-    // remove the last empty line
-    if (lines[lines.length - 1] === "") {
-      lines.pop();
-    }
+
     lines.push("}");
     lines.push("");
   }
