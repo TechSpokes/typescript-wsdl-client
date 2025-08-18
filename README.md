@@ -11,285 +11,160 @@
 [![TechSpokes Org](https://img.shields.io/badge/org-techspokes-181717?logo=github)](https://github.com/techspokes)
 [![Sponsor TechSpokes](https://img.shields.io/badge/sponsor-GitHub-blue?logo=github-sponsors)](https://github.com/sponsors/TechSpokes)
 
-**TypeScript WSDL → SOAP client generator.**
-Reads WSDL/XSD (with imports) and emits a small, typed client you can compile into your app.
+## Introduction
 
-* `xs:attribute` support (attributes become first-class fields, not bags)
-* `complexType` (`sequence` / `all` / `choice`)
-* `simpleContent` / `complexContent` (`extension` + `restriction`)
-* Inline **anonymous** types (auto-named, stable)
-* Global `element @ref` resolution
-* Duplicate/local-name **merge** across schemas/namespaces
-* Deterministic metadata (`ATTR_SPEC`, `PROP_META`) for clean JSON ⇄ SOAP mapping
-* ESM **and** CommonJS friendly output
+**TypeScript WSDL Client** is a generator that converts WSDL/XSD files into a fully-typed SOAP client for TypeScript. It simplifies SOAP integration by generating deterministic, type-safe code that works seamlessly with modern TypeScript and Node.js environments.
 
-Vendor: **[TechSpokes](https://www.techspokes.com)** · Contact: **[contact page](https://www.techspokes.com/contact/)**
-Maintainer: **Serge Liatko** ([@sergeliatko](https://github.com/sergeliatko)) · GitHub org: [@techspokes](https://github.com/techspokes)
+Key features:
+- **Typed SOAP client**: Generates TypeScript interfaces and runtime code.
+- **Deterministic metadata**: Ensures clean JSON ⇄ SOAP mapping.
+- **ESM and CommonJS support**: Compatible with modern and legacy module systems.
+- **Customizable mappings**: Control how XML primitives (e.g., `xs:decimal`, `xs:date`) are mapped.
+
+Vendor: **[TechSpokes](https://www.techspokes.com)**  
+Maintainer: **Serge Liatko** ([@sergeliatko](https://github.com/sergeliatko))  
 
 ---
 
-## Quick start
+## Installation
 
-Install the generator (dev-time) in your project:
+Install the generator as a development dependency:
 
 ```bash
 npm i -D @techspokes/typescript-wsdl-client
-# your app will use node-soap at runtime:
+# Your app will use node-soap at runtime:
 npm i soap
 ```
 
-Generate into your app (recommended under `src/generated/...`):
+---
+
+## Quick Start
+
+### Generate a SOAP Client
+
+Run the following command to generate a client from your WSDL file:
 
 ```bash
 npx wsdl-tsc --wsdl ./spec/wsdl/MyService.wsdl --out ./src/generated/my --imports js --ops-ts
 ```
 
-Use the generated client:
+### Use the Generated Client
 
 ```ts
-// ESM / NodeNext app
 import { createSoapClient } from "./generated/my/runtime.js";
-// class name defaults to <ServiceName>SoapClient (from WSDL), e.g., MyServiceSoapClient
 import { MyServiceSoapClient } from "./generated/my/client.js";
-
-// optional: pass security straight into createSoapClient (node-soap security instance)
 import soap from "soap";
-const security = new soap.WSSecurity("user", "pass");
 
+const security = new soap.WSSecurity("user", "pass");
 const soapClient = await createSoapClient({
   wsdlUrl: "https://example.com/MyService?wsdl",
-  security, // or configure after creation: (await createSoapClient(...)).setSecurity(security)
+  security,
 });
 
-const client = new MyServiceSoapClient(soapClient, "$attributes"); // attributes key optional
-
-// Example: To set literal text content for an XML element, use the reserved `$value` key.
-// Other keys in the object represent XML attributes (e.g. `MyAttribute`) and child elements (e.g. `MyElement`).
-// This lets you build mixed-content XML: `$value` for text, attribute keys for XML attributes, and element keys for nested elements.
-const rs = await client.MyOperation({
+const client = new MyServiceSoapClient(soapClient, "$attributes");
+const response = await client.MyOperation({
   MyOperationRQ: {
-    MyAttribute: "passed as attribute",
-    MyElement: "passed as child element",
-    $value: "passed text content here",
-  }
+    MyElement: {
+      MyAttribute: "value",
+      ChildElementA: "valueA",
+    },
+  },
 });
 
-console.log(rs);
+console.log(response);
 ```
-
-> The generator always emits TypeScript sources (`*.ts`). You compile them with your app.
 
 ---
 
-## Security and WS-Policy hints
+## Features
 
-- node-soap leaves security up to you. Create a security instance (e.g., `new soap.BasicAuthSecurity(...)`, `new soap.WSSecurity(...)`, `new soap.ClientSSLSecurity(...)`) and set it on the client via `client.setSecurity(...)`.
-- The runtime factory `createSoapClient({ wsdlUrl, endpoint?, wsdlOptions?, security? })` accepts an optional `security` and will call `client.setSecurity(security)` for you.
-- The generated client includes minimal WS-Policy hints if your WSDL embeds inline `wsp:Policy` under `wsdl:binding` or `wsdl:binding/wsdl:operation`.
-  - Hints are surfaced in method JSDoc as “Security (WSDL policy hint): …” and in `operations.json`/`operations.ts` as a `security: string[]` field (e.g., `usernameToken`, `https`, `x509`, `messageSecurity`).
-  - These hints are best-effort and not authoritative (no `wsp:PolicyReference` dereferencing yet). They’re intended to nudge you to configure the right security.
-  - At runtime, if an operation has hints and your client has no `security` configured, a console warning is emitted.
+- **Attributes and Child Elements**: Supports both attributes and nested elements in SOAP requests.
+- **Literal Text Values**: Handles mixed content (attributes + text).
+- **Security Integration**: Works with `node-soap` security instances (e.g., `WSSecurity`, `BasicAuthSecurity`).
+- **WS-Policy Hints**: Provides inline hints for security configuration based on WSDL policies.
 
 ---
 
-## CLI
+## CLI Usage
 
-```
-wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
-```
-
-### Local development
-
-By default, `npx wsdl-tsc` invokes the published npm version. To run the CLI from your local source (with your latest changes), use one of these approaches:
+The CLI is the primary way to generate SOAP clients.
 
 ```bash
-# Directly via tsx (requires tsx in devDependencies)
-npx tsx src/cli.ts --wsdl <path-or-url> --out <dir> [options]
-
-# Via npm script
-git clone ... then:
-npm install
-git checkout <branch>
-npm run dev -- --wsdl <path-or-url> --out <dir> [options]
-
-# Using npm link to symlink your working copy
-npm link
 wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
 ```
 
-**Required**
+### Required Flags
+- `--wsdl`: Path or URL to the WSDL file.
+- `--out`: Output directory for the generated files.
 
-* `--wsdl` — WSDL path or URL
-* `--out` — output directory (created if missing)
-
-**Options**
+### Options
 
 | Flag                | Type      | Choices                        | Default      | Description                                                      |
 |---------------------|-----------|--------------------------------|--------------|------------------------------------------------------------------|
 | `--imports`         | string    | js, ts, bare                   | js           | Intra-generated import specifiers: '.js', '.ts', or bare         |
 | `--ops-ts`          | boolean   | true, false                    | true         | Emit `operations.ts` instead of JSON                             |
 | `--attributes-key`  | string    | any                            | $attributes  | Key used by runtime marshaller for XML attributes                |
-| `--client-name`     | string    | any                            | —            | Override the exported client class name (exact)                  |
 | `--int64-as`        | string    | string, number, bigint         | string       | How to map xs:long/xs:unsignedLong                               |
 | `--bigint-as`       | string    | string, number                 | string       | How to map xs:integer family (positive/nonNegative/etc.)         |
 | `--decimal-as`      | string    | string, number                 | string       | How to map xs:decimal (money/precision)                          |
 | `--date-as`         | string    | string, Date                   | string       | How to map date/time/duration types                              |
 
-### Client naming
+---
 
-- By default, the generated client class is named after the WSDL service: `<ServiceName>SoapClient`.
-- If the service name can’t be determined, we fall back to the WSDL filename: `<WsdlFileBaseName>SoapClient`.
-- If neither is available, we fall back to `GeneratedSoapClient`.
-- You can override the name entirely with `--client-name MyCustomClient` (the exact export name will be used).
+## Generated Files
 
-**Primitive mapping (safe defaults)**
-
-Defaults are **string-first** to avoid precision & timezone surprises:
-
-* `xs:decimal` → `string` (money/precision safe)
-* 64-bit integers → `string` (you can opt into `bigint` or `number`)
-* dates/times → `string` (transport-friendly, no implicit tz conversion)
-
-Override these defaults using the CLI flags above as needed for your use case.
-
-# What gets generated
+The generator produces the following files in the output directory:
 
 ```
 <out>/
-  types.ts       # interfaces + type aliases (with @xsd JSDoc: original XML type/occurs)
-  client.ts      # thin operation wrapper (calls into runtime)
-  runtime.ts     # small SOAP runtime: createSoapClient, toSoapArgs, fromSoapResult
-  meta.ts        # ATTR_SPEC, CHILD_TYPE, PROP_META for JSON ⇄ SOAP mapping
-  operations.ts  # compiled operation metadata (name, soapAction, etc.)
+  types.ts       # TypeScript interfaces and type aliases
+  client.ts      # Thin wrapper for SOAP operations
+  runtime.ts     # SOAP runtime utilities
+  meta.ts        # Metadata for JSON ⇄ SOAP mapping
+  operations.ts  # Operation metadata (optional, based on --ops-ts)
 ```
 
-Example: if `User` has `@Id` and `@CreatedAt`, you’ll see:
+---
+
+## Advanced Usage
+
+### Programmatic API
+
+You can use the generator programmatically for custom workflows:
 
 ```ts
-interface User {
-  Id?: string;
-  CreatedAt?: string; // or Date if you chose --date-as Date
-}
-```
-
----
-
-## Using in different app module systems
-
-### ESM / NodeNext (recommended)
-
-Service `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
-  }
-}
-```
-
-Generate with `--imports js` and import `./client.js`, `./runtime.js`.
-
-### CommonJS
-
-Keep your app `module: "CommonJS"` and generate with `--imports bare` (imports like `./runtime`).
-TypeScript will compile to `require("./runtime")` cleanly.
-
----
-
-## Recommended workflow
-
-* **Vendor** your WSDL(s) in `spec/wsdl/` for reproducible builds.
-* Generate into `src/generated/<service>/` and **commit the generated files** (deterministic CI/Docker).
-* Build your app (the generated code compiles with it).
-
-**Example scripts (app `package.json`):**
-
-```json
-{
-  "scripts": {
-    "codegen:my": "wsdl-tsc --wsdl ./spec/wsdl/MyService.wsdl --out ./src/generated/my --imports js --ops-ts",
-    "prebuild": "npm run codegen:my",
-    "build": "tsc -p tsconfig.json"
-  }
-}
-```
-
----
-
-## Programmatic API (optional)
-
-```ts
-import { compileCatalog, xsdToTsPrimitive, type CompilerOptions } from "@techspokes/typescript-wsdl-client";
-import { loadWsdlCatalog } from "@techspokes/typescript-wsdl-client/internal-or-your-loader"; // if you expose it
+import { compileCatalog } from "@techspokes/typescript-wsdl-client";
 
 const catalog = await loadWsdlCatalog("./spec/wsdl/MyService.wsdl");
 const compiled = compileCatalog(catalog, {
-  primitive: { decimalAs: "string", dateAs: "string" }
+  primitive: { decimalAs: "string", dateAs: "string" },
 });
-// …write your own emitters or use the built-ins in the CLI.
-```
 
----
-
-## Primitive mapping rationale
-
-Defaults are **string-first** to avoid precision & timezone surprises:
-
-* `xs:decimal` → `string` (money/precision safe)
-* 64-bit integers → `string` (you can opt into `bigint` or `number`)
-* dates/times → `string` (transport-friendly, no implicit tz conversion)
-
-Change per your needs with the CLI flags above.
-
----
-
-## Minimal test you can run
-
-```bash
-# generate from a local WSDL
-npx wsdl-tsc --wsdl ./spec/wsdl/MyService.wsdl --out ./tmp --imports js --ops-ts
-
-# quick typecheck of generated output (NodeNext)
-npx tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 ./tmp/*.ts
+// Use the compiled output as needed.
 ```
 
 ---
 
 ## Troubleshooting
 
-* **“I don’t see `runtime.ts`”** — You should. Ensure you’re on a recent version and check that the output directory is writable.
-* **“Cannot find './runtime.js'”** — Your app must be `module: "NodeNext"` when using `--imports js`.
-  Use `--imports bare` for CommonJS apps.
-* **“node-soap not found”** — Install it in your **app**: `npm i soap`.
-* **“Security required?”** — If your generated client warns or JSDoc shows a security hint, configure node-soap security: `client.setSecurity(new soap.WSSecurity(...))` or pass `security` to `createSoapClient`.
+- **Missing `runtime.ts`**: Ensure the output directory is writable and you're using the latest version.
+- **Module system issues**: Use `--imports js` for ESM/NodeNext or `--imports bare` for CommonJS.
+- **Security warnings**: Configure `node-soap` security (e.g., `WSSecurity`) as needed.
+
+---
+
+## Roadmap
+
+Please see the [ROADMAP.md](ROADMAP.md) for planned features and improvements.
 
 ---
 
 ## Contributing
 
-Issues and PRs welcome. Please include a **minimal WSDL/XSD** fixture that reproduces the case.
-Node 20+ supported.
-
-- See CONTRIBUTING.md for setup and workflow.
-- See CODE_OF_CONDUCT.md for community expectations.
-- Security reports: see SECURITY.md.
-
----
-
-## Community
-
-- Contributing guide: CONTRIBUTING.md
-- Code of Conduct: CODE_OF_CONDUCT.md
-- Security policy: SECURITY.md
-- Support: SUPPORT.md
-- Roadmap: ROADMAP.md
-- Changelog: CHANGELOG.md
+We welcome contributions! Please see the following resources:
+- [CONTRIBUTING.md](CONTRIBUTING.md): Development workflow and guidelines.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): Community expectations.
+- [SECURITY.md](SECURITY.md): Reporting vulnerabilities.
 
 ---
 
@@ -306,9 +181,10 @@ MIT © TechSpokes.
 - Your Name Here!
 
 **Gold Sponsors**
-- [Your Name or Company](https://your-link-here.com)
+- [Your Name or Company (with a link) Here!](https://your-link-here.com)
 
 **Platinum Sponsors**
-- [Your Name or Company](https://your-link-here.com) – 30-min one-to-one video meeting on AI, business automations, vacation rentals industry, development, tools, or a subject of your choice.
+- [Your Name or Company (with a link) Here!](https://your-link-here.com)
+- **AND** 30-min one-to-one video meeting on AI, business automations, vacation rentals industry, development, tools, or a subject of your choice.
 
 Want to see your name or company here? [Become a sponsor!](https://github.com/sponsors/TechSpokes)

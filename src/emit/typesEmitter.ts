@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import type { CompiledCatalog } from "../compiler/schemaCompiler.js";
+import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
 
 /**
  * Emit TypeScript types from a compiled XSD catalog.
@@ -14,12 +14,16 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
 
   // Convenience lookups
   const typeNames = new Set(compiled.types.map((t) => t.name));
+  const isValidIdent = (name: string) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name);
+  const emitPropName = (name: string) => (isValidIdent(name) ? name : JSON.stringify(name));
 
   //
   // 1) Named simple types (aliases) first
   //
+  // sort aliases by name to ensure consistent order
+  compiled.aliases.sort((a, b) => a.name.localeCompare(b.name));
   for (const a of compiled.aliases) {
-    const ann = a.jsdoc ? `  /** @xsd ${a.jsdoc} */\n` : "";
+    const ann = a.jsdoc ? `/** @xsd ${a.jsdoc} */\n` : "";
     lines.push(`${ann}export type ${a.name} = ${a.tsType};`);
     lines.push("");
   }
@@ -27,6 +31,8 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
   //
   // 2) Complex types as interfaces
   //
+  // sort types by name to ensure consistent order
+  compiled.types.sort((a, b) => a.name.localeCompare(b.name));
   for (const t of compiled.types) {
     // Detect mis-mapped simpleContent extension:
     //   single "$value" whose tsType is another named interface ⇒ extend that interface
@@ -62,7 +68,8 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
       };
       const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
       lines.push(ann);
-      lines.push(`  ${a.name}${opt}: ${a.tsType};`);
+      lines.push(`  ${emitPropName(a.name)}${opt}: ${a.tsType};`);
+      lines.push("");
     }
 
     //
@@ -92,13 +99,17 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
       const annObj = {
         kind: "element" as const,
         type: e.declaredType,
-        occurs: { min: e.min, max: e.max, nillable: e.nillable ?? false },
+        occurs: {min: e.min, max: e.max, nillable: e.nillable ?? false},
       };
       const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
       lines.push(ann);
-      lines.push(`  ${e.name}${opt}: ${e.tsType}${arr};`);
+      lines.push(`  ${emitPropName(e.name)}${opt}: ${e.tsType}${arr};`);
+      lines.push("");
     }
-
+    // remove the last empty line
+    if (lines[lines.length - 1] === "") {
+      lines.pop();
+    }
     lines.push("}");
     lines.push("");
   }

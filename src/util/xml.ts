@@ -26,7 +26,34 @@ export function getFirstWithLocalName(node: any, local: string): any | undefined
 
 /** Simple PascalCase helper used across emitters/parsers. */
 export function pascal(s: string): string {
-    return s.replace(/(^|[_\-\s])(\w)/g, (_, __, c) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, "");
+    const raw = String(s ?? "");
+    // Split on underscores to preserve them literally
+    const segments = raw.split("_");
+    const cased = segments.map(seg => {
+        // Uppercase letters after common separators (start, space, dash, dot, colon, slash)
+        const up = seg.replace(/(^|[-\s.:\/])([A-Za-z0-9_$])/g, (_m, _sep, c) => String(c).toUpperCase());
+        // Remove disallowed identifier characters but preserve A-Z, a-z, 0-9, _ and $
+        return up.replace(/[^A-Za-z0-9_$]/g, "");
+    });
+    let out = cased.join("_");
+    if (!out) out = "_"; // fallback
+    if (/^[0-9]/.test(out)) out = `_${out}`; // ensure valid identifier start
+
+    // guard against TypeScript reserved keywords at the start of the identifier
+    const reserved = [
+      "break","case","catch","class","const","continue","debugger","default","delete",
+      "do","else","enum","export","extends","false","finally","for","function","if",
+      "import","in","instanceof","new","null","return","super","switch","this","throw",
+      "true","try","typeof","var","void","while","with","as","implements","interface",
+      "let","package","private","protected","public","static","yield","any","boolean",
+      "constructor","declare","get","module","require","number","set","string","symbol",
+      "type","from","of"
+    ];
+    const lower = out.toLowerCase();
+    if (reserved.some(r => lower === r || lower.startsWith(r))) {
+      out = `_${out}`;
+    }
+    return out;
 }
 
 export function resolveQName(
@@ -43,4 +70,3 @@ export function resolveQName(
   }
   return { ns: defaultNS, local: qname };
 }
-

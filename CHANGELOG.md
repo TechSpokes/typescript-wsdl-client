@@ -1,12 +1,20 @@
 # Changelog
 
-> Entry style: one-line, no file lists, no vague phrasing. See .github/copilot-instructions.md for details.
+> Entry style: one-line, no file lists, no vague phrasing.
+> (@agents see .github/copilot-instructions.md for details)
 
 All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
+
+## [0.2.3] – 2025-08-18
+- Preserve underscores and $ in generated TypeScript identifiers; sanitize others and ensure valid identifier start.
+- Quote generated property names that are not valid TypeScript identifiers (e.g., containing hyphens).
+- Emit client methods using computed property names to support operations with non-identifier names.
+- Guard against reserved TypeScript keywords by prefixing an underscore when necessary.
+- docs(README): fix malformed code fences and overlapping blocks; clarify XML mapping with $value/attributes and identifier tip examples.
 
 ## [0.2.2] – 2025-08-18
 - Name generated client class after WSDL service (e.g., Weather → WeatherSoapClient); fallback to WSDL filename or GeneratedSoapClient.
