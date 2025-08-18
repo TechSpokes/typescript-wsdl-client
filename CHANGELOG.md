@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.2.6] – 2025-08-18
+- fix(schemaCompiler): merge duplicate complexType definitions by consolidating attributes and elements
+
 ## [0.2.5] – 2025-08-18
 - fix(schemaCompiler): recursively traverse nested `<sequence>`, `<choice>`, and `<all>` groups so inner `<element>` declarations (e.g., BookingChannels, Errors, Success, TPA_Extensions, Warnings) are correctly emitted in generated interfaces
 

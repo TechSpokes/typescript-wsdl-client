@@ -276,50 +276,22 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
   ): CompiledType {
     const outName = pascal(name);
     const key = `${schemaNS}|${outName}`;
-    const present = compiledMap.get(key);
-    if (present) {
-      return present;
-    }
-    if (inProgress.has(key)) {
-      // minimal cycle break
-      return { name: outName, ns: schemaNS, attrs: [], elems: [] };
-    }
-    inProgress.add(key);
 
-    // mergeAttrs: combine base attributes with local ones, overriding duplicates by name
+    // hoisted helpers for merging and collecting
     const mergeAttrs = (into: CompiledType["attrs"], list: CompiledType["attrs"]) => {
-      // build index of existing attribute names
-      const idx = new Map<string, number>();
-      into.forEach((a, i) => idx.set(a.name, i));
-      // for each new attr, add or override existing
+      const idx = new Map<string, number>(); into.forEach((a, i) => idx.set(a.name, i));
       for (const a of list) {
         const pos = idx.get(a.name);
-        if (pos == null) {
-          idx.set(a.name, into.length);
-          into.push(a);
-        } else {
-          into[pos] = a; // override existing attribute details
-        }
+        if (pos == null) { idx.set(a.name, into.length); into.push(a); } else { into[pos] = a; }
       }
     };
-
-    // mergeElems: combine base elements (particles) with local ones, preserving unique names and overriding duplicates
     const mergeElems = (into: CompiledType["elems"], list: CompiledType["elems"]) => {
-      const idx = new Map<string, number>();
-      into.forEach((e, i) => idx.set(e.name, i));
+      const idx = new Map<string, number>(); into.forEach((e, i) => idx.set(e.name, i));
       for (const e of list) {
         const pos = idx.get(e.name);
-        if (pos == null) {
-          idx.set(e.name, into.length);
-          into.push(e);
-        } else {
-          into[pos] = e; // override existing element details
-        }
+        if (pos == null) { idx.set(e.name, into.length); into.push(e); } else { into[pos] = e; }
       }
     };
-
-    // collectAttributes: read all <attribute> children, handle inline simpleType vs named type references
-    // maps each attribute to a TS type, tracks required vs optional via @use, and records the original declared XSD type
     const collectAttributes = (node: any): CompiledType["attrs"] => {
       const out: CompiledType["attrs"] = [];
       const attrs = getChildrenWithLocalName(node, "attribute");
@@ -343,10 +315,6 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
       }
       return out;
     };
-
-    // collectParticles: parse compositor elements (sequence, all, choice), extract <element> definitions
-    // handles inline complex/simple definitions by generating a unique inline type name
-    // resolves type refs or @ref, applies min/max occurrence and nillable flags
     const collectParticles = (ownerTypeName: string, node: any): CompiledType["elems"] => {
       const out: CompiledType["elems"] = [];
       // process a compositor or element container recursively
@@ -387,7 +355,21 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
       return out;
     };
 
-    // Result accumulators
+    const present = compiledMap.get(key);
+    if (present) {
+      // On duplicate definitions, merge new attributes and elements
+      const newAttrs = collectAttributes(cnode);
+      const newElems = collectParticles(outName, cnode);
+      mergeAttrs(present.attrs, newAttrs);
+      mergeElems(present.elems, newElems);
+      return present;
+    }
+    if (inProgress.has(key)) {
+      // minimal cycle break
+      return { name: outName, ns: schemaNS, attrs: [], elems: [] };
+    }
+    inProgress.add(key);
+    // result accumulators
     const attrs: CompiledType["attrs"] = [];
     const elems: CompiledType["elems"] = [];
 
