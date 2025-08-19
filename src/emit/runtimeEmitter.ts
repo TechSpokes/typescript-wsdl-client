@@ -8,39 +8,48 @@ export function emitRuntime(outFile: string) {
   endpoint?: string;
   wsdlOptions?: Record<string, any>;
   requestOptions?: Record<string, any>;
-  security?: any; // pass an instance of a node-soap security class, e.g., new soap.WSSecurity("user","pass")
+  security?: any;
 }
+
 export type AttrSpec = Record<string, readonly string[]>;
 export type ChildType = Record<string, Readonly<Record<string, string>>>;
 export type PropMeta = Record<string, Readonly<Record<string, any>>>;
 
-async function loadSoapModule(): Promise<any> {
-  // Prefer dynamic import (works in ESM). Fallback to require where available (CJS).
+// Universal CJS/ESM loader without import.meta
+async function loadSoap(): Promise<any> {
+  // Prefer CJS require when available (CommonJS or transpiled output)
   try {
-    // @ts-ignore
-    const m: any = await import("soap");
-    return (m && (m.default || m.createClient || m.createClientAsync)) ? (m.default ?? m) : m;
-  } catch (e) {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const req = (typeof require !== "undefined") ? require : (await import("node:module")).createRequire(import.meta.url);
-      return req("soap");
-    } catch {
-      throw e;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const cjsMod = typeof require === "function" ? require("soap") : undefined;
+    if (cjsMod) return cjsMod;
+  } catch {
+    // ignore and fall back to dynamic import
   }
+  // ESM fallback (Node wraps CJS under default)
+  const esmMod: any = await import("soap");
+  return (esmMod && esmMod.default) ? esmMod.default : esmMod;
 }
 
 export async function createSoapClient(opts: CreateSoapClientOptions): Promise<any> {
-  const soapModule = await loadSoapModule();
-  const client = await soapModule.createClientAsync(opts.wsdlUrl, opts.wsdlOptions || {});
-  if (opts.endpoint) client.setEndpoint(opts.endpoint);
-  if (opts.security) client.setSecurity(opts.security);
-  // security and any request-specific configuration are the caller's responsibility
-  return client;
+  try {
+    const soapModule = await loadSoap();
+
+    console.log("Creating SOAP client with WSDL:", opts.wsdlUrl);
+    console.log("SOAP module methods available:", typeof soapModule.createClientAsync);
+
+    const client = await soapModule.createClientAsync(opts.wsdlUrl, opts.wsdlOptions || {});
+    if (opts.endpoint) client.setEndpoint(opts.endpoint);
+    if (opts.security) client.setSecurity(opts.security);
+
+    console.log("SOAP client created successfully");
+    return client;
+  } catch (error) {
+    console.error("Error creating SOAP client:", error);
+    throw error;
+  }
 }
 
-// Normalize booleans/numbers for XML attributes (node-soap handles strings best)
+// Normalize simple attribute values to strings (WCF prefers string attrs)
 function normalizeAttrValue(v: unknown): string {
   if (v == null) return "";
   if (typeof v === "boolean") return v ? "true" : "false";
@@ -52,36 +61,53 @@ export function toSoapArgs(
   value: any,
   typeName?: string,
   meta?: { ATTR_SPEC: AttrSpec; CHILD_TYPE: ChildType; PROP_META: PropMeta },
-  attributesKey: string = "$attributes" // input bag name accepted from TS-side
+  attributesKeyIn: string = "$attributes",  // accepted TS-side bag
+  attributesKeyOut: string = "attributes"   // node-soap expects "attributes"
 ): any {
   if (value == null) return value;
   if (typeof value !== "object") return value;
+  if (Array.isArray(value)) {
+    return value.map(v => toSoapArgs(v, typeName, meta, attributesKeyIn, attributesKeyOut));
+  }
+
   const attrList = (typeName && meta?.ATTR_SPEC?.[typeName]) || [];
   const childType = (typeName && meta?.CHILD_TYPE?.[typeName]) || {};
+
   const out: any = {};
   const attrBag: Record<string, any> = {};
-  // map TS $value -> SOAP $value
-  if ("$value" in value && Object.keys(value).length >= 1) out.$value = (value as any).$value;
 
-  // merge user-provided attr bag(s) first (support both attributesKey and 'attributes')
-  const inAttrNode = (value as any)[attributesKey] ?? (value as any)["attributes"];
+  // text content
+  if ("$value" in value) {
+    out.$value = (value as any).$value;
+  }
+
+  // merge user-provided attr bags ("$attributes" or "attributes")
+  const inAttrNode = (value as any)[attributesKeyIn] ?? (value as any)["attributes"];
   if (inAttrNode && typeof inAttrNode === "object") {
     for (const [ak, av] of Object.entries(inAttrNode)) {
       attrBag[ak] = normalizeAttrValue(av);
     }
   }
 
+  // split attributes vs elements
   for (const [k, v] of Object.entries<any>(value)) {
-    if (k === "$value") continue;                 // skip text node (already mapped)
-    if (k === attributesKey || k === "attributes") continue;            // user shouldn't send raw attr bag beyond merge above
-    if (attrList.includes(k)) { attrBag[k] = normalizeAttrValue(v); continue; }
+    if (k === "$value" || k === attributesKeyIn || k === "attributes") continue;
+
+    if (attrList.includes(k)) {
+      attrBag[k] = normalizeAttrValue(v);
+      continue;
+    }
+
     const childT = (childType as any)[k] as string | undefined;
     out[k] = Array.isArray(v)
-      ? v.map(it => toSoapArgs(it, childT, meta, attributesKey))
-      : toSoapArgs(v, childT, meta, attributesKey);
+      ? v.map(it => toSoapArgs(it, childT, meta, attributesKeyIn, attributesKeyOut))
+      : toSoapArgs(v, childT, meta, attributesKeyIn, attributesKeyOut);
   }
-  // node-soap expects 'attributes' bag to render as XML attributes
-  if (Object.keys(attrBag).length) (out as any).attributes = attrBag;
+
+  if (Object.keys(attrBag).length) {
+    out[attributesKeyOut] = attrBag; // renders as XML attributes
+  }
+
   return out;
 }
 
@@ -89,31 +115,31 @@ export function fromSoapResult(
   node: any,
   typeName?: string,
   meta?: { ATTR_SPEC: AttrSpec; CHILD_TYPE: ChildType; PROP_META: PropMeta },
-  attributesKey: string = "$attributes" // keep exposing attrs to TS via hoisting; this name is only used to skip if present
+  attributesKeyOut: string = "$attributes"
 ): any {
   if (node == null) return node;
   if (typeof node !== "object") return node;
-  if (Array.isArray(node)) return node.map(n => fromSoapResult(n, typeName, meta, attributesKey));
+  if (Array.isArray(node)) return node.map(n => fromSoapResult(n, typeName, meta, attributesKeyOut));
 
   const childType = (typeName && meta?.CHILD_TYPE?.[typeName]) || {};
   const result: any = {};
 
-  // map SOAP $value -> TS $value
   if ("$value" in node) result.$value = (node as any).$value;
 
-  // hoist attributes from any supported bucket: node-soap may use 'attributes'; xml2js often uses '$'
-  const inAttrNode = (node as any)[attributesKey] || (node as any)["attributes"] || (node as any)["$"];
+  // hoist attributes from supported buckets
+  const inAttrNode = (node as any)[attributesKeyOut] || (node as any)["attributes"] || (node as any)["$"];
   if (inAttrNode && typeof inAttrNode === "object") {
     Object.assign(result, inAttrNode);
   }
 
   for (const [k, v] of Object.entries<any>(node)) {
-    if (k === attributesKey || k === "attributes" || k === "$" || k === "$value") continue;
+    if (k === attributesKeyOut || k === "attributes" || k === "$" || k === "$value") continue;
     const childT = (childType as any)[k] as string | undefined;
     result[k] = Array.isArray(v)
-      ? v.map(it => fromSoapResult(it, childT, meta, attributesKey))
-      : fromSoapResult(v, childT, meta, attributesKey);
+      ? v.map(it => fromSoapResult(it, childT, meta, attributesKeyOut))
+      : fromSoapResult(v, childT, meta, attributesKeyOut);
   }
+
   return result;
 }
 `;
