@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.2.72] – 2025-08-19
+- fix(runtime): emit XML attributes via 'attributes' (node-soap) instead of '$attributes' elements; accept both '$attributes'/'attributes' on input; hoist attrs from 'attributes'/'$' on parse.
+- refactor(runtime): load 'soap' dynamically for ESM/CJS interop (prefer import(), fallback to require()).
+
 ## [0.2.71] – 2025-08-18
 - refactor(schemaCompiler): inclined redundant variable
 
