@@ -9,6 +9,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.4.0] – 2025-08-21
+
+- Added `compileWsdlToProject` function for programmatic API usage
+- Added `--catalog` flag and `catalogEmitter` for WSDL compilation introspection
+- Refactored emitters: consolidated meta, ops, and runtime; introduced `utilsEmitter` for runtime metadata
+- Updated `clientEmitter` to embed marshalling/unmarshalling logic and include `requestRaw` in response types
+- Centralized utilities in `util/tools` (string, XML, and name‐derivation helpers)
+- Enhanced `schemaCompiler` to handle complex/simpleContent inheritance and WS-Policy scanning
+- Improved `typesEmitter` to support simpleContent extensions and consistent property ordering
+
 ## [0.3.0] – 2025-08-19
 
 - fix(runtime): serialize XML attributes via attributes for node-soap; accept both $attributes/attributes on input; hoist attributes from responses; normalize boolean/number attribute values to strings (src/emit/runtimeEmitter.ts, generated runtime.ts).

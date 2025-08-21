@@ -2,7 +2,7 @@ import { XMLParser } from "fast-xml-parser";
 import { fetchText } from "./fetch.js";
 import path from "node:path";
 // noinspection ES6UnusedImports
-import { getChildrenWithLocalName, normalizeArray } from "../util/xml.js";
+import { getChildrenWithLocalName, normalizeArray } from "../util/tools.js";
 
 export type SchemaDoc = {
     uri: string;          // directory/URL base of this schema document

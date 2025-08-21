@@ -1,6 +1,6 @@
 import type {CompilerOptions} from "../config.js";
 import type {WsdlCatalog} from "../loader/wsdlLoader.js";
-import {getChildrenWithLocalName, getFirstWithLocalName, normalizeArray, pascal, resolveQName,} from "../util/xml.js";
+import {getChildrenWithLocalName, getFirstWithLocalName, normalizeArray, pascal, resolveQName,} from "../util/tools.js";
 import {xsdToTsPrimitive} from "../xsd/primitives.js";
 
 export type QName = { ns: string; local: string };
@@ -51,6 +51,7 @@ export type CompiledAlias = {
 };
 
 export type CompiledCatalog = {
+  options: CompilerOptions; // original compiler options
   types: CompiledType[];    // complex types (interfaces)
   aliases: CompiledAlias[]; // named simple types (type aliases)
   meta: {
@@ -66,9 +67,8 @@ export type CompiledCatalog = {
     security?: string[]; // minimal WS-Policy-derived hints (e.g., ["usernameToken", "https"])
   }>;
   wsdlTargetNS: string;
-  // Newly added: used for naming the generated client and potential diagnostics
-  serviceName?: string;
   wsdlUri: string;
+  serviceName?: string;
 };
 
 const XS = "http://www.w3.org/2001/XMLSchema";
@@ -140,7 +140,7 @@ function collectSecurityFromPolicyNodes(policyNodes: any[]): string[] {
  * 4. Extract WSDL operations: pick the appropriate SOAP binding (v1.1 or v1.2), resolve its
  *    portType reference, then enumerate operations and their soapAction URIs.
  */
-export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): CompiledCatalog {
+export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): CompiledCatalog {
   // symbol tables discovered across all schemas
   const complexTypes = new Map<string, { node: any; tns: string; prefixes: Record<string, string> }>();
   const simpleTypes  = new Map<string, { node: any; tns: string; prefixes: Record<string, string> }>();
@@ -198,13 +198,13 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
         const union = enums.map((v: string) => JSON.stringify(v)).join(" | ");
         return { tsType: union, declared, jsdoc: JSON.stringify({ kind: "enum", values: enums }) };
       }
-      return { tsType: xsdToTsPrimitive(declared, (_opts as any)?.primitive), declared };
+      return { tsType: xsdToTsPrimitive(declared, (options as any)?.primitive), declared };
     }
     const list = getFirstWithLocalName(simpleNode, "list");
     if (list?.["@_itemType"]) {
       const q = resolveQName(list["@_itemType"], schemaNS, prefixes);
       const declared = q.ns === XS ? `xs:${q.local}` : `{${q.ns}}${q.local}`;
-      return { tsType: `${xsdToTsPrimitive(declared, (_opts as any)?.primitive)}[]`, declared };
+      return { tsType: `${xsdToTsPrimitive(declared, (options as any)?.primitive)}[]`, declared };
     }
     // fallback
     return { tsType: "string", declared: "xs:string" };
@@ -240,7 +240,7 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
     }
     if (q.ns === XS) {
       const label = `xs:${q.local}`;
-      return { tsType: xsdToTsPrimitive(label, (_opts as any)?.primitive), declared: label };
+      return { tsType: xsdToTsPrimitive(label, (options as any)?.primitive), declared: label };
     }
     const k = qkey(q);
     const srec = simpleTypes.get(k);
@@ -482,7 +482,7 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
           name: outName,
           ns: schemaNS,
           attrs: [],
-          elems: [{ name: "$value", tsType: xsdToTsPrimitive(label, (_opts as any)?.primitive), min: 0, max: 1, nillable: false, declaredType: label }],
+          elems: [{ name: "$value", tsType: xsdToTsPrimitive(label, (options as any)?.primitive), min: 0, max: 1, nillable: false, declaredType: label }],
         };
         compiledMap.set(key, t);
         return t;
@@ -663,12 +663,13 @@ export function compileCatalog(cat: WsdlCatalog, _opts: CompilerOptions): Compil
   serviceName = (serviceUsingBinding?.["@_name"] as string | undefined) || (serviceDefs[0]?.["@_name"] as string | undefined);
 
   return {
+    options: options,
     types: typesList,
     aliases: aliasList,
     meta: { attrSpec, childType, propMeta },
     operations: ops,
     wsdlTargetNS: defs?.["@_targetNamespace"] || "",
     serviceName,
-    wsdlUri: cat.wsdlUri,
+    wsdlUri: cat.wsdlUri
   };
 }

@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "rootDir": ".",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "paths": {
+      "soap": ["src/types/soap.d.ts"]
+    }
+  },
+  "include": ["tmp/*.ts", "src/types/soap.d.ts"]
+}

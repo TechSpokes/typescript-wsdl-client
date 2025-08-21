@@ -1,47 +1,45 @@
-import type { PrimitiveOptions } from "./xsd/primitives.js";
+import type {PrimitiveOptions} from "./xsd/primitives.js";
 
 /**
  * Options to control WSDL-to-TypeScript compilation behavior.
  */
 export type CompilerOptions = {
-    /**
-     * How to represent XML <choice> elements: as all-optional properties or a discriminated union.
-     */
-    choice?: "all-optional" | "union";
-    /**
-     * Legacy flag: map all date/time/duration types to string or Date. Superceded by primitive.dateAs if set.
-     */
-    dateAs?: "string" | "date";
-    /**
-     * Legacy flag: shorthand for int64As and bigIntegerAs. Maps integer types to number or string.
-     */
-    intAs?: "number" | "string";
-    /**
-     * Emit errors if any type references cannot be resolved in the WSDL schema.
-     */
-    failOnUnresolved?: boolean;
-    /**
-     * Attribute bag key for the runtime mapper (node-soap).
-     */
-    attributesKey?: string;
-    /**
-     * Optional override for the generated client class name.
-     * If provided, the emitter will export this exact class name.
-     */
-    clientName?: string;
-    /**
-     * Controls low-level mapping of XSD primitives to TypeScript types. Safe defaults are provided.
-     */
-    primitive?: PrimitiveOptions;
+  /** Path/URL of the source WSDL (from --wsdl) */
+  wsdl: string;
+  /** Output directory (from --out) */
+  out: string;
+  /** Import-extension mode (from --imports) */
+  imports: "js" | "ts" | "bare";
+  /** Emit catalog.json file with complied catalog object */
+  catalog: boolean;
+  /** Low-level mapping of XSD primitives (from --int64-as, --bigint-as, etc.) */
+  primitive: PrimitiveOptions;
+  /** How to represent XML <choice> elements: as all-optional props or a discriminated union. */
+  choice?: "all-optional" | "union";
+  /** Emit errors if any type references cannot be resolved in the WSDL schema. */
+  failOnUnresolved?: boolean;
+  /** Attribute bag key for the runtime mapper (from --attributes-key). */
+  attributesKey?: string;
+  /** Override the generated client class name (from --client-name). */
+  clientName?: string;
 };
 
 /**
  * Default compiler options. Users may override selectively.
  */
-export const defaultOptions: CompilerOptions = {
-    choice: "all-optional",
+export const TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS: CompilerOptions = {
+  wsdl: "",                       // no default, required via CLI
+  out: "",                        // no default, required via CLI
+  imports: "js",                  // CLI default
+  catalog: true,                  // CLI default
+  primitive: {                    // CLI defaults
+    int64As: "string",
+    bigIntegerAs: "string",
+    decimalAs: "string",
     dateAs: "string",
-    intAs: "number",
-    failOnUnresolved: false,
-    attributesKey: "$attributes",
+  },
+  choice: "all-optional",         // CLI default
+  failOnUnresolved: false,        // CLI default
+  attributesKey: "$attributes",   // CLI default
+  clientName: undefined,          // no default
 };

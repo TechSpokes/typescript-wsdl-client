@@ -1,68 +1,68 @@
-import { defaultOptions } from "./config.js";
-import type { CompilerOptions } from "./config.js";
-import { loadWsdl } from "./loader/wsdlLoader.js";
-import { compileCatalog } from "./compiler/schemaCompiler.js";
-import { emitTypes } from "./emit/typesEmitter.js";
-import { emitMeta } from "./emit/metaEmitter.js";
-import { emitOperations } from "./emit/opsEmitter.js";
-import { emitClient } from "./emit/clientEmitter.js";
-import { emitRuntime } from "./emit/runtimeEmitter.js";
 import fs from "node:fs";
 import path from "node:path";
-
-// Entry point for programmatic API: compile a WSDL into a set of TypeScript files in a project layout
+import type {CompilerOptions} from "./config.js";
+import {loadWsdl} from "./loader/wsdlLoader.js";
+import {compileCatalog} from "./compiler/schemaCompiler.js";
+import {emitTypes} from "./emit/typesEmitter.js";
+import {emitUtils} from "./emit/utilsEmitter.js";
+import {emitCatalog} from "./emit/catalogEmitter.js";
+import {emitClient} from "./emit/clientEmitter.js";
+import {TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS} from "./config.js";
 
 // noinspection JSUnusedGlobalSymbols
 export async function compileWsdlToProject(
-    input: { wsdl: string; outDir: string; options?: CompilerOptions }
+  input: { wsdl: string; outDir: string; options?: CompilerOptions }
 ) {
-    // Merge defaults with user overrides
-    const baseOptions = { ...defaultOptions, ...(input.options || {}) } as CompilerOptions;
+  // Merge defaults with overrides, always set wsdl+out
+  const finalOptions: CompilerOptions = {
+    ...TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS,
+    ...(input.options || {}),
+    wsdl: input.wsdl,
+    out: input.outDir,
+  };
 
-    // Backward compatibility: legacy flags map to the new primitive preferences if not set
-    const normalizedPrimitive = { ...(baseOptions.primitive || {}) } as NonNullable<CompilerOptions["primitive"]>;
-    if (baseOptions.dateAs && normalizedPrimitive.dateAs == null) {
-        // dateAs legacy: choose Date or string based on flag
-        normalizedPrimitive.dateAs = baseOptions.dateAs === "date" ? "Date" : "string";
-    }
-    if (baseOptions.intAs && (normalizedPrimitive.int64As == null || normalizedPrimitive.bigIntegerAs == null)) {
-        // intAs legacy: apply to both 64-bit and big integer types
-        const as = baseOptions.intAs;
-        if (normalizedPrimitive.int64As == null) normalizedPrimitive.int64As = as as any;
-        if (normalizedPrimitive.bigIntegerAs == null) normalizedPrimitive.bigIntegerAs = as as any;
-    }
-    // Final merged options including computed primitive mappings
-    const finalOptions: CompilerOptions = { ...baseOptions, primitive: normalizedPrimitive };
+  // Load & compile
+  const wsdlCatalog = await loadWsdl(input.wsdl);
+  console.log(`Loaded WSDL: ${wsdlCatalog.wsdlUri}`);
+  if (wsdlCatalog.schemas.length === 0) {
+    throw new Error(`No schemas found in WSDL: ${input.wsdl}`);
+  }
+  console.log(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
 
-    // Load WSDL definitions and schema catalog (remote or local file)
-    const wsdlCatalog = await loadWsdl(input.wsdl);
-    console.log(`Loaded WSDL: ${wsdlCatalog.wsdlUri}`);
+  const compiled = compileCatalog(wsdlCatalog, finalOptions);
+  console.log(`Compiled WSDL: ${wsdlCatalog.wsdlUri}`);
 
-    // Compile schemas and operations into intermediate data structures
-    const compiledCatalog = compileCatalog(wsdlCatalog, finalOptions);
-    console.log(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
-    console.log(`Compiled types: ${compiledCatalog.types.length}`);
-    console.log(`Operations: ${compiledCatalog.operations.length}`);
+  // check if we have any types and operations
+  if (compiled.types.length === 0) {
+    throw new Error(`No types compiled from WSDL: ${input.wsdl}`);
+  } else {
+    console.log(`Types discovered: ${compiled.types.length}`);
+  }
+  if (compiled.operations.length === 0) {
+    throw new Error(`No operations compiled from WSDL: ${input.wsdl}`);
+  } else {
+    console.log(`Operations discovered: ${compiled.operations.length}`);
+  }
 
-    // Prepare output directory for generated files
-    fs.mkdirSync(input.outDir, { recursive: true });
-    // Define target paths
-    const typesFile = path.join(input.outDir, "types.ts");
-    const metaFile = path.join(input.outDir, "meta.ts");
-    const opsFile = path.join(input.outDir, "operations.json");
-    const clientFile = path.join(input.outDir, "client.ts");
-    const runtimeFile = path.join(input.outDir, "runtime.ts");
+  // Emit artifacts
+  const typesFile = path.join(input.outDir, "types.ts");
+  const metaFile = path.join(input.outDir, "meta.ts");
+  const catalogFile = path.join(input.outDir, "catalog.json");
+  const clientFile = path.join(input.outDir, "client.ts");
 
-    // Emit code artifacts: types, metadata, operations listing, client harness, runtime helpers
-    emitTypes(typesFile, compiledCatalog);
-    emitMeta(metaFile, compiledCatalog, finalOptions);
-    emitOperations(opsFile, compiledCatalog);
-    emitClient(clientFile, compiledCatalog, finalOptions);
-    emitRuntime(runtimeFile);
+  // Prepare output dir
+  try {
+    fs.mkdirSync(input.outDir, {recursive: true});
+  } catch (e) {
+    throw new Error(`Failed to create output directory '${input.outDir}': ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  // Emit files
+  emitClient(clientFile, compiled);
+  emitTypes(typesFile, compiled);
+  emitUtils(metaFile, compiled);
+
+  if (compiled.options.catalog) {
+    emitCatalog(catalogFile, compiled);
+  }
 }
-
-// Re-export public API for library consumers
-export { compileCatalog } from "./compiler/schemaCompiler.js";
-export type { PrimitiveOptions } from "./xsd/primitives.js";
-export { xsdToTsPrimitive } from "./xsd/primitives.js";
-export type { CompilerOptions } from "./config.js";

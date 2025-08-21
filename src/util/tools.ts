@@ -1,3 +1,5 @@
+import type { CompiledCatalog } from "../compiler/schemaCompiler.js";
+
 /** Normalize a possibly-single value into an array. */
 export function normalizeArray<T>(x: T | T[] | undefined | null): T[] {
     if (x == null) return [];
@@ -69,4 +71,36 @@ export function resolveQName(
     return { ns, local };
   }
   return { ns: defaultNS, local: qname };
+}
+
+/** Derive a SOAP client class name from CompilerOptions and compiled catalog. */
+export function deriveClientName(
+  compiled: CompiledCatalog
+): string {
+  const overrideName = (compiled.options.clientName || "").trim();
+  const svcName = compiled.serviceName ? pascal(compiled.serviceName) : "";
+  const fileBase = (() => {
+    const uri = compiled.wsdlUri || "";
+    const seg = uri.split(/[\\/]/).pop() || "";
+    const noExt = seg.replace(/\.[^.]+$/, "");
+    return noExt ? pascal(noExt) : "";
+  })();
+  return overrideName
+    || ((svcName || fileBase) ? `${svcName || fileBase}` : "GeneratedSOAPClient");
+}
+
+/** Explode a PascalCase string into its constituent segments. */
+export function explodePascal(s: string): string[] {
+  // insert underscores between camel‐transitions
+  const withUnderscores = String(s)
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2');
+  return withUnderscores.split('_').filter(Boolean);
+}
+
+/** Convert a PascalCase string to snake_case (lowercase + underscores). */
+export function pascalToSnakeCase(s: string): string {
+  return explodePascal(s)
+    .map(seg => seg.toLowerCase())
+    .join('_');
 }

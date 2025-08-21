@@ -124,7 +124,7 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
     }
 
     for (const e of elementsToEmit) {
-      const isArray = e.max === "unbounded" ||  (e.max > 1);
+      const isArray = e.max === "unbounded" || (e.max > 1);
       const arr = isArray ? "[]" : "";
       const opt = (e.min ?? 0) === 0 ? "?" : "";
       const annObj = {
@@ -147,5 +147,10 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
     lines.push("");
   }
 
-  fs.writeFileSync(outFile, lines.join("\n"), "utf8");
+  try {
+    fs.writeFileSync(outFile, lines.join("\n"), "utf8");
+    console.log(`Types written to ${outFile}`);
+  } catch (e) {
+    console.error(`Failed to write types to ${outFile}:`, e);
+  }
 }
