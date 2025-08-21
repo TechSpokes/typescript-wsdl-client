@@ -13,13 +13,17 @@
 
 ## Introduction
 
-**TypeScript WSDL Client** is a generator that converts WSDL/XSD files into a fully-typed SOAP client for TypeScript. It simplifies SOAP integration by generating deterministic, type-safe code that works seamlessly with modern TypeScript and Node.js environments.
+- TypeScript WSDL Client transforms WSDL/XSD schemas into a fully-typed, ready-to-use SOAP client for TypeScript.
+- Eliminates common SOAP pain points: inconsistent XML mappings, complex type inheritance, and module interop headaches.
+- Generates maintainable, diff-friendly code that runs in modern Node.js (ESM/CJS) and strict TypeScript.
 
-Key features:
-- **Typed SOAP client**: Generates TypeScript interfaces and runtime code.
-- **Deterministic metadata**: Ensures clean JSON ⇄ SOAP mapping.
-- **ESM and CommonJS support**: Compatible with modern and legacy module systems.
-- **Customizable mappings**: Control how XML primitives (e.g., `xs:decimal`, `xs:date`) are mapped.
+With this tool you get:
+- End-to-end type safety: generated interfaces, aliases, and marshalling/unmarshalling logic.
+- Deterministic JSON ⇄ SOAP metadata: clear attribute vs element ordering.
+- Flexible primitive mapping: control decimals, dates, integers, and more via flags.
+- Automatic flattening of `<complexContent>`/`<simpleContent>` inheritance.
+- `<choice>` handling strategies and WS-Policy security hints baked in.
+- Pluggable ESM/CJS imports: target your runtime with `--imports` alone.
 
 Vendor: **[TechSpokes](https://www.techspokes.com)**  
 Maintainer: **Serge Liatko** ([@sergeliatko](https://github.com/sergeliatko))  
@@ -45,23 +49,20 @@ npm i soap
 Run the following command to generate a client from your WSDL file:
 
 ```bash
-npx wsdl-tsc --wsdl ./spec/wsdl/MyService.wsdl --out ./src/generated/my --imports js --ops-ts
+npx wsdl-tsc --wsdl ./spec/wsdl/MyService.wsdl --out ./src/services/my-service
 ```
 
 ### Use the Generated Client
 
 ```ts
-import { createSoapClient } from "./generated/my/runtime.js";
-import { MyServiceSoapClient } from "./generated/my/client.js";
 import soap from "soap";
+import { MyService } from "./services/my-service/client.js";
 
-const security = new soap.WSSecurity("user", "pass");
-const soapClient = await createSoapClient({
-  wsdlUrl: "https://example.com/MyService?wsdl",
-  security,
+const client = new MyService({
+  source: "https://example.com/MyService?wsdl",
+  security: new soap.WSSecurity("user", "pass")
 });
 
-const client = new MyServiceSoapClient(soapClient, "$attributes");
 const response = await client.MyOperation({
   MyOperationRQ: {
     MyElement: {
@@ -78,16 +79,21 @@ console.log(response);
 
 ## Features
 
-- **Attributes and Child Elements**: Supports both attributes and nested elements in SOAP requests.
-- **Literal Text Values**: Handles mixed content (attributes + text).
-- **Security Integration**: Works with `node-soap` security instances (e.g., `WSSecurity`, `BasicAuthSecurity`).
-- **WS-Policy Hints**: Provides inline hints for security configuration based on WSDL policies.
+- **Primitive-type mapping**: Fine-grained flags (`--int64-as`, `--bigint-as`, `--decimal-as`, `--date-as`) so you don’t have to hand-roll conversions for odd XSD primitives.
+- **Complex/simpleContent inheritance**: Automatically flattens and extends base types for `<complexContent>` and `<simpleContent>` extensions.
+- **Deterministic metadata**: Emits runtime maps for JSON ⇄ SOAP mapping—clear attribute vs element distinctions and order.
+- **Choice element support**: Two modes (`all-optional` or `union`) to handle `<choice>` constructs exactly how you need.
+- **Fail-fast unresolved references**: `--fail-on-unresolved` aborts codegen on missing type refs to catch XSD import issues early.
+- **WS-Policy security hints**: Parses WS-Policy tokens and surfaces required security hints in generated JSDoc.
+- **Full catalog introspection**: `--catalog` emits a JSON dump of the compiled schema for debugging large/malformed WSDLs.
+- **Stable, sorted output**: Interfaces, aliases, attributes, and elements are consistently sorted for diff-friendly regeneration.
+- **ESM/CJS interop & custom imports**: `--imports js|ts|bare` lets you target your module system without manual edits.
+- **Attributes and child elements**: Supports both XML attributes and nested elements (including mixed `$value` content).
+- **Security integration**: Works with any `soap.ISecurity` (e.g., `WSSecurity`, `BasicAuthSecurity`) for seamless auth.
 
 ---
 
 ## CLI Usage
-
-The CLI is the primary way to generate SOAP clients.
 
 ```bash
 wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
@@ -99,15 +105,18 @@ wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
 
 ### Options
 
-| Flag                | Type      | Choices                        | Default      | Description                                                      |
-|---------------------|-----------|--------------------------------|--------------|------------------------------------------------------------------|
-| `--imports`         | string    | js, ts, bare                   | js           | Intra-generated import specifiers: '.js', '.ts', or bare         |
-| `--ops-ts`          | boolean   | true, false                    | true         | Emit `operations.ts` instead of JSON                             |
-| `--attributes-key`  | string    | any                            | $attributes  | Key used by runtime marshaller for XML attributes                |
-| `--int64-as`        | string    | string, number, bigint         | string       | How to map xs:long/xs:unsignedLong                               |
-| `--bigint-as`       | string    | string, number                 | string       | How to map xs:integer family (positive/nonNegative/etc.)         |
-| `--decimal-as`      | string    | string, number                 | string       | How to map xs:decimal (money/precision)                          |
-| `--date-as`         | string    | string, Date                   | string       | How to map date/time/duration types                              |
+| Flag                   | Type      | Choices                        | Default        | Description                                                      |
+|------------------------|-----------|--------------------------------|----------------|------------------------------------------------------------------|
+| `--imports`            | string    | js, ts, bare                   | js             | Intra-generated import specifiers: '.js', '.ts', or bare         |
+| `--catalog`            | boolean   | true, false                    | false          | Emit catalog.json for introspection                              |
+| `--client-name`        | string    | —                              | derived        | Override the exported client class name                          |
+| `--attributes-key`     | string    | any                            | $attributes    | Key used by runtime marshaller for XML attributes                |
+| `--int64-as`           | string    | string, number, bigint         | string         | How to map xs:long/xs:unsignedLong                               |
+| `--bigint-as`          | string    | string, number                 | string         | How to map xs:integer family (positive/nonNegative/etc.)         |
+| `--decimal-as`         | string    | string, number                 | string         | How to map xs:decimal (money/precision)                          |
+| `--date-as`            | string    | string, Date                   | string         | How to map date/time/duration types                              |
+| `--choice`             | string    | all-optional, union            | all-optional   | Representation of `<choice>` elements                            |
+| `--fail-on-unresolved` | boolean   | true, false                    | true           | Fail if any type references cannot be resolved                   |
 
 ---
 
@@ -118,10 +127,9 @@ The generator produces the following files in the output directory:
 ```
 <out>/
   types.ts       # TypeScript interfaces and type aliases
-  client.ts      # Thin wrapper for SOAP operations
-  runtime.ts     # SOAP runtime utilities
-  meta.ts        # Metadata for JSON ⇄ SOAP mapping
-  operations.ts  # Operation metadata (optional, based on --ops-ts)
+  utils.ts       # Runtime metadata for JSON ⇄ SOAP mapping
+  client.ts      # Strongly-typed SOAP client wrapper
+  catalog.json   # (optional) Compiled catalog JSON if `--catalog` is set
 ```
 
 ---
@@ -130,26 +138,55 @@ The generator produces the following files in the output directory:
 
 ### Programmatic API
 
-You can use the generator programmatically for custom workflows:
+You can use the generator programmatically:
 
 ```ts
-import { compileCatalog } from "@techspokes/typescript-wsdl-client";
+import { compileWsdlToProject } from "@techspokes/typescript-wsdl-client";
 
-const catalog = await loadWsdlCatalog("./spec/wsdl/MyService.wsdl");
-const compiled = compileCatalog(catalog, {
-  primitive: { decimalAs: "string", dateAs: "string" },
+await compileWsdlToProject({
+  wsdl: "./spec/wsdl/MyService.wsdl",
+  outDir: "./generated",
+  options: {
+    imports: "js",
+    catalog: true,
+    primitive: {
+      int64As: "string",
+      bigIntegerAs: "string",
+      decimalAs: "string",
+      dateAs: "string",
+    },
+    choice: "all-optional",
+    failOnUnresolved: true,
+    attributesKey: "$attributes",
+    clientName: "MyServiceClient",
+  },
 });
-
-// Use the compiled output as needed.
 ```
 
 ---
 
 ## Troubleshooting
 
-- **Missing `runtime.ts`**: Ensure the output directory is writable and you're using the latest version.
-- **Module system issues**: Use `--imports js` for ESM/NodeNext or `--imports bare` for CommonJS.
-- **Security warnings**: Configure `node-soap` security (e.g., `WSSecurity`) as needed.
+- CLI errors  
+  • “Error: Cannot parse WSDL” → verify file path or URL; test with `curl -I <wsdl-url>`.  
+  • “Cannot resolve type XYZ” → ensure all XSD imports are reachable or use `--fail-on-unresolved=false`.  
+- Module resolution  
+  • `ERR_MODULE_NOT_FOUND` → align import extensions: use `--imports js` (adds `.js`), `--imports ts` (adds `.ts`), or `--imports bare` for no extension.  
+- TypeScript type issues  
+  • “Cannot find module './client'” → run `npm run typecheck`, confirm your `outDir` matches import paths, and include generated `.d.ts`.  
+- Runtime SOAP errors  
+  • Enable raw SOAP logging:  
+    ```bash
+    NODE_DEBUG=soap node your-app.js
+    ```  
+  • “wsdl is not valid” → update `soap` to latest (`npm i soap@latest`).  
+- Security warnings  
+  • Missing or invalid headers → pass a valid `soap.ISecurity` instance:  
+    ```ts
+    new soap.WSSecurity("user","pass",{passwordType:"PasswordText"});
+    ```  
+- XML attribute/content issues  
+  • Wrong key in requests → override with `--attributes-key inKey[:outKey]` (e.g., `--attributes-key $attributes:attributes`).
 
 ---
 

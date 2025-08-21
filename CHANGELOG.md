@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.4.1] – 2025-08-21
+
+- fix(docs): update README w
+- docs(readme): elaborate Features section with detailed advanced feature list for SOAP pain points
+- docs(readme): improve Introduction section with concise overview and key benefits
+- docs(readme): enhance Troubleshooting section with clearer, example-driven guidance
+  ith correct package name and installation instructions
+
 ## [0.4.0] – 2025-08-21
 
 - Added `compileWsdlToProject` function for programmatic API usage
