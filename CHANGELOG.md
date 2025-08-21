@@ -9,9 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.4.2] – 2025-08-21
+
+- refactor(clientEmitter): update constructor logic and remove redundant source type check, fix semicolon usage
+
 ## [0.4.1] – 2025-08-21
 
-- fix(docs): update README w
+- fix(docs): update README with correct package name and installation instructions
 - docs(readme): elaborate Features section with detailed advanced feature list for SOAP pain points
 - docs(readme): improve Introduction section with concise overview and key benefits
 - docs(readme): enhance Troubleshooting section with clearer, example-driven guidance

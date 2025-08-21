@@ -26,7 +26,7 @@ export interface ${clientName}DataTypes {
   Attributes: Record<string, readonly string[]>;
   /** Maps type names to their child element types for recursive processing */
   ChildrenTypes: Record<string, Readonly<Record<string, string>>>;
-};
+}
 
 export const ${clientConstant}_DATA_TYPES: ${clientName}DataTypes = ${metas} as const;\n`;
   try {

@@ -137,10 +137,14 @@ export class ${clientName} {
     attributesKeyOut?: string
   }) {
     this.source = options.source;
-    this.options = options.options ?? undefined;
-    this.security = options.security ?? undefined;
     this.attributesKeyIn = options.attributesKeyIn ?? "$attributes";
     this.attributesKeyOut = options.attributesKeyOut ?? "attributes";
+    if (options.options) {
+      this.options = options.options;
+    }
+    if (options.security) {
+      this.security = options.security;
+    }
   }
 
   /**
@@ -154,7 +158,7 @@ export class ${clientName} {
     // If client is not initialized or has no WSDL source, create a new one
     if (!this.client || !this.client.wsdl) {
       // Note: source can be a URL or a local WSDL file path
-      if (!this.source || (typeof this.source !== "string")) {
+      if (!this.source) {
         throw new Error("WSDL source must be a non-empty string URL or file path.");
       }
       try {
