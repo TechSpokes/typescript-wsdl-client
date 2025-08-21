@@ -29,6 +29,10 @@ export function emitClient(outFile: string, compiled: CompiledCatalog) {
       : `[${JSON.stringify(op.name)}]`;
     const inTypeName = op.inputElement ? pascal(op.inputElement.local) : undefined;
     const outTypeName = op.outputElement ? pascal(op.outputElement.local) : undefined;
+    if (!inTypeName && !outTypeName) {
+      console.warn(`Operation ${op.name} has no input or output type defined. Skipping method generation.`);
+      continue;
+    }
     const inTs = inTypeName ? `T.${inTypeName}` : `any`;
     const outTs = outTypeName ? `T.${outTypeName}` : `any`;
     const secHints = Array.isArray((op as any).security) && (op as any).security!.length ? (op as any).security as string[] : [];
@@ -48,7 +52,8 @@ export function emitClient(outFile: string, compiled: CompiledCatalog) {
     return this.call<${inTs}, ${outTs}, HeadersType>(
       args,
       ${JSON.stringify(m)},
-      ${JSON.stringify(m)}
+      ${inTypeName ? JSON.stringify(inTypeName) : "undefined"},
+      ${outTypeName ? JSON.stringify(outTypeName) : "undefined"}
     );
   }`;
     methods.push(methodTemplate);
@@ -180,6 +185,7 @@ ${methodsBody}
    *
    * @param args - The request arguments/payload for the operation.
    * @param operation - The name of the SOAP operation to invoke.
+   * @param requestType - The metadata type name for request serialization.
    * @param responseType - The metadata type name for response deserialization.
    * @returns A promise resolving to the operation response containing data, headers, and raw XML.
    * @throws Error if the specified operation is not found on the SOAP client.
@@ -187,6 +193,7 @@ ${methodsBody}
   protected async call<RequestType, ResponseType, HeadersType>(
     args: RequestType,
     operation: string,
+    requestType: string,
     responseType: string
   ): Promise<${clientName}Response<ResponseType, HeadersType>> {
     const client = await this.soapClient();
@@ -194,7 +201,7 @@ ${methodsBody}
       throw new Error("Operation not found on SOAP client: " + operation);
     }
     // Convert TypeScript object to the format expected by node-soap
-    const soapArgs = this.toSoapArgs(args, responseType);
+    const soapArgs = this.toSoapArgs(args, requestType);
     return new Promise((resolve, reject) => {
       client[operation](soapArgs, (err: any, result: any, rawResponse: string, soapHeader: any, rawRequest: string) => {
         if (err) {

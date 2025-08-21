@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.5.0] – 2025-08-21
+
+- refactor(clientEmitter): properly pass operation input and output types to call() method
+
 ## [0.4.2] – 2025-08-21
 
 - refactor(clientEmitter): update constructor logic and remove redundant source type check, fix semicolon usage
