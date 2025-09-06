@@ -1,0 +1,59 @@
+title: "General Discussion"
+labels: ["discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start a conversation about typescript-wsdl-client!
+
+        This is the place for:
+        - General thoughts and feedback
+        - Architecture discussions
+        - Ecosystem and tooling talk
+        - Community building
+        - Anything that doesn't fit other categories
+
+  - type: dropdown
+    id: topic-category
+    attributes:
+      label: "Topic Category"
+      options:
+        - "Project Direction & Vision"
+        - "Developer Experience"
+        - "Performance & Optimization"
+        - "Documentation & Learning"
+        - "Ecosystem & Integrations"
+        - "Best Practices & Patterns"
+        - "Tooling & Workflow"
+        - "Community & Events"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: discussion-topic
+    attributes:
+      label: "Discussion Topic"
+      description: "What would you like to discuss?"
+      placeholder: "Share your thoughts, ideas, or start a conversation..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: "Context (optional)"
+      description: "Any additional background or context that would help the discussion"
+
+  - type: checkboxes
+    id: discussion-goals
+    attributes:
+      label: "Discussion Goals"
+      description: "What are you hoping to achieve? (optional)"
+      options:
+        - label: "Get community feedback"
+        - label: "Share knowledge/experience"
+        - label: "Find collaboration opportunities"
+        - label: "Influence project direction"
+        - label: "Learn from others"
+        - label: "Build consensus"

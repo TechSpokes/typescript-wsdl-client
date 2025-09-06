@@ -1,0 +1,85 @@
+title: "Show and Tell"
+labels: ["showcase", "community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share how you're using typescript-wsdl-client in your projects!
+
+        This helps others learn and shows the real-world impact of the tool.
+
+  - type: input
+    id: project-name
+    attributes:
+      label: "Project Name"
+      description: "What's your project called? (can be anonymous)"
+      placeholder: "My SOAP Integration Project"
+
+  - type: dropdown
+    id: project-type
+    attributes:
+      label: "Project Type"
+      options:
+        - "Enterprise Integration"
+        - "Legacy System Migration"
+        - "API Gateway/Proxy"
+        - "Microservices Architecture"
+        - "E-commerce Integration"
+        - "Financial/Banking System"
+        - "Government/Public Sector"
+        - "Healthcare/Medical"
+        - "Educational/Academic"
+        - "Open Source Tool"
+        - "Personal/Learning Project"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "Tell us about your project and how you use typescript-wsdl-client"
+      placeholder: "Describe what your project does and how the WSDL client fits in..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: wsdl-details
+    attributes:
+      label: "WSDL Details"
+      description: "What kind of SOAP services are you integrating with?"
+      placeholder: |
+        - Service provider/vendor (if public)
+        - Number of operations
+        - Complexity level
+        - Any special challenges overcome
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: "Benefits & Wins"
+      description: "What benefits did you get from using this tool?"
+      placeholder: "Type safety, reduced development time, better maintainability..."
+
+  - type: textarea
+    id: lessons-learned
+    attributes:
+      label: "Lessons Learned"
+      description: "Any tips, tricks, or lessons you'd share with other users?"
+
+  - type: checkboxes
+    id: sharing
+    attributes:
+      label: "Sharing"
+      options:
+        - label: "This project is open source (include link below)"
+        - label: "I'm open to discussing this project with others"
+        - label: "I'd be interested in writing a blog post/case study"
+
+  - type: input
+    id: links
+    attributes:
+      label: "Links (optional)"
+      description: "GitHub repo, blog post, or other relevant links"
+      placeholder: "https://github.com/username/project"

@@ -79,7 +79,7 @@ console.log(response);
 
 ## Features
 
-- **Primitive-type mapping**: Fine-grained flags (`--int64-as`, `--bigint-as`, `--decimal-as`, `--date-as`) so you don’t have to hand-roll conversions for odd XSD primitives.
+- **Primitive-type mapping**: Fine-grained flags (`--int64-as`, `--bigint-as`, `--decimal-as`, `--date-as`) so you don't have to hand-roll conversions for odd XSD primitives.
 - **Complex/simpleContent inheritance**: Automatically flattens and extends base types for `<complexContent>` and `<simpleContent>` extensions.
 - **Deterministic metadata**: Emits runtime maps for JSON ⇄ SOAP mapping—clear attribute vs element distinctions and order.
 - **Choice element support**: Two modes (`all-optional` or `union`) to handle `<choice>` constructs exactly how you need.
@@ -117,6 +117,7 @@ wsdl-tsc --wsdl <path-or-url> --out <dir> [options]
 | `--date-as`            | string    | string, Date                   | string         | How to map date/time/duration types                              |
 | `--choice`             | string    | all-optional, union            | all-optional   | Representation of `<choice>` elements                            |
 | `--fail-on-unresolved` | boolean   | true, false                    | true           | Fail if any type references cannot be resolved                   |
+| `--nillable-as-optional` | boolean | true, false                    | false          | Treat nillable elements as optional properties in types          |
 
 ---
 
@@ -159,6 +160,7 @@ await compileWsdlToProject({
     failOnUnresolved: true,
     attributesKey: "$attributes",
     clientName: "MyServiceClient",
+    nillableAsOptional: false,
   },
 });
 ```
@@ -168,18 +170,18 @@ await compileWsdlToProject({
 ## Troubleshooting
 
 - CLI errors  
-  • “Error: Cannot parse WSDL” → verify file path or URL; test with `curl -I <wsdl-url>`.  
-  • “Cannot resolve type XYZ” → ensure all XSD imports are reachable or use `--fail-on-unresolved=false`.  
+  • "Error: Cannot parse WSDL" → verify file path or URL; test with `curl -I <wsdl-url>`.  
+  • "Cannot resolve type XYZ" → ensure all XSD imports are reachable or use `--fail-on-unresolved=false`.  
 - Module resolution  
   • `ERR_MODULE_NOT_FOUND` → align import extensions: use `--imports js` (adds `.js`), `--imports ts` (adds `.ts`), or `--imports bare` for no extension.  
 - TypeScript type issues  
-  • “Cannot find module './client'” → run `npm run typecheck`, confirm your `outDir` matches import paths, and include generated `.d.ts`.  
+  • "Cannot find module './client'" → run `npm run typecheck`, confirm your `outDir` matches import paths, and include generated `.d.ts`.  
 - Runtime SOAP errors  
   • Enable raw SOAP logging:  
     ```bash
     NODE_DEBUG=soap node your-app.js
     ```  
-  • “wsdl is not valid” → update `soap` to latest (`npm i soap@latest`).  
+  • "wsdl is not valid" → update `soap` to latest (`npm i soap@latest`).  
 - Security warnings  
   • Missing or invalid headers → pass a valid `soap.ISecurity` instance:  
     ```ts
@@ -212,7 +214,7 @@ MIT © TechSpokes.
 
 ---
 
-## 💖 Sponsors
+## Sponsors
 
 **Silver Sponsors**
 - Your Name Here!

@@ -1,0 +1,58 @@
+title: "Feature Ideas & Suggestions"
+labels: ["enhancement", "discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing your ideas! Help us understand what you'd like to see in typescript-wsdl-client.
+
+        Before posting, please:
+        - Check existing discussions and issues
+        - Review our [ROADMAP.md](../../ROADMAP.md) for planned features
+
+  - type: textarea
+    id: idea-description
+    attributes:
+      label: "Idea Description"
+      description: "What feature or improvement would you like to see?"
+      placeholder: "Describe your idea..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: "Use Case"
+      description: "What problem does this solve? How would you use this feature?"
+      placeholder: "Explain the use case and benefits..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: example-wsdl
+    attributes:
+      label: "Example WSDL/Schema (if applicable)"
+      description: "Share a minimal WSDL snippet that demonstrates the need"
+      render: xml
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      description: "How important is this to your workflow?"
+      options:
+        - "Nice to have"
+        - "Would be helpful"
+        - "Important for my project"
+        - "Blocking my adoption"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: "Contribution"
+      options:
+        - label: "I'd be interested in contributing to this feature"
+        - label: "I can provide more examples/test cases"
+        - label: "I can help with documentation"

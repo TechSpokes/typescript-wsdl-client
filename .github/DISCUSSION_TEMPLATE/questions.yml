@@ -1,0 +1,74 @@
+title: "Questions & Help"
+labels: ["question", "help wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help with typescript-wsdl-client? Ask away!
+
+        **Before asking:**
+        - Check the [README.md](../../README.md) for basic usage
+        - Search existing discussions and issues
+        - Try the `npm run smoke` commands to verify your setup
+
+  - type: dropdown
+    id: question-type
+    attributes:
+      label: "Question Type"
+      options:
+        - "Getting Started / Installation"
+        - "WSDL Parsing Issues"
+        - "Generated Code Problems"
+        - "TypeScript Compilation Errors"
+        - "Runtime/SOAP Call Issues"
+        - "CLI Usage & Configuration"
+        - "Integration with Frameworks"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: "Your Question"
+      description: "What specific help do you need?"
+      placeholder: "Describe your question or problem..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: wsdl-info
+    attributes:
+      label: "WSDL Information"
+      description: "Tell us about your WSDL (without sharing sensitive data)"
+      placeholder: |
+        - WSDL source (URL, vendor, custom)
+        - Approximate size/complexity
+        - Any special features (authentication, complex types, etc.)
+
+  - type: textarea
+    id: command-used
+    attributes:
+      label: "Command Used"
+      description: "What wsdl-tsc command did you run?"
+      render: bash
+      placeholder: "npx wsdl-tsc --wsdl your-service.wsdl --out generated"
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: "Error Output (if any)"
+      description: "Copy paste any error messages"
+      render: text
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Help us understand your setup"
+      value: |
+        - Node.js version:
+        - TypeScript version:
+        - Operating System:
+        - Package manager: (npm/yarn/pnpm)
+        - typescript-wsdl-client version:

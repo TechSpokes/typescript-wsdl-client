@@ -9,6 +9,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.6.0] – 2025-09-06
+
+- docs: comprehensive documentation improvements with enhanced usage examples and API reference
+- feat: enable GitHub Discussions for community feedback and feature requests
+- docs: simplify ROADMAP.md to reflect realistic scope for small project with 2 contributors
+- docs: clarify OpenAPI 3.1 generation goals for 0.7.x series to enable REST API gateways
+- feat: add --nillable-as-optional CLI flag to treat nillable elements as optional properties (thanks @GerryWilko)
+- fix: correct utils file generation in programmatic API - was generating as meta.ts instead of utils.ts (thanks @GerryWilko)
+
 ## [0.5.0] – 2025-08-21
 
 - refactor(clientEmitter): properly pass operation input and output types to call() method
