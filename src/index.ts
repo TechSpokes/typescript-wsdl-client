@@ -46,7 +46,7 @@ export async function compileWsdlToProject(
 
   // Emit artifacts
   const typesFile = path.join(input.outDir, "types.ts");
-  const metaFile = path.join(input.outDir, "meta.ts");
+  const utilsFile = path.join(input.outDir, "utils.ts");
   const catalogFile = path.join(input.outDir, "catalog.json");
   const clientFile = path.join(input.outDir, "client.ts");
 
@@ -60,7 +60,7 @@ export async function compileWsdlToProject(
   // Emit files
   emitClient(clientFile, compiled);
   emitTypes(typesFile, compiled);
-  emitUtils(metaFile, compiled);
+  emitUtils(utilsFile, compiled);
 
   if (compiled.options.catalog) {
     emitCatalog(catalogFile, compiled);
