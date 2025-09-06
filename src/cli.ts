@@ -79,6 +79,11 @@ const argv = await yargs(hideBin(process.argv))
     default: true,
     desc: "Emit errors if any type references cannot be resolved in the WSDL schema",
   })
+  .option("nillable-as-optional", {
+    type: "boolean",
+    default: false,
+    desc: "Emit nillable elements as optional properties in types.",
+  })
   .strict()
   .help()
   .parse();
@@ -105,6 +110,7 @@ const compiled = compileCatalog(
     failOnUnresolved: argv["fail-on-unresolved"] as boolean,
     attributesKey: argv["attributes-key"] as string,
     clientName: argv["client-name"] as string | undefined,
+    nillableAsOptional: argv["nillable-as-optional"] as boolean,
   }
 );
 

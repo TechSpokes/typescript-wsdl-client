@@ -126,7 +126,7 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
     for (const e of elementsToEmit) {
       const isArray = e.max === "unbounded" || (e.max > 1);
       const arr = isArray ? "[]" : "";
-      const opt = (e.min ?? 0) === 0 ? "?" : "";
+      const opt = (compiled.options.nillableAsOptional && e.nillable) || (e.min ?? 0) === 0 ? "?" : "";
       const annObj = {
         // if a.name === "$value", the kind should be "scalar value"
         kind: e.name === "$value" ? "scalar value" : "element" as const,

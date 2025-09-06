@@ -22,6 +22,8 @@ export type CompilerOptions = {
   attributesKey?: string;
   /** Override the generated client class name (from --client-name). */
   clientName?: string;
+  /** Emit nillable elements as optional properties in types. */
+  nillableAsOptional?: boolean
 };
 
 /**
@@ -42,4 +44,5 @@ export const TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS: CompilerOptions = 
   failOnUnresolved: false,        // CLI default
   attributesKey: "$attributes",   // CLI default
   clientName: undefined,          // no default
+  nillableAsOptional: false,      // CLI default
 };
