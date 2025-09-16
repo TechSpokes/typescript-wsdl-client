@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.6.2] – 2025-09-16
+
+- chore(ci): update permissions for CI jobs
+
 ## [0.6.1] – 2025-09-16
 
 - build(deps): bump soap from 1.3.0 to 1.4.1
