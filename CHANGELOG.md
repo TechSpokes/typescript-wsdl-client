@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.6.3] – 2025-09-22
+
+- build(deps): update dependencies to version 0.25.10
+
 ## [0.6.2] – 2025-09-16
 
 - chore(ci): update permissions for CI jobs
