@@ -217,17 +217,5 @@ export function buildSchemas(compiled: CompiledCatalog, opts: BuildSchemasOption
     }
   }
 
-  // Standard error envelope (always include)
-  if (!schemas.ErrorEnvelope) {
-    schemas.ErrorEnvelope = {
-      type: "object",
-      properties: {
-        message: {type: "string"},
-        faultCode: {type: "string"},
-        detail: {type: "object", additionalProperties: true},
-      },
-    };
-  }
-
   return schemas;
 }

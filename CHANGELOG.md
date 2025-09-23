@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.7.1] – 2025-09-23
+- feat(openapi): introduce always-on standard response envelope (base + alphabetized extensions + error object) with customizable --envelope-namespace / --error-namespace and global alphabetical sorting of paths, methods, schemas, securitySchemes, and parameters
+- fix(openapi): omit non-default jsonSchemaDialect to prevent IDE warnings; add deterministic default server '/' when none supplied via --servers; alphabetically sort component section keys & operation tag arrays; introduce underscore collision avoidance for envelope/error namespace concatenation (e.g. FooResponse_ResponseEnvelope)
+
 ## [0.7.0] – 2025-09-23
 - feat(openapi): add fail-fast validation of unknown schema refs/base types in buildComplexSchema to prevent dangling $ref emissions
 - feat(openapi): add OpenAPI 3.1 generation subcommand and programmatic API (generateOpenAPI) with schema/path/security support

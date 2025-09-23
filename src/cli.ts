@@ -89,6 +89,15 @@ if (rawArgs[0] === "openapi") {
       default: "default",
       desc: "Heuristic for inferring tags when no --tags map provided"
     })
+    // Standard envelope feature flags
+    .option("envelope-namespace", {
+      type: "string",
+      desc: "Override the standard response envelope base name segment (default <ServiceName>ResponseEnvelope or provided segment alone)"
+    })
+    .option("error-namespace", {
+      type: "string",
+      desc: "Override the standard error object schema name segment (default <ServiceName>ErrorObject or provided segment alone)"
+    })
     .strict()
     .help()
     .parse();
@@ -138,6 +147,8 @@ if (rawArgs[0] === "openapi") {
     format: inferredFormat,
     skipValidate: openapiArgv.validate === false,
     tagStyle: openapiArgv["tag-style"] as any,
+    envelopeNamespace: openapiArgv["envelope-namespace"] as string | undefined,
+    errorNamespace: openapiArgv["error-namespace"] as string | undefined,
   });
 
   console.log(`✅ OpenAPI generation complete (${inferredFormat || 'json'})`);
@@ -183,6 +194,9 @@ if (rawArgs[0] === "pipeline") {
     .option("ops", {type: "string"})
     .option("closedSchemas", {type: "boolean", default: false})
     .option("pruneUnusedSchemas", {type: "boolean", default: false})
+    // Envelope feature flags
+    .option("envelope-namespace", {type: "string"})
+    .option("error-namespace", {type: "string"})
     .strict()
     .help()
     .parse();
@@ -239,6 +253,8 @@ if (rawArgs[0] === "pipeline") {
       opsFile: pipelineArgv.ops as string | undefined,
       closedSchemas: pipelineArgv.closedSchemas as boolean,
       pruneUnusedSchemas: pipelineArgv.pruneUnusedSchemas as boolean,
+      envelopeNamespace: pipelineArgv["envelope-namespace"] as string | undefined,
+      errorNamespace: pipelineArgv["error-namespace"] as string | undefined,
     }
   });
 
