@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
   "keywords": [
     "wsdl",
@@ -55,7 +55,7 @@
     "test": "exit 0",
     "smoke": "tsx src/cli.ts --help",
     "smoke:gen": "rimraf tmp && tsx src/cli.ts --wsdl examples/minimal/weather.wsdl --out tmp && tsc -p tsconfig.smoke.json",
-    "smoke:pipeline": "tsx src/cli.ts pipeline --wsdl examples/minimal/weather.wsdl --out tmp --clean --format both --tag-style service --openapi-out tmp/openapi",
+    "smoke:pipeline": "tsx src/cli.ts pipeline --wsdl examples/minimal/weather.wsdl --out tmp --clean --format both --tag-style service --openapi-out tmp/openapi --servers https://example.com/api",
     "ci": "npm run build && npm run typecheck && npm run smoke && npm run smoke:gen && npm run smoke:pipeline"
   },
   "devDependencies": {
