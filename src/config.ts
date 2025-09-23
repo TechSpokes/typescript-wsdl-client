@@ -1,7 +1,30 @@
+/**
+ * Configuration Options for TypeScript WSDL Client Generator
+ *
+ * This module defines the configuration interface and default values for the WSDL-to-TypeScript
+ * compilation process. It centralizes all compiler options that can be customized by users
+ * through the CLI or programmatic API. These options control everything from output formatting
+ * to type mapping strategies.
+ *
+ * The configuration follows a "safe defaults" philosophy, prioritizing correctness and
+ * data integrity over convenience, while still allowing users to override when needed.
+ */
 import type {PrimitiveOptions} from "./xsd/primitives.js";
 
 /**
  * Options to control WSDL-to-TypeScript compilation behavior.
+ *
+ * @interface CompilerOptions
+ * @property {string} wsdl - Path/URL of the source WSDL (from --wsdl)
+ * @property {string} out - Output directory (from --out)
+ * @property {"js"|"ts"|"bare"} imports - Import-extension mode for generated imports (from --imports)
+ * @property {boolean} catalog - Whether to emit catalog.json file with compiled catalog object
+ * @property {PrimitiveOptions} primitive - Low-level mapping of XSD primitives
+ * @property {"all-optional"|"union"} [choice] - How to represent XML <choice> elements
+ * @property {boolean} [failOnUnresolved] - Whether to emit errors for unresolved type references
+ * @property {string} [attributesKey] - Attribute bag key for the runtime mapper
+ * @property {string} [clientName] - Override the generated client class name
+ * @property {boolean} [nillableAsOptional] - Whether to emit nillable elements as optional properties
  */
 export type CompilerOptions = {
   /** Path/URL of the source WSDL (from --wsdl) */

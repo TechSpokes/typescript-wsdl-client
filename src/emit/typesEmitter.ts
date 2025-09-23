@@ -1,13 +1,38 @@
+/**
+ * TypeScript Types Emitter
+ *
+ * This module is responsible for transforming the compiled WSDL catalog into TypeScript
+ * type definitions. It generates interfaces for complex types and type aliases for
+ * simple types, handling features such as:
+ *
+ * - XML attribute flattening (attributes and elements as peer properties)
+ * - Text content as "$value" property
+ * - Type inheritance (extends) for complexContent extensions
+ * - Proper JSDoc annotations for XML metadata
+ * - Consistent property ordering and interface structuring
+ * - Optional/required markers based on XML schema requirements
+ */
 import fs from "node:fs";
 import type {CompiledCatalog, CompiledType} from "../compiler/schemaCompiler.js";
 
 /**
- * Emit TypeScript types from a compiled XSD catalog.
+ * Emits TypeScript interfaces and type aliases from a compiled WSDL catalog
  *
- * - Text node is modeled as "$value" (not "value") to avoid collisions with real elements.
- * - xs:complexType + xs:simpleContent/extension is flattened to `extends <BaseType>`.
- * - All properties (attributes and elements) include @xsd JSDoc.
- * - If a "$value" element is present, it is emitted last.
+ * This function generates a TypeScript file containing all the types required to
+ * work with the SOAP service, including:
+ *
+ * - Type aliases for simple types (enums, restrictions, etc.)
+ * - Interfaces for complex types with proper inheritance
+ * - JSDoc annotations with XML metadata for runtime marshalling
+ *
+ * Key design decisions:
+ * - Text node is modeled as "$value" (not "value") to avoid collisions with real elements
+ * - xs:complexType + xs:simpleContent/extension is flattened to `extends <BaseType>`
+ * - All properties (attributes and elements) include @xsd JSDoc
+ * - If a "$value" element is present, it is emitted last
+ *
+ * @param {string} outFile - Path to the output TypeScript file
+ * @param {CompiledCatalog} compiled - The compiled WSDL catalog
  */
 export function emitTypes(outFile: string, compiled: CompiledCatalog) {
   const lines: string[] = [];

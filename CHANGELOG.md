@@ -9,6 +9,19 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.7.0] – 2025-09-23
+- feat(openapi): add fail-fast validation of unknown schema refs/base types in buildComplexSchema to prevent dangling $ref emissions
+- feat(openapi): add OpenAPI 3.1 generation subcommand and programmatic API (generateOpenAPI) with schema/path/security support
+- feat(openapi): support YAML output via --yaml flag or .yaml/.yml extension
+- feat(openapi): add tag inference heuristics (--tag-style default|first|service)
+- feat(openapi): add optional spec validation using swagger-parser (--validate)
+- feat(pipeline): add one-shot generation subcommand (pipeline) and programmatic API runGenerationPipeline
+- docs(readme): improve examples clarity with explicit references to examples/minimal/weather.wsdl
+- feat(npm): add clean:tmp script for comprehensive temporary directory cleanup
+- fix(openapi): replace flawed custom YAML serializer with js-yaml library for proper YAML formatting and IDE compatibility
+- feat(ci): auto-cleanup validation test artifacts after successful CI completion for cleaner workspace
+- chore(ci): consolidate pipeline artifacts (client, types, utils, catalog, openapi.{json,yaml}) into single output directory (no nested pipeline folder)
+
 ## [0.6.3] – 2025-09-22
 
 - build(deps): update dependencies to version 0.25.10

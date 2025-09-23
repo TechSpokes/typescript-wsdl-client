@@ -1,9 +1,38 @@
-// noinspection UnreachableCodeJS,JSUnusedLocalSymbols
-
+/**
+ * TypeScript SOAP Client Emitter
+ *
+ * This module generates a strongly-typed TypeScript SOAP client class from the compiled WSDL catalog.
+ * The generated client wraps the node-soap library with type-safe operation methods and proper
+ * TypeScript declarations for request/response types.
+ *
+ * Key features of the generated client:
+ * - Type-safe operation methods matching WSDL operations
+ * - Response type that includes headers, raw XML, and typed data
+ * - Security hint annotations from WS-Policy
+ * - Support for custom attribute handling
+ * - Consistent error handling and client configuration
+ */
 import fs from "node:fs";
 import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
-import {pascal, deriveClientName, pascalToSnakeCase} from "../util/tools.js";
+import {deriveClientName, pascal, pascalToSnakeCase} from "../util/tools.js";
 
+/**
+ * Generates a TypeScript SOAP client class from a compiled WSDL catalog
+ *
+ * This function creates a fully-typed TypeScript class that wraps the node-soap library
+ * with strongly-typed methods for each SOAP operation defined in the WSDL. The generated
+ * client handles XML serialization/deserialization, SOAP headers, and security settings.
+ *
+ * The client provides:
+ * - Async methods for each WSDL operation with proper TypeScript typing
+ * - A Response type that includes headers, raw XML, and typed response data
+ * - Security annotations based on WS-Policy analysis
+ * - Support for custom attribute keys and namespaces
+ * - Clean error handling with meaningful messages
+ *
+ * @param {string} outFile - Path to the output TypeScript file
+ * @param {CompiledCatalog} compiled - The compiled WSDL catalog
+ */
 export function emitClient(outFile: string, compiled: CompiledCatalog) {
   const isValidIdent = (name: string) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name);
   const reserved = new Set<string>([
@@ -59,7 +88,7 @@ export function emitClient(outFile: string, compiled: CompiledCatalog) {
     methods.push(methodTemplate);
   }
   const methodsBody = methods.join("\n");
-  // noinspection JSFileReferences,JSUnresolvedReference,CommaExpressionJS,JSDuplicatedDeclaration,ReservedWordAsName,JSCommentMatchesSignature,JSValidateTypes,JSIgnoredPromiseFromCall,BadExpressionStatementJS,ES6UnusedImports,JSUnnecessarySemicolon
+  // noinspection JSFileReferences,JSUnresolvedReference,CommaExpressionJS,JSDuplicatedDeclaration,ReservedWordAsName,JSCommentMatchesSignature,JSValidateTypes,JSIgnoredPromiseFromCall,BadExpressionStatementJS,ES6UnusedImports,JSUnnecessarySemicolon,UnreachableCodeJS,JSUnusedLocalSymbols
   const classTemplate = `// noinspection JSAnnotator
 
 /**
@@ -358,7 +387,7 @@ ${methodsBody}
 }
 `;
   try {
-    fs.writeFileSync(outFile, classTemplate.replace(`// noinspection JSAnnotator\n\n`,''), "utf8");
+    fs.writeFileSync(outFile, classTemplate.replace(`// noinspection JSAnnotator\n\n`, ''), "utf8");
     console.log(`Client class written to ${outFile}`);
   } catch (e) {
     console.log(`Failed to write catalog to ${outFile}`);

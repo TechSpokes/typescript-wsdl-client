@@ -1,7 +1,37 @@
+/**
+ * TypeScript SOAP Client Utilities Emitter
+ *
+ * This module generates utility types and constants needed for the TypeScript SOAP client
+ * to properly handle XML serialization and deserialization. It creates metadata mappings
+ * that enable the client to distinguish between XML attributes and child elements during
+ * the conversion process between TypeScript objects and XML.
+ *
+ * The generated utilities include:
+ * - A DataTypes interface defining the structure of the metadata
+ * - A constant containing the actual metadata mappings extracted from the compiled catalog
+ */
 import fs from "node:fs";
 import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
 import {deriveClientName, pascalToSnakeCase} from "../util/tools.js";
 
+/**
+ * Emits utility types and constants for XML serialization/deserialization
+ *
+ * This function generates a TypeScript file containing metadata mappings that help
+ * the SOAP client distinguish between XML attributes and child elements during
+ * the conversion process. It exports:
+ *
+ * 1. A DataTypes interface defining the structure of the metadata
+ * 2. A constant containing the actual mappings extracted from the compiled catalog
+ *
+ * The metadata is critical for proper XML marshalling and unmarshalling, as it enables
+ * the client to correctly handle XML attributes vs. child elements, maintain type information
+ * during recursive processing, and ensure that the XML structure matches the WSDL specification.
+ *
+ * @param {string} outFile - Path to the output TypeScript file
+ * @param {CompiledCatalog} compiled - The compiled WSDL catalog containing metadata
+ * @throws {Error} If metadata is missing or has an invalid structure
+ */
 export function emitUtils(outFile: string, compiled: CompiledCatalog) {
   const clientName = deriveClientName(compiled);
   const clientConstant = pascalToSnakeCase(clientName).toUpperCase();

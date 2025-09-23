@@ -1,0 +1,8 @@
+{
+  "GetCityWeatherByZIP": {
+    "method": "post",
+    "summary": "Retrieve weather by ZIP code",
+    "description": "Returns current weather data for the specified US ZIP code."
+  }
+}
+

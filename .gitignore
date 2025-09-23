@@ -145,10 +145,10 @@ vite.config.ts.timestamp-*
 *.tmp
 *.temp
 temp/
-# Temporary files created by the TypeScript compiler
+# Temporary files created by the TypeScript generator
+/tmp/catalog.json
 /tmp/client.ts
-/tmp/meta.ts
-/tmp/operations.ts
-/tmp/runtime.ts
+/tmp/openapi.json
+/tmp/openapi.yaml
 /tmp/types.ts
 /tmp/utils.ts

@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
   "keywords": [
     "wsdl",
@@ -47,6 +47,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist",
+    "clean:tmp": "rimraf tmp",
     "dev": "tsx src/cli.ts",
     "watch": "tsx watch src/cli.ts",
     "typecheck": "tsc --noEmit",
@@ -54,9 +55,11 @@
     "test": "exit 0",
     "smoke": "tsx src/cli.ts --help",
     "smoke:gen": "rimraf tmp && tsx src/cli.ts --wsdl examples/minimal/weather.wsdl --out tmp && tsc -p tsconfig.smoke.json",
-    "ci": "npm run build && npm run typecheck && npm run smoke && npm run smoke:gen"
+    "smoke:pipeline": "tsx src/cli.ts pipeline --wsdl examples/minimal/weather.wsdl --out tmp --clean --format both --tag-style service --openapi-out tmp/openapi",
+    "ci": "npm run build && npm run typecheck && npm run smoke && npm run smoke:gen && npm run smoke:pipeline"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.3.0",
     "@types/yargs": "^17.0.33",
     "rimraf": "^6.0.0",
@@ -64,7 +67,9 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@apidevtools/swagger-parser": "^10.0.3",
     "fast-xml-parser": "^5.2.5",
+    "js-yaml": "^4.1.0",
     "soap": "^1.3.0",
     "yargs": "^18.0.0"
   },

@@ -1,0 +1,10 @@
+{
+  "global": {
+    "scheme": "none",
+    "headers": [
+      { "name": "X-Correlation-Id", "required": false, "schema": { "type": "string" } }
+    ]
+  },
+  "overrides": {}
+}
+

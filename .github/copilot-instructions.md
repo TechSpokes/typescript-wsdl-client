@@ -2,7 +2,49 @@
 
 > This file guides GitHub Copilot Chat on how to interact with the `typescript-wsdl-client` codebase, providing project context, conventions, and best practices.
 
-## Project context (read this first)
+## Repository Information
+- Owner/Repo: techspokes / typescript-wsdl-client
+- Package: `@techspokes/typescript-wsdl-client`
+- Default Branch: main
+- CLI Binary: `wsdl-tsc` (dist/cli.js)
+- Engine: Node.js ≥ 20
+- Issue Tracker: https://github.com/techspokes/typescript-wsdl-client/issues
+- Discussions: https://github.com/techspokes/typescript-wsdl-client/discussions
+- CI: `.github/workflows/ci.yml`
+- Version Policy: Always read current version from `package.json`; never duplicate it here.
+
+Machine-readable metadata (parse first for GitHub MCP operations):
+
+```yaml
+# repo-metadata
+owner: techspokes
+repo: typescript-wsdl-client
+package: '@techspokes/typescript-wsdl-client'
+# version: always read from package.json
+defaultBranch: main
+issues: 'https://github.com/techspokes/typescript-wsdl-client/issues'
+discussions: 'https://github.com/techspokes/typescript-wsdl-client/discussions'
+ciWorkflow: 'ci.yml'
+cliBinary: wsdl-tsc
+node: '>=20'
+```
+
+### GitHub MCP Usage Guidelines (minimal set)
+1. Use `owner`/`repo` from YAML; read `package.json` each time you need the version (no caching).
+2. Commit / PR titles: prefix with `Version: <version>` (see commit format section below).
+3. Default PR base: `main` unless explicitly overridden.
+4. Prefer repo-scoped queries; avoid broad searches when listing issues/PRs.
+5. Release prep: read `CHANGELOG.md` + `package.json`; apply release rules section below.
+6. Don’t remote-fetch metadata already present in YAML (owner/repo/branch/etc.).
+7. For any code or docs change, propose (and on confirmation add) a concise bullet under `## [Unreleased]` (exclude the version prefix).
+
+
+## Project context - Make sure to understand:
+- Purpose: Generate fully-typed TypeScript SOAP clients from WSDL/XSD schemas, addressing common SOAP pain points.
+- Key features: end-to-end type safety, deterministic JSON ⇄ SOAP metadata, flexible primitive mapping, automatic flattening of complex/simple content inheritance, choice handling strategies, WS-Policy security hints, pluggable ESM/CJS imports.
+- Primary users: TypeScript developers needing SOAP clients.
+- Maintainer: Serge Liatko (@sergeliatko). 
+- Vendor: TechSpokes (https://www.techspokes.com).
 - Runtime/tooling: **Node.js ≥ 20**, **TypeScript (strict)**, **ES2022**, **ESM/NodeNext**. 
 - CLI binary: `wsdl-tsc` (exposed from `dist/cli.js`). Build artifacts live in `dist/`.
 - Useful scripts:
