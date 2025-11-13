@@ -15,19 +15,19 @@
 ## 1. Why This Project (What Sets It Apart)
 Most generators stop at loosely typed stubs or leak XML complexity into your application layer. This tool focuses on **correct flattening and determinism**:
 
-| Core Differentiator              | What You Get                                                                                    |
-|----------------------------------|-------------------------------------------------------------------------------------------------|
-| Attribute + Element Flattening   | Attributes and child elements appear as peer properties (no nested wrapper noise).              |
-| `$value` Text Content Convention | Simple & mixed content always represented as a `$value` property (collision-safe & documented). |
-| Inheritance Resolution           | `complexContent` and `simpleContent` extensions are merged or extended consistently.            |
-| Choice Strategy                  | Predictable `all-optional` modeling today (future advanced discriminators planned).             |
-| WS‑Policy Security Hints         | Inline scan of policies surfaces required auth hints (e.g. `usernameToken`, `https`).           |
-| Deterministic Output             | Sorted declarations and stable alias resolution for diff‑friendly regeneration.                 |
-| Primitive Mapping Controls       | Explicit flags for long / big integer / decimal / temporal families (string‑first safety).      |
-| Catalog Introspection            | One JSON artifact (`catalog.json`) to drive further tooling (including OpenAPI).                |
-| OpenAPI 3.1 Bridge               | Mirrors the exact TypeScript model — no divergence between runtime and spec.                    |
-| Multi‑format Output              | `--format json                                                                                  |yaml|both` with always‑on validation (unless disabled). |
-| One‑Shot Pipeline                | Single pass (parse → TS → OpenAPI) for CI & automation.                                         |
+| Core Differentiator              | What You Get                                                                                         |
+|----------------------------------|------------------------------------------------------------------------------------------------------|
+| Attribute + Element Flattening   | Attributes and child elements appear as peer properties (no nested wrapper noise).                   |
+| `$value` Text Content Convention | Simple text & mixed content always represented as a `$value` property (collision-safe & documented). |
+| Inheritance Resolution           | `complexContent` and `simpleContent` extensions are merged or extended consistently.                 |
+| Choice Strategy                  | Predictable `all-optional` modeling today (future advanced discriminators planned).                  |
+| WS‑Policy Security Hints         | Inline scan of policies surfaces required auth hints (e.g. `usernameToken`, `https`).                |
+| Deterministic Output             | Sorted declarations and stable alias resolution for diff‑friendly regeneration.                      |
+| Primitive Mapping Controls       | Explicit flags for long / big integer / decimal / temporal families (string‑first safety).           |
+| Catalog Introspection            | One JSON artifact (`catalog.json`) to drive further tooling (including OpenAPI).                     |
+| OpenAPI 3.1 Bridge               | Mirrors the exact TypeScript model — no divergence between runtime and spec.                         |
+| Multi‑format Output              | `--format json\|yaml\|both` with always‑on validation (unless disabled).                             |
+| One‑Shot Pipeline                | Single pass (parse → TS → OpenAPI) for CI & automation.                                              |
 
 **Vendor**: [TechSpokes](https://www.techspokes.com) · **Maintainer**: Serge Liatko ([@sergeliatko](https://github.com/sergeliatko))
 
@@ -141,27 +141,27 @@ npx wsdl-tsc openapi --catalog ./src/integrations/soap/hotel/catalog.json --out 
 ### 5.1 Formats & Validation
 | Flag                       | Purpose                                                    |
 |----------------------------|------------------------------------------------------------|
-| `--format json             | yaml                                                       |both` | Output format (default json). |
+| `--format`                 | Output format: `json`, `yaml`, `both`. Default: `json`.    |
 | `--yaml`                   | (Deprecated) alias for `--format yaml` when format absent. |
-| `--validate/--no-validate` | Validation on by default.                                  |
+| `--validate/--no-validate` | Validation (on by default).                                |
 | `--out`                    | Base path or explicit file (extension optional).           |
 
 ### 5.2 Core Schema Parity
 The OpenAPI schemas reproduce the **exact** flattening & naming used in `types.ts` — crucial for avoiding drift between SOAP and REST surfaces.
 
 ### 5.3 Additional Flags (Selected)
-| Flag                   | Description                                                                    |
-|------------------------|--------------------------------------------------------------------------------|
-| `--basePath`           | Prefix for REST path segments (e.g. `/v1/booking`).                            |
-| `--pathStyle kebab     | asis                                                                           |lower` | Control operation name → path transformation. |
-| `--method`             | Default HTTP method (per‑op override via `--ops`).                             |
-| `--tag-style`          | Tag inference: `default`, `service`, `first`.                                  |
-| `--security`           | Path to `security.json` (schemes + headers + overrides).                       |
-| `--tags`               | Path to `tags.json` (explicit operation → tag map).                            |
-| `--ops`                | Path to `ops.json` (method/summary/description/deprecated).                    |
-| `--closedSchemas`      | Apply `additionalProperties:false` globally.                                   |
-| `--pruneUnusedSchemas` | Emit only reachable schemas.                                                   |
-| `--servers`            | Comma‑separated server base URLs for the spec (default: `/` if none provided). |
+| Flag                   | Description                                                                              |
+|------------------------|------------------------------------------------------------------------------------------|
+| `--basePath`           | Prefix for REST path segments (e.g. `/v1/booking`).                                      |
+| `--pathStyle`          | Control operation name → path transformation: `kebab`, `asis`, `lower`. Default: `kebab` |
+| `--method`             | Default HTTP method (per‑op override via `--ops`).                                       |
+| `--tag-style`          | Tag inference: `default`, `service`, `first`.                                            |
+| `--security`           | Path to `security.json` (schemes + headers + overrides).                                 |
+| `--tags`               | Path to `tags.json` (explicit operation → tag map).                                      |
+| `--ops`                | Path to `ops.json` (method/summary/description/deprecated).                              |
+| `--closedSchemas`      | Apply `additionalProperties:false` globally.                                             |
+| `--pruneUnusedSchemas` | Emit only reachable schemas.                                                             |
+| `--servers`            | Comma‑separated server base URLs for the spec (default: `/` if none provided).           |
 
 Deterministic ordering: all path keys, HTTP methods, component schema names, securitySchemes, parameters, component section keys, and operation tag arrays are alphabetically sorted for diff‑friendly output. The generator also omits a custom `jsonSchemaDialect` declaration to maximize IDE/tool compatibility (JetBrains warning avoidance) unless a future flag introduces non‑default dialect selection.
 
@@ -186,18 +186,20 @@ If the base name you are concatenating already ends with the leading token of th
 The same rule applies to the error namespace (e.g. `StatusErrorObject`, `StatusError_ErrorObject`). This keeps the intent obvious and signals to developers they might want to pick a shorter custom namespace.
 
 Core properties (always present in the base envelope):
-| Field | Type | Purpose |
-|-------|------|---------|
-| `status` | string | High‑level machine status (e.g. `SUCCESS`, `FAILURE`, `PENDING`). |
-| `message` | string \| null | Diagnostic / log message (not for end‑user UI). |
-| `data` | any \| null | Operation payload (per‑operation extension specializes this). |
-| `error` | Error object \| null | Populated on failures; null on success. |
+
+| Field     | Type                 | Purpose                                                           |
+|-----------|----------------------|-------------------------------------------------------------------|
+| `status`  | string               | High‑level machine status (e.g. `SUCCESS`, `FAILURE`, `PENDING`). |
+| `message` | string \| null       | Diagnostic / log message (not for end‑user UI).                   |
+| `data`    | any \| null          | Operation payload (per‑operation extension specializes this).     |
+| `error`   | Error object \| null | Populated on failures; null on success.                           |
 
 Error object schema fields:
-| Field | Type | Notes |
-|-------|------|-------|
-| `code` | string | Stable machine error code. |
-| `message` | string | Brief description. |
+
+| Field     | Type           | Notes                                                      |
+|-----------|----------------|------------------------------------------------------------|
+| `code`    | string         | Stable machine error code.                                 |
+| `message` | string         | Brief description.                                         |
 | `details` | object \| null | Arbitrary extra info (trace IDs, validation detail, etc.). |
 
 #### Naming Rules
@@ -333,11 +335,11 @@ NODE_DEBUG=soap node app.js
 
 ---
 ## 12. Programmatic Reference (Summary)
-| Function                | Purpose                                         |
-|-------------------------|-------------------------------------------------|
-| `compileWsdlToProject`  | WSDL → TS artifacts.                            |
-| `generateOpenAPI`       | WSDL or catalog → OpenAPI (json / yaml / both). |
-| `runGenerationPipeline` | One pass: compile + TS emit + OpenAPI.          |
+| Function                | Purpose                                             |
+|-------------------------|-----------------------------------------------------|
+| `compileWsdlToProject`  | WSDL → TS artifacts.                                |
+| `generateOpenAPI`       | WSDL or catalog → OpenAPI (`json`, `yaml`, `both`). |
+| `runGenerationPipeline` | One pass: compile + TS emit + OpenAPI.              |
 
 ---
 ## 13. Contributing

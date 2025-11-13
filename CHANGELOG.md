@@ -9,6 +9,17 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.7.12] – 2025-10-10
+- fix(docs): improve README formatting and clarity (broken tables)
+
+## [0.7.11] – 2025-10-01
+- Build(deps-dev): bump tsx from 4.20.5 to 4.20.6 by @dependabot[bot] in #19
+- Build(deps): bump fast-xml-parser from 5.2.5 to 5.3.0 by @dependabot[bot] in #21
+- Build(deps): bump actions/setup-node from 5 to 6 by @dependabot[bot] in #25
+- Build(deps): bump @apidevtools/swagger-parser from 10.1.1 to 12.1.0 by @dependabot[bot] in #26
+- Build(deps-dev): bump @types/node from 24.5.2 to 24.9.1 by @dependabot[bot] in #27
+- Build(deps): bump soap from 1.4.1 to 1.6.0 by @dependabot[bot] in #28
+
 ## [0.7.1] – 2025-09-23
 - feat(openapi): introduce always-on standard response envelope (base + alphabetized extensions + error object) with customizable --envelope-namespace / --error-namespace and global alphabetical sorting of paths, methods, schemas, securitySchemes, and parameters
 - fix(openapi): omit non-default jsonSchemaDialect to prevent IDE warnings; add deterministic default server '/' when none supplied via --servers; alphabetically sort component section keys & operation tag arrays; introduce underscore collision avoidance for envelope/error namespace concatenation (e.g. FooResponse_ResponseEnvelope)
