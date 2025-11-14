@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.7.13] – 2025-11-14
+- fix(version): correct the version number in package.json to 0.7.13 to keep up with tagging
+
 ## [0.7.12] – 2025-10-10
 - fix(docs): improve README formatting and clarity (broken tables)
 
