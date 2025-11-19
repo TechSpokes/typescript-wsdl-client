@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.7.14] – 2025-11-19
+- feat(docs): enhance README with additional flags and defaults
+- Build(deps-dev): bump glob from 11.0.3 to 11.1.0 by @dependabot[bot]
+- Build(deps): bump js-yaml from 4.1.0 to 4.1.1 by @dependabot[bot]
+
 ## [0.7.13] – 2025-11-14
 - fix(version): correct the version number in package.json to 0.7.13 to keep up with tagging
 
