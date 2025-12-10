@@ -145,6 +145,7 @@ vite.config.ts.timestamp-*
 *.tmp
 *.temp
 temp/
+temp/*
 # Temporary files created by the TypeScript generator
 /tmp/catalog.json
 /tmp/client.ts
