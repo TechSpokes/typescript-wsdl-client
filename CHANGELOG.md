@@ -9,6 +9,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.7.15] – 2025-12-10
+- chore(gitignore): add rule to ignore all temp files
+- Build(deps-dev): bump rimraf from 6.0.1 to 6.1.2
+- Build(deps): bump fast-xml-parser from 5.3.0 to 5.3.2
+- Build(deps-dev): bump @types/yargs from 17.0.33 to 17.0.35
+- Build(deps): bump types/node from 24.9.1 to 24.10.1
+- Build(deps): bump typescript from 5.9.2 to 5.9.3
+- Build(deps): bump actions/checkout from 5 to 6
+
 ## [0.7.14] – 2025-11-19
 - feat(docs): enhance README with additional flags and defaults
 - Build(deps-dev): bump glob from 11.0.3 to 11.1.0 by @dependabot[bot]
