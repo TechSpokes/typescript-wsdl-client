@@ -12,11 +12,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import {
-  slugName,
-  rewriteSchemaRefs,
-  type OpenAPIDocument,
-} from "./helpers.js";
+import {type OpenAPIDocument, rewriteSchemaRefs, slugName,} from "./helpers.js";
 
 /**
  * Emits individual JSON Schema files for each OpenAPI component schema

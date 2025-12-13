@@ -163,7 +163,7 @@ export function emitClientArtifacts(
   generateTypes: (path: string, compiled: any) => void,
   generateUtils: (path: string, compiled: any) => void
 ): void {
-  fs.mkdirSync(outDir, { recursive: true });
+  fs.mkdirSync(outDir, {recursive: true});
 
   generateClient(path.join(outDir, "client.ts"), compiled);
   generateTypes(path.join(outDir, "types.ts"), compiled);

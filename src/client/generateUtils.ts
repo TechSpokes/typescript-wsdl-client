@@ -25,7 +25,7 @@ import {error} from "../util/cli.js";
  * 1. A DataTypes interface defining the structure of the metadata
  * 2. A constant containing the actual mappings extracted from the compiled catalog
  *
- * The metadata is critical for proper XML marshalling and unmarshalling, as it enables
+ * The metadata is critical for proper XML marshaling and unmarshalling, as it enables
  * the client to correctly handle XML attributes vs. child elements, maintain type information
  * during recursive processing, and ensure that the XML structure matches the WSDL specification.
  *

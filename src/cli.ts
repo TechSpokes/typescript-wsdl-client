@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// noinspection RequiredAttributes,XmlDeprecatedElement,HtmlDeprecatedTag
+
 /**
  * CLI Entry Point for TypeScript WSDL Client Generator
  *

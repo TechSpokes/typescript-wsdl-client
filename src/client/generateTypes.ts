@@ -24,7 +24,7 @@ import {error} from "../util/cli.js";
  *
  * - Type aliases for simple types (enums, restrictions, etc.)
  * - Interfaces for complex types with proper inheritance
- * - JSDoc annotations with XML metadata for runtime marshalling
+ * - JSDoc annotations with XML metadata for runtime marshaling
  *
  * Key design decisions:
  * - Text node is modeled as "$value" (not "value") to avoid collisions with real elements

@@ -16,8 +16,8 @@ import {generateUtils} from "./client/generateUtils.js";
 import {generateCatalog} from "./compiler/generateCatalog.js";
 import {generateOpenAPI, type GenerateOpenAPIOptions} from "./openapi/generateOpenAPI.js";
 import {generateGateway, type GenerateGatewayOptions} from "./gateway/generateGateway.js";
-import {resolveCompilerOptions, type CompilerOptions} from "./config.js";
-import {success, reportCompilationStats, emitClientArtifacts, reportOpenApiSuccess} from "./util/cli.js";
+import {type CompilerOptions, resolveCompilerOptions} from "./config.js";
+import {emitClientArtifacts, reportCompilationStats, reportOpenApiSuccess, success} from "./util/cli.js";
 
 /**
  * Configuration options for the generation pipeline
@@ -55,7 +55,7 @@ export interface PipelineOptions {
  * @param {PipelineOptions} opts - Configuration options for the pipeline
  * @returns {Promise<{compiled: any; openapiDoc?: any}>} - The compiled catalog and optional OpenAPI document
  */
-export async function runGenerationPipeline(opts: PipelineOptions) {
+export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ compiled: any; openapiDoc?: any; }> {
   // Determine a working directory for the compiler (used for relative path resolution)
   // Use the first available output location as the base
   const workingDir = opts.clientOutDir

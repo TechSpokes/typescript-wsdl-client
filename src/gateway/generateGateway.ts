@@ -25,18 +25,13 @@ import fs from "node:fs";
 import path from "node:path";
 import * as yaml from "js-yaml";
 import {
-  type OpenAPIDocument,
-  determineVersionAndService,
-  isNumericStatus,
-  getJsonSchemaRefName,
   buildParamSchemasForOperation,
+  determineVersionAndService,
+  getJsonSchemaRefName,
+  isNumericStatus,
+  type OpenAPIDocument,
 } from "./helpers.js";
-import {
-  emitModelSchemas,
-  emitOperationSchemas,
-  emitSchemasModule,
-  emitRouteFiles,
-} from "./generators.js";
+import {emitModelSchemas, emitOperationSchemas, emitRouteFiles, emitSchemasModule,} from "./generators.js";
 
 /**
  * Options for gateway code generation

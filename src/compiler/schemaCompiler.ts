@@ -135,7 +135,7 @@ const XS = "http://www.w3.org/2001/XMLSchema";
  * @param {QName} q - Qualified name to convert
  * @returns {string} - String representation of the qualified name
  */
-function qkey(q: QName) {
+function qkey(q: QName): string {
   return `{${q.ns}}${q.local}`;
 }
 
@@ -226,7 +226,7 @@ function collectSecurityFromPolicyNodes(policyNodes: any[]): string[] {
  * 1. Collect and index complexType, simpleType, and element definitions across all schemas.
  * 2. Recursively compile each named type to a TS interface or alias, handling inheritance,
  *    inline definitions, and XSD primitives.
- * 3. Build metadata maps for runtime marshalling (attributes, children, nillable, occurrence).
+ * 3. Build metadata maps for runtime marshaling (attributes, children, nillable, occurrence).
  * 4. Extract WSDL operations: pick the appropriate SOAP binding (v1.1 or v1.2), resolve its
  *    portType reference, then enumerate operations and their soapAction URIs.
  */

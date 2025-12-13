@@ -13,8 +13,7 @@
 import {XMLParser} from "fast-xml-parser";
 import {fetchText} from "./fetch.js";
 import path from "node:path";
-// noinspection ES6UnusedImports
-import {getChildrenWithLocalName, normalizeArray} from "../util/tools.js";
+import {getChildrenWithLocalName} from "../util/tools.js";
 
 /**
  * Represents a single XSD schema document with its associated context
