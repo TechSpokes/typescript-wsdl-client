@@ -1,0 +1,23 @@
+{
+  "name": "gateway-example",
+  "version": "1.0.0",
+  "description": "Example Fastify gateway generated from WSDL",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "tsx ../../src/cli.ts pipeline --wsdl ../minimal/weather.wsdl --out ../../tmp --clean --format json --gateway-out ../../tmp/gateway --gateway-version v1 --gateway-service weather",
+    "dev": "tsx server.ts",
+    "start": "node ../../tmp/gateway/server.js",
+    "build": "tsc --noEmit",
+    "test": "curl -X POST http://localhost:3000/get-city-weather-by-zip -H 'Content-Type: application/json' -d '{\"ZIP\": \"90210\"}'"
+  },
+  "dependencies": {
+    "fastify": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.6.3"
+  }
+}
+

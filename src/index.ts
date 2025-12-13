@@ -14,7 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type {CompilerOptions} from "./config.js";
-import {TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS} from "./config.js";
+import {resolveCompilerOptions} from "./config.js";
 import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
 import {emitTypes} from "./emit/typesEmitter.js";
@@ -23,6 +23,7 @@ import {emitCatalog} from "./emit/catalogEmitter.js";
 import {emitClient} from "./emit/clientEmitter.js";
 
 export {generateOpenAPI} from "./openapi/generateOpenAPI.js";
+export {generateGateway} from "./gateway/generateGateway.js";
 export {runGenerationPipeline} from "./pipeline.js";
 
 // noinspection JSUnusedGlobalSymbols
@@ -50,12 +51,13 @@ export async function compileWsdlToProject(
   input: { wsdl: string; outDir: string; options?: CompilerOptions }
 ): Promise<void> {
   // Merge defaults with overrides, always set wsdl+out
-  const finalOptions: CompilerOptions = {
-    ...TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS,
-    ...(input.options || {}),
-    wsdl: input.wsdl,
-    out: input.outDir,
-  };
+  const finalOptions = resolveCompilerOptions(
+    input.options || {},
+    {
+      wsdl: input.wsdl,
+      out: input.outDir,
+    }
+  );
 
   // Load & compile
   const wsdlCatalog = await loadWsdl(input.wsdl);

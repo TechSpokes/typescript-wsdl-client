@@ -8,6 +8,17 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
+- refactor(cli): extract shared utilities to src/util/cli.ts for better code reuse
+- refactor(config): add resolveCompilerOptions helper for consistent option merging across CLI, pipeline, and API
+- refactor(cli): standardize error handling with handleCLIError utility
+- refactor(cli): consolidate deprecation warnings with warnDeprecated helper
+- refactor(cli): deduplicate status code parsing logic across pipeline and gateway commands
+- refactor(cli): standardize format and validation option resolution
+- refactor(cli): rename hasStandardLayoutArgs to hasRequiredPathArgs for clarity (checks path construction args, not layout)
+- refactor(scripts): simplify npm scripts to smoke:client, smoke:openapi, smoke:pipeline (3 functional smoke tests)
+- refactor(ci): optimize CI to run only smoke:pipeline (complete workflow test covering all three operations: client + openapi + gateway)
+- feat(output): add consistent console output for gateway generation in pipeline and standalone gateway command
+- feat(output): improve pipeline completion message to show which operations were generated (client + OpenAPI + gateway)
 
 ## [0.7.15] – 2025-12-10
 - chore(gitignore): add rule to ignore all temp files

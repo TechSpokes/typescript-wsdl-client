@@ -11,5 +11,11 @@
       "soap": ["src/types/soap.d.ts"]
     }
   },
-  "include": ["tmp/*.ts", "src/types/soap.d.ts"]
+  "include": [
+    "tmp/services/**/*.ts",
+    "tmp/openapi/**/*.ts",
+    "tmp/src/**/*.ts",
+    "tmp/*.ts",
+    "src/types/soap.d.ts"
+  ]
 }

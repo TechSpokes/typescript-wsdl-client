@@ -53,15 +53,16 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run clean && npm run build",
     "test": "exit 0",
-    "smoke": "tsx src/cli.ts --help",
-    "smoke:gen": "rimraf tmp && tsx src/cli.ts --wsdl examples/minimal/weather.wsdl --out tmp && tsc -p tsconfig.smoke.json",
-    "smoke:pipeline": "tsx src/cli.ts pipeline --wsdl examples/minimal/weather.wsdl --out tmp --clean --format both --tag-style service --openapi-out tmp/openapi --servers https://example.com/api",
-    "ci": "npm run build && npm run typecheck && npm run smoke && npm run smoke:gen && npm run smoke:pipeline"
+    "smoke:client": "rimraf tmp && tsx src/cli.ts --wsdl examples/minimal/weather.wsdl --out tmp --service weather --version v1 --catalog && tsc -p tsconfig.smoke.json",
+    "smoke:openapi": "rimraf tmp && tsx src/cli.ts openapi --wsdl examples/minimal/weather.wsdl --out tmp --service weather --version v1 --format json && tsc -p tsconfig.smoke.json",
+    "smoke:pipeline": "rimraf tmp && tsx src/cli.ts pipeline --wsdl examples/minimal/weather.wsdl --out tmp --service weather --version v1 --clean --format json --servers https://example.com/api --gateway-out tmp/gateway && tsc -p tsconfig.smoke.json",
+    "ci": "npm run build && npm run typecheck && npm run smoke:pipeline"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.3.0",
     "@types/yargs": "^17.0.33",
+    "fastify": "^5.2.0",
     "rimraf": "^6.0.0",
     "tsx": "^4.20.0",
     "typescript": "^5.6.3"
