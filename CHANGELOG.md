@@ -8,45 +8,45 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
+- docs(readme): add catalog file organization section with co-location patterns by command
+- docs(readme): add complete gateway command documentation with Fastify integration patterns
+- docs(readme): add programmatic API documentation for all 4 exported functions
+- docs(readme): comprehensive rewrite to document all 5 CLI commands (compile, client, openapi, gateway, pipeline)
+- docs(readme): expand troubleshooting section with catalog location guidance
+- docs(readme): remove inline catalog comments from code blocks for cleaner copy-paste experience
+- docs(readme): standardize all CLI flag names to hyphenated format throughout documentation
+- docs(readme): update all examples to reflect catalog co-location behavior
 - feat(catalog): implement intelligent catalog co-location - defaults to output directory instead of hardcoded tmp/ path
 - feat(cli): client command now defaults catalog to {client-dir}/catalog.json for better organization
 - feat(cli): openapi command now defaults catalog to {openapi-file-dir}/catalog.json for consistency
 - feat(cli): pipeline command uses intelligent cascade for catalog location (client-dir > openapi-dir > gateway-dir > tmp/)
-- fix(cli): correct catalog-file option descriptions to match actual default behavior in client and openapi commands
-- fix(cli): remove unreachable else branch in client command catalog loading logic
-- docs(readme): comprehensive rewrite to document all 5 CLI commands (compile, client, openapi, gateway, pipeline)
-- docs(readme): add complete gateway command documentation with Fastify integration patterns
-- docs(readme): update all examples to reflect catalog co-location behavior
-- docs(readme): add catalog file organization section with co-location patterns by command
-- docs(readme): remove inline catalog comments from code blocks for cleaner copy-paste experience
-- docs(readme): standardize all CLI flag names to hyphenated format throughout documentation
-- docs(readme): add programmatic API documentation for all 4 exported functions
-- docs(readme): expand troubleshooting section with catalog location guidance
-- refactor(scripts): update smoke:gateway to use co-located catalog from client generation
-- refactor(scripts): optimize ci script to run only smoke:pipeline (eliminates redundant smoke test runs)
 - feat(gateway): add YAML OpenAPI file support alongside JSON based on file extension (.yaml/.yml)
-- fix(scripts): update all package.json smoke scripts to use correct CLI flag names (--wsdl-source, --catalog-file, --client-dir, --openapi-file, --gateway-dir, --gateway-service-name, --gateway-version-prefix, --openapi-format, --openapi-servers)
-- refactor(cli)!: standardize all CLI options to lowercase hyphenated format (BREAKING: `--versionTag` → `--version-tag`, `--basePath` → `--base-path`, `--pathStyle` → `--path-style`, `--closedSchemas` → `--closed-schemas`, `--pruneUnusedSchemas` → `--prune-unused-schemas`)
-- refactor(logging): standardize console output with [ERROR], [WARNING], [SUCCESS] prefixes and remove emojis for better terminal compatibility
-- refactor(logging): reduce verbosity by removing individual file write messages, keeping only high-level progress and success indicators
-- refactor(logging): remove inconsistent [wsdl] prefix from loader messages for unified output format
-- refactor(logging): eliminate redundant schema count messages between loader and CLI
-- refactor(logging): remove redundant OpenAPI validation success message (only report validation failures)
-- feat(pipeline): add discovery info messages (schemas, types, operations) matching client command output
-- feat(pipeline): add success messages with output paths for each generation step (client, OpenAPI, gateway)
-- feat(openapi): improve success message to show actual generated file path instead of base directory
 - feat(gateway): ensure gateway success messages always show absolute paths for consistency with other commands
-- refactor(cli): extract shared utilities to src/util/cli.ts for better code reuse
-- refactor(config): add resolveCompilerOptions helper for consistent option merging across CLI, pipeline, and API
-- refactor(cli): standardize error handling with handleCLIError utility
-- refactor(cli): consolidate deprecation warnings with warnDeprecated helper
-- refactor(cli): deduplicate status code parsing logic across pipeline and gateway commands
-- refactor(cli): standardize format and validation option resolution
-- refactor(cli): rename hasStandardLayoutArgs to hasRequiredPathArgs for clarity (checks path construction args, not layout)
-- refactor(scripts): simplify npm scripts to smoke:client, smoke:openapi, smoke:pipeline (3 functional smoke tests)
-- refactor(ci): optimize CI to run only smoke:pipeline (complete workflow test covering all three operations: client + openapi + gateway)
+- feat(openapi): improve success message to show actual generated file path instead of base directory
 - feat(output): add consistent console output for gateway generation in pipeline and standalone gateway command
 - feat(output): improve pipeline completion message to show which operations were generated (client + OpenAPI + gateway)
+- feat(pipeline): add discovery info messages (schemas, types, operations) matching client command output
+- feat(pipeline): add success messages with output paths for each generation step (client, OpenAPI, gateway)
+- fix(cli): correct catalog-file option descriptions to match actual default behavior in client and openapi commands
+- fix(cli): remove unreachable else branch in client command catalog loading logic
+- fix(scripts): update all package.json smoke scripts to use correct CLI flag names (--wsdl-source, --catalog-file, --client-dir, --openapi-file, --gateway-dir, --gateway-service-name, --gateway-version-prefix, --openapi-format, --openapi-servers)
+- refactor(ci): optimize CI to run only smoke:pipeline (complete workflow test covering all three operations: client + openapi + gateway)
+- refactor(cli)!: standardize all CLI options to lowercase hyphenated format (BREAKING: `--versionTag` → `--version-tag`, `--basePath` → `--base-path`, `--pathStyle` → `--path-style`, `--closedSchemas` → `--closed-schemas`, `--pruneUnusedSchemas` → `--prune-unused-schemas`)
+- refactor(cli): consolidate deprecation warnings with warnDeprecated helper
+- refactor(cli): deduplicate status code parsing logic across pipeline and gateway commands
+- refactor(cli): extract shared utilities to src/util/cli.ts for better code reuse
+- refactor(cli): rename hasStandardLayoutArgs to hasRequiredPathArgs for clarity (checks path construction args, not layout)
+- refactor(cli): standardize error handling with handleCLIError utility
+- refactor(cli): standardize format and validation option resolution
+- refactor(config): add resolveCompilerOptions helper for consistent option merging across CLI, pipeline, and API
+- refactor(logging): eliminate redundant schema count messages between loader and CLI
+- refactor(logging): reduce verbosity by removing individual file write messages, keeping only high-level progress and success indicators
+- refactor(logging): remove inconsistent [wsdl] prefix from loader messages for unified output format
+- refactor(logging): remove redundant OpenAPI validation success message (only report validation failures)
+- refactor(logging): standardize console output with [ERROR], [WARNING], [SUCCESS] prefixes and remove emojis for better terminal compatibility
+- refactor(scripts): optimize ci script to run only smoke:pipeline (eliminates redundant smoke test runs)
+- refactor(scripts): simplify npm scripts to smoke:client, smoke:openapi, smoke:pipeline (3 functional smoke tests)
+- refactor(scripts): update smoke:gateway to use co-located catalog from client generation
 
 ## [0.7.15] – 2025-12-10
 - chore(gitignore): add rule to ignore all temp files
