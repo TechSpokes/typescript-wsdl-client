@@ -6,98 +6,8 @@
  * maintainability and consistency.
  */
 import path from "node:path";
+import fs from "node:fs";
 
-/**
- * Check if all required arguments for structured path generation are provided
- *
- * The tool can generate outputs in a structured directory hierarchy using:
- * - --out: Base output directory
- * - --service: Service slug for namespacing
- * - --version: Version slug for versioning
- *
- * This creates paths like: {out}/services/{service}/{version}/ or {out}/openapi/{service}/{version}/
- *
- * @param argv - Parsed arguments object
- * @returns True if all three path construction flags are present and are strings
- */
-export function hasRequiredPathArgs(argv: {
-  out?: unknown;
-  service?: unknown;
-  version?: unknown;
-}): boolean {
-  return (
-    typeof argv.out === "string" &&
-    typeof argv.service === "string" &&
-    typeof argv.version === "string"
-  );
-}
-
-/**
- * Resolve client output directory from CLI arguments
- *
- * Uses explicit --client-out if provided, otherwise constructs path from
- * standard layout flags (--out, --service, --version).
- *
- * @param argv - Parsed arguments object
- * @returns Absolute path to client output directory
- * @throws Error if neither explicit path nor complete standard layout flags are provided
- */
-export function resolveClientOut(argv: {
-  out?: unknown;
-  service?: unknown;
-  version?: unknown;
-  clientOut?: unknown;
-}): string {
-  // Explicit client-out wins when provided
-  if (typeof argv.clientOut === "string" && argv.clientOut.trim()) {
-    return path.resolve(argv.clientOut);
-  }
-
-  if (!hasRequiredPathArgs(argv)) {
-    throw new Error(
-      "Missing required flags for structured paths: --out, --service, --version. " +
-        "Either provide them or explicitly pass --client-out for the client output directory."
-    );
-  }
-
-  const out = String(argv.out);
-  const service = String(argv.service);
-  const version = String(argv.version);
-  return path.resolve(out, "services", service, version);
-}
-
-/**
- * Resolve OpenAPI output base directory from CLI arguments
- *
- * Uses explicit --openapi-out if provided, otherwise constructs path from
- * standard layout flags (--out, --service, --version).
- *
- * @param argv - Parsed arguments object
- * @returns Absolute path to OpenAPI output base
- * @throws Error if neither explicit path nor complete standard layout flags are provided
- */
-export function resolveOpenApiOutBase(argv: {
-  out?: unknown;
-  service?: unknown;
-  version?: unknown;
-  openapiOut?: unknown;
-}): string {
-  if (typeof argv.openapiOut === "string" && argv.openapiOut.trim()) {
-    return path.resolve(argv.openapiOut);
-  }
-
-  if (!hasRequiredPathArgs(argv)) {
-    throw new Error(
-      "Missing required flags for structured paths: --out, --service, --version. " +
-        "Either provide them or explicitly pass --openapi-out for the OpenAPI output base."
-    );
-  }
-
-  const out = String(argv.out);
-  const service = String(argv.service);
-  const version = String(argv.version);
-  return path.resolve(out, "openapi", service, version, "openapi");
-}
 
 /**
  * Parse comma-separated status codes from CLI argument
@@ -200,48 +110,91 @@ export function handleCLIError(errorObj: unknown, exitCode: number = 1): never {
 }
 
 /**
- * Warn about deprecated CLI flags
+ * Handle CLI errors consistently
  *
- * @param flag - Deprecated flag name
- * @param replacement - Recommended replacement (optional)
+ *
+ * @param result - Result from generateOpenAPI containing jsonPath and yamlPath
  */
-export function warnDeprecated(flag: string, replacement?: string): void {
-  const message = replacement
-    ? `${flag} is deprecated; use ${replacement}`
-    : `${flag} is deprecated`;
-  warn(`[deprecation] ${message}`);
+export function reportOpenApiSuccess(result: {
+  jsonPath?: string;
+  yamlPath?: string;
+}): void {
+  const generatedFiles = [result.jsonPath, result.yamlPath].filter(Boolean);
+  if (generatedFiles.length > 0) {
+    const outputPath =
+      generatedFiles.length === 1
+        ? path.resolve(generatedFiles[0]!)
+        : path.resolve(path.dirname(generatedFiles[0]!));
+    success(`Generated OpenAPI specification in ${outputPath}`);
+  }
 }
 
 /**
- * Resolve format option, handling deprecated --yaml flag
+ * Report compilation statistics for user visibility
  *
- * @param argv - Parsed arguments with format and/or yaml flags
- * @returns Resolved format: "json" | "yaml" | "both" | undefined
+ * @param wsdlCatalog - Loaded WSDL catalog with schemas
+ * @param compiled - Compiled catalog with types and operations
  */
-export function resolveFormatOption(argv: {
-  format?: string;
-  yaml?: boolean;
-}): "json" | "yaml" | "both" | undefined {
-  if (argv.yaml && !argv.format) {
-    warnDeprecated("--yaml", "--format yaml or --format both");
-    return "yaml";
-  }
-  return argv.format as "json" | "yaml" | "both" | undefined;
+export function reportCompilationStats(
+  wsdlCatalog: { schemas: any[] },
+  compiled: { types: any[]; operations: any[] }
+): void {
+  info(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
+  info(`Compiled types: ${compiled.types.length}`);
+  info(`Operations: ${compiled.operations.length}`);
 }
 
 /**
- * Resolve validation flag, handling --no-validate override
+ * Emit TypeScript client artifacts (client.ts, types.ts, utils.ts)
  *
- * @param argv - Parsed arguments with validate and/or no-validate flags
- * @returns True if validation should be performed
+ * Note: catalog.json is NOT emitted by this function - it should be handled
+ * separately by the caller using generateCatalog() with explicit --catalog-file path.
+ *
+ * @param outDir - Output directory for client artifacts
+ * @param compiled - Compiled catalog
+ * @param generateClient - Client generator function
+ * @param generateTypes - Types generator function
+ * @param generateUtils - Utils generator function
  */
-export function resolveValidateOption(argv: {
-  validate?: boolean;
-  "no-validate"?: boolean;
-}): boolean {
-  if (argv["no-validate"]) {
-    return false;
-  }
-  return argv.validate !== false;
+export function emitClientArtifacts(
+  outDir: string,
+  compiled: any,
+  generateClient: (path: string, compiled: any) => void,
+  generateTypes: (path: string, compiled: any) => void,
+  generateUtils: (path: string, compiled: any) => void
+): void {
+  fs.mkdirSync(outDir, { recursive: true });
+
+  generateClient(path.join(outDir, "client.ts"), compiled);
+  generateTypes(path.join(outDir, "types.ts"), compiled);
+  generateUtils(path.join(outDir, "utils.ts"), compiled);
+
+
+  success(`Generated TypeScript client in ${outDir}`);
 }
 
+/**
+ * Validate gateway generation requirements
+ *
+ * @param gatewayDir - Gateway output directory (if provided)
+ * @param openapiFile - OpenAPI output path (if provided)
+ * @param gatewayServiceName - Gateway service name (if provided)
+ * @param gatewayVersionPrefix - Gateway version prefix (if provided)
+ * @throws Error if requirements are not met
+ */
+export function validateGatewayRequirements(
+  gatewayDir: string | undefined,
+  openapiFile: string | undefined,
+  gatewayServiceName: string | undefined,
+  gatewayVersionPrefix: string | undefined
+): void {
+  if (!gatewayDir) return; // Gateway not requested, no validation needed
+
+  if (!openapiFile) {
+    handleCLIError("Gateway generation requires OpenAPI generation. Provide --openapi-file.");
+  }
+
+  if (!gatewayServiceName || !gatewayVersionPrefix) {
+    handleCLIError("When --gateway-dir is specified, both --gateway-service-name and --gateway-version-prefix must be provided.");
+  }
+}

@@ -19,7 +19,7 @@ import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
 import {generateTypes} from "./client/generateTypes.js";
 import {generateUtils} from "./client/generateUtils.js";
-import {generateCatalog} from "./client/generateCatalog.js";
+import {generateCatalog} from "./compiler/generateCatalog.js";
 import {generateClient} from "./client/generateClient.js";
 import {info} from "./util/cli.js";
 

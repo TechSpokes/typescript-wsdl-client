@@ -23,6 +23,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import * as yaml from "js-yaml";
 import {
   type OpenAPIDocument,
   determineVersionAndService,
@@ -41,9 +42,10 @@ import {
  * Options for gateway code generation
  *
  * @interface GenerateGatewayOptions
- * @property {string} [openapiFile] - Path to OpenAPI 3.1 JSON file (exclusive with openapiDocument)
+ * @property {string} [openapiFile] - Path to OpenAPI 3.1 JSON or YAML file (exclusive with openapiDocument)
  * @property {any} [openapiDocument] - Pre-loaded OpenAPI document object (exclusive with openapiFile)
  * @property {string} outDir - Output directory for generated gateway code
+ * @property {string} [clientDir] - Path to client directory (where client.ts is located) for importing client code
  * @property {string} [versionSlug] - Version identifier for URN generation (auto-detected if omitted)
  * @property {string} [serviceSlug] - Service identifier for URN generation (auto-detected if omitted)
  * @property {number[]} [defaultResponseStatusCodes] - Status codes to backfill with default response
@@ -53,6 +55,7 @@ export interface GenerateGatewayOptions {
   openapiFile?: string;
   openapiDocument?: any;
   outDir: string;
+  clientDir?: string;
   versionSlug?: string;
   serviceSlug?: string;
   defaultResponseStatusCodes?: number[];
@@ -80,9 +83,18 @@ export interface GenerateGatewayOptions {
  * @throws {Error} If OpenAPI validation fails or contract assumptions are violated
  *
  * @example
- * // From file
+ * // From JSON file
  * await generateGateway({
  *   openapiFile: "openapi.json",
+ *   outDir: "gateway",
+ *   versionSlug: "v1",
+ *   serviceSlug: "weather"
+ * });
+ *
+ * @example
+ * // From YAML file
+ * await generateGateway({
+ *   openapiFile: "openapi.yaml",
  *   outDir: "gateway",
  *   versionSlug: "v1",
  *   serviceSlug: "weather"
@@ -109,7 +121,18 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
   let doc: OpenAPIDocument;
   if (opts.openapiFile) {
     const raw = fs.readFileSync(opts.openapiFile, "utf8");
-    doc = JSON.parse(raw);
+    const ext = path.extname(opts.openapiFile).toLowerCase();
+
+    // Parse based on file extension
+    if (ext === ".yaml" || ext === ".yml") {
+      doc = yaml.load(raw) as OpenAPIDocument;
+    } else if (ext === ".json") {
+      doc = JSON.parse(raw);
+    } else {
+      throw new Error(
+        `Unsupported OpenAPI file extension: ${ext}. Expected .json, .yaml, or .yml`
+      );
+    }
   } else {
     doc = opts.openapiDocument;
   }

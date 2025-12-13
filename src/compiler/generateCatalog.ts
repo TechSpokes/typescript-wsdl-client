@@ -12,7 +12,7 @@
  * - Enabling incremental compilation workflows
  */
 import fs from "node:fs";
-import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
+import type {CompiledCatalog} from "./schemaCompiler.js";
 import {error} from "../util/cli.js";
 
 /**

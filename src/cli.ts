@@ -17,135 +17,210 @@ import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
 import {generateTypes} from "./client/generateTypes.js";
 import {generateUtils} from "./client/generateUtils.js";
-import {generateCatalog} from "./client/generateCatalog.js";
+import {generateCatalog} from "./compiler/generateCatalog.js";
 import {generateClient} from "./client/generateClient.js";
 import {generateOpenAPI} from "./openapi/generateOpenAPI.js";
 import {runGenerationPipeline} from "./pipeline.js";
 import {resolveCompilerOptions} from "./config.js";
 import {
-  resolveClientOut,
-  resolveOpenApiOutBase,
+  emitClientArtifacts,
   handleCLIError,
-  warnDeprecated,
-  resolveFormatOption,
-  resolveValidateOption,
-  parseStatusCodes,
   parseServers,
-  info,
+  parseStatusCodes,
+  reportCompilationStats,
+  reportOpenApiSuccess,
   success,
+  validateGatewayRequirements,
 } from "./util/cli.js";
+import {buildCompilerOptionsFromArgv, buildOpenApiOptionsFromArgv} from "./util/builder.js";
 
 
 // Process command line arguments, removing the first two elements (node executable and script path)
 const rawArgs = hideBin(process.argv);
 
 // ---------------------------------------------------------------------------
-// Client generation (default / legacy entrypoint)
+// Show help if no subcommand provided
 // ---------------------------------------------------------------------------
 
-// If first argument is not a known subcommand, treat this as client generation.
-if (!rawArgs[0] || !["openapi", "pipeline", "gateway", "client"].includes(rawArgs[0])) {
-  const clientArgv = await yargs(rawArgs)
+if (!rawArgs[0] || !["compile", "client", "openapi", "gateway", "pipeline"].includes(rawArgs[0])) {
+  await yargs(rawArgs)
     .version(false)
     .scriptName("wsdl-tsc")
-    .usage("$0 --wsdl <file|url> [options]")
-    .option("wsdl", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
-    // New layout flags
-    .option("out", {type: "string", demandOption: true, desc: "Base output directory (root or legacy client dir)"})
-    .option("service", {type: "string", desc: "Service slug used for folder layout"})
-    .option("version", {type: "string", desc: "Version slug used for folder layout"})
-    .option("client-out", {type: "string", desc: "Explicit client output directory (overrides standard layout)"})
-    // Compiler flags (mirroring original CLI)
-    .option("imports", {
+    .usage("$0 <command> [options]")
+    .command("compile", "Compile WSDL to catalog.json")
+    .command("client", "Generate TypeScript SOAP client from WSDL or catalog")
+    .command("openapi", "Generate OpenAPI specification from WSDL or catalog")
+    .command("gateway", "Generate Fastify gateway from OpenAPI specification")
+    .command("pipeline", "Run full generation pipeline (client + OpenAPI + gateway)")
+    .demandCommand(1, "Please specify a command: compile, client, openapi, gateway, or pipeline")
+    .strict()
+    .help()
+    .parse();
+  process.exit(1);
+}
+
+// ---------------------------------------------------------------------------
+// Compile subcommand - Parse WSDL and generate catalog
+// ---------------------------------------------------------------------------
+
+if (rawArgs[0] === "compile") {
+  const compileArgv = await yargs(rawArgs.slice(1))
+    .version(false)
+    .scriptName("wsdl-tsc compile")
+    .usage("$0 --wsdl-source <file|url> --catalog-file <path> [options]")
+    .option("wsdl-source", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
+    .option("catalog-file", {type: "string", demandOption: true, desc: "Output path for catalog.json"})
+    // Compiler flags
+    .option("import-extensions", {
       type: "string",
       choices: ["js", "ts", "bare"],
       default: "js",
       desc: "Intra-generated import specifiers: 'js', 'ts', or 'bare'.",
     })
-    .option("catalog", {type: "boolean", default: false, desc: "Emit catalog.json for introspection"})
-    .option("attributes-key", {type: "string", default: "$attributes"})
-    .option("client-name", {type: "string"})
-    .option("int64-as", {type: "string", choices: ["string", "number", "bigint"], default: "string"})
-    .option("bigint-as", {type: "string", choices: ["string", "number"], default: "string"})
-    .option("decimal-as", {type: "string", choices: ["string", "number"], default: "string"})
-    .option("date-as", {type: "string", choices: ["string", "Date"], default: "string"})
-    .option("choice", {type: "string", choices: ["all-optional", "union"], default: "all-optional"})
-    .option("fail-on-unresolved", {type: "boolean", default: true})
-    .option("nillable-as-optional", {type: "boolean", default: false})
+    .option("client-attributes-key", {type: "string", default: "$attributes"})
+    .option("client-class-name", {type: "string"})
+    .option("client-int64-as", {type: "string", choices: ["string", "number", "bigint"], default: "string"})
+    .option("client-bigint-as", {type: "string", choices: ["string", "number"], default: "string"})
+    .option("client-decimal-as", {type: "string", choices: ["string", "number"], default: "string"})
+    .option("client-date-as", {type: "string", choices: ["string", "Date"], default: "string"})
+    .option("client-choice-mode", {type: "string", choices: ["all-optional", "union"], default: "all-optional"})
+    .option("client-fail-on-unresolved", {type: "boolean", default: false})
+    .option("client-nillable-as-optional", {type: "boolean", default: false})
     .strict()
     .help()
     .parse();
 
-  // Determine client output directory
-  let clientOutDir: string;
-  const hasServiceOrVersion = !!clientArgv.service || !!clientArgv.version || !!clientArgv.clientOut;
-  try {
-    clientOutDir = resolveClientOut({
-      out: clientArgv.out,
-      service: clientArgv.service,
-      version: clientArgv.version,
-      clientOut: clientArgv.clientOut,
-    });
-  } catch (err) {
-    // For pure legacy usage (no service/version and no client-out), fall back to treating --out as direct client folder
-    if (!hasServiceOrVersion) {
-      warnDeprecated(
-        "Treating --out as direct client folder",
-        "--service/--version or --client-out to opt into the standardized layout"
-      );
-      clientOutDir = path.resolve(String(clientArgv.out));
-    } else {
-      handleCLIError(err);
-    }
-  }
+  const catalogOut = path.resolve(String(compileArgv["catalog-file"]));
 
   // Load WSDL
-  const wsdlCatalog = await loadWsdl(String(clientArgv.wsdl));
+  const wsdlCatalog = await loadWsdl(String(compileArgv["wsdl-source"]));
 
-  // Build compiler options using shared resolver
+  // Build compiler options using shared resolver and builder
   const compilerOptions = resolveCompilerOptions(
     {
-      imports: clientArgv.imports as "js" | "ts" | "bare",
-      catalog: clientArgv.catalog as boolean,
-      primitive: {
-        int64As: clientArgv["int64-as"] as any,
-        bigIntegerAs: clientArgv["bigint-as"] as any,
-        decimalAs: clientArgv["decimal-as"] as any,
-        dateAs: clientArgv["date-as"] as any,
-      },
-      choice: clientArgv.choice as any,
-      failOnUnresolved: clientArgv["fail-on-unresolved"] as boolean,
-      attributesKey: clientArgv["attributes-key"] as string,
-      clientName: clientArgv["client-name"] as string | undefined,
-      nillableAsOptional: clientArgv["nillable-as-optional"] as boolean,
+      ...buildCompilerOptionsFromArgv(compileArgv),
+      catalog: true, // Always emit catalog for compile subcommand
     },
     {
-      wsdl: String(clientArgv.wsdl),
-      out: clientOutDir,
+      wsdl: String(compileArgv["wsdl-source"]),
+      out: path.dirname(catalogOut),
     }
   );
 
   const compiled = compileCatalog(wsdlCatalog, compilerOptions);
 
-  // Report counts of types and operations for user visibility
-  info(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
-  info(`Compiled types: ${compiled.types.length}`);
-  info(`Operations: ${compiled.operations.length}`);
+  // Report compilation statistics
+  reportCompilationStats(wsdlCatalog, compiled);
 
   // Ensure output directory exists
-  fs.mkdirSync(clientOutDir, {recursive: true});
+  fs.mkdirSync(path.dirname(catalogOut), {recursive: true});
 
-  // Emit files (paths relative to clientOutDir)
-  generateClient(path.join(clientOutDir, "client.ts"), compiled);
-  generateTypes(path.join(clientOutDir, "types.ts"), compiled);
-  generateUtils(path.join(clientOutDir, "utils.ts"), compiled);
+  // Emit catalog
+  generateCatalog(catalogOut, compiled);
 
-  // Emit catalog if requested
-  if (compiled.options.catalog) {
-    generateCatalog(path.join(clientOutDir, "catalog.json"), compiled);
+  success(`Compiled catalog written to ${catalogOut}`);
+  process.exit(0);
+}
+
+// ---------------------------------------------------------------------------
+// Client generation subcommand
+// ---------------------------------------------------------------------------
+
+if (rawArgs[0] === "client") {
+  const clientArgv = await yargs(rawArgs.slice(1))
+    .version(false)
+    .scriptName("wsdl-tsc client")
+    .usage("$0 [--wsdl-source <file|url> | --catalog-file <file>] --client-dir <dir> [--catalog-file <path>] [options]")
+    .option("wsdl-source", {
+      type: "string",
+      desc: "Path or URL to the WSDL (exclusive with --catalog-file when used as input)"
+    })
+    .option("catalog-file", {
+      type: "string",
+      desc: "Existing compiled catalog.json, or output path when compiling from WSDL"
+    })
+    .option("client-dir", {
+      type: "string",
+      demandOption: true,
+      desc: "Directory for generated client (client.ts, types.ts, utils.ts)"
+    })
+    // Compiler flags
+    .option("import-extensions", {
+      type: "string",
+      choices: ["js", "ts", "bare"],
+      default: "js",
+      desc: "Intra-generated import specifiers: 'js', 'ts', or 'bare'.",
+    })
+    .option("client-attributes-key", {type: "string", default: "$attributes"})
+    .option("client-class-name", {type: "string"})
+    .option("client-int64-as", {type: "string", choices: ["string", "number", "bigint"], default: "string"})
+    .option("client-bigint-as", {type: "string", choices: ["string", "number"], default: "string"})
+    .option("client-decimal-as", {type: "string", choices: ["string", "number"], default: "string"})
+    .option("client-date-as", {type: "string", choices: ["string", "Date"], default: "string"})
+    .option("client-choice-mode", {type: "string", choices: ["all-optional", "union"], default: "all-optional"})
+    .option("client-fail-on-unresolved", {type: "boolean", default: false})
+    .option("client-nillable-as-optional", {type: "boolean", default: false})
+    .strict()
+    .help()
+    .parse();
+
+  // Validate mutually exclusive options
+  const hasWsdl = !!clientArgv["wsdl-source"];
+  const hasCatalog = !!clientArgv["catalog-file"];
+
+  if (!hasWsdl && !hasCatalog) {
+    handleCLIError("either --wsdl-source or --catalog-file must be provided for client generation");
   }
 
-  success(`Generated TypeScript client in ${clientOutDir}`);
+  const clientOutDir = path.resolve(String(clientArgv["client-dir"]));
+
+  let compiled: any;
+  let catalogOutPath: string | undefined;
+
+  // Determine if catalog-file is input or output based on wsdl-source presence
+  if (hasWsdl && !hasCatalog) {
+    // WSDL provided, no catalog-file: default catalog output to client-dir/catalog.json
+    catalogOutPath = path.join(clientOutDir, "catalog.json");
+  } else if (hasWsdl && hasCatalog) {
+    // Both provided: catalog-file is output path
+    catalogOutPath = path.resolve(String(clientArgv["catalog-file"]));
+  } else if (!hasWsdl && hasCatalog) {
+    // Only catalog-file: it's an input, load it
+    const catalogPath = path.resolve(String(clientArgv["catalog-file"]));
+    const catalogContent = fs.readFileSync(catalogPath, "utf-8");
+    compiled = JSON.parse(catalogContent);
+    success(`Loaded catalog from ${catalogPath}`);
+  }
+
+  // If we need to compile from WSDL
+  if (hasWsdl) {
+    const wsdlCatalog = await loadWsdl(String(clientArgv["wsdl-source"]));
+
+    // Build compiler options using shared resolver and builder
+    const compilerOptions = resolveCompilerOptions(
+      {
+        ...buildCompilerOptionsFromArgv(clientArgv),
+        catalog: true, // Always generate catalog when compiling from WSDL
+      },
+      {
+        wsdl: String(clientArgv["wsdl-source"]),
+        out: clientOutDir,
+      }
+    );
+
+    compiled = compileCatalog(wsdlCatalog, compilerOptions);
+
+    // Report compilation statistics
+    reportCompilationStats(wsdlCatalog, compiled);
+
+    // Emit catalog
+    fs.mkdirSync(path.dirname(catalogOutPath!), {recursive: true});
+    generateCatalog(catalogOutPath!, compiled);
+    success(`Compiled catalog written to ${catalogOutPath}`);
+  }
+
+  // Emit client artifacts (excluding catalog since we already emitted it above if needed)
+  emitClientArtifacts(clientOutDir, compiled, generateClient, generateTypes, generateUtils);
   process.exit(0);
 }
 
@@ -159,278 +234,95 @@ if (rawArgs[0] === "openapi") {
   const openapiArgv = await yargs(rawArgs.slice(1))
     .version(false)
     .scriptName("wsdl-tsc openapi")
-    .usage("$0 --wsdl <file|url> --out <dir> --service <slug> --version <slug> [options]")
-    .option("wsdl", {type: "string", desc: "Path or URL to the WSDL (exclusive with --catalog)"})
-    .option("catalog", {type: "string", desc: "Existing compiled catalog.json (exclusive with --wsdl)"})
-    .option("out", {type: "string", demandOption: true, desc: "Base output directory (root)"})
-    .option("service", {type: "string", demandOption: true, desc: "Service slug used for folder layout"})
-    .option("version", {type: "string", demandOption: true, desc: "Version slug used for folder layout"})
-    .option("openapi-out", {type: "string", desc: "Explicit OpenAPI output base (overrides standard layout)"})
-    .option("format", {
+    .usage("$0 [--wsdl-source <file|url> | --catalog-file <file>] --openapi-file <path> [options]")
+    .option("wsdl-source", {type: "string", desc: "Path or URL to the WSDL (exclusive with --catalog-file)"})
+    .option("catalog-file", {type: "string", desc: "Existing compiled catalog.json (exclusive with --wsdl-source)"})
+    .option("openapi-file", {type: "string", demandOption: true, desc: "Output file or base path for OpenAPI"})
+    .option("openapi-format", {
       type: "string",
       choices: ["json", "yaml", "both"],
       desc: "Output format: json|yaml|both (default json)"
     })
-    .option("yaml", {type: "boolean", default: false, desc: "[DEPRECATED] Use --format yaml or both"})
-    .option("title", {type: "string", desc: "API title (defaults to derived service name)"})
-    .option("version-tag", {type: "string", desc: "API version for info.version (default 0.0.0)"})
-    .option("servers", {type: "string", desc: "Comma-separated server URLs"})
-    .option("base-path", {type: "string", desc: "Base path prefix added before operation segments (e.g. /v1/soap)"})
-    .option("path-style", {
+    .option("openapi-title", {type: "string", desc: "API title (defaults to derived service name)"})
+    .option("openapi-version-tag", {
+      type: "string",
+      desc: "API version tag for info.version (e.g. 1.0.2; default 0.0.0)"
+    })
+    .option("openapi-servers", {type: "string", desc: "Comma-separated server URLs"})
+    .option("openapi-base-path", {
+      type: "string",
+      desc: "Base path prefix added before operation segments (e.g. /v1/soap)"
+    })
+    .option("openapi-path-style", {
       type: "string",
       choices: ["kebab", "asis", "lower"],
       default: "kebab",
       desc: "Path segment style applied to operation names"
     })
-    .option("method", {
+    .option("openapi-default-method", {
       type: "string",
       choices: ["post", "get", "put", "patch", "delete"],
       default: "post",
-      desc: "Default HTTP method for all operations (can be overridden via --ops)"
+      desc: "Default HTTP method for all operations (can be overridden via --openapi-ops-file)"
     })
-    .option("security", {type: "string", desc: "Path to security.json configuration"})
-    .option("tags", {type: "string", desc: "Path to tags.json mapping operation name -> tag"})
-    .option("ops", {
+    .option("openapi-security-file", {type: "string", desc: "Path to security.json configuration"})
+    .option("openapi-tags-file", {type: "string", desc: "Path to tags.json mapping operation name -> tag"})
+    .option("openapi-ops-file", {
       type: "string",
       desc: "Path to ops.json per-operation overrides (method, deprecated, summary, description)"
     })
-    .option("closed-schemas", {
+    .option("openapi-closed-schemas", {
       type: "boolean",
       default: false,
       desc: "Emit additionalProperties:false for object schemas"
     })
-    .option("prune-unused-schemas", {
+    .option("openapi-prune-unused-schemas", {
       type: "boolean",
       default: false,
       desc: "Emit only schemas reachable from operations"
     })
-    .option("validate", {type: "boolean", default: true, desc: "Validate generated document (always on unless false)"})
-    .option("no-validate", {type: "boolean", default: false, desc: "Alias for --validate=false"})
-    .option("tag-style", {
+    .option("openapi-tag-style", {
       type: "string",
       choices: ["default", "first", "service"],
       default: "default",
-      desc: "Heuristic for inferring tags when no --tags map provided"
+      desc: "Heuristic for inferring tags when no map is provided"
     })
-    .option("envelope-namespace", {
+    .option("openapi-envelope-namespace", {
       type: "string",
-      desc: "Override the standard response envelope base name segment (default <ServiceName>ResponseEnvelope or provided segment alone)"
+      desc: "Override the standard response envelope base name segment"
     })
-    .option("error-namespace", {
+    .option("openapi-error-namespace", {
       type: "string",
-      desc: "Override the standard error object schema name segment (default <ServiceName>ErrorObject or provided segment alone)"
+      desc: "Override the standard error object schema name segment"
     })
     .strict()
     .help()
     .parse();
 
-  // Handle deprecated and conflicting options
-  const format = resolveFormatOption(openapiArgv);
-  const skipValidate = !resolveValidateOption(openapiArgv);
+  // Resolve format
+  const format = (openapiArgv["openapi-format"] as "json" | "yaml" | "both") ?? "json";
 
-  if (!openapiArgv.wsdl && !openapiArgv.catalog) {
-    handleCLIError("either --wsdl or --catalog must be provided for openapi generation");
+  if (!openapiArgv["wsdl-source"] && !openapiArgv["catalog-file"]) {
+    handleCLIError("either --wsdl-source or --catalog-file must be provided for openapi generation");
   }
-  if (openapiArgv.wsdl && openapiArgv.catalog) {
-    handleCLIError("provide only one of --wsdl or --catalog, not both");
+  if (openapiArgv["wsdl-source"] && openapiArgv["catalog-file"]) {
+    handleCLIError("provide only one of --wsdl-source or --catalog-file, not both");
   }
 
-  const servers = parseServers(openapiArgv.servers as string | undefined);
+  const servers = parseServers(openapiArgv["openapi-servers"] as string | undefined);
+  const outBase = path.resolve(String(openapiArgv["openapi-file"]));
 
-  let outBase: string;
-  try {
-    outBase = resolveOpenApiOutBase({
-      out: openapiArgv.out,
-      service: openapiArgv.service,
-      version: openapiArgv.version,
-      openapiOut: openapiArgv.openapiOut,
-    });
-  } catch (err) {
-    handleCLIError(err);
-  }
+  const openApiOptions = buildOpenApiOptionsFromArgv(openapiArgv, format, servers);
 
   const result = await generateOpenAPI({
-    wsdl: openapiArgv.wsdl as string | undefined,
-    catalogFile: openapiArgv.catalog as string | undefined,
+    ...openApiOptions,
+    catalogFile: openapiArgv["catalog-file"] as string | undefined,
     outFile: outBase,
-    title: openapiArgv.title as string | undefined,
-    version: (openapiArgv["version-tag"] as string | undefined) || undefined,
-    servers,
-    basePath: openapiArgv["base-path"] as string | undefined,
-    pathStyle: openapiArgv["path-style"] as any,
-    defaultMethod: openapiArgv.method as string | undefined,
-    securityConfigFile: openapiArgv.security as string | undefined,
-    tagsFile: openapiArgv.tags as string | undefined,
-    opsFile: openapiArgv.ops as string | undefined,
-    closedSchemas: openapiArgv["closed-schemas"] as boolean,
-    pruneUnusedSchemas: openapiArgv["prune-unused-schemas"] as boolean,
-    format,
-    skipValidate,
-    tagStyle: openapiArgv["tag-style"] as any,
-    envelopeNamespace: openapiArgv["envelope-namespace"] as string | undefined,
-    errorNamespace: openapiArgv["error-namespace"] as string | undefined,
+    wsdl: openapiArgv["wsdl-source"] as string | undefined,
   });
 
-  // Report success with actual output path
-  const generatedFiles = [result.jsonPath, result.yamlPath].filter(Boolean);
-  if (generatedFiles.length > 0) {
-    const outputPath = generatedFiles.length === 1
-      ? generatedFiles[0]!
-      : path.dirname(generatedFiles[0]!);
-    success(`Generated OpenAPI specification in ${outputPath}`);
-  }
-  process.exit(0);
-}
-
-if (rawArgs[0] === "pipeline") {
-  const pipelineArgv = await yargs(rawArgs.slice(1))
-    .version(false)
-    .scriptName("wsdl-tsc pipeline")
-    .usage("$0 --wsdl <file|url> --out <dir> [--service <slug> --version <slug>] [options]")
-    .option("wsdl", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
-    .option("out", {type: "string", demandOption: true, desc: "Base output directory (root)"})
-    .option("service", {type: "string", desc: "Service slug used for folder layout (optional for legacy mode)"})
-    .option("version", {type: "string", desc: "Version slug used for folder layout (optional for legacy mode)"})
-    .option("clean", {
-      type: "boolean",
-      default: false,
-      desc: "Remove existing contents of --out before generation (safety: will refuse if --out is project root)"
-    })
-    // Compiler flags
-    .option("imports", {type: "string", choices: ["js", "ts", "bare"], default: "js"})
-    .option("catalog", {type: "boolean", default: true})
-    .option("attributes-key", {type: "string", default: "$attributes"})
-    .option("int64-as", {type: "string", choices: ["string", "number", "bigint"], default: "string"})
-    .option("bigint-as", {type: "string", choices: ["string", "number"], default: "string"})
-    .option("decimal-as", {type: "string", choices: ["string", "number"], default: "string"})
-    .option("date-as", {type: "string", choices: ["string", "Date"], default: "string"})
-    .option("choice", {type: "string", choices: ["all-optional", "union"], default: "all-optional"})
-    .option("fail-on-unresolved", {type: "boolean", default: false})
-    .option("nillable-as-optional", {type: "boolean", default: false})
-    // OpenAPI flags
-    .option("openapi-out", {type: "string", desc: "Output base or file for OpenAPI (if omitted chooses openapi.json)"})
-    .option("format", {type: "string", choices: ["json", "yaml", "both"], desc: "OpenAPI output format (default json)"})
-    .option("yaml", {type: "boolean", default: false, desc: "[DEPRECATED] Use --format yaml or both"})
-    .option("validate", {type: "boolean", default: true, desc: "Validate OpenAPI output"})
-    .option("no-validate", {type: "boolean", default: false, desc: "Alias for --validate=false"})
-    .option("tag-style", {type: "string", choices: ["default", "first", "service"], default: "default"})
-    .option("servers", {type: "string"})
-    .option("base-path", {type: "string"})
-    .option("path-style", {type: "string", choices: ["kebab", "asis", "lower"], default: "kebab"})
-    .option("method", {type: "string", choices: ["post", "get", "put", "patch", "delete"], default: "post"})
-    .option("security", {type: "string"})
-    .option("tags", {type: "string"})
-    .option("ops", {type: "string"})
-    .option("closed-schemas", {type: "boolean", default: false})
-    .option("prune-unused-schemas", {type: "boolean", default: false})
-    // Envelope feature flags
-    .option("envelope-namespace", {type: "string"})
-    .option("error-namespace", {type: "string"})
-    // Gateway flags
-    .option("gateway-out", {type: "string", desc: "Output directory for gateway code (enables gateway generation)"})
-    .option("gateway-version", {
-      type: "string",
-      desc: "Version slug for gateway URN generation (auto-detected if omitted)"
-    })
-    .option("gateway-service", {
-      type: "string",
-      desc: "Service slug for gateway URN generation (auto-detected if omitted)"
-    })
-    .option("gateway-default-response-status-codes", {
-      type: "string",
-      desc: "Comma-separated status codes for gateway (default: 200,400,401,403,404,409,422,429,500,502,503,504)"
-    })
-    .strict()
-    .help()
-    .parse();
-
-  // Handle deprecated and conflicting options
-  const format = resolveFormatOption(pipelineArgv);
-  const skipValidate = !resolveValidateOption(pipelineArgv);
-
-  const outRoot = path.resolve(String(pipelineArgv.out));
-  const serviceSlug = pipelineArgv.service as string | undefined;
-  const versionSlug = pipelineArgv.version as string | undefined;
-  const hasSlugs = !!serviceSlug && !!versionSlug;
-
-  if (pipelineArgv.clean) {
-    const projectRoot = path.resolve(process.cwd());
-    if (outRoot === projectRoot) {
-      handleCLIError("Refusing to clean project root. Choose a subdirectory for --out.", 2);
-    }
-    if (fs.existsSync(outRoot)) {
-      fs.rmSync(outRoot, {recursive: true, force: true});
-    }
-  }
-
-  const servers = parseServers(pipelineArgv.servers as string | undefined);
-
-  // Derive OpenAPI output base when not explicitly provided and slugs are available
-  const explicitOpenapiOut = pipelineArgv["openapi-out"] as string | undefined;
-  const effectiveOpenapiOut = explicitOpenapiOut
-    ? explicitOpenapiOut
-    : (hasSlugs ? path.join(outRoot, "openapi", serviceSlug!, versionSlug!, "openapi") : undefined);
-
-  // Parse gateway default response status codes if provided
-  let gatewayDefaultResponseStatusCodes: number[] | undefined;
-  if (pipelineArgv["gateway-default-response-status-codes"]) {
-    try {
-      gatewayDefaultResponseStatusCodes = parseStatusCodes(
-        String(pipelineArgv["gateway-default-response-status-codes"]),
-        "--gateway-default-response-status-codes"
-      );
-    } catch (err) {
-      handleCLIError(err);
-    }
-  }
-
-  const explicitGatewayOut = pipelineArgv["gateway-out"] as string | undefined;
-  const effectiveGatewayOut = explicitGatewayOut
-    ? explicitGatewayOut
-    : (hasSlugs ? path.join(outRoot, "src", versionSlug!, serviceSlug!) : undefined);
-
-  await runGenerationPipeline({
-    wsdl: pipelineArgv.wsdl as string,
-    outDir: outRoot,
-    compiler: {
-      imports: pipelineArgv.imports as any,
-      catalog: pipelineArgv.catalog as boolean,
-      attributesKey: pipelineArgv["attributes-key"] as string,
-      primitive: {
-        int64As: pipelineArgv["int64-as"] as any,
-        bigIntegerAs: pipelineArgv["bigint-as"] as any,
-        decimalAs: pipelineArgv["decimal-as"] as any,
-        dateAs: pipelineArgv["date-as"] as any,
-      },
-      choice: pipelineArgv.choice as any,
-      failOnUnresolved: pipelineArgv["fail-on-unresolved"] as boolean,
-      nillableAsOptional: pipelineArgv["nillable-as-optional"] as boolean,
-    },
-    openapi: {
-      outFile: effectiveOpenapiOut,
-      format,
-      skipValidate,
-      tagStyle: pipelineArgv["tag-style"] as any,
-      servers,
-      basePath: pipelineArgv["base-path"] as string | undefined,
-      pathStyle: pipelineArgv["path-style"] as any,
-      defaultMethod: pipelineArgv.method as string,
-      securityConfigFile: pipelineArgv.security as string | undefined,
-      tagsFile: pipelineArgv.tags as string | undefined,
-      opsFile: pipelineArgv.ops as string | undefined,
-      closedSchemas: pipelineArgv["closed-schemas"] as boolean,
-      pruneUnusedSchemas: pipelineArgv["prune-unused-schemas"] as boolean,
-      envelopeNamespace: pipelineArgv["envelope-namespace"] as string | undefined,
-      errorNamespace: pipelineArgv["error-namespace"] as string | undefined,
-    },
-    gateway: effectiveGatewayOut ? {
-      outDir: effectiveGatewayOut,
-      versionSlug: (pipelineArgv["gateway-version"] as string | undefined) || versionSlug,
-      serviceSlug: (pipelineArgv["gateway-service"] as string | undefined) || serviceSlug,
-      defaultResponseStatusCodes: gatewayDefaultResponseStatusCodes,
-    } : undefined,
-  });
-
+  // Report success
+  reportOpenApiSuccess(result);
   process.exit(0);
 }
 
@@ -446,32 +338,39 @@ if (rawArgs[0] === "gateway") {
   const gatewayArgv = await yargs(rawArgs.slice(1))
     .version(false)
     .scriptName("wsdl-tsc gateway")
-    .usage("$0 --openapi <file> --out <dir> [options]")
-    .option("openapi", {
+    .usage("$0 --openapi-file <file> --client-dir <dir> --gateway-dir <dir> --gateway-service-name <slug> --gateway-version-prefix <slug> [options]")
+    .option("openapi-file", {
       type: "string",
       demandOption: true,
-      desc: "Path to OpenAPI 3.1 JSON file"
+      desc: "Path to OpenAPI 3.1 JSON/YAML file"
     })
-    .option("out", {
+    .option("client-dir", {
+      type: "string",
+      demandOption: true,
+      desc: "Path to client directory (where client.ts is located)"
+    })
+    .option("gateway-dir", {
       type: "string",
       demandOption: true,
       desc: "Output directory for gateway code"
     })
-    .option("version", {
+    .option("gateway-version-prefix", {
       type: "string",
-      desc: "Version slug for URN generation (auto-detected if omitted)"
+      demandOption: true,
+      desc: "Version prefix for URN generation (e.g. v1, v2, urn:1.0.2:schema)"
     })
-    .option("service", {
+    .option("gateway-service-name", {
       type: "string",
-      desc: "Service slug for URN generation (auto-detected if omitted)"
+      demandOption: true,
+      desc: "Service identifier for URN generation"
     })
-    .option("imports", {
+    .option("import-extensions", {
       type: "string",
       choices: ["js", "ts", "bare"],
       default: "js",
-      desc: "Import-extension mode for generated TypeScript modules (mirrors global --imports)",
+      desc: "Import-extension mode for generated TypeScript modules",
     })
-    .option("default-response-status-codes", {
+    .option("gateway-default-status-codes", {
       type: "string",
       desc: "Comma-separated status codes to backfill with default response (default: 200,400,401,403,404,409,422,429,500,502,503,504)"
     })
@@ -481,28 +380,192 @@ if (rawArgs[0] === "gateway") {
 
   // Parse default response status codes
   let defaultResponseStatusCodes: number[] | undefined;
-  if (gatewayArgv["default-response-status-codes"]) {
+  if (gatewayArgv["gateway-default-status-codes"]) {
     try {
       defaultResponseStatusCodes = parseStatusCodes(
-        String(gatewayArgv["default-response-status-codes"]),
-        "--default-response-status-codes"
+        String(gatewayArgv["gateway-default-status-codes"]),
+        "--gateway-default-status-codes"
       );
     } catch (err) {
       handleCLIError(err);
     }
   }
 
-  // Generate gateway code
-  const outDir = path.resolve(gatewayArgv.out as string);
+  const outDir = path.resolve(gatewayArgv["gateway-dir"] as string);
+  const clientDir = path.resolve(gatewayArgv["client-dir"] as string);
+
   await generateGateway({
-    openapiFile: gatewayArgv.openapi as string,
+    openapiFile: gatewayArgv["openapi-file"] as string,
     outDir,
-    versionSlug: gatewayArgv.version as string | undefined,
-    serviceSlug: gatewayArgv.service as string | undefined,
+    clientDir,
+    versionSlug: gatewayArgv["gateway-version-prefix"] as string,
+    serviceSlug: gatewayArgv["gateway-service-name"] as string,
     defaultResponseStatusCodes,
-    imports: gatewayArgv.imports as "js" | "ts" | "bare",
+    imports: gatewayArgv["import-extensions"] as "js" | "ts" | "bare",
   });
 
   success(`Gateway code generated in ${outDir}`);
+  process.exit(0);
+}
+
+if (rawArgs[0] === "pipeline") {
+  const pipelineArgv = await yargs(rawArgs.slice(1))
+    .version(false)
+    .scriptName("wsdl-tsc pipeline")
+    .usage("$0 --wsdl-source <file|url> [--client-dir <dir>] [--openapi-file <path>] [--gateway-dir <dir> --gateway-service-name <slug> --gateway-version-prefix <slug>] [--catalog-file <path>] [options]")
+    .option("wsdl-source", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
+    // Per-artifact outputs
+    .option("client-dir", {
+      type: "string",
+      desc: "Output directory for generated client (client.ts, types.ts, utils.ts)"
+    })
+    .option("openapi-file", {
+      type: "string",
+      desc: "Output base or file for OpenAPI (enables OpenAPI generation when provided)"
+    })
+    .option("gateway-dir", {
+      type: "string",
+      desc: "Output directory for gateway code (enables gateway generation when provided)"
+    })
+    .option("catalog-file", {
+      type: "string",
+      desc: "Output path for catalog.json (default: {client-dir}/catalog.json if client-dir provided, otherwise required)"
+    })
+    .option("clean", {
+      type: "boolean",
+      default: false,
+      desc: "Remove existing contents of the client output directory before generation (safety: will refuse if it resolves to project root)"
+    })
+    // Compiler flags
+    .option("import-extensions", {type: "string", choices: ["js", "ts", "bare"], default: "js"})
+    .option("client-attributes-key", {type: "string", default: "$attributes"})
+    .option("client-class-name", {type: "string"})
+    .option("client-bigint-as", {type: "string", choices: ["string", "number"], default: "string"})
+    .option("client-choice-mode", {type: "string", choices: ["all-optional", "union"], default: "all-optional"})
+    .option("client-date-as", {type: "string", choices: ["string", "Date"], default: "string"})
+    .option("client-decimal-as", {type: "string", choices: ["string", "number"], default: "string"})
+    .option("client-fail-on-unresolved", {type: "boolean", default: false})
+    .option("client-int64-as", {type: "string", choices: ["string", "number", "bigint"], default: "string"})
+    .option("client-nillable-as-optional", {type: "boolean", default: false})
+    // OpenAPI flags
+    .option("openapi-format", {
+      type: "string",
+      choices: ["json", "yaml", "both"],
+      desc: "OpenAPI output format (default json)"
+    })
+    .option("openapi-title", {type: "string"})
+    .option("openapi-version-tag", {type: "string"})
+    .option("openapi-tag-style", {type: "string", choices: ["default", "first", "service"], default: "default"})
+    .option("openapi-servers", {type: "string"})
+    .option("openapi-base-path", {type: "string"})
+    .option("openapi-path-style", {type: "string", choices: ["kebab", "asis", "lower"], default: "kebab"})
+    .option("openapi-default-method", {
+      type: "string",
+      choices: ["post", "get", "put", "patch", "delete"],
+      default: "post"
+    })
+    .option("openapi-security-file", {type: "string"})
+    .option("openapi-tags-file", {type: "string"})
+    .option("openapi-ops-file", {type: "string"})
+    .option("openapi-closed-schemas", {type: "boolean", default: false})
+    .option("openapi-prune-unused-schemas", {type: "boolean", default: false})
+    .option("openapi-envelope-namespace", {type: "string"})
+    .option("openapi-error-namespace", {type: "string"})
+    // Gateway flags
+    .option("gateway-service-name", {
+      type: "string",
+      desc: "Service name for gateway URN generation (required when --gateway-dir is provided)"
+    })
+    .option("gateway-version-prefix", {
+      type: "string",
+      desc: "Version prefix for gateway URN generation (required when --gateway-dir is provided)"
+    })
+    .option("gateway-default-status-codes", {
+      type: "string",
+      desc: "Comma-separated status codes for gateway (default: 200,400,401,403,404,409,422,429,500,502,503,504)"
+    })
+    .strict()
+    .help()
+    .parse();
+
+  const format = (pipelineArgv["openapi-format"] as "json" | "yaml" | "both") ?? "json";
+
+  const clientOut = pipelineArgv["client-dir"] as string | undefined;
+  const openapiOut = pipelineArgv["openapi-file"] as string | undefined;
+  const gatewayOut = pipelineArgv["gateway-dir"] as string | undefined;
+  const catalogOutArg = pipelineArgv["catalog-file"] as string | undefined;
+
+  if (!clientOut && !openapiOut && !gatewayOut) {
+    handleCLIError("At least one of --catalog-file, --client-dir, --openapi-file, or --gateway-dir must be provided for pipeline generation.");
+  }
+
+  // Determine catalog output path (always required since we always compile WSDL)
+  let catalogOut: string;
+  if (catalogOutArg) {
+    catalogOut = path.resolve(catalogOutArg);
+  } else if (clientOut) {
+    catalogOut = path.join(path.resolve(clientOut), "catalog.json");
+  } else {
+    handleCLIError("--catalog-file must be provided when --client-dir is not specified.");
+  }
+
+  // Handle --clean flag for client output
+  if (pipelineArgv.clean && clientOut) {
+    const clientOutDir = path.resolve(clientOut);
+    const projectRoot = path.resolve(process.cwd());
+    if (clientOutDir === projectRoot) {
+      handleCLIError("Refusing to clean project root. Choose a subdirectory for --client-dir.", 2);
+    }
+    if (fs.existsSync(clientOutDir)) {
+      fs.rmSync(clientOutDir, {recursive: true, force: true});
+    }
+  }
+
+  const servers = parseServers(pipelineArgv["openapi-servers"] as string | undefined);
+
+  // Validate gateway requirements
+  validateGatewayRequirements(
+    gatewayOut,
+    openapiOut,
+    pipelineArgv["gateway-service-name"] as string | undefined,
+    pipelineArgv["gateway-version-prefix"] as string | undefined
+  );
+
+  // Parse gateway default response status codes if provided
+  let gatewayDefaultResponseStatusCodes: number[] | undefined;
+  if (pipelineArgv["gateway-default-status-codes"]) {
+    try {
+      gatewayDefaultResponseStatusCodes = parseStatusCodes(
+        String(pipelineArgv["gateway-default-status-codes"]),
+        "--gateway-default-status-codes"
+      );
+    } catch (err) {
+      handleCLIError(err);
+    }
+  }
+
+  // Build options using helpers
+  const compilerOptions = buildCompilerOptionsFromArgv(pipelineArgv);
+  const openApiOptions = openapiOut
+    ? buildOpenApiOptionsFromArgv(pipelineArgv, format, servers)
+    : undefined;
+
+  await runGenerationPipeline({
+    wsdl: pipelineArgv["wsdl-source"] as string,
+    clientOutDir: clientOut ? path.resolve(clientOut) : undefined,
+    catalogOut,
+    compiler: compilerOptions,
+    openapi: openApiOptions ? {
+      ...openApiOptions,
+      outFile: path.resolve(openapiOut!),
+    } : undefined,
+    gateway: gatewayOut ? {
+      defaultResponseStatusCodes: gatewayDefaultResponseStatusCodes,
+      outDir: path.resolve(gatewayOut),
+      serviceSlug: pipelineArgv["gateway-service-name"] as string,
+      versionSlug: pipelineArgv["gateway-version-prefix"] as string,
+    } : undefined,
+  });
+
   process.exit(0);
 }

@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.7.15",
+  "version": "0.8.0",
   "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
   "keywords": [
     "wsdl",
@@ -53,10 +53,12 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run clean && npm run build",
     "test": "exit 0",
-    "smoke:client": "rimraf tmp && tsx src/cli.ts --wsdl examples/minimal/weather.wsdl --out tmp --service weather --version v1 --catalog && tsc -p tsconfig.smoke.json",
-    "smoke:openapi": "rimraf tmp && tsx src/cli.ts openapi --wsdl examples/minimal/weather.wsdl --out tmp --service weather --version v1 --format json && tsc -p tsconfig.smoke.json",
-    "smoke:pipeline": "rimraf tmp && tsx src/cli.ts pipeline --wsdl examples/minimal/weather.wsdl --out tmp --service weather --version v1 --clean --format json --servers https://example.com/api --gateway-out tmp/gateway && tsc -p tsconfig.smoke.json",
-    "ci": "npm run build && npm run typecheck && npm run smoke:pipeline"
+    "smoke:compile": "rimraf tmp && tsx src/cli.ts compile --wsdl-source examples/minimal/weather.wsdl --catalog-file tmp/catalog.json",
+    "smoke:client": "rimraf tmp && tsx src/cli.ts client --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --catalog-file tmp/client/catalog.json && tsc -p tsconfig.smoke.json",
+    "smoke:openapi": "rimraf tmp && tsx src/cli.ts openapi --wsdl-source examples/minimal/weather.wsdl --openapi-file tmp/openapi.json --openapi-format json && tsc -p tsconfig.smoke.json",
+    "smoke:gateway": "rimraf tmp && tsx src/cli.ts client --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --catalog-file tmp/client/catalog.json && tsx src/cli.ts openapi --wsdl-source examples/minimal/weather.wsdl --openapi-file tmp/openapi.json --openapi-format json && tsx src/cli.ts gateway --openapi-file tmp/openapi.json --client-dir tmp/client --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 && tsc -p tsconfig.smoke.json",
+    "smoke:pipeline": "rimraf tmp && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --catalog-file tmp/client/catalog.json --openapi-file tmp/openapi.json --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --openapi-servers https://example.com/api && tsc -p tsconfig.smoke.json",
+    "ci": "npm run build && npm run typecheck && npm run smoke:compile && npm run smoke:client && npm run smoke:openapi && npm run smoke:gateway && npm run smoke:pipeline"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

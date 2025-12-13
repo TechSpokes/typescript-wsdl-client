@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
+- feat(gateway): add YAML OpenAPI file support alongside JSON based on file extension (.yaml/.yml)
+- fix(scripts): update all package.json smoke scripts to use correct CLI flag names (--wsdl-source, --catalog-file, --client-dir, --openapi-file, --gateway-dir, --gateway-service-name, --gateway-version-prefix, --openapi-format, --openapi-servers)
 - refactor(cli)!: standardize all CLI options to lowercase hyphenated format (BREAKING: `--versionTag` → `--version-tag`, `--basePath` → `--base-path`, `--pathStyle` → `--path-style`, `--closedSchemas` → `--closed-schemas`, `--pruneUnusedSchemas` → `--prune-unused-schemas`)
 - refactor(logging): standardize console output with [ERROR], [WARNING], [SUCCESS] prefixes and remove emojis for better terminal compatibility
 - refactor(logging): reduce verbosity by removing individual file write messages, keeping only high-level progress and success indicators
