@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
+- refactor(cli)!: standardize all CLI options to lowercase hyphenated format (BREAKING: `--versionTag` → `--version-tag`, `--basePath` → `--base-path`, `--pathStyle` → `--path-style`, `--closedSchemas` → `--closed-schemas`, `--pruneUnusedSchemas` → `--prune-unused-schemas`)
 - refactor(logging): standardize console output with [ERROR], [WARNING], [SUCCESS] prefixes and remove emojis for better terminal compatibility
 - refactor(logging): reduce verbosity by removing individual file write messages, keeping only high-level progress and success indicators
 - refactor(logging): remove inconsistent [wsdl] prefix from loader messages for unified output format

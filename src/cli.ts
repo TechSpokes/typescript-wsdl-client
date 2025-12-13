@@ -173,10 +173,10 @@ if (rawArgs[0] === "openapi") {
     })
     .option("yaml", {type: "boolean", default: false, desc: "[DEPRECATED] Use --format yaml or both"})
     .option("title", {type: "string", desc: "API title (defaults to derived service name)"})
-    .option("versionTag", {type: "string", desc: "API version for info.version (default 0.0.0)"})
+    .option("version-tag", {type: "string", desc: "API version for info.version (default 0.0.0)"})
     .option("servers", {type: "string", desc: "Comma-separated server URLs"})
-    .option("basePath", {type: "string", desc: "Base path prefix added before operation segments (e.g. /v1/soap)"})
-    .option("pathStyle", {
+    .option("base-path", {type: "string", desc: "Base path prefix added before operation segments (e.g. /v1/soap)"})
+    .option("path-style", {
       type: "string",
       choices: ["kebab", "asis", "lower"],
       default: "kebab",
@@ -194,12 +194,12 @@ if (rawArgs[0] === "openapi") {
       type: "string",
       desc: "Path to ops.json per-operation overrides (method, deprecated, summary, description)"
     })
-    .option("closedSchemas", {
+    .option("closed-schemas", {
       type: "boolean",
       default: false,
       desc: "Emit additionalProperties:false for object schemas"
     })
-    .option("pruneUnusedSchemas", {
+    .option("prune-unused-schemas", {
       type: "boolean",
       default: false,
       desc: "Emit only schemas reachable from operations"
@@ -254,16 +254,16 @@ if (rawArgs[0] === "openapi") {
     catalogFile: openapiArgv.catalog as string | undefined,
     outFile: outBase,
     title: openapiArgv.title as string | undefined,
-    version: (openapiArgv.versionTag as string | undefined) || undefined,
+    version: (openapiArgv["version-tag"] as string | undefined) || undefined,
     servers,
-    basePath: openapiArgv.basePath as string | undefined,
-    pathStyle: openapiArgv.pathStyle as any,
+    basePath: openapiArgv["base-path"] as string | undefined,
+    pathStyle: openapiArgv["path-style"] as any,
     defaultMethod: openapiArgv.method as string | undefined,
     securityConfigFile: openapiArgv.security as string | undefined,
     tagsFile: openapiArgv.tags as string | undefined,
     opsFile: openapiArgv.ops as string | undefined,
-    closedSchemas: openapiArgv.closedSchemas as boolean,
-    pruneUnusedSchemas: openapiArgv.pruneUnusedSchemas as boolean,
+    closedSchemas: openapiArgv["closed-schemas"] as boolean,
+    pruneUnusedSchemas: openapiArgv["prune-unused-schemas"] as boolean,
     format,
     skipValidate,
     tagStyle: openapiArgv["tag-style"] as any,
@@ -315,14 +315,14 @@ if (rawArgs[0] === "pipeline") {
     .option("no-validate", {type: "boolean", default: false, desc: "Alias for --validate=false"})
     .option("tag-style", {type: "string", choices: ["default", "first", "service"], default: "default"})
     .option("servers", {type: "string"})
-    .option("basePath", {type: "string"})
-    .option("pathStyle", {type: "string", choices: ["kebab", "asis", "lower"], default: "kebab"})
+    .option("base-path", {type: "string"})
+    .option("path-style", {type: "string", choices: ["kebab", "asis", "lower"], default: "kebab"})
     .option("method", {type: "string", choices: ["post", "get", "put", "patch", "delete"], default: "post"})
     .option("security", {type: "string"})
     .option("tags", {type: "string"})
     .option("ops", {type: "string"})
-    .option("closedSchemas", {type: "boolean", default: false})
-    .option("pruneUnusedSchemas", {type: "boolean", default: false})
+    .option("closed-schemas", {type: "boolean", default: false})
+    .option("prune-unused-schemas", {type: "boolean", default: false})
     // Envelope feature flags
     .option("envelope-namespace", {type: "string"})
     .option("error-namespace", {type: "string"})
@@ -412,14 +412,14 @@ if (rawArgs[0] === "pipeline") {
       skipValidate,
       tagStyle: pipelineArgv["tag-style"] as any,
       servers,
-      basePath: pipelineArgv.basePath as string | undefined,
-      pathStyle: pipelineArgv.pathStyle as any,
+      basePath: pipelineArgv["base-path"] as string | undefined,
+      pathStyle: pipelineArgv["path-style"] as any,
       defaultMethod: pipelineArgv.method as string,
       securityConfigFile: pipelineArgv.security as string | undefined,
       tagsFile: pipelineArgv.tags as string | undefined,
       opsFile: pipelineArgv.ops as string | undefined,
-      closedSchemas: pipelineArgv.closedSchemas as boolean,
-      pruneUnusedSchemas: pipelineArgv.pruneUnusedSchemas as boolean,
+      closedSchemas: pipelineArgv["closed-schemas"] as boolean,
+      pruneUnusedSchemas: pipelineArgv["prune-unused-schemas"] as boolean,
       envelopeNamespace: pipelineArgv["envelope-namespace"] as string | undefined,
       errorNamespace: pipelineArgv["error-namespace"] as string | undefined,
     },
