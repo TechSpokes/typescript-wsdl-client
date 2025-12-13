@@ -1,5 +1,5 @@
 /**
- * TypeScript Types Emitter
+ * TypeScript Types Generator
  *
  * This module is responsible for transforming the compiled WSDL catalog into TypeScript
  * type definitions. It generates interfaces for complex types and type aliases for
@@ -14,16 +14,17 @@
  */
 import fs from "node:fs";
 import type {CompiledCatalog, CompiledType} from "../compiler/schemaCompiler.js";
+import {error} from "../util/cli.js";
 
 /**
- * Emits TypeScript interfaces and type aliases from a compiled WSDL catalog
+ * Generates TypeScript interfaces and type aliases from a compiled WSDL catalog
  *
  * This function generates a TypeScript file containing all the types required to
  * work with the SOAP service, including:
  *
  * - Type aliases for simple types (enums, restrictions, etc.)
  * - Interfaces for complex types with proper inheritance
- * - JSDoc annotations with XML metadata for runtime marshalling
+ * - JSDoc annotations with XML metadata for runtime marshaling
  *
  * Key design decisions:
  * - Text node is modeled as "$value" (not "value") to avoid collisions with real elements
@@ -34,7 +35,7 @@ import type {CompiledCatalog, CompiledType} from "../compiler/schemaCompiler.js"
  * @param {string} outFile - Path to the output TypeScript file
  * @param {CompiledCatalog} compiled - The compiled WSDL catalog
  */
-export function emitTypes(outFile: string, compiled: CompiledCatalog) {
+export function generateTypes(outFile: string, compiled: CompiledCatalog) {
   const lines: string[] = [];
 
   // Convenience lookups
@@ -174,8 +175,7 @@ export function emitTypes(outFile: string, compiled: CompiledCatalog) {
 
   try {
     fs.writeFileSync(outFile, lines.join("\n"), "utf8");
-    console.log(`Types written to ${outFile}`);
   } catch (e) {
-    console.error(`Failed to write types to ${outFile}:`, e);
+    error(`Failed to write types to ${outFile}: ${e instanceof Error ? e.message : String(e)}`);
   }
 }

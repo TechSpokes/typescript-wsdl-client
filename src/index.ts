@@ -14,15 +14,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import type {CompilerOptions} from "./config.js";
-import {TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS} from "./config.js";
+import {resolveCompilerOptions} from "./config.js";
 import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
-import {emitTypes} from "./emit/typesEmitter.js";
-import {emitUtils} from "./emit/utilsEmitter.js";
-import {emitCatalog} from "./emit/catalogEmitter.js";
-import {emitClient} from "./emit/clientEmitter.js";
+import {generateTypes} from "./client/generateTypes.js";
+import {generateUtils} from "./client/generateUtils.js";
+import {generateCatalog} from "./compiler/generateCatalog.js";
+import {generateClient} from "./client/generateClient.js";
+import {info} from "./util/cli.js";
 
 export {generateOpenAPI} from "./openapi/generateOpenAPI.js";
+export {generateGateway} from "./gateway/generateGateway.js";
 export {runGenerationPipeline} from "./pipeline.js";
 
 // noinspection JSUnusedGlobalSymbols
@@ -50,34 +52,35 @@ export async function compileWsdlToProject(
   input: { wsdl: string; outDir: string; options?: CompilerOptions }
 ): Promise<void> {
   // Merge defaults with overrides, always set wsdl+out
-  const finalOptions: CompilerOptions = {
-    ...TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS,
-    ...(input.options || {}),
-    wsdl: input.wsdl,
-    out: input.outDir,
-  };
+  const finalOptions = resolveCompilerOptions(
+    input.options || {},
+    {
+      wsdl: input.wsdl,
+      out: input.outDir,
+    }
+  );
 
   // Load & compile
   const wsdlCatalog = await loadWsdl(input.wsdl);
-  console.log(`Loaded WSDL: ${wsdlCatalog.wsdlUri}`);
+  info(`Loaded WSDL: ${wsdlCatalog.wsdlUri}`);
   if (wsdlCatalog.schemas.length === 0) {
     throw new Error(`No schemas found in WSDL: ${input.wsdl}`);
   }
-  console.log(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
+  info(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
 
   const compiled = compileCatalog(wsdlCatalog, finalOptions);
-  console.log(`Compiled WSDL: ${wsdlCatalog.wsdlUri}`);
+  info(`Compiled WSDL: ${wsdlCatalog.wsdlUri}`);
 
   // check if we have any types and operations
   if (compiled.types.length === 0) {
     throw new Error(`No types compiled from WSDL: ${input.wsdl}`);
   } else {
-    console.log(`Types discovered: ${compiled.types.length}`);
+    info(`Types discovered: ${compiled.types.length}`);
   }
   if (compiled.operations.length === 0) {
     throw new Error(`No operations compiled from WSDL: ${input.wsdl}`);
   } else {
-    console.log(`Operations discovered: ${compiled.operations.length}`);
+    info(`Operations discovered: ${compiled.operations.length}`);
   }
 
   // Emit artifacts
@@ -94,11 +97,11 @@ export async function compileWsdlToProject(
   }
 
   // Emit files
-  emitClient(clientFile, compiled);
-  emitTypes(typesFile, compiled);
-  emitUtils(utilsFile, compiled);
+  generateClient(clientFile, compiled);
+  generateTypes(typesFile, compiled);
+  generateUtils(utilsFile, compiled);
 
   if (compiled.options.catalog) {
-    emitCatalog(catalogFile, compiled);
+    generateCatalog(catalogFile, compiled);
   }
 }

@@ -150,19 +150,19 @@ npx wsdl-tsc openapi --catalog ./src/integrations/soap/hotel/catalog.json --out 
 The OpenAPI schemas reproduce the **exact** flattening & naming used in `types.ts` — crucial for avoiding drift between SOAP and REST surfaces.
 
 ### 5.3 Additional Flags (Selected)
-| Flag                   | Description                                                                              |
-|------------------------|------------------------------------------------------------------------------------------|
-| `--openapi-out`        | Output base or file for OpenAPI (if omitted chooses `openapi.json`).                     |
-| `--basePath`           | Prefix for REST path segments (e.g. `/v1/booking`).                                      |
-| `--pathStyle`          | Control operation name → path transformation: `kebab`, `asis`, `lower`. Default: `kebab` |
-| `--method`             | Default HTTP method (per‑op override via `--ops`). Default: `post`.                      |
-| `--tag-style`          | Tag inference: `default`, `service`, `first`. Default: `default`.                        |
-| `--security`           | Path to `security.json` (schemes + headers + overrides).                                 |
-| `--tags`               | Path to `tags.json` (explicit operation → tag map).                                      |
-| `--ops`                | Path to `ops.json` (method/summary/description/deprecated).                              |
-| `--closedSchemas`      | Apply `additionalProperties:false` globally. Default: `false`.                           |
-| `--pruneUnusedSchemas` | Emit only reachable schemas. Default: `false`.                                           |
-| `--servers`            | Comma‑separated server base URLs for the spec. Default: `/`.                             |
+| Flag                       | Description                                                                              |
+|----------------------------|------------------------------------------------------------------------------------------|
+| `--openapi-out`            | Output base or file for OpenAPI (if omitted chooses `openapi.json`).                     |
+| `--base-path`              | Prefix for REST path segments (e.g. `/v1/booking`).                                      |
+| `--path-style`             | Control operation name → path transformation: `kebab`, `asis`, `lower`. Default: `kebab` |
+| `--method`                 | Default HTTP method (per‑op override via `--ops`). Default: `post`.                      |
+| `--tag-style`              | Tag inference: `default`, `service`, `first`. Default: `default`.                        |
+| `--security`               | Path to `security.json` (schemes + headers + overrides).                                 |
+| `--tags`                   | Path to `tags.json` (explicit operation → tag map).                                      |
+| `--ops`                    | Path to `ops.json` (method/summary/description/deprecated).                              |
+| `--closed-schemas`         | Apply `additionalProperties:false` globally. Default: `false`.                           |
+| `--prune-unused-schemas`   | Emit only reachable schemas. Default: `false`.                                           |
+| `--servers`                | Comma‑separated server base URLs for the spec. Default: `/`.                             |
 
 Deterministic ordering: all path keys, HTTP methods, component schema names, securitySchemes, parameters, component section keys, and operation tag arrays are alphabetically sorted for diff‑friendly output. The generator also omits a custom `jsonSchemaDialect` declaration to maximize IDE/tool compatibility (JetBrains warning avoidance) unless a future flag introduces non‑default dialect selection.
 

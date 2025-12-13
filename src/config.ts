@@ -69,3 +69,25 @@ export const TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS: CompilerOptions = 
   clientName: undefined,          // no default
   nillableAsOptional: false,      // CLI default
 };
+
+/**
+ * Resolve full compiler options from partial input
+ *
+ * Merges defaults with user-provided options and required overrides.
+ *
+ * @param input - Partial compiler options from CLI or API
+ * @param required - Required overrides (wsdl, out)
+ * @returns Complete compiler options
+ */
+export function resolveCompilerOptions(
+  input: Partial<CompilerOptions>,
+  required: { wsdl: string; out: string }
+): CompilerOptions {
+  return {
+    ...TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS,
+    ...input,
+    wsdl: required.wsdl,
+    out: required.out,
+  } as CompilerOptions;
+}
+

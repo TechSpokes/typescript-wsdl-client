@@ -10,33 +10,39 @@ import path from "node:path";
 import fs from "node:fs";
 import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
-import {emitClient} from "./emit/clientEmitter.js";
-import {emitTypes} from "./emit/typesEmitter.js";
-import {emitUtils} from "./emit/utilsEmitter.js";
-import {emitCatalog} from "./emit/catalogEmitter.js";
+import {generateClient} from "./client/generateClient.js";
+import {generateTypes} from "./client/generateTypes.js";
+import {generateUtils} from "./client/generateUtils.js";
+import {generateCatalog} from "./compiler/generateCatalog.js";
 import {generateOpenAPI, type GenerateOpenAPIOptions} from "./openapi/generateOpenAPI.js";
-import type {CompilerOptions} from "./config.js";
-import {TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS} from "./config.js";
+import {generateGateway, type GenerateGatewayOptions} from "./gateway/generateGateway.js";
+import {type CompilerOptions, resolveCompilerOptions} from "./config.js";
+import {emitClientArtifacts, reportCompilationStats, reportOpenApiSuccess, success} from "./util/cli.js";
 
 /**
  * Configuration options for the generation pipeline
  *
  * @interface PipelineOptions
  * @property {string} wsdl - Path or URL to the WSDL file to process
- * @property {string} outDir - Output directory for generated TypeScript artifacts
+ * @property {string} catalogOut - Output path for catalog.json (always generated when compiling WSDL)
+ * @property {string} [clientOutDir] - Optional client output directory; when provided, client artifacts are generated
  * @property {Partial<CompilerOptions>} [compiler] - Compiler options for type generation
  * @property {object} [openapi] - OpenAPI generation configuration (optional)
- * @property {string} [openapi.outFile] - Optional output path for OpenAPI specification
+ * @property {string} openapi.outFile - Output path for OpenAPI specification
+ * @property {object} [gateway] - Gateway generation configuration (optional, requires openapi)
+ * @property {string} gateway.outDir - Output directory for gateway code
  */
 export interface PipelineOptions {
   wsdl: string;
-  outDir: string;
+  catalogOut: string;
+  clientOutDir?: string;
   compiler?: Partial<CompilerOptions>;
   openapi?: Omit<GenerateOpenAPIOptions, "wsdl" | "catalogFile" | "compiledCatalog"> & { outFile?: string };
+  gateway?: Omit<GenerateGatewayOptions, "openapiFile" | "openapiDocument"> & { outDir?: string };
 }
 
 /**
- * Runs the complete generation pipeline from WSDL to TypeScript artifacts and optionally OpenAPI
+ * Runs the complete generation pipeline from WSDL to TypeScript artifacts and optionally OpenAPI/Gateway
  *
  * This function orchestrates the entire process:
  * 1. Loads and parses the WSDL from file or URL
@@ -44,19 +50,33 @@ export interface PipelineOptions {
  * 3. Emits TypeScript client code, types, and utilities
  * 4. Optionally emits a JSON catalog for introspection
  * 5. Optionally generates an OpenAPI 3.1 specification
+ * 6. Optionally generates Fastify gateway code from the OpenAPI spec
  *
  * @param {PipelineOptions} opts - Configuration options for the pipeline
- * @returns {Promise<{compiled: any}>} - The compiled catalog for potential further processing
+ * @returns {Promise<{compiled: any; openapiDoc?: any}>} - The compiled catalog and optional OpenAPI document
  */
-export async function runGenerationPipeline(opts: PipelineOptions) {
+export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ compiled: any; openapiDoc?: any; }> {
+  // Determine a working directory for the compiler (used for relative path resolution)
+  // Use the first available output location as the base
+  const workingDir = opts.clientOutDir
+    ? opts.clientOutDir
+    : opts.openapi?.outFile
+      ? path.dirname(opts.openapi.outFile)
+      : opts.gateway?.outDir
+        ? opts.gateway.outDir
+        : path.dirname(opts.catalogOut);
+
   // Merge provided compiler options with defaults, ensuring required fields are set
-  const finalCompiler: CompilerOptions = {
-    ...TYPESCRIPT_WSDL_CLIENT_DEFAULT_COMPLIER_OPTIONS,
-    catalog: opts.compiler?.catalog ?? true, // default to emitting catalog in pipeline mode
-    ...(opts.compiler || {}),
-    wsdl: opts.wsdl,
-    out: opts.outDir,
-  } as CompilerOptions;
+  const finalCompiler = resolveCompilerOptions(
+    {
+      ...opts.compiler,
+      catalog: true, // Always emit catalog in pipeline mode
+    },
+    {
+      wsdl: opts.wsdl,
+      out: workingDir,
+    }
+  );
 
   // Step 1: Load and parse the WSDL document
   const wsdlCatalog = await loadWsdl(opts.wsdl);
@@ -64,36 +84,70 @@ export async function runGenerationPipeline(opts: PipelineOptions) {
   // Step 2: Compile the WSDL into a structured catalog
   const compiled = compileCatalog(wsdlCatalog, finalCompiler);
 
-  // Step 3: Ensure the output directory exists
-  fs.mkdirSync(opts.outDir, {recursive: true});
+  // Report compilation statistics
+  reportCompilationStats(wsdlCatalog, compiled);
 
-  // Step 4: Emit TypeScript artifacts
-  emitClient(path.join(opts.outDir, "client.ts"), compiled);
-  emitTypes(path.join(opts.outDir, "types.ts"), compiled);
-  emitUtils(path.join(opts.outDir, "utils.ts"), compiled);
+  // Step 3: Emit catalog.json (always, to the specified catalogOut path)
+  fs.mkdirSync(path.dirname(opts.catalogOut), {recursive: true});
+  generateCatalog(opts.catalogOut, compiled);
+  success(`Compiled catalog written to ${opts.catalogOut}`);
 
-  // Step 5: Optionally emit the JSON catalog for introspection
-  if (finalCompiler.catalog) {
-    emitCatalog(path.join(opts.outDir, "catalog.json"), compiled);
+  // Step 4: Optionally generate TypeScript client artifacts
+  if (opts.clientOutDir) {
+    emitClientArtifacts(
+      opts.clientOutDir,
+      compiled,
+      generateClient,
+      generateTypes,
+      generateUtils
+    );
   }
 
-  // Step 6: Optionally generate OpenAPI specification
+  // Step 4: Optionally generate OpenAPI specification
+  let openapiDoc: any;
   if (opts.openapi) {
-    // Determine output path for OpenAPI specification
-    let resolvedOut: string | undefined = opts.openapi.outFile;
-    if (!resolvedOut) {
-      const yamlPreferred = !!opts.openapi.asYaml;
-      resolvedOut = path.join(opts.outDir, yamlPreferred ? "openapi.yaml" : "openapi.json");
+    // OpenAPI output file must be explicitly provided
+    if (!opts.openapi.outFile) {
+      throw new Error("OpenAPI generation requires an explicit output file path via openapi.outFile");
     }
 
     // Generate the OpenAPI specification using the compiled catalog
-    await generateOpenAPI({
+    const result = await generateOpenAPI({
       ...opts.openapi,
       compiledCatalog: compiled,
-      outFile: resolvedOut,
+      outFile: opts.openapi.outFile,
     });
+    openapiDoc = result.doc;
+
+    // Report OpenAPI generation success
+    reportOpenApiSuccess(result);
   }
 
-  // Return the compiled catalog for potential further processing
-  return {compiled};
+  // Step 5: Optionally generate Fastify gateway code
+  if (opts.gateway) {
+    if (!openapiDoc) {
+      throw new Error("Gateway generation requires OpenAPI generation to be enabled in the pipeline");
+    }
+
+    if (!opts.gateway.outDir) {
+      throw new Error("Gateway generation requires an explicit output directory via gateway.outDir");
+    }
+
+    const gatewayOutDir = path.resolve(opts.gateway.outDir);
+
+    await generateGateway({
+      ...opts.gateway,
+      openapiDocument: openapiDoc,
+      outDir: gatewayOutDir,
+      // Pass the client directory if client is being generated
+      clientDir: opts.clientOutDir ? path.resolve(opts.clientOutDir) : undefined,
+      // Reuse the same imports mode as the TypeScript client/types/utils emitters
+      imports: finalCompiler.imports,
+    });
+
+    success(`Gateway code generated in ${gatewayOutDir}`);
+  }
+
+  // Return the compiled catalog and OpenAPI doc for potential further processing
+  return {compiled, openapiDoc};
 }

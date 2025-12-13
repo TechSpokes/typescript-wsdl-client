@@ -1,5 +1,5 @@
 /**
- * Catalog Emitter for TypeScript WSDL Client Generator
+ * Catalog Generator for TypeScript WSDL Client Generator
  *
  * This module is responsible for writing the complete compiled catalog to a JSON file,
  * which serves as a structured representation of the WSDL for introspection and further
@@ -12,10 +12,11 @@
  * - Enabling incremental compilation workflows
  */
 import fs from "node:fs";
-import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
+import type {CompiledCatalog} from "./schemaCompiler.js";
+import {error} from "../util/cli.js";
 
 /**
- * Emits the compiled catalog as a JSON file
+ * Generates the compiled catalog as a JSON file
  *
  * This function writes the complete compiled catalog to a JSON file, preserving all
  * type definitions, operation information, and metadata in a structured format.
@@ -32,11 +33,10 @@ import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
  * @param {string} outFile - Path to the output JSON file
  * @param {CompiledCatalog} compiled - The compiled WSDL catalog to write
  */
-export function emitCatalog(outFile: string, compiled: CompiledCatalog) {
+export function generateCatalog(outFile: string, compiled: CompiledCatalog) {
   try {
     fs.writeFileSync(outFile, JSON.stringify(compiled, null, 2), "utf8");
-    console.log(`Catalog written to ${outFile}`);
   } catch (err) {
-    console.error(`Failed to write catalog to ${outFile}:`, err);
+    error(`Failed to write catalog to ${outFile}: ${err instanceof Error ? err.message : String(err)}`);
   }
 }

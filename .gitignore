@@ -147,6 +147,7 @@ vite.config.ts.timestamp-*
 temp/
 temp/*
 # Temporary files created by the TypeScript generator
+/tmp
 /tmp/catalog.json
 /tmp/client.ts
 /tmp/openapi.json

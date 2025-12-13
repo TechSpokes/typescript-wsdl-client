@@ -1,5 +1,5 @@
 /**
- * OpenAPI Schema Component Builder
+ * OpenAPI Schema Component Generator
  *
  * This module transforms the compiled TypeScript types from the WSDL catalog
  * into OpenAPI 3.1 schema components. It handles the conversion of complex types,
@@ -16,13 +16,13 @@
 import type {CompiledAlias, CompiledCatalog, CompiledType} from "../compiler/schemaCompiler.js";
 
 /**
- * Options for building OpenAPI schema components
+ * Options for generating OpenAPI schema components
  *
- * @interface BuildSchemasOptions
+ * @interface GenerateSchemasOptions
  * @property {boolean} [closedSchemas] - Whether to add additionalProperties:false to object schemas
  * @property {boolean} [pruneUnusedSchemas] - Whether to exclude schemas not referenced by operations
  */
-export interface BuildSchemasOptions {
+export interface GenerateSchemasOptions {
   closedSchemas?: boolean;
   pruneUnusedSchemas?: boolean;
 }
@@ -161,18 +161,18 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
 /**
  * Transforms the compiled WSDL catalog into OpenAPI schema components
  *
- * @function buildSchemas
+ * @function generateSchemas
  * @param {CompiledCatalog} compiled - The compiled WSDL catalog containing types, aliases, and operations
- * @param {BuildSchemasOptions} opts - Options for schema generation
+ * @param {GenerateSchemasOptions} opts - Options for schema generation
  * @returns {ComponentsSchemas} - A record of schema component names to their JSON Schema definitions
  *
  * @throws Will throw an error if there are unknown referenced types or bases while building schemas
  *
  * @example
- * // Example usage: building schemas with closed schemas enforcement and unused schema pruning
- * const schemas = buildSchemas(compiledCatalog, { closedSchemas: true, pruneUnusedSchemas: true });
+ * // Example usage: generating schemas with closed schemas enforcement and unused schema pruning
+ * const schemas = generateSchemas(compiledCatalog, { closedSchemas: true, pruneUnusedSchemas: true });
  */
-export function buildSchemas(compiled: CompiledCatalog, opts: BuildSchemasOptions): ComponentsSchemas {
+export function generateSchemas(compiled: CompiledCatalog, opts: GenerateSchemasOptions): ComponentsSchemas {
   const closed = !!opts.closedSchemas;
   const schemas: ComponentsSchemas = {};
   const typeNames = new Set(compiled.types.map(t => t.name));
