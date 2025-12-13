@@ -29,6 +29,7 @@ import {loadWsdl} from "../loader/wsdlLoader.js";
 import {compileCatalog, type CompiledCatalog} from "../compiler/schemaCompiler.js";
 import {generateSchemas} from "./generateSchemas.js";
 import {generatePaths} from "./generatePaths.js";
+import {error, warn, info} from "../util/cli.js";
 import {buildSecurity, loadSecurityConfig} from "./security.js";
 import type {PathStyle} from "./casing.js";
 
@@ -332,13 +333,13 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
     try {
       const parser = await import("@apidevtools/swagger-parser");
       await parser.default.validate(JSON.parse(JSON.stringify(doc)));
-      console.log("OpenAPI validation: OK");
+      // Validation passed - no message needed (only report failures)
     } catch (e) {
-      console.error("OpenAPI validation failed:", e instanceof Error ? e.message : e);
+      error(`OpenAPI validation failed: ${e instanceof Error ? e.message : e}`);
       throw e;
     }
   } else {
-    console.log("OpenAPI validation skipped by flag");
+    info("OpenAPI validation skipped by flag");
   }
 
   // Determine base path for writing
@@ -377,7 +378,7 @@ function safeJson(file: string): any | undefined {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
   } catch (e) {
-    console.warn(`⚠️ Failed to parse JSON file '${file}': ${e instanceof Error ? e.message : String(e)}`);
+    warn(`Failed to parse JSON file '${file}': ${e instanceof Error ? e.message : String(e)}`);
     return undefined;
   }
 }

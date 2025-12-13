@@ -100,7 +100,6 @@ export async function loadWsdl(wsdlUrlOrPath: string): Promise<WsdlCatalog> {
     }
   }
 
-  console.log(`[wsdl] types->schemas: ${schemas.length}`);
   return {wsdlUri, wsdlXml, schemas, prefixMap: {...prefixMap, tns}};
 }
 

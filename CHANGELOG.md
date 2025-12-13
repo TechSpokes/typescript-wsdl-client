@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
+- refactor(logging): standardize console output with [ERROR], [WARNING], [SUCCESS] prefixes and remove emojis for better terminal compatibility
+- refactor(logging): reduce verbosity by removing individual file write messages, keeping only high-level progress and success indicators
+- refactor(logging): remove inconsistent [wsdl] prefix from loader messages for unified output format
+- refactor(logging): eliminate redundant schema count messages between loader and CLI
+- refactor(logging): remove redundant OpenAPI validation success message (only report validation failures)
+- feat(pipeline): add discovery info messages (schemas, types, operations) matching client command output
+- feat(pipeline): add success messages with output paths for each generation step (client, OpenAPI, gateway)
+- feat(openapi): improve success message to show actual generated file path instead of base directory
+- feat(gateway): ensure gateway success messages always show absolute paths for consistency with other commands
 - refactor(cli): extract shared utilities to src/util/cli.ts for better code reuse
 - refactor(config): add resolveCompilerOptions helper for consistent option merging across CLI, pipeline, and API
 - refactor(cli): standardize error handling with handleCLIError utility

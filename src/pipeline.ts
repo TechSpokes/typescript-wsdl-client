@@ -17,6 +17,7 @@ import {generateCatalog} from "./client/generateCatalog.js";
 import {generateOpenAPI, type GenerateOpenAPIOptions} from "./openapi/generateOpenAPI.js";
 import {generateGateway, type GenerateGatewayOptions} from "./gateway/generateGateway.js";
 import {resolveCompilerOptions, type CompilerOptions} from "./config.js";
+import {success, info} from "./util/cli.js";
 
 /**
  * Configuration options for the generation pipeline
@@ -71,6 +72,11 @@ export async function runGenerationPipeline(opts: PipelineOptions) {
   // Step 2: Compile the WSDL into a structured catalog
   const compiled = compileCatalog(wsdlCatalog, finalCompiler);
 
+  // Report counts of types and operations for user visibility
+  info(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
+  info(`Compiled types: ${compiled.types.length}`);
+  info(`Operations: ${compiled.operations.length}`);
+
   // Step 3: Ensure the output directory exists
   fs.mkdirSync(opts.outDir, {recursive: true});
 
@@ -83,6 +89,8 @@ export async function runGenerationPipeline(opts: PipelineOptions) {
   if (finalCompiler.catalog) {
     generateCatalog(path.join(opts.outDir, "catalog.json"), compiled);
   }
+
+  success(`Generated TypeScript client in ${opts.outDir}`);
 
   // Step 6: Optionally generate OpenAPI specification
   let openapiDoc: any;
@@ -101,6 +109,15 @@ export async function runGenerationPipeline(opts: PipelineOptions) {
       outFile: resolvedOut,
     });
     openapiDoc = result.doc;
+
+    // Report OpenAPI generation success with output path
+    const generatedFiles = [result.jsonPath, result.yamlPath].filter(Boolean);
+    if (generatedFiles.length > 0) {
+      const outputPath = generatedFiles.length === 1
+        ? generatedFiles[0]!
+        : path.dirname(generatedFiles[0]!);
+      success(`Generated OpenAPI specification in ${outputPath}`);
+    }
   }
 
   // Step 7: Optionally generate Fastify gateway code
@@ -109,7 +126,7 @@ export async function runGenerationPipeline(opts: PipelineOptions) {
       throw new Error("Gateway generation requires OpenAPI generation to be enabled in the pipeline");
     }
 
-    const gatewayOutDir = opts.gateway.outDir || path.join(opts.outDir, "gateway");
+    const gatewayOutDir = path.resolve(opts.gateway.outDir || path.join(opts.outDir, "gateway"));
 
     await generateGateway({
       ...opts.gateway,
@@ -119,7 +136,7 @@ export async function runGenerationPipeline(opts: PipelineOptions) {
       imports: finalCompiler.imports,
     });
 
-    console.log(`✅ Gateway code generated in ${gatewayOutDir}`);
+    success(`Gateway code generated in ${gatewayOutDir}`);
   }
 
   // Return the compiled catalog and OpenAPI doc for potential further processing

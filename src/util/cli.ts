@@ -138,17 +138,64 @@ export function parseServers(value: string | undefined): string[] {
 }
 
 /**
+ * Standardized Console Logging Functions
+ *
+ * These functions provide consistent console output formatting across the codebase.
+ * All messages follow a standard pattern:
+ * - Errors: [ERROR] {message} (output to stderr)
+ * - Warnings: [WARNING] {message} (output to stderr)
+ * - Success: [SUCCESS] {message} (output to stdout)
+ * - Info: {message} (output to stdout, no prefix for general logs)
+ */
+
+/**
+ * Log an error message to stderr
+ *
+ * @param message - Error message to display
+ */
+export function error(message: string): void {
+  console.error(`[ERROR] ${message}`);
+}
+
+/**
+ * Log a warning message to stderr
+ *
+ * @param message - Warning message to display
+ */
+export function warn(message: string): void {
+  console.warn(`[WARNING] ${message}`);
+}
+
+/**
+ * Log a success message to stdout
+ *
+ * @param message - Success message to display
+ */
+export function success(message: string): void {
+  console.log(`[SUCCESS] ${message}`);
+}
+
+/**
+ * Log an informational message to stdout
+ *
+ * @param message - Info message to display (no prefix added)
+ */
+export function info(message: string): void {
+  console.log(message);
+}
+
+/**
  * Handle CLI errors consistently
  *
  * Prints error message to stderr and exits with appropriate code.
  * This centralizes error handling for better consistency and testability.
  *
- * @param error - Error object or string
+ * @param errorObj - Error object or string
  * @param exitCode - Process exit code (default: 1)
  */
-export function handleCLIError(error: unknown, exitCode: number = 1): never {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(`Error: ${message}`);
+export function handleCLIError(errorObj: unknown, exitCode: number = 1): never {
+  const message = errorObj instanceof Error ? errorObj.message : String(errorObj);
+  error(message);
   process.exit(exitCode);
 }
 
@@ -160,9 +207,9 @@ export function handleCLIError(error: unknown, exitCode: number = 1): never {
  */
 export function warnDeprecated(flag: string, replacement?: string): void {
   const message = replacement
-    ? `[deprecation] ${flag} is deprecated; use ${replacement}`
-    : `[deprecation] ${flag} is deprecated`;
-  console.warn(message);
+    ? `${flag} is deprecated; use ${replacement}`
+    : `${flag} is deprecated`;
+  warn(`[deprecation] ${message}`);
 }
 
 /**

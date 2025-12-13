@@ -15,6 +15,7 @@
  * security overrides through an external JSON configuration file.
  */
 import fs from "node:fs";
+import {warn} from "../util/cli.js";
 
 /**
  * Authentication scheme types supported in the OpenAPI specification
@@ -83,7 +84,7 @@ export function loadSecurityConfig(filePath?: string): SecurityConfig | undefine
     const raw = fs.readFileSync(filePath, "utf8");
     return JSON.parse(raw);
   } catch (e) {
-    console.warn(`⚠️ Failed to read security config '${filePath}': ${e instanceof Error ? e.message : String(e)}`);
+    warn(`Failed to read security config '${filePath}': ${e instanceof Error ? e.message : String(e)}`);
     return undefined;
   }
 }

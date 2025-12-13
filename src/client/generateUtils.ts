@@ -13,6 +13,7 @@
 import fs from "node:fs";
 import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
 import {deriveClientName, pascalToSnakeCase} from "../util/tools.js";
+import {error} from "../util/cli.js";
 
 /**
  * Generates utility types and constants for XML serialization/deserialization
@@ -61,8 +62,7 @@ export interface ${clientName}DataTypes {
 export const ${clientConstant}_DATA_TYPES: ${clientName}DataTypes = ${metas} as const;\n`;
   try {
     fs.writeFileSync(outFile, dataTypes, "utf8");
-    console.log(`Utils written to ${outFile}`);
   } catch (e) {
-    console.error(`Failed to write utils to ${outFile}:`, e);
+    error(`Failed to write utils to ${outFile}: ${e instanceof Error ? e.message : String(e)}`);
   }
 }

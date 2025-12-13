@@ -31,6 +31,8 @@ import {
   resolveValidateOption,
   parseStatusCodes,
   parseServers,
+  info,
+  success,
 } from "./util/cli.js";
 
 
@@ -126,9 +128,9 @@ if (!rawArgs[0] || !["openapi", "pipeline", "gateway", "client"].includes(rawArg
   const compiled = compileCatalog(wsdlCatalog, compilerOptions);
 
   // Report counts of types and operations for user visibility
-  console.log(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
-  console.log(`Compiled types: ${compiled.types.length}`);
-  console.log(`Operations: ${compiled.operations.length}`);
+  info(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
+  info(`Compiled types: ${compiled.types.length}`);
+  info(`Operations: ${compiled.operations.length}`);
 
   // Ensure output directory exists
   fs.mkdirSync(clientOutDir, {recursive: true});
@@ -143,7 +145,7 @@ if (!rawArgs[0] || !["openapi", "pipeline", "gateway", "client"].includes(rawArg
     generateCatalog(path.join(clientOutDir, "catalog.json"), compiled);
   }
 
-  console.log(`[SUCCESS] Generated TypeScript client in ${clientOutDir}`);
+  success(`Generated TypeScript client in ${clientOutDir}`);
   process.exit(0);
 }
 
@@ -247,7 +249,7 @@ if (rawArgs[0] === "openapi") {
     handleCLIError(err);
   }
 
-  await generateOpenAPI({
+  const result = await generateOpenAPI({
     wsdl: openapiArgv.wsdl as string | undefined,
     catalogFile: openapiArgv.catalog as string | undefined,
     outFile: outBase,
@@ -269,7 +271,14 @@ if (rawArgs[0] === "openapi") {
     errorNamespace: openapiArgv["error-namespace"] as string | undefined,
   });
 
-  console.log(`[SUCCESS] OpenAPI generation complete (${format || "json"}) at ${outBase}`);
+  // Report success with actual output path
+  const generatedFiles = [result.jsonPath, result.yamlPath].filter(Boolean);
+  if (generatedFiles.length > 0) {
+    const outputPath = generatedFiles.length === 1
+      ? generatedFiles[0]!
+      : path.dirname(generatedFiles[0]!);
+    success(`Generated OpenAPI specification in ${outputPath}`);
+  }
   process.exit(0);
 }
 
@@ -422,12 +431,6 @@ if (rawArgs[0] === "pipeline") {
     } : undefined,
   });
 
-  // Build summary message
-  const parts = ['client', 'OpenAPI'];
-  if (effectiveGatewayOut) {
-    parts.push('gateway');
-  }
-  console.log(`[SUCCESS] Pipeline complete: generated ${parts.join(' + ')}`);
   process.exit(0);
 }
 
@@ -490,7 +493,7 @@ if (rawArgs[0] === "gateway") {
   }
 
   // Generate gateway code
-  const outDir = gatewayArgv.out as string;
+  const outDir = path.resolve(gatewayArgv.out as string);
   await generateGateway({
     openapiFile: gatewayArgv.openapi as string,
     outDir,
@@ -500,6 +503,6 @@ if (rawArgs[0] === "gateway") {
     imports: gatewayArgv.imports as "js" | "ts" | "bare",
   });
 
-  console.log(`[SUCCESS] Gateway code generated in ${outDir}`);
+  success(`Gateway code generated in ${outDir}`);
   process.exit(0);
 }

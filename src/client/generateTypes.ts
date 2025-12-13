@@ -14,6 +14,7 @@
  */
 import fs from "node:fs";
 import type {CompiledCatalog, CompiledType} from "../compiler/schemaCompiler.js";
+import {error} from "../util/cli.js";
 
 /**
  * Generates TypeScript interfaces and type aliases from a compiled WSDL catalog
@@ -174,8 +175,7 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
 
   try {
     fs.writeFileSync(outFile, lines.join("\n"), "utf8");
-    console.log(`Types written to ${outFile}`);
   } catch (e) {
-    console.error(`Failed to write types to ${outFile}:`, e);
+    error(`Failed to write types to ${outFile}: ${e instanceof Error ? e.message : String(e)}`);
   }
 }

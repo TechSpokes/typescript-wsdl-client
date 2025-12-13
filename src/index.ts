@@ -21,6 +21,7 @@ import {generateTypes} from "./client/generateTypes.js";
 import {generateUtils} from "./client/generateUtils.js";
 import {generateCatalog} from "./client/generateCatalog.js";
 import {generateClient} from "./client/generateClient.js";
+import {info} from "./util/cli.js";
 
 export {generateOpenAPI} from "./openapi/generateOpenAPI.js";
 export {generateGateway} from "./gateway/generateGateway.js";
@@ -61,25 +62,25 @@ export async function compileWsdlToProject(
 
   // Load & compile
   const wsdlCatalog = await loadWsdl(input.wsdl);
-  console.log(`Loaded WSDL: ${wsdlCatalog.wsdlUri}`);
+  info(`Loaded WSDL: ${wsdlCatalog.wsdlUri}`);
   if (wsdlCatalog.schemas.length === 0) {
     throw new Error(`No schemas found in WSDL: ${input.wsdl}`);
   }
-  console.log(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
+  info(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
 
   const compiled = compileCatalog(wsdlCatalog, finalOptions);
-  console.log(`Compiled WSDL: ${wsdlCatalog.wsdlUri}`);
+  info(`Compiled WSDL: ${wsdlCatalog.wsdlUri}`);
 
   // check if we have any types and operations
   if (compiled.types.length === 0) {
     throw new Error(`No types compiled from WSDL: ${input.wsdl}`);
   } else {
-    console.log(`Types discovered: ${compiled.types.length}`);
+    info(`Types discovered: ${compiled.types.length}`);
   }
   if (compiled.operations.length === 0) {
     throw new Error(`No operations compiled from WSDL: ${input.wsdl}`);
   } else {
-    console.log(`Operations discovered: ${compiled.operations.length}`);
+    info(`Operations discovered: ${compiled.operations.length}`);
   }
 
   // Emit artifacts

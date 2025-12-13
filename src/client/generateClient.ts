@@ -15,6 +15,7 @@
 import fs from "node:fs";
 import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
 import {deriveClientName, pascal, pascalToSnakeCase} from "../util/tools.js";
+import {error, warn} from "../util/cli.js";
 
 /**
  * Generates a TypeScript SOAP client class from a compiled WSDL catalog
@@ -59,7 +60,7 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
     const inTypeName = op.inputElement ? pascal(op.inputElement.local) : undefined;
     const outTypeName = op.outputElement ? pascal(op.outputElement.local) : undefined;
     if (!inTypeName && !outTypeName) {
-      console.warn(`Operation ${op.name} has no input or output type defined. Skipping method generation.`);
+      warn(`Operation ${op.name} has no input or output type defined. Skipping method generation.`);
       continue;
     }
     const inTs = inTypeName ? `T.${inTypeName}` : `any`;
@@ -388,8 +389,7 @@ ${methodsBody}
 `;
   try {
     fs.writeFileSync(outFile, classTemplate.replace(`// noinspection JSAnnotator\n\n`, ''), "utf8");
-    console.log(`Client class written to ${outFile}`);
   } catch (e) {
-    console.log(`Failed to write catalog to ${outFile}`);
+    error(`Failed to write client to ${outFile}`);
   }
 }
