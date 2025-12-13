@@ -20,7 +20,7 @@ import {type OpenAPIDocument, rewriteSchemaRefs, slugName,} from "./helpers.js";
  * Process:
  * 1. Creates schemas/models/ directory
  * 2. For each component schema:
- *    - Generates URN $id: urn:{version}.services.{service}.schemas.models.{slug}
+ *    - Generates URN $id: urn:services:{service}:{version}:schemas:models:{slug}
  *    - Rewrites all internal $refs to URN format
  *    - Writes to {slug}.json
  *
@@ -48,7 +48,7 @@ export function emitModelSchemas(
       throw new Error(`Duplicate schema name '${name}'`);
     }
     modelSlugByName[name] = slug;
-    schemaIdByName[name] = `urn:schema:${versionSlug}:services:${serviceSlug}:models:${slug}`;
+    schemaIdByName[name] = `urn:services:${serviceSlug}:${versionSlug}:schemas:models:${slug}`;
   }
 
   // Second pass: rewrite refs and emit files
@@ -77,7 +77,7 @@ export interface OperationMetadata {
  *
  * Schema structure:
  * {
- *   "$id": "urn:{version}.services.{service}.schemas.operations.{slug}",
+ *   "$id": "urn:services:{service}:{version}:schemas:operations:{slug}",
  *   "body": { $ref: "..." },           // optional
  *   "params": { type: object, ... },   // optional
  *   "querystring": { type: object, ... }, // optional
@@ -213,7 +213,7 @@ export function emitOperationSchemas(
 
       // Build operation schema object
       const opSchema: any = {
-        $id: `urn:schema:${versionSlug}:services:${serviceSlug}:operations:${operationSlug}`,
+        $id: `urn:services:${serviceSlug}:${versionSlug}:schemas:operations:${operationSlug}`,
         response: responseObj,
       };
       if (bodySchema) opSchema.body = bodySchema;

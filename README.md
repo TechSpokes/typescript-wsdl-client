@@ -9,7 +9,7 @@
 [![TechSpokes Org](https://img.shields.io/badge/org-techspokes-181717?logo=github)](https://github.com/techspokes)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-blue?logo=github-sponsors)](https://github.com/sponsors/TechSpokes)
 
-> **Mission**: Transform complex WSDL/XSD definitions into ergonomic, type-safe TypeScript SOAP clients with optional OpenAPI 3.1 specs and production-ready Fastify REST gateway code — enabling confident integration with legacy enterprise services.
+> **Mission**: Transform complex WSDL/XSD definitions into ergonomic, type-safe TypeScript SOAP clients with optional OpenAPI 3.1 specs and Fastify REST gateway scaffolding — enabling confident integration with legacy enterprise services.
 
 ---
 
@@ -49,11 +49,11 @@ Most WSDL generators produce loosely typed stubs or expose raw XML complexity to
 | **Deterministic Output**             | Sorted declarations and stable alias resolution for diff-friendly regeneration.                      |
 | **Primitive Mapping Controls**       | Explicit flags for long / big integer / decimal / temporal families (string-first safety).           |
 | **Catalog Introspection**            | One JSON artifact (`catalog.json`) to drive further tooling (including OpenAPI & gateway).           |
-| **OpenAPI 3.1 Bridge**               | Mirrors the exact TypeScript model — no divergence between runtime and spec.                         |
+| **OpenAPI 3.1 Bridge**               | Mirrors the exact TypeScript model with no divergence between runtime and spec.                      |
 | **Standard Response Envelope**       | Always-on, debuggable envelope structure (status, message, data, error) for REST gateways.           |
-| **Fastify Gateway Generation**       | Production-ready route scaffolding with JSON Schema validation and URN-based schema IDs.             |
+| **Fastify Gateway Scaffolding**      | Route and schema generation with JSON Schema validation (handler implementation in progress).        |
 | **Multi-format Output**              | `--openapi-format json\|yaml\|both` with always-on validation (unless disabled).                     |
-| **One-Shot Pipeline**                | Single pass (parse → TS → OpenAPI → Gateway) for CI & automation.                                    |
+| **One-Shot Pipeline**                | Single pass (parse to TS to OpenAPI to Gateway) for CI & automation.                                 |
 
 **Vendor**: [TechSpokes](https://www.techspokes.com) · **Maintainer**: Serge Liatko ([@sergeliatko](https://github.com/sergeliatko))
 
@@ -63,10 +63,12 @@ Most WSDL generators produce loosely typed stubs or expose raw XML complexity to
 
 ```bash
 npm install --save-dev @techspokes/typescript-wsdl-client
-npm install soap   # runtime dependency for actual SOAP calls
+npm install soap   # Runtime dependency for SOAP calls
 ```
 
-**Requirements**: Node.js ≥ 20.0.0
+**Requirements**:
+- Node.js 20.0.0 or later
+- `soap` package (runtime dependency for generated clients)
 
 ---
 
@@ -109,7 +111,7 @@ The tool provides **five commands** for different integration scenarios:
 | `compile`    | Parse WSDL and emit `catalog.json` only                        | Debugging, inspection, or multi-stage builds        |
 | `client`     | Generate TypeScript SOAP client from WSDL or catalog           | Standard SOAP integration (most common)             |
 | `openapi`    | Generate OpenAPI 3.1 spec from WSDL or catalog                 | Documentation, REST proxies, API gateways           |
-| `gateway`    | Generate Fastify gateway code from OpenAPI spec                | Production REST gateway implementation              |
+| `gateway`    | Generate Fastify gateway scaffolding from OpenAPI spec         | REST gateway foundation (handler stubs)             |
 | `pipeline`   | Run full pipeline: client + OpenAPI + gateway in one pass      | CI/CD automation, complete stack generation         |
 
 ---
@@ -303,7 +305,7 @@ npx wsdl-tsc client --catalog-file <path> --client-dir <path> [options]
 |----------------|------------------------------------------------------------------------------|
 | `client.ts`    | Strongly-typed SOAP client wrapper with one method per operation             |
 | `types.ts`     | Flattened TypeScript interfaces, type aliases, and enums                     |
-| `utils.ts`     | Runtime metadata for JSON ⇄ SOAP conversion (attribute mapping, occurrence)  |
+| `utils.ts`     | Runtime metadata for JSON to SOAP conversion (attribute mapping, occurrence) |
 | `catalog.json` | (When using `--wsdl-source`) Generated in client directory by default        |
 
 ### Optional Flags
@@ -371,10 +373,10 @@ npx wsdl-tsc client \
 
 ### Key Modeling Rules
 
-- **Attributes & elements** → peer properties (flattened)
-- **Text content** → `$value` property
+- **Attributes & elements** become peer properties (flattened)
+- **Text content** becomes `$value` property
 - **Required attributes**: `use!="optional"`; elements `minOccurs>=1`
-- **Multiplicity**: `maxOccurs>1` or `unbounded` → arrays
+- **Multiplicity**: `maxOccurs>1` or `unbounded` become arrays
 - **Nillable**: `nillable="true"` preserved (optionally model as optional with `--client-nillable-as-optional`)
 - **Inheritance**: extensions merged or emitted as `extends`; simpleContent base collapsed logically
 
@@ -408,7 +410,7 @@ npx wsdl-tsc openapi --catalog-file <path> --openapi-file <path> [options]
 
 | Flag                | Default                              | Description                                        |
 |---------------------|--------------------------------------|----------------------------------------------------|
-| `--wsdl-source`     | —                                    | Path or URL to WSDL file                           |
+| `--wsdl-source`     | (none)                               | Path or URL to WSDL file                           |
 | `--catalog-file`    | `{openapi-file-dir}/catalog.json`    | Path to pre-compiled `catalog.json`                |
 
 **Note**: Provide **either** `--wsdl-source` **or** `--catalog-file`. When neither is provided, defaults to reading from the OpenAPI output directory. When using `--wsdl-source`, the catalog is automatically written to the OpenAPI output directory unless overridden.
@@ -577,13 +579,23 @@ This ensures diff-friendly output for version control.
 
 ## 8. Command: `gateway`
 
-**Purpose**: Generate production-ready Fastify gateway code from an OpenAPI 3.1 specification, creating a complete REST API layer over your SOAP client.
+**Purpose**: Generate Fastify gateway scaffolding (routes and schemas) from an OpenAPI 3.1 specification. This provides the foundation for building a REST API layer over your SOAP client.
+
+> **Current Status (v0.8.0)**: The gateway generator produces basic scaffolding including route registration, JSON Schema validation setup, and handler stubs. Full code generation with complete handler implementations is planned for future releases. You will need to implement the business logic that calls your SOAP client and transforms responses.
 
 **When to use**:
 - Building a REST API gateway for legacy SOAP services
 - Creating a modern HTTP/JSON interface for SOAP operations
-- Implementing request validation with JSON Schema
-- Deploying production REST endpoints with Fastify
+- Setting up request/response validation with JSON Schema
+- Establishing Fastify routing structure for SOAP operations
+
+**What it generates**:
+- Fastify route registration files
+- JSON Schema models with URN-based IDs
+- Operation schemas (request/response validation)
+- Schema and route registration modules
+- Handler stubs (require manual implementation)
+- Full handler implementations (coming in future versions)
 
 ### Usage
 
@@ -640,10 +652,10 @@ npx wsdl-tsc gateway \
 All generated JSON Schemas use deterministic URN identifiers:
 
 ```
-urn:{versionSlug}:{serviceSlug}:schema:{schemaName}
+urn:services:{serviceSlug}:{versionSlug}:schemas:{models|operations}:{schemaSlug}
 ```
 
-**Example**: `urn:v1:weather:schema:GetCityWeatherByZIPResponse`
+**Example**: `urn:services:weather:v1:schemas:models:getcityweatherbyzipresponse`
 
 ### Contract Assumptions
 
@@ -691,7 +703,7 @@ npx wsdl-tsc gateway \
 
 ### Integration Pattern
 
-The generated gateway code provides scaffolding that you can integrate into your Fastify application:
+The generated gateway scaffolding provides the foundation for your Fastify application:
 
 ```typescript
 import Fastify from 'fastify';
@@ -700,10 +712,10 @@ import { registerRoutes } from './gateway/routes.js';
 
 const app = Fastify({ logger: true });
 
-// Register JSON Schemas
+// Register JSON Schemas (validation setup)
 await registerSchemas(app);
 
-// Register routes
+// Register routes (with handler stubs)
 await registerRoutes(app, {
   prefix: '/api/v1',
   // Pass any route-level options
@@ -712,7 +724,11 @@ await registerRoutes(app, {
 await app.listen({ port: 3000 });
 ```
 
+> **Note**: The registered routes contain handler stubs that throw "Not implemented" errors. You must implement the handler logic in each route file before the gateway becomes functional.
+
 ### Handler Implementation
+
+> ** Manual Implementation Required**: Currently, the gateway generator produces handler stubs that you must implement. Future versions will include full code generation for handler logic.
 
 Each generated route file contains handler stubs that you need to implement:
 
@@ -729,7 +745,14 @@ export async function handler(request, reply) {
 }
 ```
 
-**Note**: Complete gateway integration examples with handler implementations will be provided in the `examples/gateway/` directory.
+**Current workflow**:
+1. Generate gateway scaffolding with `wsdl-tsc gateway`
+2. Implement handler functions manually in each route file
+3. Import and call your SOAP client
+4. Transform SOAP responses to match OpenAPI schemas
+5. Return responses in the standard envelope format
+
+**Future enhancement**: Automated handler generation will include SOAP client calls, response transformation, error handling, and envelope wrapping.
 
 ---
 
@@ -1196,7 +1219,7 @@ await generateGateway({
   clientDir: "./src/services/hotel",
   versionSlug: "v1",
   serviceSlug: "hotel",
-  defaultResponseStatusCodes: [200, 400, 401, 404, 500],
+  defaultResponseStatusCodes: [200, 400, 401, 403, 404, 409, 422, 429, 500, 502, 503, 504],
   imports: "js"
 });
 ```
@@ -1538,7 +1561,7 @@ See also: [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDU
 
 MIT © TechSpokes
 
-Generated artifacts are fully yours — no restrictions or attribution required.
+Generated artifacts are fully yours with no restrictions or attribution required.
 
 See [LICENSE](LICENSE) for full text.
 
@@ -1562,7 +1585,7 @@ Support ongoing development and maintenance:
 - Direct influence on roadmap priorities
 - Support open source sustainability
 
-Thank you for considering sponsorship! 🙏
+Thank you for considering sponsorship!
 
 ---
 

@@ -9,7 +9,6 @@
  * - Generates JSON Schema files with URN-based IDs for all components
  * - Creates Fastify-compatible operation schemas (body, params, querystring, headers, response)
  * - Emits route registration code with handler stubs
- * - Supports automatic version/service detection from paths
  * - Enforces strict contract validation (no inline schemas, proper $refs)
  *
  * Output structure:
@@ -26,7 +25,6 @@ import path from "node:path";
 import * as yaml from "js-yaml";
 import {
   buildParamSchemasForOperation,
-  determineVersionAndService,
   getJsonSchemaRefName,
   isNumericStatus,
   type OpenAPIDocument,
@@ -41,8 +39,8 @@ import {emitModelSchemas, emitOperationSchemas, emitRouteFiles, emitSchemasModul
  * @property {any} [openapiDocument] - Pre-loaded OpenAPI document object (exclusive with openapiFile)
  * @property {string} outDir - Output directory for generated gateway code
  * @property {string} [clientDir] - Path to client directory (where client.ts is located) for importing client code
- * @property {string} [versionSlug] - Version identifier for URN generation (auto-detected if omitted)
- * @property {string} [serviceSlug] - Service identifier for URN generation (auto-detected if omitted)
+ * @property {string} versionSlug - Version identifier for URN generation (required)
+ * @property {string} serviceSlug - Service identifier for URN generation (required)
  * @property {number[]} [defaultResponseStatusCodes] - Status codes to backfill with default response
  * @property {"js"|"ts"|"bare"} [imports] - Import-extension mode for generated TypeScript modules (mirrors global --imports)
  */
@@ -51,8 +49,8 @@ export interface GenerateGatewayOptions {
   openapiDocument?: any;
   outDir: string;
   clientDir?: string;
-  versionSlug?: string;
-  serviceSlug?: string;
+  versionSlug: string;
+  serviceSlug: string;
   defaultResponseStatusCodes?: number[];
   imports?: "js" | "ts" | "bare";
 }
@@ -62,7 +60,7 @@ export interface GenerateGatewayOptions {
  *
  * This function orchestrates the complete gateway generation process:
  * 1. Loads/validates the OpenAPI document
- * 2. Determines version and service slugs
+ * 2. Validates version and service slugs are provided
  * 3. Generates model schemas with URN IDs
  * 4. Generates operation schemas with Fastify structure
  * 5. Emits schema registration module
@@ -100,6 +98,8 @@ export interface GenerateGatewayOptions {
  * await generateGateway({
  *   openapiDocument: openapiDoc,
  *   outDir: "gateway",
+ *   versionSlug: "v1",
+ *   serviceSlug: "weather",
  *   defaultResponseStatusCodes: [200, 400, 500]
  * });
  */
@@ -140,12 +140,13 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
     throw new Error("Invalid OpenAPI document: missing 'components.schemas'");
   }
 
-  // Determine version and service slugs
-  const {versionSlug, serviceSlug} = determineVersionAndService(
-    doc,
-    opts.versionSlug,
-    opts.serviceSlug
-  );
+  // Validate that version and service slugs are provided
+  if (!opts.versionSlug || !opts.serviceSlug) {
+    throw new Error("Both versionSlug and serviceSlug are required for gateway generation");
+  }
+
+  const versionSlug = opts.versionSlug;
+  const serviceSlug = opts.serviceSlug;
 
   // Set default response status codes if not provided
   const defaultResponseStatusCodes = opts.defaultResponseStatusCodes || [

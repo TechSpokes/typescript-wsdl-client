@@ -41,32 +41,9 @@ export interface OpenAPIDocument {
  * slugName("User-Profile_Data") // "user_profile_data"
  */
 export function slugName(name: string): string {
-  const lower = name.toLowerCase();
-  let result = "";
-  let prevUnderscore = false;
-
-  for (const ch of lower) {
-    const code = ch.charCodeAt(0);
-    const isAlphaNum =
-      (code >= 97 && code <= 122) || (code >= 48 && code <= 57);
-
-    if (isAlphaNum) {
-      result += ch;
-      prevUnderscore = false;
-      continue;
-    }
-
-    if (result.length > 0 && !prevUnderscore) {
-      result += "_";
-      prevUnderscore = true;
-    }
-  }
-
-  if (prevUnderscore) {
-    result = result.replace(/_+$/, "");
-  }
-
-  return result;
+  const lower = String(name ?? "").toLowerCase();
+  const collapsed = lower.replace(/[^a-z0-9]+/g, "_");
+  return collapsed.replace(/^_+|_+$/g, "");
 }
 
 /**
@@ -289,54 +266,3 @@ export function buildParamSchemasForOperation(
     headersSchema,
   };
 }
-
-/**
- * Determines version and service slugs from OpenAPI document or CLI arguments
- *
- * Resolution strategy:
- * 1. If both CLI args provided, use them directly
- * 2. Otherwise, analyze paths to infer from URL structure
- * 3. Expect paths like "/{version}/{service}/..." for inference
- * 4. Fail fast with clear error if inference impossible
- *
- * @param {OpenAPIDocument} doc - OpenAPI document containing paths
- * @param {string} [cliVersion] - Optional version slug from CLI
- * @param {string} [cliService] - Optional service slug from CLI
- * @returns {{ versionSlug: string; serviceSlug: string }} - Resolved slugs
- * @throws {Error} If version/service cannot be determined
- */
-export function determineVersionAndService(
-  doc: OpenAPIDocument,
-  cliVersion?: string,
-  cliService?: string
-): { versionSlug: string; serviceSlug: string } {
-  let versionSlug = cliVersion;
-  let serviceSlug = cliService;
-
-  if (versionSlug && serviceSlug) {
-    return {versionSlug, serviceSlug};
-  }
-
-  const paths = Object.keys(doc.paths || {});
-  const segments: string[][] = [];
-  for (const p of paths) {
-    const parts = p.split("/").filter(Boolean);
-    segments.push(parts);
-  }
-
-  const candidates = segments.filter((s) => s.length >= 2);
-  if (candidates.length > 0) {
-    const [first] = candidates;
-    if (!versionSlug) versionSlug = first[0];
-    if (!serviceSlug) serviceSlug = first[1];
-  }
-
-  if (!versionSlug || !serviceSlug) {
-    throw new Error(
-      "Unable to determine version/service from paths. Please provide --version and --service explicitly."
-    );
-  }
-
-  return {versionSlug, serviceSlug};
-}
-

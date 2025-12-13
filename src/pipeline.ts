@@ -29,8 +29,10 @@ import {emitClientArtifacts, reportCompilationStats, reportOpenApiSuccess, succe
  * @property {Partial<CompilerOptions>} [compiler] - Compiler options for type generation
  * @property {object} [openapi] - OpenAPI generation configuration (optional)
  * @property {string} openapi.outFile - Output path for OpenAPI specification
- * @property {object} [gateway] - Gateway generation configuration (optional, requires openapi)
+ * @property {object} [gateway] - Gateway generation configuration (optional, requires openapi and explicit versionSlug/serviceSlug)
  * @property {string} gateway.outDir - Output directory for gateway code
+ * @property {string} gateway.versionSlug - Version identifier for URN generation (required)
+ * @property {string} gateway.serviceSlug - Service identifier for URN generation (required)
  */
 export interface PipelineOptions {
   wsdl: string;
@@ -38,7 +40,11 @@ export interface PipelineOptions {
   clientOutDir?: string;
   compiler?: Partial<CompilerOptions>;
   openapi?: Omit<GenerateOpenAPIOptions, "wsdl" | "catalogFile" | "compiledCatalog"> & { outFile?: string };
-  gateway?: Omit<GenerateGatewayOptions, "openapiFile" | "openapiDocument"> & { outDir?: string };
+  gateway?: Omit<GenerateGatewayOptions, "openapiFile" | "openapiDocument"> & {
+    outDir?: string;
+    versionSlug: string;
+    serviceSlug: string;
+  };
 }
 
 /**

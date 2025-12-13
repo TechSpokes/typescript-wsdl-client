@@ -8,6 +8,18 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
+- **BREAKING**: refactor(gateway): change URN format to service-first structure - URN IDs now use `urn:services:{service}:{version}:schemas:{models|operations}:{slug}` instead of `urn:schema:{version}:services:{service}:{models|operations}:{slug}` for better namespace hierarchy and service-based filtering
+- **BREAKING**: refactor(gateway): remove automatic version/service detection - `--gateway-version-prefix` and `--gateway-service-name` are now always required for gateway and pipeline commands
+- docs(readme): remove all emojis and icon characters from body text (keeping only badges at top and sponsor icons at bottom)
+- docs(readme): replace arrow symbols with simple text (becomes, to) for better readability and accessibility
+- docs(readme): fix typo in Handler Implementation heading
+- docs(readme): remove em dashes and AI-style emphasis for more natural, human-readable text
+- docs(readme): simplify language and remove unnecessary formal phrasing throughout documentation
+- docs(readme): clarify runtime vs development dependencies in Installation section
+- docs(readme): clarify gateway command generates scaffolding (routes + schemas) with handler stubs, not fully functional gateway yet
+- docs(readme): add version 0.8.0 status indicator explaining basic scaffolding with full handler generation planned for future
+- docs(readme): update mission statement and feature table to accurately reflect current gateway scaffolding capabilities
+- docs(readme): add clear workflow steps showing manual handler implementation is currently required
 - docs(readme): add catalog file organization section with co-location patterns by command
 - docs(readme): add complete gateway command documentation with Fastify integration patterns
 - docs(readme): add programmatic API documentation for all 4 exported functions
