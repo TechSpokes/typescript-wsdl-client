@@ -41,11 +41,32 @@ export interface OpenAPIDocument {
  * slugName("User-Profile_Data") // "user_profile_data"
  */
 export function slugName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
+  const lower = name.toLowerCase();
+  let result = "";
+  let prevUnderscore = false;
+
+  for (const ch of lower) {
+    const code = ch.charCodeAt(0);
+    const isAlphaNum =
+      (code >= 97 && code <= 122) || (code >= 48 && code <= 57);
+
+    if (isAlphaNum) {
+      result += ch;
+      prevUnderscore = false;
+      continue;
+    }
+
+    if (result.length > 0 && !prevUnderscore) {
+      result += "_";
+      prevUnderscore = true;
+    }
+  }
+
+  if (prevUnderscore) {
+    result = result.replace(/_+$/, "");
+  }
+
+  return result;
 }
 
 /**
@@ -293,7 +314,7 @@ export function determineVersionAndService(
   let serviceSlug = cliService;
 
   if (versionSlug && serviceSlug) {
-    return { versionSlug, serviceSlug };
+    return {versionSlug, serviceSlug};
   }
 
   const paths = Object.keys(doc.paths || {});
@@ -316,6 +337,6 @@ export function determineVersionAndService(
     );
   }
 
-  return { versionSlug, serviceSlug };
+  return {versionSlug, serviceSlug};
 }
 
