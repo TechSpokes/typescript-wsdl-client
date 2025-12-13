@@ -204,6 +204,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fix README install instructions to use correct package name (@techspokes/typescript-wsdl-client) to prevent 404 errors.
 
 ## [0.2.0] – 2025-08-18
+
 - Enrich schemaCompiler operations by extracting SOAP action URIs from WSDL
   `<soap:operation>` bindings.
 
