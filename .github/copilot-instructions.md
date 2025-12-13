@@ -1,17 +1,17 @@
 # Copilot Instructions for This Repository
 
-> This file guides GitHub Copilot Chat on how to interact with the `typescript-wsdl-client` codebase, providing project context, conventions, and best practices.
+> Guide for GitHub Copilot Chat when working on `techspokes/typescript-wsdl-client`.
 
 ## Repository Information
 - Owner/Repo: techspokes / typescript-wsdl-client
 - Package: `@techspokes/typescript-wsdl-client`
-- Default Branch: main
-- CLI Binary: `wsdl-tsc` (dist/cli.js)
-- Engine: Node.js ≥ 20
-- Issue Tracker: https://github.com/techspokes/typescript-wsdl-client/issues
+- Default Branch: `main`
+- CLI Binary: `wsdl-tsc` (`dist/cli.js`)
+- Engine: Node.js >= 20
+- Issues: https://github.com/techspokes/typescript-wsdl-client/issues
 - Discussions: https://github.com/techspokes/typescript-wsdl-client/discussions
-- CI: `.github/workflows/ci.yml`
-- Version Policy: Always read current version from `package.json`; never duplicate it here.
+- CI Workflow: `.github/workflows/ci.yml`
+- Version Policy: always read `"version"` from `package.json`; do not duplicate it here.
 
 Machine-readable metadata (parse first for GitHub MCP operations):
 
@@ -29,106 +29,183 @@ cliBinary: wsdl-tsc
 node: '>=20'
 ```
 
-### GitHub MCP Usage Guidelines (minimal set)
-1. Use `owner`/`repo` from YAML; read `package.json` each time you need the version (no caching).
-2. Commit / PR titles: prefix with `Version: <version>` (see commit format section below).
+### GitHub MCP Usage Guidelines (minimal)
+1. Use `owner` / `repo` from YAML; read `package.json` each time you need the version (no caching).
+2. Commit/PR titles: prefix with `Version: <version>` (see commit format rules).
 3. Default PR base: `main` unless explicitly overridden.
-4. Prefer repo-scoped queries; avoid broad searches when listing issues/PRs.
-5. Release prep: read `CHANGELOG.md` + `package.json`; apply release rules section below.
-6. Don’t remote-fetch metadata already present in YAML (owner/repo/branch/etc.).
-7. For any code or docs change, propose (and on confirmation add) a concise bullet under `## [Unreleased]` (exclude the version prefix).
+4. Prefer repo-scoped queries; avoid broad GitHub-wide searches for issues/PRs.
+5. For releases, read `CHANGELOG.md` and `package.json` and follow the release workflow below.
+6. Don't remote-fetch metadata already present in this file or `package.json`.
+7. For any code or docs change, propose (and on confirmation add) a concise bullet under `## [Unreleased]` in `CHANGELOG.md` (omit the `Version: <'>` prefix).
 
+---
 
-## Project context - Make sure to understand:
-- Purpose: Generate fully-typed TypeScript SOAP clients from WSDL/XSD schemas, addressing common SOAP pain points.
-- Key features: end-to-end type safety, deterministic JSON ⇄ SOAP metadata, flexible primitive mapping, automatic flattening of complex/simple content inheritance, choice handling strategies, WS-Policy security hints, pluggable ESM/CJS imports.
-- Primary users: TypeScript developers needing SOAP clients.
-- Maintainer: Serge Liatko (@sergeliatko). 
+## Project Context (what agents should know)
+- Purpose: generate fully-typed TypeScript SOAP clients from WSDL/XSD, with optional OpenAPI 3.1 and Fastify REST gateway scaffolding.
+- Key features:
+  - Deterministic JSON / SOAP metadata; attribute + element flattening.
+  - `$value` convention for text content; inheritance resolution for complex/simple content.
+  - Choice handling strategies; WS-Policy hints; string-first primitive mapping by default.
+  - Catalog introspection via `catalog.json` reused by client/OpenAPI/gateway/pipeline.
+- Primary users: TypeScript developers integrating with SOAP services.
+- Maintainer: Serge Liatko ([@sergeliatko](https://github.com/sergeliatko)).
 - Vendor: TechSpokes (https://www.techspokes.com).
-- Runtime/tooling: **Node.js ≥ 20**, **TypeScript (strict)**, **ES2022**, **ESM/NodeNext**. 
-- CLI binary: `wsdl-tsc` (exposed from `dist/cli.js`). Build artifacts live in `dist/`.
-- Useful scripts:
-  - `npm run build` → compile TS
-  - `npm run typecheck` → `tsc --noEmit`
-  - `npm run smoke` → CLI help
-  - `npm run smoke:gen` → generate sample client + compile check
-  - `npm run ci` → build + typecheck + both smokes
-- When suggesting commands in terminal, do so a command-by-command basis, not as a single block (no && or ;). This helps users understand each step and allows them to run commands individually if needed.
-- Docs to consult when answering or editing code:
-  - **README.md** (CLI, workflow, mapping defaults) 
-  - **CONTRIBUTING.md** (dev workflow & expectations)
-  - **ROADMAP.md** (near-term priorities; don’t drift)
-  - **CHANGELOG.md** (Keep a Changelog style with **Unreleased**)
-  - **SECURITY.md** (Node 20+, private reporting)
+- Runtime/tooling:
+  - Node.js `>= 20.0.0` (see `engines.node` in `package.json`).
+  - TypeScript strict, ES2022, `type: "module"` (ESM/NodeNext style).
+  - CLI binary: `wsdl-tsc` (entry: `dist/cli.js`), orchestrating the pipeline.
+- Generated artifacts:
+  - Client: `client.ts`, `types.ts`, `utils.ts`, co-located `catalog.json`.
+  - OpenAPI: 3.1 spec (`.json`/`.yaml`) mirroring the TS model.
+  - Gateway: Fastify scaffolding (routes + JSON Schemas + handler stubs; handlers are manual).
+- Catalog co-location (important for reasoning about paths):
+  - `compile`: explicit `--catalog-file` (no default).
+  - `client`: defaults to `{client-dir}/catalog.json`.
+  - `openapi`: defaults to `{dir-of-openapi-file}/catalog.json`.
+  - `pipeline`: cascade lookup: `{client-dir}` / `{openapi-dir}` / `{gateway-dir}` / `tmp/`.
+- Scratchpads: non-project notes may live under ad-hoc folders; treat them as scratchpads only, not as source of truth for behavior or docs.
 
+---
 
-## How to propose changes
-- Prefer **scoped and focused** diffs. Update CLI help/README when user-visible behavior changes.
-- Align with current emit/runtime conventions (ESM/NodeNext, strict TS).
-- Preserve “string-first” primitive mapping defaults unless a flag explicitly opts out. (Examples in README.)
+## CLI and Commands (align with README)
+- CLI entry: `wsdl-tsc` (via `npx wsdl-tsc '` in README examples).
+- Commands (5 total; keep terminology consistent with README):
+  - `compile`: WSDL / `catalog.json` only (no TS code).
+  - `client`: WSDL or catalog / TS client (`client.ts`, `types.ts`, `utils.ts`, `catalog.json`).
+  - `openapi`: WSDL or catalog / OpenAPI 3.1 spec.
+  - `gateway`: OpenAPI / Fastify REST gateway scaffolding (routes + schemas + handler stubs).
+  - `pipeline`: one-shot compile / client / OpenAPI / gateway (full stack).
+- Gateway status:
+  - Generates scaffolding (routes, schemas, handler stubs).
+  - Does **not** emit a fully wired production gateway; handler implementation is manual.
+- When changing CLI behavior:
+  - Keep flag names consistent with README (lowercase, hyphenated, e.g. `--wsdl-source`, `--openapi-file`).
+  - Update:
+    - CLI sections in `README.md` (commands, examples, tables).
+    - Any relevant smoke/CI scripts in `package.json`.
+  - Ensure catalog co-location behavior remains aligned with README, or update docs + scripts together.
 
+---
 
-## Commit message format (required)
-- **Always include the current version** from `package.json` in the title.
-- **Always prefix the title with `Version: <version>`**.
-- Check the CHANGELOG.md for the unreleased or current version changes for additional context (when available).
-- When multiple items are changed in a single commit, provide a single summary that captures the essence of the changes.
+## Scripts and Local Tooling (package.json as source of truth)
+- Node and CLI entry:
+  - Node engine: read from `engines.node` in `package.json` (currently `>=20.0.0`).
+  - CLI binary mapping: read from `bin.wsdl-tsc` in `package.json` (currently `dist/cli.js`).
+- Scripts:
+  - **Do not hardcode script lists here.**
+  - When you need scripts:
+    - Inspect `"scripts"` in `package.json` (`build`, `typecheck`, `ci`, smoke scripts, etc.).
+    - Infer behavior from script names and values instead of maintaining a separate canonical list.
+  - Typical patterns (describe, don't freeze):
+    - `build`: compile TypeScript to `dist/`.
+    - `typecheck`: run `tsc --noEmit`.
+    - `clean*`: remove `dist`/`tmp` or other temporary artifacts.
+    - `dev` / `watch`: run the CLI in dev/watch mode via `tsx`.
+    - `smoke:*`: end-to-end CLI checks (compile, client, openapi, gateway, pipeline) using `examples/minimal/weather.wsdl`.
+    - `ci`: combine build/typecheck and at least one pipeline-style smoke test.
+- When suggesting commands in a terminal:
+  - Use one command per line, no `&&` chaining (PowerShell-friendly).
+  - Prefer `npm run <script>` and `npx wsdl-tsc ' patterns consistent with README and `package.json`.
 
-```
-Version: <version> <type>(<optional-scope>): <imperative summary>
-```
+---
 
-- The version is **read-only**: never change it in commits (releases handle bumps).
-- Conventional Commit `type` examples: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
-- Title ≤ 72 chars; put rationale/risks/refs (e.g., `Closes #123`) in the body.
+## How to Propose and Shape Changes
+- Prefer small, focused diffs:
+  - One feature or bugfix per change.
+  - Update CLI help output and `README.md` when user-visible CLI behavior changes.
+- Technical constraints:
+  - Keep TypeScript strict and consistent with existing `tsconfig.json`.
+  - Maintain ESM/NodeNext style and `type: "module"` conventions.
+  - Avoid new dependencies unless clearly justified; prefer existing tools (`tsc`, `tsx`, `rimraf`).
+- SOAP/OpenAPI/gateway modeling:
+  - Preserve string-first primitive mapping defaults unless a flag explicitly requests another mapping (e.g. `--client-int64-as number`).
+  - Keep JSON / SOAP mapping and OpenAPI structure deterministic and stable for diff-friendly regeneration.
 
-**Examples**
-- `Version: 0.1.6 feat(cli): add --flag to control attribute key`
-- `Version: 0.1.6 fix(emitter): stabilize operation order in meta`
-- `Version: 0.1.6 docs: clarify NodeNext setup and imports`
+---
 
-> The current project version source is `package.json` (`"version": "…"`).
+## Commit Message Format (required)
+- Always:
+  - Read current version from `package.json`.
+  - Start commit titles with `Version: <version>`.
+- Format (Conventional Commits style):
 
+  ```
+  Version: <version> <type>(<optional-scope>): <imperative summary>
+  ```
 
-## CHANGELOG rules
-- Keep an **“Unreleased”** section at the top. New entries go there.
-- All file modifications performed during a Copilot session or in code edits must be captured as bullets under **Unreleased** before concluding.
-- For each change:
-   1) If interactive (local commit), **ask for confirmation** to append a concise bullet to **Unreleased** based on the commit title (without the `Version: <…>` prefix).
-   2) If non-interactive (e.g., CI), append automatically.
-- On release:
-   1) Read the current version from `package.json`.
-   2) Decide the semver bump (patch/minor/major).
-    3) Update the `"version"` field in `package.json` to the new release version.
-   4) Promote **Unreleased** → `## [<version>] – YYYY-MM-DD` (today’s date) in CHANGELOG.md.
-   5) Start a fresh **Unreleased** section at the top of CHANGELOG.md.
+- Rules:
+  - Treat `"version"` in `package.json` as **read-only** in normal work; releases handle bumps.
+  - Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, etc.
+  - Title <= 72 characters.
+  - Place rationale, risks, and references (e.g. `Closes #123`) in the body.
+- Examples:
+  - `Version: 0.8.0 feat(cli): add --flag to control attribute key`
+  - `Version: 0.8.0 fix(emitter): stabilize operation order in meta`
+  - `Version: 0.8.0 docs: clarify NodeNext setup and imports`
 
-## What to generate (guidance for Copilot Chat & edits)
-- When asked to **create a commit message**:
-  1) Read version from `package.json`.
-  2) Start title with `Version: <version>`.
-  3) Produce a Conventional Commit style summary + (optional) body with context/risks/refs.
+---
+
+## CHANGELOG Rules (align with current file)
+- General:
+  - Keep `## [Unreleased]` at the top; new entries go there.
+  - Style: one-line entries, no file lists, no vague phrasing.
+- For each code/docs change:
+  - Ensure a bullet under `## [Unreleased]` before concluding work.
+  - If interactive:
+    - Ask for confirmation to append a bullet derived from the commit title (strip `Version: <'>`).
+  - If non-interactive (e.g. CI):
+    - Append the bullet automatically.
+- Release workflow:
+  1. Read current version from `package.json`.
+  2. Determine semver bump (patch/minor/major) based on `Unreleased` changes.
+  3. Update `"version"` in `package.json` to the new release version.
+  4. In `CHANGELOG.md`:
+     - Promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date).
+     - Start a fresh, empty `## [Unreleased]` section at the top.
 - When asked to **update the CHANGELOG**:
-  - Propose a single bullet under **Unreleased** derived from the commit title (minus the version prefix), then request confirmation to insert it.
+  - Propose a single bullet for `Unreleased` based on the described change.
+  - Match the tone/precision of existing entries (e.g. `feat(cli): ', `fix(openapi): ').
+
+---
+
+## What to Generate (for Copilot Chat)
+- When asked to **create a commit message**:
+  1. Read the version from `package.json`.
+  2. Use the `Version: <version> <type>(scope): summary` format.
+  3. Provide an optional body with context, risks, or references.
+- When asked to **update `CHANGELOG.md`**:
+  - Draft a single bullet for `## [Unreleased]` derived from the commit summary (no `Version: '`).
+  - Ask for confirmation before editing the file in interactive contexts.
 - When asked to **prepare a release**:
-  - Bump the version in `package.json`, 
-  - Promote **Unreleased** to a new version header with today’s date (`## [x.y.z] – YYYY-MM-DD`), 
-  - Then reset an empty **Unreleased** at the top.
-- When editing code:
-  - Keep TypeScript strict and NodeNext module settings intact.
-  - If changing CLI behavior or flags, update README’s CLI section/examples accordingly. 
-  - Prefer minimal dependencies; stick to the existing toolchain (`tsc`, `tsx`, `rimraf`).
+  - Bump the version in `package.json`.
+  - Promote `Unreleased` to a dated section `## [x.y.z] - YYYY-MM-DD`.
+  - Insert a new empty `## [Unreleased]` at the top.
+- When editing code that affects CLI, OpenAPI, or gateway:
+  - Keep TypeScript and NodeNext settings intact.
+  - Align flags, examples, and terminology with the current `README.md`.
+  - Ensure catalog co-location behavior and gateway scaffolding status match the docs.
 
+---
 
-## Don’ts
-- Don’t include “version bump” phrasing anywhere.
-- Don’t alter the project version in commits.
-- Don’t introduce breaking CLI flags without updating docs and smoke scripts. 
+## Don'ts
+- Don't use `version bump` phrasing in commit messages or changelog entries.
+- Don't alter the project version in regular feature/fix commits (only in release steps).
+- Don't introduce breaking CLI flags or behavior without:
+  - Updating README CLI docs and examples.
+  - Updating relevant smoke/CI scripts in `package.json`.
+- Don't treat scratchpad or non-project docs as authoritative for behavior; use README, CHANGELOG, `package.json`, and `src/` instead.
 
+---
 
-## Quick references
-
-- Build: `npm run build` · Typecheck: `npm run typecheck` · Smoke: `npm run smoke` / `npm run smoke:gen`
-- Readme (CLI & workflow details): see **README.md**.
-- Contributing (dev workflow): see **CONTRIBUTING.md**.
-- Changelog (format & Unreleased): see **CHANGELOG.md**.
+## Quick References
+- Node/CLI:
+  - Node: see `engines.node` in `package.json`.
+  - CLI: `wsdl-tsc` (entry `dist/cli.js`; used via `npx wsdl-tsc ').
+- Scripts:
+  - Inspect `"scripts"` in `package.json` for `build`, `typecheck`, `ci`, and smoke tests.
+- Docs:
+  - CLI and workflow details: `README.md` (commands, flags, examples).
+  - Dev workflow: `CONTRIBUTING.md`.
+  - Roadmap/priorities: `ROADMAP.md`.
+  - Changelog format and current `Unreleased`: `CHANGELOG.md`.
+  - Security/reporting: `SECURITY.md`.
