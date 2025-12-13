@@ -10,10 +10,10 @@ import path from "node:path";
 import fs from "node:fs";
 import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
-import {emitClient} from "./emit/clientEmitter.js";
-import {emitTypes} from "./emit/typesEmitter.js";
-import {emitUtils} from "./emit/utilsEmitter.js";
-import {emitCatalog} from "./emit/catalogEmitter.js";
+import {generateClient} from "./client/generateClient.js";
+import {generateTypes} from "./client/generateTypes.js";
+import {generateUtils} from "./client/generateUtils.js";
+import {generateCatalog} from "./client/generateCatalog.js";
 import {generateOpenAPI, type GenerateOpenAPIOptions} from "./openapi/generateOpenAPI.js";
 import {generateGateway, type GenerateGatewayOptions} from "./gateway/generateGateway.js";
 import {resolveCompilerOptions, type CompilerOptions} from "./config.js";
@@ -75,13 +75,13 @@ export async function runGenerationPipeline(opts: PipelineOptions) {
   fs.mkdirSync(opts.outDir, {recursive: true});
 
   // Step 4: Emit TypeScript artifacts
-  emitClient(path.join(opts.outDir, "client.ts"), compiled);
-  emitTypes(path.join(opts.outDir, "types.ts"), compiled);
-  emitUtils(path.join(opts.outDir, "utils.ts"), compiled);
+  generateClient(path.join(opts.outDir, "client.ts"), compiled);
+  generateTypes(path.join(opts.outDir, "types.ts"), compiled);
+  generateUtils(path.join(opts.outDir, "utils.ts"), compiled);
 
   // Step 5: Optionally emit the JSON catalog for introspection
   if (finalCompiler.catalog) {
-    emitCatalog(path.join(opts.outDir, "catalog.json"), compiled);
+    generateCatalog(path.join(opts.outDir, "catalog.json"), compiled);
   }
 
   // Step 6: Optionally generate OpenAPI specification

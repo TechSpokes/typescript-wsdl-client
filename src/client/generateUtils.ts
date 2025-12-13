@@ -1,5 +1,5 @@
 /**
- * TypeScript SOAP Client Utilities Emitter
+ * TypeScript SOAP Client Utilities Generator
  *
  * This module generates utility types and constants needed for the TypeScript SOAP client
  * to properly handle XML serialization and deserialization. It creates metadata mappings
@@ -15,7 +15,7 @@ import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
 import {deriveClientName, pascalToSnakeCase} from "../util/tools.js";
 
 /**
- * Emits utility types and constants for XML serialization/deserialization
+ * Generates utility types and constants for XML serialization/deserialization
  *
  * This function generates a TypeScript file containing metadata mappings that help
  * the SOAP client distinguish between XML attributes and child elements during
@@ -32,12 +32,12 @@ import {deriveClientName, pascalToSnakeCase} from "../util/tools.js";
  * @param {CompiledCatalog} compiled - The compiled WSDL catalog containing metadata
  * @throws {Error} If metadata is missing or has an invalid structure
  */
-export function emitUtils(outFile: string, compiled: CompiledCatalog) {
+export function generateUtils(outFile: string, compiled: CompiledCatalog) {
   const clientName = deriveClientName(compiled);
   const clientConstant = pascalToSnakeCase(clientName).toUpperCase();
   const {attrSpec, childType} = compiled.meta;
   if (!attrSpec || !childType) {
-    throw new Error("Metadata not found in compiled catalog. Ensure schemaCompiler runs before metaEmitter.");
+    throw new Error("Metadata not found in compiled catalog. Ensure schemaCompiler runs before generator.");
   }
   if (typeof attrSpec !== "object" || typeof childType !== "object") {
     throw new Error("Invalid metadata structure. Expected objects for Attributes and ChildrenTypes.");

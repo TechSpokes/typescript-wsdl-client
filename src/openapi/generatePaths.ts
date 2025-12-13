@@ -1,5 +1,5 @@
 /**
- * OpenAPI Paths Builder
+ * OpenAPI Paths Generator
  *
  * This module transforms WSDL operations into OpenAPI 3.1 paths and operations.
  * It bridges the gap between SOAP's operation-centric model and REST's resource-oriented
@@ -53,9 +53,9 @@ export interface TagsMappingFile {
 }
 
 /**
- * Options for building OpenAPI paths
+ * Options for generating OpenAPI paths
  *
- * @interface BuildPathsOptions
+ * @interface GeneratePathsOptions
  * @property {string} [basePath] - Base path prefix for all operations (e.g., /v1/soap)
  * @property {PathStyle} pathStyle - Style for converting operation names to path segments
  * @property {string} defaultMethod - Default HTTP method for operations
@@ -65,7 +65,7 @@ export interface TagsMappingFile {
  * @property {Record<string, any[]>} opSecurity - Operation-specific security requirements
  * @property {Record<string, string[]>} opHeaderParameters - Operation-specific header parameters
  */
-export interface BuildPathsOptions {
+export interface GeneratePathsOptions {
   basePath?: string;
   pathStyle: PathStyle;
   defaultMethod: string;
@@ -76,7 +76,7 @@ export interface BuildPathsOptions {
   opHeaderParameters: Record<string, string[]>; // names of parameter components
 }
 
-export function buildPaths(compiled: CompiledCatalog, opts: BuildPathsOptions) {
+export function generatePaths(compiled: CompiledCatalog, opts: GeneratePathsOptions) {
   const paths: Record<string, any> = {};
   const base = normalizeBase(opts.basePath || "/");
 

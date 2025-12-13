@@ -29,13 +29,13 @@ import {
   isNumericStatus,
   getJsonSchemaRefName,
   buildParamSchemasForOperation,
-} from "./gatewayHelpers.js";
+} from "./helpers.js";
 import {
   emitModelSchemas,
   emitOperationSchemas,
   emitSchemasModule,
   emitRouteFiles,
-} from "./gatewayEmitters.js";
+} from "./generators.js";
 
 /**
  * Options for gateway code generation

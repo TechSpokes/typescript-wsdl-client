@@ -27,8 +27,8 @@ import * as path from "path";
 import * as yaml from "js-yaml";
 import {loadWsdl} from "../loader/wsdlLoader.js";
 import {compileCatalog, type CompiledCatalog} from "../compiler/schemaCompiler.js";
-import {buildSchemas} from "./buildSchemas.js";
-import {buildPaths} from "./buildPaths.js";
+import {generateSchemas} from "./generateSchemas.js";
+import {generatePaths} from "./generatePaths.js";
 import {buildSecurity, loadSecurityConfig} from "./security.js";
 import type {PathStyle} from "./casing.js";
 
@@ -139,7 +139,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
   const securityBuilt = buildSecurity(securityCfg);
 
   // Build components.schemas
-  const schemas = buildSchemas(compiled, {
+  const schemas = generateSchemas(compiled, {
     closedSchemas: opts.closedSchemas,
     pruneUnusedSchemas: opts.pruneUnusedSchemas,
   });
@@ -151,7 +151,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
     if (tagStyle === "first") return "General"; // fallback; per-op derivation below
     return compiled.serviceName || "SOAP";
   })();
-  const paths = buildPaths(compiled, {
+  const paths = generatePaths(compiled, {
     basePath: opts.basePath || "/",
     pathStyle: opts.pathStyle || "kebab",
     defaultMethod: opts.defaultMethod || "post",

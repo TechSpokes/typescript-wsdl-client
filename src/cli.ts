@@ -15,10 +15,10 @@ import path from "node:path";
 
 import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
-import {emitTypes} from "./emit/typesEmitter.js";
-import {emitUtils} from "./emit/utilsEmitter.js";
-import {emitCatalog} from "./emit/catalogEmitter.js";
-import {emitClient} from "./emit/clientEmitter.js";
+import {generateTypes} from "./client/generateTypes.js";
+import {generateUtils} from "./client/generateUtils.js";
+import {generateCatalog} from "./client/generateCatalog.js";
+import {generateClient} from "./client/generateClient.js";
 import {generateOpenAPI} from "./openapi/generateOpenAPI.js";
 import {runGenerationPipeline} from "./pipeline.js";
 import {resolveCompilerOptions} from "./config.js";
@@ -134,13 +134,13 @@ if (!rawArgs[0] || !["openapi", "pipeline", "gateway", "client"].includes(rawArg
   fs.mkdirSync(clientOutDir, {recursive: true});
 
   // Emit files (paths relative to clientOutDir)
-  emitClient(path.join(clientOutDir, "client.ts"), compiled);
-  emitTypes(path.join(clientOutDir, "types.ts"), compiled);
-  emitUtils(path.join(clientOutDir, "utils.ts"), compiled);
+  generateClient(path.join(clientOutDir, "client.ts"), compiled);
+  generateTypes(path.join(clientOutDir, "types.ts"), compiled);
+  generateUtils(path.join(clientOutDir, "utils.ts"), compiled);
 
   // Emit catalog if requested
   if (compiled.options.catalog) {
-    emitCatalog(path.join(clientOutDir, "catalog.json"), compiled);
+    generateCatalog(path.join(clientOutDir, "catalog.json"), compiled);
   }
 
   console.log(`[SUCCESS] Generated TypeScript client in ${clientOutDir}`);

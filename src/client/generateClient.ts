@@ -1,5 +1,5 @@
 /**
- * TypeScript SOAP Client Emitter
+ * TypeScript SOAP Client Generator
  *
  * This module generates a strongly-typed TypeScript SOAP client class from the compiled WSDL catalog.
  * The generated client wraps the node-soap library with type-safe operation methods and proper
@@ -33,7 +33,7 @@ import {deriveClientName, pascal, pascalToSnakeCase} from "../util/tools.js";
  * @param {string} outFile - Path to the output TypeScript file
  * @param {CompiledCatalog} compiled - The compiled WSDL catalog
  */
-export function emitClient(outFile: string, compiled: CompiledCatalog) {
+export function generateClient(outFile: string, compiled: CompiledCatalog) {
   const isValidIdent = (name: string) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name);
   const reserved = new Set<string>([
     "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete",

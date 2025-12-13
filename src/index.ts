@@ -17,10 +17,10 @@ import type {CompilerOptions} from "./config.js";
 import {resolveCompilerOptions} from "./config.js";
 import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
-import {emitTypes} from "./emit/typesEmitter.js";
-import {emitUtils} from "./emit/utilsEmitter.js";
-import {emitCatalog} from "./emit/catalogEmitter.js";
-import {emitClient} from "./emit/clientEmitter.js";
+import {generateTypes} from "./client/generateTypes.js";
+import {generateUtils} from "./client/generateUtils.js";
+import {generateCatalog} from "./client/generateCatalog.js";
+import {generateClient} from "./client/generateClient.js";
 
 export {generateOpenAPI} from "./openapi/generateOpenAPI.js";
 export {generateGateway} from "./gateway/generateGateway.js";
@@ -96,11 +96,11 @@ export async function compileWsdlToProject(
   }
 
   // Emit files
-  emitClient(clientFile, compiled);
-  emitTypes(typesFile, compiled);
-  emitUtils(utilsFile, compiled);
+  generateClient(clientFile, compiled);
+  generateTypes(typesFile, compiled);
+  generateUtils(utilsFile, compiled);
 
   if (compiled.options.catalog) {
-    emitCatalog(catalogFile, compiled);
+    generateCatalog(catalogFile, compiled);
   }
 }

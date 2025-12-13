@@ -1,7 +1,7 @@
 /**
- * Gateway Code Emitters
+ * Gateway Code Generators
  *
- * This module contains functions for emitting various gateway code artifacts:
+ * This module contains functions for generating various gateway code artifacts:
  * - Model JSON Schema files with URN IDs
  * - Operation schema files with Fastify-compatible structure
  * - schemas.ts module for registering all model schemas
@@ -16,7 +16,7 @@ import {
   slugName,
   rewriteSchemaRefs,
   type OpenAPIDocument,
-} from "./gatewayHelpers.js";
+} from "./helpers.js";
 
 /**
  * Emits individual JSON Schema files for each OpenAPI component schema

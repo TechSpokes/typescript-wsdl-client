@@ -101,7 +101,9 @@ src/
 ├── cli.ts              # CLI entry point
 ├── index.ts            # Library exports
 ├── compiler/           # WSDL/XSD parsing logic
-├── emit/               # Code generation
+├── client/             # TypeScript client generation
+├── openapi/            # OpenAPI generation
+├── gateway/            # Fastify gateway generation
 ├── loader/             # WSDL fetching and loading
 └── util/               # Shared utilities
 ```
