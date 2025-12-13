@@ -8,6 +8,22 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
 ## [Unreleased]
+- feat(catalog): implement intelligent catalog co-location - defaults to output directory instead of hardcoded tmp/ path
+- feat(cli): client command now defaults catalog to {client-dir}/catalog.json for better organization
+- feat(cli): openapi command now defaults catalog to {openapi-file-dir}/catalog.json for consistency
+- feat(cli): pipeline command uses intelligent cascade for catalog location (client-dir > openapi-dir > gateway-dir > tmp/)
+- fix(cli): correct catalog-file option descriptions to match actual default behavior in client and openapi commands
+- fix(cli): remove unreachable else branch in client command catalog loading logic
+- docs(readme): comprehensive rewrite to document all 5 CLI commands (compile, client, openapi, gateway, pipeline)
+- docs(readme): add complete gateway command documentation with Fastify integration patterns
+- docs(readme): update all examples to reflect catalog co-location behavior
+- docs(readme): add catalog file organization section with co-location patterns by command
+- docs(readme): remove inline catalog comments from code blocks for cleaner copy-paste experience
+- docs(readme): standardize all CLI flag names to hyphenated format throughout documentation
+- docs(readme): add programmatic API documentation for all 4 exported functions
+- docs(readme): expand troubleshooting section with catalog location guidance
+- refactor(scripts): update smoke:gateway to use co-located catalog from client generation
+- refactor(scripts): optimize ci script to run only smoke:pipeline (eliminates redundant smoke test runs)
 - feat(gateway): add YAML OpenAPI file support alongside JSON based on file extension (.yaml/.yml)
 - fix(scripts): update all package.json smoke scripts to use correct CLI flag names (--wsdl-source, --catalog-file, --client-dir, --openapi-file, --gateway-dir, --gateway-service-name, --gateway-version-prefix, --openapi-format, --openapi-servers)
 - refactor(cli)!: standardize all CLI options to lowercase hyphenated format (BREAKING: `--versionTag` → `--version-tag`, `--basePath` → `--base-path`, `--pathStyle` → `--path-style`, `--closedSchemas` → `--closed-schemas`, `--pruneUnusedSchemas` → `--prune-unused-schemas`)
@@ -121,7 +137,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Added `compileWsdlToProject` function for programmatic API usage
 - Added `--catalog` flag and `catalogEmitter` for WSDL compilation introspection
 - Refactored emitters: consolidated meta, ops, and runtime; introduced `utilsEmitter` for runtime metadata
-- Updated `clientEmitter` to embed marshalling/unmarshalling logic and include `requestRaw` in response types
+- Updated `clientEmitter` to embed marshaling/unmarshalling logic and include `requestRaw` in response types
 - Centralized utilities in `util/tools` (string, XML, and name‐derivation helpers)
 - Enhanced `schemaCompiler` to handle complex/simpleContent inheritance and WS-Policy scanning
 - Improved `typesEmitter` to support simpleContent extensions and consistent property ordering
@@ -188,7 +204,6 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fix README install instructions to use correct package name (@techspokes/typescript-wsdl-client) to prevent 404 errors.
 
 ## [0.2.0] – 2025-08-18
-
 - Enrich schemaCompiler operations by extracting SOAP action URIs from WSDL
   `<soap:operation>` bindings.
 
@@ -203,5 +218,5 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [0.1.9] – 2025-08-17
 
-- Replace email links in public markdown files with link to contact page.
+- Replace email links in public Markdown files with link to contact page.
 - Initial community scaffolding: CI, issue/PR templates, docs.

@@ -139,7 +139,7 @@ if (rawArgs[0] === "client") {
     })
     .option("catalog-file", {
       type: "string",
-      desc: "Existing compiled catalog.json, or output path when compiling from WSDL"
+      desc: "Existing compiled catalog.json (for input), or output path when compiling from WSDL (default: tmp/catalog.json)"
     })
     .option("client-dir", {
       type: "string",
@@ -186,8 +186,8 @@ if (rawArgs[0] === "client") {
   } else if (hasWsdl && hasCatalog) {
     // Both provided: catalog-file is output path
     catalogOutPath = path.resolve(String(clientArgv["catalog-file"]));
-  } else if (!hasWsdl && hasCatalog) {
-    // Only catalog-file: it's an input, load it
+  } else {
+    // Only catalog-file provided: it's an input, load it
     const catalogPath = path.resolve(String(clientArgv["catalog-file"]));
     const catalogContent = fs.readFileSync(catalogPath, "utf-8");
     compiled = JSON.parse(catalogContent);
@@ -238,7 +238,7 @@ if (rawArgs[0] === "openapi") {
     .scriptName("wsdl-tsc openapi")
     .usage("$0 [--wsdl-source <file|url> | --catalog-file <file>] --openapi-file <path> [options]")
     .option("wsdl-source", {type: "string", desc: "Path or URL to the WSDL (exclusive with --catalog-file)"})
-    .option("catalog-file", {type: "string", desc: "Existing compiled catalog.json (exclusive with --wsdl-source)"})
+    .option("catalog-file", {type: "string", desc: "Existing compiled catalog.json (default: tmp/catalog.json if --wsdl-source not provided)"})
     .option("openapi-file", {type: "string", demandOption: true, desc: "Output file or base path for OpenAPI"})
     .option("openapi-format", {
       type: "string",
@@ -304,9 +304,13 @@ if (rawArgs[0] === "openapi") {
   // Resolve format
   const format = (openapiArgv["openapi-format"] as "json" | "yaml" | "both") ?? "json";
 
+  // Default to {openapi-file-dir}/catalog.json if neither wsdl-source nor catalog-file provided
   if (!openapiArgv["wsdl-source"] && !openapiArgv["catalog-file"]) {
-    handleCLIError("either --wsdl-source or --catalog-file must be provided for openapi generation");
+    const openapiFileArg = String(openapiArgv["openapi-file"]);
+    const openapiDir = path.dirname(path.resolve(openapiFileArg));
+    openapiArgv["catalog-file"] = path.join(openapiDir, "catalog.json");
   }
+
   if (openapiArgv["wsdl-source"] && openapiArgv["catalog-file"]) {
     handleCLIError("provide only one of --wsdl-source or --catalog-file, not both");
   }
@@ -431,7 +435,7 @@ if (rawArgs[0] === "pipeline") {
     })
     .option("catalog-file", {
       type: "string",
-      desc: "Output path for catalog.json (default: {client-dir}/catalog.json if client-dir provided, otherwise required)"
+      desc: "Output path for catalog.json (default: tmp/catalog.json)"
     })
     .option("clean", {
       type: "boolean",
@@ -506,9 +510,18 @@ if (rawArgs[0] === "pipeline") {
   if (catalogOutArg) {
     catalogOut = path.resolve(catalogOutArg);
   } else if (clientOut) {
+    // Default to client-dir/catalog.json
     catalogOut = path.join(path.resolve(clientOut), "catalog.json");
+  } else if (openapiOut) {
+    // Default to openapi-file-dir/catalog.json
+    const openapiDir = path.dirname(path.resolve(openapiOut));
+    catalogOut = path.join(openapiDir, "catalog.json");
+  } else if (gatewayOut) {
+    // Default to gateway-dir/catalog.json
+    catalogOut = path.join(path.resolve(gatewayOut), "catalog.json");
   } else {
-    handleCLIError("--catalog-file must be provided when --client-dir is not specified.");
+    // Fallback to tmp/catalog.json (should rarely happen due to validation above)
+    catalogOut = path.resolve("tmp/catalog.json");
   }
 
   // Handle --clean flag for client output
