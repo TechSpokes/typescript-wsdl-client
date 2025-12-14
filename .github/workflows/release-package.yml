@@ -101,8 +101,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
 
-    environment: release
-
     permissions:
       contents: read
       id-token: write
@@ -119,7 +117,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org/
 
-      - name: Ensure latest npm
+      - name: Ensure latest npm (trusted publishing requires >= 11.5.1)
         run: npm install -g npm@latest
 
       - name: Install dependencies
