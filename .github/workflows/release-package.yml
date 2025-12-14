@@ -2,7 +2,12 @@ name: Node.js Package
 
 on:
   release:
-    types: [created]
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to release from (e.g. v0.1.0)'
+        required: true
 
 jobs:
   build:
@@ -11,11 +16,17 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - name: Check out code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'npm'
+
       - run: npm ci
       - run: npm run ci
 
@@ -26,30 +37,54 @@ jobs:
       packages: write
       contents: read
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - name: Check out code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}
+
+      - name: Use Node.js (GitHub Packages)
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
+
       - run: npm ci
-      - run: npm publish
+
+      - name: Publish to GitHub Packages
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
+
+    # This must match the Environment name you enter on npmjs.com
+    environment: release
+
+    # Trusted publishing requires OIDC
     permissions:
       contents: read
-      pull-requests: write
+      id-token: write
+
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - name: Check out code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}
+
+      - name: Use Node.js (npmjs)
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm config set registry https://registry.npmjs.org/
-      - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # npm docs: require npm 11.5.1+ for trusted publishing
+      - name: Ensure latest npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish to npm (trusted publishing via OIDC)
+        run: npm publish --access public

@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.8.01] - 2025-12-14
+- feat(release): enhance release workflow and update versioning.
+
 ## [0.8.0] - 2025-12-13
 - **BREAKING**: refactor(gateway): change URN format to service-first structure - URN IDs now use `urn:services:{service}:{version}:schemas:{models|operations}:{slug}` instead of `urn:schema:{version}:services:{service}:{models|operations}:{slug}` for better namespace hierarchy and service-based filtering
 - **BREAKING**: refactor(gateway): remove automatic version/service detection - `--gateway-version-prefix` and `--gateway-service-name` are now always required for gateway and pipeline commands
