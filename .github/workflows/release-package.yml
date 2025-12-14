@@ -2,7 +2,7 @@ name: Node.js Package
 
 on:
   release:
-    types: [ published ]
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
@@ -19,18 +19,21 @@ jobs:
       contents: read
       pull-requests: write
 
+    outputs:
+      tag: ${{ steps.determine_tag.outputs.tag }}
+
     steps:
       - name: Determine tag
         id: determine_tag
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
-            echo "TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+            TAG="${{ github.event.release.tag_name }}"
           else
-            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+            TAG="${{ github.event.inputs.tag }}"
           fi
-          echo "Using TAG=$TAG"  # TAG is automatically exported to env in this shell
-        env:
-          TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Using TAG=$TAG"
 
       - name: Validate tag naming rule
         run: |
@@ -40,18 +43,18 @@ jobs:
             exit 1
           fi
         env:
-          TAG: ${{ env.TAG }}
+          TAG: ${{ steps.determine_tag.outputs.tag }}
 
       - name: Check out code
         uses: actions/checkout@v6
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ steps.determine_tag.outputs.tag }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: npm
 
       - run: npm ci
       - run: npm run ci
@@ -67,9 +70,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v6
         with:
-          ref: ${{ needs.build.outputs.TAG || env.TAG }}
-        env:
-          TAG: ${{ env.TAG }}
+          ref: ${{ needs.build.outputs.tag }}
 
       - name: Use Node.js (GitHub Packages)
         uses: actions/setup-node@v6
@@ -112,7 +113,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v6
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ needs.build.outputs.tag }}
 
       - name: Use Node.js (npmjs)
         uses: actions/setup-node@v6
