@@ -2,12 +2,15 @@ name: Node.js Package
 
 on:
   release:
-    types: [published]
+    types: [ published ]
   workflow_dispatch:
     inputs:
       tag:
         description: 'Git tag to release from (e.g. v0.1.0)'
         required: true
+
+env:
+  NODE_VERSION: 20
 
 jobs:
   build:
@@ -15,16 +18,39 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+
     steps:
+      - name: Determine tag
+        id: determine_tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          else
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          fi
+          echo "Using TAG=$TAG"  # TAG is automatically exported to env in this shell
+        env:
+          TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}
+
+      - name: Validate tag naming rule
+        run: |
+          echo "Validating tag: $TAG"
+          if ! echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Tag '$TAG' does not match required pattern v<major>.<minor>.<patch> (e.g. v0.8.1)"
+            exit 1
+          fi
+        env:
+          TAG: ${{ env.TAG }}
+
       - name: Check out code
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}
+          ref: ${{ env.TAG }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - run: npm ci
@@ -36,22 +62,37 @@ jobs:
     permissions:
       packages: write
       contents: read
+
     steps:
       - name: Check out code
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}
+          ref: ${{ needs.build.outputs.TAG || env.TAG }}
+        env:
+          TAG: ${{ env.TAG }}
 
       - name: Use Node.js (GitHub Packages)
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           registry-url: https://npm.pkg.github.com/
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Publish to GitHub Packages
-        run: npm publish
+      - name: Publish to GitHub Packages (skip if version exists)
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+
+          echo "Attempting to publish $NAME@$VERSION to GitHub Packages..."
+
+          if npm view "$NAME@$VERSION" --registry=https://npm.pkg.github.com/ > /dev/null 2>&1; then
+            echo "$NAME@$VERSION already exists on GitHub Packages, skipping publish."
+            exit 0
+          fi
+
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -59,7 +100,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
 
-    # This must match the Environment name you enter on npmjs.com
+    # Must match the Environment name configured on npmjs.com Trusted Publishing
     environment: release
 
     # Trusted publishing requires OIDC
@@ -71,15 +112,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag }}
+          ref: ${{ env.TAG }}
 
       - name: Use Node.js (npmjs)
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org/
 
-      # npm docs: require npm 11.5.1+ for trusted publishing
+      # Ensure recent npm for trusted publishing
       - name: Ensure latest npm
         run: npm install -g npm@latest
 
