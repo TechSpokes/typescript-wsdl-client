@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.8.13",
+  "version": "0.8.14",
   "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
   "keywords": [
     "wsdl",
@@ -11,13 +11,13 @@
     "xml",
     "xsd"
   ],
-  "homepage": "https://github.com/techspokes/typescript-wsdl-client#readme",
+  "homepage": "https://github.com/TechSpokes/typescript-wsdl-client#readme",
   "bugs": {
-    "url": "https://github.com/techspokes/typescript-wsdl-client/issues"
+    "url": "https://github.com/TechSpokes/typescript-wsdl-client/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/techspokes/typescript-wsdl-client"
+    "url": "git+https://github.com/TechSpokes/typescript-wsdl-client.git"
   },
   "license": "MIT",
   "author": "TechSpokes <contact@techspokes.com> (https://www.techspokes.com)",

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Git tag to release from (e.g. v0.8.11)"
+        description: "Git tag to release from (e.g. v0.8.0)"
         required: true
 
 env:
@@ -60,6 +60,9 @@ jobs:
   publish-gpr:
     needs: build
     runs-on: ubuntu-latest
+
+    environment: release
+
     permissions:
       packages: write
       contents: read

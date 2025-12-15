@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.8.14] - 2025-12-15
+- feat(release): update version and fix repository URLs
+
 ## [0.8.11] - 2025-12-14
 - feat(release): enhance release workflow and update versioning.
 
