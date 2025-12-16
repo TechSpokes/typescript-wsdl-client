@@ -61,8 +61,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
 
-    environment: release
-
     permissions:
       packages: write
       contents: read
@@ -98,8 +96,6 @@ jobs:
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
-
-    environment: release
 
     permissions:
       contents: read
