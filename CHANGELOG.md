@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.8.16] - 2025-12-29
+
+- Build(deps-dev): bump @types/node from 25.0.2 to 25.0.3
+
 ## [0.8.15] - 2025-12-16
 
 - build(deps-dev): bump @types/node to 25.0.2 and update version in package.json
