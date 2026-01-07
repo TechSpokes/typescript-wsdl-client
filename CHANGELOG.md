@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.8.17] - 2026-01-07
+- Build(deps): bump soap from 1.6.1 to 1.6.2
+
 ## [0.8.16] - 2025-12-29
 
 - Build(deps-dev): bump @types/node from 25.0.2 to 25.0.3
