@@ -9,7 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.8.18] - 2026-01-09
+
+- fix(compiler): prevent stack overflow on circular type references by moving cycle detection before pascal() call in getOrCompileComplex(), fixes #44
+
 ## [0.8.17] - 2026-01-07
+
 - Build(deps): bump soap from 1.6.1 to 1.6.2
 
 ## [0.8.16] - 2025-12-29
