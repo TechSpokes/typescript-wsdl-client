@@ -358,6 +358,16 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     schemaNS: string,
     prefixes: Record<string, string>
   ): CompiledType {
+    // Early cycle detection: check if we're already processing this raw name + namespace combo
+    // BEFORE calling pascal() to avoid stack overflow on circular references
+    const rawKey = `${schemaNS}|${name}`;
+    if (inProgress.has(rawKey)) {
+      // Return a minimal stub to break the cycle
+      const stubName = pascal(name);
+      return {name: stubName, ns: schemaNS, attrs: [], elems: []};
+    }
+    inProgress.add(rawKey);
+
     const outName = pascal(name);
     const key = `${schemaNS}|${outName}`;
 
@@ -475,13 +485,11 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       const newElems = collectParticles(outName, cnode);
       mergeAttrs(present.attrs, newAttrs);
       mergeElems(present.elems, newElems);
+      // Remove from inProgress since we're done with this cycle
+      inProgress.delete(rawKey);
       return present;
     }
-    if (inProgress.has(key)) {
-      // minimal cycle break
-      return {name: outName, ns: schemaNS, attrs: [], elems: []};
-    }
-    inProgress.add(key);
+
     // result accumulators
     const attrs: CompiledType["attrs"] = [];
     const elems: CompiledType["elems"] = [];
@@ -550,7 +558,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
         mergeAttrs(attrs, collectAttributes(scNode));
         const result: CompiledType = {name: outName, ns: schemaNS, attrs, elems};
         compiledMap.set(key, result);
-        inProgress.delete(key);
+        inProgress.delete(rawKey);
         return result;
       };
       if (ext) {
@@ -567,7 +575,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
 
     const result: CompiledType = {name: outName, ns: schemaNS, attrs, elems};
     compiledMap.set(key, result);
-    inProgress.delete(key);
+    inProgress.delete(rawKey);
     return result;
   }
 
