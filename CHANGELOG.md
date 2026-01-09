@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.8.19] - 2026-01-09
+
+- fix(openapi): handle inline string literal unions in schema generation - types with attributes like `"Create" | "Read" | "Update" | "Delete"` now correctly emit as `{ type: "string", enum: [...] }` instead of failing with unknown referenced type error
+
 ## [0.8.18] - 2026-01-09
 
 - fix(compiler): prevent stack overflow on circular type references by moving cycle detection before pascal() call in getOrCompileComplex(), fixes #44

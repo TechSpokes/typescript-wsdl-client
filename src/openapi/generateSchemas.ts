@@ -92,6 +92,11 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
       case "any":
         return {}; // intentionally permissive
       default:
+        // Handle inline string literal unions (e.g. "Create" | "Read" | "Update" | "Delete")
+        const lit = isLiteralUnion(ts);
+        if (lit) {
+          return {type: "string", enum: lit};
+        }
         if (ts.endsWith("[]")) {
           const inner = ts.slice(0, -2);
           return {type: "array", items: refOrPrimitive(inner)};
