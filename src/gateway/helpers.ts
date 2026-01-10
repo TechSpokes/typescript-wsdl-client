@@ -267,46 +267,55 @@ export function buildParamSchemasForOperation(
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Client Metadata Resolution (for full handler generation)
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Client Metadata Resolution
+ *
+ * Types and functions for resolving SOAP client metadata used in handler generation.
+ */
 
 /**
  * Metadata about the SOAP client for handler generation
+ *
+ * @interface ClientMeta
+ * @property {string} className - Client class name (e.g., "EVRNService")
+ * @property {string} decoratorName - Fastify decorator name (e.g., "evrnserviceClient")
+ * @property {string} importPath - Import path relative to routes directory
+ * @property {string} typesImportPath - Import path for types
  */
 export interface ClientMeta {
-  /** Client class name (e.g., "EVRNService") */
   className: string;
-  /** Fastify decorator name (e.g., "evrnserviceClient") */
   decoratorName: string;
-  /** Import path relative to routes directory (e.g., "../../client/client.js") */
   importPath: string;
-  /** Import path for types (e.g., "../../client/types.js") */
   typesImportPath: string;
 }
 
 /**
  * Extended operation metadata for full handler generation
+ *
+ * @interface ResolvedOperationMeta
+ * @property {string} operationId - OpenAPI operationId
+ * @property {string} operationSlug - Slugified for filenames
+ * @property {string} method - HTTP method
+ * @property {string} path - URL path
+ * @property {string} clientMethodName - SOAP client method to call
+ * @property {string} [requestTypeName] - TypeScript request type
+ * @property {string} [responseTypeName] - TypeScript response type
  */
 export interface ResolvedOperationMeta {
-  /** OpenAPI operationId */
   operationId: string;
-  /** Slugified for filenames */
   operationSlug: string;
-  /** HTTP method */
   method: string;
-  /** URL path */
   path: string;
-  /** SOAP client method to call */
   clientMethodName: string;
-  /** TypeScript request type */
   requestTypeName?: string;
-  /** TypeScript response type */
   responseTypeName?: string;
 }
 
 /**
  * PascalCase conversion utility
+ *
+ * @param {string} str - String to convert to PascalCase
+ * @returns {string} - PascalCase version of the string
  */
 export function pascalCase(str: string): string {
   return str
@@ -316,6 +325,14 @@ export function pascalCase(str: string): string {
 
 /**
  * Options for resolving client metadata
+ *
+ * @interface ResolveClientMetaOptions
+ * @property {string} [clientDir] - Path to client directory
+ * @property {string} [catalogFile] - Path to catalog.json
+ * @property {string} [clientClassName] - Override client class name
+ * @property {string} [clientDecoratorName] - Override decorator name
+ * @property {string} serviceSlug - Service slug for derivation
+ * @property {"js"|"ts"|"bare"} importsMode - Import extension mode
  */
 export interface ResolveClientMetaOptions {
   clientDir?: string;
@@ -333,6 +350,10 @@ export interface ResolveClientMetaOptions {
  * 1. Explicit clientClassName/clientDecoratorName options
  * 2. serviceName from catalog.json if catalogFile provided
  * 3. Derive from serviceSlug
+ *
+ * @param {ResolveClientMetaOptions} opts - Options for resolving client metadata
+ * @param {any} [catalog] - Optional loaded catalog object
+ * @returns {ClientMeta} - Resolved client metadata
  */
 export function resolveClientMeta(opts: ResolveClientMetaOptions, catalog?: any): ClientMeta {
   const suffix = opts.importsMode === "bare" ? "" : `.${opts.importsMode}`;
@@ -373,6 +394,13 @@ export function resolveClientMeta(opts: ResolveClientMetaOptions, catalog?: any)
 
 /**
  * Resolves operation metadata by matching OpenAPI operationId to catalog operations
+ *
+ * @param {string} operationId - OpenAPI operation ID
+ * @param {string} operationSlug - Slugified operation name for filenames
+ * @param {string} method - HTTP method
+ * @param {string} path - URL path
+ * @param {Array} [catalogOperations] - Optional catalog operations to match against
+ * @returns {ResolvedOperationMeta} - Resolved operation metadata with type names
  */
 export function resolveOperationMeta(
   operationId: string,

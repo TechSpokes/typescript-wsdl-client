@@ -65,12 +65,20 @@ export function emitModelSchemas(
 
 /**
  * Operation metadata for route generation
+ *
+ * @interface OperationMetadata
+ * @property {string} operationSlug - Slugified operation name for filenames
+ * @property {string} method - HTTP method (lowercase)
+ * @property {string} path - URL path
+ * @property {string} [operationId] - OpenAPI operationId
+ * @property {string} [clientMethodName] - SOAP client method to call
+ * @property {string} [requestTypeName] - TypeScript request type name
+ * @property {string} [responseTypeName] - TypeScript response type name
  */
 export interface OperationMetadata {
   operationSlug: string;
   method: string;
   path: string;
-  // Extended fields for full handler generation
   operationId?: string;
   clientMethodName?: string;
   requestTypeName?: string;
@@ -352,9 +360,6 @@ export function emitRouteFiles(
   fs.writeFileSync(path.join(outDir, "routes.ts"), routesTs, "utf8");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// New generators for full handler implementation
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Emits runtime.ts module with envelope builders and error handling utilities
@@ -385,10 +390,9 @@ export function emitRuntimeModule(
  */
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Response Envelope Types
-// ─────────────────────────────────────────────────────────────────────────────
-
+/**
+ * Success response envelope
+ */
 export interface SuccessEnvelope<T> {
   status: "SUCCESS";
   message: string | null;
@@ -396,6 +400,9 @@ export interface SuccessEnvelope<T> {
   error: null;
 }
 
+/**
+ * Error response envelope
+ */
 export interface ErrorEnvelope {
   status: "ERROR";
   message: string;
@@ -407,12 +414,18 @@ export interface ErrorEnvelope {
   };
 }
 
+/**
+ * Union type for response envelopes
+ */
 export type ResponseEnvelope<T> = SuccessEnvelope<T> | ErrorEnvelope;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Envelope Builders
-// ─────────────────────────────────────────────────────────────────────────────
-
+/**
+ * Builds a success response envelope
+ *
+ * @param data - The response data
+ * @param message - Optional success message
+ * @returns Success envelope wrapping the data
+ */
 export function buildSuccessEnvelope<T>(data: T, message?: string): SuccessEnvelope<T> {
   return {
     status: "SUCCESS",
@@ -422,6 +435,14 @@ export function buildSuccessEnvelope<T>(data: T, message?: string): SuccessEnvel
   };
 }
 
+/**
+ * Builds an error response envelope
+ *
+ * @param code - Error code (e.g., "VALIDATION_ERROR")
+ * @param message - Human-readable error message
+ * @param details - Optional error details
+ * @returns Error envelope with the error information
+ */
 export function buildErrorEnvelope(
   code: string,
   message: string,
@@ -435,10 +456,9 @@ export function buildErrorEnvelope(
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Error Classification
-// ─────────────────────────────────────────────────────────────────────────────
-
+/**
+ * Classified error with HTTP status and details
+ */
 export interface ClassifiedError {
   httpStatus: number;
   code: string;
@@ -446,6 +466,12 @@ export interface ClassifiedError {
   details?: unknown;
 }
 
+/**
+ * Classifies an error and maps it to an appropriate HTTP status code
+ *
+ * @param err - The error to classify
+ * @returns Classified error with HTTP status, code, and message
+ */
 export function classifyError(err: unknown): ClassifiedError {
   // Fastify validation errors
   if (err && typeof err === "object" && "validation" in err) {
@@ -503,10 +529,11 @@ export function classifyError(err: unknown): ClassifiedError {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Error Handler Factory
-// ─────────────────────────────────────────────────────────────────────────────
-
+/**
+ * Creates a gateway error handler for this service
+ *
+ * @returns Fastify error handler function
+ */
 export function createGatewayErrorHandler_${vSlug}_${sSlug}() {
   return async function gatewayErrorHandler(
     error: Error,
@@ -568,10 +595,6 @@ import { registerSchemas_${vSlug}_${sSlug} } from "./schemas${suffix}";
 import { registerRoutes_${vSlug}_${sSlug} } from "./routes${suffix}";
 import { createGatewayErrorHandler_${vSlug}_${sSlug} } from "./runtime${suffix}";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Plugin Options
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
  * Options for the ${clientMeta.className} gateway plugin
  */
@@ -590,10 +613,9 @@ export interface ${clientMeta.className}GatewayOptions extends FastifyPluginOpti
   prefix?: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Fastify Decorator Declaration
-// ─────────────────────────────────────────────────────────────────────────────
-
+/**
+ * Fastify decorator type augmentation
+ */
 declare module "fastify" {
   interface FastifyInstance {
     ${clientMeta.decoratorName}: {
@@ -602,10 +624,12 @@ declare module "fastify" {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Plugin Implementation
-// ─────────────────────────────────────────────────────────────────────────────
-
+/**
+ * Gateway plugin implementation
+ *
+ * @param fastify - Fastify instance
+ * @param opts - Plugin options including client and optional prefix
+ */
 async function ${sSlug}GatewayPlugin(
   fastify: FastifyInstance,
   opts: ${clientMeta.className}GatewayOptions
