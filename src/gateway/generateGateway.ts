@@ -28,8 +28,19 @@ import {
   getJsonSchemaRefName,
   isNumericStatus,
   type OpenAPIDocument,
+  resolveClientMeta,
+  resolveOperationMeta,
 } from "./helpers.js";
-import {emitModelSchemas, emitOperationSchemas, emitRouteFiles, emitSchemasModule,} from "./generators.js";
+import {
+  emitModelSchemas,
+  emitOperationSchemas,
+  emitPluginModule,
+  emitRouteFiles,
+  emitRouteFilesWithHandlers,
+  emitRuntimeModule,
+  emitSchemasModule,
+  type OperationMetadata,
+} from "./generators.js";
 
 /**
  * Options for gateway code generation
@@ -43,6 +54,12 @@ import {emitModelSchemas, emitOperationSchemas, emitRouteFiles, emitSchemasModul
  * @property {string} serviceSlug - Service identifier for URN generation (required)
  * @property {number[]} [defaultResponseStatusCodes] - Status codes to backfill with default response
  * @property {"js"|"ts"|"bare"} [imports] - Import-extension mode for generated TypeScript modules (mirrors global --imports)
+ * @property {string} [clientClassName] - Override auto-detected SOAP client class name
+ * @property {string} [clientDecoratorName] - Fastify decorator name for client (default: derived from serviceSlug)
+ * @property {string} [catalogFile] - Path to catalog.json for operation metadata
+ * @property {boolean} [emitPlugin] - Whether to emit plugin.ts (default: true)
+ * @property {boolean} [emitRuntime] - Whether to emit runtime.ts (default: true)
+ * @property {boolean} [stubHandlers] - If true, emit stubs instead of full handlers (default: false)
  */
 export interface GenerateGatewayOptions {
   openapiFile?: string;
@@ -53,6 +70,13 @@ export interface GenerateGatewayOptions {
   serviceSlug: string;
   defaultResponseStatusCodes?: number[];
   imports?: "js" | "ts" | "bare";
+  // New options for full handler generation
+  clientClassName?: string;
+  clientDecoratorName?: string;
+  catalogFile?: string;
+  emitPlugin?: boolean;
+  emitRuntime?: boolean;
+  stubHandlers?: boolean;
 }
 
 /**
@@ -156,6 +180,28 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
   // Determine import-extension mode (defaults to "js" like the client/compiler)
   const importsMode: "js" | "ts" | "bare" = opts.imports ?? "js";
 
+  // Determine if we should generate full handlers or stubs
+  const stubHandlers = opts.stubHandlers ?? false;
+  const emitPlugin = opts.emitPlugin ?? !stubHandlers;
+  const emitRuntime = opts.emitRuntime ?? !stubHandlers;
+
+  // Load catalog if provided (for operation metadata)
+  let catalog: any = undefined;
+  if (opts.catalogFile && fs.existsSync(opts.catalogFile)) {
+    const catalogRaw = fs.readFileSync(opts.catalogFile, "utf8");
+    catalog = JSON.parse(catalogRaw);
+  }
+
+  // Resolve client metadata for full handler generation
+  const clientMeta = resolveClientMeta({
+    clientDir: opts.clientDir,
+    catalogFile: opts.catalogFile,
+    clientClassName: opts.clientClassName,
+    clientDecoratorName: opts.clientDecoratorName,
+    serviceSlug,
+    importsMode,
+  }, catalog);
+
   // Prepare output directories
   const outDir = opts.outDir;
   const modelsDir = path.join(outDir, "schemas", "models");
@@ -170,8 +216,8 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
     serviceSlug
   );
 
-  // Step 2: Generate operation schemas
-  const operations = emitOperationSchemas(
+  // Step 2: Generate operation schemas and collect basic metadata
+  const basicOperations = emitOperationSchemas(
     doc,
     opsDir,
     versionSlug,
@@ -183,9 +229,50 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
     isNumericStatus
   );
 
-  // Step 3: Emit schemas.ts module
+  // Step 3: Enrich operations with type information for full handlers
+  const operations: OperationMetadata[] = basicOperations.map((op) => {
+    // Extract operationId from OpenAPI document
+    const pathItem = doc.paths[op.path];
+    const opDef = pathItem?.[op.method] as any;
+    const operationId = opDef?.operationId || op.operationSlug;
+
+    // Resolve full operation metadata from catalog
+    const resolved = resolveOperationMeta(
+      operationId,
+      op.operationSlug,
+      op.method,
+      op.path,
+      catalog?.operations
+    );
+
+    return {
+      ...op,
+      operationId: resolved.operationId,
+      clientMethodName: resolved.clientMethodName,
+      requestTypeName: resolved.requestTypeName,
+      responseTypeName: resolved.responseTypeName,
+    };
+  });
+
+  // Step 4: Emit schemas.ts module
   emitSchemasModule(outDir, modelsDir, versionSlug, serviceSlug);
 
-  // Step 4: Emit route files and routes.ts module
-  emitRouteFiles(outDir, routesDir, versionSlug, serviceSlug, operations, importsMode);
+  // Step 5: Emit route files (with handlers or stubs)
+  if (stubHandlers) {
+    // Legacy mode: emit stub handlers
+    emitRouteFiles(outDir, routesDir, versionSlug, serviceSlug, operations, importsMode);
+  } else {
+    // Full handler mode: emit working implementations
+    emitRouteFilesWithHandlers(outDir, routesDir, versionSlug, serviceSlug, operations, importsMode, clientMeta);
+  }
+
+  // Step 6: Emit runtime.ts (if enabled)
+  if (emitRuntime) {
+    emitRuntimeModule(outDir, versionSlug, serviceSlug);
+  }
+
+  // Step 7: Emit plugin.ts (if enabled)
+  if (emitPlugin) {
+    emitPluginModule(outDir, versionSlug, serviceSlug, clientMeta, importsMode);
+  }
 }

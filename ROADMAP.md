@@ -2,52 +2,49 @@
 
 Simple roadmap for the TypeScript WSDL → SOAP client generator.
 
-## Current: 0.5.x Series
+## Current: 0.8.x Series
 
 **What we have now:**
 - Core WSDL/XSD parsing with proper TypeScript types
-- CLI tool (`wsdl-tsc`) with essential flags
-- Programmatic API (`compileWsdlToProject`)
+- CLI tool (`wsdl-tsc`) with five commands: `compile`, `client`, `openapi`, `gateway`, `pipeline`
+- Programmatic API for all generation tasks
 - Complex inheritance handling (`<extension>`, `<restriction>`)
 - XML attribute marshalling with configurable keys
 - Runtime metadata for JSON ⇄ SOAP conversion
 - Choice element handling strategies
 - WS-Policy security hints in generated code
+- OpenAPI 3.1 generation with standard response envelopes
+- **Full Fastify gateway generation with working handlers** (NEW in 0.9.0)
+  - Automatic SOAP client integration via Fastify decorators
+  - Centralized error handling with HTTP status mapping
+  - Fastify plugin pattern for easy integration
+  - Response envelope wrapping (SUCCESS/ERROR)
 
 **Still working on:**
 - Better error messages when WSDL parsing fails
 - Edge cases in schema parsing
 - Code generation consistency
+- More comprehensive testing
 
-## Next: 0.6.x Series
+## Next: 0.9.x Series
 
-**Focus: Documentation**
+**Focus: Stability and Polish**
 
-We're currently working on comprehensive documentation:
-- Complete usage examples and tutorials
-- API reference documentation
-- Integration guides for common frameworks
-- Migration examples from other SOAP libraries
-- Better CLI help and error messages
+- Snapshot testing for generated code
+- Integration tests for gateway handlers
+- Documentation improvements
+- Performance optimizations
 
-## Future: 0.7.x Series
+## Future: 1.0.x Series
 
-**Focus: OpenAPI Integration**
-
-Add OpenAPI 3.1 generation to make it easier to create REST API gateways for SOAP services:
-- Generate OpenAPI 3.1 specs from WSDL files
-- Map SOAP operations to RESTful endpoints
-- JSON Schema generation for request/response types
-- Integration patterns for API gateways
-
-## Beyond 0.7
+**Focus: Production Readiness**
 
 Ideas we're considering:
 - Configuration files for complex setups
 - Watch mode for development
 - Testing utilities and mock generation
-- Performance optimizations
 - More WSDL edge case support
+- Custom handler hooks/middleware
 
 ## Goals
 
@@ -55,6 +52,7 @@ Ideas we're considering:
 - Support most real-world WSDL files
 - Generate clean, strict TypeScript
 - Keep runtime dependencies minimal
+- Production-ready gateway generation
 
 **Community:**
 - Good documentation and examples

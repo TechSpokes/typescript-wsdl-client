@@ -12,7 +12,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import {type OpenAPIDocument, rewriteSchemaRefs, slugName,} from "./helpers.js";
+import {type ClientMeta, type OpenAPIDocument, rewriteSchemaRefs, slugName,} from "./helpers.js";
 
 /**
  * Emits individual JSON Schema files for each OpenAPI component schema
@@ -70,6 +70,11 @@ export interface OperationMetadata {
   operationSlug: string;
   method: string;
   path: string;
+  // Extended fields for full handler generation
+  operationId?: string;
+  clientMethodName?: string;
+  requestTypeName?: string;
+  responseTypeName?: string;
 }
 
 /**
@@ -347,3 +352,401 @@ export function emitRouteFiles(
   fs.writeFileSync(path.join(outDir, "routes.ts"), routesTs, "utf8");
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// New generators for full handler implementation
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Emits runtime.ts module with envelope builders and error handling utilities
+ *
+ * Generated code includes:
+ * - Response envelope types (SuccessEnvelope, ErrorEnvelope)
+ * - buildSuccessEnvelope() and buildErrorEnvelope() functions
+ * - classifyError() for mapping errors to HTTP status codes
+ * - createGatewayErrorHandler_{version}_{service}() factory function
+ *
+ * @param {string} outDir - Root output directory
+ * @param {string} versionSlug - Version slug for function naming
+ * @param {string} serviceSlug - Service slug for function naming
+ */
+export function emitRuntimeModule(
+  outDir: string,
+  versionSlug: string,
+  serviceSlug: string
+): void {
+  const vSlug = slugName(versionSlug);
+  const sSlug = slugName(serviceSlug);
+
+  const runtimeTs = `/**
+ * Gateway Runtime Utilities
+ *
+ * Provides envelope builders and error handling for the generated gateway.
+ * Auto-generated - do not edit manually.
+ */
+import type { FastifyReply, FastifyRequest } from "fastify";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Response Envelope Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SuccessEnvelope<T> {
+  status: "SUCCESS";
+  message: string | null;
+  data: T;
+  error: null;
+}
+
+export interface ErrorEnvelope {
+  status: "ERROR";
+  message: string;
+  data: null;
+  error: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+}
+
+export type ResponseEnvelope<T> = SuccessEnvelope<T> | ErrorEnvelope;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Envelope Builders
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function buildSuccessEnvelope<T>(data: T, message?: string): SuccessEnvelope<T> {
+  return {
+    status: "SUCCESS",
+    message: message ?? null,
+    data,
+    error: null,
+  };
+}
+
+export function buildErrorEnvelope(
+  code: string,
+  message: string,
+  details?: unknown
+): ErrorEnvelope {
+  return {
+    status: "ERROR",
+    message,
+    data: null,
+    error: { code, message, details },
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Error Classification
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ClassifiedError {
+  httpStatus: number;
+  code: string;
+  message: string;
+  details?: unknown;
+}
+
+export function classifyError(err: unknown): ClassifiedError {
+  // Fastify validation errors
+  if (err && typeof err === "object" && "validation" in err) {
+    return {
+      httpStatus: 400,
+      code: "VALIDATION_ERROR",
+      message: "Request validation failed",
+      details: (err as Record<string, unknown>).validation,
+    };
+  }
+
+  // SOAP fault errors (node-soap throws these)
+  if (err && typeof err === "object" && "root" in err) {
+    const root = (err as Record<string, unknown>).root as Record<string, unknown> | undefined;
+    const envelope = root?.Envelope as Record<string, unknown> | undefined;
+    const body = envelope?.Body as Record<string, unknown> | undefined;
+    const fault = body?.Fault as Record<string, unknown> | undefined;
+    if (fault) {
+      return {
+        httpStatus: 502,
+        code: "SOAP_FAULT",
+        message: (fault.faultstring as string) || "SOAP service returned a fault",
+        details: fault,
+      };
+    }
+  }
+
+  // Connection/timeout errors
+  if (err instanceof Error) {
+    if (err.message.includes("ECONNREFUSED") || err.message.includes("ENOTFOUND")) {
+      return {
+        httpStatus: 503,
+        code: "SERVICE_UNAVAILABLE",
+        message: "Unable to connect to SOAP service",
+        details: err.message,
+      };
+    }
+    if (err.message.includes("ETIMEDOUT") || err.message.includes("timeout")) {
+      return {
+        httpStatus: 504,
+        code: "GATEWAY_TIMEOUT",
+        message: "SOAP service request timed out",
+        details: err.message,
+      };
+    }
+  }
+
+  // Generic error fallback
+  const message = err instanceof Error ? err.message : String(err);
+  return {
+    httpStatus: 500,
+    code: "INTERNAL_ERROR",
+    message,
+    details: process.env.NODE_ENV === "development" ? err : undefined,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Error Handler Factory
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function createGatewayErrorHandler_${vSlug}_${sSlug}() {
+  return async function gatewayErrorHandler(
+    error: Error,
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<ErrorEnvelope> {
+    const classified = classifyError(error);
+
+    request.log.error({
+      err: error,
+      classified,
+      url: request.url,
+      method: request.method,
+    }, "Gateway error");
+
+    reply.status(classified.httpStatus);
+    return buildErrorEnvelope(classified.code, classified.message, classified.details);
+  };
+}
+`;
+
+  fs.writeFileSync(path.join(outDir, "runtime.ts"), runtimeTs, "utf8");
+}
+
+/**
+ * Emits plugin.ts module as the primary Fastify plugin wrapper
+ *
+ * Generated code includes:
+ * - Plugin options interface with client and prefix support
+ * - Fastify decorator type augmentation
+ * - Plugin implementation that registers schemas, routes, and error handler
+ *
+ * @param {string} outDir - Root output directory
+ * @param {string} versionSlug - Version slug for function naming
+ * @param {string} serviceSlug - Service slug for function naming
+ * @param {ClientMeta} clientMeta - Client class metadata
+ * @param {"js"|"ts"|"bare"} importsMode - Import-extension mode
+ */
+export function emitPluginModule(
+  outDir: string,
+  versionSlug: string,
+  serviceSlug: string,
+  clientMeta: ClientMeta,
+  importsMode: "js" | "ts" | "bare"
+): void {
+  const vSlug = slugName(versionSlug);
+  const sSlug = slugName(serviceSlug);
+  const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
+
+  const pluginTs = `/**
+ * ${clientMeta.className} Gateway Plugin
+ *
+ * Fastify plugin that registers the SOAP-to-REST gateway for ${serviceSlug}.
+ * Auto-generated - do not edit manually.
+ */
+import fp from "fastify-plugin";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { registerSchemas_${vSlug}_${sSlug} } from "./schemas${suffix}";
+import { registerRoutes_${vSlug}_${sSlug} } from "./routes${suffix}";
+import { createGatewayErrorHandler_${vSlug}_${sSlug} } from "./runtime${suffix}";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Plugin Options
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Options for the ${clientMeta.className} gateway plugin
+ */
+export interface ${clientMeta.className}GatewayOptions extends FastifyPluginOptions {
+  /**
+   * SOAP client instance (pre-configured).
+   * The client should be instantiated with appropriate source and security settings.
+   */
+  client: {
+    [method: string]: (args: unknown) => Promise<{ response: unknown; headers: unknown }>;
+  };
+  /**
+   * Optional route prefix (e.g., "/api/v1").
+   * If provided, all routes will be prefixed with this path.
+   */
+  prefix?: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fastify Decorator Declaration
+// ─────────────────────────────────────────────────────────────────────────────
+
+declare module "fastify" {
+  interface FastifyInstance {
+    ${clientMeta.decoratorName}: {
+      [method: string]: (args: unknown) => Promise<{ response: unknown; headers: unknown }>;
+    };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Plugin Implementation
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function ${sSlug}GatewayPlugin(
+  fastify: FastifyInstance,
+  opts: ${clientMeta.className}GatewayOptions
+): Promise<void> {
+  // Decorate with SOAP client
+  if (!fastify.hasDecorator("${clientMeta.decoratorName}")) {
+    fastify.decorate("${clientMeta.decoratorName}", opts.client);
+  }
+
+  // Register model schemas
+  await registerSchemas_${vSlug}_${sSlug}(fastify);
+
+  // Register error handler (scoped to this plugin)
+  fastify.setErrorHandler(createGatewayErrorHandler_${vSlug}_${sSlug}());
+
+  // Register routes (optionally prefixed)
+  if (opts.prefix) {
+    await fastify.register(async (child) => {
+      await registerRoutes_${vSlug}_${sSlug}(child);
+    }, { prefix: opts.prefix });
+  } else {
+    await registerRoutes_${vSlug}_${sSlug}(fastify);
+  }
+}
+
+// Export as Fastify plugin (encapsulated)
+export default fp(${sSlug}GatewayPlugin, {
+  fastify: "5.x",
+  name: "${sSlug}-gateway",
+});
+
+// Named export for convenience
+export { ${sSlug}GatewayPlugin };
+`;
+
+  fs.writeFileSync(path.join(outDir, "plugin.ts"), pluginTs, "utf8");
+}
+
+/**
+ * Emits individual route files with full handler implementations
+ *
+ * For each operation:
+ * - Creates routes/{slug}.ts with registerRoute_{slug} function
+ * - Imports operation schema, types, and runtime utilities
+ * - Implements handler that calls decorated client and returns envelope
+ *
+ * @param {string} outDir - Root output directory
+ * @param {string} routesDir - Directory for individual route files
+ * @param {string} versionSlug - Version slug for function naming
+ * @param {string} serviceSlug - Service slug for function naming
+ * @param {OperationMetadata[]} operations - Array of operation metadata
+ * @param {"js"|"ts"|"bare"} importsMode - Import-extension mode
+ * @param {ClientMeta} clientMeta - Client class metadata
+ */
+export function emitRouteFilesWithHandlers(
+  outDir: string,
+  routesDir: string,
+  versionSlug: string,
+  serviceSlug: string,
+  operations: OperationMetadata[],
+  importsMode: "js" | "ts" | "bare",
+  clientMeta: ClientMeta
+): void {
+  fs.mkdirSync(routesDir, {recursive: true});
+
+  // Sort operations for deterministic output
+  operations.sort((a, b) => a.operationSlug.localeCompare(b.operationSlug));
+
+  const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
+  const vSlug = slugName(versionSlug);
+  const sSlug = slugName(serviceSlug);
+
+  let routesTs = `import type { FastifyInstance, FastifyPluginOptions } from "fastify";\n`;
+
+  operations.forEach((op) => {
+    const fnName = `registerRoute_${vSlug}_${sSlug}_${op.operationSlug.replace(/[^a-zA-Z0-9_]/g, "_")}`;
+    const routeFileBase = op.operationSlug;
+    routesTs += `import { ${fnName} } from "./routes/${routeFileBase}${suffix}";\n`;
+
+    // Generate individual route file with full handler
+    const clientMethod = op.clientMethodName || op.operationId || op.operationSlug;
+    // Type names for documentation; we use unknown at runtime since schema validation handles it
+    const reqTypeName = op.requestTypeName || "unknown";
+    const resTypeName = op.responseTypeName || "unknown";
+
+    let routeTs = `/**
+ * Route: ${op.method.toUpperCase()} ${op.path}
+ * Operation: ${op.operationId || op.operationSlug}
+ * Request Type: ${reqTypeName}
+ * Response Type: ${resTypeName} (wrapped in envelope)
+ * Auto-generated - do not edit manually.
+ */
+import type { FastifyInstance } from "fastify";
+import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };
+import { buildSuccessEnvelope } from "../runtime${suffix}";
+
+export async function ${fnName}(fastify: FastifyInstance) {
+  fastify.route({
+    method: "${op.method.toUpperCase()}",
+    url: "${op.path}",
+    schema,
+    handler: async (request) => {
+      const client = fastify.${clientMeta.decoratorName};
+      const result = await client.${clientMethod}(request.body);
+      return buildSuccessEnvelope(result.response);
+    },
+  });
+}
+`;
+
+    fs.writeFileSync(path.join(routesDir, `${routeFileBase}.ts`), routeTs, "utf8");
+  });
+
+  // Generate routes.ts with prefix support
+  const routeFnName = `registerRoutes_${vSlug}_${sSlug}`;
+  routesTs += `
+/**
+ * Options for route registration
+ */
+export interface RoutesOptions extends FastifyPluginOptions {
+  /** Optional route prefix */
+  prefix?: string;
+}
+
+/**
+ * Registers all ${serviceSlug} routes with the Fastify instance
+ */
+export async function ${routeFnName}(
+  fastify: FastifyInstance,
+  opts?: RoutesOptions
+): Promise<void> {
+`;
+
+  // Generate route registration calls
+  const routeCalls = operations.map((op) => {
+    const fnName = `registerRoute_${vSlug}_${sSlug}_${op.operationSlug.replace(/[^a-zA-Z0-9_]/g, "_")}`;
+    return `  await ${fnName}(fastify);`;
+  }).join("\n");
+
+  routesTs += `  // Register all routes\n${routeCalls}\n`;
+  routesTs += `}\n`;
+
+  fs.writeFileSync(path.join(outDir, "routes.ts"), routesTs, "utf8");
+}

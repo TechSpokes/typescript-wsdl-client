@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.8.19",
+  "version": "0.9.0",
   "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
   "keywords": [
     "wsdl",
@@ -65,6 +65,7 @@
     "@types/node": "^25.0.2",
     "@types/yargs": "^17.0.33",
     "fastify": "^5.2.0",
+    "fastify-plugin": "^5.1.0",
     "rimraf": "^6.0.0",
     "tsx": "^4.20.0",
     "typescript": "^5.6.3"

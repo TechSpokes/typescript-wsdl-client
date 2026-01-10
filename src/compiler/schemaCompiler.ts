@@ -119,6 +119,8 @@ export type CompiledCatalog = {
     inputElement?: QName;
     outputElement?: QName;
     security?: string[]; // minimal WS-Policy-derived hints (e.g., ["usernameToken", "https"])
+    inputTypeName?: string;  // PascalCase TS type for input (e.g., "UnitResRequest")
+    outputTypeName?: string; // PascalCase TS type for output (e.g., "UnitResResponse")
   }>;
   wsdlTargetNS: string;
   wsdlUri: string;
@@ -781,13 +783,18 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       const outMsg = findMessage((getFirstWithLocalName(po, "output") as any)?.["@_message"]);
       const inputElement = elementOfMessage(inMsg);
       const outputElement = elementOfMessage(outMsg);
-      return {name, soapAction: bOps.get(name) || "", inputElement, outputElement};
+      // Derive TypeScript type names from element local names
+      const inputTypeName = inputElement ? pascal(inputElement.local) : undefined;
+      const outputTypeName = outputElement ? pascal(outputElement.local) : undefined;
+      return {name, soapAction: bOps.get(name) || "", inputElement, outputElement, inputTypeName, outputTypeName};
     })
     .filter((x): x is NonNullable<typeof x> => x != null)) as Array<{
     name: string;
     soapAction: string;
     inputElement?: QName;
-    outputElement?: QName
+    outputElement?: QName;
+    inputTypeName?: string;
+    outputTypeName?: string;
   }>;
 
   // --- WS-Policy: scan for security requirements (inline policies only) ---

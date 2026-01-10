@@ -621,10 +621,16 @@ npx wsdl-tsc gateway \
 
 ### Optional Flags
 
-| Flag                             | Default                                           | Description                              |
-|----------------------------------|---------------------------------------------------|------------------------------------------|
-| `--import-extensions`            | `js`                                              | Import style: `js`, `ts`, or `bare`      |
-| `--gateway-default-status-codes` | `200,400,401,403,404,409,422,429,500,502,503,504` | Comma-separated status codes to backfill |
+| Flag                             | Default                                           | Description                                                 |
+|----------------------------------|---------------------------------------------------|-------------------------------------------------------------|
+| `--import-extensions`            | `js`                                              | Import style: `js`, `ts`, or `bare`                         |
+| `--gateway-default-status-codes` | `200,400,401,403,404,409,422,429,500,502,503,504` | Comma-separated status codes to backfill                    |
+| `--catalog-file`                 | *(none)*                                          | Path to `catalog.json` for operation metadata               |
+| `--gateway-client-class-name`    | *(auto-detected)*                                 | Override SOAP client class name                             |
+| `--gateway-decorator-name`       | `{serviceSlug}Client`                             | Fastify decorator name for client instance                  |
+| `--gateway-stub-handlers`        | `false`                                           | Generate stub handlers instead of full implementations      |
+| `--gateway-skip-plugin`          | `false`                                           | Skip generating `plugin.ts` wrapper                         |
+| `--gateway-skip-runtime`         | `false`                                           | Skip generating `runtime.ts` utilities                      |
 
 ### Generated Output Structure
 
@@ -640,11 +646,13 @@ npx wsdl-tsc gateway \
 │       ├── <operation2>.json
 │       └── ...
 ├── routes/                  # Individual route registration files
-│   ├── <route1>.ts
+│   ├── <route1>.ts          # Full handler implementations
 │   ├── <route2>.ts
 │   └── ...
 ├── schemas.ts               # Schema registration module
-└── routes.ts                # Route aggregator module
+├── routes.ts                # Route aggregator module
+├── runtime.ts               # Envelope builders and error handler
+└── plugin.ts                # Fastify plugin wrapper (recommended entry point)
 ```
 
 ### URN-Based Schema IDs
@@ -703,56 +711,154 @@ npx wsdl-tsc gateway \
 
 ### Integration Pattern
 
-The generated gateway scaffolding provides the foundation for your Fastify application:
+The generated gateway provides a Fastify plugin for simplified integration.
+
+#### Prerequisites
+
+Your host application needs these dependencies:
+
+```bash
+npm install fastify fastify-plugin
+```
+
+#### Using the Generated Plugin (Recommended)
 
 ```typescript
 import Fastify from 'fastify';
-import { registerSchemas } from './gateway/schemas.js';
-import { registerRoutes } from './gateway/routes.js';
+import weatherGateway from './gateway/plugin.js';
+import { Weather } from './client/client.js';
 
 const app = Fastify({ logger: true });
 
-// Register JSON Schemas (validation setup)
-await registerSchemas(app);
+// Create and configure SOAP client
+const weatherClient = new Weather({
+  source: 'https://example.com/weather.wsdl',
+  // security: new soap.WSSecurity('user', 'pass'), // if needed
+});
 
-// Register routes (with handler stubs)
-await registerRoutes(app, {
-  prefix: '/api/v1',
-  // Pass any route-level options
+// Register gateway plugin with client
+await app.register(weatherGateway, {
+  client: weatherClient,
+  prefix: '/api/v1',  // optional route prefix
 });
 
 await app.listen({ port: 3000 });
 ```
 
-> **Note**: The registered routes contain handler stubs that throw "Not implemented" errors. You must implement the handler logic in each route file before the gateway becomes functional.
+The plugin automatically:
+- Decorates Fastify with the SOAP client (`fastify.weatherClient`)
+- Registers all JSON schemas for validation
+- Installs a centralized error handler
+- Registers all routes with full handler implementations
 
-### Handler Implementation
+#### Using Individual Components (Advanced)
 
-> ** Manual Implementation Required**: Currently, the gateway generator produces handler stubs that you must implement. Future versions will include full code generation for handler logic.
-
-Each generated route file contains handler stubs that you need to implement:
+For more control, you can use the individual modules:
 
 ```typescript
-// Example: routes/get-weather.ts
-export async function handler(request, reply) {
-  // TODO: Implement handler logic
-  // 1. Extract validated input from request.body
-  // 2. Call SOAP client
-  // 3. Transform response
-  // 4. Return standard envelope
-  
-  throw new Error('Not implemented');
+import Fastify from 'fastify';
+import { registerSchemas_v1_weather } from './gateway/schemas.js';
+import { registerRoutes_v1_weather } from './gateway/routes.js';
+import { createGatewayErrorHandler_v1_weather } from './gateway/runtime.js';
+import { Weather } from './client/client.js';
+
+const app = Fastify({ logger: true });
+
+// Manual setup
+const weatherClient = new Weather({ source: 'weather.wsdl' });
+app.decorate('weatherClient', weatherClient);
+
+// Register schemas
+await registerSchemas_v1_weather(app);
+
+// Install error handler
+app.setErrorHandler(createGatewayErrorHandler_v1_weather());
+
+// Register routes with optional prefix
+await registerRoutes_v1_weather(app, { prefix: '/api/v1' });
+
+await app.listen({ port: 3000 });
+```
+
+### Generated Handler Implementation
+
+Route handlers are fully implemented and call the SOAP client automatically:
+
+```typescript
+// Generated: routes/get-city-forecast-by-zip.ts
+import type { FastifyInstance } from "fastify";
+import schema from "../schemas/operations/getcityforecastbyzip.json" with { type: "json" };
+import { buildSuccessEnvelope } from "../runtime.js";
+
+export async function registerRoute_v1_weather_getcityforecastbyzip(fastify: FastifyInstance) {
+  fastify.route({
+    method: "POST",
+    url: "/get-city-forecast-by-zip",
+    schema,
+    handler: async (request) => {
+      const client = fastify.weatherClient;
+      const result = await client.GetCityForecastByZIP(request.body);
+      return buildSuccessEnvelope(result.response);
+    },
+  });
 }
 ```
 
-**Current workflow**:
-1. Generate gateway scaffolding with `wsdl-tsc gateway`
-2. Implement handler functions manually in each route file
-3. Import and call your SOAP client
-4. Transform SOAP responses to match OpenAPI schemas
-5. Return responses in the standard envelope format
+### Response Envelope
 
-**Future enhancement**: Automated handler generation will include SOAP client calls, response transformation, error handling, and envelope wrapping.
+All responses are wrapped in a standard envelope format:
+
+**Success Response:**
+```json
+{
+  "status": "SUCCESS",
+  "message": null,
+  "data": { /* SOAP response data */ },
+  "error": null
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "ERROR",
+  "message": "Request validation failed",
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": { /* validation errors */ }
+  }
+}
+```
+
+### Error Handling
+
+The centralized error handler (`runtime.ts`) automatically classifies errors:
+
+| Error Type            | HTTP Status | Error Code            |
+|-----------------------|-------------|-----------------------|
+| Validation errors     | 400         | `VALIDATION_ERROR`    |
+| SOAP faults           | 502         | `SOAP_FAULT`          |
+| Connection refused    | 503         | `SERVICE_UNAVAILABLE` |
+| Timeout               | 504         | `GATEWAY_TIMEOUT`     |
+| Other errors          | 500         | `INTERNAL_ERROR`      |
+
+### Stub Handler Mode (Legacy)
+
+For backward compatibility or manual handler implementation, use stub mode:
+
+```bash
+npx wsdl-tsc gateway \
+  --openapi-file ./docs/weather-api.json \
+  --client-dir ./src/services/weather \
+  --gateway-dir ./src/gateway/weather \
+  --gateway-service-name weather \
+  --gateway-version-prefix v1 \
+  --gateway-stub-handlers
+```
+
+This generates handler stubs that throw "Not implemented" errors, allowing you to implement custom logic.
 
 ---
 

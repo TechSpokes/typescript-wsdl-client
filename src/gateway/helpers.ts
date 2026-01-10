@@ -266,3 +266,142 @@ export function buildParamSchemasForOperation(
     headersSchema,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Client Metadata Resolution (for full handler generation)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Metadata about the SOAP client for handler generation
+ */
+export interface ClientMeta {
+  /** Client class name (e.g., "EVRNService") */
+  className: string;
+  /** Fastify decorator name (e.g., "evrnserviceClient") */
+  decoratorName: string;
+  /** Import path relative to routes directory (e.g., "../../client/client.js") */
+  importPath: string;
+  /** Import path for types (e.g., "../../client/types.js") */
+  typesImportPath: string;
+}
+
+/**
+ * Extended operation metadata for full handler generation
+ */
+export interface ResolvedOperationMeta {
+  /** OpenAPI operationId */
+  operationId: string;
+  /** Slugified for filenames */
+  operationSlug: string;
+  /** HTTP method */
+  method: string;
+  /** URL path */
+  path: string;
+  /** SOAP client method to call */
+  clientMethodName: string;
+  /** TypeScript request type */
+  requestTypeName?: string;
+  /** TypeScript response type */
+  responseTypeName?: string;
+}
+
+/**
+ * PascalCase conversion utility
+ */
+export function pascalCase(str: string): string {
+  return str
+    .replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ""))
+    .replace(/^(.)/, (c) => c.toUpperCase());
+}
+
+/**
+ * Options for resolving client metadata
+ */
+export interface ResolveClientMetaOptions {
+  clientDir?: string;
+  catalogFile?: string;
+  clientClassName?: string;
+  clientDecoratorName?: string;
+  serviceSlug: string;
+  importsMode: "js" | "ts" | "bare";
+}
+
+/**
+ * Resolves client metadata from available sources
+ *
+ * Resolution priority:
+ * 1. Explicit clientClassName/clientDecoratorName options
+ * 2. serviceName from catalog.json if catalogFile provided
+ * 3. Derive from serviceSlug
+ */
+export function resolveClientMeta(opts: ResolveClientMetaOptions, catalog?: any): ClientMeta {
+  const suffix = opts.importsMode === "bare" ? "" : `.${opts.importsMode}`;
+
+  // Determine client class name
+  let className: string;
+  if (opts.clientClassName) {
+    className = opts.clientClassName;
+  } else if (catalog?.serviceName) {
+    className = pascalCase(catalog.serviceName);
+  } else {
+    className = pascalCase(opts.serviceSlug);
+  }
+
+  // Determine decorator name
+  let decoratorName: string;
+  if (opts.clientDecoratorName) {
+    decoratorName = opts.clientDecoratorName;
+  } else {
+    decoratorName = slugName(className) + "Client";
+  }
+
+  // Build import paths (relative from routes/ to client/)
+  const importPath = opts.clientDir
+    ? `../../client/client${suffix}`
+    : `../client/client${suffix}`;
+  const typesImportPath = opts.clientDir
+    ? `../../client/types${suffix}`
+    : `../client/types${suffix}`;
+
+  return {
+    className,
+    decoratorName,
+    importPath,
+    typesImportPath,
+  };
+}
+
+/**
+ * Resolves operation metadata by matching OpenAPI operationId to catalog operations
+ */
+export function resolveOperationMeta(
+  operationId: string,
+  operationSlug: string,
+  method: string,
+  path: string,
+  catalogOperations?: Array<{
+    name: string;
+    inputTypeName?: string;
+    outputTypeName?: string;
+  }>
+): ResolvedOperationMeta {
+  // Try to find matching operation in catalog
+  const catalogOp = catalogOperations?.find(
+    op => op.name === operationId || slugName(op.name) === operationSlug
+  );
+
+  // Use catalog type names if available, otherwise derive by convention
+  const requestTypeName = catalogOp?.inputTypeName ?? pascalCase(operationId);
+  const responseTypeName = catalogOp?.outputTypeName ?? pascalCase(operationId);
+
+  return {
+    operationId,
+    operationSlug,
+    method,
+    path,
+    clientMethodName: operationId, // Client methods use the original operation name
+    requestTypeName,
+    responseTypeName,
+  };
+}
+

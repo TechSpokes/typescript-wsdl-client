@@ -380,6 +380,33 @@ if (rawArgs[0] === "gateway") {
       type: "string",
       desc: "Comma-separated status codes to backfill with default response (default: 200,400,401,403,404,409,422,429,500,502,503,504)"
     })
+    .option("catalog-file", {
+      type: "string",
+      desc: "Path to catalog.json for operation metadata (enables type-safe handlers)"
+    })
+    .option("gateway-client-class-name", {
+      type: "string",
+      desc: "Override auto-detected SOAP client class name"
+    })
+    .option("gateway-decorator-name", {
+      type: "string",
+      desc: "Fastify decorator name for client (default: derived from service slug)"
+    })
+    .option("gateway-stub-handlers", {
+      type: "boolean",
+      default: false,
+      desc: "Generate stub handlers instead of full implementations"
+    })
+    .option("gateway-skip-plugin", {
+      type: "boolean",
+      default: false,
+      desc: "Skip generating plugin.ts wrapper"
+    })
+    .option("gateway-skip-runtime", {
+      type: "boolean",
+      default: false,
+      desc: "Skip generating runtime.ts utilities"
+    })
     .strict()
     .help()
     .parse();
@@ -408,6 +435,13 @@ if (rawArgs[0] === "gateway") {
     serviceSlug: gatewayArgv["gateway-service-name"] as string,
     defaultResponseStatusCodes,
     imports: gatewayArgv["import-extensions"] as "js" | "ts" | "bare",
+    catalogFile: gatewayArgv["catalog-file"] as string | undefined,
+    clientClassName: gatewayArgv["gateway-client-class-name"] as string | undefined,
+    clientDecoratorName: gatewayArgv["gateway-decorator-name"] as string | undefined,
+    stubHandlers: gatewayArgv["gateway-stub-handlers"] as boolean,
+    // Only override defaults if explicitly skipping (otherwise let generateGateway decide based on stubHandlers)
+    emitPlugin: gatewayArgv["gateway-skip-plugin"] ? false : undefined,
+    emitRuntime: gatewayArgv["gateway-skip-runtime"] ? false : undefined,
   });
 
   success(`Gateway code generated in ${outDir}`);
