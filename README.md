@@ -809,7 +809,7 @@ export async function registerRoute_v1_weather_getcityforecastbyzip(fastify: Fas
 All responses are wrapped in a standard envelope format:
 
 **Success Response:**
-```json
+```
 {
   "status": "SUCCESS",
   "message": null,
@@ -819,7 +819,7 @@ All responses are wrapped in a standard envelope format:
 ```
 
 **Error Response:**
-```json
+```
 {
   "status": "ERROR",
   "message": "Request validation failed",

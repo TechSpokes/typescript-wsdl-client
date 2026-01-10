@@ -57,7 +57,3 @@ Ideas we're considering:
 **Community:**
 - Good documentation and examples
 - Responsive to user feedback and issues
-
----
-
-*Have feedback or ideas? Open an [issue](/issues) or start a [discussion](/discussions).*
