@@ -23,15 +23,16 @@
 - [6. Command: `client`](#6-command-client)
 - [7. Command: `openapi`](#7-command-openapi)
 - [8. Command: `gateway`](#8-command-gateway)
-- [9. Command: `pipeline`](#9-command-pipeline)
-- [10. Working With Generated Clients](#10-working-with-generated-clients)
-- [11. OpenAPI Configuration](#11-openapi-configuration)
-- [12. Programmatic API](#12-programmatic-api)
-- [13. Advanced Topics](#13-advanced-topics)
-- [14. Troubleshooting](#14-troubleshooting)
-- [15. Contributing](#15-contributing)
-- [16. License](#16-license)
-- [17. Sponsors](#17-sponsors)
+- [9. Command: `app`](#9-command-app)
+- [10. Command: `pipeline`](#10-command-pipeline)
+- [11. Working With Generated Clients](#11-working-with-generated-clients)
+- [12. OpenAPI Configuration](#12-openapi-configuration)
+- [13. Programmatic API](#13-programmatic-api)
+- [14. Advanced Topics](#14-advanced-topics)
+- [15. Troubleshooting](#15-troubleshooting)
+- [16. Contributing](#16-contributing)
+- [17. License](#17-license)
+- [18. Sponsors](#18-sponsors)
 
 ---
 
@@ -104,7 +105,7 @@ npx wsdl-tsc pipeline \
 
 ## 4. Commands Overview
 
-The tool provides **five commands** for different integration scenarios:
+The tool provides **six commands** for different integration scenarios:
 
 | Command    | Purpose                                                       | Typical Use Case                              |
 |------------|---------------------------------------------------------------|-----------------------------------------------|
@@ -112,7 +113,8 @@ The tool provides **five commands** for different integration scenarios:
 | `client`   | Generate TypeScript SOAP client from WSDL or catalog          | Standard SOAP integration (most common)       |
 | `openapi`  | Generate OpenAPI 3.1 spec from WSDL or catalog                | Documentation, REST proxies, API gateways     |
 | `gateway`  | Generate Fastify gateway with full handlers from OpenAPI spec | Production REST gateway with SOAP integration |
-| `pipeline` | Run full pipeline: client + OpenAPI + gateway in one pass     | CI/CD automation, complete stack generation   |
+| `app`      | Generate runnable Fastify app from client + gateway + OpenAPI | Local testing, quick iteration, demos         |
+| `pipeline` | Run full pipeline: client + OpenAPI + gateway (+ app optional)| CI/CD automation, complete stack generation   |
 
 ---
 
@@ -864,7 +866,189 @@ This generates minimal handler stubs that throw "Not implemented" errors, allowi
 
 ---
 
-## 9. Command: `pipeline`
+## 9. Command: `app`
+
+**Purpose**: Generate a runnable Fastify application that integrates the generated client, gateway, and OpenAPI spec. This provides an immediately executable server for testing, development, and demonstrations.
+
+**When to use**:
+- Local testing and development
+- Quick iteration on gateway configurations
+- Demonstrating the generated API
+- CI smoke testing
+
+### Usage
+
+```bash
+npx wsdl-tsc app \
+  --client-dir <path> \
+  --gateway-dir <path> \
+  --openapi-file <path> \
+  [--catalog-file <path>] \
+  [--app-dir <path>] \
+  [options]
+```
+
+### Required Flags
+
+| Flag                | Description                                                          |
+|---------------------|----------------------------------------------------------------------|
+| `--client-dir`      | Path to client directory (where `client.ts` is located)             |
+| `--gateway-dir`     | Path to gateway directory (where `plugin.ts` is located)            |
+| `--openapi-file`    | Path to OpenAPI specification file                                   |
+
+### Optional Flags
+
+| Flag                   | Default                                  | Description                                                  |
+|------------------------|------------------------------------------|--------------------------------------------------------------|
+| `--catalog-file`       | `{client-dir}/catalog.json`              | Path to catalog.json (for metadata extraction)               |
+| `--app-dir`            | `{gateway-dir}/../app`                   | Output directory for generated app                           |
+| `--import-extensions`  | Inferred from catalog or `js`            | Import-extension mode: `js`, `ts`, or `bare`                 |
+| `--host`               | `127.0.0.1`                              | Default server host                                          |
+| `--port`               | `3000`                                   | Default server port                                          |
+| `--prefix`             | `""` (empty)                             | Route prefix                                                 |
+| `--logger`             | `true`                                   | Enable Fastify logger                                        |
+| `--openapi-mode`       | `copy`                                   | How to handle OpenAPI file: `copy` or `reference`           |
+
+### Examples
+
+#### Generate App After Pipeline
+
+```bash
+# First generate client, OpenAPI, and gateway
+npx wsdl-tsc pipeline \
+  --wsdl-source weather.wsdl \
+  --client-dir ./client \
+  --openapi-file ./openapi.json \
+  --gateway-dir ./gateway \
+  --gateway-service-name weather \
+  --gateway-version-prefix v1
+
+# Then generate runnable app
+npx wsdl-tsc app \
+  --client-dir ./client \
+  --gateway-dir ./gateway \
+  --openapi-file ./openapi.json \
+  --app-dir ./app
+```
+
+#### Generate App with Custom Configuration
+
+```bash
+npx wsdl-tsc app \
+  --client-dir ./client \
+  --gateway-dir ./gateway \
+  --openapi-file ./openapi.json \
+  --app-dir ./my-app \
+  --host 0.0.0.0 \
+  --port 8080 \
+  --prefix /api/v1
+```
+
+### Generated App Structure
+
+The `app` command generates the following files:
+
+```
+app/
+├── server.js (or .ts)    # Main application entry point
+├── config.js (or .ts)    # Configuration loader with env support
+├── .env.example          # Environment variable template
+├── README.md             # Usage instructions
+└── openapi.json          # OpenAPI spec (when --openapi-mode=copy)
+```
+
+### Running the Generated App
+
+```bash
+# Copy environment template
+cd app
+cp .env.example .env
+
+# Edit .env to configure WSDL source and other settings
+# vim .env
+
+# Run the server
+npx tsx server.js  # For TypeScript files
+# or
+node server.js     # For JavaScript files
+```
+
+### Configuration
+
+The generated app loads configuration from environment variables with the following precedence:
+
+1. **Environment variables** (runtime overrides)
+2. **Catalog defaults** (from generation-time)
+3. **Hard defaults** (in config file)
+
+#### Environment Variables
+
+| Variable        | Default (from catalog or flags) | Description                          |
+|-----------------|---------------------------------|--------------------------------------|
+| `WSDL_SOURCE`   | From catalog or **required**    | WSDL URL or local file path          |
+| `HOST`          | `127.0.0.1`                     | Server bind address                  |
+| `PORT`          | `3000`                          | Server listen port                   |
+| `PREFIX`        | `""` (empty)                    | Route prefix                         |
+| `LOGGER`        | `true`                          | Enable Fastify logger                |
+
+### Endpoints
+
+The generated app serves the following endpoints:
+
+#### Health Check
+```bash
+GET /health
+```
+Returns: `{ "ok": true }`
+
+#### OpenAPI Specification
+```bash
+GET /openapi.json
+```
+Returns: Complete OpenAPI 3.1 specification
+
+#### Gateway Routes
+All SOAP operations are exposed as REST endpoints. See the OpenAPI spec for complete API documentation.
+
+### Example Usage
+
+```bash
+# Start the server
+cd app
+npx tsx server.js
+
+# Test health endpoint
+curl http://localhost:3000/health
+
+# Get OpenAPI spec
+curl http://localhost:3000/openapi.json | jq .
+
+# Call a gateway operation (example)
+curl -X POST http://localhost:3000/get-weather-information \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+### Integration with Pipeline
+
+The `app` command can also be used via the pipeline with the `--generate-app` flag:
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source weather.wsdl \
+  --client-dir ./client \
+  --openapi-file ./openapi.json \
+  --gateway-dir ./gateway \
+  --gateway-service-name weather \
+  --gateway-version-prefix v1 \
+  --generate-app
+```
+
+This generates all artifacts including the runnable app in a single command.
+
+---
+
+## 10. Command: `pipeline`
 
 **Purpose**: Run the complete generation pipeline in a single pass: WSDL parsing → TypeScript client → OpenAPI spec → Fastify gateway.
 
@@ -1042,7 +1226,7 @@ All steps share the same parsed WSDL and compiled catalog, ensuring consistency.
 
 ---
 
-## 10. Working With Generated Clients
+## 11. Working With Generated Clients
 
 ### Client Construction
 
@@ -1109,7 +1293,7 @@ result.GetCityWeatherByZIPResult.Temperature;  // number | string (depends on ma
 
 ---
 
-## 11. OpenAPI Configuration
+## 12. OpenAPI Configuration
 
 ### Security Configuration (`security.json`)
 
@@ -1168,7 +1352,7 @@ Per-operation overrides for method, summary, description, and deprecation:
 
 ---
 
-## 12. Programmatic API
+## 13. Programmatic API
 
 All CLI commands are available as TypeScript functions for programmatic usage.
 
@@ -1435,7 +1619,7 @@ interface PipelineOptions {
 
 ---
 
-## 13. Advanced Topics
+## 14. Advanced Topics
 
 ### Primitive Mapping Philosophy
 
@@ -1510,7 +1694,7 @@ Disable with `--openapi-validate false` or `validate: false` in API.
 
 ---
 
-## 14. Troubleshooting
+## 15. Troubleshooting
 
 ### Common Issues
 
@@ -1591,7 +1775,7 @@ The catalog is automatically placed at `./src/services/hotel/catalog.json`.
 
 ---
 
-## 15. Contributing
+## 16. Contributing
 
 We welcome contributions! Here's how to get started:
 
@@ -1665,7 +1849,7 @@ See also: [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDU
 
 ---
 
-## 16. License
+## 17. License
 
 MIT © TechSpokes
 
@@ -1675,7 +1859,7 @@ See [LICENSE](LICENSE) for full text.
 
 ---
 
-## 17. Sponsors
+## 18. Sponsors
 
 Support ongoing development and maintenance:
 
