@@ -9,7 +9,7 @@ Need help with `typescript-wsdl-client`? Here's how to get the assistance you ne
 - [README.md](./README.md) - Installation, usage examples, CLI reference
 - [Examples](./examples/) - Sample WSDL files and generated code
 - [CHANGELOG.md](./CHANGELOG.md) - Recent changes and breaking changes
-- [Smoke tests](./package.json) - `npm run smoke` and `npm run smoke:gen` for setup verification
+- [Smoke tests](./package.json) - `npm run smoke:pipeline` or `npm run ci` for setup verification
 
 ## Community Support (Free)
 
@@ -53,7 +53,7 @@ Help us help you by providing:
 
 2. **Command used**:
    ```bash
-   npx wsdl-tsc --wsdl your-service.wsdl --out generated
+   npx wsdl-tsc pipeline --wsdl-source your-service.wsdl --client-dir ./generated
    ```
 
 3. **WSDL information** (without sensitive data):
