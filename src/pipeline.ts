@@ -33,6 +33,9 @@ import {emitClientArtifacts, reportCompilationStats, reportOpenApiSuccess, succe
  * @property {string} gateway.outDir - Output directory for gateway code
  * @property {string} gateway.versionSlug - Version identifier for URN generation (required)
  * @property {string} gateway.serviceSlug - Service identifier for URN generation (required)
+ * @property {object} [app] - App generation configuration (optional, requires client, gateway, and openapi)
+ * @property {string} app.appDir - Output directory for generated Fastify app
+ * @property {"copy"|"reference"} [app.openapiMode] - How to handle OpenAPI file (default: "copy")
  */
 export interface PipelineOptions {
   wsdl: string;
@@ -45,10 +48,14 @@ export interface PipelineOptions {
     versionSlug: string;
     serviceSlug: string;
   };
+  app?: {
+    appDir: string;
+    openapiMode?: "copy" | "reference";
+  };
 }
 
 /**
- * Runs the complete generation pipeline from WSDL to TypeScript artifacts and optionally OpenAPI/Gateway
+ * Runs the complete generation pipeline from WSDL to TypeScript artifacts and optionally OpenAPI/Gateway/App
  *
  * This function orchestrates the entire process:
  * 1. Loads and parses the WSDL from file or URL
@@ -57,6 +64,7 @@ export interface PipelineOptions {
  * 4. Optionally emits a JSON catalog for introspection
  * 5. Optionally generates an OpenAPI 3.1 specification
  * 6. Optionally generates Fastify gateway code from the OpenAPI spec
+ * 7. Optionally generates a runnable Fastify app that uses client and gateway
  *
  * @param {PipelineOptions} opts - Configuration options for the pipeline
  * @returns {Promise<{compiled: any; openapiDoc?: any}>} - The compiled catalog and optional OpenAPI document
@@ -152,6 +160,26 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
     });
 
     success(`Gateway code generated in ${gatewayOutDir}`);
+  }
+
+  // Step 6: Optionally generate Fastify app
+  if (opts.app) {
+    // App generation requires client, gateway, and openapi to be generated
+    if (!opts.clientOutDir || !opts.gateway?.outDir || !opts.openapi?.outFile) {
+      throw new Error("App generation requires client, gateway, and OpenAPI to be generated in the pipeline");
+    }
+
+    const {generateApp} = await import("./app/generateApp.js");
+
+    await generateApp({
+      clientDir: path.resolve(opts.clientOutDir),
+      gatewayDir: path.resolve(opts.gateway.outDir),
+      openapiFile: path.resolve(opts.openapi.outFile),
+      catalogFile: path.resolve(opts.catalogOut),
+      appDir: path.resolve(opts.app.appDir),
+      imports: finalCompiler.imports,
+      openapiMode: opts.app.openapiMode || "copy",
+    });
   }
 
   // Return the compiled catalog and OpenAPI doc for potential further processing
