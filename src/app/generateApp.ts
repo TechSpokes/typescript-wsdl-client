@@ -175,9 +175,25 @@ function generateServerFile(
   const gatewayPluginImport = computeRelativeImport(appDir, path.join(opts.gatewayDir, "plugin"), imports);
   const clientImport = computeRelativeImport(appDir, path.join(opts.clientDir, "client"), imports);
   
-  const openapiPath = opts.openapiMode === "copy" 
-    ? "./openapi.json"
-    : computeRelativeImport(appDir, opts.openapiFile, "bare");
+  // For OpenAPI serving, we need to read and parse the file at startup in ESM mode
+  const openapiServeLogic = opts.openapiMode === "copy"
+    ? `
+  // Read and parse OpenAPI spec at startup
+  const openapiSpecPath = new URL("./openapi.json", import.meta.url).pathname;
+  const openapiSpec = JSON.parse(fs.readFileSync(openapiSpecPath, "utf-8"));
+
+  // Serve OpenAPI specification
+  fastify.get("/openapi.json", async () => {
+    return openapiSpec;
+  });`
+    : `
+  // Serve OpenAPI specification from original file
+  const openapiSpecPath = "${computeRelativeImport(appDir, opts.openapiFile, "bare")}";
+  const openapiSpec = JSON.parse(fs.readFileSync(openapiSpecPath, "utf-8"));
+
+  fastify.get("/openapi.json", async () => {
+    return openapiSpec;
+  });`;
 
   const content = `/**
  * Generated Fastify Application
@@ -191,6 +207,7 @@ function generateServerFile(
  *
  * Auto-generated - do not edit manually.
  */
+import fs from "node:fs";
 import Fastify from "fastify";
 import { loadConfig } from "${configImport}";
 import gatewayPlugin from "${gatewayPluginImport}";
@@ -223,11 +240,7 @@ async function main() {
   fastify.get("/health", async () => {
     return { ok: true };
   });
-
-  // Serve OpenAPI specification
-  fastify.get("/openapi.json", async () => {
-    return fastify.sendFile ? await fastify.sendFile("${openapiPath}") : require("${openapiPath}");
-  });
+${openapiServeLogic}
 
   // Start server
   try {
@@ -283,18 +296,11 @@ function generateConfigFile(
   const defaultPrefix = opts.prefix || "";
   const defaultLogger = opts.logger !== false;
 
-  const content = `/**
- * Application Configuration
- *
- * Loads configuration from environment variables with sensible defaults.
- * Configuration precedence:
- * 1. Environment variables (runtime overrides)
- * 2. Catalog defaults (generation-time recorded values)
- * 3. Hard defaults (defined in this file)
- *
- * Auto-generated - do not edit manually.
- */
-
+  // For .js files, we need to generate plain JavaScript (no TypeScript types)
+  // For .ts files, we can use TypeScript syntax
+  const isTypeScript = ext === ".ts" || ext === "";
+  
+  const typeAnnotations = isTypeScript ? `
 /**
  * Application configuration interface
  */
@@ -311,8 +317,27 @@ export interface AppConfig {
  *
  * @returns {AppConfig} - Application configuration
  * @throws {Error} If required configuration is missing
+ */` : `
+/**
+ * Loads configuration from environment variables
+ *
+ * @returns {object} - Application configuration with wsdlSource, host, port, prefix, logger
+ * @throws {Error} If required configuration is missing
+ */`;
+
+  const content = `/**
+ * Application Configuration
+ *
+ * Loads configuration from environment variables with sensible defaults.
+ * Configuration precedence:
+ * 1. Environment variables (runtime overrides)
+ * 2. Catalog defaults (generation-time recorded values)
+ * 3. Hard defaults (defined in this file)
+ *
+ * Auto-generated - do not edit manually.
  */
-export function loadConfig(): AppConfig {
+${typeAnnotations}
+export function loadConfig() {
   // WSDL source: required from env or catalog default
   const wsdlSource = process.env.WSDL_SOURCE${defaultWsdlSource ? ` || "${defaultWsdlSource}"` : ""};
   if (!wsdlSource) {
