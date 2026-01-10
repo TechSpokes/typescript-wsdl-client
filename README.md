@@ -9,7 +9,7 @@
 [![TechSpokes Org](https://img.shields.io/badge/org-techspokes-181717?logo=github)](https://github.com/techspokes)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-blue?logo=github-sponsors)](https://github.com/sponsors/TechSpokes)
 
-> **Mission**: Transform complex WSDL/XSD definitions into ergonomic, type-safe TypeScript SOAP clients with optional OpenAPI 3.1 specs and Fastify REST gateway scaffolding — enabling confident integration with legacy enterprise services.
+> **Mission**: Transform complex WSDL/XSD definitions into ergonomic, type-safe TypeScript SOAP clients with optional OpenAPI 3.1 specs and production-ready Fastify REST gateways — enabling confident integration with legacy enterprise services.
 
 ---
 
@@ -51,7 +51,7 @@ Most WSDL generators produce loosely typed stubs or expose raw XML complexity to
 | **Catalog Introspection**            | One JSON artifact (`catalog.json`) to drive further tooling (including OpenAPI & gateway).           |
 | **OpenAPI 3.1 Bridge**               | Mirrors the exact TypeScript model with no divergence between runtime and spec.                      |
 | **Standard Response Envelope**       | Always-on, debuggable envelope structure (status, message, data, error) for REST gateways.           |
-| **Fastify Gateway Scaffolding**      | Route and schema generation with JSON Schema validation (handler implementation in progress).        |
+| **Fastify Gateway Generation**       | Production-ready route handlers with SOAP client integration and standardized envelope responses.    |
 | **Multi-format Output**              | `--openapi-format json\|yaml\|both` with always-on validation (unless disabled).                     |
 | **One-Shot Pipeline**                | Single pass (parse to TS to OpenAPI to Gateway) for CI & automation.                                 |
 
@@ -106,13 +106,13 @@ npx wsdl-tsc pipeline \
 
 The tool provides **five commands** for different integration scenarios:
 
-| Command      | Purpose                                                        | Typical Use Case                                    |
-|--------------|----------------------------------------------------------------|-----------------------------------------------------|
-| `compile`    | Parse WSDL and emit `catalog.json` only                        | Debugging, inspection, or multi-stage builds        |
-| `client`     | Generate TypeScript SOAP client from WSDL or catalog           | Standard SOAP integration (most common)             |
-| `openapi`    | Generate OpenAPI 3.1 spec from WSDL or catalog                 | Documentation, REST proxies, API gateways           |
-| `gateway`    | Generate Fastify gateway scaffolding from OpenAPI spec         | REST gateway foundation (handler stubs)             |
-| `pipeline`   | Run full pipeline: client + OpenAPI + gateway in one pass      | CI/CD automation, complete stack generation         |
+| Command    | Purpose                                                       | Typical Use Case                              |
+|------------|---------------------------------------------------------------|-----------------------------------------------|
+| `compile`  | Parse WSDL and emit `catalog.json` only                       | Debugging, inspection, or multi-stage builds  |
+| `client`   | Generate TypeScript SOAP client from WSDL or catalog          | Standard SOAP integration (most common)       |
+| `openapi`  | Generate OpenAPI 3.1 spec from WSDL or catalog                | Documentation, REST proxies, API gateways     |
+| `gateway`  | Generate Fastify gateway with full handlers from OpenAPI spec | Production REST gateway with SOAP integration |
+| `pipeline` | Run full pipeline: client + OpenAPI + gateway in one pass     | CI/CD automation, complete stack generation   |
 
 ---
 
@@ -579,23 +579,21 @@ This ensures diff-friendly output for version control.
 
 ## 8. Command: `gateway`
 
-**Purpose**: Generate Fastify gateway scaffolding (routes and schemas) from an OpenAPI 3.1 specification. This provides the foundation for building a REST API layer over your SOAP client.
-
-> **Current Status (v0.8.0)**: The gateway generator produces basic scaffolding including route registration, JSON Schema validation setup, and handler stubs. Full code generation with complete handler implementations is planned for future releases. You will need to implement the business logic that calls your SOAP client and transforms responses.
+**Purpose**: Generate a production-ready Fastify gateway with fully functional route handlers from an OpenAPI 3.1 specification. This creates a complete REST API layer over your SOAP client with automatic request/response transformation and standardized envelope responses.
 
 **When to use**:
 - Building a REST API gateway for legacy SOAP services
 - Creating a modern HTTP/JSON interface for SOAP operations
 - Setting up request/response validation with JSON Schema
-- Establishing Fastify routing structure for SOAP operations
+- Establishing Fastify routing structure with full handler implementations
 
 **What it generates**:
-- Fastify route registration files
+- Fastify route registration files with complete handler implementations
 - JSON Schema models with URN-based IDs
 - Operation schemas (request/response validation)
 - Schema and route registration modules
-- Handler stubs (require manual implementation)
-- Full handler implementations (coming in future versions)
+- Runtime utilities (envelope builders, error handlers)
+- Fastify plugin wrapper for simplified integration
 
 ### Usage
 
@@ -647,8 +645,8 @@ npx wsdl-tsc gateway \
 │       ├── <operation1>.json
 │       ├── <operation2>.json
 │       └── ...
-├── routes/                  # Individual route registration files
-│   ├── <route1>.ts          # Full handler implementations
+├── routes/                  # Route registration files with full handlers
+│   ├── <route1>.ts
 │   ├── <route2>.ts
 │   └── ...
 ├── schemas.ts               # Schema registration module
@@ -848,9 +846,9 @@ The centralized error handler (`runtime.ts`) automatically classifies errors:
 | Timeout               | 504         | `GATEWAY_TIMEOUT`     |
 | Other errors          | 500         | `INTERNAL_ERROR`      |
 
-### Stub Handler Mode (Legacy)
+### Stub Handler Mode (Backward Compatible)
 
-For backward compatibility or manual handler implementation, use stub mode:
+If you prefer to implement handler logic manually or need custom transformation logic beyond the standard SOAP-to-REST mapping, use stub mode:
 
 ```bash
 npx wsdl-tsc gateway \
@@ -862,7 +860,7 @@ npx wsdl-tsc gateway \
   --gateway-stub-handlers
 ```
 
-This generates handler stubs that throw "Not implemented" errors, allowing you to implement custom logic.
+This generates minimal handler stubs that throw "Not implemented" errors, allowing you to implement fully custom logic while keeping the routing and validation infrastructure.
 
 ---
 

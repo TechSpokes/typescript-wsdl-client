@@ -9,6 +9,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-01-10
+
+- docs(readme): update mission statement to reflect production-ready gateway instead of scaffolding
+- docs(readme): update feature table - change "Fastify Gateway Scaffolding" to "Fastify Gateway Generation" with production-ready description
+- docs(readme): update commands overview table - gateway command now shows "Production REST gateway with SOAP integration"
+- docs(readme): remove outdated v0.8.0 status note from gateway command documentation
+- docs(readme): update gateway command purpose to emphasize production-ready handlers with automatic SOAP integration
+- docs(readme): clarify generated output structure shows route files with full handler implementations
+- docs(readme): update stub handler mode section to clarify it's for backward compatibility or custom transformation logic
+
 ## [0.9.0] - 2026-01-10
 
 - feat(gateway): generate fully functional route handlers that call SOAP client and return envelope responses
