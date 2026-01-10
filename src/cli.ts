@@ -40,11 +40,14 @@ import {buildCompilerOptionsFromArgv, buildOpenApiOptionsFromArgv} from "./util/
 // Process command line arguments, removing the first two elements (node executable and script path)
 const rawArgs = hideBin(process.argv);
 
+// Available commands
+const COMMANDS = ["compile", "client", "openapi", "gateway", "app", "pipeline"] as const;
+
 // ---------------------------------------------------------------------------
 // Show help if no subcommand provided
 // ---------------------------------------------------------------------------
 
-if (!rawArgs[0] || !["compile", "client", "openapi", "gateway", "app", "pipeline"].includes(rawArgs[0])) {
+if (!rawArgs[0] || !COMMANDS.includes(rawArgs[0] as any)) {
   await yargs(rawArgs)
     .version(false)
     .scriptName("wsdl-tsc")
@@ -55,7 +58,7 @@ if (!rawArgs[0] || !["compile", "client", "openapi", "gateway", "app", "pipeline
     .command("gateway", "Generate Fastify gateway from OpenAPI specification")
     .command("app", "Generate runnable Fastify application from client + gateway + OpenAPI")
     .command("pipeline", "Run full generation pipeline (client + OpenAPI + gateway)")
-    .demandCommand(1, "Please specify a command: compile, client, openapi, gateway, app, or pipeline")
+    .demandCommand(1, `Please specify a command: ${COMMANDS.join(", ")}`)
     .strict()
     .help()
     .parse();

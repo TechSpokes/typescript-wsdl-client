@@ -179,7 +179,7 @@ function generateServerFile(
   const openapiServeLogic = opts.openapiMode === "copy"
     ? `
   // Read and parse OpenAPI spec at startup
-  const openapiSpecPath = new URL("./openapi.json", import.meta.url).pathname;
+  const openapiSpecPath = path.join(__dirname, "openapi.json");
   const openapiSpec = JSON.parse(fs.readFileSync(openapiSpecPath, "utf-8"));
 
   // Serve OpenAPI specification
@@ -188,7 +188,7 @@ function generateServerFile(
   });`
     : `
   // Serve OpenAPI specification from original file
-  const openapiSpecPath = "${computeRelativeImport(appDir, opts.openapiFile, "bare")}";
+  const openapiSpecPath = path.resolve(__dirname, "${computeRelativeImport(appDir, opts.openapiFile, "bare")}");
   const openapiSpec = JSON.parse(fs.readFileSync(openapiSpecPath, "utf-8"));
 
   fastify.get("/openapi.json", async () => {
@@ -208,10 +208,17 @@ function generateServerFile(
  * Auto-generated - do not edit manually.
  */
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 import Fastify from "fastify";
 import { loadConfig } from "${configImport}";
 import gatewayPlugin from "${gatewayPluginImport}";
 import { ${clientClassName} } from "${clientImport}";
+
+// ES module dirname/filename helpers
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Main application entry point
