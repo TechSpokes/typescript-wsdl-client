@@ -14,11 +14,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - feat(gateway): generate fully functional route handlers that call SOAP client and return envelope responses
 - feat(gateway): add `runtime.ts` module with envelope builders (`buildSuccessEnvelope`, `buildErrorEnvelope`) and centralized error handling
 - feat(gateway): add `plugin.ts` as Fastify plugin wrapper for simplified integration with decorator support
-- feat(gateway): support optional route prefix via plugin options
+- feat(gateway): route URLs derived from OpenAPI paths (respects `--openapi-base-path` from OpenAPI generation)
 - feat(cli): add `--gateway-stub-handlers` flag for backward-compatible stub generation
 - feat(cli): add `--gateway-client-class-name` and `--gateway-decorator-name` override flags
 - feat(cli): add `--catalog-file` option for gateway command to load operation metadata
 - feat(cli): add `--gateway-skip-plugin` and `--gateway-skip-runtime` flags
+- feat(cli): pipeline command now supports all gateway flags for full control
 - feat(compiler): add `inputTypeName` and `outputTypeName` fields to operation metadata in catalog
 
 ## [0.8.19] - 2026-01-09

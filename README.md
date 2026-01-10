@@ -632,6 +632,8 @@ npx wsdl-tsc gateway \
 | `--gateway-skip-plugin`          | `false`                                           | Skip generating `plugin.ts` wrapper                         |
 | `--gateway-skip-runtime`         | `false`                                           | Skip generating `runtime.ts` utilities                      |
 
+> **Note**: Route URLs are derived from the OpenAPI document paths, which already include any base path configured during OpenAPI generation (via `--openapi-base-path`). There is no separate route prefix option for the gateway.
+
 ### Generated Output Structure
 
 ```
@@ -739,7 +741,9 @@ const weatherClient = new Weather({
 // Register gateway plugin with client
 await app.register(weatherGateway, {
   client: weatherClient,
-  prefix: '/api/v1',  // optional route prefix
+  // Note: Route paths are determined by --openapi-base-path during generation.
+  // The prefix option here adds an ADDITIONAL runtime prefix on top of generated paths.
+  // Only use if you need to mount routes under a different sub-path at runtime.
 });
 
 await app.listen({ port: 3000 });
@@ -774,8 +778,8 @@ await registerSchemas_v1_weather(app);
 // Install error handler
 app.setErrorHandler(createGatewayErrorHandler_v1_weather());
 
-// Register routes with optional prefix
-await registerRoutes_v1_weather(app, { prefix: '/api/v1' });
+// Register routes (paths already include --openapi-base-path if configured)
+await registerRoutes_v1_weather(app);
 
 await app.listen({ port: 3000 });
 ```

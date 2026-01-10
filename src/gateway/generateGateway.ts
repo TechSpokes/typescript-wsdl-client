@@ -258,6 +258,7 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
   emitSchemasModule(outDir, modelsDir, versionSlug, serviceSlug);
 
   // Step 5: Emit route files (with handlers or stubs)
+  // Note: Route URLs come from OpenAPI paths which already include any base path
   if (stubHandlers) {
     // Legacy mode: emit stub handlers
     emitRouteFiles(outDir, routesDir, versionSlug, serviceSlug, operations, importsMode);

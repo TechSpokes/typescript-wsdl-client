@@ -302,6 +302,9 @@ export function emitSchemasModule(
  * - Imports all route registration functions
  * - Exports registerRoutes_{version}_{service}(fastify) function
  *
+ * Note: Route URLs come from OpenAPI paths which already include any base path
+ * configured during OpenAPI generation (--openapi-base-path).
+ *
  * @param {string} outDir - Root output directory
  * @param {string} routesDir - Directory for individual route files
  * @param {string} versionSlug - Version slug for function naming
@@ -332,6 +335,7 @@ export function emitRouteFiles(
     routesTs += `import { ${fnName} } from "./routes/${routeFileBase}${suffix}";\n`;
 
     // Generate individual route file
+    // Note: op.path comes from OpenAPI and already includes any base path
     let routeTs = "";
     routeTs += `import type { FastifyInstance } from "fastify";\n`;
     routeTs += `import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };\n\n`;
@@ -607,8 +611,9 @@ export interface ${clientMeta.className}GatewayOptions extends FastifyPluginOpti
     [method: string]: (args: unknown) => Promise<{ response: unknown; headers: unknown }>;
   };
   /**
-   * Optional route prefix (e.g., "/api/v1").
-   * If provided, all routes will be prefixed with this path.
+   * Optional additional route prefix applied at runtime.
+   * Note: If you used --openapi-base-path during generation, routes already have that prefix baked in.
+   * Only use this for additional runtime prefixing (e.g., mounting under a versioned sub-path).
    */
   prefix?: string;
 }
@@ -676,6 +681,9 @@ export { ${sSlug}GatewayPlugin };
  * - Imports operation schema, types, and runtime utilities
  * - Implements handler that calls decorated client and returns envelope
  *
+ * Note: Route URLs come from OpenAPI paths which already include any base path
+ * configured during OpenAPI generation (--openapi-base-path).
+ *
  * @param {string} outDir - Root output directory
  * @param {string} routesDir - Directory for individual route files
  * @param {string} versionSlug - Version slug for function naming
@@ -702,7 +710,7 @@ export function emitRouteFilesWithHandlers(
   const vSlug = slugName(versionSlug);
   const sSlug = slugName(serviceSlug);
 
-  let routesTs = `import type { FastifyInstance, FastifyPluginOptions } from "fastify";\n`;
+  let routesTs = `import type { FastifyInstance } from "fastify";\n`;
 
   operations.forEach((op) => {
     const fnName = `registerRoute_${vSlug}_${sSlug}_${op.operationSlug.replace(/[^a-zA-Z0-9_]/g, "_")}`;
@@ -715,6 +723,7 @@ export function emitRouteFilesWithHandlers(
     const reqTypeName = op.requestTypeName || "unknown";
     const resTypeName = op.responseTypeName || "unknown";
 
+    // Note: op.path comes from OpenAPI and already includes any base path
     let routeTs = `/**
  * Route: ${op.method.toUpperCase()} ${op.path}
  * Operation: ${op.operationId || op.operationSlug}
@@ -743,24 +752,14 @@ export async function ${fnName}(fastify: FastifyInstance) {
     fs.writeFileSync(path.join(routesDir, `${routeFileBase}.ts`), routeTs, "utf8");
   });
 
-  // Generate routes.ts with prefix support
+  // Generate routes.ts aggregator module
   const routeFnName = `registerRoutes_${vSlug}_${sSlug}`;
   routesTs += `
 /**
- * Options for route registration
+ * Registers all ${serviceSlug} routes with the Fastify instance.
+ * Route paths are determined by the OpenAPI specification (--openapi-base-path).
  */
-export interface RoutesOptions extends FastifyPluginOptions {
-  /** Optional route prefix */
-  prefix?: string;
-}
-
-/**
- * Registers all ${serviceSlug} routes with the Fastify instance
- */
-export async function ${routeFnName}(
-  fastify: FastifyInstance,
-  opts?: RoutesOptions
-): Promise<void> {
+export async function ${routeFnName}(fastify: FastifyInstance): Promise<void> {
 `;
 
   // Generate route registration calls

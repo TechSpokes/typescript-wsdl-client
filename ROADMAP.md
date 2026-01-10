@@ -9,7 +9,7 @@ Simple roadmap for the TypeScript WSDL → SOAP client generator.
 - CLI tool (`wsdl-tsc`) with five commands: `compile`, `client`, `openapi`, `gateway`, `pipeline`
 - Programmatic API for all generation tasks
 - Complex inheritance handling (`<extension>`, `<restriction>`)
-- XML attribute marshalling with configurable keys
+- XML attribute marshaling with configurable keys
 - Runtime metadata for JSON ⇄ SOAP conversion
 - Choice element handling strategies
 - WS-Policy security hints in generated code

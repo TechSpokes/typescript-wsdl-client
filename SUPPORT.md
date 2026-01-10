@@ -90,12 +90,12 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
 
 ## Support Channels Summary
 
-| Need | Channel | Response Time | Best For |
-|------|---------|---------------|----------|
-| Quick question | [Discussions Q&A](../../discussions/categories/q-a) | 24-48h | Learning, troubleshooting |
-| Feature idea | [Discussions Ideas](../../discussions/categories/ideas) | 1-7 days | Suggestions, feedback |
-| Confirmed bug | [GitHub Issues](../../issues) | 1-7 days | Reproducible problems |
-| Security issue | [Contact page](https://www.techspokes.com/contact/) | 72h | Vulnerabilities |
+| Need           | Channel                                                 | Response Time | Best For                  |
+|----------------|---------------------------------------------------------|---------------|---------------------------|
+| Quick question | [Discussions Q&A](../../discussions/categories/q-a)     | 24-48h        | Learning, troubleshooting |
+| Feature idea   | [Discussions Ideas](../../discussions/categories/ideas) | 1-7 days      | Suggestions, feedback     |
+| Confirmed bug  | [GitHub Issues](../../issues)                           | 1-7 days      | Reproducible problems     |
+| Security issue | [Contact page](https://www.techspokes.com/contact/)     | 72h           | Vulnerabilities           |
 
 ---
 

@@ -524,6 +524,29 @@ if (rawArgs[0] === "pipeline") {
       type: "string",
       desc: "Comma-separated status codes for gateway (default: 200,400,401,403,404,409,422,429,500,502,503,504)"
     })
+    .option("gateway-client-class-name", {
+      type: "string",
+      desc: "Override auto-detected SOAP client class name for gateway"
+    })
+    .option("gateway-decorator-name", {
+      type: "string",
+      desc: "Fastify decorator name for client (default: derived from service slug)"
+    })
+    .option("gateway-stub-handlers", {
+      type: "boolean",
+      default: false,
+      desc: "Generate stub handlers instead of full implementations"
+    })
+    .option("gateway-skip-plugin", {
+      type: "boolean",
+      default: false,
+      desc: "Skip generating plugin.ts wrapper"
+    })
+    .option("gateway-skip-runtime", {
+      type: "boolean",
+      default: false,
+      desc: "Skip generating runtime.ts utilities"
+    })
     .strict()
     .help()
     .parse();
@@ -613,6 +636,11 @@ if (rawArgs[0] === "pipeline") {
       outDir: path.resolve(gatewayOut),
       serviceSlug: pipelineArgv["gateway-service-name"] as string,
       versionSlug: pipelineArgv["gateway-version-prefix"] as string,
+      clientClassName: pipelineArgv["gateway-client-class-name"] as string | undefined,
+      clientDecoratorName: pipelineArgv["gateway-decorator-name"] as string | undefined,
+      stubHandlers: pipelineArgv["gateway-stub-handlers"] as boolean,
+      emitPlugin: pipelineArgv["gateway-skip-plugin"] ? false : undefined,
+      emitRuntime: pipelineArgv["gateway-skip-runtime"] ? false : undefined,
     } : undefined,
   });
 
