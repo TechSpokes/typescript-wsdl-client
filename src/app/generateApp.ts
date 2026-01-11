@@ -1,3 +1,5 @@
+// noinspection HttpUrlsUsage
+
 /**
  * Fastify App Generator
  *
@@ -171,13 +173,11 @@ function getCatalogWsdlSource(catalog: any): string | undefined {
  *
  * @param {string} appDir - App output directory
  * @param {GenerateAppOptions} opts - App generation options
- * @param {any} catalog - Parsed catalog object
  * @param {string} clientClassName - Derived client class name
  */
 function generateServerFile(
   appDir: string,
   opts: GenerateAppOptions,
-  catalog: any,
   clientClassName: string
 ): void {
   const imports = opts.imports || "js";
@@ -611,7 +611,7 @@ export async function generateApp(opts: GenerateAppOptions): Promise<void> {
   fs.mkdirSync(resolvedOpts.appDir, {recursive: true});
 
   // Generate app files
-  generateServerFile(resolvedOpts.appDir, resolvedOpts, catalog, clientClassName);
+  generateServerFile(resolvedOpts.appDir, resolvedOpts, clientClassName);
   generateConfigFile(resolvedOpts.appDir, resolvedOpts, defaultWsdlSource);
   generateEnvExample(resolvedOpts.appDir, resolvedOpts, defaultWsdlSource);
   generateReadme(resolvedOpts.appDir, resolvedOpts);

@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-01-11
+
+- fix(app): remove unused `catalog` parameter from `generateServerFile` function
 - fix(openapi): remove top-level `required` when using `allOf` for type inheritance
 - fix(gateway): flatten `allOf` compositions in gateway schemas for Fastify serialization compatibility
 
