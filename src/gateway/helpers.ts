@@ -94,6 +94,137 @@ export function rewriteSchemaRefs(node: any, schemaIdByName: Record<string, stri
 }
 
 /**
+ * Flattens allOf compositions into a single merged schema for Fastify compatibility.
+ *
+ * This is necessary because fast-json-stringify cannot handle deeply nested allOf
+ * compositions, especially when referenced schemas also use allOf for inheritance.
+ *
+ * The function:
+ * - Recursively resolves $ref references within allOf members
+ * - Merges properties, required arrays, and other keywords
+ * - Handles circular references by keeping them as $ref
+ * - Preserves anyOf/oneOf without flattening (only allOf is problematic)
+ *
+ * @param {any} schema - The schema to flatten
+ * @param {Record<string, any>} allSchemas - All available schemas for $ref resolution
+ * @param {Set<string>} [visited] - Set of visited schema names to detect circular references
+ * @returns {any} - Flattened schema without allOf (or original if no allOf present)
+ */
+export function flattenAllOf(
+  schema: any,
+  allSchemas: Record<string, any>,
+  visited: Set<string> = new Set()
+): any {
+  if (!schema || typeof schema !== "object") {
+    return schema;
+  }
+
+  // Handle arrays
+  if (Array.isArray(schema)) {
+    return schema.map(item => flattenAllOf(item, allSchemas, visited));
+  }
+
+  // If no allOf, recursively process nested schemas but preserve structure
+  if (!schema.allOf) {
+    const result: any = {};
+    for (const [key, value] of Object.entries(schema)) {
+      if (key === "properties" && value && typeof value === "object") {
+        result[key] = {};
+        for (const [propName, propSchema] of Object.entries(value as Record<string, any>)) {
+          result[key][propName] = flattenAllOf(propSchema, allSchemas, visited);
+        }
+      } else if (key === "items" && value && typeof value === "object") {
+        result[key] = flattenAllOf(value, allSchemas, visited);
+      } else if ((key === "anyOf" || key === "oneOf") && Array.isArray(value)) {
+        result[key] = value.map(v => flattenAllOf(v, allSchemas, visited));
+      } else if (key === "additionalProperties" && value && typeof value === "object") {
+        result[key] = flattenAllOf(value, allSchemas, visited);
+      } else {
+        result[key] = value;
+      }
+    }
+    return result;
+  }
+
+  // Flatten allOf: merge all schemas into one
+  const merged: any = {
+    type: "object",
+    properties: {},
+  };
+  const requiredSet = new Set<string>();
+
+  for (const member of schema.allOf) {
+    let resolvedMember = member;
+
+    // Resolve $ref if present
+    if (member.$ref && typeof member.$ref === "string") {
+      const refPath = member.$ref;
+      let schemaName: string | null = null;
+
+      if (refPath.startsWith("#/components/schemas/")) {
+        schemaName = refPath.slice("#/components/schemas/".length);
+      }
+
+      if (schemaName && allSchemas[schemaName]) {
+        if (visited.has(schemaName)) {
+          // Circular reference - keep the $ref as-is in properties that reference it
+          continue;
+        }
+        const newVisited = new Set(visited);
+        newVisited.add(schemaName);
+        resolvedMember = flattenAllOf(allSchemas[schemaName], allSchemas, newVisited);
+      } else {
+        // Unknown ref - keep as-is (will be rewritten later by rewriteSchemaRefs)
+        continue;
+      }
+    }
+
+    // Merge properties
+    if (resolvedMember.properties && typeof resolvedMember.properties === "object") {
+      for (const [propName, propSchema] of Object.entries(resolvedMember.properties)) {
+        merged.properties[propName] = flattenAllOf(propSchema, allSchemas, visited);
+      }
+    }
+
+    // Merge required
+    if (Array.isArray(resolvedMember.required)) {
+      for (const req of resolvedMember.required) {
+        requiredSet.add(req);
+      }
+    }
+
+    // Copy other keywords (last one wins for conflicts)
+    if (resolvedMember.additionalProperties !== undefined) {
+      merged.additionalProperties = resolvedMember.additionalProperties;
+    }
+    if (resolvedMember.description !== undefined) {
+      merged.description = resolvedMember.description;
+    }
+    if (resolvedMember.title !== undefined) {
+      merged.title = resolvedMember.title;
+    }
+  }
+
+  // Apply description from the original allOf schema if present (overrides merged)
+  if (schema.description !== undefined) {
+    merged.description = schema.description;
+  }
+
+  // Convert required set to array
+  if (requiredSet.size > 0) {
+    merged.required = Array.from(requiredSet).sort();
+  }
+
+  // Clean up empty properties object
+  if (Object.keys(merged.properties).length === 0) {
+    delete merged.properties;
+    delete merged.type; // No properties means we shouldn't force type: object
+  }
+
+  return merged;
+}
+
+/**
  * Extracts the component schema name from a $ref object
  *
  * Contract enforcement (strict validation):

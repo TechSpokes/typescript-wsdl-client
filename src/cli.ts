@@ -40,11 +40,14 @@ import {buildCompilerOptionsFromArgv, buildOpenApiOptionsFromArgv} from "./util/
 // Process command line arguments, removing the first two elements (node executable and script path)
 const rawArgs = hideBin(process.argv);
 
+// Available commands
+const COMMANDS = ["compile", "client", "openapi", "gateway", "app", "pipeline"] as const;
+
 // ---------------------------------------------------------------------------
 // Show help if no subcommand provided
 // ---------------------------------------------------------------------------
 
-if (!rawArgs[0] || !["compile", "client", "openapi", "gateway", "pipeline"].includes(rawArgs[0])) {
+if (!rawArgs[0] || !COMMANDS.includes(rawArgs[0] as any)) {
   await yargs(rawArgs)
     .version(false)
     .scriptName("wsdl-tsc")
@@ -53,8 +56,9 @@ if (!rawArgs[0] || !["compile", "client", "openapi", "gateway", "pipeline"].incl
     .command("client", "Generate TypeScript SOAP client from WSDL or catalog")
     .command("openapi", "Generate OpenAPI specification from WSDL or catalog")
     .command("gateway", "Generate Fastify gateway from OpenAPI specification")
+    .command("app", "Generate runnable Fastify application from client + gateway + OpenAPI")
     .command("pipeline", "Run full generation pipeline (client + OpenAPI + gateway)")
-    .demandCommand(1, "Please specify a command: compile, client, openapi, gateway, or pipeline")
+    .demandCommand(1, `Please specify a command: ${COMMANDS.join(", ")}`)
     .strict()
     .help()
     .parse();
@@ -448,6 +452,123 @@ if (rawArgs[0] === "gateway") {
   process.exit(0);
 }
 
+/**
+ * Command handler for "app" subcommand
+ *
+ * This branch handles the Fastify application generation mode, which creates a runnable
+ * Fastify server that uses the generated gateway plugin and SOAP client.
+ */
+if (rawArgs[0] === "app") {
+  const {generateApp} = await import("./app/generateApp.js");
+
+  const appArgv = await yargs(rawArgs.slice(1))
+    .version(false)
+    .scriptName("wsdl-tsc app")
+    .usage("$0 --client-dir <dir> --gateway-dir <dir> --openapi-file <file> [--catalog-file <file>] [--app-dir <dir>] [options]")
+    .option("client-dir", {
+      type: "string",
+      demandOption: true,
+      desc: "Path to client directory (where client.ts is located)"
+    })
+    .option("gateway-dir", {
+      type: "string",
+      demandOption: true,
+      desc: "Path to gateway directory (where plugin.ts is located)"
+    })
+    .option("openapi-file", {
+      type: "string",
+      demandOption: true,
+      desc: "Path to OpenAPI spec file"
+    })
+    .option("catalog-file", {
+      type: "string",
+      desc: "Path to catalog.json (default: {client-dir}/catalog.json)"
+    })
+    .option("app-dir", {
+      type: "string",
+      desc: "Output directory for generated app (default: sibling to gateway-dir, named 'app')"
+    })
+    .option("import-extensions", {
+      type: "string",
+      choices: ["js", "ts", "bare"],
+      desc: "Import-extension mode for generated TypeScript modules (inferred from catalog when available)"
+    })
+    .option("host", {
+      type: "string",
+      default: "127.0.0.1",
+      desc: "Default server host"
+    })
+    .option("port", {
+      type: "number",
+      default: 3000,
+      desc: "Default server port"
+    })
+    .option("prefix", {
+      type: "string",
+      default: "",
+      desc: "Route prefix"
+    })
+    .option("logger", {
+      type: "boolean",
+      default: true,
+      desc: "Enable Fastify logger"
+    })
+    .option("openapi-mode", {
+      type: "string",
+      choices: ["copy", "reference"],
+      default: "copy",
+      desc: "How to handle OpenAPI file: copy into app dir or reference original"
+    })
+    .strict()
+    .help()
+    .parse();
+
+  const clientDir = path.resolve(String(appArgv["client-dir"]));
+  const gatewayDir = path.resolve(String(appArgv["gateway-dir"]));
+  const openapiFile = path.resolve(String(appArgv["openapi-file"]));
+
+  // Determine catalog file path
+  const catalogFile = appArgv["catalog-file"]
+    ? path.resolve(String(appArgv["catalog-file"]))
+    : path.join(clientDir, "catalog.json");
+
+  // Determine app directory (default: sibling to gateway-dir, named 'app')
+  const appDir = appArgv["app-dir"]
+    ? path.resolve(String(appArgv["app-dir"]))
+    : path.join(path.dirname(gatewayDir), "app");
+
+  // Infer import-extensions from catalog if not explicitly provided
+  let imports = appArgv["import-extensions"] as "js" | "ts" | "bare" | undefined;
+  if (!imports && fs.existsSync(catalogFile)) {
+    try {
+      const catalogContent = fs.readFileSync(catalogFile, "utf-8");
+      const catalog = JSON.parse(catalogContent);
+      imports = catalog?.options?.imports || "js";
+    } catch (err) {
+      // If catalog read fails, fall back to "js"
+      imports = "js";
+    }
+  } else if (!imports) {
+    imports = "js";
+  }
+
+  await generateApp({
+    clientDir,
+    gatewayDir,
+    openapiFile,
+    catalogFile,
+    appDir,
+    imports,
+    host: String(appArgv.host),
+    port: Number(appArgv.port),
+    prefix: String(appArgv.prefix),
+    logger: Boolean(appArgv.logger),
+    openapiMode: appArgv["openapi-mode"] as "copy" | "reference",
+  });
+
+  process.exit(0);
+}
+
 if (rawArgs[0] === "pipeline") {
   const pipelineArgv = await yargs(rawArgs.slice(1))
     .version(false)
@@ -547,6 +668,22 @@ if (rawArgs[0] === "pipeline") {
       default: false,
       desc: "Skip generating runtime.ts utilities"
     })
+    // App generation flags
+    .option("generate-app", {
+      type: "boolean",
+      default: false,
+      desc: "Generate runnable Fastify application (requires --client-dir, --gateway-dir, --openapi-file)"
+    })
+    .option("app-dir", {
+      type: "string",
+      desc: "Output directory for generated app (default: sibling to gateway-dir, named 'app')"
+    })
+    .option("app-openapi-mode", {
+      type: "string",
+      choices: ["copy", "reference"],
+      default: "copy",
+      desc: "How to handle OpenAPI file in app: copy or reference"
+    })
     .strict()
     .help()
     .parse();
@@ -622,6 +759,14 @@ if (rawArgs[0] === "pipeline") {
     ? buildOpenApiOptionsFromArgv(pipelineArgv, format, servers)
     : undefined;
 
+  // Validate app generation requirements
+  const generateApp = pipelineArgv["generate-app"] as boolean;
+  if (generateApp) {
+    if (!clientOut || !gatewayOut || !openapiOut) {
+      handleCLIError("--generate-app requires --client-dir, --gateway-dir, and --openapi-file to be set");
+    }
+  }
+
   await runGenerationPipeline({
     wsdl: pipelineArgv["wsdl-source"] as string,
     clientOutDir: clientOut ? path.resolve(clientOut) : undefined,
@@ -641,6 +786,12 @@ if (rawArgs[0] === "pipeline") {
       stubHandlers: pipelineArgv["gateway-stub-handlers"] as boolean,
       emitPlugin: pipelineArgv["gateway-skip-plugin"] ? false : undefined,
       emitRuntime: pipelineArgv["gateway-skip-runtime"] ? false : undefined,
+    } : undefined,
+    app: generateApp ? {
+      appDir: pipelineArgv["app-dir"]
+        ? path.resolve(pipelineArgv["app-dir"] as string)
+        : path.join(path.dirname(path.resolve(gatewayOut!)), "app"),
+      openapiMode: pipelineArgv["app-openapi-mode"] as "copy" | "reference",
     } : undefined,
   });
 
