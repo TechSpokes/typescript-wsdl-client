@@ -726,7 +726,7 @@ npx wsdl-tsc client \
 
 ---
 
-## Command: `openapi`
+### Command: `openapi`
 
 **Purpose**: Generate OpenAPI 3.1 specification from WSDL or a pre-compiled catalog, mirroring the exact TypeScript type structure.
 
@@ -921,7 +921,7 @@ This ensures diff-friendly output for version control.
 
 ---
 
-## Command: `gateway`
+### Command: `gateway`
 
 **Purpose**: Generate a production-ready Fastify gateway with fully functional route handlers from an OpenAPI 3.1 specification. This creates a complete REST API layer over your SOAP client with automatic request/response transformation and standardized envelope responses.
 
@@ -1208,7 +1208,7 @@ This generates minimal handler stubs that throw "Not implemented" errors, allowi
 
 ---
 
-## Command: `app`
+### Command: `app`
 
 **Purpose**: Generate a runnable Fastify application that integrates the generated client, gateway, and OpenAPI spec. This provides an immediately executable server for testing, development, and demonstrations.
 
