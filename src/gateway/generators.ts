@@ -12,7 +12,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import {type ClientMeta, type OpenAPIDocument, rewriteSchemaRefs, slugName,} from "./helpers.js";
+import {type ClientMeta, type OpenAPIDocument, flattenAllOf, rewriteSchemaRefs, slugName,} from "./helpers.js";
 
 /**
  * Emits individual JSON Schema files for each OpenAPI component schema
@@ -51,10 +51,13 @@ export function emitModelSchemas(
     schemaIdByName[name] = `urn:services:${serviceSlug}:${versionSlug}:schemas:models:${slug}`;
   }
 
-  // Second pass: rewrite refs and emit files
+  // Second pass: flatten allOf, rewrite refs, and emit files
   for (const [name, schema] of Object.entries(schemas)) {
     const slug = modelSlugByName[name];
-    const cloned = rewriteSchemaRefs(schema, schemaIdByName);
+    // Flatten allOf compositions for Fastify/fast-json-stringify compatibility
+    const flattened = flattenAllOf(schema, schemas);
+    // Rewrite $refs to URN format
+    const cloned = rewriteSchemaRefs(flattened, schemaIdByName);
     cloned.$id = schemaIdByName[name];
     const outPath = path.join(modelsDir, `${slug}.json`);
     fs.writeFileSync(outPath, JSON.stringify(cloned, null, 2), "utf8");
