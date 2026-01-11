@@ -9,58 +9,46 @@
 [![TechSpokes Org](https://img.shields.io/badge/org-techspokes-181717?logo=github)](https://github.com/techspokes)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-blue?logo=github-sponsors)](https://github.com/sponsors/TechSpokes)
 
-> **Mission**: Transform complex WSDL/XSD definitions into ergonomic, type-safe TypeScript SOAP clients with optional OpenAPI 3.1 specs and production-ready Fastify REST gateways — enabling confident integration with legacy enterprise services.
+> **Transform complex WSDL/XSD definitions into type-safe TypeScript SOAP clients with optional OpenAPI 3.1 specs and production-ready REST gateways.**
 
----
+## Use This If You Need...
 
-## Table of Contents
-
-- [1. Why This Project](#1-why-this-project-what-sets-it-apart)
-- [2. Installation](#2-installation)
-- [3. Quick Start](#3-quick-start)
-- [4. Commands Overview](#4-commands-overview)
-- [5. Command: `compile`](#5-command-compile)
-- [6. Command: `client`](#6-command-client)
-- [7. Command: `openapi`](#7-command-openapi)
-- [8. Command: `gateway`](#8-command-gateway)
-- [9. Command: `app`](#9-command-app)
-- [10. Command: `pipeline`](#10-command-pipeline)
-- [11. Working With Generated Clients](#11-working-with-generated-clients)
-- [12. OpenAPI Configuration](#12-openapi-configuration)
-- [13. Programmatic API](#13-programmatic-api)
-- [14. Advanced Topics](#14-advanced-topics)
-- [15. Troubleshooting](#15-troubleshooting)
-- [16. Contributing](#16-contributing)
-- [17. License](#17-license)
-- [18. Sponsors](#18-sponsors)
-
----
-
-## 1. Why This Project (What Sets It Apart)
-
-Most WSDL generators produce loosely typed stubs or expose raw XML complexity to your application layer. This tool delivers **correct flattening, determinism, and multiple integration paths**:
-
-| Core Differentiator                  | What You Get                                                                                         |
-|--------------------------------------|------------------------------------------------------------------------------------------------------|
-| **Attribute + Element Flattening**   | Attributes and child elements appear as peer properties (no nested wrapper noise).                   |
-| **`$value` Text Content Convention** | Simple text & mixed content always represented as a `$value` property (collision-safe & documented). |
-| **Inheritance Resolution**           | `complexContent` and `simpleContent` extensions are merged or extended consistently.                 |
-| **Choice Strategy**                  | Predictable `all-optional` modeling today (future advanced discriminators planned).                  |
-| **WS-Policy Security Hints**         | Inline scan of policies surfaces required auth hints (e.g. `usernameToken`, `https`).                |
-| **Deterministic Output**             | Sorted declarations and stable alias resolution for diff-friendly regeneration.                      |
-| **Primitive Mapping Controls**       | Explicit flags for long / big integer / decimal / temporal families (string-first safety).           |
-| **Catalog Introspection**            | One JSON artifact (`catalog.json`) to drive further tooling (including OpenAPI & gateway).           |
-| **OpenAPI 3.1 Bridge**               | Mirrors the exact TypeScript model with no divergence between runtime and spec.                      |
-| **Standard Response Envelope**       | Always-on, debuggable envelope structure (status, message, data, error) for REST gateways.           |
-| **Fastify Gateway Generation**       | Production-ready route handlers with SOAP client integration and standardized envelope responses.    |
-| **Multi-format Output**              | `--openapi-format json\|yaml\|both` with always-on validation (unless disabled).                     |
-| **One-Shot Pipeline**                | Single pass (parse to TS to OpenAPI to Gateway) for CI & automation.                                 |
+- ✅ **TypeScript-first SOAP clients** — Strongly typed, ergonomic client generation from WSDL
+- ✅ **OpenAPI 3.1 specs** — Generate REST API documentation that mirrors your TypeScript types
+- ✅ **REST gateway over SOAP** — Production-ready Fastify handlers with automatic request/response transformation
+- ✅ **CI-friendly determinism** — Stable, diff-friendly output for safe regeneration in version control
+- ✅ **Predictable modeling** — Flattened attributes, consistent `$value` convention, inheritance resolution
 
 **Vendor**: [TechSpokes](https://www.techspokes.com) · **Maintainer**: Serge Liatko ([@sergeliatko](https://github.com/sergeliatko))
 
 ---
 
-## 2. Installation
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start (60 Seconds)](#quick-start-60-seconds)
+- [What You Get (Outputs)](#what-you-get-outputs)
+- [Core Concepts](#core-concepts)
+- [Common Workflows](#common-workflows)
+- [Command Reference](#command-reference)
+  - [pipeline (Recommended)](#command-pipeline-recommended)
+  - [client](#command-client)
+  - [openapi](#command-openapi)
+  - [gateway](#command-gateway)
+  - [app](#command-app)
+  - [compile (Advanced)](#command-compile-advanced)
+- [Configuration Files](#configuration-files)
+- [Working With Generated Clients](#working-with-generated-clients)
+- [Production Concerns](#production-concerns)
+- [Programmatic API](#programmatic-api)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
+
+---
+
+## Installation
 
 ```bash
 npm install --save-dev @techspokes/typescript-wsdl-client
@@ -73,203 +61,557 @@ npm install soap   # Runtime dependency for SOAP calls
 
 ---
 
-## 3. Quick Start
+## Quick Start (60 Seconds)
 
-### Generate TypeScript SOAP Client
-
-```bash
-npx wsdl-tsc client --wsdl-source ./wsdl/Weather.wsdl --client-dir ./src/services/weather
-```
-
-**Try with included example:**
+Generate a complete SOAP-to-REST stack in one command:
 
 ```bash
-npx wsdl-tsc client --wsdl-source examples/minimal/weather.wsdl --client-dir ./tmp/weather
-```
-
-### Generate Everything (Pipeline)
-
-```bash
+# Generate client, OpenAPI spec, gateway, and runnable app
 npx wsdl-tsc pipeline \
   --wsdl-source examples/minimal/weather.wsdl \
   --client-dir ./tmp/client \
   --openapi-file ./tmp/openapi.json \
   --gateway-dir ./tmp/gateway \
   --gateway-service-name weather \
-  --gateway-version-prefix v1
+  --gateway-version-prefix v1 \
+  --generate-app
 ```
 
-**Output**: Generates client files in `tmp/client/`, OpenAPI spec at `tmp/openapi.json`, gateway code in `tmp/gateway/`, and catalog at `tmp/client/catalog.json`.
+**Start the server:**
+
+```bash
+cd tmp/app
+cp .env.example .env
+# Edit .env to set WSDL_SOURCE if needed
+npx tsx server.js
+```
+
+**Test it:**
+
+```bash
+# Health check
+curl http://localhost:3000/health
+
+# Get OpenAPI spec
+curl http://localhost:3000/openapi.json | jq .
+
+# Call a SOAP operation via REST
+curl -X POST http://localhost:3000/get-weather-information \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**What just happened?**
+1. Parsed the WSDL and compiled types
+2. Generated a TypeScript SOAP client with full type safety
+3. Created an OpenAPI 3.1 spec matching the client types
+4. Built Fastify gateway handlers that call SOAP and return JSON
+5. Created a runnable Express-style app with health/OpenAPI endpoints
 
 ---
 
-## 4. Commands Overview
+## What You Get (Outputs)
 
-The tool provides **six commands** for different integration scenarios:
+### TypeScript SOAP Client
 
-| Command    | Purpose                                                        | Typical Use Case                              |
-|------------|----------------------------------------------------------------|-----------------------------------------------|
-| `compile`  | Parse WSDL and emit `catalog.json` only                        | Debugging, inspection, or multi-stage builds  |
-| `client`   | Generate TypeScript SOAP client from WSDL or catalog           | Standard SOAP integration (most common)       |
-| `openapi`  | Generate OpenAPI 3.1 spec from WSDL or catalog                 | Documentation, REST proxies, API gateways     |
-| `gateway`  | Generate Fastify gateway with full handlers from OpenAPI spec  | Production REST gateway with SOAP integration |
-| `app`      | Generate runnable Fastify app from client + gateway + OpenAPI  | Local testing, quick iteration, demos         |
-| `pipeline` | Run full pipeline: client + OpenAPI + gateway (+ app optional) | CI/CD automation, complete stack generation   |
-
----
-
-## 5. Command: `compile`
-
-**Purpose**: Parse WSDL and generate only the intermediate `catalog.json` representation without TypeScript client code.
-
-**When to use**: 
-- Multi-stage builds where you want to cache the parsed WSDL
-- Debugging or inspecting the compiled schema structure
-- Sharing a compiled catalog across multiple generation targets
-
-### Usage
-
-```bash
-npx wsdl-tsc compile --wsdl-source <file|url> --catalog-file <path> [options]
+```
+client/
+├── client.ts      # Strongly-typed SOAP client wrapper with methods
+├── types.ts       # Flattened interfaces, type aliases, and enums
+├── utils.ts       # Runtime metadata for JSON→SOAP conversion
+└── catalog.json   # Compiled schema representation (reusable)
 ```
 
-### Required Flags
+**Example usage:**
 
-| Flag                | Description                              |
-|---------------------|------------------------------------------|
-| `--wsdl-source`     | Path or URL to the WSDL file             |
-| `--catalog-file`    | Output path for `catalog.json`           |
+```typescript
+import { Weather } from './client/client.js';
 
-### Optional Flags
+const client = new Weather({
+  source: 'https://example.com/weather.wsdl',
+});
 
-| Flag                               | Default        | Description                                                  |
-|------------------------------------|----------------|--------------------------------------------------------------|
-| `--import-extensions`              | `js`           | Import specifier style: `js`, `ts`, or `bare`                |
-| `--client-attributes-key`          | `$attributes`  | Attribute bag key for runtime mapper                         |
-| `--client-class-name`              | (derived)      | Override generated client class name                         |
-| `--client-int64-as`                | `string`       | Map 64-bit integers: `string`, `number`, or `bigint`         |
-| `--client-bigint-as`               | `string`       | Map arbitrary-size integers: `string` or `number`            |
-| `--client-decimal-as`              | `string`       | Map `xs:decimal`: `string` or `number`                       |
-| `--client-date-as`                 | `string`       | Map date/time types: `string` or `Date`                      |
-| `--client-choice-mode`             | `all-optional` | Choice element strategy: `all-optional` or `union`           |
-| `--client-fail-on-unresolved`      | `false`        | Fail build on unresolved type references                     |
-| `--client-nillable-as-optional`    | `false`        | Treat nillable elements as optional properties               |
-
-### Examples
-
-#### Basic Compilation
-
-```bash
-npx wsdl-tsc compile \
-  --wsdl-source examples/minimal/weather.wsdl \
-  --catalog-file tmp/catalog.json
+const result = await client.GetCityWeatherByZIP({ ZIP: '10001' });
+console.log(result.GetCityWeatherByZIPResult);
 ```
 
-#### With Custom Output Path
+### OpenAPI 3.1 Specification
 
-```bash
-npx wsdl-tsc compile \
-  --wsdl-source https://example.com/Hotel.wsdl \
-  --catalog-file ./build/hotel-catalog.json \
-  --client-int64-as number \
-  --client-decimal-as string
+```
+openapi.json   # or .yaml — Complete REST API documentation
 ```
 
-#### For Debugging
+- Mirrors exact TypeScript type structure
+- All responses wrapped in standard envelope (status, message, data, error)
+- Deterministic ordering for version control
+- Validates with `swagger-parser` by default
 
-```bash
-# Compile to inspect types and operations
-npx wsdl-tsc compile \
-  --wsdl-source ./wsdl/ComplexService.wsdl \
-  --catalog-file ./debug/catalog.json \
-  --client-fail-on-unresolved false
+### Fastify REST Gateway
+
+```
+gateway/
+├── schemas/
+│   ├── models/         # JSON Schema components with URN IDs
+│   └── operations/     # Request/response validation schemas
+├── routes/             # Route handlers (fully implemented)
+├── schemas.ts          # Schema registration module
+├── routes.ts           # Route aggregator
+├── runtime.ts          # Envelope builders, error handlers
+└── plugin.ts           # Fastify plugin wrapper
 ```
 
-### Output
+**Example integration:**
 
-- `catalog.json` - Compiled schema representation including types, operations, and metadata
+```typescript
+import Fastify from 'fastify';
+import weatherGateway from './gateway/plugin.js';
+import { Weather } from './client/client.js';
 
-### Catalog Structure
+const app = Fastify({ logger: true });
+const client = new Weather({ source: 'weather.wsdl' });
 
-The catalog.json file contains the compiled WSDL representation:
+await app.register(weatherGateway, { client });
+await app.listen({ port: 3000 });
+```
 
+### Runnable Application
+
+```
+app/
+├── server.js       # Main entry point
+├── config.js       # Configuration with env var support
+├── .env.example    # Environment template
+├── README.md       # Usage instructions
+└── openapi.json    # OpenAPI spec (when --openapi-mode=copy)
+```
+
+### Standard Response Envelope
+
+All gateway responses follow this structure:
+
+**Success:**
 ```json
 {
-  "wsdlUri": "path/to/service.wsdl",
-  "targetNamespace": "http://example.com/service",
-  "serviceName": "WeatherService",
-  "types": [
-    {
-      "name": "GetWeatherRequest",
-      "properties": []
-    }
-  ],
-  "operations": [
-    {
-      "name": "GetWeather",
-      "input": "GetWeatherRequest",
-      "output": "GetWeatherResponse"
-    }
-  ],
-  "options": {
-    "imports": "js",
-    "catalog": true
+  "status": "SUCCESS",
+  "message": null,
+  "data": { /* SOAP response */ },
+  "error": null
+}
+```
+
+**Error:**
+```json
+{
+  "status": "ERROR",
+  "message": "Request validation failed",
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": { /* validation errors */ }
   }
 }
 ```
 
-**Key sections**:
-- `types` - All compiled type definitions with properties and inheritance
-- `operations` - SOAP operations with input/output type references
-- `options` - Compiler options used during generation
+---
 
-This catalog can be reused with the `client` and `openapi` commands via `--catalog-file`.
+## Core Concepts
 
-### Catalog File Organization
+### Flattening and `$value`
 
-**Default behavior**: Catalog files are **co-located** with their primary output files for better organization and discoverability.
+**Attributes and elements become peer properties** — No nested wrapper noise:
 
-**Catalog Location by Command**:
-- `compile`: Always requires explicit `--catalog-file` (no default)
-- `client`: Defaults to `{client-dir}/catalog.json`
-- `openapi`: Defaults to `{openapi-file-dir}/catalog.json`
-- `pipeline`: Intelligent cascade - first available: `{client-dir}` > `{openapi-dir}` > `{gateway-dir}` > `tmp/`
+```xml
+<!-- WSDL -->
+<xs:complexType name="Price">
+  <xs:simpleContent>
+    <xs:extension base="xs:decimal">
+      <xs:attribute name="currency" type="xs:string"/>
+    </xs:extension>
+  </xs:simpleContent>
+</xs:complexType>
+```
 
-**Common patterns**:
+```typescript
+// Generated TypeScript
+interface Price {
+  currency?: string;  // attribute
+  $value: string;     // text content (decimal mapped to string by default)
+}
+```
 
-1. **Co-located with client** (recommended for most projects):
-   ```bash
-   npx wsdl-tsc client --wsdl-source service.wsdl --client-dir src/services/weather
-   ```
-   
-   Creates `src/services/weather/catalog.json` automatically.
-   
-   Result:
-   ```
-   src/services/weather/
-   ├── client.ts
-   ├── types.ts
-   ├── utils.ts
-   └── catalog.json
-   ```
+### Primitive Mapping Defaults (String-First Safety)
 
-2. **Pipeline with multiple outputs** (catalog in client directory):
-   ```bash
-   npx wsdl-tsc pipeline --wsdl-source service.wsdl --client-dir src/client --openapi-file docs/api.json
-   ```
-   
-   Creates `src/client/catalog.json` (co-located with client).
+Prevents precision loss and parsing errors at the cost of convenience:
 
-3. **Shared catalog for multiple commands** (custom location):
-   ```bash
-   npx wsdl-tsc compile --wsdl-source service.wsdl --catalog-file build/shared-catalog.json
-   npx wsdl-tsc client --catalog-file build/shared-catalog.json --client-dir src/client
-   npx wsdl-tsc openapi --catalog-file build/shared-catalog.json --openapi-file docs/api.json
-   ```
+| XSD Type      | Default  | Override Options   | When to Override                       |
+|---------------|----------|--------------------|----------------------------------------|
+| `xs:long`     | `string` | `number`, `bigint` | Use `number` if values fit JS range    |
+| `xs:integer`  | `string` | `number`           | Use `string` for arbitrary-size ints   |
+| `xs:decimal`  | `string` | `number`           | Use `string` for precise decimals      |
+| `xs:dateTime` | `string` | `Date`             | Use `Date` if runtime parsing is okay  |
+
+**Override with flags:**
+- `--client-int64-as number`
+- `--client-decimal-as string`
+- `--client-date-as Date`
+
+### Deterministic Generation
+
+All output is **stable and diff-friendly** for CI/CD:
+
+- ✅ Sorted type declarations
+- ✅ Sorted OpenAPI paths, schemas, parameters
+- ✅ Sorted JSON schema keys
+- ✅ Stable alias resolution
+- ✅ Consistent ordering of imports
+
+Regenerate safely without spurious diffs in version control.
+
+### Catalog as Intermediate Artifact
+
+`catalog.json` is the compiled representation of your WSDL:
+
+- **Debuggable** — Inspect types, operations, and metadata as JSON
+- **Cacheable** — Reuse across client/OpenAPI/gateway generation
+- **Co-located** — Automatically placed alongside generated output
+
+**Common locations:**
+- `client` command: `{client-dir}/catalog.json`
+- `openapi` command: `{openapi-dir}/catalog.json`
+- `pipeline` command: First available output directory
 
 ---
 
-## 6. Command: `client`
+## Common Workflows
+
+### Which Command Should I Run?
+
+| I Want...                                     | Use Command  | Example                                                                                                              |
+|-----------------------------------------------|--------------|----------------------------------------------------------------------------------------------------------------------|
+| **Everything (client + OpenAPI + gateway)**   | `pipeline`   | `npx wsdl-tsc pipeline --wsdl-source service.wsdl --client-dir ./client --openapi-file ./api.json --gateway-dir ./gateway --gateway-service-name svc --gateway-version-prefix v1` |
+| **Only a TypeScript SOAP client**             | `client`     | `npx wsdl-tsc client --wsdl-source service.wsdl --client-dir ./client`                                              |
+| **Only OpenAPI spec (for docs or SDKs)**      | `openapi`    | `npx wsdl-tsc openapi --wsdl-source service.wsdl --openapi-file ./api.json`                                         |
+| **Only REST gateway (have OpenAPI already)**  | `gateway`    | `npx wsdl-tsc gateway --openapi-file ./api.json --client-dir ./client --gateway-dir ./gateway --gateway-service-name svc --gateway-version-prefix v1` |
+| **Runnable server for testing**               | `app`        | `npx wsdl-tsc app --client-dir ./client --gateway-dir ./gateway --openapi-file ./api.json`                          |
+| **Debug/inspect WSDL compilation**            | `compile`    | `npx wsdl-tsc compile --wsdl-source service.wsdl --catalog-file ./catalog.json`                                     |
+
+### Workflow 1: Generate Everything (Recommended)
+
+Use `pipeline` for complete stack generation:
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source examples/minimal/weather.wsdl \
+  --client-dir ./src/services/weather \
+  --openapi-file ./docs/weather-api.json \
+  --gateway-dir ./src/gateway/weather \
+  --gateway-service-name weather \
+  --gateway-version-prefix v1
+```
+
+**Output:**
+- Client: `./src/services/weather/client.ts`, `types.ts`, `utils.ts`, `catalog.json`
+- OpenAPI: `./docs/weather-api.json`
+- Gateway: `./src/gateway/weather/` (routes, schemas, plugin)
+
+### Workflow 2: SOAP Client Only
+
+Generate TypeScript client for direct SOAP integration:
+
+```bash
+npx wsdl-tsc client \
+  --wsdl-source ./wsdl/Hotel.wsdl \
+  --client-dir ./src/services/hotel
+```
+
+**Usage:**
+
+```typescript
+import soap from 'soap';
+import { Hotel } from './src/services/hotel/client.js';
+
+const client = new Hotel({
+  source: 'https://example.com/hotel.wsdl',
+  security: new soap.WSSecurity('username', 'password'),
+});
+
+const result = await client.SearchAvailableRooms({
+  checkIn: '2024-01-15',
+  checkOut: '2024-01-20',
+  guests: 2,
+});
+```
+
+### Workflow 3: OpenAPI for Documentation
+
+Generate OpenAPI spec for API documentation or SDK generation:
+
+```bash
+npx wsdl-tsc openapi \
+  --wsdl-source ./wsdl/Booking.wsdl \
+  --openapi-file ./docs/booking-api.yaml \
+  --openapi-format yaml \
+  --openapi-title "Hotel Booking API" \
+  --openapi-version "1.0.0" \
+  --openapi-servers https://api.example.com/v1
+```
+
+**Use the spec:**
+- Import into Postman, Insomnia, or Swagger UI
+- Generate client SDKs with OpenAPI Generator
+- Share as REST API documentation
+
+### Workflow 4: REST Gateway Over SOAP
+
+Build a REST API layer over legacy SOAP services:
+
+```bash
+# 1. Generate client + OpenAPI
+npx wsdl-tsc pipeline \
+  --wsdl-source ./wsdl/Legacy.wsdl \
+  --client-dir ./src/services/legacy \
+  --openapi-file ./docs/legacy-api.json
+
+# 2. Generate gateway
+npx wsdl-tsc gateway \
+  --openapi-file ./docs/legacy-api.json \
+  --client-dir ./src/services/legacy \
+  --gateway-dir ./src/gateway/legacy \
+  --gateway-service-name legacy \
+  --gateway-version-prefix v1
+```
+
+**Or in one command:**
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source ./wsdl/Legacy.wsdl \
+  --client-dir ./src/services/legacy \
+  --openapi-file ./docs/legacy-api.json \
+  --gateway-dir ./src/gateway/legacy \
+  --gateway-service-name legacy \
+  --gateway-version-prefix v1
+```
+
+### Workflow 5: CI/CD Integration
+
+Cache compiled catalog for faster multi-stage builds:
+
+```bash
+# Stage 1: Compile catalog (cacheable)
+npx wsdl-tsc compile \
+  --wsdl-source ./wsdl/Service.wsdl \
+  --catalog-file ./build/service-catalog.json
+
+# Stage 2: Generate client from catalog
+npx wsdl-tsc client \
+  --catalog-file ./build/service-catalog.json \
+  --client-dir ./src/services/service
+
+# Stage 3: Generate OpenAPI from catalog
+npx wsdl-tsc openapi \
+  --catalog-file ./build/service-catalog.json \
+  --openapi-file ./docs/service-api.json
+```
+
+### Workflow 6: Debugging Complex WSDL
+
+Inspect compiled types and operations:
+
+```bash
+# Compile to catalog
+npx wsdl-tsc compile \
+  --wsdl-source ./wsdl/Complex.wsdl \
+  --catalog-file ./debug/catalog.json
+
+# Inspect types
+cat ./debug/catalog.json | jq '.types'
+
+# Inspect operations
+cat ./debug/catalog.json | jq '.operations'
+```
+
+---
+
+## Command Reference
+
+The tool provides **six commands** for different integration scenarios. Commands are listed in **recommended order of use**:
+
+| Command    | Purpose                                                        | Typical Use Case                              |
+|------------|----------------------------------------------------------------|-----------------------------------------------|
+| `pipeline` | Run full pipeline: client + OpenAPI + gateway (+ app optional) | **CI/CD automation, complete stack generation (recommended)** |
+| `client`   | Generate TypeScript SOAP client from WSDL or catalog           | Standard SOAP integration                     |
+| `openapi`  | Generate OpenAPI 3.1 spec from WSDL or catalog                 | Documentation, REST proxies, API gateways     |
+| `gateway`  | Generate Fastify gateway with full handlers from OpenAPI spec  | Production REST gateway with SOAP integration |
+| `app`      | Generate runnable Fastify app from client + gateway + OpenAPI  | Local testing, quick iteration, demos         |
+| `compile`  | Parse WSDL and emit `catalog.json` only                        | Debugging, inspection, or multi-stage builds (advanced) |
+
+---
+
+### Command: `pipeline` (Recommended)
+
+**Purpose**: Run the complete generation pipeline in a single pass: WSDL parsing → TypeScript client → OpenAPI spec → Fastify gateway (+ app optional).
+
+**When to use**:
+- CI/CD automation
+- Complete stack generation
+- Ensuring all artifacts are generated from the same WSDL parse
+- One-command development workflows
+
+#### Usage
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source <file|url> \
+  [--catalog-file <path>] \
+  [--client-dir <path>] \
+  [--openapi-file <path>] \
+  [--gateway-dir <path>] \
+  [options]
+```
+
+#### Required Flags
+
+| Flag                | Description                                                          |
+|---------------------|----------------------------------------------------------------------|
+| `--wsdl-source`     | Path or URL to WSDL file                                             |
+
+#### Output Flags
+
+| Flag                | Default                                     | Description                                       |
+|---------------------|---------------------------------------------|---------------------------------------------------|
+| `--catalog-file`    | Co-located with first output (see below)    | Output path for `catalog.json` (always generated) |
+
+**Catalog Default Location**: The catalog is automatically placed alongside the first available output:
+- With `--client-dir`: `{client-dir}/catalog.json`
+- With `--openapi-file` only: `{openapi-file-dir}/catalog.json`
+- With `--gateway-dir` only: `{gateway-dir}/catalog.json`
+
+**Note**: At least one of `--client-dir`, `--openapi-file`, or `--gateway-dir` must be provided.
+
+#### Generation Control Flags
+
+| Flag                    | Description                                    |
+|-------------------------|------------------------------------------------|
+| `--client-dir`          | Generate TypeScript client in this directory   |
+| `--openapi-file`        | Generate OpenAPI spec at this path             |
+| `--gateway-dir`         | Generate Fastify gateway in this directory     |
+| `--generate-app`        | Generate runnable app (requires gateway)       |
+
+#### Optional Flags
+
+All flags from `client`, `openapi`, and `gateway` commands are supported. Key flags:
+
+**Client Flags:**
+- `--import-extensions` (default: `js`)
+- `--client-attributes-key` (default: `$attributes`)
+- `--client-class-name`
+- `--client-int64-as` (default: `string`)
+- `--client-bigint-as` (default: `string`)
+- `--client-decimal-as` (default: `string`)
+- `--client-date-as` (default: `string`)
+- `--client-choice-mode` (default: `all-optional`)
+- `--client-fail-on-unresolved` (default: `false`)
+- `--client-nillable-as-optional` (default: `false`)
+
+**OpenAPI Flags:**
+- `--openapi-format` (default: `json`)
+- `--openapi-title`
+- `--openapi-version` (default: `0.0.0`)
+- `--openapi-description`
+- `--openapi-servers` (default: `/`)
+- `--openapi-base-path`
+- `--openapi-path-style` (default: `kebab`)
+- `--openapi-method` (default: `post`)
+- `--openapi-tag-style` (default: `default`)
+- `--openapi-closed-schemas` (default: `false`)
+- `--openapi-prune-unused-schemas` (default: `false`)
+- `--openapi-envelope-namespace` (default: `ResponseEnvelope`)
+- `--openapi-error-namespace` (default: `ErrorObject`)
+- `--openapi-validate` (default: `true`)
+- `--openapi-security-config-file`
+- `--openapi-tags-file`
+- `--openapi-ops-file`
+
+**Gateway Flags:**
+- `--gateway-service-name` (required if `--gateway-dir` provided)
+- `--gateway-version-prefix` (required if `--gateway-dir` provided)
+- `--gateway-default-status-codes`
+- `--gateway-stub-handlers` (default: `false`)
+
+#### Examples
+
+**Complete Stack Generation:**
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source examples/minimal/weather.wsdl \
+  --client-dir tmp/client \
+  --openapi-file tmp/openapi.json \
+  --gateway-dir tmp/gateway \
+  --gateway-service-name weather \
+  --gateway-version-prefix v1
+```
+
+**With App Generation:**
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source examples/minimal/weather.wsdl \
+  --client-dir tmp/client \
+  --openapi-file tmp/openapi.json \
+  --gateway-dir tmp/gateway \
+  --gateway-service-name weather \
+  --gateway-version-prefix v1 \
+  --generate-app
+```
+
+**Client + OpenAPI Only:**
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source https://example.com/Hotel.wsdl \
+  --client-dir ./build/client \
+  --openapi-file ./docs/hotel-api.json \
+  --openapi-format both
+```
+
+**With Full Configuration:**
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source ./wsdl/Booking.wsdl \
+  --client-dir ./build/client \
+  --openapi-file ./docs/booking-api \
+  --gateway-dir ./build/gateway \
+  --openapi-format both \
+  --openapi-servers https://api.example.com/v1 \
+  --openapi-base-path /booking \
+  --openapi-security-config-file ./config/security.json \
+  --gateway-service-name booking \
+  --gateway-version-prefix v1 \
+  --client-int64-as number \
+  --client-decimal-as string
+```
+
+#### Pipeline Workflow
+
+The pipeline command executes these steps in order:
+
+1. **Parse WSDL** → Load and validate WSDL document
+2. **Compile Catalog** → Generate intermediate representation
+3. **Emit Catalog** → Write `catalog.json` (always)
+4. **Generate Client** → Emit TypeScript client files (if `--client-dir`)
+5. **Generate OpenAPI** → Create OpenAPI spec (if `--openapi-file`)
+6. **Generate Gateway** → Create Fastify gateway code (if `--gateway-dir`)
+7. **Generate App** → Create runnable application (if `--generate-app`)
+
+All steps share the same parsed WSDL and compiled catalog, ensuring consistency.
+
+---
+
+### Command: `client`
 
 **Purpose**: Generate strongly-typed TypeScript SOAP client code from WSDL or a pre-compiled catalog.
 
@@ -384,7 +726,7 @@ npx wsdl-tsc client \
 
 ---
 
-## 7. Command: `openapi`
+### Command: `openapi`
 
 **Purpose**: Generate OpenAPI 3.1 specification from WSDL or a pre-compiled catalog, mirroring the exact TypeScript type structure.
 
@@ -579,7 +921,7 @@ This ensures diff-friendly output for version control.
 
 ---
 
-## 8. Command: `gateway`
+### Command: `gateway`
 
 **Purpose**: Generate a production-ready Fastify gateway with fully functional route handlers from an OpenAPI 3.1 specification. This creates a complete REST API layer over your SOAP client with automatic request/response transformation and standardized envelope responses.
 
@@ -866,7 +1208,7 @@ This generates minimal handler stubs that throw "Not implemented" errors, allowi
 
 ---
 
-## 9. Command: `app`
+### Command: `app`
 
 **Purpose**: Generate a runnable Fastify application that integrates the generated client, gateway, and OpenAPI spec. This provides an immediately executable server for testing, development, and demonstrations.
 
@@ -1048,185 +1390,148 @@ This generates all artifacts including the runnable app in a single command.
 
 ---
 
-## 10. Command: `pipeline`
+### Command: `compile` (Advanced)
 
-**Purpose**: Run the complete generation pipeline in a single pass: WSDL parsing → TypeScript client → OpenAPI spec → Fastify gateway.
+**Purpose**: Parse WSDL and generate only the intermediate `catalog.json` representation without TypeScript client code.
 
-**When to use**:
-- CI/CD automation
-- Complete stack generation
-- Ensuring all artifacts are generated from the same WSDL parse
-- One-command development workflows
+**When to use**: 
+- Multi-stage builds where you want to cache the parsed WSDL
+- Debugging or inspecting the compiled schema structure
+- Sharing a compiled catalog across multiple generation targets
 
-### Usage
+#### Usage
 
 ```bash
-npx wsdl-tsc pipeline \
-  --wsdl-source <file|url> \
-  [--catalog-file <path>] \
-  [--client-dir <path>] \
-  [--openapi-file <path>] \
-  [--gateway-dir <path>] \
-  [options]
+npx wsdl-tsc compile --wsdl-source <file|url> --catalog-file <path> [options]
 ```
 
-### Required Flags
+#### Required Flags
 
-| Flag                | Description                                                          |
-|---------------------|----------------------------------------------------------------------|
-| `--wsdl-source`     | Path or URL to WSDL file                                             |
+| Flag                | Description                              |
+|---------------------|------------------------------------------|
+| `--wsdl-source`     | Path or URL to the WSDL file             |
+| `--catalog-file`    | Output path for `catalog.json`           |
 
-### Output Flags
+#### Optional Flags
 
-| Flag                | Default                                     | Description                                       |
-|---------------------|---------------------------------------------|---------------------------------------------------|
-| `--catalog-file`    | Co-located with first output (see below)    | Output path for `catalog.json` (always generated) |
+| Flag                               | Default        | Description                                                  |
+|------------------------------------|----------------|--------------------------------------------------------------|
+| `--import-extensions`              | `js`           | Import specifier style: `js`, `ts`, or `bare`                |
+| `--client-attributes-key`          | `$attributes`  | Attribute bag key for runtime mapper                         |
+| `--client-class-name`              | (derived)      | Override generated client class name                         |
+| `--client-int64-as`                | `string`       | Map 64-bit integers: `string`, `number`, or `bigint`         |
+| `--client-bigint-as`               | `string`       | Map arbitrary-size integers: `string` or `number`            |
+| `--client-decimal-as`              | `string`       | Map `xs:decimal`: `string` or `number`                       |
+| `--client-date-as`                 | `string`       | Map date/time types: `string` or `Date`                      |
+| `--client-choice-mode`             | `all-optional` | Choice element strategy: `all-optional` or `union`           |
+| `--client-fail-on-unresolved`      | `false`        | Fail build on unresolved type references                     |
+| `--client-nillable-as-optional`    | `false`        | Treat nillable elements as optional properties               |
 
-**Catalog Default Location**: The catalog is automatically placed alongside the first available output:
-- With `--client-dir`: `{client-dir}/catalog.json`
-- With `--openapi-file` only: `{openapi-file-dir}/catalog.json`
-- With `--gateway-dir` only: `{gateway-dir}/catalog.json`
+#### Examples
 
-**Note**: At least one of `--client-dir`, `--openapi-file`, or `--gateway-dir` must be provided.
-
-### Generation Control Flags
-
-| Flag                    | Description                                    |
-|-------------------------|------------------------------------------------|
-| `--client-dir`          | Generate TypeScript client in this directory   |
-| `--openapi-file`        | Generate OpenAPI spec at this path             |
-| `--gateway-dir`         | Generate Fastify gateway in this directory     |
-
-### Optional Flags
-
-All flags from `client`, `openapi`, and `gateway` commands are supported. Key flags:
-
-#### Client Flags
-- `--import-extensions` (default: `js`)
-- `--client-attributes-key` (default: `$attributes`)
-- `--client-class-name`
-- `--client-int64-as` (default: `string`)
-- `--client-bigint-as` (default: `string`)
-- `--client-decimal-as` (default: `string`)
-- `--client-date-as` (default: `string`)
-- `--client-choice-mode` (default: `all-optional`)
-- `--client-fail-on-unresolved` (default: `false`)
-- `--client-nillable-as-optional` (default: `false`)
-
-#### OpenAPI Flags
-- `--openapi-format` (default: `json`)
-- `--openapi-title`
-- `--openapi-version` (default: `0.0.0`)
-- `--openapi-description`
-- `--openapi-servers` (default: `/`)
-- `--openapi-base-path`
-- `--openapi-path-style` (default: `kebab`)
-- `--openapi-method` (default: `post`)
-- `--openapi-tag-style` (default: `default`)
-- `--openapi-closed-schemas` (default: `false`)
-- `--openapi-prune-unused-schemas` (default: `false`)
-- `--openapi-envelope-namespace` (default: `ResponseEnvelope`)
-- `--openapi-error-namespace` (default: `ErrorObject`)
-- `--openapi-validate` (default: `true`)
-- `--openapi-security-config-file`
-- `--openapi-tags-file`
-- `--openapi-ops-file`
-
-#### Gateway Flags
-- `--gateway-service-name` (required if `--gateway-dir` provided)
-- `--gateway-version-prefix` (required if `--gateway-dir` provided)
-- `--gateway-default-status-codes`
-
-### Examples
-
-#### Complete Stack Generation (Using Default Catalog Location)
+**Basic Compilation:**
 
 ```bash
-npx wsdl-tsc pipeline \
+npx wsdl-tsc compile \
   --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir tmp/client \
-  --openapi-file tmp/openapi.json \
-  --gateway-dir tmp/gateway \
-  --gateway-service-name weather \
-  --gateway-version-prefix v1
+  --catalog-file tmp/catalog.json
 ```
 
-**Output**: Catalog at `tmp/client/catalog.json`.
-
-#### Client + OpenAPI Only
+**With Custom Mapping Options:**
 
 ```bash
-npx wsdl-tsc pipeline \
+npx wsdl-tsc compile \
   --wsdl-source https://example.com/Hotel.wsdl \
-  --client-dir ./build/client \
-  --openapi-file ./docs/hotel-api.json \
-  --openapi-format both
-```
-
-**Output**: Catalog at `./build/client/catalog.json`.
-
-#### OpenAPI + Gateway Only
-
-```bash
-npx wsdl-tsc pipeline \
-  --wsdl-source ./wsdl/Booking.wsdl \
-  --openapi-file ./docs/booking-api.json \
-  --gateway-dir ./build/gateway \
-  --gateway-service-name booking \
-  --gateway-version-prefix v1
-```
-
-**Output**: Catalog at `./docs/catalog.json`.
-
-#### With Custom Catalog Path
-
-```bash
-npx wsdl-tsc pipeline \
-  --wsdl-source ./wsdl/Booking.wsdl \
-  --catalog-file ./build/shared/catalog.json \
-  --client-dir ./build/client \
-  --openapi-file ./docs/booking-api.json \
-  --gateway-dir ./build/gateway \
-  --gateway-service-name booking \
-  --gateway-version-prefix v1
-```
-
-#### With Full Configuration
-
-```bash
-npx wsdl-tsc pipeline \
-  --wsdl-source ./wsdl/Booking.wsdl \
-  --client-dir ./build/client \
-  --openapi-file ./docs/booking-api \
-  --gateway-dir ./build/gateway \
-  --openapi-format both \
-  --openapi-servers https://api.example.com/v1 \
-  --openapi-base-path /booking \
-  --openapi-security-config-file ./config/security.json \
-  --gateway-service-name booking \
-  --gateway-version-prefix v1 \
+  --catalog-file ./build/hotel-catalog.json \
   --client-int64-as number \
   --client-decimal-as string
 ```
 
-**Output**: Catalog at `./build/client/catalog.json`.
+**For Debugging:**
 
-### Pipeline Workflow
+```bash
+# Compile to inspect types and operations
+npx wsdl-tsc compile \
+  --wsdl-source ./wsdl/ComplexService.wsdl \
+  --catalog-file ./debug/catalog.json \
+  --client-fail-on-unresolved false
 
-The pipeline command executes these steps in order:
+# Inspect types
+cat ./debug/catalog.json | jq '.types'
 
-1. **Parse WSDL** → Load and validate WSDL document
-2. **Compile Catalog** → Generate intermediate representation
-3. **Emit Catalog** → Write `catalog.json` (always)
-4. **Generate Client** → Emit TypeScript client files (if `--client-dir`)
-5. **Generate OpenAPI** → Create OpenAPI spec (if `--openapi-file`)
-6. **Generate Gateway** → Create Fastify gateway code (if `--gateway-dir`)
+# Inspect operations
+cat ./debug/catalog.json | jq '.operations'
+```
 
-All steps share the same parsed WSDL and compiled catalog, ensuring consistency.
+#### Output
+
+- `catalog.json` - Compiled schema representation including types, operations, and metadata
+
+#### Catalog Structure
+
+The catalog.json file contains the compiled WSDL representation:
+
+```json
+{
+  "wsdlUri": "path/to/service.wsdl",
+  "targetNamespace": "http://example.com/service",
+  "serviceName": "WeatherService",
+  "types": [
+    {
+      "name": "GetWeatherRequest",
+      "properties": []
+    }
+  ],
+  "operations": [
+    {
+      "name": "GetWeather",
+      "input": "GetWeatherRequest",
+      "output": "GetWeatherResponse"
+    }
+  ],
+  "options": {
+    "imports": "js",
+    "catalog": true
+  }
+}
+```
+
+**Key sections**:
+- `types` - All compiled type definitions with properties and inheritance
+- `operations` - SOAP operations with input/output type references
+- `options` - Compiler options used during generation
+
+This catalog can be reused with the `client` and `openapi` commands via `--catalog-file`.
+
+#### Catalog Co-location
+
+**Default behavior**: Catalog files are **co-located** with their primary output files for better organization and discoverability.
+
+**Catalog Location by Command**:
+- `compile`: Always requires explicit `--catalog-file` (no default)
+- `client`: Defaults to `{client-dir}/catalog.json`
+- `openapi`: Defaults to `{openapi-file-dir}/catalog.json`
+- `pipeline`: Intelligent cascade - first available: `{client-dir}` > `{openapi-dir}` > `{gateway-dir}` > `tmp/`
+
+**Common patterns**:
+
+1. **Co-located with client** (recommended for most projects):
+   ```bash
+   npx wsdl-tsc client --wsdl-source service.wsdl --client-dir src/services/weather
+   ```
+   
+   Creates `src/services/weather/catalog.json` automatically.
+
+2. **Shared catalog for multiple commands** (custom location):
+   ```bash
+   npx wsdl-tsc compile --wsdl-source service.wsdl --catalog-file build/shared-catalog.json
+   npx wsdl-tsc client --catalog-file build/shared-catalog.json --client-dir src/client
+   npx wsdl-tsc openapi --catalog-file build/shared-catalog.json --openapi-file docs/api.json
+   ```
 
 ---
 
-## 11. Working With Generated Clients
+## Working With Generated Clients
 
 ### Client Construction
 
@@ -1293,7 +1598,7 @@ result.GetCityWeatherByZIPResult.Temperature;  // number | string (depends on ma
 
 ---
 
-## 12. OpenAPI Configuration
+## Configuration Files
 
 ### Security Configuration (`security.json`)
 
@@ -1352,7 +1657,106 @@ Per-operation overrides for method, summary, description, and deprecation:
 
 ---
 
-## 13. Programmatic API
+## Production Concerns
+
+### Deterministic Output Guarantees
+
+All generated code and specifications have **stable, deterministic ordering** for version control:
+
+- ✅ **TypeScript files**: Sorted type declarations, imports, and exports
+- ✅ **OpenAPI specs**: Sorted paths, HTTP methods, schemas, parameters, security schemes, tags
+- ✅ **JSON Schemas**: Sorted property keys and component names
+- ✅ **Gateway routes**: Alphabetically organized route files
+- ✅ **Catalog JSON**: Consistent ordering of types and operations
+
+**Benefit**: Safe regeneration in CI/CD without spurious diffs.
+
+### Validation Behavior
+
+**OpenAPI Validation** (enabled by default):
+- Uses `@apidevtools/swagger-parser`
+- Validates schema structure
+- Resolves all `$ref` references
+- Catches missing schemas and circular dependencies
+- Disable with `--openapi-validate false`
+
+**Gateway Contract Validation**:
+- All request/response bodies must use `$ref` to `components.schemas`
+- Every operation must have a default response with `application/json` content
+- All referenced schemas must exist in `components.schemas`
+
+### Error Handling
+
+**Gateway Error Classification**:
+
+| Error Type            | HTTP Status | Error Code            | When It Occurs                        |
+|-----------------------|-------------|-----------------------|---------------------------------------|
+| Validation errors     | 400         | `VALIDATION_ERROR`    | Request doesn't match JSON Schema     |
+| SOAP faults           | 502         | `SOAP_FAULT`          | SOAP service returned a fault         |
+| Connection refused    | 503         | `SERVICE_UNAVAILABLE` | Cannot reach SOAP endpoint            |
+| Timeout               | 504         | `GATEWAY_TIMEOUT`     | SOAP request exceeded timeout         |
+| Other errors          | 500         | `INTERNAL_ERROR`      | Unexpected errors                     |
+
+All errors are wrapped in the standard envelope format with `error` object populated.
+
+### SOAP Wire Logging
+
+Enable SOAP request/response debugging:
+
+```bash
+NODE_DEBUG=soap node app.js
+```
+
+This logs full XML request/response payloads to console.
+
+### CI/CD Tips
+
+**Caching Strategy:**
+
+```bash
+# Step 1: Compile catalog (cacheable artifact)
+npx wsdl-tsc compile \
+  --wsdl-source ./wsdl/Service.wsdl \
+  --catalog-file ./build/catalog.json
+
+# Step 2: Generate code from cached catalog
+npx wsdl-tsc client --catalog-file ./build/catalog.json --client-dir ./src/client
+npx wsdl-tsc openapi --catalog-file ./build/catalog.json --openapi-file ./docs/api.json
+```
+
+**Recommended Build Script** (`package.json`):
+
+```json
+{
+  "scripts": {
+    "generate": "npx wsdl-tsc pipeline --wsdl-source ./wsdl/service.wsdl --client-dir ./src/client --openapi-file ./docs/api.json --gateway-dir ./src/gateway --gateway-service-name svc --gateway-version-prefix v1",
+    "build": "npm run generate && tsc",
+    "typecheck": "tsc --noEmit"
+  }
+}
+```
+
+### Known Limitations
+
+**Choice Elements**:
+- Current strategy: `all-optional` (all branches optional)
+- Future: Discriminated union support (planned)
+
+**Union Types**:
+- Experimental `--client-choice-mode union` available
+- May require manual refinement for complex patterns
+
+**WS-Policy**:
+- Security hints extracted from policies
+- Custom policies may require manual security configuration
+
+**Array Wrapper Flattening**:
+- Single-child sequences with `maxOccurs>1` become array schemas
+- Sequences with multiple children preserve wrapper
+
+---
+
+## Programmatic API
 
 All CLI commands are available as TypeScript functions for programmatic usage.
 
@@ -1619,7 +2023,7 @@ interface PipelineOptions {
 
 ---
 
-## 14. Advanced Topics
+## Advanced Topics
 
 ### Primitive Mapping Philosophy
 
@@ -1694,7 +2098,7 @@ Disable with `--openapi-validate false` or `validate: false` in API.
 
 ---
 
-## 15. Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -1775,7 +2179,7 @@ The catalog is automatically placed at `./src/services/hotel/catalog.json`.
 
 ---
 
-## 16. Contributing
+## Contributing
 
 We welcome contributions! Here's how to get started:
 
@@ -1849,7 +2253,7 @@ See also: [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDU
 
 ---
 
-## 17. License
+## License
 
 MIT © TechSpokes
 
@@ -1859,7 +2263,7 @@ See [LICENSE](LICENSE) for full text.
 
 ---
 
-## 18. Sponsors
+## Sponsors
 
 Support ongoing development and maintenance:
 
