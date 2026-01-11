@@ -147,8 +147,8 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
   if (closed) obj.additionalProperties = false;
 
   // inheritance via base => allOf
-  if ((t as any).base) {
-    const baseName = (t as any).base as string;
+  if (t.base) {
+    const baseName = t.base;
     // Validate base reference explicitly (using helper ensures error if unknown)
     if (!knownTypeNames.has(baseName) && !aliasNames.has(baseName)) {
       throw new Error(`[openapi] unknown base type '${baseName}' while building schema '${t.name}'`);
@@ -156,7 +156,7 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
     obj.allOf = [{$ref: `#/components/schemas/${baseName}`}, {...obj}];
     delete obj.type; // inner object part handled in allOf
     delete obj.properties;
-    if (!required.length) delete obj.required;
+    delete obj.required; // Always remove from top-level; it's already in the allOf member
     if (!closed) delete obj.additionalProperties; // put closed only on leaf part
   }
 

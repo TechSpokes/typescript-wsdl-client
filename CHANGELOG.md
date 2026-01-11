@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(openapi): remove top-level `required` when using `allOf` for type inheritance
+
 ## [0.9.1] - 2026-01-10
 
 - docs(readme): update mission statement to reflect production-ready gateway instead of scaffolding

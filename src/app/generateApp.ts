@@ -16,7 +16,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
-import {error, success} from "../util/cli.js";
+import {success} from "../util/cli.js";
 
 /**
  * Options for app generation
@@ -107,6 +107,18 @@ function getExtension(imports: string): string {
 }
 
 /**
+ * Returns the file extension for executable app files (server, config)
+ * These always need extensions even with bare imports since they are entry points
+ *
+ * @param {string} imports - Import mode (js, ts, or bare)
+ * @returns {string} - File extension with leading dot
+ */
+function getAppFileExtension(imports: string): string {
+  if (imports === "ts") return ".ts";
+  return ".js"; // Use .js for both "js" and "bare" modes
+}
+
+/**
  * Computes a relative import path from source to target
  *
  * @param {string} from - Source directory
@@ -120,7 +132,7 @@ function computeRelativeImport(from: string, to: string, imports: string): strin
   const posix = rel.split(path.sep).join("/");
   // Ensure it starts with ./ or ../
   const prefixed = posix.startsWith(".") ? posix : `./${posix}`;
-  
+
   // Apply import extension rules
   const ext = getExtension(imports);
   if (ext) {
@@ -169,12 +181,12 @@ function generateServerFile(
   clientClassName: string
 ): void {
   const imports = opts.imports || "js";
-  const ext = getExtension(imports);
-  
+  const ext = getAppFileExtension(imports); // Use getAppFileExtension for executable entry point
+
   const configImport = computeRelativeImport(appDir, path.join(appDir, "config"), imports);
   const gatewayPluginImport = computeRelativeImport(appDir, path.join(opts.gatewayDir, "plugin"), imports);
   const clientImport = computeRelativeImport(appDir, path.join(opts.clientDir, "client"), imports);
-  
+
   // For OpenAPI serving, we need to read and parse the file at startup in ESM mode
   const openapiServeLogic = opts.openapiMode === "copy"
     ? `
@@ -296,8 +308,8 @@ function generateConfigFile(
   defaultWsdlSource: string | undefined
 ): void {
   const imports = opts.imports || "js";
-  const ext = getExtension(imports);
-  
+  const ext = getAppFileExtension(imports); // Use getAppFileExtension for executable entry point
+
   const defaultHost = opts.host || "127.0.0.1";
   const defaultPort = opts.port || 3000;
   const defaultPrefix = opts.prefix || "";
@@ -305,8 +317,8 @@ function generateConfigFile(
 
   // For .js files, we need to generate plain JavaScript (no TypeScript types)
   // For .ts files, we can use TypeScript syntax
-  const isTypeScript = ext === ".ts" || ext === "";
-  
+  const isTypeScript = ext === ".ts";
+
   const typeAnnotations = isTypeScript ? `
 /**
  * Application configuration interface
@@ -438,8 +450,8 @@ LOGGER=${defaultLogger}
 function generateReadme(appDir: string, opts: GenerateAppOptions): void {
   const imports = opts.imports || "js";
   const ext = getExtension(imports);
-  
-  const runCommand = ext === ".ts" 
+
+  const runCommand = ext === ".ts"
     ? "npx tsx server.ts"
     : "node server.js";
 

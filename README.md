@@ -107,14 +107,14 @@ npx wsdl-tsc pipeline \
 
 The tool provides **six commands** for different integration scenarios:
 
-| Command    | Purpose                                                       | Typical Use Case                              |
-|------------|---------------------------------------------------------------|-----------------------------------------------|
-| `compile`  | Parse WSDL and emit `catalog.json` only                       | Debugging, inspection, or multi-stage builds  |
-| `client`   | Generate TypeScript SOAP client from WSDL or catalog          | Standard SOAP integration (most common)       |
-| `openapi`  | Generate OpenAPI 3.1 spec from WSDL or catalog                | Documentation, REST proxies, API gateways     |
-| `gateway`  | Generate Fastify gateway with full handlers from OpenAPI spec | Production REST gateway with SOAP integration |
-| `app`      | Generate runnable Fastify app from client + gateway + OpenAPI | Local testing, quick iteration, demos         |
-| `pipeline` | Run full pipeline: client + OpenAPI + gateway (+ app optional)| CI/CD automation, complete stack generation   |
+| Command    | Purpose                                                        | Typical Use Case                              |
+|------------|----------------------------------------------------------------|-----------------------------------------------|
+| `compile`  | Parse WSDL and emit `catalog.json` only                        | Debugging, inspection, or multi-stage builds  |
+| `client`   | Generate TypeScript SOAP client from WSDL or catalog           | Standard SOAP integration (most common)       |
+| `openapi`  | Generate OpenAPI 3.1 spec from WSDL or catalog                 | Documentation, REST proxies, API gateways     |
+| `gateway`  | Generate Fastify gateway with full handlers from OpenAPI spec  | Production REST gateway with SOAP integration |
+| `app`      | Generate runnable Fastify app from client + gateway + OpenAPI  | Local testing, quick iteration, demos         |
+| `pipeline` | Run full pipeline: client + OpenAPI + gateway (+ app optional) | CI/CD automation, complete stack generation   |
 
 ---
 
@@ -890,24 +890,24 @@ npx wsdl-tsc app \
 
 ### Required Flags
 
-| Flag                | Description                                                          |
-|---------------------|----------------------------------------------------------------------|
-| `--client-dir`      | Path to client directory (where `client.ts` is located)             |
-| `--gateway-dir`     | Path to gateway directory (where `plugin.ts` is located)            |
-| `--openapi-file`    | Path to OpenAPI specification file                                   |
+| Flag             | Description                                              |
+|------------------|----------------------------------------------------------|
+| `--client-dir`   | Path to client directory (where `client.ts` is located)  |
+| `--gateway-dir`  | Path to gateway directory (where `plugin.ts` is located) |
+| `--openapi-file` | Path to OpenAPI specification file                       |
 
 ### Optional Flags
 
-| Flag                   | Default                                  | Description                                                  |
-|------------------------|------------------------------------------|--------------------------------------------------------------|
-| `--catalog-file`       | `{client-dir}/catalog.json`              | Path to catalog.json (for metadata extraction)               |
-| `--app-dir`            | `{gateway-dir}/../app`                   | Output directory for generated app                           |
-| `--import-extensions`  | Inferred from catalog or `js`            | Import-extension mode: `js`, `ts`, or `bare`                 |
-| `--host`               | `127.0.0.1`                              | Default server host                                          |
-| `--port`               | `3000`                                   | Default server port                                          |
-| `--prefix`             | `""` (empty)                             | Route prefix                                                 |
-| `--logger`             | `true`                                   | Enable Fastify logger                                        |
-| `--openapi-mode`       | `copy`                                   | How to handle OpenAPI file: `copy` or `reference`           |
+| Flag                  | Default                       | Description                                       |
+|-----------------------|-------------------------------|---------------------------------------------------|
+| `--catalog-file`      | `{client-dir}/catalog.json`   | Path to catalog.json (for metadata extraction)    |
+| `--app-dir`           | `{gateway-dir}/../app`        | Output directory for generated app                |
+| `--import-extensions` | Inferred from catalog or `js` | Import-extension mode: `js`, `ts`, or `bare`      |
+| `--host`              | `127.0.0.1`                   | Default server host                               |
+| `--port`              | `3000`                        | Default server port                               |
+| `--prefix`            | `""` (empty)                  | Route prefix                                      |
+| `--logger`            | `true`                        | Enable Fastify logger                             |
+| `--openapi-mode`      | `copy`                        | How to handle OpenAPI file: `copy` or `reference` |
 
 ### Examples
 
