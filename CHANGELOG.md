@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-01-13
+
+- version: bump versions of node and soap in package.json and package-lock.json
 - docs(readme): reorganize README with developer-focused structure - pipeline-first commands, 60-second quick start, decision matrix, and production concerns
 
 ## [0.9.2] - 2026-01-11
