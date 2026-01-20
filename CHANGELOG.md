@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.9.4] - 2026-01-20
+
+- build: update Fastify and @types/node dev dependencies
+- build: update esbuild, fast-json-stringify, fastq, find-my-way, pino, sax, thread-stream and related packages
+- chore(scripts): refactor npm scripts for smoke tests to use a reset step and improve consistency
+- test: expand tsconfig.smoke.json includes for better test coverage
+- docs: document changes in CHANGELOG.md
+
 ## [0.9.3] - 2026-01-13
 
 - version: bump versions of node and soap in package.json and package-lock.json

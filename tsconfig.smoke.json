@@ -12,12 +12,8 @@
     }
   },
   "include": [
-    "tmp/services/**/*.ts",
-    "tmp/openapi/**/*.ts",
-    "tmp/src/**/*.ts",
-    "tmp/client/**/*.ts",
-    "tmp/gateway/**/*.ts",
-    "tmp/*.ts",
+    "tmp/**/*.ts",
+    "tmp/**/*.tsx",
     "src/types/soap.d.ts"
   ]
 }
