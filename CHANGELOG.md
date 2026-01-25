@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.9.5] - 2026-01-25
+- build(deps): bump lodash from 4.17.21 to 4.17.23
+
 ## [0.9.4] - 2026-01-20
 
 - build: update Fastify and @types/node dev dependencies
