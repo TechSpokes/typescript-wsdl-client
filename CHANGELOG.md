@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.9.7] - 2026-02-03
+- build(deps): bump soap from 1.6.3 to 1.6.4
+- build(deps): bump fast-xml-parser from 5.3.3 to 5.3.4
+- build(deps-dev): bump @types/node from 25.0.10 to 25.2.0
+
 ## [0.9.6] - 2026-01-27
 - build(deps): update Fastify to 5.7.2 and @types/node to 25.0.10
 
