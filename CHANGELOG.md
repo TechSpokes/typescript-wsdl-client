@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.9.9] - 2026-02-16
+- build(deps): bump fast-xml-parser from 5.3.5 to 5.3.6
+- build(deps-dev): bump rimraf from 6.1.2 to 6.1.3
+
 ## [0.9.8] - 2026-02-13
 - build(deps-dev): bump @types/node from 25.2.0 to 25.2.2
 
