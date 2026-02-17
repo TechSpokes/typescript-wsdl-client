@@ -1,15 +1,20 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
   "version": "0.10.0",
-  "description": "TypeScript WSDL → SOAP client generator with full xs:attribute support, complex types, sequences, inheritance, and namespace-collision merging.",
+  "description": "Generate type-safe TypeScript SOAP clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways from WSDL/XSD definitions.",
   "keywords": [
     "wsdl",
     "soap",
     "typescript",
+    "openapi",
+    "rest",
+    "gateway",
+    "fastify",
     "codegen",
-    "generator",
-    "xml",
-    "xsd"
+    "soap-to-rest",
+    "api-gateway",
+    "code-generator",
+    "wsdl-to-typescript"
   ],
   "homepage": "https://github.com/TechSpokes/typescript-wsdl-client#readme",
   "bugs": {
@@ -81,6 +86,6 @@
   },
   "funding": {
     "type": "github",
-    "url": "https://github.com/techspokes"
+    "url": "https://github.com/sponsors/TechSpokes"
   }
 }
