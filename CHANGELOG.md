@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(gateway): use concrete client class type in plugin options interface instead of generic index signature
+- fix(gateway): consolidate PascalCase functions — replace gateway-local `pascalCase()` with canonical `pascal()` from tools.ts to preserve underscores per v0.2.3 design
+- feat(gateway): generate named operations interface (`${ClassName}Operations`) for Fastify decorator type with method autocomplete
+- feat(gateway): emit `_typecheck.ts` fixture to catch plugin-client type divergence at build time
+- fix(gateway): add `pluginImportPath` to `ClientMeta` for correct import depth from plugin.ts to client module
+
 ## [0.9.9] - 2026-02-16
 - build(deps): bump fast-xml-parser from 5.3.5 to 5.3.6
 - build(deps-dev): bump rimraf from 6.1.2 to 6.1.3

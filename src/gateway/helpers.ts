@@ -11,6 +11,8 @@
  * - Automatic version/service detection from OpenAPI paths
  */
 
+import {pascal} from "../util/tools.js";
+
 /**
  * OpenAPI document structure (minimal type for internal use)
  */
@@ -410,14 +412,16 @@ export function buildParamSchemasForOperation(
  * @interface ClientMeta
  * @property {string} className - Client class name (e.g., "EVRNService")
  * @property {string} decoratorName - Fastify decorator name (e.g., "evrnserviceClient")
- * @property {string} importPath - Import path relative to routes directory
- * @property {string} typesImportPath - Import path for types
+ * @property {string} importPath - Import path relative to routes/ directory — for future typed route handlers
+ * @property {string} typesImportPath - Types import path relative to routes/ directory — for future typed route handlers
+ * @property {string} pluginImportPath - Import path relative to gateway output directory — used by emitPluginModule()
  */
 export interface ClientMeta {
   className: string;
   decoratorName: string;
   importPath: string;
   typesImportPath: string;
+  pluginImportPath: string;
 }
 
 /**
@@ -442,17 +446,6 @@ export interface ResolvedOperationMeta {
   responseTypeName?: string;
 }
 
-/**
- * PascalCase conversion utility
- *
- * @param {string} str - String to convert to PascalCase
- * @returns {string} - PascalCase version of the string
- */
-export function pascalCase(str: string): string {
-  return str
-    .replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ""))
-    .replace(/^(.)/, (c) => c.toUpperCase());
-}
 
 /**
  * Options for resolving client metadata
@@ -494,9 +487,9 @@ export function resolveClientMeta(opts: ResolveClientMetaOptions, catalog?: any)
   if (opts.clientClassName) {
     className = opts.clientClassName;
   } else if (catalog?.serviceName) {
-    className = pascalCase(catalog.serviceName);
+    className = pascal(catalog.serviceName);
   } else {
-    className = pascalCase(opts.serviceSlug);
+    className = pascal(opts.serviceSlug);
   }
 
   // Determine decorator name
@@ -507,19 +500,30 @@ export function resolveClientMeta(opts: ResolveClientMetaOptions, catalog?: any)
     decoratorName = slugName(className) + "Client";
   }
 
-  // Build import paths (relative from routes/ to client/)
+  // Build import paths for different directory depths.
+  //
+  // Standard layout (enforced by pipeline convention):
+  //   {parent}/
+  //     client/client.ts    ← --client-dir
+  //     gateway/            ← --gateway-dir
+  //       plugin.ts         ← pluginImportPath: one level up
+  //       routes/foo.ts     ← importPath: two levels up
   const importPath = opts.clientDir
     ? `../../client/client${suffix}`
     : `../client/client${suffix}`;
   const typesImportPath = opts.clientDir
     ? `../../client/types${suffix}`
     : `../client/types${suffix}`;
+  const pluginImportPath = opts.clientDir
+    ? `../client/client${suffix}`
+    : `./client/client${suffix}`;
 
   return {
     className,
     decoratorName,
     importPath,
     typesImportPath,
+    pluginImportPath,
   };
 }
 
@@ -550,8 +554,8 @@ export function resolveOperationMeta(
   );
 
   // Use catalog type names if available, otherwise derive by convention
-  const requestTypeName = catalogOp?.inputTypeName ?? pascalCase(operationId);
-  const responseTypeName = catalogOp?.outputTypeName ?? pascalCase(operationId);
+  const requestTypeName = catalogOp?.inputTypeName ?? pascal(operationId);
+  const responseTypeName = catalogOp?.outputTypeName ?? pascal(operationId);
 
   return {
     operationId,
