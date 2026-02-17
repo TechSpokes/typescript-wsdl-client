@@ -1,0 +1,47 @@
+# @techspokes/typescript-wsdl-client
+
+> Generate type-safe TypeScript SOAP clients, OpenAPI 3.1 specs, and
+> production-ready Fastify REST gateways from WSDL/XSD definitions.
+
+## Quick Facts
+
+- CLI binary: wsdl-tsc
+- Node.js >= 20.0.0
+- Runtime dependency: soap
+- Output: TypeScript client + OpenAPI 3.1 + Fastify gateway
+- All output is deterministic and diff-friendly
+
+## Install
+
+npm install --save-dev @techspokes/typescript-wsdl-client
+npm install soap
+
+## Primary Command
+
+npx wsdl-tsc pipeline \
+  --wsdl-source <path-or-url> \
+  --client-dir <output-dir> \
+  --openapi-file <output-path> \
+  --gateway-dir <output-dir> \
+  --gateway-service-name <slug> \
+  --gateway-version-prefix <version>
+
+## Generated Files
+
+- client/client.ts: typed SOAP client class
+- client/types.ts: TypeScript interfaces from XSD
+- client/utils.ts: runtime metadata
+- client/catalog.json: compiled WSDL representation
+- openapi.json: OpenAPI 3.1 specification
+- gateway/plugin.ts: Fastify plugin entry point
+- gateway/routes/: route handlers with typed request bodies
+- gateway/schemas/: JSON schemas for validation and serialization
+
+## Documentation
+
+- AGENTS.md: agent instructions (universal, tool-agnostic)
+- README.md: project overview and quick start
+- CONTRIBUTING.md: development setup, project structure, testing strategy
+- docs/migration.md: upgrade paths between versions
+- npm: https://www.npmjs.com/package/@techspokes/typescript-wsdl-client
+- GitHub: https://github.com/TechSpokes/typescript-wsdl-client
