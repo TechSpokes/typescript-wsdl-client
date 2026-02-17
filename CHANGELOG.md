@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-02-17
+- docs: update community docs, add migration guide, and fix package metadata
+- docs: add AI agent instruction files (AGENTS.md) and llms.txt for LLM discovery
+- docs: restructure README as gateway to docs/ directory with CLI reference, examples, and migration guide
+- docs(examples): add generated output samples and directory guide
+- docs: align agent instruction files with v0.10.0 gateway capabilities and markdown rules
+- chore(deps): update glob and minimatch dependencies
+
 ## [0.10.0] - 2026-02-17
 - fix(gateway): use concrete client class type in plugin options interface instead of generic index signature
 - fix(gateway): consolidate PascalCase functions — replace gateway-local `pascalCase()` with canonical `pascal()` from tools.ts to preserve underscores per v0.2.3 design
