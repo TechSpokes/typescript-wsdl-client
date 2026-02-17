@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "GetWeatherInformationResult": {
+      "$ref": "urn:services:weather:v1:schemas:models:arrayofweatherdescription#"
+    }
+  },
+  "$id": "urn:services:weather:v1:schemas:models:getweatherinformationresponse"
+}

@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "description": "Machine-readable high-level status (e.g. SUCCESS, FAILURE, PENDING)."
+    },
+    "message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Diagnostic/logging message (not for end-user display)."
+    },
+    "data": {
+      "anyOf": [
+        {},
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Primary payload; per-operation extension refines the shape."
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:weathererrorobject#"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Error details when status indicates failure; null otherwise."
+    }
+  },
+  "required": [
+    "status",
+    "data",
+    "error",
+    "message"
+  ],
+  "additionalProperties": true,
+  "description": "Standard API response envelope base schema.",
+  "$id": "urn:services:weather:v1:schemas:models:weatherresponseenvelope"
+}

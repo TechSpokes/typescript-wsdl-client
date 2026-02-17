@@ -1,0 +1,7 @@
+{
+  "type": "array",
+  "items": {
+    "$ref": "urn:services:weather:v1:schemas:models:weatherdescription#"
+  },
+  "$id": "urn:services:weather:v1:schemas:models:arrayofweatherdescription"
+}

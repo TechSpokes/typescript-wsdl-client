@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "Date": {
+      "type": "string"
+    },
+    "ProbabilityOfPrecipiation": {
+      "$ref": "urn:services:weather:v1:schemas:models:pop#"
+    },
+    "Temperatures": {
+      "$ref": "urn:services:weather:v1:schemas:models:temp#"
+    },
+    "WeatherID": {
+      "type": "number"
+    },
+    "Desciption": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "Date",
+    "ProbabilityOfPrecipiation",
+    "Temperatures",
+    "WeatherID"
+  ],
+  "$id": "urn:services:weather:v1:schemas:models:forecast"
+}

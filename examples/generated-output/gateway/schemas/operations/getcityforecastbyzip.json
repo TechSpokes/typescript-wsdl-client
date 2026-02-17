@@ -1,0 +1,44 @@
+{
+  "$id": "urn:services:weather:v1:schemas:operations:getcityforecastbyzip",
+  "response": {
+    "200": {
+      "$ref": "urn:services:weather:v1:schemas:models:getcityforecastbyzipresponse_responseenvelope#"
+    },
+    "400": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "401": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "403": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "404": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "409": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "422": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "429": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "500": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "502": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "503": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    },
+    "504": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#"
+    }
+  },
+  "body": {
+    "$ref": "urn:services:weather:v1:schemas:models:getcityforecastbyzip#"
+  }
+}

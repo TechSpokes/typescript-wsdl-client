@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "properties": {},
+  "$id": "urn:services:weather:v1:schemas:models:getweatherinformation"
+}

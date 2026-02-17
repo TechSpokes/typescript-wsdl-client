@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "GetCityWeatherByZIPResult": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherreturn#"
+    }
+  },
+  "required": [
+    "GetCityWeatherByZIPResult"
+  ],
+  "$id": "urn:services:weather:v1:schemas:models:getcityweatherbyzipresponse"
+}

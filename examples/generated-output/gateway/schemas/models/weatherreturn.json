@@ -1,0 +1,52 @@
+{
+  "type": "object",
+  "properties": {
+    "Success": {
+      "type": "boolean"
+    },
+    "WeatherID": {
+      "type": "number"
+    },
+    "City": {
+      "type": "string"
+    },
+    "Description": {
+      "type": "string"
+    },
+    "Pressure": {
+      "type": "string"
+    },
+    "RelativeHumidity": {
+      "type": "string"
+    },
+    "Remarks": {
+      "type": "string"
+    },
+    "ResponseText": {
+      "type": "string"
+    },
+    "State": {
+      "type": "string"
+    },
+    "Temperature": {
+      "type": "string"
+    },
+    "Visibility": {
+      "type": "string"
+    },
+    "WeatherStationCity": {
+      "type": "string"
+    },
+    "Wind": {
+      "type": "string"
+    },
+    "WindChill": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "Success",
+    "WeatherID"
+  ],
+  "$id": "urn:services:weather:v1:schemas:models:weatherreturn"
+}

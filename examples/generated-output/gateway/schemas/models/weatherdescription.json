@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "WeatherID": {
+      "type": "number"
+    },
+    "Description": {
+      "type": "string"
+    },
+    "PictureURL": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "WeatherID"
+  ],
+  "$id": "urn:services:weather:v1:schemas:models:weatherdescription"
+}

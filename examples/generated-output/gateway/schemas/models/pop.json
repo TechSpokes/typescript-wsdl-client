@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "Daytime": {
+      "type": "string"
+    },
+    "Nighttime": {
+      "type": "string"
+    }
+  },
+  "$id": "urn:services:weather:v1:schemas:models:pop"
+}

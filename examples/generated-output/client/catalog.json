@@ -1,0 +1,829 @@
+{
+  "options": {
+    "wsdl": "examples/minimal/weather.wsdl",
+    "out": "C:\\Users\\serge\\PhpstormProjects\\typescript-wsdl-client\\examples\\generated-output\\client",
+    "imports": "js",
+    "catalog": true,
+    "primitive": {
+      "int64As": "string",
+      "bigIntegerAs": "string",
+      "decimalAs": "string",
+      "dateAs": "string"
+    },
+    "choice": "all-optional",
+    "failOnUnresolved": false,
+    "attributesKey": "$attributes",
+    "nillableAsOptional": false
+  },
+  "types": [
+    {
+      "name": "WeatherDescription",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "WeatherID",
+          "tsType": "number",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:short"
+        },
+        {
+          "name": "Description",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "PictureURL",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfWeatherDescription",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "WeatherDescription",
+          "tsType": "WeatherDescription",
+          "min": 0,
+          "max": "unbounded",
+          "nillable": false,
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}WeatherDescription"
+        }
+      ]
+    },
+    {
+      "name": "Temp",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "MorningLow",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "DaytimeHigh",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        }
+      ]
+    },
+    {
+      "name": "POP",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "Nighttime",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "Daytime",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        }
+      ]
+    },
+    {
+      "name": "Forecast",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "Date",
+          "tsType": "string",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:dateTime"
+        },
+        {
+          "name": "WeatherID",
+          "tsType": "number",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:short"
+        },
+        {
+          "name": "Desciption",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "Temperatures",
+          "tsType": "Temp",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}temp"
+        },
+        {
+          "name": "ProbabilityOfPrecipiation",
+          "tsType": "POP",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}POP"
+        }
+      ]
+    },
+    {
+      "name": "ArrayOfForecast",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "Forecast",
+          "tsType": "Forecast",
+          "min": 0,
+          "max": "unbounded",
+          "nillable": true,
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}Forecast"
+        }
+      ]
+    },
+    {
+      "name": "ForecastReturn",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "Success",
+          "tsType": "boolean",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:boolean"
+        },
+        {
+          "name": "ResponseText",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "State",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "City",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "WeatherStationCity",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "ForecastResult",
+          "tsType": "ArrayOfForecast",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ArrayOfForecast"
+        }
+      ]
+    },
+    {
+      "name": "WeatherReturn",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "Success",
+          "tsType": "boolean",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:boolean"
+        },
+        {
+          "name": "ResponseText",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "State",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "City",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "WeatherStationCity",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "WeatherID",
+          "tsType": "number",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:short"
+        },
+        {
+          "name": "Description",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "Temperature",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "RelativeHumidity",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "Wind",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "Pressure",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "Visibility",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "WindChill",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        },
+        {
+          "name": "Remarks",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        }
+      ]
+    },
+    {
+      "name": "GetWeatherInformation",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": []
+    },
+    {
+      "name": "GetWeatherInformationResponse",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "GetWeatherInformationResult",
+          "tsType": "ArrayOfWeatherDescription",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ArrayOfWeatherDescription"
+        }
+      ]
+    },
+    {
+      "name": "GetCityForecastByZIP",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "ZIP",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        }
+      ]
+    },
+    {
+      "name": "GetCityForecastByZIPResponse",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "GetCityForecastByZIPResult",
+          "tsType": "ForecastReturn",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ForecastReturn"
+        }
+      ]
+    },
+    {
+      "name": "GetCityWeatherByZIP",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "ZIP",
+          "tsType": "string",
+          "min": 0,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "xs:string"
+        }
+      ]
+    },
+    {
+      "name": "GetCityWeatherByZIPResponse",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+      "attrs": [],
+      "elems": [
+        {
+          "name": "GetCityWeatherByZIPResult",
+          "tsType": "WeatherReturn",
+          "min": 1,
+          "max": 1,
+          "nillable": false,
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}WeatherReturn"
+        }
+      ]
+    }
+  ],
+  "aliases": [],
+  "meta": {
+    "attrSpec": {
+      "WeatherDescription": [],
+      "ArrayOfWeatherDescription": [],
+      "Temp": [],
+      "POP": [],
+      "Forecast": [],
+      "ArrayOfForecast": [],
+      "ForecastReturn": [],
+      "WeatherReturn": [],
+      "GetWeatherInformation": [],
+      "GetWeatherInformationResponse": [],
+      "GetCityForecastByZIP": [],
+      "GetCityForecastByZIPResponse": [],
+      "GetCityWeatherByZIP": [],
+      "GetCityWeatherByZIPResponse": []
+    },
+    "childType": {
+      "WeatherDescription": {
+        "WeatherID": "number",
+        "Description": "string",
+        "PictureURL": "string"
+      },
+      "ArrayOfWeatherDescription": {
+        "WeatherDescription": "WeatherDescription"
+      },
+      "Temp": {
+        "MorningLow": "string",
+        "DaytimeHigh": "string"
+      },
+      "POP": {
+        "Nighttime": "string",
+        "Daytime": "string"
+      },
+      "Forecast": {
+        "Date": "string",
+        "WeatherID": "number",
+        "Desciption": "string",
+        "Temperatures": "Temp",
+        "ProbabilityOfPrecipiation": "POP"
+      },
+      "ArrayOfForecast": {
+        "Forecast": "Forecast"
+      },
+      "ForecastReturn": {
+        "Success": "boolean",
+        "ResponseText": "string",
+        "State": "string",
+        "City": "string",
+        "WeatherStationCity": "string",
+        "ForecastResult": "ArrayOfForecast"
+      },
+      "WeatherReturn": {
+        "Success": "boolean",
+        "ResponseText": "string",
+        "State": "string",
+        "City": "string",
+        "WeatherStationCity": "string",
+        "WeatherID": "number",
+        "Description": "string",
+        "Temperature": "string",
+        "RelativeHumidity": "string",
+        "Wind": "string",
+        "Pressure": "string",
+        "Visibility": "string",
+        "WindChill": "string",
+        "Remarks": "string"
+      },
+      "GetWeatherInformation": {},
+      "GetWeatherInformationResponse": {
+        "GetWeatherInformationResult": "ArrayOfWeatherDescription"
+      },
+      "GetCityForecastByZIP": {
+        "ZIP": "string"
+      },
+      "GetCityForecastByZIPResponse": {
+        "GetCityForecastByZIPResult": "ForecastReturn"
+      },
+      "GetCityWeatherByZIP": {
+        "ZIP": "string"
+      },
+      "GetCityWeatherByZIPResponse": {
+        "GetCityWeatherByZIPResult": "WeatherReturn"
+      }
+    },
+    "propMeta": {
+      "WeatherDescription": {
+        "WeatherID": {
+          "declaredType": "xs:short",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        },
+        "Description": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "PictureURL": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "ArrayOfWeatherDescription": {
+        "WeatherDescription": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}WeatherDescription",
+          "min": 0,
+          "max": "unbounded",
+          "nillable": false
+        }
+      },
+      "Temp": {
+        "MorningLow": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "DaytimeHigh": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "POP": {
+        "Nighttime": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "Daytime": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "Forecast": {
+        "Date": {
+          "declaredType": "xs:dateTime",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        },
+        "WeatherID": {
+          "declaredType": "xs:short",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        },
+        "Desciption": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "Temperatures": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}temp",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        },
+        "ProbabilityOfPrecipiation": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}POP",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "ArrayOfForecast": {
+        "Forecast": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}Forecast",
+          "min": 0,
+          "max": "unbounded",
+          "nillable": true
+        }
+      },
+      "ForecastReturn": {
+        "Success": {
+          "declaredType": "xs:boolean",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        },
+        "ResponseText": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "State": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "City": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "WeatherStationCity": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "ForecastResult": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ArrayOfForecast",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "WeatherReturn": {
+        "Success": {
+          "declaredType": "xs:boolean",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        },
+        "ResponseText": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "State": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "City": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "WeatherStationCity": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "WeatherID": {
+          "declaredType": "xs:short",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        },
+        "Description": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "Temperature": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "RelativeHumidity": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "Wind": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "Pressure": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "Visibility": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "WindChill": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        },
+        "Remarks": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "GetWeatherInformation": {},
+      "GetWeatherInformationResponse": {
+        "GetWeatherInformationResult": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ArrayOfWeatherDescription",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "GetCityForecastByZIP": {
+        "ZIP": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "GetCityForecastByZIPResponse": {
+        "GetCityForecastByZIPResult": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ForecastReturn",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "GetCityWeatherByZIP": {
+        "ZIP": {
+          "declaredType": "xs:string",
+          "min": 0,
+          "max": 1,
+          "nillable": false
+        }
+      },
+      "GetCityWeatherByZIPResponse": {
+        "GetCityWeatherByZIPResult": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}WeatherReturn",
+          "min": 1,
+          "max": 1,
+          "nillable": false
+        }
+      }
+    }
+  },
+  "operations": [
+    {
+      "name": "GetWeatherInformation",
+      "soapAction": "http://ws.cdyne.com/WeatherWS/GetWeatherInformation",
+      "inputElement": {
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+        "local": "GetWeatherInformation"
+      },
+      "outputElement": {
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+        "local": "GetWeatherInformationResponse"
+      },
+      "inputTypeName": "GetWeatherInformation",
+      "outputTypeName": "GetWeatherInformationResponse",
+      "security": []
+    },
+    {
+      "name": "GetCityForecastByZIP",
+      "soapAction": "http://ws.cdyne.com/WeatherWS/GetCityForecastByZIP",
+      "inputElement": {
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+        "local": "GetCityForecastByZIP"
+      },
+      "outputElement": {
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+        "local": "GetCityForecastByZIPResponse"
+      },
+      "inputTypeName": "GetCityForecastByZIP",
+      "outputTypeName": "GetCityForecastByZIPResponse",
+      "security": []
+    },
+    {
+      "name": "GetCityWeatherByZIP",
+      "soapAction": "http://ws.cdyne.com/WeatherWS/GetCityWeatherByZIP",
+      "inputElement": {
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+        "local": "GetCityWeatherByZIP"
+      },
+      "outputElement": {
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+        "local": "GetCityWeatherByZIPResponse"
+      },
+      "inputTypeName": "GetCityWeatherByZIP",
+      "outputTypeName": "GetCityWeatherByZIPResponse",
+      "security": []
+    }
+  ],
+  "wsdlTargetNS": "http://ws.cdyne.com/WeatherWS/",
+  "serviceName": "Weather",
+  "wsdlUri": "examples/minimal/weather.wsdl"
+}

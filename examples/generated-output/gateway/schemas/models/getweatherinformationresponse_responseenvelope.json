@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "description": "Machine-readable high-level status (e.g. SUCCESS, FAILURE, PENDING)."
+    },
+    "message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Diagnostic/logging message (not for end-user display)."
+    },
+    "data": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:getweatherinformationresponse#"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:weathererrorobject#"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Error details when status indicates failure; null otherwise."
+    }
+  },
+  "additionalProperties": true,
+  "description": "Envelope for GetWeatherInformationResponse operation output wrapping its payload in 'data'.",
+  "required": [
+    "data",
+    "error",
+    "message",
+    "status"
+  ],
+  "$id": "urn:services:weather:v1:schemas:models:getweatherinformationresponse_responseenvelope"
+}

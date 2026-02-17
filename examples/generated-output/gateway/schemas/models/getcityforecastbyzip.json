@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "ZIP": {
+      "type": "string"
+    }
+  },
+  "$id": "urn:services:weather:v1:schemas:models:getcityforecastbyzip"
+}

@@ -1,0 +1,487 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Weather SOAP API",
+    "version": "0.0.0"
+  },
+  "paths": {
+    "/get-city-forecast-by-zip": {
+      "post": {
+        "operationId": "GetCityForecastByZIP",
+        "tags": [
+          "Weather"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCityForecastByZIP"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation (standard envelope)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCityForecastByZIPResponse_ResponseEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response (standard envelope with populated error object)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponseEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get-city-weather-by-zip": {
+      "post": {
+        "operationId": "GetCityWeatherByZIP",
+        "tags": [
+          "Weather"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCityWeatherByZIP"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation (standard envelope)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCityWeatherByZIPResponse_ResponseEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response (standard envelope with populated error object)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponseEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get-weather-information": {
+      "post": {
+        "operationId": "GetWeatherInformation",
+        "tags": [
+          "Weather"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetWeatherInformation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation (standard envelope)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetWeatherInformationResponse_ResponseEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response (standard envelope with populated error object)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponseEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ArrayOfForecast": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Forecast"
+        }
+      },
+      "ArrayOfWeatherDescription": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/WeatherDescription"
+        }
+      },
+      "Forecast": {
+        "type": "object",
+        "properties": {
+          "Date": {
+            "type": "string"
+          },
+          "ProbabilityOfPrecipiation": {
+            "$ref": "#/components/schemas/POP"
+          },
+          "Temperatures": {
+            "$ref": "#/components/schemas/Temp"
+          },
+          "WeatherID": {
+            "type": "number"
+          },
+          "Desciption": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Date",
+          "ProbabilityOfPrecipiation",
+          "Temperatures",
+          "WeatherID"
+        ]
+      },
+      "ForecastReturn": {
+        "type": "object",
+        "properties": {
+          "Success": {
+            "type": "boolean"
+          },
+          "City": {
+            "type": "string"
+          },
+          "ForecastResult": {
+            "$ref": "#/components/schemas/ArrayOfForecast"
+          },
+          "ResponseText": {
+            "type": "string"
+          },
+          "State": {
+            "type": "string"
+          },
+          "WeatherStationCity": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Success"
+        ]
+      },
+      "GetCityForecastByZIP": {
+        "type": "object",
+        "properties": {
+          "ZIP": {
+            "type": "string"
+          }
+        }
+      },
+      "GetCityForecastByZIPResponse": {
+        "type": "object",
+        "properties": {
+          "GetCityForecastByZIPResult": {
+            "$ref": "#/components/schemas/ForecastReturn"
+          }
+        }
+      },
+      "GetCityForecastByZIPResponse_ResponseEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WeatherResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GetCityForecastByZIPResponse"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        ],
+        "description": "Envelope for GetCityForecastByZIPResponse operation output wrapping its payload in 'data'."
+      },
+      "GetCityWeatherByZIP": {
+        "type": "object",
+        "properties": {
+          "ZIP": {
+            "type": "string"
+          }
+        }
+      },
+      "GetCityWeatherByZIPResponse": {
+        "type": "object",
+        "properties": {
+          "GetCityWeatherByZIPResult": {
+            "$ref": "#/components/schemas/WeatherReturn"
+          }
+        },
+        "required": [
+          "GetCityWeatherByZIPResult"
+        ]
+      },
+      "GetCityWeatherByZIPResponse_ResponseEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WeatherResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GetCityWeatherByZIPResponse"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        ],
+        "description": "Envelope for GetCityWeatherByZIPResponse operation output wrapping its payload in 'data'."
+      },
+      "GetWeatherInformation": {
+        "type": "object",
+        "properties": {}
+      },
+      "GetWeatherInformationResponse": {
+        "type": "object",
+        "properties": {
+          "GetWeatherInformationResult": {
+            "$ref": "#/components/schemas/ArrayOfWeatherDescription"
+          }
+        }
+      },
+      "GetWeatherInformationResponse_ResponseEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WeatherResponseEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GetWeatherInformationResponse"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        ],
+        "description": "Envelope for GetWeatherInformationResponse operation output wrapping its payload in 'data'."
+      },
+      "POP": {
+        "type": "object",
+        "properties": {
+          "Daytime": {
+            "type": "string"
+          },
+          "Nighttime": {
+            "type": "string"
+          }
+        }
+      },
+      "Temp": {
+        "type": "object",
+        "properties": {
+          "DaytimeHigh": {
+            "type": "string"
+          },
+          "MorningLow": {
+            "type": "string"
+          }
+        }
+      },
+      "WeatherDescription": {
+        "type": "object",
+        "properties": {
+          "WeatherID": {
+            "type": "number"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "PictureURL": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "WeatherID"
+        ]
+      },
+      "WeatherErrorObject": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "additionalProperties": false,
+        "description": "Standard error object for REST responses (not reused for underlying SOAP faults)."
+      },
+      "WeatherResponseEnvelope": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Machine-readable high-level status (e.g. SUCCESS, FAILURE, PENDING)."
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Diagnostic/logging message (not for end-user display)."
+          },
+          "data": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Primary payload; per-operation extension refines the shape."
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeatherErrorObject"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Error details when status indicates failure; null otherwise."
+          }
+        },
+        "required": [
+          "status",
+          "data",
+          "error",
+          "message"
+        ],
+        "additionalProperties": true,
+        "description": "Standard API response envelope base schema."
+      },
+      "WeatherReturn": {
+        "type": "object",
+        "properties": {
+          "Success": {
+            "type": "boolean"
+          },
+          "WeatherID": {
+            "type": "number"
+          },
+          "City": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Pressure": {
+            "type": "string"
+          },
+          "RelativeHumidity": {
+            "type": "string"
+          },
+          "Remarks": {
+            "type": "string"
+          },
+          "ResponseText": {
+            "type": "string"
+          },
+          "State": {
+            "type": "string"
+          },
+          "Temperature": {
+            "type": "string"
+          },
+          "Visibility": {
+            "type": "string"
+          },
+          "WeatherStationCity": {
+            "type": "string"
+          },
+          "Wind": {
+            "type": "string"
+          },
+          "WindChill": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Success",
+          "WeatherID"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ]
+}

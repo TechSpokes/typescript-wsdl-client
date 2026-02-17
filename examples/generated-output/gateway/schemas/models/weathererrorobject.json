@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "details": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "additionalProperties": false,
+  "description": "Standard error object for REST responses (not reused for underlying SOAP faults).",
+  "$id": "urn:services:weather:v1:schemas:models:weathererrorobject"
+}

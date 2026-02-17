@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "DaytimeHigh": {
+      "type": "string"
+    },
+    "MorningLow": {
+      "type": "string"
+    }
+  },
+  "$id": "urn:services:weather:v1:schemas:models:temp"
+}
