@@ -47,5 +47,7 @@ npx wsdl-tsc pipeline \
 - README.md: project overview and quick start
 - CONTRIBUTING.md: development setup, project structure, testing strategy
 - docs/migration.md: upgrade paths between versions
+- .github/copilot-instructions.md: authoritative detailed agent instructions (referenced by AGENTS.md)
+- docs/README.md: documentation directory index and conventions
 - npm: https://www.npmjs.com/package/@techspokes/typescript-wsdl-client
 - GitHub: https://github.com/TechSpokes/typescript-wsdl-client

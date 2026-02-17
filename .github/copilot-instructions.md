@@ -169,8 +169,15 @@ node: '>=20'
 - Don't introduce breaking CLI flags or behavior without updating README CLI docs, examples, and relevant smoke/CI scripts in `package.json`.
 - Don't treat scratchpad or non-project docs as authoritative for behavior; use README, CHANGELOG, `package.json`, and `src/` instead.
 
+## Documentation Conventions
+- Prefer pointers to the authoritative source over duplicating indexes across files.
+- The root README.md Documentation table is the single source of truth for the docs/ directory listing.
+- When adding, removing, or renaming documentation files, update only the root README.md Documentation table; other files should reference it rather than maintaining their own copies.
+- Each folder may have its own README.md (folder index) and AGENTS.md (agent instructions) per their respective specifications; these should point upward rather than duplicating content.
+- Instruction file hierarchy: this file (copilot-instructions.md) is the authoritative source; AGENTS.md is the tool-agnostic buffer pointing here; vendor-specific files (CLAUDE.md, llms.txt) point to AGENTS.md and add only tool-specific details.
+
 ## Quick References
 - Node: see `engines.node` in `package.json`.
 - CLI: `wsdl-tsc` (entry `dist/cli.js`; used via `npx wsdl-tsc`).
 - Scripts: inspect `"scripts"` in `package.json` for `build`, `typecheck`, `ci`, and smoke tests.
-- Docs: `README.md` (gateway overview and quick start), `docs/` directory (CLI reference, examples, migration guide), `CONTRIBUTING.md` (dev workflow), `ROADMAP.md` (priorities), `CHANGELOG.md` (version history), `SECURITY.md` (reporting).
+- Docs: `README.md` (gateway overview and quick start), `docs/README.md` (documentation index), `CONTRIBUTING.md` (dev workflow), `ROADMAP.md` (priorities), `CHANGELOG.md` (version history), `SECURITY.md` (reporting).

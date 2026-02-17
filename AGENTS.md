@@ -18,6 +18,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 
 - README.md: project overview, installation, quick start, and CLI command reference
 - CONTRIBUTING.md: development setup, project structure, and testing strategy
+- .github/copilot-instructions.md: authoritative agent instructions with full detail on commit format, catalog co-location, CLI conventions, and changelog rules
 - docs/migration.md: upgrade paths and breaking changes between versions
 
 ## Agent guidelines
@@ -48,6 +49,6 @@ The project evolved from a simple WSDL parser (v0.1.x) to a full generation pipe
 
 ## References
 
-- .github/copilot-instructions.md: GitHub Copilot instructions with additional detail on commit format, changelog rules, and catalog co-location
+- docs/AGENTS.md: agent instructions for the documentation directory
 - examples/minimal/weather.wsdl: test fixture used by all smoke tests
 - CHANGELOG.md: version history and breaking change entries

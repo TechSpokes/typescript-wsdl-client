@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-02-18
+- docs: add docs/README.md and docs/AGENTS.md for documentation directory index and agent instructions
+- docs: clarify instruction file hierarchy (copilot-instructions.md > AGENTS.md > vendor-specific files) across all agent instruction files
+
 ## [0.10.1] - 2026-02-17
 - docs: update community docs, add migration guide, and fix package metadata
 - docs: add AI agent instruction files (AGENTS.md) and llms.txt for LLM discovery
