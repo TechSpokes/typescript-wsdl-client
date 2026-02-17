@@ -1,4 +1,4 @@
-# Agent Instructions for typescript-wsdl-client – WSDL-to-TypeScript Code Generator
+# Agent Instructions for typescript-wsdl-client: WSDL-to-TypeScript Code Generator
 
 ## Summary
 

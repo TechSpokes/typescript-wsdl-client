@@ -34,8 +34,12 @@ npx wsdl-tsc pipeline \
 - client/catalog.json: compiled WSDL representation
 - openapi.json: OpenAPI 3.1 specification
 - gateway/plugin.ts: Fastify plugin entry point
+- gateway/routes.ts: route aggregator module
 - gateway/routes/: route handlers with typed request bodies
+- gateway/runtime.ts: envelope builders and error handler
+- gateway/schemas.ts: schema registration module
 - gateway/schemas/: JSON schemas for validation and serialization
+- gateway/_typecheck.ts: build-time type-check fixture
 
 ## Documentation
 
