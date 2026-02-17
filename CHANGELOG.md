@@ -14,6 +14,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - feat(gateway): generate named operations interface (`${ClassName}Operations`) for Fastify decorator type with method autocomplete
 - feat(gateway): emit `_typecheck.ts` fixture to catch plugin-client type divergence at build time
 - fix(gateway): add `pluginImportPath` to `ClientMeta` for correct import depth from plugin.ts to client module
+- feat(gateway): add typed route handlers — `import type` for request types and `fastify.route<{ Body: T }>()` generics in generated route files
+- feat(gateway): use concrete client class for Fastify decorator type augmentation instead of operations interface — enables fully typed method returns
+- fix(gateway): remove `as any` cast from `fastify.decorate()` call — concrete class is directly assignable now
 
 ## [0.9.9] - 2026-02-16
 - build(deps): bump fast-xml-parser from 5.3.5 to 5.3.6

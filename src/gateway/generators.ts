@@ -630,12 +630,12 @@ export interface ${clientMeta.className}GatewayOptions extends FastifyPluginOpti
 }
 
 /**
- * Named operations interface for Fastify decorator type.
+ * Convenience type listing all SOAP operations with \`args: unknown\` signatures.
  *
- * Lists all SOAP operations with \`args: unknown\` signatures. This provides
- * method name autocomplete on the decorator without requiring the concrete
- * client class import (which would cascade into route handler type errors
- * since request.body is untyped).
+ * This interface is NOT used for the decorator type (which uses the concrete
+ * client class for full type safety). It is exported as a lightweight alternative
+ * for mocking or testing scenarios where importing the full client class is
+ * undesirable.
  */
 export interface ${clientMeta.className}Operations {
 ${operationMethods}
@@ -643,7 +643,7 @@ ${operationMethods}
 
 declare module "fastify" {
   interface FastifyInstance {
-    ${clientMeta.decoratorName}: ${clientMeta.className}Operations;
+    ${clientMeta.decoratorName}: ${clientMeta.className};
   }
 }
 
@@ -657,11 +657,9 @@ async function ${sSlug}GatewayPlugin(
   fastify: FastifyInstance,
   opts: ${clientMeta.className}GatewayOptions
 ): Promise<void> {
-  // Decorate with SOAP client.
-  // Cast required: the concrete client class has typed method args (e.g. args: T.Foo)
-  // while the operations interface uses args: unknown for route handler compatibility.
+  // Decorate with SOAP client
   if (!fastify.hasDecorator("${clientMeta.decoratorName}")) {
-    fastify.decorate("${clientMeta.decoratorName}", opts.client as any);
+    fastify.decorate("${clientMeta.decoratorName}", opts.client);
   }
 
   // Register model schemas
@@ -777,9 +775,24 @@ export function emitRouteFilesWithHandlers(
 
     // Generate individual route file with full handler
     const clientMethod = op.clientMethodName || op.operationId || op.operationSlug;
-    // Type names for documentation; we use unknown at runtime since schema validation handles it
     const reqTypeName = op.requestTypeName || "unknown";
     const resTypeName = op.responseTypeName || "unknown";
+    const hasRequestType = op.requestTypeName && op.requestTypeName !== "unknown";
+
+    // Build type import and route generic when request type is available.
+    // The Body generic narrows request.body for types with properties. For empty
+    // request types (e.g. no-arg operations), Fastify's KeysOf<Body> resolves to
+    // never and the generic is ignored — the `as` assertion at the call site
+    // handles this edge case. The cast is safe: JSON Schema validates at runtime.
+    const typeImport = hasRequestType
+      ? `import type { ${reqTypeName} } from "${clientMeta.typesImportPath}";\n`
+      : "";
+    const routeGeneric = hasRequestType
+      ? `<{ Body: ${reqTypeName} }>`
+      : "";
+    const bodyArg = hasRequestType
+      ? `request.body as ${reqTypeName}`
+      : "request.body";
 
     // Note: op.path comes from OpenAPI and already includes any base path
     let routeTs = `/**
@@ -790,17 +803,17 @@ export function emitRouteFilesWithHandlers(
  * Auto-generated - do not edit manually.
  */
 import type { FastifyInstance } from "fastify";
-import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };
+${typeImport}import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };
 import { buildSuccessEnvelope } from "../runtime${suffix}";
 
 export async function ${fnName}(fastify: FastifyInstance) {
-  fastify.route({
+  fastify.route${routeGeneric}({
     method: "${op.method.toUpperCase()}",
     url: "${op.path}",
     schema,
     handler: async (request) => {
       const client = fastify.${clientMeta.decoratorName};
-      const result = await client.${clientMethod}(request.body);
+      const result = await client.${clientMethod}(${bodyArg});
       return buildSuccessEnvelope(result.response);
     },
   });
