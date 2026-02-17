@@ -570,6 +570,7 @@ export function createGatewayErrorHandler_${vSlug}_${sSlug}() {
  *
  * Generated code includes:
  * - Plugin options interface with client and prefix support
+ * - Named operations interface for decorator type autocomplete
  * - Fastify decorator type augmentation
  * - Plugin implementation that registers schemas, routes, and error handler
  *
@@ -578,17 +579,25 @@ export function createGatewayErrorHandler_${vSlug}_${sSlug}() {
  * @param {string} serviceSlug - Service slug for function naming
  * @param {ClientMeta} clientMeta - Client class metadata
  * @param {"js"|"ts"|"bare"} importsMode - Import-extension mode
+ * @param {OperationMetadata[]} operations - Operation metadata for generating the operations interface
  */
 export function emitPluginModule(
   outDir: string,
   versionSlug: string,
   serviceSlug: string,
   clientMeta: ClientMeta,
-  importsMode: "js" | "ts" | "bare"
+  importsMode: "js" | "ts" | "bare",
+  operations: OperationMetadata[]
 ): void {
   const vSlug = slugName(versionSlug);
   const sSlug = slugName(serviceSlug);
   const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
+
+  // Build named operations interface methods from operation metadata
+  const operationMethods = operations
+    .filter(op => op.clientMethodName)
+    .map(op => `  ${op.clientMethodName}(args: unknown): Promise<{ response: unknown; headers: unknown }>;`)
+    .join("\n");
 
   const pluginTs = `/**
  * ${clientMeta.className} Gateway Plugin
@@ -598,6 +607,7 @@ export function emitPluginModule(
  */
 import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import type { ${clientMeta.className} } from "${clientMeta.pluginImportPath}";
 import { registerSchemas_${vSlug}_${sSlug} } from "./schemas${suffix}";
 import { registerRoutes_${vSlug}_${sSlug} } from "./routes${suffix}";
 import { createGatewayErrorHandler_${vSlug}_${sSlug} } from "./runtime${suffix}";
@@ -610,9 +620,7 @@ export interface ${clientMeta.className}GatewayOptions extends FastifyPluginOpti
    * SOAP client instance (pre-configured).
    * The client should be instantiated with appropriate source and security settings.
    */
-  client: {
-    [method: string]: (args: unknown) => Promise<{ response: unknown; headers: unknown }>;
-  };
+  client: ${clientMeta.className};
   /**
    * Optional additional route prefix applied at runtime.
    * Note: If you used --openapi-base-path during generation, routes already have that prefix baked in.
@@ -622,13 +630,20 @@ export interface ${clientMeta.className}GatewayOptions extends FastifyPluginOpti
 }
 
 /**
- * Fastify decorator type augmentation
+ * Convenience type listing all SOAP operations with \`args: unknown\` signatures.
+ *
+ * This interface is NOT used for the decorator type (which uses the concrete
+ * client class for full type safety). It is exported as a lightweight alternative
+ * for mocking or testing scenarios where importing the full client class is
+ * undesirable.
  */
+export interface ${clientMeta.className}Operations {
+${operationMethods}
+}
+
 declare module "fastify" {
   interface FastifyInstance {
-    ${clientMeta.decoratorName}: {
-      [method: string]: (args: unknown) => Promise<{ response: unknown; headers: unknown }>;
-    };
+    ${clientMeta.decoratorName}: ${clientMeta.className};
   }
 }
 
@@ -677,6 +692,44 @@ export { ${sSlug}GatewayPlugin };
 }
 
 /**
+ * Emits a type-check fixture that verifies plugin-client type compatibility
+ *
+ * Generates `_typecheck.ts` in the gateway output directory. This file is
+ * picked up by tsconfig.smoke.json and will fail to compile if the plugin
+ * options interface diverges from the concrete client class.
+ *
+ * @param {string} outDir - Gateway output directory
+ * @param {ClientMeta} clientMeta - Client metadata (className, pluginImportPath)
+ * @param {"js"|"ts"|"bare"} importsMode - Import-extension mode
+ */
+export function emitTypeCheckFixture(
+  outDir: string,
+  clientMeta: ClientMeta,
+  importsMode: "js" | "ts" | "bare"
+): void {
+  const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
+
+  const content = `/**
+ * Type-check fixture — verifies plugin options accept the concrete client class.
+ * Auto-generated. Not intended for runtime use.
+ */
+import type { ${clientMeta.className} } from "${clientMeta.pluginImportPath}";
+import type { ${clientMeta.className}GatewayOptions } from "./plugin${suffix}";
+
+// This function verifies structural compatibility at the type level.
+// If the plugin options interface diverges from the client class, this
+// will produce a compile error with a clear message.
+function _assertClientCompatible(client: ${clientMeta.className}): void {
+  const _opts: ${clientMeta.className}GatewayOptions = { client };
+  void _opts;
+}
+void _assertClientCompatible;
+`;
+
+  fs.writeFileSync(path.join(outDir, "_typecheck.ts"), content, "utf8");
+}
+
+/**
  * Emits individual route files with full handler implementations
  *
  * For each operation:
@@ -722,9 +775,24 @@ export function emitRouteFilesWithHandlers(
 
     // Generate individual route file with full handler
     const clientMethod = op.clientMethodName || op.operationId || op.operationSlug;
-    // Type names for documentation; we use unknown at runtime since schema validation handles it
     const reqTypeName = op.requestTypeName || "unknown";
     const resTypeName = op.responseTypeName || "unknown";
+    const hasRequestType = op.requestTypeName && op.requestTypeName !== "unknown";
+
+    // Build type import and route generic when request type is available.
+    // The Body generic narrows request.body for types with properties. For empty
+    // request types (e.g. no-arg operations), Fastify's KeysOf<Body> resolves to
+    // never and the generic is ignored — the `as` assertion at the call site
+    // handles this edge case. The cast is safe: JSON Schema validates at runtime.
+    const typeImport = hasRequestType
+      ? `import type { ${reqTypeName} } from "${clientMeta.typesImportPath}";\n`
+      : "";
+    const routeGeneric = hasRequestType
+      ? `<{ Body: ${reqTypeName} }>`
+      : "";
+    const bodyArg = hasRequestType
+      ? `request.body as ${reqTypeName}`
+      : "request.body";
 
     // Note: op.path comes from OpenAPI and already includes any base path
     let routeTs = `/**
@@ -735,17 +803,17 @@ export function emitRouteFilesWithHandlers(
  * Auto-generated - do not edit manually.
  */
 import type { FastifyInstance } from "fastify";
-import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };
+${typeImport}import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };
 import { buildSuccessEnvelope } from "../runtime${suffix}";
 
 export async function ${fnName}(fastify: FastifyInstance) {
-  fastify.route({
+  fastify.route${routeGeneric}({
     method: "${op.method.toUpperCase()}",
     url: "${op.path}",
     schema,
     handler: async (request) => {
       const client = fastify.${clientMeta.decoratorName};
-      const result = await client.${clientMethod}(request.body);
+      const result = await client.${clientMethod}(${bodyArg});
       return buildSuccessEnvelope(result.response);
     },
   });

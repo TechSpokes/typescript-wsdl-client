@@ -35,6 +35,7 @@ import {
   emitModelSchemas,
   emitOperationSchemas,
   emitPluginModule,
+  emitTypeCheckFixture,
   emitRouteFiles,
   emitRouteFilesWithHandlers,
   emitRuntimeModule,
@@ -272,8 +273,9 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
     emitRuntimeModule(outDir, versionSlug, serviceSlug);
   }
 
-  // Step 7: Emit plugin.ts (if enabled)
+  // Step 7: Emit plugin.ts and type-check fixture (if enabled)
   if (emitPlugin) {
-    emitPluginModule(outDir, versionSlug, serviceSlug, clientMeta, importsMode);
+    emitPluginModule(outDir, versionSlug, serviceSlug, clientMeta, importsMode, operations);
+    emitTypeCheckFixture(outDir, clientMeta, importsMode);
   }
 }
