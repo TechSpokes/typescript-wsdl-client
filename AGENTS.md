@@ -11,7 +11,8 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Run `npm run smoke:pipeline` to verify changes end-to-end
 - Commit messages must follow: `Version: <version> <type>(scope): <imperative summary>`
 - Node.js >= 20.0.0, ESM-only (`type: "module"`), strict TypeScript
-- CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--client-dir`
+- CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--init-app`
+- On release, bump hardcoded dep versions in `src/app/generateApp.ts` (`generatePackageJson`) to current latest; stale versions ship insecure code to end users
 - The `soap` package is a runtime dependency; `wsdl-tsc` is a devDependency for consumers
 
 ## Must-read documents

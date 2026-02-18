@@ -9,6 +9,18 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-02-18
+- feat(app): generate TypeScript scaffold (server.ts, config.ts) instead of JavaScript for full type safety
+- feat(app): generate package.json and tsconfig.json for immediate out-of-box usage
+- feat(app): add skip-if-exists overwrite protection for scaffold files (use --force-init to override)
+- feat(app): add OPENAPI_SERVER_URL env var for runtime OpenAPI server URL override
+- feat(app): resolve WSDL_SOURCE path relative to app directory; URL sources get fallback defaults
+- feat(cli): add --init-app and --force-init flags; deprecate --generate-app as hidden alias
+- feat(cli): default --openapi-servers to http://localhost:3000 when scaffolding with --init-app
+- docs(examples): rename examples/openapi/ to examples/config/; add typescript-project, fastify-gateway, and ci-cd examples
+- docs: update CLI reference, gateway guide, README, and architecture docs for new app scaffold
+- chore(deps): bump dependency lower bounds to current latest (fastify 5.7.4, soap 1.6.5, typescript 5.9.3)
+
 ## [0.10.2] - 2026-02-18
 - docs: add docs/README.md and docs/AGENTS.md for documentation directory index and agent instructions
 - docs: clarify instruction file hierarchy (copilot-instructions.md > AGENTS.md > vendor-specific files) across all agent instruction files

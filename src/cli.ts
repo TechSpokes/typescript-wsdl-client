@@ -519,6 +519,11 @@ if (rawArgs[0] === "app") {
       default: "copy",
       desc: "How to handle OpenAPI file: copy into app dir or reference original"
     })
+    .option("force", {
+      type: "boolean",
+      default: false,
+      desc: "Overwrite existing scaffold files"
+    })
     .strict()
     .help()
     .parse();
@@ -564,6 +569,7 @@ if (rawArgs[0] === "app") {
     prefix: String(appArgv.prefix),
     logger: Boolean(appArgv.logger),
     openapiMode: appArgv["openapi-mode"] as "copy" | "reference",
+    force: Boolean(appArgv.force),
   });
 
   process.exit(0);
@@ -668,11 +674,21 @@ if (rawArgs[0] === "pipeline") {
       default: false,
       desc: "Skip generating runtime.ts utilities"
     })
-    // App generation flags
+    // App scaffold flags
+    .option("init-app", {
+      type: "boolean",
+      default: false,
+      desc: "Scaffold a runnable Fastify application (one-time setup, requires --client-dir, --gateway-dir, --openapi-file)"
+    })
+    .option("force-init", {
+      type: "boolean",
+      default: false,
+      desc: "Overwrite existing scaffold files when using --init-app"
+    })
     .option("generate-app", {
       type: "boolean",
       default: false,
-      desc: "Generate runnable Fastify application (requires --client-dir, --gateway-dir, --openapi-file)"
+      hidden: true,  // deprecated, use --init-app
     })
     .option("app-dir", {
       type: "string",
@@ -730,7 +746,16 @@ if (rawArgs[0] === "pipeline") {
     }
   }
 
-  const servers = parseServers(pipelineArgv["openapi-servers"] as string | undefined);
+  // Resolve --init-app (new name) or --generate-app (deprecated alias)
+  const initApp = (pipelineArgv["init-app"] as boolean) || (pipelineArgv["generate-app"] as boolean);
+  const forceInit = pipelineArgv["force-init"] as boolean;
+
+  let servers = parseServers(pipelineArgv["openapi-servers"] as string | undefined);
+
+  // Default OpenAPI servers to localhost when scaffolding an app and no explicit servers provided
+  if (initApp && servers.length === 0) {
+    servers = ["http://localhost:3000"];
+  }
 
   // Validate gateway requirements
   validateGatewayRequirements(
@@ -759,11 +784,10 @@ if (rawArgs[0] === "pipeline") {
     ? buildOpenApiOptionsFromArgv(pipelineArgv, format, servers)
     : undefined;
 
-  // Validate app generation requirements
-  const generateApp = pipelineArgv["generate-app"] as boolean;
-  if (generateApp) {
+  // Validate app scaffold requirements
+  if (initApp) {
     if (!clientOut || !gatewayOut || !openapiOut) {
-      handleCLIError("--generate-app requires --client-dir, --gateway-dir, and --openapi-file to be set");
+      handleCLIError("--init-app requires --client-dir, --gateway-dir, and --openapi-file to be set");
     }
   }
 
@@ -787,11 +811,12 @@ if (rawArgs[0] === "pipeline") {
       emitPlugin: pipelineArgv["gateway-skip-plugin"] ? false : undefined,
       emitRuntime: pipelineArgv["gateway-skip-runtime"] ? false : undefined,
     } : undefined,
-    app: generateApp ? {
+    app: initApp ? {
       appDir: pipelineArgv["app-dir"]
         ? path.resolve(pipelineArgv["app-dir"] as string)
         : path.join(path.dirname(path.resolve(gatewayOut!)), "app"),
       openapiMode: pipelineArgv["app-openapi-mode"] as "copy" | "reference",
+      force: forceInit,
     } : undefined,
   });
 

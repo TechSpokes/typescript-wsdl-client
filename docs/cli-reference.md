@@ -54,7 +54,9 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--client-dir` | Generate TypeScript client in this directory |
 | `--openapi-file` | Generate OpenAPI spec at this path |
 | `--gateway-dir` | Generate Fastify gateway in this directory |
-| `--generate-app` | Generate runnable app (requires gateway) |
+| `--init-app` | Scaffold runnable Fastify app (requires client, gateway, OpenAPI) |
+| `--force-init` | Overwrite existing scaffold files when using `--init-app` |
+| `--generate-app` | Deprecated alias for `--init-app` |
 
 ### Client Flags
 
@@ -116,7 +118,7 @@ Steps execute in order:
 4. Generate client (if --client-dir)
 5. Generate OpenAPI (if --openapi-file)
 6. Generate gateway (if --gateway-dir)
-7. Generate app (if --generate-app)
+7. Scaffold app (if --init-app)
 
 All steps share the same parsed WSDL and compiled catalog.
 
@@ -134,17 +136,17 @@ npx wsdl-tsc pipeline \
   --gateway-version-prefix v1
 ```
 
-With app generation:
+With app scaffold:
 
 ```bash
 npx wsdl-tsc pipeline \
-  --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir tmp/client \
-  --openapi-file tmp/openapi.json \
-  --gateway-dir tmp/gateway \
+  --wsdl-source https://example.com/weather?wsdl \
+  --client-dir ./generated/client \
+  --openapi-file ./generated/openapi.json \
+  --gateway-dir ./generated/gateway \
   --gateway-service-name weather \
   --gateway-version-prefix v1 \
-  --generate-app
+  --init-app
 ```
 
 Client and OpenAPI only:
@@ -371,7 +373,9 @@ npx wsdl-tsc gateway \
 
 ## app
 
-Generate a runnable Fastify application integrating client, gateway, and OpenAPI spec.
+Scaffold a runnable Fastify application integrating client, gateway, and OpenAPI spec. The generated app is TypeScript and includes `package.json` and `tsconfig.json` for immediate use.
+
+Scaffold files that already exist are skipped by default. Use `--force` to overwrite.
 
 ### Usage
 
@@ -404,13 +408,16 @@ npx wsdl-tsc app \
 | `--prefix` | (empty) | Route prefix |
 | `--logger` | true | Enable Fastify logger |
 | `--openapi-mode` | copy | copy or reference |
+| `--force` | false | Overwrite existing scaffold files |
 
 ### Generated Structure
 
 ```text
 app/
-├── server.js        # Main entry point
-├── config.js        # Configuration with env support
+├── server.ts        # Main entry point (TypeScript)
+├── config.ts        # Configuration with env support
+├── package.json     # Dependencies (fastify, soap, tsx)
+├── tsconfig.json    # NodeNext/ES2022 configuration
 ├── .env.example     # Environment template
 ├── README.md        # Usage instructions
 └── openapi.json     # OpenAPI spec (when --openapi-mode=copy)
@@ -420,11 +427,12 @@ app/
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WSDL_SOURCE` | From catalog or required | WSDL URL or path |
+| `WSDL_SOURCE` | URL fallback or required | WSDL URL or path |
 | `HOST` | 127.0.0.1 | Server bind address |
 | `PORT` | 3000 | Server listen port |
 | `PREFIX` | (empty) | Route prefix |
 | `LOGGER` | true | Fastify logger |
+| `OPENAPI_SERVER_URL` | (empty) | Override OpenAPI spec server URL at runtime |
 
 ### Endpoints
 
@@ -432,7 +440,17 @@ app/
 - `GET /openapi.json` returns the OpenAPI specification
 - All SOAP operations are exposed as REST endpoints
 
-The app can also be generated via pipeline with `--generate-app`.
+### Quick Start
+
+```bash
+cd app/
+npm install
+cp .env.example .env
+# Edit .env — set WSDL_SOURCE to your WSDL URL
+npm start
+```
+
+The app can also be scaffolded via pipeline with `--init-app`.
 
 ## compile
 

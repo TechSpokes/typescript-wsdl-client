@@ -54,7 +54,7 @@ generateGateway.ts orchestrates all gateway file generation. generators.ts conta
 
 ### app/
 
-generateApp.ts generates server.js, config.js, and .env.example.
+generateApp.ts scaffolds server.ts, config.ts, package.json, tsconfig.json, .env.example, and README.md.
 
 ### Top-level Modules
 

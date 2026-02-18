@@ -117,6 +117,39 @@ All generated JSON Schemas use deterministic URN identifiers:
 
 Example: `urn:services:weather:v1:schemas:models:getcityweatherbyzipresponse`
 
+## Multi-Service Setup
+
+When integrating multiple SOAP services, each service gets its own client, gateway, and OpenAPI spec. Register each in its own Fastify encapsulation scope to prevent decorator collisions:
+
+```typescript
+import Fastify from "fastify";
+import weatherPlugin from "./generated/weather/gateway/plugin.js";
+import inventoryPlugin from "./generated/inventory/gateway/plugin.js";
+import { Weather } from "./generated/weather/client/client.js";
+import { Inventory } from "./generated/inventory/client/client.js";
+
+const app = Fastify({ logger: true });
+
+// Each plugin gets its own scope to isolate decorators
+await app.register(async (scope) => {
+  await scope.register(weatherPlugin, {
+    client: new Weather({ source: "https://example.com/weather?wsdl" }),
+    prefix: "/api/weather",
+  });
+});
+
+await app.register(async (scope) => {
+  await scope.register(inventoryPlugin, {
+    client: new Inventory({ source: "https://example.com/inventory?wsdl" }),
+    prefix: "/api/inventory",
+  });
+});
+
+await app.listen({ port: 3000 });
+```
+
+See [`examples/fastify-gateway/`](../examples/fastify-gateway/) for a complete example.
+
 ## Contract Assumptions
 
 - All request/response bodies must use $ref to components.schemas

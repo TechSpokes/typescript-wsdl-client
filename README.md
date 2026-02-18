@@ -35,7 +35,7 @@ npx wsdl-tsc pipeline \
   --gateway-dir ./tmp/gateway \
   --gateway-service-name weather \
   --gateway-version-prefix v1 \
-  --generate-app
+  --init-app
 ```
 
 This parses the WSDL, generates a typed SOAP client, creates an OpenAPI 3.1 spec, builds Fastify gateway handlers, and creates a runnable application.
@@ -43,7 +43,7 @@ This parses the WSDL, generates a typed SOAP client, creates an OpenAPI 3.1 spec
 ### Run and Test
 
 ```bash
-cd tmp/app && cp .env.example .env && npx tsx server.js
+cd tmp/app && npm install && cp .env.example .env && npm start
 ```
 
 ```bash

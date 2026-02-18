@@ -1,0 +1,46 @@
+name: Generate SOAP Client
+
+on:
+  # Run on schedule to detect WSDL changes
+  schedule:
+    - cron: "0 6 * * 1" # Every Monday at 6am UTC
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      # Generate client, OpenAPI spec, and gateway from WSDL
+      - name: Run generation pipeline
+        run: |
+          npx wsdl-tsc pipeline \
+            --wsdl-source "${{ vars.WSDL_URL }}" \
+            --client-dir ./src/generated/client \
+            --openapi-file ./src/generated/openapi.json \
+            --gateway-dir ./src/generated/gateway \
+            --gateway-service-name "${{ vars.SERVICE_NAME }}" \
+            --gateway-version-prefix v1 \
+            --clean
+
+      # Verify generated code compiles
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # Commit if anything changed
+      - name: Commit changes
+        run: |
+          git diff --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/generated/
+          git commit -m "chore: regenerate SOAP client from WSDL"
+          git push

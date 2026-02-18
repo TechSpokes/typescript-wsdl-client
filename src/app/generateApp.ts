@@ -1,24 +1,31 @@
 // noinspection HttpUrlsUsage
 
 /**
- * Fastify App Generator
+ * Fastify App Scaffold Generator
  *
  * This module generates a runnable Fastify application that imports and uses
  * the generated gateway plugin and SOAP client. The app serves the OpenAPI spec,
  * health checks, and all gateway routes.
  *
+ * The generated scaffold is intended as a one-time starting point. Developers
+ * should customize it freely after generation. Use --force-init to overwrite
+ * existing scaffold files.
+ *
  * Core capabilities:
  * - Generates server.ts with Fastify setup and plugin registration
  * - Generates config.ts with environment-based configuration
+ * - Generates package.json with required dependencies
+ * - Generates tsconfig.json with NodeNext/ES2022 settings
  * - Generates .env.example with required/optional environment variables
  * - Generates README.md with instructions for running the app
  * - Optionally copies OpenAPI spec into app directory
  * - Validates required inputs (client-dir, gateway-dir, openapi-file, catalog-file)
+ * - Skip-if-exists protection for scaffold files (override with force option)
  */
 import fs from "node:fs";
 import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
-import {success} from "../util/cli.js";
+import {info, success} from "../util/cli.js";
 
 /**
  * Options for app generation
@@ -35,6 +42,7 @@ import {success} from "../util/cli.js";
  * @property {string} [prefix] - Route prefix (default: "")
  * @property {boolean} [logger] - Enable Fastify logger (default: true)
  * @property {"copy"|"reference"} [openapiMode] - How to handle OpenAPI file (default: "copy")
+ * @property {boolean} [force] - Overwrite existing scaffold files (default: false)
  */
 export interface GenerateAppOptions {
   clientDir: string;
@@ -48,6 +56,7 @@ export interface GenerateAppOptions {
   prefix?: string;
   logger?: boolean;
   openapiMode?: "copy" | "reference";
+  force?: boolean;
 }
 
 /**
@@ -109,15 +118,13 @@ function getExtension(imports: string): string {
 }
 
 /**
- * Returns the file extension for executable app files (server, config)
- * These always need extensions even with bare imports since they are entry points
+ * Returns the file extension for scaffold app files (server, config).
+ * Always .ts — the scaffold is TypeScript for full type safety.
  *
- * @param {string} imports - Import mode (js, ts, or bare)
  * @returns {string} - File extension with leading dot
  */
-function getAppFileExtension(imports: string): string {
-  if (imports === "ts") return ".ts";
-  return ".js"; // Use .js for both "js" and "bare" modes
+function getAppFileExtension(): string {
+  return ".ts";
 }
 
 /**
@@ -141,6 +148,49 @@ function computeRelativeImport(from: string, to: string, imports: string): strin
     return prefixed + ext;
   }
   return prefixed;
+}
+
+/**
+ * Checks if a string is a URL (http:// or https://)
+ */
+function isUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value);
+}
+
+/**
+ * Normalizes a file path to POSIX separators
+ */
+function toPosix(filePath: string): string {
+  return filePath.split(path.sep).join("/");
+}
+
+/**
+ * Resolves a WSDL source path relative to the app directory.
+ * URLs are returned as-is. File paths are computed relative to appDir.
+ *
+ * @param {string} wsdlSource - Original WSDL source from catalog
+ * @param {string} appDir - Resolved app output directory
+ * @returns {string} - WSDL source suitable for use from the app directory
+ */
+function resolveWsdlSourceForApp(wsdlSource: string, appDir: string): string {
+  if (isUrl(wsdlSource)) return wsdlSource;
+  return toPosix(path.relative(appDir, path.resolve(wsdlSource)));
+}
+
+/**
+ * Checks whether a scaffold file should be written.
+ * Returns true if the file does not exist or force is enabled.
+ * Logs an info message and returns false if the file exists and force is disabled.
+ *
+ * @param {string} filePath - Absolute path to the file
+ * @param {boolean} force - Whether to overwrite existing files
+ * @returns {boolean} - Whether the file should be written
+ */
+function shouldWriteScaffoldFile(filePath: string, force: boolean): boolean {
+  if (!fs.existsSync(filePath)) return true;
+  if (force) return true;
+  info(`Skipping ${path.basename(filePath)} (already exists, use --force-init to overwrite)`);
+  return false;
 }
 
 /**
@@ -174,14 +224,19 @@ function getCatalogWsdlSource(catalog: any): string | undefined {
  * @param {string} appDir - App output directory
  * @param {GenerateAppOptions} opts - App generation options
  * @param {string} clientClassName - Derived client class name
+ * @param {boolean} force - Whether to overwrite existing files
  */
 function generateServerFile(
   appDir: string,
   opts: GenerateAppOptions,
-  clientClassName: string
+  clientClassName: string,
+  force: boolean
 ): void {
   const imports = opts.imports || "js";
-  const ext = getAppFileExtension(imports); // Use getAppFileExtension for executable entry point
+  const ext = getAppFileExtension();
+  const filePath = path.join(appDir, `server${ext}`);
+
+  if (!shouldWriteScaffoldFile(filePath, force)) return;
 
   const configImport = computeRelativeImport(appDir, path.join(appDir, "config"), imports);
   const gatewayPluginImport = computeRelativeImport(appDir, path.join(opts.gatewayDir, "plugin"), imports);
@@ -194,6 +249,11 @@ function generateServerFile(
   const openapiSpecPath = path.join(__dirname, "openapi.json");
   const openapiSpec = JSON.parse(fs.readFileSync(openapiSpecPath, "utf-8"));
 
+  // Override OpenAPI server URL at runtime if configured
+  if (config.openapiServerUrl) {
+    openapiSpec.servers = [{ url: config.openapiServerUrl }];
+  }
+
   // Serve OpenAPI specification
   fastify.get("/openapi.json", async () => {
     return openapiSpec;
@@ -203,12 +263,17 @@ function generateServerFile(
   const openapiSpecPath = path.resolve(__dirname, "${computeRelativeImport(appDir, opts.openapiFile, "bare")}");
   const openapiSpec = JSON.parse(fs.readFileSync(openapiSpecPath, "utf-8"));
 
+  // Override OpenAPI server URL at runtime if configured
+  if (config.openapiServerUrl) {
+    openapiSpec.servers = [{ url: config.openapiServerUrl }];
+  }
+
   fastify.get("/openapi.json", async () => {
     return openapiSpec;
   });`;
 
   const content = `/**
- * Generated Fastify Application
+ * Fastify Application
  *
  * This file bootstraps a Fastify server that:
  * - Loads configuration from environment variables
@@ -217,7 +282,7 @@ function generateServerFile(
  * - Serves the OpenAPI specification
  * - Provides health check endpoint
  *
- * Auto-generated - do not edit manually.
+ * Scaffolded by wsdl-tsc. Customize freely.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -292,7 +357,7 @@ main().catch((err) => {
 });
 `;
 
-  fs.writeFileSync(path.join(appDir, `server${ext}`), content, "utf-8");
+  fs.writeFileSync(filePath, content, "utf-8");
 }
 
 /**
@@ -301,25 +366,43 @@ main().catch((err) => {
  * @param {string} appDir - App output directory
  * @param {GenerateAppOptions} opts - App generation options
  * @param {string|undefined} defaultWsdlSource - Default WSDL source from catalog
+ * @param {boolean} force - Whether to overwrite existing files
  */
 function generateConfigFile(
   appDir: string,
   opts: GenerateAppOptions,
-  defaultWsdlSource: string | undefined
+  defaultWsdlSource: string | undefined,
+  force: boolean
 ): void {
-  const imports = opts.imports || "js";
-  const ext = getAppFileExtension(imports); // Use getAppFileExtension for executable entry point
+  const ext = getAppFileExtension();
+  const filePath = path.join(appDir, `config${ext}`);
+
+  if (!shouldWriteScaffoldFile(filePath, force)) return;
 
   const defaultHost = opts.host || "127.0.0.1";
   const defaultPort = opts.port || 3000;
   const defaultPrefix = opts.prefix || "";
   const defaultLogger = opts.logger !== false;
 
-  // For .js files, we need to generate plain JavaScript (no TypeScript types)
-  // For .ts files, we can use TypeScript syntax
-  const isTypeScript = ext === ".ts";
+  // Resolve WSDL source relative to app directory
+  const resolvedWsdlSource = defaultWsdlSource
+    ? resolveWsdlSourceForApp(defaultWsdlSource, appDir)
+    : undefined;
+  // For URL sources, use as fallback default. For file sources, require explicit WSDL_SOURCE.
+  const wsdlIsUrl = resolvedWsdlSource && isUrl(resolvedWsdlSource);
+  const wsdlFallback = wsdlIsUrl ? ` || "${resolvedWsdlSource}"` : "";
 
-  const typeAnnotations = isTypeScript ? `
+  const content = `/**
+ * Application Configuration
+ *
+ * Loads configuration from environment variables with sensible defaults.
+ * Configuration precedence:
+ * 1. Environment variables (runtime overrides)
+ * 2. Hard defaults (defined in this file)
+ *
+ * Scaffolded by wsdl-tsc. Customize freely.
+ */
+
 /**
  * Application configuration interface
  */
@@ -329,6 +412,7 @@ export interface AppConfig {
   port: number;
   prefix: string;
   logger: boolean;
+  openapiServerUrl: string;
 }
 
 /**
@@ -336,31 +420,12 @@ export interface AppConfig {
  *
  * @returns {AppConfig} - Application configuration
  * @throws {Error} If required configuration is missing
- */` : `
-/**
- * Loads configuration from environment variables
- *
- * @returns {object} - Application configuration with wsdlSource, host, port, prefix, logger
- * @throws {Error} If required configuration is missing
- */`;
-
-  const content = `/**
- * Application Configuration
- *
- * Loads configuration from environment variables with sensible defaults.
- * Configuration precedence:
- * 1. Environment variables (runtime overrides)
- * 2. Catalog defaults (generation-time recorded values)
- * 3. Hard defaults (defined in this file)
- *
- * Auto-generated - do not edit manually.
  */
-${typeAnnotations}
-export function loadConfig() {
-  // WSDL source: required from env or catalog default
-  const wsdlSource = process.env.WSDL_SOURCE${defaultWsdlSource ? ` || "${defaultWsdlSource}"` : ""};
+export function loadConfig(): AppConfig {
+  // WSDL source: required from env${wsdlIsUrl ? " or URL default" : ""}
+  const wsdlSource = process.env.WSDL_SOURCE${wsdlFallback};
   if (!wsdlSource) {
-    throw new Error("WSDL_SOURCE environment variable is required");
+    throw new Error("WSDL_SOURCE environment variable is required${resolvedWsdlSource && !wsdlIsUrl ? ` (hint: ${resolvedWsdlSource})` : ""}");
   }
 
   // Host: default to ${defaultHost}
@@ -378,17 +443,21 @@ export function loadConfig() {
   // Logger: default to ${defaultLogger}
   const logger = process.env.LOGGER ? process.env.LOGGER === "true" : ${defaultLogger};
 
+  // OpenAPI server URL override (replaces servers in OpenAPI spec at runtime)
+  const openapiServerUrl = process.env.OPENAPI_SERVER_URL || "";
+
   return {
     wsdlSource,
     host,
     port,
     prefix,
     logger,
+    openapiServerUrl,
   };
 }
 `;
 
-  fs.writeFileSync(path.join(appDir, `config${ext}`), content, "utf-8");
+  fs.writeFileSync(filePath, content, "utf-8");
 }
 
 /**
@@ -397,28 +466,49 @@ export function loadConfig() {
  * @param {string} appDir - App output directory
  * @param {GenerateAppOptions} opts - App generation options
  * @param {string|undefined} defaultWsdlSource - Default WSDL source from catalog
+ * @param {boolean} force - Whether to overwrite existing files
  */
 function generateEnvExample(
   appDir: string,
   opts: GenerateAppOptions,
-  defaultWsdlSource: string | undefined
+  defaultWsdlSource: string | undefined,
+  force: boolean
 ): void {
+  const filePath = path.join(appDir, ".env.example");
+
+  if (!shouldWriteScaffoldFile(filePath, force)) return;
+
   const defaultHost = opts.host || "127.0.0.1";
   const defaultPort = opts.port || 3000;
   const defaultPrefix = opts.prefix || "";
   const defaultLogger = opts.logger !== false;
 
-  const content = `# Generated Fastify Application Environment Variables
+  // Resolve WSDL source relative to app directory
+  const resolvedWsdlSource = defaultWsdlSource
+    ? resolveWsdlSourceForApp(defaultWsdlSource, appDir)
+    : undefined;
+  const wsdlIsUrl = resolvedWsdlSource && isUrl(resolvedWsdlSource);
+
+  let wsdlSection: string;
+  if (wsdlIsUrl) {
+    // URL source: show as commented default (it's the fallback in config.ts)
+    wsdlSection = `# WSDL source URL (default: ${resolvedWsdlSource})
+#WSDL_SOURCE=${resolvedWsdlSource}`;
+  } else if (resolvedWsdlSource) {
+    // File source: require explicit setting, show hint
+    wsdlSection = `# WSDL source (required — set to URL or file path)
+# Generation-time path: ${resolvedWsdlSource}
+WSDL_SOURCE=`;
+  } else {
+    wsdlSection = `# WSDL source (required — set to URL or file path)
+WSDL_SOURCE=`;
+  }
+
+  const content = `# Fastify Application Environment Variables
 #
 # Copy this file to .env and customize as needed.
-# Configuration precedence:
-# 1. Environment variables (runtime overrides)
-# 2. Catalog defaults (generation-time recorded values)
-# 3. Hard defaults (see config file)
 
-# WSDL source (required unless provided in catalog)
-${defaultWsdlSource ? `# Default from catalog: ${defaultWsdlSource}` : "# Required: specify the WSDL URL or local file path"}
-${defaultWsdlSource ? `#WSDL_SOURCE=${defaultWsdlSource}` : `WSDL_SOURCE=`}
+${wsdlSection}
 
 # Server host (default: ${defaultHost})
 HOST=${defaultHost}
@@ -432,13 +522,87 @@ PREFIX=${defaultPrefix}
 # Enable Fastify logger (default: ${defaultLogger})
 LOGGER=${defaultLogger}
 
+# Override OpenAPI spec server URL at runtime (default: use generation-time value)
+#OPENAPI_SERVER_URL=http://localhost:${defaultPort}
+
 # Optional: SOAP security settings (configure based on your client requirements)
 # SOAP_USERNAME=
 # SOAP_PASSWORD=
 # SOAP_ENDPOINT=
 `;
 
-  fs.writeFileSync(path.join(appDir, ".env.example"), content, "utf-8");
+  fs.writeFileSync(filePath, content, "utf-8");
+}
+
+/**
+ * Generates package.json file (skipped if already exists)
+ *
+ * @param {string} appDir - App output directory
+ * @param {boolean} force - Whether to overwrite existing files
+ */
+function generatePackageJson(appDir: string, force: boolean): void {
+  const filePath = path.join(appDir, "package.json");
+
+  if (!shouldWriteScaffoldFile(filePath, force)) return;
+
+  const pkg = {
+    name: "wsdl-gateway-app",
+    version: "0.0.1",
+    private: true,
+    type: "module",
+    scripts: {
+      start: "tsx server.ts",
+      dev: "tsx watch server.ts",
+    },
+    dependencies: {
+      fastify: "^5.7.4",
+      "fastify-plugin": "^5.1.0",
+      soap: "^1.6.5",
+    },
+    devDependencies: {
+      tsx: "^4.21.0",
+      typescript: "^5.9.3",
+    },
+  };
+
+  fs.writeFileSync(filePath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
+}
+
+/**
+ * Generates tsconfig.json file (skipped if already exists)
+ *
+ * @param {string} appDir - App output directory
+ * @param {GenerateAppOptions} opts - App generation options
+ * @param {boolean} force - Whether to overwrite existing files
+ */
+function generateTsConfig(appDir: string, opts: GenerateAppOptions, force: boolean): void {
+  const filePath = path.join(appDir, "tsconfig.json");
+
+  if (!shouldWriteScaffoldFile(filePath, force)) return;
+
+  // Compute include paths relative to app directory
+  const clientInclude = toPosix(path.relative(appDir, opts.clientDir)) + "/**/*.ts";
+  const gatewayInclude = toPosix(path.relative(appDir, opts.gatewayDir)) + "/**/*.ts";
+
+  const tsconfig = {
+    compilerOptions: {
+      module: "NodeNext",
+      moduleResolution: "NodeNext",
+      target: "ES2022",
+      strict: true,
+      esModuleInterop: true,
+      skipLibCheck: true,
+      outDir: "dist",
+      rootDir: ".",
+    },
+    include: [
+      "*.ts",
+      clientInclude,
+      gatewayInclude,
+    ],
+  };
+
+  fs.writeFileSync(filePath, JSON.stringify(tsconfig, null, 2) + "\n", "utf-8");
 }
 
 /**
@@ -446,143 +610,86 @@ LOGGER=${defaultLogger}
  *
  * @param {string} appDir - App output directory
  * @param {GenerateAppOptions} opts - App generation options
+ * @param {boolean} force - Whether to overwrite existing files
  */
-function generateReadme(appDir: string, opts: GenerateAppOptions): void {
-  const imports = opts.imports || "js";
-  const ext = getExtension(imports);
+function generateReadme(appDir: string, opts: GenerateAppOptions, force: boolean): void {
+  const filePath = path.join(appDir, "README.md");
 
-  const runCommand = ext === ".ts"
-    ? "npx tsx server.ts"
-    : "node server.js";
+  if (!shouldWriteScaffoldFile(filePath, force)) return;
 
   const content = `# Generated Fastify Application
 
-This application was auto-generated by \`wsdl-tsc app\`.
-
-## Overview
-
-This Fastify application provides a REST gateway to a SOAP service, automatically bridging between REST endpoints and SOAP operations.
-
-## Structure
-
-- \`server${ext}\` - Main application entry point
-- \`config${ext}\` - Configuration loader (environment-based)
-- \`.env.example\` - Example environment configuration
-- \`openapi.json\` - OpenAPI specification${opts.openapiMode === "copy" ? " (copied)" : " (referenced)"}
-
-## Prerequisites
-
-- Node.js >= 20.0.0
-- Dependencies installed (\`npm install\`)
+This application was scaffolded by \`wsdl-tsc\`. Customize freely.
 
 ## Quick Start
 
-1. **Copy environment template**:
-   \`\`\`bash
-   cp .env.example .env
-   \`\`\`
+\`\`\`bash
+npm install
+cp .env.example .env
+# Edit .env — set WSDL_SOURCE to your WSDL URL or file path
+npm start
+\`\`\`
 
-2. **Configure environment**:
-   Edit \`.env\` and set required variables (especially \`WSDL_SOURCE\` if not provided via catalog).
+## Structure
 
-3. **Run the server**:
-   \`\`\`bash
-   ${runCommand}
-   \`\`\`
+- \`server.ts\` - Main application entry point
+- \`config.ts\` - Configuration loader (environment-based)
+- \`package.json\` - Dependencies and scripts
+- \`tsconfig.json\` - TypeScript configuration
+- \`.env.example\` - Example environment configuration
+- \`openapi.json\` - OpenAPI specification${opts.openapiMode === "copy" ? " (copied)" : " (referenced)"}
 
 ## Endpoints
 
-### Health Check
-\`\`\`
-GET /health
-\`\`\`
-Returns: \`{ ok: true }\`
-
-### OpenAPI Specification
-\`\`\`
-GET /openapi.json
-\`\`\`
-Returns: OpenAPI 3.1 specification document
-
-### Gateway Routes
-All SOAP operations are exposed as REST endpoints. See \`openapi.json\` for complete API documentation.
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| \`/health\` | GET | Health check — returns \`{ "ok": true }\` |
+| \`/openapi.json\` | GET | OpenAPI 3.1 specification |
+| All SOAP operations | POST | REST-to-SOAP gateway routes (see openapi.json) |
 
 ## Configuration
 
-Configuration is loaded from environment variables with the following precedence:
-
-1. Environment variables (runtime overrides)
-2. Catalog defaults (from generation-time)
-3. Hard defaults (in config file)
-
-### Environment Variables
-
 | Variable | Default | Description |
 |----------|---------|-------------|
-| \`WSDL_SOURCE\` | (from catalog) | WSDL URL or local file path (required) |
+| \`WSDL_SOURCE\` | (see .env.example) | WSDL URL or local file path (required) |
 | \`HOST\` | ${opts.host || "127.0.0.1"} | Server bind address |
 | \`PORT\` | ${opts.port || 3000} | Server listen port |
-| \`PREFIX\` | ${opts.prefix || "(empty)"} | Route prefix |
+| \`PREFIX\` | (empty) | Route prefix |
 | \`LOGGER\` | ${opts.logger !== false} | Enable Fastify logger |
+| \`OPENAPI_SERVER_URL\` | (empty) | Override OpenAPI spec server URL at runtime |
 
 ## Development
 
-### Running with watch mode
 \`\`\`bash
-npx tsx watch server${ext}
+npm run dev          # Start with file watching
+curl localhost:3000/health
+curl localhost:3000/openapi.json
 \`\`\`
-
-### Testing endpoints
-\`\`\`bash
-# Health check
-curl http://localhost:3000/health
-
-# OpenAPI spec
-curl http://localhost:3000/openapi.json
-\`\`\`
-
-## Troubleshooting
-
-### WSDL_SOURCE missing
-If you see "WSDL_SOURCE environment variable is required", set it in your \`.env\` file or export it:
-\`\`\`bash
-export WSDL_SOURCE=path/to/service.wsdl
-${runCommand}
-\`\`\`
-
-### Port already in use
-Change the \`PORT\` in your \`.env\` file or:
-\`\`\`bash
-PORT=8080 ${runCommand}
-\`\`\`
-
-## Notes
-
-- This app uses the generated client from: \`${opts.clientDir}\`
-- Gateway plugin from: \`${opts.gatewayDir}\`
-- OpenAPI spec from: \`${opts.openapiFile}\`
 
 ## Generated By
 
-- Tool: [@techspokes/typescript-wsdl-client](https://github.com/TechSpokes/typescript-wsdl-client)
-- Command: \`wsdl-tsc app\`
+[@techspokes/typescript-wsdl-client](https://github.com/TechSpokes/typescript-wsdl-client)
 `;
 
-  fs.writeFileSync(path.join(appDir, "README.md"), content, "utf-8");
+  fs.writeFileSync(filePath, content, "utf-8");
 }
 
 /**
- * Generates a runnable Fastify application
+ * Generates a runnable Fastify application scaffold
  *
- * This function orchestrates the complete app generation process:
+ * This function orchestrates the complete app scaffold process:
  * 1. Validates all required inputs exist
  * 2. Reads catalog.json for metadata
  * 3. Creates app directory
  * 4. Generates server.ts with Fastify setup
  * 5. Generates config.ts with environment loading
- * 6. Generates .env.example with configuration template
- * 7. Generates README.md with usage instructions
- * 8. Optionally copies OpenAPI spec into app directory
+ * 6. Generates package.json with dependencies
+ * 7. Generates tsconfig.json with TypeScript settings
+ * 8. Generates .env.example with configuration template
+ * 9. Generates README.md with usage instructions
+ * 10. Optionally copies OpenAPI spec into app directory
+ *
+ * Files that already exist are skipped unless force is true.
  *
  * @param {GenerateAppOptions} opts - App generation options
  * @returns {Promise<void>}
@@ -599,6 +706,8 @@ export async function generateApp(opts: GenerateAppOptions): Promise<void> {
     appDir: path.resolve(opts.appDir),
   };
 
+  const force = resolvedOpts.force ?? false;
+
   // Validate required files and directories
   validateRequiredFiles(resolvedOpts);
 
@@ -610,19 +719,23 @@ export async function generateApp(opts: GenerateAppOptions): Promise<void> {
   // Create app directory
   fs.mkdirSync(resolvedOpts.appDir, {recursive: true});
 
-  // Generate app files
-  generateServerFile(resolvedOpts.appDir, resolvedOpts, clientClassName);
-  generateConfigFile(resolvedOpts.appDir, resolvedOpts, defaultWsdlSource);
-  generateEnvExample(resolvedOpts.appDir, resolvedOpts, defaultWsdlSource);
-  generateReadme(resolvedOpts.appDir, resolvedOpts);
+  // Generate scaffold files (each checks for existing files unless force is set)
+  generateServerFile(resolvedOpts.appDir, resolvedOpts, clientClassName, force);
+  generateConfigFile(resolvedOpts.appDir, resolvedOpts, defaultWsdlSource, force);
+  generatePackageJson(resolvedOpts.appDir, force);
+  generateTsConfig(resolvedOpts.appDir, resolvedOpts, force);
+  generateEnvExample(resolvedOpts.appDir, resolvedOpts, defaultWsdlSource, force);
+  generateReadme(resolvedOpts.appDir, resolvedOpts, force);
 
   // Handle OpenAPI file
   const openapiMode = resolvedOpts.openapiMode || "copy";
   if (openapiMode === "copy") {
     const destPath = path.join(resolvedOpts.appDir, "openapi.json");
-    fs.copyFileSync(resolvedOpts.openapiFile, destPath);
-    success(`Copied OpenAPI spec to ${destPath}`);
+    if (shouldWriteScaffoldFile(destPath, force)) {
+      fs.copyFileSync(resolvedOpts.openapiFile, destPath);
+      success(`Copied OpenAPI spec to ${destPath}`);
+    }
   }
 
-  success(`Generated runnable Fastify app in ${resolvedOpts.appDir}`);
+  success(`Scaffolded Fastify app in ${resolvedOpts.appDir}`);
 }

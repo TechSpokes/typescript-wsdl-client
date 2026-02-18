@@ -137,6 +137,7 @@ node: '>=20'
 2. Determine semver bump (patch/minor/major) based on `Unreleased` changes.
 3. Update `"version"` in `package.json` to the new release version.
 4. In `CHANGELOG.md`: promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date) and start a fresh, empty `## [Unreleased]` section at the top.
+5. Bump hardcoded dependency versions in `src/app/generateApp.ts` (the `generatePackageJson` function) to current latest. The generated app scaffold ships these versions to end users; stale minimums deliver outdated code with potential security issues out of the box. Check latest with `npm view <pkg> version` for: fastify, fastify-plugin, soap, tsx, typescript.
 
 ### Updating the CHANGELOG
 - Propose a single bullet for `Unreleased` based on the described change.
