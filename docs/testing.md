@@ -39,6 +39,7 @@ Unit tests cover pure functions with no I/O or side effects:
 - **`primitives.test.ts`** — `xsdToTsPrimitive()` covering all XSD types (string-like, boolean, integers, decimals, floats, dates, any)
 - **`errors.test.ts`** — `WsdlCompilationError` construction and `toUserMessage()` formatting
 - **`schema-alignment.test.ts`** — Cross-validates TypeScript types, JSON schemas, and catalog.json for consistency
+- **`mock-data.test.ts`** — `generateMockPrimitive()`, `generateMockData()`, `generateAllOperationMocks()` with cycle detection and array wrapping
 
 ### Writing Unit Tests
 
@@ -180,9 +181,78 @@ When `--openapi-flatten-array-wrappers false` is used, ArrayOf* types are emitte
 
 The `classifyError()` function puts `err.message` (a string) in the `details` field for connection and timeout errors, but the error JSON schema defines `details` as `object | null`. This causes Fastify serialization failures for 503/504 error responses. Test error classification directly via `classifyError()` rather than through Fastify's `inject()` for these error types.
 
+## Generated Test Suite
+
+The `--test-dir` flag generates a complete, runnable Vitest test suite that validates all generated gateway artifacts out of the box. This is the recommended way to verify generated code in consumer projects.
+
+### Generating Tests
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source service.wsdl \
+  --client-dir ./generated/client \
+  --openapi-file ./generated/openapi.json \
+  --gateway-dir ./generated/gateway \
+  --gateway-service-name myservice \
+  --gateway-version-prefix v1 \
+  --test-dir ./generated/tests
+```
+
+### Generated Structure
+
+```text
+{test-dir}/
+  vitest.config.ts
+  helpers/
+    mock-client.ts            createMockClient() with full default responses per operation
+    test-app.ts               createTestApp() Fastify bootstrap helper
+  gateway/
+    routes.test.ts            per-operation happy path (one test per route)
+    errors.test.ts            400/500/502/503/504 through Fastify
+    envelope.test.ts          SUCCESS/ERROR structure assertions
+    validation.test.ts        invalid payloads rejected per route
+  runtime/
+    classify-error.test.ts    classifyError() unit tests
+    envelope-builders.test.ts buildSuccessEnvelope/buildErrorEnvelope
+    unwrap.test.ts            unwrapArrayWrappers (only when ArrayOf* wrappers exist)
+```
+
+### Running Generated Tests
+
+```bash
+npx vitest run --config ./generated/tests/vitest.config.ts
+```
+
+### Skip-if-Exists Behavior
+
+Test files that already exist are skipped by default. This allows you to customize generated tests without losing changes on regeneration. Use `--force-test` to overwrite all test files.
+
+### Mock Client
+
+The generated `helpers/mock-client.ts` creates a fully typed mock client with default responses for every operation. Override individual methods for specific test scenarios:
+
+```typescript
+import { createMockClient } from "./helpers/mock-client.js";
+
+const client = createMockClient({
+  GetCityWeatherByZIP: async () => ({
+    response: { GetCityWeatherByZIPResult: { Success: false, WeatherID: 0 } },
+    headers: {},
+  }),
+});
+```
+
+Mock responses use the pre-unwrap SOAP wrapper shape. The generated `unwrapArrayWrappers()` function handles conversion at runtime.
+
 ## For Consumer Projects
 
 If you're using wsdl-tsc as a dependency and want to test your integration:
+
+1. Generate code with `npx wsdl-tsc pipeline --test-dir ./tests` to get a ready-to-run test suite
+2. Run `npx vitest run --config ./tests/vitest.config.ts` to verify everything works
+3. Customize generated tests as needed (they won't be overwritten on regeneration)
+
+Alternatively, write tests manually:
 
 1. Generate code with `npx wsdl-tsc pipeline`
 2. Import the operations interface from `operations.ts`

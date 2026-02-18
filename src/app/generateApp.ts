@@ -26,6 +26,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
 import {info, success} from "../util/cli.js";
+import {computeRelativeImport, getImportExtension} from "../util/imports.js";
 
 /**
  * Options for app generation
@@ -112,9 +113,7 @@ function validateRequiredFiles(opts: GenerateAppOptions): void {
  * @returns {string} - File extension with leading dot or empty string for bare
  */
 function getExtension(imports: string): string {
-  if (imports === "js") return ".js";
-  if (imports === "ts") return ".ts";
-  return "";
+  return getImportExtension(imports);
 }
 
 /**
@@ -127,28 +126,7 @@ function getAppFileExtension(): string {
   return ".ts";
 }
 
-/**
- * Computes a relative import path from source to target
- *
- * @param {string} from - Source directory
- * @param {string} to - Target file or directory
- * @param {string} imports - Import mode (js, ts, or bare)
- * @returns {string} - Relative import specifier with proper extension
- */
-function computeRelativeImport(from: string, to: string, imports: string): string {
-  const rel = path.relative(from, to);
-  // Normalize to POSIX separators
-  const posix = rel.split(path.sep).join("/");
-  // Ensure it starts with ./ or ../
-  const prefixed = posix.startsWith(".") ? posix : `./${posix}`;
-
-  // Apply import extension rules
-  const ext = getExtension(imports);
-  if (ext) {
-    return prefixed + ext;
-  }
-  return prefixed;
-}
+// computeRelativeImport is now imported from ../util/imports.js
 
 /**
  * Checks if a string is a URL (http:// or https://)

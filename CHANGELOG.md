@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-02-18
+
+- feat(cli): add `--test-dir` and `--force-test` flags to generate Vitest test suite for gateway artifacts
+- feat(test): generate mock client, test app helper, route/error/envelope/validation/runtime tests from catalog metadata
+- feat(test): skip-if-exists for generated test files with `--force-test` override
+- refactor(util): extract shared `computeRelativeImport()` and `getImportExtension()` to `src/util/imports.ts`
+- docs: add generated test suite section to testing guide and CLI reference
+
 ## [0.11.1] - 2026-02-18
 
 - fix(gateway): wrap classifyError() details as object for 400/503/504 to fix FST_ERR_FAILED_ERROR_SERIALIZATION

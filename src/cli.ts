@@ -732,6 +732,16 @@ if (rawArgs[0] === "pipeline") {
       default: "",
       desc: "Route prefix for app scaffold"
     })
+    // Test generation flags
+    .option("test-dir", {
+      type: "string",
+      desc: "Output directory for generated Vitest test suite"
+    })
+    .option("force-test", {
+      type: "boolean",
+      default: false,
+      desc: "Overwrite existing test files when using --test-dir"
+    })
     .strict()
     .help()
     .parse();
@@ -823,6 +833,15 @@ if (rawArgs[0] === "pipeline") {
     }
   }
 
+  // Validate test generation requirements
+  const testDir = pipelineArgv["test-dir"] as string | undefined;
+  const forceTest = pipelineArgv["force-test"] as boolean;
+  if (testDir) {
+    if (!clientOut || !gatewayOut) {
+      handleCLIError("--test-dir requires --client-dir and --gateway-dir to be set");
+    }
+  }
+
   await runGenerationPipeline({
     wsdl: pipelineArgv["wsdl-source"] as string,
     clientOutDir: clientOut ? path.resolve(clientOut) : undefined,
@@ -852,6 +871,10 @@ if (rawArgs[0] === "pipeline") {
       host: pipelineArgv["app-host"] as string,
       port: pipelineArgv["app-port"] as number,
       prefix: pipelineArgv["app-prefix"] as string,
+    } : undefined,
+    test: testDir ? {
+      testDir: path.resolve(testDir),
+      force: forceTest,
     } : undefined,
   });
 

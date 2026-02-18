@@ -57,6 +57,10 @@ export interface PipelineOptions {
     port?: number;
     prefix?: string;
   };
+  test?: {
+    testDir: string;
+    force?: boolean;
+  };
 }
 
 /**
@@ -193,6 +197,26 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
       host: opts.app.host,
       port: opts.app.port,
       prefix: opts.app.prefix,
+    });
+  }
+
+  // Step 7: Optionally generate test suite
+  if (opts.test) {
+    if (!opts.clientOutDir || !opts.gateway?.outDir) {
+      throw new Error("Test generation requires client and gateway to be generated in the pipeline");
+    }
+
+    const {generateTests} = await import("./test/generateTests.js");
+
+    await generateTests({
+      testDir: path.resolve(opts.test.testDir),
+      gatewayDir: path.resolve(opts.gateway.outDir),
+      clientDir: path.resolve(opts.clientOutDir),
+      catalogFile: path.resolve(opts.catalogOut),
+      imports: finalCompiler.imports,
+      force: opts.test.force,
+      versionSlug: opts.gateway.versionSlug,
+      serviceSlug: opts.gateway.serviceSlug,
     });
   }
 

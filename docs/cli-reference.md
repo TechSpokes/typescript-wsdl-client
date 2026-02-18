@@ -122,6 +122,13 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--app-port` | `3000` | Default server port |
 | `--app-prefix` | (empty) | Route prefix |
 
+### Test Suite Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--test-dir` | (none) | Generate Vitest test suite in this directory (requires client, gateway) |
+| `--force-test` | `false` | Overwrite existing test files when using --test-dir |
+
 ### Pipeline Workflow
 
 Steps execute in order:
@@ -133,6 +140,7 @@ Steps execute in order:
 5. Generate OpenAPI (if --openapi-file)
 6. Generate gateway (if --gateway-dir)
 7. Scaffold app (if --init-app)
+8. Generate test suite (if --test-dir)
 
 All steps share the same parsed WSDL and compiled catalog.
 
@@ -161,6 +169,19 @@ npx wsdl-tsc pipeline \
   --gateway-service-name weather \
   --gateway-version-prefix v1 \
   --init-app
+```
+
+With generated test suite:
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source examples/minimal/weather.wsdl \
+  --client-dir tmp/client \
+  --openapi-file tmp/openapi.json \
+  --gateway-dir tmp/gateway \
+  --gateway-service-name weather \
+  --gateway-version-prefix v1 \
+  --test-dir tmp/tests
 ```
 
 Client and OpenAPI only:

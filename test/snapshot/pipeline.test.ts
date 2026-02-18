@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { runGenerationPipeline } from "../../src/pipeline.js";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -46,6 +46,10 @@ describe("pipeline snapshot", () => {
         outDir: join(outDir, "gateway"),
         versionSlug: "v1",
         serviceSlug: "weather",
+      },
+      test: {
+        testDir: join(outDir, "tests"),
+        force: false,
       },
     });
   }, 60_000);
@@ -158,6 +162,22 @@ describe("pipeline snapshot", () => {
         expect(parsed).toMatchSnapshot(relPath);
       }
     });
+  });
+
+  // --- Generated test suite ---
+
+  it("tests/helpers/mock-client.ts", () => {
+    const filePath = join(outDir, "tests", "helpers", "mock-client.ts");
+    expect(existsSync(filePath)).toBe(true);
+    const content = readFileSync(filePath, "utf-8");
+    expect(content).toMatchSnapshot();
+  });
+
+  it("tests/gateway/routes.test.ts", () => {
+    const filePath = join(outDir, "tests", "gateway", "routes.test.ts");
+    expect(existsSync(filePath)).toBe(true);
+    const content = readFileSync(filePath, "utf-8");
+    expect(content).toMatchSnapshot();
   });
 
   // --- File inventory (catch new/removed files) ---
