@@ -35,6 +35,8 @@ To regenerate from the repository root:
 npm run examples:regenerate
 ```
 
+> **Note:** `examples:regenerate` intentionally omits `--init-app`. The app scaffold generates files with relative import paths and WSDL source paths tied to the output location — they are one-time scaffolds meant to be customized, not stable reference output. Use `--init-app` in your own projects instead (see [Using a Remote WSDL](#using-a-remote-wsdl) below).
+
 ## Configuration Files
 
 The `config/` directory contains example configuration files:

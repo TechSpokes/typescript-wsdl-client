@@ -54,9 +54,6 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--client-dir` | Generate TypeScript client in this directory |
 | `--openapi-file` | Generate OpenAPI spec at this path |
 | `--gateway-dir` | Generate Fastify gateway in this directory |
-| `--init-app` | Scaffold runnable Fastify app (requires client, gateway, OpenAPI) |
-| `--force-init` | Overwrite existing scaffold files when using `--init-app` |
-| `--generate-app` | Deprecated alias for `--init-app` |
 
 ### Client Flags
 
@@ -81,7 +78,10 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--openapi-title` | (derived) | API title |
 | `--openapi-version` | `0.0.0` | API version |
 | `--openapi-description` | (empty) | API description |
-| `--openapi-servers` | `/` | Comma-separated server URLs |
+| `--openapi-servers` | `/` | Comma-separated server URLs (see note below) |
+
+> When `--init-app` is used and `--openapi-servers` is not provided, servers default to `http://localhost:3000`. The app scaffold also rewrites the servers array in its local `openapi.json` copy to match the configured port and prefix.
+
 | `--openapi-base-path` | (empty) | Base path prefix |
 | `--openapi-path-style` | `kebab` | Path transform: kebab, asis, or lower |
 | `--openapi-method` | `post` | Default HTTP method |
@@ -107,6 +107,18 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--gateway-decorator-name` | {serviceSlug}Client | Fastify decorator name |
 | `--gateway-skip-plugin` | `false` | Skip plugin.ts generation |
 | `--gateway-skip-runtime` | `false` | Skip runtime.ts generation |
+
+### App Scaffold Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--init-app` | `false` | Scaffold runnable Fastify app (requires client, gateway, OpenAPI) |
+| `--force-init` | `false` | Overwrite existing scaffold files |
+| `--app-dir` | sibling `app/` | Output directory for app scaffold |
+| `--app-openapi-mode` | `copy` | How to handle OpenAPI file: copy or reference |
+| `--app-host` | `127.0.0.1` | Default server host |
+| `--app-port` | `3000` | Default server port |
+| `--app-prefix` | (empty) | Route prefix |
 
 ### Pipeline Workflow
 

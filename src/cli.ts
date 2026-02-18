@@ -700,6 +700,21 @@ if (rawArgs[0] === "pipeline") {
       default: "copy",
       desc: "How to handle OpenAPI file in app: copy or reference"
     })
+    .option("app-host", {
+      type: "string",
+      default: "127.0.0.1",
+      desc: "Default server host for app scaffold"
+    })
+    .option("app-port", {
+      type: "number",
+      default: 3000,
+      desc: "Default server port for app scaffold"
+    })
+    .option("app-prefix", {
+      type: "string",
+      default: "",
+      desc: "Route prefix for app scaffold"
+    })
     .strict()
     .help()
     .parse();
@@ -817,6 +832,9 @@ if (rawArgs[0] === "pipeline") {
         : path.join(path.dirname(path.resolve(gatewayOut!)), "app"),
       openapiMode: pipelineArgv["app-openapi-mode"] as "copy" | "reference",
       force: forceInit,
+      host: pipelineArgv["app-host"] as string,
+      port: pipelineArgv["app-port"] as number,
+      prefix: pipelineArgv["app-prefix"] as string,
     } : undefined,
   });
 

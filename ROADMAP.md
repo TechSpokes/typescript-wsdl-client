@@ -2,7 +2,7 @@
 
 Simple roadmap for the TypeScript WSDL → SOAP client generator.
 
-## Current: 0.9.x Series
+## Current: 0.10.x Series
 
 **What we have now:**
 - Core WSDL/XSD parsing with proper TypeScript types
@@ -26,13 +26,15 @@ Simple roadmap for the TypeScript WSDL → SOAP client generator.
   - Typed `request.body` via Fastify route generics (`Body: T`)
   - Build-time type-check fixture (`_typecheck.ts`)
   - Named operations interface for mocking and autocomplete
+- **TypeScript app scaffold with overwrite protection** (0.10.3)
+  - Full TypeScript scaffold (server.ts, config.ts, package.json, tsconfig.json)
+  - App scaffold rewrites OpenAPI servers array to match configured localhost port
 
 **Still working on:**
 - Better error messages when WSDL parsing fails
 - Edge cases in complex schema compositions
-- README examples showing the typed handler output
 
-## Next: 0.10.x Series
+## Next: 0.11.x Series
 
 **Focus: Stability and Testing**
 

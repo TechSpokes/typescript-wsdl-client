@@ -9,6 +9,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.10.4] - 2026-02-18
+- fix(app): use host option in OpenAPI servers URL rewrite instead of hardcoding localhost
+- feat(cli): add --app-host, --app-port, --app-prefix flags to pipeline command
+- docs: add App Scaffold Flags section to CLI reference and clarify --openapi-servers default
+- test: add --port 8080 to smoke:app to exercise URL rewrite with non-default port
+- fix(app): rewrite OpenAPI servers array in app scaffold to match configured localhost port
+- test: remove explicit --openapi-servers from smoke:pipeline to exercise --init-app default
+- docs: add typed route handler examples to generated-code.md and update gateway-guide.md
+- docs: update ROADMAP.md to reflect 0.10.x series as current
+
 ## [0.10.3] - 2026-02-18
 - feat(app): generate TypeScript scaffold (server.ts, config.ts) instead of JavaScript for full type safety
 - feat(app): generate package.json and tsconfig.json for immediate out-of-box usage

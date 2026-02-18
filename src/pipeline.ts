@@ -52,6 +52,9 @@ export interface PipelineOptions {
     appDir: string;
     openapiMode?: "copy" | "reference";
     force?: boolean;
+    host?: string;
+    port?: number;
+    prefix?: string;
   };
 }
 
@@ -181,6 +184,9 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
       imports: finalCompiler.imports,
       openapiMode: opts.app.openapiMode || "copy",
       force: opts.app.force,
+      host: opts.app.host,
+      port: opts.app.port,
+      prefix: opts.app.prefix,
     });
   }
 

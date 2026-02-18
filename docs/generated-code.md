@@ -72,3 +72,35 @@ result.GetCityWeatherByZIPResult.Temperature;
 ```
 
 Autocomplete and type checking work across all generated interfaces.
+
+## Gateway Route Handlers
+
+When generating a Fastify gateway (`--gateway-dir`), each SOAP operation gets a fully typed route handler. The handler imports the request type from the client, uses Fastify's `Body: T` generic for type inference, and wraps the SOAP response in a standard envelope.
+
+```typescript
+import type { FastifyInstance } from "fastify";
+import type { GetCityForecastByZIP } from "../../client/types.js";
+import schema from "../schemas/operations/getcityforecastbyzip.json" with { type: "json" };
+import { buildSuccessEnvelope } from "../runtime.js";
+
+export async function registerRoute_v1_weather_getcityforecastbyzip(fastify: FastifyInstance) {
+  fastify.route<{ Body: GetCityForecastByZIP }>({
+    method: "POST",
+    url: "/get-city-forecast-by-zip",
+    schema,
+    handler: async (request) => {
+      const client = fastify.weatherClient;
+      const result = await client.GetCityForecastByZIP(request.body as GetCityForecastByZIP);
+      return buildSuccessEnvelope(result.response);
+    },
+  });
+}
+```
+
+Key features of the generated handlers:
+
+- **`Body: T` generic** — Fastify infers `request.body` type from the route generic, enabling IDE autocomplete and compile-time checks
+- **JSON Schema validation** — the `schema` import provides Fastify with request/response validation at runtime, before the handler runs
+- **Envelope wrapping** — `buildSuccessEnvelope()` wraps the raw SOAP response in the standard `{ status, message, data, error }` envelope
+
+See [Gateway Guide](gateway-guide.md) for the full architecture and [CLI Reference](cli-reference.md) for generation flags.

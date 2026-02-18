@@ -732,7 +732,13 @@ export async function generateApp(opts: GenerateAppOptions): Promise<void> {
   if (openapiMode === "copy") {
     const destPath = path.join(resolvedOpts.appDir, "openapi.json");
     if (shouldWriteScaffoldFile(destPath, force)) {
-      fs.copyFileSync(resolvedOpts.openapiFile, destPath);
+      const spec = JSON.parse(fs.readFileSync(resolvedOpts.openapiFile, "utf-8"));
+      const host = resolvedOpts.host || "127.0.0.1";
+      const port = resolvedOpts.port || 3000;
+      const prefix = resolvedOpts.prefix || "";
+      const urlHost = ["0.0.0.0", "127.0.0.1", "::", "::1"].includes(host) ? "localhost" : host;
+      spec.servers = [{ url: `http://${urlHost}:${port}${prefix}` }];
+      fs.writeFileSync(destPath, JSON.stringify(spec, null, 2) + "\n", "utf-8");
       success(`Copied OpenAPI spec to ${destPath}`);
     }
   }
