@@ -279,7 +279,7 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
 
   // Step 7: Emit plugin.ts and type-check fixture (if enabled)
   if (emitPlugin) {
-    emitPluginModule(outDir, versionSlug, serviceSlug, clientMeta, importsMode, operations);
+    emitPluginModule(outDir, versionSlug, serviceSlug, clientMeta, importsMode);
     emitTypeCheckFixture(outDir, clientMeta, importsMode);
   }
 }

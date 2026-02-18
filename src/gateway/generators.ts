@@ -659,15 +659,13 @@ export function createGatewayErrorHandler_${vSlug}_${sSlug}() {
  * @param {string} serviceSlug - Service slug for function naming
  * @param {ClientMeta} clientMeta - Client class metadata
  * @param {"js"|"ts"|"bare"} importsMode - Import-extension mode
- * @param {OperationMetadata[]} operations - Operation metadata for generating the operations interface
  */
 export function emitPluginModule(
   outDir: string,
   versionSlug: string,
   serviceSlug: string,
   clientMeta: ClientMeta,
-  importsMode: "js" | "ts" | "bare",
-  operations: OperationMetadata[]
+  importsMode: "js" | "ts" | "bare"
 ): void {
   const vSlug = slugName(versionSlug);
   const sSlug = slugName(serviceSlug);
@@ -822,6 +820,7 @@ void _assertClientCompatible;
  * @param {OperationMetadata[]} operations - Array of operation metadata
  * @param {"js"|"ts"|"bare"} importsMode - Import-extension mode
  * @param {ClientMeta} clientMeta - Client class metadata
+ * @param {any} [catalog] - Compiled catalog for detecting ArrayOf* wrapper types to unwrap
  */
 export function emitRouteFilesWithHandlers(
   outDir: string,

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { runGenerationPipeline } from "../../src/pipeline.js";
-import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";

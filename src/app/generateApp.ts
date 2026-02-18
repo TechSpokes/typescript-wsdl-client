@@ -26,7 +26,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
 import {info, success} from "../util/cli.js";
-import {computeRelativeImport, getImportExtension} from "../util/imports.js";
+import {computeRelativeImport} from "../util/imports.js";
 
 /**
  * Options for app generation
@@ -104,16 +104,6 @@ function validateRequiredFiles(opts: GenerateAppOptions): void {
   if (!gatewayEntrypointFound) {
     throw new Error(`Gateway plugin entrypoint does not exist in ${opts.gatewayDir} (tried plugin.ts, plugin.js, plugin)`);
   }
-}
-
-/**
- * Returns the file extension for the import mode
- *
- * @param {string} imports - Import mode (js, ts, or bare)
- * @returns {string} - File extension with leading dot or empty string for bare
- */
-function getExtension(imports: string): string {
-  return getImportExtension(imports);
 }
 
 /**

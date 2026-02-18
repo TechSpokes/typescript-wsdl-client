@@ -12,7 +12,7 @@
  * can find fastify, vitest, and other dependencies from node_modules.
  */
 import { describe, it, expect, beforeAll } from "vitest";
-import { mkdtempSync, mkdirSync, readFileSync, statSync, existsSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { runGenerationPipeline } from "../../src/pipeline.js";
