@@ -9,6 +9,22 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs: add Vitest verification step and package-lock.json bump to release workflow in copilot-instructions.md
+
+## [0.11.0] - 2026-02-18
+
+- feat: add Vitest test infrastructure with unit, snapshot, and integration test suites (200 tests)
+- feat(client): extract typed operations interface (`operations.ts`) for mock-friendly dependency injection
+- feat(gateway): generate `unwrapArrayWrappers()` in runtime.ts to bridge flattened OpenAPI array schemas with SOAP wrapper objects
+- feat(cli): add `--openapi-flatten-array-wrappers` flag on openapi, gateway, and pipeline subcommands (default true)
+- feat: add structured `WsdlCompilationError` with element/namespace context and `toUserMessage()` formatting
+- test: add unit tests for casing, primitives, tools, errors, and schema-type alignment
+- test: add snapshot tests capturing full pipeline output as baselines
+- test: add integration tests for gateway routes via Fastify inject with mock SOAP clients
+- test: add integration tests for both `flattenArrayWrappers: true` and `false` modes
+- docs: add testing guide, update CLI reference, concepts, and generated-code documentation
+- docs: align instruction file hierarchy and add `.github/instructions` reference to copilot-instructions.md
+
 ## [0.10.4] - 2026-02-18
 - fix(app): use host option in OpenAPI servers URL rewrite instead of hardcoding localhost
 - feat(cli): add --app-host, --app-port, --app-prefix flags to pipeline command
