@@ -170,6 +170,7 @@ export async function createTestApp(
  * @param operations - Resolved operation metadata
  * @param mocks - Pre-computed mock data map
  */
+// noinspection JSUnusedLocalSymbols
 export function emitRoutesTest(
   testDir: string,
   importsMode: "js" | "ts" | "bare",
@@ -229,6 +230,7 @@ ${testCases}
  * @param operations - Resolved operation metadata (uses first operation for error tests)
  * @param mocks - Pre-computed mock data map
  */
+// noinspection JSUnusedLocalSymbols
 export function emitErrorsTest(
   testDir: string,
   importsMode: "js" | "ts" | "bare",
@@ -368,6 +370,7 @@ describe("gateway routes — error handling", () => {
 /**
  * Emits gateway/envelope.test.ts with SUCCESS/ERROR structure assertions.
  */
+// noinspection JSUnusedLocalSymbols
 export function emitEnvelopeTest(
   testDir: string,
   importsMode: "js" | "ts" | "bare",
@@ -449,6 +452,7 @@ describe("gateway — envelope structure", () => {
 /**
  * Emits gateway/validation.test.ts with invalid payload tests per route.
  */
+// noinspection JSUnusedLocalSymbols
 export function emitValidationTest(
   testDir: string,
   importsMode: "js" | "ts" | "bare",

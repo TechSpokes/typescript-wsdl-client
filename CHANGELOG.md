@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [0.11.6] - 2026-02-18
 
+- chore: suppress unused-parameter IDE warnings in test emitters and replace `as any` casts with typed alternatives in tests
 - fix(test): include XML attribute fields in generated mock payloads via `attrType` catalog metadata
 - fix(test): flatten array-wrapper request payloads to match OpenAPI schema format
 - fix(test): detect enum types and generate valid mock values in `generateMockPrimitive()`

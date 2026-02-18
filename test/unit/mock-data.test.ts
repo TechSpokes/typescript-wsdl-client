@@ -118,7 +118,7 @@ describe("generateMockData", () => {
     };
     const result = generateMockData("Parent", catalog);
     expect(result.Child).toBeDefined();
-    expect(typeof (result.Child as any).Value).toBe("string");
+    expect(typeof (result.Child as Record<string, unknown>).Value).toBe("string");
   });
 
   it("wraps unbounded properties in arrays", () => {
@@ -156,7 +156,7 @@ describe("generateMockData", () => {
     };
     const result = generateMockData("Container", catalog);
     expect(Array.isArray(result.Items)).toBe(true);
-    const items = result.Items as any[];
+    const items = result.Items as Record<string, unknown>[];
     expect(items.length).toBe(1);
     expect(typeof items[0].Id).toBe("number");
     expect(typeof items[0].Name).toBe("string");
@@ -175,7 +175,7 @@ describe("generateMockData", () => {
     const result = generateMockData("TypeA", catalog);
     expect(result.Ref).toBeDefined();
     // TypeB.Back -> TypeA is a cycle, so it returns {}
-    expect((result.Ref as any).Back).toEqual({});
+    expect((result.Ref as Record<string, unknown>).Back).toEqual({});
   });
 
   it("respects maxDepth option", () => {
@@ -193,7 +193,7 @@ describe("generateMockData", () => {
     const result = generateMockData("L0", catalog, { maxDepth: 2 });
     // Depth 0: L0, Depth 1: L1, Depth 2 is maxDepth so L2 -> {}
     expect(result.Next).toBeDefined();
-    expect((result.Next as any).Next).toEqual({});
+    expect((result.Next as Record<string, unknown>).Next).toEqual({});
   });
 
   it("returns empty object when catalog has no meta", () => {

@@ -152,7 +152,7 @@ function loadSchemas(dir: string): Map<string, JSONSchemaInfo> {
 /**
  * Parse types from catalog.json.
  */
-function parseCatalog(catalog: any): Map<string, CatalogType> {
+function parseCatalog(catalog: { types?: Array<{ name: string; elems?: unknown[] }> }): Map<string, CatalogType> {
   const types = new Map<string, CatalogType>();
   for (const t of catalog.types || []) {
     types.set(t.name, {

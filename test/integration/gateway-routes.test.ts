@@ -609,7 +609,7 @@ describe("gateway runtime — unwrapArrayWrappers", () => {
       Success: true,
       ForecastResult: { Forecast: [{ Temperature: "72" }] },
     };
-    const result = unwrapArrayWrappers(data, "ForecastReturn") as any;
+    const result = unwrapArrayWrappers(data, "ForecastReturn") as Record<string, unknown>;
     expect(result.Success).toBe(true);
     expect(result.ForecastResult).toEqual([{ Temperature: "72" }]);
   });
