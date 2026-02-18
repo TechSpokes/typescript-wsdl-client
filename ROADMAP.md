@@ -2,9 +2,23 @@
 
 Simple roadmap for the TypeScript WSDL → SOAP client generator.
 
-## Current: 0.10.x Series
+## Current: 0.11.x Series
 
-**What we have now:**
+**Focus: Stability and Testing**
+
+Detailed plans: `scratches/plans/v011/`
+
+**What's new in 0.11.0:**
+- **Vitest test infrastructure** — ESM-native test runner with unit, snapshot, and integration test suites (200 tests, < 3s)
+- **Snapshot testing** — full pipeline output captured as baselines, catches unintended generation changes
+- **Client interface extraction** — typed `operations.ts` with concrete input/output types, enables mocking without SOAP dependencies
+- **Integration tests** — gateway route handlers tested end-to-end via Fastify `.inject()` with mock SOAP clients
+- **Schema-type alignment** — cross-validates TypeScript types, JSON schemas, and catalog entries
+- **Error messages** — structured `WsdlCompilationError` with element/namespace context and `toUserMessage()` formatting
+- **ArrayOf\* runtime unwrap** — `--openapi-flatten-array-wrappers` flag (default `true`): generates `unwrapArrayWrappers()` in runtime.ts to bridge the schema-type gap between flattened OpenAPI arrays and SOAP wrapper objects. Pass `false` to emit ArrayOf\* as `type: "object"` matching TypeScript types exactly.
+- **Documentation** — testing guide, CLI reference updates, concepts documentation for array wrapper flattening
+
+**What we have from 0.10.x:**
 - Core WSDL/XSD parsing with proper TypeScript types
 - CLI tool (`wsdl-tsc`) with six commands: `compile`, `client`, `openapi`, `gateway`, `app`, `pipeline`
 - Programmatic API for all generation tasks
@@ -14,35 +28,12 @@ Simple roadmap for the TypeScript WSDL → SOAP client generator.
 - Choice element handling strategies
 - WS-Policy security hints in generated code
 - OpenAPI 3.1 generation with standard response envelopes
-- **Full Fastify gateway generation with working handlers** (0.9.0)
-  - Automatic SOAP client integration via Fastify decorators
-  - Centralized error handling with HTTP status mapping
-  - Fastify plugin pattern for easy integration
-  - Response envelope wrapping (SUCCESS/ERROR)
-- **Runnable Fastify app generator** (0.9.2)
-  - One-command full application with client, gateway, and server
-- **End-to-end type safety** from WSDL to HTTP response (0.10.0):
-  - Concrete client class type in plugin options and decorator
-  - Typed `request.body` via Fastify route generics (`Body: T`)
-  - Build-time type-check fixture (`_typecheck.ts`)
-  - Named operations interface for mocking and autocomplete
-- **TypeScript app scaffold with overwrite protection** (0.10.3)
-  - Full TypeScript scaffold (server.ts, config.ts, package.json, tsconfig.json)
-  - App scaffold rewrites OpenAPI servers array to match configured localhost port
+- Full Fastify gateway generation with working handlers (0.9.0)
+- End-to-end type safety from WSDL to HTTP response (0.10.0)
+- TypeScript app scaffold with overwrite protection (0.10.3)
 
 **Still working on:**
-- Better error messages when WSDL parsing fails
 - Edge cases in complex schema compositions
-
-## Next: 0.11.x Series
-
-**Focus: Stability and Testing**
-
-- Snapshot testing for generated code
-- Integration tests for gateway handlers
-- Generic client interface extraction (enables mocking without SOAP dependencies)
-- Schema-type alignment verification (JSON Schema vs TypeScript types)
-- Documentation improvements
 
 ## Future: 1.0.x Series
 
@@ -51,7 +42,7 @@ Simple roadmap for the TypeScript WSDL → SOAP client generator.
 Ideas we're considering:
 - Configuration files for complex setups
 - Watch mode for development
-- Testing utilities and mock generation
+- Testing utilities and mock generation for consumers
 - More WSDL edge case support
 - Custom handler hooks/middleware
 - Typed response envelopes (`Reply: T` generics in route handlers)

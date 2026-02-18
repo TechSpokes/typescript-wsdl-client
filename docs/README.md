@@ -13,6 +13,7 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 - [generated-code.md](generated-code.md) – Using clients and types
 - [migration.md](migration.md) – Upgrade paths between versions
 - [production.md](production.md) – CI/CD, validation, logging, limitations
+- [testing.md](testing.md) – Testing patterns and mock client examples
 - [troubleshooting.md](troubleshooting.md) – Common issues and debugging
 
 ## Conventions

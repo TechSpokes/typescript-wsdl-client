@@ -13,6 +13,7 @@ import {compileCatalog} from "./compiler/schemaCompiler.js";
 import {generateClient} from "./client/generateClient.js";
 import {generateTypes} from "./client/generateTypes.js";
 import {generateUtils} from "./client/generateUtils.js";
+import {generateOperations} from "./client/generateOperations.js";
 import {generateCatalog} from "./compiler/generateCatalog.js";
 import {generateOpenAPI, type GenerateOpenAPIOptions} from "./openapi/generateOpenAPI.js";
 import {generateGateway, type GenerateGatewayOptions} from "./gateway/generateGateway.js";
@@ -117,7 +118,8 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
       compiled,
       generateClient,
       generateTypes,
-      generateUtils
+      generateUtils,
+      generateOperations
     );
   }
 
@@ -161,6 +163,10 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
       clientDir: opts.clientOutDir ? path.resolve(opts.clientOutDir) : undefined,
       // Reuse the same imports mode as the TypeScript client/types/utils emitters
       imports: finalCompiler.imports,
+      // Pass catalog for runtime unwrap generation
+      catalogFile: path.resolve(opts.catalogOut),
+      // Thread flatten flag from OpenAPI options
+      flattenArrayWrappers: opts.openapi?.flattenArrayWrappers,
     });
 
     success(`Gateway code generated in ${gatewayOutDir}`);

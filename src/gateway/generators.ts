@@ -381,13 +381,93 @@ export function emitRouteFiles(
  * @param {string} versionSlug - Version slug for function naming
  * @param {string} serviceSlug - Service slug for function naming
  */
+/**
+ * Detects ArrayOf* wrapper types from catalog type metadata.
+ *
+ * An ArrayOf* wrapper has exactly one element with max "unbounded" (or > 1)
+ * and no attributes — mirroring the logic in generateSchemas.ts isArrayWrapper().
+ *
+ * @param catalog - Compiled catalog object
+ * @returns Record mapping wrapper type name to inner element property name
+ */
+function detectArrayWrappers(catalog: any): Record<string, string> {
+  const wrappers: Record<string, string> = {};
+  for (const t of catalog.types || []) {
+    if (t.attrs && t.attrs.length !== 0) continue;
+    if (!t.elems || t.elems.length !== 1) continue;
+    const e = t.elems[0];
+    if (e.max !== "unbounded" && !(e.max > 1)) continue;
+    wrappers[t.name] = e.name;
+  }
+  return wrappers;
+}
+
 export function emitRuntimeModule(
   outDir: string,
   versionSlug: string,
-  serviceSlug: string
+  serviceSlug: string,
+  catalog?: any
 ): void {
   const vSlug = slugName(versionSlug);
   const sSlug = slugName(serviceSlug);
+
+  // Build unwrap maps from catalog if provided
+  let unwrapSection = "";
+  if (catalog) {
+    const arrayWrappers = detectArrayWrappers(catalog);
+    const childTypes: Record<string, Record<string, string>> = catalog.meta?.childType || {};
+
+    // Only emit if there are actual wrapper types to unwrap
+    if (Object.keys(arrayWrappers).length > 0) {
+      unwrapSection = `
+/**
+ * ArrayOf* wrapper type → inner element property name.
+ * These types are flattened to plain arrays in the OpenAPI schema,
+ * so the runtime must unwrap { InnerElement: [...] } → [...].
+ */
+const ARRAY_WRAPPERS: Record<string, string> = ${JSON.stringify(arrayWrappers, null, 2)};
+
+/**
+ * Type name → { propertyName: propertyTypeName } for recursive unwrapping.
+ */
+const CHILDREN_TYPES: Record<string, Record<string, string>> = ${JSON.stringify(childTypes, null, 2)};
+
+/**
+ * Recursively unwraps ArrayOf* wrapper objects in a SOAP response so the
+ * data matches the flattened OpenAPI array schemas.
+ *
+ * Safe to call on any response — returns data unchanged when the type
+ * has no wrapper fields.
+ *
+ * @param data - SOAP response data (potentially with wrapper objects)
+ * @param typeName - The type name for the current data level
+ * @returns Unwrapped data matching the OpenAPI schema shape
+ */
+export function unwrapArrayWrappers(data: unknown, typeName: string): unknown {
+  if (data == null || typeof data !== "object") return data;
+
+  // If this type is itself a wrapper, unwrap it
+  if (typeName in ARRAY_WRAPPERS) {
+    const innerKey = ARRAY_WRAPPERS[typeName];
+    return (data as Record<string, unknown>)[innerKey] ?? [];
+  }
+
+  // Recurse into children whose types may contain wrappers
+  if (typeName in CHILDREN_TYPES) {
+    const children = CHILDREN_TYPES[typeName];
+    for (const [propName, propType] of Object.entries(children)) {
+      const val = (data as Record<string, unknown>)[propName];
+      if (val !== undefined) {
+        (data as Record<string, unknown>)[propName] = unwrapArrayWrappers(val, propType);
+      }
+    }
+  }
+
+  return data;
+}
+`;
+    }
+  }
 
   const runtimeTs = `/**
  * Gateway Runtime Utilities
@@ -562,7 +642,7 @@ export function createGatewayErrorHandler_${vSlug}_${sSlug}() {
 }
 `;
 
-  fs.writeFileSync(path.join(outDir, "runtime.ts"), runtimeTs, "utf8");
+  fs.writeFileSync(path.join(outDir, "runtime.ts"), runtimeTs + unwrapSection, "utf8");
 }
 
 /**
@@ -593,12 +673,6 @@ export function emitPluginModule(
   const sSlug = slugName(serviceSlug);
   const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
 
-  // Build named operations interface methods from operation metadata
-  const operationMethods = operations
-    .filter(op => op.clientMethodName)
-    .map(op => `  ${op.clientMethodName}(args: unknown): Promise<{ response: unknown; headers: unknown }>;`)
-    .join("\n");
-
   const pluginTs = `/**
  * ${clientMeta.className} Gateway Plugin
  *
@@ -608,9 +682,13 @@ export function emitPluginModule(
 import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import type { ${clientMeta.className} } from "${clientMeta.pluginImportPath}";
+import type { ${clientMeta.className}Operations } from "${clientMeta.operationsImportPath}";
 import { registerSchemas_${vSlug}_${sSlug} } from "./schemas${suffix}";
 import { registerRoutes_${vSlug}_${sSlug} } from "./routes${suffix}";
 import { createGatewayErrorHandler_${vSlug}_${sSlug} } from "./runtime${suffix}";
+
+// Re-export the operations interface for convenience
+export type { ${clientMeta.className}Operations };
 
 /**
  * Options for the ${clientMeta.className} gateway plugin
@@ -619,8 +697,9 @@ export interface ${clientMeta.className}GatewayOptions extends FastifyPluginOpti
   /**
    * SOAP client instance (pre-configured).
    * The client should be instantiated with appropriate source and security settings.
+   * Accepts the concrete client class or any implementation of ${clientMeta.className}Operations.
    */
-  client: ${clientMeta.className};
+  client: ${clientMeta.className}Operations;
   /**
    * Optional additional route prefix applied at runtime.
    * Note: If you used --openapi-base-path during generation, routes already have that prefix baked in.
@@ -629,21 +708,9 @@ export interface ${clientMeta.className}GatewayOptions extends FastifyPluginOpti
   prefix?: string;
 }
 
-/**
- * Convenience type listing all SOAP operations with \`args: unknown\` signatures.
- *
- * This interface is NOT used for the decorator type (which uses the concrete
- * client class for full type safety). It is exported as a lightweight alternative
- * for mocking or testing scenarios where importing the full client class is
- * undesirable.
- */
-export interface ${clientMeta.className}Operations {
-${operationMethods}
-}
-
 declare module "fastify" {
   interface FastifyInstance {
-    ${clientMeta.decoratorName}: ${clientMeta.className};
+    ${clientMeta.decoratorName}: ${clientMeta.className}Operations;
   }
 }
 
@@ -714,11 +781,19 @@ export function emitTypeCheckFixture(
  * Auto-generated. Not intended for runtime use.
  */
 import type { ${clientMeta.className} } from "${clientMeta.pluginImportPath}";
+import type { ${clientMeta.className}Operations } from "${clientMeta.operationsImportPath}";
 import type { ${clientMeta.className}GatewayOptions } from "./plugin${suffix}";
 
-// This function verifies structural compatibility at the type level.
-// If the plugin options interface diverges from the client class, this
-// will produce a compile error with a clear message.
+// Verify the concrete client class satisfies the operations interface.
+// If the client class diverges from the operations interface, this
+// will produce a compile error.
+function _assertClientSatisfiesOps(client: ${clientMeta.className}): ${clientMeta.className}Operations {
+  return client;
+}
+void _assertClientSatisfiesOps;
+
+// Verify the concrete client class is accepted by plugin options.
+// This ensures the gateway plugin can be used with the generated client.
 function _assertClientCompatible(client: ${clientMeta.className}): void {
   const _opts: ${clientMeta.className}GatewayOptions = { client };
   void _opts;
@@ -755,7 +830,8 @@ export function emitRouteFilesWithHandlers(
   serviceSlug: string,
   operations: OperationMetadata[],
   importsMode: "js" | "ts" | "bare",
-  clientMeta: ClientMeta
+  clientMeta: ClientMeta,
+  catalog?: any
 ): void {
   fs.mkdirSync(routesDir, {recursive: true});
 
@@ -765,6 +841,9 @@ export function emitRouteFilesWithHandlers(
   const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
   const vSlug = slugName(versionSlug);
   const sSlug = slugName(serviceSlug);
+
+  // Detect if unwrap code should be emitted
+  const hasUnwrap = catalog ? Object.keys(detectArrayWrappers(catalog)).length > 0 : false;
 
   let routesTs = `import type { FastifyInstance } from "fastify";\n`;
 
@@ -794,6 +873,14 @@ export function emitRouteFilesWithHandlers(
       ? `request.body as ${reqTypeName}`
       : "request.body";
 
+    // Build the runtime import and return expression based on unwrap availability
+    const runtimeImport = hasUnwrap
+      ? `import { buildSuccessEnvelope, unwrapArrayWrappers } from "../runtime${suffix}";`
+      : `import { buildSuccessEnvelope } from "../runtime${suffix}";`;
+    const returnExpr = hasUnwrap
+      ? `return buildSuccessEnvelope(unwrapArrayWrappers(result.response, "${resTypeName}"));`
+      : `return buildSuccessEnvelope(result.response);`;
+
     // Note: op.path comes from OpenAPI and already includes any base path
     let routeTs = `/**
  * Route: ${op.method.toUpperCase()} ${op.path}
@@ -804,7 +891,7 @@ export function emitRouteFilesWithHandlers(
  */
 import type { FastifyInstance } from "fastify";
 ${typeImport}import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };
-import { buildSuccessEnvelope } from "../runtime${suffix}";
+${runtimeImport}
 
 export async function ${fnName}(fastify: FastifyInstance) {
   fastify.route${routeGeneric}({
@@ -814,7 +901,7 @@ export async function ${fnName}(fastify: FastifyInstance) {
     handler: async (request) => {
       const client = fastify.${clientMeta.decoratorName};
       const result = await client.${clientMethod}(${bodyArg});
-      return buildSuccessEnvelope(result.response);
+      ${returnExpr}
     },
   });
 }

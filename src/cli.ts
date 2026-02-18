@@ -21,6 +21,7 @@ import {generateTypes} from "./client/generateTypes.js";
 import {generateUtils} from "./client/generateUtils.js";
 import {generateCatalog} from "./compiler/generateCatalog.js";
 import {generateClient} from "./client/generateClient.js";
+import {generateOperations} from "./client/generateOperations.js";
 import {generateOpenAPI} from "./openapi/generateOpenAPI.js";
 import {runGenerationPipeline} from "./pipeline.js";
 import {resolveCompilerOptions} from "./config.js";
@@ -226,7 +227,7 @@ if (rawArgs[0] === "client") {
   }
 
   // Emit client artifacts (excluding catalog since we already emitted it above if needed)
-  emitClientArtifacts(clientOutDir, compiled, generateClient, generateTypes, generateUtils);
+  emitClientArtifacts(clientOutDir, compiled, generateClient, generateTypes, generateUtils, generateOperations);
   process.exit(0);
 }
 
@@ -281,6 +282,11 @@ if (rawArgs[0] === "openapi") {
       type: "boolean",
       default: false,
       desc: "Emit additionalProperties:false for object schemas"
+    })
+    .option("openapi-flatten-array-wrappers", {
+      type: "boolean",
+      default: true,
+      desc: "Flatten ArrayOf* wrapper types to plain arrays in schemas (default: true)"
     })
     .option("openapi-prune-unused-schemas", {
       type: "boolean",
@@ -411,6 +417,11 @@ if (rawArgs[0] === "gateway") {
       default: false,
       desc: "Skip generating runtime.ts utilities"
     })
+    .option("openapi-flatten-array-wrappers", {
+      type: "boolean",
+      default: true,
+      desc: "Generate runtime unwrap for ArrayOf* wrapper types (default: true)"
+    })
     .strict()
     .help()
     .parse();
@@ -446,6 +457,7 @@ if (rawArgs[0] === "gateway") {
     // Only override defaults if explicitly skipping (otherwise let generateGateway decide based on stubHandlers)
     emitPlugin: gatewayArgv["gateway-skip-plugin"] ? false : undefined,
     emitRuntime: gatewayArgv["gateway-skip-runtime"] ? false : undefined,
+    flattenArrayWrappers: gatewayArgv["openapi-flatten-array-wrappers"] as boolean | undefined,
   });
 
   success(`Gateway code generated in ${outDir}`);
@@ -635,6 +647,11 @@ if (rawArgs[0] === "pipeline") {
     .option("openapi-tags-file", {type: "string"})
     .option("openapi-ops-file", {type: "string"})
     .option("openapi-closed-schemas", {type: "boolean", default: false})
+    .option("openapi-flatten-array-wrappers", {
+      type: "boolean",
+      default: true,
+      desc: "Flatten ArrayOf* wrapper types to plain arrays in schemas (default: true)"
+    })
     .option("openapi-prune-unused-schemas", {type: "boolean", default: false})
     .option("openapi-envelope-namespace", {type: "string"})
     .option("openapi-error-namespace", {type: "string"})

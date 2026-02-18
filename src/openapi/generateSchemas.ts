@@ -25,6 +25,7 @@ import type {CompiledAlias, CompiledCatalog, CompiledType} from "../compiler/sch
 export interface GenerateSchemasOptions {
   closedSchemas?: boolean;
   pruneUnusedSchemas?: boolean;
+  flattenArrayWrappers?: boolean;
 }
 
 export type ComponentsSchemas = Record<string, any>;
@@ -78,7 +79,7 @@ function isArrayWrapper(t: CompiledType): { itemType: string } | null {
   return {itemType: e.tsType};
 }
 
-function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Set<string>, aliasNames: Set<string>): any {
+function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Set<string>, aliasNames: Set<string>, flattenWrappers: boolean): any {
   // Use knownTypeNames/aliasNames to validate $ref targets so we surface
   // compiler issues early instead of emitting dangling references in OpenAPI output.
   function refOrPrimitive(ts: string): any {
@@ -109,7 +110,7 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
     }
   }
 
-  const arrayWrap = isArrayWrapper(t);
+  const arrayWrap = flattenWrappers ? isArrayWrapper(t) : null;
   if (arrayWrap) {
     const item = refOrPrimitive(String(arrayWrap.itemType));
     return {type: "array", items: item};
@@ -179,6 +180,7 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
  */
 export function generateSchemas(compiled: CompiledCatalog, opts: GenerateSchemasOptions): ComponentsSchemas {
   const closed = !!opts.closedSchemas;
+  const flattenWrappers = opts.flattenArrayWrappers !== false; // default true
   const schemas: ComponentsSchemas = {};
   const typeNames = new Set(compiled.types.map(t => t.name));
   const aliasNames = new Set(compiled.aliases.map(a => a.name));
@@ -188,7 +190,7 @@ export function generateSchemas(compiled: CompiledCatalog, opts: GenerateSchemas
     schemas[a.name] = buildAliasSchema(a);
   }
   for (const t of compiled.types) {
-    schemas[t.name] = buildComplexSchema(t, closed, typeNames, aliasNames);
+    schemas[t.name] = buildComplexSchema(t, closed, typeNames, aliasNames, flattenWrappers);
   }
 
   if (opts.pruneUnusedSchemas) {

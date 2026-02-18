@@ -34,7 +34,13 @@ Source is in `src/` with these modules: `loader/`, `compiler/`, `client/`, `open
 
 ### Testing
 
-Smoke tests generate output to `tmp/` from `examples/minimal/weather.wsdl`, then typecheck with `tsconfig.smoke.json`. Run `npm run smoke:pipeline` for the full test. Run `npm run ci` for the complete CI pipeline including build and typecheck.
+The project uses Vitest for unit, snapshot, and integration tests. Run `npm test` for all Vitest tests. Run `npm run smoke:pipeline` for the full CLI smoke test. Run `npm run ci` for the complete CI pipeline including build, typecheck, Vitest, and smoke tests.
+
+Key test commands: `test:unit`, `test:snap`, `test:integration`, `test:watch`.
+
+Integration tests use a mock client implementing the `{Service}Operations` interface from `operations.ts`. The mock pattern uses Fastify's `inject()` to test routes without a running server. See `test/integration/gateway-routes.test.ts` for the reference implementation.
+
+When modifying generators, run snapshot tests and update baselines with `npx vitest run test/snapshot -u`. Review the diff before committing.
 
 ### Key Conventions
 

@@ -412,9 +412,10 @@ export function buildParamSchemasForOperation(
  * @interface ClientMeta
  * @property {string} className - Client class name (e.g., "EVRNService")
  * @property {string} decoratorName - Fastify decorator name (e.g., "evrnserviceClient")
- * @property {string} importPath - Import path relative to routes/ directory — for future typed route handlers
- * @property {string} typesImportPath - Types import path relative to routes/ directory — for future typed route handlers
+ * @property {string} importPath - Import path relative to routes/ directory — for typed route handlers
+ * @property {string} typesImportPath - Types import path relative to routes/ directory — for typed route handlers
  * @property {string} pluginImportPath - Import path relative to gateway output directory — used by emitPluginModule()
+ * @property {string} operationsImportPath - Operations interface import path relative to gateway output directory
  */
 export interface ClientMeta {
   className: string;
@@ -422,6 +423,7 @@ export interface ClientMeta {
   importPath: string;
   typesImportPath: string;
   pluginImportPath: string;
+  operationsImportPath: string;
 }
 
 /**
@@ -517,6 +519,9 @@ export function resolveClientMeta(opts: ResolveClientMetaOptions, catalog?: any)
   const pluginImportPath = opts.clientDir
     ? `../client/client${suffix}`
     : `./client/client${suffix}`;
+  const operationsImportPath = opts.clientDir
+    ? `../client/operations${suffix}`
+    : `./client/operations${suffix}`;
 
   return {
     className,
@@ -524,6 +529,7 @@ export function resolveClientMeta(opts: ResolveClientMetaOptions, catalog?: any)
     importPath,
     typesImportPath,
     pluginImportPath,
+    operationsImportPath,
   };
 }
 

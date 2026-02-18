@@ -61,6 +61,7 @@ export function buildOpenApiOptionsFromArgv(
     tagsFile: argv["openapi-tags-file"] as string | undefined,
     title: argv["openapi-title"] as string | undefined,
     version: argv["openapi-version-tag"] as string | undefined,
+    flattenArrayWrappers: argv["openapi-flatten-array-wrappers"] as boolean | undefined,
     asYaml: format === "yaml",
   };
 }

@@ -13,6 +13,7 @@ import type {CompilerOptions} from "../config.js";
 import type {WsdlCatalog} from "../loader/wsdlLoader.js";
 import {getChildrenWithLocalName, getFirstWithLocalName, normalizeArray, pascal, resolveQName,} from "../util/tools.js";
 import {xsdToTsPrimitive} from "../xsd/primitives.js";
+import {WsdlCompilationError} from "../util/errors.js";
 
 /**
  * Qualified name with namespace and local part
@@ -345,7 +346,17 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       const t = getOrCompileComplex(q.local, crec.node, crec.tns, crec.prefixes);
       return {tsType: t.name, declared: `{${t.ns}}${q.local}`};
     }
-    // fallback
+    // Unresolved type reference
+    if (options.failOnUnresolved) {
+      throw new WsdlCompilationError(
+        `Unresolved type reference: "${q.local}" in namespace "${q.ns}".`,
+        {
+          element: q.local,
+          namespace: q.ns,
+          suggestion: "Check that the XSD import for this namespace is included in the WSDL, or use --no-fail-on-unresolved to emit 'any'.",
+        }
+      );
+    }
     return {tsType: "any", declared: `{${q.ns}}${q.local}`};
   }
 
@@ -735,6 +746,15 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
   const tns = defs?.["@_targetNamespace"] || "";
   const bindingDefs = normalizeArray(defs?.["wsdl:binding"] || defs?.["binding"]);
   const soapBinding = bindingDefs.find(b => Object.keys(b).some(k => k === "soap:binding" || k === "soap12:binding")) || bindingDefs[0];
+  if (!soapBinding) {
+    throw new WsdlCompilationError(
+      "No SOAP binding found in the WSDL document.",
+      {
+        file: cat.wsdlUri,
+        suggestion: "Ensure the WSDL defines a <wsdl:binding> element with a <soap:binding> or <soap12:binding> child.",
+      }
+    );
+  }
   // binding @type typically looks like "tns:MyPortType", so resolve via prefixes map
   const portTypeAttr = soapBinding?.["@_type"] as string | undefined;
   const portTypeQName = portTypeAttr ? resolveQName(portTypeAttr, tns, cat.prefixMap) : undefined;

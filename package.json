@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.10.4",
+  "version": "0.11.0",
   "description": "Generate type-safe TypeScript SOAP clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways from WSDL/XSD definitions.",
   "keywords": [
     "wsdl",
@@ -58,7 +58,11 @@
     "clean:tmp": "rimraf tmp",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "test": "npm run typecheck && npm run smoke:pipeline",
+    "test": "vitest run",
+    "test:unit": "vitest run test/unit",
+    "test:snap": "vitest run test/snapshot",
+    "test:integration": "vitest run test/integration",
+    "test:watch": "vitest",
     "prepublishOnly": "npm run clean && npm run build",
     "smoke:reset": "npm run clean:tmp",
     "smoke:compile": "npm run smoke:reset && tsx src/cli.ts compile --wsdl-source examples/minimal/weather.wsdl --catalog-file tmp/catalog.json",
@@ -67,7 +71,7 @@
     "smoke:gateway": "npm run smoke:reset && tsx src/cli.ts client --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client && tsx src/cli.ts openapi --catalog-file tmp/client/catalog.json --openapi-file tmp/openapi.json --openapi-format json && tsx src/cli.ts gateway --openapi-file tmp/openapi.json --client-dir tmp/client --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 && tsc -p tsconfig.smoke.json",
     "smoke:pipeline": "npm run smoke:reset && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --openapi-file tmp/openapi.json --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --init-app && tsc -p tsconfig.smoke.json",
     "smoke:app": "npm run smoke:reset && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --openapi-file tmp/openapi.json --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --openapi-servers https://example.com/api && tsx src/cli.ts app --client-dir tmp/client --gateway-dir tmp/gateway --openapi-file tmp/openapi.json --app-dir tmp/app --port 8080 && tsc -p tsconfig.smoke.json",
-    "ci": "npm run clean && npm run build && npm run typecheck && npm run smoke:pipeline",
+    "ci": "npm run clean && npm run build && npm run typecheck && vitest run && npm run smoke:pipeline",
     "examples:regenerate": "tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir examples/generated-output/client --openapi-file examples/generated-output/openapi.json --gateway-dir examples/generated-output/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json"
   },
   "devDependencies": {
@@ -78,7 +82,8 @@
     "fastify-plugin": "^5.1.0",
     "rimraf": "^6.1.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",

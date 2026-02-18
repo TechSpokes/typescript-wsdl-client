@@ -7,6 +7,7 @@
  */
 import path from "node:path";
 import fs from "node:fs";
+import {WsdlCompilationError} from "./errors.js";
 
 
 /**
@@ -104,8 +105,12 @@ export function info(message: string): void {
  * @param exitCode - Process exit code (default: 1)
  */
 export function handleCLIError(errorObj: unknown, exitCode: number = 1): never {
-  const message = errorObj instanceof Error ? errorObj.message : String(errorObj);
-  error(message);
+  if (errorObj instanceof WsdlCompilationError) {
+    error(errorObj.toUserMessage());
+  } else {
+    const message = errorObj instanceof Error ? errorObj.message : String(errorObj);
+    error(message);
+  }
   process.exit(exitCode);
 }
 
@@ -145,7 +150,7 @@ export function reportCompilationStats(
 }
 
 /**
- * Emit TypeScript client artifacts (client.ts, types.ts, utils.ts)
+ * Emit TypeScript client artifacts (client.ts, types.ts, utils.ts, operations.ts)
  *
  * Note: catalog.json is NOT emitted by this function - it should be handled
  * separately by the caller using generateCatalog() with explicit --catalog-file path.
@@ -155,20 +160,24 @@ export function reportCompilationStats(
  * @param generateClient - Client generator function
  * @param generateTypes - Types generator function
  * @param generateUtils - Utils generator function
+ * @param generateOperations - Operations interface generator function
  */
 export function emitClientArtifacts(
   outDir: string,
   compiled: any,
   generateClient: (path: string, compiled: any) => void,
   generateTypes: (path: string, compiled: any) => void,
-  generateUtils: (path: string, compiled: any) => void
+  generateUtils: (path: string, compiled: any) => void,
+  generateOperations?: (path: string, compiled: any) => void
 ): void {
   fs.mkdirSync(outDir, {recursive: true});
 
   generateClient(path.join(outDir, "client.ts"), compiled);
   generateTypes(path.join(outDir, "types.ts"), compiled);
   generateUtils(path.join(outDir, "utils.ts"), compiled);
-
+  if (generateOperations) {
+    generateOperations(path.join(outDir, "operations.ts"), compiled);
+  }
 
   success(`Generated TypeScript client in ${outDir}`);
 }

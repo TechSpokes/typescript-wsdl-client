@@ -1,0 +1,3207 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`pipeline snapshot > client/catalog.json 1`] = `
+{
+  "aliases": [],
+  "meta": {
+    "attrSpec": {
+      "ArrayOfForecast": [],
+      "ArrayOfWeatherDescription": [],
+      "Forecast": [],
+      "ForecastReturn": [],
+      "GetCityForecastByZIP": [],
+      "GetCityForecastByZIPResponse": [],
+      "GetCityWeatherByZIP": [],
+      "GetCityWeatherByZIPResponse": [],
+      "GetWeatherInformation": [],
+      "GetWeatherInformationResponse": [],
+      "POP": [],
+      "Temp": [],
+      "WeatherDescription": [],
+      "WeatherReturn": [],
+    },
+    "childType": {
+      "ArrayOfForecast": {
+        "Forecast": "Forecast",
+      },
+      "ArrayOfWeatherDescription": {
+        "WeatherDescription": "WeatherDescription",
+      },
+      "Forecast": {
+        "Date": "string",
+        "Desciption": "string",
+        "ProbabilityOfPrecipiation": "POP",
+        "Temperatures": "Temp",
+        "WeatherID": "number",
+      },
+      "ForecastReturn": {
+        "City": "string",
+        "ForecastResult": "ArrayOfForecast",
+        "ResponseText": "string",
+        "State": "string",
+        "Success": "boolean",
+        "WeatherStationCity": "string",
+      },
+      "GetCityForecastByZIP": {
+        "ZIP": "string",
+      },
+      "GetCityForecastByZIPResponse": {
+        "GetCityForecastByZIPResult": "ForecastReturn",
+      },
+      "GetCityWeatherByZIP": {
+        "ZIP": "string",
+      },
+      "GetCityWeatherByZIPResponse": {
+        "GetCityWeatherByZIPResult": "WeatherReturn",
+      },
+      "GetWeatherInformation": {},
+      "GetWeatherInformationResponse": {
+        "GetWeatherInformationResult": "ArrayOfWeatherDescription",
+      },
+      "POP": {
+        "Daytime": "string",
+        "Nighttime": "string",
+      },
+      "Temp": {
+        "DaytimeHigh": "string",
+        "MorningLow": "string",
+      },
+      "WeatherDescription": {
+        "Description": "string",
+        "PictureURL": "string",
+        "WeatherID": "number",
+      },
+      "WeatherReturn": {
+        "City": "string",
+        "Description": "string",
+        "Pressure": "string",
+        "RelativeHumidity": "string",
+        "Remarks": "string",
+        "ResponseText": "string",
+        "State": "string",
+        "Success": "boolean",
+        "Temperature": "string",
+        "Visibility": "string",
+        "WeatherID": "number",
+        "WeatherStationCity": "string",
+        "Wind": "string",
+        "WindChill": "string",
+      },
+    },
+    "propMeta": {
+      "ArrayOfForecast": {
+        "Forecast": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}Forecast",
+          "max": "unbounded",
+          "min": 0,
+          "nillable": true,
+        },
+      },
+      "ArrayOfWeatherDescription": {
+        "WeatherDescription": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}WeatherDescription",
+          "max": "unbounded",
+          "min": 0,
+          "nillable": false,
+        },
+      },
+      "Forecast": {
+        "Date": {
+          "declaredType": "xs:dateTime",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+        "Desciption": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "ProbabilityOfPrecipiation": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}POP",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+        "Temperatures": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}temp",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+        "WeatherID": {
+          "declaredType": "xs:short",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+      },
+      "ForecastReturn": {
+        "City": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "ForecastResult": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ArrayOfForecast",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "ResponseText": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "State": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "Success": {
+          "declaredType": "xs:boolean",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+        "WeatherStationCity": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+      },
+      "GetCityForecastByZIP": {
+        "ZIP": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+      },
+      "GetCityForecastByZIPResponse": {
+        "GetCityForecastByZIPResult": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ForecastReturn",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+      },
+      "GetCityWeatherByZIP": {
+        "ZIP": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+      },
+      "GetCityWeatherByZIPResponse": {
+        "GetCityWeatherByZIPResult": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}WeatherReturn",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+      },
+      "GetWeatherInformation": {},
+      "GetWeatherInformationResponse": {
+        "GetWeatherInformationResult": {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ArrayOfWeatherDescription",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+      },
+      "POP": {
+        "Daytime": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "Nighttime": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+      },
+      "Temp": {
+        "DaytimeHigh": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "MorningLow": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+      },
+      "WeatherDescription": {
+        "Description": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "PictureURL": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "WeatherID": {
+          "declaredType": "xs:short",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+      },
+      "WeatherReturn": {
+        "City": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "Description": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "Pressure": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "RelativeHumidity": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "Remarks": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "ResponseText": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "State": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "Success": {
+          "declaredType": "xs:boolean",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+        "Temperature": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "Visibility": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "WeatherID": {
+          "declaredType": "xs:short",
+          "max": 1,
+          "min": 1,
+          "nillable": false,
+        },
+        "WeatherStationCity": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "Wind": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+        "WindChill": {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "nillable": false,
+        },
+      },
+    },
+  },
+  "operations": [
+    {
+      "inputElement": {
+        "local": "GetWeatherInformation",
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+      },
+      "inputTypeName": "GetWeatherInformation",
+      "name": "GetWeatherInformation",
+      "outputElement": {
+        "local": "GetWeatherInformationResponse",
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+      },
+      "outputTypeName": "GetWeatherInformationResponse",
+      "security": [],
+      "soapAction": "http://ws.cdyne.com/WeatherWS/GetWeatherInformation",
+    },
+    {
+      "inputElement": {
+        "local": "GetCityForecastByZIP",
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+      },
+      "inputTypeName": "GetCityForecastByZIP",
+      "name": "GetCityForecastByZIP",
+      "outputElement": {
+        "local": "GetCityForecastByZIPResponse",
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+      },
+      "outputTypeName": "GetCityForecastByZIPResponse",
+      "security": [],
+      "soapAction": "http://ws.cdyne.com/WeatherWS/GetCityForecastByZIP",
+    },
+    {
+      "inputElement": {
+        "local": "GetCityWeatherByZIP",
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+      },
+      "inputTypeName": "GetCityWeatherByZIP",
+      "name": "GetCityWeatherByZIP",
+      "outputElement": {
+        "local": "GetCityWeatherByZIPResponse",
+        "ns": "http://ws.cdyne.com/WeatherWS/",
+      },
+      "outputTypeName": "GetCityWeatherByZIPResponse",
+      "security": [],
+      "soapAction": "http://ws.cdyne.com/WeatherWS/GetCityWeatherByZIP",
+    },
+  ],
+  "options": {
+    "attributesKey": "$attributes",
+    "catalog": true,
+    "choice": "all-optional",
+    "failOnUnresolved": false,
+    "imports": "js",
+    "nillableAsOptional": false,
+    "out": "<SANITIZED_OUT_DIR>",
+    "primitive": {
+      "bigIntegerAs": "string",
+      "dateAs": "string",
+      "decimalAs": "string",
+      "int64As": "string",
+    },
+    "wsdl": "examples/minimal/weather.wsdl",
+  },
+  "serviceName": "Weather",
+  "types": [
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "xs:short",
+          "max": 1,
+          "min": 1,
+          "name": "WeatherID",
+          "nillable": false,
+          "tsType": "number",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Description",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "PictureURL",
+          "nillable": false,
+          "tsType": "string",
+        },
+      ],
+      "name": "WeatherDescription",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}WeatherDescription",
+          "max": "unbounded",
+          "min": 0,
+          "name": "WeatherDescription",
+          "nillable": false,
+          "tsType": "WeatherDescription",
+        },
+      ],
+      "name": "ArrayOfWeatherDescription",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "MorningLow",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "DaytimeHigh",
+          "nillable": false,
+          "tsType": "string",
+        },
+      ],
+      "name": "Temp",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Nighttime",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Daytime",
+          "nillable": false,
+          "tsType": "string",
+        },
+      ],
+      "name": "POP",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "xs:dateTime",
+          "max": 1,
+          "min": 1,
+          "name": "Date",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:short",
+          "max": 1,
+          "min": 1,
+          "name": "WeatherID",
+          "nillable": false,
+          "tsType": "number",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Desciption",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}temp",
+          "max": 1,
+          "min": 1,
+          "name": "Temperatures",
+          "nillable": false,
+          "tsType": "Temp",
+        },
+        {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}POP",
+          "max": 1,
+          "min": 1,
+          "name": "ProbabilityOfPrecipiation",
+          "nillable": false,
+          "tsType": "POP",
+        },
+      ],
+      "name": "Forecast",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}Forecast",
+          "max": "unbounded",
+          "min": 0,
+          "name": "Forecast",
+          "nillable": true,
+          "tsType": "Forecast",
+        },
+      ],
+      "name": "ArrayOfForecast",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "xs:boolean",
+          "max": 1,
+          "min": 1,
+          "name": "Success",
+          "nillable": false,
+          "tsType": "boolean",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "ResponseText",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "State",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "City",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "WeatherStationCity",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ArrayOfForecast",
+          "max": 1,
+          "min": 0,
+          "name": "ForecastResult",
+          "nillable": false,
+          "tsType": "ArrayOfForecast",
+        },
+      ],
+      "name": "ForecastReturn",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "xs:boolean",
+          "max": 1,
+          "min": 1,
+          "name": "Success",
+          "nillable": false,
+          "tsType": "boolean",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "ResponseText",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "State",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "City",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "WeatherStationCity",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:short",
+          "max": 1,
+          "min": 1,
+          "name": "WeatherID",
+          "nillable": false,
+          "tsType": "number",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Description",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Temperature",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "RelativeHumidity",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Wind",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Pressure",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Visibility",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "WindChill",
+          "nillable": false,
+          "tsType": "string",
+        },
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "Remarks",
+          "nillable": false,
+          "tsType": "string",
+        },
+      ],
+      "name": "WeatherReturn",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [],
+      "name": "GetWeatherInformation",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ArrayOfWeatherDescription",
+          "max": 1,
+          "min": 0,
+          "name": "GetWeatherInformationResult",
+          "nillable": false,
+          "tsType": "ArrayOfWeatherDescription",
+        },
+      ],
+      "name": "GetWeatherInformationResponse",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "ZIP",
+          "nillable": false,
+          "tsType": "string",
+        },
+      ],
+      "name": "GetCityForecastByZIP",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}ForecastReturn",
+          "max": 1,
+          "min": 0,
+          "name": "GetCityForecastByZIPResult",
+          "nillable": false,
+          "tsType": "ForecastReturn",
+        },
+      ],
+      "name": "GetCityForecastByZIPResponse",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "xs:string",
+          "max": 1,
+          "min": 0,
+          "name": "ZIP",
+          "nillable": false,
+          "tsType": "string",
+        },
+      ],
+      "name": "GetCityWeatherByZIP",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+    {
+      "attrs": [],
+      "elems": [
+        {
+          "declaredType": "{http://ws.cdyne.com/WeatherWS/}WeatherReturn",
+          "max": 1,
+          "min": 1,
+          "name": "GetCityWeatherByZIPResult",
+          "nillable": false,
+          "tsType": "WeatherReturn",
+        },
+      ],
+      "name": "GetCityWeatherByZIPResponse",
+      "ns": "http://ws.cdyne.com/WeatherWS/",
+    },
+  ],
+  "wsdlTargetNS": "http://ws.cdyne.com/WeatherWS/",
+  "wsdlUri": "examples/minimal/weather.wsdl",
+}
+`;
+
+exports[`pipeline snapshot > client/client.ts 1`] = `
+"/**
+ * Generated Weather client class.
+ * This class wraps the node-soap client and provides strongly-typed methods for each operation.
+ */
+import * as soap from "soap";
+import type * as T from "./types.js";
+import type {WeatherDataTypes} from "./utils.js";
+import {WEATHER_DATA_TYPES} from "./utils.js";
+
+/**
+ * Represents the response structure for Weather operations.
+ * Contains the response object, SOAP headers object, and raw response/request XML.
+ *
+ * @typeParam ResponseType - The type of the response data.
+ * @typeParam HeadersType - The type of the headers (default: Record<string, unknown>).
+ */
+export type WeatherResponse<ResponseType, HeadersType = Record<string, unknown>> = {
+  response: ResponseType;
+  headers: HeadersType;
+  responseRaw: string;
+  requestRaw: string;
+}
+
+/**
+ * @class Weather
+ *
+ * Represents a SOAP client wrapper around the Weather service.
+ * Provides async methods for each operation defined in the WSDL.
+ * Handles serialization/deserialization of request/response data
+ * according to the WSDL-defined data types.
+ * Supports security settings (hints) and custom attribute handling.
+ *
+ * @property source - The WSDL URL or local file path to use.
+ * @property options - Optional SOAP client configuration options.
+ * @property security - Optional SOAP security settings to apply.
+ * @property attributesKeyIn - Key name for input attribute bags (default: "$attributes").
+ * @property attributesKeyOut - Key name for output attribute bags (default: "attributes").
+ * @property client - The underlying node-soap client instance.
+ * @property dataTypes - Metadata for data types used in serialization/deserialization.
+ * @property dataTypes.Attributes - Maps type names to lists of property names that should be treated as XML attributes.
+ * @property dataTypes.ChildrenTypes - Maps type names to their child element types for recursive processing.
+ *
+ *
+ * @note Have fun with the generated client! If TechSpokes made your day (or a week),
+ *      please consider supporting this project: https://github.com/TechSpokes/typescript-wsdl-client?tab=readme-ov-file#readme
+ *      Thanks for using it!
+ *
+ *      Cheers,
+ *      Serge Liatko, TechSpokes, https://www.techspokes.com | https://www.techspokes.store
+ *      https://www.linkedin.com/in/sergeliatko/ | https://www.linkedin.com/company/techspokes/
+ *
+ * @license MIT
+ */
+export class Weather {
+  protected source: string;
+  protected options?: soap.IOptions;
+  protected security?: soap.ISecurity;
+  protected attributesKeyIn: string;
+  protected attributesKeyOut: string;
+  protected client?: soap.Client;
+  protected dataTypes: WeatherDataTypes = WEATHER_DATA_TYPES;
+
+  /**
+   * Creates a new Weather instance.
+   *
+   * @param options - Configuration options for the service.
+   * @param options.source - The WSDL URL or local file path to use.
+   * @param [options.options] - Optional SOAP client configuration options.
+   * @param [options.security] - Optional SOAP security settings to apply.
+   * @param [options.attributesKeyIn] - Key name for input attribute bags (default: "$attributes").
+   * @param [options.attributesKeyOut] - Key name for output attribute bags (default: "attributes").
+   */
+  constructor(options: {
+    source: string,
+    options?: soap.IOptions,
+    security?: soap.ISecurity,
+    attributesKeyIn?: string,
+    attributesKeyOut?: string
+  }) {
+    this.source = options.source;
+    this.attributesKeyIn = options.attributesKeyIn ?? "$attributes";
+    this.attributesKeyOut = options.attributesKeyOut ?? "attributes";
+    if (options.options) {
+      this.options = options.options;
+    }
+    if (options.security) {
+      this.security = options.security;
+    }
+  }
+
+  /**
+   * Lazily initializes and returns the underlying SOAP client.
+   * If the client is not yet created or its WSDL is missing, a new client is instantiated.
+   *
+   * @returns The initialized SOAP client instance.
+   * @throws Error if the WSDL source is invalid or client creation fails.
+   */
+  async soapClient(): Promise<soap.Client> {
+    // If client is not initialized or has no WSDL source, create a new one
+    if (!this.client || !this.client.wsdl) {
+      // Note: source can be a URL or a local WSDL file path
+      if (!this.source) {
+        throw new Error("WSDL source must be a non-empty string URL or file path.");
+      }
+      try {
+        // Create the SOAP client using the provided source and options
+        this.client = await soap.createClientAsync(this.source, this.options || {});
+        if (this.security) {
+          this.client.setSecurity(this.security);
+        }
+      } catch (e) {
+        throw new Error("Error creating SOAP client: " + (e instanceof Error ? e.message : String(e)));
+      }
+    }
+    return this.client;
+  }
+
+
+  /**
+   * Calls the GetWeatherInformation operation of the Weather.
+   *
+   * @param args - The request arguments for the GetWeatherInformation operation.
+   * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
+   */
+  async GetWeatherInformation<HeadersType = Record<string, unknown>>(
+    args: T.GetWeatherInformation
+  ): Promise<WeatherResponse<T.GetWeatherInformationResponse, HeadersType>> {
+    return this.call<T.GetWeatherInformation, T.GetWeatherInformationResponse, HeadersType>(
+      args,
+      "GetWeatherInformation",
+      "GetWeatherInformation",
+      "GetWeatherInformationResponse"
+    );
+  }
+
+
+  /**
+   * Calls the GetCityForecastByZIP operation of the Weather.
+   *
+   * @param args - The request arguments for the GetCityForecastByZIP operation.
+   * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
+   */
+  async GetCityForecastByZIP<HeadersType = Record<string, unknown>>(
+    args: T.GetCityForecastByZIP
+  ): Promise<WeatherResponse<T.GetCityForecastByZIPResponse, HeadersType>> {
+    return this.call<T.GetCityForecastByZIP, T.GetCityForecastByZIPResponse, HeadersType>(
+      args,
+      "GetCityForecastByZIP",
+      "GetCityForecastByZIP",
+      "GetCityForecastByZIPResponse"
+    );
+  }
+
+
+  /**
+   * Calls the GetCityWeatherByZIP operation of the Weather.
+   *
+   * @param args - The request arguments for the GetCityWeatherByZIP operation.
+   * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
+   */
+  async GetCityWeatherByZIP<HeadersType = Record<string, unknown>>(
+    args: T.GetCityWeatherByZIP
+  ): Promise<WeatherResponse<T.GetCityWeatherByZIPResponse, HeadersType>> {
+    return this.call<T.GetCityWeatherByZIP, T.GetCityWeatherByZIPResponse, HeadersType>(
+      args,
+      "GetCityWeatherByZIP",
+      "GetCityWeatherByZIP",
+      "GetCityWeatherByZIPResponse"
+    );
+  }
+
+  /**
+   * Calls a specified SOAP operation with the provided arguments and response type.
+   *
+   * @param args - The request arguments/payload for the operation.
+   * @param operation - The name of the SOAP operation to invoke.
+   * @param requestType - The metadata type name for request serialization.
+   * @param responseType - The metadata type name for response deserialization.
+   * @returns A promise resolving to the operation response containing data, headers, and raw XML.
+   * @throws Error if the specified operation is not found on the SOAP client.
+   */
+  protected async call<RequestType, ResponseType, HeadersType>(
+    args: RequestType,
+    operation: string,
+    requestType: string,
+    responseType: string
+  ): Promise<WeatherResponse<ResponseType, HeadersType>> {
+    const client = await this.soapClient();
+    if (!client[operation] || typeof client[operation] !== "function") {
+      throw new Error("Operation not found on SOAP client: " + operation);
+    }
+    // Convert TypeScript object to the format expected by node-soap
+    const soapArgs = this.toSoapArgs(args, requestType);
+    return new Promise((resolve, reject) => {
+      client[operation](soapArgs, (err: any, result: any, rawResponse: string, soapHeader: any, rawRequest: string) => {
+        if (err) {
+          reject(err);
+        } else {
+          // Convert the SOAP response back to TypeScript object
+          const response = this.fromSoapResult(result, responseType);
+          resolve({
+            response,
+            headers: soapHeader || {},
+            responseRaw: rawResponse,
+            requestRaw: rawRequest
+          });
+        }
+      });
+    });
+  }
+
+  /**
+   * Converts TypeScript objects to the format expected by node-soap for SOAP requests.
+   * Handles the conversion of object properties to XML attributes and elements based on metadata.
+   *
+   * @param value - The value to convert (object, array, or primitive)
+   * @param typeName - Optional type name for metadata lookup
+   * @returns Converted value ready for SOAP serialization
+   */
+  protected toSoapArgs(value: any, typeName?: string): any {
+    // Pass through null/undefined unchanged
+    if (value == null) {
+      return value;
+    }
+    // Pass through primitives (string, number, boolean) unchanged
+    if (typeof value !== "object") {
+      return value;
+    }
+    // Recursively process array elements with same type context
+    if (Array.isArray(value)) {
+      return value.map(v => this.toSoapArgs(v, typeName));
+    }
+
+    /**
+     * Normalizes values to strings for XML attribute serialization.
+     * Handles null, boolean, number, and other types appropriately.
+     */
+    const normalize = (v: unknown): string => {
+      if (v == null) return "";
+      if (typeof v === "boolean") return v ? "true" : "false";
+      if (typeof v === "number") return Number.isFinite(v) ? String(v) : "";
+      return String(v);
+    };
+
+    // Get metadata for this specific type to know which props are attributes
+    const attributesList = (typeName && this.dataTypes?.Attributes?.[typeName]) || [];
+    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+
+    const out: any = {};
+    const attributesBag: Record<string, any> = {};
+
+    // Preserve text content for mixed XML elements (text + child elements)
+    if ("$value" in value) {
+      out.$value = (value as any).$value;
+    }
+
+    // Extract pre-existing attributes from input object's attribute bag
+    const inAttrNode = (value as any)[this.attributesKeyIn] ?? (value as any)["attributes"];
+    if (inAttrNode && typeof inAttrNode === "object") {
+      // Normalize all attribute values to strings for XML serialization
+      for (const [ak, av] of Object.entries(inAttrNode)) {
+        attributesBag[ak] = normalize(av);
+      }
+    }
+
+    // Categorize each property as either XML attribute or child element
+    for (const [k, v] of Object.entries<any>(value)) {
+      // Skip special properties that are handled separately above
+      if (k === "$value" || k === this.attributesKeyIn || k === "attributes") {
+        continue;
+      }
+
+      // Check metadata to see if this property should be an XML attribute
+      if (attributesList.includes(k)) {
+        attributesBag[k] = normalize(v);
+        continue;
+      }
+
+      // Everything else becomes a child element, recursively processed
+      const childType = (childrenTypes as any)[k] as string | undefined;
+      out[k] = Array.isArray(v)
+        ? v.map(node => this.toSoapArgs(node, childType))
+        : this.toSoapArgs(v, childType);
+    }
+
+    // Only add attributes bag if we actually have attributes to serialize
+    if (Object.keys(attributesBag).length) {
+      out[this.attributesKeyOut] = attributesBag; // renders as XML attributes
+    }
+
+    return out;
+  }
+
+  /**
+   * Converts SOAP response nodes into application DTOs based on metadata mapping.
+   *
+   * @param node - The raw SOAP response node.
+   * @param typeName - Optional metadata key to guide deserialization.
+   * @returns The deserialized object matching your DTO shape.
+   */
+  protected fromSoapResult(node: any, typeName?: string): any {
+    // Pass through null/undefined unchanged
+    if (node == null) {
+      return node;
+    }
+    // Pass through primitives unchanged
+    if (typeof node !== "object") {
+      return node;
+    }
+    // Recursively process array elements
+    if (Array.isArray(node)) {
+      return node.map(n => this.fromSoapResult(n, typeName));
+    }
+
+    // Get child type mapping for recursive processing with correct types
+    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const result: any = {};
+
+    // Preserve text content for mixed XML elements
+    if ("$value" in node) {
+      result.$value = (node as any).$value;
+    }
+
+    // Extract attributes from various node-soap attribute containers
+    // Different SOAP parsers may use "attributes", "$", or custom keys
+    const inAttrNode = (node as any)[this.attributesKeyOut] || (node as any)["attributes"] || (node as any)["$"];
+    if (inAttrNode && typeof inAttrNode === "object") {
+      // Promote all attributes to top-level properties for easier TS access
+      Object.assign(result, inAttrNode);
+    }
+
+    // Process remaining properties as child elements
+    for (const [k, v] of Object.entries<any>(node)) {
+      // Skip all possible attribute containers and special properties
+      if (k === this.attributesKeyOut || k === "attributes" || k === "$" || k === "$value") {
+        continue;
+      }
+      // Recursively convert child elements with their specific type info
+      const childType = (childrenTypes as any)[k] as string | undefined;
+      result[k] = Array.isArray(v)
+        ? v.map(node => this.fromSoapResult(node, childType))
+        : this.fromSoapResult(v, childType);
+    }
+
+    return result;
+  }
+}
+"
+`;
+
+exports[`pipeline snapshot > client/types.ts 1`] = `
+"export interface ArrayOfForecast {
+
+  /**
+   * Child element.
+   */
+
+  /** @xsd {"kind":"element","type":"{http://ws.cdyne.com/WeatherWS/}Forecast","occurs":{"min":0,"max":"unbounded","nillable":true}} */
+  Forecast?: Forecast[];
+}
+
+export interface ArrayOfWeatherDescription {
+
+  /**
+   * Child element.
+   */
+
+  /** @xsd {"kind":"element","type":"{http://ws.cdyne.com/WeatherWS/}WeatherDescription","occurs":{"min":0,"max":"unbounded","nillable":false}} */
+  WeatherDescription?: WeatherDescription[];
+}
+
+export interface Forecast {
+
+  /**
+   * Children elements.
+   */
+
+  /** @xsd {"kind":"element","type":"xs:dateTime","occurs":{"min":1,"max":1,"nillable":false}} */
+  Date: string;
+
+  /** @xsd {"kind":"element","type":"{http://ws.cdyne.com/WeatherWS/}POP","occurs":{"min":1,"max":1,"nillable":false}} */
+  ProbabilityOfPrecipiation: POP;
+
+  /** @xsd {"kind":"element","type":"{http://ws.cdyne.com/WeatherWS/}temp","occurs":{"min":1,"max":1,"nillable":false}} */
+  Temperatures: Temp;
+
+  /** @xsd {"kind":"element","type":"xs:short","occurs":{"min":1,"max":1,"nillable":false}} */
+  WeatherID: number;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Desciption?: string;
+}
+
+export interface ForecastReturn {
+
+  /**
+   * Children elements.
+   */
+
+  /** @xsd {"kind":"element","type":"xs:boolean","occurs":{"min":1,"max":1,"nillable":false}} */
+  Success: boolean;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  City?: string;
+
+  /** @xsd {"kind":"element","type":"{http://ws.cdyne.com/WeatherWS/}ArrayOfForecast","occurs":{"min":0,"max":1,"nillable":false}} */
+  ForecastResult?: ArrayOfForecast;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  ResponseText?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  State?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  WeatherStationCity?: string;
+}
+
+export interface GetCityForecastByZIP {
+
+  /**
+   * Child element.
+   */
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  ZIP?: string;
+}
+
+export interface GetCityForecastByZIPResponse {
+
+  /**
+   * Child element.
+   */
+
+  /** @xsd {"kind":"element","type":"{http://ws.cdyne.com/WeatherWS/}ForecastReturn","occurs":{"min":0,"max":1,"nillable":false}} */
+  GetCityForecastByZIPResult?: ForecastReturn;
+}
+
+export interface GetCityWeatherByZIP {
+
+  /**
+   * Child element.
+   */
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  ZIP?: string;
+}
+
+export interface GetCityWeatherByZIPResponse {
+
+  /**
+   * Child element.
+   */
+
+  /** @xsd {"kind":"element","type":"{http://ws.cdyne.com/WeatherWS/}WeatherReturn","occurs":{"min":1,"max":1,"nillable":false}} */
+  GetCityWeatherByZIPResult: WeatherReturn;
+}
+
+export interface GetWeatherInformation {
+}
+
+export interface GetWeatherInformationResponse {
+
+  /**
+   * Child element.
+   */
+
+  /** @xsd {"kind":"element","type":"{http://ws.cdyne.com/WeatherWS/}ArrayOfWeatherDescription","occurs":{"min":0,"max":1,"nillable":false}} */
+  GetWeatherInformationResult?: ArrayOfWeatherDescription;
+}
+
+export interface POP {
+
+  /**
+   * Children elements.
+   */
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Daytime?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Nighttime?: string;
+}
+
+export interface Temp {
+
+  /**
+   * Children elements.
+   */
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  DaytimeHigh?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  MorningLow?: string;
+}
+
+export interface WeatherDescription {
+
+  /**
+   * Children elements.
+   */
+
+  /** @xsd {"kind":"element","type":"xs:short","occurs":{"min":1,"max":1,"nillable":false}} */
+  WeatherID: number;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Description?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  PictureURL?: string;
+}
+
+export interface WeatherReturn {
+
+  /**
+   * Children elements.
+   */
+
+  /** @xsd {"kind":"element","type":"xs:boolean","occurs":{"min":1,"max":1,"nillable":false}} */
+  Success: boolean;
+
+  /** @xsd {"kind":"element","type":"xs:short","occurs":{"min":1,"max":1,"nillable":false}} */
+  WeatherID: number;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  City?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Description?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Pressure?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  RelativeHumidity?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Remarks?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  ResponseText?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  State?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Temperature?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Visibility?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  WeatherStationCity?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  Wind?: string;
+
+  /** @xsd {"kind":"element","type":"xs:string","occurs":{"min":0,"max":1,"nillable":false}} */
+  WindChill?: string;
+}
+"
+`;
+
+exports[`pipeline snapshot > client/utils.ts 1`] = `
+"/**
+ * Weather WSDL data types for proper serialization/deserialization.
+ * Used to distinguish between XML attributes and elements during conversion.
+ */
+export interface WeatherDataTypes {
+  /** Maps type names to lists of property names that should be treated as XML attributes */
+  Attributes: Record<string, readonly string[]>;
+  /** Maps type names to their child element types for recursive processing */
+  ChildrenTypes: Record<string, Readonly<Record<string, string>>>;
+}
+
+export const WEATHER_DATA_TYPES: WeatherDataTypes = {
+  "Attributes": {
+    "WeatherDescription": [],
+    "ArrayOfWeatherDescription": [],
+    "Temp": [],
+    "POP": [],
+    "Forecast": [],
+    "ArrayOfForecast": [],
+    "ForecastReturn": [],
+    "WeatherReturn": [],
+    "GetWeatherInformation": [],
+    "GetWeatherInformationResponse": [],
+    "GetCityForecastByZIP": [],
+    "GetCityForecastByZIPResponse": [],
+    "GetCityWeatherByZIP": [],
+    "GetCityWeatherByZIPResponse": []
+  },
+  "ChildrenTypes": {
+    "WeatherDescription": {
+      "WeatherID": "number",
+      "Description": "string",
+      "PictureURL": "string"
+    },
+    "ArrayOfWeatherDescription": {
+      "WeatherDescription": "WeatherDescription"
+    },
+    "Temp": {
+      "MorningLow": "string",
+      "DaytimeHigh": "string"
+    },
+    "POP": {
+      "Nighttime": "string",
+      "Daytime": "string"
+    },
+    "Forecast": {
+      "Date": "string",
+      "WeatherID": "number",
+      "Desciption": "string",
+      "Temperatures": "Temp",
+      "ProbabilityOfPrecipiation": "POP"
+    },
+    "ArrayOfForecast": {
+      "Forecast": "Forecast"
+    },
+    "ForecastReturn": {
+      "Success": "boolean",
+      "ResponseText": "string",
+      "State": "string",
+      "City": "string",
+      "WeatherStationCity": "string",
+      "ForecastResult": "ArrayOfForecast"
+    },
+    "WeatherReturn": {
+      "Success": "boolean",
+      "ResponseText": "string",
+      "State": "string",
+      "City": "string",
+      "WeatherStationCity": "string",
+      "WeatherID": "number",
+      "Description": "string",
+      "Temperature": "string",
+      "RelativeHumidity": "string",
+      "Wind": "string",
+      "Pressure": "string",
+      "Visibility": "string",
+      "WindChill": "string",
+      "Remarks": "string"
+    },
+    "GetWeatherInformation": {},
+    "GetWeatherInformationResponse": {
+      "GetWeatherInformationResult": "ArrayOfWeatherDescription"
+    },
+    "GetCityForecastByZIP": {
+      "ZIP": "string"
+    },
+    "GetCityForecastByZIPResponse": {
+      "GetCityForecastByZIPResult": "ForecastReturn"
+    },
+    "GetCityWeatherByZIP": {
+      "ZIP": "string"
+    },
+    "GetCityWeatherByZIPResponse": {
+      "GetCityWeatherByZIPResult": "WeatherReturn"
+    }
+  }
+} as const;
+"
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/arrayofforecast.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:arrayofforecast",
+  "items": {
+    "$ref": "urn:services:weather:v1:schemas:models:forecast#",
+  },
+  "type": "array",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/arrayofweatherdescription.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:arrayofweatherdescription",
+  "items": {
+    "$ref": "urn:services:weather:v1:schemas:models:weatherdescription#",
+  },
+  "type": "array",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/forecast.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:forecast",
+  "properties": {
+    "Date": {
+      "type": "string",
+    },
+    "Desciption": {
+      "type": "string",
+    },
+    "ProbabilityOfPrecipiation": {
+      "$ref": "urn:services:weather:v1:schemas:models:pop#",
+    },
+    "Temperatures": {
+      "$ref": "urn:services:weather:v1:schemas:models:temp#",
+    },
+    "WeatherID": {
+      "type": "number",
+    },
+  },
+  "required": [
+    "Date",
+    "ProbabilityOfPrecipiation",
+    "Temperatures",
+    "WeatherID",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/forecastreturn.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:forecastreturn",
+  "properties": {
+    "City": {
+      "type": "string",
+    },
+    "ForecastResult": {
+      "$ref": "urn:services:weather:v1:schemas:models:arrayofforecast#",
+    },
+    "ResponseText": {
+      "type": "string",
+    },
+    "State": {
+      "type": "string",
+    },
+    "Success": {
+      "type": "boolean",
+    },
+    "WeatherStationCity": {
+      "type": "string",
+    },
+  },
+  "required": [
+    "Success",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getcityforecastbyzip.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getcityforecastbyzip",
+  "properties": {
+    "ZIP": {
+      "type": "string",
+    },
+  },
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getcityforecastbyzipresponse.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getcityforecastbyzipresponse",
+  "properties": {
+    "GetCityForecastByZIPResult": {
+      "$ref": "urn:services:weather:v1:schemas:models:forecastreturn#",
+    },
+  },
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getcityforecastbyzipresponse_responseenvelope.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getcityforecastbyzipresponse_responseenvelope",
+  "additionalProperties": true,
+  "description": "Envelope for GetCityForecastByZIPResponse operation output wrapping its payload in 'data'.",
+  "properties": {
+    "data": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:getcityforecastbyzipresponse#",
+        },
+        {
+          "type": "null",
+        },
+      ],
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:weathererrorobject#",
+        },
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Error details when status indicates failure; null otherwise.",
+    },
+    "message": {
+      "anyOf": [
+        {
+          "type": "string",
+        },
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Diagnostic/logging message (not for end-user display).",
+    },
+    "status": {
+      "description": "Machine-readable high-level status (e.g. SUCCESS, FAILURE, PENDING).",
+      "type": "string",
+    },
+  },
+  "required": [
+    "data",
+    "error",
+    "message",
+    "status",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getcityweatherbyzip.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getcityweatherbyzip",
+  "properties": {
+    "ZIP": {
+      "type": "string",
+    },
+  },
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getcityweatherbyzipresponse.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getcityweatherbyzipresponse",
+  "properties": {
+    "GetCityWeatherByZIPResult": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherreturn#",
+    },
+  },
+  "required": [
+    "GetCityWeatherByZIPResult",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getcityweatherbyzipresponse_responseenvelope.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getcityweatherbyzipresponse_responseenvelope",
+  "additionalProperties": true,
+  "description": "Envelope for GetCityWeatherByZIPResponse operation output wrapping its payload in 'data'.",
+  "properties": {
+    "data": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:getcityweatherbyzipresponse#",
+        },
+        {
+          "type": "null",
+        },
+      ],
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:weathererrorobject#",
+        },
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Error details when status indicates failure; null otherwise.",
+    },
+    "message": {
+      "anyOf": [
+        {
+          "type": "string",
+        },
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Diagnostic/logging message (not for end-user display).",
+    },
+    "status": {
+      "description": "Machine-readable high-level status (e.g. SUCCESS, FAILURE, PENDING).",
+      "type": "string",
+    },
+  },
+  "required": [
+    "data",
+    "error",
+    "message",
+    "status",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getweatherinformation.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getweatherinformation",
+  "properties": {},
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getweatherinformationresponse.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getweatherinformationresponse",
+  "properties": {
+    "GetWeatherInformationResult": {
+      "$ref": "urn:services:weather:v1:schemas:models:arrayofweatherdescription#",
+    },
+  },
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/getweatherinformationresponse_responseenvelope.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:getweatherinformationresponse_responseenvelope",
+  "additionalProperties": true,
+  "description": "Envelope for GetWeatherInformationResponse operation output wrapping its payload in 'data'.",
+  "properties": {
+    "data": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:getweatherinformationresponse#",
+        },
+        {
+          "type": "null",
+        },
+      ],
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:weathererrorobject#",
+        },
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Error details when status indicates failure; null otherwise.",
+    },
+    "message": {
+      "anyOf": [
+        {
+          "type": "string",
+        },
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Diagnostic/logging message (not for end-user display).",
+    },
+    "status": {
+      "description": "Machine-readable high-level status (e.g. SUCCESS, FAILURE, PENDING).",
+      "type": "string",
+    },
+  },
+  "required": [
+    "data",
+    "error",
+    "message",
+    "status",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/pop.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:pop",
+  "properties": {
+    "Daytime": {
+      "type": "string",
+    },
+    "Nighttime": {
+      "type": "string",
+    },
+  },
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/temp.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:temp",
+  "properties": {
+    "DaytimeHigh": {
+      "type": "string",
+    },
+    "MorningLow": {
+      "type": "string",
+    },
+  },
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/weatherdescription.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:weatherdescription",
+  "properties": {
+    "Description": {
+      "type": "string",
+    },
+    "PictureURL": {
+      "type": "string",
+    },
+    "WeatherID": {
+      "type": "number",
+    },
+  },
+  "required": [
+    "WeatherID",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/weathererrorobject.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:weathererrorobject",
+  "additionalProperties": false,
+  "description": "Standard error object for REST responses (not reused for underlying SOAP faults).",
+  "properties": {
+    "code": {
+      "type": "string",
+    },
+    "details": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object",
+        },
+        {
+          "type": "null",
+        },
+      ],
+    },
+    "message": {
+      "type": "string",
+    },
+  },
+  "required": [
+    "code",
+    "message",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/weatherresponseenvelope.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:weatherresponseenvelope",
+  "additionalProperties": true,
+  "description": "Standard API response envelope base schema.",
+  "properties": {
+    "data": {
+      "anyOf": [
+        {},
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Primary payload; per-operation extension refines the shape.",
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "urn:services:weather:v1:schemas:models:weathererrorobject#",
+        },
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Error details when status indicates failure; null otherwise.",
+    },
+    "message": {
+      "anyOf": [
+        {
+          "type": "string",
+        },
+        {
+          "type": "null",
+        },
+      ],
+      "description": "Diagnostic/logging message (not for end-user display).",
+    },
+    "status": {
+      "description": "Machine-readable high-level status (e.g. SUCCESS, FAILURE, PENDING).",
+      "type": "string",
+    },
+  },
+  "required": [
+    "status",
+    "data",
+    "error",
+    "message",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/models/weatherreturn.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:models:weatherreturn",
+  "properties": {
+    "City": {
+      "type": "string",
+    },
+    "Description": {
+      "type": "string",
+    },
+    "Pressure": {
+      "type": "string",
+    },
+    "RelativeHumidity": {
+      "type": "string",
+    },
+    "Remarks": {
+      "type": "string",
+    },
+    "ResponseText": {
+      "type": "string",
+    },
+    "State": {
+      "type": "string",
+    },
+    "Success": {
+      "type": "boolean",
+    },
+    "Temperature": {
+      "type": "string",
+    },
+    "Visibility": {
+      "type": "string",
+    },
+    "WeatherID": {
+      "type": "number",
+    },
+    "WeatherStationCity": {
+      "type": "string",
+    },
+    "Wind": {
+      "type": "string",
+    },
+    "WindChill": {
+      "type": "string",
+    },
+  },
+  "required": [
+    "Success",
+    "WeatherID",
+  ],
+  "type": "object",
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/operations/getcityforecastbyzip.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:operations:getcityforecastbyzip",
+  "body": {
+    "$ref": "urn:services:weather:v1:schemas:models:getcityforecastbyzip#",
+  },
+  "response": {
+    "200": {
+      "$ref": "urn:services:weather:v1:schemas:models:getcityforecastbyzipresponse_responseenvelope#",
+    },
+    "400": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "401": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "403": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "404": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "409": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "422": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "429": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "500": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "502": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "503": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "504": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+  },
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/operations/getcityweatherbyzip.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:operations:getcityweatherbyzip",
+  "body": {
+    "$ref": "urn:services:weather:v1:schemas:models:getcityweatherbyzip#",
+  },
+  "response": {
+    "200": {
+      "$ref": "urn:services:weather:v1:schemas:models:getcityweatherbyzipresponse_responseenvelope#",
+    },
+    "400": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "401": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "403": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "404": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "409": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "422": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "429": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "500": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "502": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "503": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "504": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+  },
+}
+`;
+
+exports[`pipeline snapshot > gateway schemas > all model and operation schema files match snapshots > gateway/schemas/operations/getweatherinformation.json 1`] = `
+{
+  "$id": "urn:services:weather:v1:schemas:operations:getweatherinformation",
+  "body": {
+    "$ref": "urn:services:weather:v1:schemas:models:getweatherinformation#",
+  },
+  "response": {
+    "200": {
+      "$ref": "urn:services:weather:v1:schemas:models:getweatherinformationresponse_responseenvelope#",
+    },
+    "400": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "401": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "403": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "404": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "409": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "422": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "429": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "500": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "502": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "503": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+    "504": {
+      "$ref": "urn:services:weather:v1:schemas:models:weatherresponseenvelope#",
+    },
+  },
+}
+`;
+
+exports[`pipeline snapshot > gateway/_typecheck.ts 1`] = `
+"/**
+ * Type-check fixture — verifies plugin options accept the concrete client class.
+ * Auto-generated. Not intended for runtime use.
+ */
+import type { Weather } from "../client/client.js";
+import type { WeatherOperations } from "../client/operations.js";
+import type { WeatherGatewayOptions } from "./plugin.js";
+
+// Verify the concrete client class satisfies the operations interface.
+// If the client class diverges from the operations interface, this
+// will produce a compile error.
+function _assertClientSatisfiesOps(client: Weather): WeatherOperations {
+  return client;
+}
+void _assertClientSatisfiesOps;
+
+// Verify the concrete client class is accepted by plugin options.
+// This ensures the gateway plugin can be used with the generated client.
+function _assertClientCompatible(client: Weather): void {
+  const _opts: WeatherGatewayOptions = { client };
+  void _opts;
+}
+void _assertClientCompatible;
+"
+`;
+
+exports[`pipeline snapshot > gateway/plugin.ts 1`] = `
+"/**
+ * Weather Gateway Plugin
+ *
+ * Fastify plugin that registers the SOAP-to-REST gateway for weather.
+ * Auto-generated - do not edit manually.
+ */
+import fp from "fastify-plugin";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import type { Weather } from "../client/client.js";
+import type { WeatherOperations } from "../client/operations.js";
+import { registerSchemas_v1_weather } from "./schemas.js";
+import { registerRoutes_v1_weather } from "./routes.js";
+import { createGatewayErrorHandler_v1_weather } from "./runtime.js";
+
+// Re-export the operations interface for convenience
+export type { WeatherOperations };
+
+/**
+ * Options for the Weather gateway plugin
+ */
+export interface WeatherGatewayOptions extends FastifyPluginOptions {
+  /**
+   * SOAP client instance (pre-configured).
+   * The client should be instantiated with appropriate source and security settings.
+   * Accepts the concrete client class or any implementation of WeatherOperations.
+   */
+  client: WeatherOperations;
+  /**
+   * Optional additional route prefix applied at runtime.
+   * Note: If you used --openapi-base-path during generation, routes already have that prefix baked in.
+   * Only use this for additional runtime prefixing (e.g., mounting under a versioned sub-path).
+   */
+  prefix?: string;
+}
+
+declare module "fastify" {
+  interface FastifyInstance {
+    weatherClient: WeatherOperations;
+  }
+}
+
+/**
+ * Gateway plugin implementation
+ *
+ * @param fastify - Fastify instance
+ * @param opts - Plugin options including client and optional prefix
+ */
+async function weatherGatewayPlugin(
+  fastify: FastifyInstance,
+  opts: WeatherGatewayOptions
+): Promise<void> {
+  // Decorate with SOAP client
+  if (!fastify.hasDecorator("weatherClient")) {
+    fastify.decorate("weatherClient", opts.client);
+  }
+
+  // Register model schemas
+  await registerSchemas_v1_weather(fastify);
+
+  // Register error handler (scoped to this plugin)
+  fastify.setErrorHandler(createGatewayErrorHandler_v1_weather());
+
+  // Register routes (optionally prefixed)
+  if (opts.prefix) {
+    await fastify.register(async (child) => {
+      await registerRoutes_v1_weather(child);
+    }, { prefix: opts.prefix });
+  } else {
+    await registerRoutes_v1_weather(fastify);
+  }
+}
+
+// Export as Fastify plugin (encapsulated)
+export default fp(weatherGatewayPlugin, {
+  fastify: "5.x",
+  name: "weather-gateway",
+});
+
+// Named export for convenience
+export { weatherGatewayPlugin };
+"
+`;
+
+exports[`pipeline snapshot > gateway/routes.ts 1`] = `
+"import type { FastifyInstance } from "fastify";
+import { registerRoute_v1_weather_getcityforecastbyzip } from "./routes/getcityforecastbyzip.js";
+import { registerRoute_v1_weather_getcityweatherbyzip } from "./routes/getcityweatherbyzip.js";
+import { registerRoute_v1_weather_getweatherinformation } from "./routes/getweatherinformation.js";
+
+/**
+ * Registers all weather routes with the Fastify instance.
+ * Route paths are determined by the OpenAPI specification (--openapi-base-path).
+ */
+export async function registerRoutes_v1_weather(fastify: FastifyInstance): Promise<void> {
+  // Register all routes
+  await registerRoute_v1_weather_getcityforecastbyzip(fastify);
+  await registerRoute_v1_weather_getcityweatherbyzip(fastify);
+  await registerRoute_v1_weather_getweatherinformation(fastify);
+}
+"
+`;
+
+exports[`pipeline snapshot > gateway/routes/getcityforecastbyzip.ts 1`] = `
+"/**
+ * Route: POST /get-city-forecast-by-zip
+ * Operation: GetCityForecastByZIP
+ * Request Type: GetCityForecastByZIP
+ * Response Type: GetCityForecastByZIPResponse (wrapped in envelope)
+ * Auto-generated - do not edit manually.
+ */
+import type { FastifyInstance } from "fastify";
+import type { GetCityForecastByZIP } from "../../client/types.js";
+import schema from "../schemas/operations/getcityforecastbyzip.json" with { type: "json" };
+import { buildSuccessEnvelope, unwrapArrayWrappers } from "../runtime.js";
+
+export async function registerRoute_v1_weather_getcityforecastbyzip(fastify: FastifyInstance) {
+  fastify.route<{ Body: GetCityForecastByZIP }>({
+    method: "POST",
+    url: "/get-city-forecast-by-zip",
+    schema,
+    handler: async (request) => {
+      const client = fastify.weatherClient;
+      const result = await client.GetCityForecastByZIP(request.body as GetCityForecastByZIP);
+      return buildSuccessEnvelope(unwrapArrayWrappers(result.response, "GetCityForecastByZIPResponse"));
+    },
+  });
+}
+"
+`;
+
+exports[`pipeline snapshot > gateway/routes/getcityweatherbyzip.ts 1`] = `
+"/**
+ * Route: POST /get-city-weather-by-zip
+ * Operation: GetCityWeatherByZIP
+ * Request Type: GetCityWeatherByZIP
+ * Response Type: GetCityWeatherByZIPResponse (wrapped in envelope)
+ * Auto-generated - do not edit manually.
+ */
+import type { FastifyInstance } from "fastify";
+import type { GetCityWeatherByZIP } from "../../client/types.js";
+import schema from "../schemas/operations/getcityweatherbyzip.json" with { type: "json" };
+import { buildSuccessEnvelope, unwrapArrayWrappers } from "../runtime.js";
+
+export async function registerRoute_v1_weather_getcityweatherbyzip(fastify: FastifyInstance) {
+  fastify.route<{ Body: GetCityWeatherByZIP }>({
+    method: "POST",
+    url: "/get-city-weather-by-zip",
+    schema,
+    handler: async (request) => {
+      const client = fastify.weatherClient;
+      const result = await client.GetCityWeatherByZIP(request.body as GetCityWeatherByZIP);
+      return buildSuccessEnvelope(unwrapArrayWrappers(result.response, "GetCityWeatherByZIPResponse"));
+    },
+  });
+}
+"
+`;
+
+exports[`pipeline snapshot > gateway/routes/getweatherinformation.ts 1`] = `
+"/**
+ * Route: POST /get-weather-information
+ * Operation: GetWeatherInformation
+ * Request Type: GetWeatherInformation
+ * Response Type: GetWeatherInformationResponse (wrapped in envelope)
+ * Auto-generated - do not edit manually.
+ */
+import type { FastifyInstance } from "fastify";
+import type { GetWeatherInformation } from "../../client/types.js";
+import schema from "../schemas/operations/getweatherinformation.json" with { type: "json" };
+import { buildSuccessEnvelope, unwrapArrayWrappers } from "../runtime.js";
+
+export async function registerRoute_v1_weather_getweatherinformation(fastify: FastifyInstance) {
+  fastify.route<{ Body: GetWeatherInformation }>({
+    method: "POST",
+    url: "/get-weather-information",
+    schema,
+    handler: async (request) => {
+      const client = fastify.weatherClient;
+      const result = await client.GetWeatherInformation(request.body as GetWeatherInformation);
+      return buildSuccessEnvelope(unwrapArrayWrappers(result.response, "GetWeatherInformationResponse"));
+    },
+  });
+}
+"
+`;
+
+exports[`pipeline snapshot > gateway/runtime.ts 1`] = `
+"/**
+ * Gateway Runtime Utilities
+ *
+ * Provides envelope builders and error handling for the generated gateway.
+ * Auto-generated - do not edit manually.
+ */
+import type { FastifyReply, FastifyRequest } from "fastify";
+
+/**
+ * Success response envelope
+ */
+export interface SuccessEnvelope<T> {
+  status: "SUCCESS";
+  message: string | null;
+  data: T;
+  error: null;
+}
+
+/**
+ * Error response envelope
+ */
+export interface ErrorEnvelope {
+  status: "ERROR";
+  message: string;
+  data: null;
+  error: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+}
+
+/**
+ * Union type for response envelopes
+ */
+export type ResponseEnvelope<T> = SuccessEnvelope<T> | ErrorEnvelope;
+
+/**
+ * Builds a success response envelope
+ *
+ * @param data - The response data
+ * @param message - Optional success message
+ * @returns Success envelope wrapping the data
+ */
+export function buildSuccessEnvelope<T>(data: T, message?: string): SuccessEnvelope<T> {
+  return {
+    status: "SUCCESS",
+    message: message ?? null,
+    data,
+    error: null,
+  };
+}
+
+/**
+ * Builds an error response envelope
+ *
+ * @param code - Error code (e.g., "VALIDATION_ERROR")
+ * @param message - Human-readable error message
+ * @param details - Optional error details
+ * @returns Error envelope with the error information
+ */
+export function buildErrorEnvelope(
+  code: string,
+  message: string,
+  details?: unknown
+): ErrorEnvelope {
+  return {
+    status: "ERROR",
+    message,
+    data: null,
+    error: { code, message, details },
+  };
+}
+
+/**
+ * Classified error with HTTP status and details
+ */
+export interface ClassifiedError {
+  httpStatus: number;
+  code: string;
+  message: string;
+  details?: unknown;
+}
+
+/**
+ * Classifies an error and maps it to an appropriate HTTP status code
+ *
+ * @param err - The error to classify
+ * @returns Classified error with HTTP status, code, and message
+ */
+export function classifyError(err: unknown): ClassifiedError {
+  // Fastify validation errors
+  if (err && typeof err === "object" && "validation" in err) {
+    return {
+      httpStatus: 400,
+      code: "VALIDATION_ERROR",
+      message: "Request validation failed",
+      details: (err as Record<string, unknown>).validation,
+    };
+  }
+
+  // SOAP fault errors (node-soap throws these)
+  if (err && typeof err === "object" && "root" in err) {
+    const root = (err as Record<string, unknown>).root as Record<string, unknown> | undefined;
+    const envelope = root?.Envelope as Record<string, unknown> | undefined;
+    const body = envelope?.Body as Record<string, unknown> | undefined;
+    const fault = body?.Fault as Record<string, unknown> | undefined;
+    if (fault) {
+      return {
+        httpStatus: 502,
+        code: "SOAP_FAULT",
+        message: (fault.faultstring as string) || "SOAP service returned a fault",
+        details: fault,
+      };
+    }
+  }
+
+  // Connection/timeout errors
+  if (err instanceof Error) {
+    if (err.message.includes("ECONNREFUSED") || err.message.includes("ENOTFOUND")) {
+      return {
+        httpStatus: 503,
+        code: "SERVICE_UNAVAILABLE",
+        message: "Unable to connect to SOAP service",
+        details: err.message,
+      };
+    }
+    if (err.message.includes("ETIMEDOUT") || err.message.includes("timeout")) {
+      return {
+        httpStatus: 504,
+        code: "GATEWAY_TIMEOUT",
+        message: "SOAP service request timed out",
+        details: err.message,
+      };
+    }
+  }
+
+  // Generic error fallback
+  const message = err instanceof Error ? err.message : String(err);
+  return {
+    httpStatus: 500,
+    code: "INTERNAL_ERROR",
+    message,
+    details: process.env.NODE_ENV === "development" ? err : undefined,
+  };
+}
+
+/**
+ * Creates a gateway error handler for this service
+ *
+ * @returns Fastify error handler function
+ */
+export function createGatewayErrorHandler_v1_weather() {
+  return async function gatewayErrorHandler(
+    error: Error,
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<ErrorEnvelope> {
+    const classified = classifyError(error);
+
+    request.log.error({
+      err: error,
+      classified,
+      url: request.url,
+      method: request.method,
+    }, "Gateway error");
+
+    reply.status(classified.httpStatus);
+    return buildErrorEnvelope(classified.code, classified.message, classified.details);
+  };
+}
+
+/**
+ * ArrayOf* wrapper type → inner element property name.
+ * These types are flattened to plain arrays in the OpenAPI schema,
+ * so the runtime must unwrap { InnerElement: [...] } → [...].
+ */
+const ARRAY_WRAPPERS: Record<string, string> = {
+  "ArrayOfWeatherDescription": "WeatherDescription",
+  "ArrayOfForecast": "Forecast"
+};
+
+/**
+ * Type name → { propertyName: propertyTypeName } for recursive unwrapping.
+ */
+const CHILDREN_TYPES: Record<string, Record<string, string>> = {
+  "WeatherDescription": {
+    "WeatherID": "number",
+    "Description": "string",
+    "PictureURL": "string"
+  },
+  "ArrayOfWeatherDescription": {
+    "WeatherDescription": "WeatherDescription"
+  },
+  "Temp": {
+    "MorningLow": "string",
+    "DaytimeHigh": "string"
+  },
+  "POP": {
+    "Nighttime": "string",
+    "Daytime": "string"
+  },
+  "Forecast": {
+    "Date": "string",
+    "WeatherID": "number",
+    "Desciption": "string",
+    "Temperatures": "Temp",
+    "ProbabilityOfPrecipiation": "POP"
+  },
+  "ArrayOfForecast": {
+    "Forecast": "Forecast"
+  },
+  "ForecastReturn": {
+    "Success": "boolean",
+    "ResponseText": "string",
+    "State": "string",
+    "City": "string",
+    "WeatherStationCity": "string",
+    "ForecastResult": "ArrayOfForecast"
+  },
+  "WeatherReturn": {
+    "Success": "boolean",
+    "ResponseText": "string",
+    "State": "string",
+    "City": "string",
+    "WeatherStationCity": "string",
+    "WeatherID": "number",
+    "Description": "string",
+    "Temperature": "string",
+    "RelativeHumidity": "string",
+    "Wind": "string",
+    "Pressure": "string",
+    "Visibility": "string",
+    "WindChill": "string",
+    "Remarks": "string"
+  },
+  "GetWeatherInformation": {},
+  "GetWeatherInformationResponse": {
+    "GetWeatherInformationResult": "ArrayOfWeatherDescription"
+  },
+  "GetCityForecastByZIP": {
+    "ZIP": "string"
+  },
+  "GetCityForecastByZIPResponse": {
+    "GetCityForecastByZIPResult": "ForecastReturn"
+  },
+  "GetCityWeatherByZIP": {
+    "ZIP": "string"
+  },
+  "GetCityWeatherByZIPResponse": {
+    "GetCityWeatherByZIPResult": "WeatherReturn"
+  }
+};
+
+/**
+ * Recursively unwraps ArrayOf* wrapper objects in a SOAP response so the
+ * data matches the flattened OpenAPI array schemas.
+ *
+ * Safe to call on any response — returns data unchanged when the type
+ * has no wrapper fields.
+ *
+ * @param data - SOAP response data (potentially with wrapper objects)
+ * @param typeName - The type name for the current data level
+ * @returns Unwrapped data matching the OpenAPI schema shape
+ */
+export function unwrapArrayWrappers(data: unknown, typeName: string): unknown {
+  if (data == null || typeof data !== "object") return data;
+
+  // If this type is itself a wrapper, unwrap it
+  if (typeName in ARRAY_WRAPPERS) {
+    const innerKey = ARRAY_WRAPPERS[typeName];
+    return (data as Record<string, unknown>)[innerKey] ?? [];
+  }
+
+  // Recurse into children whose types may contain wrappers
+  if (typeName in CHILDREN_TYPES) {
+    const children = CHILDREN_TYPES[typeName];
+    for (const [propName, propType] of Object.entries(children)) {
+      const val = (data as Record<string, unknown>)[propName];
+      if (val !== undefined) {
+        (data as Record<string, unknown>)[propName] = unwrapArrayWrappers(val, propType);
+      }
+    }
+  }
+
+  return data;
+}
+"
+`;
+
+exports[`pipeline snapshot > gateway/schemas.ts 1`] = `
+"import type { FastifyInstance } from "fastify";
+import m0 from "./schemas/models/arrayofforecast.json" with { type: "json" };
+import m1 from "./schemas/models/arrayofweatherdescription.json" with { type: "json" };
+import m2 from "./schemas/models/forecast.json" with { type: "json" };
+import m3 from "./schemas/models/forecastreturn.json" with { type: "json" };
+import m4 from "./schemas/models/getcityforecastbyzip.json" with { type: "json" };
+import m5 from "./schemas/models/getcityforecastbyzipresponse.json" with { type: "json" };
+import m6 from "./schemas/models/getcityforecastbyzipresponse_responseenvelope.json" with { type: "json" };
+import m7 from "./schemas/models/getcityweatherbyzip.json" with { type: "json" };
+import m8 from "./schemas/models/getcityweatherbyzipresponse.json" with { type: "json" };
+import m9 from "./schemas/models/getcityweatherbyzipresponse_responseenvelope.json" with { type: "json" };
+import m10 from "./schemas/models/getweatherinformation.json" with { type: "json" };
+import m11 from "./schemas/models/getweatherinformationresponse.json" with { type: "json" };
+import m12 from "./schemas/models/getweatherinformationresponse_responseenvelope.json" with { type: "json" };
+import m13 from "./schemas/models/pop.json" with { type: "json" };
+import m14 from "./schemas/models/temp.json" with { type: "json" };
+import m15 from "./schemas/models/weatherdescription.json" with { type: "json" };
+import m16 from "./schemas/models/weathererrorobject.json" with { type: "json" };
+import m17 from "./schemas/models/weatherresponseenvelope.json" with { type: "json" };
+import m18 from "./schemas/models/weatherreturn.json" with { type: "json" };
+
+export async function registerSchemas_v1_weather(fastify: FastifyInstance) {
+  const schemas = [m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m16, m17, m18];
+  for (const s of schemas) {
+    fastify.addSchema(s as any);
+  }
+}
+"
+`;
+
+exports[`pipeline snapshot > generates the expected set of files 1`] = `
+[
+  "client/catalog.json",
+  "client/client.ts",
+  "client/operations.ts",
+  "client/types.ts",
+  "client/utils.ts",
+  "gateway/_typecheck.ts",
+  "gateway/plugin.ts",
+  "gateway/routes.ts",
+  "gateway/routes/getcityforecastbyzip.ts",
+  "gateway/routes/getcityweatherbyzip.ts",
+  "gateway/routes/getweatherinformation.ts",
+  "gateway/runtime.ts",
+  "gateway/schemas.ts",
+  "gateway/schemas/models/arrayofforecast.json",
+  "gateway/schemas/models/arrayofweatherdescription.json",
+  "gateway/schemas/models/forecast.json",
+  "gateway/schemas/models/forecastreturn.json",
+  "gateway/schemas/models/getcityforecastbyzip.json",
+  "gateway/schemas/models/getcityforecastbyzipresponse.json",
+  "gateway/schemas/models/getcityforecastbyzipresponse_responseenvelope.json",
+  "gateway/schemas/models/getcityweatherbyzip.json",
+  "gateway/schemas/models/getcityweatherbyzipresponse.json",
+  "gateway/schemas/models/getcityweatherbyzipresponse_responseenvelope.json",
+  "gateway/schemas/models/getweatherinformation.json",
+  "gateway/schemas/models/getweatherinformationresponse.json",
+  "gateway/schemas/models/getweatherinformationresponse_responseenvelope.json",
+  "gateway/schemas/models/pop.json",
+  "gateway/schemas/models/temp.json",
+  "gateway/schemas/models/weatherdescription.json",
+  "gateway/schemas/models/weathererrorobject.json",
+  "gateway/schemas/models/weatherresponseenvelope.json",
+  "gateway/schemas/models/weatherreturn.json",
+  "gateway/schemas/operations/getcityforecastbyzip.json",
+  "gateway/schemas/operations/getcityweatherbyzip.json",
+  "gateway/schemas/operations/getweatherinformation.json",
+  "openapi.json",
+]
+`;
+
+exports[`pipeline snapshot > openapi.json 1`] = `
+{
+  "components": {
+    "schemas": {
+      "ArrayOfForecast": {
+        "items": {
+          "$ref": "#/components/schemas/Forecast",
+        },
+        "type": "array",
+      },
+      "ArrayOfWeatherDescription": {
+        "items": {
+          "$ref": "#/components/schemas/WeatherDescription",
+        },
+        "type": "array",
+      },
+      "Forecast": {
+        "properties": {
+          "Date": {
+            "type": "string",
+          },
+          "Desciption": {
+            "type": "string",
+          },
+          "ProbabilityOfPrecipiation": {
+            "$ref": "#/components/schemas/POP",
+          },
+          "Temperatures": {
+            "$ref": "#/components/schemas/Temp",
+          },
+          "WeatherID": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "Date",
+          "ProbabilityOfPrecipiation",
+          "Temperatures",
+          "WeatherID",
+        ],
+        "type": "object",
+      },
+      "ForecastReturn": {
+        "properties": {
+          "City": {
+            "type": "string",
+          },
+          "ForecastResult": {
+            "$ref": "#/components/schemas/ArrayOfForecast",
+          },
+          "ResponseText": {
+            "type": "string",
+          },
+          "State": {
+            "type": "string",
+          },
+          "Success": {
+            "type": "boolean",
+          },
+          "WeatherStationCity": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "Success",
+        ],
+        "type": "object",
+      },
+      "GetCityForecastByZIP": {
+        "properties": {
+          "ZIP": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "GetCityForecastByZIPResponse": {
+        "properties": {
+          "GetCityForecastByZIPResult": {
+            "$ref": "#/components/schemas/ForecastReturn",
+          },
+        },
+        "type": "object",
+      },
+      "GetCityForecastByZIPResponse_ResponseEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WeatherResponseEnvelope",
+          },
+          {
+            "additionalProperties": true,
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GetCityForecastByZIPResponse",
+                  },
+                  {
+                    "type": "null",
+                  },
+                ],
+              },
+            },
+            "type": "object",
+          },
+        ],
+        "description": "Envelope for GetCityForecastByZIPResponse operation output wrapping its payload in 'data'.",
+      },
+      "GetCityWeatherByZIP": {
+        "properties": {
+          "ZIP": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "GetCityWeatherByZIPResponse": {
+        "properties": {
+          "GetCityWeatherByZIPResult": {
+            "$ref": "#/components/schemas/WeatherReturn",
+          },
+        },
+        "required": [
+          "GetCityWeatherByZIPResult",
+        ],
+        "type": "object",
+      },
+      "GetCityWeatherByZIPResponse_ResponseEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WeatherResponseEnvelope",
+          },
+          {
+            "additionalProperties": true,
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GetCityWeatherByZIPResponse",
+                  },
+                  {
+                    "type": "null",
+                  },
+                ],
+              },
+            },
+            "type": "object",
+          },
+        ],
+        "description": "Envelope for GetCityWeatherByZIPResponse operation output wrapping its payload in 'data'.",
+      },
+      "GetWeatherInformation": {
+        "properties": {},
+        "type": "object",
+      },
+      "GetWeatherInformationResponse": {
+        "properties": {
+          "GetWeatherInformationResult": {
+            "$ref": "#/components/schemas/ArrayOfWeatherDescription",
+          },
+        },
+        "type": "object",
+      },
+      "GetWeatherInformationResponse_ResponseEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WeatherResponseEnvelope",
+          },
+          {
+            "additionalProperties": true,
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GetWeatherInformationResponse",
+                  },
+                  {
+                    "type": "null",
+                  },
+                ],
+              },
+            },
+            "type": "object",
+          },
+        ],
+        "description": "Envelope for GetWeatherInformationResponse operation output wrapping its payload in 'data'.",
+      },
+      "POP": {
+        "properties": {
+          "Daytime": {
+            "type": "string",
+          },
+          "Nighttime": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "Temp": {
+        "properties": {
+          "DaytimeHigh": {
+            "type": "string",
+          },
+          "MorningLow": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "WeatherDescription": {
+        "properties": {
+          "Description": {
+            "type": "string",
+          },
+          "PictureURL": {
+            "type": "string",
+          },
+          "WeatherID": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "WeatherID",
+        ],
+        "type": "object",
+      },
+      "WeatherErrorObject": {
+        "additionalProperties": false,
+        "description": "Standard error object for REST responses (not reused for underlying SOAP faults).",
+        "properties": {
+          "code": {
+            "type": "string",
+          },
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "message": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "code",
+          "message",
+        ],
+        "type": "object",
+      },
+      "WeatherResponseEnvelope": {
+        "additionalProperties": true,
+        "description": "Standard API response envelope base schema.",
+        "properties": {
+          "data": {
+            "anyOf": [
+              {},
+              {
+                "type": "null",
+              },
+            ],
+            "description": "Primary payload; per-operation extension refines the shape.",
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WeatherErrorObject",
+              },
+              {
+                "type": "null",
+              },
+            ],
+            "description": "Error details when status indicates failure; null otherwise.",
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+            "description": "Diagnostic/logging message (not for end-user display).",
+          },
+          "status": {
+            "description": "Machine-readable high-level status (e.g. SUCCESS, FAILURE, PENDING).",
+            "type": "string",
+          },
+        },
+        "required": [
+          "status",
+          "data",
+          "error",
+          "message",
+        ],
+        "type": "object",
+      },
+      "WeatherReturn": {
+        "properties": {
+          "City": {
+            "type": "string",
+          },
+          "Description": {
+            "type": "string",
+          },
+          "Pressure": {
+            "type": "string",
+          },
+          "RelativeHumidity": {
+            "type": "string",
+          },
+          "Remarks": {
+            "type": "string",
+          },
+          "ResponseText": {
+            "type": "string",
+          },
+          "State": {
+            "type": "string",
+          },
+          "Success": {
+            "type": "boolean",
+          },
+          "Temperature": {
+            "type": "string",
+          },
+          "Visibility": {
+            "type": "string",
+          },
+          "WeatherID": {
+            "type": "number",
+          },
+          "WeatherStationCity": {
+            "type": "string",
+          },
+          "Wind": {
+            "type": "string",
+          },
+          "WindChill": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "Success",
+          "WeatherID",
+        ],
+        "type": "object",
+      },
+    },
+  },
+  "info": {
+    "title": "Weather SOAP API",
+    "version": "0.0.0",
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/get-city-forecast-by-zip": {
+      "post": {
+        "operationId": "GetCityForecastByZIP",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCityForecastByZIP",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCityForecastByZIPResponse_ResponseEnvelope",
+                },
+              },
+            },
+            "description": "Successful operation (standard envelope)",
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponseEnvelope",
+                },
+              },
+            },
+            "description": "Error response (standard envelope with populated error object)",
+          },
+        },
+        "tags": [
+          "Weather",
+        ],
+      },
+    },
+    "/get-city-weather-by-zip": {
+      "post": {
+        "operationId": "GetCityWeatherByZIP",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCityWeatherByZIP",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCityWeatherByZIPResponse_ResponseEnvelope",
+                },
+              },
+            },
+            "description": "Successful operation (standard envelope)",
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponseEnvelope",
+                },
+              },
+            },
+            "description": "Error response (standard envelope with populated error object)",
+          },
+        },
+        "tags": [
+          "Weather",
+        ],
+      },
+    },
+    "/get-weather-information": {
+      "post": {
+        "operationId": "GetWeatherInformation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetWeatherInformation",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetWeatherInformationResponse_ResponseEnvelope",
+                },
+              },
+            },
+            "description": "Successful operation (standard envelope)",
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponseEnvelope",
+                },
+              },
+            },
+            "description": "Error response (standard envelope with populated error object)",
+          },
+        },
+        "tags": [
+          "Weather",
+        ],
+      },
+    },
+  },
+  "servers": [
+    {
+      "url": "/",
+    },
+  ],
+}
+`;

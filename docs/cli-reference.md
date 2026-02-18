@@ -87,6 +87,7 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--openapi-method` | `post` | Default HTTP method |
 | `--openapi-tag-style` | `default` | Tag inference: default, service, or first |
 | `--openapi-closed-schemas` | `false` | Add additionalProperties: false |
+| `--openapi-flatten-array-wrappers` | `true` | Flatten ArrayOf* wrappers to plain arrays; emit runtime unwrap in gateway |
 | `--openapi-prune-unused-schemas` | `false` | Emit only referenced schemas |
 | `--openapi-envelope-namespace` | `ResponseEnvelope` | Envelope component name suffix |
 | `--openapi-error-namespace` | `ErrorObject` | Error object name suffix |
@@ -107,6 +108,7 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--gateway-decorator-name` | {serviceSlug}Client | Fastify decorator name |
 | `--gateway-skip-plugin` | `false` | Skip plugin.ts generation |
 | `--gateway-skip-runtime` | `false` | Skip runtime.ts generation |
+| `--openapi-flatten-array-wrappers` | `true` | Generate runtime unwrap for ArrayOf* wrapper types |
 
 ### App Scaffold Flags
 

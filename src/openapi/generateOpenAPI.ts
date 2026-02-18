@@ -86,6 +86,7 @@ export interface GenerateOpenAPIOptions {
   skipValidate?: boolean;
   envelopeNamespace?: string;
   errorNamespace?: string;
+  flattenArrayWrappers?: boolean;
 }
 
 export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
@@ -144,6 +145,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
   const schemas = generateSchemas(compiled, {
     closedSchemas: opts.closedSchemas,
     pruneUnusedSchemas: opts.pruneUnusedSchemas,
+    flattenArrayWrappers: opts.flattenArrayWrappers,
   });
 
   // Build paths

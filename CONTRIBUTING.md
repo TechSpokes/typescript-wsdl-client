@@ -142,9 +142,50 @@ src/
 
 ### Testing Strategy
 
-#### How Smoke Tests Work
+The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integration tests, plus smoke tests for end-to-end CLI validation.
 
-Smoke tests are the primary test mechanism. The pipeline is: generate to `tmp/` from `examples/minimal/weather.wsdl`, then typecheck the generated output.
+#### Test Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm test` | Run all Vitest tests |
+| `npm run test:unit` | Unit tests for utilities and parsers |
+| `npm run test:snap` | Snapshot tests for generated code |
+| `npm run test:integration` | Gateway handler integration tests |
+| `npm run test:watch` | Watch mode during development |
+| `npm run smoke:pipeline` | Full CLI smoke test (generate + typecheck) |
+
+#### Test Structure
+
+```text
+test/
+├── unit/                  # Pure function tests
+│   ├── tools.test.ts      # String helpers (pascal, resolveQName, etc.)
+│   ├── casing.test.ts     # Path segment casing
+│   ├── primitives.test.ts # XSD-to-TypeScript type mapping
+│   ├── errors.test.ts     # WsdlCompilationError formatting
+│   └── schema-alignment.test.ts # Cross-validates TS types, JSON schemas, catalog
+├── snapshot/              # Generated output baselines
+│   ├── pipeline.test.ts   # Snapshots for all pipeline outputs
+│   └── __snapshots__/     # Snapshot baseline files
+├── integration/           # End-to-end gateway tests
+│   └── gateway-routes.test.ts # Fastify inject() with mock client
+└── helpers/               # Shared test utilities
+```
+
+#### Updating Snapshots
+
+When a generator change intentionally alters output:
+
+```bash
+npx vitest run test/snapshot -u
+```
+
+Review the snapshot diff before committing. Every file in the generated output has a corresponding snapshot; adding or removing a generated file will also be caught by the file inventory snapshot.
+
+#### Smoke Tests
+
+Smoke tests generate output to `tmp/` from `examples/minimal/weather.wsdl`, then typecheck with `tsc -p tsconfig.smoke.json`.
 
 | Command | What It Tests |
 |---------|---------------|
@@ -155,27 +196,23 @@ Smoke tests are the primary test mechanism. The pipeline is: generate to `tmp/` 
 | `npm run smoke:pipeline` | Full pipeline (client + OpenAPI + gateway + app) + typecheck |
 | `npm run smoke:app` | Pipeline + standalone app generation + typecheck |
 
-Each smoke test follows three steps:
-
-1. Run `smoke:reset` to clear `tmp/`
-2. Generate output using `tsx src/cli.ts <command> ...`
-3. Run `tsc -p tsconfig.smoke.json` to verify the generated TypeScript compiles
-
 The `tsconfig.smoke.json` extends the main `tsconfig.json` but includes `tmp/**/*.ts` in its scope. It maps the `soap` import to `src/types/soap.d.ts` (local type stubs) so generated client code compiles without the soap runtime.
 
 The gateway also generates a `_typecheck.ts` fixture that catches plugin-client type divergence at build time.
 
 #### CI Pipeline
 
-`npm run ci` runs: clean, build, typecheck, smoke:pipeline.
+`npm run ci` runs: clean, build, typecheck, vitest, smoke:pipeline.
 
-This verifies the complete stack: the source compiles, the CLI works, the generated output compiles, and all types are consistent.
+This verifies the complete stack: the source compiles, the tests pass, the CLI works, the generated output compiles, and all types are consistent.
 
 #### Adding Test Fixtures
 
 1. Add the `.wsdl` file to `examples/`
 2. Add a corresponding smoke test script to `package.json`
 3. Include the generated output path in `tsconfig.smoke.json` if needed
+
+See [Testing Guide](docs/testing.md) for detailed patterns including integration test architecture and mock client examples.
 
 ## Community Guidelines
 

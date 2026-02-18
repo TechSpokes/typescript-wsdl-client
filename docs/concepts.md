@@ -163,7 +163,8 @@ interface MyType {
 ## Array Wrapper Flattening
 
 A complex type whose only child is a single repeated element with no attributes
-collapses to an array schema in OpenAPI.
+collapses to an array schema in OpenAPI. Controlled by
+`--openapi-flatten-array-wrappers` (default `true`).
 
 ```xml
 <xs:complexType name="ArrayOfForecast">
@@ -173,7 +174,7 @@ collapses to an array schema in OpenAPI.
 </xs:complexType>
 ```
 
-The resulting OpenAPI schema:
+With flattening enabled (default), the OpenAPI schema becomes a plain array:
 
 ```json
 {
@@ -183,6 +184,32 @@ The resulting OpenAPI schema:
   }
 }
 ```
+
+The TypeScript types preserve the wrapper structure:
+
+```typescript
+export interface ArrayOfForecast {
+  Forecast?: Forecast[];
+}
+```
+
+### Runtime Unwrap
+
+Because the SOAP client returns wrapper-shaped objects (`{ Forecast: [...] }`)
+while the OpenAPI schema expects flat arrays, the generated gateway includes an
+`unwrapArrayWrappers()` function in `runtime.ts`. Route handlers call it
+automatically before serialization. This bridges the TS-type/schema gap without
+requiring consumers to transform responses manually.
+
+### Disabling Flattening
+
+Pass `--openapi-flatten-array-wrappers false` to preserve the wrapper object
+structure in OpenAPI schemas. When disabled:
+
+- ArrayOf* types emit as `type: "object"` with their inner element as a property
+- No `unwrapArrayWrappers()` function is generated in `runtime.ts`
+- Route handlers pass SOAP responses through unmodified
+- The OpenAPI schema matches the TypeScript types exactly
 
 ## Inheritance Flattening
 

@@ -21,6 +21,7 @@ import {generateTypes} from "./client/generateTypes.js";
 import {generateUtils} from "./client/generateUtils.js";
 import {generateCatalog} from "./compiler/generateCatalog.js";
 import {generateClient} from "./client/generateClient.js";
+import {generateOperations} from "./client/generateOperations.js";
 import {info} from "./util/cli.js";
 
 export {generateOpenAPI} from "./openapi/generateOpenAPI.js";
@@ -86,6 +87,7 @@ export async function compileWsdlToProject(
   // Emit artifacts
   const typesFile = path.join(input.outDir, "types.ts");
   const utilsFile = path.join(input.outDir, "utils.ts");
+  const operationsFile = path.join(input.outDir, "operations.ts");
   const catalogFile = path.join(input.outDir, "catalog.json");
   const clientFile = path.join(input.outDir, "client.ts");
 
@@ -100,6 +102,7 @@ export async function compileWsdlToProject(
   generateClient(clientFile, compiled);
   generateTypes(typesFile, compiled);
   generateUtils(utilsFile, compiled);
+  generateOperations(operationsFile, compiled);
 
   if (compiled.options.catalog) {
     generateCatalog(catalogFile, compiled);

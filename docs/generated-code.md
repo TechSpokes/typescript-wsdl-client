@@ -104,3 +104,27 @@ Key features of the generated handlers:
 - **Envelope wrapping** — `buildSuccessEnvelope()` wraps the raw SOAP response in the standard `{ status, message, data, error }` envelope
 
 See [Gateway Guide](gateway-guide.md) for the full architecture and [CLI Reference](cli-reference.md) for generation flags.
+
+## Operations Interface
+
+The generated `operations.ts` exports a typed interface (`{ServiceName}Operations`) that mirrors the concrete client class methods. Use it for dependency injection and testing:
+
+```typescript
+import type { WeatherOperations } from "./client/operations.js";
+
+const mock: WeatherOperations = {
+  GetCityWeatherByZIP: async (args) => ({
+    response: { GetCityWeatherByZIPResult: { Success: true } },
+    headers: {},
+  }),
+  // ...other operations
+};
+```
+
+The gateway plugin accepts any `WeatherOperations` implementation, so you can pass the mock directly:
+
+```typescript
+app.register(weatherGateway, { client: mock });
+```
+
+See [Testing Guide](testing.md) for full integration test patterns.

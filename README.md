@@ -62,6 +62,31 @@ curl -X POST http://localhost:3000/get-weather-information \
 | Fastify Gateway | plugin.ts, routes/, schemas/ | Production REST handlers |
 | Catalog | catalog.json | Compiled WSDL (debuggable, cacheable) |
 
+## Testing With Generated Code
+
+The generated `operations.ts` provides a typed interface for mocking the SOAP client without importing the concrete class or the `soap` package:
+
+```typescript
+import type { WeatherOperations } from "./generated/client/operations.js";
+
+const mockClient: WeatherOperations = {
+  GetCityWeatherByZIP: async (args) => ({
+    response: { GetCityWeatherByZIPResult: { Success: true, City: "Test" } },
+    headers: {},
+  }),
+  // ... other operations
+};
+
+// Use with the gateway plugin
+import Fastify from "fastify";
+import { weatherGateway } from "./generated/gateway/plugin.js";
+
+const app = Fastify();
+await app.register(weatherGateway, { client: mockClient, prefix: "/v1/weather" });
+```
+
+See [Testing Guide](docs/testing.md) for integration test patterns and mock examples.
+
 ## Commands
 
 | Command | Purpose |
@@ -85,6 +110,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Gateway Guide](docs/gateway-guide.md) | Fastify integration and error handling |
 | [Configuration](docs/configuration.md) | Security, tags, operations config files |
 | [Production Guide](docs/production.md) | CI/CD, validation, logging, limitations |
+| [Testing Guide](docs/testing.md) | Testing patterns and mock client examples |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
 | [Working With Generated Code](docs/generated-code.md) | Using clients and types |
 | [Architecture](docs/architecture.md) | Internal pipeline for contributors |

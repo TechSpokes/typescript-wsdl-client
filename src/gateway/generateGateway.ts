@@ -78,6 +78,7 @@ export interface GenerateGatewayOptions {
   emitPlugin?: boolean;
   emitRuntime?: boolean;
   stubHandlers?: boolean;
+  flattenArrayWrappers?: boolean;
 }
 
 /**
@@ -258,6 +259,9 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
   // Step 4: Emit schemas.ts module
   emitSchemasModule(outDir, modelsDir, versionSlug, serviceSlug);
 
+  // Determine whether to generate unwrap code for ArrayOf* wrappers
+  const shouldUnwrap = opts.flattenArrayWrappers !== false && catalog;
+
   // Step 5: Emit route files (with handlers or stubs)
   // Note: Route URLs come from OpenAPI paths which already include any base path
   if (stubHandlers) {
@@ -265,12 +269,12 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
     emitRouteFiles(outDir, routesDir, versionSlug, serviceSlug, operations, importsMode);
   } else {
     // Full handler mode: emit working implementations
-    emitRouteFilesWithHandlers(outDir, routesDir, versionSlug, serviceSlug, operations, importsMode, clientMeta);
+    emitRouteFilesWithHandlers(outDir, routesDir, versionSlug, serviceSlug, operations, importsMode, clientMeta, shouldUnwrap ? catalog : undefined);
   }
 
   // Step 6: Emit runtime.ts (if enabled)
   if (emitRuntime) {
-    emitRuntimeModule(outDir, versionSlug, serviceSlug);
+    emitRuntimeModule(outDir, versionSlug, serviceSlug, shouldUnwrap ? catalog : undefined);
   }
 
   // Step 7: Emit plugin.ts and type-check fixture (if enabled)

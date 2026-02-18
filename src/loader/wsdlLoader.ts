@@ -14,6 +14,7 @@ import {XMLParser} from "fast-xml-parser";
 import {fetchText} from "./fetch.js";
 import path from "node:path";
 import {getChildrenWithLocalName} from "../util/tools.js";
+import {WsdlCompilationError} from "../util/errors.js";
 
 /**
  * Represents a single XSD schema document with its associated context
@@ -66,12 +67,46 @@ const parser = new XMLParser({ignoreAttributes: false, attributeNamePrefix: "@_"
  */
 export async function loadWsdl(wsdlUrlOrPath: string): Promise<WsdlCatalog> {
   // Fetch and parse the WSDL document
-  const {uri: wsdlUri, text} = await fetchText(wsdlUrlOrPath);
-  const wsdlXml = parser.parse(text);
+  let wsdlUri: string;
+  let text: string;
+  try {
+    const fetched = await fetchText(wsdlUrlOrPath);
+    wsdlUri = fetched.uri;
+    text = fetched.text;
+  } catch (err) {
+    throw new WsdlCompilationError(
+      `Failed to load WSDL document: ${err instanceof Error ? err.message : String(err)}`,
+      {
+        file: wsdlUrlOrPath,
+        suggestion: "Verify the file path or URL is correct and accessible.",
+      }
+    );
+  }
+
+  let wsdlXml: any;
+  try {
+    wsdlXml = parser.parse(text);
+  } catch (err) {
+    throw new WsdlCompilationError(
+      `Failed to parse WSDL/XSD document as XML: ${err instanceof Error ? err.message : String(err)}`,
+      {
+        file: wsdlUrlOrPath,
+        suggestion: "Validate the XML with an external tool (e.g., xmllint) and fix any syntax errors.",
+      }
+    );
+  }
 
   // Extract the WSDL definitions node (with or without namespace prefix)
   const defs = wsdlXml["wsdl:definitions"] || wsdlXml["definitions"];
-  if (!defs) throw new Error("Not a WSDL 1.1 file: missing wsdl:definitions");
+  if (!defs) {
+    throw new WsdlCompilationError(
+      "Not a WSDL 1.1 file: missing <wsdl:definitions> root element.",
+      {
+        file: wsdlUrlOrPath,
+        suggestion: "Ensure the file is a valid WSDL 1.1 document with a <definitions> root element.",
+      }
+    );
+  }
 
   // Extract namespace prefixes declared at the WSDL level
   const prefixMap: Record<string, string> = {};
