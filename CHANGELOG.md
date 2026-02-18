@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.11.3] - 2026-02-18
+
+- fix(test): ensure `tmp/` directory exists before `mkdtempSync` in integration test (fixes CI ENOENT)
+
 ## [0.11.2] - 2026-02-18
 
 - feat(cli): add `--test-dir` and `--force-test` flags to generate Vitest test suite for gateway artifacts

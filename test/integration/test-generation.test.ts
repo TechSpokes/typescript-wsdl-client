@@ -12,7 +12,7 @@
  * can find fastify, vitest, and other dependencies from node_modules.
  */
 import { describe, it, expect, beforeAll } from "vitest";
-import { mkdtempSync, readFileSync, statSync, existsSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, statSync, existsSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { runGenerationPipeline } from "../../src/pipeline.js";
@@ -27,7 +27,9 @@ describe("test generation pipeline", () => {
   beforeAll(async () => {
     // Use a project-local tmp/ directory so ESM module resolution finds
     // fastify, vitest, etc. from the project's node_modules.
-    outDir = mkdtempSync(join(PROJECT_ROOT, "tmp", "testgen-"));
+    const tmpBase = join(PROJECT_ROOT, "tmp");
+    mkdirSync(tmpBase, { recursive: true });
+    outDir = mkdtempSync(join(tmpBase, "testgen-"));
     testDir = join(outDir, "tests");
 
     await runGenerationPipeline({
