@@ -60,6 +60,7 @@ export interface PipelineOptions {
   test?: {
     testDir: string;
     force?: boolean;
+    flattenArrayWrappers?: boolean;
   };
 }
 
@@ -217,6 +218,7 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
       force: opts.test.force,
       versionSlug: opts.gateway.versionSlug,
       serviceSlug: opts.gateway.serviceSlug,
+      flattenArrayWrappers: opts.test.flattenArrayWrappers ?? opts.openapi?.flattenArrayWrappers,
     });
   }
 

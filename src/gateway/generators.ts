@@ -12,7 +12,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import {type ClientMeta, type OpenAPIDocument, flattenAllOf, rewriteSchemaRefs, slugName,} from "./helpers.js";
+import {type ClientMeta, type OpenAPIDocument, flattenAllOf, measureSchemaRefComplexity, rewriteSchemaRefs, slugName,} from "./helpers.js";
+import {detectArrayWrappers as detectArrayWrappersShared} from "../util/catalogMeta.js";
 
 /**
  * Emits individual JSON Schema files for each OpenAPI component schema
@@ -86,6 +87,8 @@ export interface OperationMetadata {
   clientMethodName?: string;
   requestTypeName?: string;
   responseTypeName?: string;
+  /** When true, response schema is omitted from route registration to avoid fast-json-stringify stack overflow on deeply nested $ref graphs */
+  skipResponseSchema?: boolean;
 }
 
 /**
@@ -237,6 +240,22 @@ export function emitOperationSchemas(
       if (querySchema) opSchema.querystring = querySchema;
       if (headersSchema) opSchema.headers = headersSchema;
 
+      // Check response schema $ref complexity — fast-json-stringify stack-overflows
+      // on deeply nested $ref graphs (typically > 150 unique schema references).
+      const REF_COMPLEXITY_LIMIT = 150;
+      let skipResponseSchema = false;
+      const allSchemas = doc.components?.schemas ?? {};
+      for (const code of Object.keys(responseObj)) {
+        const refId = responseObj[code]?.$ref;
+        if (!refId) continue;
+        // Extract component name from URN: look up inverse of schemaIdByName
+        const schemaName = Object.keys(schemaIdByName).find(n => schemaIdByName[n] + "#" === refId);
+        if (schemaName && measureSchemaRefComplexity(schemaName, allSchemas, REF_COMPLEXITY_LIMIT) >= REF_COMPLEXITY_LIMIT) {
+          skipResponseSchema = true;
+          break;
+        }
+      }
+
       const opOutPath = path.join(opsDir, `${operationSlug}.json`);
       fs.writeFileSync(opOutPath, JSON.stringify(opSchema, null, 2), "utf8");
 
@@ -244,6 +263,7 @@ export function emitOperationSchemas(
         operationSlug,
         method: lowerMethod,
         path: p,
+        skipResponseSchema,
       });
     }
   }
@@ -343,10 +363,21 @@ export function emitRouteFiles(
     routeTs += `import type { FastifyInstance } from "fastify";\n`;
     routeTs += `import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };\n\n`;
     routeTs += `export async function ${fnName}(fastify: FastifyInstance) {\n`;
-    routeTs += `  fastify.route({\n`;
-    routeTs += `    method: "${op.method.toUpperCase()}",\n`;
-    routeTs += `    url: "${op.path}",\n`;
-    routeTs += `    schema: schema as any,\n`;
+    if (op.skipResponseSchema) {
+      // Response schema too complex for fast-json-stringify — strip it so Fastify
+      // falls back to JSON.stringify for response serialization.
+      routeTs += `  // Response schema omitted: $ref graph exceeds fast-json-stringify depth limit\n`;
+      routeTs += `  const { response: _response, ...routeSchema } = schema as Record<string, unknown>;\n`;
+      routeTs += `  fastify.route({\n`;
+      routeTs += `    method: "${op.method.toUpperCase()}",\n`;
+      routeTs += `    url: "${op.path}",\n`;
+      routeTs += `    schema: routeSchema as any,\n`;
+    } else {
+      routeTs += `  fastify.route({\n`;
+      routeTs += `    method: "${op.method.toUpperCase()}",\n`;
+      routeTs += `    url: "${op.path}",\n`;
+      routeTs += `    schema: schema as any,\n`;
+    }
     routeTs += `    handler: async (request, reply) => {\n`;
     routeTs += `      throw new Error("Not implemented");\n`;
     routeTs += `    }\n`;
@@ -384,22 +415,13 @@ export function emitRouteFiles(
 /**
  * Detects ArrayOf* wrapper types from catalog type metadata.
  *
- * An ArrayOf* wrapper has exactly one element with max "unbounded" (or > 1)
- * and no attributes — mirroring the logic in generateSchemas.ts isArrayWrapper().
+ * Delegates to the shared utility in src/util/catalogMeta.ts.
  *
  * @param catalog - Compiled catalog object
  * @returns Record mapping wrapper type name to inner element property name
  */
 function detectArrayWrappers(catalog: any): Record<string, string> {
-  const wrappers: Record<string, string> = {};
-  for (const t of catalog.types || []) {
-    if (t.attrs && t.attrs.length !== 0) continue;
-    if (!t.elems || t.elems.length !== 1) continue;
-    const e = t.elems[0];
-    if (e.max !== "unbounded" && !(e.max > 1)) continue;
-    wrappers[t.name] = e.name;
-  }
-  return wrappers;
+  return detectArrayWrappersShared(catalog.types || []);
 }
 
 export function emitRuntimeModule(
@@ -449,7 +471,13 @@ export function unwrapArrayWrappers(data: unknown, typeName: string): unknown {
   // If this type is itself a wrapper, unwrap it
   if (typeName in ARRAY_WRAPPERS) {
     const innerKey = ARRAY_WRAPPERS[typeName];
-    return (data as Record<string, unknown>)[innerKey] ?? [];
+    const arr = (data as Record<string, unknown>)[innerKey] ?? [];
+    // Recurse into each item using the element's type from CHILDREN_TYPES
+    if (Array.isArray(arr) && typeName in CHILDREN_TYPES) {
+      const elemType = CHILDREN_TYPES[typeName][innerKey];
+      if (elemType) return arr.map(item => unwrapArrayWrappers(item, elemType));
+    }
+    return arr;
   }
 
   // Recurse into children whose types may contain wrappers
@@ -458,7 +486,11 @@ export function unwrapArrayWrappers(data: unknown, typeName: string): unknown {
     for (const [propName, propType] of Object.entries(children)) {
       const val = (data as Record<string, unknown>)[propName];
       if (val !== undefined) {
-        (data as Record<string, unknown>)[propName] = unwrapArrayWrappers(val, propType);
+        if (Array.isArray(val)) {
+          (data as Record<string, unknown>)[propName] = val.map(item => unwrapArrayWrappers(item, propType));
+        } else {
+          (data as Record<string, unknown>)[propName] = unwrapArrayWrappers(val, propType);
+        }
       }
     }
   }
@@ -881,6 +913,13 @@ export function emitRouteFilesWithHandlers(
       : `return buildSuccessEnvelope(result.response);`;
 
     // Note: op.path comes from OpenAPI and already includes any base path
+    const schemaBinding = op.skipResponseSchema
+      ? `\n// Response schema omitted: $ref graph exceeds fast-json-stringify depth limit\nconst { response: _response, ...routeSchema } = schema as Record<string, unknown>;\n`
+      : "";
+    const schemaLine = op.skipResponseSchema
+      ? "    schema: routeSchema,"
+      : "    schema,";
+
     let routeTs = `/**
  * Route: ${op.method.toUpperCase()} ${op.path}
  * Operation: ${op.operationId || op.operationSlug}
@@ -891,12 +930,12 @@ export function emitRouteFilesWithHandlers(
 import type { FastifyInstance } from "fastify";
 ${typeImport}import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };
 ${runtimeImport}
-
+${schemaBinding}
 export async function ${fnName}(fastify: FastifyInstance) {
   fastify.route${routeGeneric}({
     method: "${op.method.toUpperCase()}",
     url: "${op.path}",
-    schema,
+${schemaLine}
     handler: async (request) => {
       const client = fastify.${clientMeta.decoratorName};
       const result = await client.${clientMethod}(${bodyArg});

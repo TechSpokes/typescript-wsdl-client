@@ -7,6 +7,7 @@
  *
  * Pure logic — no I/O or side effects.
  */
+import {detectArrayWrappers, flattenMockPayload} from "../util/catalogMeta.js";
 
 /**
  * Options for mock data generation
@@ -20,6 +21,7 @@ export interface MockDataOptions {
  */
 export interface CatalogForMocks {
   meta?: {
+    attrType?: Record<string, Record<string, string>>;
     childType?: Record<string, Record<string, string>>;
     propMeta?: Record<string, Record<string, {
       declaredType?: string;
@@ -32,6 +34,11 @@ export interface CatalogForMocks {
     name: string;
     inputTypeName?: string;
     outputTypeName?: string;
+  }>;
+  types?: Array<{
+    name: string;
+    attrs: Array<{ name: string }>;
+    elems: Array<{ name: string; max: number | "unbounded" }>;
   }>;
 }
 
@@ -57,6 +64,13 @@ export function generateMockPrimitive(tsType: string, propName: string): string 
     if (lower.includes("humidity")) return 65;
     if (lower.includes("pressure")) return 1013;
     return 0;
+  }
+
+  // String union / enum type — pick the first literal value
+  // e.g. '"Test" | "Production"' → "Test"
+  if (tsType.includes("|") && tsType.includes('"')) {
+    const match = tsType.match(/"([^"]+)"/);
+    if (match) return match[1];
   }
 
   // string type — use contextual defaults
@@ -104,7 +118,8 @@ export function generateMockData(
   }
 
   const childTypes = catalog.meta?.childType?.[typeName];
-  if (!childTypes || Object.keys(childTypes).length === 0) {
+  const attrTypes = catalog.meta?.attrType?.[typeName];
+  if ((!childTypes || Object.keys(childTypes).length === 0) && !attrTypes) {
     return {};
   }
 
@@ -114,7 +129,7 @@ export function generateMockData(
 
   const result: Record<string, unknown> = {};
 
-  for (const [propName, propType] of Object.entries(childTypes)) {
+  for (const [propName, propType] of Object.entries(childTypes ?? {})) {
     const meta = propMeta[propName];
     const isArray = meta?.max === "unbounded" || (typeof meta?.max === "number" && meta.max > 1);
 
@@ -129,7 +144,29 @@ export function generateMockData(
     }
   }
 
+  // Include XML attributes (not in childType, stored separately in attrType)
+  if (attrTypes) {
+    for (const [attrName, attrTsType] of Object.entries(attrTypes)) {
+      if (!(attrName in result)) {
+        // Handle array-typed attributes (e.g. "string[]")
+        if (attrTsType.endsWith("[]")) {
+          const baseType = attrTsType.slice(0, -2);
+          result[attrName] = [generateMockPrimitive(baseType, attrName)];
+        } else {
+          result[attrName] = generateMockPrimitive(attrTsType, attrName);
+        }
+      }
+    }
+  }
+
   return result;
+}
+
+/**
+ * Options for bulk mock generation
+ */
+export interface GenerateAllMocksOptions {
+  flattenArrayWrappers?: boolean;
 }
 
 /**
@@ -138,21 +175,40 @@ export function generateMockData(
  * Response data uses the pre-unwrap shape (e.g. { WeatherDescription: [{...}] }
  * not [{...}]) since the generated route handler calls unwrapArrayWrappers() at runtime.
  *
+ * When flattenArrayWrappers is enabled, request payloads are post-processed to
+ * flatten ArrayOf* wrapper objects into plain arrays, matching the OpenAPI schema
+ * shape that AJV validates against.
+ *
  * @param catalog - The compiled catalog with operations and type metadata
+ * @param opts - Optional generation options
  * @returns Map from operation name to { request, response } mock data
  */
 export function generateAllOperationMocks(
-  catalog: CatalogForMocks
+  catalog: CatalogForMocks,
+  opts?: GenerateAllMocksOptions
 ): Map<string, { request: Record<string, unknown>; response: Record<string, unknown> }> {
   const result = new Map<string, { request: Record<string, unknown>; response: Record<string, unknown> }>();
 
   if (!catalog.operations) return result;
 
+  // Detect array wrappers once for all operations
+  const arrayWrappers = opts?.flattenArrayWrappers !== false && catalog.types
+    ? detectArrayWrappers(catalog.types)
+    : {};
+  const shouldFlatten = Object.keys(arrayWrappers).length > 0;
+  const childTypeMap = catalog.meta?.childType ?? {};
+
   for (const op of catalog.operations) {
-    const request = op.inputTypeName
+    let request = op.inputTypeName
       ? generateMockData(op.inputTypeName, catalog)
       : {};
 
+    // Flatten request payloads when array wrappers are active
+    if (shouldFlatten && op.inputTypeName) {
+      request = flattenMockPayload(request, op.inputTypeName, childTypeMap, arrayWrappers);
+    }
+
+    // Response stays SOAP-shaped (pre-unwrap) since runtime unwrapArrayWrappers() handles it
     const response = op.outputTypeName
       ? generateMockData(op.outputTypeName, catalog)
       : {};

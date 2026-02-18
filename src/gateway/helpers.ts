@@ -574,3 +574,59 @@ export function resolveOperationMeta(
   };
 }
 
+/**
+ * Measures the $ref graph complexity of a schema component.
+ *
+ * Walks all $ref chains from the starting schema and counts the number of
+ * unique schemas referenced. Used to detect response schemas that are too
+ * complex for fast-json-stringify to compile without stack overflow.
+ *
+ * @param startSchemaName - Name of the schema component to start from
+ * @param allSchemas - All component schemas (from doc.components.schemas)
+ * @param limit - Stop walking after this many unique refs (default 200)
+ * @returns Number of unique schema components reachable via $ref
+ */
+export function measureSchemaRefComplexity(
+  startSchemaName: string,
+  allSchemas: Record<string, any>,
+  limit: number = 200
+): number {
+  const visited = new Set<string>();
+
+  function walkSchema(node: any): void {
+    if (!node || typeof node !== "object" || visited.size >= limit) return;
+
+    if (Array.isArray(node)) {
+      for (const item of node) walkSchema(item);
+      return;
+    }
+
+    if (node.$ref && typeof node.$ref === "string") {
+      const prefix = "#/components/schemas/";
+      if (node.$ref.startsWith(prefix)) {
+        const refName = node.$ref.slice(prefix.length);
+        if (!visited.has(refName)) {
+          visited.add(refName);
+          if (allSchemas[refName]) walkSchema(allSchemas[refName]);
+        }
+      }
+      return;
+    }
+
+    if (node.properties) {
+      for (const propSchema of Object.values(node.properties)) walkSchema(propSchema);
+    }
+    if (node.items) walkSchema(node.items);
+    if (node.additionalProperties && typeof node.additionalProperties === "object") {
+      walkSchema(node.additionalProperties);
+    }
+    if (node.allOf) for (const m of node.allOf) walkSchema(m);
+    if (node.anyOf) for (const m of node.anyOf) walkSchema(m);
+    if (node.oneOf) for (const m of node.oneOf) walkSchema(m);
+  }
+
+  visited.add(startSchemaName);
+  if (allSchemas[startSchemaName]) walkSchema(allSchemas[startSchemaName]);
+  return visited.size;
+}
+

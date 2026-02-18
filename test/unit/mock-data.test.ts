@@ -61,6 +61,12 @@ describe("generateMockPrimitive", () => {
     expect(generateMockPrimitive("string", "SomethingUnknown")).toBe("sample");
   });
 
+  it("picks first enum value for string union types", () => {
+    expect(generateMockPrimitive('"Test" | "Production"', "Target")).toBe("Test");
+    expect(generateMockPrimitive('"Start" | "End" | "Rollback"', "Status")).toBe("Start");
+    expect(generateMockPrimitive('"Yes" | "No" | "Inherit"', "ShareSynchInd")).toBe("Yes");
+  });
+
   it("returns correct types", () => {
     expect(typeof generateMockPrimitive("string", "x")).toBe("string");
     expect(typeof generateMockPrimitive("number", "x")).toBe("number");
@@ -194,6 +200,59 @@ describe("generateMockData", () => {
     const catalog: CatalogForMocks = {};
     expect(generateMockData("AnyType", catalog)).toEqual({});
   });
+
+  it("includes attributes from attrType in mock data", () => {
+    const catalog: CatalogForMocks = {
+      meta: {
+        childType: {
+          RequestType: { Name: "string" },
+        },
+        attrType: {
+          RequestType: { Version: "string", Priority: "number" },
+        },
+        propMeta: {},
+      },
+    };
+    const result = generateMockData("RequestType", catalog);
+    expect(typeof result.Name).toBe("string");
+    expect(typeof result.Version).toBe("string");
+    expect(typeof result.Priority).toBe("number");
+  });
+
+  it("does not overwrite element values with attribute values", () => {
+    const catalog: CatalogForMocks = {
+      meta: {
+        childType: {
+          MyType: { Status: "string" },
+        },
+        attrType: {
+          MyType: { Status: "boolean" },
+        },
+        propMeta: {},
+      },
+    };
+    const result = generateMockData("MyType", catalog);
+    // Element value takes priority
+    expect(typeof result.Status).toBe("string");
+  });
+
+  it("generates attribute-only types (no elements)", () => {
+    const catalog: CatalogForMocks = {
+      meta: {
+        childType: {
+          AttrOnlyType: {},
+        },
+        attrType: {
+          AttrOnlyType: { Code: "string", Active: "boolean" },
+        },
+        propMeta: {},
+      },
+    };
+    // childType is empty, so elements produce nothing, but attrType adds attrs
+    const result = generateMockData("AttrOnlyType", catalog);
+    expect(typeof result.Code).toBe("string");
+    expect(typeof result.Active).toBe("boolean");
+  });
 });
 
 describe("generateAllOperationMocks", () => {
@@ -280,5 +339,65 @@ describe("generateAllOperationMocks", () => {
     expect(result.size).toBe(2);
     expect(result.has("OpA")).toBe(true);
     expect(result.has("OpB")).toBe(true);
+  });
+
+  it("flattens array wrappers in request payloads when types are available", () => {
+    const catalog: CatalogForMocks = {
+      meta: {
+        childType: {
+          ReqType: { Items: "ArrayOfItem" },
+          ArrayOfItem: { Item: "ItemType" },
+          ItemType: { Id: "number" },
+          ResType: { Items: "ArrayOfItem" },
+        },
+        propMeta: {
+          ArrayOfItem: {
+            Item: { declaredType: "ItemType", min: 0, max: "unbounded" },
+          },
+        },
+      },
+      types: [
+        { name: "ArrayOfItem", attrs: [], elems: [{ name: "Item", max: "unbounded" as const }] },
+        { name: "ItemType", attrs: [], elems: [{ name: "Id", max: 1 }] },
+        { name: "ReqType", attrs: [], elems: [{ name: "Items", max: 1 }] },
+        { name: "ResType", attrs: [], elems: [{ name: "Items", max: 1 }] },
+      ],
+      operations: [
+        { name: "GetItems", inputTypeName: "ReqType", outputTypeName: "ResType" },
+      ],
+    };
+    const result = generateAllOperationMocks(catalog, { flattenArrayWrappers: true });
+    const mock = result.get("GetItems")!;
+    // Request should be flattened: Items is an array, not { Item: [...] }
+    expect(Array.isArray(mock.request.Items)).toBe(true);
+    // Response should stay SOAP-shaped (pre-unwrap)
+    expect(mock.response.Items).toHaveProperty("Item");
+  });
+
+  it("does not flatten when flattenArrayWrappers is false", () => {
+    const catalog: CatalogForMocks = {
+      meta: {
+        childType: {
+          ReqType: { Items: "ArrayOfItem" },
+          ArrayOfItem: { Item: "string" },
+        },
+        propMeta: {
+          ArrayOfItem: {
+            Item: { declaredType: "string", min: 0, max: "unbounded" },
+          },
+        },
+      },
+      types: [
+        { name: "ArrayOfItem", attrs: [], elems: [{ name: "Item", max: "unbounded" as const }] },
+        { name: "ReqType", attrs: [], elems: [{ name: "Items", max: 1 }] },
+      ],
+      operations: [
+        { name: "Op", inputTypeName: "ReqType" },
+      ],
+    };
+    const result = generateAllOperationMocks(catalog, { flattenArrayWrappers: false });
+    const mock = result.get("Op")!;
+    // Should NOT be flattened
+    expect(mock.request.Items).toHaveProperty("Item");
   });
 });

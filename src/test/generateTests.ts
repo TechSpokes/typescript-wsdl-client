@@ -17,6 +17,7 @@ import {info, success} from "../util/cli.js";
 import {resolveClientMeta, resolveOperationMeta} from "../gateway/helpers.js";
 import type {ResolvedOperationMeta} from "../gateway/helpers.js";
 import type {CatalogForMocks} from "./mockData.js";
+import {generateAllOperationMocks} from "./mockData.js";
 import {
   emitVitestConfig,
   emitMockClientHelper,
@@ -42,6 +43,7 @@ export interface GenerateTestsOptions {
   force?: boolean;
   versionSlug?: string;
   serviceSlug?: string;
+  flattenArrayWrappers?: boolean;
 }
 
 /**
@@ -152,6 +154,11 @@ export async function generateTests(opts: GenerateTestsOptions): Promise<void> {
   fs.mkdirSync(path.join(testDir, "gateway"), {recursive: true});
   fs.mkdirSync(path.join(testDir, "runtime"), {recursive: true});
 
+  // Compute mock data once for all emitters
+  const mocks = generateAllOperationMocks(catalog, {
+    flattenArrayWrappers: opts.flattenArrayWrappers,
+  });
+
   // Emit vitest.config.ts
   writeTestFile(
     path.join(testDir, "vitest.config.ts"),
@@ -162,7 +169,7 @@ export async function generateTests(opts: GenerateTestsOptions): Promise<void> {
   // Emit helpers/mock-client.ts
   writeTestFile(
     path.join(testDir, "helpers", "mock-client.ts"),
-    emitMockClientHelper(testDir, clientDir, importsMode, clientMeta, operations, catalog),
+    emitMockClientHelper(testDir, clientDir, importsMode, clientMeta, operations, mocks),
     force
   );
 
@@ -176,21 +183,21 @@ export async function generateTests(opts: GenerateTestsOptions): Promise<void> {
   // Emit gateway/routes.test.ts
   writeTestFile(
     path.join(testDir, "gateway", "routes.test.ts"),
-    emitRoutesTest(testDir, importsMode, operations, catalog),
+    emitRoutesTest(testDir, importsMode, operations, mocks),
     force
   );
 
   // Emit gateway/errors.test.ts
   writeTestFile(
     path.join(testDir, "gateway", "errors.test.ts"),
-    emitErrorsTest(testDir, importsMode, operations, catalog),
+    emitErrorsTest(testDir, importsMode, operations, mocks),
     force
   );
 
   // Emit gateway/envelope.test.ts
   writeTestFile(
     path.join(testDir, "gateway", "envelope.test.ts"),
-    emitEnvelopeTest(testDir, importsMode, operations, catalog),
+    emitEnvelopeTest(testDir, importsMode, operations, mocks),
     force
   );
 

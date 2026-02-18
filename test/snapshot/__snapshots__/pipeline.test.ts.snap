@@ -20,6 +20,7 @@ exports[`pipeline snapshot > client/catalog.json 1`] = `
       "WeatherDescription": [],
       "WeatherReturn": [],
     },
+    "attrType": {},
     "childType": {
       "ArrayOfForecast": {
         "Forecast": "Forecast",
@@ -2625,7 +2626,13 @@ export function unwrapArrayWrappers(data: unknown, typeName: string): unknown {
   // If this type is itself a wrapper, unwrap it
   if (typeName in ARRAY_WRAPPERS) {
     const innerKey = ARRAY_WRAPPERS[typeName];
-    return (data as Record<string, unknown>)[innerKey] ?? [];
+    const arr = (data as Record<string, unknown>)[innerKey] ?? [];
+    // Recurse into each item using the element's type from CHILDREN_TYPES
+    if (Array.isArray(arr) && typeName in CHILDREN_TYPES) {
+      const elemType = CHILDREN_TYPES[typeName][innerKey];
+      if (elemType) return arr.map(item => unwrapArrayWrappers(item, elemType));
+    }
+    return arr;
   }
 
   // Recurse into children whose types may contain wrappers
@@ -2634,7 +2641,11 @@ export function unwrapArrayWrappers(data: unknown, typeName: string): unknown {
     for (const [propName, propType] of Object.entries(children)) {
       const val = (data as Record<string, unknown>)[propName];
       if (val !== undefined) {
-        (data as Record<string, unknown>)[propName] = unwrapArrayWrappers(val, propType);
+        if (Array.isArray(val)) {
+          (data as Record<string, unknown>)[propName] = val.map(item => unwrapArrayWrappers(item, propType));
+        } else {
+          (data as Record<string, unknown>)[propName] = unwrapArrayWrappers(val, propType);
+        }
       }
     }
   }

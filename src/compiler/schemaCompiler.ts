@@ -111,6 +111,7 @@ export type CompiledCatalog = {
   aliases: CompiledAlias[]; // named simple types (type aliases)
   meta: {
     attrSpec: Record<string, string[]>;
+    attrType: Record<string, Record<string, string>>;
     childType: Record<string, Record<string, string>>;
     propMeta: Record<string, Record<string, any>>;
   };
@@ -270,6 +271,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
 
   // meta accumulators
   const attrSpec: Record<string, string[]> = {};
+  const attrType: Record<string, Record<string, string>> = {};
   const childType: Record<string, Record<string, string>> = {};
   const propMeta: Record<string, Record<string, any>> = {};
 
@@ -707,9 +709,29 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
   const typesList = Array.from(compiledMap.values());
   const aliasList = Array.from(aliasMap.values());
 
+  // Build alias resolution map for simple type aliases (e.g. YesNoType -> '"Yes" | "No"')
+  const aliasResolve = new Map<string, string>();
+  for (const a of aliasList) {
+    if (a.tsType && a.tsType !== a.name) {
+      aliasResolve.set(a.name, a.tsType);
+    }
+  }
+
   // meta
   for (const t of typesList) {
     attrSpec[t.name] = (t.attrs || []).map(a => a.name);
+    const attrMap: Record<string, string> = {};
+    for (const a of t.attrs || []) {
+      let tsType = typeof a.tsType === "string" ? a.tsType : "string";
+      // Resolve alias names to their underlying TS types for mock data generation
+      if (aliasResolve.has(tsType)) {
+        tsType = aliasResolve.get(tsType)!;
+      }
+      attrMap[a.name] = tsType;
+    }
+    if (Object.keys(attrMap).length > 0) {
+      attrType[t.name] = attrMap;
+    }
     const child: Record<string, string> = {};
     const meta: Record<string, any> = {};
     for (const e of t.elems || []) {
@@ -733,6 +755,9 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
         childType[a.name] = childType[a.tsType];
         propMeta[a.name] = propMeta[a.tsType];
         attrSpec[a.name] = attrSpec[a.tsType];
+        if (a.tsType in attrType) {
+          attrType[a.name] = attrType[a.tsType];
+        }
       }
     }
   }
@@ -847,7 +872,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     options: options,
     types: typesList,
     aliases: aliasList,
-    meta: {attrSpec, childType, propMeta},
+    meta: {attrSpec, attrType, childType, propMeta},
     operations: ops,
     wsdlTargetNS: defs?.["@_targetNamespace"] || "",
     serviceName,

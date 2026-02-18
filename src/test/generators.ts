@@ -12,7 +12,10 @@
 import {computeRelativeImport} from "../util/imports.js";
 import type {ClientMeta, ResolvedOperationMeta} from "../gateway/helpers.js";
 import type {CatalogForMocks} from "./mockData.js";
-import {generateAllOperationMocks} from "./mockData.js";
+import {detectArrayWrappers, detectChildrenTypes} from "../util/catalogMeta.js";
+
+/** Pre-computed mock data map passed from the orchestrator to all emitters. */
+export type OperationMocksMap = Map<string, { request: Record<string, unknown>; response: Record<string, unknown> }>;
 
 /**
  * Emits vitest.config.ts content.
@@ -21,12 +24,13 @@ import {generateAllOperationMocks} from "./mockData.js";
  * config file location, not the working directory.
  */
 export function emitVitestConfig(): string {
-  return `import { dirname } from "node:path";
+  return `import { defineProject } from "vitest/config";
+import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export default {
+export default defineProject({
   test: {
     root: __dirname,
     include: [
@@ -35,7 +39,7 @@ export default {
     ],
     testTimeout: 30000,
   },
-};
+});
 `;
 }
 
@@ -47,7 +51,7 @@ export default {
  * @param importsMode - Import extension mode
  * @param clientMeta - Client metadata
  * @param operations - Resolved operation metadata
- * @param catalog - Compiled catalog for mock data generation
+ * @param mocks - Pre-computed mock data map
  */
 export function emitMockClientHelper(
   testDir: string,
@@ -55,12 +59,10 @@ export function emitMockClientHelper(
   importsMode: "js" | "ts" | "bare",
   clientMeta: ClientMeta,
   operations: ResolvedOperationMeta[],
-  catalog: CatalogForMocks
+  mocks: OperationMocksMap
 ): string {
   const helpersDir = `${testDir}/helpers`;
   const operationsImport = computeRelativeImport(helpersDir, `${clientDir}/operations`, importsMode);
-
-  const mocks = generateAllOperationMocks(catalog);
 
   // Sort operations for deterministic output
   const sortedOps = [...operations].sort((a, b) => a.operationId.localeCompare(b.operationId));
@@ -166,18 +168,16 @@ export async function createTestApp(
  * @param testDir - Absolute path to test output directory
  * @param importsMode - Import extension mode
  * @param operations - Resolved operation metadata
- * @param catalog - Compiled catalog for mock data generation
+ * @param mocks - Pre-computed mock data map
  */
 export function emitRoutesTest(
   testDir: string,
   importsMode: "js" | "ts" | "bare",
   operations: ResolvedOperationMeta[],
-  catalog: CatalogForMocks
+  mocks: OperationMocksMap
 ): string {
   const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
   const testAppImport = `../helpers/test-app${suffix}`;
-
-  const mocks = generateAllOperationMocks(catalog);
 
   // Sort operations for deterministic output
   const sortedOps = [...operations].sort((a, b) => a.operationId.localeCompare(b.operationId));
@@ -227,13 +227,13 @@ ${testCases}
  * @param testDir - Absolute path to test output directory
  * @param importsMode - Import extension mode
  * @param operations - Resolved operation metadata (uses first operation for error tests)
- * @param catalog - Compiled catalog for mock data generation
+ * @param mocks - Pre-computed mock data map
  */
 export function emitErrorsTest(
   testDir: string,
   importsMode: "js" | "ts" | "bare",
   operations: ResolvedOperationMeta[],
-  catalog: CatalogForMocks
+  mocks: OperationMocksMap
 ): string {
   const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
   const testAppImport = `../helpers/test-app${suffix}`;
@@ -244,7 +244,6 @@ export function emitErrorsTest(
   const op = sortedOps[0];
   if (!op) return "// No operations found\n";
 
-  const mocks = generateAllOperationMocks(catalog);
   const mockData = mocks.get(op.operationId);
   const requestPayload = JSON.stringify(mockData?.request ?? {}, null, 4).replace(/\n/g, "\n    ");
 
@@ -373,7 +372,7 @@ export function emitEnvelopeTest(
   testDir: string,
   importsMode: "js" | "ts" | "bare",
   operations: ResolvedOperationMeta[],
-  catalog: CatalogForMocks
+  mocks: OperationMocksMap
 ): string {
   // noinspection DuplicatedCode
   const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
@@ -384,7 +383,6 @@ export function emitEnvelopeTest(
   const op = sortedOps[0];
   if (!op) return "// No operations found\n";
 
-  const mocks = generateAllOperationMocks(catalog);
   const mockData = mocks.get(op.operationId);
   const requestPayload = JSON.stringify(mockData?.request ?? {}, null, 4).replace(/\n/g, "\n    ");
 
@@ -649,9 +647,14 @@ export function emitUnwrapTest(
   importsMode: "js" | "ts" | "bare",
   catalog: CatalogForMocks
 ): string | null {
-  // Detect array wrappers
-  const wrappers = detectArrayWrappersFromCatalog(catalog);
+  // Detect array wrappers using shared utility with full type definitions
+  const types = catalog.types ?? [];
+  const wrappers = detectArrayWrappers(types);
   if (Object.keys(wrappers).length === 0) return null;
+
+  // Detect children-only types (in CHILDREN_TYPES but NOT in ARRAY_WRAPPERS)
+  const childTypeMap = catalog.meta?.childType ?? {};
+  const childrenOnly = detectChildrenTypes(childTypeMap, wrappers);
 
   const runtimeDir = `${testDir}/runtime`;
   const runtimeImport = computeRelativeImport(runtimeDir, `${gatewayDir}/runtime`, importsMode);
@@ -663,6 +666,26 @@ export function emitUnwrapTest(
     expect(result).toEqual([{ id: 1 }]);
   });`;
   }).join("\n\n");
+
+  // Generate tests for children-only types that have nested wrappers
+  const childrenTests: string[] = [];
+  for (const [typeName, children] of Object.entries(childrenOnly)) {
+    // Find children whose types are array wrappers (these get recursively unwrapped)
+    const wrappedChildren = Object.entries(children).filter(([, childType]) => childType in wrappers);
+    if (wrappedChildren.length === 0) continue;
+
+    const [childProp, childType] = wrappedChildren[0];
+    const innerKey = wrappers[childType];
+    childrenTests.push(`  it("recursively unwraps nested wrappers in ${typeName}", () => {
+    const input = { ${childProp}: { ${innerKey}: [{ id: 1 }] } };
+    const result = unwrapArrayWrappers(input, "${typeName}");
+    expect(result).toEqual({ ${childProp}: [{ id: 1 }] });
+  });`);
+  }
+
+  const childrenTestBlock = childrenTests.length > 0
+    ? "\n" + childrenTests.join("\n\n") + "\n"
+    : "";
 
   return `/**
  * unwrapArrayWrappers() Unit Tests
@@ -676,7 +699,7 @@ import { unwrapArrayWrappers } from "${runtimeImport}";
 
 describe("unwrapArrayWrappers", () => {
 ${wrapperTests}
-
+${childrenTestBlock}
   it("returns empty array when inner key is missing", () => {
     const result = unwrapArrayWrappers({}, "${Object.keys(wrappers)[0]}");
     expect(result).toEqual([]);
@@ -691,24 +714,3 @@ ${wrapperTests}
 `;
 }
 
-/**
- * Detects ArrayOf* wrapper types from catalog (mirrors the logic in generators.ts).
- */
-function detectArrayWrappersFromCatalog(catalog: CatalogForMocks): Record<string, string> {
-  const wrappers: Record<string, string> = {};
-  const childTypes = catalog.meta?.childType ?? {};
-  const propMeta = catalog.meta?.propMeta ?? {};
-
-  for (const [typeName, children] of Object.entries(childTypes)) {
-    const childEntries = Object.entries(children);
-    if (childEntries.length !== 1) continue;
-
-    const [propName] = childEntries[0];
-    const meta = propMeta[typeName]?.[propName];
-    if (meta?.max === "unbounded" || (typeof meta?.max === "number" && meta.max > 1)) {
-      wrappers[typeName] = propName;
-    }
-  }
-
-  return wrappers;
-}

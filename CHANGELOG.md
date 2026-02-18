@@ -9,6 +9,17 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.11.6] - 2026-02-18
+
+- fix(test): include XML attribute fields in generated mock payloads via `attrType` catalog metadata
+- fix(test): flatten array-wrapper request payloads to match OpenAPI schema format
+- fix(test): detect enum types and generate valid mock values in `generateMockPrimitive()`
+- fix(test): use `defineProject()` from vitest/config in generated vitest.config.ts
+- fix(gateway): recurse into array items in generated `unwrapArrayWrappers()` runtime function
+- fix(gateway): skip response schema when `$ref` graph exceeds fast-json-stringify depth limit (150 unique refs)
+- refactor(util): extract shared `detectArrayWrappers()`, `detectChildrenTypes()`, and `flattenMockPayload()` to `src/util/catalogMeta.ts`
+- chore(deps): update soap lower bound to 1.7.1 in generated app scaffold
+
 ## [0.11.5] - 2026-02-18
 
 - fix(test): ensure `tmp/` directory exists before `mkdtempSync` in integration test (fixes CI ENOENT)
