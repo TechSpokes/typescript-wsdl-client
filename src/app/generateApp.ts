@@ -345,6 +345,7 @@ function generateConfigFile(
   const ext = getAppFileExtension();
   const filePath = path.join(appDir, `config${ext}`);
 
+  // noinspection DuplicatedCode
   if (!shouldWriteScaffoldFile(filePath, force)) return;
 
   const defaultHost = opts.host || "127.0.0.1";
@@ -444,6 +445,7 @@ function generateEnvExample(
 ): void {
   const filePath = path.join(appDir, ".env.example");
 
+  // noinspection DuplicatedCode
   if (!shouldWriteScaffoldFile(filePath, force)) return;
 
   const defaultHost = opts.host || "127.0.0.1";

@@ -16,6 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import Fastify, { type FastifyInstance } from "fastify";
+// noinspection ES6PreferShortImport
 import { runGenerationPipeline } from "../../src/pipeline.js";
 
 // ── Paths ──────────────────────────────────────────────────

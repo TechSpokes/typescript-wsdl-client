@@ -52,7 +52,9 @@ describe("WsdlCompilationError.toUserMessage", () => {
   });
 
   it("includes namespace when provided", () => {
+    // noinspection HttpUrlsUsage
     const err = new WsdlCompilationError("Unresolved type", { namespace: "http://ns.example.com" });
+    // noinspection HttpUrlsUsage
     expect(err.toUserMessage()).toContain("Namespace: http://ns.example.com");
   });
 

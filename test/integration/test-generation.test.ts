@@ -15,6 +15,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { mkdtempSync, mkdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
+// noinspection ES6PreferShortImport
 import { runGenerationPipeline } from "../../src/pipeline.js";
 
 const PROJECT_ROOT = join(import.meta.dirname, "..", "..");

@@ -13,6 +13,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+// noinspection ES6PreferShortImport
 import { runGenerationPipeline } from "../../src/pipeline.js";
 
 // ── Types for parsed representations ───────────────────────

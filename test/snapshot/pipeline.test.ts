@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
+// noinspection ES6PreferShortImport
 import { runGenerationPipeline } from "../../src/pipeline.js";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";

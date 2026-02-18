@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 /**
  * Test File Emitters
  *
@@ -373,6 +375,7 @@ export function emitEnvelopeTest(
   operations: ResolvedOperationMeta[],
   catalog: CatalogForMocks
 ): string {
+  // noinspection DuplicatedCode
   const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
   const testAppImport = `../helpers/test-app${suffix}`;
   const mockClientImport = `../helpers/mock-client${suffix}`;
