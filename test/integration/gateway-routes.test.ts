@@ -295,20 +295,13 @@ describe("gateway routes — error classification", () => {
     }
   });
 
-  // NOTE: Connection/timeout error tests verify behavior despite a known issue:
-  // The classifyError() function puts a string in `details`, but the error object
-  // schema requires `details` to be object|null. This causes Fastify's serializer
-  // to fail with FST_ERR_FAILED_ERROR_SERIALIZATION. The error handler correctly
-  // classifies the error, but the response cannot be serialized through the schema.
-  //
-  // These tests verify the classification logic via the classifyError function directly.
-
   it("classifyError returns 503 for ECONNREFUSED", async () => {
     const runtimePath = pathToFileURL(join(outDir, "gateway", "runtime.ts")).href;
     const { classifyError } = await import(runtimePath);
     const result = classifyError(new Error("connect ECONNREFUSED 127.0.0.1:80"));
     expect(result.httpStatus).toBe(503);
     expect(result.code).toBe("SERVICE_UNAVAILABLE");
+    expect(result.details).toEqual({ message: "connect ECONNREFUSED 127.0.0.1:80" });
   });
 
   it("classifyError returns 503 for ENOTFOUND", async () => {
@@ -317,6 +310,7 @@ describe("gateway routes — error classification", () => {
     const result = classifyError(new Error("getaddrinfo ENOTFOUND soap.example.com"));
     expect(result.httpStatus).toBe(503);
     expect(result.code).toBe("SERVICE_UNAVAILABLE");
+    expect(result.details).toEqual({ message: expect.stringContaining("ENOTFOUND") });
   });
 
   it("classifyError returns 504 for ETIMEDOUT", async () => {
@@ -325,6 +319,7 @@ describe("gateway routes — error classification", () => {
     const result = classifyError(new Error("ETIMEDOUT"));
     expect(result.httpStatus).toBe(504);
     expect(result.code).toBe("GATEWAY_TIMEOUT");
+    expect(result.details).toEqual({ message: "ETIMEDOUT" });
   });
 
   it("classifyError returns 504 for timeout", async () => {
@@ -333,6 +328,7 @@ describe("gateway routes — error classification", () => {
     const result = classifyError(new Error("Request timeout after 30000ms"));
     expect(result.httpStatus).toBe(504);
     expect(result.code).toBe("GATEWAY_TIMEOUT");
+    expect(result.details).toEqual({ message: "Request timeout after 30000ms" });
   });
 
   it("classifyError returns 500 for unknown errors", async () => {
@@ -352,12 +348,12 @@ describe("gateway routes — error classification", () => {
     const result = classifyError(err);
     expect(result.httpStatus).toBe(400);
     expect(result.code).toBe("VALIDATION_ERROR");
+    expect(result.details).toEqual({
+      validationErrors: [{ message: "body/ZIP must be string", keyword: "type" }],
+    });
   });
 
-  it("connection errors through Fastify produce error response", async () => {
-    // Connection errors cause FST_ERR_FAILED_ERROR_SERIALIZATION because
-    // classifyError puts a string in `details` (schema expects object|null).
-    // The response will be 500 with FST_ERR_FAILED_ERROR_SERIALIZATION.
+  it("connection errors through Fastify produce 503 response", async () => {
     const app = await createTestApp(
       createMockClient({
         GetCityWeatherByZIP: async () => {
@@ -371,8 +367,37 @@ describe("gateway routes — error classification", () => {
         url: "/get-city-weather-by-zip",
         payload: { ZIP: "10001" },
       });
-      // Currently produces 500 due to serialization failure (known issue)
-      expect(res.statusCode).toBe(500);
+      expect(res.statusCode).toBe(503);
+      const body = res.json();
+      expect(body.status).toBe("ERROR");
+      expect(body.error.code).toBe("SERVICE_UNAVAILABLE");
+      expect(body.error.details).toEqual({
+        message: "connect ECONNREFUSED 127.0.0.1:80",
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("timeout errors through Fastify produce 504 response", async () => {
+    const app = await createTestApp(
+      createMockClient({
+        GetCityWeatherByZIP: async () => {
+          throw new Error("ETIMEDOUT");
+        },
+      })
+    );
+    try {
+      const res = await app.inject({
+        method: "POST",
+        url: "/get-city-weather-by-zip",
+        payload: { ZIP: "10001" },
+      });
+      expect(res.statusCode).toBe(504);
+      const body = res.json();
+      expect(body.status).toBe("ERROR");
+      expect(body.error.code).toBe("GATEWAY_TIMEOUT");
+      expect(body.error.details).toEqual({ message: "ETIMEDOUT" });
     } finally {
       await app.close();
     }

@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-02-18
+
+- fix(gateway): wrap classifyError() details as object for 400/503/504 to fix FST_ERR_FAILED_ERROR_SERIALIZATION
 - docs: add Vitest verification step and package-lock.json bump to release workflow in copilot-instructions.md
 
 ## [0.11.0] - 2026-02-18

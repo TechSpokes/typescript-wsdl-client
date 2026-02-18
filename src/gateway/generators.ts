@@ -566,7 +566,7 @@ export function classifyError(err: unknown): ClassifiedError {
       httpStatus: 400,
       code: "VALIDATION_ERROR",
       message: "Request validation failed",
-      details: (err as Record<string, unknown>).validation,
+      details: { validationErrors: (err as Record<string, unknown>).validation },
     };
   }
 
@@ -593,7 +593,7 @@ export function classifyError(err: unknown): ClassifiedError {
         httpStatus: 503,
         code: "SERVICE_UNAVAILABLE",
         message: "Unable to connect to SOAP service",
-        details: err.message,
+        details: { message: err.message },
       };
     }
     if (err.message.includes("ETIMEDOUT") || err.message.includes("timeout")) {
@@ -601,7 +601,7 @@ export function classifyError(err: unknown): ClassifiedError {
         httpStatus: 504,
         code: "GATEWAY_TIMEOUT",
         message: "SOAP service request timed out",
-        details: err.message,
+        details: { message: err.message },
       };
     }
   }
