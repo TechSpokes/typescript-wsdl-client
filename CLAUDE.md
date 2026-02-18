@@ -1,8 +1,6 @@
 # Claude Code Instructions
 
-This project uses AGENTS.md as the primary agent instruction file. Read AGENTS.md for complete project context, constraints, and conventions. AGENTS.md in turn references .github/copilot-instructions.md as the authoritative detailed instructions.
-
-For Claude Code-specific guidance when developing this package, also read .github/copilot-instructions.md directly for commit format, catalog co-location rules, and CLI flag conventions.
+Read AGENTS.md first for project context, must-follow rules, and pointers to the authoritative instructions. AGENTS.md references `.github/copilot-instructions.md` (authoritative detailed rules) and `.github/instructions/` (file-pattern-specific rules such as markdown formatting). Follow the instruction file hierarchy described there.
 
 When working on projects that use this package as a dependency:
 
