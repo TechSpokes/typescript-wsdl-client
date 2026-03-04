@@ -83,7 +83,7 @@ CompiledCatalog {
 }
 ```
 
-`CompiledType`, type aliases, and operations may include optional `doc` fields populated from WSDL/XSD documentation nodes. Client emitters consume these values to generate comments in `types.ts`, `operations.ts`, and `client.ts`. OpenAPI emitters consume the same fields for schema, property, and operation `description` values.
+`CompiledType`, type aliases, and operations may include optional `doc` fields populated from WSDL/XSD documentation nodes. The catalog also carries optional `wsdlDocs` arrays for WSDL bindings, messages, parts, services, and ports. Client emitters consume operation and type docs to generate comments in `types.ts`, `operations.ts`, and `client.ts`. OpenAPI emitters consume the same fields for schema/property descriptions and operation summary and description values.
 
 Data flow through the pipeline:
 
@@ -91,7 +91,7 @@ Data flow through the pipeline:
 2. generateCatalog serializes it to JSON
 3. Client generators read types[] for TypeScript emission
 4. OpenAPI generator reads types[] and operations[] for spec generation
-5. Gateway generator reads the OpenAPI spec (not the catalog directly)
+5. Gateway generator reads the OpenAPI spec, then enriches operation metadata from catalog operation docs when available
 
 ## Extension Points
 

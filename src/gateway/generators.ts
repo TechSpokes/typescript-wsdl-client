@@ -87,8 +87,32 @@ export interface OperationMetadata {
   clientMethodName?: string;
   requestTypeName?: string;
   responseTypeName?: string;
+  summary?: string;
+  description?: string;
   /** When true, response schema is omitted from route registration to avoid fast-json-stringify stack overflow on deeply nested $ref graphs */
   skipResponseSchema?: boolean;
+}
+
+function normalizeDocCommentText(value: string | undefined): string | undefined {
+  const normalized = String(value ?? "")
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!normalized) return undefined;
+  return normalized.replace(/\*\//g, "* /");
+}
+
+function buildOperationDocLines(op: OperationMetadata): string {
+  const summary = normalizeDocCommentText(op.summary);
+  const description = normalizeDocCommentText(op.description);
+  let out = "";
+  if (summary) out += ` * Summary: ${summary}\n`;
+  if (description) out += ` * Description: ${description}\n`;
+  return out;
 }
 
 /**
@@ -263,6 +287,8 @@ export function emitOperationSchemas(
         operationSlug,
         method: lowerMethod,
         path: p,
+        summary: normalizeDocCommentText(typeof operation.summary === "string" ? operation.summary : undefined),
+        description: normalizeDocCommentText(typeof operation.description === "string" ? operation.description : undefined),
         skipResponseSchema,
       });
     }
@@ -359,8 +385,15 @@ export function emitRouteFiles(
 
     // Generate individual route file
     // Note: op.path comes from OpenAPI and already includes any base path
+    const operationDocLines = buildOperationDocLines(op);
     let routeTs = "";
-    routeTs += `import type { FastifyInstance } from "fastify";\n`;
+    routeTs += `/**
+ * Route: ${op.method.toUpperCase()} ${op.path}
+ * Operation: ${op.operationId || op.operationSlug}
+${operationDocLines} * Auto-generated - do not edit manually.
+ */
+import type { FastifyInstance } from "fastify";
+`;
     routeTs += `import schema from "../schemas/operations/${op.operationSlug}.json" with { type: "json" };\n\n`;
     routeTs += `export async function ${fnName}(fastify: FastifyInstance) {\n`;
     if (op.skipResponseSchema) {
@@ -919,11 +952,12 @@ export function emitRouteFilesWithHandlers(
     const schemaLine = op.skipResponseSchema
       ? "    schema: routeSchema,"
       : "    schema,";
+    const operationDocLines = buildOperationDocLines(op);
 
     let routeTs = `/**
  * Route: ${op.method.toUpperCase()} ${op.path}
  * Operation: ${op.operationId || op.operationSlug}
- * Request Type: ${reqTypeName}
+${operationDocLines} * Request Type: ${reqTypeName}
  * Response Type: ${resTypeName} (wrapped in envelope)
  * Auto-generated - do not edit manually.
  */

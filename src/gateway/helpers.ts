@@ -446,6 +446,8 @@ export interface ResolvedOperationMeta {
   clientMethodName: string;
   requestTypeName?: string;
   responseTypeName?: string;
+  summary?: string;
+  description?: string;
 }
 
 
@@ -552,6 +554,9 @@ export function resolveOperationMeta(
     name: string;
     inputTypeName?: string;
     outputTypeName?: string;
+    summary?: string;
+    description?: string;
+    doc?: string;
   }>
 ): ResolvedOperationMeta {
   // Try to find matching operation in catalog
@@ -562,6 +567,8 @@ export function resolveOperationMeta(
   // Use catalog type names if available, otherwise derive by convention
   const requestTypeName = catalogOp?.inputTypeName ?? pascal(operationId);
   const responseTypeName = catalogOp?.outputTypeName ?? pascal(operationId);
+  const description = normalizeOperationText(catalogOp?.description ?? catalogOp?.doc);
+  const summary = normalizeOperationText(catalogOp?.summary) ?? deriveSummaryFromText(description);
 
   return {
     operationId,
@@ -571,7 +578,27 @@ export function resolveOperationMeta(
     clientMethodName: operationId, // Client methods use the original operation name
     requestTypeName,
     responseTypeName,
+    ...(summary ? {summary} : {}),
+    ...(description ? {description} : {}),
   };
+}
+
+function normalizeOperationText(value: string | undefined): string | undefined {
+  const normalized = String(value ?? "")
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized || undefined;
+}
+
+function deriveSummaryFromText(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const firstSentence = value.match(/^(.+?[.!?])(?:\s|$)/);
+  return firstSentence ? firstSentence[1].trim() : value;
 }
 
 /**
@@ -629,4 +656,3 @@ export function measureSchemaRefComplexity(
   if (allSchemas[startSchemaName]) walkSchema(allSchemas[startSchemaName]);
   return visited.size;
 }
-

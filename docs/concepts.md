@@ -67,7 +67,17 @@ cacheable, and reused across client, OpenAPI, and gateway generation.
 Inspect types, operations, and metadata as plain JSON. The catalog is
 automatically placed alongside generated output.
 
-The catalog stores optional human-readable `doc` fields extracted from WSDL/XSD documentation nodes. These fields are additive metadata used by TypeScript and OpenAPI emitters and do not change runtime behavior.
+The catalog stores optional human-readable `doc` fields extracted from WSDL/XSD documentation nodes. These fields are additive metadata used by TypeScript, OpenAPI, gateway, and generated-test emitters and do not change runtime behavior.
+
+The catalog also stores optional `wsdlDocs` metadata for selected WSDL nodes:
+
+- `bindings[]`
+- `messages[]`
+- `messages[].parts[]`
+- `services[]`
+- `services[].ports[]`
+
+OpenAPI uses operation docs for both `description` and default `summary` values. `ops.json` keeps precedence when `summary` or `description` is explicitly provided.
 
 ### Catalog Locations by Command
 

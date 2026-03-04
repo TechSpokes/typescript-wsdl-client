@@ -831,6 +831,273 @@ exports[`pipeline snapshot > client/catalog.json 1`] = `
       "ns": "http://ws.cdyne.com/WeatherWS/",
     },
   ],
+  "wsdlDocs": {
+    "bindings": [
+      {
+        "name": "WeatherHttpGet",
+        "type": {
+          "local": "WeatherHttpGet",
+          "ns": "http://ws.cdyne.com/WeatherWS/",
+        },
+      },
+      {
+        "name": "WeatherHttpPost",
+        "type": {
+          "local": "WeatherHttpPost",
+          "ns": "http://ws.cdyne.com/WeatherWS/",
+        },
+      },
+      {
+        "name": "WeatherSoap",
+        "type": {
+          "local": "WeatherSoap",
+          "ns": "http://ws.cdyne.com/WeatherWS/",
+        },
+      },
+      {
+        "name": "WeatherSoap12",
+        "type": {
+          "local": "WeatherSoap",
+          "ns": "http://ws.cdyne.com/WeatherWS/",
+        },
+      },
+    ],
+    "messages": [
+      {
+        "name": "GetCityForecastByZIPHttpGetIn",
+        "parts": [
+          {
+            "name": "ZIP",
+            "type": {
+              "local": "string",
+              "ns": "http://www.w3.org/2001/XMLSchema",
+            },
+          },
+        ],
+      },
+      {
+        "name": "GetCityForecastByZIPHttpGetOut",
+        "parts": [
+          {
+            "element": {
+              "local": "ForecastReturn",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "Body",
+          },
+        ],
+      },
+      {
+        "name": "GetCityForecastByZIPHttpPostIn",
+        "parts": [
+          {
+            "name": "ZIP",
+            "type": {
+              "local": "string",
+              "ns": "http://www.w3.org/2001/XMLSchema",
+            },
+          },
+        ],
+      },
+      {
+        "name": "GetCityForecastByZIPHttpPostOut",
+        "parts": [
+          {
+            "element": {
+              "local": "ForecastReturn",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "Body",
+          },
+        ],
+      },
+      {
+        "name": "GetCityForecastByZIPSoapIn",
+        "parts": [
+          {
+            "element": {
+              "local": "GetCityForecastByZIP",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "parameters",
+          },
+        ],
+      },
+      {
+        "name": "GetCityForecastByZIPSoapOut",
+        "parts": [
+          {
+            "element": {
+              "local": "GetCityForecastByZIPResponse",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "parameters",
+          },
+        ],
+      },
+      {
+        "name": "GetCityWeatherByZIPHttpGetIn",
+        "parts": [
+          {
+            "name": "ZIP",
+            "type": {
+              "local": "string",
+              "ns": "http://www.w3.org/2001/XMLSchema",
+            },
+          },
+        ],
+      },
+      {
+        "name": "GetCityWeatherByZIPHttpGetOut",
+        "parts": [
+          {
+            "element": {
+              "local": "WeatherReturn",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "Body",
+          },
+        ],
+      },
+      {
+        "name": "GetCityWeatherByZIPHttpPostIn",
+        "parts": [
+          {
+            "name": "ZIP",
+            "type": {
+              "local": "string",
+              "ns": "http://www.w3.org/2001/XMLSchema",
+            },
+          },
+        ],
+      },
+      {
+        "name": "GetCityWeatherByZIPHttpPostOut",
+        "parts": [
+          {
+            "element": {
+              "local": "WeatherReturn",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "Body",
+          },
+        ],
+      },
+      {
+        "name": "GetCityWeatherByZIPSoapIn",
+        "parts": [
+          {
+            "element": {
+              "local": "GetCityWeatherByZIP",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "parameters",
+          },
+        ],
+      },
+      {
+        "name": "GetCityWeatherByZIPSoapOut",
+        "parts": [
+          {
+            "element": {
+              "local": "GetCityWeatherByZIPResponse",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "parameters",
+          },
+        ],
+      },
+      {
+        "name": "GetWeatherInformationHttpGetIn",
+      },
+      {
+        "name": "GetWeatherInformationHttpGetOut",
+        "parts": [
+          {
+            "element": {
+              "local": "ArrayOfWeatherDescription",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "Body",
+          },
+        ],
+      },
+      {
+        "name": "GetWeatherInformationHttpPostIn",
+      },
+      {
+        "name": "GetWeatherInformationHttpPostOut",
+        "parts": [
+          {
+            "element": {
+              "local": "ArrayOfWeatherDescription",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "Body",
+          },
+        ],
+      },
+      {
+        "name": "GetWeatherInformationSoapIn",
+        "parts": [
+          {
+            "element": {
+              "local": "GetWeatherInformation",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "parameters",
+          },
+        ],
+      },
+      {
+        "name": "GetWeatherInformationSoapOut",
+        "parts": [
+          {
+            "element": {
+              "local": "GetWeatherInformationResponse",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "parameters",
+          },
+        ],
+      },
+    ],
+    "services": [
+      {
+        "name": "Weather",
+        "ports": [
+          {
+            "binding": {
+              "local": "WeatherHttpGet",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "WeatherHttpGet",
+          },
+          {
+            "binding": {
+              "local": "WeatherHttpPost",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "WeatherHttpPost",
+          },
+          {
+            "binding": {
+              "local": "WeatherSoap",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "WeatherSoap",
+          },
+          {
+            "binding": {
+              "local": "WeatherSoap12",
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+            },
+            "name": "WeatherSoap12",
+          },
+        ],
+      },
+    ],
+  },
   "wsdlTargetNS": "http://ws.cdyne.com/WeatherWS/",
   "wsdlUri": "examples/minimal/weather.wsdl",
 }
@@ -2283,6 +2550,8 @@ exports[`pipeline snapshot > gateway/routes/getcityforecastbyzip.ts 1`] = `
 "/**
  * Route: POST /get-city-forecast-by-zip
  * Operation: GetCityForecastByZIP
+ * Summary: Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly.
+ * Description: Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly. U.S. Only
  * Request Type: GetCityForecastByZIP
  * Response Type: GetCityForecastByZIPResponse (wrapped in envelope)
  * Auto-generated - do not edit manually.
@@ -2311,6 +2580,8 @@ exports[`pipeline snapshot > gateway/routes/getcityweatherbyzip.ts 1`] = `
 "/**
  * Route: POST /get-city-weather-by-zip
  * Operation: GetCityWeatherByZIP
+ * Summary: Allows you to get your City's Weather, which is updated hourly.
+ * Description: Allows you to get your City's Weather, which is updated hourly. U.S. Only
  * Request Type: GetCityWeatherByZIP
  * Response Type: GetCityWeatherByZIPResponse (wrapped in envelope)
  * Auto-generated - do not edit manually.
@@ -2339,6 +2610,8 @@ exports[`pipeline snapshot > gateway/routes/getweatherinformation.ts 1`] = `
 "/**
  * Route: POST /get-weather-information
  * Operation: GetWeatherInformation
+ * Summary: Gets Information for each WeatherID
+ * Description: Gets Information for each WeatherID
  * Request Type: GetWeatherInformation
  * Response Type: GetWeatherInformationResponse (wrapped in envelope)
  * Auto-generated - do not edit manually.
@@ -3143,6 +3416,7 @@ exports[`pipeline snapshot > openapi.json 1`] = `
             "description": "Error response (standard envelope with populated error object)",
           },
         },
+        "summary": "Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly.",
         "tags": [
           "Weather",
         ],
@@ -3184,6 +3458,7 @@ exports[`pipeline snapshot > openapi.json 1`] = `
             "description": "Error response (standard envelope with populated error object)",
           },
         },
+        "summary": "Allows you to get your City's Weather, which is updated hourly.",
         "tags": [
           "Weather",
         ],
@@ -3225,6 +3500,7 @@ exports[`pipeline snapshot > openapi.json 1`] = `
             "description": "Error response (standard envelope with populated error object)",
           },
         },
+        "summary": "Gets Information for each WeatherID",
         "tags": [
           "Weather",
         ],
@@ -3251,6 +3527,7 @@ import { describe, it, expect } from "vitest";
 import { createTestApp } from "../helpers/test-app.js";
 
 describe("gateway routes — happy path", () => {
+  // Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly.
   it("POST /get-city-forecast-by-zip returns SUCCESS envelope", async () => {
     const app = await createTestApp();
     try {
@@ -3271,6 +3548,7 @@ describe("gateway routes — happy path", () => {
     }
   });
 
+  // Allows you to get your City's Weather, which is updated hourly.
   it("POST /get-city-weather-by-zip returns SUCCESS envelope", async () => {
     const app = await createTestApp();
     try {
@@ -3291,6 +3569,7 @@ describe("gateway routes — happy path", () => {
     }
   });
 
+  // Gets Information for each WeatherID
   it("POST /get-weather-information returns SUCCESS envelope", async () => {
     const app = await createTestApp();
     try {

@@ -9,6 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(catalog): add optional `wsdlDocs` metadata for WSDL bindings, messages, parts, services, and ports
+- feat(openapi): derive operation `summary` from WSDL documentation first sentence with `ops.json` override precedence
+- feat(gateway): propagate OpenAPI operation summary and description into generated gateway route header comments
+- feat(test): add operation documentation hints to generated gateway route tests
+- test(unit): extend documentation propagation coverage for `wsdlDocs`, OpenAPI summary precedence, and gateway route comments
+- docs: document extended docs-flow propagation into catalog `wsdlDocs`, OpenAPI summaries, gateway routes, and generated tests
+
 ## [0.13.0] - 2026-03-04
 
 - feat(docs-flow): propagate WSDL/XSD documentation into catalog metadata, generated TypeScript comments, and OpenAPI descriptions

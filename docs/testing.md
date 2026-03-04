@@ -40,7 +40,7 @@ Unit tests cover pure functions with no I/O or side effects:
 - `errors.test.ts`: `WsdlCompilationError` construction and `toUserMessage()` formatting
 - `schema-alignment.test.ts`: Cross-validates TypeScript types, JSON schemas, and catalog.json for consistency
 - `mock-data.test.ts`: `generateMockPrimitive()`, `generateMockData()`, `generateAllOperationMocks()` with cycle detection and array wrapping
-- `wsdl-documentation.test.ts`: verifies doc flow to catalog, generated TS comments, and OpenAPI descriptions with override precedence
+- `wsdl-documentation.test.ts`: verifies doc flow to catalog `wsdlDocs`, generated TS comments, OpenAPI summary and description precedence, and gateway route comment propagation
 
 ### Writing Unit Tests
 
@@ -79,6 +79,7 @@ Always review the diff before committing updated snapshots.
 - OpenAPI: `openapi.json`
 - Gateway core: `plugin.ts`, `routes.ts`, `schemas.ts`, `runtime.ts`, `_typecheck.ts`
 - Gateway routes: one handler per WSDL operation
+- Gateway route comments: propagated summary and description metadata
 - Gateway schemas: all model and operation JSON schema files
 - File inventory: complete listing of generated files
 

@@ -98,7 +98,9 @@ The existing `@xsd` metadata annotations are preserved for runtime marshaling an
 OpenAPI generation also propagates these docs into `description` fields:
 
 - Operation descriptions come from `wsdl:documentation` by default
+- Operation summaries default to the first sentence of `wsdl:documentation`
 - `--openapi-ops-file` `description` overrides operation documentation when provided
+- `--openapi-ops-file` `summary` overrides the default summary when provided
 - Schema and property descriptions come from `xs:annotation/xs:documentation`
 
 ## Gateway Route Handlers
@@ -130,6 +132,7 @@ Key features of the generated handlers:
 - `Body: T` generic: Fastify infers `request.body` type from the route generic, enabling IDE autocomplete and compile-time checks
 - JSON Schema validation: the `schema` import provides Fastify with request/response validation at runtime, before the handler runs
 - Envelope wrapping: `buildSuccessEnvelope()` wraps the raw SOAP response in the standard `{ status, message, data, error }` envelope
+- Route file header comments include propagated operation summary and description when present
 
 See [Gateway Guide](gateway-guide.md) for the full architecture and [CLI Reference](cli-reference.md) for generation flags.
 

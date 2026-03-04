@@ -17,6 +17,19 @@ import {detectArrayWrappers, detectChildrenTypes} from "../util/catalogMeta.js";
 /** Pre-computed mock data map passed from the orchestrator to all emitters. */
 export type OperationMocksMap = Map<string, { request: Record<string, unknown>; response: Record<string, unknown> }>;
 
+function formatOperationHint(summary?: string, description?: string): string | undefined {
+  const source = summary || description;
+  const normalized = String(source ?? "")
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized || undefined;
+}
+
 /**
  * Emits vitest.config.ts content.
  *
@@ -186,8 +199,10 @@ export function emitRoutesTest(
   const testCases = sortedOps.map((op) => {
     const mockData = mocks.get(op.operationId);
     const requestPayload = JSON.stringify(mockData?.request ?? {}, null, 4).replace(/\n/g, "\n    ");
+    const hint = formatOperationHint(op.summary, op.description);
+    const hintComment = hint ? `  // ${hint}\n` : "";
 
-    return `  it("${op.method.toUpperCase()} ${op.path} returns SUCCESS envelope", async () => {
+    return `${hintComment}  it("${op.method.toUpperCase()} ${op.path} returns SUCCESS envelope", async () => {
     const app = await createTestApp();
     try {
       const res = await app.inject({

@@ -121,7 +121,12 @@ export function generatePaths(compiled: CompiledCatalog, opts: GeneratePathsOpti
         }
       },
     };
-    if (override.summary) operationObject.summary = override.summary;
+    if (override.summary) {
+      operationObject.summary = override.summary;
+    } else if (op.doc) {
+      const derivedSummary = deriveSummaryFromDoc(op.doc);
+      if (derivedSummary) operationObject.summary = derivedSummary;
+    }
     if (override.description) {
       operationObject.description = override.description;
     } else if (op.doc) {
@@ -137,6 +142,13 @@ export function generatePaths(compiled: CompiledCatalog, opts: GeneratePathsOpti
   }
 
   return paths;
+}
+
+function deriveSummaryFromDoc(doc: string): string | undefined {
+  const normalized = String(doc ?? "").replace(/\s+/g, " ").trim();
+  if (!normalized) return undefined;
+  const firstSentence = normalized.match(/^(.+?[.!?])(?:\s|$)/);
+  return firstSentence ? firstSentence[1].trim() : normalized;
 }
 
 function normalizeBase(base: string): string {

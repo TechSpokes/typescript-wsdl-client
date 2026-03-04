@@ -98,6 +98,43 @@ export type CompiledAlias = {
   doc?: string;
 };
 
+export type CompiledWsdlPartDoc = {
+  name?: string;
+  element?: QName;
+  type?: QName;
+  doc?: string;
+};
+
+export type CompiledWsdlMessageDoc = {
+  name: string;
+  doc?: string;
+  parts?: CompiledWsdlPartDoc[];
+};
+
+export type CompiledWsdlBindingDoc = {
+  name: string;
+  type?: QName;
+  doc?: string;
+};
+
+export type CompiledWsdlPortDoc = {
+  name: string;
+  binding?: QName;
+  doc?: string;
+};
+
+export type CompiledWsdlServiceDoc = {
+  name: string;
+  doc?: string;
+  ports?: CompiledWsdlPortDoc[];
+};
+
+export type CompiledWsdlDocs = {
+  bindings?: CompiledWsdlBindingDoc[];
+  messages?: CompiledWsdlMessageDoc[];
+  services?: CompiledWsdlServiceDoc[];
+};
+
 /**
  * Complete compiled catalog with all types, aliases, operations and metadata
  *
@@ -134,6 +171,7 @@ export type CompiledCatalog = {
   wsdlTargetNS: string;
   wsdlUri: string;
   serviceName?: string;
+  wsdlDocs?: CompiledWsdlDocs;
 };
 
 // XML Schema namespace constant
@@ -870,6 +908,8 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
   const defs = cat.wsdlXml["wsdl:definitions"] || cat.wsdlXml["definitions"];
   const tns = defs?.["@_targetNamespace"] || "";
   const bindingDefs = normalizeArray(defs?.["wsdl:binding"] || defs?.["binding"]);
+  const msgDefs = normalizeArray(defs?.["wsdl:message"] || defs?.["message"]);
+  const serviceDefs = normalizeArray(defs?.["wsdl:service"] || defs?.["service"]);
   const soapBinding = bindingDefs.find(b => Object.keys(b).some(k => k === "soap:binding" || k === "soap12:binding")) || bindingDefs[0];
   if (!soapBinding) {
     throw new WsdlCompilationError(
@@ -902,7 +942,6 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     bOps.set(name, action);
   }
 
-  const msgDefs = normalizeArray(defs?.["wsdl:message"] || defs?.["message"]);
   const findMessage = (qstr: string | undefined) => {
     if (!qstr) return undefined;
     const q = resolveQName(qstr, tns, cat.prefixMap);
@@ -918,6 +957,83 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     const q = resolveQName(el, tns, cat.prefixMap);
     return {ns: q.ns, local: q.local};
   };
+
+  const messageDocs = msgDefs
+    .map((msg): CompiledWsdlMessageDoc | undefined => {
+      const name = msg?.["@_name"] as string | undefined;
+      if (!name) return undefined;
+      const doc = extractDirectDocumentation(msg);
+      const parts = getChildrenWithLocalName(msg, "part")
+        .map((part): CompiledWsdlPartDoc | undefined => {
+          const partName = part?.["@_name"] as string | undefined;
+          const partElement = part?.["@_element"] as string | undefined;
+          const partType = part?.["@_type"] as string | undefined;
+          const partDoc = extractDirectDocumentation(part);
+          const element = partElement ? resolveQName(partElement, tns, cat.prefixMap) : undefined;
+          const type = partType ? resolveQName(partType, tns, cat.prefixMap) : undefined;
+          if (!partName && !element && !type && !partDoc) return undefined;
+          return {
+            ...(partName ? {name: partName} : {}),
+            ...(element ? {element: {ns: element.ns, local: element.local}} : {}),
+            ...(type ? {type: {ns: type.ns, local: type.local}} : {}),
+            ...(partDoc ? {doc: partDoc} : {}),
+          };
+        })
+        .filter((x): x is CompiledWsdlPartDoc => x != null)
+        .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+      return {
+        name,
+        ...(doc ? {doc} : {}),
+        ...(parts.length ? {parts} : {}),
+      };
+    })
+    .filter((x): x is CompiledWsdlMessageDoc => x != null)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const bindingDocs = bindingDefs
+    .map((binding): CompiledWsdlBindingDoc | undefined => {
+      const name = binding?.["@_name"] as string | undefined;
+      if (!name) return undefined;
+      const typeLabel = binding?.["@_type"] as string | undefined;
+      const type = typeLabel ? resolveQName(typeLabel, tns, cat.prefixMap) : undefined;
+      const doc = extractDirectDocumentation(binding);
+      return {
+        name,
+        ...(type ? {type: {ns: type.ns, local: type.local}} : {}),
+        ...(doc ? {doc} : {}),
+      };
+    })
+    .filter((x): x is CompiledWsdlBindingDoc => x != null)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const serviceDocs = serviceDefs
+    .map((service): CompiledWsdlServiceDoc | undefined => {
+      const name = service?.["@_name"] as string | undefined;
+      if (!name) return undefined;
+      const doc = extractDirectDocumentation(service);
+      const ports = getChildrenWithLocalName(service, "port")
+        .map((port): CompiledWsdlPortDoc | undefined => {
+          const portName = port?.["@_name"] as string | undefined;
+          const bindingLabel = port?.["@_binding"] as string | undefined;
+          const binding = bindingLabel ? resolveQName(bindingLabel, tns, cat.prefixMap) : undefined;
+          const portDoc = extractDirectDocumentation(port);
+          if (!portName) return undefined;
+          return {
+            name: portName,
+            ...(binding ? {binding: {ns: binding.ns, local: binding.local}} : {}),
+            ...(portDoc ? {doc: portDoc} : {}),
+          };
+        })
+        .filter((x): x is CompiledWsdlPortDoc => x != null)
+        .sort((a, b) => a.name.localeCompare(b.name));
+      return {
+        name,
+        ...(doc ? {doc} : {}),
+        ...(ports.length ? {ports} : {}),
+      };
+    })
+    .filter((x): x is CompiledWsdlServiceDoc => x != null)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   // build operations list
   const ops = (pOps
@@ -958,7 +1074,6 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
   // --- Service discovery (for client naming) ---
   let serviceName: string | undefined;
   const soapBindingName = soapBinding?.["@_name"] as string | undefined;
-  const serviceDefs = normalizeArray(defs?.["wsdl:service"] || defs?.["service"]);
   const serviceUsingBinding = serviceDefs.find(s => {
     const ports = getChildrenWithLocalName(s, "port");
     return ports.some(p => {
@@ -970,6 +1085,14 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
   });
   serviceName = (serviceUsingBinding?.["@_name"] as string | undefined) || (serviceDefs[0]?.["@_name"] as string | undefined);
 
+  const wsdlDocs: CompiledWsdlDocs | undefined = (bindingDocs.length || messageDocs.length || serviceDocs.length)
+    ? {
+      ...(bindingDocs.length ? {bindings: bindingDocs} : {}),
+      ...(messageDocs.length ? {messages: messageDocs} : {}),
+      ...(serviceDocs.length ? {services: serviceDocs} : {}),
+    }
+    : undefined;
+
   return {
     options: options,
     types: typesList,
@@ -978,6 +1101,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     operations: ops,
     wsdlTargetNS: defs?.["@_targetNamespace"] || "",
     serviceName,
-    wsdlUri: cat.wsdlUri
+    wsdlUri: cat.wsdlUri,
+    ...(wsdlDocs ? {wsdlDocs} : {}),
   };
 }

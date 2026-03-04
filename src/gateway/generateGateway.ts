@@ -246,6 +246,8 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
       op.path,
       catalog?.operations
     );
+    const openApiSummary = typeof opDef?.summary === "string" ? opDef.summary : undefined;
+    const openApiDescription = typeof opDef?.description === "string" ? opDef.description : undefined;
 
     return {
       ...op,
@@ -253,6 +255,8 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
       clientMethodName: resolved.clientMethodName,
       requestTypeName: resolved.requestTypeName,
       responseTypeName: resolved.responseTypeName,
+      summary: openApiSummary ?? resolved.summary,
+      description: openApiDescription ?? resolved.description,
     };
   });
 
