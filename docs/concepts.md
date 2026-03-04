@@ -67,6 +67,8 @@ cacheable, and reused across client, OpenAPI, and gateway generation.
 Inspect types, operations, and metadata as plain JSON. The catalog is
 automatically placed alongside generated output.
 
+The catalog stores optional human-readable `doc` fields extracted from WSDL/XSD documentation nodes. These fields are additive metadata used by TypeScript and OpenAPI emitters and do not change runtime behavior.
+
 ### Catalog Locations by Command
 
 | Command | Location |

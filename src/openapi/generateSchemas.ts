@@ -61,14 +61,24 @@ function primitiveSchema(ts: string): any {
 function buildAliasSchema(a: CompiledAlias): any {
   const lit = isLiteralUnion(a.tsType);
   if (lit) {
-    return {type: "string", enum: lit};
+    return {
+      type: "string",
+      enum: lit,
+      ...(a.doc ? {description: a.doc} : {}),
+    };
   }
   // If alias wraps primitive
   if (["string", "number", "boolean", "any"].includes(a.tsType) || a.tsType.endsWith("[]")) {
-    return primitiveSchema(a.tsType);
+    return {
+      ...primitiveSchema(a.tsType),
+      ...(a.doc ? {description: a.doc} : {}),
+    };
   }
   // alias of another complex/alias type -> allOf wrapper preserves name
-  return {allOf: [{$ref: `#/components/schemas/${a.tsType}`}]};
+  return {
+    allOf: [{$ref: `#/components/schemas/${a.tsType}`}],
+    ...(a.doc ? {description: a.doc} : {}),
+  };
 }
 
 function isArrayWrapper(t: CompiledType): { itemType: string } | null {
@@ -113,14 +123,22 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
   const arrayWrap = flattenWrappers ? isArrayWrapper(t) : null;
   if (arrayWrap) {
     const item = refOrPrimitive(String(arrayWrap.itemType));
-    return {type: "array", items: item};
+    return {
+      type: "array",
+      items: item,
+      ...(t.doc ? {description: t.doc} : {}),
+    };
   }
   const properties: Record<string, any> = {};
   const required: string[] = [];
 
   // attributes
   for (const a of t.attrs) {
-    properties[a.name] = refOrPrimitive(a.tsType);
+    const propSchema = refOrPrimitive(a.tsType);
+    if (a.doc) {
+      propSchema.description = a.doc;
+    }
+    properties[a.name] = propSchema;
     if (a.use === "required") required.push(a.name);
   }
   // elements
@@ -131,6 +149,9 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
     if (isArray) schema = {type: "array", items: baseSchema};
     if (e.nillable) {
       schema = {anyOf: [schema, {type: "null"}]};
+    }
+    if (e.doc) {
+      schema.description = e.doc;
     }
     properties[e.name] = schema;
     if (e.name === "$value") {
@@ -159,6 +180,9 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
     delete obj.properties;
     delete obj.required; // Always remove from top-level; it's already in the allOf member
     if (!closed) delete obj.additionalProperties; // put closed only on leaf part
+  }
+  if (t.doc) {
+    obj.description = t.doc;
   }
 
   return obj;

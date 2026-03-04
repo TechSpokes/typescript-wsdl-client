@@ -13,6 +13,7 @@ Generate type-safe TypeScript SOAP clients, OpenAPI 3.1 specs, and production-re
 - OpenAPI 3.1 specs that mirror your TypeScript types
 - REST gateway over SOAP with automatic request/response transformation
 - CI-friendly deterministic output for safe regeneration in version control
+- WSDL/XSD documentation propagated into generated comments and OpenAPI descriptions
 
 ## Quick Start
 
@@ -57,7 +58,7 @@ curl -X POST http://localhost:3000/get-weather-information \
 
 | Output | Files | Purpose |
 |--------|-------|---------|
-| TypeScript Client | client.ts, types.ts, utils.ts | Typed SOAP operations |
+| TypeScript Client | client.ts, types.ts, utils.ts, operations.ts | Typed SOAP operations and mockable operations interface |
 | OpenAPI 3.1 Spec | openapi.json or .yaml | REST API documentation |
 | Fastify Gateway | plugin.ts, routes/, schemas/ | Production REST handlers |
 | Catalog | catalog.json | Compiled WSDL (debuggable, cacheable) |

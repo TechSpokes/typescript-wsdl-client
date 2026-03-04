@@ -37,6 +37,31 @@ import {error} from "../util/cli.js";
  */
 export function generateTypes(outFile: string, compiled: CompiledCatalog) {
   const lines: string[] = [];
+  const normalizeDocLines = (text: string): string[] =>
+    String(text)
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/\*\//g, "*\\/"));
+  const emitDocBlock = (indent: string, docText?: string, xsdTag?: string) => {
+    if (!docText && !xsdTag) {
+      return;
+    }
+    lines.push(`${indent}/**`);
+    if (docText) {
+      for (const line of normalizeDocLines(docText)) {
+        lines.push(`${indent} * ${line}`);
+      }
+    }
+    if (xsdTag) {
+      if (docText) {
+        lines.push(`${indent} *`);
+      }
+      lines.push(`${indent} * @xsd ${xsdTag}`);
+    }
+    lines.push(`${indent} */`);
+  };
 
   // Convenience lookups
   const typeNames = new Set(compiled.types.map((t) => t.name));
@@ -49,8 +74,13 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
   // sort aliases by name to ensure consistent order
   compiled.aliases.sort((a, b) => a.name.localeCompare(b.name));
   for (const a of compiled.aliases) {
-    const ann = a.jsdoc ? `/** @xsd ${a.jsdoc} */\n` : "";
-    lines.push(`${ann}export type ${a.name} = ${a.tsType};`);
+    if (a.doc) {
+      emitDocBlock("", a.doc, a.jsdoc);
+      lines.push(`export type ${a.name} = ${a.tsType};`);
+    } else {
+      const ann = a.jsdoc ? `/** @xsd ${a.jsdoc} */\n` : "";
+      lines.push(`${ann}export type ${a.name} = ${a.tsType};`);
+    }
     lines.push("");
   }
 
@@ -72,6 +102,10 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
     );
     const isSimpleContentExtension = !complexBase && (t.elems?.length || 0) === 1 && valueElems.length === 1;
     const baseName = complexBase ?? (isSimpleContentExtension ? (valueElems[0].tsType as string) : undefined);
+
+    if (t.doc) {
+      emitDocBlock("", t.doc);
+    }
 
     // Header: extend base type if applicable
     if (baseName) {
@@ -116,9 +150,13 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
         type: a.declaredType,
         use: a.use || "optional",
       };
-      const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
       lines.push("");
-      lines.push(ann);
+      if (a.doc) {
+        emitDocBlock("  ", a.doc, JSON.stringify(annObj));
+      } else {
+        const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
+        lines.push(ann);
+      }
       lines.push(`  ${emitPropName(a.name)}${opt}: ${a.tsType};`);
     }
 
@@ -163,9 +201,13 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
       if ((e.name === "$value") && (1 < elementsToEmit.length)) {
         lines.push("");
       }
-      const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
       lines.push("");
-      lines.push(ann);
+      if (e.doc) {
+        emitDocBlock("  ", e.doc, JSON.stringify(annObj));
+      } else {
+        const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
+        lines.push(ann);
+      }
       lines.push(`  ${emitPropName(e.name)}${opt}: ${e.tsType}${arr};`);
     }
 

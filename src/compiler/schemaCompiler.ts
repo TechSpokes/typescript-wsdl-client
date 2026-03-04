@@ -45,6 +45,7 @@ export type CompiledType = {
     tsType: string;
     use?: "required" | "optional";
     declaredType: string;
+    doc?: string;
   }>;
   elems: Array<{
     name: string;
@@ -53,8 +54,10 @@ export type CompiledType = {
     max: number | "unbounded";
     nillable?: boolean;
     declaredType: string;
+    doc?: string;
   }>;
   jsdoc?: string;
+  doc?: string;
   base?: string;        // optional base type name for complexContent extension
   // attributes introduced locally in extension (only those not inherited)
   localAttrs?: Array<{
@@ -62,6 +65,7 @@ export type CompiledType = {
     tsType: string;
     use?: "required" | "optional";
     declaredType: string;
+    doc?: string;
   }>;
   // elements introduced locally in extension (only those not inherited)
   localElems?: Array<{
@@ -71,6 +75,7 @@ export type CompiledType = {
     max: number | "unbounded";
     nillable?: boolean;
     declaredType: string;
+    doc?: string;
   }>;
 };
 
@@ -90,6 +95,7 @@ export type CompiledAlias = {
   tsType: string; // resolved TS type
   declared: string; // original QName label (eg xs:string or {ns}Name)
   jsdoc?: string;
+  doc?: string;
 };
 
 /**
@@ -123,6 +129,7 @@ export type CompiledCatalog = {
     security?: string[]; // minimal WS-Policy-derived hints (e.g., ["usernameToken", "https"])
     inputTypeName?: string;  // PascalCase TS type for input (e.g., "UnitResRequest")
     outputTypeName?: string; // PascalCase TS type for output (e.g., "UnitResResponse")
+    doc?: string;
   }>;
   wsdlTargetNS: string;
   wsdlUri: string;
@@ -224,6 +231,61 @@ function collectSecurityFromPolicyNodes(policyNodes: any[]): string[] {
   return Array.from(found);
 }
 
+function extractNodeText(node: any): string {
+  if (node == null) {
+    return "";
+  }
+  if (typeof node === "string" || typeof node === "number" || typeof node === "boolean") {
+    return String(node);
+  }
+  if (Array.isArray(node)) {
+    return node.map(extractNodeText).join(" ");
+  }
+  if (typeof node === "object") {
+    const parts: string[] = [];
+    if (node["#text"] != null) {
+      parts.push(extractNodeText(node["#text"]));
+    }
+    for (const [k, v] of Object.entries(node)) {
+      if ("#text" === k || k.startsWith("@_")) {
+        continue;
+      }
+      parts.push(extractNodeText(v));
+    }
+    return parts.join(" ");
+  }
+  return "";
+}
+
+function normalizeDocText(text: string): string | undefined {
+  const compact = text
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return compact || undefined;
+}
+
+function extractDirectDocumentation(node: any): string | undefined {
+  const docs = getChildrenWithLocalName(node, "documentation");
+  const merged = docs
+    .map(extractNodeText)
+    .join(" ");
+  return normalizeDocText(merged);
+}
+
+function extractAnnotationDocumentation(node: any): string | undefined {
+  const annotations = getChildrenWithLocalName(node, "annotation");
+  const docs = annotations.flatMap(a => getChildrenWithLocalName(a, "documentation"));
+  const merged = docs
+    .map(extractNodeText)
+    .join(" ");
+  return normalizeDocText(merged);
+}
+
 /**
  * Compile a WSDL catalog into an internal representation (CompiledCatalog).
  * Steps:
@@ -319,7 +381,14 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     }
 
     const {tsType, declared, jsdoc} = compileSimpleTypeNode(sNode, schemaNS, prefixes);
-    const alias: CompiledAlias = {name: pascal(name), ns: schemaNS, tsType, declared, jsdoc};
+    const alias: CompiledAlias = {
+      name: pascal(name),
+      ns: schemaNS,
+      tsType,
+      declared,
+      jsdoc,
+      doc: extractAnnotationDocumentation(sNode),
+    };
     aliasMap.set(key, alias);
     return alias;
   }
@@ -384,6 +453,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     inProgress.add(rawKey);
 
     const outName = pascal(name);
+    const typeDoc = extractAnnotationDocumentation(cnode);
     const key = `${schemaNS}|${outName}`;
 
     // hoisted helpers for merging and collecting
@@ -429,7 +499,8 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
             name: an,
             tsType: r.tsType,
             use: a["@_use"] === "required" ? "required" : "optional",
-            declaredType: r.declared
+            declaredType: r.declared,
+            doc: extractAnnotationDocumentation(a),
           });
         } else {
           // named type or default xs:string
@@ -440,7 +511,8 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
             name: an,
             tsType: r.tsType,
             use: a["@_use"] === "required" ? "required" : "optional",
-            declaredType: r.declared
+            declaredType: r.declared,
+            doc: extractAnnotationDocumentation(a),
           });
         }
       }
@@ -470,16 +542,33 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
               min,
               max,
               nillable,
-              declaredType: `{${schemaNS}}${rec.name}`
+              declaredType: `{${schemaNS}}${rec.name}`,
+              doc: extractAnnotationDocumentation(e),
             });
           } else if (inlineSimple) {
             const r = compileSimpleTypeNode(inlineSimple, schemaNS, prefixes);
-            out.push({name: propName || nameOrRef, tsType: r.tsType, min, max, nillable, declaredType: r.declared});
+            out.push({
+              name: propName || nameOrRef,
+              tsType: r.tsType,
+              min,
+              max,
+              nillable,
+              declaredType: r.declared,
+              doc: extractAnnotationDocumentation(e),
+            });
           } else {
             const t = e["@_type"] || e["@_ref"];
             const q = t ? resolveQName(t, schemaNS, prefixes) : {ns: XS, local: "string"};
             const r = resolveTypeRef(q, schemaNS, prefixes);
-            out.push({name: propName || nameOrRef, tsType: r.tsType, min, max, nillable, declaredType: r.declared});
+            out.push({
+              name: propName || nameOrRef,
+              tsType: r.tsType,
+              min,
+              max,
+              nillable,
+              declaredType: r.declared,
+              doc: extractAnnotationDocumentation(e),
+            });
           }
         }
         // recurse into nested compositor groups
@@ -500,6 +589,9 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       const newElems = collectParticles(outName, cnode);
       mergeAttrs(present.attrs, newAttrs);
       mergeElems(present.elems, newElems);
+      if (!present.doc && typeDoc) {
+        present.doc = typeDoc;
+      }
       // Remove from inProgress since we're done with this cycle
       inProgress.delete(rawKey);
       return present;
@@ -540,6 +632,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
           ns: schemaNS,
           attrs,
           elems,
+          doc: typeDoc,
           base: baseName,
           localAttrs: locals,
           localElems
@@ -571,7 +664,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
           declaredType: r.declared,
         }]);
         mergeAttrs(attrs, collectAttributes(scNode));
-        const result: CompiledType = {name: outName, ns: schemaNS, attrs, elems};
+        const result: CompiledType = {name: outName, ns: schemaNS, attrs, elems, doc: typeDoc};
         compiledMap.set(key, result);
         inProgress.delete(rawKey);
         return result;
@@ -588,7 +681,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     mergeAttrs(attrs, collectAttributes(cnode));
     mergeElems(elems, collectParticles(outName, cnode));
 
-    const result: CompiledType = {name: outName, ns: schemaNS, attrs, elems};
+    const result: CompiledType = {name: outName, ns: schemaNS, attrs, elems, doc: typeDoc};
     compiledMap.set(key, result);
     inProgress.delete(rawKey);
     return result;
@@ -602,6 +695,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     prefixes: Record<string, string>
   ): CompiledType {
     const outName = pascal(name);
+    const elementDoc = extractAnnotationDocumentation(enode);
     const key = `${schemaNS}|${outName}`;
     const present = compiledMap.get(key);
     if (present) return present;
@@ -618,6 +712,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
         ns: schemaNS,
         attrs: [],
         elems: [{name: "$value", tsType: r.tsType, min: 0, max: 1, nillable: false, declaredType: r.declared}],
+        doc: elementDoc,
       };
       compiledMap.set(key, t);
       return t;
@@ -640,6 +735,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
             nillable: false,
             declaredType: label
           }],
+          doc: elementDoc,
         };
         compiledMap.set(key, t);
         return t;
@@ -655,9 +751,12 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
           const existingAlias = aliasMap.get(aliasKey);
           const declared = `{${base.ns}}${base.name}`;
           if (!existingAlias) {
-            aliasMap.set(aliasKey, {name: outName, ns: schemaNS, tsType: base.name, declared});
+            aliasMap.set(aliasKey, {name: outName, ns: schemaNS, tsType: base.name, declared, doc: elementDoc});
           } else {
             // if an alias exists but points elsewhere, keep the first one (stable) and ignore
+            if (!existingAlias.doc && elementDoc) {
+              existingAlias.doc = elementDoc;
+            }
           }
         }
         // Return base so callers have a CompiledType, but do not duplicate in compiledMap for wrapper
@@ -678,13 +777,14 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
             nillable: false,
             declaredType: `{${a.ns}}${q.local}`
           }],
+          doc: elementDoc,
         };
         compiledMap.set(key, t);
         return t;
       }
     }
     // default empty wrapper
-    const t: CompiledType = {name: outName, ns: schemaNS, attrs: [], elems: []};
+    const t: CompiledType = {name: outName, ns: schemaNS, attrs: [], elems: [], doc: elementDoc};
     compiledMap.set(key, t);
     return t;
   }
@@ -828,10 +928,11 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       const outMsg = findMessage((getFirstWithLocalName(po, "output") as any)?.["@_message"]);
       const inputElement = elementOfMessage(inMsg);
       const outputElement = elementOfMessage(outMsg);
+      const doc = extractDirectDocumentation(po);
       // Derive TypeScript type names from element local names
       const inputTypeName = inputElement ? pascal(inputElement.local) : undefined;
       const outputTypeName = outputElement ? pascal(outputElement.local) : undefined;
-      return {name, soapAction: bOps.get(name) || "", inputElement, outputElement, inputTypeName, outputTypeName};
+      return {name, soapAction: bOps.get(name) || "", inputElement, outputElement, inputTypeName, outputTypeName, doc};
     })
     .filter((x): x is NonNullable<typeof x> => x != null)) as Array<{
     name: string;
@@ -840,6 +941,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     outputElement?: QName;
     inputTypeName?: string;
     outputTypeName?: string;
+    doc?: string;
   }>;
 
   // --- WS-Policy: scan for security requirements (inline policies only) ---

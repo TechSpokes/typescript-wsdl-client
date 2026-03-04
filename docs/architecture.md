@@ -83,6 +83,8 @@ CompiledCatalog {
 }
 ```
 
+`CompiledType`, type aliases, and operations may include optional `doc` fields populated from WSDL/XSD documentation nodes. Client emitters consume these values to generate comments in `types.ts`, `operations.ts`, and `client.ts`. OpenAPI emitters consume the same fields for schema, property, and operation `description` values.
+
 Data flow through the pipeline:
 
 1. schemaCompiler produces CompiledCatalog from WSDL XML

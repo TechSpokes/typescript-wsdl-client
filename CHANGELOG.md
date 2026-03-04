@@ -9,6 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-03-04
+
+- feat(docs-flow): propagate WSDL/XSD documentation into catalog metadata, generated TypeScript comments, and OpenAPI descriptions
+- test(unit): add WSDL/XSD documentation propagation coverage for catalog, client/types/operations emitters, and OpenAPI description overrides
+- docs: document source documentation comment propagation in generated code and catalog concepts
+- docs: align updated documentation formatting with markdown rules by removing bold emphasis patterns
+
 ## [0.12.0] - 2026-03-04
 
 - chore(deps): bump soap to 1.7.1

@@ -24,6 +24,13 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
   const ext = compiled.options.imports ?? "bare";
   const suffix = ext === "bare" ? "" : `.${ext}`;
   const clientName = deriveClientName(compiled);
+  const normalizeDocLines = (text: string): string[] =>
+    String(text)
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/\*\//g, "*\\/"));
 
   // Collect type names used in method signatures for the import statement
   const importedTypes = new Set<string>();
@@ -43,8 +50,13 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
     if (inTypeName) importedTypes.add(inTypeName);
     if (outTypeName) importedTypes.add(outTypeName);
 
+    const docLines = op.doc ? normalizeDocLines(op.doc) : [];
+    const docBlock = docLines.length > 0
+      ? `  /**\n${docLines.map(line => `   * ${line}`).join("\n")}\n   */\n`
+      : "";
+
     methods.push(
-      `  ${op.name}(\n` +
+      `${docBlock}  ${op.name}(\n` +
       `    args: ${inTs}\n` +
       `  ): Promise<{ response: ${outTs}; headers: unknown }>;\n`
     );

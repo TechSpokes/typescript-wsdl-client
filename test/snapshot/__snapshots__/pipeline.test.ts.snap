@@ -355,6 +355,7 @@ exports[`pipeline snapshot > client/catalog.json 1`] = `
   },
   "operations": [
     {
+      "doc": "Gets Information for each WeatherID",
       "inputElement": {
         "local": "GetWeatherInformation",
         "ns": "http://ws.cdyne.com/WeatherWS/",
@@ -370,6 +371,7 @@ exports[`pipeline snapshot > client/catalog.json 1`] = `
       "soapAction": "http://ws.cdyne.com/WeatherWS/GetWeatherInformation",
     },
     {
+      "doc": "Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly. U.S. Only",
       "inputElement": {
         "local": "GetCityForecastByZIP",
         "ns": "http://ws.cdyne.com/WeatherWS/",
@@ -385,6 +387,7 @@ exports[`pipeline snapshot > client/catalog.json 1`] = `
       "soapAction": "http://ws.cdyne.com/WeatherWS/GetCityForecastByZIP",
     },
     {
+      "doc": "Allows you to get your City's Weather, which is updated hourly. U.S. Only",
       "inputElement": {
         "local": "GetCityWeatherByZIP",
         "ns": "http://ws.cdyne.com/WeatherWS/",
@@ -955,6 +958,8 @@ export class Weather {
   /**
    * Calls the GetWeatherInformation operation of the Weather.
    *
+   * Gets Information for each WeatherID
+   *
    * @param args - The request arguments for the GetWeatherInformation operation.
    * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
    */
@@ -973,6 +978,8 @@ export class Weather {
   /**
    * Calls the GetCityForecastByZIP operation of the Weather.
    *
+   * Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly. U.S. Only
+   *
    * @param args - The request arguments for the GetCityForecastByZIP operation.
    * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
    */
@@ -990,6 +997,8 @@ export class Weather {
 
   /**
    * Calls the GetCityWeatherByZIP operation of the Weather.
+   *
+   * Allows you to get your City's Weather, which is updated hourly. U.S. Only
    *
    * @param args - The request arguments for the GetCityWeatherByZIP operation.
    * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
@@ -3100,6 +3109,7 @@ exports[`pipeline snapshot > openapi.json 1`] = `
   "paths": {
     "/get-city-forecast-by-zip": {
       "post": {
+        "description": "Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly. U.S. Only",
         "operationId": "GetCityForecastByZIP",
         "requestBody": {
           "content": {
@@ -3140,6 +3150,7 @@ exports[`pipeline snapshot > openapi.json 1`] = `
     },
     "/get-city-weather-by-zip": {
       "post": {
+        "description": "Allows you to get your City's Weather, which is updated hourly. U.S. Only",
         "operationId": "GetCityWeatherByZIP",
         "requestBody": {
           "content": {
@@ -3180,6 +3191,7 @@ exports[`pipeline snapshot > openapi.json 1`] = `
     },
     "/get-weather-information": {
       "post": {
+        "description": "Gets Information for each WeatherID",
         "operationId": "GetWeatherInformation",
         "requestBody": {
           "content": {

@@ -8,9 +8,9 @@ See [README](../README.md) for quick start and [CONTRIBUTING](../CONTRIBUTING.md
 
 The project uses three layers of testing:
 
-1. **Unit tests** — Pure function tests for utilities, parsers, and type mapping
-2. **Snapshot tests** — Baseline comparisons for all generated pipeline output
-3. **Integration tests** — End-to-end gateway tests using Fastify's `inject()` with mock clients
+1. Unit tests: Pure function tests for utilities, parsers, and type mapping
+2. Snapshot tests: Baseline comparisons for all generated pipeline output
+3. Integration tests: End-to-end gateway tests using Fastify's `inject()` with mock clients
 
 All tests use [Vitest](https://vitest.dev/) and run in under 3 seconds.
 
@@ -34,12 +34,13 @@ npm run ci
 
 Unit tests cover pure functions with no I/O or side effects:
 
-- **`tools.test.ts`** — `pascal()`, `resolveQName()`, `explodePascal()`, `pascalToSnakeCase()`, `normalizeArray()`, `getChildrenWithLocalName()`, `getFirstWithLocalName()`
-- **`casing.test.ts`** — `toPathSegment()` with kebab, asis, and lower styles
-- **`primitives.test.ts`** — `xsdToTsPrimitive()` covering all XSD types (string-like, boolean, integers, decimals, floats, dates, any)
-- **`errors.test.ts`** — `WsdlCompilationError` construction and `toUserMessage()` formatting
-- **`schema-alignment.test.ts`** — Cross-validates TypeScript types, JSON schemas, and catalog.json for consistency
-- **`mock-data.test.ts`** — `generateMockPrimitive()`, `generateMockData()`, `generateAllOperationMocks()` with cycle detection and array wrapping
+- `tools.test.ts`: `pascal()`, `resolveQName()`, `explodePascal()`, `pascalToSnakeCase()`, `normalizeArray()`, `getChildrenWithLocalName()`, `getFirstWithLocalName()`
+- `casing.test.ts`: `toPathSegment()` with kebab, asis, and lower styles
+- `primitives.test.ts`: `xsdToTsPrimitive()` covering all XSD types (string-like, boolean, integers, decimals, floats, dates, any)
+- `errors.test.ts`: `WsdlCompilationError` construction and `toUserMessage()` formatting
+- `schema-alignment.test.ts`: Cross-validates TypeScript types, JSON schemas, and catalog.json for consistency
+- `mock-data.test.ts`: `generateMockPrimitive()`, `generateMockData()`, `generateAllOperationMocks()` with cycle detection and array wrapping
+- `wsdl-documentation.test.ts`: verifies doc flow to catalog, generated TS comments, and OpenAPI descriptions with override precedence
 
 ### Writing Unit Tests
 

@@ -36,6 +36,13 @@ import {error, warn} from "../util/cli.js";
  */
 export function generateClient(outFile: string, compiled: CompiledCatalog) {
   const isValidIdent = (name: string) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name);
+  const normalizeDocLines = (text: string): string[] =>
+    String(text)
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/\*\//g, "*\\/"));
   const reserved = new Set<string>([
     "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete",
     "do", "else", "enum", "export", "extends", "false", "finally", "for", "function", "if",
@@ -66,12 +73,14 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
     const inTs = inTypeName ? `T.${inTypeName}` : `any`;
     const outTs = outTypeName ? `T.${outTypeName}` : `any`;
     const secHints = Array.isArray((op as any).security) && (op as any).security!.length ? (op as any).security as string[] : [];
+    const opDocLines = op.doc ? normalizeDocLines(op.doc) : [];
+    const opDocStr = opDocLines.length ? `\n   *\n${opDocLines.map(line => `   * ${line}`).join("\n")}` : "";
     const secHintsStr = secHints.length ? `\n   *\n   * Security (WSDL policy hint): ${secHints.join(", ")}` : "";
 
     const methodTemplate = `
 
   /**
-   * Calls the ${m} operation of the ${clientName}.${secHintsStr}
+   * Calls the ${m} operation of the ${clientName}.${opDocStr}${secHintsStr}
    *
    * @param args - The request arguments for the ${m} operation.
    * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.

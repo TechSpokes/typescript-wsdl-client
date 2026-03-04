@@ -73,6 +73,34 @@ result.GetCityWeatherByZIPResult.Temperature;
 
 Autocomplete and type checking work across all generated interfaces.
 
+## Documentation Comments
+
+Generated `types.ts`, `operations.ts`, and `client.ts` include source documentation when present in WSDL/XSD.
+
+`wsdl:documentation` on operations is emitted as method comments in `operations.ts` and `client.ts`. `xs:annotation/xs:documentation` on complex types, attributes, and elements is emitted as comments in `types.ts`.
+
+```typescript
+/**
+ * Thing payload.
+ */
+export interface Thing {
+  /**
+   * Display name.
+   *
+   * @xsd {"kind":"element","type":"xs:string","occurs":{"min":1,"max":1,"nillable":false}}
+   */
+  name: string;
+}
+```
+
+The existing `@xsd` metadata annotations are preserved for runtime marshaling and tooling.
+
+OpenAPI generation also propagates these docs into `description` fields:
+
+- Operation descriptions come from `wsdl:documentation` by default
+- `--openapi-ops-file` `description` overrides operation documentation when provided
+- Schema and property descriptions come from `xs:annotation/xs:documentation`
+
 ## Gateway Route Handlers
 
 When generating a Fastify gateway (`--gateway-dir`), each SOAP operation gets a fully typed route handler. The handler imports the request type from the client, uses Fastify's `Body: T` generic for type inference, and wraps the SOAP response in a standard envelope.
@@ -99,9 +127,9 @@ export async function registerRoute_v1_weather_getcityforecastbyzip(fastify: Fas
 
 Key features of the generated handlers:
 
-- **`Body: T` generic** — Fastify infers `request.body` type from the route generic, enabling IDE autocomplete and compile-time checks
-- **JSON Schema validation** — the `schema` import provides Fastify with request/response validation at runtime, before the handler runs
-- **Envelope wrapping** — `buildSuccessEnvelope()` wraps the raw SOAP response in the standard `{ status, message, data, error }` envelope
+- `Body: T` generic: Fastify infers `request.body` type from the route generic, enabling IDE autocomplete and compile-time checks
+- JSON Schema validation: the `schema` import provides Fastify with request/response validation at runtime, before the handler runs
+- Envelope wrapping: `buildSuccessEnvelope()` wraps the raw SOAP response in the standard `{ status, message, data, error }` envelope
 
 See [Gateway Guide](gateway-guide.md) for the full architecture and [CLI Reference](cli-reference.md) for generation flags.
 

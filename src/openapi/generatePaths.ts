@@ -122,7 +122,11 @@ export function generatePaths(compiled: CompiledCatalog, opts: GeneratePathsOpti
       },
     };
     if (override.summary) operationObject.summary = override.summary;
-    if (override.description) operationObject.description = override.description;
+    if (override.description) {
+      operationObject.description = override.description;
+    } else if (op.doc) {
+      operationObject.description = op.doc;
+    }
     if (override.deprecated) operationObject.deprecated = true;
     if (parameters.length) operationObject.parameters = parameters;
     const opSec = opts.opSecurity[op.name];
