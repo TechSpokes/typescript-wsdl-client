@@ -9,6 +9,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-03-04
+
+- chore(deps): bump soap to 1.7.1
+- chore(deps): bump fast-xml-parser to 5.4.2
+- chore(deps-dev): bump @types/node to 25.3.3
+- chore(deps-dev): bump fastify to 5.7.4
+- chore(deps-dev): bump rimraf to 6.1.3
+- chore(deps-dev): bump typescript to 5.9.3
+
 ## [0.11.6] - 2026-02-18
 
 - chore: suppress unused-parameter IDE warnings in test emitters and replace `as any` casts with typed alternatives in tests
