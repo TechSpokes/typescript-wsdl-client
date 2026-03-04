@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-03-04
+
 - feat(catalog): add optional `wsdlDocs` metadata for WSDL bindings, messages, parts, services, and ports
 - feat(openapi): derive operation `summary` from WSDL documentation first sentence with `ops.json` override precedence
 - feat(gateway): propagate OpenAPI operation summary and description into generated gateway route header comments
