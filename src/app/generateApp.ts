@@ -525,9 +525,9 @@ function generatePackageJson(appDir: string, force: boolean): void {
       dev: "tsx watch server.ts",
     },
     dependencies: {
-      fastify: "^5.7.4",
+      fastify: "^5.8.2",
       "fastify-plugin": "^5.1.0",
-      soap: "^1.7.1",
+      soap: "^1.8.0",
     },
     devDependencies: {
       tsx: "^4.21.0",

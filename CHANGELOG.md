@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-03-14
+
+- chore(deps): bump soap to 1.8.0 and fast-xml-parser to 5.5.5
+- chore(deps-dev): bump @types/node to 25.5.0, fastify to 5.8.2, and vitest to 4.1.0
+- chore(app): update generated app scaffold dependency lower bounds to fastify 5.8.2 and soap 1.8.0
+
 ## [0.14.0] - 2026-03-04
 
 - feat(catalog): add optional `wsdlDocs` metadata for WSDL bindings, messages, parts, services, and ports
