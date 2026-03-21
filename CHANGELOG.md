@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.14.2] - 2026-03-21
+
+- chore(deps): bump fast-xml-parser minimum to 5.5.8
+
 ## [0.14.1] - 2026-03-14
 
 - chore(deps): bump soap to 1.8.0 and fast-xml-parser to 5.5.5
