@@ -316,12 +316,12 @@ export function emitSchemasModule(
   versionSlug: string,
   serviceSlug: string
 ): void {
-  const modelFiles = fs.readdirSync(modelsDir).filter((f) => f.endsWith(".json"));
+  const modelFiles = fs.readdirSync(modelsDir).filter((f: string) => f.endsWith(".json"));
   modelFiles.sort();
 
   let schemasTs = "";
   schemasTs += `import type { FastifyInstance } from "fastify";\n`;
-  modelFiles.forEach((file, idx) => {
+  modelFiles.forEach((file: string, idx: number) => {
     const varName = `m${idx}`;
     schemasTs += `import ${varName} from "./schemas/models/${file}" with { type: "json" };\n`;
   });
@@ -329,7 +329,7 @@ export function emitSchemasModule(
     versionSlug
   )}_${slugName(serviceSlug)}(fastify: FastifyInstance) {\n`;
   schemasTs += `  const schemas = [${modelFiles
-    .map((_, idx) => `m${idx}`)
+    .map((_: string, idx: number) => `m${idx}`)
     .join(", ")}];\n`;
   schemasTs += `  for (const s of schemas) {\n`;
   schemasTs += `    fastify.addSchema(s as any);\n`;

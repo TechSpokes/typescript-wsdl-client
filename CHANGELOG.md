@@ -9,6 +9,16 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-04-02
+
+- fix(build): add explicit `types: ["node"]` to tsconfig for TypeScript 6.0 compatibility
+- fix(build): add type annotations to implicit-any callback parameters in gateway schema emitter
+- fix(build): use relative path in smoke tsconfig `paths` to remove deprecated `baseUrl` dependency
+- feat(app): add `@types/node` to generated app scaffold devDependencies
+- feat(app): add `types: ["node"]` to generated app scaffold tsconfig for TypeScript 6.0 forward-compatibility
+- chore(deps-dev): bump typescript to 6.0.2
+- chore(app): bump generated app scaffold dependency lower bounds to fastify 5.8.4 and typescript 6.0.2
+
 ## [0.14.2] - 2026-03-21
 
 - chore(deps): bump fast-xml-parser minimum to 5.5.8

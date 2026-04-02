@@ -525,13 +525,14 @@ function generatePackageJson(appDir: string, force: boolean): void {
       dev: "tsx watch server.ts",
     },
     dependencies: {
-      fastify: "^5.8.2",
+      fastify: "^5.8.4",
       "fastify-plugin": "^5.1.0",
       soap: "^1.8.0",
     },
     devDependencies: {
+      "@types/node": "^22.0.0",
       tsx: "^4.21.0",
-      typescript: "^5.9.3",
+      typescript: "^6.0.2",
     },
   };
 
@@ -562,6 +563,7 @@ function generateTsConfig(appDir: string, opts: GenerateAppOptions, force: boole
       strict: true,
       esModuleInterop: true,
       skipLibCheck: true,
+      types: ["node"],
       outDir: "dist",
       rootDir: ".",
     },
