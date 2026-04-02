@@ -1,7 +1,7 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.15.0",
-  "description": "Generate type-safe TypeScript SOAP clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways from WSDL/XSD definitions.",
+  "version": "0.15.1",
+  "description": "Turn legacy WSDL/SOAP services into typed TypeScript clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways. Built for enterprise SOAP modernization.",
   "keywords": [
     "wsdl",
     "soap",
@@ -14,7 +14,11 @@
     "soap-to-rest",
     "api-gateway",
     "code-generator",
-    "wsdl-to-typescript"
+    "wsdl-to-typescript",
+    "soap-modernization",
+    "wsdl-parser",
+    "soap-to-rest-bridge",
+    "legacy-api"
   ],
   "homepage": "https://github.com/TechSpokes/typescript-wsdl-client#readme",
   "bugs": {

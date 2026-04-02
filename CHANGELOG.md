@@ -9,6 +9,18 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-04-02
+
+- docs(readme): restructure README around pain-first positioning with goal-based entry paths and comparison section
+- docs: add start-here guide for evaluators with per-goal quickstarts
+- docs: add migration playbook for end-to-end SOAP modernization workflow
+- docs: add supported patterns page with codebase-verified WSDL/XSD feature coverage
+- docs: add output anatomy page describing all generated files
+- docs: reorganize documentation index into evaluate/adopt/operate/extend journey
+- docs(roadmap): update ROADMAP.md to reflect 0.15.x as current with 0.12-0.15 highlights
+- chore(meta): update npm description to migration-focused wording and add keywords
+- fix(docs): replace vendor-specific JSDoc examples in gateway helpers with generic WeatherService names
+
 ## [0.15.0] - 2026-04-02
 
 - fix(build): add explicit `types: ["node"]` to tsconfig for TypeScript 6.0 compatibility

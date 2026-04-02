@@ -1,20 +1,33 @@
 # Documentation
 
-Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. The root [README.md](../README.md) Documentation table is the authoritative index with descriptions; the list below is a quick local reference.
+Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. The root [README.md](../README.md) Documentation section is the authoritative index with descriptions; the list below is a quick local reference organized by reader intent.
 
-## Contents
+## Evaluate
 
-- [api-reference.md](api-reference.md) – Programmatic TypeScript API
-- [architecture.md](architecture.md) – Internal pipeline for contributors
-- [cli-reference.md](cli-reference.md) – All 6 commands with flags and examples
-- [concepts.md](concepts.md) – Flattening, `$value`, primitives, determinism
-- [configuration.md](configuration.md) – Security, tags, operations config files
-- [gateway-guide.md](gateway-guide.md) – Fastify integration and error handling
-- [generated-code.md](generated-code.md) – Using clients and types
-- [migration.md](migration.md) – Upgrade paths between versions
-- [production.md](production.md) – CI/CD, validation, logging, limitations
-- [testing.md](testing.md) – Testing patterns and mock client examples
-- [troubleshooting.md](troubleshooting.md) – Common issues and debugging
+- [start-here.md](start-here.md): what this is, who it is for, choose your path
+- [supported-patterns.md](supported-patterns.md): WSDL/XSD features handled and current limitations
+- [output-anatomy.md](output-anatomy.md): what gets generated and how to use it
+
+## Adopt
+
+- [cli-reference.md](cli-reference.md): all 6 commands with flags and examples
+- [generated-code.md](generated-code.md): using clients, types, and operations
+- [configuration.md](configuration.md): security schemes, tags, operations config files
+- [migration-playbook.md](migration-playbook.md): end-to-end SOAP modernization guide
+
+## Operate
+
+- [gateway-guide.md](gateway-guide.md): Fastify integration and error handling
+- [testing.md](testing.md): testing patterns and mock client examples
+- [production.md](production.md): CI/CD, validation, logging
+- [troubleshooting.md](troubleshooting.md): common issues and debugging
+
+## Extend
+
+- [api-reference.md](api-reference.md): programmatic TypeScript API
+- [concepts.md](concepts.md): flattening, `$value`, primitives, determinism
+- [architecture.md](architecture.md): internal pipeline for contributors
+- [migration.md](migration.md): upgrading between package versions
 
 ## Conventions
 
@@ -25,10 +38,10 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 
 ## Related
 
-- [Root README](../README.md) – project overview, quick start, and authoritative Documentation table
-- [CONTRIBUTING.md](../CONTRIBUTING.md) – development setup and workflow
-- [CHANGELOG.md](../CHANGELOG.md) – version history
-- [examples/](../examples/) – sample WSDL files and generated output
+- [Root README](../README.md): project overview, quick start, and authoritative Documentation section
+- [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow
+- [CHANGELOG.md](../CHANGELOG.md): version history
+- [examples/](../examples/): sample WSDL files and generated output
 
 ## Not Here
 

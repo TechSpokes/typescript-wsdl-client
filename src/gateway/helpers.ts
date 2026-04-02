@@ -410,8 +410,8 @@ export function buildParamSchemasForOperation(
  * Metadata about the SOAP client for handler generation
  *
  * @interface ClientMeta
- * @property {string} className - Client class name (e.g., "EVRNService")
- * @property {string} decoratorName - Fastify decorator name (e.g., "evrnserviceClient")
+ * @property {string} className - Client class name (e.g., "WeatherService")
+ * @property {string} decoratorName - Fastify decorator name (e.g., "weatherserviceClient")
  * @property {string} importPath - Import path relative to routes/ directory — for typed route handlers
  * @property {string} typesImportPath - Types import path relative to routes/ directory — for typed route handlers
  * @property {string} pluginImportPath - Import path relative to gateway output directory — used by emitPluginModule()
