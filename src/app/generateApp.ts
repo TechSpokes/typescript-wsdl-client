@@ -530,7 +530,7 @@ function generatePackageJson(appDir: string, force: boolean): void {
       soap: "^1.8.0",
     },
     devDependencies: {
-      "@types/node": "^22.0.0",
+      "@types/node": "^25.6.0",
       tsx: "^4.21.0",
       typescript: "^6.0.2",
     },
