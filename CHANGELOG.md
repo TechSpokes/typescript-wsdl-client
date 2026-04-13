@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.15.2] - 2026-04-13
+
+- chore(deps): refresh lockfile to axios 1.15.0 and fast-xml-parser 5.5.10
+- chore(deps-dev): refresh lockfile to @types/node 25.5.2 and vite 8.0.5
+
 ## [0.15.1] - 2026-04-02
 
 - docs(readme): restructure README around pain-first positioning with goal-based entry paths and comparison section
