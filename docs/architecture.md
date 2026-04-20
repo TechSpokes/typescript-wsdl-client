@@ -7,9 +7,9 @@ See [CONTRIBUTING](../CONTRIBUTING.md) for development setup and [README](../REA
 ## Pipeline Overview
 
 ```text
-WSDL Source
-    |
-    v
+WSDL Source       Stream Config (optional)
+    |                    |
+    v                    v
 Loader (fetch.ts, wsdlLoader.ts)
     Fetches WSDL from URL or file
     Returns parsed XML document
@@ -17,7 +17,14 @@ Loader (fetch.ts, wsdlLoader.ts)
     v
 Compiler (schemaCompiler.ts)
     Walks XSD types, resolves references
+    Retains xs:any wildcard particles
     Produces CompiledCatalog
+    |
+    v
+Shape Resolver (shapeResolver.ts, optional)
+    Loads companion catalogs
+    Copies reachable record-type graphs
+    Fails on structural name collisions
     |
     v
 Catalog Emitter (generateCatalog.ts)
@@ -38,7 +45,7 @@ fetch.ts handles HTTP/HTTPS/file fetching. wsdlLoader.ts handles XML parsing and
 
 ### compiler/
 
-schemaCompiler.ts is the core compiler. It walks XSD complex/simple types, resolves inheritance, handles choices, and builds the type graph. generateCatalog.ts serializes compiled types to catalog.json.
+schemaCompiler.ts is the core compiler. It walks XSD complex/simple types, resolves inheritance, handles choices, retains xs:any wildcard particles as catalog metadata, and builds the type graph. generateCatalog.ts serializes compiled types to catalog.json. shapeResolver.ts resolves companion catalogs: it loads each referenced `shapeCatalog` once, copies the reachable record-type graph into the current compilation, and enforces structural-equality collision checks. It mutates the compiled catalog in place and is invoked after schemaCompiler.ts whenever a stream config is present.
 
 ### client/
 
@@ -62,7 +69,11 @@ pipeline.ts orchestrates the full pipeline from compile through app generation. 
 
 ### util/
 
-tools.ts provides string helpers (pascal, kebab, QName resolution). cli.ts provides console output helpers and error handling. builder.ts provides shared Yargs option builders.
+tools.ts provides string helpers (pascal, kebab, QName resolution). cli.ts provides console output helpers and error handling. builder.ts provides shared Yargs option builders. streamConfig.ts parses and validates `--stream-config` input into a normalized `StreamConfig` shape; it is parser-only and never touches the filesystem beyond reading the config file itself. runtimeSource.ts reads template strings for the client stream transport.
+
+### runtime/
+
+Template sources embedded into generated clients and gateways. streamXml.ts implements a SAX-driven `parseRecords(stream, spec)` that tracks the configured `recordPath` positionally (duplicate local names allowed) and yields records as their closing tags arrive. ndjson.ts wraps an async iterable of records in a `Readable` that emits NDJSON lines with honored backpressure. clientStreamMethods.tpl.txt and operationsStreamHelper.tpl.txt are text templates emitted into the generated `client.ts` and `operations.ts` when stream operations are present; they encode the `callStream()` transport and the `StreamOperationResponse<T>` type.
 
 ### xsd/
 
@@ -115,3 +126,14 @@ Data flow through the pipeline:
 1. Add mapping in src/xsd/primitives.ts
 2. Handle in src/compiler/schemaCompiler.ts if needed
 3. Update src/openapi/generateSchemas.ts for JSON Schema output
+
+### Adding a Stream-Capable Operation Output
+
+1. Add a `stream-config` JSON entry for the operation with `recordType` and `recordPath`
+2. Declare a `shapeCatalog` entry when the record type lives in a companion WSDL
+3. Run the compile command and verify `catalog.operations[].stream` carries normalized metadata
+4. The client, OpenAPI, and gateway emitters consume that metadata automatically; no per-emitter code changes are required
+
+## Client Stream Transport
+
+Phase-0 research (see ADR-002) established that `node-soap` buffers the full response before invoking its operation callback. Stream operations cannot use that transport, so the generated client emits a parallel `callStream()` method that POSTs a hand-built SOAP envelope via global `fetch`, captures HTTP headers before the first record, and pipes the response body through `parseRecords`. Buffered operations continue to use `node-soap` unchanged. The two transports coexist on the same client class.

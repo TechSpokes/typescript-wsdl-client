@@ -28,6 +28,7 @@ Most tools in this space stop at one layer: a SOAP runtime, type generation, or 
 - Handles complex inheritance, `xs:attribute`, namespace collisions, nested XSD imports, and choice elements
 - Generated `operations.ts` interface enables testing without importing `soap` or calling a live service
 - OpenAPI is a first-class output, not an afterthought; types, schemas, and descriptions stay aligned
+- Opt-in NDJSON streaming for large SOAP responses: client emits `AsyncIterable<RecordType>`, gateway flushes records incrementally, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
 - MIT licensed; generated code is yours with no attribution required
 
 ## Installation
@@ -103,6 +104,7 @@ See [Output Anatomy](docs/output-anatomy.md) for a detailed walkthrough of each 
 - You want OpenAPI documentation that stays in sync with WSDL changes
 - You need deterministic codegen output safe for CI/CD regeneration
 - You are modernizing a legacy SOAP integration incrementally
+- You have SOAP operations that return large payloads and need to stream records incrementally instead of buffering
 
 ## When NOT to Use This
 
@@ -137,6 +139,7 @@ Platform API gateways solve governance, policy, and multi-language SDK generatio
 | REST gateway generation | no | no | no | yes |
 | Runnable app scaffolding | no | no | no | yes |
 | Mockable operations interface | no | no | no | yes |
+| Streaming large responses (NDJSON) | no | no | no | yes |
 
 Data as of April 2026.
 
@@ -152,6 +155,7 @@ Real-world WSDL/XSD files are rarely clean. This generator handles patterns that
 - Correct optionality for nillable fields in both TypeScript and OpenAPI output
 - The `$value` pattern for simple content with attributes, preserving text content alongside attribute properties
 - `ArrayOf*` wrapper types, unwrapped automatically in OpenAPI with runtime bridging
+- `xs:any` wildcard payloads mapped to concrete record shapes from a companion WSDL, enabling streaming over responses that the primary WSDL describes only as opaque wrappers
 
 See [Core Concepts](docs/concepts.md) and [Supported Patterns](docs/supported-patterns.md) for details.
 

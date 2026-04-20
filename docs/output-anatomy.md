@@ -43,6 +43,24 @@ Exports a TypeScript interface with the same method signatures as the client cla
 
 Contains runtime metadata and helper functions. Includes `unwrapArrayWrappers()` for bridging between SOAP array wrapper objects and flattened OpenAPI array schemas.
 
+### Stream Operations
+
+When `--stream-config` opts an operation into streaming (see [ADR-002](decisions/002-streamable-responses.md)), the client emits additional surfaces alongside the buffered ones. Buffered operations in the same client are unaffected.
+
+`operations.ts` gains a `StreamOperationResponse<RecordType>` type that stream methods return instead of the buffered `{ response, headers, responseRaw, requestRaw }` shape:
+
+```typescript
+export type StreamOperationResponse<RecordType, HeadersType = Record<string, unknown>> = {
+  records: AsyncIterable<RecordType>;
+  headers: HeadersType;
+  requestRaw?: string;
+};
+```
+
+`client.ts` gains a protected `callStream()` transport. Stream methods bypass `node-soap` (which buffers the full response before invoking its callback, as confirmed in phase-0 research) and instead POST a hand-built SOAP envelope via global `fetch`, piping the response body through a SAX-driven record parser. `node-soap` remains the transport for buffered operations.
+
+Generated imports required at runtime: `saxes` for SAX parsing. The generated app scaffold pins `saxes ^6.0.0` automatically; manual consumers must install it explicitly.
+
 ## OpenAPI Output
 
 Generated at the path specified by `--openapi-file`.
@@ -54,6 +72,29 @@ Generated at the path specified by `--openapi-file`.
 The spec includes one POST path per WSDL operation, request and response schemas in `components/schemas`, and descriptions derived from WSDL documentation annotations. Schemas are generated from the same catalog used for TypeScript types, so the two outputs stay aligned.
 
 OpenAPI validation runs by default using `@apidevtools/swagger-parser`. Disable with `--openapi-validate false`.
+
+### Stream Schema Extension
+
+Stream operations do not use the standard success envelope for `200` responses. The response content declares the configured stream media type (default `application/x-ndjson`) with `schema: { "type": "string" }` and an `x-wsdl-tsc-stream` extension that carries the record schema reference:
+
+```json
+{
+  "200": {
+    "description": "Successful streamed SOAP operation response",
+    "content": {
+      "application/x-ndjson": {
+        "schema": { "type": "string" },
+        "x-wsdl-tsc-stream": {
+          "format": "ndjson",
+          "itemSchema": { "$ref": "#/components/schemas/UnitDescriptiveContentType" }
+        }
+      }
+    }
+  }
+}
+```
+
+OpenAPI 3.1 cannot fully describe an NDJSON sequence as a standard JSON Schema document, so the extension makes the item schema explicit for generated gateways, documentation tools, and future SDK generators. Error responses (400, 502, and the rest) still use the normal envelope.
 
 ## Gateway Output
 
@@ -73,6 +114,14 @@ Generated into the directory specified by `--gateway-dir`.
 ### Route handler structure
 
 Each route file in `routes/` follows the same pattern: validate the JSON request body against the operation schema, call the corresponding SOAP operation via the typed client, transform the SOAP response to JSON, and return it with the appropriate response schema.
+
+### Stream Routes
+
+Stream-configured operations generate a different route shape. The Fastify response serialization schema is omitted because Fastify cannot serialize an unbounded stream with a normal JSON response schema. The handler sets `reply.type("application/x-ndjson")` and returns `reply.send(toNdjson(result.records))`. `runtime.ts` gains a `toNdjson<T>(records: AsyncIterable<T>): Readable` helper that wraps the async iterable in a backpressure-aware Node `Readable`. See the [Gateway Guide](gateway-guide.md#streaming-handlers) for the full handler example and terminal-error policy.
+
+### Generated Test Surface
+
+When `--test-dir` is combined with `--stream-config`, the generated happy-path tests for stream operations assert on the `application/x-ndjson` content-type and parse each line as a separate JSON record. Mock clients use async-generator overrides that yield records to drive those tests; see the [Testing Guide](testing.md) for the pattern.
 
 ### Plugin registration
 

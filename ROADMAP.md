@@ -2,9 +2,19 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, and Fastify gateway scaffolding.
 
-## Current: 0.15.x Series
+## Current: 0.17.x Series
 
-Focus: stability, compatibility, and documentation quality.
+Focus: streaming large SOAP responses and schema-accuracy improvements while keeping buffered output byte-for-byte unchanged.
+
+### Recent highlights (0.16 through 0.17)
+
+- Opt-in streamable SOAP responses (ADR-002): per-operation `--stream-config`, client `StreamOperationResponse<T>` with `AsyncIterable<RecordType>`, gateway NDJSON with backpressure, OpenAPI `x-wsdl-tsc-stream` extension
+- Companion-catalog shape resolution: map opaque `xs:any` wrappers to concrete record types from a second WSDL or pre-compiled catalog, with structural-equality collision checks
+- Compiler now retains `xs:any` wildcard particles on compiled types instead of silently dropping them
+- SAX-driven streaming runtime (`parseRecords`, `toNdjson`) with chunk-boundary fuzz-tested correctness
+- Same-name simple-type element reuse avoids duplicate enum declarations; compiler records diagnostic notes for modeling decisions
+- Generated mock clients yield async-iterable records for stream operations; generated happy-path tests assert NDJSON content-type and parseable records
+- `saxes ^6.0.0` promoted from devDependency to runtime dependency and pinned into generated app scaffolds
 
 ### Recent highlights (0.12 through 0.15)
 
@@ -51,6 +61,8 @@ Ideas we are considering:
 - More WSDL edge case support (xs:union, abstract types, substitution groups)
 - Custom handler hooks and middleware extension points
 - Typed response envelopes with `Reply<T>` generics in route handlers
+- `json-array` streaming format to complement the existing `ndjson` format
+- Streaming request bodies for upload-style SOAP operations
 
 ## Goals
 

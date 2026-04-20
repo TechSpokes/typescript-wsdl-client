@@ -8,7 +8,7 @@ For routine tasks such as bug fixes and small feature additions, the summary and
 
 ## Summary
 
-This is a TypeScript code generator that transforms WSDL/XSD SOAP service definitions into typed SOAP clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways. The `pipeline` command runs the full generation stack in one pass. Source is in `src/` with modules for loading, compiling, client generation, OpenAPI generation, gateway generation, app scaffolding, and utilities. The pipeline orchestrator is `src/pipeline.ts`.
+This is a TypeScript code generator that transforms WSDL/XSD SOAP service definitions into typed SOAP clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways. The `pipeline` command runs the full generation stack in one pass. Source is in `src/` with modules for loading, compiling, client generation, OpenAPI generation, gateway generation, app scaffolding, and utilities. The pipeline orchestrator is `src/pipeline.ts`. Opt-in per-operation NDJSON streaming is available for large responses via `--stream-config` (ADR-002).
 
 ## Must-follow rules
 

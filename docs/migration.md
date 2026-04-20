@@ -16,12 +16,37 @@ These steps apply to every version upgrade:
 
 ## Version Compatibility
 
-| wsdl-tsc | Node.js | TypeScript | soap | Fastify |
-|----------|---------|------------|------|---------|
-| 0.10.x | >= 20.0 | >= 5.6 | >= 1.3 | >= 5.2 |
-| 0.9.x | >= 20.0 | >= 5.6 | >= 1.3 | >= 5.2 |
-| 0.8.x | >= 20.0 | >= 5.6 | >= 1.3 | >= 5.2 |
-| 0.7.x | >= 20.0 | >= 5.6 | >= 1.3 | N/A |
+| wsdl-tsc | Node.js | TypeScript | soap | Fastify | saxes |
+|----------|---------|------------|------|---------|-------|
+| 0.17.x | >= 20.0 | >= 6.0 | >= 1.9 | >= 5.8 | >= 6.0 |
+| 0.16.x | >= 20.0 | >= 6.0 | >= 1.9 | >= 5.8 | N/A |
+| 0.15.x | >= 20.0 | >= 6.0 | >= 1.8 | >= 5.4 | N/A |
+| 0.11.x to 0.14.x | >= 20.0 | >= 5.6 | >= 1.3 | >= 5.2 | N/A |
+| 0.10.x | >= 20.0 | >= 5.6 | >= 1.3 | >= 5.2 | N/A |
+| 0.9.x | >= 20.0 | >= 5.6 | >= 1.3 | >= 5.2 | N/A |
+| 0.8.x | >= 20.0 | >= 5.6 | >= 1.3 | >= 5.2 | N/A |
+| 0.7.x | >= 20.0 | >= 5.6 | >= 1.3 | N/A | N/A |
+
+Versions 0.11 through 0.16 are additive and non-breaking. See `CHANGELOG.md` for per-version detail rather than dedicated upgrade sections here.
+
+## Upgrading to 0.17.x from 0.16.x
+
+This upgrade adds opt-in streamable SOAP responses. No breaking changes; generated output is byte-for-byte unchanged when `--stream-config` is not provided.
+
+### What Changed in 0.17.x
+
+The CLI gains a `--stream-config <file>` flag on `compile`, `client`, and `pipeline`. Operations listed in that file emit a new client method signature returning `StreamOperationResponse<RecordType>` with `records: AsyncIterable<RecordType>`, an OpenAPI 200 response typed as `application/x-ndjson` with an `x-wsdl-tsc-stream` extension, and a Fastify route that streams NDJSON with backpressure. The compiler now retains `xs:any` wildcard particles on compiled types (previously dropped silently), enabling honest stream-candidate detection and companion-catalog shape resolution. `saxes ^6.0.0` is now a runtime dependency of the package and is pinned automatically into the generated app scaffold.
+
+### Steps to Upgrade to 0.17.x
+
+1. Update the package and regenerate; no flag or code changes are required for buffered operations
+2. If consumers integrate the generated client directly (not via the app scaffold), install `saxes ^6.0.0` as a runtime dependency before using any stream operation
+3. To opt into streaming for specific operations, author a stream-config file (see [Stream Configuration](configuration.md#stream-configuration)) and pass it via `--stream-config`
+4. Review the new generated client method signatures for any opted-in operation; consumers must use `for await (const record of result.records)` instead of awaiting the full response
+
+### Is 0.17.x Breaking?
+
+No. Without `--stream-config`, generated output is byte-for-byte unchanged. Consumers only see new surfaces when they opt in.
 
 ## Upgrading to 0.10.x from 0.9.x
 

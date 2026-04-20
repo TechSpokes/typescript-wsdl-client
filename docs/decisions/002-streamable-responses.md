@@ -290,6 +290,16 @@ NDJSON becomes the recommended stream format because it is simple, broadly consu
 
 Companion catalogs are required for vendors that split stream wrappers and concrete record shapes across separate WSDLs.
 
+## Implementation Notes
+
+Captured after the 0.17.0 ship for future maintainers:
+
+- `--stream-config` is wired onto the `compile`, `client`, and `pipeline` CLI commands. It is intentionally not accepted on `openapi`, `gateway`, or `app` because those commands consume a pre-compiled `catalog.json` that already carries the normalized `OperationStreamMetadata`. The original proposal text that listed the flag on every command reflected the design intent; the shipped surface is narrower for that reason.
+- `GenerateOpenAPIOptions` and `GenerateGatewayOptions` in the programmatic API do not carry stream-config fields for the same reason. `compileWsdlToProject` and `runGenerationPipeline` (PipelineOptions) do.
+- The client stream transport is emitted from two templates (`clientStreamMethods.tpl.txt`, `operationsStreamHelper.tpl.txt`). They embed the `StreamOperationResponse<T>` type and a `callStream()` method that POSTs a hand-built SOAP envelope via global `fetch`, bypassing `node-soap` as required by the phase-0 finding.
+- `saxes ^6.0.0` was promoted from devDependency to runtime dependency on the package, and added as a pinned dependency in the generated app scaffold so stream-enabled consumers install it automatically.
+- The `json-array` format is reserved in the config parser but not yet implemented by the emitters. Entries using `format: "json-array"` parse successfully and can be used to forward-declare intent; they do not currently generate routes or client methods.
+
 ## References
 
 - Escapia EVRN API documentation: <https://eweb.escapia.com/distribution/api/evrn-api-documentation>

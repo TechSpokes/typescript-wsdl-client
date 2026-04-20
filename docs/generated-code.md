@@ -36,6 +36,23 @@ const info = await client.GetWeatherInformation({});
 console.log(info.GetWeatherInformationResult.WeatherDescriptions);
 ```
 
+## Calling Stream Operations
+
+Operations opted into streaming with `--stream-config` return `StreamOperationResponse<RecordType>` instead of the buffered shape. `records` is a single-pass `AsyncIterable<RecordType>` that pulls bytes from the upstream SOAP response on demand, so memory stays bounded regardless of payload size.
+
+```typescript
+const result = await client.UnitDescriptiveInfoStream({});
+for await (const record of result.records) {
+  console.log(record);
+}
+```
+
+Because `records` is single-pass, each response can be iterated once. Headers captured before the first record are available on `result.headers`, and the serialized SOAP envelope that was sent upstream is on `result.requestRaw` when populated.
+
+Streaming requires the `saxes` runtime dependency. The generated app scaffold pins `saxes ^6.0.0` automatically; consumers that integrate the generated client into their own project must install it explicitly.
+
+See [Stream Configuration](configuration.md#stream-configuration) for how to opt specific operations in, and [ADR-002](decisions/002-streamable-responses.md) for the rationale and terminal-error policy.
+
 ## Attributes and Text Content
 
 When an element has both attributes and text content, use the $value convention:
@@ -134,6 +151,8 @@ Key features of the generated handlers:
 - Envelope wrapping: `buildSuccessEnvelope()` wraps the raw SOAP response in the standard `{ status, message, data, error }` envelope
 - Route file header comments include propagated operation summary and description when present
 
+Stream-configured operations generate a different handler shape: the response serialization schema is omitted, `reply.type("application/x-ndjson")` is set, and `reply.send(toNdjson(result.records))` streams records with backpressure. See the [Gateway Guide Streaming Handlers section](gateway-guide.md#streaming-handlers) for the full example and terminal-error policy.
+
 See [Gateway Guide](gateway-guide.md) for the full architecture and [CLI Reference](cli-reference.md) for generation flags.
 
 ## Operations Interface
@@ -157,5 +176,7 @@ The gateway plugin accepts any `WeatherOperations` implementation, so you can pa
 ```typescript
 app.register(weatherGateway, { client: mock });
 ```
+
+For stream operations, mock implementations return an async-iterable `records` field. See the [Testing Guide](testing.md) for the full pattern with async generators.
 
 See [Testing Guide](testing.md) for full integration test patterns.

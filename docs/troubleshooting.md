@@ -17,6 +17,12 @@ See [README](../README.md) for quick start and [CLI Reference](cli-reference.md)
 | TypeScript compilation errors | Check --import-extensions matches your tsconfig moduleResolution |
 | Gateway validation failures | Ensure OpenAPI has valid $ref paths and all schemas in components.schemas |
 | Catalog file not found | Catalog defaults to output directory; use --catalog-file to specify |
+| Stream config references unknown operation | Operation name must match the WSDL exactly; check spelling and casing |
+| Stream record type not found | `recordType` must exist in the main catalog or a companion `shapeCatalog` must supply it; confirm the companion WSDL compiles cleanly in isolation |
+| Structural collision between main and companion catalog | Two types share a name but differ structurally; rename in the companion source or point `recordType` at a distinct subtree |
+| NDJSON response ends abruptly | Mid-stream upstream error per the terminal-error policy; check gateway logs for the classified error |
+| Stream recordPath does not match | SAX matching is positional and case-sensitive; verify duplicate local-name segments are spelled exactly |
+| Stream client throws "stream request failed" | The upstream SOAP endpoint rejected the hand-built envelope; check `requestRaw` on the response and verify SOAP action and namespaces match the WSDL binding |
 
 ## SOAP Wire Logging
 
@@ -68,3 +74,15 @@ Or inspect catalog from client generation:
 ```bash
 cat ./src/services/hotel/catalog.json | jq '.types'
 ```
+
+## Streaming Debug
+
+Inspect stream metadata on the compiled catalog to confirm the config was parsed and applied:
+
+```bash
+cat ./src/services/hotel/catalog.json | jq '.operations[] | select(.stream) | {name, stream}'
+```
+
+Each entry shows the normalized `OperationStreamMetadata` (mode, format, mediaType, recordPath, recordTypeName, and any `shapeCatalogName`). If an expected operation is missing, the config either did not match the WSDL operation name or was not passed to the generation command.
+
+For record-path and chunk-boundary issues, the reference integration test pattern lives in `test/integration/stream-end-to-end.test.ts` and the SAX record matcher is exercised by `test/unit/stream-xml.test.ts`. Running them against a local fixture isolates whether the issue is in the config, the parser, or the upstream SOAP server.

@@ -37,8 +37,12 @@ function compileWsdlToProject(input: {
   wsdl: string;
   outDir: string;
   options?: Partial<CompilerOptions>;
+  streamConfigFile?: string;
+  streamConfig?: StreamConfig;
 }): Promise<void>;
 ```
+
+`streamConfigFile` points at a JSON file parsed by `loadStreamConfigFile`. `streamConfig` accepts an already-parsed value; `streamConfigFile` takes precedence when both are set. Buffered generation is unchanged when both are omitted. See [Stream Configuration](configuration.md#stream-configuration) for the file format and [ADR-002](decisions/002-streamable-responses.md) for rationale.
 
 ### CompilerOptions
 
@@ -219,5 +223,147 @@ interface PipelineOptions {
   gateway?: Omit<GenerateGatewayOptions, "openapiFile" | "openapiDocument"> & {
     outDir?: string;
   };
+  streamConfigFile?: string;
+  streamConfig?: StreamConfig;
 }
 ```
+
+`streamConfigFile` and `streamConfig` are threaded through the compile step and into every downstream emitter via `catalog.json`. Relative paths in `shapeCatalogs` resolve against the stream-config file's directory when `streamConfigFile` is used, otherwise against the WSDL's directory.
+
+## Stream Configuration Helpers
+
+These exports back the `--stream-config` CLI flag and are also usable directly in programmatic flows.
+
+### loadStreamConfigFile
+
+Read a stream-config JSON file from disk and return a parsed, validated `StreamConfig`. Throws `StreamConfigError` on missing files, invalid JSON, or schema violations.
+
+```typescript
+import { loadStreamConfigFile } from "@techspokes/typescript-wsdl-client";
+
+const streamConfig = loadStreamConfigFile("./stream.config.json");
+```
+
+### parseStreamConfig
+
+Parse and validate a stream configuration from an in-memory value. Useful when the config originates from a build tool or a remote source rather than a file.
+
+```typescript
+import { parseStreamConfig } from "@techspokes/typescript-wsdl-client";
+
+const streamConfig = parseStreamConfig({
+  operations: {
+    MyStreamOp: {
+      recordType: "MyRecordType",
+      recordPath: ["MyStreamOpResponse", "Records", "Record"],
+    },
+  },
+});
+```
+
+### StreamConfigError
+
+Thrown by `loadStreamConfigFile` and `parseStreamConfig` when the configuration is invalid. Use `.toUserMessage()` to render a multi-line, human-readable error suitable for CLI output.
+
+```typescript
+import { StreamConfigError } from "@techspokes/typescript-wsdl-client";
+
+try {
+  loadStreamConfigFile("./stream.config.json");
+} catch (err) {
+  if (err instanceof StreamConfigError) {
+    console.error(err.toUserMessage());
+    process.exit(1);
+  }
+  throw err;
+}
+```
+
+### applyShapeCatalogs
+
+Resolve companion catalogs against a compiled catalog, copying reachable record-type graphs into place. `runGenerationPipeline` and `compileWsdlToProject` call this automatically when a stream config is present; it is exported for custom pipelines.
+
+```typescript
+import {
+  applyShapeCatalogs,
+  loadStreamConfigFile,
+} from "@techspokes/typescript-wsdl-client";
+import path from "node:path";
+
+const streamConfig = loadStreamConfigFile("./stream.config.json");
+await applyShapeCatalogs(compiled, streamConfig, {
+  baseDir: path.dirname(path.resolve("./stream.config.json")),
+});
+```
+
+### ApplyShapeCatalogsOptions
+
+```typescript
+interface ApplyShapeCatalogsOptions {
+  baseDir?: string;
+}
+```
+
+`baseDir` is the directory against which relative `catalogFile` and `wsdlSource` paths are resolved. Defaults to `process.cwd()`.
+
+### StreamConfig
+
+```typescript
+interface StreamConfig {
+  shapeCatalogs: Record<string, ShapeCatalogRef>;
+  operations: Record<string, OperationStreamMetadata>;
+}
+
+interface ShapeCatalogRef {
+  wsdlSource?: string;
+  catalogFile?: string;
+}
+
+interface OperationStreamMetadata {
+  mode: "stream";
+  format: "ndjson" | "json-array";
+  mediaType: string;
+  recordPath: string[];
+  recordTypeName: string;
+  shapeCatalogName?: string;
+  sourceOutputTypeName?: string;
+}
+```
+
+Exactly one of `wsdlSource` or `catalogFile` must be set on each `ShapeCatalogRef`. `OperationStreamMetadata` is produced by the parser; `sourceOutputTypeName` is populated by the compiler when it binds the operation to the main WSDL.
+
+## End-to-End Example
+
+Compile with a stream config, verify the catalog carries the expected metadata, and run the full pipeline:
+
+```typescript
+import {
+  loadStreamConfigFile,
+  runGenerationPipeline,
+} from "@techspokes/typescript-wsdl-client";
+
+const streamConfig = loadStreamConfigFile("./stream.config.json");
+
+const { compiled, openapiDoc } = await runGenerationPipeline({
+  wsdl: "./wsdl/Service.wsdl",
+  catalogOut: "./build/service-catalog.json",
+  clientOutDir: "./src/services/service",
+  compiler: { imports: "js" },
+  openapi: {
+    outFile: "./docs/service-api.json",
+    format: "json",
+    servers: ["https://api.example.com/v1"],
+  },
+  gateway: {
+    outDir: "./src/gateway/service",
+    versionSlug: "v1",
+    serviceSlug: "service",
+  },
+  streamConfig,
+});
+
+const streamOp = compiled.operations.find((op) => op.stream);
+console.log(streamOp?.stream?.mediaType); // "application/x-ndjson"
+```
+
+The generated client exports a `StreamOperationResponse<RecordType>` type; each stream-configured operation returns `Promise<StreamOperationResponse<RecordType>>` with `records: AsyncIterable<RecordType>`.

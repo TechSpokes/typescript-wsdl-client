@@ -58,6 +58,39 @@ Open `openapi.json` and review the paths, request/response schemas, and descript
 
 Validate the spec with any OpenAPI tool. Built-in validation runs by default; disable with `--openapi-validate false` if you need to inspect an intermediate state.
 
+## Step 2b (Optional): Opt Into Streaming for Large Responses
+
+Skip this step unless a specific SOAP operation returns payloads too large or too slow to buffer in memory. Good candidates are batch-style operations with repeated record elements, responses that use `xs:any` wildcards to point at concrete records in a companion WSDL, and any operation where first-byte latency matters more than total duration.
+
+Author a stream config naming those operations:
+
+```json
+{
+  "operations": {
+    "MyBatchOp": {
+      "recordType": "MyRecordType",
+      "recordPath": ["MyBatchOpResponse", "Records", "Record"]
+    }
+  }
+}
+```
+
+Regenerate with `--stream-config`:
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source your-service.wsdl \
+  --client-dir ./generated/client \
+  --openapi-file ./generated/openapi.json \
+  --gateway-dir ./generated/gateway \
+  --gateway-service-name your-service \
+  --gateway-version-prefix v1 \
+  --stream-config ./stream.config.json \
+  --init-app
+```
+
+The opted-in operations now return `StreamOperationResponse<RecordType>` on the client, serve `application/x-ndjson` on the gateway, and advertise the record schema in OpenAPI via `x-wsdl-tsc-stream`. Operations not listed in the config are unchanged. See [Stream Configuration](configuration.md#stream-configuration) for the full file reference and [ADR-002](decisions/002-streamable-responses.md) for the terminal-error policy.
+
 ## Step 3: Generate the REST Gateway
 
 Generate Fastify route handlers that translate JSON HTTP requests into SOAP calls.
