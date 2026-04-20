@@ -140,7 +140,7 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
   // *.tpl file so the IDE does not try to parse their content as code nested
   // inside this template literal (which would flag `this`, `await`, `yield`
   // outside-of-function false positives).
-  const streamMethodsBlock = anyStream ? "\n" + loadRuntimeSource("clientStreamMethods.ts.tpl") : "";
+  const streamMethodsBlock = anyStream ? "\n" + loadRuntimeSource("clientStreamMethods.tpl.txt") : "";
   // noinspection JSFileReferences,JSUnresolvedReference,CommaExpressionJS,JSDuplicatedDeclaration,ReservedWordAsName,JSCommentMatchesSignature,JSValidateTypes,JSIgnoredPromiseFromCall,BadExpressionStatementJS,ES6UnusedImports,JSUnnecessarySemicolon,UnreachableCodeJS,JSUnusedLocalSymbols
   const classTemplate = `// noinspection JSAnnotator
 

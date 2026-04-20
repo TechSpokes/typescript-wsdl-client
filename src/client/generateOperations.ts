@@ -90,7 +90,7 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
   // TypeScript type-parameter defaults (HeadersType = Record<...>) as
   // JavaScript assignment expressions.
   const streamHelper = anyStream
-    ? loadRuntimeSource("operationsStreamHelper.ts.tpl").replace(/__CLIENT_NAME__/g, clientName)
+    ? loadRuntimeSource("operationsStreamHelper.tpl.txt").replace(/__CLIENT_NAME__/g, clientName)
     : "";
 
   const content = `/**
