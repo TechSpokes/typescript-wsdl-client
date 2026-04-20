@@ -117,7 +117,7 @@ export function emitMockClientHelper(
     "  overrides: Partial<" + operationsType + "> = {}",
     "): " + operationsType + " {",
     "  return {",
-    methodEntries,
+    methodEntries ? `${methodEntries},` : "",
     "    ...overrides,",
     "  } as " + operationsType + ";",
     "}",
