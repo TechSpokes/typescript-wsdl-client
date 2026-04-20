@@ -17,6 +17,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - feat(runtime): SAX-driven `parseRecords` and backpressure-aware `toNdjson` runtimes; saxes promoted from devDependency to runtime dependency
 - chore(app): include `saxes ^6.0.0` in the generated app's dependencies so stream-enabled consumers install the SAX parser out of the box
 - feat(test): generated mock clients yield async-iterable records for stream operations; generated happy-path tests assert NDJSON content-type and parseable records
+- docs: document the streaming surface across start-here, output-anatomy, generated-code, api-reference, concepts, architecture, production, troubleshooting, migration, migration-playbook, ROADMAP, AGENTS; add root README streaming bullets and comparison matrix row
+- docs(cli-reference): clarify `--stream-config` is accepted on compile/client/pipeline only
+- docs(adr-002): add implementation notes capturing CLI and programmatic-API scope divergences, saxes promotion, and reserved `json-array` format
 
 ## [0.16.2] - 2026-04-20
 
