@@ -448,6 +448,16 @@ export interface ResolvedOperationMeta {
   responseTypeName?: string;
   summary?: string;
   description?: string;
+  /**
+   * Populated for operations that opt into streaming via stream-config. Drives
+   * mock-client emission (async-iterable records) and test-payload shape.
+   */
+  stream?: {
+    format: "ndjson" | "json-array";
+    mediaType: string;
+    recordTypeName: string;
+    recordPath: string[];
+  };
 }
 
 
@@ -557,6 +567,12 @@ export function resolveOperationMeta(
     summary?: string;
     description?: string;
     doc?: string;
+    stream?: {
+      format: "ndjson" | "json-array";
+      mediaType: string;
+      recordTypeName: string;
+      recordPath: string[];
+    };
   }>
 ): ResolvedOperationMeta {
   // Try to find matching operation in catalog
@@ -580,6 +596,7 @@ export function resolveOperationMeta(
     responseTypeName,
     ...(summary ? {summary} : {}),
     ...(description ? {description} : {}),
+    ...(catalogOp?.stream ? {stream: catalogOp.stream} : {}),
   };
 }
 

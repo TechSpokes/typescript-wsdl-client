@@ -13,9 +13,11 @@
  * - Consistent error handling and client configuration
  */
 import fs from "node:fs";
+import path from "node:path";
 import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
 import {deriveClientName, pascal, pascalToSnakeCase} from "../util/tools.js";
 import {error, warn} from "../util/cli.js";
+import {loadRuntimeSource} from "../util/runtimeSource.js";
 
 /**
  * Generates a TypeScript SOAP client class from a compiled WSDL catalog
@@ -58,6 +60,9 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
   // get the class name for the client
   const clientName = deriveClientName(compiled);
   const clientConstant = pascalToSnakeCase(clientName).toUpperCase();
+  // Track whether any operation opts into streaming, so we can emit the
+  // supporting runtime helpers only when they're actually used.
+  let anyStream = false;
 
   // Build the dynamic methods for the client class
   for (const op of compiled.operations) {
@@ -76,6 +81,39 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
     const opDocLines = op.doc ? normalizeDocLines(op.doc) : [];
     const opDocStr = opDocLines.length ? `\n   *\n${opDocLines.map(line => `   * ${line}`).join("\n")}` : "";
     const secHintsStr = secHints.length ? `\n   *\n   * Security (WSDL policy hint): ${secHints.join(", ")}` : "";
+
+    if (op.stream) {
+      anyStream = true;
+      const recordTs = op.stream.recordTypeName;
+      const inputElementLocal = op.inputElement?.local ?? op.name;
+      const inputElementNs = op.inputElement?.ns ?? compiled.wsdlTargetNS;
+      const methodTemplate = `
+
+  /**
+   * Streams records from the ${m} operation of the ${clientName}.${opDocStr}${secHintsStr}
+   *
+   * @param args - The request arguments for the ${m} operation.
+   * @returns A promise resolving to a streaming response whose \`records\` is an
+   *          async iterable of ${recordTs} objects parsed from the SOAP body as
+   *          chunks arrive. Iteration pulls bytes on demand.
+   */
+  async ${m}<HeadersType = Record<string, string>>(
+    args: ${inTs}
+  ): Promise<StreamOperationResponse<T.${recordTs}, HeadersType>> {
+    return this.callStream<${inTs}, T.${recordTs}, HeadersType>(
+      args,
+      ${JSON.stringify(m)},
+      ${inTypeName ? JSON.stringify(inTypeName) : "undefined"},
+      ${JSON.stringify(recordTs)},
+      ${JSON.stringify(inputElementLocal)},
+      ${JSON.stringify(inputElementNs)},
+      ${JSON.stringify(op.soapAction ?? "")},
+      ${JSON.stringify(op.stream.recordPath)}
+    );
+  }`;
+      methods.push(methodTemplate);
+      continue;
+    }
 
     const methodTemplate = `
 
@@ -98,6 +136,11 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
     methods.push(methodTemplate);
   }
   const methodsBody = methods.join("\n");
+  // The streaming transport + envelope builders are carried in a sibling
+  // *.tpl file so the IDE does not try to parse their content as code nested
+  // inside this template literal (which would flag `this`, `await`, `yield`
+  // outside-of-function false positives).
+  const streamMethodsBlock = anyStream ? "\n" + loadRuntimeSource("clientStreamMethods.ts.tpl") : "";
   // noinspection JSFileReferences,JSUnresolvedReference,CommaExpressionJS,JSDuplicatedDeclaration,ReservedWordAsName,JSCommentMatchesSignature,JSValidateTypes,JSIgnoredPromiseFromCall,BadExpressionStatementJS,ES6UnusedImports,JSUnnecessarySemicolon,UnreachableCodeJS,JSUnusedLocalSymbols
   const classTemplate = `// noinspection JSAnnotator
 
@@ -108,7 +151,9 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
 import * as soap from "soap";
 import type * as T from "./types${suffix}";
 import type {${clientName}DataTypes} from "./utils${suffix}";
-import {${clientConstant}_DATA_TYPES} from "./utils${suffix}";
+import {${clientConstant}_DATA_TYPES} from "./utils${suffix}";${anyStream ? `
+import {parseRecords, type RecordParseSpec} from "./streamXml${suffix}";
+import type {StreamOperationResponse} from "./operations${suffix}";` : ""}
 
 /**
  * Represents the response structure for ${clientName} operations.
@@ -294,7 +339,7 @@ ${methodsBody}
 
     // Get metadata for this specific type to know which props are attributes
     const attributesList = (typeName && this.dataTypes?.Attributes?.[typeName]) || [];
-    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
 
     const out: any = {};
     const attributesBag: Record<string, any> = {};
@@ -327,7 +372,7 @@ ${methodsBody}
       }
 
       // Everything else becomes a child element, recursively processed
-      const childType = (childrenTypes as any)[k] as string | undefined;
+      const childType: string | undefined = childrenTypes[k];
       out[k] = Array.isArray(v)
         ? v.map(node => this.toSoapArgs(node, childType))
         : this.toSoapArgs(v, childType);
@@ -363,7 +408,7 @@ ${methodsBody}
     }
 
     // Get child type mapping for recursive processing with correct types
-    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
     const result: any = {};
 
     // Preserve text content for mixed XML elements
@@ -386,19 +431,31 @@ ${methodsBody}
         continue;
       }
       // Recursively convert child elements with their specific type info
-      const childType = (childrenTypes as any)[k] as string | undefined;
+      const childType: string | undefined = childrenTypes[k];
       result[k] = Array.isArray(v)
         ? v.map(node => this.fromSoapResult(node, childType))
         : this.fromSoapResult(v, childType);
     }
 
     return result;
-  }
+  }${streamMethodsBlock}
 }
 `;
   try {
     fs.writeFileSync(outFile, classTemplate.replace(`// noinspection JSAnnotator\n\n`, ''), "utf8");
   } catch (e) {
     error(`Failed to write client to ${outFile}`);
+  }
+
+  // If any operation opted into streaming, drop the runtime XML parser
+  // alongside the client so the generated class can import it without
+  // depending on a `@techspokes/typescript-wsdl-client/runtime/...` subpath.
+  if (anyStream) {
+    try {
+      const streamXmlOut = path.join(path.dirname(outFile), "streamXml.ts");
+      fs.writeFileSync(streamXmlOut, loadRuntimeSource("streamXml.ts"), "utf-8");
+    } catch (e) {
+      error(`Failed to emit streamXml.ts next to ${outFile}: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 }

@@ -6,7 +6,10 @@ See the root [README](../../README.md) for the authoritative documentation index
 
 ## Status
 
-Proposed
+Accepted (2026-04-20). Implementation shipped in 0.17.0 across five phases
+(Phase 0 research → Phase 5 integration). See
+`scratches/plans/v017/streamable-responses.plan.yaml` for phase-by-phase
+notes and verification gates.
 
 ## Context
 
@@ -178,6 +181,8 @@ export type StreamOperationResponse<RecordType, HeadersType = Record<string, unk
 The operations interface should use the same stream response type so generated gateway tests and user mocks can implement streaming behavior without importing the concrete SOAP client.
 
 The transport layer should be proven by a chunked integration test. If `node-soap` with stream or SAX options can deliver records incrementally, it can be used for the MVP. If it buffers before yielding, the feature must use a dedicated SOAP HTTP transport for stream operations before release.
+
+> **Phase 0 research outcome (2026-04-20):** `node-soap` **buffers** the full response before invoking the operation callback. Measured with `test/research/node-soap-streaming.test.ts` against a chunked HTTP fixture: first chunk flushed at ~48 ms, server closed at ~701 ms, node-soap callback fired at ~659 ms (~40 ms before close — that is parse time, not streaming). Generated stream operations therefore use a dedicated streaming HTTP transport emitted into the client runtime; `node-soap` remains the transport for buffered operations only. SAX streaming was validated with `saxes` 6.0.0; `test/research/sax-record-path.test.ts` chunk-fuzzes the Escapia-shaped XML (duplicate `EVRN_UnitDescriptiveInfoRS` wrappers) across every single-byte split and every byte-pair split and produces identical records each time. See `scratches/plans/v017/streamable-responses.plan.yaml` for the full findings.
 
 ## XML to JSON Streaming Conversion
 

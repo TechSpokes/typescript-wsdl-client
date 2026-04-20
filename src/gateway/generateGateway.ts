@@ -278,7 +278,8 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
 
   // Step 6: Emit runtime.ts (if enabled)
   if (emitRuntime) {
-    emitRuntimeModule(outDir, versionSlug, serviceSlug, shouldUnwrap ? catalog : undefined);
+    const hasStreams = operations.some((o) => !!o.stream);
+    emitRuntimeModule(outDir, versionSlug, serviceSlug, shouldUnwrap ? catalog : undefined, {hasStreams});
   }
 
   // Step 7: Emit plugin.ts and type-check fixture (if enabled)

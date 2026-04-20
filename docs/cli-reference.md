@@ -129,6 +129,34 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--test-dir` | (none) | Generate Vitest test suite in this directory (requires client, gateway) |
 | `--force-test` | `false` | Overwrite existing test files when using --test-dir |
 
+### Stream Configuration Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--stream-config` | (none) | Path to a JSON stream-configuration file (ADR-002). Marks selected operations as streaming: client emits `AsyncIterable<RecordType>`, gateway serves NDJSON, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`. Buffered output is unchanged when the flag is omitted. |
+
+Stream-config file shape (see `docs/decisions/002-streamable-responses.md`):
+
+```json
+{
+  "shapeCatalogs": {
+    "main": { "wsdlSource": "https://api.example.com/Main.svc?singleWsdl" }
+  },
+  "operations": {
+    "UnitDescriptiveInfoStream": {
+      "recordType": "UnitDescriptiveContentType",
+      "recordPath": [
+        "UnitDescriptiveInfoStream",
+        "EVRN_UnitDescriptiveInfoRS",
+        "UnitDescriptiveContents",
+        "UnitDescriptiveContent"
+      ],
+      "shapeCatalog": "main"
+    }
+  }
+}
+```
+
 ### Pipeline Workflow
 
 Steps execute in order:

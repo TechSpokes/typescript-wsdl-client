@@ -226,7 +226,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Programmatic API](docs/api-reference.md) | TypeScript functions for build tools |
 | [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
 | [Architecture](docs/architecture.md) | Internal pipeline for contributors |
-| [Streamable Response Proposal](docs/decisions/002-streamable-responses.md) | Proposed architecture for streamed SOAP-to-JSON gateway responses |
+| [Streamable Responses (ADR-002)](docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON, `x-wsdl-tsc-stream` |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
 
 ## Why This Exists

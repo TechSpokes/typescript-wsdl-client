@@ -9,6 +9,7 @@ import fs from "node:fs";
 import type { CompiledCatalog } from "../compiler/schemaCompiler.js";
 import { deriveClientName, pascal } from "../util/tools.js";
 import { error } from "../util/cli.js";
+import { loadRuntimeSource } from "../util/runtimeSource.js";
 
 /**
  * Generates an operations.ts file with a fully-typed interface for all SOAP operations
@@ -35,6 +36,9 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
   // Collect type names used in method signatures for the import statement
   const importedTypes = new Set<string>();
   const methods: string[] = [];
+  // Does any operation opt into streaming? If so we also emit the
+  // StreamOperationResponse helper type below.
+  let anyStream = false;
 
   for (const op of compiled.operations) {
     const inTypeName = op.inputTypeName ?? (op.inputElement ? pascal(op.inputElement.local) : undefined);
@@ -55,17 +59,38 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
       ? `  /**\n${docLines.map(line => `   * ${line}`).join("\n")}\n   */\n`
       : "";
 
-    methods.push(
-      `${docBlock}  ${op.name}(\n` +
-      `    args: ${inTs}\n` +
-      `  ): Promise<{ response: ${outTs}; headers: unknown }>;\n`
-    );
+    if (op.stream) {
+      anyStream = true;
+      const recordTs = op.stream.recordTypeName;
+      importedTypes.add(recordTs);
+      methods.push(
+        `${docBlock}  ${op.name}(\n` +
+        `    args: ${inTs}\n` +
+        `  ): Promise<StreamOperationResponse<${recordTs}>>;\n`
+      );
+    } else {
+      methods.push(
+        `${docBlock}  ${op.name}(\n` +
+        `    args: ${inTs}\n` +
+        `  ): Promise<{ response: ${outTs}; headers: unknown }>;\n`
+      );
+    }
   }
 
   // Build sorted import list for deterministic output
   const sortedImports = Array.from(importedTypes).sort();
   const typeImport = sortedImports.length > 0
     ? `import type {\n${sortedImports.map((t) => `  ${t},`).join("\n")}\n} from "./types${suffix}";\n\n`
+    : "";
+
+  // Emit the StreamOperationResponse helper type iff at least one operation
+  // is stream-configured. Kept inside operations.ts so that mocks and gateway
+  // code can import it without pulling in the SOAP runtime. The raw template
+  // lives in a sibling .tpl file so the IDE does not try to parse embedded
+  // TypeScript type-parameter defaults (HeadersType = Record<...>) as
+  // JavaScript assignment expressions.
+  const streamHelper = anyStream
+    ? loadRuntimeSource("operationsStreamHelper.ts.tpl").replace(/__CLIENT_NAME__/g, clientName)
     : "";
 
   const content = `/**
@@ -76,7 +101,7 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
  *
  * Auto-generated - do not edit manually.
  */
-${typeImport}/**
+${typeImport}${streamHelper}/**
  * All operations exposed by the ${clientName} SOAP service.
  *
  * The concrete ${clientName} class satisfies this interface.

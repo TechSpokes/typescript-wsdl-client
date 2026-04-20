@@ -1356,7 +1356,7 @@ export class Weather {
 
     // Get metadata for this specific type to know which props are attributes
     const attributesList = (typeName && this.dataTypes?.Attributes?.[typeName]) || [];
-    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
 
     const out: any = {};
     const attributesBag: Record<string, any> = {};
@@ -1389,7 +1389,7 @@ export class Weather {
       }
 
       // Everything else becomes a child element, recursively processed
-      const childType = (childrenTypes as any)[k] as string | undefined;
+      const childType: string | undefined = childrenTypes[k];
       out[k] = Array.isArray(v)
         ? v.map(node => this.toSoapArgs(node, childType))
         : this.toSoapArgs(v, childType);
@@ -1425,7 +1425,7 @@ export class Weather {
     }
 
     // Get child type mapping for recursive processing with correct types
-    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
     const result: any = {};
 
     // Preserve text content for mixed XML elements
@@ -1448,7 +1448,7 @@ export class Weather {
         continue;
       }
       // Recursively convert child elements with their specific type info
-      const childType = (childrenTypes as any)[k] as string | undefined;
+      const childType: string | undefined = childrenTypes[k];
       result[k] = Array.isArray(v)
         ? v.map(node => this.fromSoapResult(node, childType))
         : this.fromSoapResult(v, childType);

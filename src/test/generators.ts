@@ -81,9 +81,23 @@ export function emitMockClientHelper(
   // Sort operations for deterministic output
   const sortedOps = [...operations].sort((a, b) => a.operationId.localeCompare(b.operationId));
 
+  const hasStream = sortedOps.some((op) => !!op.stream);
+
   const methodEntries = sortedOps.map((op) => {
     const mockData = mocks.get(op.operationId);
     const response = mockData?.response ?? {};
+
+    if (op.stream) {
+      // For stream operations, the mock emits a single-record iterable derived
+      // from the mock data. Tests that need multi-record sequences can pass an
+      // override via createMockClient({...}).
+      const recordJson = JSON.stringify(response, null, 6).replace(/\n/g, "\n    ");
+      return `    ${op.operationId}: async () => ({
+      records: asyncIterableOf(${recordJson}),
+      headers: {},
+    })`;
+    }
+
     const responseJson = JSON.stringify(response, null, 6).replace(/\n/g, "\n    ");
 
     return `    ${op.operationId}: async () => ({
@@ -91,6 +105,21 @@ export function emitMockClientHelper(
       headers: {},
     })`;
   }).join(",\n");
+
+  const streamHelper = hasStream
+    ? `
+/**
+ * Wraps a single record (or an array of records) as an async iterable, matching
+ * the StreamOperationResponse.records shape the real client would return.
+ */
+function asyncIterableOf<T>(value: T | T[]): AsyncIterable<T> {
+  const items = Array.isArray(value) ? value : [value];
+  return (async function* () {
+    for (const item of items) yield item;
+  })();
+}
+`
+    : "";
 
   return [
     "/**",
@@ -121,6 +150,7 @@ export function emitMockClientHelper(
     "    ...overrides,",
     "  } as " + operationsType + ";",
     "}",
+    ...(streamHelper ? [streamHelper] : []),
     "",
   ].join("\n");
 }
@@ -204,6 +234,31 @@ export function emitRoutesTest(
     const requestPayload = JSON.stringify(mockData?.request ?? {}, null, 4).replace(/\n/g, "\n    ");
     const hint = formatOperationHint(op.summary, op.description);
     const hintComment = hint ? `  // ${hint}\n` : "";
+
+    if (op.stream) {
+      // Stream routes return NDJSON lines, not a single JSON envelope. Assert
+      // on content-type and at least one parseable record per line.
+      return `${hintComment}  it("${op.method.toUpperCase()} ${op.path} streams ${op.stream.format} records", async () => {
+    const app = await createTestApp();
+    try {
+      const res = await app.inject({
+        method: "${op.method.toUpperCase()}",
+        url: "${op.path}",
+        payload: ${requestPayload},
+      });
+      expect(res.statusCode).toBe(200);
+      expect(String(res.headers["content-type"] ?? "")).toContain(${JSON.stringify(op.stream.mediaType)});
+      const lines = res.body.split("\\n").filter((l: string) => l.length > 0);
+      expect(lines.length).toBeGreaterThan(0);
+      for (const line of lines) {
+        const record = JSON.parse(line);
+        expect(record).toBeDefined();
+      }
+    } finally {
+      await app.close();
+    }
+  });`;
+    }
 
     return `${hintComment}  it("${op.method.toUpperCase()} ${op.path} returns SUCCESS envelope", async () => {
     const app = await createTestApp();

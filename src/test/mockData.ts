@@ -34,6 +34,12 @@ export interface CatalogForMocks {
     name: string;
     inputTypeName?: string;
     outputTypeName?: string;
+    stream?: {
+      format: "ndjson" | "json-array";
+      mediaType: string;
+      recordTypeName: string;
+      recordPath: string[];
+    };
   }>;
   types?: Array<{
     name: string;
@@ -219,8 +225,12 @@ export function generateAllOperationMocks(
       request = flattenMockPayload(request as Record<string, unknown>, op.inputTypeName, childTypeMap, arrayWrappers);
     }
 
-    // Response stays SOAP-shaped (pre-unwrap) since runtime unwrapArrayWrappers() handles it
-    const response = generateOperationPayload(op.outputTypeName, catalog);
+    // Response: for stream ops we generate a single record of the configured
+    // recordType so the mock client can yield it through asyncIterableOf().
+    // Otherwise the SOAP-shaped outputType envelope (pre-unwrap).
+    const response = op.stream
+      ? generateOperationPayload(op.stream.recordTypeName, catalog)
+      : generateOperationPayload(op.outputTypeName, catalog);
 
     result.set(op.name, { request, response });
   }

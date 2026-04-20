@@ -19,6 +19,8 @@ import {generateOpenAPI, type GenerateOpenAPIOptions} from "./openapi/generateOp
 import {generateGateway, type GenerateGatewayOptions} from "./gateway/generateGateway.js";
 import {type CompilerOptions, resolveCompilerOptions} from "./config.js";
 import {emitClientArtifacts, reportCompilationStats, reportOpenApiSuccess, success} from "./util/cli.js";
+import {loadStreamConfigFile, type StreamConfig} from "./util/streamConfig.js";
+import {applyShapeCatalogs} from "./compiler/shapeResolver.js";
 
 /**
  * Configuration options for the generation pipeline
@@ -62,6 +64,18 @@ export interface PipelineOptions {
     force?: boolean;
     flattenArrayWrappers?: boolean;
   };
+  /**
+   * Path to a stream configuration JSON file. Loaded and parsed once before
+   * compilation; the parsed value takes precedence over `streamConfig` when
+   * both are set. Leave undefined to preserve byte-for-byte buffered output.
+   */
+  streamConfigFile?: string;
+  /**
+   * In-memory stream configuration. Useful for programmatic callers that
+   * do not want to round-trip through a file. Ignored when
+   * `streamConfigFile` is also provided.
+   */
+  streamConfig?: StreamConfig;
 }
 
 /**
@@ -102,11 +116,27 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
     }
   );
 
+  // Resolve stream configuration (file path takes precedence over in-memory).
+  const streamConfig: StreamConfig | undefined = opts.streamConfigFile
+    ? loadStreamConfigFile(opts.streamConfigFile)
+    : opts.streamConfig;
+
   // Step 1: Load and parse the WSDL document
   const wsdlCatalog = await loadWsdl(opts.wsdl);
 
   // Step 2: Compile the WSDL into a structured catalog
-  const compiled = compileCatalog(wsdlCatalog, finalCompiler);
+  const compiled = compileCatalog(wsdlCatalog, finalCompiler, streamConfig);
+
+  // Step 2b: Apply companion-catalog shape resolution when a stream config is
+  // provided. Relative paths in shapeCatalogs resolve against the stream
+  // config file's directory, or the WSDL's directory when the config came in
+  // programmatically.
+  if (streamConfig) {
+    const shapeBaseDir = opts.streamConfigFile
+      ? path.dirname(path.resolve(opts.streamConfigFile))
+      : path.dirname(path.resolve(opts.wsdl));
+    await applyShapeCatalogs(compiled, streamConfig, {baseDir: shapeBaseDir});
+  }
 
   // Report compilation statistics
   reportCompilationStats(wsdlCatalog, compiled);

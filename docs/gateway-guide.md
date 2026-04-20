@@ -81,6 +81,43 @@ export async function registerRoute_v1_weather_getcityforecastbyzip(fastify: Fas
 }
 ```
 
+### Streaming Handlers
+
+Operations opted in via `--stream-config` emit an NDJSON response pipe
+instead of the standard envelope. The generated handler streams records as
+they arrive, and the Fastify response is flushed line-by-line with
+backpressure (ADR-002).
+
+```typescript
+import type { FastifyInstance } from "fastify";
+import type { GetWeatherInformation } from "../../client/types.js";
+import schema from "../schemas/operations/getweatherinformation.json" with { type: "json" };
+import { toNdjson } from "../runtime.js";
+
+// Response schema omitted: stream operations emit NDJSON, not a single JSON object
+const { response: _response, ...routeSchema } = schema as Record<string, unknown>;
+
+export async function registerRoute_v1_weather_getweatherinformation(fastify: FastifyInstance) {
+  fastify.route<{ Body: GetWeatherInformation }>({
+    method: "POST",
+    url: "/get-weather-information",
+    schema: routeSchema,
+    handler: async (request, reply) => {
+      const client = fastify.weatherClient;
+      const result = await client.GetWeatherInformation(request.body as GetWeatherInformation);
+      reply.type("application/x-ndjson");
+      return reply.send(toNdjson(result.records));
+    },
+  });
+}
+```
+
+The client method returns `StreamOperationResponse<RecordType>` with a
+`records: AsyncIterable<RecordType>`. Errors raised before the first record
+use the normal error envelope; errors raised mid-stream trip the chunked
+response's truncation — consumers detect these via the absence of a clean
+terminating zero-chunk.
+
 ## Error Handling
 
 The centralized error handler (runtime.ts) automatically classifies errors:

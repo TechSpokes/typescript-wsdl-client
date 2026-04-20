@@ -19,6 +19,8 @@ These patterns are handled end-to-end: WSDL parsing, TypeScript type generation,
 - Circular type references detected and broken with minimal stub types
 - Multiple WSDL ports and bindings; the first SOAP binding is selected, all ports are documented in service metadata
 - SOAP 1.1 and SOAP 1.2 binding detection
+- Streamable SOAP responses, opt-in per operation via `--stream-config` (ADR-002): client exposes `AsyncIterable<RecordType>`, gateway emits NDJSON with backpressure, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
+- `xs:any` wildcard particles retained on compiled types (they used to be dropped silently) — enables honest stream-candidate detection and companion-catalog shape resolution
 
 ### Named simple types and same-name elements
 

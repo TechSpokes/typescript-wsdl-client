@@ -28,6 +28,15 @@ export {generateOpenAPI} from "./openapi/generateOpenAPI.js";
 export {generateGateway} from "./gateway/generateGateway.js";
 export {generateTests} from "./test/generateTests.js";
 export {runGenerationPipeline} from "./pipeline.js";
+export {
+  loadStreamConfigFile,
+  parseStreamConfig,
+  StreamConfigError,
+  type OperationStreamMetadata,
+  type ShapeCatalogRef,
+  type StreamConfig,
+} from "./util/streamConfig.js";
+export {applyShapeCatalogs, type ApplyShapeCatalogsOptions} from "./compiler/shapeResolver.js";
 
 // noinspection JSUnusedGlobalSymbols
 /**
@@ -51,7 +60,15 @@ export {runGenerationPipeline} from "./pipeline.js";
  * @throws {Error} If no schemas or operations are found, or if compilation fails
  */
 export async function compileWsdlToProject(
-  input: { wsdl: string; outDir: string; options?: CompilerOptions }
+  input: {
+    wsdl: string;
+    outDir: string;
+    options?: CompilerOptions;
+    /** Path to a stream configuration JSON file (ADR-002). Takes precedence over `streamConfig` when both are set. */
+    streamConfigFile?: string;
+    /** In-memory stream configuration. Ignored when `streamConfigFile` is set. */
+    streamConfig?: import("./util/streamConfig.js").StreamConfig;
+  }
 ): Promise<void> {
   // Merge defaults with overrides, always set wsdl+out
   const finalOptions = resolveCompilerOptions(
@@ -62,6 +79,12 @@ export async function compileWsdlToProject(
     }
   );
 
+  // Resolve stream configuration.
+  const {loadStreamConfigFile} = await import("./util/streamConfig.js");
+  const streamConfig = input.streamConfigFile
+    ? loadStreamConfigFile(input.streamConfigFile)
+    : input.streamConfig;
+
   // Load & compile
   const wsdlCatalog = await loadWsdl(input.wsdl);
   info(`Loaded WSDL: ${wsdlCatalog.wsdlUri}`);
@@ -70,7 +93,16 @@ export async function compileWsdlToProject(
   }
   info(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
 
-  const compiled = compileCatalog(wsdlCatalog, finalOptions);
+  const compiled = compileCatalog(wsdlCatalog, finalOptions, streamConfig);
+
+  // Apply companion-catalog shape resolution when a stream config is present.
+  if (streamConfig) {
+    const {applyShapeCatalogs} = await import("./compiler/shapeResolver.js");
+    const shapeBaseDir = input.streamConfigFile
+      ? path.dirname(path.resolve(input.streamConfigFile))
+      : path.dirname(path.resolve(input.wsdl));
+    await applyShapeCatalogs(compiled, streamConfig, {baseDir: shapeBaseDir});
+  }
   info(`Compiled WSDL: ${wsdlCatalog.wsdlUri}`);
 
   // check if we have any data models and operations

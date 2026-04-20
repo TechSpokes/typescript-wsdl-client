@@ -252,6 +252,34 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
       if (!opId) continue;
       const op = compiled.operations.find(o => o.name === opId);
       if (!op) continue;
+      if (op.stream) {
+        // Stream operations bypass the standard JSON envelope for 200. Emit
+        // the configured media type with an itemSchema carried under the
+        // x-wsdl-tsc-stream extension so generated tooling can find the
+        // record schema without pretending NDJSON is a single JSON document.
+        // Errors raised before the first byte still use the standard envelope.
+        const recordType = op.stream.recordTypeName;
+        const itemRef = {$ref: `#/components/schemas/${recordType}`};
+        if ((methodObj as any).responses?.["200"]) {
+          (methodObj as any).responses["200"] = {
+            description: "Successful streamed SOAP operation response",
+            content: {
+              [op.stream.mediaType]: {
+                schema: {type: "string"},
+                "x-wsdl-tsc-stream": {
+                  format: op.stream.format,
+                  itemSchema: itemRef,
+                },
+              },
+            },
+          };
+        }
+        if ((methodObj as any).responses?.default) {
+          (methodObj as any).responses.default.description = "Error raised before any stream record was emitted (standard envelope).";
+          (methodObj as any).responses.default.content = {"application/json": {schema: {$ref: `#/components/schemas/${baseEnvelopeName}`}}};
+        }
+        continue;
+      }
       const payloadType = op.outputTypeName ?? op.outputElement?.local;
       const baseForExt = payloadType || op.name;
       const extName = joinWithNamespace(baseForExt, envelopeNamespace);

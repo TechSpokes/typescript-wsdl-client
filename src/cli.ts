@@ -36,7 +36,24 @@ import {
   validateGatewayRequirements,
 } from "./util/cli.js";
 import {buildCompilerOptionsFromArgv, buildOpenApiOptionsFromArgv} from "./util/builder.js";
+import {loadStreamConfigFile, StreamConfigError, type StreamConfig} from "./util/streamConfig.js";
 
+/**
+ * Load and parse a stream-config file, or call the shared CLI error handler
+ * (which prints the structured message and exits). Returns `undefined` when
+ * `filePath` is falsy so callers can chain with `argv["stream-config"]`.
+ */
+function loadStreamConfigOrExit(filePath: string | undefined): StreamConfig | undefined {
+  if (!filePath) return undefined;
+  try {
+    return loadStreamConfigFile(filePath);
+  } catch (err) {
+    if (err instanceof StreamConfigError) {
+      handleCLIError(err);
+    }
+    throw err;
+  }
+}
 
 // Process command line arguments, removing the first two elements (node executable and script path)
 const rawArgs = hideBin(process.argv);
@@ -93,6 +110,7 @@ if (rawArgs[0] === "compile") {
     .option("client-choice-mode", {type: "string", choices: ["all-optional", "union"], default: "all-optional"})
     .option("client-fail-on-unresolved", {type: "boolean", default: false})
     .option("client-nillable-as-optional", {type: "boolean", default: false})
+    .option("stream-config", {type: "string", desc: "Path to a stream configuration JSON file (ADR-002)."})
     .strict()
     .help()
     .parse();
@@ -114,7 +132,18 @@ if (rawArgs[0] === "compile") {
     }
   );
 
-  const compiled = compileCatalog(wsdlCatalog, compilerOptions);
+  const streamConfig = compileArgv["stream-config"]
+    ? loadStreamConfigOrExit(String(compileArgv["stream-config"]))
+    : undefined;
+  const compiled = compileCatalog(wsdlCatalog, compilerOptions, streamConfig);
+
+  if (streamConfig) {
+    const {applyShapeCatalogs} = await import("./compiler/shapeResolver.js");
+    const shapeBaseDir = compileArgv["stream-config"]
+      ? path.dirname(path.resolve(String(compileArgv["stream-config"])))
+      : path.dirname(path.resolve(String(compileArgv["wsdl-source"])));
+    await applyShapeCatalogs(compiled, streamConfig, {baseDir: shapeBaseDir});
+  }
 
   // Report compilation statistics
   reportCompilationStats(wsdlCatalog, compiled);
@@ -167,6 +196,7 @@ if (rawArgs[0] === "client") {
     .option("client-choice-mode", {type: "string", choices: ["all-optional", "union"], default: "all-optional"})
     .option("client-fail-on-unresolved", {type: "boolean", default: false})
     .option("client-nillable-as-optional", {type: "boolean", default: false})
+    .option("stream-config", {type: "string", desc: "Path to a stream configuration JSON file (ADR-002). Only applied when compiling from WSDL."})
     .strict()
     .help()
     .parse();
@@ -215,7 +245,16 @@ if (rawArgs[0] === "client") {
       }
     );
 
-    compiled = compileCatalog(wsdlCatalog, compilerOptions);
+    const clientStreamConfig = loadStreamConfigOrExit(clientArgv["stream-config"] as string | undefined);
+    compiled = compileCatalog(wsdlCatalog, compilerOptions, clientStreamConfig);
+
+    if (clientStreamConfig) {
+      const {applyShapeCatalogs} = await import("./compiler/shapeResolver.js");
+      const shapeBaseDir = clientArgv["stream-config"]
+        ? path.dirname(path.resolve(String(clientArgv["stream-config"])))
+        : path.dirname(path.resolve(String(clientArgv["wsdl-source"])));
+      await applyShapeCatalogs(compiled, clientStreamConfig, {baseDir: shapeBaseDir});
+    }
 
     // Report compilation statistics
     reportCompilationStats(wsdlCatalog, compiled);
@@ -742,6 +781,10 @@ if (rawArgs[0] === "pipeline") {
       default: false,
       desc: "Overwrite existing test files when using --test-dir"
     })
+    .option("stream-config", {
+      type: "string",
+      desc: "Path to a stream configuration JSON file (ADR-002). Applied to every stage that consumes the compiled catalog."
+    })
     .strict()
     .help()
     .parse();
@@ -847,6 +890,7 @@ if (rawArgs[0] === "pipeline") {
     clientOutDir: clientOut ? path.resolve(clientOut) : undefined,
     catalogOut,
     compiler: compilerOptions,
+    streamConfigFile: pipelineArgv["stream-config"] as string | undefined,
     openapi: openApiOptions ? {
       ...openApiOptions,
       outFile: path.resolve(openapiOut!),

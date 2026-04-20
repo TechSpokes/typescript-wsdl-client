@@ -527,6 +527,7 @@ function generatePackageJson(appDir: string, force: boolean): void {
     dependencies: {
       fastify: "^5.8.5",
       "fastify-plugin": "^5.1.0",
+      saxes: "^6.0.0",
       soap: "^1.9.1",
     },
     devDependencies: {

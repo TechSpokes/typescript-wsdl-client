@@ -246,6 +246,20 @@ const client = createMockClient({
 
 Mock responses use the pre-unwrap SOAP wrapper shape. The generated `unwrapArrayWrappers()` function handles conversion at runtime.
 
+For operations opted in via `--stream-config`, the mock returns `records: AsyncIterable<RecordType>` (via a small `asyncIterableOf` helper) and the generated happy-path test asserts on the NDJSON content-type and parseable record lines. Override a stream op with a multi-record iterable to exercise downstream backpressure:
+
+```typescript
+const client = createMockClient({
+  UnitDescriptiveInfoStream: async () => ({
+    records: (async function* () {
+      yield { Id: "1", Name: "Villa A" };
+      yield { Id: "2", Name: "Villa B" };
+    })(),
+    headers: {},
+  }),
+});
+```
+
 ## For Consumer Projects
 
 If you're using wsdl-tsc as a dependency and want to test your integration:

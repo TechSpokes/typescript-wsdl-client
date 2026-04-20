@@ -9,6 +9,15 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-04-20
+
+- feat(stream): opt-in streamable SOAP responses via `--stream-config` (ADR-002) — client emits `StreamOperationResponse<T>` with an async-iterable `records` field, OpenAPI declares `application/x-ndjson` with `x-wsdl-tsc-stream` item schema, Fastify gateway serves NDJSON with backpressure
+- feat(compiler): retain `xs:any` wildcard particles on compiled types instead of silently dropping them; fail loudly on stream-config references to unknown operations
+- feat(compiler): companion-catalog shape resolver copies reachable record-type graphs with structural-equality name-collision checks
+- feat(runtime): SAX-driven `parseRecords` and backpressure-aware `toNdjson` runtimes; saxes promoted from devDependency to runtime dependency
+- chore(app): include `saxes ^6.0.0` in the generated app's dependencies so stream-enabled consumers install the SAX parser out of the box
+- feat(test): generated mock clients yield async-iterable records for stream operations; generated happy-path tests assert NDJSON content-type and parseable records
+
 ## [0.16.2] - 2026-04-20
 
 - docs: add proposed architecture for streamable SOAP-to-JSON gateway responses

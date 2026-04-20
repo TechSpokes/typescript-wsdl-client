@@ -91,6 +91,16 @@ export interface OperationMetadata {
   description?: string;
   /** When true, response schema is omitted from route registration to avoid fast-json-stringify stack overflow on deeply nested $ref graphs */
   skipResponseSchema?: boolean;
+  /**
+   * Stream metadata populated from the OpenAPI `x-wsdl-tsc-stream` extension.
+   * When present, the route handler pipes `result.records` through the NDJSON
+   * helper instead of envelope-wrapping a single response object.
+   */
+  stream?: {
+    mediaType: string;
+    format: "ndjson" | "json-array";
+    recordTypeName?: string;
+  };
 }
 
 function normalizeDocCommentText(value: string | undefined): string | undefined {
@@ -206,11 +216,19 @@ export function emitOperationSchemas(
       const responses = operation.responses || {};
       const responseObj: Record<string, any> = {};
 
+      // Detect streaming operation: OpenAPI emits a non-JSON content entry with
+      // an `x-wsdl-tsc-stream` extension on the 200 response.
+      const streamEntry = detectStreamResponse(responses["200"]);
+
       const explicitCodes = Object.keys(responses).filter(isNumeric);
 
       for (const code of explicitCodes) {
         const r = responses[code];
         if (!r || typeof r !== "object") continue;
+        // Stream ops intentionally skip JSON response-schema construction on the
+        // streamed status code; the body is an NDJSON stream, not a single
+        // JSON object, so fast-json-stringify cannot serialize it anyway.
+        if (streamEntry && code === "200") continue;
         const rSchema = r.content?.["application/json"]?.schema;
         if (!rSchema) {
           throw new Error(
@@ -289,12 +307,38 @@ export function emitOperationSchemas(
         path: p,
         summary: normalizeDocCommentText(typeof operation.summary === "string" ? operation.summary : undefined),
         description: normalizeDocCommentText(typeof operation.description === "string" ? operation.description : undefined),
-        skipResponseSchema,
+        // Stream ops always skip response schema because NDJSON is not a single
+        // JSON document and fast-json-stringify can't serialize it.
+        skipResponseSchema: skipResponseSchema || !!streamEntry,
+        ...(streamEntry ? {stream: streamEntry} : {}),
       });
     }
   }
 
   return operations;
+}
+
+/**
+ * Look for an `x-wsdl-tsc-stream` extension on the 200 response's content map.
+ * Returns the normalized stream metadata when found, or undefined otherwise.
+ */
+function detectStreamResponse(
+  response200: any,
+): {mediaType: string; format: "ndjson" | "json-array"; recordTypeName?: string} | undefined {
+  const content = response200?.content;
+  if (!content || typeof content !== "object") return undefined;
+  for (const [mediaType, entry] of Object.entries(content as Record<string, any>)) {
+    const ext = entry && typeof entry === "object" ? (entry as any)["x-wsdl-tsc-stream"] : undefined;
+    if (!ext || typeof ext !== "object") continue;
+    const format = (ext as any).format;
+    if (format !== "ndjson" && format !== "json-array") continue;
+    const itemRef = (ext as any).itemSchema?.$ref as string | undefined;
+    const recordTypeName = typeof itemRef === "string"
+      ? itemRef.split("/").pop()
+      : undefined;
+    return {mediaType, format, recordTypeName};
+  }
+  return undefined;
 }
 
 /**
@@ -461,7 +505,8 @@ export function emitRuntimeModule(
   outDir: string,
   versionSlug: string,
   serviceSlug: string,
-  catalog?: any
+  catalog?: any,
+  opts?: {hasStreams?: boolean}
 ): void {
   const vSlug = slugName(versionSlug);
   const sSlug = slugName(serviceSlug);
@@ -707,7 +752,44 @@ export function createGatewayErrorHandler_${vSlug}_${sSlug}() {
 }
 `;
 
-  fs.writeFileSync(path.join(outDir, "runtime.ts"), runtimeTs + unwrapSection, "utf8");
+  const streamSection = opts?.hasStreams ? buildStreamRuntimeSection() : "";
+  fs.writeFileSync(path.join(outDir, "runtime.ts"), runtimeTs + unwrapSection + streamSection, "utf8");
+}
+
+/**
+ * Returns the streaming helpers block for runtime.ts.
+ *
+ * The emitted `toNdjson` mirrors the reference implementation in
+ * src/runtime/ndjson.ts but is inlined here to avoid a cross-package import
+ * from the generated gateway (which would require wsdl-tsc to be a runtime
+ * dependency of the consumer's project).
+ */
+function buildStreamRuntimeSection(): string {
+  return `
+// -----------------------------------------------------------------------------
+// Streaming helpers (emitted because at least one operation is stream-configured).
+// -----------------------------------------------------------------------------
+
+import { Readable } from "node:stream";
+
+/**
+ * Wrap an async iterable of records in a Node Readable stream that emits
+ * NDJSON (one JSON document per line, LF-terminated). Downstream backpressure
+ * is honored by Readable.from's default iterator-pausing behavior. Source
+ * errors are forwarded to the returned stream's 'error' event — before-first-
+ * byte errors fire before any push(), so Fastify translates them into the
+ * standard JSON error envelope.
+ */
+export function toNdjson<T>(records: AsyncIterable<T>): Readable {
+  return Readable.from(encodeNdjson(records), { objectMode: false, encoding: "utf-8" });
+}
+
+async function* encodeNdjson<T>(records: AsyncIterable<T>): AsyncIterable<string> {
+  for await (const record of records) {
+    yield JSON.stringify(record) + "\\n";
+  }
+}
+`;
 }
 
 /**
@@ -938,27 +1020,47 @@ export function emitRouteFilesWithHandlers(
       : "request.body";
 
     // Build the runtime import and return expression based on unwrap availability
-    const runtimeImport = hasUnwrap
-      ? `import { buildSuccessEnvelope, unwrapArrayWrappers } from "../runtime${suffix}";`
-      : `import { buildSuccessEnvelope } from "../runtime${suffix}";`;
+    const runtimeImport = op.stream
+      ? `import { toNdjson } from "../runtime${suffix}";`
+      : hasUnwrap
+        ? `import { buildSuccessEnvelope, unwrapArrayWrappers } from "../runtime${suffix}";`
+        : `import { buildSuccessEnvelope } from "../runtime${suffix}";`;
     const returnExpr = hasUnwrap
       ? `return buildSuccessEnvelope(unwrapArrayWrappers(result.response, "${resTypeName}"));`
       : `return buildSuccessEnvelope(result.response);`;
 
     // Note: op.path comes from OpenAPI and already includes any base path
     const schemaBinding = op.skipResponseSchema
-      ? `\n// Response schema omitted: $ref graph exceeds fast-json-stringify depth limit\nconst { response: _response, ...routeSchema } = schema as Record<string, unknown>;\n`
+      ? `\n// Response schema omitted: ${op.stream
+            ? "stream operations emit NDJSON, not a single JSON object"
+            : "$ref graph exceeds fast-json-stringify depth limit"}\nconst { response: _response, ...routeSchema } = schema as Record<string, unknown>;\n`
       : "";
     const schemaLine = op.skipResponseSchema
       ? "    schema: routeSchema,"
       : "    schema,";
     const operationDocLines = buildOperationDocLines(op);
 
+    const handlerBody = op.stream
+      ? `    handler: async (request, reply) => {
+      const client = fastify.${clientMeta.decoratorName};
+      const result = await client.${clientMethod}(${bodyArg});
+      reply.type(${JSON.stringify(op.stream.mediaType)});
+      return reply.send(toNdjson(result.records));
+    },`
+      : `    handler: async (request) => {
+      const client = fastify.${clientMeta.decoratorName};
+      const result = await client.${clientMethod}(${bodyArg});
+      ${returnExpr}
+    },`;
+    const responseTypeDoc = op.stream
+      ? `${op.stream.recordTypeName ?? "records"} (streamed as ${op.stream.format})`
+      : `${resTypeName} (wrapped in envelope)`;
+
     let routeTs = `/**
  * Route: ${op.method.toUpperCase()} ${op.path}
  * Operation: ${op.operationId || op.operationSlug}
 ${operationDocLines} * Request Type: ${reqTypeName}
- * Response Type: ${resTypeName} (wrapped in envelope)
+ * Response Type: ${responseTypeDoc}
  * Auto-generated - do not edit manually.
  */
 import type { FastifyInstance } from "fastify";
@@ -970,11 +1072,7 @@ export async function ${fnName}(fastify: FastifyInstance) {
     method: "${op.method.toUpperCase()}",
     url: "${op.path}",
 ${schemaLine}
-    handler: async (request) => {
-      const client = fastify.${clientMeta.decoratorName};
-      const result = await client.${clientMethod}(${bodyArg});
-      ${returnExpr}
-    },
+${handlerBody}
   });
 }
 `;

@@ -65,6 +65,46 @@ Per-operation overrides for method, summary, description, and deprecation.
 }
 ```
 
+## Stream Configuration
+
+The `--stream-config <file>` flag (available on `compile`, `client`, `pipeline`)
+opts selected WSDL operations into streaming. Buffered output is unchanged for
+operations not listed in the file.
+
+```json
+{
+  "shapeCatalogs": {
+    "main": { "wsdlSource": "https://api.example.com/Main.svc?singleWsdl" }
+  },
+  "operations": {
+    "UnitDescriptiveInfoStream": {
+      "format": "ndjson",
+      "mediaType": "application/x-ndjson",
+      "recordType": "UnitDescriptiveContentType",
+      "recordPath": [
+        "UnitDescriptiveInfoStream",
+        "EVRN_UnitDescriptiveInfoRS",
+        "UnitDescriptiveContents",
+        "UnitDescriptiveContent"
+      ],
+      "shapeCatalog": "main"
+    }
+  }
+}
+```
+
+- `recordType` and `recordPath` are required; `format` defaults to `ndjson` and
+  `mediaType` to `application/x-ndjson`.
+- `shapeCatalog` references a `shapeCatalogs` entry and is only needed when
+  the record type lives in a different WSDL than the one driving generation.
+- Shape catalogs accept either `wsdlSource` (fetched and compiled on the fly)
+  or `catalogFile` (path to a pre-compiled `catalog.json`).
+- Structural name collisions across catalogs fail the build; structurally
+  identical types dedupe silently.
+
+See [ADR-002](decisions/002-streamable-responses.md) for rationale and the
+terminal-error policy.
+
 ## Example Files
 
 Example configuration files are available in the `examples/openapi/` directory:

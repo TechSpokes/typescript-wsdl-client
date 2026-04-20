@@ -105,8 +105,12 @@ export function info(message: string): void {
  * @param exitCode - Process exit code (default: 1)
  */
 export function handleCLIError(errorObj: unknown, exitCode: number = 1): never {
-  if (errorObj instanceof WsdlCompilationError) {
-    error(errorObj.toUserMessage());
+  // Known structured errors carry richer context; print their multi-line form.
+  if (
+    errorObj instanceof WsdlCompilationError ||
+    (errorObj instanceof Error && typeof (errorObj as {toUserMessage?: unknown}).toUserMessage === "function")
+  ) {
+    error((errorObj as {toUserMessage: () => string}).toUserMessage());
   } else {
     const message = errorObj instanceof Error ? errorObj.message : String(errorObj);
     error(message);

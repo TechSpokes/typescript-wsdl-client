@@ -14,6 +14,7 @@ import type {WsdlCatalog} from "../loader/wsdlLoader.js";
 import {getChildrenWithLocalName, getFirstWithLocalName, normalizeArray, pascal, resolveQName,} from "../util/tools.js";
 import {xsdToTsPrimitive} from "../xsd/primitives.js";
 import {WsdlCompilationError} from "../util/errors.js";
+import type {OperationStreamMetadata, StreamConfig} from "../util/streamConfig.js";
 
 /**
  * Qualified name with namespace and local part
@@ -23,6 +24,22 @@ import {WsdlCompilationError} from "../util/errors.js";
  * @property {string} local - Local name within the namespace
  */
 export type QName = { ns: string; local: string };
+
+/**
+ * Represents an xs:any wildcard particle retained on a complex type.
+ *
+ * The base compiler previously dropped wildcards silently. Keeping them as
+ * explicit markers lets downstream tools (stream-candidate detection,
+ * streaming XML converter) reason honestly about types whose payload lives
+ * outside the statically-typed schema — e.g. Escapia's content-service
+ * stream wrappers that mix an xs:schema marker with an xs:any payload.
+ */
+export type CompiledWildcard = {
+  min: number;
+  max: number | "unbounded";
+  namespace?: string;
+  processContents?: "lax" | "strict" | "skip";
+};
 
 /**
  * Represents a compiled complex type with attributes and elements
@@ -36,6 +53,7 @@ export type QName = { ns: string; local: string };
  * @property {string} [base] - Base type name for extension/inheritance
  * @property {Array<Object>} [localAttrs] - Attributes added in extension (not inherited)
  * @property {Array<Object>} [localElems] - Elements added in extension (not inherited)
+ * @property {Array<Object>} [wildcards] - xs:any wildcard particles retained on the type
  */
 export type CompiledType = {
   name: string;
@@ -77,6 +95,9 @@ export type CompiledType = {
     declaredType: string;
     doc?: string;
   }>;
+  // Retained xs:any particles, if any. Absent on types without wildcards so
+  // existing catalogs remain byte-for-byte identical.
+  wildcards?: CompiledWildcard[];
 };
 
 /**
@@ -140,6 +161,27 @@ export type CompiledDiagnostics = {
 };
 
 /**
+ * Compiled SOAP operation shape. Extracted so that extended fields (stream
+ * metadata, future delivery modes) live in one named type instead of being
+ * buried inline on CompiledCatalog.operations.
+ */
+export type CompiledOperation = {
+  name: string;
+  soapAction: string;
+  inputElement?: QName;
+  outputElement?: QName;
+  security?: string[];
+  inputTypeName?: string;
+  outputTypeName?: string;
+  doc?: string;
+  /**
+   * Stream delivery metadata; populated from a StreamConfig when the operation
+   * is opted in. Absent for ordinary buffered operations.
+   */
+  stream?: OperationStreamMetadata;
+};
+
+/**
  * Complete compiled catalog with all types, aliases, operations and metadata
  *
  * @interface CompiledCatalog
@@ -162,16 +204,7 @@ export type CompiledCatalog = {
     childType: Record<string, Record<string, string>>;
     propMeta: Record<string, Record<string, any>>;
   };
-  operations: Array<{
-    name: string;
-    soapAction: string;
-    inputElement?: QName;
-    outputElement?: QName;
-    security?: string[]; // minimal WS-Policy-derived hints (e.g., ["usernameToken", "https"])
-    inputTypeName?: string;  // PascalCase TS type for input (e.g., "UnitResRequest")
-    outputTypeName?: string; // PascalCase TS type for output (e.g., "UnitResResponse")
-    doc?: string;
-  }>;
+  operations: CompiledOperation[];
   wsdlTargetNS: string;
   wsdlUri: string;
   serviceName?: string;
@@ -339,7 +372,11 @@ function extractAnnotationDocumentation(node: any): string | undefined {
  * 4. Extract WSDL operations: pick the appropriate SOAP binding (v1.1 or v1.2), resolve its
  *    portType reference, then enumerate operations and their soapAction URIs.
  */
-export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): CompiledCatalog {
+export function compileCatalog(
+  cat: WsdlCatalog,
+  options: CompilerOptions,
+  streamConfig?: StreamConfig,
+): CompiledCatalog {
   // symbol tables discovered across all schemas
   const complexTypes = new Map<string, { node: any; tns: string; prefixes: Record<string, string> }>();
   const simpleTypes = new Map<string, { node: any; tns: string; prefixes: Record<string, string> }>();
@@ -568,6 +605,34 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       }
       return out;
     };
+    // Walks the same compositor structure as collectParticles and returns any
+    // xs:any wildcard particles found. Kept as a sibling to avoid reshaping
+    // collectParticles' return type at the three call sites below.
+    const collectWildcards = (node: any): CompiledWildcard[] => {
+      const out: CompiledWildcard[] = [];
+      const recurse = (groupNode: any) => {
+        for (const a of getChildrenWithLocalName(groupNode, "any")) {
+          const min = a["@_minOccurs"] ? Number(a["@_minOccurs"]) : 1;
+          const maxAttr = a["@_maxOccurs"];
+          const max = maxAttr === "unbounded" ? "unbounded" : maxAttr ? Number(maxAttr) : 1;
+          const pc = a["@_processContents"] as string | undefined;
+          out.push({
+            min,
+            max,
+            ...(a["@_namespace"] ? {namespace: a["@_namespace"] as string} : {}),
+            ...(pc === "lax" || pc === "strict" || pc === "skip" ? {processContents: pc} : {}),
+          });
+        }
+        for (const comp of ["sequence", "all", "choice"]) {
+          for (const sub of getChildrenWithLocalName(groupNode, comp)) {
+            recurse(sub);
+          }
+        }
+      };
+      recurse(node);
+      return out;
+    };
+
     const collectParticles = (ownerTypeName: string, node: any): CompiledType["elems"] => {
       const out: CompiledType["elems"] = [];
       // process a compositor or element container recursively
@@ -637,8 +702,12 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       // On duplicate definitions, merge new attributes and elements
       const newAttrs = collectAttributes(cnode);
       const newElems = collectParticles(outName, cnode);
+      const newWildcards = collectWildcards(cnode);
       mergeAttrs(present.attrs, newAttrs);
       mergeElems(present.elems, newElems);
+      if (newWildcards.length > 0) {
+        present.wildcards = [...(present.wildcards ?? []), ...newWildcards];
+      }
       if (!present.doc && typeDoc) {
         present.doc = typeDoc;
       }
@@ -675,6 +744,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
         // collect local additions/overrides
         const locals = collectAttributes(node);
         const localElems = collectParticles(outName, node);
+        const localWildcards = collectWildcards(node);
         attrs.push(...locals);
         elems.push(...localElems);
         const result: CompiledType = {
@@ -685,7 +755,8 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
           doc: typeDoc,
           base: baseName,
           localAttrs: locals,
-          localElems
+          localElems,
+          ...(localWildcards.length > 0 ? {wildcards: localWildcards} : {}),
         };
         compiledMap.set(key, result);
         inProgress.delete(key);
@@ -730,8 +801,16 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     // Attributes + particles
     mergeAttrs(attrs, collectAttributes(cnode));
     mergeElems(elems, collectParticles(outName, cnode));
+    const wildcards = collectWildcards(cnode);
 
-    const result: CompiledType = {name: outName, ns: schemaNS, attrs, elems, doc: typeDoc};
+    const result: CompiledType = {
+      name: outName,
+      ns: schemaNS,
+      attrs,
+      elems,
+      doc: typeDoc,
+      ...(wildcards.length > 0 ? {wildcards} : {}),
+    };
     compiledMap.set(key, result);
     inProgress.delete(rawKey);
     return result;
@@ -1063,7 +1142,7 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     .sort((a, b) => a.name.localeCompare(b.name));
 
   // build operations list
-  const ops = (pOps
+  const ops: CompiledOperation[] = pOps
     .map(po => {
       const name = po?.["@_name"] as string | undefined;
       if (!name) return undefined;
@@ -1075,17 +1154,18 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       // Derive TypeScript type names from element local names
       const inputTypeName = inputElement ? pascal(inputElement.local) : undefined;
       const outputTypeName = outputElement ? pascal(outputElement.local) : undefined;
-      return {name, soapAction: bOps.get(name) || "", inputElement, outputElement, inputTypeName, outputTypeName, doc};
+      const op: CompiledOperation = {
+        name,
+        soapAction: bOps.get(name) || "",
+        ...(inputElement ? {inputElement} : {}),
+        ...(outputElement ? {outputElement} : {}),
+        ...(inputTypeName ? {inputTypeName} : {}),
+        ...(outputTypeName ? {outputTypeName} : {}),
+        ...(doc ? {doc} : {}),
+      };
+      return op;
     })
-    .filter((x): x is NonNullable<typeof x> => x != null)) as Array<{
-    name: string;
-    soapAction: string;
-    inputElement?: QName;
-    outputElement?: QName;
-    inputTypeName?: string;
-    outputTypeName?: string;
-    doc?: string;
-  }>;
+    .filter((x): x is CompiledOperation => x != null);
 
   // --- WS-Policy: scan for security requirements (inline policies only) ---
   const bindingPolicies = getChildrenWithLocalName(soapBinding || {}, "Policy");
@@ -1095,7 +1175,36 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     const opPolicies = getChildrenWithLocalName(bo, "Policy");
     const opSec = collectSecurityFromPolicyNodes(opPolicies);
     const secSet = new Set<string>([...bindingSec, ...opSec]);
-    (op as any).security = Array.from(secSet);
+    op.security = Array.from(secSet);
+  }
+
+  // --- Stream config application ---
+  // A stream-configured operation is matched by name against the WSDL's
+  // portType operations. Unknown operation names are fatal so that consumers
+  // find out about stale configs at generation time, not at runtime.
+  if (streamConfig) {
+    const opByName = new Map(ops.map((op) => [op.name, op] as const));
+    for (const [opName, meta] of Object.entries(streamConfig.operations)) {
+      const op = opByName.get(opName);
+      if (!op) {
+        throw new WsdlCompilationError(
+          `Stream config references operation "${opName}" but the WSDL portType does not declare it.`,
+          {
+            element: opName,
+            suggestion: `Remove the entry under "operations.${opName}" in the stream config, or correct the operation name to match one defined in the WSDL.`,
+          },
+        );
+      }
+      op.stream = {
+        mode: meta.mode,
+        format: meta.format,
+        mediaType: meta.mediaType,
+        recordPath: [...meta.recordPath],
+        recordTypeName: meta.recordTypeName,
+        ...(meta.shapeCatalogName ? {shapeCatalogName: meta.shapeCatalogName} : {}),
+        ...(op.outputTypeName ? {sourceOutputTypeName: op.outputTypeName} : {}),
+      };
+    }
   }
 
   // --- Service discovery (for client naming) ---
