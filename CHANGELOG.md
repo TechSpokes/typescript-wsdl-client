@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.16.2] - 2026-04-20
+
+- docs: add proposed architecture for streamable SOAP-to-JSON gateway responses
+
 ## [0.16.1] - 2026-04-20
 
 - fix(test): preserve generated mock client override separator

@@ -27,6 +27,7 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 - [api-reference.md](api-reference.md): programmatic TypeScript API
 - [concepts.md](concepts.md): flattening, `$value`, primitives, determinism
 - [architecture.md](architecture.md): internal pipeline for contributors
+- [decisions/002-streamable-responses.md](decisions/002-streamable-responses.md): proposed streamable SOAP response architecture
 - [migration.md](migration.md): upgrading between package versions
 
 ## Conventions
