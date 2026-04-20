@@ -1,3 +1,5 @@
+// noinspection ES6PreferShortImport,HttpUrlsUsage,JSVoidFunctionReturnValueUsed
+
 import {afterAll, describe, expect, it, vi} from "vitest";
 import {mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
