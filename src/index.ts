@@ -73,11 +73,15 @@ export async function compileWsdlToProject(
   const compiled = compileCatalog(wsdlCatalog, finalOptions);
   info(`Compiled WSDL: ${wsdlCatalog.wsdlUri}`);
 
-  // check if we have any types and operations
-  if (compiled.types.length === 0) {
-    throw new Error(`No types compiled from WSDL: ${input.wsdl}`);
+  // check if we have any data models and operations
+  if (compiled.types.length === 0 && compiled.aliases.length === 0) {
+    throw new Error(`No types or aliases compiled from WSDL: ${input.wsdl}`);
   } else {
     info(`Types discovered: ${compiled.types.length}`);
+    info(`Aliases discovered: ${compiled.aliases.length}`);
+    for (const note of compiled.diagnostics?.notes ?? []) {
+      info(`Note: ${note}`);
+    }
   }
   if (compiled.operations.length === 0) {
     throw new Error(`No operations compiled from WSDL: ${input.wsdl}`);

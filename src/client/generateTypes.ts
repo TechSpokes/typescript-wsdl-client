@@ -65,8 +65,17 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
 
   // Convenience lookups
   const typeNames = new Set(compiled.types.map((t) => t.name));
+  const aliasNames = new Set(compiled.aliases.map((a) => a.name));
   const isValidIdent = (name: string) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name);
   const emitPropName = (name: string) => (isValidIdent(name) ? name : JSON.stringify(name));
+  const isSyntheticAliasSelfWrapper = (t: CompiledType): boolean => {
+    const elems = t.elems || [];
+    return aliasNames.has(t.name) &&
+      (t.attrs || []).length === 0 &&
+      elems.length === 1 &&
+      elems[0].name === "$value" &&
+      elems[0].tsType === t.name;
+  };
 
   //
   // 1) Named simple types (aliases) first
@@ -90,6 +99,9 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
   // sort types by name to ensure consistent order
   compiled.types.sort((a, b) => a.name.localeCompare(b.name));
   for (const t of compiled.types) {
+    if (isSyntheticAliasSelfWrapper(t)) {
+      continue;
+    }
     // Detect complexContent extension via compiled metadata or mis-mapped simpleContent extension
     const complexBase = (t as any).base as string | undefined;
     // Detect mis-mapped simpleContent extension: single "$value" whose tsType is another named interface
@@ -98,6 +110,7 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
         e.name === "$value" &&
         (e.max === 1 || e.max === undefined) &&
         typeof e.tsType === "string" &&
+        e.tsType !== t.name &&
         typeNames.has(e.tsType as string)
     );
     const isSimpleContentExtension = !complexBase && (t.elems?.length || 0) === 1 && valueElems.length === 1;

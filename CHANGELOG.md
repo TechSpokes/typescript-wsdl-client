@@ -9,6 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-04-20
+
+- fix(client): avoid duplicate enum declarations for same-name simple type elements
+- feat(compiler): report same-name simple type element reuse as a catalog diagnostic note
+- docs: document same-name simple type element alias behavior
+- chore(deps): bump root and generated app pins to fast-xml-parser 5.7.1, fastify 5.8.5, soap 1.9.1, and typescript 6.0.3
+
 ## [0.15.2] - 2026-04-13
 
 - chore(deps): refresh lockfile to axios 1.15.0 and fast-xml-parser 5.5.10

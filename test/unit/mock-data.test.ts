@@ -279,8 +279,8 @@ describe("generateAllOperationMocks", () => {
     expect(result.size).toBe(1);
     expect(result.has("GetData")).toBe(true);
     const mock = result.get("GetData")!;
-    expect(typeof mock.request.Query).toBe("string");
-    expect(typeof mock.response.Result).toBe("string");
+    expect(typeof (mock.request as Record<string, unknown>).Query).toBe("string");
+    expect(typeof (mock.response as Record<string, unknown>).Result).toBe("string");
   });
 
   it("handles operations with no input type", () => {
@@ -298,7 +298,7 @@ describe("generateAllOperationMocks", () => {
     const result = generateAllOperationMocks(catalog);
     const mock = result.get("ListAll")!;
     expect(mock.request).toEqual({});
-    expect(typeof mock.response.Items).toBe("string");
+    expect(typeof (mock.response as Record<string, unknown>).Items).toBe("string");
   });
 
   it("handles operations with no output type", () => {
@@ -315,7 +315,7 @@ describe("generateAllOperationMocks", () => {
     };
     const result = generateAllOperationMocks(catalog);
     const mock = result.get("Delete")!;
-    expect(typeof mock.request.Id).toBe("number");
+    expect(typeof (mock.request as Record<string, unknown>).Id).toBe("number");
     expect(mock.response).toEqual({});
   });
 
@@ -339,6 +339,26 @@ describe("generateAllOperationMocks", () => {
     expect(result.size).toBe(2);
     expect(result.has("OpA")).toBe(true);
     expect(result.has("OpB")).toBe(true);
+  });
+
+  it("generates scalar mocks for operation roots backed by simple type aliases", () => {
+    const catalog: CatalogForMocks = {
+      aliases: [
+        { name: "MyEnum", tsType: "\"Red\" | \"Green\" | \"Blue\"" },
+      ],
+      meta: {
+        childType: {},
+        propMeta: {},
+      },
+      operations: [
+        { name: "Echo", inputTypeName: "MyEnum", outputTypeName: "MyEnum" },
+      ],
+    };
+
+    const result = generateAllOperationMocks(catalog);
+    const mock = result.get("Echo")!;
+    expect(mock.request).toBe("Red");
+    expect(mock.response).toBe("Red");
   });
 
   it("flattens array wrappers in request payloads when types are available", () => {
@@ -369,9 +389,9 @@ describe("generateAllOperationMocks", () => {
     const result = generateAllOperationMocks(catalog, { flattenArrayWrappers: true });
     const mock = result.get("GetItems")!;
     // Request should be flattened: Items is an array, not { Item: [...] }
-    expect(Array.isArray(mock.request.Items)).toBe(true);
+    expect(Array.isArray((mock.request as Record<string, unknown>).Items)).toBe(true);
     // Response should stay SOAP-shaped (pre-unwrap)
-    expect(mock.response.Items).toHaveProperty("Item");
+    expect((mock.response as Record<string, unknown>).Items).toHaveProperty("Item");
   });
 
   it("does not flatten when flattenArrayWrappers is false", () => {
@@ -398,6 +418,6 @@ describe("generateAllOperationMocks", () => {
     const result = generateAllOperationMocks(catalog, { flattenArrayWrappers: false });
     const mock = result.get("Op")!;
     // Should NOT be flattened
-    expect(mock.request.Items).toHaveProperty("Item");
+    expect((mock.request as Record<string, unknown>).Items).toHaveProperty("Item");
   });
 });

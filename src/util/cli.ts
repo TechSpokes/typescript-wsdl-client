@@ -142,11 +142,14 @@ export function reportOpenApiSuccess(result: {
  */
 export function reportCompilationStats(
   wsdlCatalog: { schemas: any[] },
-  compiled: { types: any[]; operations: any[] }
+  compiled: { types: any[]; operations: any[]; diagnostics?: { notes?: string[] } }
 ): void {
   info(`Schemas discovered: ${wsdlCatalog.schemas.length}`);
   info(`Compiled types: ${compiled.types.length}`);
   info(`Operations: ${compiled.operations.length}`);
+  for (const note of compiled.diagnostics?.notes ?? []) {
+    info(`Note: ${note}`);
+  }
 }
 
 /**

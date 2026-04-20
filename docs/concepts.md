@@ -47,6 +47,90 @@ Override with CLI flags:
 - `--client-decimal-as`
 - `--client-date-as`
 
+## Simple Type Aliases
+
+Named `xs:simpleType` declarations generate scalar TypeScript aliases. Enumerated restrictions generate string literal unions.
+
+```xml
+<xs:simpleType name="MyEnum">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Red"/>
+    <xs:enumeration value="Green"/>
+  </xs:restriction>
+</xs:simpleType>
+```
+
+The generated TypeScript type preserves the enum as a scalar alias:
+
+```typescript
+export type MyEnum = "Red" | "Green";
+```
+
+The generated OpenAPI schema uses the same component name with a scalar enum schema:
+
+```json
+{
+  "MyEnum": {
+    "type": "string",
+    "enum": ["Red", "Green"]
+  }
+}
+```
+
+### Same-Name Global Elements
+
+Some WSDLs declare a named simple type and a global element with the same local name. When the element references that simple type, the generator treats the element as the scalar alias rather than creating a wrapper interface.
+
+```xml
+<xs:simpleType name="MyEnum">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Red"/>
+    <xs:enumeration value="Green"/>
+  </xs:restriction>
+</xs:simpleType>
+<xs:element name="MyEnum" nillable="true" type="tns:MyEnum"/>
+```
+
+The generated TypeScript remains a single declaration:
+
+```typescript
+export type MyEnum = "Red" | "Green";
+```
+
+Operation methods that use `tns:MyEnum` as their root element accept and return `MyEnum` directly:
+
+```typescript
+Echo(args: MyEnum): Promise<{ response: MyEnum; headers: unknown }>;
+```
+
+This avoids invalid duplicate declarations such as `type MyEnum` plus `interface MyEnum`. It also keeps OpenAPI request and response schemas pointed at the scalar `MyEnum` component.
+
+The same-name scalar element does not create an object wrapper only to carry element metadata. A root element marked `nillable="true"` still uses the scalar alias as the operation type.
+
+### Different-Name Simple Elements
+
+When a global element has a different name from the named simple type it references, the element remains a wrapper surface type. The simple type alias is still generated separately.
+
+```xml
+<xs:simpleType name="MyEnum">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Red"/>
+    <xs:enumeration value="Green"/>
+  </xs:restriction>
+</xs:simpleType>
+<xs:element name="FavoriteColor" type="tns:MyEnum"/>
+```
+
+The generated surface type keeps the element name and stores the scalar value in `$value`:
+
+```typescript
+export type MyEnum = "Red" | "Green";
+
+export interface FavoriteColor {
+  $value?: MyEnum;
+}
+```
+
 ## Deterministic Generation
 
 All output is stable and diff-friendly for CI/CD pipelines.
@@ -68,6 +152,8 @@ Inspect types, operations, and metadata as plain JSON. The catalog is
 automatically placed alongside generated output.
 
 The catalog stores optional human-readable `doc` fields extracted from WSDL/XSD documentation nodes. These fields are additive metadata used by TypeScript, OpenAPI, gateway, and generated-test emitters and do not change runtime behavior.
+
+The catalog may also store optional `diagnostics.notes` entries. These notes record non-error modeling decisions, such as reusing a same-name simple type alias instead of emitting a duplicate wrapper interface. CLI commands print these entries as `Note:` lines during compilation.
 
 The catalog also stores optional `wsdlDocs` metadata for selected WSDL nodes:
 

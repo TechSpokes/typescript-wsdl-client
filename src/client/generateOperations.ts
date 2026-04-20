@@ -37,8 +37,8 @@ export function generateOperations(outFile: string, compiled: CompiledCatalog): 
   const methods: string[] = [];
 
   for (const op of compiled.operations) {
-    const inTypeName = op.inputElement ? pascal(op.inputElement.local) : undefined;
-    const outTypeName = op.outputElement ? pascal(op.outputElement.local) : undefined;
+    const inTypeName = op.inputTypeName ?? (op.inputElement ? pascal(op.inputElement.local) : undefined);
+    const outTypeName = op.outputTypeName ?? (op.outputElement ? pascal(op.outputElement.local) : undefined);
 
     if (!inTypeName && !outTypeName) {
       continue;

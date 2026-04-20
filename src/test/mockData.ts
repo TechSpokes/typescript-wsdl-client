@@ -40,6 +40,10 @@ export interface CatalogForMocks {
     attrs: Array<{ name: string }>;
     elems: Array<{ name: string; max: number | "unbounded" }>;
   }>;
+  aliases?: Array<{
+    name: string;
+    tsType: string;
+  }>;
 }
 
 /**
@@ -162,6 +166,15 @@ export function generateMockData(
   return result;
 }
 
+function generateOperationPayload(typeName: string | undefined, catalog: CatalogForMocks): unknown {
+  if (!typeName) return {};
+  const alias = catalog.aliases?.find(a => a.name === typeName);
+  if (alias) {
+    return generateMockPrimitive(alias.tsType, typeName);
+  }
+  return generateMockData(typeName, catalog);
+}
+
 /**
  * Options for bulk mock generation
  */
@@ -186,8 +199,8 @@ export interface GenerateAllMocksOptions {
 export function generateAllOperationMocks(
   catalog: CatalogForMocks,
   opts?: GenerateAllMocksOptions
-): Map<string, { request: Record<string, unknown>; response: Record<string, unknown> }> {
-  const result = new Map<string, { request: Record<string, unknown>; response: Record<string, unknown> }>();
+): Map<string, { request: unknown; response: unknown }> {
+  const result = new Map<string, { request: unknown; response: unknown }>();
 
   if (!catalog.operations) return result;
 
@@ -199,19 +212,15 @@ export function generateAllOperationMocks(
   const childTypeMap = catalog.meta?.childType ?? {};
 
   for (const op of catalog.operations) {
-    let request = op.inputTypeName
-      ? generateMockData(op.inputTypeName, catalog)
-      : {};
+    let request = generateOperationPayload(op.inputTypeName, catalog);
 
     // Flatten request payloads when array wrappers are active
-    if (shouldFlatten && op.inputTypeName) {
-      request = flattenMockPayload(request, op.inputTypeName, childTypeMap, arrayWrappers);
+    if (shouldFlatten && op.inputTypeName && request != null && typeof request === "object" && !Array.isArray(request)) {
+      request = flattenMockPayload(request as Record<string, unknown>, op.inputTypeName, childTypeMap, arrayWrappers);
     }
 
     // Response stays SOAP-shaped (pre-unwrap) since runtime unwrapArrayWrappers() handles it
-    const response = op.outputTypeName
-      ? generateMockData(op.outputTypeName, catalog)
-      : {};
+    const response = generateOperationPayload(op.outputTypeName, catalog);
 
     result.set(op.name, { request, response });
   }

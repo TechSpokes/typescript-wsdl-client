@@ -135,6 +135,10 @@ export type CompiledWsdlDocs = {
   services?: CompiledWsdlServiceDoc[];
 };
 
+export type CompiledDiagnostics = {
+  notes?: string[];
+};
+
 /**
  * Complete compiled catalog with all types, aliases, operations and metadata
  *
@@ -172,6 +176,7 @@ export type CompiledCatalog = {
   wsdlUri: string;
   serviceName?: string;
   wsdlDocs?: CompiledWsdlDocs;
+  diagnostics?: CompiledDiagnostics;
 };
 
 // XML Schema namespace constant
@@ -374,6 +379,13 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
   const attrType: Record<string, Record<string, string>> = {};
   const childType: Record<string, Record<string, string>> = {};
   const propMeta: Record<string, Record<string, any>> = {};
+  const diagnostics: CompiledDiagnostics = {};
+  const addDiagnosticNote = (note: string) => {
+    diagnostics.notes ??= [];
+    if (!diagnostics.notes.includes(note)) {
+      diagnostics.notes.push(note);
+    }
+  };
 
   /** Compile a simpleType node to TS */
   function compileSimpleTypeNode(
@@ -803,6 +815,21 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
       const srec = simpleTypes.get(qkey(q));
       if (srec) {
         const a = getOrCompileAlias(q.local, srec.node, srec.tns, srec.prefixes);
+        if (outName === a.name) {
+          addDiagnosticNote(
+            `Element {${schemaNS}}${name} reuses same-name simple type alias ${a.name} instead of emitting a wrapper interface.`
+          );
+          if (!a.doc && elementDoc) {
+            a.doc = elementDoc;
+          }
+          return {
+            name: a.name,
+            ns: schemaNS,
+            attrs: [],
+            elems: [],
+            doc: elementDoc,
+          };
+        }
         const t: CompiledType = {
           name: outName,
           ns: schemaNS,
@@ -1103,5 +1130,6 @@ export function compileCatalog(cat: WsdlCatalog, options: CompilerOptions): Comp
     serviceName,
     wsdlUri: cat.wsdlUri,
     ...(wsdlDocs ? {wsdlDocs} : {}),
+    ...(diagnostics.notes?.length ? {diagnostics} : {}),
   };
 }

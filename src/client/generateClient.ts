@@ -64,8 +64,8 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
     const m = isValidIdent(op.name) && !reserved.has(op.name)
       ? op.name
       : `[${JSON.stringify(op.name)}]`;
-    const inTypeName = op.inputElement ? pascal(op.inputElement.local) : undefined;
-    const outTypeName = op.outputElement ? pascal(op.outputElement.local) : undefined;
+    const inTypeName = op.inputTypeName ?? (op.inputElement ? pascal(op.inputElement.local) : undefined);
+    const outTypeName = op.outputTypeName ?? (op.outputElement ? pascal(op.outputElement.local) : undefined);
     if (!inTypeName && !outTypeName) {
       warn(`Operation ${op.name} has no input or output type defined. Skipping method generation.`);
       continue;

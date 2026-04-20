@@ -8,6 +8,7 @@ These patterns are handled end-to-end: WSDL parsing, TypeScript type generation,
 
 - Complex types with `<xs:sequence>`, `<xs:all>`, and `<xs:choice>` compositors, including recursive nesting
 - Simple content with attributes using the `$value` pattern to preserve text content alongside attribute properties
+- Named simple type restrictions and enumerations emitted as TypeScript aliases and OpenAPI scalar schemas
 - Type inheritance through `<xs:extension>` and `<xs:restriction>` on both simple and complex content
 - Nested XSD imports across multiple schema files with relative and absolute URI resolution
 - Multiple namespaces with deterministic collision resolution via PascalCase uniqueness
@@ -18,6 +19,32 @@ These patterns are handled end-to-end: WSDL parsing, TypeScript type generation,
 - Circular type references detected and broken with minimal stub types
 - Multiple WSDL ports and bindings; the first SOAP binding is selected, all ports are documented in service metadata
 - SOAP 1.1 and SOAP 1.2 binding detection
+
+### Named simple types and same-name elements
+
+Named `xs:simpleType` declarations compile to TypeScript type aliases. Restriction enumerations compile to string literal unions in TypeScript and `enum` scalar schemas in OpenAPI.
+
+When a global `xs:element` has the same local name as a referenced named simple type, the generator reuses the simple type alias. It does not emit a second wrapper interface with the same TypeScript name.
+
+```xml
+<xs:simpleType name="MyEnum">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Red"/>
+    <xs:enumeration value="Green"/>
+  </xs:restriction>
+</xs:simpleType>
+<xs:element name="MyEnum" nillable="true" type="tns:MyEnum"/>
+```
+
+The generated TypeScript type is a scalar alias:
+
+```typescript
+export type MyEnum = "Red" | "Green";
+```
+
+If a message part uses `tns:MyEnum` as the operation root element, the generated client method uses `MyEnum` directly for the request or response payload type.
+
+The compiler records this reuse as an informational catalog diagnostic. CLI commands print it as a `Note:` line, not as a warning.
 
 ## Partially Supported
 

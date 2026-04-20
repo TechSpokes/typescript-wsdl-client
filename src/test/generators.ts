@@ -15,7 +15,7 @@ import type {CatalogForMocks} from "./mockData.js";
 import {detectArrayWrappers, detectChildrenTypes} from "../util/catalogMeta.js";
 
 /** Pre-computed mock data map passed from the orchestrator to all emitters. */
-export type OperationMocksMap = Map<string, { request: Record<string, unknown>; response: Record<string, unknown> }>;
+export type OperationMocksMap = Map<string, { request: unknown; response: unknown }>;
 
 function formatOperationHint(summary?: string, description?: string): string | undefined {
   const source = summary || description;

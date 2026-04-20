@@ -89,6 +89,14 @@ function isArrayWrapper(t: CompiledType): { itemType: string } | null {
   return {itemType: e.tsType};
 }
 
+function isSyntheticAliasSelfWrapper(t: CompiledType, aliasNames: Set<string>): boolean {
+  if (!aliasNames.has(t.name)) return false;
+  if (t.attrs.length !== 0) return false;
+  if (t.elems.length !== 1) return false;
+  const e = t.elems[0];
+  return e.name === "$value" && e.tsType === t.name;
+}
+
 function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Set<string>, aliasNames: Set<string>, flattenWrappers: boolean): any {
   // Use knownTypeNames/aliasNames to validate $ref targets so we surface
   // compiler issues early instead of emitting dangling references in OpenAPI output.
@@ -214,15 +222,20 @@ export function generateSchemas(compiled: CompiledCatalog, opts: GenerateSchemas
     schemas[a.name] = buildAliasSchema(a);
   }
   for (const t of compiled.types) {
+    if (isSyntheticAliasSelfWrapper(t, aliasNames)) {
+      continue;
+    }
     schemas[t.name] = buildComplexSchema(t, closed, typeNames, aliasNames, flattenWrappers);
   }
 
   if (opts.pruneUnusedSchemas) {
-    // Root references: each operation's inputElement.local, outputElement.local
+    // Root references: operation type names when available, falling back to element local names.
     const roots = new Set<string>();
     for (const op of compiled.operations) {
-      if (op.inputElement?.local) roots.add(op.inputElement.local);
-      if (op.outputElement?.local) roots.add(op.outputElement.local);
+      const inputRoot = op.inputTypeName ?? op.inputElement?.local;
+      const outputRoot = op.outputTypeName ?? op.outputElement?.local;
+      if (inputRoot) roots.add(inputRoot);
+      if (outputRoot) roots.add(outputRoot);
     }
     // BFS through $ref graph
     const reachable = new Set<string>();

@@ -87,8 +87,10 @@ export function generatePaths(compiled: CompiledCatalog, opts: GeneratePathsOpti
     const method = (override.method || opts.defaultMethod || "post").toLowerCase();
     const tag = opts.tagsMap?.[op.name] || opts.defaultTag;
 
-    const inputRef = op.inputElement?.local ? {$ref: `#/components/schemas/${op.inputElement.local}`} : {type: "object"};
-    const outputRef = op.outputElement?.local ? {$ref: `#/components/schemas/${op.outputElement.local}`} : {type: "object"};
+    const inputTypeName = op.inputTypeName ?? op.inputElement?.local;
+    const outputTypeName = op.outputTypeName ?? op.outputElement?.local;
+    const inputRef = inputTypeName ? {$ref: `#/components/schemas/${inputTypeName}`} : {type: "object"};
+    const outputRef = outputTypeName ? {$ref: `#/components/schemas/${outputTypeName}`} : {type: "object"};
 
     const parameters: any[] = [];
     // Header parameters from security builder

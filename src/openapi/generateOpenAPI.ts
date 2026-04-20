@@ -220,7 +220,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
 
   const extensionSchemas: Record<string, any> = {};
   for (const op of compiled.operations) {
-    const payloadType = op.outputElement?.local;
+    const payloadType = op.outputTypeName ?? op.outputElement?.local;
     const payloadRef = payloadType && schemas[payloadType] ? {$ref: `#/components/schemas/${payloadType}`} : {type: "object"};
     const baseForExt = payloadType || op.name;
     const extName = joinWithNamespace(baseForExt, envelopeNamespace);
@@ -252,7 +252,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
       if (!opId) continue;
       const op = compiled.operations.find(o => o.name === opId);
       if (!op) continue;
-      const payloadType = op.outputElement?.local;
+      const payloadType = op.outputTypeName ?? op.outputElement?.local;
       const baseForExt = payloadType || op.name;
       const extName = joinWithNamespace(baseForExt, envelopeNamespace);
       if ((methodObj as any).responses?.["200"]) {
