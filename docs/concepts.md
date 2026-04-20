@@ -34,12 +34,12 @@ interface Price {
 All XSD numeric and date-time types map to `string` by default. This prevents
 precision loss at the cost of convenience.
 
-| XSD Type | Default | Override Options | When to Override |
-|----------|---------|-----------------|-----------------|
-| xs:long | string | number, bigint | Use number if values fit JS range |
-| xs:integer | string | number | Use string for arbitrary-size ints |
-| xs:decimal | string | number | Use string for precise decimals |
-| xs:dateTime | string | Date | Use Date if runtime parsing is okay |
+| XSD Type      | Default  | Override Options   | When to Override                      |
+|---------------|----------|--------------------|---------------------------------------|
+| `xs:long`     | `string` | `number`, `bigint` | Use `number` if values fit JS range   |
+| `xs:integer`  | `string` | `number`           | Use `string` for arbitrary-size ints  |
+| `xs:decimal`  | `string` | `number`           | Use `string` for precise decimals     |
+| `xs:dateTime` | `string` | `Date`             | Use `Date` if runtime parsing is okay |
 
 Override with CLI flags:
 
@@ -100,7 +100,9 @@ export type MyEnum = "Red" | "Green";
 Operation methods that use `tns:MyEnum` as their root element accept and return `MyEnum` directly:
 
 ```typescript
-Echo(args: MyEnum): Promise<{ response: MyEnum; headers: unknown }>;
+interface EnumServiceOperations {
+  Echo(args: MyEnum): Promise<{ response: MyEnum; headers: unknown }>;
+}
 ```
 
 This avoids invalid duplicate declarations such as `type MyEnum` plus `interface MyEnum`. It also keeps OpenAPI request and response schemas pointed at the scalar `MyEnum` component.
@@ -167,11 +169,11 @@ OpenAPI uses operation docs for both `description` and default `summary` values.
 
 ### Catalog Locations by Command
 
-| Command | Location |
-|---------|----------|
-| client | `{client-dir}/catalog.json` |
-| openapi | `{openapi-dir}/catalog.json` |
-| pipeline | First available output directory |
+| Command    | Location                         |
+|------------|----------------------------------|
+| `client`   | `{client-dir}/catalog.json`      |
+| `openapi`  | `{openapi-dir}/catalog.json`     |
+| `pipeline` | First available output directory |
 
 ## Response Envelope
 
