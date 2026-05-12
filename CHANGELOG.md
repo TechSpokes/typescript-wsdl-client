@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.19.1] - 2026-05-12
+
+- docs(roadmap): refresh current priorities and repository health guidance for 0.19.1
+
 ## [0.19.0] - 2026-05-12
 
 - feat(security): add shared gateway and upstream SOAP security config with OpenAPI and app scaffold integration

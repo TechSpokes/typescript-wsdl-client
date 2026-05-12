@@ -2,79 +2,88 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, and Fastify gateway scaffolding.
 
-## Current: 0.17.x Series
+## Current: 0.19.x Series
 
-Focus: streaming large SOAP responses and schema-accuracy improvements while keeping buffered output byte-for-byte unchanged.
+Focus: production gateway fit, security configuration, and repository health while keeping generated output deterministic and reviewable.
 
-### Recent highlights (0.16 through 0.17)
+## Recently Shipped
 
-- Opt-in streamable SOAP responses (ADR-002): per-operation `--stream-config`, client `StreamOperationResponse<T>` with `AsyncIterable<RecordType>`, gateway NDJSON with backpressure, OpenAPI `x-wsdl-tsc-stream` extension
-- Companion-catalog shape resolution: map opaque `xs:any` wrappers to concrete record types from a second WSDL or pre-compiled catalog, with structural-equality collision checks
-- Compiler now retains `xs:any` wildcard particles on compiled types instead of silently dropping them
-- SAX-driven streaming runtime (`parseRecords`, `toNdjson`) with chunk-boundary fuzz-tested correctness
-- Same-name simple-type element reuse avoids duplicate enum declarations; compiler records diagnostic notes for modeling decisions
-- Generated mock clients yield async-iterable records for stream operations; generated happy-path tests assert NDJSON content-type and parseable records
-- `saxes ^6.0.0` promoted from devDependency to runtime dependency and pinned into generated app scaffolds
+### 0.19.0
 
-### Recent highlights (0.12 through 0.15)
+- Shared security configuration for OpenAPI gateway security and upstream SOAP runtime security
+- Generated app scaffold support for upstream `node-soap` security profiles
+- OpenAPI top-level and per-operation security output from `security.json`
+- Runtime `.env.example` and app README entries for upstream SOAP secrets
+- IDE-inspection cleanup for Markdown links, TypeScript docs snippets, and generated source templates
 
-- WSDL/XSD documentation propagation into catalog metadata, TypeScript JSDoc comments, and OpenAPI descriptions
-- OpenAPI operation summaries derived from WSDL documentation with configuration file override precedence
-- Gateway route header comments propagated from OpenAPI summaries
-- Generated Vitest test suite for gateway artifacts via `--test-dir` and `--force-test` flags
-- TypeScript 6.0 compatibility (explicit `types: ["node"]`, typed callback parameters, relative tsconfig paths)
-- Dependency updates: TypeScript 6.0.2, soap 1.8.0, fast-xml-parser 5.5.8, Vitest 4.1.0
+### 0.18.x
 
-### What we have from earlier releases
+- Dependency maintenance script for root dependencies and generated app pins
+- Refreshed generated app dependency minimums
 
-- Core WSDL/XSD parsing with proper TypeScript types
-- CLI tool (`wsdl-tsc`) with six commands: `compile`, `client`, `openapi`, `gateway`, `app`, `pipeline`
-- Programmatic API for all generation tasks
-- Complex inheritance handling (`<extension>`, `<restriction>`)
-- XML attribute marshaling with configurable keys
-- Runtime metadata for JSON to SOAP conversion
-- Choice element handling strategies
-- WS-Policy security hints in generated code
-- OpenAPI 3.1 generation with standard response envelopes
-- Full Fastify gateway generation with working handlers
-- End-to-end type safety from WSDL to HTTP response
-- TypeScript app scaffold with overwrite protection
-- Vitest test infrastructure with unit, snapshot, and integration suites
-- Client interface extraction for mockable `operations.ts`
-- Schema-type alignment cross-validation
-- `ArrayOf*` runtime unwrap with `--openapi-flatten-array-wrappers` flag
-- Optional JSON configuration files for security, tags, and per-operation overrides
+### 0.17.x
 
-### Still working on
+- Opt-in streamable SOAP responses via ADR-002
+- Client `StreamOperationResponse<T>` with `AsyncIterable<RecordType>`
+- Gateway NDJSON streaming with backpressure
+- OpenAPI `x-wsdl-tsc-stream` extension for record schema discovery
+- Companion-catalog shape resolution for opaque `xs:any` wrappers
+- SAX-driven streaming runtime and generated stream-aware tests
 
-- Edge cases in complex schema compositions
-- Documentation and positioning improvements
+## Product Priorities
 
-## Future: 1.0.x Series
+### Gateway Integration
 
-Focus: production readiness and remaining feature gaps.
+- Add documented extension points for generated app authentication, authorization, logging, and request correlation.
+- Provide examples for verifying inbound JWT, API key, and mutual TLS signals outside generated route files.
+- Clarify which gateway security settings are documentation and validation only, and which are enforced by generated code.
 
-Ideas we are considering:
+### WSDL Coverage
 
-- Watch mode for development
-- Testing utilities and mock generation for consumers
-- More WSDL edge case support (xs:union, abstract types, substitution groups)
-- Custom handler hooks and middleware extension points
-- Typed response envelopes with `Reply<T>` generics in route handlers
-- `json-array` streaming format to complement the existing `ndjson` format
-- Streaming request bodies for upload-style SOAP operations
+- Improve support for `xs:union`, abstract types, and substitution groups.
+- Expand fixture coverage for multi-binding WSDLs, out-of-band policy references, and deeply composed schemas.
+- Keep unsupported SOAP features explicit in [Supported Patterns](docs/supported-patterns.md).
+
+### Streaming
+
+- Evaluate `json-array` streaming as a complement to NDJSON.
+- Investigate streaming request bodies for upload-style SOAP operations.
+- Add more backpressure and terminal-error examples for generated gateways.
+
+### Testing Experience
+
+- Broaden generated consumer test utilities beyond the current gateway happy-path tests.
+- Add examples for mock clients with authentication, custom headers, and upstream security.
+- Keep snapshot inventory checks strict when generator output changes.
+
+## Repository Health Priorities
+
+- Add a portable documentation verification script for relative links and TypeScript fenced snippets.
+- Keep roadmap, changelog, README, CLI help, examples, and docs configuration pages aligned before each release.
+- Continue using packaged template files for generated source blocks that are too large for readable inline strings.
+- Consider a release preflight script that runs CI, dependency maintenance, generated example checks, and documentation verification.
+- Keep CI on the supported Node.js floor and periodically test the newest active Node.js version before 1.0.
+
+## 1.0 Readiness Themes
+
+- Stable CLI and programmatic API contracts
+- Documented security responsibility boundaries for generated gateways
+- Real-world WSDL fixture coverage across common enterprise schema patterns
+- Clear upgrade guidance and deprecation policy
+- Repeatable release workflow with package provenance and generated output verification
 
 ## Goals
 
 ### Technical
 
-- Support most real-world WSDL files
-- Generate clean, strict TypeScript
-- Keep runtime dependencies minimal
-- Production-ready gateway generation
-- End-to-end type safety from WSDL to HTTP response
+- Support most real-world WSDL files.
+- Generate clean, strict TypeScript.
+- Keep runtime dependencies minimal.
+- Produce production-ready gateway scaffolds.
+- Preserve end-to-end type safety from WSDL to HTTP response.
 
 ### Community
 
-- Good documentation and examples
-- Responsive to user feedback and issues
+- Provide documentation and examples that match shipped behavior.
+- Keep issues focused on reproducible bugs and discussions focused on design, adoption, and support.
+- Make roadmap items specific enough for contributors to pick up.

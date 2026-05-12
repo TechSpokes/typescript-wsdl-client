@@ -1,6 +1,6 @@
 # Contributing to TypeScript WSDL Client
 
-Thank you for your interest in contributing to `typescript-wsdl-client`. This guide covers development setup, coding standards, and the pull request process.
+Thank you for contributing to `typescript-wsdl-client`. This guide covers local setup, coding standards, testing, and release hygiene.
 
 ## Quick Start
 
@@ -24,70 +24,68 @@ npm run ci
 
 ### Development Commands
 
-| Command | Purpose |
-|---------|---------|
-| `npm run build` | Compile TypeScript to `dist/` |
-| `npm run typecheck` | Validate types without emit |
-| `npm run dev` | Run CLI with tsx (no build needed) |
-| `npm run watch` | Auto-reload during development |
-| `npm run smoke:pipeline` | Full end-to-end generation test |
+- `npm run build`: compile TypeScript to `dist/`
+- `npm run typecheck`: validate types without emit
+- `npm run dev`: run CLI with tsx
+- `npm run watch`: auto-reload during development
+- `npm run smoke:pipeline`: full end-to-end generation test
 
 ## Community and Discussions
 
 Before contributing code, consider starting a discussion:
 
-- [Feature Ideas](../../discussions/categories/ideas) for new features
-- [Questions & Help](../../discussions/categories/q-a) for questions
-- [Show and Tell](../../discussions/categories/show-and-tell) for sharing projects
-- [General](../../discussions/categories/general) for open conversations
+- [Feature Ideas](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/ideas) for new features
+- [Questions & Help](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/q-a) for questions
+- [Show and Tell](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/show-and-tell) for sharing projects
+- [General](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/general) for open conversations
 
 ## Reporting Issues
 
-Use [GitHub Issues](../../issues/new) for confirmed bugs with clear reproduction steps. Use [Discussions Q&A](../../discussions/categories/q-a) for questions. Follow our [Security Policy](./SECURITY.md) for vulnerabilities.
+Use [GitHub Issues](https://github.com/TechSpokes/typescript-wsdl-client/issues/new) for confirmed bugs with clear reproduction steps. Use [Discussions Q&A](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/q-a) for questions. Follow our [Security Policy](./SECURITY.md) for vulnerabilities.
 
 ## Code Contributions
 
 ### Types of Contributions Welcome
 
 - Bug fixes
-- Documentation: README, examples, inline comments
-- WSDL/XSD parsing: support for new schema patterns
-- Code generation: better TypeScript output, ESM/CJS handling
-- CLI improvements: new flags, better error messages
-- Test coverage: examples, edge cases, smoke tests
+- Documentation updates
+- WSDL/XSD parsing improvements
+- Code generation improvements
+- CLI improvements
+- Test coverage for examples and edge cases
 
 ### Before You Code
 
-1. Search issues and discussions for existing work
-2. Start small: bug fixes and documentation are great first contributions
-3. For new features, start a [discussion](../../discussions/categories/ideas)
+1. Search issues and discussions for existing work.
+2. Start small when possible.
+3. Start a [discussion](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/ideas) for new features.
 
 ### Coding Standards
 
-TypeScript strict mode with ESM/NodeNext modules. Node.js >= 20, no browser-specific code. Follow existing patterns, prefer explicit types. Use [Conventional Commits](https://conventionalcommits.org/) with the version prefix described below.
+TypeScript strict mode with ESM and NodeNext modules. Node.js >= 20, no browser-specific code. Follow existing patterns, prefer explicit types, and keep generated output deterministic.
 
 ### Commit Message Format
 
 ```text
 Version: 0.5.1 feat(scope): imperative summary
 
-Optional body with more details, breaking changes,
-and references like "Closes #123"
+Optional body with rationale, risks, and references like "Closes #123".
 ```
 
 Examples:
+
 - `Version: 0.5.1 fix(parser): handle empty choice elements`
 - `Version: 0.5.1 docs: add complex inheritance example`
 - `Version: 0.5.1 feat(cli): add --attribute-prefix flag`
 
 ### Pull Request Process
 
-1. Fork the repository
-2. Create a branch from `main`: `git checkout -b fix/my-bug-fix`
-3. Make changes following our standards
-4. Run `npm run ci` to test thoroughly
-5. Update docs if behavior changes (README, help text)
-6. Submit a PR with a clear description and link to related discussions or issues
+1. Fork the repository.
+2. Create a branch from `main`, for example `git checkout -b fix/my-bug-fix`.
+3. Make focused changes following repository standards.
+4. Run `npm run ci`.
+5. Update docs if behavior changes.
+6. Submit a PR with a clear description and related issue or discussion links.
 
 ## Development Guidelines
 
@@ -95,85 +93,62 @@ Examples:
 
 ```text
 src/
-├── cli.ts              # CLI entry point (wsdl-tsc binary)
-├── config.ts           # Compiler options and defaults
-├── index.ts            # Public API exports (4 functions)
-├── pipeline.ts         # Full generation pipeline orchestrator
-├── app/                # Runnable Fastify app generation
-│   └── generateApp.ts
-├── client/             # TypeScript SOAP client generation
-│   ├── generateClient.ts
-│   ├── generateTypes.ts
-│   └── generateUtils.ts
-├── compiler/           # WSDL/XSD schema compilation
-│   ├── generateCatalog.ts
-│   └── schemaCompiler.ts
-├── gateway/            # Fastify REST gateway generation
-│   ├── generateGateway.ts
-│   ├── generators.ts
-│   └── helpers.ts
-├── loader/             # WSDL document fetching and parsing
-│   ├── fetch.ts
-│   └── wsdlLoader.ts
-├── openapi/            # OpenAPI 3.1 specification generation
-│   ├── casing.ts
-│   ├── generateOpenAPI.ts
-│   ├── generatePaths.ts
-│   ├── generateSchemas.ts
-│   └── security.ts
-├── types/              # Type declarations and stubs
-│   ├── soap.d.ts
-│   └── yargs-helpers.d.ts
-├── util/               # Shared utilities
-│   ├── builder.ts      # Yargs option builders
-│   ├── cli.ts          # Console output and error handling
-│   └── tools.ts        # String helpers (pascal, kebab, QName)
-└── xsd/                # XSD type system mapping
-    └── primitives.ts
+  cli.ts              CLI entry point for the wsdl-tsc binary
+  config.ts           Compiler options and defaults
+  index.ts            Public programmatic API exports
+  pipeline.ts         Full generation pipeline orchestrator
+  app/                Runnable Fastify app generation
+  client/             TypeScript SOAP client generation
+  compiler/           WSDL/XSD schema compilation
+  gateway/            Fastify REST gateway generation
+  loader/             WSDL document fetching and parsing
+  openapi/            OpenAPI 3.1 specification generation
+  runtime/            Runtime modules and packaged templates embedded in generated output
+  test/               Generated Vitest test scaffolding
+  types/              Type declarations and stubs
+  util/               Shared utilities, config parsers, imports, errors, and runtime source loading
+  xsd/                XSD primitive type mapping
 ```
 
 ### Key Principles
 
-- Generate fully-typed code with no `any` types
-- Same WSDL must always generate the same output (deterministic)
-- ESM-first, Node.js >= 20, latest TypeScript features
-- Keep the dependency tree lean
-- CLI flags and generated code should be stable across releases
+- Generate fully typed code.
+- The same WSDL must always generate the same output.
+- Use ESM, Node.js >= 20, and strict TypeScript.
+- Keep the dependency tree lean.
+- Keep CLI flags and generated code stable across releases.
 
-### Testing Strategy
+### Generated Artifacts
+
+Do not hand-edit generated output in `client/`, `gateway/`, or `app/` directories. Update the generator or input configuration and regenerate output instead.
+
+Large generated source blocks should live in packaged runtime templates, not in unreadable inline strings.
+
+## Testing Strategy
 
 The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integration tests, plus smoke tests for end-to-end CLI validation.
 
-#### Test Commands
+### Test Commands
 
-| Command | Purpose |
-|---------|---------|
-| `npm test` | Run all Vitest tests |
-| `npm run test:unit` | Unit tests for utilities and parsers |
-| `npm run test:snap` | Snapshot tests for generated code |
-| `npm run test:integration` | Gateway handler integration tests |
-| `npm run test:watch` | Watch mode during development |
-| `npm run smoke:pipeline` | Full CLI smoke test (generate + typecheck) |
+- `npm test`: run all Vitest tests
+- `npm run test:unit`: unit tests for utilities and parsers
+- `npm run test:snap`: snapshot tests for generated code
+- `npm run test:integration`: gateway handler integration tests
+- `npm run test:watch`: watch mode during development
+- `npm run smoke:pipeline`: full CLI smoke test
 
-#### Test Structure
+### Test Structure
 
 ```text
 test/
-├── unit/                  # Pure function tests
-│   ├── tools.test.ts      # String helpers (pascal, resolveQName, etc.)
-│   ├── casing.test.ts     # Path segment casing
-│   ├── primitives.test.ts # XSD-to-TypeScript type mapping
-│   ├── errors.test.ts     # WsdlCompilationError formatting
-│   └── schema-alignment.test.ts # Cross-validates TS types, JSON schemas, catalog
-├── snapshot/              # Generated output baselines
-│   ├── pipeline.test.ts   # Snapshots for all pipeline outputs
-│   └── __snapshots__/     # Snapshot baseline files
-├── integration/           # End-to-end gateway tests
-│   └── gateway-routes.test.ts # Fastify inject() with mock client
-└── helpers/               # Shared test utilities
+  unit/                  Pure function tests
+  snapshot/              Generated output baselines
+  integration/           Gateway, streaming, and generated-test integration tests
+  research/              Exploratory probes kept out of the default test suite
+  helpers/               Shared test utilities
 ```
 
-#### Updating Snapshots
+### Updating Snapshots
 
 When a generator change intentionally alters output:
 
@@ -181,38 +156,42 @@ When a generator change intentionally alters output:
 npx vitest run test/snapshot -u
 ```
 
-Review the snapshot diff before committing. Every file in the generated output has a corresponding snapshot; adding or removing a generated file will also be caught by the file inventory snapshot.
+Review the snapshot diff before committing. The snapshot suite also checks the generated file inventory.
 
-#### Smoke Tests
+### Smoke Tests
 
 Smoke tests generate output to `tmp/` from `examples/minimal/weather.wsdl`, then typecheck with `tsc -p tsconfig.smoke.json`.
 
-| Command | What It Tests |
-|---------|---------------|
-| `npm run smoke:compile` | WSDL parsing and catalog generation |
-| `npm run smoke:client` | TypeScript client generation + typecheck |
-| `npm run smoke:openapi` | OpenAPI 3.1 spec generation + typecheck |
-| `npm run smoke:gateway` | Client + OpenAPI + gateway generation + typecheck |
-| `npm run smoke:pipeline` | Full pipeline (client + OpenAPI + gateway + app) + typecheck |
-| `npm run smoke:app` | Pipeline + standalone app generation + typecheck |
+- `npm run smoke:compile`: WSDL parsing and catalog generation
+- `npm run smoke:client`: TypeScript client generation and typecheck
+- `npm run smoke:openapi`: OpenAPI 3.1 generation and typecheck
+- `npm run smoke:gateway`: client, OpenAPI, and gateway generation
+- `npm run smoke:pipeline`: full pipeline with app scaffold and typecheck
+- `npm run smoke:app`: standalone app generation and typecheck
 
-The `tsconfig.smoke.json` extends the main `tsconfig.json` but includes `tmp/**/*.ts` in its scope. It maps the `soap` import to `src/types/soap.d.ts` (local type stubs) so generated client code compiles without the soap runtime.
+The `tsconfig.smoke.json` file extends the main `tsconfig.json` and includes `tmp/**/*.ts`. It maps `soap` to local type stubs so generated client code compiles without a live SOAP runtime.
 
-The gateway also generates a `_typecheck.ts` fixture that catches plugin-client type divergence at build time.
+### CI Pipeline
 
-#### CI Pipeline
+`npm run ci` runs clean, build, typecheck, Vitest, and the smoke pipeline.
 
-`npm run ci` runs: clean, build, typecheck, vitest, smoke:pipeline.
+This verifies the source compiles, tests pass, the CLI works, generated output compiles, and type contracts stay aligned.
 
-This verifies the complete stack: the source compiles, the tests pass, the CLI works, the generated output compiles, and all types are consistent.
+## Repository Health Checks
 
-#### Adding Test Fixtures
+Before a release, run `npm run ci` and review the roadmap, changelog, README, CLI help, examples, and configuration docs for drift.
 
-1. Add the `.wsdl` file to `examples/`
-2. Add a corresponding smoke test script to `package.json`
-3. Include the generated output path in `tsconfig.smoke.json` if needed
+Run `npm run maint:deps` when preparing a release so root dependency minimums and generated app pins stay aligned.
 
-See [Testing Guide](docs/testing.md) for detailed patterns including integration test architecture and mock client examples.
+When an IDE inspection tool is available, run it on touched Markdown files and generator files that embed generated source. Without IDE inspections, verify relative Markdown links target concrete files or headings and keep TypeScript fenced examples syntactically valid.
+
+## Adding Test Fixtures
+
+1. Add the `.wsdl` file to `examples/`.
+2. Add a corresponding smoke test script to `package.json` if needed.
+3. Include the generated output path in `tsconfig.smoke.json` if needed.
+
+See [Testing Guide](docs/testing.md) for integration test architecture and mock client examples.
 
 ## Community Guidelines
 
@@ -222,9 +201,8 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 
 ### Getting Help
 
-- [Discussions Q&A](../../discussions/categories/q-a) for questions
-- Check if maintainers are available in discussions for real-time help
-- [TechSpokes](https://www.techspokes.com) offers commercial support
+- [Discussions Q&A](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/q-a) for questions
+- [TechSpokes](https://www.techspokes.com) for commercial support
 
 ## Project Priorities
 
@@ -233,5 +211,3 @@ See [ROADMAP.md](./ROADMAP.md) for current priorities and planned features.
 ## Recognition
 
 Contributors are recognized in git commit history and GitHub contributors. Significant contributions are added to the `package.json` contributors field. Major features receive special mention in release notes.
-
-Questions? Start a [discussion](../../discussions) or reach out to the maintainers.
