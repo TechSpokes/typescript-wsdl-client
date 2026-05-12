@@ -204,7 +204,7 @@ Examples:
 2. Determine semver bump (patch/minor/major) based on `Unreleased` changes.
 3. Update `"version"` in `package.json` and `package-lock.json` to the new release version.
 4. In `CHANGELOG.md`: promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date) and start a fresh, empty `## [Unreleased]` section at the top.
-5. Bump hardcoded dependency versions in `src/app/generateApp.ts` (the `generatePackageJson` function) to current latest. The generated app scaffold ships these versions to end users; stale minimums deliver outdated code with potential security issues out of the box. Check latest with `npm view <pkg> version` for: fastify, fastify-plugin, soap, tsx, typescript.
+5. Run `npm run maint:deps` to update dependency minimums, lockfile entries, and app scaffold pins.
 6. Run `npm run ci` to verify the release. This runs build, typecheck, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
 
 ### Updating the CHANGELOG
@@ -230,7 +230,7 @@ Examples:
 - Bump the version in `package.json` and `package-lock.json`.
 - Promote `Unreleased` to a dated section `## [x.y.z] - YYYY-MM-DD`.
 - Insert a new empty `## [Unreleased]` at the top.
-- Bump hardcoded dep versions in `src/app/generateApp.ts`.
+- Run `npm run maint:deps` to update dependency minimums and generated app scaffold pins.
 - Run `npm run ci` to verify (build, typecheck, Vitest tests, smoke pipeline).
 
 ### Editing code that affects CLI, OpenAPI, or gateway

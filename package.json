@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Turn legacy WSDL/SOAP services into typed TypeScript clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways. Built for enterprise SOAP modernization.",
   "keywords": [
     "wsdl",
@@ -77,23 +77,24 @@
     "smoke:gateway": "npm run smoke:reset && tsx src/cli.ts client --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client && tsx src/cli.ts openapi --catalog-file tmp/client/catalog.json --openapi-file tmp/openapi.json --openapi-format json && tsx src/cli.ts gateway --openapi-file tmp/openapi.json --client-dir tmp/client --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 && tsc -p tsconfig.smoke.json",
     "smoke:pipeline": "npm run smoke:reset && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --openapi-file tmp/openapi.json --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --init-app && tsc -p tsconfig.smoke.json",
     "smoke:app": "npm run smoke:reset && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --openapi-file tmp/openapi.json --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --openapi-servers https://example.com/api && tsx src/cli.ts app --client-dir tmp/client --gateway-dir tmp/gateway --openapi-file tmp/openapi.json --app-dir tmp/app --port 8080 && tsc -p tsconfig.smoke.json",
+    "maint:deps": "node scripts/maint-deps.mjs",
     "ci": "npm run clean && npm run build && npm run typecheck && vitest run && npm run smoke:pipeline",
     "examples:regenerate": "tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir examples/generated-output/client --openapi-file examples/generated-output/openapi.json --gateway-dir examples/generated-output/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.7.0",
     "@types/yargs": "^17.0.35",
     "fastify": "^5.8.5",
     "fastify-plugin": "^5.1.0",
     "rimraf": "^6.1.3",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.6"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
-    "fast-xml-parser": "^5.7.1",
+    "fast-xml-parser": "^5.8.0",
     "js-yaml": "^4.1.1",
     "saxes": "^6.0.0",
     "soap": "^1.9.1",

@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-05-12
+
+- chore(deps): add `npm run maint:deps` for root and generated app dependency maintenance
+- chore(deps): bump root and generated app dependency minimums to current latest versions
+
 ## [0.17.0] - 2026-04-20
 
 - feat(stream): opt-in streamable SOAP responses via `--stream-config` (ADR-002) — client emits `StreamOperationResponse<T>` with an async-iterable `records` field, OpenAPI declares `application/x-ndjson` with `x-wsdl-tsc-stream` item schema, Fastify gateway serves NDJSON with backpressure
