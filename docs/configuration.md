@@ -8,28 +8,43 @@ See [CLI Reference](cli-reference.md) for flag details and [README](../README.md
 
 Pass via `--openapi-security-config-file`.
 
-Defines security schemes, headers, and per-operation overrides.
+Defines REST gateway security, request headers, and upstream SOAP security. The `gateway` section describes the generated REST API in OpenAPI and adds Fastify header validation. The `upstream` section is used by the generated app scaffold to build `node-soap` runtime options from environment variables.
 
 ```json
 {
-  "global": {
-    "scheme": "bearer",
-    "bearer": { "bearerFormat": "JWT" },
-    "headers": [
-      {
-        "name": "X-Correlation-Id",
-        "required": false,
-        "schema": { "type": "string" }
-      }
-    ]
+  "gateway": {
+    "global": {
+      "scheme": "bearer",
+      "bearer": { "bearerFormat": "JWT" },
+      "headers": [
+        {
+          "name": "X-Correlation-Id",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ]
+    },
+    "operations": {
+      "CancelBooking": { "scheme": "apiKey" },
+      "HealthCheck": { "scheme": "none" }
+    }
   },
-  "overrides": {
-    "CancelBooking": { "scheme": "apiKey" }
+  "upstream": {
+    "profile": "ws-security-username-token",
+    "usernameEnv": "SOAP_USERNAME",
+    "passwordEnv": "SOAP_PASSWORD",
+    "endpointEnv": "SOAP_ENDPOINT"
   }
 }
 ```
 
-Supported schemes: none, basic, bearer, apiKey, oauth2.
+Gateway schemes: none, basic, bearer, apiKey, oauth2, mutualTLS, openIdConnect.
+
+Upstream SOAP profiles: none, basic, bearer, ws-security-username-token, client-ssl, client-ssl-pfx, x509, ntlm, custom.
+
+The older OpenAPI-only shape with top-level `global` and `overrides` is still accepted. New projects should use `gateway.global` and `gateway.operations`.
+
+The generated app scaffold reads upstream secrets from environment variables. It does not embed secret values in generated source and does not implement production JWT, OAuth, or API-key verification for inbound gateway requests. Add that verification in app hooks or your platform gateway.
 
 ## Tags Configuration
 
@@ -107,8 +122,8 @@ terminal-error policy.
 
 ## Example Files
 
-Example configuration files are available in the `examples/openapi/` directory:
+Example configuration files are available in the `examples/config/` directory:
 
-- `examples/openapi/security.json` for security scheme configuration
-- `examples/openapi/tags.json` for tag mapping
-- `examples/openapi/ops.json` for operation overrides
+- `examples/config/security.json` for gateway and upstream security configuration
+- `examples/config/tags.json` for tag mapping
+- `examples/config/ops.json` for operation overrides

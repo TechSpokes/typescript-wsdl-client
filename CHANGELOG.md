@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-05-12
+
+- feat(security): add shared gateway and upstream SOAP security config with OpenAPI and app scaffold integration
+- fix(docs): make Markdown links and TypeScript snippets resolve cleanly under IDE inspections
+
 ## [0.18.0] - 2026-05-12
 
 - chore(deps): add `npm run maint:deps` for root and generated app dependency maintenance

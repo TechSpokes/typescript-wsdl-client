@@ -159,6 +159,12 @@ Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `bu
 - Use one command per line, no `&&` chaining (PowerShell-friendly).
 - Prefer `npm run <script>` and `npx wsdl-tsc` patterns consistent with README and `package.json`.
 
+### File verification
+
+- When an IDE inspection tool is available, run it on touched Markdown files and source files that embed generated code.
+- When IDE inspections are unavailable, use repository-local checks: verify relative Markdown links target concrete files or headings, and keep TypeScript fenced examples syntactically valid as standalone snippets.
+- When embedding generated source code inside TypeScript, prefer template helpers, string builders, or packaged template files over large raw template literals that IDEs may inspect as incomplete injected code.
+
 ## How to Propose and Shape Changes
 
 - Prefer small, focused diffs: one feature or bugfix per change.

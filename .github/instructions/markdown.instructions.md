@@ -102,6 +102,17 @@ Code examples should be unambiguous to parsers and easy to copy. Keep them minim
 - Always specify a language identifier on fenced code blocks.
 - Keep examples minimal. Use the shortest code that demonstrates the point.
 - Show commands the reader should run, not terminal session transcripts.
+- Use `declare` for signature-only TypeScript examples, or use a non-TypeScript fence for pseudo-code.
+
+## Links
+
+### Rules for relative links
+
+Relative links must resolve for IDEs, Markdown processors, and repository browsers.
+
+- Link to concrete files, headings, or URLs.
+- Avoid bare directory links unless the directory target is intentionally browsable in every supported reader.
+- Prefer the directory's `README.md` when a directory is documented by an index file.
 
 ## Tables
 

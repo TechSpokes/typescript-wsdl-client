@@ -53,7 +53,7 @@ generateClient.ts emits the client class with one method per operation. generate
 
 ### openapi/
 
-generateOpenAPI.ts orchestrates the complete OpenAPI document. generateSchemas.ts converts compiled types to JSON Schema. generatePaths.ts generates path items from operations. security.ts processes security configuration files. casing.ts handles path style transformation.
+generateOpenAPI.ts orchestrates the complete OpenAPI document. generateSchemas.ts converts compiled types to JSON Schema. generatePaths.ts generates path items from operations. security.ts adapts the shared security configuration model for OpenAPI. casing.ts handles path style transformation.
 
 ### gateway/
 

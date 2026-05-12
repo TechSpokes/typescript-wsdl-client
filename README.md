@@ -211,7 +211,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |-------|-------------|
 | [CLI Reference](docs/cli-reference.md) | All commands with flags and examples |
 | [Working With Generated Code](docs/generated-code.md) | Using clients, types, and operations |
-| [Configuration](docs/configuration.md) | Security schemes, tags, operation overrides |
+| [Configuration](docs/configuration.md) | Gateway security, upstream SOAP security, tags, operation overrides |
 | [Migration Playbook](docs/migration-playbook.md) | End-to-end SOAP modernization guide |
 
 ### Operate

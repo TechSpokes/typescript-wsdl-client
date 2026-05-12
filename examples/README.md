@@ -4,14 +4,12 @@ Sample files, configuration, and generated output for `@techspokes/typescript-ws
 
 ## Directory Contents
 
-| Directory | Description |
-|-----------|-------------|
-| [minimal/](minimal/) | Source WSDL file used for smoke tests and examples |
-| [generated-output/](generated-output/) | Pre-generated output from weather.wsdl for inspection |
-| [config/](config/) | Configuration file examples for OpenAPI generation |
-| [typescript-project/](typescript-project/) | Minimal TypeScript project using the generated client |
-| [fastify-gateway/](fastify-gateway/) | Multi-service Fastify gateway setup |
-| [ci-cd/](ci-cd/) | CI/CD integration with GitHub Actions and shell scripts |
+- [minimal/weather.wsdl](minimal/weather.wsdl): source WSDL file used for smoke tests and examples
+- [generated-output](generated-output/README.md): pre-generated output from weather.wsdl for inspection
+- [config](config/README.md): configuration file examples for OpenAPI generation
+- [typescript-project](typescript-project/README.md): minimal TypeScript project using the generated client
+- [fastify-gateway](fastify-gateway/README.md): multi-service Fastify gateway setup
+- [ci-cd](ci-cd/README.md): CI/CD integration with GitHub Actions and shell scripts
 
 ## Generated Output
 
@@ -35,13 +33,13 @@ To regenerate from the repository root:
 npm run examples:regenerate
 ```
 
-> **Note:** `examples:regenerate` intentionally omits `--init-app`. The app scaffold generates files with relative import paths and WSDL source paths tied to the output location — they are one-time scaffolds meant to be customized, not stable reference output. Use `--init-app` in your own projects instead (see [Using a Remote WSDL](#using-a-remote-wsdl) below).
+Note: `examples:regenerate` intentionally omits `--init-app`. The app scaffold generates files with relative import paths and WSDL source paths tied to the output location; they are one-time scaffolds meant to be customized, not stable reference output. Use `--init-app` in your own projects instead (see [Using a Remote WSDL](#using-a-remote-wsdl) below).
 
 ## Configuration Files
 
 The `config/` directory contains example configuration files:
 
-- `security.json` for security scheme configuration (pass via `--openapi-security-file`)
+- `security.json` for gateway and upstream security configuration (pass via `--openapi-security-config-file`)
 - `tags.json` for operation-to-tag mapping (pass via `--openapi-tags-file`)
 - `ops.json` for per-operation overrides (pass via `--openapi-ops-file`)
 

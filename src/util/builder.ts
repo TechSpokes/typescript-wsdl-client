@@ -54,7 +54,7 @@ export function buildOpenApiOptionsFromArgv(
     opsFile: argv["openapi-ops-file"] as string | undefined,
     pathStyle: argv["openapi-path-style"],
     pruneUnusedSchemas: argv["openapi-prune-unused-schemas"] as boolean,
-    securityConfigFile: argv["openapi-security-file"] as string | undefined,
+    securityConfigFile: (argv["openapi-security-config-file"] || argv["openapi-security-file"]) as string | undefined,
     servers,
     skipValidate: false, // Always validate
     tagStyle: argv["openapi-tag-style"],
@@ -65,4 +65,3 @@ export function buildOpenApiOptionsFromArgv(
     asYaml: format === "yaml",
   };
 }
-

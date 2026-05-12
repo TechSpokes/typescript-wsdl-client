@@ -12,7 +12,7 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 
 - [cli-reference.md](cli-reference.md): all 6 commands with flags and examples
 - [generated-code.md](generated-code.md): using clients, types, and operations
-- [configuration.md](configuration.md): security schemes, tags, operations config files
+- [configuration.md](configuration.md): gateway security, upstream SOAP security, tags, operations config files
 - [migration-playbook.md](migration-playbook.md): end-to-end SOAP modernization guide
 
 ## Operate
@@ -42,7 +42,7 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 - [Root README](../README.md): project overview, quick start, and authoritative Documentation section
 - [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow
 - [CHANGELOG.md](../CHANGELOG.md): version history
-- [examples/](../examples/): sample WSDL files and generated output
+- [examples](../examples/README.md): sample WSDL files and generated output
 
 ## Not Here
 

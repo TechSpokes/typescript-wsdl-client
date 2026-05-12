@@ -1,12 +1,12 @@
 # Configuration Examples
 
-Example configuration files for customizing OpenAPI generation.
+Example configuration files for customizing OpenAPI generation and the generated app scaffold.
 
 ## Files
 
 | File | CLI Flag | Purpose |
 |------|----------|---------|
-| `security.json` | `--openapi-security-file` | Define security schemes and global headers |
+| `security.json` | `--openapi-security-config-file` | Define gateway security and upstream SOAP security |
 | `tags.json` | `--openapi-tags-file` | Map operations to OpenAPI tags |
 | `ops.json` | `--openapi-ops-file` | Per-operation overrides (method, summary, description) |
 
@@ -22,7 +22,7 @@ npx wsdl-tsc pipeline \
   --gateway-dir ./generated/gateway \
   --gateway-service-name my-service \
   --gateway-version-prefix v1 \
-  --openapi-security-file ./config/security.json \
+  --openapi-security-config-file ./config/security.json \
   --openapi-tags-file ./config/tags.json \
   --openapi-ops-file ./config/ops.json
 ```

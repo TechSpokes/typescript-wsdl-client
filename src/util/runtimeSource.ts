@@ -41,3 +41,8 @@ export function loadRuntimeSource(filename: string): string {
   const raw = fs.readFileSync(abs, "utf-8");
   return HEADER(filename) + "\n" + raw;
 }
+
+export function loadRuntimeTemplate(filename: string): string {
+  const abs = resolveRuntimeSourcePath(filename);
+  return fs.readFileSync(abs, "utf-8");
+}

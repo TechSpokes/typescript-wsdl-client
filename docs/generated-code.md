@@ -18,6 +18,13 @@ const client = new Weather({
 
 The `source` parameter accepts a URL or local file path to the WSDL.
 
+When generating a runnable app with a security config, the scaffold can create
+`security.ts` to build `soap.IOptions` and `soap.ISecurity` from environment
+variables. The generated helper supports common `node-soap` profiles such as
+Basic auth, bearer auth, WS-Security UsernameToken, TLS client certificates,
+X509 signing, and NTLM. Secrets are read at runtime and are not embedded in
+generated source.
+
 ## Calling Operations
 
 ```typescript

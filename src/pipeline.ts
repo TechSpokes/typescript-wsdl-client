@@ -58,6 +58,7 @@ export interface PipelineOptions {
     host?: string;
     port?: number;
     prefix?: string;
+    securityConfigFile?: string;
   };
   test?: {
     testDir: string;
@@ -228,6 +229,7 @@ export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ co
       host: opts.app.host,
       port: opts.app.port,
       prefix: opts.app.prefix,
+      securityConfigFile: opts.app.securityConfigFile,
     });
   }
 

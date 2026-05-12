@@ -27,6 +27,8 @@ import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
 import {info, success} from "../util/cli.js";
 import {computeRelativeImport} from "../util/imports.js";
+import {loadRuntimeTemplate} from "../util/runtimeSource.js";
+import {hasUpstreamRuntimeSecurity, loadSecurityConfigFile, type SecurityConfig} from "../util/securityConfig.js";
 
 /**
  * Options for app generation
@@ -58,6 +60,7 @@ export interface GenerateAppOptions {
   logger?: boolean;
   openapiMode?: "copy" | "reference";
   force?: boolean;
+  securityConfigFile?: string;
 }
 
 /**
@@ -72,6 +75,7 @@ function validateRequiredFiles(opts: GenerateAppOptions): void {
     {path: opts.gatewayDir, type: "directory", label: "Gateway directory"},
     {path: opts.catalogFile, type: "file", label: "Catalog file"},
     {path: opts.openapiFile, type: "file", label: "OpenAPI file"},
+    ...(opts.securityConfigFile ? [{path: opts.securityConfigFile, type: "file", label: "Security config file"}] : []),
   ];
 
   for (const check of checks) {
@@ -209,6 +213,21 @@ function generateServerFile(
   const configImport = computeRelativeImport(appDir, path.join(appDir, "config"), imports);
   const gatewayPluginImport = computeRelativeImport(appDir, path.join(opts.gatewayDir, "plugin"), imports);
   const clientImport = computeRelativeImport(appDir, path.join(opts.clientDir, "client"), imports);
+  const securityCfg = loadOptionalSecurityConfig(opts.securityConfigFile);
+  const emitSecurity = hasUpstreamRuntimeSecurity(securityCfg);
+  const securityImport = emitSecurity
+    ? `import { buildSoapRuntimeConfig } from "${computeRelativeImport(appDir, path.join(appDir, "security"), imports)}";\n`
+    : "";
+  const clientConstruction = emitSecurity
+    ? `  const soapRuntime = buildSoapRuntimeConfig();
+  const client = new ${clientClassName}({
+    source: config.wsdlSource,
+    options: soapRuntime.options,
+    security: soapRuntime.security,
+  });`
+    : `  const client = new ${clientClassName}({
+    source: config.wsdlSource,
+  });`;
 
   // For OpenAPI serving, we need to read and parse the file at startup in ESM mode
   const openapiServeLogic = opts.openapiMode === "copy"
@@ -260,6 +279,7 @@ import Fastify from "fastify";
 import { loadConfig } from "${configImport}";
 import gatewayPlugin from "${gatewayPluginImport}";
 import { ${clientClassName} } from "${clientImport}";
+${securityImport}
 
 // ES module dirname/filename helpers
 const __filename = fileURLToPath(import.meta.url);
@@ -278,9 +298,7 @@ async function main() {
   });
 
   // Instantiate SOAP client
-  const client = new ${clientClassName}({
-    source: config.wsdlSource,
-  });
+${clientConstruction}
 
   // Register gateway plugin
   await fastify.register(gatewayPlugin, {
@@ -429,6 +447,31 @@ export function loadConfig(): AppConfig {
   fs.writeFileSync(filePath, content, "utf-8");
 }
 
+function loadOptionalSecurityConfig(filePath: string | undefined): SecurityConfig | undefined {
+  return filePath ? loadSecurityConfigFile(filePath) : undefined;
+}
+
+function collectSecurityEnvVars(cfg: SecurityConfig | undefined): string[] {
+  const upstream = cfg?.upstream;
+  if (!upstream) return [];
+  const names = [
+    upstream.usernameEnv,
+    upstream.passwordEnv,
+    upstream.tokenEnv,
+    upstream.domainEnv,
+    upstream.workstationEnv,
+    upstream.keyFileEnv,
+    upstream.certFileEnv,
+    upstream.caFileEnv,
+    upstream.pfxFileEnv,
+    upstream.passphraseEnv,
+    upstream.endpointEnv,
+    ...Object.values(upstream.wsdlHeaderEnv || {}),
+    ...Object.values(upstream.requestHeaderEnv || {}),
+  ].filter((v): v is string => typeof v === "string" && v.length > 0);
+  return Array.from(new Set(names)).sort((a, b) => a.localeCompare(b));
+}
+
 /**
  * Generates .env.example file
  *
@@ -452,6 +495,8 @@ function generateEnvExample(
   const defaultPort = opts.port || 3000;
   const defaultPrefix = opts.prefix || "";
   const defaultLogger = opts.logger !== false;
+  const securityCfg = loadOptionalSecurityConfig(opts.securityConfigFile);
+  const securityEnv = collectSecurityEnvVars(securityCfg);
 
   // Resolve WSDL source relative to app directory
   const resolvedWsdlSource = defaultWsdlSource
@@ -495,11 +540,31 @@ LOGGER=${defaultLogger}
 # Override OpenAPI spec server URL at runtime (default: use generation-time value)
 #OPENAPI_SERVER_URL=http://localhost:${defaultPort}
 
-# Optional: SOAP security settings (configure based on your client requirements)
+${securityEnv.length
+    ? `# Upstream SOAP security values referenced by security.json
+${securityEnv.map(name => `${name}=`).join("\n")}`
+    : `# Optional: SOAP security settings (configure based on your client requirements)
 # SOAP_USERNAME=
 # SOAP_PASSWORD=
-# SOAP_ENDPOINT=
+# SOAP_ENDPOINT=`}
 `;
+
+  fs.writeFileSync(filePath, content, "utf-8");
+}
+
+function generateSecurityFile(
+  appDir: string,
+  opts: GenerateAppOptions,
+  force: boolean
+): void {
+  const securityCfg = loadOptionalSecurityConfig(opts.securityConfigFile);
+  if (!hasUpstreamRuntimeSecurity(securityCfg)) return;
+
+  const filePath = path.join(appDir, `security${getAppFileExtension()}`);
+  if (!shouldWriteScaffoldFile(filePath, force)) return;
+
+  const upstreamJson = JSON.stringify(securityCfg?.upstream ?? {}, null, 2);
+  const content = loadRuntimeTemplate("appSecurity.tpl.txt").replace("__UPSTREAM_JSON__", upstreamJson);
 
   fs.writeFileSync(filePath, content, "utf-8");
 }
@@ -589,6 +654,13 @@ function generateReadme(appDir: string, opts: GenerateAppOptions, force: boolean
   const filePath = path.join(appDir, "README.md");
 
   if (!shouldWriteScaffoldFile(filePath, force)) return;
+  const securityCfg = loadOptionalSecurityConfig(opts.securityConfigFile);
+  const securityStructureRow = hasUpstreamRuntimeSecurity(securityCfg)
+    ? "- `security.ts` - Upstream SOAP security factory\n"
+    : "";
+  const securityConfigRows = collectSecurityEnvVars(securityCfg)
+    .map(name => `| \`${name}\` | (required when configured) | Upstream SOAP security value |`)
+    .join("\n");
 
   const content = `# Generated Fastify Application
 
@@ -607,7 +679,7 @@ npm start
 
 - \`server.ts\` - Main application entry point
 - \`config.ts\` - Configuration loader (environment-based)
-- \`package.json\` - Dependencies and scripts
+${securityStructureRow}- \`package.json\` - Dependencies and scripts
 - \`tsconfig.json\` - TypeScript configuration
 - \`.env.example\` - Example environment configuration
 - \`openapi.json\` - OpenAPI specification${opts.openapiMode === "copy" ? " (copied)" : " (referenced)"}
@@ -630,6 +702,7 @@ npm start
 | \`PREFIX\` | (empty) | Route prefix |
 | \`LOGGER\` | ${opts.logger !== false} | Enable Fastify logger |
 | \`OPENAPI_SERVER_URL\` | (empty) | Override OpenAPI spec server URL at runtime |
+${securityConfigRows ? `${securityConfigRows}\n` : ""}
 
 ## Development
 
@@ -677,6 +750,7 @@ export async function generateApp(opts: GenerateAppOptions): Promise<void> {
     openapiFile: path.resolve(opts.openapiFile),
     catalogFile: path.resolve(opts.catalogFile),
     appDir: path.resolve(opts.appDir),
+    securityConfigFile: opts.securityConfigFile ? path.resolve(opts.securityConfigFile) : undefined,
   };
 
   const force = resolvedOpts.force ?? false;
@@ -695,6 +769,7 @@ export async function generateApp(opts: GenerateAppOptions): Promise<void> {
   // Generate scaffold files (each checks for existing files unless force is set)
   generateServerFile(resolvedOpts.appDir, resolvedOpts, clientClassName, force);
   generateConfigFile(resolvedOpts.appDir, resolvedOpts, defaultWsdlSource, force);
+  generateSecurityFile(resolvedOpts.appDir, resolvedOpts, force);
   generatePackageJson(resolvedOpts.appDir, force);
   generateTsConfig(resolvedOpts.appDir, resolvedOpts, force);
   generateEnvExample(resolvedOpts.appDir, resolvedOpts, defaultWsdlSource, force);

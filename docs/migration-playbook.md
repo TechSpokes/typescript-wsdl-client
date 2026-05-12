@@ -126,9 +126,16 @@ Create a security configuration file to add authentication to the OpenAPI spec a
 
 ```json
 {
-  "global": {
-    "scheme": "bearer",
-    "bearer": { "bearerFormat": "JWT" }
+  "gateway": {
+    "global": {
+      "scheme": "bearer",
+      "bearer": { "bearerFormat": "JWT" }
+    }
+  },
+  "upstream": {
+    "profile": "ws-security-username-token",
+    "usernameEnv": "SOAP_USERNAME",
+    "passwordEnv": "SOAP_PASSWORD"
   }
 }
 ```
@@ -142,11 +149,13 @@ npx wsdl-tsc pipeline \
   ...
 ```
 
-See [Configuration](configuration.md) for all options including per-operation overrides and custom headers.
+See [Configuration](configuration.md) for all options including per-operation overrides, custom headers, and upstream SOAP security profiles.
 
 ### Custom middleware
 
-Add middleware in your application code, not in the generated gateway files. The generated app scaffold (`index.ts`) is the right place for auth verification, logging, CORS, and other cross-cutting concerns.
+Add middleware in your application code, not in the generated gateway files. The generated app scaffold (`server.ts`) is the right place for auth verification, logging, CORS, and other cross-cutting concerns.
+
+The security config describes gateway authentication in OpenAPI and can scaffold upstream SOAP credentials for `node-soap`. It does not validate JWTs, OAuth tokens, or API keys for inbound REST requests. Use Fastify hooks, platform middleware, or your API gateway for that enforcement.
 
 ```typescript
 import Fastify from "fastify";

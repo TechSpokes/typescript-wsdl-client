@@ -1,10 +1,14 @@
 {
-  "global": {
-    "scheme": "none",
-    "headers": [
-      { "name": "X-Correlation-Id", "required": false, "schema": { "type": "string" } }
-    ]
+  "gateway": {
+    "global": {
+      "scheme": "none",
+      "headers": [
+        { "name": "X-Correlation-Id", "required": false, "schema": { "type": "string" } }
+      ]
+    },
+    "operations": {}
   },
-  "overrides": {}
+  "upstream": {
+    "profile": "none"
+  }
 }
-

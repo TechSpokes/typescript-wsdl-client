@@ -352,6 +352,9 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
     paths: sortedPaths,
     components,
   };
+  if (securityBuilt.globalSecurity) {
+    doc.security = securityBuilt.globalSecurity;
+  }
   if (opts.description) doc.info.description = opts.description;
   if (opts.servers && opts.servers.length) {
     doc.servers = opts.servers.map(u => ({url: u}));

@@ -1,0 +1,108 @@
+/**
+ * Upstream SOAP Security
+ *
+ * Builds node-soap runtime options from environment variables referenced by
+ * the generation-time security config. Secrets are intentionally read at
+ * runtime and are never embedded in generated source.
+ *
+ * Scaffolded by wsdl-tsc. Customize freely.
+ */
+import fs from "node:fs";
+import soap from "soap";
+
+const upstream: any = __UPSTREAM_JSON__;
+
+export interface SoapRuntimeConfig {
+  options?: soap.IOptions;
+  security?: soap.ISecurity;
+}
+
+export function buildSoapRuntimeConfig(): SoapRuntimeConfig {
+  const options: soap.IOptions = {};
+  const wsdlHeaders = buildHeaders(upstream.wsdlHeaders, upstream.wsdlHeaderEnv);
+  if (Object.keys(wsdlHeaders).length) {
+    options.wsdl_headers = wsdlHeaders;
+  }
+  const requestHeaders = buildHeaders(upstream.requestHeaders, upstream.requestHeaderEnv);
+  if (Object.keys(requestHeaders).length) {
+    options.extraHeaders = requestHeaders;
+  }
+  if (upstream.endpointEnv) {
+    const endpoint = process.env[upstream.endpointEnv];
+    if (endpoint) options.endpoint = endpoint;
+  }
+
+  const security = buildSoapSecurity();
+  return {
+    ...(Object.keys(options).length ? { options } : {}),
+    ...(security ? { security } : {}),
+  };
+}
+
+function buildSoapSecurity(): soap.ISecurity | undefined {
+  const soapRuntime = soap as any;
+  switch (upstream.profile ?? "none") {
+    case "none":
+      return undefined;
+    case "basic":
+      return new soapRuntime.BasicAuthSecurity(requiredEnv(upstream.usernameEnv, "upstream.usernameEnv"), requiredEnv(upstream.passwordEnv, "upstream.passwordEnv"));
+    case "bearer":
+      return new soapRuntime.BearerSecurity(requiredEnv(upstream.tokenEnv, "upstream.tokenEnv"));
+    case "ws-security-username-token":
+      return new soapRuntime.WSSecurity(
+        requiredEnv(upstream.usernameEnv, "upstream.usernameEnv"),
+        requiredEnv(upstream.passwordEnv, "upstream.passwordEnv"),
+        upstream.wsSecurity ?? {},
+      );
+    case "ntlm":
+      return new soapRuntime.NTLMSecurity({
+        username: requiredEnv(upstream.usernameEnv, "upstream.usernameEnv"),
+        password: requiredEnv(upstream.passwordEnv, "upstream.passwordEnv"),
+        domain: envValue(upstream.domainEnv),
+        workstation: envValue(upstream.workstationEnv),
+      });
+    case "client-ssl":
+      return new soapRuntime.ClientSSLSecurity(
+        readFileFromEnv(upstream.keyFileEnv, "upstream.keyFileEnv"),
+        readFileFromEnv(upstream.certFileEnv, "upstream.certFileEnv"),
+        upstream.caFileEnv ? readFileFromEnv(upstream.caFileEnv, "upstream.caFileEnv") : undefined,
+      );
+    case "client-ssl-pfx":
+      return new soapRuntime.ClientSSLSecurityPFX(
+        readFileFromEnv(upstream.pfxFileEnv, "upstream.pfxFileEnv"),
+        envValue(upstream.passphraseEnv),
+      );
+    case "x509":
+      return new soapRuntime.WSSecurityCert(
+        readFileFromEnv(upstream.keyFileEnv, "upstream.keyFileEnv"),
+        readFileFromEnv(upstream.certFileEnv, "upstream.certFileEnv"),
+        envValue(upstream.passphraseEnv) ?? "",
+      );
+    case "custom":
+      throw new Error("upstream.profile=custom requires editing security.ts to return a soap.ISecurity implementation.");
+  }
+}
+
+function buildHeaders(staticHeaders?: Record<string, string>, envHeaders?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {...(staticHeaders ?? {})};
+  for (const [headerName, envName] of Object.entries(envHeaders ?? {})) {
+    const value = process.env[envName];
+    if (value) headers[headerName] = value;
+  }
+  return headers;
+}
+
+function requiredEnv(envName: string | undefined, label: string): string {
+  if (!envName) throw new Error(`${label} must name an environment variable.`);
+  const value = process.env[envName];
+  if (!value) throw new Error(`${envName} environment variable is required for upstream SOAP security.`);
+  return value;
+}
+
+function envValue(envName: string | undefined): string | undefined {
+  return envName ? process.env[envName] : undefined;
+}
+
+function readFileFromEnv(envName: string | undefined, label: string): Buffer {
+  return fs.readFileSync(requiredEnv(envName, label));
+}

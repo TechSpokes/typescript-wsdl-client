@@ -122,13 +122,13 @@ terminating zero-chunk.
 
 The centralized error handler (runtime.ts) automatically classifies errors:
 
-| Error Type | HTTP Status | Error Code |
-|------------|-------------|------------|
-| Validation errors | 400 | VALIDATION_ERROR |
-| SOAP faults | 502 | SOAP_FAULT |
-| Connection refused | 503 | SERVICE_UNAVAILABLE |
-| Timeout | 504 | GATEWAY_TIMEOUT |
-| Other errors | 500 | INTERNAL_ERROR |
+| Error Type         | HTTP Status | Error Code          |
+|--------------------|-------------|---------------------|
+| Validation errors  | 400         | VALIDATION_ERROR    |
+| SOAP faults        | 502         | SOAP_FAULT          |
+| Connection refused | 503         | SERVICE_UNAVAILABLE |
+| Timeout            | 504         | GATEWAY_TIMEOUT     |
+| Other errors       | 500         | INTERNAL_ERROR      |
 
 All errors are wrapped in the standard envelope format. See [Concepts](concepts.md) for the envelope structure.
 
@@ -186,7 +186,7 @@ await app.register(async (scope) => {
 await app.listen({ port: 3000 });
 ```
 
-See [`examples/fastify-gateway/`](../examples/fastify-gateway/) for a complete example.
+See [`examples/fastify-gateway`](../examples/fastify-gateway/README.md) for a complete example.
 
 ## Contract Assumptions
 

@@ -26,6 +26,13 @@ import {info} from "./util/cli.js";
 
 export {generateOpenAPI} from "./openapi/generateOpenAPI.js";
 export {generateGateway} from "./gateway/generateGateway.js";
+export {
+  buildSecurity,
+  loadSecurityConfigFile,
+  parseSecurityConfig,
+  SecurityConfigError,
+  type SecurityConfig,
+} from "./util/securityConfig.js";
 export {generateTests} from "./test/generateTests.js";
 export {runGenerationPipeline} from "./pipeline.js";
 export {

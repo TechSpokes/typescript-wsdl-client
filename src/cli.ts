@@ -311,7 +311,11 @@ if (rawArgs[0] === "openapi") {
       default: "post",
       desc: "Default HTTP method for all operations (can be overridden via --openapi-ops-file)"
     })
-    .option("openapi-security-file", {type: "string", desc: "Path to security.json configuration"})
+    .option("openapi-security-config-file", {
+      type: "string",
+      desc: "Path to security.json configuration",
+      alias: "openapi-security-file",
+    })
     .option("openapi-tags-file", {type: "string", desc: "Path to tags.json mapping operation name -> tag"})
     .option("openapi-ops-file", {
       type: "string",
@@ -570,6 +574,10 @@ if (rawArgs[0] === "app") {
       default: "copy",
       desc: "How to handle OpenAPI file: copy into app dir or reference original"
     })
+    .option("security-config-file", {
+      type: "string",
+      desc: "Path to security.json configuration used to scaffold upstream SOAP security",
+    })
     .option("force", {
       type: "boolean",
       default: false,
@@ -621,6 +629,7 @@ if (rawArgs[0] === "app") {
     logger: Boolean(appArgv.logger),
     openapiMode: appArgv["openapi-mode"] as "copy" | "reference",
     force: Boolean(appArgv.force),
+    securityConfigFile: appArgv["security-config-file"] ? path.resolve(String(appArgv["security-config-file"])) : undefined,
   });
 
   process.exit(0);
@@ -682,7 +691,7 @@ if (rawArgs[0] === "pipeline") {
       choices: ["post", "get", "put", "patch", "delete"],
       default: "post"
     })
-    .option("openapi-security-file", {type: "string"})
+    .option("openapi-security-config-file", {type: "string", alias: "openapi-security-file"})
     .option("openapi-tags-file", {type: "string"})
     .option("openapi-ops-file", {type: "string"})
     .option("openapi-closed-schemas", {type: "boolean", default: false})
@@ -915,6 +924,7 @@ if (rawArgs[0] === "pipeline") {
       host: pipelineArgv["app-host"] as string,
       port: pipelineArgv["app-port"] as number,
       prefix: pipelineArgv["app-prefix"] as string,
+      securityConfigFile: (pipelineArgv["openapi-security-config-file"] || pipelineArgv["openapi-security-file"]) as string | undefined,
     } : undefined,
     test: testDir ? {
       testDir: path.resolve(testDir),

@@ -12,7 +12,7 @@ See [README](../README.md) for quick start and [CLI Reference](cli-reference.md)
 | Unresolved type references | Re-run with --client-fail-on-unresolved=false to inspect partial graph |
 | Missing schema in OpenAPI | Ensure the global element exists (catalog shows compiled symbols) |
 | Wrong array modeling | Check maxOccurs in WSDL; tool only arrays when maxOccurs>1 or unbounded |
-| Authentication errors | Provide proper soap.ISecurity instance (WSSecurity, BasicAuthSecurity) |
+| Authentication errors | Provide proper upstream security config or `soap.ISecurity` instance |
 | Date/time confusion | Use --client-date-as Date for runtime Date objects |
 | TypeScript compilation errors | Check --import-extensions matches your tsconfig moduleResolution |
 | Gateway validation failures | Ensure OpenAPI has valid $ref paths and all schemas in components.schemas |

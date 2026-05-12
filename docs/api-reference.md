@@ -33,7 +33,7 @@ await compileWsdlToProject({
 ### Type Signature
 
 ```typescript
-function compileWsdlToProject(input: {
+declare function compileWsdlToProject(input: {
   wsdl: string;
   outDir: string;
   options?: Partial<CompilerOptions>;
@@ -92,7 +92,7 @@ const { doc, jsonPath, yamlPath } = await generateOpenAPI({
 ### Type Signature
 
 ```typescript
-function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
+declare function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
   doc: any;
   jsonPath?: string;
   yamlPath?: string;
@@ -129,6 +129,10 @@ interface GenerateOpenAPIOptions {
 }
 ```
 
+`securityConfigFile` accepts the shared security configuration documented in
+[Configuration](configuration.md#security-configuration). The config can describe
+gateway OpenAPI security and upstream SOAP runtime security for generated apps.
+
 ## generateGateway
 
 Generate Fastify gateway code from an OpenAPI specification.
@@ -150,7 +154,7 @@ await generateGateway({
 ### Type Signature
 
 ```typescript
-function generateGateway(opts: GenerateGatewayOptions): Promise<void>;
+declare function generateGateway(opts: GenerateGatewayOptions): Promise<void>;
 ```
 
 ### GenerateGatewayOptions
@@ -203,7 +207,7 @@ const { compiled, openapiDoc } = await runGenerationPipeline({
 ### Type Signature
 
 ```typescript
-function runGenerationPipeline(opts: PipelineOptions): Promise<{
+declare function runGenerationPipeline(opts: PipelineOptions): Promise<{
   compiled: CompiledCatalog;
   openapiDoc?: any;
 }>;
@@ -331,6 +335,26 @@ interface OperationStreamMetadata {
 ```
 
 Exactly one of `wsdlSource` or `catalogFile` must be set on each `ShapeCatalogRef`. `OperationStreamMetadata` is produced by the parser; `sourceOutputTypeName` is populated by the compiler when it binds the operation to the main WSDL.
+
+## Security Configuration Helpers
+
+Parse and build the shared security configuration used by OpenAPI generation and
+the app scaffold.
+
+```typescript
+import {
+  buildSecurity,
+  loadSecurityConfigFile,
+  parseSecurityConfig,
+} from "@techspokes/typescript-wsdl-client";
+
+const config = loadSecurityConfigFile("./security.json");
+const built = buildSecurity(config);
+console.log(built.securitySchemes);
+```
+
+`parseSecurityConfig` accepts the same JSON shape as `loadSecurityConfigFile`.
+`SecurityConfigError` is thrown for invalid schemes or malformed sections.
 
 ## End-to-End Example
 

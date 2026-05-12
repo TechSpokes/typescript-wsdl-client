@@ -92,7 +92,7 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--openapi-envelope-namespace` | `ResponseEnvelope` | Envelope component name suffix |
 | `--openapi-error-namespace` | `ErrorObject` | Error object name suffix |
 | `--openapi-validate` | `true` | Validate spec with swagger-parser |
-| `--openapi-security-config-file` | | Path to security.json |
+| `--openapi-security-config-file` | | Path to security.json; `--openapi-security-file` is accepted as an alias |
 | `--openapi-tags-file` | | Path to tags.json |
 | `--openapi-ops-file` | | Path to ops.json |
 
@@ -473,6 +473,7 @@ npx wsdl-tsc app \
 | `--prefix` | (empty) | Route prefix |
 | `--logger` | true | Enable Fastify logger |
 | `--openapi-mode` | copy | copy or reference |
+| `--security-config-file` | (none) | Path to security.json for upstream SOAP security scaffold |
 | `--force` | false | Overwrite existing scaffold files |
 
 ### Generated Structure
@@ -498,6 +499,8 @@ app/
 | `PREFIX` | (empty) | Route prefix |
 | `LOGGER` | true | Fastify logger |
 | `OPENAPI_SERVER_URL` | (empty) | Override OpenAPI spec server URL at runtime |
+
+When `--security-config-file` is supplied and it contains an `upstream` profile, `.env.example` also lists the environment variables referenced by that profile.
 
 ### Endpoints
 
