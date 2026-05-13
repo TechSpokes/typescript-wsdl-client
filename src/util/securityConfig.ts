@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import {trimRepeatedEdgeChar} from "./tools.js";
 
 export type GatewayAuthScheme = "none" | "basic" | "bearer" | "apiKey" | "oauth2" | "mutualTLS" | "openIdConnect";
 
@@ -365,9 +366,10 @@ function buildHeaderParameter(h: SecurityHeaderConfig): any {
 }
 
 function makeParamComponentName(headerName: string): string {
-  return headerName
-      .replace(/[^A-Za-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "")
+  return trimRepeatedEdgeChar(
+    headerName.replace(/[^A-Za-z0-9]+/g, "_"),
+    "_",
+  )
     || "X_Header";
 }
 

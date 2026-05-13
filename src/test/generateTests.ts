@@ -14,7 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import {info, success} from "../util/cli.js";
-import {resolveClientMeta, resolveOperationMeta} from "../gateway/helpers.js";
+import {resolveClientMeta, resolveOperationMeta, slugName} from "../gateway/helpers.js";
 import type {ResolvedOperationMeta} from "../gateway/helpers.js";
 import type {CatalogForMocks} from "./mockData.js";
 import {generateAllOperationMocks} from "./mockData.js";
@@ -109,7 +109,7 @@ export async function generateTests(opts: GenerateTestsOptions): Promise<void> {
     // Read OpenAPI doc paths from the gateway's generated routes to get URL paths
     // We use the catalog operations and derive paths using the same pattern as gateway generation
     for (const op of catalog.operations) {
-      const operationSlug = op.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+      const operationSlug = slugName(op.name);
 
       // Try to find the path from the generated operation schema
       const opSchemaPath = path.join(gatewayDir, "schemas", "operations", `${operationSlug}.json`);

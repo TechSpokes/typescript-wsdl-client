@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.19.2] - 2026-05-13
+
+- fix(security): remove polynomial edge-trim regexes from name sanitizers
+
 ## [0.19.1] - 2026-05-12
 
 - docs(roadmap): refresh current priorities and repository health guidance for 0.19.1

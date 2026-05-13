@@ -31,6 +31,21 @@ export function normalizeArray<T>(x: T | T[] | undefined | null): T[] {
 }
 
 /**
+ * Removes one repeated edge character without regex backtracking.
+ *
+ * @param value - Value to trim.
+ * @param char - Single character to remove from both edges.
+ * @returns Input without repeated leading or trailing `char` values.
+ */
+export function trimRepeatedEdgeChar(value: string, char: string): string {
+  let start = 0;
+  let end = value.length;
+  while (start < end && value[start] === char) start += 1;
+  while (end > start && value[end - 1] === char) end -= 1;
+  return value.slice(start, end);
+}
+
+/**
  * Collects direct children whose local name matches (prefix-agnostic)
  *
  * XML namespaces can cause the same element to appear with different prefixes.

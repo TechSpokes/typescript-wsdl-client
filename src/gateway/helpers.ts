@@ -11,7 +11,7 @@
  * - Automatic version/service detection from OpenAPI paths
  */
 
-import {pascal} from "../util/tools.js";
+import {pascal, trimRepeatedEdgeChar} from "../util/tools.js";
 
 /**
  * OpenAPI document structure (minimal type for internal use)
@@ -45,7 +45,7 @@ export interface OpenAPIDocument {
 export function slugName(name: string): string {
   const lower = String(name ?? "").toLowerCase();
   const collapsed = lower.replace(/[^a-z0-9]+/g, "_");
-  return collapsed.replace(/^_+|_+$/g, "");
+  return trimRepeatedEdgeChar(collapsed, "_");
 }
 
 /**

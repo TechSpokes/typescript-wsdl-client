@@ -12,6 +12,7 @@
  * These transformations ensure that the generated API paths follow consistent conventions
  * and are properly formatted for RESTful API design.
  */
+import {trimRepeatedEdgeChar} from "../util/tools.js";
 
 /**
  * Path segment styling options for OpenAPI generation
@@ -51,10 +52,12 @@ export function toPathSegment(name: string, style: PathStyle): string {
     case "kebab":
     default:
       // insert hyphen between camelCase boundaries then sanitize
-      return name
-        .replace(CAMEL_BOUNDARY, "$1-$2")
-        .replace(/[^A-Za-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
+      return trimRepeatedEdgeChar(
+        name
+          .replace(CAMEL_BOUNDARY, "$1-$2")
+          .replace(/[^A-Za-z0-9]+/g, "-"),
+        "-",
+      )
         .toLowerCase();
   }
 }

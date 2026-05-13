@@ -23,6 +23,10 @@ describe("toPathSegment", () => {
       expect(toPathSegment("-hello-", "kebab")).toBe("hello");
     });
 
+    it("strips long leading and trailing separator runs", () => {
+      expect(toPathSegment(`${"-".repeat(5000)}hello${"-".repeat(5000)}`, "kebab")).toBe("hello");
+    });
+
     it("replaces non-alphanumeric with hyphens", () => {
       expect(toPathSegment("get.user.details", "kebab")).toBe("get-user-details");
     });

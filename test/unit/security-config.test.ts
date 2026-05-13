@@ -85,6 +85,21 @@ describe("buildSecurity", () => {
     expect(built.headerParameters.X_Tenant_Id.required).toBe(true);
   });
 
+  it("normalizes header parameter component names without edge-trim regexes", () => {
+    const built = buildSecurity(parseSecurityConfig({
+      gateway: {
+        global: {
+          headers: [
+            {name: "---X-Correlation-Id---"},
+            {name: "___"},
+          ],
+        },
+      },
+    }));
+
+    expect(Object.keys(built.headerParameters)).toEqual(["X_Correlation_Id", "X_Header"]);
+  });
+
   it("builds OpenAPI 3.1 mutual TLS and OpenID Connect schemes", () => {
     const mtls = buildSecurity(parseSecurityConfig({
       gateway: {
