@@ -2,11 +2,16 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, and Fastify gateway scaffolding.
 
-## Current: 0.19.x Series
+## Current: 0.20.x Series
 
-Focus: production gateway fit, security configuration, and repository health while keeping generated output deterministic and reviewable.
+Focus: repository health, dependency currency, production gateway fit, and security configuration while keeping generated output deterministic and reviewable.
 
 ## Recently Shipped
+
+### 0.20.0
+
+- Refreshed root dependency minimums for `@types/node`, `soap`, and `tsx`
+- Refreshed generated app scaffold dependency minimums for `@types/node`, `soap`, and `tsx`
 
 ### 0.19.0
 

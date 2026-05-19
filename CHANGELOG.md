@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-05-19
+
+- chore(deps): bump root and generated app dependency minimums for `@types/node`, `soap`, and `tsx`
+
 ## [0.19.2] - 2026-05-13
 
 - fix(security): remove polynomial edge-trim regexes from name sanitizers
