@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- chore(release): render draft release bodies from validated release note subtitles
+- docs(release): describe release validation as consumer-facing outcomes
+- docs(agent-skill): surface the release skill artifact in consumer and contributor docs
+
+## [0.21.0] - 2026-05-19
+
+- feat(agent-skill): add drift-controlled release skill artifact for consumer-project agents
+
 ## [0.20.0] - 2026-05-19
 
 - chore(deps): bump root and generated app dependency minimums for `@types/node`, `soap`, and `tsx`

@@ -29,6 +29,7 @@ Most tools in this space stop at one layer: a SOAP runtime, type generation, or 
 - Generated `operations.ts` interface enables testing without importing `soap` or calling a live service
 - OpenAPI is a first-class output, not an afterthought; types, schemas, and descriptions stay aligned
 - Opt-in NDJSON streaming for large SOAP responses: client emits `AsyncIterable<RecordType>`, gateway flushes records incrementally, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
+- Optional agent skill ZIP for consumer-project AI agents that need package-specific generation guidance
 - MIT licensed; generated code is yours with no attribution required
 
 ## Installation
@@ -231,6 +232,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Programmatic API](docs/api-reference.md) | TypeScript functions for build tools |
 | [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
 | [Architecture](docs/architecture.md) | Internal pipeline for contributors |
+| [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Streamable Responses (ADR-002)](docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON, `x-wsdl-tsc-stream` |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
 

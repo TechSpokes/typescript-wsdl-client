@@ -1,0 +1,108 @@
+{
+  "references": [
+    {
+      "kind": "evergreen",
+      "source": "agent-skill/evergreen/architecture.md",
+      "output": "references/architecture.md",
+      "required": true
+    },
+    {
+      "kind": "evergreen",
+      "source": "agent-skill/evergreen/consumer-workflows.md",
+      "output": "references/consumer-workflows.md",
+      "required": true
+    },
+    {
+      "kind": "fluid",
+      "source": "docs/cli-reference.md",
+      "output": "references/cli-reference.md",
+      "sections": [
+        "## Commands Overview",
+        "## pipeline",
+        "## client",
+        "## openapi",
+        "## gateway",
+        "## app",
+        "## compile",
+        "## Common Workflows"
+      ],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
+      "kind": "fluid",
+      "source": "docs/generated-code.md",
+      "output": "references/generated-code.md",
+      "sections": [
+        "## Client Construction",
+        "## Calling Operations",
+        "## Calling Stream Operations",
+        "## Attributes and Text Content",
+        "## Working With Arrays",
+        "## Type Safety",
+        "## Documentation Comments",
+        "## Gateway Route Handlers",
+        "## Operations Interface"
+      ],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
+      "kind": "fluid",
+      "source": "docs/testing.md",
+      "output": "references/testing.md",
+      "sections": [
+        "## Test Architecture",
+        "## Running Tests",
+        "## Integration Tests",
+        "## Generated Test Suite",
+        "## For Consumer Projects"
+      ],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
+      "kind": "fluid",
+      "source": "docs/troubleshooting.md",
+      "output": "references/troubleshooting.md",
+      "sections": [
+        "## Common Issues",
+        "## SOAP Wire Logging",
+        "## Verify Installation",
+        "## TypeScript Configuration",
+        "## Catalog Inspection",
+        "## Streaming Debug"
+      ],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
+      "kind": "fluid",
+      "source": "docs/configuration.md",
+      "output": "references/streaming.md",
+      "sections": [
+        "## Stream Configuration"
+      ],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
+      "kind": "fluid",
+      "source": "docs/decisions/002-streamable-responses.md",
+      "output": "references/streaming.md",
+      "sections": [
+        "## Requirements",
+        "## Proposed Configuration Model",
+        "## CLI and Programmatic API",
+        "## Client Runtime",
+        "## XML to JSON Streaming Conversion",
+        "## OpenAPI Output",
+        "## Gateway Output",
+        "## Consequences"
+      ],
+      "linkPolicy": "rewrite",
+      "required": true
+    }
+  ]
+}
+

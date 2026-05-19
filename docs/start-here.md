@@ -96,6 +96,12 @@ Stream operations return `StreamOperationResponse<RecordType>` on the client (`r
 
 Next: [ADR-002: Streamable Responses](decisions/002-streamable-responses.md) for rationale and terminal-error policy, then [Stream Configuration](configuration.md#stream-configuration) for the full file reference.
 
+### I want an AI agent to help in my project
+
+Release assets include an optional `typescript-wsdl-client` agent skill ZIP for consumer-project AI agents. Install it when you want an agent to choose `wsdl-tsc` commands, respect generated-output boundaries, load package reference docs, and validate generated clients, OpenAPI specs, gateways, apps, tests, or catalogs in your repository.
+
+Next: [Agent Skill Artifact](agent-skill.md) for package contents, installation, and maintainer validation details.
+
 ## What NOT to Expect
 
 This package does not replace a full API management platform. It does not provide rate limiting, policy enforcement, or multi-language SDK generation. It generates code; it does not run a proxy or manage deployments.
@@ -113,3 +119,4 @@ For more on scope boundaries, see the "When NOT to Use This" section of the [REA
 | Set up testing for generated code | [Testing Guide](testing.md) |
 | Review all CLI flags | [CLI Reference](cli-reference.md) |
 | Opt specific operations into NDJSON streaming | [ADR-002](decisions/002-streamable-responses.md) and [Stream Configuration](configuration.md#stream-configuration) |
+| Install package-specific agent guidance | [Agent Skill Artifact](agent-skill.md) |

@@ -81,9 +81,64 @@ jobs:
             exit 1
           fi
 
+          expected_title="# TypeScript WSDL Client ${tag}"
+          first_line="$(sed -n '1p' "${notes_file}")"
+          if [[ "${first_line}" != "${expected_title}" ]]; then
+            echo "Release notes first line must be exactly: ${expected_title}" >&2
+            exit 1
+          fi
+
+          improves_line="$(grep -n -m 1 '^## What This Improves$' "${notes_file}" | cut -d: -f1 || true)"
+          if [[ -z "${improves_line}" ]]; then
+            echo "Release notes must contain a ## What This Improves section." >&2
+            exit 1
+          fi
+
+          section_line() {
+            local heading="$1"
+            grep -n -m 1 "^## ${heading}$" "${notes_file}" | cut -d: -f1 || true
+          }
+
+          highlights_line="$(section_line "Highlights")"
+          upgrade_notes_line="$(section_line "Upgrade Notes")"
+          validation_line="$(section_line "Validation")"
+          notes_line="$(section_line "Notes")"
+
+          if [[ -z "${highlights_line}" || -z "${upgrade_notes_line}" || -z "${validation_line}" || -z "${notes_line}" ]]; then
+            echo "Release notes must include ## Highlights, ## Upgrade Notes, ## Validation, and ## Notes sections." >&2
+            exit 1
+          fi
+
+          if ! (( improves_line < highlights_line && highlights_line < upgrade_notes_line && upgrade_notes_line < validation_line && validation_line < notes_line )); then
+            echo "Release note sections must appear in the expected order." >&2
+            exit 1
+          fi
+
+          second_heading="$(grep -n -E '^#{1,6} ' "${notes_file}" | sed -n '2p')"
+          if [[ -z "${second_heading}" ]]; then
+            echo "Release notes must include an H2 subtitle after the H1 title." >&2
+            exit 1
+          fi
+
+          second_heading_line="${second_heading%%:*}"
+          second_heading_text="${second_heading#*:}"
+          if [[ ! "${second_heading_text}" =~ ^##[[:space:]][^#[:space:]].* ]]; then
+            echo "The second Markdown heading in release notes must be an H2 subtitle." >&2
+            exit 1
+          fi
+
+          if [[ "${second_heading_text}" == "## What This Improves" || "${second_heading_line}" -ge "${improves_line}" ]]; then
+            echo "Release notes must include an H2 subtitle before ## What This Improves." >&2
+            exit 1
+          fi
+
+          notes_body_file="${RUNNER_TEMP}/release-notes-body-${tag}.md"
+          tail -n +2 "${notes_file}" > "${notes_body_file}"
+
           {
             echo "tag=${tag}"
             echo "notes_file=${notes_file}"
+            echo "notes_body_file=${notes_body_file}"
             echo "release_title=TypeScript WSDL Client ${tag}"
           } >> "${GITHUB_OUTPUT}"
 
@@ -93,13 +148,17 @@ jobs:
       - name: Verify release state
         run: npm run ci
 
+      - name: Package agent skill
+        run: npm run skill:package -- ${{ steps.meta.outputs.tag }}
+
       - name: Create or update draft release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: ${{ steps.meta.outputs.tag }}
           RELEASE_TITLE: ${{ steps.meta.outputs.release_title }}
-          NOTES_FILE: ${{ steps.meta.outputs.notes_file }}
+          NOTES_BODY_FILE: ${{ steps.meta.outputs.notes_body_file }}
+          SKILL_ASSET: dist/assets/typescript-wsdl-client-agent-skill-${{ steps.meta.outputs.tag }}.zip
         run: |
           set -euo pipefail
 
@@ -112,10 +171,12 @@ jobs:
 
             gh release edit "${TAG_NAME}" \
               --title "${RELEASE_TITLE}" \
-              --notes-file "${NOTES_FILE}"
+              --notes-file "${NOTES_BODY_FILE}"
           else
             gh release create "${TAG_NAME}" \
               --draft \
               --title "${RELEASE_TITLE}" \
-              --notes-file "${NOTES_FILE}"
+              --notes-file "${NOTES_BODY_FILE}"
           fi
+
+          gh release upload "${TAG_NAME}" "${SKILL_ASSET}" --clobber

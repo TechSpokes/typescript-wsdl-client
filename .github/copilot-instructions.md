@@ -152,7 +152,9 @@ Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `bu
 - `clean*`: remove `dist`/`tmp` or other temporary artifacts.
 - `dev` / `watch`: run the CLI in dev/watch mode via `tsx`.
 - `smoke:*`: end-to-end CLI checks (compile, client, openapi, gateway, pipeline) using `examples/minimal/weather.wsdl`.
-- `ci`: combine build, typecheck, Vitest tests, and smoke pipeline.
+- `skill:validate`: validate the standalone agent skill release artifact.
+- `package:validate`: validate the exact npm package dry-run contents.
+- `ci`: combine build, typecheck, agent skill validation, npm package validation, Vitest tests, and smoke pipeline.
 
 ### Terminal commands
 
@@ -212,19 +214,31 @@ Examples:
 4. In `CHANGELOG.md`: promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date) and start a fresh, empty `## [Unreleased]` section at the top.
 5. Run `npm run maint:deps` to update dependency minimums, lockfile entries, and app scaffold pins.
 6. Review the completed changelog section and convert the user-facing changes into `docs/releases/v<version>.md`.
-7. Run `npm run ci` to verify the release. This runs build, typecheck, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
-8. Commit the version, changelog, dependency, and release notes changes before tagging `v<version>`.
+7. Run `npm run skill:validate` to verify the standalone agent skill source, manifest, extracted docs references, packaged links, and deterministic staging output.
+8. Run `npm run ci` to verify the release. This runs build, typecheck, agent skill validation, npm package validation, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
+9. Run `npm run skill:package -- v<version>` and confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` exists before drafting the release.
+10. Commit the version, changelog, dependency, release notes, and agent skill changes before tagging `v<version>`.
 
 ### Release notes
 
-Release notes are required for every release tag. The tag-triggered draft release workflow reads `docs/releases/v<version>.md` and uses it as the GitHub release description.
+Release notes are required for every release tag. The tag-triggered draft release workflow reads `docs/releases/v<version>.md`, validates the source file, and strips only the first H1 line when generating the GitHub release body.
+
+The draft release workflow also packages and uploads `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip`. Continue refusing to mutate a published non-draft release.
+
+Keep the H1 in repository release files. Do not remove it to avoid a duplicate title on GitHub; the workflow handles that display-only transformation.
 
 Use this structure for release notes:
 
 ```markdown
 # TypeScript WSDL Client vX.Y.Z
 
-Short summary paragraph.
+## Short agent-generated subtitle
+
+A concise summary paragraph.
+
+## What This Improves
+
+Explain the practical developer impact of the release. Focus on what becomes easier, safer, clearer, more reliable, or more complete for developers using or maintaining this package.
 
 ## Highlights
 
@@ -236,13 +250,18 @@ No special upgrade steps.
 
 ## Validation
 
-- `npm run maint:deps`
-- `npm run ci`
+- CI passed.
+- NPM package contents were validated.
+- Agent skill artifact was validated and packaged.
 
 ## Notes
 
 Release tag: `vX.Y.Z`.
 ```
+
+The H2 subtitle must be a concise phrase generated from the release content. Put `## What This Improves` before `## Highlights` and describe practical developer impact instead of broad promotional value.
+
+Write `## Validation` as consumer-facing outcomes, not as maintainer command transcripts. The release operator commands remain in this instruction file and in workflow logs; release notes should say what was validated.
 
 Keep `CHANGELOG.md` as the canonical version history. Write release notes as a concise user-facing summary of why the release matters, how to upgrade, and which release checks passed.
 
@@ -271,7 +290,8 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 - Insert a new empty `## [Unreleased]` at the top.
 - Run `npm run maint:deps` to update dependency minimums and generated app scaffold pins.
 - Create `docs/releases/vX.Y.Z.md` from the completed changelog section.
-- Run `npm run ci` to verify (build, typecheck, Vitest tests, smoke pipeline).
+- Run `npm run skill:package -- vX.Y.Z` to create the standalone agent skill ZIP.
+- Run `npm run ci` to verify (build, typecheck, agent skill validation, npm package validation, Vitest tests, smoke pipeline).
 
 ### Editing code that affects CLI, OpenAPI, or gateway
 
@@ -292,6 +312,8 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 - Prefer pointers to the authoritative source over duplicating indexes across files.
 - The root README.md Documentation table is the single source of truth for the docs/ directory listing.
 - When adding, removing, or renaming documentation files, update only the root README.md Documentation table; other files should reference it rather than maintaining their own copies.
+- Docs updates to sections listed in `agent-skill/reference-manifest.json` automatically affect packaged fluid skill references during validation and release packaging.
+- Update evergreen files under `agent-skill/` only when stable agent workflow, architecture guidance, dependency rules, or generated-output safety rules change.
 - Each folder may have its own README.md (folder index) and AGENTS.md (agent instructions) per their respective specifications; these should point upward rather than duplicating content.
 
 ### Instruction file hierarchy

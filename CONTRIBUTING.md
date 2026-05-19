@@ -26,6 +26,8 @@ npm run ci
 
 - `npm run build`: compile TypeScript to `dist/`
 - `npm run typecheck`: validate types without emit
+- `npm run skill:validate`: validate the standalone agent skill artifact
+- `npm run package:validate`: validate npm package dry-run contents
 - `npm run dev`: run CLI with tsx
 - `npm run watch`: auto-reload during development
 - `npm run smoke:pipeline`: full end-to-end generation test
@@ -173,17 +175,19 @@ The `tsconfig.smoke.json` file extends the main `tsconfig.json` and includes `tm
 
 ### CI Pipeline
 
-`npm run ci` runs clean, build, typecheck, Vitest, and the smoke pipeline.
+`npm run ci` runs clean, build, typecheck, agent skill validation, npm package validation, Vitest, and the smoke pipeline.
 
-This verifies the source compiles, tests pass, the CLI works, generated output compiles, and type contracts stay aligned.
+This verifies the source compiles, tests pass, the CLI works, generated output compiles, package contents are valid, the agent skill packages cleanly, and type contracts stay aligned.
 
 ## Repository Health Checks
 
-Before a release, run `npm run ci` and review the roadmap, changelog, README, CLI help, examples, and configuration docs for drift.
+Before a release, run `npm run ci` and review the roadmap, changelog, README, CLI help, examples, configuration docs, and agent skill docs for drift.
 
 Run `npm run maint:deps` when preparing a release so root dependency minimums and generated app pins stay aligned.
 
-Every release commit must include `docs/releases/vX.Y.Z.md`. Pushing the matching `vX.Y.Z` tag creates or updates a GitHub draft release from that file after CI passes; publishing the draft release triggers package publishing.
+Every release commit must include `docs/releases/vX.Y.Z.md`. Before tagging, run `npm run skill:package -- vX.Y.Z` and confirm the release ZIP exists under `dist/assets/`.
+
+Pushing the matching `vX.Y.Z` tag creates or updates a GitHub draft release from the release notes file after CI passes. The draft release workflow strips the release-note H1 for GitHub display, packages and uploads the agent skill ZIP, and refuses to mutate a published non-draft release.
 
 When an IDE inspection tool is available, run it on touched Markdown files and generator files that embed generated source. Without IDE inspections, verify relative Markdown links target concrete files or headings and keep TypeScript fenced examples syntactically valid.
 
