@@ -16,6 +16,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
 - Commit messages must follow: `Version: <version> <type>(scope): <imperative summary>`.
+- Every release commit must include the matching `docs/releases/vX.Y.Z.md` release notes file.
 - Node.js >= 20.0.0, ESM-only (`type: "module"`), strict TypeScript.
 - CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--init-app`.
 - On release, bump hardcoded dep versions in `src/app/generateApp.ts` (`generatePackageJson`) to current latest.

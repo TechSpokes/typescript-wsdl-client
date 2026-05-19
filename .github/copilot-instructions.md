@@ -40,7 +40,7 @@ node: '>=20'
 2. Commit/PR titles: prefix with `Version: <version>` (see commit format rules).
 3. Default PR base: `main` unless explicitly overridden.
 4. Prefer repo-scoped queries; avoid broad GitHub-wide searches for issues/PRs.
-5. For releases, read `CHANGELOG.md` and `package.json` and follow the release workflow below.
+5. For releases, read `CHANGELOG.md`, `package.json`, and the matching `docs/releases/vX.Y.Z.md` release notes when present; follow the release workflow below.
 6. Don't remote-fetch metadata already present in this file or `package.json`.
 7. For any code or docs change, propose (and on confirmation add) a concise bullet under `## [Unreleased]` in `CHANGELOG.md` (omit the `Version: <'>` prefix).
 
@@ -211,7 +211,40 @@ Examples:
 3. Update `"version"` in `package.json` and `package-lock.json` to the new release version.
 4. In `CHANGELOG.md`: promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date) and start a fresh, empty `## [Unreleased]` section at the top.
 5. Run `npm run maint:deps` to update dependency minimums, lockfile entries, and app scaffold pins.
-6. Run `npm run ci` to verify the release. This runs build, typecheck, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
+6. Review the completed changelog section and convert the user-facing changes into `docs/releases/v<version>.md`.
+7. Run `npm run ci` to verify the release. This runs build, typecheck, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
+8. Commit the version, changelog, dependency, and release notes changes before tagging `v<version>`.
+
+### Release notes
+
+Release notes are required for every release tag. The tag-triggered draft release workflow reads `docs/releases/v<version>.md` and uses it as the GitHub release description.
+
+Use this structure for release notes:
+
+```markdown
+# TypeScript WSDL Client vX.Y.Z
+
+Short summary paragraph.
+
+## Highlights
+
+- User-facing release highlight.
+
+## Upgrade Notes
+
+No special upgrade steps.
+
+## Validation
+
+- `npm run maint:deps`
+- `npm run ci`
+
+## Notes
+
+Release tag: `vX.Y.Z`.
+```
+
+Keep `CHANGELOG.md` as the canonical version history. Write release notes as a concise user-facing summary of why the release matters, how to upgrade, and which release checks passed.
 
 ### Updating the CHANGELOG
 
@@ -237,6 +270,7 @@ Examples:
 - Promote `Unreleased` to a dated section `## [x.y.z] - YYYY-MM-DD`.
 - Insert a new empty `## [Unreleased]` at the top.
 - Run `npm run maint:deps` to update dependency minimums and generated app scaffold pins.
+- Create `docs/releases/vX.Y.Z.md` from the completed changelog section.
 - Run `npm run ci` to verify (build, typecheck, Vitest tests, smoke pipeline).
 
 ### Editing code that affects CLI, OpenAPI, or gateway

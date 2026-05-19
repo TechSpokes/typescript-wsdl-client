@@ -12,6 +12,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ## [0.20.0] - 2026-05-19
 
 - chore(deps): bump root and generated app dependency minimums for `@types/node`, `soap`, and `tsx`
+- chore(release): add tag-driven GitHub draft release notes workflow
 
 ## [0.19.2] - 2026-05-13
 

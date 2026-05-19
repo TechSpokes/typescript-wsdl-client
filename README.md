@@ -222,6 +222,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Testing Guide](docs/testing.md) | Testing patterns and mock client examples |
 | [Production Guide](docs/production.md) | CI/CD, validation, logging |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
+| [Release Notes](docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
 
 ### Extend
 

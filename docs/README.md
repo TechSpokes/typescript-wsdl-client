@@ -21,6 +21,7 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 - [testing.md](testing.md): testing patterns and mock client examples
 - [production.md](production.md): CI/CD, validation, logging
 - [troubleshooting.md](troubleshooting.md): common issues and debugging
+- [releases/README.md](releases/README.md): per-version GitHub release notes used by the draft release workflow
 
 ## Extend
 

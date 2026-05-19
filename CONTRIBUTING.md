@@ -183,6 +183,8 @@ Before a release, run `npm run ci` and review the roadmap, changelog, README, CL
 
 Run `npm run maint:deps` when preparing a release so root dependency minimums and generated app pins stay aligned.
 
+Every release commit must include `docs/releases/vX.Y.Z.md`. Pushing the matching `vX.Y.Z` tag creates or updates a GitHub draft release from that file after CI passes; publishing the draft release triggers package publishing.
+
 When an IDE inspection tool is available, run it on touched Markdown files and generator files that embed generated source. Without IDE inspections, verify relative Markdown links target concrete files or headings and keep TypeScript fenced examples syntactically valid.
 
 ## Adding Test Fixtures
