@@ -1,0 +1,109 @@
+name: Draft Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to draft, for example v0.20.1"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  draft-release:
+    name: Draft GitHub release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out tagged commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Resolve release metadata
+        id: meta
+        shell: bash
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+        run: |
+          set -euo pipefail
+
+          tag="${INPUT_TAG:-${GITHUB_REF_NAME}}"
+          version="${tag#v}"
+          notes_file="docs/releases/${tag}.md"
+          package_version="$(node -p "require('./package.json').version")"
+
+          if [[ ! "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag '${tag}' does not match expected vX.Y.Z format." >&2
+            exit 1
+          fi
+
+          if [[ "${package_version}" != "${version}" ]]; then
+            echo "package.json version '${package_version}' does not match tag '${tag}'." >&2
+            exit 1
+          fi
+
+          if [[ ! -f "${notes_file}" ]]; then
+            echo "Missing release notes file: ${notes_file}" >&2
+            exit 1
+          fi
+
+          if [[ ! -f CHANGELOG.md ]]; then
+            echo "Missing CHANGELOG.md." >&2
+            exit 1
+          fi
+
+          if ! grep -Fq "## [${version}] -" CHANGELOG.md; then
+            echo "CHANGELOG.md is missing required dated section: ## [${version}] - YYYY-MM-DD" >&2
+            exit 1
+          fi
+
+          {
+            echo "tag=${tag}"
+            echo "notes_file=${notes_file}"
+            echo "release_title=TypeScript WSDL Client ${tag}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify release state
+        run: npm run ci
+
+      - name: Create or update draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+          RELEASE_TITLE: ${{ steps.meta.outputs.release_title }}
+          NOTES_FILE: ${{ steps.meta.outputs.notes_file }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            is_draft="$(gh release view "${TAG_NAME}" --json isDraft --jq '.isDraft')"
+            if [[ "${is_draft}" != "true" ]]; then
+              echo "Release ${TAG_NAME} already exists and is not a draft. Refusing to mutate a published release." >&2
+              exit 1
+            fi
+
+            gh release edit "${TAG_NAME}" \
+              --title "${RELEASE_TITLE}" \
+              --notes-file "${NOTES_FILE}"
+          else
+            gh release create "${TAG_NAME}" \
+              --draft \
+              --title "${RELEASE_TITLE}" \
+              --notes-file "${NOTES_FILE}"
+          fi
