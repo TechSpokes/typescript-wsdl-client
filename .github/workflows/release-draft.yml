@@ -20,10 +20,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Determine tag
+        id: determine_tag
+        shell: bash
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+        run: |
+          set -euo pipefail
+
+          tag="${INPUT_TAG:-${GITHUB_REF_NAME}}"
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "Using tag ${tag}"
+
       - name: Check out tagged commit
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          ref: ${{ steps.determine_tag.outputs.tag }}
 
       - name: Use Node.js
         uses: actions/setup-node@v6
@@ -35,11 +47,11 @@ jobs:
         id: meta
         shell: bash
         env:
-          INPUT_TAG: ${{ github.event.inputs.tag }}
+          TAG: ${{ steps.determine_tag.outputs.tag }}
         run: |
           set -euo pipefail
 
-          tag="${INPUT_TAG:-${GITHUB_REF_NAME}}"
+          tag="${TAG}"
           version="${tag#v}"
           notes_file="docs/releases/${tag}.md"
           package_version="$(node -p "require('./package.json').version")"
