@@ -2,11 +2,16 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, and Fastify gateway scaffolding.
 
-## Current: 0.22.x Series
+## Current: 0.23.x Series
 
 Focus: gateway integration documentation, repository health, dependency currency, production gateway fit, and security responsibility boundaries while keeping generated output deterministic and reviewable.
 
 ## Recently Shipped
+
+### 0.23.0
+
+- Added portable documentation validation for local Markdown links and TypeScript fenced snippets
+- Added inbound gateway enforcement documentation for authentication, authorization, logging, and request correlation extension points
 
 ### 0.22.0
 
@@ -74,7 +79,7 @@ Focus: gateway integration documentation, repository health, dependency currency
 
 ## Repository Health Priorities
 
-- Add a portable documentation verification script for relative links and TypeScript fenced snippets.
+- Keep documentation validation wired into CI and release preflight checks.
 - Keep roadmap, changelog, README, CLI help, examples, and docs configuration pages aligned before each release.
 - Continue using packaged template files for generated source blocks that are too large for readable inline strings.
 - Consider a release preflight script that runs CI, dependency maintenance, generated example checks, and documentation verification.
