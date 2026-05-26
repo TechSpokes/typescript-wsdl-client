@@ -7,8 +7,8 @@ Need help with `typescript-wsdl-client`? Here is how to get the assistance you n
 Start here for quick answers:
 
 - [README.md](./README.md) for installation, quick start, and documentation links
-- [docs/](./docs/) for CLI reference, API reference, concepts, gateway guide, and more
-- [Examples](./examples/) for sample WSDL files, generated output, and project templates
+- [docs/README.md](./docs/README.md) for CLI reference, API reference, concepts, gateway guide, and more
+- [Examples](./examples/README.md) for sample WSDL files, generated output, and project templates
 - [CHANGELOG.md](./CHANGELOG.md) for recent changes and breaking changes
 - [docs/migration.md](./docs/migration.md) for upgrade guidance between versions
 - `npx wsdl-tsc --help` and `npx wsdl-tsc <command> --help` for CLI reference
@@ -21,16 +21,16 @@ Start here for quick answers:
 
 Start here for most questions and community interaction:
 
-- [Questions & Help](../../discussions/categories/q-a) for technical questions and troubleshooting
-- [Feature Ideas](../../discussions/categories/ideas) for suggestions and improvements
-- [Show and Tell](../../discussions/categories/show-and-tell) for sharing projects
-- [General Discussion](../../discussions/categories/general) for open conversations
+- [Questions & Help](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/q-a) for technical questions and troubleshooting
+- [Feature Ideas](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/ideas) for suggestions and improvements
+- [Show and Tell](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/show-and-tell) for sharing projects
+- [General Discussion](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/general) for open conversations
 
 ### GitHub Issues
 
 Use issues for confirmed bugs only:
 
-- [Bug Reports](../../issues) for reproducible problems
+- [Bug Reports](https://github.com/TechSpokes/typescript-wsdl-client/issues) for reproducible problems
 - Include WSDL details, the command used, error output, and environment info
 
 Please use Discussions for questions; it keeps issues focused on actionable bugs.
@@ -90,7 +90,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
 
 | Need | Channel | Response Time | Best For |
 |------|---------|---------------|----------|
-| Quick question | [Discussions Q&A](../../discussions/categories/q-a) | 24-48h | Learning, troubleshooting |
-| Feature idea | [Discussions Ideas](../../discussions/categories/ideas) | 1-7 days | Suggestions, feedback |
-| Confirmed bug | [GitHub Issues](../../issues) | 1-7 days | Reproducible problems |
+| Quick question | [Discussions Q&A](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/q-a) | 24-48h | Learning, troubleshooting |
+| Feature idea | [Discussions Ideas](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/ideas) | 1-7 days | Suggestions, feedback |
+| Confirmed bug | [GitHub Issues](https://github.com/TechSpokes/typescript-wsdl-client/issues) | 1-7 days | Reproducible problems |
 | Security issue | [Contact page](https://www.techspokes.com/contact/) | 72h | Vulnerabilities |

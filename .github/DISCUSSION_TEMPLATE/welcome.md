@@ -9,27 +9,27 @@ We're excited to have you here! This is where our community connects to discuss 
 ## How to Use Discussions
 
 ### Need Help?
-- [Questions & Help](./categories/q-a) - Stuck with a WSDL? CLI not working? Ask here!
+- [Questions & Help](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/q-a) - Stuck with a WSDL? CLI not working? Ask here!
 - Include your WSDL details, command used, and error output for faster help
 
 ### Have Ideas?
-- [Feature Ideas](./categories/ideas) - Suggest improvements, new CLI flags, or WSDL features
+- [Feature Ideas](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/ideas) - Suggest improvements, new CLI flags, or WSDL features
 - Share your use case and why it would help the community
 
 ### Show Off Your Work!
-- [Show and Tell](./categories/show-and-tell) - Share how you're using the tool in real projects
+- [Show and Tell](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/show-and-tell) - Share how you're using the tool in real projects
 - Inspire others and get recognition for your integrations
 
 ### General Chat
-- [General Discussion](./categories/general) - Architecture thoughts, ecosystem ideas, community building
+- [General Discussion](https://github.com/TechSpokes/typescript-wsdl-client/discussions/categories/general) - Architecture thoughts, ecosystem ideas, community building
 
 ## Quick Links
 
-- [Documentation](../README.md) - Installation, usage, CLI reference
-- [Roadmap](../ROADMAP.md) - See what's planned and influence priorities  
-- [Contributing](../CONTRIBUTING.md) - Join the development effort
-- [Support](../SUPPORT.md) - All the ways to get help
-- [Bug Reports](../issues) - Found a problem? Report it here
+- [Documentation](https://github.com/TechSpokes/typescript-wsdl-client#readme) - Installation, usage, CLI reference
+- [Roadmap](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/ROADMAP.md) - See what's planned and influence priorities  
+- [Contributing](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) - Join the development effort
+- [Support](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/SUPPORT.md) - All the ways to get help
+- [Bug Reports](https://github.com/TechSpokes/typescript-wsdl-client/issues) - Found a problem? Report it here
 
 ## Introduce Yourself!
 

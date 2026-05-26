@@ -26,6 +26,7 @@ npm run ci
 
 - `npm run build`: compile TypeScript to `dist/`
 - `npm run typecheck`: validate types without emit
+- `npm run docs:validate`: verify Markdown links and TypeScript fenced snippets
 - `npm run skill:validate`: validate the standalone agent skill artifact
 - `npm run package:validate`: validate npm package dry-run contents
 - `npm run dev`: run CLI with tsx
@@ -175,9 +176,9 @@ The `tsconfig.smoke.json` file extends the main `tsconfig.json` and includes `tm
 
 ### CI Pipeline
 
-`npm run ci` runs clean, build, typecheck, agent skill validation, npm package validation, Vitest, and the smoke pipeline.
+`npm run ci` runs clean, build, typecheck, agent skill validation, npm package validation, documentation validation, Vitest, and the smoke pipeline.
 
-This verifies the source compiles, tests pass, the CLI works, generated output compiles, package contents are valid, the agent skill packages cleanly, and type contracts stay aligned.
+This verifies the source compiles, tests pass, the CLI works, generated output compiles, package contents are valid, Markdown links and TypeScript fenced snippets resolve, the agent skill packages cleanly, and type contracts stay aligned.
 
 ## Repository Health Checks
 

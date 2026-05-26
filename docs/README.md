@@ -37,6 +37,7 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 - Each document opens with an H1 title and a one-line description.
 - Cross-reference related documents and the root README where relevant.
 - Use fenced code blocks for CLI examples; format flags as inline code (`` `--flag-name` ``).
+- Run `npm run docs:validate` to check local links and TypeScript fenced snippets.
 - Keep language direct and task-oriented; architecture.md targets contributors, all others target users.
 
 ## Related

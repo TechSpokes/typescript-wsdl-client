@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- chore(docs): add portable Markdown link and TypeScript fence validation
 - docs(gateway): document inbound gateway enforcement extension points
 
 ## [0.22.0] - 2026-05-26

@@ -13,7 +13,7 @@ Briefly describe the change and its motivation.
 
 Commands and steps to validate locally:
 
-```
+```bash
 npm ci
 npm run build
 npm run typecheck
