@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(gateway): document inbound gateway enforcement extension points
+
 ## [0.22.0] - 2026-05-26
 
 - chore(release): render draft release bodies from validated release note subtitles

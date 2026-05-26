@@ -2,11 +2,22 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, and Fastify gateway scaffolding.
 
-## Current: 0.20.x Series
+## Current: 0.22.x Series
 
-Focus: repository health, dependency currency, production gateway fit, and security configuration while keeping generated output deterministic and reviewable.
+Focus: gateway integration documentation, repository health, dependency currency, production gateway fit, and security responsibility boundaries while keeping generated output deterministic and reviewable.
 
 ## Recently Shipped
+
+### 0.22.0
+
+- Refreshed root dependency minimums for `@types/node`, `soap`, `tsx`, and `vitest`
+- Refreshed generated app scaffold dependency minimums for `@types/node`, `soap`, and `tsx`
+- Improved draft release body rendering and consumer-facing release validation notes
+
+### 0.21.0
+
+- Added the standalone AI agent skill artifact for consumer projects
+- Added release validation and packaging for the generated skill artifact
 
 ### 0.20.0
 
@@ -39,9 +50,9 @@ Focus: repository health, dependency currency, production gateway fit, and secur
 
 ### Gateway Integration
 
-- Add documented extension points for generated app authentication, authorization, logging, and request correlation.
-- Provide examples for verifying inbound JWT, API key, and mutual TLS signals outside generated route files.
-- Clarify which gateway security settings are documentation and validation only, and which are enforced by generated code.
+- Keep documented extension points current for generated app authentication, authorization, logging, and request correlation.
+- Keep examples current for verifying inbound JWT, API key, and mutual TLS signals outside generated route files.
+- Keep gateway security responsibility boundaries explicit in configuration and gateway integration docs.
 
 ### WSDL Coverage
 

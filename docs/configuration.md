@@ -46,6 +46,21 @@ The older OpenAPI-only shape with top-level `global` and `overrides` is still ac
 
 The generated app scaffold reads upstream secrets from environment variables. It does not embed secret values in generated source and does not implement production JWT, OAuth, or API-key verification for inbound gateway requests. Add that verification in app hooks or your platform gateway.
 
+### Runtime Enforcement Boundaries
+
+The `gateway` security settings describe the generated REST API and add request header schema validation. They do not authenticate callers or authorize access to operations.
+
+The `upstream` security settings configure how the generated app creates `node-soap` runtime security for calls from the gateway to the SOAP service. They do not enforce inbound REST gateway access.
+
+| Concern | Configured In | Generated Behavior | Consumer Responsibility |
+|---------|---------------|--------------------|-------------------------|
+| OpenAPI security schemes | `gateway.global` and `gateway.operations` | Emits OpenAPI security metadata | Keep API documentation aligned with runtime policy |
+| Required inbound headers | `gateway.global.headers` | Adds Fastify schema validation | Verify header values in host app hooks |
+| Inbound JWT verification | Host app or platform gateway | No generated verifier | Validate issuer, audience, signature, and claims |
+| Inbound API key verification | Host app or platform gateway | No generated key lookup | Compare keys against a trusted secret store |
+| Inbound mutual TLS | TLS terminator or host app | No generated certificate validation | Verify client certificate signals from trusted infrastructure |
+| Upstream SOAP credentials | `upstream` | Builds `node-soap` security from environment variables | Provide secrets through deployment environment variables |
+
 ## Tags Configuration
 
 Pass via `--openapi-tags-file`.

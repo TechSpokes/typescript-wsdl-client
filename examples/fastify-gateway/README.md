@@ -70,6 +70,62 @@ await app.listen({ port: 3000 });
 
 Each gateway plugin registers a Fastify decorator with the SOAP client instance. Without encapsulation scopes, the second plugin would overwrite the first plugin's decorator. Wrapping each plugin in `async (scope) => { ... }` creates an isolated context.
 
+## Adding Inbound Enforcement
+
+Add authentication, authorization, logging, and request correlation in the host Fastify app before registering generated gateway plugins. Keep this logic outside generated route files so regeneration stays safe.
+
+```typescript
+import { randomUUID } from "node:crypto";
+import Fastify from "fastify";
+import weatherPlugin from "./generated/weather/gateway/plugin.js";
+import { Weather } from "./generated/weather/client/client.js";
+
+interface GatewayPrincipal {
+  subject: string;
+  scopes: string[];
+}
+
+declare module "fastify" {
+  interface FastifyRequest {
+    correlationId: string;
+    principal?: GatewayPrincipal;
+  }
+}
+
+declare function verifyJwt(token: string): Promise<GatewayPrincipal>;
+declare function principalCanCallWeather(principal: GatewayPrincipal): boolean;
+
+const app = Fastify({ logger: true });
+
+app.addHook("onRequest", async (request, reply) => {
+  const header = request.headers["x-correlation-id"];
+  request.correlationId = typeof header === "string" && header.length > 0 ? header : randomUUID();
+  reply.header("x-correlation-id", request.correlationId);
+  request.log.info({ correlationId: request.correlationId }, "gateway request started");
+});
+
+app.addHook("preHandler", async (request, reply) => {
+  const authorization = request.headers.authorization;
+  if (!authorization?.startsWith("Bearer ")) {
+    return reply.code(401).send({ error: "missing bearer token" });
+  }
+
+  const principal = await verifyJwt(authorization.slice("Bearer ".length));
+  if (!principalCanCallWeather(principal)) {
+    return reply.code(403).send({ error: "gateway access denied" });
+  }
+
+  request.principal = principal;
+});
+
+await app.register(weatherPlugin, {
+  client: new Weather({ source: "https://example.com/weather?wsdl" }),
+  prefix: "/api/weather",
+});
+```
+
+Use a separate encapsulation scope when each generated service needs a different policy.
+
 ## Scaffolded App Alternative
 
 For a single service, use `--init-app` to scaffold a complete runnable application:

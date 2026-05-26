@@ -219,7 +219,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 
 | Guide | Description |
 |-------|-------------|
-| [Gateway Guide](docs/gateway-guide.md) | Fastify integration and error handling |
+| [Gateway Guide](docs/gateway-guide.md) | Fastify integration, inbound enforcement, and error handling |
 | [Testing Guide](docs/testing.md) | Testing patterns and mock client examples |
 | [Production Guide](docs/production.md) | CI/CD, validation, logging |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |

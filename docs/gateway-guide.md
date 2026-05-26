@@ -34,7 +34,107 @@ await app.listen({ port: 3000 });
 
 The plugin automatically decorates Fastify with the SOAP client, registers JSON schemas, installs a centralized error handler, and registers all routes.
 
-Route paths are determined by --openapi-base-path during generation. The prefix option adds an additional runtime prefix on top of generated paths.
+Route paths are determined by `--openapi-base-path` during generation. The prefix option adds an additional runtime prefix on top of generated paths.
+
+## Inbound Gateway Enforcement
+
+Install inbound authentication, authorization, logging, and request correlation in the host Fastify app before registering the generated gateway plugin. Generated route files are safe to regenerate because custom policy stays outside the generated directory.
+
+The example below accepts either a trusted API key or a bearer token. Replace `verifyJwt` and `principalCanCallWeather` with application-specific policy code.
+
+```typescript
+import { randomUUID } from "node:crypto";
+import Fastify from "fastify";
+import weatherGateway from "./gateway/plugin.js";
+import { Weather } from "./client/client.js";
+
+interface GatewayPrincipal {
+  subject: string;
+  scopes: string[];
+}
+
+declare module "fastify" {
+  interface FastifyRequest {
+    correlationId: string;
+    principal?: GatewayPrincipal;
+  }
+}
+
+declare function verifyJwt(token: string): Promise<GatewayPrincipal>;
+declare function principalCanCallWeather(principal: GatewayPrincipal): boolean;
+
+const app = Fastify({ logger: true });
+
+app.addHook("onRequest", async (request, reply) => {
+  const header = request.headers["x-correlation-id"];
+  request.correlationId = typeof header === "string" && header.length > 0 ? header : randomUUID();
+  reply.header("x-correlation-id", request.correlationId);
+  request.log.info({ correlationId: request.correlationId }, "gateway request started");
+});
+
+app.addHook("preHandler", async (request, reply) => {
+  const expectedApiKey = process.env.GATEWAY_API_KEY;
+  const apiKey = request.headers["x-api-key"];
+  if (expectedApiKey && apiKey === expectedApiKey) return;
+
+  const authorization = request.headers.authorization;
+  if (!authorization?.startsWith("Bearer ")) {
+    return reply.code(401).send({ error: "missing gateway credentials" });
+  }
+
+  const principal = await verifyJwt(authorization.slice("Bearer ".length));
+  if (!principalCanCallWeather(principal)) {
+    return reply.code(403).send({ error: "gateway access denied" });
+  }
+
+  request.principal = principal;
+});
+
+const weatherClient = new Weather({
+  source: "https://example.com/weather.wsdl",
+});
+
+await app.register(weatherGateway, {
+  client: weatherClient,
+});
+```
+
+### Mutual TLS Signals
+
+When Fastify terminates TLS directly, inspect the peer certificate before generated handlers run.
+
+```typescript
+import type { TLSSocket } from "node:tls";
+
+app.addHook("preHandler", async (request, reply) => {
+  const socket = request.raw.socket as TLSSocket;
+  const cert = socket.getPeerCertificate();
+  if (!cert || Object.keys(cert).length === 0) {
+    return reply.code(401).send({ error: "client certificate required" });
+  }
+
+  request.log.info({ subject: cert.subject }, "client certificate accepted");
+});
+```
+
+When TLS terminates at a load balancer or platform gateway, verify a trusted internal signal instead of reading the socket certificate. Strip public client-supplied certificate headers at ingress and inject trusted headers only after certificate validation succeeds.
+
+```typescript
+app.addHook("preHandler", async (request, reply) => {
+  const subject = request.headers["x-client-cert-subject"];
+  if (typeof subject !== "string" || subject.length === 0) {
+    return reply.code(401).send({ error: "client certificate signal required" });
+  }
+
+  request.log.info({ subject }, "trusted client certificate signal accepted");
+});
+```
+
+### Where To Put Custom Logic
+
+Use host app hooks for authentication, authorization, logging, request correlation, and platform headers. Register hooks before `app.register(weatherGateway, ...)` so they run before generated route handlers.
+
+Use Fastify encapsulation when different generated services need different policies. Do not edit generated route files because regeneration overwrites them.
 
 ## Using Individual Components (Advanced)
 
@@ -115,7 +215,7 @@ export async function registerRoute_v1_weather_getweatherinformation(fastify: Fa
 The client method returns `StreamOperationResponse<RecordType>` with a
 `records: AsyncIterable<RecordType>`. Errors raised before the first record
 use the normal error envelope; errors raised mid-stream trip the chunked
-response's truncation — consumers detect these via the absence of a clean
+response's truncation. Consumers detect these via the absence of a clean
 terminating zero-chunk.
 
 ## Error Handling
