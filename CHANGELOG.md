@@ -9,9 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-05-26
+
 - chore(release): render draft release bodies from validated release note subtitles
 - docs(release): describe release validation as consumer-facing outcomes
 - docs(agent-skill): surface the release skill artifact in consumer and contributor docs
+- chore(deps): bump root dependency pins for `@types/node`, `soap`, `tsx`, and `vitest`
+- chore(app): bump generated app pins for `@types/node`, `soap`, and `tsx`
 
 ## [0.21.0] - 2026-05-19
 
