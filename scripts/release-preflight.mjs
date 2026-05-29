@@ -15,6 +15,7 @@ import {
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
 import { findExampleDrift } from "./lib/preflight-examples.mjs";
+import { findDatedChangelogSection } from "./lib/release-preflight-utils.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
 
 const WEATHER_WSDL = path.join(ROOT, "examples", "minimal", "weather.wsdl");
@@ -145,13 +146,11 @@ function changelogEntry(tag) {
   }
   const content = fs.readFileSync(CHANGELOG, "utf-8");
   const lines = content.split(/\r?\n/);
-  const headerRegex = new RegExp(`^## \\[${version.replace(/\./g, "\\.")}\\] - (\\d{4}-\\d{2}-\\d{2})\\s*$`);
-  const headerIndex = lines.findIndex(line => headerRegex.test(line));
-  if (headerIndex === -1) {
+  const section = findDatedChangelogSection(lines, version);
+  if (!section) {
     throw new Error(`CHANGELOG.md is missing required dated section: ## [${version}] - YYYY-MM-DD`);
   }
-  const dateMatch = lines[headerIndex].match(headerRegex);
-  const dateString = dateMatch?.[1];
+  const { index: headerIndex, dateString } = section;
   if (!dateString || Number.isNaN(Date.parse(dateString))) {
     throw new Error(`CHANGELOG.md ${version} section date '${dateString}' is not a valid ISO date.`);
   }

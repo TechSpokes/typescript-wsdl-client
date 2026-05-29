@@ -532,6 +532,10 @@ const ARRAY_WRAPPERS: Record<string, string> = ${JSON.stringify(arrayWrappers, n
  */
 const CHILDREN_TYPES: Record<string, Record<string, string>> = ${JSON.stringify(childTypes, null, 2)};
 
+function isSafeObjectKey(key: string): boolean {
+  return key !== "__proto__" && key !== "constructor" && key !== "prototype";
+}
+
 /**
  * Recursively unwraps ArrayOf* wrapper objects in a SOAP response so the
  * data matches the flattened OpenAPI array schemas.
@@ -561,14 +565,14 @@ export function unwrapArrayWrappers(data: unknown, typeName: string): unknown {
   // Recurse into children whose types may contain wrappers
   if (typeName in CHILDREN_TYPES) {
     const children = CHILDREN_TYPES[typeName];
+    const record = data as Record<string, unknown>;
     for (const [propName, propType] of Object.entries(children)) {
-      const val = (data as Record<string, unknown>)[propName];
-      if (val !== undefined) {
-        if (Array.isArray(val)) {
-          (data as Record<string, unknown>)[propName] = val.map(item => unwrapArrayWrappers(item, propType));
-        } else {
-          (data as Record<string, unknown>)[propName] = unwrapArrayWrappers(val, propType);
-        }
+      if (!isSafeObjectKey(propName) || !Object.hasOwn(record, propName)) continue;
+      const val = record[propName];
+      if (Array.isArray(val)) {
+        record[propName] = val.map(item => unwrapArrayWrappers(item, propType));
+      } else {
+        record[propName] = unwrapArrayWrappers(val, propType);
       }
     }
   }
