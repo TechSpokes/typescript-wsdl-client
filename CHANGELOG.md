@@ -12,6 +12,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ## [0.24.0] - 2026-05-29
 
 - chore(release): add `npm run release:preflight` local verification script
+- fix(gateway): omit unused concrete client imports from generated plugin wrappers
+- fix(release): normalize generated example comparison in release preflight
 
 ## [0.23.0] - 2026-05-26
 

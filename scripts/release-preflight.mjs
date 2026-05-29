@@ -14,6 +14,7 @@ import {
   verifyGeneratedAppSource,
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
+import { findExampleDrift } from "./lib/preflight-examples.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
 
 const WEATHER_WSDL = path.join(ROOT, "examples", "minimal", "weather.wsdl");
@@ -221,42 +222,6 @@ function lockfileInSync() {
   }
 }
 
-function diffDirectories(left, right) {
-  const diffs = [];
-  walkAndDiff(left, right, "", diffs);
-  return diffs;
-}
-
-function walkAndDiff(left, right, rel, diffs) {
-  const leftPath = path.join(left, rel);
-  const rightPath = path.join(right, rel);
-  const leftExists = fs.existsSync(leftPath);
-  const rightExists = fs.existsSync(rightPath);
-  if (!leftExists && !rightExists) return;
-  if (leftExists !== rightExists) {
-    diffs.push(rel || ".");
-    return;
-  }
-  const leftStat = fs.statSync(leftPath);
-  const rightStat = fs.statSync(rightPath);
-  if (leftStat.isDirectory() !== rightStat.isDirectory()) {
-    diffs.push(rel || ".");
-    return;
-  }
-  if (leftStat.isDirectory()) {
-    const names = new Set([...fs.readdirSync(leftPath), ...fs.readdirSync(rightPath)]);
-    for (const name of [...names].sort()) {
-      walkAndDiff(left, right, path.join(rel, name), diffs);
-    }
-    return;
-  }
-  const leftBuf = fs.readFileSync(leftPath);
-  const rightBuf = fs.readFileSync(rightPath);
-  if (!leftBuf.equals(rightBuf)) {
-    diffs.push(rel || ".");
-  }
-}
-
 function examplesFresh() {
   fs.rmSync(PREFLIGHT_DIR, { recursive: true, force: true });
   fs.mkdirSync(PREFLIGHT_DIR, { recursive: true });
@@ -274,7 +239,7 @@ function examplesFresh() {
     "--gateway-version-prefix", "v1",
     "--openapi-format", "json",
   ]);
-  const diffs = diffDirectories(EXAMPLES_DIR, PREFLIGHT_DIR);
+  const diffs = findExampleDrift(EXAMPLES_DIR, PREFLIGHT_DIR, { root: ROOT });
   if (diffs.length > 0) {
     throw new Error(`examples/generated-output/ drifts from regenerated output:\n${diffs.map(d => `- ${d}`).join("\n")}\nRun \`npm run examples:regenerate\` and commit the diff.`);
   }

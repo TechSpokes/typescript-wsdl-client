@@ -98,6 +98,7 @@ describe("pipeline snapshot", () => {
 
   it("gateway/plugin.ts", () => {
     const content = readFileSync(join(outDir, "gateway", "plugin.ts"), "utf-8");
+    expect(content).not.toContain('import type { Weather } from "../client/client.js";');
     expect(content).toMatchSnapshot();
   });
 

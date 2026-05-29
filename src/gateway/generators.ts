@@ -826,7 +826,6 @@ export function emitPluginModule(
  */
 import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import type { ${clientMeta.className} } from "${clientMeta.pluginImportPath}";
 import type { ${clientMeta.className}Operations } from "${clientMeta.operationsImportPath}";
 import { registerSchemas_${vSlug}_${sSlug} } from "./schemas${suffix}";
 import { registerRoutes_${vSlug}_${sSlug} } from "./routes${suffix}";

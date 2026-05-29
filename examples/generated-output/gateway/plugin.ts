@@ -6,7 +6,6 @@
  */
 import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import type { Weather } from "../client/client.js";
 import type { WeatherOperations } from "../client/operations.js";
 import { registerSchemas_v1_weather } from "./schemas.js";
 import { registerRoutes_v1_weather } from "./routes.js";
