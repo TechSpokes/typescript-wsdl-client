@@ -444,6 +444,7 @@
       "GetCityWeatherByZIP": [],
       "GetCityWeatherByZIPResponse": []
     },
+    "attrType": {},
     "childType": {
       "WeatherDescription": {
         "WeatherID": "number",
@@ -790,6 +791,7 @@
       },
       "inputTypeName": "GetWeatherInformation",
       "outputTypeName": "GetWeatherInformationResponse",
+      "doc": "Gets Information for each WeatherID",
       "security": []
     },
     {
@@ -805,6 +807,7 @@
       },
       "inputTypeName": "GetCityForecastByZIP",
       "outputTypeName": "GetCityForecastByZIPResponse",
+      "doc": "Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly. U.S. Only",
       "security": []
     },
     {
@@ -820,10 +823,278 @@
       },
       "inputTypeName": "GetCityWeatherByZIP",
       "outputTypeName": "GetCityWeatherByZIPResponse",
+      "doc": "Allows you to get your City's Weather, which is updated hourly. U.S. Only",
       "security": []
     }
   ],
   "wsdlTargetNS": "http://ws.cdyne.com/WeatherWS/",
   "serviceName": "Weather",
-  "wsdlUri": "examples/minimal/weather.wsdl"
+  "wsdlUri": "examples/minimal/weather.wsdl",
+  "wsdlDocs": {
+    "bindings": [
+      {
+        "name": "WeatherHttpGet",
+        "type": {
+          "ns": "http://ws.cdyne.com/WeatherWS/",
+          "local": "WeatherHttpGet"
+        }
+      },
+      {
+        "name": "WeatherHttpPost",
+        "type": {
+          "ns": "http://ws.cdyne.com/WeatherWS/",
+          "local": "WeatherHttpPost"
+        }
+      },
+      {
+        "name": "WeatherSoap",
+        "type": {
+          "ns": "http://ws.cdyne.com/WeatherWS/",
+          "local": "WeatherSoap"
+        }
+      },
+      {
+        "name": "WeatherSoap12",
+        "type": {
+          "ns": "http://ws.cdyne.com/WeatherWS/",
+          "local": "WeatherSoap"
+        }
+      }
+    ],
+    "messages": [
+      {
+        "name": "GetCityForecastByZIPHttpGetIn",
+        "parts": [
+          {
+            "name": "ZIP",
+            "type": {
+              "ns": "http://www.w3.org/2001/XMLSchema",
+              "local": "string"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityForecastByZIPHttpGetOut",
+        "parts": [
+          {
+            "name": "Body",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "ForecastReturn"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityForecastByZIPHttpPostIn",
+        "parts": [
+          {
+            "name": "ZIP",
+            "type": {
+              "ns": "http://www.w3.org/2001/XMLSchema",
+              "local": "string"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityForecastByZIPHttpPostOut",
+        "parts": [
+          {
+            "name": "Body",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "ForecastReturn"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityForecastByZIPSoapIn",
+        "parts": [
+          {
+            "name": "parameters",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "GetCityForecastByZIP"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityForecastByZIPSoapOut",
+        "parts": [
+          {
+            "name": "parameters",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "GetCityForecastByZIPResponse"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityWeatherByZIPHttpGetIn",
+        "parts": [
+          {
+            "name": "ZIP",
+            "type": {
+              "ns": "http://www.w3.org/2001/XMLSchema",
+              "local": "string"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityWeatherByZIPHttpGetOut",
+        "parts": [
+          {
+            "name": "Body",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "WeatherReturn"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityWeatherByZIPHttpPostIn",
+        "parts": [
+          {
+            "name": "ZIP",
+            "type": {
+              "ns": "http://www.w3.org/2001/XMLSchema",
+              "local": "string"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityWeatherByZIPHttpPostOut",
+        "parts": [
+          {
+            "name": "Body",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "WeatherReturn"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityWeatherByZIPSoapIn",
+        "parts": [
+          {
+            "name": "parameters",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "GetCityWeatherByZIP"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetCityWeatherByZIPSoapOut",
+        "parts": [
+          {
+            "name": "parameters",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "GetCityWeatherByZIPResponse"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetWeatherInformationHttpGetIn"
+      },
+      {
+        "name": "GetWeatherInformationHttpGetOut",
+        "parts": [
+          {
+            "name": "Body",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "ArrayOfWeatherDescription"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetWeatherInformationHttpPostIn"
+      },
+      {
+        "name": "GetWeatherInformationHttpPostOut",
+        "parts": [
+          {
+            "name": "Body",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "ArrayOfWeatherDescription"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetWeatherInformationSoapIn",
+        "parts": [
+          {
+            "name": "parameters",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "GetWeatherInformation"
+            }
+          }
+        ]
+      },
+      {
+        "name": "GetWeatherInformationSoapOut",
+        "parts": [
+          {
+            "name": "parameters",
+            "element": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "GetWeatherInformationResponse"
+            }
+          }
+        ]
+      }
+    ],
+    "services": [
+      {
+        "name": "Weather",
+        "ports": [
+          {
+            "name": "WeatherHttpGet",
+            "binding": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "WeatherHttpGet"
+            }
+          },
+          {
+            "name": "WeatherHttpPost",
+            "binding": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "WeatherHttpPost"
+            }
+          },
+          {
+            "name": "WeatherSoap",
+            "binding": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "WeatherSoap"
+            }
+          },
+          {
+            "name": "WeatherSoap12",
+            "binding": {
+              "ns": "http://ws.cdyne.com/WeatherWS/",
+              "local": "WeatherSoap12"
+            }
+          }
+        ]
+      }
+    ]
+  }
 }

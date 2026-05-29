@@ -7,9 +7,13 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import type { Weather } from "../client/client.js";
+import type { WeatherOperations } from "../client/operations.js";
 import { registerSchemas_v1_weather } from "./schemas.js";
 import { registerRoutes_v1_weather } from "./routes.js";
 import { createGatewayErrorHandler_v1_weather } from "./runtime.js";
+
+// Re-export the operations interface for convenience
+export type { WeatherOperations };
 
 /**
  * Options for the Weather gateway plugin
@@ -18,8 +22,9 @@ export interface WeatherGatewayOptions extends FastifyPluginOptions {
   /**
    * SOAP client instance (pre-configured).
    * The client should be instantiated with appropriate source and security settings.
+   * Accepts the concrete client class or any implementation of WeatherOperations.
    */
-  client: Weather;
+  client: WeatherOperations;
   /**
    * Optional additional route prefix applied at runtime.
    * Note: If you used --openapi-base-path during generation, routes already have that prefix baked in.
@@ -28,23 +33,9 @@ export interface WeatherGatewayOptions extends FastifyPluginOptions {
   prefix?: string;
 }
 
-/**
- * Convenience type listing all SOAP operations with `args: unknown` signatures.
- *
- * This interface is NOT used for the decorator type (which uses the concrete
- * client class for full type safety). It is exported as a lightweight alternative
- * for mocking or testing scenarios where importing the full client class is
- * undesirable.
- */
-export interface WeatherOperations {
-  GetCityForecastByZIP(args: unknown): Promise<{ response: unknown; headers: unknown }>;
-  GetCityWeatherByZIP(args: unknown): Promise<{ response: unknown; headers: unknown }>;
-  GetWeatherInformation(args: unknown): Promise<{ response: unknown; headers: unknown }>;
-}
-
 declare module "fastify" {
   interface FastifyInstance {
-    weatherClient: Weather;
+    weatherClient: WeatherOperations;
   }
 }
 

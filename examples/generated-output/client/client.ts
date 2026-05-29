@@ -119,6 +119,8 @@ export class Weather {
   /**
    * Calls the GetWeatherInformation operation of the Weather.
    *
+   * Gets Information for each WeatherID
+   *
    * @param args - The request arguments for the GetWeatherInformation operation.
    * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
    */
@@ -137,6 +139,8 @@ export class Weather {
   /**
    * Calls the GetCityForecastByZIP operation of the Weather.
    *
+   * Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly. U.S. Only
+   *
    * @param args - The request arguments for the GetCityForecastByZIP operation.
    * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
    */
@@ -154,6 +158,8 @@ export class Weather {
 
   /**
    * Calls the GetCityWeatherByZIP operation of the Weather.
+   *
+   * Allows you to get your City's Weather, which is updated hourly. U.S. Only
    *
    * @param args - The request arguments for the GetCityWeatherByZIP operation.
    * @returns A promise resolving to the operation response containing data, headers, response raw XML, and request raw XML.
@@ -244,7 +250,7 @@ export class Weather {
 
     // Get metadata for this specific type to know which props are attributes
     const attributesList = (typeName && this.dataTypes?.Attributes?.[typeName]) || [];
-    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
 
     const out: any = {};
     const attributesBag: Record<string, any> = {};
@@ -277,7 +283,7 @@ export class Weather {
       }
 
       // Everything else becomes a child element, recursively processed
-      const childType = (childrenTypes as any)[k] as string | undefined;
+      const childType: string | undefined = childrenTypes[k];
       out[k] = Array.isArray(v)
         ? v.map(node => this.toSoapArgs(node, childType))
         : this.toSoapArgs(v, childType);
@@ -313,7 +319,7 @@ export class Weather {
     }
 
     // Get child type mapping for recursive processing with correct types
-    const childrenTypes = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
     const result: any = {};
 
     // Preserve text content for mixed XML elements
@@ -336,7 +342,7 @@ export class Weather {
         continue;
       }
       // Recursively convert child elements with their specific type info
-      const childType = (childrenTypes as any)[k] as string | undefined;
+      const childType: string | undefined = childrenTypes[k];
       result[k] = Array.isArray(v)
         ? v.map(node => this.fromSoapResult(node, childType))
         : this.fromSoapResult(v, childType);

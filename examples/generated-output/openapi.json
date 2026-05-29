@@ -42,7 +42,9 @@
               }
             }
           }
-        }
+        },
+        "summary": "Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly.",
+        "description": "Allows you to get your City Forecast Over the Next 7 Days, which is updated hourly. U.S. Only"
       }
     },
     "/get-city-weather-by-zip": {
@@ -82,7 +84,9 @@
               }
             }
           }
-        }
+        },
+        "summary": "Allows you to get your City's Weather, which is updated hourly.",
+        "description": "Allows you to get your City's Weather, which is updated hourly. U.S. Only"
       }
     },
     "/get-weather-information": {
@@ -122,7 +126,9 @@
               }
             }
           }
-        }
+        },
+        "summary": "Gets Information for each WeatherID",
+        "description": "Gets Information for each WeatherID"
       }
     }
   },

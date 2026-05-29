@@ -95,7 +95,7 @@ export function classifyError(err: unknown): ClassifiedError {
       httpStatus: 400,
       code: "VALIDATION_ERROR",
       message: "Request validation failed",
-      details: (err as Record<string, unknown>).validation,
+      details: { validationErrors: (err as Record<string, unknown>).validation },
     };
   }
 
@@ -122,7 +122,7 @@ export function classifyError(err: unknown): ClassifiedError {
         httpStatus: 503,
         code: "SERVICE_UNAVAILABLE",
         message: "Unable to connect to SOAP service",
-        details: err.message,
+        details: { message: err.message },
       };
     }
     if (err.message.includes("ETIMEDOUT") || err.message.includes("timeout")) {
@@ -130,7 +130,7 @@ export function classifyError(err: unknown): ClassifiedError {
         httpStatus: 504,
         code: "GATEWAY_TIMEOUT",
         message: "SOAP service request timed out",
-        details: err.message,
+        details: { message: err.message },
       };
     }
   }
@@ -168,4 +168,130 @@ export function createGatewayErrorHandler_v1_weather() {
     reply.status(classified.httpStatus);
     return buildErrorEnvelope(classified.code, classified.message, classified.details);
   };
+}
+
+/**
+ * ArrayOf* wrapper type → inner element property name.
+ * These types are flattened to plain arrays in the OpenAPI schema,
+ * so the runtime must unwrap { InnerElement: [...] } → [...].
+ */
+const ARRAY_WRAPPERS: Record<string, string> = {
+  "ArrayOfWeatherDescription": "WeatherDescription",
+  "ArrayOfForecast": "Forecast"
+};
+
+/**
+ * Type name → { propertyName: propertyTypeName } for recursive unwrapping.
+ */
+const CHILDREN_TYPES: Record<string, Record<string, string>> = {
+  "WeatherDescription": {
+    "WeatherID": "number",
+    "Description": "string",
+    "PictureURL": "string"
+  },
+  "ArrayOfWeatherDescription": {
+    "WeatherDescription": "WeatherDescription"
+  },
+  "Temp": {
+    "MorningLow": "string",
+    "DaytimeHigh": "string"
+  },
+  "POP": {
+    "Nighttime": "string",
+    "Daytime": "string"
+  },
+  "Forecast": {
+    "Date": "string",
+    "WeatherID": "number",
+    "Desciption": "string",
+    "Temperatures": "Temp",
+    "ProbabilityOfPrecipiation": "POP"
+  },
+  "ArrayOfForecast": {
+    "Forecast": "Forecast"
+  },
+  "ForecastReturn": {
+    "Success": "boolean",
+    "ResponseText": "string",
+    "State": "string",
+    "City": "string",
+    "WeatherStationCity": "string",
+    "ForecastResult": "ArrayOfForecast"
+  },
+  "WeatherReturn": {
+    "Success": "boolean",
+    "ResponseText": "string",
+    "State": "string",
+    "City": "string",
+    "WeatherStationCity": "string",
+    "WeatherID": "number",
+    "Description": "string",
+    "Temperature": "string",
+    "RelativeHumidity": "string",
+    "Wind": "string",
+    "Pressure": "string",
+    "Visibility": "string",
+    "WindChill": "string",
+    "Remarks": "string"
+  },
+  "GetWeatherInformation": {},
+  "GetWeatherInformationResponse": {
+    "GetWeatherInformationResult": "ArrayOfWeatherDescription"
+  },
+  "GetCityForecastByZIP": {
+    "ZIP": "string"
+  },
+  "GetCityForecastByZIPResponse": {
+    "GetCityForecastByZIPResult": "ForecastReturn"
+  },
+  "GetCityWeatherByZIP": {
+    "ZIP": "string"
+  },
+  "GetCityWeatherByZIPResponse": {
+    "GetCityWeatherByZIPResult": "WeatherReturn"
+  }
+};
+
+/**
+ * Recursively unwraps ArrayOf* wrapper objects in a SOAP response so the
+ * data matches the flattened OpenAPI array schemas.
+ *
+ * Safe to call on any response — returns data unchanged when the type
+ * has no wrapper fields.
+ *
+ * @param data - SOAP response data (potentially with wrapper objects)
+ * @param typeName - The type name for the current data level
+ * @returns Unwrapped data matching the OpenAPI schema shape
+ */
+export function unwrapArrayWrappers(data: unknown, typeName: string): unknown {
+  if (data == null || typeof data !== "object") return data;
+
+  // If this type is itself a wrapper, unwrap it
+  if (typeName in ARRAY_WRAPPERS) {
+    const innerKey = ARRAY_WRAPPERS[typeName];
+    const arr = (data as Record<string, unknown>)[innerKey] ?? [];
+    // Recurse into each item using the element's type from CHILDREN_TYPES
+    if (Array.isArray(arr) && typeName in CHILDREN_TYPES) {
+      const elemType = CHILDREN_TYPES[typeName][innerKey];
+      if (elemType) return arr.map(item => unwrapArrayWrappers(item, elemType));
+    }
+    return arr;
+  }
+
+  // Recurse into children whose types may contain wrappers
+  if (typeName in CHILDREN_TYPES) {
+    const children = CHILDREN_TYPES[typeName];
+    for (const [propName, propType] of Object.entries(children)) {
+      const val = (data as Record<string, unknown>)[propName];
+      if (val !== undefined) {
+        if (Array.isArray(val)) {
+          (data as Record<string, unknown>)[propName] = val.map(item => unwrapArrayWrappers(item, propType));
+        } else {
+          (data as Record<string, unknown>)[propName] = unwrapArrayWrappers(val, propType);
+        }
+      }
+    }
+  }
+
+  return data;
 }
