@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- chore(release): add `npm run release:preflight` local verification script
+
 ## [0.23.0] - 2026-05-26
 
 - chore(docs): add portable Markdown link and TypeScript fence validation

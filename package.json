@@ -84,6 +84,7 @@
     "skill:validate": "node scripts/validate-agent-skill.mjs",
     "skill:package": "node scripts/build-agent-skill.mjs",
     "package:validate": "node scripts/validate-npm-package.mjs",
+    "release:preflight": "node scripts/release-preflight.mjs",
     "ci": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate && npm run docs:validate && vitest run && npm run smoke:pipeline",
     "examples:regenerate": "tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir examples/generated-output/client --openapi-file examples/generated-output/openapi.json --gateway-dir examples/generated-output/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json"
   },
