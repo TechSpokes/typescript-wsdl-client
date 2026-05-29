@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-05-29
+
 - chore(release): add `npm run release:preflight` local verification script
 
 ## [0.23.0] - 2026-05-26
