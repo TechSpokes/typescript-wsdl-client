@@ -1,97 +1,123 @@
 # TypeScript WSDL Client Roadmap
 
-Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, and Fastify gateway scaffolding.
+Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 0.23.x Series
+## Current: 0.25.x Series
 
-Focus: gateway integration documentation, repository health, dependency currency, production gateway fit, and security responsibility boundaries while keeping generated output deterministic and reviewable.
+Focus: align the public contract before 1.0, preserve release quality, and turn remaining WSDL coverage gaps into test-backed decisions.
+
+The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
 
+### 0.25.0
+
+- Hardened generated gateway runtime array unwrapping against prototype-sensitive keys.
+- Replaced release-preflight dynamic changelog header matching with literal version matching.
+- Added regression coverage for the reported CodeQL findings.
+
+### 0.24.0
+
+- Added `npm run release:preflight -- vX.Y.Z` for local release verification.
+- Checked release metadata, dependency freshness, generated example drift, CI, and skill packaging before tags.
+- Normalized generated example comparisons to avoid false drift from temporary paths.
+- Removed unused concrete client imports from generated gateway plugin wrappers.
+
 ### 0.23.0
 
-- Added portable documentation validation for local Markdown links and TypeScript fenced snippets
-- Added inbound gateway enforcement documentation for authentication, authorization, logging, and request correlation extension points
+- Added portable documentation validation for local Markdown links and TypeScript fenced snippets.
+- Added inbound gateway enforcement documentation for authentication, authorization, logging, and request correlation extension points.
 
 ### 0.22.0
 
-- Refreshed root dependency minimums for `@types/node`, `soap`, `tsx`, and `vitest`
-- Refreshed generated app scaffold dependency minimums for `@types/node`, `soap`, and `tsx`
-- Improved draft release body rendering and consumer-facing release validation notes
+- Refreshed root dependency minimums for `@types/node`, `soap`, `tsx`, and `vitest`.
+- Refreshed generated app scaffold dependency minimums for `@types/node`, `soap`, and `tsx`.
+- Improved draft release body rendering and consumer-facing release validation notes.
 
 ### 0.21.0
 
-- Added the standalone AI agent skill artifact for consumer projects
-- Added release validation and packaging for the generated skill artifact
+- Added the standalone AI agent skill artifact for consumer projects.
+- Added release validation and packaging for the generated skill artifact.
 
 ### 0.20.0
 
-- Refreshed root dependency minimums for `@types/node`, `soap`, and `tsx`
-- Refreshed generated app scaffold dependency minimums for `@types/node`, `soap`, and `tsx`
+- Added the tag-driven GitHub draft release workflow.
+- Refreshed root and generated app dependency minimums.
 
 ### 0.19.0
 
-- Shared security configuration for OpenAPI gateway security and upstream SOAP runtime security
-- Generated app scaffold support for upstream `node-soap` security profiles
-- OpenAPI top-level and per-operation security output from `security.json`
-- Runtime `.env.example` and app README entries for upstream SOAP secrets
-- IDE-inspection cleanup for Markdown links, TypeScript docs snippets, and generated source templates
-
-### 0.18.x
-
-- Dependency maintenance script for root dependencies and generated app pins
-- Refreshed generated app dependency minimums
+- Added shared security configuration for OpenAPI gateway security and upstream SOAP runtime security.
+- Added generated app scaffold support for upstream `node-soap` security profiles.
+- Added OpenAPI top-level and per-operation security output from `security.json`.
+- Added runtime `.env.example` and app README entries for upstream SOAP secrets.
+- Cleaned up Markdown links, TypeScript docs snippets, and generated source templates for IDE inspections.
 
 ### 0.17.x
 
-- Opt-in streamable SOAP responses via ADR-002
-- Client `StreamOperationResponse<T>` with `AsyncIterable<RecordType>`
-- Gateway NDJSON streaming with backpressure
-- OpenAPI `x-wsdl-tsc-stream` extension for record schema discovery
-- Companion-catalog shape resolution for opaque `xs:any` wrappers
-- SAX-driven streaming runtime and generated stream-aware tests
+- Added opt-in streamable SOAP responses via ADR-002.
+- Added client `StreamOperationResponse<T>` with `AsyncIterable<RecordType>`.
+- Added gateway NDJSON streaming with backpressure.
+- Added OpenAPI `x-wsdl-tsc-stream` extension for record schema discovery.
+- Added companion-catalog shape resolution for opaque `xs:any` wrappers.
+- Added SAX-driven streaming runtime and generated stream-aware tests.
 
 ## Product Priorities
 
-### Gateway Integration
+### Public Contract Alignment
 
-- Keep documented extension points current for generated app authentication, authorization, logging, and request correlation.
-- Keep examples current for verifying inbound JWT, API key, and mutual TLS signals outside generated route files.
-- Keep gateway security responsibility boundaries explicit in configuration and gateway integration docs.
+Public CLI flags, programmatic options, docs, and generated behavior must match before 1.0. The current priority is to implement full `xs:choice` union mode rather than reject it.
 
-### WSDL Coverage
+### OpenAPI And Fastify Compatibility
 
-- Improve support for `xs:union`, abstract types, and substitution groups.
-- Expand fixture coverage for multi-binding WSDLs, out-of-band policy references, and deeply composed schemas.
-- Keep unsupported SOAP features explicit in [Supported Patterns](docs/supported-patterns.md).
+OpenAPI schema changes must be proven against Fastify validation and serialization behavior before generator output changes. Compatibility research must constrain the union and JSON array streaming implementations.
 
 ### Streaming
 
-- Evaluate `json-array` streaming as a complement to NDJSON.
-- Investigate streaming request bodies for upload-style SOAP operations.
-- Add more backpressure and terminal-error examples for generated gateways.
+`json-array` streaming must be implemented before 1.0. The implementation must stream without buffering the full response and must document the terminal-error behavior for JSON array clients.
 
-### Testing Experience
+### WSDL Coverage
 
-- Broaden generated consumer test utilities beyond the current gateway happy-path tests.
-- Add examples for mock clients with authentication, custom headers, and upstream security.
-- Keep snapshot inventory checks strict when generator output changes.
+The project must have an automated WSDL feature matrix that proves what is supported, partially supported, or rejected with diagnostics. Priority gaps are `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, and deeply composed schemas.
+
+### Gateway Integration
+
+Generated gateway integration documentation must keep inbound authentication, authorization, logging, and request correlation outside generated route files. Security responsibility boundaries must remain explicit in configuration and gateway integration docs.
 
 ## Repository Health Priorities
 
 - Keep documentation validation wired into CI and release preflight checks.
 - Keep roadmap, changelog, README, CLI help, examples, and docs configuration pages aligned before each release.
-- Continue using packaged template files for generated source blocks that are too large for readable inline strings.
-- Consider a release preflight script that runs CI, dependency maintenance, generated example checks, and documentation verification.
-- Keep CI on the supported Node.js floor and periodically test the newest active Node.js version before 1.0.
+- Keep generated output deterministic and reviewable through snapshot inventory checks.
+- Keep package provenance and generated output verification in the release workflow.
+- Test the supported Node.js floor and the newest active Node.js line before 1.0.
 
-## 1.0 Readiness Themes
+## 1.0 Release Gates
 
-- Stable CLI and programmatic API contracts
-- Documented security responsibility boundaries for generated gateways
-- Real-world WSDL fixture coverage across common enterprise schema patterns
-- Clear upgrade guidance and deprecation policy
-- Repeatable release workflow with package provenance and generated output verification
+### Contract Gate
+
+- `--client-choice-mode union` has full test-backed behavior.
+- `format: "json-array"` has full test-backed behavior.
+- Public CLI docs, API docs, examples, and generated output agree.
+
+### Compatibility Gate
+
+- Choice-union OpenAPI output is compatible with Fastify request validation.
+- Response schemas remain compatible with Fastify serialization limits.
+- Streaming JSON array output has clear media type, schema, and error semantics.
+
+### Coverage Gate
+
+- The automated WSDL feature matrix runs in CI or preflight.
+- Every listed feature has a status, fixture, and expected behavior.
+- Unsupported features fail with useful diagnostics rather than silent miscompilation.
+
+### Quality Gate
+
+- `npm run docs:validate` passes.
+- `npm test` passes.
+- `npm run smoke:pipeline` passes.
+- `npm run ci` passes.
+- `npm run release:preflight -- v1.0.0` passes during release preparation.
 
 ## Goals
 

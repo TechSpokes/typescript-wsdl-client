@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(roadmap): add 1.0 readiness roadmap and implementation slice plans
+
 ## [0.25.0] - 2026-05-29
 
 - fix(security): harden release preflight and generated gateway runtime scans
