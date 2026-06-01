@@ -60,7 +60,6 @@ describe("toJsonArray", () => {
   it("does not emit bytes when the source fails before the first record", async () => {
     async function* failing() {
       throw new Error("boom before");
-      yield {ok: false};
     }
 
     const result = await readUntilError(toJsonArray(failing()));

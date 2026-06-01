@@ -2,10 +2,22 @@ import {mkdtempSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {describe, expect, it} from "vitest";
-import {runGenerationPipeline} from "../../src/pipeline.js";
-import {parseStreamConfig} from "../../src/util/streamConfig.js";
+import {parseStreamConfig, runGenerationPipeline} from "../../src/index.js";
 
 const WSDL = join(import.meta.dirname, "..", "..", "examples", "minimal", "weather.wsdl");
+
+type OpenApiTestDocument = {
+  paths: Record<string, {
+    post: {
+      responses: Record<string, {
+        content: Record<string, {
+          schema: unknown;
+          "x-wsdl-tsc-stream"?: unknown;
+        }>;
+      }>;
+    };
+  }>;
+};
 
 function weatherStreamConfig(format: "ndjson" | "json-array") {
   return parseStreamConfig({
@@ -23,7 +35,7 @@ function weatherStreamConfig(format: "ndjson" | "json-array") {
   });
 }
 
-async function generateOpenApiForStream(format: "ndjson" | "json-array") {
+async function generateOpenApiForStream(format: "ndjson" | "json-array"): Promise<OpenApiTestDocument> {
   const outDir = mkdtempSync(join(tmpdir(), `wsdl-openapi-stream-${format}-`));
   const {openapiDoc} = await runGenerationPipeline({
     wsdl: WSDL,
@@ -36,7 +48,10 @@ async function generateOpenApiForStream(format: "ndjson" | "json-array") {
     },
     streamConfig: weatherStreamConfig(format),
   });
-  return openapiDoc;
+  if (!openapiDoc) {
+    throw new Error("expected pipeline to return an OpenAPI document");
+  }
+  return openapiDoc as OpenApiTestDocument;
 }
 
 describe("OpenAPI stream responses", () => {

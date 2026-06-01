@@ -16,9 +16,7 @@ import { mkdtempSync, mkdirSync, readFileSync, statSync, existsSync, writeFileSy
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 import {buildChoiceWsdl, buildSearchChoiceSchema, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
-// noinspection ES6PreferShortImport
-import { runGenerationPipeline } from "../../src/pipeline.js";
-import {parseStreamConfig} from "../../src/util/streamConfig.js";
+import {parseStreamConfig, runGenerationPipeline} from "../../src/index.js";
 
 const PROJECT_ROOT = join(import.meta.dirname, "..", "..");
 const WSDL = join(PROJECT_ROOT, "examples", "minimal", "weather.wsdl");

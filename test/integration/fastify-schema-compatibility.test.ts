@@ -278,14 +278,15 @@ describe("Fastify schema compatibility probes", () => {
     await withFastify(
       (app) => {
         app.setErrorHandler(async (error, _request, reply) => {
+          const message = error instanceof Error ? error.message : String(error);
           reply.status(500);
           return {
             status: "ERROR",
-            message: error.message,
+            message,
             data: null,
             error: {
               code: "INTERNAL_ERROR",
-              message: error.message,
+              message,
             },
           };
         });
