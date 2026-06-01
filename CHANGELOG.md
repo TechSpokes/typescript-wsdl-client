@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(cli): align CLI reference flags with the public command surface
 - docs(roadmap): add 1.0 readiness roadmap and implementation slice plans
 
 ## [0.25.0] - 2026-05-29

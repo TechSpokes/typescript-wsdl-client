@@ -108,7 +108,7 @@ All CLI flags changed from camelCase to kebab-case. The URN format changed to a 
 
 | Old Flag (0.7.x) | New Flag (0.8.x) |
 |-------------------|-------------------|
-| `--versionTag` | `--openapi-version` |
+| `--versionTag` | `--openapi-version-tag` |
 | `--basePath` | `--openapi-base-path` |
 | `--pathStyle` | `--openapi-path-style` |
 | `--closedSchemas` | `--openapi-closed-schemas` |

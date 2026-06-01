@@ -54,6 +54,7 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--client-dir` | Generate TypeScript client in this directory |
 | `--openapi-file` | Generate OpenAPI spec at this path |
 | `--gateway-dir` | Generate Fastify gateway in this directory |
+| `--clean` | Remove existing client output directory contents before generation |
 
 ### Client Flags
 
@@ -76,25 +77,24 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 |------|---------|-------------|
 | `--openapi-format` | `json` | Output format: json, yaml, or both |
 | `--openapi-title` | (derived) | API title |
-| `--openapi-version` | `0.0.0` | API version |
-| `--openapi-description` | (empty) | API description |
+| `--openapi-version-tag` | `0.0.0` | API version for `info.version` |
 | `--openapi-servers` | `/` | Comma-separated server URLs (see note below) |
-
-> When `--init-app` is used and `--openapi-servers` is not provided, servers default to `http://localhost:3000`. The app scaffold also rewrites the servers array in its local `openapi.json` copy to match the configured port and prefix.
-
 | `--openapi-base-path` | (empty) | Base path prefix |
 | `--openapi-path-style` | `kebab` | Path transform: kebab, asis, or lower |
-| `--openapi-method` | `post` | Default HTTP method |
+| `--openapi-default-method` | `post` | Default HTTP method |
 | `--openapi-tag-style` | `default` | Tag inference: default, service, or first |
 | `--openapi-closed-schemas` | `false` | Add additionalProperties: false |
 | `--openapi-flatten-array-wrappers` | `true` | Flatten ArrayOf* wrappers to plain arrays; emit runtime unwrap in gateway |
 | `--openapi-prune-unused-schemas` | `false` | Emit only referenced schemas |
 | `--openapi-envelope-namespace` | `ResponseEnvelope` | Envelope component name suffix |
 | `--openapi-error-namespace` | `ErrorObject` | Error object name suffix |
-| `--openapi-validate` | `true` | Validate spec with swagger-parser |
 | `--openapi-security-config-file` | | Path to security.json; `--openapi-security-file` is accepted as an alias |
 | `--openapi-tags-file` | | Path to tags.json |
 | `--openapi-ops-file` | | Path to ops.json |
+
+CLI OpenAPI generation always validates the generated spec with `@apidevtools/swagger-parser`.
+
+When `--init-app` is used and `--openapi-servers` is not provided, servers default to `http://localhost:3000`. The app scaffold also rewrites the servers array in its local `openapi.json` copy to match the configured port and prefix.
 
 ### Gateway Flags
 

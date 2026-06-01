@@ -20,7 +20,7 @@ Regenerate safely in CI/CD without spurious diffs.
 
 ### OpenAPI Validation
 
-Enabled by default using @apidevtools/swagger-parser. Validates schema structure, resolves all $ref references, catches missing schemas and circular dependencies. Disable with `--openapi-validate false`.
+CLI OpenAPI generation always validates with `@apidevtools/swagger-parser`. It checks schema structure, resolves `$ref` references, and catches missing schemas and circular dependencies.
 
 ### Gateway Contract Validation
 

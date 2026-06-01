@@ -56,7 +56,7 @@ npx wsdl-tsc openapi \
 
 Open `openapi.json` and review the paths, request/response schemas, and descriptions. The spec is derived from the same compiled catalog as the TypeScript types, so they stay aligned.
 
-Validate the spec with any OpenAPI tool. Built-in validation runs by default; disable with `--openapi-validate false` if you need to inspect an intermediate state.
+Validate the spec with any OpenAPI tool. Built-in CLI validation always runs; programmatic callers can set `skipValidate: true` when they need to inspect an intermediate state.
 
 ## Step 2b (Optional): Opt Into Streaming for Large Responses
 

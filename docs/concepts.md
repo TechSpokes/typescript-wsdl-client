@@ -339,8 +339,7 @@ OpenAPI output is validated with `@apidevtools/swagger-parser`. The validator
 checks schema structure, resolves all `$ref` references, catches missing
 schemas, and detects circular dependencies.
 
-Disable with `--openapi-validate false` or `validate: false` in the
-programmatic API.
+CLI OpenAPI generation always validates the generated spec. Programmatic callers can set `skipValidate: true` when they need to inspect an intermediate state.
 
 ## Streaming vs Buffered Responses
 

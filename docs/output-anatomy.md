@@ -71,7 +71,7 @@ Generated at the path specified by `--openapi-file`.
 
 The spec includes one POST path per WSDL operation, request and response schemas in `components/schemas`, and descriptions derived from WSDL documentation annotations. Schemas are generated from the same catalog used for TypeScript types, so the two outputs stay aligned.
 
-OpenAPI validation runs by default using `@apidevtools/swagger-parser`. Disable with `--openapi-validate false`.
+CLI OpenAPI generation always validates the generated spec using `@apidevtools/swagger-parser`.
 
 ### Stream Schema Extension
 
