@@ -233,7 +233,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
 | [Architecture](docs/architecture.md) | Internal pipeline for contributors |
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
-| [Version 1.0 Roadmap Plan](docs/roadmap/README.md) | Implementation slices and release gates for 1.0 |
+| [Version 1.0 Roadmap Plan](docs/roadmap/README.md) | Conformance framework, implementation slices, and release gates for 1.0 |
 | [Streamable Responses (ADR-002)](docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
 

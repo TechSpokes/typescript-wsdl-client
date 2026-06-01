@@ -12,14 +12,15 @@ The plan is optimized for preserving quality. The contract and compatibility bas
 
 ## Route Summary
 
-| Slice                 | Document                                                               | Status            | Outcome                        |
-|-----------------------|------------------------------------------------------------------------|-------------------|--------------------------------|
-| Contract audit        | [Contract Audit](v1.0-contract-audit.md)                               | baseline complete | Public surfaces match behavior |
-| OpenAPI compatibility | [OpenAPI Fastify Compatibility](v1.0-openapi-fastify-compatibility.md) | baseline complete | Schema strategy is proven      |
-| Choice union mode     | [Choice Union Mode](v1.0-choice-union-mode.md)                         | complete          | Implemented in `0.26.0`        |
-| JSON array streaming  | [JSON Array Streaming](v1.0-json-array-streaming.md)                   | complete          | Implemented in `0.28.0`        |
-| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                   | remaining         | Feature support is test-backed |
-| Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)             | remaining         | 1.0 release is repeatable      |
+| Slice                 | Document                                                                     | Status            | Outcome                         |
+|-----------------------|------------------------------------------------------------------------------|-------------------|---------------------------------|
+| Contract audit        | [Contract Audit](v1.0-contract-audit.md)                                     | baseline complete | Public surfaces match behavior  |
+| OpenAPI compatibility | [OpenAPI Fastify Compatibility](v1.0-openapi-fastify-compatibility.md)       | baseline complete | Schema strategy is proven       |
+| Choice union mode     | [Choice Union Mode](v1.0-choice-union-mode.md)                               | complete          | Implemented in `0.26.0`         |
+| JSON array streaming  | [JSON Array Streaming](v1.0-json-array-streaming.md)                         | complete          | Implemented in `0.28.0`         |
+| Conformance framework | [Capability Conformance Framework](v1.0-capability-conformance-framework.md) | planned           | Pipeline claims are test-backed |
+| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | remaining         | Feature support is test-backed  |
+| Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)                   | remaining         | 1.0 release is repeatable       |
 
 ## Execution Order
 
@@ -39,17 +40,22 @@ Choice union mode is complete in `0.26.0`. The default `all-optional` mode remai
 
 JSON array streaming is complete in `0.28.0`. The default `ndjson` format remains unchanged, and `format: "json-array"` streams records incrementally without buffering the full SOAP response.
 
-### Slice 5: WSDL Coverage Matrix
+### Slice 5: Capability Conformance Framework
+
+Build the conformance registry, fixture strategy, stage runners, and issue-triage model. This slice turns feature claims into testable pipeline-wide capability cases.
+
+### Slice 6: WSDL Coverage Matrix
 
 Build the automated WSDL feature matrix next. The matrix should drive the remaining WSDL support, diagnostic, and deferral decisions.
 
-### Slice 6: Release Candidate Gates
+### Slice 7: Release Candidate Gates
 
 Run the release candidate gates after feature work and documentation have converged. This slice validates docs, tests, generated examples, package contents, skill artifact, release notes, and provenance workflow readiness.
 
 ## Remaining Before 1.0
 
-- Build and run the WSDL feature matrix.
+- Build the capability conformance registry and runner.
+- Build and run the WSDL feature matrix as the first conformance domain.
 - Turn unsupported or partial matrix rows into diagnostics, documentation, or scoped fixes.
 - Confirm `docs/supported-patterns.md` matches the matrix.
 - Run the release-candidate gates.
@@ -79,8 +85,8 @@ Run the release candidate gates after feature work and documentation have conver
 
 ### Coverage Gate
 
-- A WSDL feature matrix runs under test automation.
-- Each matrix entry has a fixture and expected behavior.
+- A capability conformance matrix runs under test automation.
+- Each matrix entry has a fixture, status, and stage expectations.
 - Unsupported features fail loudly or are documented as deliberately unsupported.
 
 ### Release Gate

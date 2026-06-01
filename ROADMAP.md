@@ -4,7 +4,7 @@ Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify g
 
 ## Current: 1.0 Readiness After 0.28.0
 
-Focus: build the automated WSDL coverage matrix, resolve discovered diagnostics or deferrals, and run the release candidate gates.
+Focus: build the capability conformance framework, use WSDL coverage as the first conformance domain, resolve discovered diagnostics or deferrals, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
@@ -81,7 +81,7 @@ The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/READM
 
 ### Public Contract Alignment
 
-Choice union mode and JSON array streaming are implemented. Remaining contract work is to keep docs, generated behavior, and examples aligned while the WSDL matrix turns coverage gaps into supported, diagnostic, or deferred statuses.
+Choice union mode and JSON array streaming are implemented. Remaining contract work is to keep docs, generated behavior, and examples aligned while the conformance framework turns coverage gaps into supported, diagnostic, or deferred statuses.
 
 ### OpenAPI And Fastify Compatibility
 
@@ -91,9 +91,13 @@ Compatibility research is complete for released choice union schemas and JSON ar
 
 `json-array` streaming is implemented and keeps NDJSON as the default format. JSON array clients receive streamed records as one JSON document; terminal upstream errors after streaming starts truncate the response and must be treated as failed streams.
 
+### Capability Conformance
+
+The immediate 1.0 blocker is an internal conformance framework that proves capability claims across compile, client, OpenAPI, gateway, app, generated-test, runtime, and documentation surfaces.
+
 ### WSDL Coverage
 
-The immediate 1.0 blocker is an automated WSDL feature matrix that proves what is supported, partially supported, or rejected with diagnostics. Priority gaps are `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, and deeply composed schemas.
+WSDL coverage should be the first conformance domain. Priority gaps are `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, and deeply composed schemas.
 
 ### Gateway Integration
 
@@ -121,10 +125,10 @@ Generated gateway integration documentation must keep inbound authentication, au
 - Response schemas remain compatible with Fastify serialization limits.
 - Streaming JSON array output has clear media type, schema, and error semantics.
 
-### Coverage Gate
+### Conformance Gate
 
-- The automated WSDL feature matrix runs in CI or preflight.
-- Every listed feature has a status, fixture, and expected behavior.
+- The automated capability conformance matrix runs in CI or preflight.
+- Every listed capability has a status, fixture, and expected stage behavior.
 - Unsupported features fail with useful diagnostics rather than silent miscompilation.
 
 ### Quality Gate
