@@ -7,6 +7,7 @@ import {
   APP_GENERATOR,
   PACKAGE_JSON,
   ROOT,
+  directDependencyRanges,
   expectedRanges,
   failIfErrors,
   readJson,
@@ -186,11 +187,11 @@ function depFreshness() {
     ...Object.keys(pkg.dependencies ?? {}),
     ...Object.keys(pkg.devDependencies ?? {}),
   ].sort();
-  const ranges = expectedRanges(names);
+  const ranges = expectedRanges(names, directDependencyRanges(pkg));
   const errors = verifyRootManifestAndLock(ranges);
   failIfErrors(errors);
   cachedRanges = ranges;
-  return { message: `${names.length} root pins match npm latest` };
+  return { message: `${names.length} root pins match npm latest or newer` };
 }
 
 function rangesFromPackageJson() {

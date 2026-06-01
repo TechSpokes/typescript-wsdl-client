@@ -77,11 +77,44 @@ export function directDependencyNames(pkg) {
   ].sort();
 }
 
-export function expectedRanges(names) {
+export function directDependencyRanges(pkg) {
+  const ranges = new Map();
+  for (const section of ["dependencies", "devDependencies"]) {
+    for (const [name, range] of Object.entries(pkg[section] ?? {})) {
+      ranges.set(name, range);
+    }
+  }
+  return ranges;
+}
+
+function parseSemver(value) {
+  const match = value?.match(/^\^?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/);
+  if (!match) return undefined;
+  return match.slice(1, 4).map(Number);
+}
+
+function compareSemver(left, right) {
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) return left[index] - right[index];
+  }
+  return 0;
+}
+
+export function selectExpectedRange(currentRange, latest) {
+  const latestRange = `^${latest}`;
+  const currentVersion = parseSemver(currentRange);
+  const latestVersion = parseSemver(latest);
+  if (currentVersion && latestVersion && compareSemver(currentVersion, latestVersion) > 0) {
+    return currentRange;
+  }
+  return latestRange;
+}
+
+export function expectedRanges(names, currentRanges = new Map()) {
   const ranges = new Map();
   for (const name of names) {
     const latest = latestVersion(name);
-    ranges.set(name, `^${latest}`);
+    ranges.set(name, selectExpectedRange(currentRanges.get(name), latest));
   }
   return ranges;
 }

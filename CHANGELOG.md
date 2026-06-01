@@ -9,8 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.25.2] - 2026-06-01
+
 - docs(cli): align CLI reference flags with the public command surface
 - docs(roadmap): add 1.0 readiness roadmap and implementation slice plans
+- fix(release): preserve newer dependency pins when npm latest points backward
 
 ## [0.25.0] - 2026-05-29
 

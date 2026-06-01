@@ -3,6 +3,7 @@ import {
   APP_DEPENDENCIES,
   APP_GENERATOR,
   PACKAGE_JSON,
+  directDependencyRanges,
   appGeneratorPinRegex,
   directDependencyNames,
   expectedRanges,
@@ -58,7 +59,7 @@ function main() {
   const pkg = readJson(PACKAGE_JSON);
   const rootPackages = directDependencyNames(pkg);
   const appPackages = Object.values(APP_DEPENDENCIES).flat();
-  const ranges = expectedRanges([...new Set([...rootPackages, ...appPackages])].sort());
+  const ranges = expectedRanges([...new Set([...rootPackages, ...appPackages])].sort(), directDependencyRanges(pkg));
 
   const rootChanged = updateRootPackage(pkg, ranges);
   const appChanged = updateAppGenerator(ranges);
