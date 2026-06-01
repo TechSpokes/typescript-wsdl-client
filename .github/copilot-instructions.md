@@ -168,6 +168,16 @@ Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `bu
 - When IDE inspections are unavailable, use repository-local checks: verify relative Markdown links target concrete files or headings, and keep TypeScript fenced examples syntactically valid as standalone snippets.
 - When embedding generated source code inside TypeScript, prefer template helpers, string builders, or packaged template files over large raw template literals that IDEs may inspect as incomplete injected code.
 
+### TypeScript test diagnostics
+
+When PhpStorm reports TypeScript diagnostics on test files, first check whether the file belongs to any `tsconfig.json`. Tests are runtime-validated by Vitest, but they may not be part of the production `tsconfig.json` because that config has `rootDir: "src"`.
+
+Do not add `test/**/*.ts` to the production config or broaden `rootDir` for a single test diagnostic. Add a scoped test `tsconfig.json` near the affected test when the test should be type-owned by the IDE.
+
+When a test imports a repository `.mjs` script, add a matching `.d.mts` declaration next to the script before relying on imported types. This prevents `TS7016` and follow-on `TS7006` implicit-`any` callbacks.
+
+Verify this class of fix with `npx tsc -p <scoped-tsconfig>`, focused Vitest tests, PhpStorm inspections, and a TypeScript service restart when diagnostics appear stale.
+
 ## How to Propose and Shape Changes
 
 - Prefer small, focused diffs: one feature or bugfix per change.

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(agent): record TypeScript test diagnostic handling
+- fix(test): type the docs validator unit test project
 - feat(test): reject missing required choice branches in generated tests
 - feat(test): generate choice-aware union-mode gateway fixtures
 - feat(openapi): emit choice branch constraints in union mode
