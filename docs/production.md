@@ -93,7 +93,7 @@ Default strategy: all-optional. The opt-in `--client-choice-mode union` mode emi
 
 ### Union Types
 
-`--client-choice-mode union` is still experimental while broader nested and required choice fixtures are completed.
+`--client-choice-mode union` is still experimental while nested, repeated, and multiple choice group fixtures are completed.
 
 ### WS-Policy
 

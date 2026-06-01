@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(test): reject missing required choice branches in generated tests
 - feat(test): generate choice-aware union-mode gateway fixtures
 - feat(openapi): emit choice branch constraints in union mode
 - feat(client): emit TypeScript choice branch unions in union mode

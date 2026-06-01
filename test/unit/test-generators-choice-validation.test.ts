@@ -14,8 +14,8 @@ const searchOperation: ResolvedOperationMeta = {
 };
 
 describe("test generators: choice validation", () => {
-  it("emits invalid multi-branch payload coverage for union-mode choices", () => {
-    const content = emitValidationTest(
+  function emitSearchValidation(catalog = createSearchChoiceCatalog("union")): string {
+    return emitValidationTest(
       "tests",
       "js",
       [searchOperation],
@@ -31,12 +31,24 @@ describe("test generators: choice validation", () => {
           },
         ],
       ]),
-      createSearchChoiceCatalog("union"),
+      catalog,
     );
+  }
+
+  it("emits invalid multi-branch payload coverage for union-mode choices", () => {
+    const content = emitSearchValidation();
 
     expect(content).toContain("rejects invalid SearchRequest choice payload");
     expect(content).toContain('"email": "sample"');
     expect(content).toContain('"phone": 0');
+    expect(content).toContain("expect(res.statusCode).toBe(400);");
+  });
+
+  it("emits missing-branch payload coverage for required union-mode choices", () => {
+    const content = emitSearchValidation(createSearchChoiceCatalog("union", {choiceMin: 1}));
+
+    expect(content).toContain("rejects missing SearchRequest choice payload");
+    expect(content).toMatch(/rejects missing SearchRequest choice payload[\s\S]*payload: \{\s+"tenantId": "sample"\s+}/);
     expect(content).toContain("expect(res.statusCode).toBe(400);");
   });
 });

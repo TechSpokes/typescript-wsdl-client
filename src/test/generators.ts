@@ -53,7 +53,7 @@ function buildInvalidChoicePayloads(
   op: ResolvedOperationMeta,
   mocks: OperationMocksMap | undefined,
   catalog: CatalogForMocks | undefined
-): Array<{typeName: string; payload: Record<string, unknown>}> {
+): Array<{kind: "invalid" | "missing"; typeName: string; payload: Record<string, unknown>}> {
   if (catalog?.options?.choice !== "union" || !op.requestTypeName) {
     return [];
   }
@@ -69,7 +69,7 @@ function buildInvalidChoicePayloads(
     return [];
   }
 
-  const invalidPayloads: Array<{typeName: string; payload: Record<string, unknown>}> = [];
+  const invalidPayloads: Array<{kind: "invalid" | "missing"; typeName: string; payload: Record<string, unknown>}> = [];
   for (const group of groups) {
     if (group.branches.length < 2) {
       continue;
@@ -87,9 +87,22 @@ function buildInvalidChoicePayloads(
     }
     payload[peerBranch.name] = mockChoiceBranchValue(peerBranch, catalog);
     invalidPayloads.push({
+      kind: "invalid",
       typeName: op.requestTypeName,
       payload,
     });
+
+    if (group.min >= 1) {
+      const missingPayload = cloneRecord(basePayload);
+      for (const branch of group.branches) {
+        delete missingPayload[branch.name];
+      }
+      invalidPayloads.push({
+        kind: "missing",
+        typeName: op.requestTypeName,
+        payload: missingPayload,
+      });
+    }
   }
 
   return invalidPayloads;
@@ -621,8 +634,8 @@ export function emitValidationTest(
   const choiceCases = sortedOps.flatMap((op) => {
     return buildInvalidChoicePayloads(op, mocks, catalog).map((invalid) => {
       const payload = JSON.stringify(invalid.payload, null, 4).replace(/\n/g, "\n    ");
-      const title = `${invalid.typeName} choice payload`;
-      return `  it("${op.method.toUpperCase()} ${op.path} rejects invalid ${title}", async () => {
+      const title = `${invalid.kind} ${invalid.typeName} choice payload`;
+      return `  it("${op.method.toUpperCase()} ${op.path} rejects ${title}", async () => {
     const app = await createTestApp();
     try {
       const res = await app.inject({

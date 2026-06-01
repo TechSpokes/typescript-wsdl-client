@@ -17,10 +17,28 @@ import { join } from "node:path";
 import { execSync } from "node:child_process";
 // noinspection ES6PreferShortImport
 import { runGenerationPipeline } from "../../src/pipeline.js";
-import {buildChoiceWsdl, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
+import {buildChoiceWsdl, buildSearchChoiceSchema, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
 
 const PROJECT_ROOT = join(import.meta.dirname, "..", "..");
 const WSDL = join(PROJECT_ROOT, "examples", "minimal", "weather.wsdl");
+
+function runGeneratedVitest(configPath: string): any {
+  const result = execSync(
+    `npx vitest run --config "${configPath}" --reporter=json`,
+    {
+      cwd: PROJECT_ROOT,
+      encoding: "utf-8",
+      timeout: 60_000,
+      env: {...process.env, NODE_ENV: "test"},
+    }
+  );
+  const jsonStart = result.indexOf("{");
+  expect(jsonStart).toBeGreaterThanOrEqual(0);
+  const parsed = JSON.parse(result.slice(jsonStart));
+  expect(parsed.success).toBe(true);
+  expect(parsed.numFailedTests).toBe(0);
+  return parsed;
+}
 
 describe("test generation pipeline", () => {
   let outDir: string;
@@ -139,27 +157,8 @@ describe("test generation pipeline", () => {
   it("generated tests pass when run with vitest", () => {
     const configPath = join(testDir, "vitest.config.ts");
 
-    // Run vitest from the project root so node_modules is accessible.
-    // Generated tests live under the project tree, so ESM resolution works.
-    const result = execSync(
-      `npx vitest run --config "${configPath}" --reporter=json`,
-      {
-        cwd: PROJECT_ROOT,
-        encoding: "utf-8",
-        timeout: 60_000,
-        env: { ...process.env, NODE_ENV: "test" },
-      }
-    );
-
-    // Parse the JSON output to verify all tests passed
-    // vitest --reporter=json may include non-JSON output before the JSON block
-    const jsonStart = result.indexOf("{");
-    if (jsonStart >= 0) {
-      const parsed = JSON.parse(result.slice(jsonStart));
-      expect(parsed.success).toBe(true);
-      expect(parsed.numPassedTests).toBeGreaterThan(0);
-      expect(parsed.numFailedTests).toBe(0);
-    }
+    const parsed = runGeneratedVitest(configPath);
+    expect(parsed.numPassedTests).toBeGreaterThan(0);
   }, 60_000);
 
   // --- Skip-if-exists ---
@@ -257,19 +256,48 @@ describe("choice union test generation", () => {
     expect(validationContent).toContain('"email": "sample"');
     expect(validationContent).toContain('"phone": 0');
 
-    const result = execSync(
-      `npx vitest run --config "${join(testDir, "vitest.config.ts")}" --reporter=json`,
-      {
-        cwd: PROJECT_ROOT,
-        encoding: "utf-8",
-        timeout: 60_000,
-        env: {...process.env, NODE_ENV: "test"},
-      }
+    runGeneratedVitest(join(testDir, "vitest.config.ts"));
+  }, 60_000);
+
+  it("emits missing-branch validation coverage for required choices", async () => {
+    const tmpBase = join(PROJECT_ROOT, "tmp");
+    mkdirSync(tmpBase, {recursive: true});
+    const outDir = mkdtempSync(join(tmpBase, "required-choice-testgen-"));
+    const testDir = join(outDir, "tests");
+    const wsdlPath = join(outDir, "choice.wsdl");
+    writeFileSync(
+      wsdlPath,
+      buildChoiceWsdl(buildSearchChoiceSchema({choiceMinOccurs: 1}), {
+        namespace: "http://example.com/required-choice-testgen",
+        servicePrefix: "RequiredChoiceTestgen",
+      }),
+      "utf8",
     );
-    const jsonStart = result.indexOf("{");
-    expect(jsonStart).toBeGreaterThanOrEqual(0);
-    const parsed = JSON.parse(result.slice(jsonStart));
-    expect(parsed.success).toBe(true);
-    expect(parsed.numFailedTests).toBe(0);
+
+    await runGenerationPipeline({
+      wsdl: wsdlPath,
+      catalogOut: join(outDir, "client", "catalog.json"),
+      clientOutDir: join(outDir, "client"),
+      compiler: {choice: "union"},
+      openapi: {
+        outFile: join(outDir, "openapi.json"),
+        format: "json",
+      },
+      gateway: {
+        outDir: join(outDir, "gateway"),
+        versionSlug: "v1",
+        serviceSlug: "choice",
+      },
+      test: {
+        testDir,
+        force: false,
+      },
+    });
+
+    const validationContent = readFileSync(join(testDir, "gateway", "validation.test.ts"), "utf-8");
+    expect(validationContent).toContain("rejects invalid SearchRequest choice payload");
+    expect(validationContent).toContain("rejects missing SearchRequest choice payload");
+
+    runGeneratedVitest(join(testDir, "vitest.config.ts"));
   }, 60_000);
 });

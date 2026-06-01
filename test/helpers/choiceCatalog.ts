@@ -1,6 +1,9 @@
 import type {CatalogForMocks} from "../../src/test/mockData.js";
 
-export function createSearchChoiceCatalog(choice: "all-optional" | "union" = "union"): CatalogForMocks {
+export function createSearchChoiceCatalog(
+  choice: "all-optional" | "union" = "union",
+  opts: {choiceMin?: number} = {},
+): CatalogForMocks {
   return {
     options: {choice},
     meta: {
@@ -25,7 +28,7 @@ export function createSearchChoiceCatalog(choice: "all-optional" | "union" = "un
         choiceGroups: [
           {
             name: "SearchRequestChoice1",
-            min: 0,
+            min: opts.choiceMin ?? 0,
             max: 1,
             sourceOrder: 1,
             branches: [

@@ -1,4 +1,9 @@
-export const SEARCH_CHOICE_SCHEMA = `
+export interface SearchChoiceSchemaOptions {
+  choiceMinOccurs?: number;
+}
+
+export function buildSearchChoiceSchema(opts: SearchChoiceSchemaOptions = {}): string {
+  return `
   <xs:element name="SearchRequest" type="tns:SearchRequest"/>
   <xs:element name="SearchResponse">
     <xs:complexType>
@@ -10,12 +15,15 @@ export const SEARCH_CHOICE_SCHEMA = `
   <xs:complexType name="SearchRequest">
     <xs:sequence>
       <xs:element name="tenantId" type="xs:string"/>
-      <xs:choice minOccurs="0" maxOccurs="1">
+      <xs:choice minOccurs="${opts.choiceMinOccurs ?? 0}" maxOccurs="1">
         <xs:element name="email" type="xs:string"/>
         <xs:element name="phone" type="xs:int"/>
       </xs:choice>
     </xs:sequence>
   </xs:complexType>`;
+}
+
+export const SEARCH_CHOICE_SCHEMA = buildSearchChoiceSchema();
 
 export interface ChoiceWsdlOptions {
   namespace?: string;
