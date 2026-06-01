@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "rootDir": "../.."
+  },
+  "include": [
+    "docs-validator.test.ts",
+    "../../scripts/validate-docs.d.mts"
+  ]
+}
