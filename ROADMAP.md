@@ -2,13 +2,19 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 0.26.x Series
+## Current: 0.28.x Readiness
 
 Focus: finish the remaining 1.0 readiness slices, preserve release quality, and turn WSDL coverage gaps into test-backed decisions.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 0.28.0
+
+- Added `format: "json-array"` streaming for stream-configured operations.
+- Added OpenAPI array schemas and generated Fastify routes for JSON array streams.
+- Preserved NDJSON as the default stream format.
 
 ### 0.26.0
 
@@ -70,15 +76,15 @@ The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/READM
 
 ### Public Contract Alignment
 
-Public CLI flags, programmatic options, docs, and generated behavior must match before 1.0. The next priorities are JSON array streaming, the WSDL coverage matrix, and release candidate gates for `1.0.0`.
+Public CLI flags, programmatic options, docs, and generated behavior must match before 1.0. The next priorities are the WSDL coverage matrix and release candidate gates for `1.0.0`.
 
 ### OpenAPI And Fastify Compatibility
 
-OpenAPI schema changes must be proven against Fastify validation and serialization behavior before generator output changes. Compatibility research now constrains the released choice union schemas and must also constrain JSON array streaming.
+OpenAPI schema changes must be proven against Fastify validation and serialization behavior before generator output changes. Compatibility research constrains the released choice union schemas and JSON array streaming behavior.
 
 ### Streaming
 
-`json-array` streaming must be implemented before 1.0. The implementation must stream without buffering the full response and must document the terminal-error behavior for JSON array clients.
+`json-array` streaming is implemented and keeps NDJSON as the default format. JSON array clients receive streamed records as one JSON document; terminal upstream errors after streaming starts truncate the response and must be treated as failed streams.
 
 ### WSDL Coverage
 

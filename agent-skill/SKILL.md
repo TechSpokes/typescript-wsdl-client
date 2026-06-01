@@ -40,4 +40,4 @@ Load fluid references only when details are needed:
 - `references/generated-code.md` for generated TypeScript, operation calls, stream calls, choice unions, and gateway integration details.
 - `references/testing.md` for mock clients, generated tests, and consumer test setup.
 - `references/troubleshooting.md` for installation, TypeScript, catalog, and streaming diagnostics.
-- `references/streaming.md` for stream configuration and NDJSON behavior.
+- `references/streaming.md` for stream configuration and NDJSON or JSON array behavior.

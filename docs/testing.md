@@ -246,7 +246,7 @@ const client = createMockClient({
 
 Mock responses use the pre-unwrap SOAP wrapper shape. The generated `unwrapArrayWrappers()` function handles conversion at runtime.
 
-For operations opted in via `--stream-config`, the mock returns `records: AsyncIterable<RecordType>` (via a small `asyncIterableOf` helper) and the generated happy-path test asserts on the NDJSON content-type and parseable record lines. Override a stream op with a multi-record iterable to exercise downstream backpressure:
+For operations opted in via `--stream-config`, the mock returns `records: AsyncIterable<RecordType>` via a small `asyncIterableOf` helper. Generated happy-path tests assert on the configured content type; NDJSON tests parse record lines, and JSON array tests parse the response body once as an array. Override a stream op with a multi-record iterable to exercise downstream backpressure:
 
 ```typescript
 const client = createMockClient({

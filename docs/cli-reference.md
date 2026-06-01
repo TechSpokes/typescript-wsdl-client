@@ -135,7 +135,7 @@ When `--init-app` is used and `--openapi-servers` is not provided, servers defau
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--stream-config` | (none) | Path to a JSON stream-configuration file (ADR-002). Marks selected operations as streaming: client emits `AsyncIterable<RecordType>`, gateway serves NDJSON, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`. Buffered output is unchanged when the flag is omitted. |
+| `--stream-config` | (none) | Path to a JSON stream-configuration file (ADR-002). Marks selected operations as streaming: client emits `AsyncIterable<RecordType>`, gateway serves NDJSON or JSON array output, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`. Buffered output is unchanged when the flag is omitted. |
 
 `--stream-config` is accepted on the `compile`, `client`, and `pipeline` commands. It is not accepted on `openapi`, `gateway`, or `app` because those consume a pre-compiled `catalog.json` that already carries the normalized stream metadata.
 

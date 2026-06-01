@@ -2,6 +2,7 @@ import {describe, it, expect} from "vitest";
 import Fastify from "fastify";
 import {parseRecords} from "../../src/runtime/streamXml.js";
 import {toNdjson} from "../../src/runtime/ndjson.js";
+import {toJsonArray} from "../../src/runtime/jsonArray.js";
 import {startChunkedSoapServer} from "../helpers/chunkedSoapServer.js";
 
 // Phase 5 acceptance gate for ADR-002:
@@ -178,6 +179,71 @@ describe("stream end-to-end integration", () => {
       expect(firstLineAtMs, "first NDJSON line must arrive").toBeDefined();
       expect(serverClosedAtMs, "server must have closed").toBeGreaterThan(0);
       expect(firstLineAtMs!).toBeLessThan((serverClosedAtMs ?? 0) - INTER_CHUNK_DELAY_MS);
+    } finally {
+      await app.close();
+      await server.close();
+    }
+  }, 20_000);
+
+  it("fastify gateway emits the first JSON array record before upstream EOF", async () => {
+    let serverClosedAtMs: number | undefined;
+    const server = await startChunkedSoapServer({
+      wsdl: "<unused/>",
+      chunks: CHUNKS,
+      interChunkDelayMs: INTER_CHUNK_DELAY_MS,
+      onServerClosed: (t) => {
+        serverClosedAtMs = t;
+      },
+    });
+    const app = Fastify({logger: false});
+    app.post("/stream", async (_request, reply) => {
+      const upstream = await fetch(server.url, {
+        method: "POST",
+        headers: {"content-type": "text/xml; charset=utf-8", soapaction: '"urn:probe/Stream"'},
+        body: "<dummy/>",
+      });
+      const records = parseRecords(webStreamToAsyncIterable(upstream.body!), SPEC);
+      reply.type("application/json");
+      return reply.send(toJsonArray(records));
+    });
+    await app.listen({port: 0, host: "127.0.0.1"});
+    try {
+      const addr = app.server.address();
+      if (!addr || typeof addr === "string") throw new Error("failed to bind Fastify");
+      const port = addr.port;
+
+      const tStart = Date.now();
+      const res = await fetch(`http://127.0.0.1:${port}/stream`, {
+        method: "POST",
+        headers: {"content-type": "application/json"},
+        body: "{}",
+      });
+      expect(res.ok).toBe(true);
+      expect(res.headers.get("content-type")).toContain("application/json");
+      expect(res.body).toBeTruthy();
+
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let body = "";
+      let firstPayloadAtMs: number | undefined;
+      while (true) {
+        const {value, done} = await reader.read();
+        if (done) break;
+        if (value) body += decoder.decode(value, {stream: true});
+        if (firstPayloadAtMs === undefined && body.includes('"Id":"1"')) {
+          firstPayloadAtMs = Date.now() - tStart;
+        }
+      }
+      body += decoder.decode();
+
+      expect(JSON.parse(body)).toEqual([
+        {Id: "1", Name: "alpha"},
+        {Id: "2", Name: "beta"},
+        {Id: "3", Name: "gamma"},
+      ]);
+      expect(firstPayloadAtMs, "first JSON array payload chunk must arrive").toBeDefined();
+      expect(serverClosedAtMs, "server must have closed").toBeGreaterThan(0);
+      expect(firstPayloadAtMs!).toBeLessThan((serverClosedAtMs ?? 0) - INTER_CHUNK_DELAY_MS);
     } finally {
       await app.close();
       await server.close();

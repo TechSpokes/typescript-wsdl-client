@@ -47,6 +47,8 @@ Read the catalog to confirm service names, operations, type names, namespaces, a
 
 Use stream configuration only for operations with large response payloads that should flush records incrementally.
 
+Use the default `ndjson` stream format unless downstream clients require one JSON document. Use `format: "json-array"` for clients that need an `application/json` array response.
+
 Regenerate the client, OpenAPI, gateway, and tests together after changing stream configuration. Streaming changes affect TypeScript return types, OpenAPI content types, gateway behavior, and generated test expectations.
 
 ## Choice Modeling

@@ -101,7 +101,7 @@ Add a stream configuration file passed with `--stream-config`. The same option s
 
 `recordType` is the TypeScript and schema model to emit for each streamed record.
 
-`format` should support `ndjson` first. `json-array` can be added later for clients that require a single JSON array response.
+`format` supports `ndjson` and `json-array`. `ndjson` remains the default; `json-array` is available for clients that require a single JSON array response.
 
 ## CLI and Programmatic API
 
@@ -197,7 +197,7 @@ The converter must reuse catalog metadata for:
 - Text content and `$value`
 - Primitive mapping
 
-The converter should collect SOAP faults, response errors, and warnings when they appear before the first record. After streaming starts, terminal errors cannot be represented as a normal JSON error envelope for NDJSON. The runtime should either emit a final error record with a documented extension shape or abort the stream and log the classified error.
+The converter should collect SOAP faults, response errors, and warnings when they appear before the first record. After streaming starts, terminal errors cannot be represented as a normal JSON error envelope. The shipped behavior aborts the stream; NDJSON clients see an incomplete HTTP response, and JSON array clients see an incomplete or invalid JSON document.
 
 ## OpenAPI Output
 
@@ -222,25 +222,47 @@ Stream operations should not use the standard success envelope for `200` respons
 
 OpenAPI 3.1 cannot fully describe an NDJSON sequence as a standard JSON Schema document. The `x-wsdl-tsc-stream` extension makes the item schema explicit for generated gateways, documentation tools, and future SDK generators.
 
+For `format: "json-array"`, OpenAPI uses an array schema under the configured media type while keeping the same extension:
+
+```json
+{
+  "description": "Successful streamed SOAP operation response",
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/UnitDescriptiveContentType"
+        }
+      },
+      "x-wsdl-tsc-stream": {
+        "format": "json-array",
+        "itemSchema": {
+          "$ref": "#/components/schemas/UnitDescriptiveContentType"
+        }
+      }
+    }
+  }
+}
+```
+
 ## Gateway Output
 
 Generated stream routes should call the stream operation and send a Node stream through Fastify.
 
 ```typescript
-import { Readable } from "node:stream";
-
 handler: async (request, reply) => {
   const client = fastify.escapiaContentClient;
   const result = await client.UnitDescriptiveInfoStream(request.body);
 
   reply.type("application/x-ndjson");
-  return reply.send(Readable.from(toNdjson(result.records)));
+  return reply.send(toNdjson(result.records));
 }
 ```
 
 The generated operation schema should keep request validation but omit the Fastify response serialization schema for streamed `200` responses. Fastify cannot serialize an unbounded stream with a normal JSON response schema.
 
-The gateway runtime should add `toNdjson()` and, later, `toJsonArrayStream()` helpers. These helpers should be deterministic, backpressure-aware, and safe for large payloads.
+The gateway runtime adds `toNdjson()` and `toJsonArray()` helpers. These helpers are deterministic, backpressure-aware, and safe for large payloads.
 
 ## Test Strategy
 
@@ -250,7 +272,7 @@ Add converter tests that split XML chunks across element boundaries to prove the
 
 Add a local Escapia-like WSDL fixture with `xs:any` output wrappers and a companion WSDL fixture with the concrete record types.
 
-Add an integration test with a fake SOAP HTTP server that writes one record, waits, writes another record, and then closes the envelope. The test should assert that the gateway emits the first NDJSON line before the upstream response completes.
+Add an integration test with a fake SOAP HTTP server that writes one record, waits, writes another record, and then closes the envelope. The test should assert that the gateway emits the first NDJSON line or JSON array record before the upstream response completes.
 
 Add snapshot tests for generated `client.ts`, `operations.ts`, OpenAPI output, gateway route files, and gateway runtime helpers.
 
@@ -273,7 +295,7 @@ Run `npm run smoke:pipeline` after implementation to verify ordinary buffered ge
 
 - Existing generated output is unchanged when no stream config is provided.
 - A stream-configured Escapia content WSDL generates typed stream client methods.
-- The generated gateway emits `application/x-ndjson` records incrementally.
+- The generated gateway emits configured stream records incrementally.
 - The generated OpenAPI document identifies stream operations and record schemas.
 - The converter maps XML attributes, arrays, text values, and nillable values consistently with buffered responses.
 - The chunked integration test proves the first record is sent before the full SOAP response is available.
@@ -286,7 +308,7 @@ The generator gains a second response execution model. This increases complexity
 
 The catalog becomes more important as the shared source of truth because OpenAPI alone cannot carry enough stream conversion metadata.
 
-NDJSON becomes the recommended stream format because it is simple, broadly consumable, and does not require buffering a complete JSON array before sending data.
+NDJSON remains the default stream format because it is simple and broadly consumable. JSON array streaming is available for clients that require one JSON document and still streams without buffering the full response.
 
 Companion catalogs are required for vendors that split stream wrappers and concrete record shapes across separate WSDLs.
 
@@ -298,7 +320,7 @@ Captured after the 0.17.0 ship for future maintainers:
 - `GenerateOpenAPIOptions` and `GenerateGatewayOptions` in the programmatic API do not carry stream-config fields for the same reason. `compileWsdlToProject` and `runGenerationPipeline` (PipelineOptions) do.
 - The client stream transport is emitted from two templates (`clientStreamMethods.tpl.txt`, `operationsStreamHelper.tpl.txt`). They embed the `StreamOperationResponse<T>` type and a `callStream()` method that POSTs a hand-built SOAP envelope via global `fetch`, bypassing `node-soap` as required by the phase-0 finding.
 - `saxes ^6.0.0` was promoted from devDependency to runtime dependency on the package, and added as a pinned dependency in the generated app scaffold so stream-enabled consumers install it automatically.
-- The `json-array` format is reserved in the config parser but not yet implemented by the emitters. Entries using `format: "json-array"` parse successfully and can be used to forward-declare intent; they do not currently generate routes or client methods.
+- The `json-array` format is implemented in `0.28.0`. The helper prefetches the first record before emitting `[`, which preserves normal error envelopes for failures before the first record and documents truncation or invalid JSON for failures after streaming starts.
 
 ## References
 

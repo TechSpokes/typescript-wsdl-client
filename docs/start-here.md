@@ -92,7 +92,9 @@ Minimal `stream.config.json`:
 }
 ```
 
-Stream operations return `StreamOperationResponse<RecordType>` on the client (`records: AsyncIterable<RecordType>`), emit `application/x-ndjson` on the gateway, and advertise the record schema in OpenAPI via the `x-wsdl-tsc-stream` extension.
+Stream operations return `StreamOperationResponse<RecordType>` on the client (`records: AsyncIterable<RecordType>`), emit `application/x-ndjson` by default on the gateway, and advertise the record schema in OpenAPI via the `x-wsdl-tsc-stream` extension.
+
+Set `"format": "json-array"` in the stream config when downstream clients need one `application/json` array document instead of NDJSON lines.
 
 Next: [ADR-002: Streamable Responses](decisions/002-streamable-responses.md) for rationale and terminal-error policy, then [Stream Configuration](configuration.md#stream-configuration) for the full file reference.
 
@@ -118,5 +120,5 @@ For more on scope boundaries, see the "When NOT to Use This" section of the [REA
 | Plan a full SOAP-to-REST migration | [Migration Playbook](migration-playbook.md) |
 | Set up testing for generated code | [Testing Guide](testing.md) |
 | Review all CLI flags | [CLI Reference](cli-reference.md) |
-| Opt specific operations into NDJSON streaming | [ADR-002](decisions/002-streamable-responses.md) and [Stream Configuration](configuration.md#stream-configuration) |
+| Opt specific operations into response streaming | [ADR-002](decisions/002-streamable-responses.md) and [Stream Configuration](configuration.md#stream-configuration) |
 | Install package-specific agent guidance | [Agent Skill Artifact](agent-skill.md) |

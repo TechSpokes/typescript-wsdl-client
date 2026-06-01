@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-06-01
+
+- feat(stream): implement JSON array streaming for stream-configured operations
+
 ## [0.27.0] - 2026-06-01
 
 - fix(test): avoid reflected request bodies in Fastify schema probes

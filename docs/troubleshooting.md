@@ -20,7 +20,7 @@ See [README](../README.md) for quick start and [CLI Reference](cli-reference.md)
 | Stream config references unknown operation | Operation name must match the WSDL exactly; check spelling and casing |
 | Stream record type not found | `recordType` must exist in the main catalog or a companion `shapeCatalog` must supply it; confirm the companion WSDL compiles cleanly in isolation |
 | Structural collision between main and companion catalog | Two types share a name but differ structurally; rename in the companion source or point `recordType` at a distinct subtree |
-| NDJSON response ends abruptly | Mid-stream upstream error per the terminal-error policy; check gateway logs for the classified error |
+| Stream response ends abruptly or JSON array parse fails | Mid-stream upstream error per the terminal-error policy; check gateway logs for the classified error |
 | Stream recordPath does not match | SAX matching is positional and case-sensitive; verify duplicate local-name segments are spelled exactly |
 | Stream client throws "stream request failed" | The upstream SOAP endpoint rejected the hand-built envelope; check `requestRaw` on the response and verify SOAP action and namespaces match the WSDL binding |
 

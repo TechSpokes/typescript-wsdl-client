@@ -125,6 +125,7 @@ operations not listed in the file.
 
 - `recordType` and `recordPath` are required; `format` defaults to `ndjson` and
   `mediaType` to `application/x-ndjson`.
+- `format` accepts `ndjson` and `json-array`; JSON array streams default `mediaType` to `application/json` and emit one valid JSON array document.
 - `shapeCatalog` references a `shapeCatalogs` entry and is only needed when
   the record type lives in a different WSDL than the one driving generation.
 - Shape catalogs accept either `wsdlSource` (fetched and compiled on the fly)

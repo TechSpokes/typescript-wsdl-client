@@ -83,7 +83,7 @@ Log the time to first record, not just the time to response completion. First-re
 
 ### Terminal-Error Policy
 
-Errors raised before the first record use the normal gateway error envelope (client sees a standard JSON error). Errors raised mid-stream truncate the chunked response without a terminating zero-chunk. Consumers detect this as an incomplete HTTP response. Document this behavior for downstream API consumers so they distinguish truncation from a legitimate empty stream.
+Errors raised before the first record use the normal gateway error envelope because the JSON array helper prefetches the first record before emitting `[`. Errors raised mid-stream truncate the response. NDJSON consumers detect this as an incomplete HTTP response, and JSON array consumers must treat an incomplete or invalid JSON document as a failed stream. Document this behavior for downstream API consumers so they distinguish truncation from a legitimate empty stream.
 
 ## Known Limitations
 
@@ -105,7 +105,7 @@ Single-child sequences with maxOccurs>1 become array schemas. Sequences with mul
 
 ### Stream Format Coverage
 
-Only `ndjson` is emitted today. `json-array` is reserved in the config schema but not yet implemented; opting in with `format: "json-array"` parses successfully but generates no routes for that operation.
+`ndjson` is the default stream format. `json-array` is supported for operations that need a single JSON document response; it streams records incrementally as a JSON array and does not buffer the full SOAP response.
 
 ### Stream Transport Bypasses node-soap
 

@@ -28,7 +28,7 @@ Most tools in this space stop at one layer: a SOAP runtime, type generation, or 
 - Handles complex inheritance, `xs:attribute`, namespace collisions, nested XSD imports, and configurable `xs:choice` modeling
 - Generated `operations.ts` interface enables testing without importing `soap` or calling a live service
 - OpenAPI is a first-class output, not an afterthought; types, schemas, and descriptions stay aligned
-- Opt-in NDJSON streaming for large SOAP responses: client emits `AsyncIterable<RecordType>`, gateway flushes records incrementally, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
+- Opt-in streaming for large SOAP responses: client emits `AsyncIterable<RecordType>`, gateway flushes NDJSON or JSON array records incrementally, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
 - Optional agent skill ZIP for consumer-project AI agents that need package-specific generation guidance
 - MIT licensed; generated code is yours with no attribution required
 
@@ -140,7 +140,7 @@ Platform API gateways solve governance, policy, and multi-language SDK generatio
 | REST gateway generation | no | no | no | yes |
 | Runnable app scaffolding | no | no | no | yes |
 | Mockable operations interface | no | no | no | yes |
-| Streaming large responses (NDJSON) | no | no | no | yes |
+| Streaming large responses (NDJSON or JSON array) | no | no | no | yes |
 
 Data as of April 2026.
 
@@ -234,7 +234,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Architecture](docs/architecture.md) | Internal pipeline for contributors |
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Version 1.0 Roadmap Plan](docs/roadmap/README.md) | Implementation slices and release gates for 1.0 |
-| [Streamable Responses (ADR-002)](docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON, `x-wsdl-tsc-stream` |
+| [Streamable Responses (ADR-002)](docs/decisions/002-streamable-responses.md) | Opt-in streaming: client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` |
 | [Version Migration](docs/migration.md) | Upgrading between package versions |
 
 ## Why This Exists

@@ -260,12 +260,15 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
         // Errors raised before the first byte still use the standard envelope.
         const recordType = op.stream.recordTypeName;
         const itemRef = {$ref: `#/components/schemas/${recordType}`};
+        const streamSchema = op.stream.format === "json-array"
+          ? {type: "array", items: itemRef}
+          : {type: "string"};
         if ((methodObj as any).responses?.["200"]) {
           (methodObj as any).responses["200"] = {
             description: "Successful streamed SOAP operation response",
             content: {
               [op.stream.mediaType]: {
-                schema: {type: "string"},
+                schema: streamSchema,
                 "x-wsdl-tsc-stream": {
                   format: op.stream.format,
                   itemSchema: itemRef,

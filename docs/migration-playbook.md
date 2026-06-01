@@ -89,7 +89,7 @@ npx wsdl-tsc pipeline \
   --init-app
 ```
 
-The opted-in operations now return `StreamOperationResponse<RecordType>` on the client, serve `application/x-ndjson` on the gateway, and advertise the record schema in OpenAPI via `x-wsdl-tsc-stream`. Operations not listed in the config are unchanged. See [Stream Configuration](configuration.md#stream-configuration) for the full file reference and [ADR-002](decisions/002-streamable-responses.md) for the terminal-error policy.
+The opted-in operations now return `StreamOperationResponse<RecordType>` on the client, serve `application/x-ndjson` by default on the gateway, and advertise the record schema in OpenAPI via `x-wsdl-tsc-stream`. Set `format: "json-array"` for `application/json` array streaming. Operations not listed in the config are unchanged. See [Stream Configuration](configuration.md#stream-configuration) for the full file reference and [ADR-002](decisions/002-streamable-responses.md) for the terminal-error policy.
 
 ## Step 3: Generate the REST Gateway
 

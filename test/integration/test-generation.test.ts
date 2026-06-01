@@ -18,6 +18,7 @@ import { execSync } from "node:child_process";
 import {buildChoiceWsdl, buildSearchChoiceSchema, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
 // noinspection ES6PreferShortImport
 import { runGenerationPipeline } from "../../src/pipeline.js";
+import {parseStreamConfig} from "../../src/util/streamConfig.js";
 
 const PROJECT_ROOT = join(import.meta.dirname, "..", "..");
 const WSDL = join(PROJECT_ROOT, "examples", "minimal", "weather.wsdl");
@@ -297,6 +298,64 @@ describe("choice union test generation", () => {
     const validationContent = readFileSync(join(testDir, "gateway", "validation.test.ts"), "utf-8");
     expect(validationContent).toContain("rejects invalid SearchRequest choice payload");
     expect(validationContent).toContain("rejects missing SearchRequest choice payload");
+
+    runGeneratedVitest(join(testDir, "vitest.config.ts"));
+  }, 60_000);
+});
+
+describe("JSON array stream test generation", () => {
+  it("emits JSON array route handlers and generated route tests", async () => {
+    const tmpBase = join(PROJECT_ROOT, "tmp");
+    mkdirSync(tmpBase, {recursive: true});
+    const outDir = mkdtempSync(join(tmpBase, "json-array-stream-testgen-"));
+    const testDir = join(outDir, "tests");
+
+    await runGenerationPipeline({
+      wsdl: WSDL,
+      catalogOut: join(outDir, "client", "catalog.json"),
+      clientOutDir: join(outDir, "client"),
+      openapi: {
+        outFile: join(outDir, "openapi.json"),
+        format: "json",
+      },
+      gateway: {
+        outDir: join(outDir, "gateway"),
+        versionSlug: "v1",
+        serviceSlug: "weather",
+      },
+      test: {
+        testDir,
+        force: false,
+      },
+      streamConfig: parseStreamConfig({
+        operations: {
+          GetWeatherInformation: {
+            format: "json-array",
+            recordType: "WeatherDescription",
+            recordPath: [
+              "GetWeatherInformationResponse",
+              "GetWeatherInformationResult",
+              "WeatherDescription",
+            ],
+          },
+        },
+      }),
+    });
+
+    const runtimeContent = readFileSync(join(outDir, "gateway", "runtime.ts"), "utf-8");
+    expect(runtimeContent).toContain("export function toNdjson");
+    expect(runtimeContent).toContain("export function toJsonArray");
+
+    const routeContent = readFileSync(join(outDir, "gateway", "routes", "getweatherinformation.ts"), "utf-8");
+    expect(routeContent).toContain('import { toJsonArray } from "../runtime.js";');
+    expect(routeContent).toContain('reply.type("application/json");');
+    expect(routeContent).toContain("return reply.send(toJsonArray(result.records));");
+    expect(routeContent).not.toContain("toNdjson(result.records)");
+
+    const routesTestContent = readFileSync(join(testDir, "gateway", "routes.test.ts"), "utf-8");
+    expect(routesTestContent).toContain("const records = JSON.parse(res.body);");
+    expect(routesTestContent).toContain("expect(Array.isArray(records)).toBe(true);");
+    expect(routesTestContent).toContain("expect(records.length).toBeGreaterThan(0);");
 
     runGeneratedVitest(join(testDir, "vitest.config.ts"));
   }, 60_000);

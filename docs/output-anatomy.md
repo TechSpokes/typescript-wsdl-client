@@ -75,7 +75,7 @@ CLI OpenAPI generation always validates the generated spec using `@apidevtools/s
 
 ### Stream Schema Extension
 
-Stream operations do not use the standard success envelope for `200` responses. The response content declares the configured stream media type (default `application/x-ndjson`) with `schema: { "type": "string" }` and an `x-wsdl-tsc-stream` extension that carries the record schema reference:
+Stream operations do not use the standard success envelope for `200` responses. NDJSON streams declare the configured stream media type (default `application/x-ndjson`) with `schema: { "type": "string" }` and an `x-wsdl-tsc-stream` extension that carries the record schema reference:
 
 ```json
 {
@@ -94,7 +94,29 @@ Stream operations do not use the standard success envelope for `200` responses. 
 }
 ```
 
-OpenAPI 3.1 cannot fully describe an NDJSON sequence as a standard JSON Schema document, so the extension makes the item schema explicit for generated gateways, documentation tools, and future SDK generators. Error responses (400, 502, and the rest) still use the normal envelope.
+JSON array streams default to `application/json` and declare the record schema as the array item schema while keeping the same extension:
+
+```json
+{
+  "200": {
+    "description": "Successful streamed SOAP operation response",
+    "content": {
+      "application/json": {
+        "schema": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/UnitDescriptiveContentType" }
+        },
+        "x-wsdl-tsc-stream": {
+          "format": "json-array",
+          "itemSchema": { "$ref": "#/components/schemas/UnitDescriptiveContentType" }
+        }
+      }
+    }
+  }
+}
+```
+
+OpenAPI 3.1 cannot fully describe an NDJSON sequence as a standard JSON Schema document, so the extension makes the item schema explicit for generated gateways, documentation tools, and future SDK generators. JSON array streams use a normal array schema and keep the extension for downstream tooling. Error responses (400, 502, and the rest) still use the normal envelope.
 
 ## Gateway Output
 
@@ -117,11 +139,11 @@ Each route file in `routes/` follows the same pattern: validate the JSON request
 
 ### Stream Routes
 
-Stream-configured operations generate a different route shape. The Fastify response serialization schema is omitted because Fastify cannot serialize an unbounded stream with a normal JSON response schema. The handler sets `reply.type("application/x-ndjson")` and returns `reply.send(toNdjson(result.records))`. `runtime.ts` gains a `toNdjson<T>(records: AsyncIterable<T>): Readable` helper that wraps the async iterable in a backpressure-aware Node `Readable`. See the [Gateway Guide](gateway-guide.md#streaming-handlers) for the full handler example and terminal-error policy.
+Stream-configured operations generate a different route shape. The Fastify response serialization schema is omitted because the handler sends a `Readable` directly. NDJSON handlers set `reply.type("application/x-ndjson")` and return `reply.send(toNdjson(result.records))`; JSON array handlers set `reply.type("application/json")` and return `reply.send(toJsonArray(result.records))`. `runtime.ts` gains `toNdjson<T>(records: AsyncIterable<T>): Readable` and `toJsonArray<T>(records: AsyncIterable<T>): Readable` helpers. See the [Gateway Guide](gateway-guide.md#streaming-handlers) for the full handler example and terminal-error policy.
 
 ### Generated Test Surface
 
-When `--test-dir` is combined with `--stream-config`, the generated happy-path tests for stream operations assert on the `application/x-ndjson` content-type and parse each line as a separate JSON record. Mock clients use async-generator overrides that yield records to drive those tests; see the [Testing Guide](testing.md) for the pattern.
+When `--test-dir` is combined with `--stream-config`, the generated happy-path tests for stream operations assert on the configured content type. NDJSON tests parse each line as a separate JSON record, and JSON array tests parse the response body once as an array. Mock clients use async-generator overrides that yield records to drive those tests; see the [Testing Guide](testing.md) for the pattern.
 
 ### Plugin registration
 

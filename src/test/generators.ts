@@ -313,10 +313,33 @@ export function emitRoutesTest(
     const hint = formatOperationHint(op.summary, op.description);
     const hintComment = hint ? `  // ${hint}\n` : "";
 
+    if (op.stream?.format === "json-array") {
+      // JSON array streams return one JSON document containing streamed records.
+      return `${hintComment}  it("${op.method.toUpperCase()} ${op.path} streams json-array records", async () => {
+    const app = await createTestApp();
+    try {
+      const res = await app.inject({
+        method: "${op.method.toUpperCase()}",
+        url: "${op.path}",
+        payload: ${requestPayload},
+      });
+      expect(res.statusCode).toBe(200);
+      expect(String(res.headers["content-type"] ?? "")).toContain(${JSON.stringify(op.stream.mediaType)});
+      const records = JSON.parse(res.body);
+      expect(Array.isArray(records)).toBe(true);
+      expect(records.length).toBeGreaterThan(0);
+      for (const record of records) {
+        expect(record).toBeDefined();
+      }
+    } finally {
+      await app.close();
+    }
+  });`;
+    }
+
     if (op.stream) {
-      // Stream routes return NDJSON lines, not a single JSON envelope. Assert
-      // on content-type and at least one parseable record per line.
-      return `${hintComment}  it("${op.method.toUpperCase()} ${op.path} streams ${op.stream.format} records", async () => {
+      // NDJSON streams return one parseable JSON document per line.
+      return `${hintComment}  it("${op.method.toUpperCase()} ${op.path} streams ndjson records", async () => {
     const app = await createTestApp();
     try {
       const res = await app.inject({

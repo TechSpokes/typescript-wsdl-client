@@ -30,7 +30,7 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 - [architecture.md](architecture.md): internal pipeline for contributors
 - [agent-skill.md](agent-skill.md): release ZIP for consumer-project AI agents
 - [roadmap/README.md](roadmap/README.md): implementation slices and release gates for 1.0
-- [decisions/002-streamable-responses.md](decisions/002-streamable-responses.md): opt-in streaming design (client `AsyncIterable`, gateway NDJSON, `x-wsdl-tsc-stream` OpenAPI extension); shipped in 0.17.0
+- [decisions/002-streamable-responses.md](decisions/002-streamable-responses.md): opt-in streaming design (client `AsyncIterable`, gateway NDJSON or JSON array, `x-wsdl-tsc-stream` OpenAPI extension); shipped in 0.17.0 and extended in 0.28.0
 - [migration.md](migration.md): upgrading between package versions
 
 ## Conventions

@@ -35,7 +35,7 @@ This upgrade adds opt-in streamable SOAP responses. No breaking changes; generat
 
 ### What Changed in 0.17.x
 
-The CLI gains a `--stream-config <file>` flag on `compile`, `client`, and `pipeline`. Operations listed in that file emit a new client method signature returning `StreamOperationResponse<RecordType>` with `records: AsyncIterable<RecordType>`, an OpenAPI 200 response typed as `application/x-ndjson` with an `x-wsdl-tsc-stream` extension, and a Fastify route that streams NDJSON with backpressure. The compiler now retains `xs:any` wildcard particles on compiled types (previously dropped silently), enabling honest stream-candidate detection and companion-catalog shape resolution. `saxes ^6.0.0` is now a runtime dependency of the package and is pinned automatically into the generated app scaffold.
+The CLI gains a `--stream-config <file>` flag on `compile`, `client`, and `pipeline`. Operations listed in that file emit a new client method signature returning `StreamOperationResponse<RecordType>` with `records: AsyncIterable<RecordType>`, an OpenAPI 200 response typed as `application/x-ndjson` by default with an `x-wsdl-tsc-stream` extension, and a Fastify route that streams records with backpressure. Set `format: "json-array"` for `application/json` array streaming. The compiler now retains `xs:any` wildcard particles on compiled types (previously dropped silently), enabling honest stream-candidate detection and companion-catalog shape resolution. `saxes ^6.0.0` is now a runtime dependency of the package and is pinned automatically into the generated app scaffold.
 
 ### Steps to Upgrade to 0.17.x
 

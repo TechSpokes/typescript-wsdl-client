@@ -183,10 +183,7 @@ export async function registerRoute_v1_weather_getcityforecastbyzip(fastify: Fas
 
 ### Streaming Handlers
 
-Operations opted in via `--stream-config` emit an NDJSON response pipe
-instead of the standard envelope. The generated handler streams records as
-they arrive, and the Fastify response is flushed line-by-line with
-backpressure (ADR-002).
+Operations opted in via `--stream-config` emit a stream response instead of the standard envelope. The generated handler streams records as they arrive, and the Fastify response is flushed with backpressure. The default format is NDJSON; `format: "json-array"` emits one JSON array document.
 
 ```typescript
 import type { FastifyInstance } from "fastify";
@@ -194,7 +191,7 @@ import type { GetWeatherInformation } from "../../client/types.js";
 import schema from "../schemas/operations/getweatherinformation.json" with { type: "json" };
 import { toNdjson } from "../runtime.js";
 
-// Response schema omitted: stream operations emit NDJSON, not a single JSON object
+// Response schema omitted: stream operations send a Readable directly
 const { response: _response, ...routeSchema } = schema as Record<string, unknown>;
 
 export async function registerRoute_v1_weather_getweatherinformation(fastify: FastifyInstance) {
@@ -212,11 +209,9 @@ export async function registerRoute_v1_weather_getweatherinformation(fastify: Fa
 }
 ```
 
-The client method returns `StreamOperationResponse<RecordType>` with a
-`records: AsyncIterable<RecordType>`. Errors raised before the first record
-use the normal error envelope; errors raised mid-stream trip the chunked
-response's truncation. Consumers detect these via the absence of a clean
-terminating zero-chunk.
+For `format: "json-array"`, the same handler imports `toJsonArray`, sets `reply.type("application/json")`, and sends `reply.send(toJsonArray(result.records))`.
+
+The client method returns `StreamOperationResponse<RecordType>` with a `records: AsyncIterable<RecordType>`. Errors raised before the first record use the normal error envelope. Errors raised mid-stream truncate the response; NDJSON clients see an incomplete HTTP response, and JSON array clients see an incomplete or invalid JSON document.
 
 ## Error Handling
 

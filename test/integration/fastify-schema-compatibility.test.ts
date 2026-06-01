@@ -273,4 +273,66 @@ describe("Fastify schema compatibility probes", () => {
       }
     );
   });
+
+  it("returns the configured error envelope when a stream fails before bytes are emitted", async () => {
+    await withFastify(
+      (app) => {
+        app.setErrorHandler(async (error, _request, reply) => {
+          reply.status(500);
+          return {
+            status: "ERROR",
+            message: error.message,
+            data: null,
+            error: {
+              code: "INTERNAL_ERROR",
+              message: error.message,
+            },
+          };
+        });
+        app.get("/stream-error-before", async (_request, reply) => {
+          reply.type("application/json");
+          return reply.send(
+            Readable.from((async function* () {
+              throw new Error("before bytes");
+            })())
+          );
+        });
+      },
+      async (app) => {
+        const response = await app.inject({method: "GET", url: "/stream-error-before"});
+
+        expect(response.statusCode).toBe(500);
+        expect(JSON.parse(response.body)).toEqual({
+          status: "ERROR",
+          message: "before bytes",
+          data: null,
+          error: {
+            code: "INTERNAL_ERROR",
+            message: "before bytes",
+          },
+        });
+      }
+    );
+  });
+
+  it("resets an injected response when a stream fails after bytes are emitted", async () => {
+    await withFastify(
+      (app) => {
+        app.get("/stream-error-after", async (_request, reply) => {
+          reply.type("application/json");
+          return reply.send(
+            Readable.from((async function* () {
+              yield "[";
+              throw new Error("after bytes");
+            })())
+          );
+        });
+      },
+      async (app) => {
+        await expect(
+          app.inject({method: "GET", url: "/stream-error-after"})
+        ).rejects.toThrow(/LIGHT_ECONNRESET|reset|aborted|premature close|destroyed before completion/i);
+      }
+    );
+  });
 });

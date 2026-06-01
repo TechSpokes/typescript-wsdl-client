@@ -232,7 +232,7 @@ details:
 
 ### Streaming Bypass
 
-Operations opted into streaming with `--stream-config` bypass the success envelope on the `200` response path. The OpenAPI response content is declared as the configured stream media type (default `application/x-ndjson`) and the gateway writes raw NDJSON lines straight to the response body. Error responses (400, 502, and the rest) still use the normal envelope so clients always see structured failures before the first record. See [ADR-002](decisions/002-streamable-responses.md) for the full rationale.
+Operations opted into streaming with `--stream-config` bypass the success envelope on the `200` response path. The OpenAPI response content is declared as the configured stream media type, and the gateway writes raw NDJSON lines or one streamed JSON array straight to the response body. Error responses (400, 502, and the rest) still use the normal envelope so clients always see structured failures before the first record. See [ADR-002](decisions/002-streamable-responses.md) for the full rationale.
 
 ### Envelope Naming
 
@@ -368,7 +368,7 @@ The catalog is the source of truth for stream metadata. Each opted-in operation 
 
 ### Terminal-Error Policy
 
-Errors before the first record use the normal gateway error envelope because the response headers and status have not been committed yet. Errors mid-stream truncate the chunked response without a terminating zero-chunk; consumers detect this as an incomplete HTTP response and must treat it as a failure. NDJSON has no native error frame, and emitting a fake one would conflict with the item schema. This behavior is documented for operators in the [Production Guide](production.md#terminal-error-policy).
+Errors before the first record use the normal gateway error envelope because the response headers and status have not been committed yet. Errors mid-stream truncate the response; NDJSON consumers detect this as an incomplete HTTP response, and JSON array consumers see an incomplete or invalid JSON document. Both cases must be treated as failed streams. This behavior is documented for operators in the [Production Guide](production.md#terminal-error-policy).
 
 ## Companion Catalogs and Shape Resolution
 

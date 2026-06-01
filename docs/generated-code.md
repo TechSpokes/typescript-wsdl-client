@@ -176,7 +176,7 @@ Key features of the generated handlers:
 - Envelope wrapping: `buildSuccessEnvelope()` wraps the raw SOAP response in the standard `{ status, message, data, error }` envelope
 - Route file header comments include propagated operation summary and description when present
 
-Stream-configured operations generate a different handler shape: the response serialization schema is omitted, `reply.type("application/x-ndjson")` is set, and `reply.send(toNdjson(result.records))` streams records with backpressure. See the [Gateway Guide Streaming Handlers section](gateway-guide.md#streaming-handlers) for the full example and terminal-error policy.
+Stream-configured operations generate a different handler shape: the response serialization schema is omitted and the handler streams `result.records` through the helper for the configured format. NDJSON handlers use `reply.type("application/x-ndjson")` with `toNdjson(result.records)`, and JSON array handlers use `reply.type("application/json")` with `toJsonArray(result.records)`. See the [Gateway Guide Streaming Handlers section](gateway-guide.md#streaming-handlers) for the full example and terminal-error policy.
 
 See [Gateway Guide](gateway-guide.md) for the full architecture and [CLI Reference](cli-reference.md) for generation flags.
 

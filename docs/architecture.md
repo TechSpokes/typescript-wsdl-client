@@ -73,7 +73,7 @@ tools.ts provides string helpers (pascal, kebab, QName resolution). cli.ts provi
 
 ### runtime/
 
-Template sources embedded into generated clients and gateways. streamXml.ts implements a SAX-driven `parseRecords(stream, spec)` that tracks the configured `recordPath` positionally (duplicate local names allowed) and yields records as their closing tags arrive. ndjson.ts wraps an async iterable of records in a `Readable` that emits NDJSON lines with honored backpressure. clientStreamMethods.tpl.txt and operationsStreamHelper.tpl.txt are text templates emitted into the generated `client.ts` and `operations.ts` when stream operations are present; they encode the `callStream()` transport and the `StreamOperationResponse<T>` type.
+Template sources embedded into generated clients and gateways. streamXml.ts implements a SAX-driven `parseRecords(stream, spec)` that tracks the configured `recordPath` positionally (duplicate local names allowed) and yields records as their closing tags arrive. ndjson.ts wraps an async iterable of records in a `Readable` that emits NDJSON lines with honored backpressure. jsonArray.ts wraps the same record iterable as one streamed JSON array document. clientStreamMethods.tpl.txt and operationsStreamHelper.tpl.txt are text templates emitted into the generated `client.ts` and `operations.ts` when stream operations are present; they encode the `callStream()` transport and the `StreamOperationResponse<T>` type.
 
 ### xsd/
 

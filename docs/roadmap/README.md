@@ -1,6 +1,6 @@
 # Version 1.0 Roadmap Plan
 
-Detailed plan for moving `@techspokes/typescript-wsdl-client` from `0.26.x` to a stable `1.0.0` release.
+Detailed plan for moving `@techspokes/typescript-wsdl-client` from `0.28.x` to a stable `1.0.0` release.
 
 See the root [README.md](../../README.md) for project overview and the root [ROADMAP.md](../../ROADMAP.md) for the public roadmap summary.
 
@@ -37,7 +37,7 @@ Choice union mode is complete in `0.26.0`. The default `all-optional` mode remai
 
 ### Slice 4: JSON Array Streaming
 
-Implement streaming JSON array output after stream error behavior is researched. This is the next implementation slice after `0.26.0`, and the result must stream records incrementally without buffering the full SOAP response.
+JSON array streaming is complete in `0.28.0`. The default `ndjson` format remains unchanged, and `format: "json-array"` streams records incrementally without buffering the full SOAP response.
 
 ### Slice 5: WSDL Coverage Matrix
 

@@ -357,6 +357,8 @@ interface OperationStreamMetadata {
 
 Exactly one of `wsdlSource` or `catalogFile` must be set on each `ShapeCatalogRef`. `OperationStreamMetadata` is produced by the parser; `sourceOutputTypeName` is populated by the compiler when it binds the operation to the main WSDL.
 
+`format` selects the gateway wire format. `ndjson` emits one JSON document per line with the default `application/x-ndjson` media type, and `json-array` emits one JSON array document with the default `application/json` media type.
+
 ## Security Configuration Helpers
 
 Parse and build the shared security configuration used by OpenAPI generation and
@@ -408,7 +410,7 @@ const { compiled, openapiDoc } = await runGenerationPipeline({
 });
 
 const streamOp = compiled.operations.find((op) => op.stream);
-console.log(streamOp?.stream?.mediaType); // "application/x-ndjson"
+console.log(streamOp?.stream?.mediaType); // "application/x-ndjson" by default
 ```
 
 The generated client exports a `StreamOperationResponse<RecordType>` type; each stream-configured operation returns `Promise<StreamOperationResponse<RecordType>>` with `records: AsyncIterable<RecordType>`.
