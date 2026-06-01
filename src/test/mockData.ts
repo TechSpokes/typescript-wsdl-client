@@ -20,6 +20,9 @@ export interface MockDataOptions {
  * Compiled catalog structure (minimal interface for mock data generation)
  */
 export interface CatalogForMocks {
+  options?: {
+    choice?: "all-optional" | "union";
+  };
   meta?: {
     attrType?: Record<string, Record<string, string>>;
     childType?: Record<string, Record<string, string>>;
@@ -45,6 +48,22 @@ export interface CatalogForMocks {
     name: string;
     attrs: Array<{ name: string }>;
     elems: Array<{ name: string; max: number | "unbounded" }>;
+    choiceGroups?: Array<{
+      name: string;
+      min: number;
+      max: number | "unbounded";
+      sourceOrder: number;
+      branches: Array<{
+        name: string;
+        tsType: string;
+        min: number;
+        max: number | "unbounded";
+        nillable?: boolean;
+        declaredType: string;
+        doc?: string;
+        sourceOrder: number;
+      }>;
+    }>;
   }>;
   aliases?: Array<{
     name: string;
@@ -138,8 +157,20 @@ export function generateMockData(
   newVisited.add(typeName);
 
   const result: Record<string, unknown> = {};
+  const typeMeta = catalog.types?.find((t) => t.name === typeName);
+  const choiceGroups = catalog.options?.choice === "union" ? (typeMeta?.choiceGroups ?? []) : [];
+  const choiceBranchNames = new Set(choiceGroups.flatMap((group) => group.branches.map((branch) => branch.name)));
+  const selectedChoiceBranchNames = new Set(
+    choiceGroups
+      .map((group) => group.branches[0]?.name)
+      .filter((name): name is string => !!name)
+  );
 
   for (const [propName, propType] of Object.entries(childTypes ?? {})) {
+    if (choiceBranchNames.has(propName) && !selectedChoiceBranchNames.has(propName)) {
+      continue;
+    }
+
     const meta = propMeta[propName];
     const isArray = meta?.max === "unbounded" || (typeof meta?.max === "number" && meta.max > 1);
 

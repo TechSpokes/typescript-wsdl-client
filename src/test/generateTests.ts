@@ -204,7 +204,7 @@ export async function generateTests(opts: GenerateTestsOptions): Promise<void> {
   // Emit gateway/validation.test.ts
   writeTestFile(
     path.join(testDir, "gateway", "validation.test.ts"),
-    emitValidationTest(testDir, importsMode, operations),
+    emitValidationTest(testDir, importsMode, operations, mocks, catalog),
     force
   );
 

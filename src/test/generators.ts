@@ -11,7 +11,7 @@
  */
 import {computeRelativeImport} from "../util/imports.js";
 import type {ClientMeta, ResolvedOperationMeta} from "../gateway/helpers.js";
-import type {CatalogForMocks} from "./mockData.js";
+import {generateMockData, generateMockPrimitive, type CatalogForMocks} from "./mockData.js";
 import {detectArrayWrappers, detectChildrenTypes} from "../util/catalogMeta.js";
 
 /** Pre-computed mock data map passed from the orchestrator to all emitters. */
@@ -28,6 +28,71 @@ function formatOperationHint(summary?: string, description?: string): string | u
     .replace(/\s+/g, " ")
     .trim();
   return normalized || undefined;
+}
+
+type ChoiceGroupForMocks = NonNullable<NonNullable<CatalogForMocks["types"]>[number]["choiceGroups"]>[number];
+type ChoiceBranchForMocks = ChoiceGroupForMocks["branches"][number];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function cloneRecord(value: Record<string, unknown>): Record<string, unknown> {
+  return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+}
+
+function mockChoiceBranchValue(branch: ChoiceBranchForMocks, catalog: CatalogForMocks): unknown {
+  const isArray = branch.max === "unbounded" || (typeof branch.max === "number" && branch.max > 1);
+  const value = branch.tsType === "string" || branch.tsType === "number" || branch.tsType === "boolean"
+    ? generateMockPrimitive(branch.tsType, branch.name)
+    : generateMockData(branch.tsType, catalog);
+  return isArray ? [value] : value;
+}
+
+function buildInvalidChoicePayloads(
+  op: ResolvedOperationMeta,
+  mocks: OperationMocksMap | undefined,
+  catalog: CatalogForMocks | undefined
+): Array<{typeName: string; payload: Record<string, unknown>}> {
+  if (catalog?.options?.choice !== "union" || !op.requestTypeName) {
+    return [];
+  }
+
+  const typeMeta = catalog.types?.find((type) => type.name === op.requestTypeName);
+  const groups = typeMeta?.choiceGroups ?? [];
+  if (groups.length === 0) {
+    return [];
+  }
+
+  const basePayload = mocks?.get(op.operationId)?.request;
+  if (!isRecord(basePayload)) {
+    return [];
+  }
+
+  const invalidPayloads: Array<{typeName: string; payload: Record<string, unknown>}> = [];
+  for (const group of groups) {
+    if (group.branches.length < 2) {
+      continue;
+    }
+
+    const selectedBranch = group.branches.find((branch) => Object.hasOwn(basePayload, branch.name)) ?? group.branches[0];
+    const peerBranch = group.branches.find((branch) => branch.name !== selectedBranch.name);
+    if (!peerBranch) {
+      continue;
+    }
+
+    const payload = cloneRecord(basePayload);
+    if (!Object.hasOwn(payload, selectedBranch.name)) {
+      payload[selectedBranch.name] = mockChoiceBranchValue(selectedBranch, catalog);
+    }
+    payload[peerBranch.name] = mockChoiceBranchValue(peerBranch, catalog);
+    invalidPayloads.push({
+      typeName: op.requestTypeName,
+      payload,
+    });
+  }
+
+  return invalidPayloads;
 }
 
 /**
@@ -529,14 +594,16 @@ describe("gateway — envelope structure", () => {
 export function emitValidationTest(
   testDir: string,
   importsMode: "js" | "ts" | "bare",
-  operations: ResolvedOperationMeta[]
+  operations: ResolvedOperationMeta[],
+  mocks?: OperationMocksMap,
+  catalog?: CatalogForMocks
 ): string {
   const suffix = importsMode === "bare" ? "" : `.${importsMode}`;
   const testAppImport = `../helpers/test-app${suffix}`;
 
   const sortedOps = [...operations].sort((a, b) => a.operationId.localeCompare(b.operationId));
 
-  const testCases = sortedOps.map((op) => {
+  const arrayBodyCases = sortedOps.map((op) => {
     return `  it("${op.method.toUpperCase()} ${op.path} rejects array body", async () => {
     const app = await createTestApp();
     try {
@@ -550,7 +617,27 @@ export function emitValidationTest(
       await app.close();
     }
   });`;
-  }).join("\n\n");
+  });
+  const choiceCases = sortedOps.flatMap((op) => {
+    return buildInvalidChoicePayloads(op, mocks, catalog).map((invalid) => {
+      const payload = JSON.stringify(invalid.payload, null, 4).replace(/\n/g, "\n    ");
+      const title = `${invalid.typeName} choice payload`;
+      return `  it("${op.method.toUpperCase()} ${op.path} rejects invalid ${title}", async () => {
+    const app = await createTestApp();
+    try {
+      const res = await app.inject({
+        method: "${op.method.toUpperCase()}",
+        url: "${op.path}",
+        payload: ${payload},
+      });
+      expect(res.statusCode).toBe(400);
+    } finally {
+      await app.close();
+    }
+  });`;
+    });
+  });
+  const testCases = [...arrayBodyCases, ...choiceCases].join("\n\n");
 
   return `/**
  * Gateway Validation Tests

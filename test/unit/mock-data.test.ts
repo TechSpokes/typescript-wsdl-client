@@ -5,6 +5,7 @@ import {
   generateAllOperationMocks,
   type CatalogForMocks,
 } from "../../src/test/mockData.js";
+import {createSearchChoiceCatalog} from "../helpers/choiceCatalog.js";
 
 describe("generateMockPrimitive", () => {
   it("returns boolean true for 'Success'", () => {
@@ -252,6 +253,25 @@ describe("generateMockData", () => {
     const result = generateMockData("AttrOnlyType", catalog);
     expect(typeof result.Code).toBe("string");
     expect(typeof result.Active).toBe("boolean");
+  });
+
+  it("keeps all choice branch fields when all-optional mode is active", () => {
+    const catalog = createSearchChoiceCatalog("all-optional");
+
+    expect(generateMockData("SearchRequest", catalog)).toEqual({
+      tenantId: "sample",
+      email: "sample",
+      phone: 0,
+    });
+  });
+
+  it("selects one choice branch when union mode is active", () => {
+    const catalog = createSearchChoiceCatalog("union");
+
+    expect(generateMockData("SearchRequest", catalog)).toEqual({
+      tenantId: "sample",
+      email: "sample",
+    });
   });
 });
 

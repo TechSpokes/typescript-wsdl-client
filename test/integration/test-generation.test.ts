@@ -12,11 +12,12 @@
  * can find fastify, vitest, and other dependencies from node_modules.
  */
 import { describe, it, expect, beforeAll } from "vitest";
-import { mkdtempSync, mkdirSync, readFileSync, statSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, statSync, existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 // noinspection ES6PreferShortImport
 import { runGenerationPipeline } from "../../src/pipeline.js";
+import {buildChoiceWsdl, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
 
 const PROJECT_ROOT = join(import.meta.dirname, "..", "..");
 const WSDL = join(PROJECT_ROOT, "examples", "minimal", "weather.wsdl");
@@ -208,5 +209,67 @@ describe("test generation pipeline", () => {
 
     const newMtime = statSync(routesTestPath).mtimeMs;
     expect(newMtime).toBeGreaterThan(originalMtime);
+  }, 60_000);
+});
+
+describe("choice union test generation", () => {
+  it("emits valid choice fixtures and invalid multi-branch validation coverage", async () => {
+    const tmpBase = join(PROJECT_ROOT, "tmp");
+    mkdirSync(tmpBase, {recursive: true});
+    const outDir = mkdtempSync(join(tmpBase, "choice-testgen-"));
+    const testDir = join(outDir, "tests");
+    const wsdlPath = join(outDir, "choice.wsdl");
+    writeFileSync(
+      wsdlPath,
+      buildChoiceWsdl(SEARCH_CHOICE_SCHEMA, {
+        namespace: "http://example.com/choice-testgen",
+        servicePrefix: "ChoiceTestgen",
+      }),
+      "utf8",
+    );
+
+    await runGenerationPipeline({
+      wsdl: wsdlPath,
+      catalogOut: join(outDir, "client", "catalog.json"),
+      clientOutDir: join(outDir, "client"),
+      compiler: {choice: "union"},
+      openapi: {
+        outFile: join(outDir, "openapi.json"),
+        format: "json",
+      },
+      gateway: {
+        outDir: join(outDir, "gateway"),
+        versionSlug: "v1",
+        serviceSlug: "choice",
+      },
+      test: {
+        testDir,
+        force: false,
+      },
+    });
+
+    const routesContent = readFileSync(join(testDir, "gateway", "routes.test.ts"), "utf-8");
+    expect(routesContent).toContain('"email": "sample"');
+    expect(routesContent).not.toContain('"phone": 0');
+
+    const validationContent = readFileSync(join(testDir, "gateway", "validation.test.ts"), "utf-8");
+    expect(validationContent).toContain("rejects invalid SearchRequest choice payload");
+    expect(validationContent).toContain('"email": "sample"');
+    expect(validationContent).toContain('"phone": 0');
+
+    const result = execSync(
+      `npx vitest run --config "${join(testDir, "vitest.config.ts")}" --reporter=json`,
+      {
+        cwd: PROJECT_ROOT,
+        encoding: "utf-8",
+        timeout: 60_000,
+        env: {...process.env, NODE_ENV: "test"},
+      }
+    );
+    const jsonStart = result.indexOf("{");
+    expect(jsonStart).toBeGreaterThanOrEqual(0);
+    const parsed = JSON.parse(result.slice(jsonStart));
+    expect(parsed.success).toBe(true);
+    expect(parsed.numFailedTests).toBe(0);
   }, 60_000);
 });
