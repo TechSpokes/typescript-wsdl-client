@@ -39,6 +39,7 @@
         "## Calling Stream Operations",
         "## Attributes and Text Content",
         "## Working With Arrays",
+        "## Working With Choice Unions",
         "## Type Safety",
         "## Documentation Comments",
         "## Gateway Route Handlers",
@@ -105,4 +106,3 @@
     }
   ]
 }
-

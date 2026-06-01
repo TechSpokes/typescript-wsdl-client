@@ -83,6 +83,24 @@ interface ForecastReturn {
 }
 ```
 
+## Working With Choice Unions
+
+`--client-choice-mode union` changes generated `xs:choice` types from parallel optional fields into a base object plus an exclusive branch union. The default mode remains `all-optional`.
+
+```typescript
+export type SearchRequest = SearchRequestChoiceBase & SearchRequestChoice1;
+
+export interface SearchRequestChoiceBase {
+  tenantId: string;
+}
+
+export type SearchRequestChoice1 =
+  | { email: string; phone?: never }
+  | { phone: number; email?: never };
+```
+
+Generated gateway test suites use one valid branch in union-mode mocks. They also include validation cases that reject payloads with multiple choice branches and payloads that omit a required choice branch.
+
 ## Type Safety
 
 All operations and types are fully typed:

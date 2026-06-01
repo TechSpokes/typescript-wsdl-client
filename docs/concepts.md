@@ -253,7 +253,7 @@ produces `WeatherResponse_ResponseEnvelope`.
 
 ## Choice Element Handling
 
-The default strategy is all-optional. Choice branches are emitted on a single interface using the occurrence metadata compiled from the WSDL.
+The default strategy is `all-optional`. Choice branches are emitted on a single interface using the occurrence metadata compiled from the WSDL.
 
 ```typescript
 // WSDL: <xs:choice>
@@ -263,7 +263,7 @@ interface MyType {
 }
 ```
 
-`--client-choice-mode union` is opt-in. It emits a base object for non-choice fields and a generated branch union for choice fields.
+`--client-choice-mode union` is opt-in. It emits a base object for non-choice fields and an exclusive generated branch union for choice fields. Peer branch properties use `?: never`, so TypeScript rejects payloads that include more than one branch.
 
 ```typescript
 type MyType = MyTypeChoiceBase & MyTypeChoice1;

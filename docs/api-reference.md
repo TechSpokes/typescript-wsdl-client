@@ -68,6 +68,8 @@ interface PrimitiveOptions {
 }
 ```
 
+`CompilerOptions.choice` defaults to `all-optional`. Set `choice: "union"` to model `xs:choice` groups as exclusive branch unions in generated client types and catalog-backed OpenAPI schemas.
+
 ## generateOpenAPI
 
 Generate an OpenAPI 3.1 specification from WSDL or catalog.
@@ -201,6 +203,25 @@ const { compiled, openapiDoc } = await runGenerationPipeline({
     versionSlug: "v1",
     serviceSlug: "hotel"
   }
+});
+```
+
+Programmatic callers opt into choice union mode by passing `compiler: { choice: "union" }` to `runGenerationPipeline`:
+
+```typescript
+await runGenerationPipeline({
+  wsdl: "./service.wsdl",
+  catalogOut: "./generated/catalog.json",
+  clientOutDir: "./generated/client",
+  openapi: {
+    outFile: "./generated/openapi.json"
+  },
+  gateway: {
+    outDir: "./generated/gateway",
+    serviceSlug: "service",
+    versionSlug: "v1"
+  },
+  compiler: { choice: "union" }
 });
 ```
 

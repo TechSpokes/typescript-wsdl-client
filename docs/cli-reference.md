@@ -67,9 +67,11 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--client-bigint-as` | `string` | Map arbitrary-size integers |
 | `--client-decimal-as` | `string` | Map xs:decimal |
 | `--client-date-as` | `string` | Map date/time types |
-| `--client-choice-mode` | `all-optional` | Choice strategy for generated client types and catalog-backed OpenAPI schemas |
+| `--client-choice-mode` | `all-optional` | Controls `xs:choice` modeling |
 | `--client-fail-on-unresolved` | `false` | Fail on unresolved references |
 | `--client-nillable-as-optional` | `false` | Treat nillable as optional |
+
+`--client-choice-mode` accepts `all-optional` and `union`. The default `all-optional` mode emits parallel optional choice fields. The `union` mode emits exclusive generated client type branches and catalog-backed OpenAPI schema constraints.
 
 ### OpenAPI Flags
 
@@ -201,6 +203,19 @@ npx wsdl-tsc pipeline \
   --init-app
 ```
 
+With union-mode choice modeling:
+
+```bash
+npx wsdl-tsc pipeline \
+  --wsdl-source ./service.wsdl \
+  --client-dir ./generated/client \
+  --openapi-file ./generated/openapi.json \
+  --gateway-dir ./generated/gateway \
+  --gateway-service-name service \
+  --gateway-version-prefix v1 \
+  --client-choice-mode union
+```
+
 With generated test suite:
 
 ```bash
@@ -256,6 +271,12 @@ Provide either `--wsdl-source` (compile from WSDL) or `--catalog-file` (use pre-
 ### Optional Flags
 
 All flags from the compile command apply, plus the client-specific flags listed in the pipeline section.
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--client-choice-mode` | `all-optional` | Controls `xs:choice` modeling |
+
+`--client-choice-mode` accepts `all-optional` and `union`. The `client` command stores the selected mode in `catalog.json` when it compiles from WSDL and uses that catalog metadata when emitting generated TypeScript.
 
 ### Key Modeling Rules
 
@@ -536,6 +557,14 @@ npx wsdl-tsc compile --wsdl-source <file|url> --catalog-file <path> [options]
 |------|-------------|
 | `--wsdl-source` | Path or URL to WSDL file |
 | `--catalog-file` | Output path for catalog.json |
+
+### Compiler Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--client-choice-mode` | `all-optional` | Controls `xs:choice` modeling |
+
+`--client-choice-mode` accepts `all-optional` and `union`. The `compile` command writes the selected mode to `catalog.json` so later catalog-backed generation stages can use the same choice strategy.
 
 ### Catalog Co-location
 

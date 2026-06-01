@@ -2,13 +2,18 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 0.25.x Series
+## Current: 0.26.x Series
 
-Focus: align the public contract before 1.0, preserve release quality, and turn remaining WSDL coverage gaps into test-backed decisions.
+Focus: finish the remaining 1.0 readiness slices, preserve release quality, and turn WSDL coverage gaps into test-backed decisions.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 0.26.0
+
+- Completed opt-in `--client-choice-mode union` across compiler metadata, TypeScript output, OpenAPI constraints, generated mocks, and generated validation tests.
+- Kept default `xs:choice` handling in `all-optional` mode for backward compatibility.
 
 ### 0.25.0
 
@@ -65,11 +70,11 @@ The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/READM
 
 ### Public Contract Alignment
 
-Public CLI flags, programmatic options, docs, and generated behavior must match before 1.0. The current priority is to implement full `xs:choice` union mode rather than reject it.
+Public CLI flags, programmatic options, docs, and generated behavior must match before 1.0. The next priorities are JSON array streaming, the WSDL coverage matrix, and release candidate gates for `1.0.0`.
 
 ### OpenAPI And Fastify Compatibility
 
-OpenAPI schema changes must be proven against Fastify validation and serialization behavior before generator output changes. Compatibility research must constrain the union and JSON array streaming implementations.
+OpenAPI schema changes must be proven against Fastify validation and serialization behavior before generator output changes. Compatibility research now constrains the released choice union schemas and must also constrain JSON array streaming.
 
 ### Streaming
 
@@ -95,7 +100,7 @@ Generated gateway integration documentation must keep inbound authentication, au
 
 ### Contract Gate
 
-- `--client-choice-mode union` has full test-backed behavior.
+- `--client-choice-mode union` is implemented and documented.
 - `format: "json-array"` has full test-backed behavior.
 - Public CLI docs, API docs, examples, and generated output agree.
 

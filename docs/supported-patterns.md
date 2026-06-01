@@ -12,7 +12,8 @@ These patterns are handled end-to-end: WSDL parsing, TypeScript type generation,
 - Type inheritance through `<xs:extension>` and `<xs:restriction>` on both simple and complex content
 - Nested XSD imports across multiple schema files with relative and absolute URI resolution
 - Multiple namespaces with deterministic collision resolution via PascalCase uniqueness
-- `<xs:choice>` elements modeled as parallel optional alternatives
+- `<xs:choice>` elements modeled as parallel optional alternatives by default
+- Opt-in `<xs:choice>` union mode with exclusive TypeScript branch unions and OpenAPI request constraints
 - Optional and nillable fields using `minOccurs`, `maxOccurs`, and `nillable` attributes
 - `ArrayOf*` wrapper types with automatic unwrapping in OpenAPI and runtime bridging in gateway code
 - WSDL/XSD documentation annotations propagated into TypeScript JSDoc comments and OpenAPI descriptions

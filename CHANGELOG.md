@@ -9,6 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-06-01
+
+- docs(cli): document choice union mode across release surfaces
+- docs(roadmap): close the choice union mode slice for 0.26.0
+- test(cli): guard choice-mode CLI documentation scope
+- chore(deps-dev): bump Vitest to 4.1.8
+- docs(agent-skill): include choice union guidance in the release skill
 - docs(agent): record TypeScript test diagnostic handling
 - fix(test): type the docs validator unit test project
 - feat(test): reject missing required choice branches in generated tests

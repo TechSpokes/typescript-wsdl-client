@@ -49,7 +49,12 @@ Use stream configuration only for operations with large response payloads that s
 
 Regenerate the client, OpenAPI, gateway, and tests together after changing stream configuration. Streaming changes affect TypeScript return types, OpenAPI content types, gateway behavior, and generated test expectations.
 
+## Choice Modeling
+
+Use the default `all-optional` choice mode when a project needs backward-compatible generated shapes for existing SOAP payload code.
+
+Use `--client-choice-mode union` when a project wants stricter generated models for `xs:choice` groups. Regenerate the catalog, client, OpenAPI, gateway, and generated tests together because union mode affects TypeScript branch unions, OpenAPI validation constraints, generated mocks, and generated validation tests.
+
 ## Validation
 
 After generation, run the consumer project's typecheck and tests. For gateway work, add route tests around the generated plugin with a typed mock operations implementation.
-

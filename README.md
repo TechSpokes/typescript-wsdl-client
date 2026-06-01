@@ -25,7 +25,7 @@ Most tools in this space stop at one layer: a SOAP runtime, type generation, or 
 
 - Typed client, OpenAPI spec, REST gateway, and runnable app from one command
 - Deterministic output safe for CI regeneration and version control
-- Handles complex inheritance, `xs:attribute`, namespace collisions, nested XSD imports, and choice elements
+- Handles complex inheritance, `xs:attribute`, namespace collisions, nested XSD imports, and configurable `xs:choice` modeling
 - Generated `operations.ts` interface enables testing without importing `soap` or calling a live service
 - OpenAPI is a first-class output, not an afterthought; types, schemas, and descriptions stay aligned
 - Opt-in NDJSON streaming for large SOAP responses: client emits `AsyncIterable<RecordType>`, gateway flushes records incrementally, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
@@ -152,7 +152,7 @@ Real-world WSDL/XSD files are rarely clean. This generator handles patterns that
 - `xs:attribute` on complex types, flattened into peer properties alongside elements
 - Namespace collisions across multiple XSD imports, resolved deterministically
 - Deep import chains across multiple schema files
-- Configurable strategies for `<xs:choice>` element modeling
+- `<xs:choice>` groups modeled as default all-optional fields or opt-in exclusive unions with `--client-choice-mode union`
 - Correct optionality for nillable fields in both TypeScript and OpenAPI output
 - The `$value` pattern for simple content with attributes, preserving text content alongside attribute properties
 - `ArrayOf*` wrapper types, unwrapped automatically in OpenAPI with runtime bridging
