@@ -2,9 +2,9 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 0.28.x Readiness
+## Current: 1.0 Readiness After 0.28.0
 
-Focus: finish the remaining 1.0 readiness slices, preserve release quality, and turn WSDL coverage gaps into test-backed decisions.
+Focus: build the automated WSDL coverage matrix, resolve discovered diagnostics or deferrals, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
@@ -15,6 +15,11 @@ The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/READM
 - Added `format: "json-array"` streaming for stream-configured operations.
 - Added OpenAPI array schemas and generated Fastify routes for JSON array streams.
 - Preserved NDJSON as the default stream format.
+
+### 0.27.0
+
+- Hardened Fastify schema compatibility probes to avoid reflected request bodies.
+- Kept the 1.0 compatibility test suite suitable for CodeQL review.
 
 ### 0.26.0
 
@@ -76,11 +81,11 @@ The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/READM
 
 ### Public Contract Alignment
 
-Public CLI flags, programmatic options, docs, and generated behavior must match before 1.0. The next priorities are the WSDL coverage matrix and release candidate gates for `1.0.0`.
+Choice union mode and JSON array streaming are implemented. Remaining contract work is to keep docs, generated behavior, and examples aligned while the WSDL matrix turns coverage gaps into supported, diagnostic, or deferred statuses.
 
 ### OpenAPI And Fastify Compatibility
 
-OpenAPI schema changes must be proven against Fastify validation and serialization behavior before generator output changes. Compatibility research constrains the released choice union schemas and JSON array streaming behavior.
+Compatibility research is complete for released choice union schemas and JSON array streaming behavior. Any new schema output before 1.0 must get the same local Fastify probe coverage before generator output changes.
 
 ### Streaming
 
@@ -88,7 +93,7 @@ OpenAPI schema changes must be proven against Fastify validation and serializati
 
 ### WSDL Coverage
 
-The project must have an automated WSDL feature matrix that proves what is supported, partially supported, or rejected with diagnostics. Priority gaps are `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, and deeply composed schemas.
+The immediate 1.0 blocker is an automated WSDL feature matrix that proves what is supported, partially supported, or rejected with diagnostics. Priority gaps are `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, and deeply composed schemas.
 
 ### Gateway Integration
 

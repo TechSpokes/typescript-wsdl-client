@@ -1,6 +1,6 @@
 # Version 1.0 Roadmap Plan
 
-Detailed plan for moving `@techspokes/typescript-wsdl-client` from `0.28.x` to a stable `1.0.0` release.
+Detailed plan for moving `@techspokes/typescript-wsdl-client` from the released `0.28.x` line to a stable `1.0.0` release.
 
 See the root [README.md](../../README.md) for project overview and the root [ROADMAP.md](../../ROADMAP.md) for the public roadmap summary.
 
@@ -8,28 +8,28 @@ See the root [README.md](../../README.md) for project overview and the root [ROA
 
 This plan turns the 1.0 roadmap into implementation slices that can be picked up independently. Each slice has its own plan document with scope, testing strategy, acceptance gates, and release implications.
 
-The plan is optimized for preserving quality. Contract mismatches are resolved before new capability work, compatibility research constrains schema changes, and WSDL coverage work turns unsupported behavior into explicit diagnostics.
+The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, and JSON array streaming is shipped. The remaining readiness work is WSDL coverage evidence and the final release candidate gate pass.
 
 ## Route Summary
 
-| Slice | Document | Outcome |
-|-------|----------|---------|
-| Contract audit | [Contract Audit](v1.0-contract-audit.md) | Public surfaces match behavior |
-| OpenAPI compatibility | [OpenAPI Fastify Compatibility](v1.0-openapi-fastify-compatibility.md) | Schema strategy is proven |
-| Choice union mode | [Choice Union Mode](v1.0-choice-union-mode.md) | Implemented in `0.26.0` |
-| JSON array streaming | [JSON Array Streaming](v1.0-json-array-streaming.md) | `format: "json-array"` works |
-| WSDL coverage matrix | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md) | Feature support is test-backed |
-| Release candidate | [Release Candidate Gates](v1.0-release-candidate-gates.md) | 1.0 release is repeatable |
+| Slice                 | Document                                                               | Status            | Outcome                        |
+|-----------------------|------------------------------------------------------------------------|-------------------|--------------------------------|
+| Contract audit        | [Contract Audit](v1.0-contract-audit.md)                               | baseline complete | Public surfaces match behavior |
+| OpenAPI compatibility | [OpenAPI Fastify Compatibility](v1.0-openapi-fastify-compatibility.md) | baseline complete | Schema strategy is proven      |
+| Choice union mode     | [Choice Union Mode](v1.0-choice-union-mode.md)                         | complete          | Implemented in `0.26.0`        |
+| JSON array streaming  | [JSON Array Streaming](v1.0-json-array-streaming.md)                   | complete          | Implemented in `0.28.0`        |
+| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                   | remaining         | Feature support is test-backed |
+| Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)             | remaining         | 1.0 release is repeatable      |
 
 ## Execution Order
 
 ### Slice 1: Contract Audit
 
-Start with contract audit because it defines the exact public promises that later slices must satisfy. This slice updates docs, identifies mismatched flags and options, and creates failing tests for the behavior that must become true.
+The baseline contract audit is complete. Keep it active as release hygiene so CLI docs, API docs, configuration docs, examples, roadmap statements, and generated behavior stay aligned.
 
 ### Slice 2: OpenAPI Fastify Compatibility
 
-Run compatibility research before changing union schemas or streaming JSON schemas. This keeps schema design constrained by Fastify validation, Fastify serialization, and generated gateway behavior.
+Compatibility research is complete for choice union mode and JSON array streaming. Run the same local Fastify probes before any future schema output changes.
 
 ### Slice 3: Choice Union Mode
 
@@ -41,11 +41,18 @@ JSON array streaming is complete in `0.28.0`. The default `ndjson` format remain
 
 ### Slice 5: WSDL Coverage Matrix
 
-Build the automated WSDL feature matrix once the two existing public contract gaps are handled. The matrix should then drive the remaining WSDL support and diagnostic decisions.
+Build the automated WSDL feature matrix next. The matrix should drive the remaining WSDL support, diagnostic, and deferral decisions.
 
 ### Slice 6: Release Candidate Gates
 
 Run the release candidate gates after feature work and documentation have converged. This slice validates docs, tests, generated examples, package contents, skill artifact, release notes, and provenance workflow readiness.
+
+## Remaining Before 1.0
+
+- Build and run the WSDL feature matrix.
+- Turn unsupported or partial matrix rows into diagnostics, documentation, or scoped fixes.
+- Confirm `docs/supported-patterns.md` matches the matrix.
+- Run the release-candidate gates.
 
 ## Quality Principles
 

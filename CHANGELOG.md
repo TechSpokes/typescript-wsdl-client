@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(roadmap): refresh 1.0 readiness after the JSON array streaming release
+
 ## [0.28.0] - 2026-06-01
 
 - feat(stream): implement JSON array streaming for stream-configured operations
