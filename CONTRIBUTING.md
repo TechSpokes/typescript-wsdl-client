@@ -69,17 +69,19 @@ TypeScript strict mode with ESM and NodeNext modules. Node.js >= 20, no browser-
 
 ### Commit Message Format
 
+Use the intended release target version in commit titles. After `0.5.1` is released, patch work toward `0.5.2` uses `Version: 0.5.2` even before `package.json` is bumped.
+
 ```text
-Version: 0.5.1 feat(scope): imperative summary
+Version: 0.5.2 feat(scope): imperative summary
 
 Optional body with rationale, risks, and references like "Closes #123".
 ```
 
 Examples:
 
-- `Version: 0.5.1 fix(parser): handle empty choice elements`
-- `Version: 0.5.1 docs: add complex inheritance example`
-- `Version: 0.5.1 feat(cli): add --attribute-prefix flag`
+- `Version: 0.5.2 fix(parser): handle empty choice elements`
+- `Version: 0.5.2 docs: add complex inheritance example`
+- `Version: 0.6.0 feat(cli): add attribute prefix mode`
 
 ### Pull Request Process
 
@@ -183,6 +185,8 @@ This verifies the source compiles, tests pass, the CLI works, generated output c
 ## Repository Health Checks
 
 Before a release, run `npm run ci` and review the roadmap, changelog, README, CLI help, examples, configuration docs, and agent skill docs for drift.
+
+For a minor release, verify the target version is the next minor after the latest release and that `package.json` has patch `0`.
 
 Run `npm run maint:deps` when preparing a release so root dependency minimums and generated app pins stay aligned.
 

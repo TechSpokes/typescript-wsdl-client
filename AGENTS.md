@@ -15,10 +15,12 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Do not edit files in generated output directories (client/, gateway/, app/); regenerate from WSDL sources instead.
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
-- Commit messages must follow: `Version: <version> <type>(scope): <imperative summary>`.
+- Commit messages must follow: `Version: <release-target-version> <type>(scope): <imperative summary>`.
+- Post-release patch work uses the next patch version in commit titles even before `package.json` is bumped.
 - Every release commit must include the matching `docs/releases/vX.Y.Z.md` release notes file.
 - Node.js >= 20.0.0, ESM-only (`type: "module"`), strict TypeScript.
 - CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--init-app`.
+- On release, verify `package.json` and `package-lock.json` match the target version before tagging.
 - On release, bump hardcoded dep versions in `src/app/generateApp.ts` (`generatePackageJson`) to current latest.
 - The `soap` package is a runtime dependency; `wsdl-tsc` is a devDependency for consumers.
 

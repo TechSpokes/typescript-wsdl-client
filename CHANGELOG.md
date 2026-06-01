@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(release): clarify patch and minor version target rules
 - test(gateway): document Fastify schema compatibility for 1.0 planning
 
 ## [0.25.2] - 2026-06-01

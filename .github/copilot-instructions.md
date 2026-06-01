@@ -16,7 +16,7 @@ Before making any changes, read the file-pattern-specific instructions in `.gith
 - Issues: https://github.com/techspokes/typescript-wsdl-client/issues
 - Discussions: https://github.com/techspokes/typescript-wsdl-client/discussions
 - CI Workflow: `.github/workflows/ci.yml`
-- Version Policy: always read `"version"` from `package.json`; do not duplicate it here.
+- Version Policy: read `"version"` from `package.json` and derive the release target before commits or releases.
 
 Machine-readable metadata (parse first for GitHub MCP operations):
 
@@ -25,7 +25,8 @@ Machine-readable metadata (parse first for GitHub MCP operations):
 owner: techspokes
 repo: typescript-wsdl-client
 package: '@techspokes/typescript-wsdl-client'
-# version: always read from package.json
+# package version: always read from package.json
+# release target: derive from changelog/latest release or explicit user target
 defaultBranch: main
 issues: 'https://github.com/techspokes/typescript-wsdl-client/issues'
 discussions: 'https://github.com/techspokes/typescript-wsdl-client/discussions'
@@ -36,8 +37,8 @@ node: '>=20'
 
 ### GitHub MCP Usage Guidelines (minimal)
 
-1. Use `owner` / `repo` from YAML; read `package.json` each time you need the version (no caching).
-2. Commit/PR titles: prefix with `Version: <version>` (see commit format rules).
+1. Use `owner` / `repo` from YAML; read `package.json` when you need the package version.
+2. Commit/PR titles: prefix with `Version: <release-target-version>` (see commit format rules).
 3. Default PR base: `main` unless explicitly overridden.
 4. Prefer repo-scoped queries; avoid broad GitHub-wide searches for issues/PRs.
 5. For releases, read `CHANGELOG.md`, `package.json`, and the matching `docs/releases/vX.Y.Z.md` release notes when present; follow the release workflow below.
@@ -177,47 +178,69 @@ Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `bu
 - Preserve string-first primitive mapping defaults unless a flag explicitly requests another mapping (e.g. `--client-int64-as number`).
 - Keep JSON / SOAP mapping and OpenAPI structure deterministic and stable for diff-friendly regeneration.
 
+## Release Target Version
+
+Determine the release target version before creating a commit title, release commit, PR title, or tag.
+
+Read `package.json` and the latest dated `CHANGELOG.md` release section. The latest released version should match `package.json` immediately after release prep.
+
+Rules:
+- For normal post-release patch work, use the next patch after the latest released version.
+- For a requested minor release train, use the next minor after the latest released version.
+- For a requested major release train, use the next major after the latest released version.
+- If the user gives an explicit target version, verify it matches the requested release train.
+- Do not use an already released package version for new post-release development commits.
+- During release prep, `package.json`, `package-lock.json`, changelog, and release notes must match the target.
+
+Examples:
+- After `0.25.2` is released, patch work uses `Version: 0.25.3 ...`.
+- After `0.25.2` is released, next-minor work uses `Version: 0.26.0 ...`.
+
 ## Commit Message Format (required)
 
-Always read current version from `package.json` and start commit titles with `Version: <version>`.
+Always derive the release target version and start commit titles with `Version: <release-target-version>`.
 
 Format (Conventional Commits style):
 
 ```text
-Version: <version> <type>(<optional-scope>): <imperative summary>
+Version: <release-target-version> <type>(<optional-scope>): <imperative summary>
 ```
 
 Rules:
 - Treat `"version"` in `package.json` as read-only in normal work; releases handle bumps.
+- Use the release target version in commit titles, not necessarily the current package version.
 - Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, etc.
 - Title <= 72 characters.
 - Place rationale, risks, and references (e.g. `Closes #123`) in the body.
 
 Examples:
-- `Version: 0.8.0 feat(cli): add --flag to control attribute key`
-- `Version: 0.8.0 fix(emitter): stabilize operation order in meta`
-- `Version: 0.8.0 docs: clarify NodeNext setup and imports`
+- `Version: 0.25.3 fix(emitter): stabilize operation order in meta`
+- `Version: 0.25.3 docs: clarify NodeNext setup and imports`
+- `Version: 0.26.0 feat(cli): add attribute prefix mode`
 
 ## CHANGELOG Rules (align with current file)
 
 - Keep `## [Unreleased]` at the top; new entries go there.
 - Style: one-line entries, no file lists, no vague phrasing.
 - For each code/docs change, ensure a bullet under `## [Unreleased]` before concluding work.
-- In interactive contexts, ask for confirmation to append a bullet derived from the commit title (strip `Version: <'>`).
+- In interactive contexts, ask for confirmation to append a bullet derived from the commit title (strip `Version: <release-target-version>`).
 - In non-interactive contexts (e.g. CI), append the bullet automatically.
 
 ### Release workflow
 
-1. Read current version from `package.json`.
-2. Determine semver bump (patch/minor/major) based on `Unreleased` changes.
-3. Update `"version"` in `package.json` and `package-lock.json` to the new release version.
-4. In `CHANGELOG.md`: promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date) and start a fresh, empty `## [Unreleased]` section at the top.
-5. Run `npm run maint:deps` to update dependency minimums, lockfile entries, and app scaffold pins.
-6. Review the completed changelog section and convert the user-facing changes into `docs/releases/v<version>.md`.
-7. Run `npm run skill:validate` to verify the standalone agent skill source, manifest, extracted docs references, packaged links, and deterministic staging output.
-8. Run `npm run ci` to verify the release. This runs build, typecheck, agent skill validation, npm package validation, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
-9. Run `npm run skill:package -- v<version>` and confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` exists before drafting the release.
-10. Commit the version, changelog, dependency, release notes, and agent skill changes before tagging `v<version>`.
+1. Read current package version from `package.json` and the latest dated release section in `CHANGELOG.md`.
+2. Determine the target semver bump based on `Unreleased` changes or the user's explicit target.
+3. For patch releases, verify the target is the next patch after the latest released version.
+4. For minor releases, verify the target is the next minor after the latest released version and has patch `0`.
+5. Update `"version"` in `package.json` and `package-lock.json` to the target release version.
+6. Re-read `package.json` and `package-lock.json`; both must match the target before release notes are written.
+7. In `CHANGELOG.md`: promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date) and start a fresh, empty `## [Unreleased]` section at the top.
+8. Run `npm run maint:deps` to update dependency minimums, lockfile entries, and app scaffold pins.
+9. Review the completed changelog section and convert the user-facing changes into `docs/releases/v<version>.md`.
+10. Run `npm run skill:validate` to verify the standalone agent skill source, manifest, extracted docs references, packaged links, and deterministic staging output.
+11. Run `npm run ci` to verify the release. This runs build, typecheck, agent skill validation, npm package validation, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
+12. Run `npm run skill:package -- v<version>` and confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` exists before drafting the release.
+13. Commit the version, changelog, dependency, release notes, and agent skill changes before tagging `v<version>`.
 
 ### Release notes
 
@@ -274,9 +297,10 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 
 ### Creating a commit message
 
-1. Read the version from `package.json`.
-2. Use the `Version: <version> <type>(scope): summary` format.
-3. Provide an optional body with context, risks, or references.
+1. Read `package.json` and the latest dated `CHANGELOG.md` release section.
+2. Determine the release target version for the current work.
+3. Use the `Version: <release-target-version> <type>(scope): summary` format.
+4. Provide an optional body with context, risks, or references.
 
 ### Updating CHANGELOG.md
 
@@ -285,7 +309,10 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 
 ### Preparing a release
 
-- Bump the version in `package.json` and `package-lock.json`.
+- Determine the target version before editing release files.
+- For a minor release, verify the target is the next minor and has patch `0`.
+- Bump the version in `package.json` and `package-lock.json` to the target.
+- Re-read `package.json` and `package-lock.json` to verify both match the target.
 - Promote `Unreleased` to a dated section `## [x.y.z] - YYYY-MM-DD`.
 - Insert a new empty `## [Unreleased]` at the top.
 - Run `npm run maint:deps` to update dependency minimums and generated app scaffold pins.
