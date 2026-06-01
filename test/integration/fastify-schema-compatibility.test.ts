@@ -36,6 +36,10 @@ const phoneChoice = {
 
 describe("Fastify schema compatibility probes", () => {
   it("does not preserve choice exclusivity with closed oneOf branches under Fastify defaults", async () => {
+    let emailOnlyBody: unknown;
+    let bothChoicesBody: unknown;
+    let requestIndex = 0;
+
     await withFastify(
       (app) => {
         app.post(
@@ -48,7 +52,16 @@ describe("Fastify schema compatibility probes", () => {
               },
             },
           },
-          async (request) => request.body
+          async (request) => {
+            requestIndex += 1;
+            if (requestIndex === 1) {
+              emailOnlyBody = request.body;
+            } else {
+              bothChoicesBody = request.body;
+            }
+
+            return {ok: true};
+          }
         );
       },
       async (app) => {
@@ -64,14 +77,18 @@ describe("Fastify schema compatibility probes", () => {
         });
 
         expect(emailOnly.statusCode).toBe(200);
-        expect(JSON.parse(emailOnly.body)).toEqual({email: "team@example.test"});
+        expect(emailOnlyBody).toEqual({email: "team@example.test"});
         expect(bothChoices.statusCode).toBe(200);
-        expect(JSON.parse(bothChoices.body)).toEqual({email: "team@example.test"});
+        expect(bothChoicesBody).toEqual({email: "team@example.test"});
       }
     );
   });
 
   it("validates exclusive request choices with oneOf and peer not constraints", async () => {
+    let emailOnlyBody: unknown;
+    let phoneOnlyBody: unknown;
+    let requestIndex = 0;
+
     await withFastify(
       (app) => {
         app.post(
@@ -99,7 +116,16 @@ describe("Fastify schema compatibility probes", () => {
               },
             },
           },
-          async (request) => request.body
+          async (request) => {
+            requestIndex += 1;
+            if (requestIndex === 1) {
+              emailOnlyBody = request.body;
+            } else {
+              phoneOnlyBody = request.body;
+            }
+
+            return {ok: true};
+          }
         );
       },
       async (app) => {
@@ -120,15 +146,17 @@ describe("Fastify schema compatibility probes", () => {
         });
 
         expect(emailOnly.statusCode).toBe(200);
-        expect(JSON.parse(emailOnly.body)).toEqual({email: "team@example.test"});
+        expect(emailOnlyBody).toEqual({email: "team@example.test"});
         expect(phoneOnly.statusCode).toBe(200);
-        expect(JSON.parse(phoneOnly.body)).toEqual({phone: "+15551234567"});
+        expect(phoneOnlyBody).toEqual({phone: "+15551234567"});
         expect(bothChoices.statusCode).toBe(400);
       }
     );
   });
 
   it("shows anyOf is not enough for request choice exclusivity", async () => {
+    let bothChoicesBody: unknown;
+
     await withFastify(
       (app) => {
         app.post(
@@ -152,7 +180,10 @@ describe("Fastify schema compatibility probes", () => {
               },
             },
           },
-          async (request) => request.body
+          async (request) => {
+            bothChoicesBody = request.body;
+            return {ok: true};
+          }
         );
       },
       async (app) => {
@@ -163,7 +194,7 @@ describe("Fastify schema compatibility probes", () => {
         });
 
         expect(bothChoices.statusCode).toBe(200);
-        expect(JSON.parse(bothChoices.body)).toEqual({
+        expect(bothChoicesBody).toEqual({
           email: "team@example.test",
           phone: "+15551234567",
         });
