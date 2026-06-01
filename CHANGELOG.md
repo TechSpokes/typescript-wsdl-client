@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(openapi): emit choice branch constraints in union mode
 - feat(client): emit TypeScript choice branch unions in union mode
 - feat(compiler): retain choice group metadata for union mode
 - docs(release): clarify patch and minor version target rules

@@ -89,11 +89,11 @@ Errors raised before the first record use the normal gateway error envelope (cli
 
 ### Choice Elements
 
-Default strategy: all-optional. The opt-in `--client-choice-mode union` mode emits TypeScript branch unions for generated client types.
+Default strategy: all-optional. The opt-in `--client-choice-mode union` mode emits TypeScript branch unions for generated client types and OpenAPI choice constraints for generated schemas.
 
 ### Union Types
 
-`--client-choice-mode union` is still experimental until OpenAPI and gateway schema generation consume the same choice metadata.
+`--client-choice-mode union` is still experimental until generated gateway tests and fixtures consume the same choice metadata.
 
 ### WS-Policy
 

@@ -67,7 +67,7 @@ The catalog is auto-placed alongside the first available output directory: `{cli
 | `--client-bigint-as` | `string` | Map arbitrary-size integers |
 | `--client-decimal-as` | `string` | Map xs:decimal |
 | `--client-date-as` | `string` | Map date/time types |
-| `--client-choice-mode` | `all-optional` | Choice strategy: all-optional or union TypeScript branches |
+| `--client-choice-mode` | `all-optional` | Choice strategy for generated client types and catalog-backed OpenAPI schemas |
 | `--client-fail-on-unresolved` | `false` | Fail on unresolved references |
 | `--client-nillable-as-optional` | `false` | Treat nillable as optional |
 

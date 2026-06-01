@@ -8,6 +8,7 @@ import {compileCatalog, type CompiledCatalog} from "../../src/compiler/schemaCom
 import {generateTypes} from "../../src/client/generateTypes.js";
 import {resolveCompilerOptions, type CompilerOptions} from "../../src/config.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
+import {buildChoiceWsdl, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
 
 const require = createRequire(import.meta.url);
 const tmpRoot = mkdtempSync(join(tmpdir(), "wsdl-choice-types-"));
@@ -17,69 +18,17 @@ afterAll(() => {
   rmSync(tmpRoot, {recursive: true, force: true});
 });
 
-function buildWsdl(schemaBody: string): string {
-  return `<?xml version="1.0" encoding="utf-8"?>
-<wsdl:definitions
-  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-  xmlns:tns="http://example.com/choice-types"
-  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  targetNamespace="http://example.com/choice-types">
-  <wsdl:types>
-    <xs:schema
-      xmlns:tns="http://example.com/choice-types"
-      elementFormDefault="qualified"
-      targetNamespace="http://example.com/choice-types">
-      ${schemaBody}
-    </xs:schema>
-  </wsdl:types>
-  <wsdl:message name="SearchInput"><wsdl:part name="parameters" element="tns:SearchRequest"/></wsdl:message>
-  <wsdl:message name="SearchOutput"><wsdl:part name="parameters" element="tns:SearchResponse"/></wsdl:message>
-  <wsdl:portType name="ChoiceTypePortType">
-    <wsdl:operation name="Search">
-      <wsdl:input message="tns:SearchInput"/>
-      <wsdl:output message="tns:SearchOutput"/>
-    </wsdl:operation>
-  </wsdl:portType>
-  <wsdl:binding name="ChoiceTypeBinding" type="tns:ChoiceTypePortType">
-    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-    <wsdl:operation name="Search">
-      <soap:operation soapAction="urn:search"/>
-      <wsdl:input><soap:body use="literal"/></wsdl:input>
-      <wsdl:output><soap:body use="literal"/></wsdl:output>
-    </wsdl:operation>
-  </wsdl:binding>
-  <wsdl:service name="ChoiceTypeService">
-    <wsdl:port name="ChoiceTypePort" binding="tns:ChoiceTypeBinding">
-      <soap:address location="http://example.com/choice-types"/>
-    </wsdl:port>
-  </wsdl:service>
-</wsdl:definitions>`;
-}
-
-const CHOICE_SCHEMA = `
-  <xs:element name="SearchRequest" type="tns:SearchRequest"/>
-  <xs:element name="SearchResponse">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="ok" type="xs:boolean"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:complexType name="SearchRequest">
-    <xs:sequence>
-      <xs:element name="tenantId" type="xs:string"/>
-      <xs:choice minOccurs="0" maxOccurs="1">
-        <xs:element name="email" type="xs:string"/>
-        <xs:element name="phone" type="xs:int"/>
-      </xs:choice>
-    </xs:sequence>
-  </xs:complexType>`;
-
 async function compileFixture(choice: CompilerOptions["choice"]): Promise<CompiledCatalog> {
   fixtureCounter += 1;
   const wsdlPath = join(tmpRoot, `choice-${choice}-${fixtureCounter}.wsdl`);
-  writeFileSync(wsdlPath, buildWsdl(CHOICE_SCHEMA), "utf8");
+  writeFileSync(
+    wsdlPath,
+    buildChoiceWsdl(SEARCH_CHOICE_SCHEMA, {
+      namespace: "http://example.com/choice-types",
+      servicePrefix: "ChoiceType",
+    }),
+    "utf8",
+  );
   const wsdlCatalog = await loadWsdl(wsdlPath);
   return compileCatalog(
     wsdlCatalog,

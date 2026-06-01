@@ -277,6 +277,8 @@ type MyTypeChoice1 =
   | { optionB: number; optionA?: never };
 ```
 
+OpenAPI generation also consumes the same choice metadata in union mode. It keeps choice member properties on the containing object and adds `oneOf` branch constraints with peer `not` checks so generated request schemas reject payloads that send multiple branches.
+
 ## Array Wrapper Flattening
 
 A complex type whose only child is a single repeated element with no attributes

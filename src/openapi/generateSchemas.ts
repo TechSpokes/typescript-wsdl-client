@@ -97,7 +97,14 @@ function isSyntheticAliasSelfWrapper(t: CompiledType, aliasNames: Set<string>): 
   return e.name === "$value" && e.tsType === t.name;
 }
 
-function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Set<string>, aliasNames: Set<string>, flattenWrappers: boolean): any {
+function buildComplexSchema(
+  t: CompiledType,
+  closed: boolean,
+  knownTypeNames: Set<string>,
+  aliasNames: Set<string>,
+  flattenWrappers: boolean,
+  choiceUnionMode: boolean,
+): any {
   // Use knownTypeNames/aliasNames to validate $ref targets so we surface
   // compiler issues early instead of emitting dangling references in OpenAPI output.
   function refOrPrimitive(ts: string): any {
@@ -139,6 +146,10 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
   }
   const properties: Record<string, any> = {};
   const required: string[] = [];
+  const choiceGroups = choiceUnionMode ? (t.choiceGroups ?? []) : [];
+  const choiceElementNames = new Set(
+    choiceGroups.flatMap((group) => group.branches.map((branch) => branch.name))
+  );
 
   // attributes
   for (const a of t.attrs) {
@@ -164,7 +175,7 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
     properties[e.name] = schema;
     if (e.name === "$value") {
       // never required
-    } else if (e.min >= 1) {
+    } else if (e.min >= 1 && !choiceElementNames.has(e.name)) {
       required.push(e.name);
     }
   }
@@ -175,6 +186,37 @@ function buildComplexSchema(t: CompiledType, closed: boolean, knownTypeNames: Se
   };
   if (required.length) obj.required = Array.from(new Set(required));
   if (closed) obj.additionalProperties = false;
+  const choiceConstraints = choiceGroups
+    .map((group) => {
+      const branchNames = group.branches.map((branch) => branch.name);
+      const presenceSchema = (names: string[]): any | undefined => {
+        if (names.length === 0) return undefined;
+        if (names.length === 1) return {required: [names[0]]};
+        return {anyOf: names.map((name) => ({required: [name]}))};
+      };
+      const oneOf = group.branches.map((branch) => {
+        const peers = branchNames.filter((name) => name !== branch.name);
+        const schema: any = {required: [branch.name]};
+        const forbiddenPeers = presenceSchema(peers);
+        if (forbiddenPeers) {
+          schema.not = forbiddenPeers;
+        }
+        return schema;
+      });
+      if (group.min === 0) {
+        const anyBranch = presenceSchema(branchNames);
+        if (anyBranch) {
+          oneOf.push({not: anyBranch});
+        }
+      }
+      return oneOf.length > 0 ? {oneOf} : undefined;
+    })
+    .filter((schema): schema is {oneOf: any[]} => !!schema);
+  if (choiceConstraints.length === 1) {
+    obj.oneOf = choiceConstraints[0].oneOf;
+  } else if (choiceConstraints.length > 1) {
+    obj.allOf = choiceConstraints;
+  }
 
   // inheritance via base => allOf
   if (t.base) {
@@ -225,7 +267,14 @@ export function generateSchemas(compiled: CompiledCatalog, opts: GenerateSchemas
     if (isSyntheticAliasSelfWrapper(t, aliasNames)) {
       continue;
     }
-    schemas[t.name] = buildComplexSchema(t, closed, typeNames, aliasNames, flattenWrappers);
+    schemas[t.name] = buildComplexSchema(
+      t,
+      closed,
+      typeNames,
+      aliasNames,
+      flattenWrappers,
+      compiled.options.choice === "union",
+    );
   }
 
   if (opts.pruneUnusedSchemas) {
