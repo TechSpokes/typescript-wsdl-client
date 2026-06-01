@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(gateway): document Fastify schema compatibility for 1.0 planning
+
 ## [0.25.2] - 2026-06-01
 
 - docs(cli): align CLI reference flags with the public command surface

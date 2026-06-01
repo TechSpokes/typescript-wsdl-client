@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {slugName} from "../../src/gateway/helpers.js";
+import {measureSchemaRefComplexity, slugName} from "../../src/gateway/helpers.js";
 
 describe("slugName", () => {
   it("normalizes names to lowercase underscore slugs", () => {
@@ -12,5 +12,35 @@ describe("slugName", () => {
 
   it("preserves the existing empty result for separator-only names", () => {
     expect(slugName("___")).toBe("");
+  });
+});
+
+describe("measureSchemaRefComplexity", () => {
+  it("counts references inside composed schema branches", () => {
+    const schemas = {
+      Envelope: {
+        type: "object",
+        properties: {
+          data: {
+            oneOf: [
+              {$ref: "#/components/schemas/EmailChoice"},
+              {
+                anyOf: [
+                  {$ref: "#/components/schemas/PhoneChoice"},
+                  {$ref: "#/components/schemas/FallbackChoice"},
+                ],
+              },
+            ],
+          },
+        },
+        allOf: [{$ref: "#/components/schemas/BaseEnvelope"}],
+      },
+      BaseEnvelope: {type: "object"},
+      EmailChoice: {type: "object"},
+      PhoneChoice: {type: "object"},
+      FallbackChoice: {type: "object"},
+    };
+
+    expect(measureSchemaRefComplexity("Envelope", schemas)).toBe(5);
   });
 });
