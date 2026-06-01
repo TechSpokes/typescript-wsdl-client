@@ -13,7 +13,7 @@
  * - Optional/required markers based on XML schema requirements
  */
 import fs from "node:fs";
-import type {CompiledCatalog, CompiledType} from "../compiler/schemaCompiler.js";
+import type {CompiledCatalog, CompiledChoiceBranch, CompiledChoiceGroup, CompiledType} from "../compiler/schemaCompiler.js";
 import {error} from "../util/cli.js";
 
 /**
@@ -68,6 +68,63 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
   const aliasNames = new Set(compiled.aliases.map((a) => a.name));
   const isValidIdent = (name: string) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name);
   const emitPropName = (name: string) => (isValidIdent(name) ? name : JSON.stringify(name));
+  type ElementParticle = CompiledType["elems"][number] | CompiledChoiceBranch;
+  const isChoiceUnionMode = compiled.options.choice === "union";
+  const elementType = (e: ElementParticle): string => {
+    const isArray = e.max === "unbounded" || (e.max > 1);
+    return `${e.tsType}${isArray ? "[]" : ""}`;
+  };
+  const elementOptionalMarker = (e: ElementParticle): string =>
+    (compiled.options.nillableAsOptional && e.nillable) || (e.min ?? 0) === 0 ? "?" : "";
+  const emitElementProperty = (
+    indent: string,
+    e: ElementParticle,
+    options: {optionalMarker?: string; tsType?: string} = {},
+  ) => {
+    const annObj = {
+      kind: e.name === "$value" ? "scalar value" : "element" as const,
+      type: e.declaredType,
+      occurs: {min: e.min, max: e.max, nillable: e.nillable ?? false},
+    };
+    lines.push("");
+    if (e.doc) {
+      emitDocBlock(indent, e.doc, JSON.stringify(annObj));
+    } else {
+      lines.push(`${indent}/** @xsd ${JSON.stringify(annObj)} */`);
+    }
+    lines.push(`${indent}${emitPropName(e.name)}${options.optionalMarker ?? elementOptionalMarker(e)}: ${options.tsType ?? elementType(e)};`);
+  };
+  const sortElementsForEmit = (elements: ElementParticle[]) => {
+    elements.sort((a, b) => {
+      if (a.name === "$value") return 1;
+      if (b.name === "$value") return -1;
+      if (a.min !== 0 && b.min === 0) return -1;
+      if (a.min === 0 && b.min !== 0) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  };
+  const sortAttributesForEmit = (attrs: CompiledType["attrs"]) => {
+    attrs.sort((a, b) => {
+      if (a.use === "required" && b.use !== "required") return -1;
+      if (a.use !== "required" && b.use === "required") return 1;
+      return a.name.localeCompare(b.name);
+    });
+  };
+  const emitAttributeProperty = (indent: string, a: CompiledType["attrs"][number]) => {
+    const opt = a.use === "required" ? "" : "?";
+    const annObj = {
+      kind: "attribute" as const,
+      type: a.declaredType,
+      use: a.use || "optional",
+    };
+    lines.push("");
+    if (a.doc) {
+      emitDocBlock(indent, a.doc, JSON.stringify(annObj));
+    } else {
+      lines.push(`${indent}/** @xsd ${JSON.stringify(annObj)} */`);
+    }
+    lines.push(`${indent}${emitPropName(a.name)}${opt}: ${a.tsType};`);
+  };
   const isSyntheticAliasSelfWrapper = (t: CompiledType): boolean => {
     const elems = t.elems || [];
     return aliasNames.has(t.name) &&
@@ -120,13 +177,6 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
       emitDocBlock("", t.doc);
     }
 
-    // Header: extend base type if applicable
-    if (baseName) {
-      lines.push(`export interface ${t.name} extends ${baseName} {`);
-    } else {
-      lines.push(`export interface ${t.name} {`);
-    }
-
     // Prepare lists: for complexContent extension use only local additions
     const attrsToEmit: CompiledType["attrs"] = complexBase ? ((t as any).localAttrs || []) : (t.attrs || []);
     // Elements list similar
@@ -135,6 +185,82 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
     if (isSimpleContentExtension && !complexBase) {
       const idx = elementsToEmit.findIndex(e => e.name === "$value");
       if (idx >= 0) elementsToEmit.splice(idx, 1);
+    }
+
+    const choiceGroupsToEmit: CompiledChoiceGroup[] = isChoiceUnionMode
+      ? (complexBase ? ((t as any).localChoiceGroups || []) : (t.choiceGroups || []))
+      : [];
+    if (choiceGroupsToEmit.length > 0) {
+      const choiceElementNames = new Set(choiceGroupsToEmit.flatMap((group) => group.branches.map((branch) => branch.name)));
+      const baseElements = elementsToEmit.filter((e) => !choiceElementNames.has(e.name));
+      const baseNameForChoice = `${t.name}ChoiceBase`;
+      const choiceNames = choiceGroupsToEmit.map((group) => group.name).join(" & ");
+      lines.push(`export type ${t.name} = ${baseNameForChoice} & ${choiceNames};`);
+      lines.push("");
+      if (baseName) {
+        lines.push(`export interface ${baseNameForChoice} extends ${baseName} {`);
+      } else {
+        lines.push(`export interface ${baseNameForChoice} {`);
+      }
+
+      if (0 < attrsToEmit.length) {
+        lines.push("");
+        lines.push("  /**");
+        lines.push((1 === attrsToEmit.length) ? "   * Attribute." : "   * Attributes.");
+        lines.push("   */");
+        sortAttributesForEmit(attrsToEmit);
+      }
+      for (const a of attrsToEmit) {
+        emitAttributeProperty("  ", a);
+      }
+
+      if (0 < baseElements.length) {
+        lines.push("");
+        lines.push("  /**");
+        lines.push((1 === baseElements.length) ? "   * Child element." : "   * Children elements.");
+        lines.push("   */");
+        sortElementsForEmit(baseElements);
+      }
+      for (const e of baseElements) {
+        if ((e.name === "$value") && (1 < baseElements.length)) {
+          lines.push("");
+        }
+        emitElementProperty("  ", e);
+      }
+      lines.push("}");
+      lines.push("");
+
+      for (const group of choiceGroupsToEmit) {
+        const branchNames = group.branches.map((branch) => branch.name);
+        lines.push(`export type ${group.name} =`);
+        for (const branch of group.branches) {
+          lines.push("  | {");
+          emitElementProperty("    ", branch);
+          for (const peerName of branchNames.filter((name) => name !== branch.name)) {
+            lines.push("");
+            lines.push(`    ${emitPropName(peerName)}?: never;`);
+          }
+          lines.push("  }");
+        }
+        if (group.min === 0) {
+          lines.push("  | {");
+          for (const peerName of branchNames) {
+            lines.push("");
+            lines.push(`    ${emitPropName(peerName)}?: never;`);
+          }
+          lines.push("  }");
+        }
+        lines.push(";");
+        lines.push("");
+      }
+      continue;
+    }
+
+    // Header: extend base type if applicable
+    if (baseName) {
+      lines.push(`export interface ${t.name} extends ${baseName} {`);
+    } else {
+      lines.push(`export interface ${t.name} {`);
     }
     //
     // Attributes — with JSDoc on every attribute
@@ -146,31 +272,10 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
       lines.push((1 === t.attrs.length) ? "   * Attribute." : "   * Attributes.");
       lines.push("   */");
 
-      // Sort the elements with the following logic: required first (sorted a-z), then optional (sorted a-z)
-      attrsToEmit.sort((a, b) => {
-        // Required attributes come before optional attributes
-        if (a.use === "required" && b.use !== "required") return -1; // `a` is required, b is optional
-        if (a.use !== "required" && b.use === "required") return 1;  // `a` is optional, b is required
-
-        // Within the same group (required or optional), sort alphabetically
-        return a.name.localeCompare(b.name);
-      });
+      sortAttributesForEmit(attrsToEmit);
     }
     for (const a of attrsToEmit) {
-      const opt = a.use === "required" ? "" : "?";
-      const annObj = {
-        kind: "attribute" as const,
-        type: a.declaredType,
-        use: a.use || "optional",
-      };
-      lines.push("");
-      if (a.doc) {
-        emitDocBlock("  ", a.doc, JSON.stringify(annObj));
-      } else {
-        const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
-        lines.push(ann);
-      }
-      lines.push(`  ${emitPropName(a.name)}${opt}: ${a.tsType};`);
+      emitAttributeProperty("  ", a);
     }
 
     //
@@ -185,43 +290,15 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
       lines.push((1 === elementsToEmit.length) ? "   * Child element." : "   * Children elements.");
       lines.push("   */");
 
-      // Sort the elements with the following logic: required first (sorted a-z), then optional (sorted a-z), and finally "$value" if present.
-      elementsToEmit.sort((a, b) => {
-        // Special case: $value is always last
-        if (a.name === "$value") return 1;
-        if (b.name === "$value") return -1;
-
-        // Required elements come before optional elements
-        if (a.min !== 0 && b.min === 0) return -1; // `a` is required, b is optional
-        if (a.min === 0 && b.min !== 0) return 1;  // `a` is optional, b is required
-
-        // Within the same group (required or optional), sort alphabetically
-        return a.name.localeCompare(b.name);
-      });
+      sortElementsForEmit(elementsToEmit);
     }
 
     for (const e of elementsToEmit) {
-      const isArray = e.max === "unbounded" || (e.max > 1);
-      const arr = isArray ? "[]" : "";
-      const opt = (compiled.options.nillableAsOptional && e.nillable) || (e.min ?? 0) === 0 ? "?" : "";
-      const annObj = {
-        // if a.name === "$value", the kind should be "scalar value"
-        kind: e.name === "$value" ? "scalar value" : "element" as const,
-        type: e.declaredType,
-        occurs: {min: e.min, max: e.max, nillable: e.nillable ?? false},
-      };
       // if the a.name === "$value" and we have more child elements, add an empty line before the annotation
       if ((e.name === "$value") && (1 < elementsToEmit.length)) {
         lines.push("");
       }
-      lines.push("");
-      if (e.doc) {
-        emitDocBlock("  ", e.doc, JSON.stringify(annObj));
-      } else {
-        const ann = `  /** @xsd ${JSON.stringify(annObj)} */`;
-        lines.push(ann);
-      }
-      lines.push(`  ${emitPropName(e.name)}${opt}: ${e.tsType}${arr};`);
+      emitElementProperty("  ", e);
     }
 
     lines.push("}");
