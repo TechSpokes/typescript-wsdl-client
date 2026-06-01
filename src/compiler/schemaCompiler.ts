@@ -41,6 +41,25 @@ export type CompiledWildcard = {
   processContents?: "lax" | "strict" | "skip";
 };
 
+export type CompiledChoiceBranch = {
+  name: string;
+  tsType: string;
+  min: number;
+  max: number | "unbounded";
+  nillable?: boolean;
+  declaredType: string;
+  doc?: string;
+  sourceOrder: number;
+};
+
+export type CompiledChoiceGroup = {
+  name: string;
+  min: number;
+  max: number | "unbounded";
+  sourceOrder: number;
+  branches: CompiledChoiceBranch[];
+};
+
 /**
  * Represents a compiled complex type with attributes and elements
  *
@@ -98,6 +117,10 @@ export type CompiledType = {
   // Retained xs:any particles, if any. Absent on types without wildcards so
   // existing catalogs remain byte-for-byte identical.
   wildcards?: CompiledWildcard[];
+  // Retained xs:choice groups, if any. Absent on types without choices so
+  // existing catalogs remain byte-for-byte identical.
+  choiceGroups?: CompiledChoiceGroup[];
+  localChoiceGroups?: CompiledChoiceGroup[];
 };
 
 /**
@@ -570,6 +593,25 @@ export function compileCatalog(
         }
       }
     };
+    const mergeChoiceGroups = (
+      into: CompiledChoiceGroup[] | undefined,
+      list: CompiledChoiceGroup[]
+    ): CompiledChoiceGroup[] | undefined => {
+      if (list.length === 0) return into;
+      const merged = into ? [...into] : [];
+      const idx = new Map<string, number>();
+      merged.forEach((g, i) => idx.set(g.name, i));
+      for (const g of list) {
+        const pos = idx.get(g.name);
+        if (pos == null) {
+          idx.set(g.name, merged.length);
+          merged.push(g);
+        } else {
+          merged[pos] = g;
+        }
+      }
+      return merged;
+    };
     const collectAttributes = (node: any): CompiledType["attrs"] => {
       const out: CompiledType["attrs"] = [];
       const attrs = getChildrenWithLocalName(node, "attribute");
@@ -633,58 +675,91 @@ export function compileCatalog(
       return out;
     };
 
+    const readOccurrence = (node: any): {min: number; max: number | "unbounded"} => {
+      const min = node["@_minOccurs"] ? Number(node["@_minOccurs"]) : 1;
+      const maxAttr = node["@_maxOccurs"];
+      const max = maxAttr === "unbounded" ? "unbounded" : maxAttr ? Number(maxAttr) : 1;
+      return {min, max};
+    };
+
+    const localNameOf = (key: string): string => {
+      const idx = key.indexOf(":");
+      return idx >= 0 ? key.slice(idx + 1) : key;
+    };
+
+    const compositorChildren = (node: any): Array<{kind: string; node: any}> => {
+      const out: Array<{kind: string; node: any}> = [];
+      for (const [key, value] of Object.entries(node || {})) {
+        const kind = localNameOf(key);
+        if (kind !== "element" && kind !== "sequence" && kind !== "all" && kind !== "choice") {
+          continue;
+        }
+        const arr = Array.isArray(value) ? value : [value];
+        for (const child of arr.filter(Boolean)) {
+          out.push({kind, node: child});
+        }
+      }
+      return out;
+    };
+
+    const compileElementParticle = (
+      ownerTypeName: string,
+      e: any
+    ): CompiledType["elems"][number] | undefined => {
+      const nameOrRef = e["@_name"] || e["@_ref"];
+      if (!nameOrRef) return undefined;
+      const propName = e["@_name"];
+      const {min, max} = readOccurrence(e);
+      const nillable = e["@_nillable"] === "true";
+      const inlineComplex = getFirstWithLocalName(e, "complexType");
+      const inlineSimple = getFirstWithLocalName(e, "simpleType");
+      if (inlineComplex) {
+        const inlineName = makeInlineTypeName(ownerTypeName, propName || nameOrRef, max);
+        const rec = getOrCompileComplex(inlineName, inlineComplex, schemaNS, prefixes);
+        return {
+          name: propName || nameOrRef,
+          tsType: rec.name,
+          min,
+          max,
+          nillable,
+          declaredType: `{${schemaNS}}${rec.name}`,
+          doc: extractAnnotationDocumentation(e),
+        };
+      }
+      if (inlineSimple) {
+        const r = compileSimpleTypeNode(inlineSimple, schemaNS, prefixes);
+        return {
+          name: propName || nameOrRef,
+          tsType: r.tsType,
+          min,
+          max,
+          nillable,
+          declaredType: r.declared,
+          doc: extractAnnotationDocumentation(e),
+        };
+      }
+      const t = e["@_type"] || e["@_ref"];
+      const q = t ? resolveQName(t, schemaNS, prefixes) : {ns: XS, local: "string"};
+      const r = resolveTypeRef(q, schemaNS, prefixes);
+      return {
+        name: propName || nameOrRef,
+        tsType: r.tsType,
+        min,
+        max,
+        nillable,
+        declaredType: r.declared,
+        doc: extractAnnotationDocumentation(e),
+      };
+    };
+
     const collectParticles = (ownerTypeName: string, node: any): CompiledType["elems"] => {
       const out: CompiledType["elems"] = [];
       // process a compositor or element container recursively
       const recurse = (groupNode: any) => {
         // handle direct element children
         for (const e of getChildrenWithLocalName(groupNode, "element")) {
-          const nameOrRef = e["@_name"] || e["@_ref"];
-          if (!nameOrRef) continue;
-          const propName = e["@_name"];
-          const min = e["@_minOccurs"] ? Number(e["@_minOccurs"]) : 1;
-          const maxAttr = e["@_maxOccurs"];
-          const max = maxAttr === "unbounded" ? "unbounded" : maxAttr ? Number(maxAttr) : 1;
-          const nillable = e["@_nillable"] === "true";
-          const inlineComplex = getFirstWithLocalName(e, "complexType");
-          const inlineSimple = getFirstWithLocalName(e, "simpleType");
-          if (inlineComplex) {
-            const inlineName = makeInlineTypeName(ownerTypeName, propName || nameOrRef, max);
-            const rec = getOrCompileComplex(inlineName, inlineComplex, schemaNS, prefixes);
-            out.push({
-              name: propName || nameOrRef,
-              tsType: rec.name,
-              min,
-              max,
-              nillable,
-              declaredType: `{${schemaNS}}${rec.name}`,
-              doc: extractAnnotationDocumentation(e),
-            });
-          } else if (inlineSimple) {
-            const r = compileSimpleTypeNode(inlineSimple, schemaNS, prefixes);
-            out.push({
-              name: propName || nameOrRef,
-              tsType: r.tsType,
-              min,
-              max,
-              nillable,
-              declaredType: r.declared,
-              doc: extractAnnotationDocumentation(e),
-            });
-          } else {
-            const t = e["@_type"] || e["@_ref"];
-            const q = t ? resolveQName(t, schemaNS, prefixes) : {ns: XS, local: "string"};
-            const r = resolveTypeRef(q, schemaNS, prefixes);
-            out.push({
-              name: propName || nameOrRef,
-              tsType: r.tsType,
-              min,
-              max,
-              nillable,
-              declaredType: r.declared,
-              doc: extractAnnotationDocumentation(e),
-            });
-          }
+          const particle = compileElementParticle(ownerTypeName, e);
+          if (particle) out.push(particle);
         }
         // recurse into nested compositor groups
         for (const comp of ["sequence", "all", "choice"]) {
@@ -697,16 +772,70 @@ export function compileCatalog(
       return out;
     };
 
+    const collectChoiceGroups = (ownerTypeName: string, node: any): CompiledChoiceGroup[] => {
+      const out: CompiledChoiceGroup[] = [];
+      let choiceIndex = 0;
+
+      const recurse = (groupNode: any) => {
+        let sourceOrder = 0;
+        for (const child of compositorChildren(groupNode)) {
+          if (child.kind === "choice") {
+            const {min, max} = readOccurrence(child.node);
+            const branches: CompiledChoiceBranch[] = [];
+            let branchSourceOrder = 0;
+            for (const e of getChildrenWithLocalName(child.node, "element")) {
+              const particle = compileElementParticle(ownerTypeName, e);
+              if (particle) {
+                branches.push({
+                  name: particle.name,
+                  tsType: particle.tsType,
+                  min: particle.min,
+                  max: particle.max,
+                  ...(particle.nillable ? {nillable: true} : {}),
+                  declaredType: particle.declaredType,
+                  ...(particle.doc ? {doc: particle.doc} : {}),
+                  sourceOrder: branchSourceOrder,
+                });
+              }
+              branchSourceOrder += 1;
+            }
+            if (branches.length > 0) {
+              choiceIndex += 1;
+              out.push({
+                name: `${ownerTypeName}Choice${choiceIndex}`,
+                min,
+                max,
+                sourceOrder,
+                branches,
+              });
+            }
+            recurse(child.node);
+          } else if (child.kind === "sequence" || child.kind === "all") {
+            recurse(child.node);
+          }
+          sourceOrder += 1;
+        }
+      };
+
+      recurse(node);
+      return out;
+    };
+
     const present = compiledMap.get(key);
     if (present) {
       // On duplicate definitions, merge new attributes and elements
       const newAttrs = collectAttributes(cnode);
       const newElems = collectParticles(outName, cnode);
       const newWildcards = collectWildcards(cnode);
+      const newChoiceGroups = collectChoiceGroups(outName, cnode);
       mergeAttrs(present.attrs, newAttrs);
       mergeElems(present.elems, newElems);
       if (newWildcards.length > 0) {
         present.wildcards = [...(present.wildcards ?? []), ...newWildcards];
+      }
+      const mergedChoiceGroups = mergeChoiceGroups(present.choiceGroups, newChoiceGroups);
+      if (mergedChoiceGroups && mergedChoiceGroups.length > 0) {
+        present.choiceGroups = mergedChoiceGroups;
       }
       if (!present.doc && typeDoc) {
         present.doc = typeDoc;
@@ -719,6 +848,7 @@ export function compileCatalog(
     // result accumulators
     const attrs: CompiledType["attrs"] = [];
     const elems: CompiledType["elems"] = [];
+    const choiceGroups: CompiledChoiceGroup[] = [];
 
     // Inheritance: complexContent
     const complexContent = getFirstWithLocalName(cnode, "complexContent");
@@ -739,14 +869,17 @@ export function compileCatalog(
             // inherit base members
             attrs.push(...baseType.attrs);
             elems.push(...baseType.elems);
+            choiceGroups.push(...(baseType.choiceGroups ?? []));
           }
         }
         // collect local additions/overrides
         const locals = collectAttributes(node);
         const localElems = collectParticles(outName, node);
         const localWildcards = collectWildcards(node);
+        const localChoiceGroups = collectChoiceGroups(outName, node);
         attrs.push(...locals);
         elems.push(...localElems);
+        choiceGroups.push(...localChoiceGroups);
         const result: CompiledType = {
           name: outName,
           ns: schemaNS,
@@ -757,6 +890,8 @@ export function compileCatalog(
           localAttrs: locals,
           localElems,
           ...(localWildcards.length > 0 ? {wildcards: localWildcards} : {}),
+          ...(choiceGroups.length > 0 ? {choiceGroups} : {}),
+          ...(localChoiceGroups.length > 0 ? {localChoiceGroups} : {}),
         };
         compiledMap.set(key, result);
         inProgress.delete(key);
@@ -802,6 +937,7 @@ export function compileCatalog(
     mergeAttrs(attrs, collectAttributes(cnode));
     mergeElems(elems, collectParticles(outName, cnode));
     const wildcards = collectWildcards(cnode);
+    choiceGroups.push(...collectChoiceGroups(outName, cnode));
 
     const result: CompiledType = {
       name: outName,
@@ -810,6 +946,7 @@ export function compileCatalog(
       elems,
       doc: typeDoc,
       ...(wildcards.length > 0 ? {wildcards} : {}),
+      ...(choiceGroups.length > 0 ? {choiceGroups} : {}),
     };
     compiledMap.set(key, result);
     inProgress.delete(rawKey);

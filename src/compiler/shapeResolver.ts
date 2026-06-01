@@ -314,6 +314,21 @@ function canonicalizeType(t: CompiledType): string {
       namespace: w.namespace ?? null,
       processContents: w.processContents ?? null,
     })),
+    choiceGroups: (t.choiceGroups ?? []).map((g) => ({
+      name: g.name,
+      min: g.min,
+      max: g.max,
+      sourceOrder: g.sourceOrder,
+      branches: g.branches.map((b) => ({
+        name: b.name,
+        tsType: b.tsType,
+        min: b.min,
+        max: b.max,
+        nillable: !!b.nillable,
+        declaredType: b.declaredType,
+        sourceOrder: b.sourceOrder,
+      })),
+    })),
   });
 }
 
