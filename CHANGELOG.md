@@ -9,8 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-06-16
+
 - docs(roadmap): refresh 1.0 readiness after the JSON array streaming release
 - docs(roadmap): define the 1.0 capability conformance framework
+- chore(deps): bump root dependency minimums for `fast-xml-parser`, `fastify-plugin`, `@types/node`, and `vitest`
+- chore(deps): refresh lockfile security updates for `esbuild`, `form-data`, and `hasown`
+- chore(app): bump generated app pins for `fastify-plugin` and `@types/node`
 
 ## [0.28.0] - 2026-06-01
 
