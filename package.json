@@ -90,7 +90,7 @@
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "@types/yargs": "^17.0.35",
     "fastify": "^5.8.5",
     "fastify-plugin": "^6.0.0",
