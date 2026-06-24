@@ -33,7 +33,7 @@ jobs:
           echo "Using tag ${tag}"
 
       - name: Check out tagged commit
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.determine_tag.outputs.tag }}
 
