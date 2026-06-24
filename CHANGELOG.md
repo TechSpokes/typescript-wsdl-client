@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-06-24
+
+- chore(ci): bump `actions/checkout` from 6 to 7
+- chore(deps): bump `js-yaml` to 5.1.0
+- chore(deps): bump `fast-xml-parser` to 5.9.3
+- chore(deps-dev): bump `@types/node` to 26.0.0
+- chore(app): bump generated app pin for `@types/node` to 26.0.0
+
 ## [0.29.0] - 2026-06-16
 
 - docs(roadmap): refresh 1.0 readiness after the JSON array streaming release
