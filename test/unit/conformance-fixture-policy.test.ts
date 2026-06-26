@@ -18,16 +18,17 @@ function writeFixture(root: string, relativePath: string, content: string): stri
 describe("conformance fixture policy", () => {
   it("accepts schema imports that stay inside the fixture root", () => {
     const root = makeFixtureRoot();
+    const importedSchema = ["types", "xsd"].join(".");
     const wsdl = writeFixture(root, "xsd/imports/service.wsdl", `
       <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <wsdl:types>
           <xs:schema>
-            <xs:import schemaLocation="types.xsd"/>
+            <xs:import schemaLocation="${importedSchema}"/>
           </xs:schema>
         </wsdl:types>
       </wsdl:definitions>
     `);
-    writeFixture(root, "xsd/imports/types.xsd", "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"/>");
+    writeFixture(root, `xsd/imports/${importedSchema}`, "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"/>");
 
     expect(() => validateConformanceFixtureGraph(wsdl, root)).not.toThrow();
   });
