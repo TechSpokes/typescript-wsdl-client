@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): support simple `xs:union` aliases
+- test(conformance): generate the public support matrix from the capability registry
+
 ## [0.30.2] - 2026-06-26
 
 - docs(conventions): document taxonomy-based fixture path organization

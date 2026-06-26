@@ -476,6 +476,30 @@ export function compileCatalog(
       }
       return {tsType: xsdToTsPrimitive(declared, (options as any)?.primitive), declared};
     }
+    const union = getFirstWithLocalName(simpleNode, "union");
+    if (union) {
+      const members: Array<{tsType: string; declared: string}> = [];
+      const memberTypes = String(union["@_memberTypes"] ?? "")
+        .split(/\s+/)
+        .map(value => value.trim())
+        .filter(Boolean);
+      for (const memberType of memberTypes) {
+        const q = resolveQName(memberType, schemaNS, prefixes);
+        members.push(resolveTypeRef(q, schemaNS, prefixes));
+      }
+      for (const inlineSimple of getChildrenWithLocalName(union, "simpleType")) {
+        members.push(compileSimpleTypeNode(inlineSimple, schemaNS, prefixes));
+      }
+      if (members.length > 0) {
+        const tsTypes = Array.from(new Set(members.flatMap(member => member.tsType.split("|").map(part => part.trim()))));
+        const declared = members.map(member => member.declared).join(" | ");
+        return {
+          tsType: tsTypes.join(" | "),
+          declared,
+          jsdoc: JSON.stringify({kind: "union", members: members.map(member => member.declared)}),
+        };
+      }
+    }
     const list = getFirstWithLocalName(simpleNode, "list");
     if (list?.["@_itemType"]) {
       const q = resolveQName(list["@_itemType"], schemaNS, prefixes);

@@ -2,6 +2,24 @@
 
 This document lists the WSDL and XSD features handled by the generator, along with current limitations. For modeling details, see [Core Concepts](concepts.md).
 
+## Capability Evidence Matrix
+
+The rows below are backed by committed conformance fixtures under `test/conformance/fixtures/`. Status means the current product contract, not the full standards surface.
+
+<!-- support-matrix:start -->
+| Capability ID | Status | Public contract |
+|---|---|---|
+| `choice-union-simple` | supported | `xs:choice` union mode retains choice metadata and drives generated TypeScript/OpenAPI constraints. |
+| `xs-union-simple-type` | supported | Simple `xs:union` aliases compile to TypeScript unions and OpenAPI `oneOf` schemas. |
+| `abstract-complex-type` | diagnostic | Abstract complex type semantics are not modeled yet; 1.0 should reject or warn instead of treating them as concrete. |
+| `substitution-group-element` | diagnostic | Substitution groups are not expanded yet; 1.0 should avoid silent omission with a diagnostic. |
+| `multi-binding-first-soap` | partial | Multiple bindings are deterministic: the first SOAP binding is selected and all ports are documented. |
+| `external-policy-reference` | partial | Inline policy hints are detected; external `PolicyReference` documents are not fetched or resolved. |
+| `deep-composition-sequence` | supported | Deep nested sequences compile into deterministic type metadata. |
+| `xs-anyattribute` | partial | `xs:anyAttribute` is retained as catalog metadata, but generated wildcard attributes are not emitted. |
+| `mtom-xop-attachment` | unsupported | MTOM/XOP binary attachment transport is outside the 1.0 typed SOAP-to-REST contract. |
+<!-- support-matrix:end -->
+
 ## Fully Supported
 
 These patterns are handled end-to-end: WSDL parsing, TypeScript type generation, OpenAPI schema output, and gateway code generation.
@@ -9,6 +27,7 @@ These patterns are handled end-to-end: WSDL parsing, TypeScript type generation,
 - Complex types with `<xs:sequence>`, `<xs:all>`, and `<xs:choice>` compositors, including recursive nesting
 - Simple content with attributes using the `$value` pattern to preserve text content alongside attribute properties
 - Named simple type restrictions and enumerations emitted as TypeScript aliases and OpenAPI scalar schemas
+- Named `xs:union` simple types emitted as TypeScript alias unions and OpenAPI `oneOf` schemas
 - Type inheritance through `<xs:extension>` and `<xs:restriction>` on both simple and complex content
 - Nested XSD imports across multiple schema files with relative and absolute URI resolution
 - Multiple namespaces with deterministic collision resolution via PascalCase uniqueness
@@ -65,6 +84,10 @@ Groups are inlined into the parent type during schema compilation. The group ide
 
 List types with an `itemType` attribute are detected and generate array types (`${itemType}[]`). Lists defined with inline simple types are not handled.
 
+### xs:union
+
+Union types with `memberTypes` or inline simple type members are detected and generate TypeScript alias unions. Mixed primitive and literal unions generate OpenAPI `oneOf` schemas.
+
 ### xs:anyAttribute
 
 Attribute wildcards are retained as catalog metadata on the enclosing compiled type. They are not emitted as typed attribute properties in generated TypeScript or OpenAPI schemas.
@@ -74,7 +97,6 @@ Attribute wildcards are retained as catalog metadata on the enclosing compiled t
 These features are not currently handled. Contributions are welcome.
 
 - Full `xs:any` serialization: arbitrary wildcard content is not emitted as a typed contract
-- `xs:union` types: only union members expressed as restriction enumerations are captured
 - Abstract types: treated as regular concrete types without substitution logic
 - Substitution groups: not resolved during schema compilation
 - MTOM/XOP binary attachments: no support for binary part handling

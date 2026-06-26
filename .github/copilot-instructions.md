@@ -132,6 +132,10 @@ All tests and smoke scripts use `examples/minimal/weather.wsdl` as the canonical
 
 Use `docs/file-naming-and-path-organization.md` for reusable fixture paths and other repository file naming decisions. Prefer committed XML fixture files over inline WSDL or XSD strings when a test represents a reusable conformance case.
 
+### Capability support matrix
+
+When changing `test/conformance/registry.ts`, run `npm run docs:support-matrix` to regenerate the owned table in `docs/supported-patterns.md`. Run `npm run docs:support-matrix:check` or `npm run docs:validate` before finishing documentation work that changes capability rows.
+
 ## Key Conventions
 
 - String-first primitive mapping: `xs:long` and `xs:decimal` default to `string` to prevent precision loss.
@@ -180,6 +184,8 @@ Never record local interpreter paths, private database connections, user-specifi
 ### File verification
 
 - When an IDE inspection tool is available, run it on touched Markdown files and source files that embed generated code.
+- Before committing, run available IDE file inspections on the files being committed. If an IDE inspection tool is unavailable, say so explicitly and rely on repository-local checks.
+- Treat local IDE schema-registration warnings on committed WSDL or XML fixtures as environment configuration issues when repository tests and XML parsing pass. Do not add machine-specific schema mappings to shared docs or project files.
 - When IDE inspections are unavailable, use repository-local checks: verify relative Markdown links target concrete files or headings, and keep TypeScript fenced examples syntactically valid as standalone snippets.
 - When embedding generated source code inside TypeScript, prefer template helpers, string builders, or packaged template files over large raw template literals that IDEs may inspect as incomplete injected code.
 

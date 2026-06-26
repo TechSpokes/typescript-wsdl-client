@@ -14,6 +14,8 @@ describe("WSDL capability conformance registry", () => {
 
       expect(capability.title).not.toEqual("");
       expect(capability.featureTags.length).toBeGreaterThan(0);
+      expect(capability.decision).not.toEqual("");
+      expect(capability.decisionReason).not.toEqual("");
       expect(capability.fixture).toMatch(/^[a-z0-9-]+(?:\/[a-z0-9-]+)+\.wsdl$/);
       expect(capability.fixture).not.toContain("/service.wsdl");
       expect(capability.authority).not.toEqual("");

@@ -1,5 +1,6 @@
 import {readFileSync} from "node:fs";
 import {describe, expect, test} from "vitest";
+import {replaceSupportMatrix} from "../../scripts/generate-support-matrix.js";
 import {capabilities} from "./registry.js";
 
 function githubAnchorForHeading(heading: string): string {
@@ -34,5 +35,19 @@ describe("WSDL capability docs anchors", () => {
         expect(anchors.has(capability.docsAnchor), capability.id).toBe(true);
       }
     }
+  });
+
+  test("list every capability id in the public evidence matrix", () => {
+    const supportedPatterns = readFileSync("docs/supported-patterns.md", "utf8");
+
+    for (const capability of capabilities) {
+      expect(supportedPatterns, capability.id).toContain(`\`${capability.id}\``);
+    }
+  });
+
+  test("keep the public evidence matrix generated from the registry", () => {
+    const supportedPatterns = readFileSync("docs/supported-patterns.md", "utf8");
+
+    expect(replaceSupportMatrix(supportedPatterns)).toBe(supportedPatterns);
   });
 });

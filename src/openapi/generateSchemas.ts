@@ -40,6 +40,11 @@ function isLiteralUnion(ts: string): string[] | null {
   return null;
 }
 
+function unionParts(ts: string): string[] | null {
+  const parts = ts.split("|").map(p => p.trim()).filter(Boolean);
+  return parts.length > 1 ? parts : null;
+}
+
 function primitiveSchema(ts: string): any {
   switch (ts) {
     case "string":
@@ -58,12 +63,41 @@ function primitiveSchema(ts: string): any {
   }
 }
 
+function schemaForUnionPart(ts: string): any {
+  if (/^".*"$/.test(ts)) {
+    return {type: "string", enum: [ts.slice(1, -1)]};
+  }
+  return primitiveSchema(ts);
+}
+
+function mixedUnionSchema(ts: string): any | null {
+  const parts = unionParts(ts);
+  if (!parts) return null;
+  const schemas = parts.map(schemaForUnionPart);
+  const stringEnums = schemas
+    .filter((schema): schema is {type: "string"; enum: string[]} => schema.type === "string" && Array.isArray(schema.enum))
+    .flatMap(schema => schema.enum);
+  const rest = schemas.filter(schema => !(schema.type === "string" && Array.isArray(schema.enum)));
+  const oneOf = [
+    ...(stringEnums.length > 0 ? [{type: "string", enum: Array.from(new Set(stringEnums))}] : []),
+    ...rest,
+  ];
+  return {oneOf};
+}
+
 function buildAliasSchema(a: CompiledAlias): any {
   const lit = isLiteralUnion(a.tsType);
   if (lit) {
     return {
       type: "string",
       enum: lit,
+      ...(a.doc ? {description: a.doc} : {}),
+    };
+  }
+  const union = mixedUnionSchema(a.tsType);
+  if (union) {
+    return {
+      ...union,
       ...(a.doc ? {description: a.doc} : {}),
     };
   }
@@ -122,6 +156,10 @@ function buildComplexSchema(
         const lit = isLiteralUnion(ts);
         if (lit) {
           return {type: "string", enum: lit};
+        }
+        const union = mixedUnionSchema(ts);
+        if (union) {
+          return union;
         }
         if (ts.endsWith("[]")) {
           const inner = ts.slice(0, -2);

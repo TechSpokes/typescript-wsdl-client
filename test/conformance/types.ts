@@ -4,6 +4,13 @@ import type {WsdlErrorContext} from "../../src/util/errors.js";
 
 export type CapabilityStatus = "supported" | "partial" | "diagnostic" | "unsupported" | "research";
 
+export type CapabilityDecision =
+  | "support"
+  | "partial-support"
+  | "diagnostic"
+  | "defer"
+  | "out-of-scope";
+
 export type FixtureKind =
   | "standards-valid"
   | "interop-profile"
@@ -39,6 +46,9 @@ export interface CapabilityCase {
   featureTags: string[];
   fixture: string;
   docsAnchor?: string;
+  publicContract: string;
+  decision: CapabilityDecision;
+  decisionReason: string;
   authority: string;
   provenance: string;
   license: string;
