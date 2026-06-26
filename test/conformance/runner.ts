@@ -1,23 +1,26 @@
 import {execFileSync} from "node:child_process";
 import {createRequire} from "node:module";
 import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
-import {tmpdir} from "node:os";
 import {dirname, join, resolve} from "node:path";
-import {fileURLToPath} from "node:url";
+import {fileURLToPath, pathToFileURL} from "node:url";
+import Fastify from "fastify";
 import {generateClient} from "../../src/client/generateClient.js";
 import {generateOperations} from "../../src/client/generateOperations.js";
 import {generateTypes} from "../../src/client/generateTypes.js";
 import {generateUtils} from "../../src/client/generateUtils.js";
 import {resolveCompilerOptions} from "../../src/config.js";
+import {generateCatalog} from "../../src/compiler/generateCatalog.js";
 import {compileCatalog, type CompiledCatalog} from "../../src/compiler/schemaCompiler.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
-import {generateOpenAPI} from "../../src";
+import {generateGateway, generateOpenAPI} from "../../src";
 import {WsdlCompilationError} from "../../src/util/errors.js";
-import type {CapabilityCase} from "./types.js";
+import {deriveClientName} from "../../src/util/tools.js";
+import type {CapabilityCase, GatewayArtifacts} from "./types.js";
 
 const require = createRequire(import.meta.url);
 const conformanceDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(conformanceDir, "..", "..");
+const conformanceTempRoot = join(repoRoot, "tmp", "conformance");
 
 export function fixturePathFor(capability: CapabilityCase): string {
   return resolve(conformanceDir, "fixtures", capability.fixture);
@@ -33,7 +36,7 @@ export async function runCompileCase(capability: CapabilityCase): Promise<void> 
     return;
   }
 
-  const outDir = mkdtempSync(join(tmpdir(), `wsdl-conformance-${capability.id}-`));
+  const outDir = createConformanceTempDir(capability, "compile");
 
   try {
     if (capability.compile.outcome === "success") {
@@ -68,7 +71,7 @@ export async function runClientCase(capability: CapabilityCase): Promise<void> {
     throw new Error(`${capability.id} cannot run client evidence without successful compile evidence.`);
   }
 
-  const outDir = mkdtempSync(join(tmpdir(), `wsdl-conformance-${capability.id}-client-`));
+  const outDir = createConformanceTempDir(capability, "client");
   const clientDir = join(outDir, "client");
 
   try {
@@ -81,11 +84,12 @@ export async function runClientCase(capability: CapabilityCase): Promise<void> {
     };
 
     mkdirSync(clientDir, {recursive: true});
+    writePackageJson(outDir);
     generateClient(files.client, compiled);
     generateTypes(files.types, compiled);
     generateUtils(files.utils, compiled);
     generateOperations(files.operations, compiled);
-    writeClientTsconfig(outDir);
+    writeGeneratedTsconfig(outDir, false);
     runTypeScript(outDir, join(outDir, "tsconfig.json"));
 
     for (const expected of capability.client.sourceIncludes ?? []) {
@@ -115,7 +119,7 @@ export async function runOpenApiCase(capability: CapabilityCase): Promise<void> 
     throw new Error(`${capability.id} cannot run OpenAPI evidence without successful compile evidence.`);
   }
 
-  const outDir = mkdtempSync(join(tmpdir(), `wsdl-conformance-${capability.id}-openapi-`));
+  const outDir = createConformanceTempDir(capability, "openapi");
   const openapiFile = join(outDir, "openapi.json");
 
   try {
@@ -138,6 +142,118 @@ export async function runOpenApiCase(capability: CapabilityCase): Promise<void> 
   }
 }
 
+export async function runGatewayCase(capability: CapabilityCase): Promise<void> {
+  if (!capability.gateway) {
+    throw new Error(`${capability.id} has no gateway expectation.`);
+  }
+
+  if (capability.compile.outcome !== "success") {
+    throw new Error(`${capability.id} cannot run gateway evidence without successful compile evidence.`);
+  }
+
+  const outDir = createConformanceTempDir(capability, "gateway");
+  const clientDir = join(outDir, "client");
+  const gatewayDir = join(outDir, "gateway");
+  const openapiFile = join(outDir, "openapi.json");
+  const catalogFile = join(clientDir, "catalog.json");
+
+  try {
+    const compiled = await compileSuccess(capability, outDir);
+    const clientFiles = {
+      client: join(clientDir, "client.ts"),
+      operations: join(clientDir, "operations.ts"),
+      types: join(clientDir, "types.ts"),
+      utils: join(clientDir, "utils.ts"),
+    };
+
+    mkdirSync(clientDir, {recursive: true});
+    writePackageJson(outDir);
+    generateClient(clientFiles.client, compiled);
+    generateTypes(clientFiles.types, compiled);
+    generateUtils(clientFiles.utils, compiled);
+    generateOperations(clientFiles.operations, compiled);
+    generateCatalog(catalogFile, compiled);
+
+    const result = await generateOpenAPI({
+      compiledCatalog: compiled,
+      format: "json",
+      outFile: openapiFile,
+      skipValidate: false,
+    });
+
+    await generateGateway({
+      openapiFile,
+      outDir: gatewayDir,
+      clientDir,
+      catalogFile,
+      versionSlug: "v1",
+      serviceSlug: "conformance",
+      clientClassName: deriveClientName(compiled),
+    });
+
+    writeGeneratedTsconfig(outDir, true);
+    runTypeScript(outDir, join(outDir, "tsconfig.json"));
+
+    for (const expected of capability.gateway.sourceIncludes ?? []) {
+      const source = readFileSync(join(gatewayDir, expected.file), "utf8");
+      if (!source.includes(expected.text)) {
+        throw new Error(`${capability.id} expected gateway ${expected.file} to include ${JSON.stringify(expected.text)}.`);
+      }
+    }
+
+    const artifacts: GatewayArtifacts = {
+      clientDir,
+      gatewayDir,
+      openapiFile,
+      catalogFile,
+      compiled,
+      doc: result.doc,
+      readGatewayFile: (relativePath: string) => readFileSync(join(gatewayDir, relativePath), "utf8"),
+    };
+
+    await capability.gateway.assert?.(artifacts);
+
+    for (const request of capability.gateway.requests ?? []) {
+      const route = routeFor(result.doc, request.operationId);
+      const observedArgs: Record<string, unknown> = {};
+      const mockClient = Object.fromEntries(
+        Object.entries(request.mockClient).map(([methodName, handler]) => [
+          methodName,
+          async (args: unknown) => {
+            observedArgs[methodName] = args;
+            return handler(args);
+          },
+        ]),
+      );
+
+      const pluginModule = await import(pathToFileURL(join(gatewayDir, "plugin.ts")).href);
+      const app = Fastify({logger: false});
+
+      try {
+        await app.register(pluginModule.default, {client: mockClient});
+        await app.ready();
+        const response = await app.inject({
+          method: route.method.toUpperCase(),
+          url: route.path,
+          headers: {"content-type": "application/json"},
+          payload: JSON.stringify(request.payload),
+        });
+
+        if (response.statusCode !== request.expectedStatus) {
+          throw new Error(`${capability.id} expected ${request.operationId} to return ${request.expectedStatus}, got ${response.statusCode}: ${response.body}`);
+        }
+
+        request.assertBody?.(response.json());
+        request.assertClientArgs?.(observedArgs[request.operationId]);
+      } finally {
+        await app.close();
+      }
+    }
+  } finally {
+    rmSync(outDir, {recursive: true, force: true});
+  }
+}
+
 async function compileSuccess(capability: CapabilityCase, outDir: string): Promise<CompiledCatalog> {
   const fixturePath = fixturePathFor(capability);
   const wsdlCatalog = await loadWsdl(fixturePath);
@@ -152,7 +268,20 @@ async function compileSuccess(capability: CapabilityCase, outDir: string): Promi
   return compileCatalog(wsdlCatalog, options);
 }
 
-function writeClientTsconfig(outDir: string): void {
+function createConformanceTempDir(capability: CapabilityCase, stage: string): string {
+  mkdirSync(conformanceTempRoot, {recursive: true});
+  return mkdtempSync(join(conformanceTempRoot, `${capability.id}-${stage}-`));
+}
+
+function writePackageJson(outDir: string): void {
+  writeFileSync(
+    join(outDir, "package.json"),
+    JSON.stringify({type: "module"}, null, 2),
+    "utf8",
+  );
+}
+
+function writeGeneratedTsconfig(outDir: string, includeGateway: boolean): void {
   writeFileSync(
     join(outDir, "tsconfig.json"),
     JSON.stringify(
@@ -162,18 +291,17 @@ function writeClientTsconfig(outDir: string): void {
           target: "ES2022",
           module: "NodeNext",
           moduleResolution: "NodeNext",
+          resolveJsonModule: true,
+          verbatimModuleSyntax: true,
           skipLibCheck: true,
           esModuleInterop: true,
           ignoreDeprecations: "6.0",
-          baseUrl: repoRoot,
-          paths: {
-            soap: ["node_modules/soap"],
-          },
-          typeRoots: [join(repoRoot, "node_modules", "@types")],
           types: ["node"],
           noEmit: true,
         },
-        include: ["client/**/*.ts"],
+        include: includeGateway
+          ? ["client/**/*.ts", "gateway/**/*.ts"]
+          : ["client/**/*.ts"],
       },
       null,
       2,
@@ -191,8 +319,20 @@ function runTypeScript(cwd: string, projectFile: string): void {
     );
   } catch (error) {
     const typed = error as {stdout?: string; stderr?: string};
-    throw new Error(`Generated client TypeScript check failed:\n${typed.stdout ?? ""}${typed.stderr ?? ""}`);
+    throw new Error(`Generated TypeScript check failed:\n${typed.stdout ?? ""}${typed.stderr ?? ""}`);
   }
+}
+
+function routeFor(doc: any, operationId: string): {method: string; path: string} {
+  for (const [path, pathItem] of Object.entries(doc.paths ?? {})) {
+    for (const [method, operation] of Object.entries(pathItem as Record<string, any>)) {
+      if ((operation as any).operationId === operationId) {
+        return {method, path};
+      }
+    }
+  }
+
+  throw new Error(`Expected OpenAPI operation ${operationId}.`);
 }
 
 function assertNames(label: string, expected: string[] | undefined, actual: string[]): void {

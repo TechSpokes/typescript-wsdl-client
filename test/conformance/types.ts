@@ -72,6 +72,35 @@ export interface OpenApiExpectation {
   assert?: (artifacts: OpenApiArtifacts) => void;
 }
 
+export interface GatewayArtifacts {
+  clientDir: string;
+  gatewayDir: string;
+  openapiFile: string;
+  catalogFile: string;
+  compiled: CompiledCatalog;
+  doc: any;
+  readGatewayFile: (relativePath: string) => string;
+}
+
+export interface GatewayRequestExpectation {
+  operationId: string;
+  payload: unknown;
+  mockClient: Record<string, (args: unknown) => Promise<{response: unknown; headers: unknown}>>;
+  expectedStatus: number;
+  assertBody?: (body: any) => void;
+  assertClientArgs?: (args: unknown) => void;
+}
+
+export interface GatewayExpectation {
+  outcome: "success";
+  requests?: GatewayRequestExpectation[];
+  sourceIncludes?: Array<{
+    file: string;
+    text: string;
+  }>;
+  assert?: (artifacts: GatewayArtifacts) => void | Promise<void>;
+}
+
 export interface CapabilityCase {
   id: string;
   title: string;
@@ -90,4 +119,5 @@ export interface CapabilityCase {
   compile: CompileExpectation;
   client?: ClientExpectation;
   openapi?: OpenApiExpectation;
+  gateway?: GatewayExpectation;
 }

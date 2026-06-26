@@ -18,8 +18,8 @@ The plan is optimized for preserving quality. The contract and compatibility bas
 | OpenAPI compatibility | [OpenAPI Fastify Compatibility](v1.0-openapi-fastify-compatibility.md)       | baseline complete | Schema strategy is proven       |
 | Choice union mode     | [Choice Union Mode](v1.0-choice-union-mode.md)                               | complete          | Implemented in `0.26.0`         |
 | JSON array streaming  | [JSON Array Streaming](v1.0-json-array-streaming.md)                         | complete          | Implemented in `0.28.0`         |
-| Conformance framework | [Capability Conformance Framework](v1.0-capability-conformance-framework.md) | phase 2 shipped   | Pipeline claims are test-backed |
-| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | client and OpenAPI evidence shipped | Feature support is test-backed |
+| Conformance framework | [Capability Conformance Framework](v1.0-capability-conformance-framework.md) | phase 3 shipped   | Pipeline claims are test-backed |
+| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | gateway evidence shipped | Feature support is test-backed |
 | Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)                   | remaining         | 1.0 release is repeatable       |
 
 ## Execution Order
@@ -42,11 +42,11 @@ JSON array streaming is complete in `0.28.0`. The default `ndjson` format remain
 
 ### Slice 5: Capability Conformance Framework
 
-The registry, fixture strategy, compile runner, client evidence, OpenAPI evidence, documentation drift check, and generated support matrix are shipped. The next work is to extend relevant rows into gateway runtime evidence without expanding public APIs.
+The registry, fixture strategy, compile runner, client evidence, OpenAPI evidence, gateway runtime evidence, documentation drift check, and generated support matrix are shipped. The next work is to extend relevant rows into generated-test and app evidence without expanding public APIs.
 
 ### Slice 6: WSDL Coverage Matrix
 
-The first WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, and documentation evidence. The next work is to prove relevant rows through generated gateway runtime artifacts.
+The first WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, and documentation evidence. The next work is to prove relevant rows through generated-test and app artifacts where those stages apply.
 
 ### Slice 7: Release Candidate Gates
 
@@ -54,8 +54,8 @@ Run the release candidate gates after feature work and documentation have conver
 
 ## Remaining Before 1.0
 
-- Extend the capability registry beyond OpenAPI evidence into gateway runtime evidence.
-- Add generated gateway checks for supported and partial WSDL rows where HTTP behavior is part of the contract.
+- Extend the capability registry beyond gateway runtime evidence into generated-test and app evidence.
+- Add generated-test and app checks for supported and partial WSDL rows where those surfaces are part of the contract.
 - Turn remaining unsupported, diagnostic, or partial matrix rows into diagnostics, documentation, or scoped fixes.
 - Confirm `docs/supported-patterns.md` matches the matrix.
 - Run the release-candidate gates.

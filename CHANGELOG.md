@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-06-26
+
+- docs(roadmap): make the gateway conformance slice implementation-ready
+- test(conformance): add gateway runtime evidence for WSDL capability rows
+
 ## [0.31.0] - 2026-06-26
 
 - docs(roadmap): align the next conformance slice with the shipped compile matrix

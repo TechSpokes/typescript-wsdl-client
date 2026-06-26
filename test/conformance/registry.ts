@@ -27,6 +27,19 @@ function assertJsonEqual(actual: unknown, expected: unknown, message: string): v
   }
 }
 
+function assertSuccessEnvelope(body: any, expectedData: unknown): void {
+  assertJsonEqual(
+    body,
+    {
+      status: "SUCCESS",
+      message: null,
+      data: expectedData,
+      error: null,
+    },
+    "Gateway should return the standard success envelope.",
+  );
+}
+
 export const capabilities: CapabilityCase[] = [
   {
     id: "choice-union-simple",
@@ -70,6 +83,24 @@ export const capabilities: CapabilityCase[] = [
           throw new Error("ChoiceRequest should carry OpenAPI oneOf branch constraints.");
         }
       },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "SubmitChoice",
+          payload: {email: "person@example.test"},
+          mockClient: {
+            SubmitChoice: async () => ({
+              response: {accepted: true},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {accepted: true}),
+          assertClientArgs: args => assertJsonEqual(args, {email: "person@example.test"}, "Gateway should pass the choice request body to the client."),
+        },
+      ],
     },
   },
   {
@@ -123,6 +154,24 @@ export const capabilities: CapabilityCase[] = [
           "InlineIdentifier should emit a mixed literal and primitive oneOf schema.",
         );
       },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "ResolveUnion",
+          payload: {id: "ABC-123", inlineId: "Local"},
+          mockClient: {
+            ResolveUnion: async () => ({
+              response: {$value: "resolved"},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {$value: "resolved"}),
+          assertClientArgs: args => assertJsonEqual(args, {id: "ABC-123", inlineId: "Local"}, "Gateway should pass union values to the client."),
+        },
+      ],
     },
   },
   {
@@ -211,6 +260,27 @@ export const capabilities: CapabilityCase[] = [
         requireSchema(doc, "GetValueResponse");
       },
     },
+    gateway: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "routes/getvalue.ts", text: "client.GetValue"},
+      ],
+      requests: [
+        {
+          operationId: "GetValue",
+          payload: {$value: "first-binding"},
+          mockClient: {
+            GetValue: async () => ({
+              response: {$value: "first-response"},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {$value: "first-response"}),
+          assertClientArgs: args => assertJsonEqual(args, {$value: "first-binding"}, "Gateway should call the deterministic first SOAP binding operation."),
+        },
+      ],
+    },
   },
   {
     id: "external-policy-reference",
@@ -249,6 +319,30 @@ export const capabilities: CapabilityCase[] = [
         }
       },
     },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "CheckPolicy",
+          payload: {$value: "policy-check"},
+          mockClient: {
+            CheckPolicy: async () => ({
+              response: {$value: "allowed"},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {$value: "allowed"}),
+          assertClientArgs: args => assertJsonEqual(args, {$value: "policy-check"}, "Gateway should not enforce an unresolved external policy reference."),
+        },
+      ],
+      assert: ({readGatewayFile}) => {
+        const pluginSource = readGatewayFile("plugin.ts");
+        if (pluginSource.includes("authenticate") || pluginSource.includes("authorization")) {
+          throw new Error("External PolicyReference should not emit generated inbound authentication hooks.");
+        }
+      },
+    },
   },
   {
     id: "deep-composition-sequence",
@@ -280,6 +374,24 @@ export const capabilities: CapabilityCase[] = [
         requireSchema(doc, "LevelTwo");
         requireOperation(doc, "SubmitDeep");
       },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "SubmitDeep",
+          payload: {levelOne: {levelTwo: {value: "nested"}}},
+          mockClient: {
+            SubmitDeep: async () => ({
+              response: {$value: "accepted"},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {$value: "accepted"}),
+          assertClientArgs: args => assertJsonEqual(args, {levelOne: {levelTwo: {value: "nested"}}}, "Gateway should pass deep composition payloads to the client."),
+        },
+      ],
     },
   },
   {
@@ -316,6 +428,30 @@ export const capabilities: CapabilityCase[] = [
         const schema = requireSchema(doc, "AnyAttributeRequest");
         if (schema.properties?.$attributes || schema.additionalProperties === true) {
           throw new Error("xs:anyAttribute should not be emitted as generated wildcard attributes yet.");
+        }
+      },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "SubmitAnyAttribute",
+          payload: {value: "known-only"},
+          mockClient: {
+            SubmitAnyAttribute: async () => ({
+              response: {$value: "stored"},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {$value: "stored"}),
+          assertClientArgs: args => assertJsonEqual(args, {value: "known-only"}, "Gateway should pass only the modeled xs:anyAttribute payload subset."),
+        },
+      ],
+      assert: ({readGatewayFile}) => {
+        const schemaSource = readGatewayFile("schemas/models/anyattributerequest.json");
+        if (schemaSource.includes("$attributes")) {
+          throw new Error("xs:anyAttribute gateway schema should not emit a wildcard attribute bag.");
         }
       },
     },
