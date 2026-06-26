@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:xs-anyattribute"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:xs-anyattribute">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:xs-anyattribute" elementFormDefault="qualified">
+      <xs:element name="AnyAttributeRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="value" type="xs:string"/>
+          </xs:sequence>
+          <xs:anyAttribute namespace="##other" processContents="lax"/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AnyAttributeResponse" type="xs:string"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="AnyAttributeInput"><wsdl:part name="parameters" element="tns:AnyAttributeRequest"/></wsdl:message>
+  <wsdl:message name="AnyAttributeOutput"><wsdl:part name="parameters" element="tns:AnyAttributeResponse"/></wsdl:message>
+  <wsdl:portType name="AnyAttributePortType">
+    <wsdl:operation name="SubmitAnyAttribute">
+      <wsdl:input message="tns:AnyAttributeInput"/>
+      <wsdl:output message="tns:AnyAttributeOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AnyAttributeBinding" type="tns:AnyAttributePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+  </wsdl:binding>
+</wsdl:definitions>

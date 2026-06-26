@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(conformance): add Phase 1 capability registry and fixtures
+
 ## [0.30.1] - 2026-06-26
 
 - docs(roadmap): align 1.0 readiness docs with the current release state

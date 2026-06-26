@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:mtom-xop-attachment"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xmime="http://www.w3.org/2005/05/xmlmime"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:mtom-xop-attachment">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:mtom-xop-attachment" elementFormDefault="qualified">
+      <xs:element name="AttachmentRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="document" type="xs:base64Binary" xmime:expectedContentTypes="application/pdf"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AttachmentResponse" type="xs:string"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="AttachmentInput"><wsdl:part name="parameters" element="tns:AttachmentRequest"/></wsdl:message>
+  <wsdl:message name="AttachmentOutput"><wsdl:part name="parameters" element="tns:AttachmentResponse"/></wsdl:message>
+  <wsdl:portType name="AttachmentPortType">
+    <wsdl:operation name="UploadAttachment">
+      <wsdl:input message="tns:AttachmentInput"/>
+      <wsdl:output message="tns:AttachmentOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AttachmentBinding" type="tns:AttachmentPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+  </wsdl:binding>
+</wsdl:definitions>

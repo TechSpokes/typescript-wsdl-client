@@ -70,6 +70,7 @@
     "test:unit": "vitest run test/unit",
     "test:snap": "vitest run test/snapshot",
     "test:integration": "vitest run test/integration",
+    "test:conformance": "vitest run test/conformance",
     "test:watch": "vitest",
     "prepublishOnly": "npm run clean && npm run build && npm run package:validate",
     "smoke:reset": "npm run clean:tmp",

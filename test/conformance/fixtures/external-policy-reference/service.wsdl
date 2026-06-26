@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:external-policy-reference"
+  xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:external-policy-reference">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:external-policy-reference" elementFormDefault="qualified">
+      <xs:element name="PolicyRequest" type="xs:string"/>
+      <xs:element name="PolicyResponse" type="xs:string"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="PolicyInput"><wsdl:part name="parameters" element="tns:PolicyRequest"/></wsdl:message>
+  <wsdl:message name="PolicyOutput"><wsdl:part name="parameters" element="tns:PolicyResponse"/></wsdl:message>
+  <wsdl:portType name="PolicyPortType">
+    <wsdl:operation name="CheckPolicy">
+      <wsdl:input message="tns:PolicyInput"/>
+      <wsdl:output message="tns:PolicyOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PolicyBinding" type="tns:PolicyPortType">
+    <wsp:PolicyReference URI="https://example.test/policies/security.xml#UsernameTokenPolicy"/>
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="CheckPolicy">
+      <soap:operation soapAction="urn:checkPolicy"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+</wsdl:definitions>

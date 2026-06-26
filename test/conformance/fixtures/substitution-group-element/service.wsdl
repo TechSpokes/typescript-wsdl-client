@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:substitution-group-element"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:substitution-group-element">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:substitution-group-element" elementFormDefault="qualified">
+      <xs:element name="payment" abstract="true"/>
+      <xs:element name="cardPayment" substitutionGroup="tns:payment">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="lastFour" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SubstitutionRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="tns:payment"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SubstitutionResponse" type="xs:string"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="SubstitutionInput"><wsdl:part name="parameters" element="tns:SubstitutionRequest"/></wsdl:message>
+  <wsdl:message name="SubstitutionOutput"><wsdl:part name="parameters" element="tns:SubstitutionResponse"/></wsdl:message>
+  <wsdl:portType name="SubstitutionPortType">
+    <wsdl:operation name="SubmitSubstitution">
+      <wsdl:input message="tns:SubstitutionInput"/>
+      <wsdl:output message="tns:SubstitutionOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SubstitutionBinding" type="tns:SubstitutionPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+  </wsdl:binding>
+</wsdl:definitions>

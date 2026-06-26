@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:multi-binding-first-soap"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:multi-binding-first-soap">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:multi-binding-first-soap" elementFormDefault="qualified">
+      <xs:element name="GetValueRequest" type="xs:string"/>
+      <xs:element name="GetValueResponse" type="xs:string"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="GetValueInput"><wsdl:part name="parameters" element="tns:GetValueRequest"/></wsdl:message>
+  <wsdl:message name="GetValueOutput"><wsdl:part name="parameters" element="tns:GetValueResponse"/></wsdl:message>
+  <wsdl:portType name="FirstPortType">
+    <wsdl:operation name="GetValue">
+      <wsdl:input message="tns:GetValueInput"/>
+      <wsdl:output message="tns:GetValueOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="FirstBinding" type="tns:FirstPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetValue">
+      <soap:operation soapAction="urn:first"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="SecondBinding" type="tns:FirstPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetValue">
+      <soap:operation soapAction="urn:second"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="MultiBindingService">
+    <wsdl:port name="FirstPort" binding="tns:FirstBinding">
+      <soap:address location="https://example.test/first"/>
+    </wsdl:port>
+    <wsdl:port name="SecondPort" binding="tns:SecondBinding">
+      <soap:address location="https://example.test/second"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

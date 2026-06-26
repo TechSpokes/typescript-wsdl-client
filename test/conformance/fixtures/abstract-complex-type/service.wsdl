@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:abstract-complex-type"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:abstract-complex-type">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:abstract-complex-type" elementFormDefault="qualified">
+      <xs:complexType name="BaseRecord" abstract="true">
+        <xs:sequence>
+          <xs:element name="id" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CustomerRecord">
+        <xs:complexContent>
+          <xs:extension base="tns:BaseRecord">
+            <xs:sequence>
+              <xs:element name="name" type="xs:string"/>
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="AbstractRequest" type="tns:CustomerRecord"/>
+      <xs:element name="AbstractResponse" type="xs:string"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="AbstractInput"><wsdl:part name="parameters" element="tns:AbstractRequest"/></wsdl:message>
+  <wsdl:message name="AbstractOutput"><wsdl:part name="parameters" element="tns:AbstractResponse"/></wsdl:message>
+  <wsdl:portType name="AbstractPortType">
+    <wsdl:operation name="SubmitAbstract">
+      <wsdl:input message="tns:AbstractInput"/>
+      <wsdl:output message="tns:AbstractOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AbstractBinding" type="tns:AbstractPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+  </wsdl:binding>
+</wsdl:definitions>

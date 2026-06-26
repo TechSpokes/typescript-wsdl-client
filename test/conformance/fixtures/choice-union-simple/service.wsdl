@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:choice-union-simple"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:choice-union-simple">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:choice-union-simple" elementFormDefault="qualified">
+      <xs:element name="ChoiceRequest">
+        <xs:complexType>
+          <xs:choice>
+            <xs:element name="email" type="xs:string"/>
+            <xs:element name="phone" type="xs:string"/>
+          </xs:choice>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ChoiceResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="accepted" type="xs:boolean"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="SubmitChoiceInput">
+    <wsdl:part name="parameters" element="tns:ChoiceRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SubmitChoiceOutput">
+    <wsdl:part name="parameters" element="tns:ChoiceResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="ChoicePortType">
+    <wsdl:operation name="SubmitChoice">
+      <wsdl:input message="tns:SubmitChoiceInput"/>
+      <wsdl:output message="tns:SubmitChoiceOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ChoiceBinding" type="tns:ChoicePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="SubmitChoice">
+      <soap:operation soapAction="urn:submitChoice"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ChoiceService">
+    <wsdl:port name="ChoicePort" binding="tns:ChoiceBinding">
+      <soap:address location="https://example.test/choice"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

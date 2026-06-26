@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:xs-union-simple-type"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:xs-union-simple-type">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:xs-union-simple-type" elementFormDefault="qualified">
+      <xs:simpleType name="Identifier">
+        <xs:union memberTypes="xs:string xs:int"/>
+      </xs:simpleType>
+      <xs:element name="UnionRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="id" type="tns:Identifier"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="UnionResponse" type="xs:string"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="UnionInput"><wsdl:part name="parameters" element="tns:UnionRequest"/></wsdl:message>
+  <wsdl:message name="UnionOutput"><wsdl:part name="parameters" element="tns:UnionResponse"/></wsdl:message>
+  <wsdl:portType name="UnionPortType">
+    <wsdl:operation name="ResolveUnion">
+      <wsdl:input message="tns:UnionInput"/>
+      <wsdl:output message="tns:UnionOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="UnionBinding" type="tns:UnionPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+  </wsdl:binding>
+</wsdl:definitions>
