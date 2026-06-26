@@ -65,11 +65,15 @@ Groups are inlined into the parent type during schema compilation. The group ide
 
 List types with an `itemType` attribute are detected and generate array types (`${itemType}[]`). Lists defined with inline simple types are not handled.
 
+### xs:anyAttribute
+
+Attribute wildcards are retained as catalog metadata on the enclosing compiled type. They are not emitted as typed attribute properties in generated TypeScript or OpenAPI schemas.
+
 ## Not Yet Supported
 
 These features are not currently handled. Contributions are welcome.
 
-- Full `xs:any` serialization and `xs:anyAttribute`: arbitrary wildcard content is not emitted as a typed contract
+- Full `xs:any` serialization: arbitrary wildcard content is not emitted as a typed contract
 - `xs:union` types: only union members expressed as restriction enumerations are captured
 - Abstract types: treated as regular concrete types without substitution logic
 - Substitution groups: not resolved during schema compilation

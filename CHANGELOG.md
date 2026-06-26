@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): retain `xs:anyAttribute` wildcard metadata
 - test(conformance): add Phase 1 capability registry and fixtures
 
 ## [0.30.1] - 2026-06-26

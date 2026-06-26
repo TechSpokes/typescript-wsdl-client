@@ -314,6 +314,10 @@ function canonicalizeType(t: CompiledType): string {
       namespace: w.namespace ?? null,
       processContents: w.processContents ?? null,
     })),
+    attributeWildcards: (t.attributeWildcards ?? []).map((w) => ({
+      namespace: w.namespace ?? null,
+      processContents: w.processContents ?? null,
+    })),
     choiceGroups: (t.choiceGroups ?? []).map((g) => ({
       name: g.name,
       min: g.min,

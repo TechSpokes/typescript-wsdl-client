@@ -121,6 +121,29 @@ describe("compiler: wildcard retention", () => {
     expect(streamResponse!.wildcards![1]).toMatchObject({min: 0, max: 1, namespace: "##other"});
   });
 
+  it("retains xs:anyAttribute wildcard metadata on the enclosing complex type", async () => {
+    const schema = `
+      <xs:element name="StreamRequest">
+        <xs:complexType><xs:sequence><xs:element name="Q" type="xs:string"/></xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="StreamResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Value" type="xs:string"/>
+          </xs:sequence>
+          <xs:anyAttribute namespace="##other" processContents="lax"/>
+        </xs:complexType>
+      </xs:element>`;
+    const compiled = await compileFromFixture(buildWsdl(schema), "any-attribute");
+    const streamResponse = compiled.types.find((t) => t.name === "StreamResponse");
+
+    expect(streamResponse, "StreamResponse type must be compiled").toBeTruthy();
+    expect(streamResponse!.attrs).toEqual([]);
+    expect((streamResponse as any).attributeWildcards).toEqual([
+      {namespace: "##other", processContents: "lax"},
+    ]);
+  });
+
   it("attaches stream metadata from the stream config to matching operations", async () => {
     const schema = `
       <xs:element name="StreamRequest">

@@ -41,6 +41,11 @@ export type CompiledWildcard = {
   processContents?: "lax" | "strict" | "skip";
 };
 
+export type CompiledAttributeWildcard = {
+  namespace?: string;
+  processContents?: "lax" | "strict" | "skip";
+};
+
 export type CompiledChoiceBranch = {
   name: string;
   tsType: string;
@@ -73,6 +78,7 @@ export type CompiledChoiceGroup = {
  * @property {Array<Object>} [localAttrs] - Attributes added in extension (not inherited)
  * @property {Array<Object>} [localElems] - Elements added in extension (not inherited)
  * @property {Array<Object>} [wildcards] - xs:any wildcard particles retained on the type
+ * @property {Array<Object>} [attributeWildcards] - xs:anyAttribute wildcards retained on the type
  */
 export type CompiledType = {
   name: string;
@@ -117,6 +123,9 @@ export type CompiledType = {
   // Retained xs:any particles, if any. Absent on types without wildcards so
   // existing catalogs remain byte-for-byte identical.
   wildcards?: CompiledWildcard[];
+  // Retained xs:anyAttribute declarations, if any. Absent on types without
+  // attribute wildcards so existing catalogs remain byte-for-byte identical.
+  attributeWildcards?: CompiledAttributeWildcard[];
   // Retained xs:choice groups, if any. Absent on types without choices so
   // existing catalogs remain byte-for-byte identical.
   choiceGroups?: CompiledChoiceGroup[];
@@ -675,6 +684,18 @@ export function compileCatalog(
       return out;
     };
 
+    const collectAttributeWildcards = (node: any): CompiledAttributeWildcard[] => {
+      const out: CompiledAttributeWildcard[] = [];
+      for (const a of getChildrenWithLocalName(node, "anyAttribute")) {
+        const pc = a["@_processContents"] as string | undefined;
+        out.push({
+          ...(a["@_namespace"] ? {namespace: a["@_namespace"] as string} : {}),
+          ...(pc === "lax" || pc === "strict" || pc === "skip" ? {processContents: pc} : {}),
+        });
+      }
+      return out;
+    };
+
     const readOccurrence = (node: any): {min: number; max: number | "unbounded"} => {
       const min = node["@_minOccurs"] ? Number(node["@_minOccurs"]) : 1;
       const maxAttr = node["@_maxOccurs"];
@@ -827,11 +848,15 @@ export function compileCatalog(
       const newAttrs = collectAttributes(cnode);
       const newElems = collectParticles(outName, cnode);
       const newWildcards = collectWildcards(cnode);
+      const newAttributeWildcards = collectAttributeWildcards(cnode);
       const newChoiceGroups = collectChoiceGroups(outName, cnode);
       mergeAttrs(present.attrs, newAttrs);
       mergeElems(present.elems, newElems);
       if (newWildcards.length > 0) {
         present.wildcards = [...(present.wildcards ?? []), ...newWildcards];
+      }
+      if (newAttributeWildcards.length > 0) {
+        present.attributeWildcards = [...(present.attributeWildcards ?? []), ...newAttributeWildcards];
       }
       const mergedChoiceGroups = mergeChoiceGroups(present.choiceGroups, newChoiceGroups);
       if (mergedChoiceGroups && mergedChoiceGroups.length > 0) {
@@ -848,6 +873,7 @@ export function compileCatalog(
     // result accumulators
     const attrs: CompiledType["attrs"] = [];
     const elems: CompiledType["elems"] = [];
+    const attributeWildcards: CompiledAttributeWildcard[] = [];
     const choiceGroups: CompiledChoiceGroup[] = [];
 
     // Inheritance: complexContent
@@ -869,6 +895,7 @@ export function compileCatalog(
             // inherit base members
             attrs.push(...baseType.attrs);
             elems.push(...baseType.elems);
+            attributeWildcards.push(...(baseType.attributeWildcards ?? []));
             choiceGroups.push(...(baseType.choiceGroups ?? []));
           }
         }
@@ -876,9 +903,11 @@ export function compileCatalog(
         const locals = collectAttributes(node);
         const localElems = collectParticles(outName, node);
         const localWildcards = collectWildcards(node);
+        const localAttributeWildcards = collectAttributeWildcards(node);
         const localChoiceGroups = collectChoiceGroups(outName, node);
         attrs.push(...locals);
         elems.push(...localElems);
+        attributeWildcards.push(...localAttributeWildcards);
         choiceGroups.push(...localChoiceGroups);
         const result: CompiledType = {
           name: outName,
@@ -890,6 +919,7 @@ export function compileCatalog(
           localAttrs: locals,
           localElems,
           ...(localWildcards.length > 0 ? {wildcards: localWildcards} : {}),
+          ...(attributeWildcards.length > 0 ? {attributeWildcards} : {}),
           ...(choiceGroups.length > 0 ? {choiceGroups} : {}),
           ...(localChoiceGroups.length > 0 ? {localChoiceGroups} : {}),
         };
@@ -920,7 +950,15 @@ export function compileCatalog(
           declaredType: r.declared,
         }]);
         mergeAttrs(attrs, collectAttributes(scNode));
-        const result: CompiledType = {name: outName, ns: schemaNS, attrs, elems, doc: typeDoc};
+        const attributeWildcards = collectAttributeWildcards(scNode);
+        const result: CompiledType = {
+          name: outName,
+          ns: schemaNS,
+          attrs,
+          elems,
+          doc: typeDoc,
+          ...(attributeWildcards.length > 0 ? {attributeWildcards} : {}),
+        };
         compiledMap.set(key, result);
         inProgress.delete(rawKey);
         return result;
@@ -937,6 +975,7 @@ export function compileCatalog(
     mergeAttrs(attrs, collectAttributes(cnode));
     mergeElems(elems, collectParticles(outName, cnode));
     const wildcards = collectWildcards(cnode);
+    attributeWildcards.push(...collectAttributeWildcards(cnode));
     choiceGroups.push(...collectChoiceGroups(outName, cnode));
 
     const result: CompiledType = {
@@ -946,6 +985,7 @@ export function compileCatalog(
       elems,
       doc: typeDoc,
       ...(wildcards.length > 0 ? {wildcards} : {}),
+      ...(attributeWildcards.length > 0 ? {attributeWildcards} : {}),
       ...(choiceGroups.length > 0 ? {choiceGroups} : {}),
     };
     compiledMap.set(key, result);
