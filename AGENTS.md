@@ -2,7 +2,7 @@
 
 ## First steps
 
-Read `.github/copilot-instructions.md` for the authoritative, detailed instructions covering commit format, catalog co-location, CLI conventions, testing, changelog rules, and documentation conventions. Read `.github/instructions/` for file-pattern-specific rules (e.g., markdown formatting for all `**/*.md` files). These two sources govern all agent behavior in this repository.
+Read `.github/copilot-instructions.md` for the authoritative, detailed instructions covering commit format, catalog co-location, CLI conventions, testing, changelog rules, and documentation conventions. Read `.github/instructions/` for file-pattern-specific rules (e.g., Markdown formatting for all `**/*.md` files). These two sources govern all agent behavior in this repository.
 
 For routine tasks such as bug fixes and small feature additions, the summary and must-follow rules below are sufficient. For architectural changes, read the full copilot-instructions.md file and the project docs referenced there.
 
@@ -23,6 +23,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - On release, verify `package.json` and `package-lock.json` match the target version before tagging.
 - On release, bump hardcoded dep versions in `src/app/generateApp.ts` (`generatePackageJson`) to current latest.
 - The `soap` package is a runtime dependency; `wsdl-tsc` is a devDependency for consumers.
+- IDE MCP tools such as PhpStorm MCP are optional accelerators for indexed search, inspections, run configurations, and symbol refactors; keep terminal commands as the portable fallback for contributors without the local IDE setup.
 
 ## Testing
 

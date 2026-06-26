@@ -1,6 +1,6 @@
 # Version 1.0 Roadmap Plan
 
-Detailed plan for moving `@techspokes/typescript-wsdl-client` from the released `0.28.x` line to a stable `1.0.0` release.
+Detailed plan for moving `@techspokes/typescript-wsdl-client` from the released `0.30.x` line to a stable `1.0.0` release.
 
 See the root [README.md](../../README.md) for project overview and the root [ROADMAP.md](../../ROADMAP.md) for the public roadmap summary.
 
@@ -8,7 +8,7 @@ See the root [README.md](../../README.md) for project overview and the root [ROA
 
 This plan turns the 1.0 roadmap into implementation slices that can be picked up independently. Each slice has its own plan document with scope, testing strategy, acceptance gates, and release implications.
 
-The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, and JSON array streaming is shipped. The remaining readiness work is WSDL coverage evidence and the final release candidate gate pass.
+The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, and JSON array streaming is shipped. The remaining readiness work is the capability conformance framework, WSDL coverage evidence, and the final release candidate gate pass.
 
 ## Route Summary
 
@@ -54,7 +54,7 @@ Run the release candidate gates after feature work and documentation have conver
 
 ## Remaining Before 1.0
 
-- Build the capability conformance registry and runner.
+- Build the capability conformance registry and compile-stage runner.
 - Build and run the WSDL feature matrix as the first conformance domain.
 - Turn unsupported or partial matrix rows into diagnostics, documentation, or scoped fixes.
 - Confirm `docs/supported-patterns.md` matches the matrix.

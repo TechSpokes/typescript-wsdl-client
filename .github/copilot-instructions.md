@@ -162,6 +162,14 @@ Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `bu
 - Use one command per line, no `&&` chaining (PowerShell-friendly).
 - Prefer `npm run <script>` and `npx wsdl-tsc` patterns consistent with README and `package.json`.
 
+### IDE MCP usage
+
+This public repository may be cloned and developed on machines without PhpStorm, JetBrains MCP, or any IDE integration. Treat IDE MCP tools as optional accelerators, not as required project infrastructure.
+
+When an IDE MCP server is available, prefer it for IDE-owned context such as indexed file discovery, inspections, quick fixes, run configurations, formatter settings, and symbol-aware refactors. Use terminal tools for exact command output, custom arguments, environment variables, process control, package scripts, git operations, and portable verification.
+
+Never record local interpreter paths, private database connections, user-specific IDE settings, or machine-specific MCP setup details in reusable repository documentation. Keep shared instructions focused on capability routing and fallbacks that work for other contributors.
+
 ### File verification
 
 - When an IDE inspection tool is available, run it on touched Markdown files and source files that embed generated code.
@@ -355,7 +363,7 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 
 ### Instruction file hierarchy
 
-This file (`.github/copilot-instructions.md`) is the authoritative source for all agent behavior. The `.github/instructions/` directory contains file-pattern-specific rules that augment this file (e.g., markdown formatting rules for `**/*.md`). `AGENTS.md` is the tool-agnostic buffer pointing here. Vendor-specific files (`CLAUDE.md`, `llms.txt`) point to `AGENTS.md` and add only tool-specific details.
+This file (`.github/copilot-instructions.md`) is the authoritative source for all agent behavior. The `.github/instructions/` directory contains file-pattern-specific rules that augment this file (e.g., Markdown formatting rules for `**/*.md`). `AGENTS.md` is the tool-agnostic buffer pointing here. Vendor-specific files (`CLAUDE.md`, `llms.txt`) point to `AGENTS.md` and add only tool-specific details.
 
 ## Quick References
 

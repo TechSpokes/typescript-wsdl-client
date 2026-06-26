@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.30.1] - 2026-06-26
+
+- docs(roadmap): align 1.0 readiness docs with the current release state
+- docs(supported-patterns): clarify `xs:any` wildcard metadata scope
+- docs(agent): document optional IDE MCP routing for public contributors
+- chore(deps-dev): bump `@types/node` to 26.0.1
+- chore(app): bump generated app pin for `@types/node` to 26.0.1
+
 ## [0.30.0] - 2026-06-24
 
 - chore(ci): bump `actions/checkout` from 6 to 7
@@ -185,7 +193,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - feat(docs-flow): propagate WSDL/XSD documentation into catalog metadata, generated TypeScript comments, and OpenAPI descriptions
 - test(unit): add WSDL/XSD documentation propagation coverage for catalog, client/types/operations emitters, and OpenAPI description overrides
 - docs: document source documentation comment propagation in generated code and catalog concepts
-- docs: align updated documentation formatting with markdown rules by removing bold emphasis patterns
+- docs: align updated documentation formatting with Markdown rules by removing bold emphasis patterns
 
 ## [0.12.0] - 2026-03-04
 
@@ -257,7 +265,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - feat(app): resolve WSDL_SOURCE path relative to app directory; URL sources get fallback defaults
 - feat(cli): add --init-app and --force-init flags; deprecate --generate-app as hidden alias
 - feat(cli): default --openapi-servers to http://localhost:3000 when scaffolding with --init-app
-- docs(examples): rename examples/openapi/ to examples/config/; add typescript-project, fastify-gateway, and ci-cd examples
+- docs(examples): rename examples/openapi/ to examples/config/; add typescript-project, fastify-gateway, and CI/CD examples
 - docs: update CLI reference, gateway guide, README, and architecture docs for new app scaffold
 - chore(deps): bump dependency lower bounds to current latest (fastify 5.7.4, soap 1.6.5, typescript 5.9.3)
 
@@ -270,7 +278,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - docs: add AI agent instruction files (AGENTS.md) and llms.txt for LLM discovery
 - docs: restructure README as gateway to docs/ directory with CLI reference, examples, and migration guide
 - docs(examples): add generated output samples and directory guide
-- docs: align agent instruction files with v0.10.0 gateway capabilities and markdown rules
+- docs: align agent instruction files with v0.10.0 gateway capabilities and Markdown rules
 - chore(deps): update glob and minimatch dependencies
 
 ## [0.10.0] - 2026-02-17

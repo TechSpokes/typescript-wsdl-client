@@ -2,13 +2,25 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.28.0
+## Current: 1.0 Readiness After 0.30.0
 
 Focus: build the capability conformance framework, use WSDL coverage as the first conformance domain, resolve discovered diagnostics or deferrals, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 0.30.0
+
+- Refreshed dependency floors and generated app scaffold pins.
+- Bumped CI checkout tooling.
+- Shipped no behavioral or API changes.
+
+### 0.29.0
+
+- Refreshed the 1.0 roadmap after the JSON array streaming release.
+- Defined the planned capability conformance framework.
+- Refreshed dependency floors, lockfile security updates, and generated app scaffold pins.
 
 ### 0.28.0
 

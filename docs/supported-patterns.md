@@ -21,7 +21,7 @@ These patterns are handled end-to-end: WSDL parsing, TypeScript type generation,
 - Multiple WSDL ports and bindings; the first SOAP binding is selected, all ports are documented in service metadata
 - SOAP 1.1 and SOAP 1.2 binding detection
 - Streamable SOAP responses, opt-in per operation via `--stream-config` (ADR-002): client exposes `AsyncIterable<RecordType>`, gateway emits NDJSON or JSON array streams with backpressure, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
-- `xs:any` wildcard particles retained on compiled types (they used to be dropped silently) — enables honest stream-candidate detection and companion-catalog shape resolution
+- `xs:any` wildcard particles retained on compiled types for stream-candidate detection and companion-catalog shape resolution
 
 ### Named simple types and same-name elements
 
@@ -69,7 +69,7 @@ List types with an `itemType` attribute are detected and generate array types (`
 
 These features are not currently handled. Contributions are welcome.
 
-- `xs:any` and `xs:anyAttribute`: unrecognized elements fall through to an untyped representation
+- Full `xs:any` serialization and `xs:anyAttribute`: arbitrary wildcard content is not emitted as a typed contract
 - `xs:union` types: only union members expressed as restriction enumerations are captured
 - Abstract types: treated as regular concrete types without substitution logic
 - Substitution groups: not resolved during schema compilation
