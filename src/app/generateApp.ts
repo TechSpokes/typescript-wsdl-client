@@ -136,6 +136,25 @@ function toPosix(filePath: string): string {
   return filePath.split(path.sep).join("/");
 }
 
+function commonPathPrefix(paths: string[]): string {
+  if (paths.length === 0) return ".";
+
+  const [first, ...rest] = paths.map(filePath => path.resolve(filePath).split(path.sep));
+  let prefixLength = first.length;
+
+  for (const parts of rest) {
+    prefixLength = Math.min(prefixLength, parts.length);
+    for (let index = 0; index < prefixLength; index += 1) {
+      if (parts[index] !== first[index]) {
+        prefixLength = index;
+        break;
+      }
+    }
+  }
+
+  return first.slice(0, prefixLength).join(path.sep) || path.parse(paths[0]).root;
+}
+
 /**
  * Resolves a WSDL source path relative to the app directory.
  * URLs are returned as-is. File paths are computed relative to appDir.
@@ -620,6 +639,7 @@ function generateTsConfig(appDir: string, opts: GenerateAppOptions, force: boole
   // Compute include paths relative to app directory
   const clientInclude = toPosix(path.relative(appDir, opts.clientDir)) + "/**/*.ts";
   const gatewayInclude = toPosix(path.relative(appDir, opts.gatewayDir)) + "/**/*.ts";
+  const rootDir = toPosix(path.relative(appDir, commonPathPrefix([appDir, opts.clientDir, opts.gatewayDir]))) || ".";
 
   const tsconfig = {
     compilerOptions: {
@@ -631,7 +651,7 @@ function generateTsConfig(appDir: string, opts: GenerateAppOptions, force: boole
       skipLibCheck: true,
       types: ["node"],
       outDir: "dist",
-      rootDir: ".",
+      rootDir,
     },
     include: [
       "*.ts",

@@ -12,10 +12,11 @@ import {resolveCompilerOptions} from "../../src/config.js";
 import {generateCatalog} from "../../src/compiler/generateCatalog.js";
 import {compileCatalog, type CompiledCatalog} from "../../src/compiler/schemaCompiler.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
-import {generateGateway, generateOpenAPI} from "../../src";
+import {generateGateway, generateOpenAPI, generateTests} from "../../src";
+import {generateApp} from "../../src/app/generateApp.js";
 import {WsdlCompilationError} from "../../src/util/errors.js";
 import {deriveClientName} from "../../src/util/tools.js";
-import type {CapabilityCase, GatewayArtifacts} from "./types.js";
+import type {AppArtifacts, CapabilityCase, GatewayArtifacts, GeneratedTestsArtifacts} from "./types.js";
 
 const require = createRequire(import.meta.url);
 const conformanceDir = dirname(fileURLToPath(import.meta.url));
@@ -152,69 +153,31 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
   }
 
   const outDir = createConformanceTempDir(capability, "gateway");
-  const clientDir = join(outDir, "client");
-  const gatewayDir = join(outDir, "gateway");
-  const openapiFile = join(outDir, "openapi.json");
-  const catalogFile = join(clientDir, "catalog.json");
 
   try {
-    const compiled = await compileSuccess(capability, outDir);
-    const clientFiles = {
-      client: join(clientDir, "client.ts"),
-      operations: join(clientDir, "operations.ts"),
-      types: join(clientDir, "types.ts"),
-      utils: join(clientDir, "utils.ts"),
-    };
-
-    mkdirSync(clientDir, {recursive: true});
-    writePackageJson(outDir);
-    generateClient(clientFiles.client, compiled);
-    generateTypes(clientFiles.types, compiled);
-    generateUtils(clientFiles.utils, compiled);
-    generateOperations(clientFiles.operations, compiled);
-    generateCatalog(catalogFile, compiled);
-
-    const result = await generateOpenAPI({
-      compiledCatalog: compiled,
-      format: "json",
-      outFile: openapiFile,
-      skipValidate: false,
-    });
-
-    await generateGateway({
-      openapiFile,
-      outDir: gatewayDir,
-      clientDir,
-      catalogFile,
-      versionSlug: "v1",
-      serviceSlug: "conformance",
-      clientClassName: deriveClientName(compiled),
-    });
-
-    writeGeneratedTsconfig(outDir, true);
-    runTypeScript(outDir, join(outDir, "tsconfig.json"));
+    const project = await generateGatewayProject(capability, outDir);
 
     for (const expected of capability.gateway.sourceIncludes ?? []) {
-      const source = readFileSync(join(gatewayDir, expected.file), "utf8");
+      const source = readFileSync(join(project.gatewayDir, expected.file), "utf8");
       if (!source.includes(expected.text)) {
         throw new Error(`${capability.id} expected gateway ${expected.file} to include ${JSON.stringify(expected.text)}.`);
       }
     }
 
     const artifacts: GatewayArtifacts = {
-      clientDir,
-      gatewayDir,
-      openapiFile,
-      catalogFile,
-      compiled,
-      doc: result.doc,
-      readGatewayFile: (relativePath: string) => readFileSync(join(gatewayDir, relativePath), "utf8"),
+      clientDir: project.clientDir,
+      gatewayDir: project.gatewayDir,
+      openapiFile: project.openapiFile,
+      catalogFile: project.catalogFile,
+      compiled: project.compiled,
+      doc: project.doc,
+      readGatewayFile: (relativePath: string) => readFileSync(join(project.gatewayDir, relativePath), "utf8"),
     };
 
     await capability.gateway.assert?.(artifacts);
 
     for (const request of capability.gateway.requests ?? []) {
-      const route = routeFor(result.doc, request.operationId);
+      const route = routeFor(project.doc, request.operationId);
       const observedArgs: Record<string, unknown> = {};
       const mockClient = Object.fromEntries(
         Object.entries(request.mockClient).map(([methodName, handler]) => [
@@ -226,7 +189,7 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
         ]),
       );
 
-      const pluginModule = await import(pathToFileURL(join(gatewayDir, "plugin.ts")).href);
+      const pluginModule = await import(pathToFileURL(join(project.gatewayDir, "plugin.ts")).href);
       const app = Fastify({logger: false});
 
       try {
@@ -249,6 +212,105 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
         await app.close();
       }
     }
+  } finally {
+    rmSync(outDir, {recursive: true, force: true});
+  }
+}
+
+export async function runGeneratedTestsCase(capability: CapabilityCase): Promise<void> {
+  if (!capability.generatedTests) {
+    throw new Error(`${capability.id} has no generated-test expectation.`);
+  }
+
+  if (capability.compile.outcome !== "success") {
+    throw new Error(`${capability.id} cannot run generated-test evidence without successful compile evidence.`);
+  }
+
+  const outDir = createConformanceTempDir(capability, "generated-tests");
+  const testDir = join(outDir, "tests");
+
+  try {
+    const project = await generateGatewayProject(capability, outDir);
+
+    await generateTests({
+      testDir,
+      gatewayDir: project.gatewayDir,
+      clientDir: project.clientDir,
+      catalogFile: project.catalogFile,
+      imports: "js",
+      force: true,
+    });
+
+    runGeneratedVitest(outDir, join(testDir, "vitest.config.ts"));
+
+    for (const expected of capability.generatedTests.sourceIncludes ?? []) {
+      const source = readFileSync(join(testDir, expected.file), "utf8");
+      if (!source.includes(expected.text)) {
+        throw new Error(`${capability.id} expected generated test ${expected.file} to include ${JSON.stringify(expected.text)}.`);
+      }
+    }
+
+    const artifacts: GeneratedTestsArtifacts = {
+      testDir,
+      clientDir: project.clientDir,
+      gatewayDir: project.gatewayDir,
+      openapiFile: project.openapiFile,
+      catalogFile: project.catalogFile,
+      compiled: project.compiled,
+      readTestFile: (relativePath: string) => readFileSync(join(testDir, relativePath), "utf8"),
+    };
+
+    await capability.generatedTests.assert?.(artifacts);
+  } finally {
+    rmSync(outDir, {recursive: true, force: true});
+  }
+}
+
+export async function runAppCase(capability: CapabilityCase): Promise<void> {
+  if (!capability.app) {
+    throw new Error(`${capability.id} has no app expectation.`);
+  }
+
+  if (capability.compile.outcome !== "success") {
+    throw new Error(`${capability.id} cannot run app evidence without successful compile evidence.`);
+  }
+
+  const outDir = createConformanceTempDir(capability, "app");
+  const appDir = join(outDir, "app");
+
+  try {
+    const project = await generateGatewayProject(capability, outDir);
+
+    await generateApp({
+      appDir,
+      clientDir: project.clientDir,
+      gatewayDir: project.gatewayDir,
+      openapiFile: project.openapiFile,
+      catalogFile: project.catalogFile,
+      imports: "js",
+      force: true,
+    });
+
+    runTypeScript(appDir, join(appDir, "tsconfig.json"));
+
+    for (const expected of capability.app.sourceIncludes ?? []) {
+      const source = readFileSync(join(appDir, expected.file), "utf8");
+      if (!source.includes(expected.text)) {
+        throw new Error(`${capability.id} expected app ${expected.file} to include ${JSON.stringify(expected.text)}.`);
+      }
+    }
+
+    const artifacts: AppArtifacts = {
+      appDir,
+      clientDir: project.clientDir,
+      gatewayDir: project.gatewayDir,
+      openapiFile: project.openapiFile,
+      catalogFile: project.catalogFile,
+      compiled: project.compiled,
+      readAppFile: (relativePath: string) => readFileSync(join(appDir, relativePath), "utf8"),
+    };
+
+    await capability.app.assert?.(artifacts);
   } finally {
     rmSync(outDir, {recursive: true, force: true});
   }
@@ -282,32 +344,88 @@ function writePackageJson(outDir: string): void {
 }
 
 function writeGeneratedTsconfig(outDir: string, includeGateway: boolean): void {
+  const tsconfig = {
+    compilerOptions: {
+      strict: true,
+      target: "ES2022",
+      module: "NodeNext",
+      moduleResolution: "NodeNext",
+      resolveJsonModule: true,
+      verbatimModuleSyntax: true,
+      skipLibCheck: true,
+      esModuleInterop: true,
+      ignoreDeprecations: "6.0",
+      types: ["node"],
+      noEmit: true,
+    },
+    include: includeGateway
+      ? ["client/**/*.ts", "gateway/**/*.ts"]
+      : ["client/**/*.ts"],
+  };
+
   writeFileSync(
     join(outDir, "tsconfig.json"),
-    JSON.stringify(
-      {
-        compilerOptions: {
-          strict: true,
-          target: "ES2022",
-          module: "NodeNext",
-          moduleResolution: "NodeNext",
-          resolveJsonModule: true,
-          verbatimModuleSyntax: true,
-          skipLibCheck: true,
-          esModuleInterop: true,
-          ignoreDeprecations: "6.0",
-          types: ["node"],
-          noEmit: true,
-        },
-        include: includeGateway
-          ? ["client/**/*.ts", "gateway/**/*.ts"]
-          : ["client/**/*.ts"],
-      },
-      null,
-      2,
-    ),
+    JSON.stringify(tsconfig, null, 2),
     "utf8",
   );
+}
+
+async function generateGatewayProject(capability: CapabilityCase, outDir: string): Promise<{
+  clientDir: string;
+  gatewayDir: string;
+  openapiFile: string;
+  catalogFile: string;
+  compiled: CompiledCatalog;
+  doc: any;
+}> {
+  const clientDir = join(outDir, "client");
+  const gatewayDir = join(outDir, "gateway");
+  const openapiFile = join(outDir, "openapi.json");
+  const catalogFile = join(clientDir, "catalog.json");
+  const compiled = await compileSuccess(capability, outDir);
+  const clientFiles = {
+    client: join(clientDir, "client.ts"),
+    operations: join(clientDir, "operations.ts"),
+    types: join(clientDir, "types.ts"),
+    utils: join(clientDir, "utils.ts"),
+  };
+
+  mkdirSync(clientDir, {recursive: true});
+  writePackageJson(outDir);
+  generateClient(clientFiles.client, compiled);
+  generateTypes(clientFiles.types, compiled);
+  generateUtils(clientFiles.utils, compiled);
+  generateOperations(clientFiles.operations, compiled);
+  generateCatalog(catalogFile, compiled);
+
+  const result = await generateOpenAPI({
+    compiledCatalog: compiled,
+    format: "json",
+    outFile: openapiFile,
+    skipValidate: false,
+  });
+
+  await generateGateway({
+    openapiFile,
+    outDir: gatewayDir,
+    clientDir,
+    catalogFile,
+    versionSlug: "v1",
+    serviceSlug: "conformance",
+    clientClassName: deriveClientName(compiled),
+  });
+
+  writeGeneratedTsconfig(outDir, true);
+  runTypeScript(outDir, join(outDir, "tsconfig.json"));
+
+  return {
+    clientDir,
+    gatewayDir,
+    openapiFile,
+    catalogFile,
+    compiled,
+    doc: result.doc,
+  };
 }
 
 function runTypeScript(cwd: string, projectFile: string): void {
@@ -320,6 +438,26 @@ function runTypeScript(cwd: string, projectFile: string): void {
   } catch (error) {
     const typed = error as {stdout?: string; stderr?: string};
     throw new Error(`Generated TypeScript check failed:\n${typed.stdout ?? ""}${typed.stderr ?? ""}`);
+  }
+}
+
+function runGeneratedVitest(cwd: string, configFile: string): void {
+  let output: string;
+  try {
+    output = execFileSync(
+      process.execPath,
+      [join(dirname(require.resolve("vitest/package.json")), "vitest.mjs"), "run", "--config", configFile, "--reporter=json"],
+      {cwd, encoding: "utf8", stdio: "pipe"},
+    );
+  } catch (error) {
+    const typed = error as {stdout?: string; stderr?: string; message?: string};
+    throw new Error(`Generated Vitest check failed:\n${typed.stdout ?? ""}${typed.stderr ?? typed.message ?? ""}`);
+  }
+
+  const jsonStart = output.indexOf("{");
+  const parsed = JSON.parse(output.slice(jsonStart)) as {success?: boolean; numFailedTests?: number};
+  if (!parsed.success || parsed.numFailedTests !== 0) {
+    throw new Error(`Generated Vitest reported failures:\n${output}`);
   }
 }
 

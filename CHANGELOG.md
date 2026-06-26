@@ -9,6 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-06-26
+
+- fix(app): emit scaffold tsconfig roots that cover generated sibling artifacts
+- fix(test): generate mock values for alias-backed request properties
+- test(conformance): add generated-test and app evidence for WSDL capability rows
+- docs(roadmap): move the conformance plan to release-gate readiness
+
 ## [0.32.0] - 2026-06-26
 
 - docs(roadmap): make the gateway conformance slice implementation-ready

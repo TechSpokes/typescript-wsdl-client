@@ -273,6 +273,29 @@ describe("generateMockData", () => {
       email: "sample",
     });
   });
+
+  it("generates primitive values for properties backed by simple type aliases", () => {
+    const catalog: CatalogForMocks = {
+      aliases: [
+        {name: "Identifier", tsType: "string | number"},
+        {name: "InlineIdentifier", tsType: "\"Local\" | \"Remote\" | number"},
+      ],
+      meta: {
+        childType: {
+          UnionRequest: {
+            id: "Identifier",
+            inlineId: "InlineIdentifier",
+          },
+        },
+        propMeta: {},
+      },
+    };
+
+    expect(generateMockData("UnionRequest", catalog)).toEqual({
+      id: "sample",
+      inlineId: "Local",
+    });
+  });
 });
 
 describe("generateAllOperationMocks", () => {

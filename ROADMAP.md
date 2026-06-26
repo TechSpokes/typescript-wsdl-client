@@ -2,9 +2,9 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.32.0
+## Current: 1.0 Readiness After 0.33.0
 
-Focus: extend the shipped conformance registry from gateway runtime evidence into generated-test and app evidence, resolve discovered deferrals, and run the release candidate gates.
+Focus: wire the shipped conformance registry into the appropriate validation gates, resolve discovered deferrals, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
@@ -105,7 +105,7 @@ Compatibility research is complete for released choice union schemas and JSON ar
 
 ### Capability Conformance
 
-The conformance registry now proves compile, client, OpenAPI, gateway runtime, and documentation surfaces for the current supported and partial WSDL rows. The immediate 1.0 blocker is extending relevant capability claims across generated-test and app surfaces.
+The conformance registry now proves compile, client, OpenAPI, gateway runtime, generated-test, app, and documentation surfaces for the current supported and partial WSDL rows. The immediate 1.0 blocker is deciding how much of that evidence should run in CI and release preflight.
 
 ### WSDL Coverage
 

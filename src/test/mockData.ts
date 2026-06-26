@@ -178,6 +178,10 @@ export function generateMockData(
     if (propType === "string" || propType === "number" || propType === "boolean") {
       const value = generateMockPrimitive(propType, propName);
       result[propName] = isArray ? [value] : value;
+    } else if (catalog.aliases?.some(alias => alias.name === propType)) {
+      const alias = catalog.aliases.find(entry => entry.name === propType)!;
+      const value = generateMockPrimitive(alias.tsType, propName);
+      result[propName] = isArray ? [value] : value;
     } else {
       // Complex type — recurse
       const childData = generateMockData(propType, catalog, opts, newVisited, currentDepth + 1);

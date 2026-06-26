@@ -1,33 +1,66 @@
-import fs from "node:fs";
+import {mkdirSync, mkdtempSync, readFileSync, writeFileSync} from "node:fs";
 import os from "node:os";
-import path from "node:path";
+import {resolve} from "node:path";
+import {execFileSync} from "node:child_process";
+import {createRequire} from "node:module";
 import {describe, expect, it} from "vitest";
 import {generateApp} from "../../src/app/generateApp.js";
 
+const require = createRequire(import.meta.url);
+const projectRoot = resolve(import.meta.dirname, "..", "..");
+
+function makeTempDir(prefix: string): string {
+  return mkdtempSync(prefix);
+}
+
+function readUtf8(filePath: string): string {
+  return readFileSync(filePath, "utf8");
+}
+
+interface AppFixture {
+  clientDir: string;
+  gatewayDir: string;
+  appDir: string;
+  catalogFile: string;
+  openapiFile: string;
+}
+
+function createAppFixture(root: string, clientSource: string): AppFixture {
+  const clientDir = `${root}/client`;
+  const gatewayDir = `${root}/gateway`;
+  const appDir = `${root}/app`;
+  mkdirSync(clientDir, {recursive: true});
+  mkdirSync(gatewayDir, {recursive: true});
+  writeFileSync(`${clientDir}/client.ts`, clientSource, "utf8");
+  writeFileSync(`${gatewayDir}/plugin.ts`, "export default async function plugin() {}\n", "utf8");
+  const catalogFile = `${clientDir}/catalog.json`;
+  writeFileSync(catalogFile, JSON.stringify({
+    options: {clientName: "Weather", imports: "js"},
+    types: [],
+    aliases: [],
+    operations: [],
+    meta: {attrSpec: {}, attrType: {}, childType: {}, propMeta: {}},
+    wsdlTargetNS: "",
+    wsdlUri: "weather.wsdl",
+  }));
+  const openapiFile = `${root}/openapi.json`;
+  writeFileSync(openapiFile, JSON.stringify({openapi: "3.1.0", info: {title: "T", version: "1"}, paths: {}, components: {schemas: {}}}));
+
+  return {
+    clientDir,
+    gatewayDir,
+    appDir,
+    catalogFile,
+    openapiFile,
+  };
+}
+
 describe("generateApp security scaffold", () => {
   it("emits upstream SOAP security helper when security config has an upstream profile", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wsdl-tsc-app-security-"));
-    const clientDir = path.join(root, "client");
-    const gatewayDir = path.join(root, "gateway");
-    const appDir = path.join(root, "app");
-    fs.mkdirSync(clientDir, {recursive: true});
-    fs.mkdirSync(gatewayDir, {recursive: true});
-    fs.writeFileSync(path.join(clientDir, "client.ts"), "export class Weather {}\n");
-    fs.writeFileSync(path.join(gatewayDir, "plugin.ts"), "export default async function plugin() {}\n");
-    const catalogFile = path.join(clientDir, "catalog.json");
-    fs.writeFileSync(catalogFile, JSON.stringify({
-      options: {clientName: "Weather", imports: "js"},
-      types: [],
-      aliases: [],
-      operations: [],
-      meta: {attrSpec: {}, attrType: {}, childType: {}, propMeta: {}},
-      wsdlTargetNS: "",
-      wsdlUri: "weather.wsdl",
-    }));
-    const openapiFile = path.join(root, "openapi.json");
-    fs.writeFileSync(openapiFile, JSON.stringify({openapi: "3.1.0", info: {title: "T", version: "1"}, paths: {}, components: {schemas: {}}}));
-    const securityConfigFile = path.join(root, "security.json");
-    fs.writeFileSync(securityConfigFile, JSON.stringify({
+    const root = makeTempDir(`${os.tmpdir()}/wsdl-tsc-app-security-`);
+    const fixture = createAppFixture(root, "export class Weather {}\n");
+    const securityConfigFile = `${root}/security.json`;
+    writeFileSync(securityConfigFile, JSON.stringify({
       upstream: {
         profile: "ws-security-username-token",
         usernameEnv: "SOAP_USERNAME",
@@ -36,17 +69,44 @@ describe("generateApp security scaffold", () => {
     }));
 
     await generateApp({
-      clientDir,
-      gatewayDir,
-      openapiFile,
-      catalogFile,
-      appDir,
+      clientDir: fixture.clientDir,
+      gatewayDir: fixture.gatewayDir,
+      openapiFile: fixture.openapiFile,
+      catalogFile: fixture.catalogFile,
+      appDir: fixture.appDir,
       securityConfigFile,
       force: true,
     });
 
-    expect(fs.readFileSync(path.join(appDir, "server.ts"), "utf8")).toContain("buildSoapRuntimeConfig");
-    expect(fs.readFileSync(path.join(appDir, "security.ts"), "utf8")).toContain("soapRuntime.WSSecurity");
-    expect(fs.readFileSync(path.join(appDir, ".env.example"), "utf8")).toContain("SOAP_USERNAME=");
+    const serverSource = readUtf8(`${fixture.appDir}/server.ts`);
+    const securitySource = readUtf8(`${fixture.appDir}/security.ts`);
+    const envSource = readUtf8(`${fixture.appDir}/.env.example`);
+
+    expect(serverSource).toContain("buildSoapRuntimeConfig");
+    expect(securitySource).toContain("soapRuntime.WSSecurity");
+    expect(envSource).toContain("SOAP_USERNAME=");
+  });
+
+  it("emits a tsconfig that type-checks sibling client and gateway artifacts", async () => {
+    const tmpBase = `${projectRoot}/tmp`;
+    mkdirSync(tmpBase, {recursive: true});
+    const root = makeTempDir(`${tmpBase}/app-tsconfig-`);
+    const fixture = createAppFixture(root, "export class Weather { constructor(_options: {source: string}) {} }\n");
+    writeFileSync(`${fixture.gatewayDir}/_typecheck.ts`, "export const gatewayTypecheck = true;\n", "utf8");
+
+    await generateApp({
+      clientDir: fixture.clientDir,
+      gatewayDir: fixture.gatewayDir,
+      openapiFile: fixture.openapiFile,
+      catalogFile: fixture.catalogFile,
+      appDir: fixture.appDir,
+      force: true,
+    });
+
+    execFileSync(
+      process.execPath,
+      [require.resolve("typescript/bin/tsc"), "-p", `${fixture.appDir}/tsconfig.json`, "--noEmit"],
+      {cwd: root, encoding: "utf8", stdio: "pipe"},
+    );
   });
 });

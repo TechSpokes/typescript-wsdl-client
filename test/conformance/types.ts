@@ -101,6 +101,44 @@ export interface GatewayExpectation {
   assert?: (artifacts: GatewayArtifacts) => void | Promise<void>;
 }
 
+export interface GeneratedTestsArtifacts {
+  testDir: string;
+  clientDir: string;
+  gatewayDir: string;
+  openapiFile: string;
+  catalogFile: string;
+  compiled: CompiledCatalog;
+  readTestFile: (relativePath: string) => string;
+}
+
+export interface GeneratedTestsExpectation {
+  outcome: "success";
+  sourceIncludes?: Array<{
+    file: string;
+    text: string;
+  }>;
+  assert?: (artifacts: GeneratedTestsArtifacts) => void | Promise<void>;
+}
+
+export interface AppArtifacts {
+  appDir: string;
+  clientDir: string;
+  gatewayDir: string;
+  openapiFile: string;
+  catalogFile: string;
+  compiled: CompiledCatalog;
+  readAppFile: (relativePath: string) => string;
+}
+
+export interface AppExpectation {
+  outcome: "success";
+  sourceIncludes?: Array<{
+    file: string;
+    text: string;
+  }>;
+  assert?: (artifacts: AppArtifacts) => void | Promise<void>;
+}
+
 export interface CapabilityCase {
   id: string;
   title: string;
@@ -120,4 +158,6 @@ export interface CapabilityCase {
   client?: ClientExpectation;
   openapi?: OpenApiExpectation;
   gateway?: GatewayExpectation;
+  generatedTests?: GeneratedTestsExpectation;
+  app?: AppExpectation;
 }

@@ -7,8 +7,10 @@
     "rootDir": "../.."
   },
   "include": [
+    "app-security.test.ts",
     "docs-validator.test.ts",
     "json-array.test.ts",
+    "mock-data.test.ts",
     "openapi-stream.test.ts",
     "../../scripts/validate-docs.d.mts"
   ]

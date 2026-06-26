@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
 import {capabilities} from "./registry.js";
-import {fixturePathFor, runClientCase, runCompileCase, runGatewayCase, runOpenApiCase} from "./runner.js";
+import {fixturePathFor, runAppCase, runClientCase, runCompileCase, runGatewayCase, runGeneratedTestsCase, runOpenApiCase} from "./runner.js";
 
 const runnableCapabilities = capabilities.filter(capability => capability.compile.outcome !== "research");
 const downstreamCapabilities = capabilities.filter(capability =>
@@ -53,6 +53,13 @@ describe("WSDL capability conformance registry", () => {
   }
 
   for (const capability of downstreamCapabilities) {
+    test(`${capability.id} declares generated-test and app evidence`, () => {
+      expect(capability.generatedTests, `${capability.id} generated-test expectation`).toBeDefined();
+      expect(capability.app, `${capability.id} app expectation`).toBeDefined();
+    });
+  }
+
+  for (const capability of downstreamCapabilities) {
     test(`${capability.id} satisfies its client expectation`, async () => {
       await runClientCase(capability);
     });
@@ -67,6 +74,18 @@ describe("WSDL capability conformance registry", () => {
   for (const capability of downstreamCapabilities) {
     test(`${capability.id} satisfies its gateway expectation`, async () => {
       await runGatewayCase(capability);
+    });
+  }
+
+  for (const capability of downstreamCapabilities) {
+    test(`${capability.id} satisfies its generated-test expectation`, async () => {
+      await runGeneratedTestsCase(capability);
+    });
+  }
+
+  for (const capability of downstreamCapabilities) {
+    test(`${capability.id} satisfies its app expectation`, async () => {
+      await runAppCase(capability);
     });
   }
 });

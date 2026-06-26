@@ -102,6 +102,16 @@ export const capabilities: CapabilityCase[] = [
         },
       ],
     },
+    generatedTests: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "gateway/validation.test.ts", text: "rejects invalid ChoiceRequest choice payload"},
+        {file: "gateway/validation.test.ts", text: "\"email\": \"sample\""},
+      ],
+    },
+    app: {
+      outcome: "success",
+    },
   },
   {
     id: "xs-union-simple-type",
@@ -172,6 +182,12 @@ export const capabilities: CapabilityCase[] = [
           assertClientArgs: args => assertJsonEqual(args, {id: "ABC-123", inlineId: "Local"}, "Gateway should pass union values to the client."),
         },
       ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
     },
   },
   {
@@ -281,6 +297,12 @@ export const capabilities: CapabilityCase[] = [
         },
       ],
     },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
   },
   {
     id: "external-policy-reference",
@@ -343,6 +365,12 @@ export const capabilities: CapabilityCase[] = [
         }
       },
     },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
   },
   {
     id: "deep-composition-sequence",
@@ -392,6 +420,12 @@ export const capabilities: CapabilityCase[] = [
           assertClientArgs: args => assertJsonEqual(args, {levelOne: {levelTwo: {value: "nested"}}}, "Gateway should pass deep composition payloads to the client."),
         },
       ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
     },
   },
   {
@@ -454,6 +488,12 @@ export const capabilities: CapabilityCase[] = [
           throw new Error("xs:anyAttribute gateway schema should not emit a wildcard attribute bag.");
         }
       },
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
     },
   },
   {
