@@ -39,6 +39,39 @@ export type CompileExpectation =
     reason: string;
   };
 
+export interface ClientArtifacts {
+  clientDir: string;
+  compiled: CompiledCatalog;
+  files: {
+    client: string;
+    operations: string;
+    types: string;
+    utils: string;
+  };
+  readFile: (file: keyof ClientArtifacts["files"]) => string;
+}
+
+export interface ClientExpectation {
+  outcome: "success";
+  sourceIncludes?: Array<{
+    file: keyof ClientArtifacts["files"];
+    text: string;
+  }>;
+  assert?: (artifacts: ClientArtifacts) => void;
+}
+
+export interface OpenApiArtifacts {
+  compiled: CompiledCatalog;
+  doc: any;
+  openapiFile: string;
+  outDir: string;
+}
+
+export interface OpenApiExpectation {
+  outcome: "success";
+  assert?: (artifacts: OpenApiArtifacts) => void;
+}
+
 export interface CapabilityCase {
   id: string;
   title: string;
@@ -55,4 +88,6 @@ export interface CapabilityCase {
   fixtureKind: FixtureKind;
   compilerOptions?: Partial<CompilerOptions>;
   compile: CompileExpectation;
+  client?: ClientExpectation;
+  openapi?: OpenApiExpectation;
 }

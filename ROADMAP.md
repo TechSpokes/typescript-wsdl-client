@@ -2,9 +2,9 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.30.0
+## Current: 1.0 Readiness After 0.30.3
 
-Focus: build the capability conformance framework, use WSDL coverage as the first conformance domain, resolve discovered diagnostics or deferrals, and run the release candidate gates.
+Focus: extend the shipped conformance registry from compile, client, and OpenAPI evidence into gateway runtime evidence, resolve discovered deferrals, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
@@ -105,11 +105,11 @@ Compatibility research is complete for released choice union schemas and JSON ar
 
 ### Capability Conformance
 
-The immediate 1.0 blocker is an internal conformance framework that proves capability claims across compile, client, OpenAPI, gateway, app, generated-test, runtime, and documentation surfaces.
+The conformance registry now proves compile, client, OpenAPI, and documentation surfaces for the current supported and partial WSDL rows. The immediate 1.0 blocker is extending relevant capability claims across gateway, app, generated-test, and runtime surfaces.
 
 ### WSDL Coverage
 
-WSDL coverage should be the first conformance domain. Priority gaps are `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, and deeply composed schemas.
+WSDL coverage is the first conformance domain. The current matrix includes `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, deeply composed schemas, `xs:anyAttribute`, and MTOM/XOP attachments.
 
 ### Gateway Integration
 

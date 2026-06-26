@@ -1,8 +1,14 @@
 import {describe, expect, test} from "vitest";
 import {capabilities} from "./registry.js";
-import {fixturePathFor, runCompileCase} from "./runner.js";
+import {fixturePathFor, runClientCase, runCompileCase, runOpenApiCase} from "./runner.js";
 
 const runnableCapabilities = capabilities.filter(capability => capability.compile.outcome !== "research");
+const downstreamCapabilities = capabilities.filter(capability =>
+  capability.status === "supported" || capability.status === "partial"
+);
+const terminalStatusCapabilities = capabilities.filter(capability =>
+  capability.status === "diagnostic" || capability.status === "unsupported"
+);
 
 describe("WSDL capability conformance registry", () => {
   test("declares unique capability ids with local fixtures", () => {
@@ -28,5 +34,22 @@ describe("WSDL capability conformance registry", () => {
 
   test.each(runnableCapabilities)("$id satisfies its compile expectation", async capability => {
     await runCompileCase(capability);
+  });
+
+  test.each(terminalStatusCapabilities)("$id has executable terminal compile evidence", capability => {
+    expect(capability.compile.outcome, capability.id).not.toBe("research");
+  });
+
+  test.each(downstreamCapabilities)("$id declares client and OpenAPI evidence", capability => {
+    expect(capability.client, `${capability.id} client expectation`).toBeDefined();
+    expect(capability.openapi, `${capability.id} OpenAPI expectation`).toBeDefined();
+  });
+
+  test.each(downstreamCapabilities)("$id satisfies its client expectation", async capability => {
+    await runClientCase(capability);
+  });
+
+  test.each(downstreamCapabilities)("$id satisfies its OpenAPI expectation", async capability => {
+    await runOpenApiCase(capability);
   });
 });

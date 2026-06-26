@@ -394,6 +394,99 @@ function extractAnnotationDocumentation(node: any): string | undefined {
   return normalizeDocText(merged);
 }
 
+function localName(name: string): string {
+  return name.includes(":") ? name.split(":").pop()! : name;
+}
+
+function isTruthyXmlBoolean(value: unknown): boolean {
+  return String(value).trim().toLowerCase() === "true" || String(value).trim() === "1";
+}
+
+function getAttributeByLocalName(node: any, name: string): unknown {
+  if (!node || typeof node !== "object") {
+    return undefined;
+  }
+  for (const [key, value] of Object.entries(node)) {
+    if (key.startsWith("@_") && localName(key.slice(2)) === name) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
+function hasAttributeByLocalName(node: any, name: string): boolean {
+  if (Array.isArray(node)) {
+    return node.some(child => hasAttributeByLocalName(child, name));
+  }
+  if (!node || typeof node !== "object") {
+    return false;
+  }
+  if (getAttributeByLocalName(node, name) !== undefined) {
+    return true;
+  }
+  return Object.entries(node)
+    .filter(([key]) => !key.startsWith("@_"))
+    .some(([, value]) => hasAttributeByLocalName(value, name));
+}
+
+function rejectUnsupportedSchemaConstructs(cat: WsdlCatalog): void {
+  for (const schema of cat.schemas) {
+    for (const element of getChildrenWithLocalName(schema.xml, "element")) {
+      const substitutionGroup = getAttributeByLocalName(element, "substitutionGroup");
+      if (substitutionGroup) {
+        throw new WsdlCompilationError(
+          `Unsupported XSD substitution group on element "${element["@_name"] ?? "(anonymous)"}".`,
+          {
+            element: String(element["@_name"] ?? ""),
+            namespace: schema.targetNS,
+            file: cat.wsdlUri,
+            suggestion: "Substitution groups require polymorphic element expansion. Remove the substitution group or model the accepted concrete element explicitly before generation.",
+          },
+        );
+      }
+    }
+
+    for (const complexType of getChildrenWithLocalName(schema.xml, "complexType")) {
+      if (isTruthyXmlBoolean(getAttributeByLocalName(complexType, "abstract"))) {
+        throw new WsdlCompilationError(
+          `Unsupported abstract complex type "${complexType["@_name"] ?? "(anonymous)"}".`,
+          {
+            element: String(complexType["@_name"] ?? ""),
+            namespace: schema.targetNS,
+            file: cat.wsdlUri,
+            suggestion: "Abstract complex types require polymorphic instance handling. Use a concrete type or add support for explicit abstract type diagnostics before generation.",
+          },
+        );
+      }
+    }
+
+    for (const element of getChildrenWithLocalName(schema.xml, "element")) {
+      if (isTruthyXmlBoolean(getAttributeByLocalName(element, "abstract"))) {
+        throw new WsdlCompilationError(
+          `Unsupported abstract element "${element["@_name"] ?? "(anonymous)"}".`,
+          {
+            element: String(element["@_name"] ?? ""),
+            namespace: schema.targetNS,
+            file: cat.wsdlUri,
+            suggestion: "Abstract elements require substitution or polymorphic element handling. Use a concrete element before generation.",
+          },
+        );
+      }
+    }
+
+    if (hasAttributeByLocalName(schema.xml, "expectedContentTypes")) {
+      throw new WsdlCompilationError(
+        "Unsupported MTOM/XOP or XML MIME attachment metadata.",
+        {
+          namespace: schema.targetNS,
+          file: cat.wsdlUri,
+          suggestion: "Attachment payloads require MIME or binary transport semantics that are outside the typed SOAP-to-REST generation contract.",
+        },
+      );
+    }
+  }
+}
+
 /**
  * Compile a WSDL catalog into an internal representation (CompiledCatalog).
  * Steps:
@@ -409,6 +502,8 @@ export function compileCatalog(
   options: CompilerOptions,
   streamConfig?: StreamConfig,
 ): CompiledCatalog {
+  rejectUnsupportedSchemaConstructs(cat);
+
   // symbol tables discovered across all schemas
   const complexTypes = new Map<string, { node: any; tns: string; prefixes: Record<string, string> }>();
   const simpleTypes = new Map<string, { node: any; tns: string; prefixes: Record<string, string> }>();

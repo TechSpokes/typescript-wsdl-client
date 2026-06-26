@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-06-26
+
+- docs(roadmap): align the next conformance slice with the shipped compile matrix
+- feat(compiler): add diagnostics for abstract, substitution, and attachment patterns
+- test(conformance): add client and OpenAPI evidence for WSDL capability rows
+
 ## [0.30.3] - 2026-06-26
 
 - docs(agent): require release preflight before pushing release tags

@@ -11,13 +11,13 @@ The rows below are backed by committed conformance fixtures under `test/conforma
 |---|---|---|
 | `choice-union-simple` | supported | `xs:choice` union mode retains choice metadata and drives generated TypeScript/OpenAPI constraints. |
 | `xs-union-simple-type` | supported | Simple `xs:union` aliases compile to TypeScript unions and OpenAPI `oneOf` schemas. |
-| `abstract-complex-type` | diagnostic | Abstract complex type semantics are not modeled yet; 1.0 should reject or warn instead of treating them as concrete. |
-| `substitution-group-element` | diagnostic | Substitution groups are not expanded yet; 1.0 should avoid silent omission with a diagnostic. |
+| `abstract-complex-type` | diagnostic | Abstract complex types are rejected with a diagnostic instead of being treated as concrete. |
+| `substitution-group-element` | diagnostic | Substitution groups are rejected with a diagnostic instead of being silently omitted. |
 | `multi-binding-first-soap` | partial | Multiple bindings are deterministic: the first SOAP binding is selected and all ports are documented. |
 | `external-policy-reference` | partial | Inline policy hints are detected; external `PolicyReference` documents are not fetched or resolved. |
 | `deep-composition-sequence` | supported | Deep nested sequences compile into deterministic type metadata. |
 | `xs-anyattribute` | partial | `xs:anyAttribute` is retained as catalog metadata, but generated wildcard attributes are not emitted. |
-| `mtom-xop-attachment` | unsupported | MTOM/XOP binary attachment transport is outside the 1.0 typed SOAP-to-REST contract. |
+| `mtom-xop-attachment` | unsupported | MTOM/XOP binary attachment metadata is rejected because attachment transport is outside the 1.0 typed SOAP-to-REST contract. |
 <!-- support-matrix:end -->
 
 ## Fully Supported
@@ -97,9 +97,9 @@ Attribute wildcards are retained as catalog metadata on the enclosing compiled t
 These features are not currently handled. Contributions are welcome.
 
 - Full `xs:any` serialization: arbitrary wildcard content is not emitted as a typed contract
-- Abstract types: treated as regular concrete types without substitution logic
-- Substitution groups: not resolved during schema compilation
-- MTOM/XOP binary attachments: no support for binary part handling
+- Abstract types: rejected with a diagnostic; no polymorphic instance handling
+- Substitution groups: rejected with a diagnostic; no polymorphic element expansion
+- MTOM/XOP binary attachments: rejected with a diagnostic; no binary part handling
 - WS-ReliableMessaging, WS-Addressing beyond basic headers
 - Custom serialization hooks for non-standard XML patterns
 

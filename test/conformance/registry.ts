@@ -1,5 +1,32 @@
 import type {CapabilityCase} from "./types.js";
 
+function requireSchema(doc: any, name: string): any {
+  const schema = doc.components?.schemas?.[name];
+  if (!schema) {
+    throw new Error(`Expected OpenAPI schema ${name}.`);
+  }
+  return schema;
+}
+
+function requireOperation(doc: any, operationId: string): any {
+  for (const pathItem of Object.values(doc.paths ?? {})) {
+    for (const operation of Object.values(pathItem as Record<string, any>)) {
+      if ((operation as any).operationId === operationId) {
+        return operation;
+      }
+    }
+  }
+  throw new Error(`Expected OpenAPI operation ${operationId}.`);
+}
+
+function assertJsonEqual(actual: unknown, expected: unknown, message: string): void {
+  const actualJson = JSON.stringify(actual);
+  const expectedJson = JSON.stringify(expected);
+  if (actualJson !== expectedJson) {
+    throw new Error(`${message}\nExpected: ${expectedJson}\nActual: ${actualJson}`);
+  }
+}
+
 export const capabilities: CapabilityCase[] = [
   {
     id: "choice-union-simple",
@@ -26,6 +53,21 @@ export const capabilities: CapabilityCase[] = [
         const request = compiled.types.find(type => type.name === "ChoiceRequest");
         if (!request?.choiceGroups?.some(group => group.branches.some(branch => branch.name === "email"))) {
           throw new Error("ChoiceRequest should retain a choice group with the email branch.");
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "export type ChoiceRequest = ChoiceRequestChoiceBase & ChoiceRequestChoice1;"},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        const schema = requireSchema(doc, "ChoiceRequest");
+        if (!Array.isArray(schema.oneOf)) {
+          throw new Error("ChoiceRequest should carry OpenAPI oneOf branch constraints.");
         }
       },
     },
@@ -60,6 +102,28 @@ export const capabilities: CapabilityCase[] = [
         }
       },
     },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "export type Identifier = string | number;"},
+        {file: "types", text: "export type InlineIdentifier = \"Local\" | \"Remote\" | number;"},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        assertJsonEqual(
+          requireSchema(doc, "Identifier"),
+          {oneOf: [{type: "string"}, {type: "number"}]},
+          "Identifier should emit a mixed primitive oneOf schema.",
+        );
+        assertJsonEqual(
+          requireSchema(doc, "InlineIdentifier"),
+          {oneOf: [{type: "string", enum: ["Local", "Remote"]}, {type: "number"}]},
+          "InlineIdentifier should emit a mixed literal and primitive oneOf schema.",
+        );
+      },
+    },
   },
   {
     id: "abstract-complex-type",
@@ -68,16 +132,22 @@ export const capabilities: CapabilityCase[] = [
     featureTags: ["xsd", "inheritance", "diagnostic"],
     fixture: "xsd/types/type-complex-abstract-extension.wsdl",
     docsAnchor: "not-yet-supported",
-    publicContract: "Abstract complex type semantics are not modeled yet; 1.0 should reject or warn instead of treating them as concrete.",
+    publicContract: "Abstract complex types are rejected with a diagnostic instead of being treated as concrete.",
     decision: "diagnostic",
-    decisionReason: "Full abstract type semantics imply polymorphic instance handling; 1.0 should reject or warn instead of treating abstract types as concrete.",
+    decisionReason: "Full abstract type semantics imply polymorphic instance handling; the compiler rejects them instead of treating abstract types as concrete.",
     authority: "XML Schema 1.0",
     provenance: "Repository-authored fixture for abstract complex type declaration and extension.",
     license: "MIT",
     fixtureKind: "diagnostic-required",
     compile: {
-      outcome: "research",
-      reason: "The compiler currently does not model abstract complex type constraints.",
+      outcome: "error",
+      errorClass: "WsdlCompilationError",
+      messageIncludes: ["Unsupported abstract complex type", "BaseRecord"],
+      userMessageIncludes: ["Abstract complex types require polymorphic instance handling"],
+      context: {
+        element: "BaseRecord",
+        namespace: "urn:conformance:abstract-complex-type",
+      },
     },
   },
   {
@@ -87,16 +157,22 @@ export const capabilities: CapabilityCase[] = [
     featureTags: ["xsd", "substitution-group", "diagnostic"],
     fixture: "xsd/elements/element-substitution-group.wsdl",
     docsAnchor: "not-yet-supported",
-    publicContract: "Substitution groups are not expanded yet; 1.0 should avoid silent omission with a diagnostic.",
+    publicContract: "Substitution groups are rejected with a diagnostic instead of being silently omitted.",
     decision: "diagnostic",
-    decisionReason: "Substitution groups require polymorphic element expansion; 1.0 should avoid silent omission by producing a diagnostic.",
+    decisionReason: "Substitution groups require polymorphic element expansion; the compiler avoids silent omission by producing a diagnostic.",
     authority: "XML Schema 1.0",
     provenance: "Repository-authored fixture for head and member elements in a substitution group.",
     license: "MIT",
     fixtureKind: "diagnostic-required",
     compile: {
-      outcome: "research",
-      reason: "The compiler has no substitution group expansion or explicit diagnostic policy yet.",
+      outcome: "error",
+      errorClass: "WsdlCompilationError",
+      messageIncludes: ["Unsupported XSD substitution group", "cardPayment"],
+      userMessageIncludes: ["Substitution groups require polymorphic element expansion"],
+      context: {
+        element: "cardPayment",
+        namespace: "urn:conformance:substitution-group-element",
+      },
     },
   },
   {
@@ -122,6 +198,17 @@ export const capabilities: CapabilityCase[] = [
         if (operation?.soapAction !== "urn:first") {
           throw new Error("GetValue should use the soapAction from the first SOAP binding.");
         }
+      },
+    },
+    client: {
+      outcome: "success",
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        requireOperation(doc, "GetValue");
+        requireSchema(doc, "GetValueRequest");
+        requireSchema(doc, "GetValueResponse");
       },
     },
   },
@@ -150,6 +237,18 @@ export const capabilities: CapabilityCase[] = [
         }
       },
     },
+    client: {
+      outcome: "success",
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        const operation = requireOperation(doc, "CheckPolicy");
+        if (doc.security || operation.security) {
+          throw new Error("External PolicyReference should not produce OpenAPI security requirements.");
+        }
+      },
+    },
   },
   {
     id: "deep-composition-sequence",
@@ -169,6 +268,18 @@ export const capabilities: CapabilityCase[] = [
       outcome: "success",
       typeNames: ["DeepRequest", "LevelOne", "LevelTwo", "DeepResponse"],
       operationNames: ["SubmitDeep"],
+    },
+    client: {
+      outcome: "success",
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        requireSchema(doc, "DeepRequest");
+        requireSchema(doc, "LevelOne");
+        requireSchema(doc, "LevelTwo");
+        requireOperation(doc, "SubmitDeep");
+      },
     },
   },
   {
@@ -196,6 +307,18 @@ export const capabilities: CapabilityCase[] = [
         }
       },
     },
+    client: {
+      outcome: "success",
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        const schema = requireSchema(doc, "AnyAttributeRequest");
+        if (schema.properties?.$attributes || schema.additionalProperties === true) {
+          throw new Error("xs:anyAttribute should not be emitted as generated wildcard attributes yet.");
+        }
+      },
+    },
   },
   {
     id: "mtom-xop-attachment",
@@ -204,7 +327,7 @@ export const capabilities: CapabilityCase[] = [
     featureTags: ["soap", "mtom", "xop", "attachment"],
     fixture: "soap/attachments/attachment-mtom-xop.wsdl",
     docsAnchor: "not-yet-supported",
-    publicContract: "MTOM/XOP binary attachment transport is outside the 1.0 typed SOAP-to-REST contract.",
+    publicContract: "MTOM/XOP binary attachment metadata is rejected because attachment transport is outside the 1.0 typed SOAP-to-REST contract.",
     decision: "out-of-scope",
     decisionReason: "MTOM/XOP requires binary attachment transport and MIME packaging semantics beyond the 1.0 typed SOAP-to-REST pipeline.",
     authority: "SOAP 1.1",
@@ -212,8 +335,13 @@ export const capabilities: CapabilityCase[] = [
     license: "MIT",
     fixtureKind: "diagnostic-required",
     compile: {
-      outcome: "research",
-      reason: "The generator does not have an attachment transport or binary payload mapping contract.",
+      outcome: "error",
+      errorClass: "WsdlCompilationError",
+      messageIncludes: ["Unsupported MTOM/XOP or XML MIME attachment metadata"],
+      userMessageIncludes: ["Attachment payloads require MIME or binary transport semantics"],
+      context: {
+        namespace: "urn:conformance:mtom-xop-attachment",
+      },
     },
   },
 ];
