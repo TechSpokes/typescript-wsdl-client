@@ -55,7 +55,7 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run ci
+      - run: npm run release:publish-check
 
   publish-gpr:
     needs: build

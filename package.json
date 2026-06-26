@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "0.36.0",
+  "version": "0.37.0",
   "description": "Turn legacy WSDL/SOAP services into typed TypeScript clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways. Built for enterprise SOAP modernization.",
   "keywords": [
     "wsdl",
@@ -89,6 +89,7 @@
     "skill:package": "node scripts/build-agent-skill.mjs",
     "package:validate": "node scripts/validate-npm-package.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
+    "release:publish-check": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate",
     "ci": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate && npm run docs:validate && vitest run && npm run smoke:pipeline",
     "ci:github": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate && npm run docs:validate && npm run test:github && npm run smoke:pipeline",
     "ci:github:node26": "npm run clean && npm run build && npm run typecheck && npm run test:unit && npm run smoke:pipeline",

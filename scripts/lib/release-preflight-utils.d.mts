@@ -12,9 +12,10 @@ export declare function verifyConformanceGateScripts(
   scripts: Record<string, string>,
 ): string[];
 
-export declare const SUPPORTED_NODE_FLOOR: 24;
-
-export declare const CURRENT_NODE_LINE: 26;
+export declare function verifyPublishWorkflowGate(
+  scripts: Record<string, string>,
+  releasePackageWorkflow: string,
+): string[];
 
 export declare function verifyNodeReleaseGate(
   inputs: {

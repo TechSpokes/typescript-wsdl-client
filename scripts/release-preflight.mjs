@@ -16,7 +16,7 @@ import {
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
 import { findExampleDrift } from "./lib/preflight-examples.mjs";
-import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate } from "./lib/release-preflight-utils.mjs";
+import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate, verifyPublishWorkflowGate } from "./lib/release-preflight-utils.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
 
 const WEATHER_WSDL = path.join(ROOT, "examples", "minimal", "weather.wsdl");
@@ -243,6 +243,15 @@ function nodeReleaseGate() {
   return { message: "Node 24 floor and Node 26 CI coverage are release-gated" };
 }
 
+function publishWorkflowGate() {
+  const errors = verifyPublishWorkflowGate(
+    readJson(PACKAGE_JSON).scripts ?? {},
+    fs.readFileSync(RELEASE_PACKAGE_WORKFLOW, "utf-8"),
+  );
+  failIfErrors(errors);
+  return { message: "release package workflow uses the targeted publish check" };
+}
+
 function examplesFresh() {
   fs.rmSync(PREFLIGHT_DIR, { recursive: true, force: true });
   fs.mkdirSync(PREFLIGHT_DIR, { recursive: true });
@@ -341,6 +350,7 @@ async function main() {
 
   await step("conformance-gate", conformanceGate);
   await step("node-release-gate", nodeReleaseGate);
+  await step("publish-workflow-gate", publishWorkflowGate);
 
   if (args.skipExamples) {
     record("examples-fresh", "skip", "--skip-examples");

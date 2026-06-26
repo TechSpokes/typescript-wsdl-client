@@ -175,9 +175,12 @@ Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `bu
 - `smoke:*`: end-to-end CLI checks (compile, client, openapi, gateway, pipeline) using `examples/minimal/weather.wsdl`.
 - `skill:validate`: validate the standalone agent skill release artifact.
 - `package:validate`: validate the exact npm package dry-run contents.
+- `release:publish-check`: targeted post-release package validation.
 - `ci`: combine build, typecheck, agent skill validation, npm package validation, docs validation, broad Vitest tests including conformance, and smoke pipeline.
 - `ci:github`: quick GitHub Node 24 gate for push and PR feedback.
 - `ci:github:node26`: lightweight GitHub Node 26 compatibility gate.
+
+The `release:publish-check` script intentionally does not rerun the full conformance, broad Vitest, or smoke gates because `release:preflight` owns those checks before the tag is pushed.
 
 ### Terminal commands
 
@@ -296,6 +299,8 @@ Examples:
 Release notes are required for every release tag. The tag-triggered draft release workflow reads `docs/releases/v<version>.md`, validates the source file, and strips only the first H1 line when generating the GitHub release body.
 
 The draft release workflow also packages and uploads `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip`. Continue refusing to mutate a published non-draft release.
+
+The published-release package workflow must stay targeted. It checks out the tag, installs dependencies, runs `npm run release:publish-check`, then publishes to GitHub Packages and npm. Do not replace that publish check with `npm run ci`; full CI, conformance, generated examples, and smoke verification belong to `npm run release:preflight -- v<version>` before the tag is pushed.
 
 Keep the H1 in repository release files. Do not remove it to avoid a duplicate title on GitHub; the workflow handles that display-only transformation.
 

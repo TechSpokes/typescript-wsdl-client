@@ -14,6 +14,7 @@ type NodeReleaseGateVerifier = (inputs: {
   releasePackageWorkflow: string;
   releaseDraftWorkflow: string;
 }) => string[];
+type PublishWorkflowGateVerifier = (scripts: Record<string, string>, releasePackageWorkflow: string) => string[];
 
 function verifyConformanceGateScripts(scripts: Record<string, string>): string[] {
   const verifier = (releasePreflightUtils as typeof releasePreflightUtils & {
@@ -31,6 +32,15 @@ function verifyNodeReleaseGate(inputs: Parameters<NodeReleaseGateVerifier>[0]): 
 
   expect(verifier).toBeTypeOf("function");
   return verifier?.(inputs) ?? [];
+}
+
+function verifyPublishWorkflowGate(scripts: Record<string, string>, releasePackageWorkflow: string): string[] {
+  const verifier = (releasePreflightUtils as typeof releasePreflightUtils & {
+    verifyPublishWorkflowGate?: PublishWorkflowGateVerifier;
+  }).verifyPublishWorkflowGate;
+
+  expect(verifier).toBeTypeOf("function");
+  return verifier?.(scripts, releasePackageWorkflow) ?? [];
 }
 
 describe("findDatedChangelogSection", () => {
@@ -156,5 +166,37 @@ describe("verifyNodeReleaseGate", () => {
       "Release package workflow must run on Node 24.",
       "Draft release workflow must run on Node 24.",
     ]);
+  });
+});
+
+describe("verifyPublishWorkflowGate", () => {
+  const scripts = {
+    "release:publish-check": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate",
+  };
+  const workflow = "run: npm run release:publish-check";
+
+  it("accepts a targeted publish check in the release package workflow", () => {
+    expect(verifyPublishWorkflowGate(scripts, workflow)).toEqual([]);
+  });
+
+  it("rejects missing targeted publish check scripts", () => {
+    const errors = verifyPublishWorkflowGate({}, workflow);
+
+    expect(errors).toContain("package.json scripts.release:publish-check must exist for targeted post-release publish validation.");
+  });
+
+  it("rejects publish checks that rerun full CI or broad tests", () => {
+    const errors = verifyPublishWorkflowGate({
+      "release:publish-check": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate && npm run ci",
+    }, workflow);
+
+    expect(errors).toContain("package.json scripts.release:publish-check must stay targeted and must not run full tests, conformance, smoke, or npm run ci.");
+  });
+
+  it("rejects release package workflows that rerun full CI", () => {
+    const errors = verifyPublishWorkflowGate(scripts, "run: npm run ci");
+
+    expect(errors).toContain("Release package workflow must run npm run release:publish-check before publishing.");
+    expect(errors).toContain("Release package workflow must not run npm run ci; full CI belongs to release preflight before tagging.");
   });
 });

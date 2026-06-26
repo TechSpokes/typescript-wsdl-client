@@ -8,8 +8,8 @@ export function findDatedChangelogSection(lines, version) {
   return null;
 }
 
-export const SUPPORTED_NODE_FLOOR = 24;
-export const CURRENT_NODE_LINE = 26;
+const SUPPORTED_NODE_FLOOR = 24;
+const CURRENT_NODE_LINE = 26;
 
 function hasFocusedConformanceRun(script) {
   return /\bvitest\s+run\b/.test(script) && /\btest[\\/]conformance\b/.test(script);
@@ -37,6 +37,31 @@ export function verifyConformanceGateScripts(scripts) {
   }
   if (!ciRunsBroadTests(ci)) {
     errors.push("package.json scripts.ci must run npm test, npm run test, or a broad vitest run so conformance is release-covered.");
+  }
+
+  return errors;
+}
+
+export function verifyPublishWorkflowGate(scripts, releasePackageWorkflow) {
+  const errors = [];
+  const publishCheck = scripts["release:publish-check"] ?? "";
+
+  if (!publishCheck) {
+    errors.push("package.json scripts.release:publish-check must exist for targeted post-release publish validation.");
+  }
+  for (const required of ["build", "typecheck", "skill:validate", "package:validate"]) {
+    if (!new RegExp(`\\bnpm\\s+run\\s+${required.replace(":", "\\:")}\\b`).test(publishCheck)) {
+      errors.push(`package.json scripts.release:publish-check must run npm run ${required}.`);
+    }
+  }
+  if (/\bnpm\s+run\s+ci\b|\bnpm\s+test\b|\bvitest\s+run\b|\bsmoke:pipeline\b|\btest:conformance\b/.test(publishCheck)) {
+    errors.push("package.json scripts.release:publish-check must stay targeted and must not run full tests, conformance, smoke, or npm run ci.");
+  }
+  if (!/\bnpm\s+run\s+release:publish-check\b/.test(releasePackageWorkflow)) {
+    errors.push("Release package workflow must run npm run release:publish-check before publishing.");
+  }
+  if (/\bnpm\s+run\s+ci\b/.test(releasePackageWorkflow)) {
+    errors.push("Release package workflow must not run npm run ci; full CI belongs to release preflight before tagging.");
   }
 
   return errors;

@@ -2,13 +2,25 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.35.0
+## Current: 1.0 Readiness After 0.37.0
 
-Focus: keep the expanded conformance baseline aligned, confirm the documented partial and terminal capability decisions, and run the release candidate gates.
+Focus: keep the expanded conformance baseline aligned after the release workflow optimization, confirm the remaining documented partial and terminal capability decisions, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 0.37.0
+
+- Replaced post-release full CI in the package publishing workflow with a targeted publish check.
+- Added a release preflight guard that keeps package publishing validation targeted.
+- Aligned 1.0 roadmap status with the `0.36.0` wildcard-bag release.
+
+### 0.36.0
+
+- Added `xs:anyAttribute` wildcard-bag output across TypeScript, OpenAPI, gateway, generated-test, and app evidence.
+- Split fast GitHub hosted checks from the full local release gate.
+- Clarified single-pass release preflight usage.
 
 ### 0.35.0
 
