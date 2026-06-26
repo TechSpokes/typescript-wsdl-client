@@ -113,6 +113,7 @@ Inspect `"scripts"` in `package.json` for the full list. Key commands:
 - `npm run test:unit`: unit tests only.
 - `npm run test:snap`: snapshot tests only.
 - `npm run test:integration`: integration tests only.
+- `npm run test:conformance`: focused WSDL capability conformance tests.
 - `npm run test:watch`: watch mode for development.
 - `npm run ci`: build, typecheck, all Vitest tests, and smoke pipeline.
 
@@ -135,6 +136,8 @@ Use `docs/file-naming-and-path-organization.md` for reusable fixture paths and o
 ### Capability support matrix
 
 When changing `test/conformance/registry.ts`, run `npm run docs:support-matrix` to regenerate the owned table in `docs/supported-patterns.md`. Run `npm run docs:support-matrix:check` or `npm run docs:validate` before finishing documentation work that changes capability rows.
+
+Run `npm run test:conformance` when changing conformance fixtures, registry rows, runner helpers, WSDL capability support claims, or generated client/OpenAPI/gateway/app/test behavior for capability rows. `npm test` and `npm run ci` must keep broad Vitest discovery so `test/conformance` stays covered. Release preflight verifies those script contracts with its `conformance-gate` step; do not add a duplicate full conformance run there unless CI stops running broad Vitest discovery.
 
 ## Key Conventions
 

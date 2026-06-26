@@ -12,6 +12,8 @@
     "json-array.test.ts",
     "mock-data.test.ts",
     "openapi-stream.test.ts",
-    "../../scripts/validate-docs.d.mts"
+    "release-preflight-utils.test.ts",
+    "../../scripts/validate-docs.d.mts",
+    "../../scripts/lib/release-preflight-utils.d.mts"
   ]
 }

@@ -21,6 +21,7 @@ npm test              # All Vitest tests
 npm run test:unit     # Unit tests only
 npm run test:snap     # Snapshot tests only
 npm run test:integration  # Integration tests only
+npm run test:conformance  # WSDL capability conformance tests only
 npm run test:watch    # Watch mode for development
 ```
 
@@ -168,6 +169,16 @@ import { pathToFileURL } from "node:url";
 
 const pluginModule = await import(pathToFileURL(join(outDir, "gateway", "plugin.ts")).href);
 ```
+
+## Conformance Tests
+
+Conformance tests live under `test/conformance/` and prove WSDL capability claims through committed fixtures, registry rows, generated artifacts, diagnostics, and documentation alignment. Use the focused command when changing capability rows or fixture-backed behavior:
+
+```bash
+npm run test:conformance
+```
+
+`npm test` includes the conformance suite through normal Vitest discovery. `npm run ci` and release preflight cover conformance through that broad test command, while release preflight also checks that the focused command and broad CI discovery remain wired.
 
 ## Known Issues
 

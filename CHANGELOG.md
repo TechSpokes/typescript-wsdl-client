@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.34.0] - 2026-06-26
+
+- test(release): add a preflight conformance gate wiring check
+- docs(testing): document focused conformance verification
+- docs(roadmap): move the conformance plan to release-candidate readiness
+
 ## [0.33.0] - 2026-06-26
 
 - fix(app): emit scaffold tsconfig roots that cover generated sibling artifacts

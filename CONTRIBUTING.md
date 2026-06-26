@@ -139,6 +139,7 @@ The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integrati
 - `npm run test:unit`: unit tests for utilities and parsers
 - `npm run test:snap`: snapshot tests for generated code
 - `npm run test:integration`: gateway handler integration tests
+- `npm run test:conformance`: WSDL capability conformance tests
 - `npm run test:watch`: watch mode during development
 - `npm run smoke:pipeline`: full CLI smoke test
 
@@ -149,6 +150,7 @@ test/
   unit/                  Pure function tests
   snapshot/              Generated output baselines
   integration/           Gateway, streaming, and generated-test integration tests
+  conformance/           Fixture-backed WSDL capability evidence
   research/              Exploratory probes kept out of the default test suite
   helpers/               Shared test utilities
 ```
@@ -180,7 +182,7 @@ The `tsconfig.smoke.json` file extends the main `tsconfig.json` and includes `tm
 
 `npm run ci` runs clean, build, typecheck, agent skill validation, npm package validation, documentation validation, Vitest, and the smoke pipeline.
 
-This verifies the source compiles, tests pass, the CLI works, generated output compiles, package contents are valid, Markdown links and TypeScript fenced snippets resolve, the agent skill packages cleanly, and type contracts stay aligned.
+This verifies the source compiles, tests pass, conformance rows stay covered through broad Vitest discovery, the CLI works, generated output compiles, package contents are valid, Markdown links and TypeScript fenced snippets resolve, the agent skill packages cleanly, and type contracts stay aligned.
 
 ## Repository Health Checks
 

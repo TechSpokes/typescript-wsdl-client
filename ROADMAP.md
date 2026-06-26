@@ -2,9 +2,9 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.33.0
+## Current: 1.0 Readiness After 0.34.0
 
-Focus: wire the shipped conformance registry into the appropriate validation gates, resolve discovered deferrals, and run the release candidate gates.
+Focus: resolve discovered conformance deferrals, keep the public support matrix aligned, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
@@ -105,7 +105,7 @@ Compatibility research is complete for released choice union schemas and JSON ar
 
 ### Capability Conformance
 
-The conformance registry now proves compile, client, OpenAPI, gateway runtime, generated-test, app, and documentation surfaces for the current supported and partial WSDL rows. The immediate 1.0 blocker is deciding how much of that evidence should run in CI and release preflight.
+The conformance registry now proves compile, client, OpenAPI, gateway runtime, generated-test, app, and documentation surfaces for the current supported and partial WSDL rows. `npm test` and `npm run ci` cover conformance through broad Vitest discovery, and release preflight verifies that the focused conformance command and CI discovery remain wired.
 
 ### WSDL Coverage
 
@@ -139,7 +139,8 @@ Generated gateway integration documentation must keep inbound authentication, au
 
 ### Conformance Gate
 
-- The automated capability conformance matrix runs in CI or preflight.
+- The automated capability conformance matrix runs through broad Vitest discovery in `npm test` and `npm run ci`.
+- `npm run release:preflight -- v1.0.0` verifies that `test:conformance`, `npm test`, and `npm run ci` still cover conformance.
 - Every listed capability has a status, fixture, and expected stage behavior.
 - Unsupported features fail with useful diagnostics rather than silent miscompilation.
 

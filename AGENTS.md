@@ -15,6 +15,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Do not edit files in generated output directories (client/, gateway/, app/); regenerate from WSDL sources instead.
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
+- Run `npm run test:conformance` for WSDL capability fixture, registry, runner, support-matrix, or generated artifact evidence changes.
 - Commit messages must follow: `Version: <release-target-version> <type>(scope): <imperative summary>`.
 - Post-release patch work uses the next patch version in commit titles even before `package.json` is bumped.
 - A commit title target such as `Version: 0.30.3` does not mean the repository is ready for tag `v0.30.3`.
@@ -29,7 +30,9 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 
 ## Testing
 
-Run `npm test` for all Vitest tests (unit, snapshot, integration). Run `npm run ci` for the complete CI pipeline. When modifying generators, update snapshot baselines with `npx vitest run test/snapshot -u` and review the diff. See `test/integration/gateway-routes.test.ts` for the mock client reference implementation.
+Run `npm test` for all Vitest tests, including unit, snapshot, integration, and conformance suites. Run `npm run ci` for the complete CI pipeline. When modifying generators, update snapshot baselines with `npx vitest run test/snapshot -u` and review the diff. See `test/integration/gateway-routes.test.ts` for the mock client reference implementation.
+
+Run `npm run test:conformance` when modifying WSDL capability rows, conformance fixtures, runner helpers, or public support claims. `npm test` and `npm run ci` must keep broad Vitest discovery so conformance remains covered, and release preflight verifies this script wiring.
 
 ## Must-read documents
 

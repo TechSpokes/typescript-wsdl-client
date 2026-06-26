@@ -16,7 +16,7 @@ import {
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
 import { findExampleDrift } from "./lib/preflight-examples.mjs";
-import { findDatedChangelogSection } from "./lib/release-preflight-utils.mjs";
+import { findDatedChangelogSection, verifyConformanceGateScripts } from "./lib/release-preflight-utils.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
 
 const WEATHER_WSDL = path.join(ROOT, "examples", "minimal", "weather.wsdl");
@@ -222,6 +222,13 @@ function lockfileInSync() {
   }
 }
 
+function conformanceGate() {
+  const pkg = readJson(PACKAGE_JSON);
+  const errors = verifyConformanceGateScripts(pkg.scripts ?? {});
+  failIfErrors(errors);
+  return { message: "test:conformance is focused and npm run ci covers broad Vitest discovery" };
+}
+
 function examplesFresh() {
   fs.rmSync(PREFLIGHT_DIR, { recursive: true, force: true });
   fs.mkdirSync(PREFLIGHT_DIR, { recursive: true });
@@ -317,6 +324,8 @@ async function main() {
   } else {
     await step("lockfile-sync", lockfileInSync);
   }
+
+  await step("conformance-gate", conformanceGate);
 
   if (args.skipExamples) {
     record("examples-fresh", "skip", "--skip-examples");

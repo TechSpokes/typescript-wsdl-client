@@ -8,7 +8,7 @@ See the root [README.md](../../README.md) for project overview and the root [ROA
 
 This plan turns the 1.0 roadmap into implementation slices that can be picked up independently. Each slice has its own plan document with scope, testing strategy, acceptance gates, and release implications.
 
-The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, and JSON array streaming is shipped. The remaining readiness work is the capability conformance framework, WSDL coverage evidence, and the final release candidate gate pass.
+The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, JSON array streaming is shipped, and the conformance framework is wired into validation gates. The remaining readiness work is to resolve any explicit conformance deferrals and run the final release candidate gate pass.
 
 ## Route Summary
 
@@ -18,9 +18,9 @@ The plan is optimized for preserving quality. The contract and compatibility bas
 | OpenAPI compatibility | [OpenAPI Fastify Compatibility](v1.0-openapi-fastify-compatibility.md)       | baseline complete | Schema strategy is proven       |
 | Choice union mode     | [Choice Union Mode](v1.0-choice-union-mode.md)                               | complete          | Implemented in `0.26.0`         |
 | JSON array streaming  | [JSON Array Streaming](v1.0-json-array-streaming.md)                         | complete          | Implemented in `0.28.0`         |
-| Conformance framework | [Capability Conformance Framework](v1.0-capability-conformance-framework.md) | phase 4 shipped   | Pipeline claims are test-backed |
-| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | generated artifacts proven | Feature support is test-backed |
-| Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)                   | remaining         | 1.0 release is repeatable       |
+| Conformance framework | [Capability Conformance Framework](v1.0-capability-conformance-framework.md) | gate wired        | Pipeline claims are test-backed |
+| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | gate wired        | Feature support is test-backed |
+| Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)                   | next              | 1.0 release is repeatable       |
 
 ## Execution Order
 
@@ -42,11 +42,11 @@ JSON array streaming is complete in `0.28.0`. The default `ndjson` format remain
 
 ### Slice 5: Capability Conformance Framework
 
-The registry, fixture strategy, compile runner, client evidence, OpenAPI evidence, gateway runtime evidence, generated-test evidence, app evidence, documentation drift check, and generated support matrix are shipped. The next work is to wire the right conformance subset into validation gates without making local development too slow.
+The registry, fixture strategy, compile runner, client evidence, OpenAPI evidence, gateway runtime evidence, generated-test evidence, app evidence, documentation drift check, generated support matrix, and validation-gate wiring are shipped. Keep `npm run test:conformance` as the focused local command while broad Vitest discovery covers conformance in `npm test`, `npm run ci`, and release preflight.
 
 ### Slice 6: WSDL Coverage Matrix
 
-The first WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, generated-test, app, and documentation evidence. The next work is to keep those rows current while release candidate gates are prepared.
+The first WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, generated-test, app, documentation, and release-gate evidence. The next work is to keep those rows current while release candidate gates are prepared.
 
 ### Slice 7: Release Candidate Gates
 
@@ -54,7 +54,6 @@ Run the release candidate gates after feature work and documentation have conver
 
 ## Remaining Before 1.0
 
-- Decide which conformance checks should run in CI, release preflight, or local-only workflows.
 - Turn remaining unsupported, diagnostic, or partial matrix rows into diagnostics, documentation, or scoped fixes.
 - Confirm `docs/supported-patterns.md` matches the matrix.
 - Run the release-candidate gates.
@@ -84,7 +83,8 @@ Run the release candidate gates after feature work and documentation have conver
 
 ### Coverage Gate
 
-- A capability conformance matrix runs under test automation.
+- A capability conformance matrix runs under broad Vitest test automation.
+- Release preflight verifies the focused conformance command and CI wiring.
 - Each matrix entry has a fixture, status, and stage expectations.
 - Unsupported features fail loudly or are documented as deliberately unsupported.
 
