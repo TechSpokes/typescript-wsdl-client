@@ -140,6 +140,43 @@ describe("compiler: wildcard retention", () => {
     ]);
   });
 
+  it("retains local xs:anyAttribute metadata separately on complexContent extensions", async () => {
+    const schema = `
+      <xs:complexType name="BaseWithWildcard">
+        <xs:sequence>
+          <xs:element name="baseValue" type="xs:string"/>
+        </xs:sequence>
+        <xs:anyAttribute namespace="##other" processContents="lax"/>
+      </xs:complexType>
+      <xs:complexType name="ExtendedWithWildcard">
+        <xs:complexContent>
+          <xs:extension base="tns:BaseWithWildcard">
+            <xs:sequence>
+              <xs:element name="childValue" type="xs:string"/>
+            </xs:sequence>
+            <xs:anyAttribute namespace="##any" processContents="skip"/>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="StreamRequest" type="tns:ExtendedWithWildcard"/>
+      <xs:element name="StreamResponse" type="xs:string"/>`;
+    const compiled = await compileFromFixture(buildWsdl(schema), "extension-anyattribute");
+    const base = compiled.types.find((t) => t.name === "BaseWithWildcard");
+    const child = compiled.types.find((t) => t.name === "ExtendedWithWildcard");
+
+    expect(base?.attributeWildcards).toEqual([
+      {namespace: "##other", processContents: "lax"},
+    ]);
+    expect(base?.localAttributeWildcards).toBeUndefined();
+    expect(child?.attributeWildcards).toEqual([
+      {namespace: "##other", processContents: "lax"},
+      {namespace: "##any", processContents: "skip"},
+    ]);
+    expect(child?.localAttributeWildcards).toEqual([
+      {namespace: "##any", processContents: "skip"},
+    ]);
+  });
+
   it("attaches stream metadata from the stream config to matching operations", async () => {
     const schema = `
       <xs:element name="StreamRequest">

@@ -154,9 +154,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify release state
-        run: npm run ci
-
       - name: Package agent skill
         run: npm run skill:package -- ${{ steps.meta.outputs.tag }}
 

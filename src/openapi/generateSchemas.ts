@@ -14,6 +14,7 @@
  * - Can prune schemas that aren't referenced by any operation
  */
 import type {CompiledAlias, CompiledCatalog, CompiledType} from "../compiler/schemaCompiler.js";
+import {hasAttributeWildcards, wildcardAttributeBagName, wildcardAttributeBagSchema} from "../util/attributeWildcards.js";
 
 /**
  * Options for generating OpenAPI schema components
@@ -138,6 +139,7 @@ function buildComplexSchema(
   aliasNames: Set<string>,
   flattenWrappers: boolean,
   choiceUnionMode: boolean,
+  attributesKey: string,
 ): any {
   // Use knownTypeNames/aliasNames to validate $ref targets so we surface
   // compiler issues early instead of emitting dangling references in OpenAPI output.
@@ -197,6 +199,12 @@ function buildComplexSchema(
     }
     properties[a.name] = propSchema;
     if (a.use === "required") required.push(a.name);
+  }
+  const wildcardCarrier = t.base
+    ? {attributeWildcards: t.localAttributeWildcards}
+    : {attributeWildcards: t.attributeWildcards};
+  if (hasAttributeWildcards(wildcardCarrier)) {
+    properties[attributesKey] = wildcardAttributeBagSchema();
   }
   // elements
   for (const e of t.elems) {
@@ -296,6 +304,7 @@ export function generateSchemas(compiled: CompiledCatalog, opts: GenerateSchemas
   const schemas: ComponentsSchemas = {};
   const typeNames = new Set(compiled.types.map(t => t.name));
   const aliasNames = new Set(compiled.aliases.map(a => a.name));
+  const attributesKey = wildcardAttributeBagName(compiled.options);
 
   // Build alias schemas first so complex types can reference them
   for (const a of compiled.aliases) {
@@ -312,6 +321,7 @@ export function generateSchemas(compiled: CompiledCatalog, opts: GenerateSchemas
       aliasNames,
       flattenWrappers,
       compiled.options.choice === "union",
+      attributesKey,
     );
   }
 

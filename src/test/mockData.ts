@@ -8,6 +8,7 @@
  * Pure logic — no I/O or side effects.
  */
 import {detectArrayWrappers, flattenMockPayload} from "../util/catalogMeta.js";
+import {hasAttributeWildcards, wildcardAttributeBagName} from "../util/attributeWildcards.js";
 
 /**
  * Options for mock data generation
@@ -21,6 +22,7 @@ export interface MockDataOptions {
  */
 export interface CatalogForMocks {
   options?: {
+    attributesKey?: string;
     choice?: "all-optional" | "union";
   };
   meta?: {
@@ -48,6 +50,7 @@ export interface CatalogForMocks {
     name: string;
     attrs: Array<{ name: string }>;
     elems: Array<{ name: string; max: number | "unbounded" }>;
+    attributeWildcards?: Array<{namespace?: string; processContents?: "lax" | "strict" | "skip"}>;
     choiceGroups?: Array<{
       name: string;
       min: number;
@@ -148,7 +151,9 @@ export function generateMockData(
 
   const childTypes = catalog.meta?.childType?.[typeName];
   const attrTypes = catalog.meta?.attrType?.[typeName];
-  if ((!childTypes || Object.keys(childTypes).length === 0) && !attrTypes) {
+  const typeMeta = catalog.types?.find((t) => t.name === typeName);
+  const hasWildcardAttributes = hasAttributeWildcards(typeMeta);
+  if ((!childTypes || Object.keys(childTypes).length === 0) && !attrTypes && !hasWildcardAttributes) {
     return {};
   }
 
@@ -157,7 +162,6 @@ export function generateMockData(
   newVisited.add(typeName);
 
   const result: Record<string, unknown> = {};
-  const typeMeta = catalog.types?.find((t) => t.name === typeName);
   const choiceGroups = catalog.options?.choice === "union" ? (typeMeta?.choiceGroups ?? []) : [];
   const choiceBranchNames = new Set(choiceGroups.flatMap((group) => group.branches.map((branch) => branch.name)));
   const selectedChoiceBranchNames = new Set(
@@ -201,6 +205,14 @@ export function generateMockData(
           result[attrName] = generateMockPrimitive(attrTsType, attrName);
         }
       }
+    }
+  }
+  if (hasWildcardAttributes) {
+    const attributesKey = wildcardAttributeBagName(catalog.options);
+    if (!(attributesKey in result)) {
+      result[attributesKey] = {
+        "extra:trace": "sample",
+      };
     }
   }
 

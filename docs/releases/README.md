@@ -40,6 +40,7 @@ No special upgrade steps.
 - CI passed.
 - NPM package contents were validated.
 - Agent skill artifact was validated and packaged.
+- Release preflight passed against the target tag.
 
 ## Notes
 

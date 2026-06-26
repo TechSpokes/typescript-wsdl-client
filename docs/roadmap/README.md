@@ -8,7 +8,7 @@ See the root [README.md](../../README.md) for project overview and the root [ROA
 
 This plan turns the 1.0 roadmap into implementation slices that can be picked up independently. Each slice has its own plan document with scope, testing strategy, acceptance gates, and release implications.
 
-The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, JSON array streaming is shipped, and the conformance framework is wired into validation gates. The remaining readiness work is to resolve any explicit conformance deferrals and run the final release candidate gate pass.
+The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, JSON array streaming is shipped, and the conformance framework is wired into validation gates. The remaining readiness work is to review the explicit partial, diagnostic, and unsupported capability decisions, then run the final release candidate gate pass.
 
 ## Route Summary
 
@@ -19,7 +19,8 @@ The plan is optimized for preserving quality. The contract and compatibility bas
 | Choice union mode     | [Choice Union Mode](v1.0-choice-union-mode.md)                               | complete          | Implemented in `0.26.0`         |
 | JSON array streaming  | [JSON Array Streaming](v1.0-json-array-streaming.md)                         | complete          | Implemented in `0.28.0`         |
 | Conformance framework | [Capability Conformance Framework](v1.0-capability-conformance-framework.md) | gate wired        | Pipeline claims are test-backed |
-| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | baseline registry | Public support is test-backed |
+| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | baseline complete | Public support is test-backed |
+| `xs:anyAttribute` bag | [`xs:anyAttribute` Wildcard Bag](v1.0-xs-anyattribute-wildcard-bag.md)        | planned           | Attribute wildcard bag emitted  |
 | Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)                   | next              | 1.0 release is repeatable       |
 
 ## Execution Order
@@ -46,16 +47,20 @@ The registry, fixture strategy, compile runner, client evidence, OpenAPI evidenc
 
 ### Slice 6: WSDL Coverage Matrix
 
-The WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, generated-test, app, documentation, and release-gate evidence. The next work is to keep those rows current while release candidate gates are prepared.
+The WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, generated-test, app, documentation, and release-gate evidence. The next work is to keep those rows current, confirm the non-supported rows are accepted 1.0 decisions, and prepare release candidate gates.
 
-### Slice 7: Release Candidate Gates
+### Slice 7: xs:anyAttribute Wildcard Bag
+
+The [`xs:anyAttribute` wildcard bag plan](v1.0-xs-anyattribute-wildcard-bag.md) is the selected scoped pre-1.0 fix. It promotes the current metadata-only partial row to supported by emitting a configured wildcard attribute bag through TypeScript, OpenAPI, gateway, generated-test, app, and documentation evidence.
+
+### Slice 8: Release Candidate Gates
 
 Run the release candidate gates after feature work and documentation have converged. This slice validates docs, tests, generated examples, package contents, skill artifact, release notes, and provenance workflow readiness.
 
 ## Remaining Before 1.0
 
-- Turn remaining unsupported, diagnostic, or partial matrix rows into diagnostics, documentation, or scoped fixes.
-- Confirm `docs/supported-patterns.md` matches the matrix.
+- Confirm each partial, diagnostic, and unsupported matrix row is an accepted 1.0 decision or select one scoped fix.
+- Confirm `docs/supported-patterns.md` still matches the generated matrix.
 - Run the release-candidate gates.
 
 ## Quality Principles

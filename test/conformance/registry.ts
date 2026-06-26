@@ -1029,13 +1029,13 @@ export const capabilities: CapabilityCase[] = [
   {
     id: "xs-anyattribute",
     title: "xs:anyAttribute wildcard",
-    status: "partial",
+    status: "supported",
     featureTags: ["xsd", "wildcard", "attribute"],
     fixture: "xsd/wildcards/wildcard-attribute-any.wsdl",
     docsAnchor: "xsanyattribute",
-    publicContract: "`xs:anyAttribute` is retained as catalog metadata, but generated wildcard attributes are not emitted.",
-    decision: "partial-support",
-    decisionReason: "The compiler can retain attribute wildcard metadata, but generated TypeScript and OpenAPI do not yet expose arbitrary attribute bags.",
+    publicContract: "`xs:anyAttribute` is retained as catalog metadata and emitted as an optional wildcard attribute bag named by the configured attributes key.",
+    decision: "support",
+    decisionReason: "The compiler retains attribute wildcard metadata, and generated TypeScript, OpenAPI, gateway, generated-test, and app artifacts can represent wildcard attributes through the existing attribute-bag runtime path.",
     authority: "XML Schema 1.0",
     provenance: "Repository-authored fixture for attribute wildcard behavior.",
     license: "MIT",
@@ -1053,13 +1053,21 @@ export const capabilities: CapabilityCase[] = [
     },
     client: {
       outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "$attributes?: Record<string, string>;"},
+      ],
     },
     openapi: {
       outcome: "success",
       assert: ({doc}) => {
         const schema = requireSchema(doc, "AnyAttributeRequest");
-        if (schema.properties?.$attributes || schema.additionalProperties === true) {
-          throw new Error("xs:anyAttribute should not be emitted as generated wildcard attributes yet.");
+        assertJsonEqual(
+          schema.properties?.$attributes,
+          {type: "object", additionalProperties: {type: "string"}},
+          "xs:anyAttribute should emit the configured wildcard attribute bag schema.",
+        );
+        if (schema.additionalProperties === true) {
+          throw new Error("xs:anyAttribute should not loosen the whole object schema.");
         }
       },
     },
@@ -1068,7 +1076,7 @@ export const capabilities: CapabilityCase[] = [
       requests: [
         {
           operationId: "SubmitAnyAttribute",
-          payload: {value: "known-only"},
+          payload: {value: "known-only", $attributes: {"extra:trace": "sample"}},
           mockClient: {
             SubmitAnyAttribute: async () => ({
               response: {$value: "stored"},
@@ -1077,18 +1085,26 @@ export const capabilities: CapabilityCase[] = [
           },
           expectedStatus: 200,
           assertBody: body => assertSuccessEnvelope(body, {$value: "stored"}),
-          assertClientArgs: args => assertJsonEqual(args, {value: "known-only"}, "Gateway should pass only the modeled xs:anyAttribute payload subset."),
+          assertClientArgs: args => assertJsonEqual(
+            args,
+            {value: "known-only", $attributes: {"extra:trace": "sample"}},
+            "Gateway should pass the modeled xs:anyAttribute bag to the client.",
+          ),
         },
       ],
       assert: ({readGatewayFile}) => {
         const schemaSource = readGatewayFile("schemas/models/anyattributerequest.json");
-        if (schemaSource.includes("$attributes")) {
-          throw new Error("xs:anyAttribute gateway schema should not emit a wildcard attribute bag.");
+        if (!schemaSource.includes("\"$attributes\"")) {
+          throw new Error("xs:anyAttribute gateway schema should emit a wildcard attribute bag.");
         }
       },
     },
     generatedTests: {
       outcome: "success",
+      sourceIncludes: [
+        {file: "gateway/routes.test.ts", text: "\"$attributes\""},
+        {file: "gateway/routes.test.ts", text: "\"extra:trace\""},
+      ],
     },
     app: {
       outcome: "success",

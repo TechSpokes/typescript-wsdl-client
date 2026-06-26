@@ -22,19 +22,22 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - A commit title target such as `Version: 0.30.3` does not mean the repository is ready for tag `v0.30.3`.
 - Every release commit must include the matching `docs/releases/vX.Y.Z.md` release notes file.
 - Node.js >= 24.0.0, ESM-only (`type: "module"`), strict TypeScript.
-- CI must test Node 24 as the supported floor and Node 26 as the current line.
+- GitHub CI must test Node 24 as the supported floor and Node 26 as the current line.
+- GitHub push and PR CI is a fast hosted signal; run full local `npm run ci` or `npm run release:preflight -- vX.Y.Z` before release work is tagged.
 - CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--init-app`.
 - On release, verify `package.json` and `package-lock.json` match the target version before tagging.
-- Before pushing a release tag, run `npm run release:preflight -- vX.Y.Z`; do not tag if it fails.
+- Before pushing a release tag, run `npm run release:preflight -- vX.Y.Z` once on the clean release commit; do not tag if it fails.
+- Release preflight already runs CI and packages the agent skill artifact; rerun it only after changing committed release files.
 - On release, bump hardcoded dep versions in `src/app/generateApp.ts` (`generatePackageJson`) to current latest.
 - The `soap` package is a runtime dependency; `wsdl-tsc` is a devDependency for consumers.
 - IDE MCP tools such as PhpStorm MCP are optional accelerators for indexed search, inspections, run configurations, and symbol refactors; keep terminal commands as the portable fallback for contributors without the local IDE setup.
+- Store 1.0 implementation plans under `docs/roadmap/` as `v1.0-<topic>.md`; never create `docs/superpowers/`.
 
 ## Testing
 
 Run `npm test` for all Vitest tests, including unit, snapshot, integration, and conformance suites. Run `npm run ci` for the complete CI pipeline. When modifying generators, update snapshot baselines with `npx vitest run test/snapshot -u` and review the diff. See `test/integration/gateway-routes.test.ts` for the mock client reference implementation.
 
-Run `npm run test:conformance` when modifying WSDL capability rows, conformance fixtures, runner helpers, or public support claims. `npm test` and `npm run ci` must keep broad Vitest discovery so conformance remains covered, and release preflight verifies this script wiring.
+Run `npm run test:conformance` when modifying WSDL capability rows, conformance fixtures, runner helpers, or public support claims. `npm test` and `npm run ci` must keep broad Vitest discovery so conformance remains covered. GitHub push and PR CI intentionally stays faster and does not replace local release preflight.
 
 ## Must-read documents
 

@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-06-26
+
+- feat(xsd): emit `xs:anyAttribute` wildcard bags in generated contracts
+- ci(github): split fast hosted checks from the full local release gate
+- docs(roadmap): add `xs:anyAttribute` wildcard bag implementation plan
+- docs(roadmap): align 1.0 readiness docs with the 0.35.0 baseline
+- docs(release): clarify single-pass release preflight usage
+
 ## [0.35.0] - 2026-06-26
 
 - chore(test): organize repository temporary outputs under classified `tmp/` subfolders

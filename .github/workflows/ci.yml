@@ -6,19 +6,31 @@ on:
   pull_request:
 
 jobs:
-  build:
+  quick:
+    name: quick checks (Node 24)
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-    strategy:
-      matrix:
-        node-version: [24, 26]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run ci
+      - run: npm run ci:github
+
+  node-compat:
+    name: compatibility smoke (Node 26)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: npm run ci:github:node26

@@ -77,6 +77,7 @@ export type CompiledChoiceGroup = {
  * @property {string} [base] - Base type name for extension/inheritance
  * @property {Array<Object>} [localAttrs] - Attributes added in extension (not inherited)
  * @property {Array<Object>} [localElems] - Elements added in extension (not inherited)
+ * @property {Array<Object>} [localAttributeWildcards] - Attribute wildcards added in extension
  * @property {Array<Object>} [wildcards] - xs:any wildcard particles retained on the type
  * @property {Array<Object>} [attributeWildcards] - xs:anyAttribute wildcards retained on the type
  */
@@ -126,6 +127,7 @@ export type CompiledType = {
   // Retained xs:anyAttribute declarations, if any. Absent on types without
   // attribute wildcards so existing catalogs remain byte-for-byte identical.
   attributeWildcards?: CompiledAttributeWildcard[];
+  localAttributeWildcards?: CompiledAttributeWildcard[];
   // Retained xs:choice groups, if any. Absent on types without choices so
   // existing catalogs remain byte-for-byte identical.
   choiceGroups?: CompiledChoiceGroup[];
@@ -740,6 +742,38 @@ export function compileCatalog(
       }
       return merged;
     };
+    const mergeWildcards = (
+      into: CompiledWildcard[] | undefined,
+      list: CompiledWildcard[]
+    ): CompiledWildcard[] | undefined => {
+      if (list.length === 0) return into;
+      const merged = into ? [...into] : [];
+      const seen = new Set(merged.map((w) => JSON.stringify(w)));
+      for (const w of list) {
+        const key = JSON.stringify(w);
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push(w);
+        }
+      }
+      return merged;
+    };
+    const mergeAttributeWildcards = (
+      into: CompiledAttributeWildcard[] | undefined,
+      list: CompiledAttributeWildcard[]
+    ): CompiledAttributeWildcard[] | undefined => {
+      if (list.length === 0) return into;
+      const merged = into ? [...into] : [];
+      const seen = new Set(merged.map((w) => JSON.stringify(w)));
+      for (const w of list) {
+        const key = JSON.stringify(w);
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push(w);
+        }
+      }
+      return merged;
+    };
     const collectAttributes = (node: any): CompiledType["attrs"] => {
       const out: CompiledType["attrs"] = [];
       const attrs = getChildrenWithLocalName(node, "attribute");
@@ -971,12 +1005,8 @@ export function compileCatalog(
       const newChoiceGroups = collectChoiceGroups(outName, cnode);
       mergeAttrs(present.attrs, newAttrs);
       mergeElems(present.elems, newElems);
-      if (newWildcards.length > 0) {
-        present.wildcards = [...(present.wildcards ?? []), ...newWildcards];
-      }
-      if (newAttributeWildcards.length > 0) {
-        present.attributeWildcards = [...(present.attributeWildcards ?? []), ...newAttributeWildcards];
-      }
+      present.wildcards = mergeWildcards(present.wildcards, newWildcards);
+      present.attributeWildcards = mergeAttributeWildcards(present.attributeWildcards, newAttributeWildcards);
       const mergedChoiceGroups = mergeChoiceGroups(present.choiceGroups, newChoiceGroups);
       if (mergedChoiceGroups && mergedChoiceGroups.length > 0) {
         present.choiceGroups = mergedChoiceGroups;
@@ -1039,6 +1069,7 @@ export function compileCatalog(
           localElems,
           ...(localWildcards.length > 0 ? {wildcards: localWildcards} : {}),
           ...(attributeWildcards.length > 0 ? {attributeWildcards} : {}),
+          ...(localAttributeWildcards.length > 0 ? {localAttributeWildcards} : {}),
           ...(choiceGroups.length > 0 ? {choiceGroups} : {}),
           ...(localChoiceGroups.length > 0 ? {localChoiceGroups} : {}),
         };

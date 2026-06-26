@@ -121,7 +121,9 @@ Inspect `"scripts"` in `package.json` for the full list. Key commands:
 - `npm run test:integration`: integration tests only.
 - `npm run test:conformance`: focused WSDL capability conformance tests.
 - `npm run test:watch`: watch mode for development.
-- `npm run ci`: build, typecheck, all Vitest tests, and smoke pipeline.
+- `npm run ci`: full local and release gate with build, typecheck, package validation, docs validation, broad Vitest, and smoke pipeline.
+- `npm run ci:github`: GitHub push and PR quick gate for Node 24.
+- `npm run ci:github:node26`: GitHub current-line compatibility gate for Node 26.
 
 ### Mock client pattern
 
@@ -143,7 +145,7 @@ Use `docs/file-naming-and-path-organization.md` for reusable fixture paths and o
 
 When changing `test/conformance/registry.ts`, run `npm run docs:support-matrix` to regenerate the owned table in `docs/supported-patterns.md`. Run `npm run docs:support-matrix:check` or `npm run docs:validate` before finishing documentation work that changes capability rows.
 
-Run `npm run test:conformance` when changing conformance fixtures, registry rows, runner helpers, WSDL capability support claims, or generated client/OpenAPI/gateway/app/test behavior for capability rows. `npm test` and `npm run ci` must keep broad Vitest discovery so `test/conformance` stays covered. Release preflight verifies those script contracts with its `conformance-gate` step; do not add a duplicate full conformance run there unless CI stops running broad Vitest discovery.
+Run `npm run test:conformance` when changing conformance fixtures, registry rows, runner helpers, WSDL capability support claims, or generated client/OpenAPI/gateway/app/test behavior for capability rows. `npm test` and `npm run ci` must keep broad Vitest discovery so `test/conformance` stays covered. GitHub push and PR CI intentionally uses `npm run ci:github` instead of the full conformance gate; run the full local gate before release.
 
 ## Key Conventions
 
@@ -159,7 +161,7 @@ Run `npm run test:conformance` when changing conformance fixtures, registry rows
 ### Node and CLI entry
 
 - Node engine: read from `engines.node` in `package.json` (currently `>=24.0.0`).
-- Node CI policy: test the supported floor (`24`) and the current line (`26`); release workflows run on the supported floor.
+- Node CI policy: GitHub push and PR CI must test the supported floor (`24`) and the current line (`26`). Full release workflows run on the supported floor.
 - CLI binary mapping: read from `bin.wsdl-tsc` in `package.json` (currently `dist/cli.js`).
 
 ### Scripts
@@ -173,7 +175,9 @@ Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `bu
 - `smoke:*`: end-to-end CLI checks (compile, client, openapi, gateway, pipeline) using `examples/minimal/weather.wsdl`.
 - `skill:validate`: validate the standalone agent skill release artifact.
 - `package:validate`: validate the exact npm package dry-run contents.
-- `ci`: combine build, typecheck, agent skill validation, npm package validation, Vitest tests, and smoke pipeline.
+- `ci`: combine build, typecheck, agent skill validation, npm package validation, docs validation, broad Vitest tests including conformance, and smoke pipeline.
+- `ci:github`: quick GitHub Node 24 gate for push and PR feedback.
+- `ci:github:node26`: lightweight GitHub Node 26 compatibility gate.
 
 ### Terminal commands
 
@@ -233,7 +237,8 @@ Rules:
 - Do not use an already released package version for new post-release development commits.
 - A commit title target is not release readiness. A commit titled `Version: 0.30.3 ...` may still be normal post-release work while `package.json` remains at `0.30.2`.
 - During release prep, `package.json`, `package-lock.json`, changelog, and release notes must match the target.
-- Do not push or recommend a release tag until `npm run release:preflight -- v<version>` passes for that exact tag.
+- Do not push or recommend a release tag until `npm run release:preflight -- v<version>` passes once for that exact tag on a clean release commit.
+- Do not run release preflight both before and after the same release commit. If files change after preflight, commit the change and rerun preflight once.
 
 Examples:
 - After `0.25.2` is released, patch work uses `Version: 0.25.3 ...`.
@@ -280,11 +285,11 @@ Examples:
 7. In `CHANGELOG.md`: promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date) and start a fresh, empty `## [Unreleased]` section at the top.
 8. Run `npm run maint:deps` to update dependency minimums, lockfile entries, and app scaffold pins.
 9. Review the completed changelog section and convert the user-facing changes into `docs/releases/v<version>.md`.
-10. Run `npm run skill:validate` to verify the standalone agent skill source, manifest, extracted docs references, packaged links, and deterministic staging output.
-11. Run `npm run ci` to verify the release. This runs build, typecheck, agent skill validation, npm package validation, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
-12. Run `npm run skill:package -- v<version>` and confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` exists before drafting the release.
-13. Run `npm run release:preflight -- v<version>` and require it to pass before tagging.
-14. Commit the version, changelog, dependency, release notes, and agent skill changes before tagging `v<version>`.
+10. Run targeted checks needed for the changed files, such as `npm run docs:validate`, `npm run test:conformance`, `npm test`, or `npm run ci`.
+11. Commit the version, changelog, dependency, release notes, and source changes before tagging `v<version>`.
+12. Run `npm run release:preflight -- v<version>` once on the clean release commit. This runs CI, validates package contents, and packages the standalone agent skill ZIP.
+13. Confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` exists after preflight.
+14. If preflight fails because files need to change, fix the files, commit or amend the release commit, then rerun preflight once.
 
 ### Release notes
 
@@ -320,6 +325,7 @@ No special upgrade steps.
 - CI passed.
 - NPM package contents were validated.
 - Agent skill artifact was validated and packaged.
+- Release preflight passed against the target tag.
 
 ## Notes
 
@@ -361,8 +367,10 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 - Insert a new empty `## [Unreleased]` at the top.
 - Run `npm run maint:deps` to update dependency minimums and generated app scaffold pins.
 - Create `docs/releases/vX.Y.Z.md` from the completed changelog section.
-- Run `npm run skill:package -- vX.Y.Z` to create the standalone agent skill ZIP.
-- Run `npm run ci` to verify (build, typecheck, agent skill validation, npm package validation, Vitest tests, smoke pipeline).
+- Run targeted checks while editing release files.
+- Commit the release prep before release preflight.
+- Run `npm run release:preflight -- vX.Y.Z` once on the clean release commit.
+- Use the skill ZIP produced by release preflight; do not run a separate skill package step unless preflight is not being used.
 
 ### Editing code that affects CLI, OpenAPI, or gateway
 
@@ -383,6 +391,7 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 - Prefer pointers to the authoritative source over duplicating indexes across files.
 - The root README.md Documentation table is the single source of truth for the docs/ directory listing.
 - When adding, removing, or renaming documentation files, update only the root README.md Documentation table; other files should reference it rather than maintaining their own copies.
+- Store 1.0 implementation plans under `docs/roadmap/` as `v1.0-<topic>.md`; never create `docs/superpowers/`.
 - Docs updates to sections listed in `agent-skill/reference-manifest.json` automatically affect packaged fluid skill references during validation and release packaging.
 - Update evergreen files under `agent-skill/` only when stable agent workflow, architecture guidance, dependency rules, or generated-output safety rules change.
 - Each folder may have its own README.md (folder index) and AGENTS.md (agent instructions) per their respective specifications; these should point upward rather than duplicating content.

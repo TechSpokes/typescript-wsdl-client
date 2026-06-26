@@ -2,13 +2,41 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.34.0
+## Current: 1.0 Readiness After 0.35.0
 
-Focus: resolve discovered conformance deferrals, keep the public baseline support registry aligned, and run the release candidate gates.
+Focus: keep the expanded conformance baseline aligned, confirm the documented partial and terminal capability decisions, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 0.35.0
+
+- Expanded baseline WSDL and XSD conformance rows across compile, client, OpenAPI, gateway, generated-test, and app stages.
+- Raised the supported Node.js floor to Node 24 with Node 26 CI coverage.
+- Classified repository-owned temporary outputs under `tmp/` subfolders.
+
+### 0.34.0
+
+- Added release-preflight wiring checks for `test:conformance`, broad Vitest discovery, and CI conformance coverage.
+- Documented focused conformance verification in the testing guide.
+- Moved the conformance plan to release-candidate readiness.
+
+### 0.33.0
+
+- Added generated-test and app scaffold evidence for WSDL capability rows.
+- Fixed generated app scaffold `tsconfig` roots for sibling generated artifacts.
+- Fixed generated mock values for alias-backed request properties.
+
+### 0.32.0
+
+- Added generated gateway type-checking and Fastify runtime evidence for WSDL capability rows.
+- Documented `tmp/conformance/` as the generated conformance project boundary.
+
+### 0.31.0
+
+- Added generated client and OpenAPI evidence for WSDL capability rows.
+- Added diagnostics for abstract types, substitution groups, and MTOM/XOP attachment metadata.
 
 ### 0.30.0
 
@@ -93,7 +121,7 @@ The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/READM
 
 ### Public Contract Alignment
 
-Choice union mode and JSON array streaming are implemented. Remaining contract work is to keep docs, generated behavior, and examples aligned while the conformance framework turns coverage gaps into supported, diagnostic, or deferred statuses.
+Choice union mode and JSON array streaming are implemented. The conformance registry now gives baseline WSDL and XSD rows explicit supported, partial, diagnostic, or unsupported statuses. Remaining contract work is to keep docs, generated behavior, and examples aligned before the 1.0 release candidate.
 
 ### OpenAPI And Fastify Compatibility
 
@@ -105,11 +133,11 @@ Compatibility research is complete for released choice union schemas and JSON ar
 
 ### Capability Conformance
 
-The conformance registry now proves compile, client, OpenAPI, gateway runtime, generated-test, app, and documentation surfaces for the current supported and partial WSDL rows. `npm test` and `npm run ci` cover conformance through broad Vitest discovery, and release preflight verifies that the focused conformance command and CI discovery remain wired.
+The conformance registry now proves compile, client, OpenAPI, gateway runtime, generated-test, app, and documentation surfaces for the current supported and partial WSDL rows. Diagnostic and unsupported rows stop with executable compiler errors. `npm test` and `npm run ci` cover conformance through broad Vitest discovery, and release preflight verifies that the focused conformance command and CI discovery remain wired.
 
 ### WSDL Coverage
 
-WSDL coverage is the first conformance domain and the public baseline support registry. The current matrix includes the canonical weather document-literal baseline, reusable sequence and simple-type behavior, documentation propagation, SOAP binding selection, XSD imports, `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, deeply composed schemas, `xs:anyAttribute`, and MTOM/XOP attachments.
+WSDL coverage is the first conformance domain and the public baseline support registry. The current matrix includes the canonical weather document-literal baseline, reusable sequence and simple-type behavior, simple content attributes, documentation propagation, SOAP binding selection, XSD imports, choice union mode, `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, deeply composed schemas, `xs:anyAttribute`, and MTOM/XOP attachments.
 
 ### Gateway Integration
 

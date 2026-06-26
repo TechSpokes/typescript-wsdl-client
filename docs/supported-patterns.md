@@ -24,7 +24,7 @@ The rows below are backed by committed conformance fixtures under `test/conforma
 | `multi-binding-first-soap` | partial | Multiple bindings are deterministic: the first SOAP binding is selected and all ports are documented. |
 | `external-policy-reference` | partial | Inline policy hints are detected; external `PolicyReference` documents are not fetched or resolved. |
 | `deep-composition-sequence` | supported | Deep nested sequences compile into deterministic type metadata. |
-| `xs-anyattribute` | partial | `xs:anyAttribute` is retained as catalog metadata, but generated wildcard attributes are not emitted. |
+| `xs-anyattribute` | supported | `xs:anyAttribute` is retained as catalog metadata and emitted as an optional wildcard attribute bag named by the configured attributes key. |
 | `mtom-xop-attachment` | unsupported | MTOM/XOP binary attachment metadata is rejected because attachment transport is outside the 1.0 typed SOAP-to-REST contract. |
 <!-- support-matrix:end -->
 
@@ -49,6 +49,13 @@ These patterns are handled end-to-end: WSDL parsing, TypeScript type generation,
 - SOAP 1.1 and SOAP 1.2 binding detection
 - Streamable SOAP responses, opt-in per operation via `--stream-config` (ADR-002): client exposes `AsyncIterable<RecordType>`, gateway emits NDJSON or JSON array streams with backpressure, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
 - `xs:any` wildcard particles retained on compiled types for stream-candidate detection and companion-catalog shape resolution
+- `xs:anyAttribute` wildcard attributes emitted as an optional configured attribute bag, defaulting to `$attributes`
+
+### xs:anyAttribute
+
+Attribute wildcards are retained as catalog metadata and emitted as an optional wildcard attribute bag on the enclosing generated type. The bag property uses the configured client attributes key, defaulting to `$attributes`, and maps arbitrary wildcard attribute names to string values.
+
+Known XML attributes remain flattened as peer properties. Wildcard attributes stay inside the bag so unknown names do not collide with child elements or known attributes.
 
 ### Named simple types and same-name elements
 
@@ -96,15 +103,11 @@ List types with an `itemType` attribute are detected and generate array types (`
 
 Union types with `memberTypes` or inline simple type members are detected and generate TypeScript alias unions. Mixed primitive and literal unions generate OpenAPI `oneOf` schemas.
 
-### xs:anyAttribute
-
-Attribute wildcards are retained as catalog metadata on the enclosing compiled type. They are not emitted as typed attribute properties in generated TypeScript or OpenAPI schemas.
-
 ## Not Yet Supported
 
 These features are not currently handled. Contributions are welcome.
 
-- Full `xs:any` serialization: arbitrary wildcard content is not emitted as a typed contract
+- Full `xs:any` element serialization: arbitrary wildcard element content is not emitted as a typed contract
 - Abstract types: rejected with a diagnostic; no polymorphic instance handling
 - Substitution groups: rejected with a diagnostic; no polymorphic element expansion
 - MTOM/XOP binary attachments: rejected with a diagnostic; no binary part handling

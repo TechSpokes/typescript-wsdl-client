@@ -255,6 +255,64 @@ describe("generateMockData", () => {
     expect(typeof result.Active).toBe("boolean");
   });
 
+  it("includes the default wildcard attribute bag for types with xs:anyAttribute", () => {
+    const catalog: CatalogForMocks = {
+      options: {
+        attributesKey: "$attributes",
+      },
+      meta: {
+        childType: {
+          AnyAttributeRequest: {value: "string"},
+        },
+        propMeta: {},
+      },
+      types: [
+        {
+          name: "AnyAttributeRequest",
+          attrs: [],
+          elems: [{name: "value", max: 1}],
+          attributeWildcards: [{namespace: "##other", processContents: "lax"}],
+        },
+      ],
+    };
+    const result = generateMockData("AnyAttributeRequest", catalog);
+    expect(result).toMatchObject({
+      value: "sample",
+      $attributes: {
+        "extra:trace": "sample",
+      },
+    });
+  });
+
+  it("uses the configured attributesKey for wildcard attribute bags", () => {
+    const catalog: CatalogForMocks = {
+      options: {
+        attributesKey: "@@attrs",
+      },
+      meta: {
+        childType: {
+          AnyAttributeRequest: {value: "string"},
+        },
+        propMeta: {},
+      },
+      types: [
+        {
+          name: "AnyAttributeRequest",
+          attrs: [],
+          elems: [{name: "value", max: 1}],
+          attributeWildcards: [{namespace: "##any"}],
+        },
+      ],
+    };
+    const result = generateMockData("AnyAttributeRequest", catalog);
+    expect(result).toMatchObject({
+      value: "sample",
+      "@@attrs": {
+        "extra:trace": "sample",
+      },
+    });
+  });
+
   it("keeps all choice branch fields when all-optional mode is active", () => {
     const catalog = createSearchChoiceCatalog("all-optional");
 

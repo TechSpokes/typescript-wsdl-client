@@ -15,6 +15,7 @@
 import fs from "node:fs";
 import type {CompiledCatalog, CompiledChoiceBranch, CompiledChoiceGroup, CompiledType} from "../compiler/schemaCompiler.js";
 import {error} from "../util/cli.js";
+import {hasAttributeWildcards, wildcardAttributeBagName} from "../util/attributeWildcards.js";
 
 /**
  * Generates TypeScript interfaces and type aliases from a compiled WSDL catalog
@@ -70,6 +71,7 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
   const emitPropName = (name: string) => (isValidIdent(name) ? name : JSON.stringify(name));
   type ElementParticle = CompiledType["elems"][number] | CompiledChoiceBranch;
   const isChoiceUnionMode = compiled.options.choice === "union";
+  const wildcardBagName = wildcardAttributeBagName(compiled.options);
   const elementType = (e: ElementParticle): string => {
     const isArray = e.max === "unbounded" || (e.max > 1);
     return `${e.tsType}${isArray ? "[]" : ""}`;
@@ -125,6 +127,15 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
     }
     lines.push(`${indent}${emitPropName(a.name)}${opt}: ${a.tsType};`);
   };
+  const emitWildcardAttributeBagProperty = (indent: string) => {
+    const annObj = {
+      kind: "attributeWildcard" as const,
+      type: "xs:anyAttribute",
+    };
+    lines.push("");
+    lines.push(`${indent}/** @xsd ${JSON.stringify(annObj)} */`);
+    lines.push(`${indent}${emitPropName(wildcardBagName)}?: Record<string, string>;`);
+  };
   const isSyntheticAliasSelfWrapper = (t: CompiledType): boolean => {
     const elems = t.elems || [];
     return aliasNames.has(t.name) &&
@@ -179,6 +190,9 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
 
     // Prepare lists: for complexContent extension use only local additions
     const attrsToEmit: CompiledType["attrs"] = complexBase ? ((t as any).localAttrs || []) : (t.attrs || []);
+    const wildcardCarrier = complexBase
+      ? {attributeWildcards: t.localAttributeWildcards}
+      : {attributeWildcards: t.attributeWildcards};
     // Elements list similar
     let elementsToEmit: CompiledType["elems"] = complexBase ? ((t as any).localElems || []) : (t.elems || []);
     // SimpleContent extension special handling drops synthetic $value
@@ -212,6 +226,9 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
       }
       for (const a of attrsToEmit) {
         emitAttributeProperty("  ", a);
+      }
+      if (hasAttributeWildcards(wildcardCarrier)) {
+        emitWildcardAttributeBagProperty("  ");
       }
 
       if (0 < baseElements.length) {
@@ -276,6 +293,9 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
     }
     for (const a of attrsToEmit) {
       emitAttributeProperty("  ", a);
+    }
+    if (hasAttributeWildcards(wildcardCarrier)) {
+      emitWildcardAttributeBagProperty("  ");
     }
 
     //
