@@ -14,12 +14,13 @@ describe("WSDL capability conformance registry", () => {
 
       expect(capability.title).not.toEqual("");
       expect(capability.featureTags.length).toBeGreaterThan(0);
-      expect(capability.fixture).toEqual(`${capability.id}/${capability.id}.wsdl`);
+      expect(capability.fixture).toMatch(/^[a-z0-9-]+(?:\/[a-z0-9-]+)+\.wsdl$/);
+      expect(capability.fixture).not.toContain("/service.wsdl");
       expect(capability.authority).not.toEqual("");
       expect(capability.provenance).not.toEqual("");
       expect(capability.license).not.toEqual("");
       expect(capability.fixtureKind).not.toEqual("");
-      expect(fixturePathFor(capability).replace(/\\/g, "/")).toContain(`fixtures/${capability.id}/${capability.id}.wsdl`);
+      expect(fixturePathFor(capability).replace(/\\/g, "/")).toContain(`fixtures/${capability.fixture}`);
     }
   });
 

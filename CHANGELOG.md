@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.30.2] - 2026-06-26
+
+- docs(conventions): document taxonomy-based fixture path organization
 - feat(compiler): retain `xs:anyAttribute` wildcard metadata
 - test(conformance): add Phase 1 capability registry and fixtures
 

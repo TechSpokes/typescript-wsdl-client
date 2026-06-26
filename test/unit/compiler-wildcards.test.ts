@@ -7,6 +7,8 @@ import {resolveCompilerOptions} from "../../src/config.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
 import {parseStreamConfig} from "../../src";
 import {WsdlCompilationError} from "../../src/util/errors.js";
+import {capabilities} from "../conformance/registry.js";
+import {fixturePathFor} from "../conformance/runner.js";
 
 const tmpRoot = mkdtempSync(join(tmpdir(), "wsdl-wildcards-"));
 
@@ -57,6 +59,10 @@ function buildWsdl(schemaBody: string): string {
 async function compileFromFixture(wsdl: string, name: string): Promise<CompiledCatalog> {
   const wsdlPath = join(tmpRoot, `${name}.wsdl`);
   writeFileSync(wsdlPath, wsdl, "utf8");
+  return compileFromPath(wsdlPath);
+}
+
+async function compileFromPath(wsdlPath: string): Promise<CompiledCatalog> {
   const wsdlCatalog = await loadWsdl(wsdlPath);
   return compileCatalog(
     wsdlCatalog,
@@ -122,24 +128,14 @@ describe("compiler: wildcard retention", () => {
   });
 
   it("retains xs:anyAttribute wildcard metadata on the enclosing complex type", async () => {
-    const schema = `
-      <xs:element name="StreamRequest">
-        <xs:complexType><xs:sequence><xs:element name="Q" type="xs:string"/></xs:sequence></xs:complexType>
-      </xs:element>
-      <xs:element name="StreamResponse">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="Value" type="xs:string"/>
-          </xs:sequence>
-          <xs:anyAttribute namespace="##other" processContents="lax"/>
-        </xs:complexType>
-      </xs:element>`;
-    const compiled = await compileFromFixture(buildWsdl(schema), "any-attribute");
-    const streamResponse = compiled.types.find((t) => t.name === "StreamResponse");
+    const capability = capabilities.find(entry => entry.id === "xs-anyattribute");
+    expect(capability, "xs-anyattribute conformance case must exist").toBeTruthy();
+    const compiled = await compileFromPath(fixturePathFor(capability!));
+    const request = compiled.types.find((t) => t.name === "AnyAttributeRequest");
 
-    expect(streamResponse, "StreamResponse type must be compiled").toBeTruthy();
-    expect(streamResponse!.attrs).toEqual([]);
-    expect((streamResponse as any).attributeWildcards).toEqual([
+    expect(request, "AnyAttributeRequest type must be compiled").toBeTruthy();
+    expect(request!.attrs).toEqual([]);
+    expect(request!.attributeWildcards).toEqual([
       {namespace: "##other", processContents: "lax"},
     ]);
   });

@@ -128,6 +128,10 @@ When modifying generators, run snapshot tests and update baselines with `npx vit
 
 All tests and smoke scripts use `examples/minimal/weather.wsdl` as the canonical test fixture.
 
+### Fixture and file organization
+
+Use `docs/file-naming-and-path-organization.md` for reusable fixture paths and other repository file naming decisions. Prefer committed XML fixture files over inline WSDL or XSD strings when a test represents a reusable conformance case.
+
 ## Key Conventions
 
 - String-first primitive mapping: `xs:long` and `xs:decimal` default to `string` to prevent precision loss.
@@ -161,6 +165,9 @@ Do not hardcode script lists here. Inspect `"scripts"` in `package.json` for `bu
 
 - Use one command per line, no `&&` chaining (PowerShell-friendly).
 - Prefer `npm run <script>` and `npx wsdl-tsc` patterns consistent with README and `package.json`.
+- Use `bash` fences for portable command examples in docs and GitHub workflow notes.
+- Use `powershell` fences only for commands that are intentionally Windows-specific.
+- Prefer `rg` examples for portable file retrieval; write path regexes to tolerate `/` and `\` separators when possible.
 
 ### IDE MCP usage
 
