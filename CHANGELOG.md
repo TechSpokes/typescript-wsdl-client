@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.30.3] - 2026-06-26
+
+- docs(agent): require release preflight before pushing release tags
 - feat(compiler): support simple `xs:union` aliases
 - test(conformance): generate the public support matrix from the capability registry
 

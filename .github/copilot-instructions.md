@@ -221,7 +221,9 @@ Rules:
 - For a requested major release train, use the next major after the latest released version.
 - If the user gives an explicit target version, verify it matches the requested release train.
 - Do not use an already released package version for new post-release development commits.
+- A commit title target is not release readiness. A commit titled `Version: 0.30.3 ...` may still be normal post-release work while `package.json` remains at `0.30.2`.
 - During release prep, `package.json`, `package-lock.json`, changelog, and release notes must match the target.
+- Do not push or recommend a release tag until `npm run release:preflight -- v<version>` passes for that exact tag.
 
 Examples:
 - After `0.25.2` is released, patch work uses `Version: 0.25.3 ...`.
@@ -271,7 +273,8 @@ Examples:
 10. Run `npm run skill:validate` to verify the standalone agent skill source, manifest, extracted docs references, packaged links, and deterministic staging output.
 11. Run `npm run ci` to verify the release. This runs build, typecheck, agent skill validation, npm package validation, all Vitest tests (unit, snapshot, integration), and the smoke pipeline in one pass. All steps must pass before committing the release.
 12. Run `npm run skill:package -- v<version>` and confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` exists before drafting the release.
-13. Commit the version, changelog, dependency, release notes, and agent skill changes before tagging `v<version>`.
+13. Run `npm run release:preflight -- v<version>` and require it to pass before tagging.
+14. Commit the version, changelog, dependency, release notes, and agent skill changes before tagging `v<version>`.
 
 ### Release notes
 

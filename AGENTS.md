@@ -17,10 +17,12 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
 - Commit messages must follow: `Version: <release-target-version> <type>(scope): <imperative summary>`.
 - Post-release patch work uses the next patch version in commit titles even before `package.json` is bumped.
+- A commit title target such as `Version: 0.30.3` does not mean the repository is ready for tag `v0.30.3`.
 - Every release commit must include the matching `docs/releases/vX.Y.Z.md` release notes file.
 - Node.js >= 20.0.0, ESM-only (`type: "module"`), strict TypeScript.
 - CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--init-app`.
 - On release, verify `package.json` and `package-lock.json` match the target version before tagging.
+- Before pushing a release tag, run `npm run release:preflight -- vX.Y.Z`; do not tag if it fails.
 - On release, bump hardcoded dep versions in `src/app/generateApp.ts` (`generatePackageJson`) to current latest.
 - The `soap` package is a runtime dependency; `wsdl-tsc` is a devDependency for consumers.
 - IDE MCP tools such as PhpStorm MCP are optional accelerators for indexed search, inspections, run configurations, and symbol refactors; keep terminal commands as the portable fallback for contributors without the local IDE setup.
