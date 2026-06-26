@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- chore(test): organize repository temporary outputs under classified `tmp/` subfolders
+- chore(node): raise the supported engine floor to Node 24 with Node 26 CI coverage
+- test(conformance): add baseline WSDL and XSD support evidence across generated stages
+
 ## [0.34.0] - 2026-06-26
 
 - test(release): add a preflight conformance gate wiring check

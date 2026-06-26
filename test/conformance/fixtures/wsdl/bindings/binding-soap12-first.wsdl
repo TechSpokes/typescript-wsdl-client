@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+  xmlns:tns="urn:conformance:binding-soap12-first"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:binding-soap12-first">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:binding-soap12-first" elementFormDefault="qualified">
+      <xs:element name="Ping">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="value" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PingResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="value" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="PingInput">
+    <wsdl:part name="parameters" element="tns:Ping"/>
+  </wsdl:message>
+  <wsdl:message name="PingOutput">
+    <wsdl:part name="parameters" element="tns:PingResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="PingPortType">
+    <wsdl:operation name="Ping">
+      <wsdl:input message="tns:PingInput"/>
+      <wsdl:output message="tns:PingOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PingSoap12" type="tns:PingPortType">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Ping">
+      <soap12:operation soapAction="urn:soap12-first" style="document"/>
+      <wsdl:input><soap12:body use="literal"/></wsdl:input>
+      <wsdl:output><soap12:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PingSoap11" type="tns:PingPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Ping">
+      <soap:operation soapAction="urn:soap11-second" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PingService">
+    <wsdl:port name="PingSoap12Port" binding="tns:PingSoap12">
+      <soap12:address location="http://example.com/ping12"/>
+    </wsdl:port>
+    <wsdl:port name="PingSoap11Port" binding="tns:PingSoap11">
+      <soap:address location="http://example.com/ping11"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

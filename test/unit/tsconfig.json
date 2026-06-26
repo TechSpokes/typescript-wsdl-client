@@ -8,11 +8,14 @@
   },
   "include": [
     "app-security.test.ts",
+    "conformance-fixture-policy.test.ts",
     "docs-validator.test.ts",
     "json-array.test.ts",
     "mock-data.test.ts",
     "openapi-stream.test.ts",
     "release-preflight-utils.test.ts",
+    "test-generators-scalar-payload.test.ts",
+    "tmp-workspace.test.ts",
     "../../scripts/validate-docs.d.mts",
     "../../scripts/lib/release-preflight-utils.d.mts"
   ]

@@ -13,6 +13,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 ## Must-follow rules
 
 - Do not edit files in generated output directories (client/, gateway/, app/); regenerate from WSDL sources instead.
+- Keep repository-owned temporary outputs classified under `tmp/`: smoke in `tmp/smoke/`, npm cache in `tmp/cache/npm/`, preflight examples in `tmp/preflight/examples/`, conformance in `tmp/conformance/`, and generated-test spikes in `tmp/test-generation/`.
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
 - Run `npm run test:conformance` for WSDL capability fixture, registry, runner, support-matrix, or generated artifact evidence changes.
@@ -20,7 +21,8 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Post-release patch work uses the next patch version in commit titles even before `package.json` is bumped.
 - A commit title target such as `Version: 0.30.3` does not mean the repository is ready for tag `v0.30.3`.
 - Every release commit must include the matching `docs/releases/vX.Y.Z.md` release notes file.
-- Node.js >= 20.0.0, ESM-only (`type: "module"`), strict TypeScript.
+- Node.js >= 24.0.0, ESM-only (`type: "module"`), strict TypeScript.
+- CI must test Node 24 as the supported floor and Node 26 as the current line.
 - CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--init-app`.
 - On release, verify `package.json` and `package-lock.json` match the target version before tagging.
 - Before pushing a release tag, run `npm run release:preflight -- vX.Y.Z`; do not tag if it fails.

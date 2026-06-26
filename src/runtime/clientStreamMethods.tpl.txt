@@ -163,7 +163,7 @@
   }
 
   /**
-   * Iterate an uploaded web ReadableStream as Uint8Array chunks. Node 20+
+   * Iterate an uploaded web ReadableStream as Uint8Array chunks. Node 24+
    * ReadableStream implements Symbol.asyncIterator natively; this helper
    * normalizes the types so TypeScript can drive it through \`for await\`.
    */

@@ -4,6 +4,16 @@ import * as releasePreflightUtils from "../../scripts/lib/release-preflight-util
 const { findDatedChangelogSection } = releasePreflightUtils;
 
 type ConformanceGateVerifier = (scripts: Record<string, string>) => string[];
+type NodeReleaseGateVerifier = (inputs: {
+  packageJson: {
+    engines?: {
+      node?: string;
+    };
+  };
+  ciWorkflow: string;
+  releasePackageWorkflow: string;
+  releaseDraftWorkflow: string;
+}) => string[];
 
 function verifyConformanceGateScripts(scripts: Record<string, string>): string[] {
   const verifier = (releasePreflightUtils as typeof releasePreflightUtils & {
@@ -12,6 +22,15 @@ function verifyConformanceGateScripts(scripts: Record<string, string>): string[]
 
   expect(verifier).toBeTypeOf("function");
   return verifier?.(scripts) ?? [];
+}
+
+function verifyNodeReleaseGate(inputs: Parameters<NodeReleaseGateVerifier>[0]): string[] {
+  const verifier = (releasePreflightUtils as typeof releasePreflightUtils & {
+    verifyNodeReleaseGate?: NodeReleaseGateVerifier;
+  }).verifyNodeReleaseGate;
+
+  expect(verifier).toBeTypeOf("function");
+  return verifier?.(inputs) ?? [];
 }
 
 describe("findDatedChangelogSection", () => {
@@ -66,5 +85,76 @@ describe("verifyConformanceGateScripts", () => {
     });
 
     expect(errors).toContain("package.json scripts.ci must run npm test, npm run test, or a broad vitest run so conformance is release-covered.");
+  });
+});
+
+describe("verifyNodeReleaseGate", () => {
+  const baseInputs = {
+    packageJson: {
+      engines: {
+        node: ">=24.0.0",
+      },
+    },
+    ciWorkflow: `
+      strategy:
+        matrix:
+          node-version: [24, 26]
+    `,
+    releasePackageWorkflow: `
+      env:
+        NODE_VERSION: 24
+    `,
+    releaseDraftWorkflow: `
+      with:
+        node-version: 24
+    `,
+  };
+
+  it("accepts the declared Node floor, current-line CI coverage, and release floor", () => {
+    expect(verifyNodeReleaseGate(baseInputs)).toEqual([]);
+  });
+
+  it("rejects a package engine below the supported Node floor", () => {
+    const errors = verifyNodeReleaseGate({
+      ...baseInputs,
+      packageJson: {
+        engines: {
+          node: ">=20.0.0",
+        },
+      },
+    });
+
+    expect(errors).toContain("package.json engines.node must declare Node >=24.0.0.");
+  });
+
+  it("rejects CI matrices that omit the supported Node floor", () => {
+    const errors = verifyNodeReleaseGate({
+      ...baseInputs,
+      ciWorkflow: "node-version: [26]",
+    });
+
+    expect(errors).toContain("CI workflow must test the supported Node floor 24.");
+  });
+
+  it("rejects CI matrices that omit the current Node line", () => {
+    const errors = verifyNodeReleaseGate({
+      ...baseInputs,
+      ciWorkflow: "node-version: [24]",
+    });
+
+    expect(errors).toContain("CI workflow must test the current Node line 26.");
+  });
+
+  it("rejects release workflows that run below the supported Node floor", () => {
+    const errors = verifyNodeReleaseGate({
+      ...baseInputs,
+      releasePackageWorkflow: "NODE_VERSION: 20",
+      releaseDraftWorkflow: "node-version: 20",
+    });
+
+    expect(errors).toEqual([
+      "Release package workflow must run on Node 24.",
+      "Draft release workflow must run on Node 24.",
+    ]);
   });
 });

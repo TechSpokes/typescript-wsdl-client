@@ -10,7 +10,7 @@ export const ROOT = path.resolve(__dirname, "..", "..");
 export const PACKAGE_JSON = path.join(ROOT, "package.json");
 export const PACKAGE_LOCK_JSON = path.join(ROOT, "package-lock.json");
 export const APP_GENERATOR = path.join(ROOT, "src", "app", "generateApp.ts");
-export const GENERATED_APP_PACKAGE = path.join(ROOT, "tmp", "app", "package.json");
+export const GENERATED_APP_PACKAGE = path.join(ROOT, "tmp", "smoke", "app", "package.json");
 
 export const APP_DEPENDENCIES = {
   dependencies: ["fastify", "fastify-plugin", "saxes", "soap"],
@@ -36,7 +36,7 @@ export function npmEnv() {
   return {
     ...process.env,
     NODE_OPTIONS: nodeOptions,
-    npm_config_cache: path.join(ROOT, "tmp", "npm-cache"),
+    npm_config_cache: path.join(ROOT, "tmp", "cache", "npm"),
   };
 }
 

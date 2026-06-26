@@ -1,4 +1,6 @@
+import {existsSync} from "node:fs";
 import {describe, expect, test} from "vitest";
+import {fixturesRoot, isWithinRoot, validateAllConformanceFixtureGraphs} from "./fixturePolicy.js";
 import {capabilities} from "./registry.js";
 import {fixturePathFor, runAppCase, runClientCase, runCompileCase, runGatewayCase, runGeneratedTestsCase, runOpenApiCase} from "./runner.js";
 
@@ -28,8 +30,13 @@ describe("WSDL capability conformance registry", () => {
       expect(capability.provenance).not.toEqual("");
       expect(capability.license).not.toEqual("");
       expect(capability.fixtureKind).not.toEqual("");
-      expect(fixturePathFor(capability).replace(/\\/g, "/")).toContain(`fixtures/${capability.fixture}`);
+      expect(isWithinRoot(fixturesRoot, fixturePathFor(capability)), capability.id).toBe(true);
+      expect(existsSync(fixturePathFor(capability)), capability.id).toBe(true);
     }
+  });
+
+  test("keeps schema imports and includes inside conformance fixtures", () => {
+    expect(() => validateAllConformanceFixtureGraphs()).not.toThrow();
   });
 
   for (const capability of runnableCapabilities) {

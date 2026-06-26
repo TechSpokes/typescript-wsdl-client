@@ -31,6 +31,22 @@ For the full CI pipeline including smoke tests:
 npm run ci
 ```
 
+## Node Support Policy
+
+The package supports Node.js >= 24.0.0. CI runs the complete project check on Node 24 and Node 26 so the supported floor and current Node line are both covered.
+
+## Temporary Workspaces
+
+Repository test and release automation keeps disposable output classified under `tmp/`:
+
+- `tmp/smoke/`: smoke-script client, OpenAPI, gateway, app, and catalog output
+- `tmp/cache/npm/`: local npm cache used by package and dependency checks
+- `tmp/preflight/examples/`: regenerated examples used by release preflight
+- `tmp/conformance/`: conformance mini-projects that need repository-local module resolution
+- `tmp/test-generation/`: generated-test integration spikes
+
+Keep new repository-owned temporary writers under the closest existing subfolder. Public CLI examples may still use simple `tmp/...` paths when those examples are clearer for users.
+
 ## Unit Tests
 
 Unit tests cover pure functions with no I/O or side effects:
@@ -179,6 +195,8 @@ npm run test:conformance
 ```
 
 `npm test` includes the conformance suite through normal Vitest discovery. `npm run ci` and release preflight cover conformance through that broad test command, while release preflight also checks that the focused command and broad CI discovery remain wired.
+
+Examples under `examples/` are consumer-facing demos and smoke-test inputs. Reusable WSDL and XSD behavior that represents a public support claim belongs in `test/conformance/fixtures/` with a matching registry row.
 
 ## Known Issues
 

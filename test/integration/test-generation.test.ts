@@ -19,6 +19,7 @@ import {buildChoiceWsdl, buildSearchChoiceSchema, SEARCH_CHOICE_SCHEMA} from "..
 import {parseStreamConfig, runGenerationPipeline} from "../../src/index.js";
 
 const PROJECT_ROOT = join(import.meta.dirname, "..", "..");
+const TEST_GENERATION_TMP = join(PROJECT_ROOT, "tmp", "test-generation");
 const WSDL = join(PROJECT_ROOT, "examples", "minimal", "weather.wsdl");
 
 function runGeneratedVitest(configPath: string): any {
@@ -46,9 +47,8 @@ describe("test generation pipeline", () => {
   beforeAll(async () => {
     // Use a project-local tmp/ directory so ESM module resolution finds
     // fastify, vitest, etc. from the project's node_modules.
-    const tmpBase = join(PROJECT_ROOT, "tmp");
-    mkdirSync(tmpBase, { recursive: true });
-    outDir = mkdtempSync(join(tmpBase, "testgen-"));
+    mkdirSync(TEST_GENERATION_TMP, { recursive: true });
+    outDir = mkdtempSync(join(TEST_GENERATION_TMP, "testgen-"));
     testDir = join(outDir, "tests");
 
     await runGenerationPipeline({
@@ -212,9 +212,8 @@ describe("test generation pipeline", () => {
 
 describe("choice union test generation", () => {
   it("emits valid choice fixtures and invalid multi-branch validation coverage", async () => {
-    const tmpBase = join(PROJECT_ROOT, "tmp");
-    mkdirSync(tmpBase, {recursive: true});
-    const outDir = mkdtempSync(join(tmpBase, "choice-testgen-"));
+    mkdirSync(TEST_GENERATION_TMP, {recursive: true});
+    const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "choice-testgen-"));
     const testDir = join(outDir, "tests");
     const wsdlPath = join(outDir, "choice.wsdl");
     writeFileSync(
@@ -259,9 +258,8 @@ describe("choice union test generation", () => {
   }, 60_000);
 
   it("emits missing-branch validation coverage for required choices", async () => {
-    const tmpBase = join(PROJECT_ROOT, "tmp");
-    mkdirSync(tmpBase, {recursive: true});
-    const outDir = mkdtempSync(join(tmpBase, "required-choice-testgen-"));
+    mkdirSync(TEST_GENERATION_TMP, {recursive: true});
+    const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "required-choice-testgen-"));
     const testDir = join(outDir, "tests");
     const wsdlPath = join(outDir, "choice.wsdl");
     writeFileSync(
@@ -303,9 +301,8 @@ describe("choice union test generation", () => {
 
 describe("JSON array stream test generation", () => {
   it("emits JSON array route handlers and generated route tests", async () => {
-    const tmpBase = join(PROJECT_ROOT, "tmp");
-    mkdirSync(tmpBase, {recursive: true});
-    const outDir = mkdtempSync(join(tmpBase, "json-array-stream-testgen-"));
+    mkdirSync(TEST_GENERATION_TMP, {recursive: true});
+    const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "json-array-stream-testgen-"));
     const testDir = join(outDir, "tests");
 
     await runGenerationPipeline({

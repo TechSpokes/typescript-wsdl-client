@@ -11,8 +11,8 @@
     }
   },
   "include": [
-    "tmp/**/*.ts",
-    "tmp/**/*.tsx",
+    "tmp/smoke/**/*.ts",
+    "tmp/smoke/**/*.tsx",
     "src/types/soap.d.ts"
   ]
 }

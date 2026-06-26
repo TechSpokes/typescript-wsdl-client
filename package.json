@@ -35,7 +35,7 @@
   ],
   "type": "module",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
   "bin": {
     "wsdl-tsc": "dist/cli.js"
@@ -74,12 +74,12 @@
     "test:watch": "vitest",
     "prepublishOnly": "npm run clean && npm run build && npm run package:validate",
     "smoke:reset": "npm run clean:tmp",
-    "smoke:compile": "npm run smoke:reset && tsx src/cli.ts compile --wsdl-source examples/minimal/weather.wsdl --catalog-file tmp/catalog.json",
-    "smoke:client": "npm run smoke:reset && tsx src/cli.ts client --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client && tsc -p tsconfig.smoke.json",
-    "smoke:openapi": "npm run smoke:reset && tsx src/cli.ts openapi --wsdl-source examples/minimal/weather.wsdl --openapi-file tmp/openapi.json --openapi-format json && tsc -p tsconfig.smoke.json",
-    "smoke:gateway": "npm run smoke:reset && tsx src/cli.ts client --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client && tsx src/cli.ts openapi --catalog-file tmp/client/catalog.json --openapi-file tmp/openapi.json --openapi-format json && tsx src/cli.ts gateway --openapi-file tmp/openapi.json --client-dir tmp/client --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 && tsc -p tsconfig.smoke.json",
-    "smoke:pipeline": "npm run smoke:reset && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --openapi-file tmp/openapi.json --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --init-app && tsc -p tsconfig.smoke.json",
-    "smoke:app": "npm run smoke:reset && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/client --openapi-file tmp/openapi.json --gateway-dir tmp/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --openapi-servers https://example.com/api && tsx src/cli.ts app --client-dir tmp/client --gateway-dir tmp/gateway --openapi-file tmp/openapi.json --app-dir tmp/app --port 8080 && tsc -p tsconfig.smoke.json",
+    "smoke:compile": "npm run smoke:reset && tsx src/cli.ts compile --wsdl-source examples/minimal/weather.wsdl --catalog-file tmp/smoke/catalog.json",
+    "smoke:client": "npm run smoke:reset && tsx src/cli.ts client --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/smoke/client && tsc -p tsconfig.smoke.json",
+    "smoke:openapi": "npm run smoke:reset && tsx src/cli.ts openapi --wsdl-source examples/minimal/weather.wsdl --openapi-file tmp/smoke/openapi.json --openapi-format json && tsc -p tsconfig.smoke.json",
+    "smoke:gateway": "npm run smoke:reset && tsx src/cli.ts client --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/smoke/client && tsx src/cli.ts openapi --catalog-file tmp/smoke/client/catalog.json --openapi-file tmp/smoke/openapi.json --openapi-format json && tsx src/cli.ts gateway --openapi-file tmp/smoke/openapi.json --client-dir tmp/smoke/client --gateway-dir tmp/smoke/gateway --gateway-service-name weather --gateway-version-prefix v1 && tsc -p tsconfig.smoke.json",
+    "smoke:pipeline": "npm run smoke:reset && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/smoke/client --openapi-file tmp/smoke/openapi.json --gateway-dir tmp/smoke/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --init-app && tsc -p tsconfig.smoke.json",
+    "smoke:app": "npm run smoke:reset && tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir tmp/smoke/client --openapi-file tmp/smoke/openapi.json --gateway-dir tmp/smoke/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json --openapi-servers https://example.com/api && tsx src/cli.ts app --client-dir tmp/smoke/client --gateway-dir tmp/smoke/gateway --openapi-file tmp/smoke/openapi.json --app-dir tmp/smoke/app --port 8080 && tsc -p tsconfig.smoke.json",
     "maint:deps": "node scripts/maint-deps.mjs",
     "docs:support-matrix": "tsx scripts/generate-support-matrix.ts",
     "docs:support-matrix:check": "tsx scripts/generate-support-matrix.ts --check",

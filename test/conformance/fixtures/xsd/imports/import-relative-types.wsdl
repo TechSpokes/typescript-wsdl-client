@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:import-relative-types"
+  xmlns:types="urn:conformance:import-relative-types:types"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:import-relative-types">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:import-relative-types" elementFormDefault="qualified">
+      <xs:import namespace="urn:conformance:import-relative-types:types" schemaLocation="import-relative-types-types.xsd"/>
+      <xs:element name="SubmitImported">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="payload" type="types:ImportedPayload"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SubmitImportedResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="accepted" type="xs:boolean"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="SubmitImportedInput">
+    <wsdl:part name="parameters" element="tns:SubmitImported"/>
+  </wsdl:message>
+  <wsdl:message name="SubmitImportedOutput">
+    <wsdl:part name="parameters" element="tns:SubmitImportedResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="ImportPortType">
+    <wsdl:operation name="SubmitImported">
+      <wsdl:input message="tns:SubmitImportedInput"/>
+      <wsdl:output message="tns:SubmitImportedOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ImportBinding" type="tns:ImportPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="SubmitImported">
+      <soap:operation soapAction="urn:SubmitImported" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ImportService">
+    <wsdl:port name="ImportPort" binding="tns:ImportBinding">
+      <soap:address location="http://example.com/import"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

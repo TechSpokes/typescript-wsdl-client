@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:type-simple-alias-same-name"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:type-simple-alias-same-name">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:type-simple-alias-same-name" elementFormDefault="qualified">
+      <xs:simpleType name="AliasCode">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Primary"/>
+          <xs:enumeration value="Secondary"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="AliasCode" type="tns:AliasCode"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="EchoAliasInput">
+    <wsdl:part name="parameters" element="tns:AliasCode"/>
+  </wsdl:message>
+  <wsdl:message name="EchoAliasOutput">
+    <wsdl:part name="parameters" element="tns:AliasCode"/>
+  </wsdl:message>
+  <wsdl:portType name="AliasPortType">
+    <wsdl:operation name="EchoAlias">
+      <wsdl:input message="tns:EchoAliasInput"/>
+      <wsdl:output message="tns:EchoAliasOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AliasBinding" type="tns:AliasPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="EchoAlias">
+      <soap:operation soapAction="urn:EchoAlias" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AliasService">
+    <wsdl:port name="AliasPort" binding="tns:AliasBinding">
+      <soap:address location="http://example.com/alias"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

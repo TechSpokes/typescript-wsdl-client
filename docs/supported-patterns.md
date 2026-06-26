@@ -9,6 +9,14 @@ The rows below are backed by committed conformance fixtures under `test/conforma
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `weather-document-literal-soap` | supported | The canonical weather WSDL compiles through client, OpenAPI, gateway, generated-test, and app artifacts with document-literal SOAP operations. |
+| `sequence-baseline-complex` | supported | Complex type sequences support nested complex references, repeated elements, optional fields, and all-optional request wrappers. |
+| `simple-restriction-list` | supported | Named simple type restrictions, enumerations, and `xs:list` declarations emit aligned TypeScript aliases and OpenAPI schemas. |
+| `same-name-simple-alias` | supported | A global element with the same local name as its named simple type reuses the scalar alias instead of emitting a duplicate wrapper interface. |
+| `simple-content-attributes` | supported | Simple content emits text content through `$value` and flattens XML attributes as peer properties. |
+| `documentation-propagation` | supported | WSDL and XSD documentation propagates into catalog metadata, generated TypeScript comments, OpenAPI descriptions, and gateway route comments. |
+| `soap12-first-binding` | supported | SOAP 1.1 and SOAP 1.2 bindings are detected, and the first SOAP binding deterministically provides operation binding metadata. |
+| `xsd-import-relative` | supported | Relative XSD imports are resolved and imported complex types participate in client, OpenAPI, gateway, generated-test, and app artifacts. |
 | `choice-union-simple` | supported | `xs:choice` union mode retains choice metadata and drives generated TypeScript/OpenAPI constraints. |
 | `xs-union-simple-type` | supported | Simple `xs:union` aliases compile to TypeScript unions and OpenAPI `oneOf` schemas. |
 | `abstract-complex-type` | diagnostic | Abstract complex types are rejected with a diagnostic instead of being treated as concrete. |

@@ -4,7 +4,7 @@ Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify g
 
 ## Current: 1.0 Readiness After 0.34.0
 
-Focus: resolve discovered conformance deferrals, keep the public support matrix aligned, and run the release candidate gates.
+Focus: resolve discovered conformance deferrals, keep the public baseline support registry aligned, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
@@ -109,7 +109,7 @@ The conformance registry now proves compile, client, OpenAPI, gateway runtime, g
 
 ### WSDL Coverage
 
-WSDL coverage is the first conformance domain. The current matrix includes `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, deeply composed schemas, `xs:anyAttribute`, and MTOM/XOP attachments.
+WSDL coverage is the first conformance domain and the public baseline support registry. The current matrix includes the canonical weather document-literal baseline, reusable sequence and simple-type behavior, documentation propagation, SOAP binding selection, XSD imports, `xs:union`, abstract types, substitution groups, multi-binding WSDLs, out-of-band policy references, deeply composed schemas, `xs:anyAttribute`, and MTOM/XOP attachments.
 
 ### Gateway Integration
 
@@ -121,7 +121,7 @@ Generated gateway integration documentation must keep inbound authentication, au
 - Keep roadmap, changelog, README, CLI help, examples, and docs configuration pages aligned before each release.
 - Keep generated output deterministic and reviewable through snapshot inventory checks.
 - Keep package provenance and generated output verification in the release workflow.
-- Test the supported Node.js floor and the newest active Node.js line before 1.0.
+- Test Node 24 as the supported Node.js floor and Node 26 as the current line before 1.0.
 
 ## 1.0 Release Gates
 
@@ -141,6 +141,7 @@ Generated gateway integration documentation must keep inbound authentication, au
 
 - The automated capability conformance matrix runs through broad Vitest discovery in `npm test` and `npm run ci`.
 - `npm run release:preflight -- v1.0.0` verifies that `test:conformance`, `npm test`, and `npm run ci` still cover conformance.
+- `npm run release:preflight -- v1.0.0` verifies CI still covers Node 24 and Node 26 and release workflows run on Node 24.
 - Every listed capability has a status, fixture, and expected stage behavior.
 - Unsupported features fail with useful diagnostics rather than silent miscompilation.
 

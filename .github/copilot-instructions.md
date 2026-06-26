@@ -12,7 +12,7 @@ Before making any changes, read the file-pattern-specific instructions in `.gith
 - Package: `@techspokes/typescript-wsdl-client`
 - Default Branch: `main`
 - CLI Binary: `wsdl-tsc` (`dist/cli.js`)
-- Engine: Node.js >= 20
+- Engine: Node.js >= 24
 - Issues: https://github.com/techspokes/typescript-wsdl-client/issues
 - Discussions: https://github.com/techspokes/typescript-wsdl-client/discussions
 - CI Workflow: `.github/workflows/ci.yml`
@@ -32,7 +32,7 @@ issues: 'https://github.com/techspokes/typescript-wsdl-client/issues'
 discussions: 'https://github.com/techspokes/typescript-wsdl-client/discussions'
 ciWorkflow: 'ci.yml'
 cliBinary: wsdl-tsc
-node: '>=20'
+node: '>=24'
 ```
 
 ### GitHub MCP Usage Guidelines (minimal)
@@ -57,7 +57,7 @@ Maintainer: Serge Liatko ([@sergeliatko](https://github.com/sergeliatko)). Vendo
 
 ### Runtime and tooling
 
-- Node.js `>= 20.0.0` (see `engines.node` in `package.json`).
+- Node.js `>= 24.0.0` (see `engines.node` in `package.json`).
 - TypeScript strict, ES2022, `type: "module"` (ESM/NodeNext style).
 - CLI binary: `wsdl-tsc` (entry: `dist/cli.js`), orchestrating the pipeline.
 - The `soap` package is a runtime dependency for consumers. The `wsdl-tsc` CLI itself is a devDependency in consumer projects.
@@ -77,6 +77,12 @@ Important for reasoning about paths:
 - `pipeline`: cascade lookup: `{client-dir}` / `{openapi-dir}` / `{gateway-dir}` / `tmp/`.
 
 Scratchpads: non-project notes may live under ad-hoc folders; treat them as scratchpads only, not as source of truth for behavior or docs.
+
+### Temporary workspace layout
+
+Repository-owned automation writes disposable output under classified `tmp/` subfolders. Keep smoke output under `tmp/smoke/`, npm cache under `tmp/cache/npm/`, release preflight regenerated examples under `tmp/preflight/examples/`, conformance mini-projects under `tmp/conformance/`, and generated-test integration spikes under `tmp/test-generation/`.
+
+Do not move public CLI defaults only to satisfy this internal layout. The CLI may still use simple `tmp/...` defaults and examples when that is clearer for users.
 
 ### Project evolution
 
@@ -152,7 +158,8 @@ Run `npm run test:conformance` when changing conformance fixtures, registry rows
 
 ### Node and CLI entry
 
-- Node engine: read from `engines.node` in `package.json` (currently `>=20.0.0`).
+- Node engine: read from `engines.node` in `package.json` (currently `>=24.0.0`).
+- Node CI policy: test the supported floor (`24`) and the current line (`26`); release workflows run on the supported floor.
 - CLI binary mapping: read from `bin.wsdl-tsc` in `package.json` (currently `dist/cli.js`).
 
 ### Scripts

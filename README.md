@@ -39,7 +39,7 @@ npm install --save-dev @techspokes/typescript-wsdl-client
 npm install soap
 ```
 
-Requirements: Node.js 20+ and the `soap` package as a runtime dependency.
+Requirements: Node.js 24+ and the `soap` package as a runtime dependency.
 
 ## Quick Start
 

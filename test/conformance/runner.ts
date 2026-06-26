@@ -16,6 +16,7 @@ import {generateGateway, generateOpenAPI, generateTests} from "../../src";
 import {generateApp} from "../../src/app/generateApp.js";
 import {WsdlCompilationError} from "../../src/util/errors.js";
 import {deriveClientName} from "../../src/util/tools.js";
+import {fixturesRoot, readFileUnder, resolveUnder, validateConformanceFixtureGraph} from "./fixturePolicy.js";
 import type {AppArtifacts, CapabilityCase, GatewayArtifacts, GeneratedTestsArtifacts} from "./types.js";
 
 const require = createRequire(import.meta.url);
@@ -24,7 +25,7 @@ const repoRoot = resolve(conformanceDir, "..", "..");
 const conformanceTempRoot = join(repoRoot, "tmp", "conformance");
 
 export function fixturePathFor(capability: CapabilityCase): string {
-  return resolve(conformanceDir, "fixtures", capability.fixture);
+  return resolveUnder(fixturesRoot, capability.fixture);
 }
 
 export async function runCompileCase(capability: CapabilityCase): Promise<void> {
@@ -158,7 +159,7 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
     const project = await generateGatewayProject(capability, outDir);
 
     for (const expected of capability.gateway.sourceIncludes ?? []) {
-      const source = readFileSync(join(project.gatewayDir, expected.file), "utf8");
+      const source = readFileUnder(project.gatewayDir, expected.file);
       if (!source.includes(expected.text)) {
         throw new Error(`${capability.id} expected gateway ${expected.file} to include ${JSON.stringify(expected.text)}.`);
       }
@@ -171,7 +172,7 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
       catalogFile: project.catalogFile,
       compiled: project.compiled,
       doc: project.doc,
-      readGatewayFile: (relativePath: string) => readFileSync(join(project.gatewayDir, relativePath), "utf8"),
+      readGatewayFile: (relativePath: string) => readFileUnder(project.gatewayDir, relativePath),
     };
 
     await capability.gateway.assert?.(artifacts);
@@ -189,7 +190,7 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
         ]),
       );
 
-      const pluginModule = await import(pathToFileURL(join(project.gatewayDir, "plugin.ts")).href);
+      const pluginModule = await import(pathToFileURL(resolveUnder(project.gatewayDir, "plugin.ts")).href);
       const app = Fastify({logger: false});
 
       try {
@@ -244,7 +245,7 @@ export async function runGeneratedTestsCase(capability: CapabilityCase): Promise
     runGeneratedVitest(outDir, join(testDir, "vitest.config.ts"));
 
     for (const expected of capability.generatedTests.sourceIncludes ?? []) {
-      const source = readFileSync(join(testDir, expected.file), "utf8");
+      const source = readFileUnder(testDir, expected.file);
       if (!source.includes(expected.text)) {
         throw new Error(`${capability.id} expected generated test ${expected.file} to include ${JSON.stringify(expected.text)}.`);
       }
@@ -257,7 +258,7 @@ export async function runGeneratedTestsCase(capability: CapabilityCase): Promise
       openapiFile: project.openapiFile,
       catalogFile: project.catalogFile,
       compiled: project.compiled,
-      readTestFile: (relativePath: string) => readFileSync(join(testDir, relativePath), "utf8"),
+      readTestFile: (relativePath: string) => readFileUnder(testDir, relativePath),
     };
 
     await capability.generatedTests.assert?.(artifacts);
@@ -294,7 +295,7 @@ export async function runAppCase(capability: CapabilityCase): Promise<void> {
     runTypeScript(appDir, join(appDir, "tsconfig.json"));
 
     for (const expected of capability.app.sourceIncludes ?? []) {
-      const source = readFileSync(join(appDir, expected.file), "utf8");
+      const source = readFileUnder(appDir, expected.file);
       if (!source.includes(expected.text)) {
         throw new Error(`${capability.id} expected app ${expected.file} to include ${JSON.stringify(expected.text)}.`);
       }
@@ -307,7 +308,7 @@ export async function runAppCase(capability: CapabilityCase): Promise<void> {
       openapiFile: project.openapiFile,
       catalogFile: project.catalogFile,
       compiled: project.compiled,
-      readAppFile: (relativePath: string) => readFileSync(join(appDir, relativePath), "utf8"),
+      readAppFile: (relativePath: string) => readFileUnder(appDir, relativePath),
     };
 
     await capability.app.assert?.(artifacts);
@@ -318,6 +319,7 @@ export async function runAppCase(capability: CapabilityCase): Promise<void> {
 
 async function compileSuccess(capability: CapabilityCase, outDir: string): Promise<CompiledCatalog> {
   const fixturePath = fixturePathFor(capability);
+  validateConformanceFixtureGraph(fixturePath);
   const wsdlCatalog = await loadWsdl(fixturePath);
   const options = resolveCompilerOptions(
     capability.compilerOptions ?? {},

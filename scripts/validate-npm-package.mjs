@@ -11,8 +11,8 @@ function runNpmPackDryRun() {
   return new Promise((resolve, reject) => {
     const command = process.platform === "win32" ? process.env.ComSpec ?? "cmd.exe" : "npm";
     const args = process.platform === "win32"
-      ? ["/d", "/s", "/c", "npm pack --dry-run --json --ignore-scripts --cache tmp/npm-cache"]
-      : ["pack", "--dry-run", "--json", "--ignore-scripts", "--cache", "tmp/npm-cache"];
+      ? ["/d", "/s", "/c", "npm pack --dry-run --json --ignore-scripts --cache tmp/cache/npm"]
+      : ["pack", "--dry-run", "--json", "--ignore-scripts", "--cache", "tmp/cache/npm"];
     const child = spawn(command, args, {
       cwd: repoRoot,
       env: {

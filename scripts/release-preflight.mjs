@@ -16,15 +16,18 @@ import {
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
 import { findExampleDrift } from "./lib/preflight-examples.mjs";
-import { findDatedChangelogSection, verifyConformanceGateScripts } from "./lib/release-preflight-utils.mjs";
+import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate } from "./lib/release-preflight-utils.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
 
 const WEATHER_WSDL = path.join(ROOT, "examples", "minimal", "weather.wsdl");
 const EXAMPLES_DIR = path.join(ROOT, "examples", "generated-output");
-const PREFLIGHT_DIR = path.join(ROOT, "tmp", "preflight-examples");
+const PREFLIGHT_DIR = path.join(ROOT, "tmp", "preflight", "examples");
 const CHANGELOG = path.join(ROOT, "CHANGELOG.md");
 const SKILL_DIR = path.join(ROOT, "dist", "assets");
 const CLI_ENTRY = path.join(ROOT, "src", "cli.ts");
+const CI_WORKFLOW = path.join(ROOT, ".github", "workflows", "ci.yml");
+const RELEASE_PACKAGE_WORKFLOW = path.join(ROOT, ".github", "workflows", "release-package.yml");
+const RELEASE_DRAFT_WORKFLOW = path.join(ROOT, ".github", "workflows", "release-draft.yml");
 
 function parseArgs(argv) {
   const args = { skipCi: false, skipExamples: false, skipDeps: false, target: null };
@@ -93,9 +96,9 @@ async function step(name, fn) {
 
 function readEnginesNode() {
   const pkg = readJson(PACKAGE_JSON);
-  const constraint = pkg.engines?.node ?? ">=20.0.0";
+  const constraint = pkg.engines?.node ?? ">=24.0.0";
   const match = constraint.match(/(\d+)\.(\d+)\.(\d+)/);
-  if (!match) return [20, 0, 0];
+  if (!match) return [24, 0, 0];
   return match.slice(1, 4).map(Number);
 }
 
@@ -229,6 +232,17 @@ function conformanceGate() {
   return { message: "test:conformance is focused and npm run ci covers broad Vitest discovery" };
 }
 
+function nodeReleaseGate() {
+  const errors = verifyNodeReleaseGate({
+    packageJson: readJson(PACKAGE_JSON),
+    ciWorkflow: fs.readFileSync(CI_WORKFLOW, "utf-8"),
+    releasePackageWorkflow: fs.readFileSync(RELEASE_PACKAGE_WORKFLOW, "utf-8"),
+    releaseDraftWorkflow: fs.readFileSync(RELEASE_DRAFT_WORKFLOW, "utf-8"),
+  });
+  failIfErrors(errors);
+  return { message: "Node 24 floor and Node 26 CI coverage are release-gated" };
+}
+
 function examplesFresh() {
   fs.rmSync(PREFLIGHT_DIR, { recursive: true, force: true });
   fs.mkdirSync(PREFLIGHT_DIR, { recursive: true });
@@ -326,6 +340,7 @@ async function main() {
   }
 
   await step("conformance-gate", conformanceGate);
+  await step("node-release-gate", nodeReleaseGate);
 
   if (args.skipExamples) {
     record("examples-fresh", "skip", "--skip-examples");

@@ -6,7 +6,7 @@ Thank you for contributing to `typescript-wsdl-client`. This guide covers local 
 
 ### Prerequisites
 
-Node.js >= 20 and npm are required.
+Node.js >= 24 and npm are required.
 
 ### Clone and Install
 
@@ -65,7 +65,7 @@ Use [GitHub Issues](https://github.com/TechSpokes/typescript-wsdl-client/issues/
 
 ### Coding Standards
 
-TypeScript strict mode with ESM and NodeNext modules. Node.js >= 20, no browser-specific code. Follow existing patterns, prefer explicit types, and keep generated output deterministic.
+TypeScript strict mode with ESM and NodeNext modules. Node.js >= 24, no browser-specific code. Follow existing patterns, prefer explicit types, and keep generated output deterministic.
 
 ### Commit Message Format
 
@@ -119,7 +119,7 @@ src/
 
 - Generate fully typed code.
 - The same WSDL must always generate the same output.
-- Use ESM, Node.js >= 20, and strict TypeScript.
+- Use ESM, Node.js >= 24, and strict TypeScript.
 - Keep the dependency tree lean.
 - Keep CLI flags and generated code stable across releases.
 
@@ -167,7 +167,7 @@ Review the snapshot diff before committing. The snapshot suite also checks the g
 
 ### Smoke Tests
 
-Smoke tests generate output to `tmp/` from `examples/minimal/weather.wsdl`, then typecheck with `tsc -p tsconfig.smoke.json`.
+Smoke tests generate output to `tmp/smoke/` from `examples/minimal/weather.wsdl`, then typecheck with `tsc -p tsconfig.smoke.json`.
 
 - `npm run smoke:compile`: WSDL parsing and catalog generation
 - `npm run smoke:client`: TypeScript client generation and typecheck
@@ -176,7 +176,17 @@ Smoke tests generate output to `tmp/` from `examples/minimal/weather.wsdl`, then
 - `npm run smoke:pipeline`: full pipeline with app scaffold and typecheck
 - `npm run smoke:app`: standalone app generation and typecheck
 
-The `tsconfig.smoke.json` file extends the main `tsconfig.json` and includes `tmp/**/*.ts`. It maps `soap` to local type stubs so generated client code compiles without a live SOAP runtime.
+The `tsconfig.smoke.json` file extends the main `tsconfig.json` and includes `tmp/smoke/**/*.ts`. It maps `soap` to local type stubs so generated client code compiles without a live SOAP runtime.
+
+### Temporary Workspace Layout
+
+Repository automation keeps disposable output classified under `tmp/` so smoke artifacts, caches, release checks, and generated-test spikes do not collide.
+
+- `tmp/smoke/`: smoke-script client, OpenAPI, gateway, app, and catalog output
+- `tmp/cache/npm/`: local npm cache used by package and dependency checks
+- `tmp/preflight/examples/`: regenerated examples used by release preflight
+- `tmp/conformance/`: conformance mini-projects that need repository-local module resolution
+- `tmp/test-generation/`: generated-test integration spikes
 
 ### CI Pipeline
 

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:documentation-propagation"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:documentation-propagation">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:documentation-propagation" elementFormDefault="qualified">
+      <xs:element name="GetThing">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="id" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Identifier field.</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GetThingResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="result" type="tns:Thing"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:complexType name="Thing">
+        <xs:annotation>
+          <xs:documentation>Thing payload.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="name" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>Display name.</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="GetThingRequestMessage">
+    <wsdl:documentation>Request wrapper message.</wsdl:documentation>
+    <wsdl:part name="parameters" element="tns:GetThing">
+      <wsdl:documentation>Request parameters part.</wsdl:documentation>
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetThingResponseMessage">
+    <wsdl:documentation>Response wrapper message.</wsdl:documentation>
+    <wsdl:part name="parameters" element="tns:GetThingResponse">
+      <wsdl:documentation>Response parameters part.</wsdl:documentation>
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="DocsPortType">
+    <wsdl:operation name="GetThing">
+      <wsdl:documentation>Gets a thing. Returns details.</wsdl:documentation>
+      <wsdl:input message="tns:GetThingRequestMessage"/>
+      <wsdl:output message="tns:GetThingResponseMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="DocsBinding" type="tns:DocsPortType">
+    <wsdl:documentation>SOAP binding for demo service.</wsdl:documentation>
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetThing">
+      <soap:operation soapAction="urn:GetThing" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="DocsService">
+    <wsdl:documentation>Demo service entrypoint.</wsdl:documentation>
+    <wsdl:port name="DocsPort" binding="tns:DocsBinding">
+      <wsdl:documentation>Primary SOAP port.</wsdl:documentation>
+      <soap:address location="http://example.com/docs"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

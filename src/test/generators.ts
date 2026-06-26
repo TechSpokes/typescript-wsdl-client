@@ -41,6 +41,15 @@ function cloneRecord(value: Record<string, unknown>): Record<string, unknown> {
   return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
 }
 
+function formatInjectPayloadFields(value: unknown): string {
+  if (value == null || typeof value !== "object") {
+    return `        headers: {"content-type": "application/json"},
+        payload: JSON.stringify(${JSON.stringify(value)}),`;
+  }
+
+  return `        payload: ${JSON.stringify(value, null, 4).replace(/\n/g, "\n    ")},`;
+}
+
 function mockChoiceBranchValue(branch: ChoiceBranchForMocks, catalog: CatalogForMocks): unknown {
   const isArray = branch.max === "unbounded" || (typeof branch.max === "number" && branch.max > 1);
   const value = branch.tsType === "string" || branch.tsType === "number" || branch.tsType === "boolean"
@@ -309,7 +318,7 @@ export function emitRoutesTest(
 
   const testCases = sortedOps.map((op) => {
     const mockData = mocks.get(op.operationId);
-    const requestPayload = JSON.stringify(mockData?.request ?? {}, null, 4).replace(/\n/g, "\n    ");
+    const requestPayloadFields = formatInjectPayloadFields(mockData?.request ?? {});
     const hint = formatOperationHint(op.summary, op.description);
     const hintComment = hint ? `  // ${hint}\n` : "";
 
@@ -321,7 +330,7 @@ export function emitRoutesTest(
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(200);
       expect(String(res.headers["content-type"] ?? "")).toContain(${JSON.stringify(op.stream.mediaType)});
@@ -345,7 +354,7 @@ export function emitRoutesTest(
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(200);
       expect(String(res.headers["content-type"] ?? "")).toContain(${JSON.stringify(op.stream.mediaType)});
@@ -367,7 +376,7 @@ export function emitRoutesTest(
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(200);
       const body = res.json();
@@ -421,7 +430,7 @@ export function emitErrorsTest(
   if (!op) return "// No operations found\n";
 
   const mockData = mocks.get(op.operationId);
-  const requestPayload = JSON.stringify(mockData?.request ?? {}, null, 4).replace(/\n/g, "\n    ");
+  const requestPayloadFields = formatInjectPayloadFields(mockData?.request ?? {});
 
   return `/**
  * Gateway Error Handling Tests
@@ -447,7 +456,7 @@ describe("gateway routes — error handling", () => {
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(500);
       const body = res.json();
@@ -481,7 +490,7 @@ describe("gateway routes — error handling", () => {
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(502);
       const body = res.json();
@@ -504,7 +513,7 @@ describe("gateway routes — error handling", () => {
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(503);
       const body = res.json();
@@ -527,7 +536,7 @@ describe("gateway routes — error handling", () => {
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(504);
       const body = res.json();
@@ -561,7 +570,7 @@ export function emitEnvelopeTest(
   if (!op) return "// No operations found\n";
 
   const mockData = mocks.get(op.operationId);
-  const requestPayload = JSON.stringify(mockData?.request ?? {}, null, 4).replace(/\n/g, "\n    ");
+  const requestPayloadFields = formatInjectPayloadFields(mockData?.request ?? {});
 
   return `/**
  * Gateway Envelope Structure Tests
@@ -581,7 +590,7 @@ describe("gateway — envelope structure", () => {
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(200);
       const body = res.json();
@@ -606,7 +615,7 @@ describe("gateway — envelope structure", () => {
       const res = await app.inject({
         method: "${op.method.toUpperCase()}",
         url: "${op.path}",
-        payload: ${requestPayload},
+${requestPayloadFields}
       });
       expect(res.statusCode).toBe(500);
       const body = res.json();

@@ -8,6 +8,9 @@ export function findDatedChangelogSection(lines, version) {
   return null;
 }
 
+export const SUPPORTED_NODE_FLOOR = 24;
+export const CURRENT_NODE_LINE = 26;
+
 function hasFocusedConformanceRun(script) {
   return /\bvitest\s+run\b/.test(script) && /\btest[\\/]conformance\b/.test(script);
 }
@@ -34,6 +37,41 @@ export function verifyConformanceGateScripts(scripts) {
   }
   if (!ciRunsBroadTests(ci)) {
     errors.push("package.json scripts.ci must run npm test, npm run test, or a broad vitest run so conformance is release-covered.");
+  }
+
+  return errors;
+}
+
+function hasNodeLine(workflow, line) {
+  return new RegExp(`(^|[^0-9])${line}([^0-9]|$)`).test(workflow);
+}
+
+function hasEngineFloor(packageJson, line) {
+  return packageJson.engines?.node === `>=${line}.0.0`;
+}
+
+export function verifyNodeReleaseGate({
+  packageJson,
+  ciWorkflow,
+  releasePackageWorkflow,
+  releaseDraftWorkflow,
+}) {
+  const errors = [];
+
+  if (!hasEngineFloor(packageJson, SUPPORTED_NODE_FLOOR)) {
+    errors.push(`package.json engines.node must declare Node >=${SUPPORTED_NODE_FLOOR}.0.0.`);
+  }
+  if (!hasNodeLine(ciWorkflow, SUPPORTED_NODE_FLOOR)) {
+    errors.push(`CI workflow must test the supported Node floor ${SUPPORTED_NODE_FLOOR}.`);
+  }
+  if (!hasNodeLine(ciWorkflow, CURRENT_NODE_LINE)) {
+    errors.push(`CI workflow must test the current Node line ${CURRENT_NODE_LINE}.`);
+  }
+  if (!hasNodeLine(releasePackageWorkflow, SUPPORTED_NODE_FLOOR)) {
+    errors.push(`Release package workflow must run on Node ${SUPPORTED_NODE_FLOOR}.`);
+  }
+  if (!hasNodeLine(releaseDraftWorkflow, SUPPORTED_NODE_FLOOR)) {
+    errors.push(`Draft release workflow must run on Node ${SUPPORTED_NODE_FLOOR}.`);
   }
 
   return errors;

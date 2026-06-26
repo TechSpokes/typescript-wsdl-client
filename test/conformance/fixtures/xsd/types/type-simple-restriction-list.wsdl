@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:type-simple-restriction-list"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:type-simple-restriction-list">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:type-simple-restriction-list" elementFormDefault="qualified">
+      <xs:simpleType name="Color">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Red"/>
+          <xs:enumeration value="Green"/>
+          <xs:enumeration value="Blue"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="CodeList">
+        <xs:list itemType="xs:string"/>
+      </xs:simpleType>
+      <xs:element name="SubmitSimple">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="color" type="tns:Color"/>
+            <xs:element name="codes" type="tns:CodeList" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SubmitSimpleResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="color" type="tns:Color"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="SubmitSimpleInput">
+    <wsdl:part name="parameters" element="tns:SubmitSimple"/>
+  </wsdl:message>
+  <wsdl:message name="SubmitSimpleOutput">
+    <wsdl:part name="parameters" element="tns:SubmitSimpleResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="SimplePortType">
+    <wsdl:operation name="SubmitSimple">
+      <wsdl:input message="tns:SubmitSimpleInput"/>
+      <wsdl:output message="tns:SubmitSimpleOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SimpleBinding" type="tns:SimplePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="SubmitSimple">
+      <soap:operation soapAction="urn:SubmitSimple" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SimpleService">
+    <wsdl:port name="SimplePort" binding="tns:SimpleBinding">
+      <soap:address location="http://example.com/simple"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

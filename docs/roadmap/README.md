@@ -1,6 +1,6 @@
 # Version 1.0 Roadmap Plan
 
-Detailed plan for moving `@techspokes/typescript-wsdl-client` from the released `0.30.x` line to a stable `1.0.0` release.
+Detailed plan for moving `@techspokes/typescript-wsdl-client` from the current `0.x` line to a stable `1.0.0` release.
 
 See the root [README.md](../../README.md) for project overview and the root [ROADMAP.md](../../ROADMAP.md) for the public roadmap summary.
 
@@ -19,7 +19,7 @@ The plan is optimized for preserving quality. The contract and compatibility bas
 | Choice union mode     | [Choice Union Mode](v1.0-choice-union-mode.md)                               | complete          | Implemented in `0.26.0`         |
 | JSON array streaming  | [JSON Array Streaming](v1.0-json-array-streaming.md)                         | complete          | Implemented in `0.28.0`         |
 | Conformance framework | [Capability Conformance Framework](v1.0-capability-conformance-framework.md) | gate wired        | Pipeline claims are test-backed |
-| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | gate wired        | Feature support is test-backed |
+| WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | baseline registry | Public support is test-backed |
 | Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)                   | next              | 1.0 release is repeatable       |
 
 ## Execution Order
@@ -42,11 +42,11 @@ JSON array streaming is complete in `0.28.0`. The default `ndjson` format remain
 
 ### Slice 5: Capability Conformance Framework
 
-The registry, fixture strategy, compile runner, client evidence, OpenAPI evidence, gateway runtime evidence, generated-test evidence, app evidence, documentation drift check, generated support matrix, and validation-gate wiring are shipped. Keep `npm run test:conformance` as the focused local command while broad Vitest discovery covers conformance in `npm test`, `npm run ci`, and release preflight.
+The registry, fixture strategy, compile runner, client evidence, OpenAPI evidence, gateway runtime evidence, generated-test evidence, app evidence, documentation drift check, generated support matrix, and validation-gate wiring are shipped. The registry is the public baseline support source, while examples remain demos. Keep `npm run test:conformance` as the focused local command while broad Vitest discovery covers conformance in `npm test`, `npm run ci`, and release preflight.
 
 ### Slice 6: WSDL Coverage Matrix
 
-The first WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, generated-test, app, documentation, and release-gate evidence. The next work is to keep those rows current while release candidate gates are prepared.
+The WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, generated-test, app, documentation, and release-gate evidence. The next work is to keep those rows current while release candidate gates are prepared.
 
 ### Slice 7: Release Candidate Gates
 
@@ -85,6 +85,7 @@ Run the release candidate gates after feature work and documentation have conver
 
 - A capability conformance matrix runs under broad Vitest test automation.
 - Release preflight verifies the focused conformance command and CI wiring.
+- Release preflight verifies CI covers Node 24 and Node 26 and release workflows use Node 24.
 - Each matrix entry has a fixture, status, and stage expectations.
 - Unsupported features fail loudly or are documented as deliberately unsupported.
 

@@ -42,6 +42,604 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 
 export const capabilities: CapabilityCase[] = [
   {
+    id: "weather-document-literal-soap",
+    title: "Weather document-literal SOAP baseline",
+    status: "supported",
+    featureTags: ["wsdl", "soap", "document-literal", "baseline"],
+    fixture: "wsdl/baselines/baseline-weather-document-literal.wsdl",
+    docsAnchor: "fully-supported",
+    publicContract: "The canonical weather WSDL compiles through client, OpenAPI, gateway, generated-test, and app artifacts with document-literal SOAP operations.",
+    decision: "support",
+    decisionReason: "The weather fixture is the canonical smoke-test WSDL and proves the baseline document-literal SOAP pipeline.",
+    authority: "WSDL 1.1",
+    provenance: "Repository weather fixture copied into the conformance corpus for baseline support evidence.",
+    license: "MIT",
+    fixtureKind: "real-world-compatible",
+    compile: {
+      outcome: "success",
+      typeNames: ["GetWeatherInformation", "GetCityForecastByZIP", "WeatherReturn", "ArrayOfForecast"],
+      operationNames: ["GetWeatherInformation", "GetCityForecastByZIP", "GetCityWeatherByZIP"],
+      assert: compiled => {
+        const operation = compiled.operations.find(op => op.name === "GetWeatherInformation");
+        if (operation?.soapAction !== "http://ws.cdyne.com/WeatherWS/GetWeatherInformation") {
+          throw new Error("Weather baseline should retain the SOAP 1.1 action from the first SOAP binding.");
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "export interface ArrayOfForecast"},
+        {file: "operations", text: "GetWeatherInformation("},
+        {file: "operations", text: "args: GetWeatherInformation"},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        const arraySchema = requireSchema(doc, "ArrayOfForecast");
+        if (arraySchema.type !== "array") {
+          throw new Error("Weather ArrayOfForecast should flatten to an OpenAPI array schema by default.");
+        }
+        const operation = requireOperation(doc, "GetWeatherInformation");
+        if (operation.summary !== "Gets Information for each WeatherID") {
+          throw new Error("Weather operation documentation should propagate into OpenAPI summary.");
+        }
+      },
+    },
+    gateway: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "runtime.ts", text: "ArrayOfWeatherDescription"},
+      ],
+      requests: [
+        {
+          operationId: "GetWeatherInformation",
+          payload: {},
+          mockClient: {
+            GetWeatherInformation: async () => ({
+              response: {
+                GetWeatherInformationResult: {
+                  WeatherDescription: [
+                    {WeatherID: 1, Description: "Sunny", PictureURL: "https://example.test/sunny.png"},
+                  ],
+                },
+              },
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {
+            GetWeatherInformationResult: [
+              {WeatherID: 1, Description: "Sunny", PictureURL: "https://example.test/sunny.png"},
+            ],
+          }),
+          assertClientArgs: args => assertJsonEqual(args, {}, "Gateway should pass the empty weather request wrapper."),
+        },
+      ],
+    },
+    generatedTests: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "runtime/unwrap.test.ts", text: "ArrayOfForecast"},
+      ],
+    },
+    app: {
+      outcome: "success",
+    },
+  },
+  {
+    id: "sequence-baseline-complex",
+    title: "Complex sequences with nested references and repeated optional fields",
+    status: "supported",
+    featureTags: ["xsd", "sequence", "types", "baseline"],
+    fixture: "xsd/sequences/sequence-baseline-complex.wsdl",
+    docsAnchor: "fully-supported",
+    publicContract: "Complex type sequences support nested complex references, repeated elements, optional fields, and all-optional request wrappers.",
+    decision: "support",
+    decisionReason: "The baseline sequence fixture exercises reusable XSD object modeling used throughout generated client, OpenAPI, and gateway artifacts.",
+    authority: "XML Schema 1.0",
+    provenance: "Repository-authored fixture distilled from existing sequence and optionality coverage.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {
+      outcome: "success",
+      typeNames: ["SubmitSequence", "SubmitSequenceResponse", "Customer", "CustomerProfile", "LineItem"],
+      operationNames: ["SubmitSequence"],
+      assert: compiled => {
+        const request = compiled.types.find(type => type.name === "SubmitSequence");
+        const items = request?.elems.find(elem => elem.name === "items");
+        if (!items || items.min !== 0 || items.max !== "unbounded") {
+          throw new Error("SubmitSequence.items should compile as an optional repeated element.");
+        }
+        const customer = request?.elems.find(elem => elem.name === "customer");
+        if (customer?.tsType !== "Customer") {
+          throw new Error("SubmitSequence.customer should reference the nested Customer type.");
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "items?: LineItem[];"},
+        {file: "types", text: "profile?: CustomerProfile;"},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        const schema = requireSchema(doc, "SubmitSequence");
+        if (schema.required?.includes("items") || schema.required?.includes("note")) {
+          throw new Error("Optional sequence fields should not be OpenAPI required properties.");
+        }
+        if (schema.properties?.items?.type !== "array") {
+          throw new Error("Repeated sequence fields should emit OpenAPI array properties.");
+        }
+      },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "SubmitSequence",
+          payload: {customer: {id: "C-1", profile: {tier: "gold"}}, items: [{sku: "SKU-1", quantity: 2}]},
+          mockClient: {
+            SubmitSequence: async () => ({
+              response: {accepted: true},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {accepted: true}),
+          assertClientArgs: args => assertJsonEqual(
+            args,
+            {customer: {id: "C-1", profile: {tier: "gold"}}, items: [{sku: "SKU-1", quantity: 2}]},
+            "Gateway should pass nested sequence payloads to the client.",
+          ),
+        },
+      ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
+  },
+  {
+    id: "simple-restriction-list",
+    title: "Simple type restrictions, enumerations, and lists",
+    status: "supported",
+    featureTags: ["xsd", "simple-type", "restriction", "list"],
+    fixture: "xsd/types/type-simple-restriction-list.wsdl",
+    docsAnchor: "fully-supported",
+    publicContract: "Named simple type restrictions, enumerations, and `xs:list` declarations emit aligned TypeScript aliases and OpenAPI schemas.",
+    decision: "support",
+    decisionReason: "Simple restrictions and list aliases are stable scalar modeling behavior used by generated TypeScript and OpenAPI outputs.",
+    authority: "XML Schema 1.0",
+    provenance: "Repository-authored fixture distilled from simple-type unit coverage.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {
+      outcome: "success",
+      aliasNames: ["Color", "CodeList"],
+      typeNames: ["SubmitSimple", "SubmitSimpleResponse"],
+      operationNames: ["SubmitSimple"],
+      assert: compiled => {
+        if (compiled.aliases.find(alias => alias.name === "Color")?.tsType !== '"Red" | "Green" | "Blue"') {
+          throw new Error("Color should compile to a string literal union alias.");
+        }
+        if (compiled.aliases.find(alias => alias.name === "CodeList")?.tsType !== "string[]") {
+          throw new Error("CodeList should compile xs:list to an array alias.");
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "export type Color = \"Red\" | \"Green\" | \"Blue\";"},
+        {file: "types", text: "export type CodeList = string[];"},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        assertJsonEqual(
+          requireSchema(doc, "Color"),
+          {type: "string", enum: ["Red", "Green", "Blue"]},
+          "Color should emit an enum scalar schema.",
+        );
+        assertJsonEqual(
+          requireSchema(doc, "CodeList"),
+          {type: "array", items: {type: "string"}},
+          "CodeList should emit an array schema.",
+        );
+      },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "SubmitSimple",
+          payload: {color: "Red", codes: ["A", "B"]},
+          mockClient: {
+            SubmitSimple: async () => ({
+              response: {color: "Green"},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {color: "Green"}),
+          assertClientArgs: args => assertJsonEqual(args, {color: "Red", codes: ["A", "B"]}, "Gateway should pass simple alias payloads to the client."),
+        },
+      ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
+  },
+  {
+    id: "same-name-simple-alias",
+    title: "Same-name simple type element alias reuse",
+    status: "supported",
+    featureTags: ["xsd", "simple-type", "alias", "diagnostic-note"],
+    fixture: "xsd/types/type-simple-alias-same-name.wsdl",
+    docsAnchor: "named-simple-types-and-same-name-elements",
+    publicContract: "A global element with the same local name as its named simple type reuses the scalar alias instead of emitting a duplicate wrapper interface.",
+    decision: "support",
+    decisionReason: "Alias reuse prevents duplicate TypeScript declarations and is reported as an informational catalog note.",
+    authority: "XML Schema 1.0",
+    provenance: "Repository-authored fixture distilled from same-name simple type unit coverage.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {
+      outcome: "success",
+      aliasNames: ["AliasCode"],
+      operationNames: ["EchoAlias"],
+      diagnosticNotes: ["reuses same-name simple type alias AliasCode"],
+      assert: compiled => {
+        if (compiled.types.some(type => type.name === "AliasCode")) {
+          throw new Error("AliasCode should not emit a duplicate wrapper interface.");
+        }
+        const operation = compiled.operations.find(op => op.name === "EchoAlias");
+        if (operation?.inputTypeName !== "AliasCode" || operation.outputTypeName !== "AliasCode") {
+          throw new Error("EchoAlias should use the scalar AliasCode alias for input and output.");
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "export type AliasCode = \"Primary\" | \"Secondary\";"},
+        {file: "operations", text: "EchoAlias("},
+        {file: "operations", text: "args: AliasCode"},
+      ],
+      assert: ({readFile}) => {
+        if (readFile("types").includes("export interface AliasCode")) {
+          throw new Error("AliasCode should not emit an interface in generated types.");
+        }
+      },
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        assertJsonEqual(
+          requireSchema(doc, "AliasCode"),
+          {type: "string", enum: ["Primary", "Secondary"]},
+          "AliasCode should emit a scalar enum schema.",
+        );
+      },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "EchoAlias",
+          payload: "Primary",
+          mockClient: {
+            EchoAlias: async () => ({
+              response: "Secondary",
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, "Secondary"),
+          assertClientArgs: args => assertJsonEqual(args, "Primary", "Gateway should pass scalar alias payloads to the client."),
+        },
+      ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
+  },
+  {
+    id: "simple-content-attributes",
+    title: "Simple content with flattened attributes",
+    status: "supported",
+    featureTags: ["xsd", "simple-content", "attribute"],
+    fixture: "xsd/types/type-simple-content-attributes.wsdl",
+    docsAnchor: "fully-supported",
+    publicContract: "Simple content emits text content through `$value` and flattens XML attributes as peer properties.",
+    decision: "support",
+    decisionReason: "The `$value` convention and flattened attributes are core XML mapping behavior in generated artifacts.",
+    authority: "XML Schema 1.0",
+    provenance: "Repository-authored fixture distilled from simple-content and attribute mapping coverage.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {
+      outcome: "success",
+      typeNames: ["LabeledAmount", "SubmitAmount", "SubmitAmountResponse"],
+      operationNames: ["SubmitAmount"],
+      assert: compiled => {
+        const amount = compiled.types.find(type => type.name === "LabeledAmount");
+        if (!amount?.elems.some(elem => elem.name === "$value" && elem.tsType === "string")) {
+          throw new Error("LabeledAmount should expose simple content through $value.");
+        }
+        if (!amount.attrs.some(attr => attr.name === "currency" && attr.use === "required")) {
+          throw new Error("LabeledAmount should flatten required currency attribute metadata.");
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "$value?: string;"},
+        {file: "types", text: "currency: string;"},
+        {file: "types", text: "source?: string;"},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        const schema = requireSchema(doc, "LabeledAmount");
+        if (!schema.properties?.$value || !schema.properties?.currency) {
+          throw new Error("Simple content and attributes should be peer OpenAPI properties.");
+        }
+        if (!schema.required?.includes("currency")) {
+          throw new Error("Required XML attributes should be required OpenAPI properties.");
+        }
+      },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "SubmitAmount",
+          payload: {amount: {$value: "42.00", currency: "USD", source: "quoted"}},
+          mockClient: {
+            SubmitAmount: async () => ({
+              response: {accepted: true},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {accepted: true}),
+          assertClientArgs: args => assertJsonEqual(
+            args,
+            {amount: {$value: "42.00", currency: "USD", source: "quoted"}},
+            "Gateway should pass $value and flattened attributes to the client.",
+          ),
+        },
+      ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
+  },
+  {
+    id: "documentation-propagation",
+    title: "WSDL and XSD documentation propagation",
+    status: "supported",
+    featureTags: ["wsdl", "xsd", "documentation"],
+    fixture: "wsdl/documentation/documentation-propagation.wsdl",
+    docsAnchor: "fully-supported",
+    publicContract: "WSDL and XSD documentation propagates into catalog metadata, generated TypeScript comments, OpenAPI descriptions, and gateway route comments.",
+    decision: "support",
+    decisionReason: "Documentation propagation is part of the public generated artifact contract and should be fixture-backed.",
+    authority: "WSDL 1.1",
+    provenance: "Repository-authored fixture distilled from documentation propagation unit coverage.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {
+      outcome: "success",
+      typeNames: ["GetThing", "GetThingResponse", "Thing"],
+      operationNames: ["GetThing"],
+      assert: compiled => {
+        const operation = compiled.operations.find(op => op.name === "GetThing");
+        if (operation?.doc !== "Gets a thing. Returns details.") {
+          throw new Error("Operation documentation should be retained in compiled metadata.");
+        }
+        const thing = compiled.types.find(type => type.name === "Thing");
+        if (thing?.doc !== "Thing payload." || thing.elems.find(elem => elem.name === "name")?.doc !== "Display name.") {
+          throw new Error("XSD type and element documentation should be retained in compiled metadata.");
+        }
+        if (compiled.wsdlDocs?.services?.find(service => service.name === "DocsService")?.doc !== "Demo service entrypoint.") {
+          throw new Error("WSDL service documentation should be retained in catalog metadata.");
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "* Thing payload."},
+        {file: "types", text: "* Display name."},
+        {file: "operations", text: "* Gets a thing. Returns details."},
+        {file: "client", text: "* Gets a thing. Returns details."},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        const operation = requireOperation(doc, "GetThing");
+        if (operation.summary !== "Gets a thing." || operation.description !== "Gets a thing. Returns details.") {
+          throw new Error("WSDL operation docs should propagate into OpenAPI summary and description.");
+        }
+        const schema = requireSchema(doc, "Thing");
+        if (schema.description !== "Thing payload." || schema.properties?.name?.description !== "Display name.") {
+          throw new Error("XSD docs should propagate into OpenAPI schema descriptions.");
+        }
+      },
+    },
+    gateway: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "routes/getthing.ts", text: "* Summary: Gets a thing."},
+        {file: "routes/getthing.ts", text: "* Description: Gets a thing. Returns details."},
+      ],
+      requests: [
+        {
+          operationId: "GetThing",
+          payload: {id: "T-1"},
+          mockClient: {
+            GetThing: async () => ({
+              response: {result: {name: "Thing One"}},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {result: {name: "Thing One"}}),
+          assertClientArgs: args => assertJsonEqual(args, {id: "T-1"}, "Gateway should pass documented request payloads to the client."),
+        },
+      ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
+  },
+  {
+    id: "soap12-first-binding",
+    title: "SOAP 1.2 binding selected when it is the first SOAP binding",
+    status: "supported",
+    featureTags: ["wsdl", "binding", "soap12"],
+    fixture: "wsdl/bindings/binding-soap12-first.wsdl",
+    docsAnchor: "fully-supported",
+    publicContract: "SOAP 1.1 and SOAP 1.2 bindings are detected, and the first SOAP binding deterministically provides operation binding metadata.",
+    decision: "support",
+    decisionReason: "The compiler scans both SOAP 1.1 and SOAP 1.2 bindings and keeps first-binding behavior deterministic.",
+    authority: "WSDL 1.1",
+    provenance: "Repository-authored fixture for SOAP 1.2 first-binding detection.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {
+      outcome: "success",
+      typeNames: ["Ping", "PingResponse"],
+      operationNames: ["Ping"],
+      assert: compiled => {
+        const operation = compiled.operations.find(op => op.name === "Ping");
+        if (operation?.soapAction !== "urn:soap12-first") {
+          throw new Error("Ping should use the SOAP 1.2 action from the first SOAP binding.");
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        requireOperation(doc, "Ping");
+        requireSchema(doc, "Ping");
+      },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "Ping",
+          payload: {value: "request"},
+          mockClient: {
+            Ping: async () => ({
+              response: {value: "response"},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {value: "response"}),
+          assertClientArgs: args => assertJsonEqual(args, {value: "request"}, "Gateway should use the operation selected from the first SOAP binding."),
+        },
+      ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
+  },
+  {
+    id: "xsd-import-relative",
+    title: "Relative XSD import",
+    status: "supported",
+    featureTags: ["xsd", "import", "types"],
+    fixture: "xsd/imports/import-relative-types.wsdl",
+    docsAnchor: "fully-supported",
+    publicContract: "Relative XSD imports are resolved and imported complex types participate in client, OpenAPI, gateway, generated-test, and app artifacts.",
+    decision: "support",
+    decisionReason: "Relative XSD imports are existing behavior and can be proven through a committed multi-file fixture.",
+    authority: "XML Schema 1.0",
+    provenance: "Repository-authored fixture for relative XSD import resolution.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {
+      outcome: "success",
+      typeNames: ["SubmitImported", "SubmitImportedResponse", "ImportedPayload"],
+      operationNames: ["SubmitImported"],
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "payload: ImportedPayload;"},
+        {file: "types", text: "export interface ImportedPayload"},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        requireSchema(doc, "ImportedPayload");
+        const request = requireSchema(doc, "SubmitImported");
+        if (request.properties?.payload?.$ref !== "#/components/schemas/ImportedPayload") {
+          throw new Error("Imported payload should be referenced from the request OpenAPI schema.");
+        }
+      },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {
+          operationId: "SubmitImported",
+          payload: {payload: {name: "imported"}},
+          mockClient: {
+            SubmitImported: async () => ({
+              response: {accepted: true},
+              headers: {},
+            }),
+          },
+          expectedStatus: 200,
+          assertBody: body => assertSuccessEnvelope(body, {accepted: true}),
+          assertClientArgs: args => assertJsonEqual(args, {payload: {name: "imported"}}, "Gateway should pass imported type payloads to the client."),
+        },
+      ],
+    },
+    generatedTests: {
+      outcome: "success",
+    },
+    app: {
+      outcome: "success",
+    },
+  },
+  {
     id: "choice-union-simple",
     title: "Simple xs:choice emitted as a discriminated union catalog shape",
     status: "supported",

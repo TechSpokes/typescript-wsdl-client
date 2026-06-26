@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:type-simple-content-attributes"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:type-simple-content-attributes">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:type-simple-content-attributes" elementFormDefault="qualified">
+      <xs:complexType name="LabeledAmount">
+        <xs:simpleContent>
+          <xs:extension base="xs:string">
+            <xs:attribute name="currency" type="xs:string" use="required"/>
+            <xs:attribute name="source" type="xs:string"/>
+          </xs:extension>
+        </xs:simpleContent>
+      </xs:complexType>
+      <xs:element name="SubmitAmount">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="amount" type="tns:LabeledAmount"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SubmitAmountResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="accepted" type="xs:boolean"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="SubmitAmountInput">
+    <wsdl:part name="parameters" element="tns:SubmitAmount"/>
+  </wsdl:message>
+  <wsdl:message name="SubmitAmountOutput">
+    <wsdl:part name="parameters" element="tns:SubmitAmountResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="AmountPortType">
+    <wsdl:operation name="SubmitAmount">
+      <wsdl:input message="tns:SubmitAmountInput"/>
+      <wsdl:output message="tns:SubmitAmountOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AmountBinding" type="tns:AmountPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="SubmitAmount">
+      <soap:operation soapAction="urn:SubmitAmount" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AmountService">
+    <wsdl:port name="AmountPort" binding="tns:AmountBinding">
+      <soap:address location="http://example.com/amount"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

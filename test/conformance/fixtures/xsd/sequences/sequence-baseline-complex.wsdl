@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="urn:conformance:sequence-baseline-complex"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:conformance:sequence-baseline-complex">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:sequence-baseline-complex" elementFormDefault="qualified">
+      <xs:element name="SubmitSequence">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="customer" type="tns:Customer" minOccurs="0"/>
+            <xs:element name="items" type="tns:LineItem" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="note" type="xs:string" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SubmitSequenceResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="accepted" type="xs:boolean"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:complexType name="Customer">
+        <xs:sequence>
+          <xs:element name="id" type="xs:string"/>
+          <xs:element name="profile" type="tns:CustomerProfile" minOccurs="0"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CustomerProfile">
+        <xs:sequence>
+          <xs:element name="tier" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="LineItem">
+        <xs:sequence>
+          <xs:element name="sku" type="xs:string"/>
+          <xs:element name="quantity" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="SubmitSequenceInput">
+    <wsdl:part name="parameters" element="tns:SubmitSequence"/>
+  </wsdl:message>
+  <wsdl:message name="SubmitSequenceOutput">
+    <wsdl:part name="parameters" element="tns:SubmitSequenceResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="SequencePortType">
+    <wsdl:operation name="SubmitSequence">
+      <wsdl:input message="tns:SubmitSequenceInput"/>
+      <wsdl:output message="tns:SubmitSequenceOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SequenceBinding" type="tns:SequencePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="SubmitSequence">
+      <soap:operation soapAction="urn:SubmitSequence" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SequenceService">
+    <wsdl:port name="SequencePort" binding="tns:SequenceBinding">
+      <soap:address location="http://example.com/sequence"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
