@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-07-04
+
+- chore(deps): bump `js-yaml`, `fastify`, `@types/node`, and `tsx` minimums
+- chore(app): bump generated app pins for `fastify`, `@types/node`, and `tsx`
+- docs(roadmap): align 1.0 readiness docs with the `0.38.0` dependency refresh
+
 ## [0.37.0] - 2026-06-26
 
 - ci(release): replace post-release full CI with a targeted publish check
