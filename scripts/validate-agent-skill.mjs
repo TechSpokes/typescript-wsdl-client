@@ -1,56 +1,20 @@
 #!/usr/bin/env node
 
 import { createHash } from "node:crypto";
-import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildAgentSkill, extractSection } from "./build-agent-skill.mjs";
+import { listFiles, pathExists, readBinaryFile, readJsonFile, readTextFile, toPosix } from "./lib/files.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
-
-function toPosix(filePath) {
-  return filePath.split(path.sep).join("/");
-}
 
 function repoPath(filePath) {
   return toPosix(path.relative(repoRoot, filePath));
 }
 
 async function readJson(relativePath) {
-  return JSON.parse(await readFile(path.join(repoRoot, relativePath), "utf8"));
-}
-
-async function pathExists(filePath) {
-  try {
-    await stat(filePath);
-    return true;
-  } catch (error) {
-    if (error && error.code === "ENOENT") {
-      return false;
-    }
-
-    throw error;
-  }
-}
-
-async function listFiles(root) {
-  const entries = await readdir(root, { withFileTypes: true });
-  const files = [];
-
-  for (const entry of entries) {
-    const absolutePath = path.join(root, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await listFiles(absolutePath));
-      continue;
-    }
-
-    if (entry.isFile()) {
-      files.push(absolutePath);
-    }
-  }
-
-  return files.sort((left, right) => repoPath(left).localeCompare(repoPath(right)));
+  return readJsonFile(path.join(repoRoot, relativePath));
 }
 
 function parseFrontmatter(markdown) {
@@ -102,7 +66,7 @@ async function validateManifestSources(manifest) {
     }
 
     if (reference.kind === "fluid") {
-      const markdown = await readFile(sourcePath, "utf8");
+      const markdown = await readTextFile(sourcePath);
       for (const section of reference.sections ?? []) {
         extractSection(markdown, section, reference.source);
       }
@@ -128,11 +92,11 @@ function markdownLinks(markdown) {
 }
 
 async function validatePackagedMarkdown(packageRoot) {
-  const files = (await listFiles(packageRoot)).filter((filePath) => filePath.endsWith(".md"));
+  const files = (await listFiles(packageRoot, { sortRoot: repoRoot })).filter((filePath) => filePath.endsWith(".md"));
   const anchorsByFile = new Map();
 
   for (const filePath of files) {
-    const markdown = await readFile(filePath, "utf8");
+    const markdown = await readTextFile(filePath);
     const h1Count = markdown.split(/\r?\n/).filter((line) => /^#\s+/.test(line)).length;
     if (h1Count !== 1) {
       throw new Error(`${repoPath(filePath)} must contain exactly one H1.`);
@@ -148,7 +112,7 @@ async function validatePackagedMarkdown(packageRoot) {
   }
 
   for (const filePath of files) {
-    const markdown = await readFile(filePath, "utf8");
+    const markdown = await readTextFile(filePath);
     for (const link of markdownLinks(markdown)) {
       if (/^[a-z][a-z0-9+.-]*:/i.test(link.target)) {
         continue;
@@ -182,7 +146,7 @@ async function validateForbiddenFiles(packageRoot) {
     "releases",
   ]);
 
-  for (const filePath of await listFiles(packageRoot)) {
+  for (const filePath of await listFiles(packageRoot, { sortRoot: repoRoot })) {
     const packagedPath = toPosix(path.relative(packageRoot, filePath));
     const segments = packagedPath.split("/");
     for (const segment of segments) {
@@ -200,9 +164,9 @@ async function validateForbiddenFiles(packageRoot) {
 async function hashTree(root) {
   const entries = [];
 
-  for (const filePath of await listFiles(root)) {
+  for (const filePath of await listFiles(root, { sortRoot: repoRoot })) {
     const relativePath = toPosix(path.relative(root, filePath));
-    const content = await readFile(filePath);
+    const content = await readBinaryFile(filePath);
     const hash = createHash("sha256").update(content).digest("hex");
     entries.push(`${relativePath}\0${hash}`);
   }
@@ -233,7 +197,7 @@ async function validateDeterministicBuild(tag) {
 
 async function validateEvergreenNoFluidTables(manifest) {
   for (const reference of manifest.references.filter((item) => item.kind === "evergreen")) {
-    const markdown = await readFile(path.join(repoRoot, reference.source), "utf8");
+    const markdown = await readTextFile(path.join(repoRoot, reference.source));
     const flagLikeCount = (markdown.match(/`--[a-z0-9-]+`/g) ?? []).length;
 
     if (/^###\s+.*Flags$/m.test(markdown) || /\|\s*Flag\s*\|/i.test(markdown) || flagLikeCount > 12) {
@@ -247,7 +211,7 @@ async function main() {
   const tag = `v${packageJson.version}`;
   const manifest = await readJson("agent-skill/reference-manifest.json");
 
-  validateSkillFrontmatter(await readFile(path.join(repoRoot, "agent-skill", "SKILL.md"), "utf8"));
+  validateSkillFrontmatter(await readTextFile(path.join(repoRoot, "agent-skill", "SKILL.md")));
   await validateManifestSources(manifest);
   await validateEvergreenNoFluidTables(manifest);
 

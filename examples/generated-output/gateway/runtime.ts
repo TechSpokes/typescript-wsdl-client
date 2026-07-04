@@ -42,7 +42,7 @@ export type ResponseEnvelope<T> = SuccessEnvelope<T> | ErrorEnvelope;
  * @param message - Optional success message
  * @returns Success envelope wrapping the data
  */
-export function buildSuccessEnvelope<T>(data: T, message?: string): SuccessEnvelope<T> {
+export function buildSuccessEnvelope<T>(data: T, message?: string): ResponseEnvelope<T> {
   return {
     status: "SUCCESS",
     message: message ?? null,
@@ -183,74 +183,76 @@ const ARRAY_WRAPPERS: Record<string, string> = {
 /**
  * Type name → { propertyName: propertyTypeName } for recursive unwrapping.
  */
-const CHILDREN_TYPES: Record<string, Record<string, string>> = {
-  "WeatherDescription": {
-    "WeatherID": "number",
-    "Description": "string",
-    "PictureURL": "string"
-  },
-  "ArrayOfWeatherDescription": {
-    "WeatherDescription": "WeatherDescription"
-  },
-  "Temp": {
-    "MorningLow": "string",
-    "DaytimeHigh": "string"
-  },
-  "POP": {
-    "Nighttime": "string",
-    "Daytime": "string"
-  },
-  "Forecast": {
-    "Date": "string",
-    "WeatherID": "number",
-    "Desciption": "string",
-    "Temperatures": "Temp",
-    "ProbabilityOfPrecipiation": "POP"
-  },
-  "ArrayOfForecast": {
-    "Forecast": "Forecast"
-  },
-  "ForecastReturn": {
-    "Success": "boolean",
-    "ResponseText": "string",
-    "State": "string",
-    "City": "string",
-    "WeatherStationCity": "string",
-    "ForecastResult": "ArrayOfForecast"
-  },
-  "WeatherReturn": {
-    "Success": "boolean",
-    "ResponseText": "string",
-    "State": "string",
-    "City": "string",
-    "WeatherStationCity": "string",
-    "WeatherID": "number",
-    "Description": "string",
-    "Temperature": "string",
-    "RelativeHumidity": "string",
-    "Wind": "string",
-    "Pressure": "string",
-    "Visibility": "string",
-    "WindChill": "string",
-    "Remarks": "string"
-  },
-  "GetWeatherInformation": {},
-  "GetWeatherInformationResponse": {
-    "GetWeatherInformationResult": "ArrayOfWeatherDescription"
-  },
-  "GetCityForecastByZIP": {
-    "ZIP": "string"
-  },
-  "GetCityForecastByZIPResponse": {
-    "GetCityForecastByZIPResult": "ForecastReturn"
-  },
-  "GetCityWeatherByZIP": {
-    "ZIP": "string"
-  },
-  "GetCityWeatherByZIPResponse": {
-    "GetCityWeatherByZIPResult": "WeatherReturn"
-  }
-};
+const CHILDREN_TYPES: Record<string, Record<string, string>> = JSON.parse([
+  "{",
+  "  \"WeatherDescription\": {",
+  "    \"WeatherID\": \"number\",",
+  "    \"Description\": \"string\",",
+  "    \"PictureURL\": \"string\"",
+  "  },",
+  "  \"ArrayOfWeatherDescription\": {",
+  "    \"WeatherDescription\": \"WeatherDescription\"",
+  "  },",
+  "  \"Temp\": {",
+  "    \"MorningLow\": \"string\",",
+  "    \"DaytimeHigh\": \"string\"",
+  "  },",
+  "  \"POP\": {",
+  "    \"Nighttime\": \"string\",",
+  "    \"Daytime\": \"string\"",
+  "  },",
+  "  \"Forecast\": {",
+  "    \"Date\": \"string\",",
+  "    \"WeatherID\": \"number\",",
+  "    \"Desciption\": \"string\",",
+  "    \"Temperatures\": \"Temp\",",
+  "    \"ProbabilityOfPrecipiation\": \"POP\"",
+  "  },",
+  "  \"ArrayOfForecast\": {",
+  "    \"Forecast\": \"Forecast\"",
+  "  },",
+  "  \"ForecastReturn\": {",
+  "    \"Success\": \"boolean\",",
+  "    \"ResponseText\": \"string\",",
+  "    \"State\": \"string\",",
+  "    \"City\": \"string\",",
+  "    \"WeatherStationCity\": \"string\",",
+  "    \"ForecastResult\": \"ArrayOfForecast\"",
+  "  },",
+  "  \"WeatherReturn\": {",
+  "    \"Success\": \"boolean\",",
+  "    \"ResponseText\": \"string\",",
+  "    \"State\": \"string\",",
+  "    \"City\": \"string\",",
+  "    \"WeatherStationCity\": \"string\",",
+  "    \"WeatherID\": \"number\",",
+  "    \"Description\": \"string\",",
+  "    \"Temperature\": \"string\",",
+  "    \"RelativeHumidity\": \"string\",",
+  "    \"Wind\": \"string\",",
+  "    \"Pressure\": \"string\",",
+  "    \"Visibility\": \"string\",",
+  "    \"WindChill\": \"string\",",
+  "    \"Remarks\": \"string\"",
+  "  },",
+  "  \"GetWeatherInformation\": {},",
+  "  \"GetWeatherInformationResponse\": {",
+  "    \"GetWeatherInformationResult\": \"ArrayOfWeatherDescription\"",
+  "  },",
+  "  \"GetCityForecastByZIP\": {",
+  "    \"ZIP\": \"string\"",
+  "  },",
+  "  \"GetCityForecastByZIPResponse\": {",
+  "    \"GetCityForecastByZIPResult\": \"ForecastReturn\"",
+  "  },",
+  "  \"GetCityWeatherByZIP\": {",
+  "    \"ZIP\": \"string\"",
+  "  },",
+  "  \"GetCityWeatherByZIPResponse\": {",
+  "    \"GetCityWeatherByZIPResult\": \"WeatherReturn\"",
+  "  }",
+  "}"
+].join("\n")) as Record<string, Record<string, string>>;
 
 function isSafeObjectKey(key: string): boolean {
   return key !== "__proto__" && key !== "constructor" && key !== "prototype";

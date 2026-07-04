@@ -42,7 +42,7 @@ Headings are the only Markdown element that all four audiences interpret as stru
 
 - Use `#` (ATX) syntax only, not underline-style (Setext).
 - Use exactly one h1 per file as the document title.
-- Do not skip levels. An h4 must appear under an h3, not directly under an h2.
+- Do not skip levels. A h4 must appear under a h3, not directly under a h2.
 - Use h1 through h6 as needed. Do not artificially stop at h3.
 - Never use bold text as a substitute for a heading.
 - When you need finer structure than your current deepest heading, use the next heading level.
@@ -102,7 +102,7 @@ Code examples should be unambiguous to parsers and easy to copy. Keep them minim
 - Always specify a language identifier on fenced code blocks.
 - Keep examples minimal. Use the shortest code that demonstrates the point.
 - Show commands the reader should run, not terminal session transcripts.
-- Use `declare` for signature-only TypeScript examples, or use a non-TypeScript fence for pseudo-code.
+- Use `declare` for signature-only TypeScript examples, or use a non-TypeScript fence for pseudocode.
 
 ## Links
 

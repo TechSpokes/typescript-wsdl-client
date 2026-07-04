@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import Fastify from "fastify";
+import Fastify, {type FastifyInstance} from "fastify";
 import {parseRecords} from "../../src/runtime/streamXml.js";
 import {toNdjson} from "../../src/runtime/ndjson.js";
 import {toJsonArray} from "../../src/runtime/jsonArray.js";
@@ -31,6 +31,20 @@ async function* webStreamToAsyncIterable(body: ReadableStream<Uint8Array>): Asyn
       reader.releaseLock();
     } catch { /* noop */ }
   }
+}
+
+function getListeningPort(app: FastifyInstance): number {
+  const addr = app.server.address();
+  if (!addr || typeof addr === "string") throw new Error("failed to bind Fastify");
+  return addr.port;
+}
+
+function postStream(port: number): Promise<Response> {
+  return fetch(`http://127.0.0.1:${port}/stream`, {
+    method: "POST",
+    headers: {"content-type": "application/json"},
+    body: "{}",
+  });
 }
 
 // Escapia-shaped SOAP body split into chunks so the server emits one record
@@ -139,16 +153,10 @@ describe("stream end-to-end integration", () => {
     });
     await app.listen({port: 0, host: "127.0.0.1"});
     try {
-      const addr = app.server.address();
-      if (!addr || typeof addr === "string") throw new Error("failed to bind Fastify");
-      const port = addr.port;
+      const port = getListeningPort(app);
 
       const tStart = Date.now();
-      const res = await fetch(`http://127.0.0.1:${port}/stream`, {
-        method: "POST",
-        headers: {"content-type": "application/json"},
-        body: "{}",
-      });
+      const res = await postStream(port);
       expect(res.ok).toBe(true);
       expect(res.headers.get("content-type")).toContain("application/x-ndjson");
       expect(res.body).toBeTruthy();
@@ -208,16 +216,10 @@ describe("stream end-to-end integration", () => {
     });
     await app.listen({port: 0, host: "127.0.0.1"});
     try {
-      const addr = app.server.address();
-      if (!addr || typeof addr === "string") throw new Error("failed to bind Fastify");
-      const port = addr.port;
+      const port = getListeningPort(app);
 
       const tStart = Date.now();
-      const res = await fetch(`http://127.0.0.1:${port}/stream`, {
-        method: "POST",
-        headers: {"content-type": "application/json"},
-        body: "{}",
-      });
+      const res = await postStream(port);
       expect(res.ok).toBe(true);
       expect(res.headers.get("content-type")).toContain("application/json");
       expect(res.body).toBeTruthy();

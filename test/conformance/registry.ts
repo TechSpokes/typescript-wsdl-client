@@ -61,6 +61,8 @@ export const capabilities: CapabilityCase[] = [
       operationNames: ["GetWeatherInformation", "GetCityForecastByZIP", "GetCityWeatherByZIP"],
       assert: compiled => {
         const operation = compiled.operations.find(op => op.name === "GetWeatherInformation");
+        // This fixture verifies the original WSDL SOAP action URI, which is intentionally HTTP.
+        // noinspection HttpUrlsUsage
         if (operation?.soapAction !== "http://ws.cdyne.com/WeatherWS/GetWeatherInformation") {
           throw new Error("Weather baseline should retain the SOAP 1.1 action from the first SOAP binding.");
         }

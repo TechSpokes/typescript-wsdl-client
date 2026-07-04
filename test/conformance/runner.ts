@@ -12,7 +12,7 @@ import {resolveCompilerOptions} from "../../src/config.js";
 import {generateCatalog} from "../../src/compiler/generateCatalog.js";
 import {compileCatalog, type CompiledCatalog} from "../../src/compiler/schemaCompiler.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
-import {generateGateway, generateOpenAPI, generateTests} from "../../src";
+import {generateGateway, generateOpenAPI, generateTests} from "../../src/index.js";
 import {generateApp} from "../../src/app/generateApp.js";
 import {WsdlCompilationError} from "../../src/util/errors.js";
 import {deriveClientName} from "../../src/util/tools.js";
@@ -197,7 +197,7 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
         await app.register(pluginModule.default, {client: mockClient});
         await app.ready();
         const response = await app.inject({
-          method: route.method.toUpperCase(),
+          method: route.method.toUpperCase() as "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD",
           url: route.path,
           headers: {"content-type": "application/json"},
           payload: JSON.stringify(request.payload),

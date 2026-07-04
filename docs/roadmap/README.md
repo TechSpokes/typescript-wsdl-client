@@ -8,7 +8,7 @@ See the root [README.md](../../README.md) for project overview and the root [ROA
 
 This plan turns the 1.0 roadmap into implementation slices that can be picked up independently. Each slice has its own plan document with scope, testing strategy, acceptance gates, and release implications.
 
-The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, JSON array streaming is shipped, `xs:anyAttribute` wildcard bags are shipped, the conformance framework is wired into validation gates, and dependency floors were refreshed in `0.38.0`. The remaining readiness work is to review the explicit partial, diagnostic, and unsupported capability decisions, then run the final release candidate gate pass.
+The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, JSON array streaming is shipped, `xs:anyAttribute` wildcard bags are shipped, the conformance framework is wired into validation gates, and IDE-owned TypeScript diagnostics were aligned with the scoped test layout in `0.39.0`. The remaining readiness work is to review the explicit partial, diagnostic, and unsupported capability decisions, then run the final release candidate gate pass.
 
 ## Route Summary
 

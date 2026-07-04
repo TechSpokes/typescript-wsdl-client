@@ -5,7 +5,7 @@ import {tmpdir} from "node:os";
 import {compileCatalog, type CompiledCatalog} from "../../src/compiler/schemaCompiler.js";
 import {resolveCompilerOptions} from "../../src/config.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
-import {parseStreamConfig} from "../../src";
+import {parseStreamConfig} from "../../src/index.js";
 import {WsdlCompilationError} from "../../src/util/errors.js";
 import {capabilities} from "../conformance/registry.js";
 import {fixturePathFor} from "../conformance/runner.js";

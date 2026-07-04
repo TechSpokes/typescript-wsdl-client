@@ -80,7 +80,7 @@ export function flattenMockPayload(
       result[key] = flattenMockPayload(value as Record<string, unknown>, childTypeName, childTypeMap, arrayWrappers);
     } else if (childTypeName && Array.isArray(value)) {
       // Array of complex types — flatten each item
-      result[key] = value.map(item => {
+      result[key] = (value as unknown[]).map(item => {
         if (item != null && typeof item === "object" && !Array.isArray(item)) {
           if (childTypeName in arrayWrappers) {
             const innerKey = arrayWrappers[childTypeName];

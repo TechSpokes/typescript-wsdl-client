@@ -8,7 +8,7 @@ Sample files, configuration, and generated output for `@techspokes/typescript-ws
 - [generated-output](generated-output/README.md): pre-generated output from weather.wsdl for inspection
 - [config](config/README.md): configuration file examples for OpenAPI generation
 - [typescript-project](typescript-project/README.md): minimal TypeScript project using the generated client
-- [fastify-gateway](fastify-gateway/README.md): multi-service Fastify gateway setup
+- [fastify-gateway](fastify-gateway/README.md): multiservice Fastify gateway setup
 - [ci-cd](ci-cd/README.md): CI/CD integration with GitHub Actions and shell scripts
 
 ## Generated Output

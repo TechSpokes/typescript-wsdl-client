@@ -520,6 +520,10 @@ export function emitRuntimeModule(
 
     // Only emit if there are actual wrapper types to unwrap
     if (Object.keys(arrayWrappers).length > 0) {
+      const childrenTypesJsonLines = JSON.stringify(childTypes, null, 2)
+        .split("\n")
+        .map((line) => `  ${JSON.stringify(line)}`)
+        .join(",\n");
       unwrapSection = `
 /**
  * ArrayOf* wrapper type → inner element property name.
@@ -531,7 +535,9 @@ const ARRAY_WRAPPERS: Record<string, string> = ${JSON.stringify(arrayWrappers, n
 /**
  * Type name → { propertyName: propertyTypeName } for recursive unwrapping.
  */
-const CHILDREN_TYPES: Record<string, Record<string, string>> = ${JSON.stringify(childTypes, null, 2)};
+const CHILDREN_TYPES: Record<string, Record<string, string>> = JSON.parse([
+${childrenTypesJsonLines}
+].join("\\n")) as Record<string, Record<string, string>>;
 
 function isSafeObjectKey(key: string): boolean {
   return key !== "__proto__" && key !== "constructor" && key !== "prototype";
@@ -628,7 +634,7 @@ export type ResponseEnvelope<T> = SuccessEnvelope<T> | ErrorEnvelope;
  * @param message - Optional success message
  * @returns Success envelope wrapping the data
  */
-export function buildSuccessEnvelope<T>(data: T, message?: string): SuccessEnvelope<T> {
+export function buildSuccessEnvelope<T>(data: T, message?: string): ResponseEnvelope<T> {
   return {
     status: "SUCCESS",
     message: message ?? null,

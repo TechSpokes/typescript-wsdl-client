@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-07-04
+
+- refactor(generator): avoid duplicated generated gateway metadata literals
+- chore(ide): resolve PhpStorm inspection warnings in release scripts and tests
+- docs: polish Markdown and consumer guidance wording
+
 ## [0.38.0] - 2026-07-04
 
 - chore(deps): bump `js-yaml`, `fastify`, `@types/node`, and `tsx` minimums

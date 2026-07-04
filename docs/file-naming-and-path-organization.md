@@ -65,7 +65,7 @@ File names state the exact purpose and content of the artifact. They should rema
 - Use lowercase kebab-case.
 - Use general-to-specific segment order.
 - Put the broad feature classifier first.
-- Put variable-like qualifiers at the right side.
+- Put variable-like qualifiers on the right side.
 - Keep recognized standards terms when they identify the feature.
 - Avoid filler words such as `service`, `sample`, `fixture`, and `test`.
 - Use the file extension to identify format, not the basename.

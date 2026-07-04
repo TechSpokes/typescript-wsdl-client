@@ -7,7 +7,7 @@ import {describe, it, expect} from "vitest";
 import {mkdtempSync, rmSync, writeFileSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
-import {applyShapeCatalogs, parseStreamConfig} from "../../src";
+import {applyShapeCatalogs, parseStreamConfig} from "../../src/index.js";
 import {WsdlCompilationError} from "../../src/util/errors.js";
 import type {CompiledCatalog, CompiledType, CompiledAlias} from "../../src/compiler/schemaCompiler.js";
 

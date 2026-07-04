@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "**/*.ts",
+    "../scripts/**/*.d.mts",
+    "../scripts/lib/preflight-examples.d.mts"
+  ]
+}

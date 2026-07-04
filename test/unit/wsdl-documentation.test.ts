@@ -1,7 +1,7 @@
 import {afterAll, describe, expect, it} from "vitest";
-import {mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
-import {join} from "node:path";
-import {tmpdir} from "node:os";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
 import {resolveCompilerOptions} from "../../src/config.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
 import {compileCatalog} from "../../src/compiler/schemaCompiler.js";
@@ -9,11 +9,16 @@ import {generateCatalog} from "../../src/compiler/generateCatalog.js";
 import {generateClient} from "../../src/client/generateClient.js";
 import {generateTypes} from "../../src/client/generateTypes.js";
 import {generateOperations} from "../../src/client/generateOperations.js";
-import {generateOpenAPI} from "../../src/openapi/generateOpenAPI.js";
-import {generateGateway} from "../../src/gateway/generateGateway.js";
+// NodeNext tests use explicit `.js` imports; PhpStorm's shorter directory import breaks that runtime contract.
+// noinspection ES6PreferShortImport
+import {generateGateway, generateOpenAPI} from "../../src/index.js";
 
-const tmpRoot = mkdtempSync(join(tmpdir(), "wsdl-docs-"));
-const wsdlPath = join(tmpRoot, "docs.wsdl");
+const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "wsdl-docs-"));
+const wsdlPath = path.join(tmpRoot, "docs.wsdl");
+
+function writeJsonFile(filePath: string, value: unknown): void {
+  fs.writeFileSync(filePath, JSON.stringify(value, null, 2), "utf8");
+}
 
 const TEST_WSDL = `<?xml version="1.0" encoding="utf-8"?>
 <wsdl:definitions
@@ -93,10 +98,10 @@ const TEST_WSDL = `<?xml version="1.0" encoding="utf-8"?>
   </wsdl:service>
 </wsdl:definitions>`;
 
-writeFileSync(wsdlPath, TEST_WSDL, "utf8");
+fs.writeFileSync(wsdlPath, TEST_WSDL, "utf8");
 
 afterAll(() => {
-  rmSync(tmpRoot, {recursive: true, force: true});
+  fs.rmSync(tmpRoot, {recursive: true, force: true});
 });
 
 describe("WSDL/XSD documentation propagation", () => {
@@ -126,32 +131,24 @@ describe("WSDL/XSD documentation propagation", () => {
     expect(compiled.wsdlDocs?.services?.find(s => s.name === "DemoService")?.doc).toBe("Demo service entrypoint.");
     expect(compiled.wsdlDocs?.services?.find(s => s.name === "DemoService")?.ports?.find(p => p.name === "DemoPort")?.doc).toBe("Primary SOAP port.");
 
-    const catalogFile = join(tmpRoot, "catalog.json");
-    const clientFile = join(tmpRoot, "client.ts");
-    const typesFile = join(tmpRoot, "types.ts");
-    const operationsFile = join(tmpRoot, "operations.ts");
-    const openapiFile = join(tmpRoot, "openapi.json");
-    const opsFile = join(tmpRoot, "ops.json");
-    const summaryOverrideOpsFile = join(tmpRoot, "ops-summary.json");
-    const gatewayDir = join(tmpRoot, "gateway");
+    const catalogFile = path.join(tmpRoot, "catalog.json");
+    const clientFile = path.join(tmpRoot, "client.ts");
+    const typesFile = path.join(tmpRoot, "types.ts");
+    const operationsFile = path.join(tmpRoot, "operations.ts");
+    const openapiFile = path.join(tmpRoot, "openapi.json");
+    const opsFile = path.join(tmpRoot, "ops.json");
+    const summaryOverrideOpsFile = path.join(tmpRoot, "ops-summary.json");
+    const gatewayDir = path.join(tmpRoot, "gateway");
 
     generateCatalog(catalogFile, compiled);
     generateClient(clientFile, compiled);
     generateTypes(typesFile, compiled);
     generateOperations(operationsFile, compiled);
-    writeFileSync(
-      opsFile,
-      JSON.stringify(
-        {
-          GetThing: {
-            description: "Override operation description.",
-          },
-        },
-        null,
-        2
-      ),
-      "utf8"
-    );
+    writeJsonFile(opsFile, {
+      GetThing: {
+        description: "Override operation description.",
+      },
+    });
     const {doc} = await generateOpenAPI({
       compiledCatalog: compiled,
       outFile: openapiFile,
@@ -160,21 +157,26 @@ describe("WSDL/XSD documentation propagation", () => {
       skipValidate: true,
     });
 
-    const catalogJson = JSON.parse(readFileSync(catalogFile, "utf8"));
+    const catalogSource = fs.readFileSync(catalogFile).toString("utf8");
+    const catalogJson = JSON.parse(catalogSource);
     expect(catalogJson.operations[0].doc).toBe("Gets a thing. Returns details.");
     expect(catalogJson.wsdlDocs.bindings[0].doc).toBe("SOAP binding for demo service.");
     expect(catalogJson.wsdlDocs.messages[0].parts[0].doc).toBe("Request parameters part.");
     expect(catalogJson.wsdlDocs.services[0].ports[0].doc).toBe("Primary SOAP port.");
 
-    const typesSource = readFileSync(typesFile, "utf8");
+    // PhpStorm sometimes misclassifies Node fs reads as void in this NodeNext Vitest file; Vitest verifies the generated text.
+    // noinspection JSVoidFunctionReturnValueUsed
+    const typesSource: string = fs.readFileSync(typesFile).toString("utf8");
     expect(typesSource).toContain("* Thing payload.");
     expect(typesSource).toContain("* Display name.");
     expect(typesSource).toContain("@xsd");
 
-    const operationsSource = readFileSync(operationsFile, "utf8");
+    const operationsSource: string = fs.readFileSync(operationsFile).toString("utf8");
     expect(operationsSource).toContain("* Gets a thing. Returns details.");
 
-    const clientSource = readFileSync(clientFile, "utf8");
+    // PhpStorm sometimes misclassifies Node fs reads as void in this NodeNext Vitest file; Vitest verifies the generated text.
+    // noinspection JSVoidFunctionReturnValueUsed
+    const clientSource: string = fs.readFileSync(clientFile).toString("utf8");
     expect(clientSource).toContain("* Gets a thing. Returns details.");
 
     expect(doc.paths["/get-thing"].post.summary).toBe("Gets a thing.");
@@ -182,19 +184,11 @@ describe("WSDL/XSD documentation propagation", () => {
     expect(doc.components.schemas.Thing.description).toBe("Thing payload.");
     expect(doc.components.schemas.Thing.properties.name.description).toBe("Display name.");
 
-    writeFileSync(
-      summaryOverrideOpsFile,
-      JSON.stringify(
-        {
-          GetThing: {
-            summary: "Explicit summary override.",
-          },
-        },
-        null,
-        2
-      ),
-      "utf8"
-    );
+    writeJsonFile(summaryOverrideOpsFile, {
+      GetThing: {
+        summary: "Explicit summary override.",
+      },
+    });
 
     const summaryDoc = await generateOpenAPI({
       compiledCatalog: compiled,
@@ -211,7 +205,9 @@ describe("WSDL/XSD documentation propagation", () => {
       serviceSlug: "demo",
       catalogFile,
     });
-    const routeSource = readFileSync(join(gatewayDir, "routes", "getthing.ts"), "utf8");
+    // PhpStorm sometimes misclassifies Node fs reads as void in this NodeNext Vitest file; Vitest verifies the generated text.
+    // noinspection JSVoidFunctionReturnValueUsed
+    const routeSource = fs.readFileSync(path.join(gatewayDir, "routes", "getthing.ts")).toString("utf8");
     expect(routeSource).toContain("* Summary: Gets a thing.");
     expect(routeSource).toContain("* Description: Override operation description.");
   });

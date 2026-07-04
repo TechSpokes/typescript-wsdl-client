@@ -3,7 +3,7 @@ import {
   buildSecurity,
   parseSecurityConfig,
   SecurityConfigError,
-} from "../../src";
+} from "../../src/index.js";
 
 describe("parseSecurityConfig", () => {
   it("parses the new gateway and upstream shape", () => {

@@ -2,13 +2,19 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.38.0
+## Current: 1.0 Readiness After 0.39.0
 
-Focus: keep the expanded conformance baseline aligned after the dependency refresh, confirm the remaining documented partial and terminal capability decisions, and run the release candidate gates.
+Focus: keep IDE-owned TypeScript diagnostics aligned with the repository test layout, confirm the remaining documented partial and terminal capability decisions, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 0.39.0
+
+- Added scoped TypeScript ownership for tests and generated examples so IDE diagnostics match the NodeNext project layout.
+- Deduplicated generated gateway runtime metadata without changing gateway response behavior.
+- Cleaned release script helpers, inspection suppressions, and documentation wording that affected local IDE quality signals.
 
 ### 0.38.0
 

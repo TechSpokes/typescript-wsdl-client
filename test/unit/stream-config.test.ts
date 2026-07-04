@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {parseStreamConfig, StreamConfigError} from "../../src";
+import {parseStreamConfig, StreamConfigError} from "../../src/index.js";
 
 describe("parseStreamConfig", () => {
   it("parses a minimal valid configuration", () => {

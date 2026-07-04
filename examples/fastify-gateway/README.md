@@ -1,6 +1,6 @@
 # Fastify Gateway Example
 
-Multi-service gateway setup using generated Fastify plugins.
+Multiservice gateway setup using generated Fastify plugins.
 
 ## Overview
 

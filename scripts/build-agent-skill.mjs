@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import { deflateRawSync } from "node:zlib";
-import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { listFiles, pathExists, readBinaryFile, readJsonFile, readTextFile, toPosix } from "./lib/files.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
@@ -20,16 +21,12 @@ const titleByOutput = new Map([
   ["references/streaming.md", "Streaming"],
 ]);
 
-function toPosix(filePath) {
-  return filePath.split(path.sep).join("/");
-}
-
 function repoPath(filePath) {
   return toPosix(path.relative(repoRoot, filePath));
 }
 
 async function readJson(relativePath) {
-  return JSON.parse(await readFile(path.join(repoRoot, relativePath), "utf8"));
+  return readJsonFile(path.join(repoRoot, relativePath));
 }
 
 function validateReleaseTag(tag) {
@@ -180,19 +177,6 @@ function buildSourceMap({ version, tag, manifest }) {
   };
 }
 
-async function pathExists(filePath) {
-  try {
-    await stat(filePath);
-    return true;
-  } catch (error) {
-    if (error && error.code === "ENOENT") {
-      return false;
-    }
-
-    throw error;
-  }
-}
-
 async function writeText(filePath, content) {
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, ensureSingleTrailingNewline(content), "utf8");
@@ -230,7 +214,7 @@ async function packageReferences({ manifest, packageRoot, sourceToOutput }) {
 
     for (const reference of references) {
       const sourceFile = path.join(repoRoot, reference.source);
-      const sourceMarkdown = await readFile(sourceFile, "utf8");
+      const sourceMarkdown = await readTextFile(sourceFile);
 
       for (const section of reference.sections ?? []) {
         const extracted = extractSection(sourceMarkdown, section, reference.source);
@@ -254,25 +238,6 @@ async function readManifest() {
 async function copySkillRoot(packageRoot) {
   await copyFileTo(path.join(repoRoot, "agent-skill", "SKILL.md"), path.join(packageRoot, "SKILL.md"));
   await copyFileTo(path.join(repoRoot, "agent-skill", "install.mjs"), path.join(packageRoot, "install.mjs"));
-}
-
-async function listFiles(root) {
-  const entries = await readdir(root, { withFileTypes: true });
-  const files = [];
-
-  for (const entry of entries) {
-    const absolutePath = path.join(root, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await listFiles(absolutePath));
-      continue;
-    }
-
-    if (entry.isFile()) {
-      files.push(absolutePath);
-    }
-  }
-
-  return files.sort((left, right) => repoPath(left).localeCompare(repoPath(right)));
 }
 
 const crcTable = new Uint32Array(256);
@@ -306,7 +271,7 @@ function uint32(value) {
 }
 
 async function createZip({ sourceRoot, zipPath }) {
-  const files = await listFiles(sourceRoot);
+  const files = await listFiles(sourceRoot, { sortRoot: repoRoot });
   const centralRecords = [];
   let offset = 0;
 
@@ -316,8 +281,11 @@ async function createZip({ sourceRoot, zipPath }) {
   for (const filePath of files) {
     const relativeName = toPosix(path.relative(sourceRoot, filePath));
     const nameBuffer = Buffer.from(relativeName, "utf8");
-    const content = await readFile(filePath);
-    const compressed = deflateRawSync(content, { level: 9 });
+    const content = await readBinaryFile(filePath);
+    const contentBuffer = content.buffer.slice(content.byteOffset, content.byteOffset + content.byteLength);
+    // PhpStorm's .mjs type model rejects this Buffer overload, but Node zlib accepts Buffer input.
+    // noinspection JSCheckFunctionSignatures
+    const compressed = new Uint8Array(deflateRawSync(Buffer.from(contentBuffer), { level: 9 }));
     const crc = crc32(content);
     const dosTime = 0;
     const dosDate = 33;
@@ -383,8 +351,12 @@ async function createZip({ sourceRoot, zipPath }) {
   });
 }
 
-export async function buildAgentSkill(options = {}) {
-  const tag = options.tag;
+export async function buildAgentSkill({
+  assetsDir = defaultAssetsDir,
+  createArchive = true,
+  stageRoot = defaultStageRoot,
+  tag,
+} = {}) {
   validateReleaseTag(tag);
 
   const version = await readPackageVersion();
@@ -394,9 +366,7 @@ export async function buildAgentSkill(options = {}) {
   }
 
   const manifest = await readManifest();
-  const stageRoot = options.stageRoot ?? defaultStageRoot;
   const packageRoot = path.join(stageRoot, skillFolderName);
-  const createArchive = options.createArchive ?? true;
 
   await rm(stageRoot, { force: true, recursive: true });
   await mkdir(packageRoot, { recursive: true });
@@ -415,7 +385,6 @@ export async function buildAgentSkill(options = {}) {
 
   let zipPath;
   if (createArchive) {
-    const assetsDir = options.assetsDir ?? defaultAssetsDir;
     zipPath = path.join(assetsDir, `typescript-wsdl-client-agent-skill-${tag}.zip`);
 
     if (await pathExists(zipPath)) {

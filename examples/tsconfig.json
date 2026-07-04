@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "rootDir": "..",
+    "paths": {
+      "soap": [
+        "../src/types/soap.d.ts"
+      ]
+    }
+  },
+  "include": [
+    "generated-output/**/*.ts",
+    "../src/types/soap.d.ts"
+  ]
+}

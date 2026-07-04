@@ -742,38 +742,27 @@ export function compileCatalog(
       }
       return merged;
     };
+    const mergeJsonUnique = <T>(into: T[] | undefined, list: T[]): T[] | undefined => {
+      if (list.length === 0) return into;
+      const merged = into ? [...into] : [];
+      const seen = new Set(merged.map((w) => JSON.stringify(w)));
+      for (const w of list) {
+        const key = JSON.stringify(w);
+        if (!seen.has(key)) {
+          seen.add(key);
+          merged.push(w);
+        }
+      }
+      return merged;
+    };
     const mergeWildcards = (
       into: CompiledWildcard[] | undefined,
       list: CompiledWildcard[]
-    ): CompiledWildcard[] | undefined => {
-      if (list.length === 0) return into;
-      const merged = into ? [...into] : [];
-      const seen = new Set(merged.map((w) => JSON.stringify(w)));
-      for (const w of list) {
-        const key = JSON.stringify(w);
-        if (!seen.has(key)) {
-          seen.add(key);
-          merged.push(w);
-        }
-      }
-      return merged;
-    };
+    ): CompiledWildcard[] | undefined => mergeJsonUnique(into, list);
     const mergeAttributeWildcards = (
       into: CompiledAttributeWildcard[] | undefined,
       list: CompiledAttributeWildcard[]
-    ): CompiledAttributeWildcard[] | undefined => {
-      if (list.length === 0) return into;
-      const merged = into ? [...into] : [];
-      const seen = new Set(merged.map((w) => JSON.stringify(w)));
-      for (const w of list) {
-        const key = JSON.stringify(w);
-        if (!seen.has(key)) {
-          seen.add(key);
-          merged.push(w);
-        }
-      }
-      return merged;
-    };
+    ): CompiledAttributeWildcard[] | undefined => mergeJsonUnique(into, list);
     const collectAttributes = (node: any): CompiledType["attrs"] => {
       const out: CompiledType["attrs"] = [];
       const attrs = getChildrenWithLocalName(node, "attribute");
