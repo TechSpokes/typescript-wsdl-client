@@ -234,8 +234,13 @@ describe("verifyReleaseAbandonmentGate", () => {
   const releaseAbandonWorkflow = `
   group: release-state-v1.0.0
   workflow_dispatch:
+  MARKER_STATE: matching
+  echo "present=false"
   run: git tag -a abandoned/v1.0.0 abc
-  notice="<!-- abandoned-release:v1.0.0 -->"
+  echo "Actor: \${ACTOR}"
+  echo "Evidence: \${EVIDENCE}"
+  - name: Verify immutable abandonment marker
+  run: gh release delete v1.0.0 --yes
   `;
 
   it("accepts guarded draft, package, and abandonment workflows", () => {
@@ -269,6 +274,36 @@ describe("verifyReleaseAbandonmentGate", () => {
 
     expect(errors).toContain("Draft release workflow must guard abandonment state before packaging or draft mutation.");
     expect(errors).toContain("Release package workflow must guard abandonment state before publish validation.");
-    expect(errors).toContain("Manual abandonment workflow must create an annotated marker and preserve a visible draft notice.");
+    expect(errors).toContain("Manual abandonment workflow must create and verify the immutable marker before retiring the draft release.");
+  });
+
+  it("rejects draft retirement that deletes the release tag", () => {
+    const errors = verifyReleaseAbandonmentGate({
+      releaseDraftWorkflow,
+      releasePackageWorkflow,
+      releaseAbandonWorkflow: releaseAbandonWorkflow.replace("--yes", "--yes --cleanup-tag"),
+    });
+
+    expect(errors).toContain("Manual abandonment workflow must never delete the release tag while retiring a draft.");
+  });
+
+  it("rejects abandonment without an idempotent absent-draft state", () => {
+    const errors = verifyReleaseAbandonmentGate({
+      releaseDraftWorkflow,
+      releasePackageWorkflow,
+      releaseAbandonWorkflow: releaseAbandonWorkflow.replace("echo \"present=false\"", "echo missing"),
+    });
+
+    expect(errors).toContain("Manual abandonment workflow must accept a matching marker with an already absent draft.");
+  });
+
+  it("rejects marker annotations without durable actor evidence", () => {
+    const errors = verifyReleaseAbandonmentGate({
+      releaseDraftWorkflow,
+      releasePackageWorkflow,
+      releaseAbandonWorkflow: releaseAbandonWorkflow.replace("Actor: \${ACTOR}", "Actor omitted"),
+    });
+
+    expect(errors).toContain("Manual abandonment workflow must preserve actor and optional evidence in new marker annotations.");
   });
 });

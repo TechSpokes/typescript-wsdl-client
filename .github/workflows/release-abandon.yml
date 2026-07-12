@@ -59,80 +59,81 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          MARKER_STATE: ${{ steps.state.outputs.marker_state }}
           TAG: ${{ steps.state.outputs.tag }}
         run: |
           set -euo pipefail
 
-          release_json="$(gh release view "${TAG}" --json body,isDraft,isPrerelease,name,url)"
+          if ! release_json="$(gh release view "${TAG}" --json isDraft,isPrerelease,url 2>/dev/null)"; then
+            if [[ "${MARKER_STATE}" != "matching" ]]; then
+              echo "Release ${TAG} has no draft and no matching abandonment marker." >&2
+              exit 1
+            fi
+            echo "present=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
           is_draft="$(jq -r '.isDraft' <<<"${release_json}")"
           if [[ "${is_draft}" != "true" ]]; then
             echo "Release ${TAG} is already published. Refusing abandonment mutation." >&2
             exit 1
           fi
 
-          echo "title=$(jq -r '.name' <<<"${release_json}")" >> "${GITHUB_OUTPUT}"
+          echo "present=true" >> "${GITHUB_OUTPUT}"
           echo "url=$(jq -r '.url' <<<"${release_json}")" >> "${GITHUB_OUTPUT}"
-          jq -r '.body' <<<"${release_json}" > "${RUNNER_TEMP}/release-body.md"
 
       - name: Create immutable abandonment marker
         if: steps.state.outputs.marker_state == 'absent'
         shell: bash
         env:
           COMMIT: ${{ steps.state.outputs.release_commit }}
+          EVIDENCE: ${{ inputs.evidence }}
           MARKER: ${{ steps.state.outputs.marker }}
           REASON: ${{ inputs.reason }}
           TAG: ${{ steps.state.outputs.tag }}
+          ACTOR: ${{ github.actor }}
         run: |
           set -euo pipefail
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "${MARKER}" "${COMMIT}" -m "Abandon ${TAG}: ${REASON}"
+          message_file="${RUNNER_TEMP}/abandonment-marker.txt"
+          {
+            echo "Abandon ${TAG}: ${REASON}"
+            echo
+            echo "Actor: ${ACTOR}"
+            echo "Release tag: ${TAG}"
+            echo "Marker tag: ${MARKER}"
+            echo "Commit: ${COMMIT}"
+            if [[ -n "${EVIDENCE}" ]]; then
+              echo "Evidence: ${EVIDENCE}"
+            fi
+          } > "${message_file}"
+          git tag -a "${MARKER}" "${COMMIT}" -F "${message_file}"
           git push origin "refs/tags/${MARKER}"
 
-      - name: Mark draft visibly abandoned
+      - name: Verify immutable abandonment marker
         shell: bash
         env:
-          ACTOR: ${{ github.actor }}
           COMMIT: ${{ steps.state.outputs.release_commit }}
-          EVIDENCE: ${{ inputs.evidence }}
-          GH_TOKEN: ${{ github.token }}
           MARKER: ${{ steps.state.outputs.marker }}
-          REASON: ${{ inputs.reason }}
-          RELEASE_TITLE: ${{ steps.release.outputs.title }}
-          TAG: ${{ steps.state.outputs.tag }}
         run: |
           set -euo pipefail
 
-          body_file="${RUNNER_TEMP}/release-body.md"
-          notice="<!-- abandoned-release:${TAG} -->"
-          if ! grep -Fq "${notice}" "${body_file}"; then
-            updated_body="${RUNNER_TEMP}/abandoned-release-body.md"
-            {
-              echo "${notice}"
-              echo "# Permanently Abandoned Candidate"
-              echo
-              echo "This candidate must never publish packages or become the supported release."
-              echo
-              echo "- Actor: ${ACTOR}"
-              echo "- Reason: ${REASON}"
-              echo "- Release tag: ${TAG}"
-              echo "- Marker tag: ${MARKER}"
-              echo "- Commit: ${COMMIT}"
-              if [[ -n "${EVIDENCE}" ]]; then
-                echo "- Failed validation evidence: ${EVIDENCE}"
-              fi
-              echo
-              cat "${body_file}"
-            } > "${updated_body}"
-            mv "${updated_body}" "${body_file}"
+          git fetch --force origin "refs/tags/${MARKER}:refs/tags/${MARKER}"
+          marker_commit="$(git rev-parse --verify "${MARKER}^{commit}")"
+          if [[ "${marker_commit}" != "${COMMIT}" ]]; then
+            echo "Marker ${MARKER} resolves to ${marker_commit}, expected ${COMMIT}." >&2
+            exit 1
           fi
 
-          title="${RELEASE_TITLE}"
-          if [[ "${title}" != "[ABANDONED] "* ]]; then
-            title="[ABANDONED] ${title}"
-          fi
-          gh release edit "${TAG}" --title "${title}" --notes-file "${body_file}"
+      - name: Retire abandoned draft release
+        if: steps.release.outputs.present == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.state.outputs.tag }}
+        run: gh release delete "${TAG}" --yes
 
       - name: Record abandonment summary
         shell: bash
@@ -140,6 +141,7 @@ jobs:
           COMMIT: ${{ steps.state.outputs.release_commit }}
           MARKER: ${{ steps.state.outputs.marker }}
           REASON: ${{ inputs.reason }}
+          RELEASE_PRESENT: ${{ steps.release.outputs.present }}
           RELEASE_URL: ${{ steps.release.outputs.url }}
           TAG: ${{ steps.state.outputs.tag }}
         run: |
@@ -150,5 +152,9 @@ jobs:
             echo "- Marker: ${MARKER}"
             echo "- Commit: ${COMMIT}"
             echo "- Reason: ${REASON}"
-            echo "- Draft: ${RELEASE_URL}"
+            if [[ "${RELEASE_PRESENT}" == "true" ]]; then
+              echo "- Draft retired: ${RELEASE_URL}"
+            else
+              echo "- Draft: already absent"
+            fi
           } >> "${GITHUB_STEP_SUMMARY}"

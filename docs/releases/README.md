@@ -53,6 +53,8 @@ Write validation as consumer-facing outcomes, not as maintainer command transcri
 
 Write release notes for users and maintainers, not as a file-by-file change log. Use `CHANGELOG.md` for the canonical version history.
 
+When an abandoned major or minor candidate contains the complete launch narrative, carry that narrative into the next published corrective release. The corrective release notes must stand alone for users who never saw the abandoned draft.
+
 ## Candidate Publication
 
 The supported release path keeps final-form tags immutable:
@@ -71,13 +73,13 @@ The normal path uses GitHub UI publication because a workflow publishing with it
 
 Run the `Abandon Release Candidate` workflow before publishing a rejected draft. Supply the final-form tag, a permanent reason, and optional failed-validation evidence.
 
-The workflow creates annotated marker `abandoned/vX.Y.Z` on the same commit as `vX.Y.Z`, marks the draft visibly abandoned, and preserves its assets and evidence. The operation is idempotent when the marker already matches. A marker on another commit fails for maintainer review.
+The workflow creates annotated marker `abandoned/vX.Y.Z` on the same commit as `vX.Y.Z`, verifies the remote marker, and then deletes only the draft release and its candidate assets. The marker preserves the durable reason and release identity. The operation is idempotent when the marker already matches and the draft is absent. A marker on another commit fails for maintainer review.
 
 Drafting, abandonment, and package publication are serialized per release tag so abandonment cannot race package delivery.
 
 Never move, delete for reuse, or force-update either tag. The rejected version is consumed, and the correction uses the next version.
 
-The marker cannot disable GitHub's Publish button. Draft and package automation enforce it, but a maintainer must still avoid publishing an abandoned draft through the GitHub UI.
+The marker cannot disable GitHub's Publish button before draft retirement. Draft and package automation enforce the marker, and abandonment removes the rejected draft after verifying the marker. Never use release deletion with tag cleanup.
 
 ## Tag Ruleset Proposal
 

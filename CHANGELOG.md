@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-07-12
+
+- fix(release): retire abandoned drafts only after immutable marker verification
+- docs(release): preserve the complete stable 1.0 contract in corrective release notes
+
 ## [1.0.1] - 2026-07-12
 
 - fix(release): accept npm 11 and npm 12 package manifests during publication validation

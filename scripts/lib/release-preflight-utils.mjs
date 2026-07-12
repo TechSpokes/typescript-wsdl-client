@@ -73,7 +73,7 @@ export function verifyPublishWorkflowGate(scripts, releasePackageWorkflow) {
     errors.push("Release package workflow must publish only to npmjs and must not grant GitHub Packages capability.");
   }
   if (!/NPM_VERSION:\s*[0-9]+\.[0-9]+\.[0-9]+/.test(releasePackageWorkflow)
-    || !/npm\s+install\s+-g\s+npm@\$\{NPM_VERSION\}/.test(releasePackageWorkflow)
+    || !/npm\s+install\s+-g\s+npm@\$\{NPM_VERSION}/.test(releasePackageWorkflow)
     || /npm@latest/.test(releasePackageWorkflow)) {
     errors.push("Release package workflow must pin and install an exact tested npm version.");
   }
@@ -116,10 +116,27 @@ export function verifyReleaseAbandonmentGate({
     errors.push("The guarded build job must not receive package or OIDC publication capability.");
   }
 
+  const markerCreation = releaseAbandonWorkflow.indexOf("git tag -a");
+  const markerVerification = releaseAbandonWorkflow.indexOf("Verify immutable abandonment marker");
+  const draftRetirement = releaseAbandonWorkflow.indexOf("gh release delete");
   if (!releaseAbandonWorkflow.includes("workflow_dispatch:")
-    || !releaseAbandonWorkflow.includes("git tag -a")
-    || !releaseAbandonWorkflow.includes("abandoned-release:")) {
-    errors.push("Manual abandonment workflow must create an annotated marker and preserve a visible draft notice.");
+    || markerCreation === -1
+    || markerVerification === -1
+    || draftRetirement === -1
+    || markerCreation > markerVerification
+    || markerVerification > draftRetirement) {
+    errors.push("Manual abandonment workflow must create and verify the immutable marker before retiring the draft release.");
+  }
+  if (/gh\s+release\s+delete[^\n]*--cleanup-tag/.test(releaseAbandonWorkflow)) {
+    errors.push("Manual abandonment workflow must never delete the release tag while retiring a draft.");
+  }
+  if (!releaseAbandonWorkflow.includes("MARKER_STATE")
+    || !releaseAbandonWorkflow.includes("present=false")) {
+    errors.push("Manual abandonment workflow must accept a matching marker with an already absent draft.");
+  }
+  if (!releaseAbandonWorkflow.includes("Actor: ${ACTOR}")
+    || !releaseAbandonWorkflow.includes("Evidence: ${EVIDENCE}")) {
+    errors.push("Manual abandonment workflow must preserve actor and optional evidence in new marker annotations.");
   }
 
   for (const workflow of [releaseDraftWorkflow, releasePackageWorkflow, releaseAbandonWorkflow]) {

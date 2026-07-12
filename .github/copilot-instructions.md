@@ -304,13 +304,13 @@ Examples:
 
 A rejected final-form release tag permanently consumes its version. Never move, delete for reuse, or force-update `vX.Y.Z`; corrections use the next version required by repository policy.
 
-Run the `Abandon Release Candidate` workflow with the release tag, permanent reason, and optional failed-validation evidence. The workflow requires an existing draft, refuses a published release, and creates annotated tag `abandoned/vX.Y.Z` on the same peeled commit as `vX.Y.Z`. It keeps the draft and assets visible, prefixes the title with `[ABANDONED]`, and records the marker evidence in the draft body.
+Run the `Abandon Release Candidate` workflow with the release tag, permanent reason, and optional failed-validation evidence. The workflow requires an existing unpublished draft for first execution, refuses a published release, and creates annotated tag `abandoned/vX.Y.Z` on the same peeled commit as `vX.Y.Z`. It verifies the remote marker before deleting only the draft release and its candidate assets. A matching marker with no draft is an idempotent completed state.
 
 The draft and package workflows must call the shared release-state helper before packaging, draft mutation, publish validation, or package-capable jobs. A matching marker prohibits publication. A marker on another commit is contradictory state that requires maintainer review.
 
 Drafting, abandonment, and package delivery share a non-cancelling per-tag concurrency group. Preserve that serialization so a marker cannot race package publication for the same candidate.
 
-The marker cannot disable GitHub's Publish button. The supported normal path is to review and publish the unmarked draft through GitHub's Release page; the guarded package workflow then delivers npmjs with provenance. Manual package dispatch is recovery-only and enforces the same published-release and marker checks.
+The marker cannot disable GitHub's Publish button while a draft exists. The supported normal path is to review and publish an unmarked draft through GitHub's Release page; the guarded package workflow then delivers npmjs with provenance. Abandonment retires the draft only after marker verification. Manual package dispatch is recovery-only and enforces the same published-release and marker checks.
 
 Do not add a workflow that publishes the draft and assumes its normal `GITHUB_TOKEN` will trigger the package workflow. GitHub suppresses that recursive workflow event. The supported UI publication path produces the external `release: published` event, while manual package dispatch remains the explicit recovery path.
 
@@ -325,6 +325,8 @@ The draft release workflow also packages and uploads `dist/assets/typescript-wsd
 The published-release package workflow must stay targeted. It checks out the tag, installs the tested npm version, runs `npm run release:publish-check`, then publishes only to npmjs with provenance. Do not add GitHub Packages capability or replace that publish check with `npm run ci`; full CI, conformance, generated examples, and smoke verification belong to `npm run release:preflight -- v<version>` before the tag is pushed.
 
 Keep the H1 in repository release files. Do not remove it to avoid a duplicate title on GitHub; the workflow handles that display-only transformation.
+
+When a major or minor candidate is abandoned before publication, preserve its complete launch narrative in the next published corrective release notes. Do not reduce the first supported release to incident-only notes.
 
 Use this structure for release notes:
 
