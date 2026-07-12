@@ -3,6 +3,7 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { parsePackOutput } from "./lib/npm-pack-output.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
@@ -45,15 +46,6 @@ function runNpmPackDryRun() {
       resolve(stdout);
     });
   });
-}
-
-function parsePackOutput(output) {
-  const parsed = JSON.parse(output);
-  if (!Array.isArray(parsed) || parsed.length !== 1 || !Array.isArray(parsed[0].files)) {
-    throw new Error("Unexpected npm pack --dry-run --json output.");
-  }
-
-  return parsed[0].files.map((file) => file.path).sort();
 }
 
 function validatePackageFiles(files) {

@@ -9,6 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-07-12
+
+- fix(release): accept npm 11 and npm 12 package manifests during publication validation
+- ci(release): pin the tested npm version and publish packages only to npmjs
+- chore(release): remove the legacy GitHub Packages distribution
+- docs(release): document npmjs as the sole package registry
+
 ## [1.0.0] - 2026-07-12
 
 - ci(release): block draft and package publication for permanently abandoned candidates

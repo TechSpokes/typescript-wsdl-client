@@ -61,7 +61,7 @@ The supported release path keeps final-form tags immutable:
 2. Commit the exact validated tree and create `vX.Y.Z`.
 3. Push the branch and tag so the draft workflow creates the release and skill asset.
 4. Review and publish the unmarked draft through GitHub's Release page.
-5. Let the guarded package workflow publish GitHub Packages and npm.
+5. Let the guarded package workflow publish to npmjs with provenance.
 
 Manual package dispatch is a recovery path after the GitHub Release is published. It enforces the same tag, marker, reachability, draft, and prerelease checks.
 

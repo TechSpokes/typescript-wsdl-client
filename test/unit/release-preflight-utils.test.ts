@@ -159,7 +159,12 @@ describe("verifyPublishWorkflowGate", () => {
   const scripts = {
     "release:publish-check": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate",
   };
-  const workflow = "run: npm run release:publish-check";
+  const workflow = `
+  env:
+    NPM_VERSION: 12.0.1
+  run: npm install -g npm@\${NPM_VERSION}
+  run: npm run release:publish-check
+  `;
 
   it("accepts a targeted publish check in the release package workflow", () => {
     expect(verifyPublishWorkflowGate(scripts, workflow)).toEqual([]);
@@ -185,6 +190,26 @@ describe("verifyPublishWorkflowGate", () => {
     expect(errors).toContain("Release package workflow must run npm run release:publish-check before publishing.");
     expect(errors).toContain("Release package workflow must not run npm run ci; full CI belongs to release preflight before tagging.");
   });
+
+  it.each([
+    "publish-gpr:",
+    "registry-url: https://npm.pkg.github.com/",
+    "packages: write",
+  ])("rejects GitHub Packages capability through %s", forbiddenCapability => {
+    const errors = verifyPublishWorkflowGate(scripts, `${workflow}\n${forbiddenCapability}`);
+
+    expect(errors).toContain("Release package workflow must publish only to npmjs and must not grant GitHub Packages capability.");
+  });
+
+  it.each([
+    "run: npm install -g npm@latest",
+    "env:\n  NPM_VERSION: 12",
+    "env:\n  NPM_VERSION: 12.0.1",
+  ])("rejects an unpinned release npm toolchain through %s", npmSetup => {
+    const errors = verifyPublishWorkflowGate(scripts, `${npmSetup}\nrun: npm run release:publish-check`);
+
+    expect(errors).toContain("Release package workflow must pin and install an exact tested npm version.");
+  });
 });
 
 describe("verifyReleaseAbandonmentGate", () => {
@@ -201,10 +226,6 @@ describe("verifyReleaseAbandonmentGate", () => {
     steps:
       - run: node scripts/lib/release-state.mjs guard --tag v1.0.0
       - run: npm run release:publish-check
-  publish-gpr:
-    needs: build
-    permissions:
-      packages: write
   publish-npm:
     needs: build
     permissions:

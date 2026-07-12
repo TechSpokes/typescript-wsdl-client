@@ -69,6 +69,14 @@ export function verifyPublishWorkflowGate(scripts, releasePackageWorkflow) {
   if (/\bnpm\s+run\s+ci\b/.test(releasePackageWorkflow)) {
     errors.push("Release package workflow must not run npm run ci; full CI belongs to release preflight before tagging.");
   }
+  if (/publish-gpr:|npm\.pkg\.github\.com|packages:\s*write/.test(releasePackageWorkflow)) {
+    errors.push("Release package workflow must publish only to npmjs and must not grant GitHub Packages capability.");
+  }
+  if (!/NPM_VERSION:\s*[0-9]+\.[0-9]+\.[0-9]+/.test(releasePackageWorkflow)
+    || !/npm\s+install\s+-g\s+npm@\$\{NPM_VERSION\}/.test(releasePackageWorkflow)
+    || /npm@latest/.test(releasePackageWorkflow)) {
+    errors.push("Release package workflow must pin and install an exact tested npm version.");
+  }
 
   return errors;
 }
@@ -95,13 +103,12 @@ export function verifyReleaseAbandonmentGate({
   if (packageGuard === -1 || publishCheck === -1 || packageGuard > publishCheck) {
     errors.push("Release package workflow must guard abandonment state before publish validation.");
   }
-  if (!/publish-gpr:\s+[\s\S]*?needs:\s*build/.test(releasePackageWorkflow)
-    || !/publish-npm:\s+[\s\S]*?needs:\s*build/.test(releasePackageWorkflow)) {
-    errors.push("Every package-capable job must depend on the guarded build job.");
+  if (!/publish-npm:\s+[\s\S]*?needs:\s*build/.test(releasePackageWorkflow)) {
+    errors.push("The npmjs publication job must depend on the guarded build job.");
   }
 
   const buildStart = releasePackageWorkflow.indexOf("\n  build:");
-  const publishStart = releasePackageWorkflow.indexOf("\n  publish-gpr:");
+  const publishStart = releasePackageWorkflow.indexOf("\n  publish-npm:");
   const buildBlock = buildStart === -1 || publishStart === -1
     ? ""
     : releasePackageWorkflow.slice(buildStart, publishStart);

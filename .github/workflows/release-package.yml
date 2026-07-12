@@ -11,6 +11,7 @@ on:
 
 env:
   NODE_VERSION: 24
+  NPM_VERSION: 12.0.1
 
 concurrency:
   group: release-state-${{ github.event.release.tag_name || github.event.inputs.tag }}
@@ -58,6 +59,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      - name: Use tested npm version
+        run: npm install -g npm@${NPM_VERSION}
+
       - name: Guard package publication state
         shell: bash
         env:
@@ -88,42 +92,6 @@ jobs:
       - run: npm ci
       - run: npm run release:publish-check
 
-  publish-gpr:
-    needs: build
-    runs-on: ubuntu-latest
-
-    permissions:
-      packages: write
-      contents: read
-
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.build.outputs.tag }}
-
-      - name: Use Node.js (GitHub Packages)
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          registry-url: https://npm.pkg.github.com/
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Publish to GitHub Packages (skip if version exists)
-        run: |
-          NAME=$(node -p "require('./package.json').name")
-          VERSION=$(node -p "require('./package.json').version")
-          echo "Attempting to publish $NAME@$VERSION to GitHub Packages..."
-          if npm view "$NAME@$VERSION" --registry=https://npm.pkg.github.com/ > /dev/null 2>&1; then
-            echo "$NAME@$VERSION already exists on GitHub Packages, skipping publish."
-            exit 0
-          fi
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
@@ -144,8 +112,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://registry.npmjs.org/
 
-      - name: Ensure latest npm (trusted publishing requires >= 11.5.1)
-        run: npm install -g npm@latest
+      - name: Use tested npm version
+        run: npm install -g npm@${NPM_VERSION}
 
       - name: Clear NODE_AUTH_TOKEN for trusted publishing
         run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV

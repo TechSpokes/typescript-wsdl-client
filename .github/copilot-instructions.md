@@ -310,7 +310,7 @@ The draft and package workflows must call the shared release-state helper before
 
 Drafting, abandonment, and package delivery share a non-cancelling per-tag concurrency group. Preserve that serialization so a marker cannot race package publication for the same candidate.
 
-The marker cannot disable GitHub's Publish button. The supported normal path is to review and publish the unmarked draft through GitHub's Release page; the guarded package workflow then delivers GitHub Packages and npm. Manual package dispatch is recovery-only and enforces the same published-release and marker checks.
+The marker cannot disable GitHub's Publish button. The supported normal path is to review and publish the unmarked draft through GitHub's Release page; the guarded package workflow then delivers npmjs with provenance. Manual package dispatch is recovery-only and enforces the same published-release and marker checks.
 
 Do not add a workflow that publishes the draft and assumes its normal `GITHUB_TOKEN` will trigger the package workflow. GitHub suppresses that recursive workflow event. The supported UI publication path produces the external `release: published` event, while manual package dispatch remains the explicit recovery path.
 
@@ -322,7 +322,7 @@ Release notes are required for every release tag. The tag-triggered draft releas
 
 The draft release workflow also packages and uploads `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip`. Continue refusing to mutate a published non-draft release.
 
-The published-release package workflow must stay targeted. It checks out the tag, installs dependencies, runs `npm run release:publish-check`, then publishes to GitHub Packages and npm. Do not replace that publish check with `npm run ci`; full CI, conformance, generated examples, and smoke verification belong to `npm run release:preflight -- v<version>` before the tag is pushed.
+The published-release package workflow must stay targeted. It checks out the tag, installs the tested npm version, runs `npm run release:publish-check`, then publishes only to npmjs with provenance. Do not add GitHub Packages capability or replace that publish check with `npm run ci`; full CI, conformance, generated examples, and smoke verification belong to `npm run release:preflight -- v<version>` before the tag is pushed.
 
 Keep the H1 in repository release files. Do not remove it to avoid a duplicate title on GitHub; the workflow handles that display-only transformation.
 
