@@ -22,6 +22,14 @@ export declare function verifyPublishWorkflowGate(
   releasePackageWorkflow: string,
 ): string[];
 
+export declare function verifyReleaseAbandonmentGate(
+  workflows: {
+    releaseDraftWorkflow: string;
+    releasePackageWorkflow: string;
+    releaseAbandonWorkflow: string;
+  },
+): string[];
+
 export declare function verifyNodeReleaseGate(
   inputs: {
     packageJson: {
@@ -30,6 +38,7 @@ export declare function verifyNodeReleaseGate(
       };
     };
     ciWorkflow: string;
+    releaseAbandonWorkflow: string;
     releasePackageWorkflow: string;
     releaseDraftWorkflow: string;
   },

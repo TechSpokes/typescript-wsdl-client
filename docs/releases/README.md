@@ -52,3 +52,33 @@ Keep the H1 in the repository file so each release note remains a complete sourc
 Write validation as consumer-facing outcomes, not as maintainer command transcripts. Keep exact release operator commands in `.github/copilot-instructions.md` and workflow logs.
 
 Write release notes for users and maintainers, not as a file-by-file change log. Use `CHANGELOG.md` for the canonical version history.
+
+## Candidate Publication
+
+The supported release path keeps final-form tags immutable:
+
+1. Run release preflight on the final uncommitted tree.
+2. Commit the exact validated tree and create `vX.Y.Z`.
+3. Push the branch and tag so the draft workflow creates the release and skill asset.
+4. Review and publish the unmarked draft through GitHub's Release page.
+5. Let the guarded package workflow publish GitHub Packages and npm.
+
+Manual package dispatch is a recovery path after the GitHub Release is published. It enforces the same tag, marker, reachability, draft, and prerelease checks.
+
+The normal path uses GitHub UI publication because a workflow publishing with its standard `GITHUB_TOKEN` does not trigger another workflow from the resulting event. Do not rely on recursive workflow delivery for package publication.
+
+## Abandoned Candidates
+
+Run the `Abandon Release Candidate` workflow before publishing a rejected draft. Supply the final-form tag, a permanent reason, and optional failed-validation evidence.
+
+The workflow creates annotated marker `abandoned/vX.Y.Z` on the same commit as `vX.Y.Z`, marks the draft visibly abandoned, and preserves its assets and evidence. The operation is idempotent when the marker already matches. A marker on another commit fails for maintainer review.
+
+Drafting, abandonment, and package publication are serialized per release tag so abandonment cannot race package delivery.
+
+Never move, delete for reuse, or force-update either tag. The rejected version is consumed, and the correction uses the next version.
+
+The marker cannot disable GitHub's Publish button. Draft and package automation enforce it, but a maintainer must still avoid publishing an abandoned draft through the GitHub UI.
+
+## Tag Ruleset Proposal
+
+Protect `v*` and `abandoned/v*` against updates and deletions. Consider restricted creation after testing the intended maintainer or GitHub App bypass identity. Repository settings remain a maintainer decision and are not changed by release automation.

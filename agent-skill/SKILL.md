@@ -9,7 +9,7 @@ Use this skill in a consumer project that depends on `@techspokes/typescript-wsd
 
 ## Default Workflow
 
-1. Confirm the consumer project uses Node.js 20 or newer.
+1. Confirm the consumer project uses Node.js 24 or newer.
 2. Install `@techspokes/typescript-wsdl-client` as a development dependency.
 3. Install `soap` as a runtime dependency.
 4. Prefer `npx wsdl-tsc pipeline` for full SOAP-to-REST adoption.

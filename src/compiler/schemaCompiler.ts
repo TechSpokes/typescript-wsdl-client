@@ -26,13 +26,13 @@ import type {OperationStreamMetadata, StreamConfig} from "../util/streamConfig.j
 export type QName = { ns: string; local: string };
 
 /**
- * Represents an xs:any wildcard particle retained on a complex type.
+ * Represents a xs:any wildcard particle retained on a complex type.
  *
  * The base compiler previously dropped wildcards silently. Keeping them as
  * explicit markers lets downstream tools (stream-candidate detection,
  * streaming XML converter) reason honestly about types whose payload lives
  * outside the statically-typed schema — e.g. Escapia's content-service
- * stream wrappers that mix an xs:schema marker with an xs:any payload.
+ * stream wrappers that mix a xs:schema marker with a xs:any payload.
  */
 export type CompiledWildcard = {
   min: number;

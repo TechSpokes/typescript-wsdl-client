@@ -93,7 +93,7 @@ Default strategy: `all-optional`. The opt-in `--client-choice-mode union` mode e
 
 ### Union Types
 
-`--client-choice-mode union` is supported as an opt-in strategy. Future WSDL coverage matrix work will broaden fixture evidence for edge cases, but the released union mode is test-backed for compiler metadata, TypeScript output, OpenAPI constraints, generated mocks, and generated validation tests.
+`--client-choice-mode union` is supported as an opt-in strategy. The 1.0 conformance matrix backs the released mode across compiler metadata, TypeScript output, OpenAPI constraints, generated mocks, generated validation tests, gateway runtime behavior, and app generation.
 
 ### WS-Policy
 

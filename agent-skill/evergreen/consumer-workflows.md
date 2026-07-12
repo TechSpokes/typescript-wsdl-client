@@ -59,4 +59,4 @@ Use `--client-choice-mode union` when a project wants stricter generated models 
 
 ## Validation
 
-After generation, run the consumer project's typecheck and tests. For gateway work, add route tests around the generated plugin with a typed mock operations implementation.
+After generation, run the consumer project's typecheck and tests. For gateway work, add route tests around the generated plugin with a typed mock operations' implementation.

@@ -14,6 +14,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-state-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   draft-release:
     name: Draft GitHub release
@@ -56,6 +60,19 @@ jobs:
         with:
           node-version: 24
           cache: npm
+
+      - name: Guard candidate release state
+        shell: bash
+        env:
+          TAG: ${{ steps.determine_tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          git fetch --force --tags origin
+          git fetch --force origin main:refs/remotes/origin/main
+          node scripts/lib/release-state.mjs guard \
+            --tag "${TAG}" \
+            --require-main true
 
       - name: Resolve release metadata
         id: meta

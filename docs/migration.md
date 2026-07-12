@@ -18,6 +18,7 @@ These steps apply to every version upgrade:
 
 | wsdl-tsc | Node.js | TypeScript | soap | Fastify | saxes |
 |----------|---------|------------|------|---------|-------|
+| 1.0.x | >= 24.0 | >= 6.0 | >= 1.9 | >= 5.10 | >= 6.0 |
 | 0.35.x and later | >= 24.0 | >= 6.0 | >= 1.9 | >= 5.8 | >= 6.0 |
 | 0.17.x | >= 20.0 | >= 6.0 | >= 1.9 | >= 5.8 | >= 6.0 |
 | 0.16.x | >= 20.0 | >= 6.0 | >= 1.9 | >= 5.8 | N/A |
@@ -29,6 +30,40 @@ These steps apply to every version upgrade:
 | 0.7.x | >= 20.0 | >= 5.6 | >= 1.3 | N/A | N/A |
 
 Versions 0.11 through 0.16 are additive and non-breaking. See `CHANGELOG.md` for per-version detail rather than dedicated upgrade sections here.
+
+## Upgrading to 1.0.0 from 0.40.1
+
+Version `1.0.0` stabilizes the public behavior shipped through `0.40.1`. It does not intentionally change generated client, OpenAPI, gateway, app, or runtime contracts.
+
+### Stable 1.0 Contract
+
+- Node.js 24 is the supported runtime floor.
+- The package and generated code remain ESM-only.
+- `all-optional` remains the default `xs:choice` strategy.
+- Choice union mode remains opt-in through `--client-choice-mode union`.
+- NDJSON remains the default configured stream format.
+- JSON array streaming remains opt-in per operation.
+- Generated output remains replaceable and should be regenerated from WSDL or catalog inputs.
+
+### Accepted 1.0 Limitations
+
+- Multiple SOAP bindings use deterministic first SOAP binding selection.
+- External `PolicyReference` documents are not fetched or resolved.
+- Abstract complex types fail with a diagnostic.
+- Substitution groups fail with a diagnostic.
+- MTOM/XOP attachments fail with a diagnostic.
+
+### Steps to Upgrade to 1.0.0
+
+1. Upgrade the development dependency to `@techspokes/typescript-wsdl-client@^1.0.0`.
+2. Confirm the project runs Node.js 24 or newer.
+3. Keep `soap` installed as a runtime dependency.
+4. Regenerate every owned client, OpenAPI, gateway, app, and generated-test artifact.
+5. Review the generated diff and run the consumer TypeScript build and tests.
+
+### Is 1.0.0 Breaking?
+
+No intentional behavior break is introduced relative to `0.40.1`. The major version declares the documented surface stable, so future incompatible changes require a new major release.
 
 ## Upgrading to 0.17.x from 0.16.x
 

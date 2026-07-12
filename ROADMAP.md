@@ -2,13 +2,21 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.40.1
+## Current: Stable 1.0.0
 
-Focus: ship stage-specific conformance commands and the accepted capability boundary in `0.40.1`, then run the release candidate gates for `1.0.0`.
+Focus: preserve the stable generated contract, respond to production evidence, and evaluate post-1.0 capabilities without weakening diagnostics or compatibility.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 1.0.0
+
+- Declared the documented client, OpenAPI, gateway, app, and programmatic surfaces stable.
+- Published the 0.x-to-1.0 migration contract and accepted capability limitations.
+- Aligned the packaged consumer agent skill with the Node 24 runtime floor.
+- Completed the contract, compatibility, conformance, Node, package, and release gates.
+- Added immutable abandonment markers that block rejected candidates before draft or package publication.
 
 ### 0.40.1
 

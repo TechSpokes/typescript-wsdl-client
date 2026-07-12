@@ -58,6 +58,18 @@ function validateSkillFrontmatter(markdown) {
   }
 }
 
+function validateSkillNodeRequirement(markdown, enginesNode) {
+  const match = /^>=(\d+)\.\d+\.\d+$/.exec(enginesNode);
+  if (!match) {
+    throw new Error(`Unsupported package engines.node requirement: ${enginesNode}`);
+  }
+
+  const expected = `Node.js ${match[1]} or newer`;
+  if (!markdown.includes(expected)) {
+    throw new Error(`agent-skill/SKILL.md must require ${expected} to match package.json.`);
+  }
+}
+
 async function validateManifestSources(manifest) {
   for (const reference of manifest.references) {
     const sourcePath = path.join(repoRoot, reference.source);
@@ -211,7 +223,9 @@ async function main() {
   const tag = `v${packageJson.version}`;
   const manifest = await readJson("agent-skill/reference-manifest.json");
 
-  validateSkillFrontmatter(await readTextFile(path.join(repoRoot, "agent-skill", "SKILL.md")));
+  const skillMarkdown = await readTextFile(path.join(repoRoot, "agent-skill", "SKILL.md"));
+  validateSkillFrontmatter(skillMarkdown);
+  validateSkillNodeRequirement(skillMarkdown, packageJson.engines.node);
   await validateManifestSources(manifest);
   await validateEvergreenNoFluidTables(manifest);
 

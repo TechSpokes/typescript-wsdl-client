@@ -73,6 +73,58 @@ export function verifyPublishWorkflowGate(scripts, releasePackageWorkflow) {
   return errors;
 }
 
+/** Verify workflow ordering and privilege boundaries for abandoned candidates.
+ * @param {{releaseDraftWorkflow: string, releasePackageWorkflow: string, releaseAbandonWorkflow: string}} workflows Workflow sources.
+ * @returns {string[]} Contract errors; empty when release-state enforcement is wired correctly.
+ */
+export function verifyReleaseAbandonmentGate({
+  releaseDraftWorkflow,
+  releasePackageWorkflow,
+  releaseAbandonWorkflow,
+}) {
+  const errors = [];
+  const helper = "scripts/lib/release-state.mjs";
+  const draftGuard = releaseDraftWorkflow.indexOf(helper);
+  const draftPackaging = releaseDraftWorkflow.indexOf("Package agent skill");
+  if (draftGuard === -1 || draftPackaging === -1 || draftGuard > draftPackaging) {
+    errors.push("Draft release workflow must guard abandonment state before packaging or draft mutation.");
+  }
+
+  const packageGuard = releasePackageWorkflow.indexOf(helper);
+  const publishCheck = releasePackageWorkflow.indexOf("npm run release:publish-check");
+  if (packageGuard === -1 || publishCheck === -1 || packageGuard > publishCheck) {
+    errors.push("Release package workflow must guard abandonment state before publish validation.");
+  }
+  if (!/publish-gpr:\s+[\s\S]*?needs:\s*build/.test(releasePackageWorkflow)
+    || !/publish-npm:\s+[\s\S]*?needs:\s*build/.test(releasePackageWorkflow)) {
+    errors.push("Every package-capable job must depend on the guarded build job.");
+  }
+
+  const buildStart = releasePackageWorkflow.indexOf("\n  build:");
+  const publishStart = releasePackageWorkflow.indexOf("\n  publish-gpr:");
+  const buildBlock = buildStart === -1 || publishStart === -1
+    ? ""
+    : releasePackageWorkflow.slice(buildStart, publishStart);
+  if (/packages:\s*write|id-token:\s*write/.test(buildBlock)) {
+    errors.push("The guarded build job must not receive package or OIDC publication capability.");
+  }
+
+  if (!releaseAbandonWorkflow.includes("workflow_dispatch:")
+    || !releaseAbandonWorkflow.includes("git tag -a")
+    || !releaseAbandonWorkflow.includes("abandoned-release:")) {
+    errors.push("Manual abandonment workflow must create an annotated marker and preserve a visible draft notice.");
+  }
+
+  for (const workflow of [releaseDraftWorkflow, releasePackageWorkflow, releaseAbandonWorkflow]) {
+    if (!workflow.includes("group: release-state-")) {
+      errors.push("Release workflows must serialize candidate state transitions through a per-tag concurrency group.");
+      break;
+    }
+  }
+
+  return errors;
+}
+
 function hasNodeLine(workflow, line) {
   return new RegExp(`(^|[^0-9])${line}([^0-9]|$)`).test(workflow);
 }
@@ -84,6 +136,7 @@ function hasEngineFloor(packageJson, line) {
 export function verifyNodeReleaseGate({
   packageJson,
   ciWorkflow,
+  releaseAbandonWorkflow,
   releasePackageWorkflow,
   releaseDraftWorkflow,
 }) {
@@ -103,6 +156,9 @@ export function verifyNodeReleaseGate({
   }
   if (!hasNodeLine(releaseDraftWorkflow, SUPPORTED_NODE_FLOOR)) {
     errors.push(`Draft release workflow must run on Node ${SUPPORTED_NODE_FLOOR}.`);
+  }
+  if (!hasNodeLine(releaseAbandonWorkflow, SUPPORTED_NODE_FLOOR)) {
+    errors.push(`Release abandonment workflow must run on Node ${SUPPORTED_NODE_FLOOR}.`);
   }
 
   return errors;

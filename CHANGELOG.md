@@ -9,6 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-12
+
+- ci(release): block draft and package publication for permanently abandoned candidates
+- docs(migration): define the stable 1.0 contract and accepted capability limitations
+- fix(agent-skill): align consumer Node guidance with the supported Node 24 floor
+- docs(roadmap): move the completed contract audit into 1.0 release-candidate preparation
+
 ## [0.40.1] - 2026-07-12
 
 - test(conformance): add stage-specific commands and visible progress for long-running capability evidence

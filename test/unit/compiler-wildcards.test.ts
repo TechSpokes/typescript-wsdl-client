@@ -100,7 +100,7 @@ describe("compiler: wildcard retention", () => {
       {min: 1, max: 1, namespace: "##any", processContents: "lax"},
     ]);
 
-    // Types that did not declare an xs:any must not sprout a wildcards field;
+    // Types that did not declare a xs:any must not sprout a wildcards field;
     // this is what keeps existing catalogs byte-for-byte identical.
     const streamRequest = compiled.types.find((t) => t.name === "StreamRequest");
     expect(streamRequest, "StreamRequest type must be compiled").toBeTruthy();

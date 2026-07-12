@@ -300,6 +300,22 @@ Examples:
 15. After preflight passes, commit the exact validated release tree without changing tracked files.
 16. Tag and push the release commit without rerunning preflight, CI, package validation, or skill packaging.
 
+### Abandoned release candidates
+
+A rejected final-form release tag permanently consumes its version. Never move, delete for reuse, or force-update `vX.Y.Z`; corrections use the next version required by repository policy.
+
+Run the `Abandon Release Candidate` workflow with the release tag, permanent reason, and optional failed-validation evidence. The workflow requires an existing draft, refuses a published release, and creates annotated tag `abandoned/vX.Y.Z` on the same peeled commit as `vX.Y.Z`. It keeps the draft and assets visible, prefixes the title with `[ABANDONED]`, and records the marker evidence in the draft body.
+
+The draft and package workflows must call the shared release-state helper before packaging, draft mutation, publish validation, or package-capable jobs. A matching marker prohibits publication. A marker on another commit is contradictory state that requires maintainer review.
+
+Drafting, abandonment, and package delivery share a non-cancelling per-tag concurrency group. Preserve that serialization so a marker cannot race package publication for the same candidate.
+
+The marker cannot disable GitHub's Publish button. The supported normal path is to review and publish the unmarked draft through GitHub's Release page; the guarded package workflow then delivers GitHub Packages and npm. Manual package dispatch is recovery-only and enforces the same published-release and marker checks.
+
+Do not add a workflow that publishes the draft and assumes its normal `GITHUB_TOKEN` will trigger the package workflow. GitHub suppresses that recursive workflow event. The supported UI publication path produces the external `release: published` event, while manual package dispatch remains the explicit recovery path.
+
+Recommended tag rulesets protect `v*` and `abandoned/v*` from updates and deletions. Consider restricted creation only after testing the maintainer and GitHub App bypass identities; do not change repository rulesets without explicit maintainer approval.
+
 ### Release notes
 
 Release notes are required for every release tag. The tag-triggered draft release workflow reads `docs/releases/v<version>.md`, validates the source file, and strips only the first H1 line when generating the GitHub release body.

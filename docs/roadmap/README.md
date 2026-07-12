@@ -1,6 +1,6 @@
 # Version 1.0 Roadmap Plan
 
-Detailed plan for moving `@techspokes/typescript-wsdl-client` from the current `0.x` line to a stable `1.0.0` release.
+Completed plan for moving `@techspokes/typescript-wsdl-client` from the `0.x` line to the stable `1.0.0` release.
 
 See the root [README.md](../../README.md) for project overview and the root [ROADMAP.md](../../ROADMAP.md) for the public roadmap summary.
 
@@ -8,20 +8,20 @@ See the root [README.md](../../README.md) for project overview and the root [ROA
 
 This plan turns the 1.0 roadmap into implementation slices that can be picked up independently. Each slice has its own plan document with scope, testing strategy, acceptance gates, and release implications.
 
-The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, JSON array streaming is shipped, `xs:anyAttribute` wildcard bags are shipped, the conformance framework is wired into validation gates, and the dependency baseline was refreshed in `0.40.0`. Version `0.40.1` accepts the remaining partial, diagnostic, and unsupported capability decisions for 1.0 and makes conformance stages independently runnable. The remaining work after that release is the final release candidate gate pass.
+The plan preserves the stable 1.0 contract. Choice union mode, JSON array streaming, `xs:anyAttribute` wildcard bags, stage-specific conformance, executable unsupported diagnostics, and repeatable release gates shipped before or with `1.0.0`.
 
 ## Route Summary
 
 | Slice                 | Document                                                                     | Status            | Outcome                         |
 |-----------------------|------------------------------------------------------------------------------|-------------------|---------------------------------|
-| Contract audit        | [Contract Audit](v1.0-contract-audit.md)                                     | baseline complete | Public surfaces match behavior  |
+| Contract audit        | [Contract Audit](v1.0-contract-audit.md)                                     | complete          | Public surfaces match behavior  |
 | OpenAPI compatibility | [OpenAPI Fastify Compatibility](v1.0-openapi-fastify-compatibility.md)       | baseline complete | Schema strategy is proven       |
 | Choice union mode     | [Choice Union Mode](v1.0-choice-union-mode.md)                               | complete          | Implemented in `0.26.0`         |
 | JSON array streaming  | [JSON Array Streaming](v1.0-json-array-streaming.md)                         | complete          | Implemented in `0.28.0`         |
 | Conformance framework | [Capability Conformance Framework](v1.0-capability-conformance-framework.md) | gate wired        | Pipeline claims are test-backed |
 | WSDL coverage matrix  | [WSDL Coverage Matrix](v1.0-wsdl-coverage-matrix.md)                         | baseline complete | Public support is test-backed |
 | `xs:anyAttribute` bag | [`xs:anyAttribute` Wildcard Bag](v1.0-xs-anyattribute-wildcard-bag.md)        | complete          | Implemented in `0.36.0`         |
-| Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)                   | next              | 1.0 release is repeatable       |
+| Release candidate     | [Release Candidate Gates](v1.0-release-candidate-gates.md)                   | complete          | 1.0 release is repeatable       |
 
 ## Execution Order
 
@@ -57,11 +57,11 @@ The [`xs:anyAttribute` wildcard bag plan](v1.0-xs-anyattribute-wildcard-bag.md) 
 
 Run the release candidate gates after feature work and documentation have converged. This slice validates docs, tests, generated examples, package contents, skill artifact, release notes, and provenance workflow readiness.
 
-## Remaining Before 1.0
+## 1.0 Release State
 
-- Release the splitable conformance maintainer surface in `0.40.1`.
-- Confirm `docs/supported-patterns.md` still matches the generated matrix.
-- Run the release-candidate gates.
+- Public contract surfaces are audited against implementation and tests.
+- Capability boundaries are documented and backed by executable evidence.
+- Release metadata and the final candidate pass release preflight before tagging.
 
 ## Quality Principles
 

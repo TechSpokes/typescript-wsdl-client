@@ -17,10 +17,12 @@
     "mock-data.test.ts",
     "openapi-stream.test.ts",
     "release-preflight-utils.test.ts",
+    "release-state.test.ts",
     "test-generators-scalar-payload.test.ts",
     "tmp-workspace.test.ts",
     "../../scripts/validate-docs.d.mts",
     "../../scripts/lib/deps.d.mts",
-    "../../scripts/lib/release-preflight-utils.d.mts"
+    "../../scripts/lib/release-preflight-utils.d.mts",
+    "../../scripts/lib/release-state.d.mts"
   ]
 }

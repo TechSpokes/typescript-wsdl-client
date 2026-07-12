@@ -3,7 +3,7 @@
  *
  * For stream operations whose record types live in a different WSDL (e.g.
  * Escapia's main EVRN service provides the concrete UnitDescriptiveContentType
- * while the content-service WSDL only exposes an xs:any-wrapped envelope),
+ * while the content-service WSDL only exposes a xs:any-wrapped envelope),
  * load the companion catalog and copy the reachable record-type graph into
  * the current catalog.
  *

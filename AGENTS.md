@@ -31,6 +31,9 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Release preflight already runs full CI and packages the agent skill artifact; do not run those final gates separately.
 - After preflight passes, commit the exact validated tree and tag it without rerunning preflight.
 - If another command changes tracked release files after preflight, rerun preflight on the new final candidate before committing.
+- A rejected tagged candidate is permanently consumed; never move, delete for reuse, or force-update its release tag.
+- Use the `Abandon Release Candidate` workflow to create `abandoned/vX.Y.Z` on the same commit and preserve the rejected draft.
+- Draft and package workflows must reject matching abandonment markers before packaging or publication capability is available.
 - On release, bump hardcoded dep versions in `src/app/generateApp.ts` (`generatePackageJson`) to current latest.
 - The `soap` package is a runtime dependency; `wsdl-tsc` is a devDependency for consumers.
 - IDE MCP tools such as PhpStorm MCP are optional accelerators for indexed search, inspections, run configurations, and symbol refactors; keep terminal commands as the portable fallback for contributors without the local IDE setup.

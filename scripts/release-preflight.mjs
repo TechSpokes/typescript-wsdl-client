@@ -16,7 +16,7 @@ import {
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
 import { findExampleDrift } from "./lib/preflight-examples.mjs";
-import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate, verifyPublishWorkflowGate, verifyTrackedTreeStable } from "./lib/release-preflight-utils.mjs";
+import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate, verifyPublishWorkflowGate, verifyReleaseAbandonmentGate, verifyTrackedTreeStable } from "./lib/release-preflight-utils.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
 
 const WEATHER_WSDL = path.join(ROOT, "examples", "minimal", "weather.wsdl");
@@ -28,6 +28,7 @@ const CLI_ENTRY = path.join(ROOT, "src", "cli.ts");
 const CI_WORKFLOW = path.join(ROOT, ".github", "workflows", "ci.yml");
 const RELEASE_PACKAGE_WORKFLOW = path.join(ROOT, ".github", "workflows", "release-package.yml");
 const RELEASE_DRAFT_WORKFLOW = path.join(ROOT, ".github", "workflows", "release-draft.yml");
+const RELEASE_ABANDON_WORKFLOW = path.join(ROOT, ".github", "workflows", "release-abandon.yml");
 
 function parseArgs(argv) {
   const args = { skipCi: false, skipExamples: false, skipDeps: false, target: null };
@@ -240,6 +241,7 @@ function nodeReleaseGate() {
   const errors = verifyNodeReleaseGate({
     packageJson: readJson(PACKAGE_JSON),
     ciWorkflow: fs.readFileSync(CI_WORKFLOW, "utf-8"),
+    releaseAbandonWorkflow: fs.readFileSync(RELEASE_ABANDON_WORKFLOW, "utf-8"),
     releasePackageWorkflow: fs.readFileSync(RELEASE_PACKAGE_WORKFLOW, "utf-8"),
     releaseDraftWorkflow: fs.readFileSync(RELEASE_DRAFT_WORKFLOW, "utf-8"),
   });
@@ -254,6 +256,16 @@ function publishWorkflowGate() {
   );
   failIfErrors(errors);
   return { message: "release package workflow uses the targeted publish check" };
+}
+
+function releaseAbandonmentGate() {
+  const errors = verifyReleaseAbandonmentGate({
+    releaseDraftWorkflow: fs.readFileSync(RELEASE_DRAFT_WORKFLOW, "utf-8"),
+    releasePackageWorkflow: fs.readFileSync(RELEASE_PACKAGE_WORKFLOW, "utf-8"),
+    releaseAbandonWorkflow: fs.readFileSync(RELEASE_ABANDON_WORKFLOW, "utf-8"),
+  });
+  failIfErrors(errors);
+  return { message: "abandoned candidates are blocked before draft and package publication" };
 }
 
 function examplesFresh() {
@@ -357,6 +369,7 @@ async function main() {
   await step("conformance-gate", conformanceGate);
   await step("node-release-gate", nodeReleaseGate);
   await step("publish-workflow-gate", publishWorkflowGate);
+  await step("release-abandonment-gate", releaseAbandonmentGate);
 
   if (args.skipExamples) {
     record("examples-fresh", "skip", "--skip-examples");

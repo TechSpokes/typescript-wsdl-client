@@ -1,3 +1,4 @@
+import {readFileSync} from "node:fs";
 import { describe, expect, it } from "vitest";
 import * as releasePreflightUtils from "../../scripts/lib/release-preflight-utils.mjs";
 
@@ -6,6 +7,7 @@ const {
   verifyConformanceGateScripts,
   verifyNodeReleaseGate,
   verifyPublishWorkflowGate,
+  verifyReleaseAbandonmentGate,
   verifyTrackedTreeStable,
 } = releasePreflightUtils;
 
@@ -88,6 +90,10 @@ describe("verifyNodeReleaseGate", () => {
         matrix:
           node-version: [24, 26]
     `,
+    releaseAbandonWorkflow: `
+      with:
+        node-version: 24
+    `,
     releasePackageWorkflow: `
       env:
         NODE_VERSION: 24
@@ -138,11 +144,13 @@ describe("verifyNodeReleaseGate", () => {
       ...baseInputs,
       releasePackageWorkflow: "NODE_VERSION: 20",
       releaseDraftWorkflow: "node-version: 20",
+      releaseAbandonWorkflow: "node-version: 20",
     });
 
     expect(errors).toEqual([
       "Release package workflow must run on Node 24.",
       "Draft release workflow must run on Node 24.",
+      "Release abandonment workflow must run on Node 24.",
     ]);
   });
 });
@@ -176,5 +184,70 @@ describe("verifyPublishWorkflowGate", () => {
 
     expect(errors).toContain("Release package workflow must run npm run release:publish-check before publishing.");
     expect(errors).toContain("Release package workflow must not run npm run ci; full CI belongs to release preflight before tagging.");
+  });
+});
+
+describe("verifyReleaseAbandonmentGate", () => {
+  const releaseDraftWorkflow = `
+    group: release-state-v1.0.0
+    node scripts/lib/release-state.mjs guard --tag v1.0.0
+    - name: Package agent skill
+  `;
+  const releasePackageWorkflow = `
+  group: release-state-v1.0.0
+  build:
+    permissions:
+      contents: read
+    steps:
+      - run: node scripts/lib/release-state.mjs guard --tag v1.0.0
+      - run: npm run release:publish-check
+  publish-gpr:
+    needs: build
+    permissions:
+      packages: write
+  publish-npm:
+    needs: build
+    permissions:
+      id-token: write
+  `;
+  const releaseAbandonWorkflow = `
+  group: release-state-v1.0.0
+  workflow_dispatch:
+  run: git tag -a abandoned/v1.0.0 abc
+  notice="<!-- abandoned-release:v1.0.0 -->"
+  `;
+
+  it("accepts guarded draft, package, and abandonment workflows", () => {
+    expect(verifyReleaseAbandonmentGate({releaseDraftWorkflow, releasePackageWorkflow, releaseAbandonWorkflow})).toEqual([]);
+  });
+
+  it("accepts the repository release workflows", () => {
+    expect(verifyReleaseAbandonmentGate({
+      releaseDraftWorkflow: readFileSync(".github/workflows/release-draft.yml", "utf8"),
+      releasePackageWorkflow: readFileSync(".github/workflows/release-package.yml", "utf8"),
+      releaseAbandonWorkflow: readFileSync(".github/workflows/release-abandon.yml", "utf8"),
+    })).toEqual([]);
+  });
+
+  it("rejects package capability before the guarded prerequisite", () => {
+    const errors = verifyReleaseAbandonmentGate({
+      releaseDraftWorkflow,
+      releasePackageWorkflow: releasePackageWorkflow.replace("contents: read", "contents: read\n      id-token: write"),
+      releaseAbandonWorkflow,
+    });
+
+    expect(errors).toContain("The guarded build job must not receive package or OIDC publication capability.");
+  });
+
+  it("rejects missing or late release-state guards", () => {
+    const errors = verifyReleaseAbandonmentGate({
+      releaseDraftWorkflow: "- name: Package agent skill",
+      releasePackageWorkflow: releasePackageWorkflow.replace("node scripts/lib/release-state.mjs guard --tag v1.0.0", "echo unguarded"),
+      releaseAbandonWorkflow: "on: workflow_dispatch",
+    });
+
+    expect(errors).toContain("Draft release workflow must guard abandonment state before packaging or draft mutation.");
+    expect(errors).toContain("Release package workflow must guard abandonment state before publish validation.");
+    expect(errors).toContain("Manual abandonment workflow must create an annotated marker and preserve a visible draft notice.");
   });
 });
