@@ -25,7 +25,7 @@ Start by generating a typed client from your WSDL.
 ```bash
 npx wsdl-tsc client \
   --wsdl-source https://your-service.example.com/service.svc?wsdl \
-  --client-dir ./generated/client
+  --client-dir ./.generated/client
 ```
 
 Inspect the generated `types.ts` to confirm that your WSDL types are represented correctly. Check that operation signatures in `operations.ts` match your expectations.
@@ -33,7 +33,7 @@ Inspect the generated `types.ts` to confirm that your WSDL types are represented
 Test a single operation to verify connectivity:
 
 ```typescript
-import { YourService } from "./generated/client/client.js";
+import { YourService } from "./.generated/client/client.js";
 
 const client = new YourService({
   source: "https://your-service.example.com/service.svc?wsdl",
@@ -51,7 +51,7 @@ Once the client types look correct, generate an OpenAPI 3.1 specification.
 ```bash
 npx wsdl-tsc openapi \
   --wsdl-source https://your-service.example.com/service.svc?wsdl \
-  --openapi-file ./generated/openapi.json
+  --openapi-file ./.generated/openapi.json
 ```
 
 Open `openapi.json` and review the paths, request/response schemas, and descriptions. The spec is derived from the same compiled catalog as the TypeScript types, so they stay aligned.
@@ -80,9 +80,9 @@ Regenerate with `--stream-config`:
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source your-service.wsdl \
-  --client-dir ./generated/client \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name your-service \
   --gateway-version-prefix v1 \
   --stream-config ./stream.config.json \
@@ -97,8 +97,8 @@ Generate Fastify route handlers that translate JSON HTTP requests into SOAP call
 
 ```bash
 npx wsdl-tsc gateway \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name your-service \
   --gateway-version-prefix v1
 ```
@@ -108,9 +108,9 @@ Or run all stages at once with the `pipeline` command and `--init-app`:
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source https://your-service.example.com/service.svc?wsdl \
-  --client-dir ./generated/client \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name your-service \
   --gateway-version-prefix v1 \
   --init-app
@@ -159,7 +159,7 @@ The security config describes gateway authentication in OpenAPI and can scaffold
 
 ```typescript
 import Fastify from "fastify";
-import { yourServiceGateway } from "./generated/gateway/plugin.js";
+import { yourServiceGateway } from "./.generated/gateway/plugin.js";
 
 const app = Fastify({ logger: true });
 
@@ -177,7 +177,7 @@ await app.listen({ port: 3000 });
 The generated `operations.ts` interface lets you test gateway routes without a live SOAP connection.
 
 ```typescript
-import type { YourServiceOperations } from "./generated/client/operations.js";
+import type { YourServiceOperations } from "./.generated/client/operations.js";
 
 const mockClient: YourServiceOperations = {
   SomeOperation: async (args) => ({
@@ -191,7 +191,7 @@ Use this mock client when registering the gateway plugin in tests:
 
 ```typescript
 import Fastify from "fastify";
-import { yourServiceGateway } from "./generated/gateway/plugin.js";
+import { yourServiceGateway } from "./.generated/gateway/plugin.js";
 
 const app = Fastify();
 await app.register(yourServiceGateway, { client: mockClient, prefix: "/v1" });
@@ -230,14 +230,14 @@ NODE_DEBUG=soap node app.js
 
 ### CI/CD regeneration
 
-Add a regeneration step to your CI pipeline. Because output is deterministic, you can regenerate and check for unexpected diffs:
+Add a generation and validation step to your CI pipeline. The `.generated/` directory is disposable and should be recreated for each build:
 
 ```bash
 npx wsdl-tsc pipeline --wsdl-source $WSDL_URL ...
-git diff --exit-code generated/
+npx vitest run --config ./.generated/tests/vitest.config.ts
 ```
 
-If the diff is non-empty, the WSDL contract has changed. Review and commit the updated files.
+If generation or the generated tests fail, review the WSDL contract change before deployment.
 
 See [Production Guide](production.md) for validation, logging, and deployment details.
 
@@ -247,7 +247,7 @@ You do not have to expose all WSDL operations at once.
 
 ### Route-by-route migration
 
-Use the operations configuration file to control which operations are included in the OpenAPI spec and gateway. Generate only the operations you are ready to expose, then add more over time.
+Use the operations configuration file to control which operations are included in the OpenAPI spec and gateway. Generate only the operations you are ready to expose, then add more overtime.
 
 See [Configuration](configuration.md) for the operations config file format.
 

@@ -173,7 +173,7 @@ if (rawArgs[0] === "client") {
     })
     .option("catalog-file", {
       type: "string",
-      desc: "Existing compiled catalog.json (for input), or output path when compiling from WSDL (default: tmp/catalog.json)"
+      desc: "Existing catalog input, or WSDL compilation output (default: {client-dir}/catalog.json)"
     })
     .option("client-dir", {
       type: "string",
@@ -282,7 +282,7 @@ if (rawArgs[0] === "openapi") {
     .scriptName("wsdl-tsc openapi")
     .usage("$0 [--wsdl-source <file|url> | --catalog-file <file>] --openapi-file <path> [options]")
     .option("wsdl-source", {type: "string", desc: "Path or URL to the WSDL (exclusive with --catalog-file)"})
-    .option("catalog-file", {type: "string", desc: "Existing compiled catalog.json (default: tmp/catalog.json if --wsdl-source not provided)"})
+    .option("catalog-file", {type: "string", desc: "Existing catalog input (default: {openapi-file-dir}/catalog.json when --wsdl-source is omitted)"})
     .option("openapi-file", {type: "string", demandOption: true, desc: "Output file or base path for OpenAPI"})
     .option("openapi-format", {
       type: "string",
@@ -656,7 +656,7 @@ if (rawArgs[0] === "pipeline") {
     })
     .option("catalog-file", {
       type: "string",
-      desc: "Output path for catalog.json (default: tmp/catalog.json)"
+      desc: "Output path for catalog.json (default: co-located with the first selected output)"
     })
     .option("clean", {
       type: "boolean",
@@ -806,7 +806,7 @@ if (rawArgs[0] === "pipeline") {
   const catalogOutArg = pipelineArgv["catalog-file"] as string | undefined;
 
   if (!clientOut && !openapiOut && !gatewayOut) {
-    handleCLIError("At least one of --catalog-file, --client-dir, --openapi-file, or --gateway-dir must be provided for pipeline generation.");
+    handleCLIError("At least one of --client-dir, --openapi-file, or --gateway-dir must be provided for pipeline generation. Use compile for catalog-only output.");
   }
 
   // Determine catalog output path (always required since we always compile WSDL)
@@ -824,8 +824,7 @@ if (rawArgs[0] === "pipeline") {
     // Default to gateway-dir/catalog.json
     catalogOut = path.join(path.resolve(gatewayOut), "catalog.json");
   } else {
-    // Fallback to tmp/catalog.json (should rarely happen due to validation above)
-    catalogOut = path.resolve("tmp/catalog.json");
+    throw new Error("Pipeline output validation did not select a catalog location.");
   }
 
   // Handle --clean flag for client output

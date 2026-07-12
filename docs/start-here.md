@@ -24,7 +24,7 @@ Run the `client` command. This generates TypeScript interfaces for all WSDL type
 ```bash
 npx wsdl-tsc client \
   --wsdl-source your-service.wsdl \
-  --client-dir ./generated/client
+  --client-dir ./.generated/client
 ```
 
 You get `types.ts`, `client.ts`, `operations.ts`, and `utils.ts`. Import the client, call typed methods, and let TypeScript catch contract mismatches at compile time.
@@ -38,7 +38,7 @@ Run the `openapi` command. This generates an OpenAPI 3.1 specification with sche
 ```bash
 npx wsdl-tsc openapi \
   --wsdl-source your-service.wsdl \
-  --openapi-file ./generated/openapi.json
+  --openapi-file ./.generated/openapi.json
 ```
 
 The spec includes paths for each SOAP operation, request/response schemas, and descriptions propagated from WSDL documentation annotations.
@@ -52,9 +52,9 @@ Run the `pipeline` command with `--init-app`. This generates the typed client, O
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source your-service.wsdl \
-  --client-dir ./generated/client \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name my-service \
   --gateway-version-prefix v1 \
   --init-app
@@ -71,9 +71,9 @@ Some SOAP services return payloads that are too large or too slow to buffer in m
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source your-service.wsdl \
-  --client-dir ./generated/client \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name my-service \
   --gateway-version-prefix v1 \
   --stream-config ./stream.config.json

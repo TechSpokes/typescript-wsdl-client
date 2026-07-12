@@ -2,13 +2,19 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.39.0
+## Current: 1.0 Readiness After 0.40.0
 
 Focus: keep IDE-owned TypeScript diagnostics aligned with the repository test layout, confirm the remaining documented partial and terminal capability decisions, and run the release candidate gates.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 0.40.0
+
+- Refreshed `fast-xml-parser`, Fastify, Vitest, and Node type dependency minimums while retaining TypeScript 6 compatibility.
+- Updated generated app scaffold pins for Fastify and Node types.
+- Kept the 1.0 roadmap focused on explicit capability decisions and release-candidate gates.
 
 ### 0.39.0
 

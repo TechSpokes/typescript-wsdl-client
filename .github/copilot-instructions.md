@@ -82,7 +82,7 @@ Scratchpads: non-project notes may live under ad-hoc folders; treat them as scra
 
 Repository-owned automation writes disposable output under classified `tmp/` subfolders. Keep smoke output under `tmp/smoke/`, npm cache under `tmp/cache/npm/`, release preflight regenerated examples under `tmp/preflight/examples/`, conformance mini-projects under `tmp/conformance/`, and generated-test integration spikes under `tmp/test-generation/`.
 
-Do not move public CLI defaults only to satisfy this internal layout. The CLI may still use simple `tmp/...` defaults and examples when that is clearer for users.
+Do not add implicit public CLI defaults only to satisfy this internal layout. Public examples use explicit `.generated/...` paths, while repository automation alone uses `tmp/`.
 
 ### Project evolution
 
@@ -145,7 +145,7 @@ Use `docs/file-naming-and-path-organization.md` for reusable fixture paths and o
 
 When changing `test/conformance/registry.ts`, run `npm run docs:support-matrix` to regenerate the owned table in `docs/supported-patterns.md`. Run `npm run docs:support-matrix:check` or `npm run docs:validate` before finishing documentation work that changes capability rows.
 
-Run `npm run test:conformance` when changing conformance fixtures, registry rows, runner helpers, WSDL capability support claims, or generated client/OpenAPI/gateway/app/test behavior for capability rows. `npm test` and `npm run ci` must keep broad Vitest discovery so `test/conformance` stays covered. GitHub push and PR CI intentionally uses `npm run ci:github` instead of the full conformance gate; run the full local gate before release.
+Run `npm run test:conformance` when changing conformance fixtures, registry rows, runner helpers, WSDL capability support claims, or generated client/OpenAPI/gateway/app/test behavior for capability rows. `npm test` and `npm run ci` must keep broad Vitest discovery so `test/conformance` stays covered. GitHub push and PR CI intentionally uses `npm run ci:github`; release preflight owns the single final full local gate.
 
 ## Key Conventions
 
@@ -240,8 +240,9 @@ Rules:
 - Do not use an already released package version for new post-release development commits.
 - A commit title target is not release readiness. A commit titled `Version: 0.30.3 ...` may still be normal post-release work while `package.json` remains at `0.30.2`.
 - During release prep, `package.json`, `package-lock.json`, changelog, and release notes must match the target.
-- Do not push or recommend a release tag until `npm run release:preflight -- v<version>` passes once for that exact tag on a clean release commit.
-- Do not run release preflight both before and after the same release commit. If files change after preflight, commit the change and rerun preflight once.
+- Update release versions before preflight. Release preflight verifies versions and must not update tracked files.
+- Do not commit or recommend a release tag until `npm run release:preflight -- v<version>` passes on the final uncommitted release tree for that exact tag.
+- Do not run release preflight again after committing an unchanged validated tree. If another command changes tracked files after preflight, finish the changes and validate the new final candidate before committing.
 
 Examples:
 - After `0.25.2` is released, patch work uses `Version: 0.25.3 ...`.
@@ -288,11 +289,13 @@ Examples:
 7. In `CHANGELOG.md`: promote `## [Unreleased]` to `## [<version>] - YYYY-MM-DD` (today's date) and start a fresh, empty `## [Unreleased]` section at the top.
 8. Run `npm run maint:deps` to update dependency minimums, lockfile entries, and app scaffold pins.
 9. Review the completed changelog section and convert the user-facing changes into `docs/releases/v<version>.md`.
-10. Run targeted checks needed for the changed files, such as `npm run docs:validate`, `npm run test:conformance`, `npm test`, or `npm run ci`.
-11. Commit the version, changelog, dependency, release notes, and source changes before tagging `v<version>`.
-12. Run `npm run release:preflight -- v<version>` once on the clean release commit. This runs CI, validates package contents, and packages the standalone agent skill ZIP.
+10. Run only targeted checks needed while editing release files. Do not run a separate final `npm run ci` or `npm run skill:package` when release preflight will run them.
+11. Review the complete uncommitted release diff and confirm it contains only the intended release changes.
+12. Run `npm run release:preflight -- v<version>` once on the final uncommitted release tree. This read-only tracked-file gate runs CI, validates package contents, and packages the standalone agent skill ZIP into ignored `dist/` output.
 13. Confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` exists after preflight.
-14. If preflight fails because files need to change, fix the files, commit or amend the release commit, then rerun preflight once.
+14. If preflight fails or a separate command changes tracked release files afterward, finish the fixes and rerun preflight on the new final candidate. Preflight itself fails if it changes tracked content.
+15. After preflight passes, commit the exact validated release tree without changing tracked files.
+16. Tag and push the release commit without rerunning preflight, CI, package validation, or skill packaging.
 
 ### Release notes
 
@@ -373,8 +376,10 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 - Run `npm run maint:deps` to update dependency minimums and generated app scaffold pins.
 - Create `docs/releases/vX.Y.Z.md` from the completed changelog section.
 - Run targeted checks while editing release files.
-- Commit the release prep before release preflight.
-- Run `npm run release:preflight -- vX.Y.Z` once on the clean release commit.
+- Review the complete uncommitted release diff.
+- Run `npm run release:preflight -- vX.Y.Z` once on the final uncommitted release tree.
+- Commit the exact validated tree without further tracked-file changes.
+- Tag and push without rerunning release validation.
 - Use the skill ZIP produced by release preflight; do not run a separate skill package step unless preflight is not being used.
 
 ### Editing code that affects CLI, OpenAPI, or gateway

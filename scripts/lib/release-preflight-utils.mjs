@@ -8,6 +8,12 @@ export function findDatedChangelogSection(lines, version) {
   return null;
 }
 
+export function verifyTrackedTreeStable(before, after) {
+  return before === after
+    ? []
+    : ["Release preflight modified tracked content; review the diff and rerun preflight on the new final candidate."];
+}
+
 const SUPPORTED_NODE_FLOOR = 24;
 const CURRENT_NODE_LINE = 26;
 

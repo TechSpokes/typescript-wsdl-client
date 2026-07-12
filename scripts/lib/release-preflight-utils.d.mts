@@ -8,6 +8,11 @@ export declare function findDatedChangelogSection(
   version: string,
 ): DatedChangelogSection | null;
 
+export declare function verifyTrackedTreeStable(
+  before: string,
+  after: string,
+): string[];
+
 export declare function verifyConformanceGateScripts(
   scripts: Record<string, string>,
 ): string[];

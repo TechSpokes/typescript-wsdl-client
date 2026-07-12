@@ -16,7 +16,7 @@ import {
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
 import { findExampleDrift } from "./lib/preflight-examples.mjs";
-import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate, verifyPublishWorkflowGate } from "./lib/release-preflight-utils.mjs";
+import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate, verifyPublishWorkflowGate, verifyTrackedTreeStable } from "./lib/release-preflight-utils.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
 
 const WEATHER_WSDL = path.join(ROOT, "examples", "minimal", "weather.wsdl");
@@ -64,6 +64,10 @@ function git(args) {
     throw new Error(`git ${args.join(" ")} failed: ${(result.stderr || "").trim()}`);
   }
   return (result.stdout || "").trim();
+}
+
+function trackedTreeSnapshot() {
+  return git(["diff", "--binary", "HEAD", "--", "."]);
 }
 
 const results = [];
@@ -293,16 +297,13 @@ function skillArtifact(tag) {
 function workingTreeStatus() {
   const dirty = git(["status", "--porcelain"]);
   const branch = git(["rev-parse", "--abbrev-ref", "HEAD"]);
-  const notes = [];
-  if (dirty) notes.push("working tree has uncommitted changes");
-  if (branch !== "main") notes.push(`current branch is ${branch}, not main`);
-  if (notes.length > 0) {
-    return { status: "warn", message: notes.join("; ") };
+  if (branch !== "main") {
+    return { status: "warn", message: `current branch is ${branch}, not main` };
   }
-  return { message: `clean on ${branch}` };
+  return { message: dirty ? `uncommitted final candidate on ${branch}` : `clean on ${branch}` };
 }
 
-function summarize(tag) {
+function summarize(tag, hasUncommittedChanges) {
   const counts = { pass: 0, warn: 0, fail: 0, skip: 0 };
   for (const r of results) counts[r.status] += 1;
   console.log("");
@@ -316,8 +317,12 @@ function summarize(tag) {
   if (counts.fail === 0) {
     console.log("");
     console.log("Next steps:");
-    console.log(`  git tag ${tag} -m "Release ${tag}"`);
-    console.log(`  git push origin main ${tag}`);
+    if (hasUncommittedChanges) {
+      console.log("  Commit the exact validated release tree without changing tracked files.");
+      console.log(`  Tag that commit with ${tag}, then push the branch and tag without rerunning preflight.`);
+    } else {
+      console.log(`  Tag the validated commit with ${tag}, then push the branch and tag without rerunning preflight.`);
+    }
   }
   return counts.fail === 0;
 }
@@ -325,6 +330,7 @@ function summarize(tag) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const tag = normalizeTag(args.target);
+  const trackedTreeBefore = trackedTreeSnapshot();
   console.log(`Preflight target: ${tag}`);
   console.log("");
 
@@ -366,9 +372,15 @@ async function main() {
     await step("skill-artifact", () => skillArtifact(tag));
   }
 
+  await step("tracked-tree-stable", () => {
+    failIfErrors(verifyTrackedTreeStable(trackedTreeBefore, trackedTreeSnapshot()));
+    return { message: "preflight did not modify tracked content" };
+  });
+
+  const hasUncommittedChanges = Boolean(git(["status", "--porcelain"]));
   await step("working-tree", workingTreeStatus);
 
-  const ok = summarize(tag);
+  const ok = summarize(tag, hasUncommittedChanges);
   process.exit(ok ? 0 : 1);
 }
 

@@ -1,5 +1,6 @@
 .idea/
 generated/
+/.generated/
 scratches/
 
 # AI Tools
@@ -149,11 +150,5 @@ vite.config.ts.timestamp-*
 *.temp
 temp/
 temp/*
-# Temporary files created by the TypeScript generator
+# Repository-owned temporary automation output
 /tmp
-/tmp/catalog.json
-/tmp/client.ts
-/tmp/openapi.json
-/tmp/openapi.yaml
-/tmp/types.ts
-/tmp/utils.ts

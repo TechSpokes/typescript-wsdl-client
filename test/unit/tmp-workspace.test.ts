@@ -6,6 +6,11 @@ const packageJson = JSON.parse(readFileSync("package.json", "utf-8")) as {
 };
 
 describe("repository tmp workspace paths", () => {
+  it("limits smoke reset to the smoke workspace", () => {
+    expect(packageJson.scripts["smoke:reset"]).toBe("rimraf tmp/smoke");
+    expect(packageJson.scripts["smoke:reset"]).not.toContain("clean:tmp");
+  });
+
   it("keeps smoke output under tmp/smoke", () => {
     const smokeScripts = Object.entries(packageJson.scripts)
       .filter(([name]) => name.startsWith("smoke:"))

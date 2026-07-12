@@ -45,7 +45,7 @@ Repository test and release automation keeps disposable output classified under 
 - `tmp/conformance/`: conformance mini-projects that need repository-local module resolution
 - `tmp/test-generation/`: generated-test integration spikes
 
-Keep new repository-owned temporary writers under the closest existing subfolder. Public CLI examples may still use simple `tmp/...` paths when those examples are clearer for users.
+Keep new repository-owned temporary writers under the closest existing subfolder. Public CLI examples use the git-ignored `.generated/` convention instead of repository `tmp/` paths.
 
 ## Unit Tests
 
@@ -221,12 +221,12 @@ The `--test-dir` flag generates a complete, runnable Vitest test suite that vali
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source service.wsdl \
-  --client-dir ./generated/client \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name myservice \
   --gateway-version-prefix v1 \
-  --test-dir ./generated/tests
+  --test-dir ./.generated/tests
 ```
 
 ### Generated Structure
@@ -251,7 +251,7 @@ npx wsdl-tsc pipeline \
 ### Running Generated Tests
 
 ```bash
-npx vitest run --config ./generated/tests/vitest.config.ts
+npx vitest run --config ./.generated/tests/vitest.config.ts
 ```
 
 ### Skip-if-Exists Behavior

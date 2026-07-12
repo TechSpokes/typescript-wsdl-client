@@ -49,6 +49,15 @@ function extractMarkdownSection(source: string, heading: typeof commandNames[num
 }
 
 describe("CLI contract documentation", () => {
+  it("keeps public catalog defaults out of the repository tmp workspace", () => {
+    const cliSource = readFileSync(path.join(repoRoot, "src", "cli.ts"), "utf8");
+    const docsSource = readFileSync(path.join(repoRoot, "docs", "cli-reference.md"), "utf8");
+
+    expect(cliSource).not.toContain("tmp/catalog.json");
+    expect(docsSource).not.toContain("tmp/catalog.json");
+    expect(cliSource).toContain("Use compile for catalog-only output.");
+  });
+
   it("keeps public CLI flags aligned with the CLI reference", () => {
     const cliSource = readFileSync(path.join(repoRoot, "src", "cli.ts"), "utf8");
     const docsSource = readFileSync(path.join(repoRoot, "docs", "cli-reference.md"), "utf8");

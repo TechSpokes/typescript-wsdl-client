@@ -151,8 +151,8 @@ The generated plugin exports a Fastify plugin function. Register it with your Fa
 
 ```typescript
 import Fastify from "fastify";
-import { myServiceGateway } from "./generated/gateway/plugin.js";
-import { createMyServiceClient } from "./generated/client/client.js";
+import { myServiceGateway } from "./.generated/gateway/plugin.js";
+import { createMyServiceClient } from "./.generated/client/client.js";
 
 const app = Fastify();
 const client = await createMyServiceClient("https://soap-endpoint.example.com");

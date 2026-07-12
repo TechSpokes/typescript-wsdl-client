@@ -9,6 +9,17 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.40.0] - 2026-07-12
+
+- chore(deps): refresh `fast-xml-parser`, `@types/node`, Fastify, and Vitest minimums while retaining TypeScript 6 compatibility
+- chore(app): refresh generated app pins for Fastify and `@types/node`
+- fix(cli): align catalog path help with explicit co-located outputs
+- chore(tmp): isolate smoke cleanup from caches and other automation workspaces
+- fix(test): align release preflight helper declarations with IDE type analysis
+- docs(output): adopt git-ignored `.generated/` paths for consumer examples
+- docs(release): define one final-candidate preflight before the release commit
+- docs(roadmap): align 1.0 readiness docs with the `0.40.0` dependency refresh
+
 ## [0.39.0] - 2026-07-04
 
 - refactor(generator): avoid duplicated generated gateway metadata literals

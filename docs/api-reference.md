@@ -211,13 +211,13 @@ Programmatic callers opt into choice union mode by passing `compiler: { choice: 
 ```typescript
 await runGenerationPipeline({
   wsdl: "./service.wsdl",
-  catalogOut: "./generated/catalog.json",
-  clientOutDir: "./generated/client",
+  catalogOut: "./.generated/catalog.json",
+  clientOutDir: "./.generated/client",
   openapi: {
-    outFile: "./generated/openapi.json"
+    outFile: "./.generated/openapi.json"
   },
   gateway: {
-    outDir: "./generated/gateway",
+    outDir: "./.generated/gateway",
     serviceSlug: "service",
     versionSlug: "v1"
   },

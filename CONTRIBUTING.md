@@ -188,6 +188,8 @@ Repository automation keeps disposable output classified under `tmp/` so smoke a
 - `tmp/conformance/`: conformance mini-projects that need repository-local module resolution
 - `tmp/test-generation/`: generated-test integration spikes
 
+Consumer-facing examples use `.generated/`, which is git-ignored and separate from repository automation. `npm run smoke:reset` removes only `tmp/smoke/`; use `npm run clean:tmp` when the entire automation workspace should be removed.
+
 ### CI Pipeline
 
 `npm run ci` runs clean, build, typecheck, agent skill validation, npm package validation, documentation validation, Vitest, and the smoke pipeline.
@@ -196,13 +198,17 @@ This verifies the source compiles, tests pass, conformance rows stay covered thr
 
 ## Repository Health Checks
 
-Before a release, run `npm run ci` and review the roadmap, changelog, README, CLI help, examples, configuration docs, and agent skill docs for drift.
+Before a release, review the roadmap, changelog, README, CLI help, examples, configuration docs, and agent skill docs for drift. Use targeted checks while editing; the final release preflight owns the single full CI pass.
 
 For a minor release, verify the target version is the next minor after the latest release and that `package.json` has patch `0`.
 
 Run `npm run maint:deps` when preparing a release so root dependency minimums and generated app pins stay aligned.
 
-Every release commit must include `docs/releases/vX.Y.Z.md`. Before tagging, run `npm run skill:package -- vX.Y.Z` and confirm the release ZIP exists under `dist/assets/`.
+Every release commit must include `docs/releases/vX.Y.Z.md`. Run `npm run release:preflight -- vX.Y.Z` once on the final uncommitted release tree and confirm the release ZIP exists under `dist/assets/`.
+
+Set the release version before preflight. Preflight verifies release metadata, writes only ignored build and temporary outputs, and fails if it changes tracked content.
+
+After preflight passes, commit the exact validated tree without further tracked-file changes. Tag and push that commit without rerunning preflight, full CI, package validation, or skill packaging. If another command changes tracked files, complete the fixes and rerun preflight on the new final candidate.
 
 Pushing the matching `vX.Y.Z` tag creates or updates a GitHub draft release from the release notes file after CI passes. The draft release workflow strips the release-note H1 for GitHub display, packages and uploads the agent skill ZIP, and refuses to mutate a published non-draft release.
 

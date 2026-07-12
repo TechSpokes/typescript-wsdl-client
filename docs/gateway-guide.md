@@ -34,7 +34,7 @@ await app.listen({ port: 3000 });
 
 The plugin automatically decorates Fastify with the SOAP client, registers JSON schemas, installs a centralized error handler, and registers all routes.
 
-Route paths are determined by `--openapi-base-path` during generation. The prefix option adds an additional runtime prefix on top of generated paths.
+Route paths are determined by `--openapi-base-path` during generation. The prefix option adds a runtime prefix on top of generated paths.
 
 ## Inbound Gateway Enforcement
 
@@ -256,10 +256,10 @@ When integrating multiple SOAP services, each service gets its own client, gatew
 
 ```typescript
 import Fastify from "fastify";
-import weatherPlugin from "./generated/weather/gateway/plugin.js";
-import inventoryPlugin from "./generated/inventory/gateway/plugin.js";
-import { Weather } from "./generated/weather/client/client.js";
-import { Inventory } from "./generated/inventory/client/client.js";
+import weatherPlugin from "./.generated/weather/gateway/plugin.js";
+import inventoryPlugin from "./.generated/inventory/gateway/plugin.js";
+import { Weather } from "./.generated/weather/client/client.js";
+import { Inventory } from "./.generated/inventory/client/client.js";
 
 const app = Fastify({ logger: true });
 

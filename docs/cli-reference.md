@@ -2,6 +2,8 @@
 
 The `wsdl-tsc` tool generates TypeScript SOAP clients, OpenAPI specifications, and Fastify gateways from WSDL files.
 
+Generation paths are explicit. Examples use the git-ignored `.generated/` directory for disposable consumer output, while this repository reserves `tmp/` for its own test and release automation.
+
 ## Commands Overview
 
 The tool provides six commands for different integration scenarios.
@@ -183,9 +185,9 @@ Complete stack:
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir tmp/client \
-  --openapi-file tmp/openapi.json \
-  --gateway-dir tmp/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name weather \
   --gateway-version-prefix v1
 ```
@@ -195,9 +197,9 @@ With app scaffold:
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source https://example.com/weather?wsdl \
-  --client-dir ./generated/client \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name weather \
   --gateway-version-prefix v1 \
   --init-app
@@ -208,9 +210,9 @@ With union-mode choice modeling:
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source ./service.wsdl \
-  --client-dir ./generated/client \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name service \
   --gateway-version-prefix v1 \
   --client-choice-mode union
@@ -221,12 +223,12 @@ With generated test suite:
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir tmp/client \
-  --openapi-file tmp/openapi.json \
-  --gateway-dir tmp/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name weather \
   --gateway-version-prefix v1 \
-  --test-dir tmp/tests
+  --test-dir ./.generated/tests
 ```
 
 Client and OpenAPI only:
@@ -294,7 +296,7 @@ Basic:
 ```bash
 npx wsdl-tsc client \
   --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir tmp/client
+  --client-dir ./.generated/client
 ```
 
 From catalog:
@@ -521,7 +523,7 @@ app/
 | `LOGGER` | true | Fastify logger |
 | `OPENAPI_SERVER_URL` | (empty) | Override OpenAPI spec server URL at runtime |
 
-When `--security-config-file` is supplied and it contains an `upstream` profile, `.env.example` also lists the environment variables referenced by that profile.
+When `--security-config-file` is supplied, and it contains an `upstream` profile, `.env.example` also lists the environment variables referenced by that profile.
 
 ### Endpoints
 
@@ -575,7 +577,7 @@ Default behavior varies by command:
 | compile | Always requires explicit `--catalog-file` |
 | client | `{client-dir}/catalog.json` |
 | openapi | `{openapi-file-dir}/catalog.json` |
-| pipeline | Cascade: `{client-dir}` then `{openapi-dir}` then `{gateway-dir}` then `tmp/` |
+| pipeline | Cascade: `{client-dir}` then `{openapi-dir}` then `{gateway-dir}` |
 
 ## Common Workflows
 

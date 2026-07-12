@@ -43,12 +43,14 @@ Requirements: Node.js 24+ and the `soap` package as a runtime dependency.
 
 ## Quick Start
 
+The CLI requires explicit output paths. These examples use the git-ignored `.generated/` directory for disposable consumer output; repository automation uses `tmp/` separately.
+
 ### Generate a typed client
 
 ```bash
 npx wsdl-tsc client \
   --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir ./generated/client
+  --client-dir ./.generated/client
 ```
 
 This produces `types.ts`, `client.ts`, `operations.ts`, and `utils.ts` in the output directory.
@@ -58,7 +60,7 @@ This produces `types.ts`, `client.ts`, `operations.ts`, and `utils.ts` in the ou
 ```bash
 npx wsdl-tsc openapi \
   --wsdl-source examples/minimal/weather.wsdl \
-  --openapi-file ./generated/openapi.json
+  --openapi-file ./.generated/openapi.json
 ```
 
 ### Generate the full stack
@@ -66,9 +68,9 @@ npx wsdl-tsc openapi \
 ```bash
 npx wsdl-tsc pipeline \
   --wsdl-source examples/minimal/weather.wsdl \
-  --client-dir ./generated/client \
-  --openapi-file ./generated/openapi.json \
-  --gateway-dir ./generated/gateway \
+  --client-dir ./.generated/client \
+  --openapi-file ./.generated/openapi.json \
+  --gateway-dir ./.generated/gateway \
   --gateway-service-name weather \
   --gateway-version-prefix v1 \
   --init-app
@@ -77,7 +79,7 @@ npx wsdl-tsc pipeline \
 ### Run and test
 
 ```bash
-cd generated/app && npm install && cp .env.example .env && npm start
+cd .generated/app && npm install && cp .env.example .env && npm start
 ```
 
 ```bash
@@ -165,7 +167,7 @@ See [Core Concepts](docs/concepts.md) and [Supported Patterns](docs/supported-pa
 The generated `operations.ts` provides a typed interface for mocking the SOAP client without importing the concrete class or the `soap` package:
 
 ```typescript
-import type { WeatherOperations } from "./generated/client/operations.js";
+import type { WeatherOperations } from "./.generated/client/operations.js";
 
 const mockClient: WeatherOperations = {
   GetCityWeatherByZIP: async (args) => ({
@@ -175,7 +177,7 @@ const mockClient: WeatherOperations = {
 };
 
 import Fastify from "fastify";
-import { weatherGateway } from "./generated/gateway/plugin.js";
+import { weatherGateway } from "./.generated/gateway/plugin.js";
 
 const app = Fastify();
 await app.register(weatherGateway, { client: mockClient, prefix: "/v1/weather" });

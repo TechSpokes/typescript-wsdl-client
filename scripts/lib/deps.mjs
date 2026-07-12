@@ -19,6 +19,9 @@ export const APP_DEPENDENCIES = {
 
 const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 const NPM_CLI = process.env.npm_execpath;
+const MAINTAINED_VERSION_SPECS = new Map([
+  ["typescript", "typescript@6"],
+]);
 
 export function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -66,8 +69,10 @@ export function runNpm(args, options = {}) {
 }
 
 export function latestVersion(packageName) {
-  const raw = runNpm(["view", packageName, "version", "--json"]);
-  return JSON.parse(raw);
+  const packageSpec = MAINTAINED_VERSION_SPECS.get(packageName) ?? packageName;
+  const raw = runNpm(["view", packageSpec, "version", "--json"]);
+  const versions = JSON.parse(raw);
+  return Array.isArray(versions) ? versions.at(-1) : versions;
 }
 
 export function directDependencyNames(pkg) {

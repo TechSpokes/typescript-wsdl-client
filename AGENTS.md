@@ -14,6 +14,7 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 
 - Do not edit files in generated output directories (client/, gateway/, app/); regenerate from WSDL sources instead.
 - Keep repository-owned temporary outputs classified under `tmp/`: smoke in `tmp/smoke/`, npm cache in `tmp/cache/npm/`, preflight examples in `tmp/preflight/examples/`, conformance in `tmp/conformance/`, and generated-test spikes in `tmp/test-generation/`.
+- Keep consumer output paths explicit and use the git-ignored `.generated/` convention in public examples.
 - All generated output must be deterministic and diff-friendly with sorted types, paths, and schemas.
 - Run `npm run smoke:pipeline` to verify changes end-to-end.
 - Run `npm run test:conformance` for WSDL capability fixture, registry, runner, support-matrix, or generated artifact evidence changes.
@@ -23,11 +24,13 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Every release commit must include the matching `docs/releases/vX.Y.Z.md` release notes file.
 - Node.js >= 24.0.0, ESM-only (`type: "module"`), strict TypeScript.
 - GitHub CI must test Node 24 as the supported floor and Node 26 as the current line.
-- GitHub push and PR CI is a fast hosted signal; run full local `npm run ci` or `npm run release:preflight -- vX.Y.Z` before release work is tagged.
+- GitHub push and PR CI is a fast hosted signal; run `npm run release:preflight -- vX.Y.Z` once on the final uncommitted release tree before committing and tagging.
 - CLI flag names are lowercase kebab-case such as `--wsdl-source` and `--init-app`.
 - On release, verify `package.json` and `package-lock.json` match the target version before tagging.
-- Before pushing a release tag, run `npm run release:preflight -- vX.Y.Z` once on the clean release commit; do not tag if it fails.
-- Release preflight already runs CI and packages the agent skill artifact; rerun it only after changing committed release files.
+- Update the version before preflight; preflight verifies versions and must not update tracked files.
+- Release preflight already runs full CI and packages the agent skill artifact; do not run those final gates separately.
+- After preflight passes, commit the exact validated tree and tag it without rerunning preflight.
+- If another command changes tracked release files after preflight, rerun preflight on the new final candidate before committing.
 - On release, bump hardcoded dep versions in `src/app/generateApp.ts` (`generatePackageJson`) to current latest.
 - The `soap` package is a runtime dependency; `wsdl-tsc` is a devDependency for consumers.
 - IDE MCP tools such as PhpStorm MCP are optional accelerators for indexed search, inspections, run configurations, and symbol refactors; keep terminal commands as the portable fallback for contributors without the local IDE setup.

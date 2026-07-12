@@ -1,47 +1,13 @@
 import { describe, expect, it } from "vitest";
 import * as releasePreflightUtils from "../../scripts/lib/release-preflight-utils.mjs";
 
-const { findDatedChangelogSection } = releasePreflightUtils;
-
-type ConformanceGateVerifier = (scripts: Record<string, string>) => string[];
-type NodeReleaseGateVerifier = (inputs: {
-  packageJson: {
-    engines?: {
-      node?: string;
-    };
-  };
-  ciWorkflow: string;
-  releasePackageWorkflow: string;
-  releaseDraftWorkflow: string;
-}) => string[];
-type PublishWorkflowGateVerifier = (scripts: Record<string, string>, releasePackageWorkflow: string) => string[];
-
-function verifyConformanceGateScripts(scripts: Record<string, string>): string[] {
-  const verifier = (releasePreflightUtils as typeof releasePreflightUtils & {
-    verifyConformanceGateScripts?: ConformanceGateVerifier;
-  }).verifyConformanceGateScripts;
-
-  expect(verifier).toBeTypeOf("function");
-  return verifier?.(scripts) ?? [];
-}
-
-function verifyNodeReleaseGate(inputs: Parameters<NodeReleaseGateVerifier>[0]): string[] {
-  const verifier = (releasePreflightUtils as typeof releasePreflightUtils & {
-    verifyNodeReleaseGate?: NodeReleaseGateVerifier;
-  }).verifyNodeReleaseGate;
-
-  expect(verifier).toBeTypeOf("function");
-  return verifier?.(inputs) ?? [];
-}
-
-function verifyPublishWorkflowGate(scripts: Record<string, string>, releasePackageWorkflow: string): string[] {
-  const verifier = (releasePreflightUtils as typeof releasePreflightUtils & {
-    verifyPublishWorkflowGate?: PublishWorkflowGateVerifier;
-  }).verifyPublishWorkflowGate;
-
-  expect(verifier).toBeTypeOf("function");
-  return verifier?.(scripts, releasePackageWorkflow) ?? [];
-}
+const {
+  findDatedChangelogSection,
+  verifyConformanceGateScripts,
+  verifyNodeReleaseGate,
+  verifyPublishWorkflowGate,
+  verifyTrackedTreeStable,
+} = releasePreflightUtils;
 
 describe("findDatedChangelogSection", () => {
   it("finds a dated semver changelog section", () => {
@@ -54,6 +20,18 @@ describe("findDatedChangelogSection", () => {
     const result = findDatedChangelogSection(["## [1\\2\\3] - 2026-05-29"], "1\\2\\3");
 
     expect(result).toEqual({ index: 0, dateString: "2026-05-29" });
+  });
+});
+
+describe("verifyTrackedTreeStable", () => {
+  it("accepts an unchanged tracked release diff", () => {
+    expect(verifyTrackedTreeStable("release diff", "release diff")).toEqual([]);
+  });
+
+  it("rejects tracked content changed by preflight", () => {
+    expect(verifyTrackedTreeStable("before", "after")).toEqual([
+      "Release preflight modified tracked content; review the diff and rerun preflight on the new final candidate.",
+    ]);
   });
 });
 
