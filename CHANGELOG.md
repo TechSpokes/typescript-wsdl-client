@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.40.1] - 2026-07-12
+
+- test(conformance): add stage-specific commands and visible progress for long-running capability evidence
+- docs(agent): document conformance duration, timeout, and stall-diagnosis expectations
+- docs(roadmap): accept the current capability boundaries for 1.0 and defer the WSDL inspector
+
 ## [0.40.0] - 2026-07-12
 
 - chore(deps): refresh `fast-xml-parser`, `@types/node`, Fastify, and Vitest minimums while retaining TypeScript 6 compatibility

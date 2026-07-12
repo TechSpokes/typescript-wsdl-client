@@ -9,6 +9,7 @@
   "include": [
     "app-security.test.ts",
     "client-choice-union-types.test.ts",
+    "conformance-scripts.test.ts",
     "conformance-fixture-policy.test.ts",
     "deps-maintenance.test.ts",
     "docs-validator.test.ts",

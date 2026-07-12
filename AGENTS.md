@@ -42,6 +42,8 @@ Run `npm test` for all Vitest tests, including unit, snapshot, integration, and 
 
 Run `npm run test:conformance` when modifying WSDL capability rows, conformance fixtures, runner helpers, or public support claims. `npm test` and `npm run ci` must keep broad Vitest discovery so conformance remains covered. GitHub push and PR CI intentionally stays faster and does not replace local release preflight.
 
+Full conformance generates and validates consumer-style client, OpenAPI, gateway, generated-test, and app projects. It takes about three to four minutes on the maintained Windows environment and may stay quiet while nested TypeScript or Vitest processes run. Use a command timeout of at least six minutes, check the active process before treating a quiet run as stalled, and use the narrowest `test:conformance:<stage>` script during development.
+
 ## Must-read documents
 
 - `.github/copilot-instructions.md`: authoritative agent instructions with full detail

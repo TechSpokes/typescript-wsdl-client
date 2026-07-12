@@ -7,6 +7,8 @@
     "rootDir": "../.."
   },
   "include": [
-    "*.ts"
+    "*.ts",
+    "stages/*.ts",
+    "../../vitest.conformance.config.ts"
   ]
 }

@@ -139,9 +139,12 @@ The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integrati
 - `npm run test:unit`: unit tests for utilities and parsers
 - `npm run test:snap`: snapshot tests for generated code
 - `npm run test:integration`: gateway handler integration tests
-- `npm run test:conformance`: WSDL capability conformance tests
+- `npm run test:conformance`: complete WSDL capability conformance tests
+- `npm run test:conformance:<stage>`: one contracts, compile, client, OpenAPI, gateway, generated-test, or app evidence layer
 - `npm run test:watch`: watch mode during development
 - `npm run smoke:pipeline`: full CLI smoke test
+
+Full conformance generates and validates several consumer-style projects, so it normally takes about three to four minutes on the maintained Windows environment. Allow at least six minutes, check the active process before treating a quiet nested TypeScript or Vitest run as stalled, and use the narrowest stage command while developing.
 
 ### Test Structure
 

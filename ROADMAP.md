@@ -2,13 +2,20 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: 1.0 Readiness After 0.40.0
+## Current: 1.0 Readiness After 0.40.1
 
-Focus: keep IDE-owned TypeScript diagnostics aligned with the repository test layout, confirm the remaining documented partial and terminal capability decisions, and run the release candidate gates.
+Focus: ship stage-specific conformance commands and the accepted capability boundary in `0.40.1`, then run the release candidate gates for `1.0.0`.
 
 The detailed route to 1.0 lives in [Version 1.0 Roadmap Plan](docs/roadmap/README.md). That plan is the working breakdown for implementation slices, acceptance gates, and testing strategy.
 
 ## Recently Shipped
+
+### 0.40.1
+
+- Added stage-specific conformance commands while preserving the complete release-blocking suite.
+- Documented realistic conformance duration, timeout, and stall-diagnosis expectations.
+- Accepted the remaining partial and terminal capability boundaries for 1.0.
+- Deferred the public WSDL inspector until after 1.0.
 
 ### 0.40.0
 
@@ -164,6 +171,8 @@ Compatibility research is complete for released choice union schemas and JSON ar
 ### Capability Conformance
 
 The conformance registry now proves compile, client, OpenAPI, gateway runtime, generated-test, app, and documentation surfaces for the current supported and partial WSDL rows. Diagnostic and unsupported rows stop with executable compiler errors. `npm test` and `npm run ci` cover conformance through broad Vitest discovery, and release preflight verifies that the focused conformance command and CI discovery remain wired.
+
+Version `0.40.1` adds stage-specific maintainer commands for faster feedback while keeping the complete suite release-blocking. The current first-binding behavior, external policy limitation, abstract and substitution diagnostics, and MTOM/XOP rejection are accepted 1.0 boundaries.
 
 ### WSDL Coverage
 

@@ -8,7 +8,7 @@ See the root [README.md](../../README.md) for project overview and the root [ROA
 
 This plan turns the 1.0 roadmap into implementation slices that can be picked up independently. Each slice has its own plan document with scope, testing strategy, acceptance gates, and release implications.
 
-The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, JSON array streaming is shipped, `xs:anyAttribute` wildcard bags are shipped, the conformance framework is wired into validation gates, and the dependency baseline was refreshed in `0.40.0`. The remaining readiness work is to review the explicit partial, diagnostic, and unsupported capability decisions, then run the final release candidate gate pass.
+The plan is optimized for preserving quality. The contract and compatibility baselines now exist, choice union mode is shipped, JSON array streaming is shipped, `xs:anyAttribute` wildcard bags are shipped, the conformance framework is wired into validation gates, and the dependency baseline was refreshed in `0.40.0`. Version `0.40.1` accepts the remaining partial, diagnostic, and unsupported capability decisions for 1.0 and makes conformance stages independently runnable. The remaining work after that release is the final release candidate gate pass.
 
 ## Route Summary
 
@@ -47,7 +47,7 @@ The registry, fixture strategy, compile runner, client evidence, OpenAPI evidenc
 
 ### Slice 6: WSDL Coverage Matrix
 
-The WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, generated-test, app, documentation, and release-gate evidence. The next work is to keep those rows current, confirm the remaining partial and terminal rows are accepted 1.0 decisions, and prepare release candidate gates.
+The WSDL matrix rows now exist as conformance registry entries with compile, client, OpenAPI, gateway runtime, generated-test, app, documentation, and release-gate evidence. Version `0.40.1` accepts the remaining partial and terminal rows as the 1.0 boundary. Keep those rows current while preparing release candidate gates.
 
 ### Slice 7: xs:anyAttribute Wildcard Bag
 
@@ -59,7 +59,7 @@ Run the release candidate gates after feature work and documentation have conver
 
 ## Remaining Before 1.0
 
-- Confirm each remaining partial, diagnostic, and unsupported matrix row is an accepted 1.0 decision.
+- Release the splitable conformance maintainer surface in `0.40.1`.
 - Confirm `docs/supported-patterns.md` still matches the generated matrix.
 - Run the release-candidate gates.
 
