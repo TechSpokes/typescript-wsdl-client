@@ -9,6 +9,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-07-14
+
+- chore(deps): refresh `soap` and `tsx` while retaining TypeScript 6 compatibility
+- chore(dependabot): defer TypeScript 7 until compiler API migration
+
 ## [1.0.2] - 2026-07-12
 
 - fix(release): retire abandoned drafts only after immutable marker verification
