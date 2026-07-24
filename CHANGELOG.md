@@ -9,6 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(deps): update vulnerable XML, HTTP, routing, URI, and YAML dependencies
+- docs(security): align reporting guidance with Node 24 and private vulnerability reporting
+
 ## [1.0.3] - 2026-07-14
 
 - chore(deps): refresh `soap` and `tsx` while retaining TypeScript 6 compatibility

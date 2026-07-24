@@ -115,8 +115,8 @@
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
-    "fast-xml-parser": "^5.10.0",
-    "js-yaml": "^5.2.1",
+    "fast-xml-parser": "^5.10.1",
+    "js-yaml": "^5.2.2",
     "saxes": "^6.0.0",
     "soap": "^1.10.0",
     "yargs": "^18.0.0"
