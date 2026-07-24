@@ -9,14 +9,17 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-07-24
+
 - fix(deps): update vulnerable XML, HTTP, routing, URI, and YAML dependencies
 - docs(security): align reporting guidance with Node 24 and private vulnerability reporting
 - chore(ci): upgrade GitHub workflows to `actions/setup-node` v7
+- chore(deps): refresh `soap` and `tsx` while retaining TypeScript 6 compatibility
+- chore(dependabot): defer TypeScript 7 until compiler API migration
 
 ## [1.0.3] - 2026-07-14
 
-- chore(deps): refresh `soap` and `tsx` while retaining TypeScript 6 compatibility
-- chore(dependabot): defer TypeScript 7 until compiler API migration
+- This release candidate was abandoned before publication. Its planned changes are included in v1.0.4.
 
 ## [1.0.2] - 2026-07-12
 
