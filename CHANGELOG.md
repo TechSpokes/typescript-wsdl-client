@@ -11,6 +11,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - fix(deps): update vulnerable XML, HTTP, routing, URI, and YAML dependencies
 - docs(security): align reporting guidance with Node 24 and private vulnerability reporting
+- chore(ci): upgrade GitHub workflows to `actions/setup-node` v7
 
 ## [1.0.3] - 2026-07-14
 
