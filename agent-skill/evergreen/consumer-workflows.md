@@ -2,6 +2,12 @@
 
 This reference gives stable workflows for agents using `@techspokes/typescript-wsdl-client` in consumer projects.
 
+## Input Discovery
+
+Inspect the consumer project for WSDL files, imported XSD files, existing `catalog.json` files, generator configuration, and established output paths before choosing a command.
+
+If no usable WSDL or catalog is available, ask only for the source location and whether the task needs the full pipeline or a narrower generated surface. Never invent service URLs, input files, output paths, or generation scope.
+
 ## Full SOAP-to-REST Adoption
 
 Use `pipeline` when the project needs a typed SOAP client, OpenAPI contract, REST gateway, and optional runnable app from the same WSDL.

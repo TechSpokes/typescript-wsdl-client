@@ -1,0 +1,80 @@
+{
+  "scenarios": [
+    {
+      "id": "choose-full-pipeline",
+      "files": [
+        "SKILL.md",
+        "references/consumer-workflows.md"
+      ],
+      "required": [
+        "Prefer `npx wsdl-tsc pipeline` for full SOAP-to-REST adoption.",
+        "Use `pipeline` when the project needs a typed SOAP client, OpenAPI contract, REST gateway, and optional runnable app from the same WSDL."
+      ],
+      "forbidden": []
+    },
+    {
+      "id": "choose-narrow-command",
+      "files": [
+        "SKILL.md",
+        "references/consumer-workflows.md"
+      ],
+      "required": [
+        "Use `client`, `openapi`, `gateway`, `app`, or `compile` only when the task needs that narrower stage.",
+        "Use `compile` when the project needs to inspect WSDL compilation output or isolate generation problems."
+      ],
+      "forbidden": []
+    },
+    {
+      "id": "protect-generated-output",
+      "files": [
+        "SKILL.md"
+      ],
+      "required": [
+        "Regenerate generated output from the WSDL source or `catalog.json` instead of editing generated files by hand.",
+        "Treat generated `client/`, `gateway/`, and `app/` output as replaceable artifacts."
+      ],
+      "forbidden": [
+        "Edit generated files by hand"
+      ]
+    },
+    {
+      "id": "follow-product-runtime-guidance",
+      "files": [
+        "SKILL.md"
+      ],
+      "required": [
+        "Confirm the consumer project uses Node.js {{nodeMajor}} or newer.",
+        "Install `@techspokes/typescript-wsdl-client` as a development dependency.",
+        "Install `soap` as a runtime dependency."
+      ],
+      "forbidden": []
+    },
+    {
+      "id": "bound-missing-input",
+      "files": [
+        "SKILL.md",
+        "references/consumer-workflows.md"
+      ],
+      "required": [
+        "Inspect the consumer project for WSDL files",
+        "ask only for the source location and the intended generation surface",
+        "Do not invent a service URL, input file, output path, or command scope."
+      ],
+      "forbidden": []
+    },
+    {
+      "id": "isolate-installation",
+      "files": [
+        "SKILL.md"
+      ],
+      "required": [
+        "Use this skill in a consumer project that depends on `@techspokes/typescript-wsdl-client`."
+      ],
+      "forbidden": [
+        "edit global configuration",
+        "edit shell configuration",
+        "edit MCP configuration"
+      ]
+    }
+  ]
+}

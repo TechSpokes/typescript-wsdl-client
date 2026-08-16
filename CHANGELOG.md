@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(agent-skill): add deterministic checksums, provenance, downloaded-asset verification, and consumer smoke evidence
+- fix(agent-skill): replace forced skill installations exactly without changing host configuration
 - fix(deps): refresh maintained dependency floors and remediate current transitive vulnerability alerts
 
 ## [1.0.4] - 2026-07-24

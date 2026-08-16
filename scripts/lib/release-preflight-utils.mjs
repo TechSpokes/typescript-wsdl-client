@@ -81,6 +81,42 @@ export function verifyPublishWorkflowGate(scripts, releasePackageWorkflow) {
   return errors;
 }
 
+/** Verify the draft workflow's agent-skill integrity and provenance chain.
+ * @param {string} releaseDraftWorkflow Draft release workflow source.
+ * @returns {string[]} Contract errors; empty when uploaded artifacts are fully verified.
+ * @why Issue #125 requires the downloaded release asset, not only the local build, to pass checksum, provenance, install, and consumer checks.
+ */
+export function verifySkillDeliveryGate(releaseDraftWorkflow) {
+  const errors = [];
+
+  for (const permission of ["contents: write", "id-token: write", "attestations: write"]) {
+    if (!releaseDraftWorkflow.includes(permission)) {
+      errors.push(`Draft release workflow must grant ${permission} for verified agent-skill delivery.`);
+    }
+  }
+
+  const packageStep = releaseDraftWorkflow.indexOf("Package agent skill");
+  const attestStep = releaseDraftWorkflow.indexOf("actions/attest-build-provenance@v4");
+  const uploadStep = releaseDraftWorkflow.indexOf("gh release upload");
+  const downloadStep = releaseDraftWorkflow.indexOf("gh release download");
+  const provenanceStep = releaseDraftWorkflow.indexOf("gh attestation verify");
+  const artifactStep = releaseDraftWorkflow.indexOf("scripts/verify-agent-skill-artifact.mjs");
+
+  if (!releaseDraftWorkflow.includes("SHA256SUMS")) {
+    errors.push("Draft release workflow must upload and verify SHA256SUMS with the agent-skill ZIP.");
+  }
+  if ([packageStep, attestStep, uploadStep, downloadStep, provenanceStep, artifactStep].some(index => index === -1)
+    || !(packageStep < attestStep
+      && attestStep < uploadStep
+      && uploadStep < downloadStep
+      && downloadStep < provenanceStep
+      && provenanceStep < artifactStep)) {
+    errors.push("Draft release workflow must package, attest, upload, download, verify provenance, and verify the installed artifact in order.");
+  }
+
+  return errors;
+}
+
 /** Verify workflow ordering and privilege boundaries for abandoned candidates.
  * @param {{releaseDraftWorkflow: string, releasePackageWorkflow: string, releaseAbandonWorkflow: string}} workflows Workflow sources.
  * @returns {string[]} Contract errors; empty when release-state enforcement is wired correctly.

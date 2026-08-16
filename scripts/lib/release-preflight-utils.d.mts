@@ -22,6 +22,10 @@ export declare function verifyPublishWorkflowGate(
   releasePackageWorkflow: string,
 ): string[];
 
+export declare function verifySkillDeliveryGate(
+  releaseDraftWorkflow: string,
+): string[];
+
 export declare function verifyReleaseAbandonmentGate(
   workflows: {
     releaseDraftWorkflow: string;

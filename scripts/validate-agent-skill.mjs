@@ -1,13 +1,26 @@
 #!/usr/bin/env node
 
 import { createHash } from "node:crypto";
+import { rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildAgentSkill, extractSection } from "./build-agent-skill.mjs";
+import {
+  buildAgentSkill,
+  buildSourceMap,
+  extractSection,
+  listZipEntries,
+  skillFolderName,
+} from "./build-agent-skill.mjs";
 import { listFiles, pathExists, readBinaryFile, readJsonFile, readTextFile, toPosix } from "./lib/files.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
+const validationPaths = [
+  path.join(repoRoot, "dist", "agent-skill-assets-a"),
+  path.join(repoRoot, "dist", "agent-skill-assets-b"),
+  path.join(repoRoot, "dist", "agent-skill-validate-a"),
+  path.join(repoRoot, "dist", "agent-skill-validate-b"),
+];
 
 function repoPath(filePath) {
   return toPosix(path.relative(repoRoot, filePath));
@@ -38,13 +51,13 @@ function parseFrontmatter(markdown) {
   return values;
 }
 
-function validateSkillFrontmatter(markdown) {
+function validateSkillFrontmatter(markdown, expectedLicense) {
   const frontmatter = parseFrontmatter(markdown);
   const keys = [...frontmatter.keys()].sort();
-  const allowed = ["description", "name"];
+  const allowed = ["description", "license", "name"];
 
   if (JSON.stringify(keys) !== JSON.stringify(allowed)) {
-    throw new Error(`SKILL.md frontmatter must include only name and description. Found: ${keys.join(", ")}`);
+    throw new Error(`SKILL.md frontmatter must include only name, description, and license. Found: ${keys.join(", ")}`);
   }
 
   const name = frontmatter.get("name") ?? "";
@@ -55,6 +68,10 @@ function validateSkillFrontmatter(markdown) {
   const description = frontmatter.get("description") ?? "";
   if (description.length < 80 || !description.includes("@techspokes/typescript-wsdl-client") || !/consumer|WSDL|generate/i.test(description)) {
     throw new Error("Skill description must be non-empty and trigger-rich for consumer WSDL generation tasks.");
+  }
+
+  if (frontmatter.get("license") !== expectedLicense) {
+    throw new Error(`SKILL.md license must match package.json license '${expectedLicense}'.`);
   }
 }
 
@@ -186,14 +203,79 @@ async function hashTree(root) {
   return entries.join("\n");
 }
 
-async function validateDeterministicBuild(tag) {
+function expectedArchiveEntries(manifest) {
+  return [
+    `${skillFolderName}/LICENSE`,
+    `${skillFolderName}/SKILL.md`,
+    `${skillFolderName}/install.mjs`,
+    `${skillFolderName}/references/SOURCE-MAP.json`,
+    ...new Set(manifest.references.map(reference => `${skillFolderName}/${reference.output}`)),
+  ].sort((left, right) => left.localeCompare(right));
+}
+
+async function validateArchive(result, manifest, tag) {
+  const archive = await readBinaryFile(result.zipPath);
+  const entries = listZipEntries(archive);
+  const expectedEntries = expectedArchiveEntries(manifest);
+  if (JSON.stringify(entries) !== JSON.stringify(expectedEntries)) {
+    throw new Error(`Agent skill ZIP inventory mismatch. Expected ${expectedEntries.join(", ")}; found ${entries.join(", ")}.`);
+  }
+  if (JSON.stringify(entries) !== JSON.stringify(result.archiveEntries)) {
+    throw new Error("Agent skill ZIP inventory differs from the builder result.");
+  }
+
+  const expectedChecksums = `${result.archiveDigest}  typescript-wsdl-client-agent-skill-${tag}.zip\n`;
+  const checksums = await readTextFile(result.checksumPath);
+  if (checksums !== expectedChecksums) {
+    throw new Error("Agent skill SHA256SUMS does not match the generated archive digest.");
+  }
+}
+
+async function validateSourceMap(packageRoot, manifest, packageJson, tag) {
+  const sourceMap = await readJsonFile(path.join(packageRoot, "references", "SOURCE-MAP.json"));
+  const expected = buildSourceMap({ version: packageJson.version, tag, manifest });
+  if (JSON.stringify(sourceMap) !== JSON.stringify(expected)) {
+    throw new Error("Agent skill SOURCE-MAP.json does not exactly match the maintained reference manifest.");
+  }
+}
+
+function interpolateFixture(value, packageJson) {
+  const nodeMajor = /^(?:>=)?(\d+)/.exec(packageJson.engines.node)?.[1];
+  return value.replaceAll("{{nodeMajor}}", nodeMajor ?? "");
+}
+
+async function validateBehaviorFixtures(packageRoot, packageJson) {
+  const fixture = await readJson("test/fixtures/agent-skill/behavior.json");
+
+  for (const scenario of fixture.scenarios ?? []) {
+    const content = (await Promise.all(
+      scenario.files.map(file => readTextFile(path.join(packageRoot, file))),
+    )).join("\n");
+
+    for (const required of scenario.required ?? []) {
+      const expected = interpolateFixture(required, packageJson);
+      if (!content.includes(expected)) {
+        throw new Error(`Agent skill behavior fixture '${scenario.id}' is missing required guidance: ${expected}`);
+      }
+    }
+
+    for (const forbidden of scenario.forbidden ?? []) {
+      const rejected = interpolateFixture(forbidden, packageJson);
+      if (content.includes(rejected)) {
+        throw new Error(`Agent skill behavior fixture '${scenario.id}' contains forbidden guidance: ${rejected}`);
+      }
+    }
+  }
+}
+
+async function validateDeterministicBuild(tag, manifest, packageJson) {
   const first = await buildAgentSkill({
-    createArchive: false,
+    assetsDir: path.join(repoRoot, "dist", "agent-skill-assets-a"),
     stageRoot: path.join(repoRoot, "dist", "agent-skill-validate-a"),
     tag,
   });
   const second = await buildAgentSkill({
-    createArchive: false,
+    assetsDir: path.join(repoRoot, "dist", "agent-skill-assets-b"),
     stageRoot: path.join(repoRoot, "dist", "agent-skill-validate-b"),
     tag,
   });
@@ -203,6 +285,14 @@ async function validateDeterministicBuild(tag) {
   if (firstHash !== secondHash) {
     throw new Error("Agent skill staged output is nondeterministic.");
   }
+  if (!first.archiveDigest || first.archiveDigest !== second.archiveDigest) {
+    throw new Error("Agent skill ZIP output is not byte-identical across complete builds.");
+  }
+
+  await validateArchive(first, manifest, tag);
+  await validateArchive(second, manifest, tag);
+  await validateSourceMap(first.packageRoot, manifest, packageJson, tag);
+  await validateBehaviorFixtures(first.packageRoot, packageJson);
 
   return first;
 }
@@ -224,14 +314,18 @@ async function main() {
   const manifest = await readJson("agent-skill/reference-manifest.json");
 
   const skillMarkdown = await readTextFile(path.join(repoRoot, "agent-skill", "SKILL.md"));
-  validateSkillFrontmatter(skillMarkdown);
+  validateSkillFrontmatter(skillMarkdown, packageJson.license);
   validateSkillNodeRequirement(skillMarkdown, packageJson.engines.node);
   await validateManifestSources(manifest);
   await validateEvergreenNoFluidTables(manifest);
 
-  const result = await validateDeterministicBuild(tag);
-  await validatePackagedMarkdown(result.packageRoot);
-  await validateForbiddenFiles(result.packageRoot);
+  try {
+    const result = await validateDeterministicBuild(tag, manifest, packageJson);
+    await validatePackagedMarkdown(result.packageRoot);
+    await validateForbiddenFiles(result.packageRoot);
+  } finally {
+    await Promise.all(validationPaths.map(filePath => rm(filePath, { force: true, recursive: true })));
+  }
 
   console.log(`Agent skill validation passed for ${tag}`);
 }
