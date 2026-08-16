@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(deps): refresh maintained dependency floors and remediate current transitive vulnerability alerts
+
 ## [1.0.4] - 2026-07-24
 
 - fix(deps): update vulnerable XML, HTTP, routing, URI, and YAML dependencies
