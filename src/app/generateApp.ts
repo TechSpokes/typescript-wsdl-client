@@ -609,14 +609,14 @@ function generatePackageJson(appDir: string, force: boolean): void {
       dev: "tsx watch server.ts",
     },
     dependencies: {
-      fastify: "^5.10.0",
+      fastify: "^5.12.0",
       "fastify-plugin": "^6.0.0",
       saxes: "^6.0.0",
       soap: "^1.10.0",
     },
     devDependencies: {
-      "@types/node": "^26.1.1",
-      tsx: "^4.23.1",
+      "@types/node": "^26.2.0",
+      tsx: "^4.23.12",
       typescript: "^6.0.3",
     },
   };
