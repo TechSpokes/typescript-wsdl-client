@@ -16,7 +16,7 @@ import {
   verifyRootManifestAndLock,
 } from "./lib/deps.mjs";
 import { findExampleDrift } from "./lib/preflight-examples.mjs";
-import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate, verifyPublishWorkflowGate, verifyReleaseAbandonmentGate, verifyTrackedTreeStable } from "./lib/release-preflight-utils.mjs";
+import { findDatedChangelogSection, verifyConformanceGateScripts, verifyNodeReleaseGate, verifyPublishWorkflowGate, verifyReleaseAbandonmentGate, verifySkillDeliveryGate, verifyTrackedTreeStable } from "./lib/release-preflight-utils.mjs";
 import { verifyReleaseNotes } from "./lib/release-notes.mjs";
 
 const WEATHER_WSDL = path.join(ROOT, "examples", "minimal", "weather.wsdl");
@@ -268,6 +268,12 @@ function releaseAbandonmentGate() {
   return { message: "abandoned candidates are blocked before draft and package publication" };
 }
 
+function skillDeliveryGate() {
+  const errors = verifySkillDeliveryGate(fs.readFileSync(RELEASE_DRAFT_WORKFLOW, "utf-8"));
+  failIfErrors(errors);
+  return { message: "draft release verifies agent-skill checksum, provenance, installation, and consumer behavior" };
+}
+
 function examplesFresh() {
   fs.rmSync(PREFLIGHT_DIR, { recursive: true, force: true });
   fs.mkdirSync(PREFLIGHT_DIR, { recursive: true });
@@ -300,10 +306,14 @@ function fullCi() {
 function skillArtifact(tag) {
   runNpm(["run", "skill:package", "--", tag], { stdio: "inherit" });
   const asset = path.join(SKILL_DIR, `typescript-wsdl-client-agent-skill-${tag}.zip`);
+  const checksums = path.join(SKILL_DIR, "SHA256SUMS");
   if (!fs.existsSync(asset)) {
     throw new Error(`expected artifact missing: ${path.relative(ROOT, asset)}`);
   }
-  return { message: path.relative(ROOT, asset) };
+  if (!fs.existsSync(checksums)) {
+    throw new Error(`expected checksum manifest missing: ${path.relative(ROOT, checksums)}`);
+  }
+  return { message: `${path.relative(ROOT, asset)} with ${path.relative(ROOT, checksums)}` };
 }
 
 function workingTreeStatus() {
@@ -370,6 +380,7 @@ async function main() {
   await step("node-release-gate", nodeReleaseGate);
   await step("publish-workflow-gate", publishWorkflowGate);
   await step("release-abandonment-gate", releaseAbandonmentGate);
+  await step("skill-delivery-gate", skillDeliveryGate);
 
   if (args.skipExamples) {
     record("examples-fresh", "skip", "--skip-examples");

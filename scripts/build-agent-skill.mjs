@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createHash } from "node:crypto";
 import { deflateRawSync } from "node:zlib";
 import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
@@ -9,7 +10,7 @@ import { listFiles, pathExists, readBinaryFile, readJsonFile, readTextFile, toPo
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
-const skillFolderName = "typescript-wsdl-client";
+export const skillFolderName = "typescript-wsdl-client";
 const defaultStageRoot = path.join(repoRoot, "dist", "agent-skill-stage");
 const defaultAssetsDir = path.join(repoRoot, "dist", "assets");
 
@@ -162,7 +163,13 @@ function buildSourceToOutput(manifest) {
   return sourceToOutput;
 }
 
-function buildSourceMap({ version, tag, manifest }) {
+/**
+ * Builds the traceability record embedded in each packaged skill.
+ *
+ * @param {{version: string, tag: string, manifest: object}} input - Product identity and maintained reference manifest.
+ * @returns {object} Deterministically ordered source-map payload.
+ */
+export function buildSourceMap({ version, tag, manifest }) {
   return {
     package: "@techspokes/typescript-wsdl-client",
     version,
@@ -238,6 +245,7 @@ async function readManifest() {
 async function copySkillRoot(packageRoot) {
   await copyFileTo(path.join(repoRoot, "agent-skill", "SKILL.md"), path.join(packageRoot, "SKILL.md"));
   await copyFileTo(path.join(repoRoot, "agent-skill", "install.mjs"), path.join(packageRoot, "install.mjs"));
+  await copyFileTo(path.join(repoRoot, "LICENSE"), path.join(packageRoot, "LICENSE"));
 }
 
 const crcTable = new Uint32Array(256);
@@ -272,6 +280,7 @@ function uint32(value) {
 
 async function createZip({ sourceRoot, zipPath }) {
   const files = await listFiles(sourceRoot, { sortRoot: repoRoot });
+  const entries = files.map(filePath => toPosix(path.relative(sourceRoot, filePath)));
   const centralRecords = [];
   let offset = 0;
 
@@ -349,8 +358,68 @@ async function createZip({ sourceRoot, zipPath }) {
     output.end(resolve);
     output.on("error", reject);
   });
+
+  return entries;
 }
 
+/**
+ * Reads the sorted file-entry inventory from a ZIP central directory.
+ *
+ * @param {Buffer} archive - Complete ZIP archive bytes.
+ * @returns {string[]} Entry names in archive order.
+ * @throws {Error} When the archive is truncated or has an unsupported central-directory record.
+ * @why Issue #125 requires validation of the emitted archive rather than only its staging tree.
+ */
+export function listZipEntries(archive) {
+  const minimumEndRecordLength = 22;
+  let endOffset = -1;
+  for (let offset = archive.length - minimumEndRecordLength; offset >= 0; offset -= 1) {
+    if (archive.readUInt32LE(offset) === 0x06054b50) {
+      endOffset = offset;
+      break;
+    }
+  }
+  if (endOffset === -1) {
+    throw new Error("ZIP end-of-central-directory record is missing.");
+  }
+
+  const entryCount = archive.readUInt16LE(endOffset + 10);
+  let offset = archive.readUInt32LE(endOffset + 16);
+  const entries = [];
+
+  for (let index = 0; index < entryCount; index += 1) {
+    if (offset + 46 > archive.length || archive.readUInt32LE(offset) !== 0x02014b50) {
+      throw new Error(`ZIP central-directory entry ${index + 1} is invalid.`);
+    }
+
+    const nameLength = archive.readUInt16LE(offset + 28);
+    const extraLength = archive.readUInt16LE(offset + 30);
+    const commentLength = archive.readUInt16LE(offset + 32);
+    const nameStart = offset + 46;
+    const nameEnd = nameStart + nameLength;
+    if (nameEnd > archive.length) {
+      throw new Error(`ZIP central-directory entry ${index + 1} is truncated.`);
+    }
+
+    entries.push(archive.subarray(nameStart, nameEnd).toString("utf8"));
+    offset = nameEnd + extraLength + commentLength;
+  }
+
+  return entries;
+}
+
+async function sha256File(filePath) {
+  return createHash("sha256").update(await readBinaryFile(filePath)).digest("hex");
+}
+
+/**
+ * Builds the complete installable skill and optional release assets.
+ *
+ * @param {{assetsDir?: string, createArchive?: boolean, stageRoot?: string, tag?: string}} options - Build destinations and product tag.
+ * @returns {Promise<object>} Staged paths plus archive inventory, digest, and checksum metadata.
+ * @throws {Error} When the tag differs from the product version or a reference cannot be packaged.
+ * @sideEffects Replaces the configured ignored staging and asset outputs.
+ */
 export async function buildAgentSkill({
   assetsDir = defaultAssetsDir,
   createArchive = true,
@@ -383,21 +452,31 @@ export async function buildAgentSkill({
     JSON.stringify(buildSourceMap({ version, tag, manifest }), null, 2),
   );
 
+  let archiveDigest;
+  let archiveEntries = (await listFiles(stageRoot, { sortRoot: stageRoot }))
+    .map(filePath => toPosix(path.relative(stageRoot, filePath)));
+  let checksumPath;
   let zipPath;
   if (createArchive) {
     zipPath = path.join(assetsDir, `typescript-wsdl-client-agent-skill-${tag}.zip`);
+    checksumPath = path.join(assetsDir, "SHA256SUMS");
 
     if (await pathExists(zipPath)) {
       await rm(zipPath);
     }
 
-    await createZip({
+    archiveEntries = await createZip({
       sourceRoot: stageRoot,
       zipPath,
     });
+    archiveDigest = await sha256File(zipPath);
+    await writeText(checksumPath, `${archiveDigest}  ${path.basename(zipPath)}`);
   }
 
   return {
+    archiveDigest,
+    archiveEntries,
+    checksumPath,
     packageRoot,
     stageRoot,
     zipPath,
@@ -412,6 +491,7 @@ async function main() {
 
   const result = await buildAgentSkill({ tag });
   console.log(`Packaged agent skill at ${result.zipPath}`);
+  console.log(`Wrote agent skill checksums at ${result.checksumPath}`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

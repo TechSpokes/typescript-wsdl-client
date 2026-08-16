@@ -294,8 +294,8 @@ Examples:
 9. Review the completed changelog section and convert the user-facing changes into `docs/releases/v<version>.md`.
 10. Run only targeted checks needed while editing release files. Do not run a separate final `npm run ci` or `npm run skill:package` when release preflight will run them.
 11. Review the complete uncommitted release diff and confirm it contains only the intended release changes.
-12. Run `npm run release:preflight -- v<version>` once on the final uncommitted release tree. This read-only tracked-file gate runs CI, validates package contents, and packages the standalone agent skill ZIP into ignored `dist/` output.
-13. Confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` exists after preflight.
+12. Run `npm run release:preflight -- v<version>` once on the final uncommitted release tree. This read-only tracked-file gate runs CI, validates package contents, and packages the standalone agent skill ZIP and checksum manifest into ignored `dist/` output.
+13. Confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` and `dist/assets/SHA256SUMS` exist after preflight.
 14. If preflight fails or a separate command changes tracked release files afterward, finish the fixes and rerun preflight on the new final candidate. Preflight itself fails if it changes tracked content.
 15. After preflight passes, commit the exact validated release tree without changing tracked files.
 16. Tag and push the release commit without rerunning preflight, CI, package validation, or skill packaging.
@@ -320,7 +320,7 @@ Recommended tag rulesets protect `v*` and `abandoned/v*` from updates and deleti
 
 Release notes are required for every release tag. The tag-triggered draft release workflow reads `docs/releases/v<version>.md`, validates the source file, and strips only the first H1 line when generating the GitHub release body.
 
-The draft release workflow also packages and uploads `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip`. Continue refusing to mutate a published non-draft release.
+The draft release workflow packages and attests `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip`, uploads the ZIP and `SHA256SUMS`, then downloads, verifies, installs, and smoke-tests the uploaded artifact. Continue refusing to mutate a published non-draft release.
 
 The published-release package workflow must stay targeted. It checks out the tag, installs the tested npm version, runs `npm run release:publish-check`, then publishes only to npmjs with provenance. Do not add GitHub Packages capability or replace that publish check with `npm run ci`; full CI, conformance, generated examples, and smoke verification belong to `npm run release:preflight -- v<version>` before the tag is pushed.
 

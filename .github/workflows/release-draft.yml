@@ -12,7 +12,9 @@ on:
         type: string
 
 permissions:
+  attestations: write
   contents: write
+  id-token: write
 
 concurrency:
   group: release-state-${{ github.event.inputs.tag || github.ref_name }}
@@ -174,6 +176,11 @@ jobs:
       - name: Package agent skill
         run: npm run skill:package -- ${{ steps.meta.outputs.tag }}
 
+      - name: Attest agent skill
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: dist/assets/typescript-wsdl-client-agent-skill-${{ steps.meta.outputs.tag }}.zip
+
       - name: Create or update draft release
         shell: bash
         env:
@@ -182,6 +189,7 @@ jobs:
           RELEASE_TITLE: ${{ steps.meta.outputs.release_title }}
           NOTES_BODY_FILE: ${{ steps.meta.outputs.notes_body_file }}
           SKILL_ASSET: dist/assets/typescript-wsdl-client-agent-skill-${{ steps.meta.outputs.tag }}.zip
+          SKILL_CHECKSUMS: dist/assets/SHA256SUMS
         run: |
           set -euo pipefail
 
@@ -202,4 +210,38 @@ jobs:
               --notes-file "${NOTES_BODY_FILE}"
           fi
 
-          gh release upload "${TAG_NAME}" "${SKILL_ASSET}" --clobber
+          gh release upload "${TAG_NAME}" "${SKILL_ASSET}" "${SKILL_CHECKSUMS}" --clobber
+
+      - name: Verify uploaded agent skill
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          verify_dir="$(mktemp -d "${RUNNER_TEMP}/agent-skill-release-verify.XXXXXX")"
+          asset_name="typescript-wsdl-client-agent-skill-${TAG_NAME}.zip"
+          previous_tag="$(gh release list --exclude-drafts --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName')"
+          previous_asset="typescript-wsdl-client-agent-skill-${previous_tag}.zip"
+
+          mkdir "${verify_dir}/previous"
+          gh release download "${previous_tag}" \
+            --pattern "${previous_asset}" \
+            --dir "${verify_dir}/previous"
+
+          gh release download "${TAG_NAME}" \
+            --pattern "${asset_name}" \
+            --pattern "SHA256SUMS" \
+            --dir "${verify_dir}"
+
+          gh attestation verify "${verify_dir}/${asset_name}" \
+            --repo "${GITHUB_REPOSITORY}"
+
+          node scripts/verify-agent-skill-artifact.mjs \
+            --zip "${verify_dir}/${asset_name}" \
+            --checksums "${verify_dir}/SHA256SUMS" \
+            --work-dir "${verify_dir}/verification" \
+            --wsdl examples/minimal/weather.wsdl \
+            --expected-tag "${TAG_NAME}" \
+            --previous-zip "${verify_dir}/previous/${previous_asset}"

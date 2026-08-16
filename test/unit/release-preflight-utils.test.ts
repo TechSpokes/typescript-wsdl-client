@@ -8,6 +8,7 @@ const {
   verifyNodeReleaseGate,
   verifyPublishWorkflowGate,
   verifyReleaseAbandonmentGate,
+  verifySkillDeliveryGate,
   verifyTrackedTreeStable,
 } = releasePreflightUtils;
 
@@ -209,6 +210,44 @@ describe("verifyPublishWorkflowGate", () => {
     const errors = verifyPublishWorkflowGate(scripts, `${npmSetup}\nrun: npm run release:publish-check`);
 
     expect(errors).toContain("Release package workflow must pin and install an exact tested npm version.");
+  });
+});
+
+describe("verifySkillDeliveryGate", () => {
+  const workflow = `
+permissions:
+  attestations: write
+  contents: write
+  id-token: write
+- name: Package agent skill
+- uses: actions/attest-build-provenance@v4
+- run: gh release upload skill.zip SHA256SUMS
+- run: gh release download --pattern skill.zip --pattern SHA256SUMS
+- run: gh attestation verify skill.zip
+- run: node scripts/verify-agent-skill-artifact.mjs
+  `;
+
+  it("accepts a checksummed, attested, downloaded, and installed artifact chain", () => {
+    expect(verifySkillDeliveryGate(workflow)).toEqual([]);
+  });
+
+  it("accepts the repository draft release workflow", () => {
+    expect(verifySkillDeliveryGate(readFileSync(".github/workflows/release-draft.yml", "utf8"))).toEqual([]);
+  });
+
+  it("rejects missing release provenance permissions", () => {
+    const errors = verifySkillDeliveryGate(workflow.replace("  attestations: write\n", ""));
+
+    expect(errors).toContain("Draft release workflow must grant attestations: write for verified agent-skill delivery.");
+  });
+
+  it("rejects verification that happens before the uploaded asset is downloaded", () => {
+    const errors = verifySkillDeliveryGate(workflow.replace(
+      "- run: gh release download --pattern skill.zip --pattern SHA256SUMS\n",
+      "",
+    ));
+
+    expect(errors).toContain("Draft release workflow must package, attest, upload, download, verify provenance, and verify the installed artifact in order.");
   });
 });
 

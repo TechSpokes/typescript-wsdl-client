@@ -1,6 +1,7 @@
 ---
 name: typescript-wsdl-client
 description: Use when working in a consumer project that depends on @techspokes/typescript-wsdl-client to generate typed SOAP clients, OpenAPI specs, Fastify gateways, apps, tests, or catalogs from WSDL or catalog inputs.
+license: MIT
 ---
 
 # TypeScript WSDL Client
@@ -16,6 +17,12 @@ Use this skill in a consumer project that depends on `@techspokes/typescript-wsd
 5. Use `client`, `openapi`, `gateway`, `app`, or `compile` only when the task needs that narrower stage.
 6. Regenerate generated output from the WSDL source or `catalog.json` instead of editing generated files by hand.
 7. Validate generated output with the consumer project's TypeScript build and tests.
+
+## Missing Input Discovery
+
+Inspect the consumer project for WSDL files, XSD imports, existing `catalog.json` files, generator configuration, and established output paths before asking for input.
+
+If no usable WSDL or catalog is available, ask only for the source location and the intended generation surface. Do not invent a service URL, input file, output path, or command scope.
 
 ## Dependency Commands
 
