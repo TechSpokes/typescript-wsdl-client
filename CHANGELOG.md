@@ -9,6 +9,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-08-29
+
+- fix(deps): update Fastify to 5.12.1 to remediate current security advisories
+- chore(deps): update Vitest to 4.1.11
+- chore(deps): refresh `fast-xml-parser`, `js-yaml`, `soap`, and `@types/node` minimums
+- chore(app): refresh generated app pins for Fastify, `soap`, and `@types/node`
+
 ## [1.0.5] - 2026-08-16
 
 - feat(agent-skill): add deterministic checksums, provenance, downloaded-asset verification, and consumer smoke evidence
