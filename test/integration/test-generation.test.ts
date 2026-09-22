@@ -12,9 +12,9 @@
  * can find fastify, vitest, and other dependencies from node_modules.
  */
 import { describe, it, expect, beforeAll } from "vitest";
-import { mkdtempSync, mkdirSync, readFileSync, statSync, existsSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { execSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { execFileSync } from "node:child_process";
 import {buildChoiceWsdl, buildSearchChoiceSchema, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
 import {parseStreamConfig, runGenerationPipeline} from "../../src/index.js";
 
@@ -23,8 +23,11 @@ const TEST_GENERATION_TMP = join(PROJECT_ROOT, "tmp", "test-generation");
 const WSDL = join(PROJECT_ROOT, "examples", "minimal", "weather.wsdl");
 
 function runGeneratedVitest(configPath: string): any {
-  const result = execSync(
-    `npx vitest run --config "${configPath}" --reporter=json`,
+  const reportPath = join(dirname(configPath), ".vitest-report.json");
+  rmSync(reportPath, {force: true});
+  execFileSync(
+    process.execPath,
+    [join(PROJECT_ROOT, "node_modules", "vitest", "vitest.mjs"), "run", "--config", configPath, "--reporter=json", "--outputFile", reportPath],
     {
       cwd: PROJECT_ROOT,
       encoding: "utf-8",
@@ -32,9 +35,7 @@ function runGeneratedVitest(configPath: string): any {
       env: {...process.env, NODE_ENV: "test"},
     }
   );
-  const jsonStart = result.indexOf("{");
-  expect(jsonStart).toBeGreaterThanOrEqual(0);
-  const parsed = JSON.parse(result.slice(jsonStart));
+  const parsed = JSON.parse(readFileSync(reportPath, "utf-8"));
   expect(parsed.success).toBe(true);
   expect(parsed.numFailedTests).toBe(0);
   return parsed;
