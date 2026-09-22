@@ -4,6 +4,14 @@ Common issues and debugging guidance for wsdl-tsc.
 
 See [README](../README.md) for quick start and [CLI Reference](cli-reference.md) for command details.
 
+## Generated Files and ESLint
+
+If the generated directive appears ineffective, check `noInlineConfig` and `--no-inline-config`. Unused-disable diagnostics can occur on files with no rule violations. Parser or TypeScript project errors are not rule reports and cannot be suppressed by the header.
+
+Use the [generated-code ESLint guidance](generated-code.md#generated-preambles-and-eslint) for global exclusions that preserve maintained-source policies, explicit-file hook warnings, and scaffold adoption. Do not disable TypeScript checking or weaken lint policy globally to accommodate generated output.
+
+A missing, empty, or unreadable packaged preamble fails generation with the resource and destination path. Reinstall the intact package; do not edit `node_modules` or patch generated files to work around a damaged installation.
+
 ## Common Issues
 
 | Symptom | Resolution |

@@ -23,6 +23,7 @@
  * - Skip-if-exists protection for scaffold files (override with force option)
  */
 import fs from "node:fs";
+import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
 import {info, success} from "../util/cli.js";
@@ -362,7 +363,7 @@ main().catch((err) => {
 });
 `;
 
-  fs.writeFileSync(filePath, content, "utf-8");
+  writeGeneratedSource(filePath, content, "app");
 }
 
 /**
@@ -463,7 +464,7 @@ export function loadConfig(): AppConfig {
 }
 `;
 
-  fs.writeFileSync(filePath, content, "utf-8");
+  writeGeneratedSource(filePath, content, "app");
 }
 
 function loadOptionalSecurityConfig(filePath: string | undefined): SecurityConfig | undefined {
@@ -585,7 +586,7 @@ function generateSecurityFile(
   const upstreamJson = JSON.stringify(securityCfg?.upstream ?? {}, null, 2);
   const content = loadRuntimeTemplate("appSecurity.tpl.txt").replace("__UPSTREAM_JSON__", upstreamJson);
 
-  fs.writeFileSync(filePath, content, "utf-8");
+  writeGeneratedSource(filePath, content, "app");
 }
 
 /**

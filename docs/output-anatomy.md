@@ -2,6 +2,10 @@
 
 This document describes each file produced by the generator, what it contains, and how to work with it. For CLI flags that control output, see [CLI Reference](cli-reference.md).
 
+## TypeScript File Preambles
+
+All complete emitted TypeScript files receive one [generated preamble](generated-code.md#generated-preambles-and-eslint), including optional helpers and `_typecheck.ts`. App and generated-test scaffolds use editable-source wording and retain their existing skip/force behavior. Data outputs and existing consumer source remain unchanged.
+
 ## Generation Flow
 
 The pipeline follows this sequence: WSDL source is parsed and compiled into a catalog, then each emitter reads the catalog and produces its output.

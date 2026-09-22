@@ -11,6 +11,7 @@
  * All emitters follow deterministic generation rules for diff-friendly output.
  */
 import fs from "node:fs";
+import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import path from "node:path";
 import {type ClientMeta, type OpenAPIDocument, flattenAllOf, measureSchemaRefComplexity, rewriteSchemaRefs, slugName,} from "./helpers.js";
 import {detectArrayWrappers as detectArrayWrappersShared} from "../util/catalogMeta.js";
@@ -381,7 +382,7 @@ export function emitSchemasModule(
   schemasTs += `  }\n`;
   schemasTs += `}\n`;
 
-  fs.writeFileSync(path.join(outDir, "schemas.ts"), schemasTs, "utf8");
+  writeGeneratedSource(path.join(outDir, "schemas.ts"), schemasTs, "gateway");
 }
 
 /**
@@ -462,7 +463,7 @@ import type { FastifyInstance } from "fastify";
     routeTs += `  });\n`;
     routeTs += `}\n`;
 
-    fs.writeFileSync(path.join(routesDir, `${routeFileBase}.ts`), routeTs, "utf8");
+    writeGeneratedSource(path.join(routesDir, `${routeFileBase}.ts`), routeTs, "gateway/routes");
   });
 
   const routeFnName = `registerRoutes_${slugName(versionSlug)}_${slugName(serviceSlug)}`;
@@ -473,7 +474,7 @@ import type { FastifyInstance } from "fastify";
   });
   routesTs += `}\n`;
 
-  fs.writeFileSync(path.join(outDir, "routes.ts"), routesTs, "utf8");
+  writeGeneratedSource(path.join(outDir, "routes.ts"), routesTs, "gateway/routes");
 }
 
 
@@ -764,7 +765,7 @@ export function createGatewayErrorHandler_${vSlug}_${sSlug}() {
 `;
 
   const streamSection = opts?.hasStreams ? buildStreamRuntimeSection() : "";
-  fs.writeFileSync(path.join(outDir, "runtime.ts"), runtimeTs + unwrapSection + streamSection, "utf8");
+  writeGeneratedSource(path.join(outDir, "runtime.ts"), runtimeTs + unwrapSection + streamSection, "gateway/runtime");
 }
 
 /**
@@ -949,7 +950,7 @@ export default fp(${sSlug}GatewayPlugin, {
 export { ${sSlug}GatewayPlugin };
 `;
 
-  fs.writeFileSync(path.join(outDir, "plugin.ts"), pluginTs, "utf8");
+  writeGeneratedSource(path.join(outDir, "plugin.ts"), pluginTs, "gateway");
 }
 
 /**
@@ -995,7 +996,7 @@ function _assertClientCompatible(client: ${clientMeta.className}): void {
 void _assertClientCompatible;
 `;
 
-  fs.writeFileSync(path.join(outDir, "_typecheck.ts"), content, "utf8");
+  writeGeneratedSource(path.join(outDir, "_typecheck.ts"), content, "gateway");
 }
 
 /**
@@ -1129,7 +1130,7 @@ ${handlerBody}
 }
 `;
 
-    fs.writeFileSync(path.join(routesDir, `${routeFileBase}.ts`), routeTs, "utf8");
+    writeGeneratedSource(path.join(routesDir, `${routeFileBase}.ts`), routeTs, "gateway/routes");
   });
 
   // Generate routes.ts aggregator module
@@ -1151,5 +1152,5 @@ export async function ${routeFnName}(fastify: FastifyInstance): Promise<void> {
   routesTs += `  // Register all routes\n${routeCalls}\n`;
   routesTs += `}\n`;
 
-  fs.writeFileSync(path.join(outDir, "routes.ts"), routesTs, "utf8");
+  writeGeneratedSource(path.join(outDir, "routes.ts"), routesTs, "gateway/routes");
 }

@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-22
+
+- feat(generation): add automatic TypeScript ESLint preambles and document generated-path exclusions for restrictive lint policies
+
 ## [1.0.7] - 2026-09-22
 
 - fix(deps): update XML, URI, and OpenAPI parsing dependencies for upstream security fixes

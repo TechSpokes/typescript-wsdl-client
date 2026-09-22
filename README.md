@@ -55,6 +55,8 @@ npx wsdl-tsc client \
 
 This produces `types.ts`, `client.ts`, `operations.ts`, and `utils.ts` in the output directory.
 
+Generated TypeScript includes an ESLint suppression preamble. See [generated-code linting guidance](docs/generated-code.md#generated-preambles-and-eslint) for strict policies, path exclusions, and editable scaffold ownership.
+
 ### Generate an OpenAPI spec
 
 ```bash
@@ -226,6 +228,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Production Guide](docs/production.md) | CI/CD, validation, logging |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
 | [Release Notes](docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.1.0 Release Notes](docs/releases/v1.1.0.md) | Automatic generated TypeScript preambles and consumer lint guidance |
 
 ### Extend
 
