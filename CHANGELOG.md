@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- chore(deps): update Vitest to 5.0.1
+- fix(test): read generated Vitest reports from the reporter output file
 - test(stream): wait for readable cleanup after cancellation on Node 26
 
 ## [1.0.6] - 2026-08-29
