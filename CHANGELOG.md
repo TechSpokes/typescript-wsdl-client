@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(stream): wait for readable cleanup after cancellation on Node 26
+
 ## [1.0.6] - 2026-08-29
 
 - fix(deps): update Fastify to 5.12.1 to remediate current security advisories

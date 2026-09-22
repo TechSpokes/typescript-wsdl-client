@@ -110,7 +110,11 @@ describe("toJsonArray", () => {
     const stream = toJsonArray(records());
     const iter = stream[Symbol.asyncIterator]();
     await iter.next();
+    const closed = new Promise<void>((resolve) => {
+      stream.once("close", resolve);
+    });
     await iter.return?.();
+    await closed;
 
     expect(cleanedUp).toBe(true);
   });
