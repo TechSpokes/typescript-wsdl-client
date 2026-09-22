@@ -4,6 +4,8 @@ All CLI commands are available as TypeScript functions. This document covers eac
 
 See the main [README](../README.md) for installation, CLI usage, and project overview.
 
+All file-producing APIs automatically apply [TypeScript preambles](generated-code.md#generated-preambles-and-eslint). Signatures and options are unchanged; existing scaffold skip/force behavior still applies. Resource and TypeScript file-write failures propagate to callers.
+
 ## compileWsdlToProject
 
 Generate a TypeScript SOAP client from WSDL.

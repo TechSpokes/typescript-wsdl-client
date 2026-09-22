@@ -4,6 +4,16 @@ Internal architecture of the wsdl-tsc code generator for contributors.
 
 See [CONTRIBUTING](../CONTRIBUTING.md) for development setup and [README](../README.md) for user documentation.
 
+## Generated Source Policy
+
+Complete TypeScript writes pass through `src/generation/writeGeneratedSource.ts` after any scaffold ownership guard. Runtime/template loaders remain fragment loaders; provenance and documentation are preserved when the final body receives its preamble.
+
+`src/generation/preamble.ts` resolves trusted raw resources relative to this package's module location, never the consumer working directory. Logical scopes use nearest-resource fallback: `gateway/routes/typescript.preamble`, then `gateway/typescript.preamble`, then the required root `typescript.preamble`. One resource wins; resources are not concatenated. App and test overrides describe editable scaffolds.
+
+Successful resource resolutions are cached per resolver and logical scope for the process lifetime. A missing optional resource falls back, but a broken selected resource or missing required root fails generation. The writer preserves shebang placement and body text while normalizing preamble line endings and removing leading BOMs.
+
+Package validation uses the development TypeScript compiler to reject non-comment content and compiler-control directives. The generator runtime does not load that compiler. Raw `.preamble` files are included in npm packages, and `package:smoke` verifies installed generation outside the checkout during full CI. No custom resource roots or new public options are exposed.
+
 ## Pipeline Overview
 
 ```text

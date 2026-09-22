@@ -12,9 +12,8 @@
  * - Consistent property ordering and interface structuring
  * - Optional/required markers based on XML schema requirements
  */
-import fs from "node:fs";
+import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import type {CompiledCatalog, CompiledChoiceBranch, CompiledChoiceGroup, CompiledType} from "../compiler/schemaCompiler.js";
-import {error} from "../util/cli.js";
 import {hasAttributeWildcards, wildcardAttributeBagName} from "../util/attributeWildcards.js";
 
 /**
@@ -35,6 +34,7 @@ import {hasAttributeWildcards, wildcardAttributeBagName} from "../util/attribute
  *
  * @param {string} outFile - Path to the output TypeScript file
  * @param {CompiledCatalog} compiled - The compiled WSDL catalog
+ * @throws {Error} If a packaged preamble cannot be loaded or the TypeScript file cannot be written.
  */
 export function generateTypes(outFile: string, compiled: CompiledCatalog) {
   const lines: string[] = [];
@@ -325,9 +325,5 @@ export function generateTypes(outFile: string, compiled: CompiledCatalog) {
     lines.push("");
   }
 
-  try {
-    fs.writeFileSync(outFile, lines.join("\n"), "utf8");
-  } catch (e) {
-    error(`Failed to write types to ${outFile}: ${e instanceof Error ? e.message : String(e)}`);
-  }
+  writeGeneratedSource(outFile, lines.join("\n"), "client");
 }
