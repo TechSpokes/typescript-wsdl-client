@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-09-22
+
+- fix(deps): update XML, URI, and OpenAPI parsing dependencies for upstream security fixes
+- chore(deps): refresh runtime, development, and generated app dependency floors
 - chore(deps): update Vitest to 5.0.1
 - fix(test): read generated Vitest reports from the reporter output file
 - test(stream): wait for readable cleanup after cancellation on Node 26
