@@ -283,6 +283,10 @@ Examples:
 
 ### Release workflow
 
+Prepare the complete release candidate, including `docs/releases/vX.Y.Z.md`, package versions, changelog, and root documentation index, before pushing the release PR. Complete the PR template checklist. Commit the preflight-validated tree, push the PR, and require Node 24 and Node 26 checks on its exact head before merging. Verify that merged main has the same tree and successful CI, then tag that merged commit. A different merged tree requires a newly validated candidate before tagging.
+
+Agent delivery ends after the tag-triggered workflow creates and verifies the draft and its artifacts, followed by task-owned local and remote cleanup. Agents must never access GitHub through a browser, publish releases, or dispatch package publication. The maintainer signs in through their own browser and clicks Publish; that event triggers npm publication. Preserve unrelated work, contributor-owned branches, release tags, and abandonment markers during cleanup.
+
 1. Read current package version from `package.json` and the latest dated release section in `CHANGELOG.md`.
 2. Determine the target semver bump based on `Unreleased` changes or the user's explicit target.
 3. For patch releases, verify the target is the next patch after the latest released version.
@@ -298,7 +302,7 @@ Examples:
 13. Confirm `dist/assets/typescript-wsdl-client-agent-skill-v<version>.zip` and `dist/assets/SHA256SUMS` exist after preflight.
 14. If preflight fails or a separate command changes tracked release files afterward, finish the fixes and rerun preflight on the new final candidate. Preflight itself fails if it changes tracked content.
 15. After preflight passes, commit the exact validated release tree without changing tracked files.
-16. Tag and push the release commit without rerunning preflight, CI, package validation, or skill packaging.
+16. Push and merge the release PR after its required checks, then tag the validated merged main commit without rerunning local preflight, CI, package validation, or skill packaging for an unchanged tree.
 
 ### Abandoned release candidates
 
@@ -310,7 +314,7 @@ The draft and package workflows must call the shared release-state helper before
 
 Drafting, abandonment, and package delivery share a non-cancelling per-tag concurrency group. Preserve that serialization so a marker cannot race package publication for the same candidate.
 
-The marker cannot disable GitHub's Publish button while a draft exists. The supported normal path is to review and publish an unmarked draft through GitHub's Release page; the guarded package workflow then delivers npmjs with provenance. Abandonment retires the draft only after marker verification. Manual package dispatch is recovery-only and enforces the same published-release and marker checks.
+The marker cannot disable GitHub's Publish button while a draft exists. The maintainer reviews and publishes an unmarked draft through GitHub's Release page after agent delivery has ended; the guarded package workflow then delivers npmjs with provenance. Abandonment retires the draft only after marker verification. Manual package dispatch is maintainer-operated recovery only and enforces the same published-release and marker checks.
 
 Do not add a workflow that publishes the draft and assumes its normal `GITHUB_TOKEN` will trigger the package workflow. GitHub suppresses that recursive workflow event. The supported UI publication path produces the external `release: published` event, while manual package dispatch remains the explicit recovery path.
 
@@ -400,7 +404,8 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 - Review the complete uncommitted release diff.
 - Run `npm run release:preflight -- vX.Y.Z` once on the final uncommitted release tree.
 - Commit the exact validated tree without further tracked-file changes.
-- Tag and push without rerunning release validation.
+- Push and merge the complete release PR, verify main's tree, then tag the merged commit without repeating unchanged local validation.
+- Verify the draft workflow and artifacts, finish task-owned cleanup, and stop for maintainer publication.
 - Use the skill ZIP produced by release preflight; do not run a separate skill package step unless preflight is not being used.
 
 ### Editing code that affects CLI, OpenAPI, or gateway

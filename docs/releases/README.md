@@ -59,11 +59,19 @@ When an abandoned major or minor candidate contains the complete launch narrativ
 
 The supported release path keeps final-form tags immutable:
 
-1. Run release preflight on the final uncommitted tree.
-2. Commit the exact validated tree and create `vX.Y.Z`.
-3. Push the branch and tag so the draft workflow creates the release and skill asset.
-4. Review and publish the unmarked draft through GitHub's Release page.
-5. Let the guarded package workflow publish to npmjs with provenance.
+1. Prepare versions, changelog, release notes, and the documentation index before pushing the release PR.
+2. Run release preflight on the final uncommitted tree and commit that exact validated tree.
+3. Push the PR and require Node 24 and Node 26 checks on its final head before merging.
+4. Verify the merged main tree matches the validated tree and require CI on the merged commit.
+5. Tag the validated merged main commit and push the tag to start the draft workflow.
+6. Verify the draft, release notes, uploaded skill ZIP, checksum manifest, and artifact verification results.
+7. Clean up task-owned merged branches and temporary outputs, then hand the draft to the maintainer.
+8. The maintainer reviews the draft in their own browser and clicks Publish.
+9. The guarded package workflow publishes to npmjs with provenance.
+
+The agent stops after draft verification and cleanup. Agents must never access GitHub through a browser, publish a release, or dispatch package publication. Use authenticated git and GitHub CLI commands for preparation and verification. Preserve unrelated work, contributor-owned branches, immutable release tags, and abandonment markers during cleanup.
+
+If the merged tree differs from the preflight-validated tree, stop before tagging and prepare a newly validated candidate. Do not rerun preflight for an unchanged validated tree.
 
 Manual package dispatch is a recovery path after the GitHub Release is published. It enforces the same tag, marker, reachability, draft, and prerelease checks.
 

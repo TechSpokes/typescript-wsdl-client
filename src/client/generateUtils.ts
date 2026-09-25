@@ -43,8 +43,17 @@ export function generateUtils(outFile: string, compiled: CompiledCatalog) {
   if (typeof attrSpec !== "object" || typeof childType !== "object") {
     throw new Error("Invalid metadata structure. Expected objects for Attributes and ChildrenTypes.");
   }
+  const repeatedElements = Object.fromEntries(
+    Object.entries(compiled.meta.propMeta ?? {}).sort(([a], [b]) => a.localeCompare(b)).map(([typeName, properties]) => [
+      typeName,
+      Object.keys(properties).filter(name => {
+        const max = properties[name]?.max;
+        return max === "unbounded" || (typeof max === "number" && max > 1);
+      }).sort(),
+    ]),
+  );
   const metas = JSON.stringify(
-    {Attributes: attrSpec, ChildrenTypes: childType},
+    {Attributes: attrSpec, ChildrenTypes: childType, RepeatedElements: repeatedElements},
     null,
     2
   );
@@ -57,6 +66,8 @@ export interface ${clientName}DataTypes {
   Attributes: Record<string, readonly string[]>;
   /** Maps type names to their child element types for recursive processing */
   ChildrenTypes: Record<string, Readonly<Record<string, string>>>;
+  /** Maps type names to repeated child properties; optional for custom metadata compatibility. */
+  RepeatedElements?: Record<string, readonly string[]>;
 }
 
 export const ${clientConstant}_DATA_TYPES: ${clientName}DataTypes = ${metas} as const;\n`;

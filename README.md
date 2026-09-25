@@ -228,6 +228,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Production Guide](docs/production.md) | CI/CD, validation, logging |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
 | [Release Notes](docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.1.2 Release Notes](docs/releases/v1.1.2.md) | Sequence occurrence bounds and singleton SOAP response normalization |
 | [v1.1.1 Release Notes](docs/releases/v1.1.1.md) | Wrapping sequence occurrence bounds and generated array contracts |
 | [v1.1.0 Release Notes](docs/releases/v1.1.0.md) | Automatic generated TypeScript preambles and consumer lint guidance |
 
