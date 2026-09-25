@@ -34,6 +34,7 @@
       "source": "docs/generated-code.md",
       "output": "references/generated-code.md",
       "sections": [
+        "## Generated Preambles and ESLint",
         "## Client Construction",
         "## Calling Operations",
         "## Calling Stream Operations",

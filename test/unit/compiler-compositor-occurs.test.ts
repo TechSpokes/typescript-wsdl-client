@@ -1,12 +1,15 @@
 import {afterAll, describe, expect, it} from "vitest";
-import {mkdtempSync, rmSync, writeFileSync} from "node:fs";
+import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
-import {tmpdir} from "node:os";
+import {generateTypes} from "../../src/client/generateTypes.js";
+import {generateSchemas} from "../../src/openapi/generateSchemas.js";
 import {compileCatalog, type CompiledCatalog} from "../../src/compiler/schemaCompiler.js";
 import {resolveCompilerOptions} from "../../src/config.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
 
-const tmpRoot = mkdtempSync(join(tmpdir(), "wsdl-compositor-occurs-"));
+const tmpParent = join(process.cwd(), "tmp", "conformance");
+mkdirSync(tmpParent, {recursive: true});
+const tmpRoot = mkdtempSync(join(tmpParent, "compiler-sequence-occurs-"));
 
 afterAll(() => {
   rmSync(tmpRoot, {recursive: true, force: true});
@@ -121,7 +124,7 @@ describe("compiler: compositor-level minOccurs/maxOccurs", () => {
     expect(row).toMatchObject({min: 0, max: "unbounded"});
   });
 
-  it("applies a wrapping compositor's occurs to a nested xs:any wildcard", async () => {
+  it("preserves existing xs:any wildcard bounds", async () => {
     const schema = `
       <xs:element name="PingRequest" type="xs:string"/>
       <xs:element name="PingResponse">
@@ -134,7 +137,7 @@ describe("compiler: compositor-level minOccurs/maxOccurs", () => {
     const compiled = await compileFromFixture(buildWsdl(schema), "sequence-wildcard-max-2");
     const pingResponse = compiled.types.find((t) => t.name === "PingResponse");
     expect(pingResponse!.wildcards).toEqual([
-      {min: 1, max: 2, namespace: "##other", processContents: "lax"},
+      {min: 1, max: 1, namespace: "##other", processContents: "lax"},
     ]);
   });
 
@@ -152,5 +155,56 @@ describe("compiler: compositor-level minOccurs/maxOccurs", () => {
     const pingResponse = compiled.types.find((t) => t.name === "PingResponse");
     const ok = pingResponse!.elems.find((e) => e.name === "ok");
     expect(ok).toMatchObject({min: 1, max: 1});
+  });
+});
+
+describe("sequence occurrence consumer contracts", () => {
+  it("generates required and optional arrays from the reusable production-shaped fixture", async () => {
+    const wsdl = readFileSync("test/conformance/fixtures/xsd/sequences/sequence-occurrence-wrappers.wsdl", "utf8");
+    const compiled = await compileFromFixture(wsdl, "consumer");
+    const output = join(tmpRoot, "types.ts");
+    generateTypes(output, compiled);
+    const source = readFileSync(output, "utf8");
+    expect(source).toContain("address: AddressType[];");
+    expect(source).toContain("address?: AddressType[];");
+    expect(source).toContain("bounded?: string[];");
+    expect(source).toContain("unbounded?: string[];");
+    const flattened = generateSchemas(compiled, {});
+    expect(flattened.Addresses).toMatchObject({type: "array", items: {$ref: "#/components/schemas/AddressType"}});
+    const wrapped = generateSchemas(compiled, {flattenArrayWrappers: false});
+    expect(wrapped.Addresses).toMatchObject({type: "object", required: ["address"], properties: {address: {type: "array"}}});
+    expect(wrapped.OptionalAddresses.required ?? []).not.toContain("address");
+    expect(wrapped.OptionalAddresses.properties.address.type).toBe("array");
+    expect(wrapped.SubmitOccurrence.required).toEqual(["requestId"]);
+  });
+
+  it.each([
+    ["finite-product", '<xs:sequence minOccurs="2" maxOccurs="3"><xs:sequence minOccurs="2" maxOccurs="4"><xs:element name="item" type="xs:string" minOccurs="2" maxOccurs="5"/></xs:sequence></xs:sequence>', 8, 60],
+    ["choice-boundary", '<xs:sequence minOccurs="0" maxOccurs="5"><xs:choice><xs:sequence minOccurs="0" maxOccurs="3"><xs:element name="item" type="xs:string"/></xs:sequence></xs:choice></xs:sequence>', 1, 1],
+    ["all-boundary", '<xs:all minOccurs="0"><xs:element name="item" type="xs:string"/></xs:all>', 1, 1],
+    ["all-nested-sequence-legacy", '<xs:all><xs:sequence minOccurs="0" maxOccurs="3"><xs:element name="item" type="xs:string"/></xs:sequence></xs:all>', 1, 1],
+    ["disabled-sequence", '<xs:sequence minOccurs="0" maxOccurs="unbounded"><xs:sequence minOccurs="0" maxOccurs="0"><xs:sequence maxOccurs="3"><xs:element name="item" type="xs:string"/></xs:sequence></xs:sequence></xs:sequence>', 1, 1],
+    ["disabled-element", '<xs:sequence maxOccurs="unbounded"><xs:element name="item" type="xs:string" minOccurs="0" maxOccurs="0"/></xs:sequence>', 0, 0],
+  ] as const)("retains the intended boundary for %s", async (name, body, min, max) => {
+    const compiled = await compileFromFixture(buildWsdl(`<xs:element name="PingRequest" type="xs:string"/><xs:element name="PingResponse"><xs:complexType>${body}</xs:complexType></xs:element>`), name);
+    expect(compiled.types.find(t => t.name === "PingResponse")?.elems.find(e => e.name === "item")).toMatchObject({min, max});
+  });
+
+  it("keeps inline type scope separate and extension locals multiplied once", async () => {
+    const compiled = await compileFromFixture(buildWsdl(`
+      <xs:element name="PingRequest" type="xs:string"/>
+      <xs:complexType name="Base"><xs:sequence maxOccurs="2"><xs:element name="baseItem" type="xs:string"/></xs:sequence></xs:complexType>
+      <xs:complexType name="Extended"><xs:complexContent><xs:extension base="tns:Base"><xs:sequence maxOccurs="3">
+        <xs:element name="localItem"><xs:complexType><xs:sequence><xs:element name="value" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+      <xs:element name="PingResponse" type="tns:Extended"/>`), "extension");
+    const extended = compiled.types.find(t => t.name === "Extended")!;
+    expect(extended.elems.find(e => e.name === "baseItem")).toMatchObject({min: 1, max: 2});
+    const local = extended.elems.find(e => e.name === "localItem")!;
+    expect(local).toMatchObject({min: 1, max: 3});
+    expect(extended.localElems?.find(e => e.name === "localItem")).toMatchObject({min: 1, max: 3});
+    expect(compiled.types.find(t => t.name === local.tsType)?.elems).toEqual([
+      expect.objectContaining({name: "value", min: 1, max: 1}),
+    ]);
   });
 });

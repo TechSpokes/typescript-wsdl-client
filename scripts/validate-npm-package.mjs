@@ -4,6 +4,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parsePackOutput } from "./lib/npm-pack-output.mjs";
+import { validatePreambleDirectory } from "./lib/preamble-validation.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
@@ -70,6 +71,11 @@ function validatePackageFiles(files) {
     "dist/cli.js",
     "dist/index.js",
     "dist/index.d.ts",
+    "dist/generation/preamble.js",
+    "dist/generation/writeGeneratedSource.js",
+    "src/generation/preambles/typescript.preamble",
+    "src/generation/preambles/app/typescript.preamble",
+    "src/generation/preambles/test/typescript.preamble",
     "docs/agent-skill.md",
     "README.md",
     "LICENSE",
@@ -83,6 +89,7 @@ function validatePackageFiles(files) {
 }
 
 async function main() {
+  validatePreambleDirectory(path.join(repoRoot, "src/generation/preambles"));
   const output = await runNpmPackDryRun();
   const files = parsePackOutput(output);
   validatePackageFiles(files);

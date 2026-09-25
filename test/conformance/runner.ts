@@ -444,11 +444,12 @@ function runTypeScript(cwd: string, projectFile: string): void {
 }
 
 function runGeneratedVitest(cwd: string, configFile: string): void {
-  let output: string;
+  const reportPath = join(cwd, ".vitest-report.json");
+  rmSync(reportPath, {force: true});
   try {
-    output = execFileSync(
+    execFileSync(
       process.execPath,
-      [join(dirname(require.resolve("vitest/package.json")), "vitest.mjs"), "run", "--config", configFile, "--reporter=json"],
+      [join(dirname(require.resolve("vitest/package.json")), "vitest.mjs"), "run", "--config", configFile, "--reporter=json", "--outputFile", reportPath],
       {cwd, encoding: "utf8", stdio: "pipe"},
     );
   } catch (error) {
@@ -456,8 +457,8 @@ function runGeneratedVitest(cwd: string, configFile: string): void {
     throw new Error(`Generated Vitest check failed:\n${typed.stdout ?? ""}${typed.stderr ?? typed.message ?? ""}`);
   }
 
-  const jsonStart = output.indexOf("{");
-  const parsed = JSON.parse(output.slice(jsonStart)) as {success?: boolean; numFailedTests?: number};
+  const output = readFileSync(reportPath, "utf8");
+  const parsed = JSON.parse(output) as {success?: boolean; numFailedTests?: number};
   if (!parsed.success || parsed.numFailedTests !== 0) {
     throw new Error(`Generated Vitest reported failures:\n${output}`);
   }

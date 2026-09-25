@@ -5,10 +5,9 @@
  * This standalone interface enables mocking and testing without importing
  * the concrete SOAP client class or its runtime dependencies.
  */
-import fs from "node:fs";
+import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import type { CompiledCatalog } from "../compiler/schemaCompiler.js";
 import { deriveClientName, pascal } from "../util/tools.js";
-import { error } from "../util/cli.js";
 import { loadRuntimeSource } from "../util/runtimeSource.js";
 
 /**
@@ -20,6 +19,7 @@ import { loadRuntimeSource } from "../util/runtimeSource.js";
  *
  * @param outFile - Path to the output TypeScript file
  * @param compiled - The compiled WSDL catalog
+ * @throws {Error} If a packaged preamble cannot be loaded or the TypeScript file cannot be written.
  */
 export function generateOperations(outFile: string, compiled: CompiledCatalog): void {
   const ext = compiled.options.imports ?? "bare";
@@ -110,9 +110,5 @@ ${typeImport}${streamHelper}/**
 export interface ${clientName}Operations {
 ${methods.join("\n")}}\n`;
 
-  try {
-    fs.writeFileSync(outFile, content, "utf8");
-  } catch (e) {
-    error(`Failed to write operations interface to ${outFile}`);
-  }
+  writeGeneratedSource(outFile, content, "client");
 }

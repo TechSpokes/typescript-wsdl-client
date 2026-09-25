@@ -23,6 +23,7 @@
  * - Skip-if-exists protection for scaffold files (override with force option)
  */
 import fs from "node:fs";
+import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
 import {info, success} from "../util/cli.js";
@@ -362,7 +363,7 @@ main().catch((err) => {
 });
 `;
 
-  fs.writeFileSync(filePath, content, "utf-8");
+  writeGeneratedSource(filePath, content, "app");
 }
 
 /**
@@ -463,7 +464,7 @@ export function loadConfig(): AppConfig {
 }
 `;
 
-  fs.writeFileSync(filePath, content, "utf-8");
+  writeGeneratedSource(filePath, content, "app");
 }
 
 function loadOptionalSecurityConfig(filePath: string | undefined): SecurityConfig | undefined {
@@ -585,7 +586,7 @@ function generateSecurityFile(
   const upstreamJson = JSON.stringify(securityCfg?.upstream ?? {}, null, 2);
   const content = loadRuntimeTemplate("appSecurity.tpl.txt").replace("__UPSTREAM_JSON__", upstreamJson);
 
-  fs.writeFileSync(filePath, content, "utf-8");
+  writeGeneratedSource(filePath, content, "app");
 }
 
 /**
@@ -609,14 +610,14 @@ function generatePackageJson(appDir: string, force: boolean): void {
       dev: "tsx watch server.ts",
     },
     dependencies: {
-      fastify: "^5.12.1",
+      fastify: "^5.12.5",
       "fastify-plugin": "^6.0.0",
       saxes: "^6.0.0",
-      soap: "^1.11.0",
+      soap: "^1.13.0",
     },
     devDependencies: {
-      "@types/node": "^26.4.0",
-      tsx: "^4.23.12",
+      "@types/node": "^26.6.2",
+      tsx: "^4.23.15",
       typescript: "^6.0.3",
     },
   };

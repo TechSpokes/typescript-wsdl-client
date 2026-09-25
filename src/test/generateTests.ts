@@ -12,6 +12,7 @@
  * 5. For each file: skip-if-exists check, then write
  */
 import fs from "node:fs";
+import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import path from "node:path";
 import {info, success} from "../util/cli.js";
 import {resolveClientMeta, resolveOperationMeta, slugName} from "../gateway/helpers.js";
@@ -61,10 +62,10 @@ function shouldWriteTestFile(filePath: string, force: boolean): boolean {
 /**
  * Writes a test file if it should be written (skip-if-exists with force override).
  */
-function writeTestFile(filePath: string, content: string, force: boolean): void {
+function writeTestFile(filePath: string, content: string, force: boolean, artifact: string = "test"): void {
   if (!shouldWriteTestFile(filePath, force)) return;
   fs.mkdirSync(path.dirname(filePath), {recursive: true});
-  fs.writeFileSync(filePath, content, "utf-8");
+  writeGeneratedSource(filePath, content, artifact);
 }
 
 /**
@@ -170,56 +171,56 @@ export async function generateTests(opts: GenerateTestsOptions): Promise<void> {
   writeTestFile(
     path.join(testDir, "helpers", "mock-client.ts"),
     emitMockClientHelper(testDir, clientDir, importsMode, clientMeta, operations, mocks),
-    force
+    force, "test/helpers"
   );
 
   // Emit helpers/test-app.ts
   writeTestFile(
     path.join(testDir, "helpers", "test-app.ts"),
     emitTestAppHelper(testDir, gatewayDir, importsMode, clientMeta),
-    force
+    force, "test/helpers"
   );
 
   // Emit gateway/routes.test.ts
   writeTestFile(
     path.join(testDir, "gateway", "routes.test.ts"),
     emitRoutesTest(testDir, importsMode, operations, mocks),
-    force
+    force, "test/gateway"
   );
 
   // Emit gateway/errors.test.ts
   writeTestFile(
     path.join(testDir, "gateway", "errors.test.ts"),
     emitErrorsTest(testDir, importsMode, operations, mocks),
-    force
+    force, "test/gateway"
   );
 
   // Emit gateway/envelope.test.ts
   writeTestFile(
     path.join(testDir, "gateway", "envelope.test.ts"),
     emitEnvelopeTest(testDir, importsMode, operations, mocks),
-    force
+    force, "test/gateway"
   );
 
   // Emit gateway/validation.test.ts
   writeTestFile(
     path.join(testDir, "gateway", "validation.test.ts"),
     emitValidationTest(testDir, importsMode, operations, mocks, catalog),
-    force
+    force, "test/gateway"
   );
 
   // Emit runtime/classify-error.test.ts
   writeTestFile(
     path.join(testDir, "runtime", "classify-error.test.ts"),
     emitClassifyErrorTest(testDir, gatewayDir, importsMode),
-    force
+    force, "test/runtime"
   );
 
   // Emit runtime/envelope-builders.test.ts
   writeTestFile(
     path.join(testDir, "runtime", "envelope-builders.test.ts"),
     emitEnvelopeBuildersTest(testDir, gatewayDir, importsMode),
-    force
+    force, "test/runtime"
   );
 
   // Emit runtime/unwrap.test.ts (conditional: only when ArrayOf* wrappers exist)
@@ -228,7 +229,7 @@ export async function generateTests(opts: GenerateTestsOptions): Promise<void> {
     writeTestFile(
       path.join(testDir, "runtime", "unwrap.test.ts"),
       unwrapContent,
-      force
+      force, "test/runtime"
     );
   }
 

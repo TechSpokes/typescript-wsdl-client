@@ -2,6 +2,12 @@
 
 Contributor guide for naming files and organizing fixture paths. See the root [README.md](../README.md) for the authoritative documentation index.
 
+## Preamble Resources
+
+Raw comment-only headers live under `src/generation/preambles/` with the filename `typescript.preamble`. Subdirectories express logical artifact scopes rather than consumer output paths. See [generated source policy](architecture.md#generated-source-policy) for fallback and packaging rules.
+
+Package-smoke tarballs and logs belong in `tmp/preflight/package/`; the isolated consumer installation uses a verified temporary directory outside the checkout to prove that package resources resolve independently.
+
 ## Purpose
 
 Paths should classify files before a reader opens them. The left side of a path carries the broadest concept; each segment to the right narrows the classification until the filename states the exact artifact purpose.

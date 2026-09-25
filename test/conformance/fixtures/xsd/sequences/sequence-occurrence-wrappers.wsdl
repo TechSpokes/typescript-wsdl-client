@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:conformance:sequence-occurrence" targetNamespace="urn:conformance:sequence-occurrence">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:conformance:sequence-occurrence" elementFormDefault="qualified">
+      <xs:complexType name="AddressType">
+        <xs:sequence><xs:element name="street" type="xs:string"/></xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Addresses">
+        <xs:sequence maxOccurs="2"><xs:element name="address" type="tns:AddressType"/></xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="OptionalAddresses">
+        <xs:sequence minOccurs="0" maxOccurs="5"><xs:element name="address" type="tns:AddressType"/></xs:sequence>
+      </xs:complexType>
+      <xs:element name="SubmitOccurrence">
+        <xs:complexType><xs:sequence>
+          <xs:element name="requestId" type="xs:string"/>
+          <xs:sequence minOccurs="0" maxOccurs="5"><xs:element name="bounded" type="xs:string"/></xs:sequence>
+          <xs:sequence minOccurs="0" maxOccurs="unbounded"><xs:element name="unbounded" type="xs:string"/></xs:sequence>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="SubmitOccurrenceResponse">
+        <xs:complexType><xs:sequence>
+          <xs:element name="addresses" type="tns:Addresses"/>
+          <xs:element name="optionalAddresses" type="tns:OptionalAddresses" minOccurs="0"/>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="SubmitOccurrenceInput"><wsdl:part name="parameters" element="tns:SubmitOccurrence"/></wsdl:message>
+  <wsdl:message name="SubmitOccurrenceOutput"><wsdl:part name="parameters" element="tns:SubmitOccurrenceResponse"/></wsdl:message>
+  <wsdl:portType name="OccurrencePortType"><wsdl:operation name="SubmitOccurrence">
+    <wsdl:input message="tns:SubmitOccurrenceInput"/><wsdl:output message="tns:SubmitOccurrenceOutput"/>
+  </wsdl:operation></wsdl:portType>
+  <wsdl:binding name="OccurrenceBinding" type="tns:OccurrencePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="SubmitOccurrence"><soap:operation soapAction="urn:submit-occurrence"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="OccurrenceService"><wsdl:port name="OccurrencePort" binding="tns:OccurrenceBinding">
+    <soap:address location="http://example.com/occurrence"/>
+  </wsdl:port></wsdl:service>
+</wsdl:definitions>

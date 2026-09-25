@@ -8,6 +8,8 @@ Generation paths are explicit. Examples use the git-ignored `.generated/` direct
 
 The tool provides six commands for different integration scenarios.
 
+TypeScript outputs automatically receive [generated preambles](generated-code.md#generated-preambles-and-eslint), including app/test scaffolds when actually written. Command syntax is unchanged and there is no preamble flag. `compile` and `openapi` data outputs remain unchanged.
+
 | Command | Purpose | Typical Use Case |
 |---------|---------|------------------|
 | pipeline | Full pipeline: client + OpenAPI + gateway + app | CI/CD automation, complete stack generation |

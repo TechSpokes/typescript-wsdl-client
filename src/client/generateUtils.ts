@@ -10,10 +10,9 @@
  * - A DataTypes interface defining the structure of the metadata
  * - A constant containing the actual metadata mappings extracted from the compiled catalog
  */
-import fs from "node:fs";
+import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
 import {deriveClientName, pascalToSnakeCase} from "../util/tools.js";
-import {error} from "../util/cli.js";
 
 /**
  * Generates utility types and constants for XML serialization/deserialization
@@ -32,6 +31,7 @@ import {error} from "../util/cli.js";
  * @param {string} outFile - Path to the output TypeScript file
  * @param {CompiledCatalog} compiled - The compiled WSDL catalog containing metadata
  * @throws {Error} If metadata is missing or has an invalid structure
+ * @throws {Error} If a packaged preamble cannot be loaded or the TypeScript file cannot be written.
  */
 export function generateUtils(outFile: string, compiled: CompiledCatalog) {
   const clientName = deriveClientName(compiled);
@@ -60,9 +60,5 @@ export interface ${clientName}DataTypes {
 }
 
 export const ${clientConstant}_DATA_TYPES: ${clientName}DataTypes = ${metas} as const;\n`;
-  try {
-    fs.writeFileSync(outFile, dataTypes, "utf8");
-  } catch (e) {
-    error(`Failed to write utils to ${outFile}: ${e instanceof Error ? e.message : String(e)}`);
-  }
+  writeGeneratedSource(outFile, dataTypes, "client");
 }

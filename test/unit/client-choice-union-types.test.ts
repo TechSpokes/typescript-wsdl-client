@@ -49,11 +49,8 @@ describe("client types: choice union mode", () => {
 
     expect(source).toContain("export interface SearchRequest {");
     expect(source).toContain("tenantId: string;");
-    // The fixture's xs:choice carries its own minOccurs="0" (see SEARCH_CHOICE_SCHEMA),
-    // so both branch fields are optional here, matching the documented all-optional
-    // shape in docs/concepts.md ("emits parallel optional choice fields").
-    expect(source).toContain("email?: string;");
-    expect(source).toContain("phone?: number;");
+    expect(source).toContain("email: string;");
+    expect(source).toContain("phone: number;");
     expect(source).not.toContain("SearchRequestChoiceBase");
     expect(source).not.toContain("SearchRequestChoice1");
   });

@@ -12,11 +12,11 @@
  * - Support for custom attribute handling
  * - Consistent error handling and client configuration
  */
-import fs from "node:fs";
+import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import path from "node:path";
 import type {CompiledCatalog} from "../compiler/schemaCompiler.js";
 import {deriveClientName, pascal, pascalToSnakeCase} from "../util/tools.js";
-import {error, warn} from "../util/cli.js";
+import {warn} from "../util/cli.js";
 import {loadRuntimeSource} from "../util/runtimeSource.js";
 
 /**
@@ -35,6 +35,7 @@ import {loadRuntimeSource} from "../util/runtimeSource.js";
  *
  * @param {string} outFile - Path to the output TypeScript file
  * @param {CompiledCatalog} compiled - The compiled WSDL catalog
+ * @throws {Error} If a packaged preamble cannot be loaded or a TypeScript file cannot be written.
  */
 export function generateClient(outFile: string, compiled: CompiledCatalog) {
   const isValidIdent = (name: string) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name);
@@ -441,21 +442,13 @@ ${methodsBody}
   }${streamMethodsBlock}
 }
 `;
-  try {
-    fs.writeFileSync(outFile, classTemplate.replace(`// noinspection JSAnnotator\n\n`, ''), "utf8");
-  } catch (e) {
-    error(`Failed to write client to ${outFile}`);
-  }
+  writeGeneratedSource(outFile, classTemplate.replace(`// noinspection JSAnnotator\n\n`, ''), "client");
 
   // If any operation opted into streaming, drop the runtime XML parser
   // alongside the client so the generated class can import it without
   // depending on a `@techspokes/typescript-wsdl-client/runtime/...` subpath.
   if (anyStream) {
-    try {
-      const streamXmlOut = path.join(path.dirname(outFile), "streamXml.ts");
-      fs.writeFileSync(streamXmlOut, loadRuntimeSource("streamXml.ts"), "utf-8");
-    } catch (e) {
-      error(`Failed to emit streamXml.ts next to ${outFile}: ${e instanceof Error ? e.message : String(e)}`);
-    }
+    const streamXmlOut = path.join(path.dirname(outFile), "streamXml.ts");
+    writeGeneratedSource(streamXmlOut, loadRuntimeSource("streamXml.ts"), "client/stream");
   }
 }

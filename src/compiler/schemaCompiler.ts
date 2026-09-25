@@ -803,9 +803,11 @@ export function compileCatalog(
     // collectParticles' return type at the three call sites below.
     const collectWildcards = (node: any): CompiledWildcard[] => {
       const out: CompiledWildcard[] = [];
-      const recurse = (groupNode: any, inherited: {min: number; max: number | "unbounded"}) => {
+      const recurse = (groupNode: any) => {
         for (const a of getChildrenWithLocalName(groupNode, "any")) {
-          const {min, max} = applyInheritedOccurrence(readOccurrence(a), inherited);
+          const min = a["@_minOccurs"] ? Number(a["@_minOccurs"]) : 1;
+          const maxAttr = a["@_maxOccurs"];
+          const max = maxAttr === "unbounded" ? "unbounded" : maxAttr ? Number(maxAttr) : 1;
           const pc = a["@_processContents"] as string | undefined;
           out.push({
             min,
@@ -816,11 +818,11 @@ export function compileCatalog(
         }
         for (const comp of ["sequence", "all", "choice"]) {
           for (const sub of getChildrenWithLocalName(groupNode, comp)) {
-            recurse(sub, combineOccurrence(inherited, readOccurrence(sub)));
+            recurse(sub);
           }
         }
       };
-      recurse(node, {min: 1, max: 1});
+      recurse(node);
       return out;
     };
 
@@ -841,32 +843,6 @@ export function compileCatalog(
       const maxAttr = node["@_maxOccurs"];
       const max = maxAttr === "unbounded" ? "unbounded" : maxAttr ? Number(maxAttr) : 1;
       return {min, max};
-    };
-
-    // A wrapping compositor (xs:sequence/xs:all/xs:choice) can carry its own
-    // minOccurs/maxOccurs, which XSD group-multiplicity semantics apply to every
-    // particle found inside it. combineOccurrence/applyInheritedOccurrence thread
-    // that inherited bound down through collectParticles/collectWildcards below.
-    const combineOccurrence = (
-      a: {min: number; max: number | "unbounded"},
-      b: {min: number; max: number | "unbounded"}
-    ): {min: number; max: number | "unbounded"} => ({
-      min: a.min * b.min,
-      max: a.max === "unbounded" || b.max === "unbounded" ? "unbounded" : a.max * b.max,
-    });
-
-    const applyInheritedOccurrence = <T extends {min: number; max: number | "unbounded"}>(
-      particle: T,
-      inherited: {min: number; max: number | "unbounded"}
-    ): T => {
-      if (inherited.min === 1 && inherited.max === 1) return particle;
-      return {
-        ...particle,
-        min: particle.min * inherited.min,
-        max: particle.max === "unbounded" || inherited.max === "unbounded"
-          ? "unbounded"
-          : particle.max * inherited.max,
-      };
     };
 
     const localNameOf = (key: string): string => {
@@ -941,22 +917,32 @@ export function compileCatalog(
 
     const collectParticles = (ownerTypeName: string, node: any): CompiledType["elems"] => {
       const out: CompiledType["elems"] = [];
-      // process a compositor or element container recursively
-      const recurse = (groupNode: any, inherited: {min: number; max: number | "unbounded"}) => {
-        // handle direct element children
+      type Occurrence = {min: number; max: number | "unbounded"};
+      const one: Occurrence = {min: 1, max: 1};
+      const combine = (a: Occurrence, b: Occurrence): Occurrence => ({
+        min: a.min * b.min,
+        max: a.max === "unbounded" || b.max === "unbounded" ? "unbounded" : a.max * b.max,
+      });
+      const recurse = (groupNode: any, inherited: Occurrence = one, inheritSequenceOccurs = true) => {
         for (const e of getChildrenWithLocalName(groupNode, "element")) {
           const particle = compileElementParticle(ownerTypeName, e);
-          if (particle) out.push(applyInheritedOccurrence(particle, inherited));
+          if (!particle) continue;
+          // @constraints Preserve disabled particles until the content model can represent their absence (#145).
+          out.push(particle.max === 0 ? particle : {...particle, ...combine(inherited, particle)});
         }
-        // recurse into nested compositor groups, propagating each group's own
-        // occurrence bounds down onto the particles found inside it
         for (const comp of ["sequence", "all", "choice"]) {
           for (const sub of getChildrenWithLocalName(groupNode, comp)) {
-            recurse(sub, combineOccurrence(inherited, readOccurrence(sub)));
+            const own = readOccurrence(sub);
+            if (inheritSequenceOccurs && comp === "sequence" && own.max !== 0) {
+              recurse(sub, combine(inherited, own), true);
+            } else {
+              // @constraints Choice, all, and disabled subtrees keep their previous flattened bounds (#145).
+              recurse(sub, one, false);
+            }
           }
         }
       };
-      recurse(node, {min: 1, max: 1});
+      recurse(node);
       return out;
     };
 
