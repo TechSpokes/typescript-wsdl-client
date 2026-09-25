@@ -9,7 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-09-25
+
 - fix(compiler): preserve wrapping sequence occurrence bounds on element particles
+- chore(deps): refresh soap and Vitest patch floors and generated app soap pins
 
 ## [1.1.0] - 2026-09-22
 

@@ -613,7 +613,7 @@ function generatePackageJson(appDir: string, force: boolean): void {
       fastify: "^5.12.5",
       "fastify-plugin": "^6.0.0",
       saxes: "^6.0.0",
-      soap: "^1.13.0",
+      soap: "^1.13.1",
     },
     devDependencies: {
       "@types/node": "^26.6.2",

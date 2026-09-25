@@ -1,6 +1,6 @@
 {
   "name": "@techspokes/typescript-wsdl-client",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Turn legacy WSDL/SOAP services into typed TypeScript clients, OpenAPI 3.1 specs, and production-ready Fastify REST gateways. Built for enterprise SOAP modernization.",
   "keywords": [
     "wsdl",
@@ -116,14 +116,14 @@
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.1",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.2"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^13.1.0",
     "fast-xml-parser": "^5.11.1",
     "js-yaml": "^5.4.2",
     "saxes": "^6.0.0",
-    "soap": "^1.13.0",
+    "soap": "^1.13.1",
     "yargs": "^18.2.0"
   },
   "funding": {
