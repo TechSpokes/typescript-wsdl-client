@@ -104,6 +104,14 @@ try {
   ].join("\n"));
   json(".generated/occurrence/tsconfig.json", {compilerOptions: {strict: true, noEmit: true, target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", skipLibCheck: true}, include: ["*.ts"]});
   run(["node_modules/typescript/bin/tsc", "-p", ".generated/occurrence/tsconfig.json"]);
+  fs.copyFileSync(path.join(root, "test/helpers/occurrenceTransport.mjs"), path.join(consumer, "occurrenceTransport.mjs"));
+  write("occurrence-transport.mjs", [
+    'import {OccurrenceService} from "./.generated/occurrence-js/client.js";',
+    'import {verifyOccurrenceTransport} from "./occurrenceTransport.mjs";',
+    'await verifyOccurrenceTransport({client: new OccurrenceService({source: "occurrence.wsdl", options: {timeout: 5000}})});',
+  ].join("\n"));
+  run(["node_modules/typescript/bin/tsc", "-p", ".generated/occurrence/tsconfig.json", "--noEmit", "false", "--outDir", ".generated/occurrence-js"]);
+  run(["occurrence-transport.mjs"]);
   run(["node_modules/typescript/bin/tsc", "--noEmit", "-p", ".generated/app/tsconfig.json"]);
   run([path.join(consumer, "node_modules/vitest/vitest.mjs"), "run", "--config", "vitest.config.ts"], path.join(consumer, ".generated/tests"));
 

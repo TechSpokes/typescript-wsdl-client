@@ -2,6 +2,8 @@ import {afterAll, describe, expect, it} from "vitest";
 import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
 import {generateTypes} from "../../src/client/generateTypes.js";
+import {generateUtils} from "../../src/client/generateUtils.js";
+import {pathToFileURL} from "node:url";
 import {generateSchemas} from "../../src/openapi/generateSchemas.js";
 import {compileCatalog, type CompiledCatalog} from "../../src/compiler/schemaCompiler.js";
 import {resolveCompilerOptions} from "../../src/config.js";
@@ -188,6 +190,11 @@ describe("sequence occurrence consumer contracts", () => {
   ] as const)("retains the intended boundary for %s", async (name, body, min, max) => {
     const compiled = await compileFromFixture(buildWsdl(`<xs:element name="PingRequest" type="xs:string"/><xs:element name="PingResponse"><xs:complexType>${body}</xs:complexType></xs:element>`), name);
     expect(compiled.types.find(t => t.name === "PingResponse")?.elems.find(e => e.name === "item")).toMatchObject({min, max});
+    const utilsFile = join(tmpRoot, `${name}-utils.ts`);
+    generateUtils(utilsFile, compiled);
+    const utils = await import(pathToFileURL(utilsFile).href);
+    const metadata = Object.values(utils)[0] as {RepeatedElements: Record<string, string[]>};
+    expect(metadata.RepeatedElements.PingResponse).toEqual(max > 1 ? ["item"] : []);
   });
 
   it("keeps inline type scope separate and extension locals multiplied once", async () => {

@@ -11,6 +11,8 @@ export interface WeatherDataTypes {
   Attributes: Record<string, readonly string[]>;
   /** Maps type names to their child element types for recursive processing */
   ChildrenTypes: Record<string, Readonly<Record<string, string>>>;
+  /** Maps type names to repeated child properties; optional for custom metadata compatibility. */
+  RepeatedElements?: Record<string, readonly string[]>;
 }
 
 export const WEATHER_DATA_TYPES: WeatherDataTypes = {
@@ -97,5 +99,25 @@ export const WEATHER_DATA_TYPES: WeatherDataTypes = {
     "GetCityWeatherByZIPResponse": {
       "GetCityWeatherByZIPResult": "WeatherReturn"
     }
+  },
+  "RepeatedElements": {
+    "ArrayOfForecast": [
+      "Forecast"
+    ],
+    "ArrayOfWeatherDescription": [
+      "WeatherDescription"
+    ],
+    "Forecast": [],
+    "ForecastReturn": [],
+    "GetCityForecastByZIP": [],
+    "GetCityForecastByZIPResponse": [],
+    "GetCityWeatherByZIP": [],
+    "GetCityWeatherByZIPResponse": [],
+    "GetWeatherInformation": [],
+    "GetWeatherInformationResponse": [],
+    "POP": [],
+    "Temp": [],
+    "WeatherDescription": [],
+    "WeatherReturn": []
   }
 } as const;

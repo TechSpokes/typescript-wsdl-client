@@ -22,6 +22,9 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 - Post-release patch work uses the next patch version in commit titles even before `package.json` is bumped.
 - A commit title target such as `Version: 0.30.3` does not mean the repository is ready for tag `v0.30.3`.
 - Every release commit must include the matching `docs/releases/vX.Y.Z.md` release notes file.
+- Prepare release notes and metadata before pushing the release PR; tag the validated merged state of main.
+- Agents stop after draft/artifact verification and task-owned cleanup; the maintainer publishes manually.
+- Agents never access GitHub through a browser or publish releases or packages.
 - Node.js >= 24.0.0, ESM-only (`type: "module"`), strict TypeScript.
 - GitHub CI must test Node 24 as the supported floor and Node 26 as the current line.
 - GitHub push and PR CI is a fast hosted signal; run `npm run release:preflight -- vX.Y.Z` once on the final uncommitted release tree before committing and tagging.

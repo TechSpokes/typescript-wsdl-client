@@ -35,6 +35,8 @@ These patterns are handled end-to-end: WSDL parsing, TypeScript type generation,
 
 Wrapping sequence bounds propagate through uninterrupted sequence ancestry to element array types and optionality. Traversal through `xs:choice`, `xs:all`, or a sequence with `maxOccurs="0"` retains the previous flattened behavior; wildcard and disabled-element handling are unchanged. This does not enforce sequence ordering or finite array lengths at runtime.
 
+Generated clients normalize present, non-null singleton responses into arrays for repeated element properties. Real SOAP transport regressions cover singleton and multiple items, omitted optional request fields, and gateway serialization with wrapper flattening enabled and disabled. Regenerate clients to receive this runtime correction; omitted optional response properties remain absent.
+
 - Complex types with `<xs:sequence>`, `<xs:all>`, and `<xs:choice>` compositors, including recursive nesting
 - Simple content with attributes using the `$value` pattern to preserve text content alongside attribute properties
 - Named simple type restrictions and enumerations emitted as TypeScript aliases and OpenAPI scalar schemas

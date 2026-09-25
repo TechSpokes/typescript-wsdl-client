@@ -209,11 +209,15 @@ Run `npm run maint:deps` when preparing a release so root dependency minimums an
 
 Every release commit must include `docs/releases/vX.Y.Z.md`. Run `npm run release:preflight -- vX.Y.Z` once on the final uncommitted release tree and confirm the release ZIP exists under `dist/assets/`.
 
+Include release notes, versions, changelog, and the root documentation link before pushing the release PR. After merging, verify that main's tree matches the preflight-validated tree before tagging the merged commit. Follow the [release delivery procedure](docs/releases/README.md#candidate-publication).
+
 Set the release version before preflight. Preflight verifies release metadata, writes only ignored build and temporary outputs, and fails if it changes tracked content.
 
 After preflight passes, commit the exact validated tree without further tracked-file changes. Tag and push that commit without rerunning preflight, full CI, package validation, or skill packaging. If another command changes tracked files, complete the fixes and rerun preflight on the new final candidate.
 
 Pushing the matching `vX.Y.Z` tag creates or updates a GitHub draft release from the release notes file after CI passes. The draft release workflow strips the release-note H1 for GitHub display, packages and uploads the agent skill ZIP, and refuses to mutate a published non-draft release.
+
+The agent verifies the draft and artifacts, cleans up task-owned local and remote branches and temporary outputs, and stops. The maintainer publishes through their own browser. Agents never access GitHub through a browser or publish releases or packages.
 
 When an IDE inspection tool is available, run it on touched Markdown files and generator files that embed generated source. Without IDE inspections, verify relative Markdown links target concrete files or headings and keep TypeScript fenced examples syntactically valid.
 

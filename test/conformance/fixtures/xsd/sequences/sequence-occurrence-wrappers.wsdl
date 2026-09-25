@@ -11,6 +11,12 @@
       <xs:complexType name="OptionalAddresses">
         <xs:sequence minOccurs="0" maxOccurs="5"><xs:element name="address" type="tns:AddressType"/></xs:sequence>
       </xs:complexType>
+      <xs:complexType name="ExtendedAddresses">
+        <xs:complexContent><xs:extension base="tns:Addresses"><xs:sequence>
+          <xs:element name="marker" type="xs:string" minOccurs="0"/>
+        </xs:sequence></xs:extension></xs:complexContent>
+      </xs:complexType>
+      <xs:element name="AddressCollection" type="tns:Addresses"/>
       <xs:element name="SubmitOccurrence">
         <xs:complexType><xs:sequence>
           <xs:element name="requestId" type="xs:string"/>
@@ -22,6 +28,7 @@
         <xs:complexType><xs:sequence>
           <xs:element name="addresses" type="tns:Addresses"/>
           <xs:element name="optionalAddresses" type="tns:OptionalAddresses" minOccurs="0"/>
+          <xs:sequence minOccurs="0" maxOccurs="5"><xs:element name="label" type="xs:string"/></xs:sequence>
         </xs:sequence></xs:complexType>
       </xs:element>
     </xs:schema>

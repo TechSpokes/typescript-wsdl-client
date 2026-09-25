@@ -43,6 +43,7 @@ export type WeatherResponse<ResponseType, HeadersType = Record<string, unknown>>
  * @property dataTypes - Metadata for data types used in serialization/deserialization.
  * @property dataTypes.Attributes - Maps type names to lists of property names that should be treated as XML attributes.
  * @property dataTypes.ChildrenTypes - Maps type names to their child element types for recursive processing.
+ * @property dataTypes.RepeatedElements - Identifies child properties that must retain their array shape for singleton responses.
  *
  *
  * @note Have fun with the generated client! If TechSpokes made your day (or a week),
@@ -324,6 +325,7 @@ export class Weather {
 
     // Get child type mapping for recursive processing with correct types
     const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const repeatedElements: readonly string[] = (typeName && this.dataTypes?.RepeatedElements?.[typeName]) || [];
     const result: any = {};
 
     // Preserve text content for mixed XML elements
@@ -347,9 +349,11 @@ export class Weather {
       }
       // Recursively convert child elements with their specific type info
       const childType: string | undefined = childrenTypes[k];
-      result[k] = Array.isArray(v)
-        ? v.map(node => this.fromSoapResult(node, childType))
-        : this.fromSoapResult(v, childType);
+      // node-soap can return a scalar when repetition is declared on a wrapping sequence (#141).
+      const value = v != null && !Array.isArray(v) && repeatedElements.includes(k) ? [v] : v;
+      result[k] = Array.isArray(value)
+        ? value.map(node => this.fromSoapResult(node, childType))
+        : this.fromSoapResult(value, childType);
     }
 
     return result;

@@ -1,4 +1,8 @@
 import type {CapabilityCase} from "./types.js";
+import {resolve, join} from "node:path";
+import {pathToFileURL} from "node:url";
+import Fastify from "fastify";
+import {verifyOccurrenceTransport} from "../helpers/occurrenceTransport.mjs";
 
 function requireSchema(doc: any, name: string): any {
   const schema = doc.components?.schemas?.[name];
@@ -50,7 +54,7 @@ export const capabilities: CapabilityCase[] = [
     docsAnchor: "fully-supported",
     publicContract: "Wrapping sequences with nonzero maxima propagate element bounds and optionality without crossing choice or all boundaries.",
     decision: "support",
-    decisionReason: "Regression evidence for #141 covers catalog bounds, client arrays, and flattened gateway responses.",
+    decisionReason: "Regression evidence for #141 covers catalog bounds, client arrays, and real singleton and repeated SOAP responses through the gateway.",
     authority: "XML Schema 1.0",
     provenance: "Synthetic fixture based on the public sequence wrapper example in issue #141; no private WSDL content.",
     license: "MIT",
@@ -95,6 +99,21 @@ export const capabilities: CapabilityCase[] = [
     },
     gateway: {
       outcome: "success",
+      assert: async ({clientDir, gatewayDir}) => {
+        const {OccurrenceService} = await import(pathToFileURL(join(clientDir, "client.ts")).href);
+        const plugin = (await import(pathToFileURL(join(gatewayDir, "plugin.ts")).href)).default;
+        await verifyOccurrenceTransport({
+          client: new OccurrenceService({
+            source: resolve("test/conformance/fixtures/xsd/sequences/sequence-occurrence-wrappers.wsdl"),
+            options: {timeout: 5_000},
+          }),
+          createGateway: async client => {
+            const app = Fastify();
+            await app.register(plugin, {client});
+            return {app, flatten: true};
+          },
+        });
+      },
       requests: [
         {requestId: "omitted"},
         {requestId: "repeated", bounded: ["a", "b"], unbounded: ["c", "d"]},
