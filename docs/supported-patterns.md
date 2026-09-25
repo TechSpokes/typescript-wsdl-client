@@ -9,6 +9,7 @@ The rows below are backed by committed conformance fixtures under `test/conforma
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `sequence-occurrence-wrappers` | supported | Wrapping sequences with nonzero maxima propagate element bounds and optionality without crossing choice or all boundaries. |
 | `weather-document-literal-soap` | supported | The canonical weather WSDL compiles through client, OpenAPI, gateway, generated-test, and app artifacts with document-literal SOAP operations. |
 | `sequence-baseline-complex` | supported | Complex type sequences support nested complex references, repeated elements, optional fields, and all-optional request wrappers. |
 | `simple-restriction-list` | supported | Named simple type restrictions, enumerations, and `xs:list` declarations emit aligned TypeScript aliases and OpenAPI schemas. |
@@ -31,6 +32,8 @@ The rows below are backed by committed conformance fixtures under `test/conforma
 ## Fully Supported
 
 These patterns are handled end-to-end: WSDL parsing, TypeScript type generation, OpenAPI schema output, and gateway code generation.
+
+Wrapping sequence bounds propagate through uninterrupted sequence ancestry to element array types and optionality. Traversal through `xs:choice`, `xs:all`, or a sequence with `maxOccurs="0"` retains the previous flattened behavior; wildcard and disabled-element handling are unchanged. This does not enforce sequence ordering or finite array lengths at runtime.
 
 - Complex types with `<xs:sequence>`, `<xs:all>`, and `<xs:choice>` compositors, including recursive nesting
 - Simple content with attributes using the `$value` pattern to preserve text content alongside attribute properties

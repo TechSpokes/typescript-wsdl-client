@@ -42,6 +42,80 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 
 export const capabilities: CapabilityCase[] = [
   {
+    id: "sequence-occurrence-wrappers",
+    title: "Occurrence bounds through uninterrupted sequence ancestry",
+    status: "supported",
+    featureTags: ["xsd", "sequence", "occurrence"],
+    fixture: "xsd/sequences/sequence-occurrence-wrappers.wsdl",
+    docsAnchor: "fully-supported",
+    publicContract: "Wrapping sequences with nonzero maxima propagate element bounds and optionality without crossing choice or all boundaries.",
+    decision: "support",
+    decisionReason: "Regression evidence for #141 covers catalog bounds, client arrays, and flattened gateway responses.",
+    authority: "XML Schema 1.0",
+    provenance: "Synthetic fixture based on the public sequence wrapper example in issue #141; no private WSDL content.",
+    license: "MIT",
+    fixtureKind: "real-world-compatible",
+    compile: {
+      outcome: "success",
+      typeNames: ["Addresses", "OptionalAddresses", "AddressType", "SubmitOccurrence", "SubmitOccurrenceResponse"],
+      operationNames: ["SubmitOccurrence"],
+      assert: compiled => {
+        for (const [type, name, min, max] of [
+          ["Addresses", "address", 1, 2],
+          ["OptionalAddresses", "address", 0, 5],
+          ["SubmitOccurrence", "bounded", 0, 5],
+          ["SubmitOccurrence", "unbounded", 0, "unbounded"],
+        ] as const) {
+          const particle = compiled.types.find(t => t.name === type)?.elems.find(e => e.name === name);
+          assertJsonEqual({min: particle?.min, max: particle?.max}, {min, max}, `${type}.${name} should inherit sequence bounds.`);
+        }
+      },
+    },
+    client: {
+      outcome: "success",
+      sourceIncludes: [
+        {file: "types", text: "address: AddressType[];"},
+        {file: "types", text: "address?: AddressType[];"},
+        {file: "types", text: "bounded?: string[];"},
+        {file: "types", text: "unbounded?: string[];"},
+      ],
+    },
+    openapi: {
+      outcome: "success",
+      assert: ({doc}) => {
+        for (const name of ["Addresses", "OptionalAddresses"]) {
+          assertJsonEqual(requireSchema(doc, name).type, "array", `${name} should flatten to an array.`);
+        }
+        const request = requireSchema(doc, "SubmitOccurrence");
+        assertJsonEqual(request.required, ["requestId"], "Only requestId should be required.");
+        for (const name of ["bounded", "unbounded"]) {
+          assertJsonEqual(request.properties[name].type, "array", `${name} should be an array.`);
+        }
+      },
+    },
+    gateway: {
+      outcome: "success",
+      requests: [
+        {requestId: "omitted"},
+        {requestId: "repeated", bounded: ["a", "b"], unbounded: ["c", "d"]},
+      ].map(payload => ({
+        operationId: "SubmitOccurrence",
+        payload,
+        mockClient: {
+          SubmitOccurrence: async () => ({
+            response: {addresses: {address: [{street: "First"}, {street: "Second"}]}},
+            headers: {},
+          }),
+        },
+        expectedStatus: 200,
+        assertBody: body => assertSuccessEnvelope(body, {addresses: [{street: "First"}, {street: "Second"}]}),
+        assertClientArgs: args => assertJsonEqual(args, payload, "Gateway should retain repeated and omitted request fields."),
+      })),
+    },
+    generatedTests: {outcome: "success"},
+    app: {outcome: "success"},
+  },
+  {
     id: "weather-document-literal-soap",
     title: "Weather document-literal SOAP baseline",
     status: "supported",

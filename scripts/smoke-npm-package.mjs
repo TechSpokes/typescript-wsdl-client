@@ -65,6 +65,12 @@ try {
   run(["--input-type=module", "-e", "import {createRequire} from 'node:module'; const require=createRequire(import.meta.url); try {require.resolve('typescript'); process.exit(2);} catch(e) {if(e.code !== 'MODULE_NOT_FOUND') throw e;}"]);
   const pipeline = ["pipeline", "--wsdl-source", "weather.wsdl", "--client-dir", ".generated/client", "--openapi-file", ".generated/openapi.json", "--gateway-dir", ".generated/gateway", "--gateway-service-name", "weather", "--gateway-version-prefix", "v1", "--openapi-format", "json", "--init-app", "--test-dir", ".generated/tests"];
   command(pipeline);
+  fs.copyFileSync(path.join(root, "test/conformance/fixtures/xsd/sequences/sequence-occurrence-wrappers.wsdl"), path.join(consumer, "occurrence.wsdl"));
+  command(["client", "--wsdl-source", "occurrence.wsdl", "--client-dir", ".generated/occurrence"]);
+  const occurrenceTypes = fs.readFileSync(path.join(consumer, ".generated/occurrence/types.ts"), "utf8");
+  for (const declaration of ["address: AddressType[];", "address?: AddressType[];", "bounded?: string[];", "unbounded?: string[];"]) {
+    assert.ok(occurrenceTypes.includes(declaration), `Installed CLI must emit ${declaration}`);
+  }
   command(["client", "--wsdl-source", "weather.wsdl", "--client-dir", "from-wsdl"]);
   command(["client", "--catalog-file", ".generated/client/catalog.json", "--client-dir", "from-catalog"]);
   command(["gateway", "--openapi-file", ".generated/openapi.json", "--client-dir", ".generated/client", "--gateway-dir", ".generated/standalone", "--gateway-service-name", "weather", "--gateway-version-prefix", "v1"]);
@@ -86,6 +92,18 @@ try {
   const appPackage = JSON.parse(fs.readFileSync(path.join(consumer, ".generated/app/package.json"), "utf8"));
   npm(["install", ...Object.keys(appPackage.dependencies).map(exact)]);
   npm(["install", "--save-dev", ...["typescript", "@types/node", "vitest"].map(exact)]);
+  write(".generated/occurrence/usage.ts", [
+    'import type {Addresses, OptionalAddresses, SubmitOccurrence} from "./types.js";',
+    'const addresses: Addresses = {address: [{street: "First"}, {street: "Second"}]};',
+    'const optional: OptionalAddresses = {};',
+    'const request: SubmitOccurrence = {requestId: "test", bounded: ["a", "b"]};',
+    'void addresses; void optional; void request;',
+    '// @ts-expect-error A repeated address cannot be a scalar.',
+    'const scalar: Addresses = {address: {street: "Wrong"}};',
+    'void scalar;',
+  ].join("\n"));
+  json(".generated/occurrence/tsconfig.json", {compilerOptions: {strict: true, noEmit: true, target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", skipLibCheck: true}, include: ["*.ts"]});
+  run(["node_modules/typescript/bin/tsc", "-p", ".generated/occurrence/tsconfig.json"]);
   run(["node_modules/typescript/bin/tsc", "--noEmit", "-p", ".generated/app/tsconfig.json"]);
   run([path.join(consumer, "node_modules/vitest/vitest.mjs"), "run", "--config", "vitest.config.ts"], path.join(consumer, ".generated/tests"));
 

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(compiler): preserve wrapping sequence occurrence bounds on element particles
+
 ## [1.1.0] - 2026-09-22
 
 - feat(generation): add automatic TypeScript ESLint preambles and document generated-path exclusions for restrictive lint policies

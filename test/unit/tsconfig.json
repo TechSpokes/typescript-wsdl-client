@@ -10,6 +10,7 @@
     "preamble.test.ts",
     "app-security.test.ts",
     "client-choice-union-types.test.ts",
+    "compiler-compositor-occurs.test.ts",
     "conformance-scripts.test.ts",
     "conformance-fixture-policy.test.ts",
     "deps-maintenance.test.ts",

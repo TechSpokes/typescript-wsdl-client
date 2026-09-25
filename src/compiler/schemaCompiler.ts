@@ -917,17 +917,28 @@ export function compileCatalog(
 
     const collectParticles = (ownerTypeName: string, node: any): CompiledType["elems"] => {
       const out: CompiledType["elems"] = [];
-      // process a compositor or element container recursively
-      const recurse = (groupNode: any) => {
-        // handle direct element children
+      type Occurrence = {min: number; max: number | "unbounded"};
+      const one: Occurrence = {min: 1, max: 1};
+      const combine = (a: Occurrence, b: Occurrence): Occurrence => ({
+        min: a.min * b.min,
+        max: a.max === "unbounded" || b.max === "unbounded" ? "unbounded" : a.max * b.max,
+      });
+      const recurse = (groupNode: any, inherited: Occurrence = one, inheritSequenceOccurs = true) => {
         for (const e of getChildrenWithLocalName(groupNode, "element")) {
           const particle = compileElementParticle(ownerTypeName, e);
-          if (particle) out.push(particle);
+          if (!particle) continue;
+          // @constraints Preserve disabled particles until the content model can represent their absence (#145).
+          out.push(particle.max === 0 ? particle : {...particle, ...combine(inherited, particle)});
         }
-        // recurse into nested compositor groups
         for (const comp of ["sequence", "all", "choice"]) {
           for (const sub of getChildrenWithLocalName(groupNode, comp)) {
-            recurse(sub);
+            const own = readOccurrence(sub);
+            if (inheritSequenceOccurs && comp === "sequence" && own.max !== 0) {
+              recurse(sub, combine(inherited, own), true);
+            } else {
+              // @constraints Choice, all, and disabled subtrees keep their previous flattened bounds (#145).
+              recurse(sub, one, false);
+            }
           }
         }
       };
