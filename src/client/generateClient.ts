@@ -61,6 +61,16 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
   // get the class name for the client
   const clientName = deriveClientName(compiled);
   const clientConstant = pascalToSnakeCase(clientName).toUpperCase();
+  // Explicit client-name overrides can match a SOAP export. Alias only that
+  // import so the generated class keeps its public name.
+  const soapImport = (name: string) => {
+    const local = name === clientName ? `Soap${pascal(name)}` : name;
+    return {local, specifier: local === name ? name : `${name} as ${local}`};
+  };
+  const soapClient = soapImport("Client");
+  const soapOptions = soapImport("IOptions");
+  const soapSecurity = soapImport("ISecurity");
+  const soapFactory = soapImport("createClientAsync");
   // Track whether any operation opts into streaming, so we can emit the
   // supporting runtime helpers only when they're actually used.
   let anyStream = false;
@@ -141,7 +151,9 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
   // *.tpl file so the IDE does not try to parse their content as code nested
   // inside this template literal (which would flag `this`, `await`, `yield`
   // outside-of-function false positives).
-  const streamMethodsBlock = anyStream ? "\n" + loadRuntimeSource("clientStreamMethods.tpl.txt") : "";
+  const streamMethodsBlock = anyStream
+    ? "\n" + loadRuntimeSource("clientStreamMethods.tpl.txt").replace("__SOAP_CLIENT_TYPE__", soapClient.local)
+    : "";
   // noinspection JSFileReferences,JSUnresolvedReference,CommaExpressionJS,JSDuplicatedDeclaration,ReservedWordAsName,JSCommentMatchesSignature,JSValidateTypes,JSIgnoredPromiseFromCall,BadExpressionStatementJS,ES6UnusedImports,JSUnnecessarySemicolon,UnreachableCodeJS,JSUnusedLocalSymbols
   const classTemplate = `// noinspection JSAnnotator
 
@@ -149,7 +161,8 @@ export function generateClient(outFile: string, compiled: CompiledCatalog) {
  * Generated ${clientName} client class.
  * This class wraps the node-soap client and provides strongly-typed methods for each operation.
  */
-import * as soap from "soap";
+import {${soapFactory.specifier}} from "soap";
+import type {${soapClient.specifier}, ${soapOptions.specifier}, ${soapSecurity.specifier}} from "soap";
 import type * as T from "./types${suffix}";
 import type {${clientName}DataTypes} from "./utils${suffix}";
 import {${clientConstant}_DATA_TYPES} from "./utils${suffix}";${anyStream ? `
@@ -203,11 +216,11 @@ export type ${clientName}Response<ResponseType, HeadersType = Record<string, unk
  */
 export class ${clientName} {
   protected source: string;
-  protected options?: soap.IOptions;
-  protected security?: soap.ISecurity;
+  protected options?: ${soapOptions.local};
+  protected security?: ${soapSecurity.local};
   protected attributesKeyIn: string;
   protected attributesKeyOut: string;
-  protected client?: soap.Client;
+  protected client?: ${soapClient.local};
   protected dataTypes: ${clientName}DataTypes = ${clientConstant}_DATA_TYPES;
 
   /**
@@ -222,8 +235,8 @@ export class ${clientName} {
    */
   constructor(options: {
     source: string,
-    options?: soap.IOptions,
-    security?: soap.ISecurity,
+    options?: ${soapOptions.local},
+    security?: ${soapSecurity.local},
     attributesKeyIn?: string,
     attributesKeyOut?: string
   }) {
@@ -245,7 +258,7 @@ export class ${clientName} {
    * @returns The initialized SOAP client instance.
    * @throws Error if the WSDL source is invalid or client creation fails.
    */
-  async soapClient(): Promise<soap.Client> {
+  async soapClient(): Promise<${soapClient.local}> {
     // If client is not initialized or has no WSDL source, create a new one
     if (!this.client || !this.client.wsdl) {
       // Note: source can be a URL or a local WSDL file path
@@ -254,7 +267,7 @@ export class ${clientName} {
       }
       try {
         // Create the SOAP client using the provided source and options
-        this.client = await soap.createClientAsync(this.source, this.options || {});
+        this.client = await ${soapFactory.local}(this.source, this.options || {});
         if (this.security) {
           this.client.setSecurity(this.security);
         }

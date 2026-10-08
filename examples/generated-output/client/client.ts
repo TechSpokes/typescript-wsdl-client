@@ -6,7 +6,8 @@
  * Generated Weather client class.
  * This class wraps the node-soap client and provides strongly-typed methods for each operation.
  */
-import * as soap from "soap";
+import {createClientAsync} from "soap";
+import type {Client, IOptions, ISecurity} from "soap";
 import type * as T from "./types.js";
 import type {WeatherDataTypes} from "./utils.js";
 import {WEATHER_DATA_TYPES} from "./utils.js";
@@ -58,11 +59,11 @@ export type WeatherResponse<ResponseType, HeadersType = Record<string, unknown>>
  */
 export class Weather {
   protected source: string;
-  protected options?: soap.IOptions;
-  protected security?: soap.ISecurity;
+  protected options?: IOptions;
+  protected security?: ISecurity;
   protected attributesKeyIn: string;
   protected attributesKeyOut: string;
-  protected client?: soap.Client;
+  protected client?: Client;
   protected dataTypes: WeatherDataTypes = WEATHER_DATA_TYPES;
 
   /**
@@ -77,8 +78,8 @@ export class Weather {
    */
   constructor(options: {
     source: string,
-    options?: soap.IOptions,
-    security?: soap.ISecurity,
+    options?: IOptions,
+    security?: ISecurity,
     attributesKeyIn?: string,
     attributesKeyOut?: string
   }) {
@@ -100,7 +101,7 @@ export class Weather {
    * @returns The initialized SOAP client instance.
    * @throws Error if the WSDL source is invalid or client creation fails.
    */
-  async soapClient(): Promise<soap.Client> {
+  async soapClient(): Promise<Client> {
     // If client is not initialized or has no WSDL source, create a new one
     if (!this.client || !this.client.wsdl) {
       // Note: source can be a URL or a local WSDL file path
@@ -109,7 +110,7 @@ export class Weather {
       }
       try {
         // Create the SOAP client using the provided source and options
-        this.client = await soap.createClientAsync(this.source, this.options || {});
+        this.client = await createClientAsync(this.source, this.options || {});
         if (this.security) {
           this.client.setSecurity(this.security);
         }

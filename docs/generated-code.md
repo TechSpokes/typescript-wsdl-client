@@ -106,6 +106,10 @@ See ESLint's [ignore documentation](https://eslint.org/docs/latest/use/configure
 
 ## Client Construction
 
+Generated clients import `createClientAsync` from `soap` at runtime and use type-only imports for `Client`,
+`IOptions`, and `ISecurity`. Imports are aliased when a generated client class uses the same name.
+Type-only imports are erased from JavaScript; install `soap` as a runtime dependency for the client factory.
+
 ```typescript
 import soap from "soap";
 import { Weather } from "./src/services/weather/client.js";

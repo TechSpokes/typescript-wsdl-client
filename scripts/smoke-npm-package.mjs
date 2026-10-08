@@ -102,8 +102,11 @@ try {
     'const scalar: Addresses = {address: {street: "Wrong"}};',
     'void scalar;',
   ].join("\n"));
-  json(".generated/occurrence/tsconfig.json", {compilerOptions: {strict: true, noEmit: true, target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", skipLibCheck: true}, include: ["*.ts"]});
+  const clientTypecheck = {compilerOptions: {strict: true, noEmit: true, target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", verbatimModuleSyntax: true, skipLibCheck: true, types: ["node"]}, include: ["*.ts"]};
+  json(".generated/occurrence/tsconfig.json", clientTypecheck);
   run(["node_modules/typescript/bin/tsc", "-p", ".generated/occurrence/tsconfig.json"]);
+  json("stream-client/tsconfig.json", clientTypecheck);
+  run(["node_modules/typescript/bin/tsc", "-p", "stream-client/tsconfig.json"]);
   fs.copyFileSync(path.join(root, "test/helpers/occurrenceTransport.mjs"), path.join(consumer, "occurrenceTransport.mjs"));
   write("occurrence-transport.mjs", [
     'import {OccurrenceService} from "./.generated/occurrence-js/client.js";',

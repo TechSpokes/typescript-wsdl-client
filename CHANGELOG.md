@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(client): use named SOAP runtime imports and explicit type-only imports in generated clients
+
 ## [1.1.3] - 2026-10-08
 
 - fix(deps): refresh compatible transitive dependencies to address HTTP, URI, brace expansion, and source map advisories
