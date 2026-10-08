@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-10-08
+
+- fix(deps): refresh compatible transitive dependencies to address HTTP, URI, brace expansion, and source map advisories
+- chore(deps): update runtime and development dependency floors and generated app pins while retaining TypeScript 6
+- chore(node): align the development Node pin with the supported Node 24 floor
+
 ## [1.1.2] - 2026-09-25
 
 - fix(client): normalize singleton SOAP responses for repeated elements
