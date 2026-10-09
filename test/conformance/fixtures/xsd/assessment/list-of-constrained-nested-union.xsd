@@ -1,0 +1,22 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review" targetNamespace="urn:review">
+  <xs:simpleType name="U">
+    <xs:union memberTypes="xs:int xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="Only1">
+    <xs:restriction base="t:U">
+      <xs:enumeration value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Wide">
+    <xs:union memberTypes="t:Only1 xs:boolean"/>
+  </xs:simpleType>
+  <xs:simpleType name="L">
+    <xs:list itemType="t:Wide"/>
+  </xs:simpleType>
+  <xs:complexType name="D">
+    <xs:simpleContent>
+      <xs:extension base="t:L"/>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

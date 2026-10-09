@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:assessment" targetNamespace="urn:assessment" elementFormDefault="qualified">
+  <xs:complexType name="D">
+    <xs:choice>
+      <xs:sequence>
+        <xs:element name="a" type="xs:string"/>
+        <xs:choice/>
+      </xs:sequence>
+      <xs:element name="a" type="xs:string"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>

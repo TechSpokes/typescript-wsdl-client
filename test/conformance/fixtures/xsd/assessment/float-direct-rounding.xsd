@@ -1,0 +1,12 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:assessment" targetNamespace="urn:assessment" elementFormDefault="qualified">
+  <xs:complexType name="B">
+    <xs:attribute name="a" type="xs:float" fixed="1.000000059604644775390625000000000000000001"/>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent>
+      <xs:restriction base="t:B">
+        <xs:attribute name="a" type="xs:float" fixed="1.00000011920928955078125"/>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>

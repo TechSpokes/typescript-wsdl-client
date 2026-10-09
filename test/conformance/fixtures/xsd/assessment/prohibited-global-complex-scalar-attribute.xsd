@@ -1,0 +1,1 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review" targetNamespace="urn:review"><xs:complexType name="S"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType><xs:attribute name="a" type="t:S"/><xs:complexType name="D"><xs:attribute ref="t:a" use="prohibited"/></xs:complexType></xs:schema>

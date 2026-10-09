@@ -9,6 +9,7 @@ The rows below are backed by committed conformance fixtures under `test/conforma
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `faithful-schema-assessment` | research | Internal faithful schema planning has independent executable contrasts; public legacy compilation and payload acceptance retain their existing contracts. |
 | `declared-derivation-boundaries` | research | Legacy compilation characterizes omitted groups, appended restriction content and named recursive references; faithful resolution/composition remain internal. |
 | `content-model-boundaries` | research | Characterization records current projection limits; it does not claim faithful content-model support. |
 | `content-model-invalid-all` | research | Legacy compiler acceptance is characterized separately from independent schema rejection. |

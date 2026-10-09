@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:assessment" targetNamespace="urn:assessment" elementFormDefault="qualified">
+  <xs:simpleType name="Bad">
+    <xs:restriction base="xs:int">
+      <xs:fractionDigits value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="bad" type="t:Bad"/>
+  <xs:complexType name="D">
+    <xs:sequence>
+      <xs:element ref="t:bad" maxOccurs="0" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

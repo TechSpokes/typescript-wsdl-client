@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review" targetNamespace="urn:review">
+  <xs:complexType name="B">
+    <xs:simpleContent>
+      <xs:extension base="xs:string"/>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent>
+      <xs:restriction base="t:B">
+        <xs:sequence/>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

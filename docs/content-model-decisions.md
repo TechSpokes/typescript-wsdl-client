@@ -56,6 +56,13 @@ S05's [derivation evidence](content-model-composition.md) adds concrete #179 qua
 Duplicate extension uses, fixed-value equivalence, group/local wildcard processing and imported wildcard expressibility require independent reconciliation before affected plans are assessed.
 S05 preserves these as typed obligations with original operands; this is not a new scalar checker or a declaration of verified arbitrary derivation support.
 
+S06's [accepted exact analysis](content-model-analysis.md) is delivered through #178/PR #230.
+The [schema-assessment draft and independent evidence](content-model-assessment.md) now investigate S05's original operands and additional primary-rule counterexamples.
+S06-AU-01 remains a foundational qualification for differing uses/constraints of the same global attribute declaration; #179 owns its resolution before affected models and the combined #153 gate can pass.
+S06-RE-01 records the normative/explanatory restriction conflict and incomplete bounded cos-ct-extends1.5 witness implementation; S06-PW-01 records unresolved WG R-240 cardinality; S06-DT-01 records negative-year calendar ambiguity.
+All four qualifications retain evidence, owners and affected gates in the assessment contract; none narrows the approved profile or marks S07/S08 Ready.
+Literal XSD 1.0 nested-union flattening is distinguished from the WG's XSD 1.1 correction, with original source member/facet relationships retained and independent payload contrast evidence.
+
 The [S02 handoff](content-model-s02-handoff.md) and #149 acceptance record pin reviewed draft/probe revisions and final delivery review/checks/merge. The SOAP source probe at `4d1d3972fbb0f8170232a3bd143f0fcf0adc842d` passed independent integration review; the gateway source probe at `d826ff506a80437bca1b747f40b772727643a506` passed independent semantic/gateway review.
 
 No foundational graph, projection, bundle/runtime, base transport or compatibility question remains open. The two open qualification entries block their affected transport/security consumers; their rejection and verification-order contracts are already resolved, so they do not change S03's input contract. Future shared scalar/particle, completion and compatibility implementations remain mandatory first-consumer gates, not already implemented features. S03 starts only after S02's joint gate closes.

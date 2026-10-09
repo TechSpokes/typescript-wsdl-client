@@ -1,0 +1,26 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:assessment" targetNamespace="urn:assessment" elementFormDefault="qualified">
+  <xs:complexType name="A">
+    <xs:sequence>
+      <xs:element name="a" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="R">
+    <xs:complexContent>
+      <xs:restriction base="t:A"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="T">
+    <xs:complexContent>
+      <xs:extension base="t:R">
+        <xs:sequence>
+          <xs:element name="a" type="xs:int"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:sequence>
+      <xs:element name="dead" type="t:T" minOccurs="0" maxOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

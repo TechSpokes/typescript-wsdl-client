@@ -194,7 +194,6 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
               continue; // Prohibition contributes no use on extension, never deletes base.
             }
             if (prior && prior.use !== "prohibited") {
-              if (prior.use === "required" && a.use !== "required") fail(node, "Extension cannot weaken a required attribute");
               obligations.push({kind: "attribute-extension-equivalence", owner: node.id, base: prior.declaration, local: a.declaration});
               if (prior.value?.kind === "fixed") obligations.push({kind: "fixed-value-equivalence", owner: node.id, base: prior.value, local: a.value});
             }

@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:au" targetNamespace="urn:au">
+  <xs:attribute name="a" type="xs:int"/>
+  <xs:complexType name="B">
+    <xs:attribute ref="t:a" use="required" fixed="1"/>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent>
+      <xs:extension base="t:B">
+        <xs:attribute ref="t:a" use="optional"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="r" type="t:D"/>
+</xs:schema>
