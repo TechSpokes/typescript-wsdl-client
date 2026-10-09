@@ -101,6 +101,64 @@ describe("structural companion dispatch", () => {
     expect(result.resolved.links.some(l => l.target === id("Exact"))).toBe(true);
   });
 
+  it.each([true, false])("relinks new union references before catalog validation (primary missing: %s)", async primaryMissing => {
+    const reference = '<xs:complexType name="Shared"><xs:sequence><xs:element name="value" type="t:Other"/></xs:sequence></xs:complexType>', definition = '<xs:complexType name="Other"/>';
+    const a = await schema(primaryMissing ? reference : definition), b = await schema(primaryMissing ? definition : reference, "https://companion.test/other.xsd");
+    const before = [JSON.stringify(a), JSON.stringify(b)];
+    const result = semantic(await prepareResolvedCompilationInput(text(a), {companions: [{input: text(b), roots: [id(primaryMissing ? "Other" : "Shared")]}]}));
+    expect(result.resolved.links.some(l => l.target === id("Other"))).toBe(true);
+    expect(result.catalog.graph.nodes.some(n => n.kind === "element" && n.type.kind === "symbol" && n.type.target === id("Other"))).toBe(true);
+    expect([JSON.stringify(a), JSON.stringify(b)]).toEqual(before);
+    expect(semantic(await prepareResolvedCompilationInput(text(result.catalog.graph))).catalog.semanticFingerprint).toBe(result.catalog.semanticFingerprint);
+  });
+
+  it.each([true, false])("resolves required dependencies across companion pools (reverse order: %s)", async reverse => {
+    const c = await schema('<xs:complexType name="C"><xs:sequence><xs:element name="value" type="t:D"/></xs:sequence></xs:complexType>', "https://companion.test/c.xsd");
+    // D is required by C, even though only E is explicitly selected from this pool.
+    const d = await schema('<xs:complexType name="D"/><xs:complexType name="E"/><xs:complexType name="Unused"/>', "https://companion.test/d.xsd");
+    const requests = [{input: text(c), roots: [id("C")]}, {input: text(d), roots: [id("E")]}];
+    if (reverse) requests.reverse();
+    const result = semantic(await prepareResolvedCompilationInput(text(await primary()), {companions: requests}));
+    expect(result.catalog.graph.globals).toEqual([id("Primary"), id("C"), id("D"), id("E")].sort());
+    expect(result.resolved.links.some(l => l.target === id("D"))).toBe(true);
+  });
+
+  it("terminates mutual recursion across separately read companion pools", async () => {
+    const c = await schema('<xs:complexType name="C"><xs:sequence><xs:element name="next" type="t:D" minOccurs="0"/></xs:sequence></xs:complexType>', "https://companion.test/c.xsd");
+    const d = await schema('<xs:complexType name="D"><xs:sequence><xs:element name="next" type="t:C" minOccurs="0"/></xs:sequence></xs:complexType>', "https://companion.test/d.xsd");
+    const result = semantic(await prepareResolvedCompilationInput(text(await primary()), {companions: [{input: text(c), roots: [id("C")]}, {input: text(d), roots: [id("D")]}]}));
+    expect(result.resolved.links.filter(l => l.target === id("C") || l.target === id("D"))).toHaveLength(2);
+    expect(result.composed.types).toHaveLength(3);
+  });
+
+  it("preserves import visibility when a primary definition supplies a companion target", async () => {
+    const main = await schema('<xs:complexType name="P"/>', "https://companion.test/p.xsd", "urn:primary");
+    const body = '<xs:complexType name="C"><xs:sequence><xs:element xmlns:p="urn:primary" name="value" type="p:P"/></xs:sequence></xs:complexType>';
+    const allowed = await schema('<xs:import namespace="urn:primary"/>' + body), denied = await schema(body);
+    const result = semantic(await prepareResolvedCompilationInput(text(main), {companions: [{input: text(allowed), roots: [id("C")]}]}));
+    expect(result.resolved.links.some(l => l.target === id("P", "type", "urn:primary"))).toBe(true);
+    await expect(prepareResolvedCompilationInput(text(main), {companions: [{input: text(denied), roots: [id("C")]}]})).rejects.toMatchObject({category: "invalid-schema", source: expect.objectContaining({path: expect.any(String)})});
+  });
+
+  it("bounds aggregate retained inputs before collecting redundant companion graphs", async () => {
+    const graph = await schema('<xs:complexType name="Shared"/>');
+    await expect(prepareResolvedCompilationInput(text(graph), {semantics: {maxNodes: 1}, companions: [{input: text(graph), roots: [id("Shared")]}]})).rejects.toMatchObject({category: "resource-limit", message: expect.stringContaining("aggregate input nodes")});
+    const options = {semantics: {maxNodes: 2}, companions: [{input: text(graph), roots: [id("Shared")]}]};
+    const result = semantic(await prepareResolvedCompilationInput(text(graph), options));
+    expect(result.gathering.inputNodes).toBe(2);
+    const steps = Math.max(result.gathering.steps, result.merge.metrics.steps, result.resolved.metrics.steps, result.composed.metrics.steps);
+    expect(semantic(await prepareResolvedCompilationInput(text(graph), {...options, semantics: {maxNodes: 2, maxSteps: steps}})).catalog.semanticFingerprint).toBe(result.catalog.semanticFingerprint);
+    await expect(prepareResolvedCompilationInput(text(graph), {...options, semantics: {maxNodes: 2, maxSteps: steps - 1}})).rejects.toMatchObject({category: "resource-limit"});
+  });
+
+  it("counts dynamic namespace-prefix keys before provenance and normalization copies", async () => {
+    const prefix = 'p'.repeat(20_000), body = `<xs:complexType name="Shared" xmlns:${prefix}="urn:long"/>`;
+    const a = await schema(body), b = await schema(body, "https://companion.test/other.xsd");
+    expect(() => mergeStructuralCompanions(a, [{graph: b, roots: [id("Shared")]}], {maxSteps: 10_000})).toThrowError(expect.objectContaining({category: "resource-limit"}));
+    const result = mergeStructuralCompanions(a, [{graph: b, roots: [id("Shared")]}]);
+    expect(result.deduplicated).toEqual([id("Shared")]);
+  });
+
   it("does not resolve or copy unrelated missing and unsupported operation components", async () => {
     const graph = await schema('<xs:complexType name="Shared"/><xs:complexType name="Unrelated"><xs:sequence><xs:element name="missing" type="t:Missing"/></xs:sequence><xs:assert test="false()"/></xs:complexType>');
     const result = semantic(await prepareResolvedCompilationInput(text(await primary()), {companions: [{input: text(graph), roots: [id("Shared")]}]}));

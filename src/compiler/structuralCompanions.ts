@@ -1,8 +1,8 @@
 /** Required structural closures over one declared graph; no public-symbol renaming. */
 import {deepFreeze, globalId} from "./canonicalGraph.js";
 import type {CanonicalGraph, GraphNode, GraphOrigin, NodeId} from "./canonicalGraph.js";
-import {containedNodes, referenceSlots} from "./graphTraversal.js";
-import {referenceTarget, SemanticError, semanticBudget} from "./resolveCanonicalGraph.js";
+import {containedNodes, referenceSlots, mapNodeReferences} from "./graphTraversal.js";
+import {referenceTarget, SemanticError, semanticBudget, countSemanticData} from "./resolveCanonicalGraph.js";
 import type {SemanticLimits} from "./resolveCanonicalGraph.js";
 import {semanticGraphRepresentation} from "./catalogProvenance.js";
 import {canonicalJson} from "./catalogErrors.js";
@@ -19,14 +19,7 @@ export function mergeStructuralCompanions(primary: CanonicalGraph, companions: r
   const checkSize = () => {if (nodes.size > budget.maxNodes) throw new SemanticError("resource-limit", `Companion graph exceeds ${budget.maxNodes} nodes`);};
   checkSize();
   // Bound normalization and provenance copying before recursive serialization allocates.
-  const countData = (value: unknown, node?: GraphNode) => {
-    const stack: unknown[] = [value];
-    while (stack.length) {
-      const item = stack.pop(); budget.step(node);
-      if (typeof item === "string") for (let i = 0; i < item.length; i++) budget.step(node);
-      else if (item && typeof item === "object") for (const child of Object.values(item)) {budget.step(node); stack.push(child);}
-    }
-  };
+  const countData = (value: unknown, node?: GraphNode) => countSemanticData(value, budget, node);
   const owned = (root: GraphNode, index: ReadonlyMap<NodeId, GraphNode>): GraphNode[] => {
     const stack = [root.id], seen = new Set<NodeId>(), result: GraphNode[] = [];
     while (stack.length) {
@@ -52,30 +45,56 @@ export function mergeStructuralCompanions(primary: CanonicalGraph, companions: r
   countData([edges, retained, annotations]);
   const edgeKeys = new Set(edges.map(canonicalJson)), retainedKeys = new Set(retained.map(canonicalJson)), annotationKeys = new Set(annotations.map(canonicalJson));
   const copied = new Set<NodeId>(), deduplicated = new Set<NodeId>();
-  for (const companion of companions) {
+  // Index requested pools before walking, so a cross-companion dependency is
+  // resolved by availability rather than the caller's request order.
+  const providers = new Map<NodeId, number[]>();
+  const pools = companions.map((companion, pool) => {
+    budget.step();
     if (companion.graph.nodes.length > budget.maxNodes) throw new SemanticError("resource-limit", `Companion input exceeds ${budget.maxNodes} graph nodes`);
-    const source = new Map(companion.graph.nodes.map(n => {budget.step(n); return [n.id, n];})), selected = new Set<NodeId>();
-    for (const ignored of companion.roots) budget.step();
-    const queue = [...companion.roots];
+    const source = new Map(companion.graph.nodes.map(n => {budget.step(n); return [n.id, n];}));
+    if (companion.roots.length) for (const node of source.values()) {
+      budget.step(node); if (node.identity.kind !== "global") continue;
+      const available = providers.get(node.id) ?? []; available.push(pool); providers.set(node.id, available);
+    }
+    return {companion, source, selected: new Set<NodeId>()};
+  });
+  const queue: {pool: number; id: NodeId}[] = [];
+  const enqueueAvailable = (id: NodeId, node: GraphNode) => {
+    for (const pool of providers.get(id) ?? []) {budget.step(node); queue.push({pool, id});}
+  };
+  pools.forEach(({companion, source}, pool) => {
     for (const root of companion.roots) {
-      const node = source.get(root);
+      budget.step(); const node = source.get(root);
       if (!node || node.identity.kind !== "global") throw new SemanticError("invalid-schema", `Companion root must identify a declared global component: ${root}`, root, node?.context.source);
+      queue.push({pool, id: root});
     }
-    while (queue.length) {
-      const id = queue.pop()!; if (selected.has(id)) continue;
-      const node = source.get(id);
-      if (!node) throw new SemanticError("invalid-schema", `Missing companion component ${id}`, id);
-      budget.step(node); selected.add(id);
-      for (const child of containedNodes(node)) {budget.step(node); queue.push(child);}
-      for (const slot of referenceSlots(node)) {
-        budget.step(node);
-        // Companion definitions take precedence for comparison; missing imported
-        // definitions may be supplied by the primary graph, with visibility still checked later.
-        const reference = slot.reference, candidate = reference.kind === "local" ? reference.target : reference.kind === "symbol" ? globalId(reference.role, reference.name) : undefined;
-        const target = referenceTarget(reference, candidate && source.has(candidate) ? source : nodes, node);
-        if (target && source.has(target)) queue.push(target);
-      }
+  });
+  for (const node of primary.nodes) for (const {reference} of referenceSlots(node)) {
+    budget.step(node);
+    if (reference.kind === "symbol") {
+      const id = globalId(reference.role, reference.name);
+      if (!nodes.has(id)) enqueueAvailable(id, node);
     }
+  }
+  while (queue.length) {
+    const {pool, id} = queue.pop()!, {source, selected} = pools[pool];
+    if (selected.has(id)) continue;
+    const node = source.get(id);
+    if (!node) throw new SemanticError("invalid-schema", `Missing companion component ${id}`, id);
+    budget.step(node); selected.add(id);
+    for (const child of containedNodes(node)) {budget.step(node); queue.push({pool, id: child});}
+    for (const {reference} of referenceSlots(node)) {
+      budget.step(node);
+      const candidate = reference.kind === "local" ? reference.target : reference.kind === "symbol" ? globalId(reference.role, reference.name) : undefined;
+      if (candidate && source.has(candidate)) {
+        referenceTarget(reference, source, node); queue.push({pool, id: candidate});
+      } else if (candidate && reference.kind === "symbol" && !nodes.has(candidate) && providers.has(candidate)) {
+        for (const available of providers.get(candidate)!) referenceTarget(reference, pools[available].source, node);
+        enqueueAvailable(candidate, node);
+      } else referenceTarget(reference, nodes, node);
+    }
+  }
+  for (const {companion, source, selected} of pools) {
     const interpretations = new Set<string>(), contexts = new Set<string>(), documents = new Set<string>();
     for (const id of selected) {
       const node = source.get(id)!;
@@ -117,5 +136,15 @@ export function mergeStructuralCompanions(primary: CanonicalGraph, companions: r
       countData(annotation); const key = canonicalJson(annotation); if (!annotationKeys.has(key)) {annotationKeys.add(key); annotations.push(annotation);}
     }
   }
-  return deepFreeze({graph: {...primary, nodes: [...nodes.values()].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0), globals: [...nodes.values()].filter(n => n.identity.kind === "global").map(n => n.id).sort(), origins, schemaAnnotations: annotations, schemaRetained: retained, loading: {...primary.loading, edges}}, copied: [...copied].sort(), deduplicated: [...deduplicated].sort(), metrics: {steps: budget.steps}});
+  const linked = [...nodes.values()].map(node => {
+    budget.step(node);
+    return mapNodeReferences(node, reference => {
+      budget.step(node);
+      if (reference.kind !== "symbol") return reference;
+      const id = globalId(reference.role, reference.name);
+      if (reference.target !== undefined && reference.target !== id) throw new SemanticError("invalid-schema", "Stored companion reference has a mismatched target", node.id, reference.lexical.context.source);
+      return nodes.has(id) ? {...reference, target: id} : reference;
+    });
+  }).sort((a, b) => {budget.step(); return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;});
+  return deepFreeze({graph: {...primary, nodes: linked, globals: linked.filter(n => n.identity.kind === "global").map(n => n.id).sort(), origins, schemaAnnotations: annotations, schemaRetained: retained, loading: {...primary.loading, edges}}, copied: [...copied].sort(), deduplicated: [...deduplicated].sort(), metrics: {steps: budget.steps}});
 }

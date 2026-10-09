@@ -14,7 +14,7 @@ import type {CatalogLimits} from "./catalogErrors.js";
 import {artifactGraph, normalizeGraphTables, semanticGraphFingerprint} from "./catalogProvenance.js";
 import {validateSemanticGraph} from "./validateSemanticGraph.js";
 import {mergeStructuralCompanions} from "./structuralCompanions.js";
-import {resolveCanonicalGraph} from "./resolveCanonicalGraph.js";
+import {resolveCanonicalGraph, semanticBudget, countSemanticData, SemanticError} from "./resolveCanonicalGraph.js";
 import type {SemanticLimits} from "./resolveCanonicalGraph.js";
 import {composeCanonicalGraph} from "./composeCanonicalGraph.js";
 import type {NodeId} from "./canonicalGraph.js";
@@ -128,20 +128,30 @@ export async function prepareResolvedCompilationInput(
     semantics?: SemanticLimits;
   } = {},
 ) {
-  const read = (source: typeof input) => source.kind === "catalog-file" ? readCatalogFile(source.file, {mode: "faithful", ...options.limits}) : prepareCompilationInput(source, {...options, mode: "faithful"});
+  const gathering = semanticBudget(options.semantics), limits = {...options.limits, maxNodes: Math.min(options.limits?.maxNodes ?? gathering.maxNodes, gathering.maxNodes)};
+  const read = (source: typeof input) => source.kind === "catalog-file" ? readCatalogFile(source.file, {mode: "faithful", ...limits}) : prepareCompilationInput(source, {...options, limits, mode: "faithful"});
+  let inputNodes = 0;
+  const retain = (catalog: SemanticCatalog) => {
+    inputNodes += catalog.graph.nodes.length;
+    if (inputNodes > gathering.maxNodes) throw new SemanticError("resource-limit", `Companion gathering exceeds ${gathering.maxNodes} aggregate input nodes`);
+    countSemanticData(catalog.graph, gathering);
+  };
   const primary = await read(input);
   if (primary.kind !== "semantic") return primary;
+  retain(primary.catalog);
   const companions = [];
   for (const request of options.companions ?? []) {
+    gathering.step(); countSemanticData(request.roots, gathering);
     // No requested root means no file read, source loading or unrelated component copy.
     if (!request.roots.length) continue;
     const companion = await read(request.input);
     if (companion.kind !== "semantic") return companion;
+    retain(companion.catalog);
     companions.push({graph: companion.catalog.graph, roots: request.roots});
   }
   const merge = mergeStructuralCompanions(primary.catalog.graph, companions, options.semantics);
   const catalog = createSemanticCatalog(merge.graph, options.limits);
   const resolved = resolveCanonicalGraph(catalog.graph, options.semantics);
   const composed = composeCanonicalGraph(resolved, options.semantics);
-  return deepFreeze({kind: "semantic" as const, catalog, resolved, composed, merge: {copied: merge.copied, deduplicated: merge.deduplicated, metrics: merge.metrics}});
+  return deepFreeze({kind: "semantic" as const, catalog, resolved, composed, gathering: {inputNodes, steps: gathering.steps}, merge: {copied: merge.copied, deduplicated: merge.deduplicated, metrics: merge.metrics}});
 }

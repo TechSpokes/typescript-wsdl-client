@@ -11,6 +11,7 @@ An unused companion with no roots is never read or loaded.
 
 The result contains one `SemanticCatalog`, its `ResolvedGraph`, its `ComposedGraph`, and copy/deduplication evidence.
 Resolution and composition consume the same persisted declared graph after reuse.
+The union refreshes typed symbol-target links immutably before catalog validation; missing definitions supplied in either direction become ordinary resolved references.
 No catalog-specific derived representation feeds downstream consumers.
 
 Catalog format remains 2 and model/profile remain `xsd10-faithful-v1`.
@@ -27,6 +28,7 @@ The new internal entry does not activate faithful generation, projections, codec
 The visited set terminates self/mutual element-type recursion while retaining complete definitions.
 Groups, attribute groups, derivation bases, anonymous types and scalar/list/union references participate in the same closure.
 An unavailable imported definition may be supplied by the primary graph; the common resolver still verifies every use's original import visibility.
+Requested companion pools are indexed before traversal; required dependencies can be supplied by another pool regardless of request order.
 Unrelated operation/type nodes and their node-local unsupported constraints are not copied.
 
 Namespace, local name and symbol role define global identity.
@@ -62,9 +64,11 @@ Unsupported retained constraints remain visible for #179; successful reuse does 
 
 Closure indexing/traversal, structural normalization and provenance copying consume bounded work.
 Normalization input and copied strings are counted before serialization; copied graph size is checked while adding definitions.
+Dynamic object keys, including namespace prefixes, count as copied strings.
 Defaults remain 100,000 nodes and 1,000,000 steps, with positive safe-integer overrides.
 Exhaustion returns `resource-limit` without modifying any input or returning a partial result.
-Merge, resolution and composition each apply that configured budget independently.
+Input gathering bounds aggregate retained nodes and structural data before retaining each additional read, including redundant definitions.
+Gathering, merge, resolution and composition each apply that configured budget independently.
 S03's conservative cyclic-depth loading behavior remains unchanged.
 
 [Integration tests](../test/integration/structural-companions.test.ts) cover reader/source/file dispatch, recursive required closures, differing bounds, namespace/role collisions, chameleon and anonymous owners, source-path deduplication, missing references/cycles, structural collisions, legacy regeneration and catalog round trips.

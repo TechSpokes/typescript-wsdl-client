@@ -5,6 +5,8 @@ import type {SchemaInput, SchemaInterpretation} from "../loader/schemaInput.js";
 import {DEFAULT_GRAPH_NODES, GRAPH_MODEL, GraphError, globalId, scopedId, deepFreeze, isBuiltinType, wsdlReferenceRoles} from "./canonicalGraph.js";
 import type {CanonicalGraph, GraphNode, GraphContext, Identity, NodeId, SymbolRole, Reference, LexicalValue, Occurs, ValueConstraint, Facet, Wildcard, GraphOrigin} from "./canonicalGraph.js";
 
+import {mapNodeReferences} from "./graphTraversal.js";
+
 type Scope = {schema: SchemaInterpretation; owner: NodeId; rootPath: string};
 const declarationRoles: Record<string, SymbolRole> = Object.assign(Object.create(null), {element: "element", attribute: "attribute", simpleType: "type", complexType: "type", group: "group", attributeGroup: "attributeGroup"});
 const particleKinds = new Set(["sequence", "choice", "all", "element", "group", "any"]);
@@ -252,19 +254,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
     const target = globalId(r.role, r.name);
     return {...r, ...(nodes.has(target) ? {target} : {})};
   };
-  const linkNode = (n: GraphNode): GraphNode => {
-    switch (n.kind) {
-      case "element": return {...n, type: link(n.type), substitutionGroup: n.substitutionGroup ? link(n.substitutionGroup) : undefined};
-      case "attribute": return {...n, type: link(n.type)};
-      case "attributeUse": return {...n, declaration: link(n.declaration)};
-      case "attributeGroupUse": return {...n, reference: link(n.reference)};
-      case "particle": return {...n, term: n.term.kind === "element" ? {...n.term, declaration: link(n.term.declaration)} : n.term.kind === "group" ? {...n.term, reference: link(n.term.reference)} : n.term};
-      case "complexType": return {...n, derivation: n.derivation ? {...n.derivation, base: link(n.derivation.base), inlineType: n.derivation.inlineType ? link(n.derivation.inlineType) : undefined} : undefined};
-      case "simpleType": return {...n, variety: n.variety.kind === "restriction" ? {...n.variety, base: link(n.variety.base)} : n.variety.kind === "list" ? {...n.variety, item: link(n.variety.item)} : {...n.variety, members: n.variety.members.map(link)}};
-      case "wsdl": return {...n, references: n.references.map(r => ({...r, reference: link(r.reference)}))};
-      default: return n;
-    }
-  };
+  const linkNode = (node: GraphNode): GraphNode => mapNodeReferences(node, link);
   // All loading contexts remain provenance; they do not multiply global symbols or local bodies.
   const ownerCache = new Map<NodeId, NodeId>();
   const rootOwner = (n: GraphNode): NodeId => {

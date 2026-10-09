@@ -21,6 +21,21 @@ export function semanticBudget(limits: SemanticLimits = {}) {
     if (++steps > maxSteps) throw new SemanticError("resource-limit", `Semantic traversal exceeds ${maxSteps} steps`, node?.id, node?.context.source);
   }};
 }
+
+/** Count structural data before retaining another input or serializing a copy. */
+export function countSemanticData(value: unknown, budget: ReturnType<typeof semanticBudget>, node?: GraphNode): void {
+  const stack: unknown[] = [value];
+  while (stack.length) {
+    const item = stack.pop(); budget.step(node);
+    if (typeof item === "string") for (let i = 0; i < item.length; i++) budget.step(node);
+    else if (item && typeof item === "object") for (const key in item) {
+      if (!Object.hasOwn(item, key)) continue;
+      budget.step(node);
+      for (let i = 0; i < key.length; i++) budget.step(node);
+      stack.push((item as Record<string, unknown>)[key]);
+    }
+  }
+}
 export type ResolvedLink = Readonly<{owner: NodeId; path: string; reference: Reference; target?: NodeId}>;
 export type ResolvedGraph = Readonly<{graph: CanonicalGraph; links: readonly ResolvedLink[]; metrics: Readonly<{steps: number}>}>;
 
