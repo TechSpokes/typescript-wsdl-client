@@ -67,6 +67,7 @@
     "clean:tmp": "rimraf tmp",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
+    "typecheck:integration": "tsc -p test/integration/tsconfig.json",
     "test": "vitest run",
     "test:unit": "vitest run test/unit",
     "test:snap": "vitest run test/snapshot",
@@ -99,9 +100,9 @@
     "package:smoke": "node scripts/smoke-npm-package.mjs",
     "release:preflight": "node scripts/release-preflight.mjs",
     "release:publish-check": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate",
-    "ci": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate && npm run docs:validate && vitest run && npm run smoke:pipeline && npm run package:smoke",
-    "ci:github": "npm run clean && npm run build && npm run typecheck && npm run skill:validate && npm run package:validate && npm run docs:validate && npm run test:github && npm run smoke:pipeline",
-    "ci:github:node26": "npm run clean && npm run build && npm run typecheck && npm run test:unit && npm run smoke:pipeline",
+    "ci": "npm run clean && npm run build && npm run typecheck && npm run typecheck:integration && npm run skill:validate && npm run package:validate && npm run docs:validate && vitest run && npm run smoke:pipeline && npm run package:smoke",
+    "ci:github": "npm run clean && npm run build && npm run typecheck && npm run typecheck:integration && npm run skill:validate && npm run package:validate && npm run docs:validate && npm run test:github && npm run smoke:pipeline",
+    "ci:github:node26": "npm run clean && npm run build && npm run typecheck && npm run typecheck:integration && npm run test:unit && vitest run test/integration/client-imports.test.ts && npm run smoke:pipeline",
     "examples:regenerate": "tsx src/cli.ts pipeline --wsdl-source examples/minimal/weather.wsdl --client-dir examples/generated-output/client --openapi-file examples/generated-output/openapi.json --gateway-dir examples/generated-output/gateway --gateway-service-name weather --gateway-version-prefix v1 --openapi-format json"
   },
   "devDependencies": {

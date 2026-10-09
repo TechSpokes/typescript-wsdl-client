@@ -4,6 +4,7 @@ import {mkdirSync, mkdtempSync, rmSync, writeFileSync} from "node:fs";
 import {createRequire} from "node:module";
 import {join, resolve} from "node:path";
 import {compileWsdlToProject, parseStreamConfig} from "../../src/index.js";
+import {resolveCompilerOptions} from "../../src/config.js";
 
 const require = createRequire(import.meta.url);
 const fixture = resolve("examples/minimal/weather.wsdl");
@@ -21,10 +22,11 @@ it("compiles and initializes buffered and streamed clients whose names match SOA
     for (const mode of ["buffered", "streamed"]) {
       for (const name of names) {
         const directory = `${mode}-${name}`;
+        const outDir = join(root, "projects", directory);
         await compileWsdlToProject({
           wsdl: fixture,
-          outDir: join(root, "projects", directory),
-          options: {imports: "js", clientName: name},
+          outDir,
+          options: resolveCompilerOptions({imports: "js", clientName: name}, {wsdl: fixture, out: outDir}),
           streamConfig: mode === "streamed" ? streamConfig : undefined,
         });
         cases.push({name, directory});
