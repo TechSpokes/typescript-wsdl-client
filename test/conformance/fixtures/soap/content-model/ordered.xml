@@ -1,0 +1,7 @@
+<Submit xmlns="urn:content-model:probe" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <selection><a>1</a><b>2</b><c>3</c><a>4</a><b>5</b></selection>
+  <pairs><p>6</p><q>7</q><p>8</p><q>9</q></pairs>
+  <ambiguous><token>x</token><token>y</token><token>z</token></ambiguous>
+  <kind xmlns:k="urn:kind">k:T</kind>
+  <nullable xsi:nil="true" id="7"/>
+</Submit>
