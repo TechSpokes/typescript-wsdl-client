@@ -40,7 +40,9 @@ Schema legality uses the primary ur-type component (mixed sequence of lax `##any
 Lax/skip wildcard scopes remain explicit, and known declarations admitted by strict/lax wildcards join the selected closure.
 Disabled particles and prohibited attribute uses correspond to no surviving component.
 Their source syntax remains visible and S05's reference/cycle gates still apply; absent local scalar operands do not acquire runtime capability requirements.
-An existing global declaration referenced through an absent use still receives schema-only legality checking, including its facets, fixed operands and particle constraints.
+An existing global declaration referenced through an absent use still receives schema-only legality checking, including its surviving local declarations, facets, fixed operands and particle constraints.
+Derivation bases retain schema-only operand closure; only effective inherited/surviving elements, attributes and declared wildcards acquire runtime capability requirements.
+Explicit prohibition removes an optional inherited attribute; simply omitting its declaration still inherits it.
 
 ## Particle rules
 
@@ -68,6 +70,8 @@ No emitter or payload validator gets a second occurrence algorithm.
 Assessment recomputes uses and wildcard combinations from original group/type operands.
 A prohibited local use contributes no AU, even during extension, and cannot delete an inherited base use.
 Distinct declaration identities sharing an attribute QName violate component constraints.
+Surviving attribute declarations require simple type definitions; scalar-content complex types remain complex definitions.
+Complex types permit at most one distinct ID-derived attribute declaration, and attribute groups permit at most one distinct ID-derived AU member; prohibited local syntax contributes neither.
 Equivalent uses of the same global declaration retain original use constraints and provenance.
 The unresolved differing-use case is qualified below.
 
@@ -84,6 +88,9 @@ Every required intermediate intersection/union must be expressible in XSD 1.0; i
 
 `ScalarSupportPlan` retains reference, variety, builtin/primitive, item/member references, ordered facet layers, original lexical values/context, whitespace mode and evidenced pattern plans.
 Every plan names runtime owner **#184**, consumed by **#188/#189/#198**.
+`OperationAssessment.elementValues` ties each reachable element default/fixed constraint to its original type, original lexical constraint, schema operand type, and `simple-content` or `mixed-text` scope.
+The primary mixed/formally-emptiable rule also applies to `anyType` and its opaque mixed extensions: their schema operands are strings, while child content retains its opaque assessment scope.
+Existing schema-only declarations, including surviving local descendants of a global type, still obey the primary prohibition on value constraints for ID-derived types or simple content; legal absent ID uses add no runtime ID capability.
 The plan does not implement a separate payload scalar engine.
 Schema-declared enumeration/default/fixed/bound operands are interpreted only to establish schema legality and value equivalence.
 
@@ -145,6 +152,9 @@ Pinned source SHA-256 values are `e496af408b14853e6169ac7c1fca09d55a81bd73771758
 The [fixed expectation manifest](../test/conformance/schema-assessment-manifest.json), its fixture paths and [pinned reference test](../test/conformance/reference/schema_assessment_contract_test.py) record primary outcomes separately from each validator's observations.
 They preserve disagreements involving block constraints, malformed facet/range syntax, XML-only whitespace, absent uses, empty effective-content extensions, temporal aliases and reordered derivations.
 An engine majority does not decide the primary rule.
+The named-ID restriction/default contrast records libxml2 acceptance beside explicit primary invalidity and XMLSchema rejection; the source-only ID value law remains enforced.
+Conversely, XMLSchema checks prohibited local ID/complex-type attribute syntax as a component and rejects it; the primary mapping creates no component, and libxml2 accepts both controls.
+Those explicit disagreements preserve the absent-component boundary rather than adding a runtime exclusion.
 The invalid disabled-global mixed/simple-content restriction also records XMLSchema 4.2.0's `AttributeError` separately from schema rejection; a validator crash is not a validity answer.
 S01/#181 and [S05 disagreements](content-model-composition.md), plus [S02 platform/security qualifications](content-model-decisions.md), remain assigned to their existing owners.
 
@@ -171,10 +181,10 @@ S03/S04 limits and conservative cyclic-depth behavior remain unchanged.
 
 `maxNodes` bounds the immutable input graph; expanded legality use positions are bounded by independently charged work before copying, not by a newly invented persisted graph count.
 The [reproducible assessment measurement probe](../test/conformance/measure-schema-assessment.ts) writes ignored measurements under `tmp/conformance/assessment`.
-Development measurements on Node 24.19.0: a 4-node recursive model passed at 661 steps (1.014 ms), failed at 660 (0.656 ms), passed at 4 nodes (0.473 ms) and failed at 3 (0.115 ms).
-A 200-digit finite repetition passed without expansion in 1.689 ms / 2,183 steps.
-A depth-20 shared binary group DAG with 87 input nodes exhausted the default work budget in 312.890 ms before full copying.
-Synthetic immutable input-index probes passed at 100,000 nodes in 56.602 ms / 100,019 steps and failed at 100,001 before indexing in 0.235 ms; these are budget measurements, not source-validity or production #208 qualification claims.
+Development measurements on Node 24.19.0: a 4-node recursive model passed at 668 steps (0.649 ms), failed at 667 (0.814 ms), passed at 4 nodes (0.405 ms) and failed at 3 (0.085 ms).
+A 200-digit finite repetition passed without expansion in 1.574 ms / 2,190 steps.
+A depth-20 shared binary group DAG with 87 input nodes exhausted the default work budget in 87.129 ms before full copying.
+Synthetic immutable input-index probes passed at 100,000 nodes in 31.073 ms / 100,019 steps and failed at 100,001 before indexing in 0.213 ms; these are budget measurements, not source-validity or production #208 qualification claims.
 
 ```bash
 npx vitest run test/unit/schema-assessment.test.ts test/conformance/schema-assessment.test.ts

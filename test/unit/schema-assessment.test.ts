@@ -27,6 +27,21 @@ const assess = (analysis: OccurrenceAnalysis, local = "T", role: "type" | "eleme
 const element = (name: string, occurs = "") => `<xs:element name="${name}" type="xs:string" ${occurs}/>`;
 
 describe("reachable XSD 1.0 schema assessment", () => {
+  it("plans opaque mixed value constraints without certifying child content", async () => {
+    const a = await load('<xs:element name="root" type="xs:anyType" fixed="abc"/>');
+    const before = JSON.stringify(a), result = assess(a, "root", "element");
+    expect(result.kind).toBe("supported");
+    if (result.kind === "supported") {
+      expect(result.elementValues).toHaveLength(1);
+      expect(result.elementValues[0]).toMatchObject({owner: id("root", "element"), originalType: {name: {local: "anyType"}},
+        operandType: {name: {local: "string"}}, constraint: {kind: "fixed", lexical: {value: "abc"}}, scope: "mixed-text", runtimeOwner: "#184"});
+      expect(result.elementValues[0].scalar.enforcement).toContain("default-fixed");
+      expect(result.scopes).toContainEqual(expect.objectContaining({kind: "opaque-builtin"}));
+      expect(Object.isFrozen(result.elementValues[0])).toBe(true);
+    }
+    expect(JSON.stringify(a)).toBe(before);
+  });
+
   it("assesses selected WSDL bodies and reachable headers independently", async () => {
     const operation = (name: string, body: string) => `<wsdl:operation name="${name}"><soap:operation soapAction="${name}"/><wsdl:input>${body}</wsdl:input></wsdl:operation>`;
     const wsdl = `<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="${ns}" targetNamespace="${ns}"><wsdl:types>${schema('<xs:element name="safe" type="xs:string"/><xs:complexType name="Excluded" abstract="true"/><xs:element name="excluded" type="t:Excluded"/>')}</wsdl:types><wsdl:message name="Safe"><wsdl:part name="body" element="t:safe"/></wsdl:message><wsdl:message name="Excluded"><wsdl:part name="body" element="t:excluded"/></wsdl:message><wsdl:portType name="Port">${["safe", "excluded", "header", "encoded", "missing"].map(name => `<wsdl:operation name="${name}"><wsdl:input message="t:${name === "excluded" ? "Excluded" : "Safe"}"/></wsdl:operation>`).join("")}</wsdl:portType><wsdl:binding name="Binding" type="t:Port"><soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>${operation("safe", '<soap:body use="literal"/>')}${operation("excluded", '<soap:body use="literal"/>')}${operation("header", '<soap:body use="literal"/><soap:header use="literal" message="t:Excluded" part="body"/>')}${operation("encoded", '<soap:body use="encoded"/>')}${operation("missing", "")}</wsdl:binding></wsdl:definitions>`;

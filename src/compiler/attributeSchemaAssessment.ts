@@ -15,8 +15,20 @@ type Attributes = {attributes: readonly AssessedAttribute[]; wildcard?: Assessed
 type Container = ComplexTypeNode | Extract<GraphNode, {kind: "attributeGroup"}>;
 const rank = {skip: 0, lax: 1, strict: 2};
 
-export function attributeSchemaAssessment(c: AssessmentContext, scalars: ReturnType<typeof scalarSchemaAssessment>) {
+export function attributeSchemaAssessment(c: AssessmentContext, scalars: ReturnType<typeof scalarSchemaAssessment>, isSchemaIdType: (type: Reference, owner: GraphNode) => boolean) {
   const groups = new Map<NodeId, Attributes>(), types = new Map<NodeId, Attributes>();
+  const checkIds = (attributes: Iterable<AssessedAttribute>, owner: Container) => {
+    const ids = new Set<NodeId>();
+    for (const attribute of attributes) {
+      c.step(owner);
+      if (attribute.use === "prohibited" || !isSchemaIdType(attribute.type, c.get(attribute.declaration))) continue;
+      // A complex type constrains distinct declarations; an attribute group
+      // constrains distinct AU members. Repeated references to one AU share ID.
+      const members = owner.kind === "attributeGroup" ? attribute.sources : [attribute.declaration];
+      for (const id of members) {c.step(owner); ids.add(id);}
+      if (ids.size > 1) c.fail(owner, owner.kind === "attributeGroup" ? "ag-props-correct" : "ct-props-correct", "Multiple distinct ID-derived attribute declarations/uses are forbidden");
+    }
+  };
   const compatibleUses = (a: AssessedAttribute, b: AssessedAttribute, owner: GraphNode) => {
     if (a.use !== b.use) c.unsupported(owner, "S06-AU-01", "Differing uses of the same global attribute require resolution of the recorded XSD 1.0 qualification");
     const x = a.value, y = b.value;
@@ -65,6 +77,8 @@ export function attributeSchemaAssessment(c: AssessmentContext, scalars: ReturnT
             if (owner.kind === "complexType" && owner.derivation?.kind === "restriction") current.uses.push({name: attribute.name, declaration: attribute.id, type: attribute.type, use: "prohibited", sources: [node.id], constraints: []});
             current.index++; continue; // Source corresponds to no AU/value operand.
           }
+          const type = attribute.type.kind === "builtin" ? undefined : c.get(c.target(attribute.type, attribute)!);
+          if (attribute.type.kind === "builtin" && attribute.type.name.local === "anyType" || type && type.kind !== "simpleType") c.fail(attribute, "a-props-correct", "An attribute declaration requires a simple type definition");
           scalars.ensure(attribute.type, attribute);
           if (attribute.value) scalars.checkValue(attribute.type, attribute.value, attribute);
           if (node.value) scalars.checkValue(attribute.type, node.value, node);
@@ -85,6 +99,7 @@ export function attributeSchemaAssessment(c: AssessmentContext, scalars: ReturnT
             sources: [...prior.sources, ...attribute.sources], constraints: [...prior.constraints, ...attribute.constraints]});
         } else attributes.set(k, attribute);
       }
+      checkIds(attributes.values(), owner);
       // c-awi1 starts from the local wildcard and selects its processing;
       // c-awi2 starts from the first non-absent group and selects that mode.
       let wildcard: Attributes["wildcard"] = current.explicit ?? current.wildcards[0];
@@ -149,6 +164,7 @@ export function attributeSchemaAssessment(c: AssessmentContext, scalars: ReturnT
         if (node.derivation.kind === "extension") wildcard = mergeWildcard(base.wildcard, declared.wildcard, node, true);
         else if (wildcard && (!base.wildcard || !namespaceSubset(wildcard.namespace, base.wildcard.namespace) || !(baseRef?.kind === "builtin" && baseRef.name.local === "anyType") && rank[wildcard.processContents] < rank[base.wildcard.processContents])) c.fail(node, "derivation-ok-restriction", "Restricted wildcard must be a namespace subset with equal or stronger processing");
       }
+      checkIds(attributes, node);
       types.set(node.id, {attributes, wildcard}); stack.pop();
     }
     return types.get(root.id)!;

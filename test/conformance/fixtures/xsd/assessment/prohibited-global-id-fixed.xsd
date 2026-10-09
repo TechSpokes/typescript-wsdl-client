@@ -1,0 +1,1 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review" targetNamespace="urn:review"><xs:attribute name="invalid" type="xs:ID" fixed="validID"/><xs:complexType name="D"><xs:attribute ref="t:invalid" use="prohibited"/></xs:complexType></xs:schema>

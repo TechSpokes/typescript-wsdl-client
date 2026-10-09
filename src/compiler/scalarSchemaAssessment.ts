@@ -366,7 +366,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
     return false;
   };
   const checkValue = (reference: Reference, constraint: ValueConstraint, owner: GraphNode) => {
-    const description = ensure(reference, owner); operand(description, constraint.lexical, owner);
+    const description = ensure(reference, owner);
+    if (description.plan.builtin === "ID") c.fail(owner, owner.kind === "attribute" || owner.kind === "attributeUse" ? "a-props-correct" : "e-props-correct", "An ID-derived type/content cannot have a value constraint");
+    operand(description, constraint.lexical, owner);
     return {...description.plan, enforcement: [...new Set([...description.plan.enforcement, "default-fixed" as const])]};
   };
   const equivalent = (referenceA: Reference, a: LexicalValue, referenceB: Reference, b: LexicalValue, owner: GraphNode) => {

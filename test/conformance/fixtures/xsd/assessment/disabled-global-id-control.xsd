@@ -1,0 +1,1 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review" targetNamespace="urn:review"><xs:element name="unused" type="xs:ID"/><xs:complexType name="D"><xs:sequence minOccurs="0" maxOccurs="0"><xs:element ref="t:unused"/></xs:sequence></xs:complexType></xs:schema>

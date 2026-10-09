@@ -1,6 +1,6 @@
 /** Internal XSD 1.0 legality/capability gate over #178's reviewed analysis. */
 import {deepFreeze} from "./canonicalGraph.js";
-import type {ComplexTypeNode, GraphNode, NodeId, Reference} from "./canonicalGraph.js";
+import type {AttributeNode, ComplexTypeNode, ElementNode, GraphNode, NodeId, Reference, ValueConstraint} from "./canonicalGraph.js";
 import type {ComposedType, DerivationObligation} from "./composeCanonicalGraph.js";
 import {referenceSlots, containedNodes} from "./graphTraversal.js";
 import type {OccurrenceAnalysis} from "./occurrenceAnalysis.js";
@@ -36,9 +36,13 @@ export type AssessedType = Readonly<{
   assessment: "schema-assessed";
 }>;
 export type AssessmentScope = Readonly<{component: NodeId; kind: "opaque-builtin" | "wildcard-lax" | "wildcard-skip" | "absent-source" | "schema-only"; description: string}>;
+export type ElementValuePlan = Readonly<{
+  owner: NodeId; originalType: Reference; operandType: Reference; constraint: ValueConstraint;
+  scope: "simple-content" | "mixed-text"; scalar: ScalarSupportPlan; runtimeOwner: "#184";
+}>;
 export type OperationAssessment = Readonly<
   {kind: "supported"; operation: string; selection: AssessmentSelection; roots: readonly NodeId[]; closure: readonly NodeId[];
-    types: readonly AssessedType[]; scalars: readonly ScalarSupportPlan[]; scopes: readonly AssessmentScope[]; binding?: BindingSupportPlan;
+    types: readonly AssessedType[]; scalars: readonly ScalarSupportPlan[]; elementValues: readonly ElementValuePlan[]; scopes: readonly AssessmentScope[]; binding?: BindingSupportPlan;
     schemaAssessment: "selected-closure"; payloadEnforcement: "requires-#180-and-#184"} |
   {kind: "invalid-schema" | "unsupported-capability"; operation: string; selection: AssessmentSelection; diagnostic: SchemaDiagnostic}
 >;
@@ -113,6 +117,11 @@ function checkSyntax(c: AssessmentContext, node: GraphNode) {
     if (retained.syntax.name.namespace !== XSD_NAMESPACE || !["include", "import", "notation"].includes(retained.syntax.name.local)) c.fail(node, "schema-for-schemas", "Unexpected child of a reachable schema document", retained.syntax.source);
   }
 }
+function checkAttributeType(c: AssessmentContext, node: AttributeNode) {
+  c.step(node);
+  const type = node.type.kind === "builtin" ? undefined : c.get(c.target(node.type, node)!);
+  if (node.type.kind === "builtin" && node.type.name.local === "anyType" || type && type.kind !== "simpleType") c.fail(node, "a-props-correct", "An attribute declaration requires a simple type definition");
+}
 
 /** Never discharge the existential reordered-derivation rule by omission. */
 function checkReorderedDerivation(c: AssessmentContext, node: ComplexTypeNode) {
@@ -136,6 +145,21 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
   try {
     c = assessmentContext(analysis, limits);
     const context = c;
+    const valueType = (node: ElementNode | AttributeNode, checks: ReturnType<typeof particleSchemaAssessment>): {type: Reference; scope: ElementValuePlan["scope"]} => {
+      context.step(node);
+      if (node.kind === "element" && node.type.kind === "builtin" && node.type.name.namespace === XSD_NAMESPACE && node.type.name.local === "anyType") {
+        return {type: {kind: "builtin", name: {namespace: XSD_NAMESPACE, local: "string"}}, scope: "mixed-text"};
+      }
+      const target = node.type.kind === "builtin" ? undefined : context.get(context.target(node.type, node)!);
+      if (node.kind === "element" && target?.kind === "complexType") {
+        const content = checks.effective(target);
+        if (!content.scalar) {
+          if (!content.mixed || !content.particle?.schemaEmptiable) context.fail(node, "e-props-correct", "Element value constraint requires scalar or mixed formally emptiable content");
+          return {type: {kind: "builtin", name: {namespace: XSD_NAMESPACE, local: "string"}}, scope: "mixed-text"};
+        }
+      }
+      return {type: node.type, scope: "simple-content"};
+    };
     const scalarContent = (node: ComplexTypeNode, particleChecks: ReturnType<typeof particleSchemaAssessment>, scalarChecks: ReturnType<typeof scalarSchemaAssessment>) => {
       if (!particleChecks.effective(node).scalar) return undefined;
       const plan = scalarChecks.ensure({kind: "local", target: node.id}, node);
@@ -150,19 +174,22 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
       return plan;
     };
     let scalars: ReturnType<typeof scalarSchemaAssessment>;
-    const particles = particleSchemaAssessment(c, (...args) => scalars.derives(...args), (derived, base) => {
+    let sourceScalars: ReturnType<typeof scalarSchemaAssessment>;
+    const particles = particleSchemaAssessment(c, (...args) => sourceScalars.derives(...args), (derived, base) => {
       if (base.value?.kind !== "fixed") return true;
-      return derived.value?.kind === "fixed" && scalars.equivalent(derived.type, derived.value.lexical, base.type, base.value.lexical, derived);
+      return derived.value?.kind === "fixed" && sourceScalars.equivalent(valueType(derived, particles).type, derived.value.lexical, valueType(base, particles).type, base.value.lexical, derived);
     });
     scalars = scalarSchemaAssessment(c, node => c!.types.get(node.id)?.scalar ? undefined : particles.effective(node).scalar);
-    const attributes = attributeSchemaAssessment(c, scalars);
     // A dead use creates no runtime requirement, but an existing referenced
     // global declaration still has schema-level operands/facet constraints.
-    let sourceScalars: ReturnType<typeof scalarSchemaAssessment>;
     const sourceParticles = particleSchemaAssessment(c, (...args) => sourceScalars.derives(...args), (a, b) =>
-      b.value?.kind !== "fixed" || a.value?.kind === "fixed" && sourceScalars.equivalent(a.type, a.value.lexical, b.type, b.value.lexical, a));
+      b.value?.kind !== "fixed" || a.value?.kind === "fixed" && sourceScalars.equivalent(valueType(a, sourceParticles).type, a.value.lexical, valueType(b, sourceParticles).type, b.value.lexical, a));
     sourceScalars = scalarSchemaAssessment(c, node => c!.types.get(node.id)?.scalar ? undefined : sourceParticles.effective(node).scalar, {schemaOperandsOnly: true});
-    const sourceAttributes = attributeSchemaAssessment(c, sourceScalars);
+    const isSchemaIdType = (type: Reference, owner: GraphNode) => sourceScalars.ensure(type, owner).builtin === "ID";
+    const sourceAttributes = attributeSchemaAssessment(c, sourceScalars, isSchemaIdType);
+    // Derivation operands are schema-only; surviving uses acquire runtime
+    // scalar requirements below, after restriction has removed absent uses.
+    const attributes = sourceAttributes;
     const checked = new Map<NodeId, AssessedType>(), operations: OperationAssessment[] = [], ids = new Set<string>();
     for (const originalSelection of selections) {
       c.step(); c.text(originalSelection.id);
@@ -186,14 +213,14 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
       if (!selection.id || ids.has(selection.id)) throw new SemanticError("invalid-schema", "Assessment selection IDs must be present and unique");
       ids.add(selection.id);
       try {
-        const selected = selectedOperationRoots(c, selection), closure: NodeId[] = [], seen = new Set<string>(), queue: {id: NodeId; sourceOnly: boolean}[] = [];
-        const scope: AssessmentScope[] = [], scalarPlans = new Map<NodeId, ScalarSupportPlan>(), typePlans: AssessedType[] = [];
+        const selected = selectedOperationRoots(c, selection), closure: NodeId[] = [], seen = new Set<string>(), queue: {id: NodeId; mode: "runtime" | "schema" | "absent"}[] = [];
+        const scope: AssessmentScope[] = [], scalarPlans = new Map<NodeId, ScalarSupportPlan>(), typePlans: AssessedType[] = [], elementValues: ElementValuePlan[] = [];
         const recordScalar = (plan: ScalarSupportPlan) => {
           context.step(undefined, plan.enforcement.length); const prior = scalarPlans.get(plan.id);
           if (prior) {context.step(undefined, prior.enforcement.length + plan.enforcement.length); scalarPlans.set(plan.id, {...plan, enforcement: [...new Set([...prior.enforcement, ...plan.enforcement])]});}
           else scalarPlans.set(plan.id, plan);
         };
-        for (const id of selected.roots) {c.step(); queue.push({id, sourceOnly: false});}
+        for (const id of selected.roots) {c.step(); queue.push({id, mode: "runtime"});}
         const scalar = (reference: Reference, owner: GraphNode) => {
           if (reference.kind === "builtin" && reference.name.local === "anyType") {scope.push({component: owner.id, kind: "opaque-builtin", description: "Builtin content is opaque; declared contributions are assessed separately"}); return;}
           const plan = scalars.ensure(reference, owner); context.step(owner); recordScalar(plan);
@@ -203,58 +230,54 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
           if (process === "skip") return;
           for (const id of c!.graph.globals) {
             c!.step(node); const declaration = c!.get(id);
-            if (declaration.kind === role && namespaceAllows(constraint, declaration.name.namespace)) queue.push({id: declaration.id, sourceOnly: false});
+            if (declaration.kind === role && namespaceAllows(constraint, declaration.name.namespace)) queue.push({id: declaration.id, mode: "runtime"});
           }
         };
         while (queue.length) {
           const entry = queue.pop()!; c.step(); const node = c.get(entry.id);
-          const sourceOnly = entry.sourceOnly || node.kind === "particle" && node.occurs.max === "0" || node.kind === "attributeUse" && node.use === "prohibited";
-          const visit = `${sourceOnly ? "source" : "component"}:${entry.id}`;
+          const mode = node.kind === "particle" && node.occurs.max === "0" || node.kind === "attributeUse" && node.use === "prohibited" ? "absent" : entry.mode;
+          const sourceOnly = mode !== "runtime";
+          const visit = `${mode}:${entry.id}`;
           if (seen.has(visit)) continue; seen.add(visit);
           if (sourceOnly) {
             c.setCurrent(node); checkSchemaSyntax(c, node);
-            if (node.identity.kind === "global") {
+            const componentExists = mode === "schema" || node.identity.kind === "global";
+            if (componentExists) {
+              if (node.kind === "attribute") checkAttributeType(c, node);
               if (node.kind === "simpleType") sourceScalars.ensure({kind: "local", target: node.id}, node);
               if (node.kind === "complexType") {checkReorderedDerivation(c, node); sourceParticles.check(node); sourceAttributes.ensure(node); scalarContent(node, sourceParticles, sourceScalars);}
               if (node.kind === "attributeGroup") sourceAttributes.group(node);
               if ((node.kind === "element" || node.kind === "attribute") && node.value) {
-                let type = node.type;
-                const target = type.kind === "builtin" ? undefined : c.get(c.target(type, node)!);
-                if (target?.kind === "complexType" && !sourceParticles.effective(target).scalar) {
-                  const content = sourceParticles.effective(target);
-                  if (!content.mixed || !content.particle?.schemaEmptiable || content.opaque) c.fail(node, "e-props-correct", "Global value constraint requires scalar or mixed formally emptiable content");
-                  type = {kind: "builtin", name: {namespace: XSD_NAMESPACE, local: "string"}};
-                }
-                sourceScalars.checkValue(type, node.value, node);
+                sourceScalars.checkValue(valueType(node, sourceParticles).type, node.value, node);
               }
-              scope.push({component: node.id, kind: "schema-only", description: "Existing global declaration retains schema-level constraints; this dead reference adds no runtime scalar capability"});
+              scope.push({component: node.id, kind: "schema-only", description: "Existing component retains original schema operands without adding a surviving runtime scalar capability"});
             } else scope.push({component: node.id, kind: "absent-source", description: "Source syntax has no surviving particle/attribute-use component; S05 reference and cycle diagnostics remain applicable"});
             chargeEdges(c, node);
             const refs = referenceSlots(node), children = containedNodes(node);
-            for (const slot of refs) if (slot.reference.kind !== "builtin") {c.step(node); queue.push({id: c.target(slot.reference, node)!, sourceOnly: true});}
-            for (const child of children) {c.step(node); queue.push({id: child, sourceOnly: true});}
+            const nextMode = componentExists ? "schema" : "absent";
+            for (const slot of refs) if (slot.reference.kind !== "builtin") {c.step(node); queue.push({id: c.target(slot.reference, node)!, mode: nextMode});}
+            for (const child of children) {c.step(node); queue.push({id: child, mode: nextMode});}
             continue;
           }
           const id = entry.id; checkSyntax(c, node); closure.push(id);
+          if (node.kind === "attribute") checkAttributeType(c, node);
           if (node.kind === "simpleType") scalar({kind: "local", target: node.id}, node);
           if (node.kind === "element" || node.kind === "attribute") {
+            const operand = node.value && valueType(node, particles);
+            if (node.value) sourceScalars.checkValue(operand!.type, node.value, node);
             const target = node.type.kind === "builtin" ? undefined : c.get(c.target(node.type, node)!);
             if (node.kind === "attribute" || node.type.kind === "builtin" || target?.kind === "simpleType" || target?.kind === "complexType" && particles.effective(target).scalar) scalar(node.type, node);
             if (node.value) {
-              let type = node.type;
-              if (target?.kind === "complexType" && !particles.effective(target).scalar) {
-                const content = particles.effective(target);
-                if (!content.mixed || !content.particle?.schemaEmptiable || content.opaque) c.fail(node, "e-props-correct", "Element value constraint requires scalar or mixed formally emptiable content");
-                type = {kind: "builtin", name: {namespace: XSD_NAMESPACE, local: "string"}};
-              }
-              const plan = scalars.checkValue(type, node.value, node); recordScalar(plan);
+              const plan = scalars.checkValue(operand!.type, node.value, node); recordScalar(plan);
+              if (node.kind === "element") {c.step(node); elementValues.push({owner: node.id, originalType: node.type, operandType: operand!.type, constraint: node.value, scope: operand!.scope, scalar: plan, runtimeOwner: "#184"});}
             }
           }
           if (node.kind === "complexType") {
             let plan = checked.get(node.id);
             if (!plan) {
               checkReorderedDerivation(c, node);
-              particles.check(node); const attrs = attributes.ensure(node), original = c.types.get(node.id)!;
+              particles.check(node);
+              const attrs = attributes.ensure(node), original = c.types.get(node.id)!;
               const effectiveContent = particles.effective(node);
               const scalarPlan = scalarContent(node, particles, scalars);
               const obligations: AssessedType["obligations"][number][] = [];
@@ -263,9 +286,20 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
             }
             typePlans.push(plan);
             if (plan.scalar) recordScalar(plan.scalar);
+            if (plan.effectiveContent.opaque) scope.push({component: node.id, kind: "opaque-builtin", description: "Inherited builtin content is opaque; surviving declared contributions are assessed separately"});
+            const effectiveParticles = plan.effectiveContent.particle ? [plan.effectiveContent.particle] : [];
+            while (effectiveParticles.length) {
+              const particle = effectiveParticles.pop()!; c.step(particle.owner);
+              if (particle.occurs.max === "0") continue;
+              if (particle.element) queue.push({id: particle.element.id, mode: "runtime"});
+              if (particle.wildcard && particle.owner.kind === "particle") wildcard(particle.owner, wildcardNamespaces(particle.wildcard), particle.wildcard.processContents, "element");
+              c.step(particle.owner, particle.children.length);
+              for (const child of particle.children) effectiveParticles.push(child);
+            }
             if (plan.wildcard) wildcard(node, plan.wildcard.namespace, plan.wildcard.processContents, "attribute");
             for (const use of plan.attributes) {
               c.step(node); if (use.use === "prohibited") continue;
+              queue.push({id: use.declaration, mode: "runtime"});
               const scalarPlan = scalars.ensure(use.type, c.get(use.declaration));
               recordScalar(scalarPlan);
               for (const constraint of use.constraints) if (constraint.value) {
@@ -273,7 +307,7 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
               }
             }
           }
-          if (node.kind === "attributeGroup") attributes.group(node);
+          if (node.kind === "attributeGroup") {sourceAttributes.group(node); attributes.group(node);}
           if (node.kind === "particle" && node.term.kind === "any") {
             c.text(node.term.wildcard.namespace.value, node); wildcard(node, wildcardNamespaces(node.term.wildcard), node.term.wildcard.processContents, "element");
           }
@@ -283,13 +317,13 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
             if (slot.reference.kind === "builtin") {
               if (slot.reference.name.local !== "anyType") scalar(slot.reference, node);
               else scalar(slot.reference, node);
-            } else queue.push({id: c.target(slot.reference, node)!, sourceOnly: false});
+            } else queue.push({id: c.target(slot.reference, node)!, mode: node.kind === "complexType" && slot.path === "derivation/base" ? "schema" : "runtime"});
           }
-          for (const child of containedNodes(node)) {c.step(node); queue.push({id: child, sourceOnly: false});}
+          for (const child of containedNodes(node)) {c.step(node); queue.push({id: child, mode: node.kind === "complexType" && child !== node.content ? "schema" : "runtime"});}
         }
-        c.step(undefined, closure.length + typePlans.length + scalarPlans.size + scope.length);
+        c.step(undefined, closure.length + typePlans.length + scalarPlans.size + scope.length + elementValues.length);
         operations.push({kind: "supported", operation: selection.id, selection, roots: selected.roots, closure,
-          types: typePlans, scalars: [...scalarPlans.values()], scopes: scope, binding: selected.binding,
+          types: typePlans, scalars: [...scalarPlans.values()], elementValues, scopes: scope, binding: selected.binding,
           schemaAssessment: "selected-closure", payloadEnforcement: "requires-#180-and-#184"});
       } catch (error) {
         if (!(error instanceof SemanticError) || error.category === "resource-limit") throw error;
