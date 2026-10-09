@@ -117,6 +117,14 @@ String style/use enumerations retain exact spelling; NMTOKEN names/parts and any
 [WSDL 1.1](https://www.w3.org/TR/2001/NOTE-wsdl-20010315) sections 2.1.3, 3.4 and 3.6 require understood mandatory extensions, explicit SOAPAction for SOAP 1.1 HTTP (including an explicit empty value), and one fault-message part.
 Other operation/port extension subtrees do not enlarge the selected capability claim.
 Recognized SOAP extension local names must occur in their declared WSDL positions; a familiar namespace does not qualify an unknown mandatory local name.
+Selected abstract/bound directions, names and faults must agree, without duplicate or surplus directions, competing protocols or addresses.
+Notification/solicit-response binding capabilities remain unqualified under WSDL 1.1 section 2.4.
+The [SOAP 1.2 WSDL submission](https://www.w3.org/submissions/wsdl11soap12/) sections 3.1–3.7 require first-child binding/operation/body/fault/address extensions, absolute action/namespace URIs and a transport-compatible endpoint.
+`actionRequired` records the effective default-true boolean; an explicit false permits an absent action.
+Its `tParts` list may be empty, unlike SOAP 1.1 `NMTOKENS`.
+Absent body/fault `use` is legal but lacks explicit literal capability evidence and returns `unsupported-capability`; header/headerfault `use` is required.
+Document bindings forbid `encodingStyle` on these content extensions.
+Section 2.3 gives normative text precedence over outlines/schema, resolving fault-name `NMTOKEN` versus Appendix `NCName` and optional fault `use` without selecting a validator's interpretation.
 SOAP 1.1/1.2 adapter qualification remains required before dispatch and belongs to #190/#192.
 
 An enumeration on base `xs:string` with value `" a "` denotes that base string value.

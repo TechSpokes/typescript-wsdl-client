@@ -12,7 +12,7 @@ const manifest = JSON.parse(readFileSync("test/conformance/schema-assessment-man
   formatVersion: number; cases: {id: string; fixture: string; sha256: string; namespace: string; root: string; role: "element" | "type"; assessment: string; qualification?: string}[];
 };
 const bindings = JSON.parse(readFileSync("test/conformance/schema-binding-manifest.json", "utf8")) as {
-  namespace: string; cases: {id: string; fixture: string; sha256: string; assessment: string; rule?: string}[];
+  namespace: string; cases: {id: string; fixture: string; sha256: string; assessment: string; rule?: string; binding?: Record<string, unknown>}[];
 };
 describe("internal faithful schema assessment, distinct from legacy public support", () => {
   for (const entry of manifest.cases) it(entry.id, async () => {
@@ -41,6 +41,7 @@ describe("internal faithful schema assessment, distinct from legacy public suppo
     if (result.kind === "assessed") {
       expect(result.assessment.operations[0].kind).toBe(entry.assessment);
       if (entry.rule) expect(result.assessment.operations[0]).toMatchObject({diagnostic: {rule: entry.rule, operations: [entry.id]}});
+      if (entry.binding) expect(result.assessment.operations[0]).toMatchObject({binding: entry.binding});
     }
   });
 });
