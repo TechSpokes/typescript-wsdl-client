@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(loader): bound policy-controlled schema fetching and cache interpretations by namespace and base-URI context.
+
 - feat(loader): retain ordered XML syntax, scoped namespaces and source provenance for the internal faithful compiler.
 
 - test(content-model): establish reviewed architecture contracts and executable SOAP/gateway feasibility evidence.

@@ -8,6 +8,8 @@
   },
   "include": [
     "ordered-syntax.test.ts",
+    "schema-input.test.ts",
+    "schema-loading-budgets.test.ts",
     "preamble.test.ts",
     "app-security.test.ts",
     "client-choice-union-types.test.ts",

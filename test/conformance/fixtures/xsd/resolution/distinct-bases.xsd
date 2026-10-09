@@ -1,0 +1,1 @@
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:base"><include schemaLocation="base-a/common.xsd"/><include schemaLocation="base-b/common.xsd"/></schema>

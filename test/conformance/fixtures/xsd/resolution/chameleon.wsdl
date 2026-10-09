@@ -1,0 +1,6 @@
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:x="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:loading">
+  <w:types>
+    <x:schema targetNamespace="urn:a"><x:include schemaLocation="common.xsd"/><x:include schemaLocation="common.xsd"/></x:schema>
+    <x:schema targetNamespace="urn:b"><x:include schemaLocation="common.xsd"/></x:schema>
+  </w:types>
+</w:definitions>

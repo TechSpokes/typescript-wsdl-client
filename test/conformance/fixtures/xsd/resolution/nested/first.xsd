@@ -1,0 +1,1 @@
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:chain" xml:base="../"><include schemaLocation="leaf.xsd"/></schema>
