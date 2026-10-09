@@ -6,6 +6,8 @@ See [CONTRIBUTING](../CONTRIBUTING.md) for development setup and [README](../REA
 
 ## Planned Content Model Contracts
 
+[Ordered schema loading](content-model-loading.md) documents S03's internal input adapter and its migration boundary.
+
 [ADR-003](decisions/003-content-model-contracts.md) defines the intended faithful content-model path and [decision register](content-model-decisions.md) assigns its owners. The S02 feasibility records and [handoff](content-model-s02-handoff.md) distinguish executed adapter/dialect evidence from later production implementation. The pipeline below describes current legacy behavior; S02 does not activate new defaults.
 
 ## Generated Source Policy

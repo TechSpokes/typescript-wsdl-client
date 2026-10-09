@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<unusual:schema xmlns:unusual="http://www.w3.org/2001/XMLSchema" xmlns:q="urn:one"
+  targetNamespace="urn:syntax" elementFormDefault="qualified" attributeFormDefault="unqualified" xml:base="schemas/">
+  <unusual:annotation><unusual:appinfo>before<q:note plain="1" q:code="2"/>after</unusual:appinfo></unusual:annotation>
+  <unusual:complexType name="First">
+    <unusual:sequence xml:base="nested/">
+      <unusual:element name="a" type="q:First" form="unqualified"/>
+      <unusual:choice xmlns:q="urn:two"><unusual:element name="b" type="q:Second"/></unusual:choice>
+      <unusual:element name="a" type="q:First"/>
+      <unusual:any processContents="lax"/>
+      <unusual:sequence><unusual:element name="c" type="unusual:string"/></unusual:sequence>
+    </unusual:sequence>
+  </unusual:complexType>
+  <unusual:complexType name="Second"><unusual:all><unusual:element name="a" type="unusual:int"/></unusual:all></unusual:complexType>
+</unusual:schema>

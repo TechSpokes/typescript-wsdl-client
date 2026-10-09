@@ -215,6 +215,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [SOAP Feasibility Evidence](docs/content-model-soap-feasibility.md) | Local ordered SOAP exchanges, raw transport seams and capability limits |
 | [Gateway Feasibility Evidence](docs/content-model-gateway-feasibility.md) | Non-mutating route validation, dialect boundaries and serialized HTTP bytes |
 | [S02 Handoff](docs/content-model-s02-handoff.md) | Delivery checkpoints, validation, provisional limits and S03 continuation |
+| [Ordered Schema Loading](docs/content-model-loading.md) | Internal ordered syntax, provenance and controlled resolution contracts |
 | [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
 
 ### Adopt

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(loader): retain ordered XML syntax, scoped namespaces and source provenance for the internal faithful compiler.
+
 - test(content-model): establish reviewed architecture contracts and executable SOAP/gateway feasibility evidence.
 
 - docs(content-model): reconcile shipped occurrence fixes and qualify a corrected XSD validator pin for the S02 handoff
