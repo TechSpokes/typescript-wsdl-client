@@ -37,7 +37,7 @@ The [characterization suite](../test/conformance/semantic-baseline.test.ts) comp
 
 ## Setup and reproduction
 
-Python 3.12 with `venv` and Node 24 or 26 are required for reference qualification. The test-only [requirements](../test/conformance/reference/requirements.txt) pin lxml 6.0.2, libxml2 2.14.6 as checked at runtime, xmlschema 4.2.0 and elementpath 5.0.4; incompatible engines fail with a setup diagnostic.
+Python 3.12 with `venv` and Node 24 or 26 are required for reference qualification. The test-only [requirements](../test/conformance/reference/requirements.txt) pin lxml 6.1.0, libxml2 2.14.6 as checked at runtime, xmlschema 4.2.0 and elementpath 5.0.4; incompatible engines fail with a setup diagnostic.
 
 Run setup once with package-index access, then validation requires only committed inputs and installed tools. No production dependency or runtime validator is introduced.
 

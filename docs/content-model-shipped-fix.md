@@ -34,7 +34,9 @@ That harness sends omitted optional fields and two-item bounded/unbounded reques
 
 The #166 full local CI passed 670 tests in 55 files, all conformance stages, pipeline smoke and installed-package consumer checks covering 73 TypeScript artifacts. The installed consumer invokes the same transport harness outside the checkout. Its independent full reference qualification passed 14 cases and 40 primary instance checks, with the documented secondary disagreement check; the required subset passed six cases and 15 instances.
 
-This task changes documentation only and reuses that evidence. It does not rerun historical commits or claim new SOAP coverage for other manifest boundaries; documentation validation and hosted checks qualify the follow-up head. Package publication, release tags, metadata bumps, private vendor validation and S02 feasibility probes are outside this delivery.
+This task consumes that manifest and requalifies it after a bounded test-tool correction. GitHub identified lxml's CVE-2026-41066 update in [PR #222](https://github.com/TechSpokes/typescript-wsdl-client/pull/222); the follow-up pins lxml 6.1.0 with the same libxml2 2.14.6 engine instead of 6.0.2. The adapter already disables external entities explicitly, but handing off a known vulnerable tool pin is unnecessary.
+
+Fresh setup, full reference qualification and full local CI verify the corrected tool pin; the corpus and literal semantic expectations remain unchanged. Historical commits and the private production environment are not rerun, and no new SOAP coverage for other manifest boundaries is claimed. Package publication, release tags, metadata bumps and S02 feasibility probes are outside this delivery.
 
 ### Historical checks and contributor report
 
