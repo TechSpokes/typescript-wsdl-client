@@ -113,6 +113,7 @@ Float/double schema operands round directly from exact decimal rationals to thei
 Unicode category pattern evidence records Node Unicode 17.0 / ICU 78.3; later portable consumers must qualify their own version/context rather than assume platform equivalence.
 
 Selected binding assessment includes operation bodies, headers, header faults and declared faults, binding-wide required extensions and selected-port extensions.
+String style/use enumerations retain exact spelling; NMTOKEN names/parts and anyURI transport/action values use their declared XML whitespace normalization while preserving source operands.
 [WSDL 1.1](https://www.w3.org/TR/2001/NOTE-wsdl-20010315) sections 2.1.3, 3.4 and 3.6 require understood mandatory extensions, explicit SOAPAction for SOAP 1.1 HTTP (including an explicit empty value), and one fault-message part.
 Other operation/port extension subtrees do not enlarge the selected capability claim.
 SOAP 1.1/1.2 adapter qualification remains required before dispatch and belongs to #190/#192.
@@ -133,14 +134,18 @@ Pinned source SHA-256 values are `e496af408b14853e6169ac7c1fca09d55a81bd73771758
 The [fixed expectation manifest](../test/conformance/schema-assessment-manifest.json), its fixture paths and [pinned reference test](../test/conformance/reference/schema_assessment_contract_test.py) record primary outcomes separately from each validator's observations.
 They preserve disagreements involving block constraints, malformed facet/range syntax, XML-only whitespace, absent uses, empty effective-content extensions, temporal aliases and reordered derivations.
 An engine majority does not decide the primary rule.
+The invalid disabled-global mixed/simple-content restriction also records XMLSchema 4.2.0's `AttributeError` separately from schema rejection; a validator crash is not a validity answer.
 S01/#181 and [S05 disagreements](content-model-composition.md), plus [S02 platform/security qualifications](content-model-decisions.md), remain assigned to their existing owners.
 
 | Qualification | Evidence and unresolved question | Owner and affected gate |
 |---|---|---|
 | S06-AU-01 Open | The primary extension mapping unions AU sets for the same global declaration; component uniqueness constrains declaration identity, while cvc-complex-type refers to “that attribute use” without resolving differing use/value constraints. Both pinned engines reject weakening/mismatched cases, but identical/equivalent cases and prohibited-use controls expose different rejection behavior. No validator answer or arbitrary merge policy is accepted. | #179 / S06 lead; affected models cannot be assessed; combined #153 gate remains open. |
-| S06-RE-01 Open rule and implementation gate | cos-ct-extends1.5 requires an existential reordered extension/restriction witness. Vacuous witnesses prove restored string/token cases legal; restored unrelated int cases violate primary type/EDC constraints despite engine acceptance. A required empty-choice separator supplies another formally valid witness: primary restriction mappings use formal emptiability while its accepted language is empty. This conflicts with explanatory subset/no-addback claims and disproves suffix-only witness search. No extra language-inclusion test or complete bounded witness algorithm has been accepted. | #179 / S06 lead; affected models cannot be assessed and approved derivation scope cannot silently shrink; combined #153 gate remains open. |
+| S06-RE-01 Open rule and implementation gate | cos-ct-extends1.5 requires an existential reordered extension/restriction witness. Vacuous witnesses prove restored string/token cases legal; restored unrelated attribute int violates primary type rules. A required empty-choice separator supplies another formally valid witness: primary restriction mappings use formal emptiability while its accepted language is empty. A wildcard suffix can even bypass the apparent particle string/int conflict without introducing an EDC conflict. This conflicts with explanatory subset/no-addback claims and disproves suffix-only witness search; particle-int's primary outcome therefore remains unresolved. No extra language-inclusion test or complete bounded witness algorithm has been accepted. | #179 / S06 lead; affected models cannot be assessed and approved derivation scope cannot silently shrink; combined #153 gate remains open. |
 | S06-PW-01 Open | [WG R-240 / issue 2232](https://www.w3.org/Bugs/Public/show_bug.cgi?id=2232) records ambiguous per-member occurrence checking in NSRecurseCheckCardinality. Its proposed zero-minimum wildcard adjustment was not published as an XSD 1.0 erratum; XSD 1.1 removed the rule. Nested optional-group controls expose pinned-engine disagreement. | #179 / S06 lead; affected restrictions and combined #153 gate remain open. |
-| S06-DT-01 Open | Appendix E computes leap years using the lexical negative year, while the informative no-year-zero discussion and cross-zero rollover imply incompatible treatment. Pinned engines disagree with the unshifted arithmetic for BCE leap operands. Negative-year schema operands remain unassessed pending an explicit rule decision. | #179 / S06 lead for schema operands; #184 for later runtime calendar semantics; affected models and combined #153 gate remain open. |
+| S06-DT-01 Open | Appendix E computes leap years using the lexical negative year, while the informative no-year-zero discussion and cross-zero rollover imply incompatible treatment. Pinned engines disagree with the unshifted arithmetic for BCE leap operands. Negative-year schema operands and duration ordering whose reference additions cross year zero remain unassessed; exact duration months/seconds equality needs no calendar ordering. [WG issue 3256](https://www.w3.org/Bugs/Public/show_bug.cgi?id=3256) documents the later XSD 1.1 interpretation change, not an XSD 1.0 correction. | #179 / S06 lead for schema operands; #184 for later runtime calendar semantics; affected models and combined #153 gate remain open. |
+
+For a base wildcard with exactly 0..unbounded bounds, all competing R-240 occurrence readings agree.
+That case is discharged recursively with namespace/process checks intact; other group-to-wildcard cardinality cases remain qualified.
 
 The official [second-edition errata](https://www.w3.org/2004/03/xmlschema-errata) were checked: the published default/PSVI correction does not settle these four questions.
 These are explicit open gates, not additional permanent exclusions in the approved profile.
@@ -155,10 +160,10 @@ S03/S04 limits and conservative cyclic-depth behavior remain unchanged.
 
 `maxNodes` bounds the immutable input graph; expanded legality use positions are bounded by independently charged work before copying, not by a newly invented persisted graph count.
 The [reproducible assessment measurement probe](../test/conformance/measure-schema-assessment.ts) writes ignored measurements under `tmp/conformance/assessment`.
-Development measurements on Node 24.19.0: a 4-node recursive model passed at 660 steps (1.139 ms), failed at 659 (0.989 ms), passed at 4 nodes (0.858 ms) and failed at 3 (0.114 ms).
-A 200-digit finite repetition passed without expansion in 1.959 ms / 2,182 steps.
-A depth-20 shared binary group DAG with 87 input nodes exhausted the default work budget in 118.638 ms before full copying.
-Synthetic immutable input-index probes passed at 100,000 nodes in 36.031 ms / 100,019 steps and failed at 100,001 before indexing in 0.408 ms; these are budget measurements, not source-validity or production #208 qualification claims.
+Development measurements on Node 24.19.0: a 4-node recursive model passed at 661 steps (1.014 ms), failed at 660 (0.656 ms), passed at 4 nodes (0.473 ms) and failed at 3 (0.115 ms).
+A 200-digit finite repetition passed without expansion in 1.689 ms / 2,183 steps.
+A depth-20 shared binary group DAG with 87 input nodes exhausted the default work budget in 312.890 ms before full copying.
+Synthetic immutable input-index probes passed at 100,000 nodes in 56.602 ms / 100,019 steps and failed at 100,001 before indexing in 0.235 ms; these are budget measurements, not source-validity or production #208 qualification claims.
 
 ```bash
 npx vitest run test/unit/schema-assessment.test.ts test/conformance/schema-assessment.test.ts

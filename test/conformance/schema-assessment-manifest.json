@@ -285,7 +285,7 @@
       "primarySchema": "valid",
       "xmlschema": "accepted",
       "libxml2": "accepted",
-      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#declare-particle",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#p-props-correct",
       "sha256": "44f6ba8dd8c289b830510661b1f34d0c546d8da4a4868e1d8d612e5faf2bc6b1"
     },
     {
@@ -427,7 +427,7 @@
       "root": "D",
       "role": "type",
       "assessment": "unsupported-capability",
-      "primarySchema": "invalid",
+      "primarySchema": "unresolved",
       "qualification": "S06-RE-01",
       "xmlschema": "accepted",
       "libxml2": "accepted",
@@ -656,7 +656,7 @@
       "primarySchema": "invalid",
       "xmlschema": "rejected",
       "libxml2": "rejected",
-      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cosschema",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#normative-schemaSchema",
       "sha256": "ad7c44d6f9fcd9062fa4af0ae197047eff9883b5506de9a900c10b2ea3abd368"
     },
     {
@@ -1060,6 +1060,78 @@
       "xmlschema": "accepted",
       "libxml2": "accepted",
       "sha256": "6693641f0365117cef57ddec82e01263a4ca4aa65f9aced6b79efeb9f1e10f1f"
+    },
+    {
+      "id": "re-dead-wildcard-intermediate",
+      "fixture": "xsd/assessment/re-dead-wildcard-intermediate.xsd",
+      "namespace": "urn:review",
+      "root": "D",
+      "role": "type",
+      "assessment": "supported",
+      "primarySchema": "valid",
+      "primaryScope": "normative-component-mapping-only",
+      "relevantQualification": "S06-RE-01",
+      "xmlschema": "rejected",
+      "libxml2": "accepted",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-restrict",
+      "sha256": "ecbe91c7765ff85ee013ca9c3abd947c2020e1c007a59efa9e152a2c1356958c"
+    },
+    {
+      "id": "re-dead-wildcard-final-restriction",
+      "fixture": "xsd/assessment/re-dead-wildcard-final-restriction.xsd",
+      "namespace": "urn:review",
+      "root": "D",
+      "role": "type",
+      "assessment": "supported",
+      "primarySchema": "valid",
+      "primaryScope": "normative-component-mapping-only",
+      "relevantQualification": "S06-RE-01",
+      "xmlschema": "rejected",
+      "libxml2": "accepted",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-restrict",
+      "sha256": "45dd2ef3f8df03c433a3077e34c9449fe01259229d914827354b024de192e463"
+    },
+    {
+      "id": "duration-cross-year-zero",
+      "assessment": "unsupported-capability",
+      "primarySchema": "unresolved",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#duration",
+      "qualification": "S06-DT-01",
+      "namespace": "urn:assessment",
+      "root": "D",
+      "role": "type",
+      "fixture": "xsd/assessment/duration-cross-year-zero.xsd",
+      "xmlschema": "accepted",
+      "libxml2": "accepted",
+      "sha256": "a6d62e72b51b686aa756cd93c6e586c812b2f5cb6bbbe81da9f8208f19e225b6"
+    },
+    {
+      "id": "disabled-global-reordered",
+      "assessment": "unsupported-capability",
+      "primarySchema": "unresolved",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends",
+      "qualification": "S06-RE-01",
+      "namespace": "urn:assessment",
+      "root": "D",
+      "role": "type",
+      "fixture": "xsd/assessment/disabled-global-reordered.xsd",
+      "xmlschema": "accepted",
+      "libxml2": "accepted",
+      "sha256": "d9c5d364aee09071e96daec23717418c155b9ec630f9696dc2fe43d4fb902802"
+    },
+    {
+      "id": "disabled-global-mixed-scalar-restriction",
+      "assessment": "invalid-schema",
+      "primarySchema": "invalid",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#src-ct",
+      "namespace": "urn:assessment",
+      "root": "D",
+      "role": "type",
+      "fixture": "xsd/assessment/disabled-global-mixed-scalar-restriction.xsd",
+      "xmlschemaException": "AttributeError",
+      "xmlschema": "crashed",
+      "libxml2": "rejected",
+      "sha256": "36377408436f17bf00546cc36eef1913e35b0266a9a877e42cc8a58afbc2a226"
     }
   ]
 }

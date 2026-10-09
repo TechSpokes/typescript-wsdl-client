@@ -4,6 +4,8 @@ import type {AssessmentContext} from "./schemaAssessmentContext.js";
 import {resolveLexicalQName, SchemaLoadingError, syntaxAttribute, WSDL_NAMESPACE} from "../loader/orderedSyntax.js";
 import type {SyntaxElement} from "../loader/orderedSyntax.js";
 import {normalizeWhitespace} from "./schemaDatatypeValues.js";
+import {schemaUri} from "./schemaUri.js";
+import {isXmlNmtoken} from "../loader/orderedSyntax.js";
 
 export type AssessmentSelection = Readonly<
   {kind: "components"; id: string; roots: readonly NodeId[]} |
@@ -70,13 +72,32 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
   const soapBindings = children(binding.syntax).filter(n => [SOAP11, SOAP12].includes(n.name.namespace) && n.name.local === "binding");
   if (soapBindings.length !== 1) c.unsupported(owner, "binding-kind", "Faithful schema assessment requires one explicit SOAP binding");
   const soapBinding = soapBindings[0], namespace = soapBinding.name.namespace, version = namespace === SOAP11 ? "soap11" : "soap12";
-  const transport = syntaxAttribute(soapBinding, "transport");
+  const rawTransport = syntaxAttribute(soapBinding, "transport");
+  if (rawTransport === undefined) c.fail(owner, "binding-transport", "SOAP binding requires its transport", soapBinding.source);
+  c.text(rawTransport!, owner);
+  const transport = normalizeWhitespace(rawTransport!, "collapse");
+  if (!schemaUri(transport, owner, c)) c.fail(owner, "binding-transport", "SOAP transport is not an anyURI value", soapBinding.source);
   if (transport !== HTTP) c.unsupported(owner, "binding-transport", "SOAP binding transport is outside the evidenced HTTP contract", soapBinding.source);
-  const soapOperation = children(bindingOperation, namespace, "operation")[0];
+  const soapOperations = children(bindingOperation, namespace, "operation");
+  if (soapOperations.length > 1) c.fail(owner, "soap-operation", "An operation permits one SOAP operation extension", bindingOperation.source);
+  const soapOperation = soapOperations[0];
   if (version === "soap11" && (!soapOperation || syntaxAttribute(soapOperation, "soapAction") === undefined)) c.fail(owner, "soap-action", "SOAP 1.1 HTTP requires an explicit soapAction (which may be empty)", bindingOperation.source);
-  const style = soapOperation && syntaxAttribute(soapOperation, "style") || syntaxAttribute(soapBinding, "style") || "document";
+  const operationStyle = soapOperation && syntaxAttribute(soapOperation, "style"), bindingStyle = syntaxAttribute(soapBinding, "style");
+  for (const value of [operationStyle, bindingStyle]) if (value !== undefined && !["document", "rpc"].includes(value)) c.fail(owner, "binding-style", "Invalid SOAP string style enumeration", soapOperation?.source ?? soapBinding.source);
+  const style = operationStyle ?? bindingStyle ?? "document";
   if (style !== "document") c.unsupported(owner, "binding-style", "RPC/encoded binding requires a separately approved codec contract", soapOperation?.source ?? soapBinding.source);
   const capabilities = new Set<string>([version, "document-literal", "selected-binding-action", "declared-faults"]);
+  const token = (syntax: SyntaxElement, name: string) => {
+    const raw = syntaxAttribute(syntax, name); if (raw === undefined) return undefined;
+    c.text(raw, owner); const value = normalizeWhitespace(raw, "collapse");
+    if (!isXmlNmtoken(value)) c.fail(owner, "wsdl-token", "Expected an XML NMTOKEN", syntax.source);
+    return value;
+  };
+  const literal = (syntax: SyntaxElement) => {
+    const use = syntaxAttribute(syntax, "use");
+    if (use === undefined || !["literal", "encoded"].includes(use)) c.fail(owner, "binding-use", "Invalid SOAP string use enumeration", syntax.source);
+    if (use !== "literal") c.unsupported(owner, "binding-use", "Encoded SOAP content is excluded", syntax.source);
+  };
   const messageParts = (syntax: SyntaxElement, specified?: readonly string[], fault = false) => {
     const value = syntaxAttribute(syntax, "message");
     if (value === undefined) c.fail(owner, "wsdl-message", "Operation direction is missing its message", syntax.source);
@@ -85,7 +106,7 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
     const found = new Set<string>(), parts = children((message as WsdlNode).syntax, WSDL_NAMESPACE, "part");
     if (fault && parts.length !== 1) c.fail(message, "soap-fault-part", "A SOAP fault message requires exactly one part", syntax.source);
     for (const part of parts) {
-      const name = syntaxAttribute(part, "name");
+      const name = token(part, "name");
       if (!name || found.has(name)) c.fail(message, "wsdl-part", "Message part names must be present and unique", part.source);
       found.add(name!);
       if (specified && !specified.includes(name!)) continue;
@@ -120,23 +141,24 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
   assessExtensions([...children(binding.syntax).filter(child => child.name.namespace !== WSDL_NAMESPACE), bindingOperation]);
   for (const direction of children(abstractOperation, WSDL_NAMESPACE)) {
     if (!["input", "output", "fault"].includes(direction.name.local)) continue;
-    const corresponding = children(bindingOperation, WSDL_NAMESPACE, direction.name.local).find(n => direction.name.local !== "fault" || syntaxAttribute(n, "name") === syntaxAttribute(direction, "name"));
+    const corresponding = children(bindingOperation, WSDL_NAMESPACE, direction.name.local).find(n => direction.name.local !== "fault" || token(n, "name") === token(direction, "name"));
     const bodies = corresponding ? children(corresponding, namespace, direction.name.local === "fault" ? "fault" : "body") : [];
     if (bodies.length !== 1) c.fail(owner, "soap-body", "Each bound direction/fault requires one SOAP body/fault", corresponding?.source ?? bindingOperation.source);
     const body = bodies[0];
-    if (direction.name.local === "fault" && syntaxAttribute(body, "name") !== syntaxAttribute(direction, "name")) c.fail(owner, "soap-fault", "SOAP fault name must match its declared WSDL fault", body.source);
-    if (body && syntaxAttribute(body, "use") !== "literal") c.unsupported(owner, "binding-use", "Encoded SOAP bodies are excluded", body.source);
+    if (direction.name.local === "fault" && token(body, "name") !== token(direction, "name")) c.fail(owner, "soap-fault", "SOAP fault name must match its declared WSDL fault", body.source);
+    literal(body);
     const rawParts = body && syntaxAttribute(body, "parts");
     if (rawParts !== undefined) c.text(rawParts, owner);
     const parts = rawParts === undefined ? undefined : normalizeWhitespace(rawParts, "collapse");
+    if (parts !== undefined && (!parts || parts.split(" ").some(part => !isXmlNmtoken(part)))) c.fail(owner, "soap-parts", "SOAP parts requires a nonempty XML NMTOKENS value", body.source);
     messageParts(direction, parts === undefined ? undefined : parts ? parts.split(" ") : [], direction.name.local === "fault");
     if (corresponding) for (const header of children(corresponding, namespace, "header")) {
-      if (syntaxAttribute(header, "use") !== "literal") c.unsupported(owner, "binding-header-use", "Encoded SOAP headers are excluded", header.source);
-      const part = syntaxAttribute(header, "part"); if (!part) c.fail(owner, "soap-header", "Header requires a selected message part", header.source);
+      literal(header);
+      const part = token(header, "part"); if (!part) c.fail(owner, "soap-header", "Header requires a selected message part", header.source);
       messageParts(header, [part!]); capabilities.add("soap-headers");
       for (const fault of children(header, namespace, "headerfault")) {
-        if (syntaxAttribute(fault, "use") !== "literal") c.unsupported(owner, "binding-header-use", "Encoded header faults are excluded", fault.source);
-        const faultPart = syntaxAttribute(fault, "part"); if (!faultPart) c.fail(owner, "soap-header", "Header fault requires a selected part", fault.source);
+        literal(fault);
+        const faultPart = token(fault, "part"); if (!faultPart) c.fail(owner, "soap-header", "Header fault requires a selected part", fault.source);
         messageParts(fault, [faultPart!]);
       }
     }
@@ -145,18 +167,24 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
   if (selection.port) {
     const service = c.get(selection.port.service);
     if (service.kind !== "wsdl" || service.role !== "service") c.fail(service, "wsdl-port", "Port selection requires a service");
-    const ports = children((service as WsdlNode).syntax, WSDL_NAMESPACE, "port").filter(p => syntaxAttribute(p, "name") === selection.port!.name);
+    const ports = children((service as WsdlNode).syntax, WSDL_NAMESPACE, "port").filter(p => token(p, "name") === selection.port!.name);
     if (ports.length !== 1) c.fail(service, "wsdl-port", "Select one declared service port");
     const port = ports[0], bindingName = syntaxAttribute(port, "binding");
     assessExtensions(children(port).filter(child => child.name.namespace !== WSDL_NAMESPACE));
     if (!bindingName || c.target(lexicalReference(bindingName, "binding", port), service) !== owner.id) c.fail(service, "wsdl-port", "Selected port does not use the selected binding", port.source);
     const address = children(port, namespace, "address");
     if (address.length !== 1 || !syntaxAttribute(address[0], "location")) c.fail(service, "soap-address", "Selected SOAP port requires an endpoint", port.source);
-    endpoint = syntaxAttribute(address[0], "location"); c.text(endpoint!, service);
+    const rawEndpoint = syntaxAttribute(address[0], "location")!; c.text(rawEndpoint, service);
+    endpoint = normalizeWhitespace(rawEndpoint, "collapse");
+    if (!schemaUri(endpoint, service, c)) c.fail(service, "soap-address", "SOAP endpoint is not an anyURI value", address[0].source);
   }
   for (const id of selection.additionalRoots ?? []) add(id, owner);
   c.step(owner, capabilities.size);
+  const rawAction = soapOperation && syntaxAttribute(soapOperation, "soapAction");
+  if (rawAction !== undefined) c.text(rawAction, owner);
+  const action = rawAction === undefined ? undefined : normalizeWhitespace(rawAction, "collapse");
+  if (action !== undefined && !schemaUri(action, owner, c)) c.fail(owner, "soap-action", "SOAP action is not an anyURI value", soapOperation!.source);
   return {roots, binding: {binding: owner.id, operation: selection.operation, version, style: "document", use: "literal", transport: HTTP,
-    action: soapOperation && syntaxAttribute(soapOperation, "soapAction"), endpoint,
+    action, endpoint,
     requiredCapabilities: [...capabilities], adapterOwners: ["#190", "#192"], dispatchQualification: "required-before-dispatch"}};
 }

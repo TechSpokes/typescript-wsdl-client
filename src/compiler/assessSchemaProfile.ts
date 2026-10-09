@@ -136,6 +136,19 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
   try {
     c = assessmentContext(analysis, limits);
     const context = c;
+    const scalarContent = (node: ComplexTypeNode, particleChecks: ReturnType<typeof particleSchemaAssessment>, scalarChecks: ReturnType<typeof scalarSchemaAssessment>) => {
+      if (!particleChecks.effective(node).scalar) return undefined;
+      const plan = scalarChecks.ensure({kind: "local", target: node.id}, node);
+      if (node.derivation?.contentKind === "simple") {
+        scalarChecks.checkFinal(node.derivation.base, node.derivation.kind, node);
+        const baseId = context.target(node.derivation.base, node), base = baseId && context.get(baseId);
+        if (node.derivation.kind === "restriction" && base && base.kind === "complexType" && !context.types.get(base.id)?.scalar) {
+          const baseContent = particleChecks.effective(base);
+          if (!baseContent.mixed || !baseContent.particle?.schemaEmptiable || !node.derivation.inlineType) context.fail(node, "src-ct", "Simple-content restriction of a mixed base requires formal emptiability and an inline scalar type");
+        }
+      }
+      return plan;
+    };
     let scalars: ReturnType<typeof scalarSchemaAssessment>;
     const particles = particleSchemaAssessment(c, (...args) => scalars.derives(...args), (derived, base) => {
       if (base.value?.kind !== "fixed") return true;
@@ -202,7 +215,7 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
             c.setCurrent(node); checkSchemaSyntax(c, node);
             if (node.identity.kind === "global") {
               if (node.kind === "simpleType") sourceScalars.ensure({kind: "local", target: node.id}, node);
-              if (node.kind === "complexType") {sourceParticles.check(node); sourceAttributes.ensure(node); if (sourceParticles.effective(node).scalar) sourceScalars.ensure({kind: "local", target: node.id}, node);}
+              if (node.kind === "complexType") {checkReorderedDerivation(c, node); sourceParticles.check(node); sourceAttributes.ensure(node); scalarContent(node, sourceParticles, sourceScalars);}
               if (node.kind === "attributeGroup") sourceAttributes.group(node);
               if ((node.kind === "element" || node.kind === "attribute") && node.value) {
                 let type = node.type;
@@ -242,19 +255,8 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
             if (!plan) {
               checkReorderedDerivation(c, node);
               particles.check(node); const attrs = attributes.ensure(node), original = c.types.get(node.id)!;
-              let scalarPlan: ScalarSupportPlan | undefined;
               const effectiveContent = particles.effective(node);
-              if (effectiveContent.scalar) {
-                scalarPlan = scalars.ensure({kind: "local", target: node.id}, node);
-                if (node.derivation?.contentKind === "simple") {
-                  scalars.checkFinal(node.derivation.base, node.derivation.kind, node);
-                  const baseId = c.target(node.derivation.base, node), base = baseId && c.get(baseId);
-                  if (node.derivation.kind === "restriction" && base && base.kind === "complexType" && !c.types.get(base.id)?.scalar) {
-                    const baseContent = particles.effective(base);
-                    if (!baseContent.mixed || !baseContent.particle?.schemaEmptiable || !node.derivation.inlineType) c.fail(node, "src-ct", "Simple-content restriction of a mixed base requires formal emptiability and an inline scalar type");
-                  }
-                }
-              }
+              const scalarPlan = scalarContent(node, particles, scalars);
               const obligations: AssessedType["obligations"][number][] = [];
               for (const obligation of original.obligations) {c.step(node); obligations.push({kind: obligation.kind, owner: obligation.owner, status: "discharged"});}
               plan = {id: node.id, original, effectiveContent, attributes: attrs.attributes, wildcard: attrs.wildcard, scalar: scalarPlan, obligations, assessment: "schema-assessed"}; checked.set(node.id, plan);

@@ -28,6 +28,9 @@ class SchemaAssessmentContractTests(unittest.TestCase):
                         outcome = "accepted"
                     except (xmlschema.XMLSchemaException, etree.XMLSchemaParseError):
                         outcome = "rejected"
+                    except AttributeError as error:
+                        self.assertEqual(case.get(engine + "Exception"), type(error).__name__)
+                        outcome = "crashed"
                     self.assertEqual(outcome, case[engine])
             self.assertTrue(case["primaryRule"].startswith("https://www.w3.org/"))
             if case.get("qualification"):

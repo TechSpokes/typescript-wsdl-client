@@ -232,8 +232,11 @@ export function schemaDatatypeValues(c: AssessmentContext) {
           const add = (operand: SchemaOperand) => {
             const monthIndex = BigInt(year) * 12n + BigInt(month - 1) + operand.ordered![0].coefficient;
             const y = floor(monthIndex, 12n), m = Number(monthIndex - y * 12n) + 1;
+            if (y <= 0n) c.unsupported(owner, "S06-DT-01", "Duration ordering crosses the unresolved XSD 1.0 year-zero calendar boundary");
             const digits = (operand.ordered![0].digits ?? 20) + 8;
-            return addDecimal({coefficient: days(y, m, 1, owner, digits) * 86400n, scale: 0, digits}, operand.ordered![1], owner);
+            const instant = addDecimal({coefficient: days(y, m, 1, owner, digits) * 86400n, scale: 0, digits}, operand.ordered![1], owner);
+            if (instant.coefficient < 0n) c.unsupported(owner, "S06-DT-01", "Duration ordering crosses the unresolved XSD 1.0 year-zero calendar boundary");
+            return instant;
           };
           const current = compareDecimal(add(a), add(b), owner);
           if (direction !== undefined && current !== direction) return undefined;

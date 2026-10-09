@@ -51,7 +51,7 @@ export const capabilities: CapabilityCase[] = [
     title: "Internal S06 selected-closure schema assessment",
     status: "research",
     featureTags: ["xsd", "schema-legality", "capability", "scalar", "derivation"],
-    fixture: "xsd/assessment/float-direct-rounding.xsd",
+    fixture: "xsd/assessment/binding-control.wsdl",
     publicContract: "Internal faithful schema planning has independent executable contrasts; public legacy compilation and payload acceptance retain their existing contracts.",
     decision: "defer",
     decisionReason: "schema-assessment.test.ts and its pinned primary/reference manifest assess the internal interface; open S06 qualifications and downstream enforcement gates prevent public faithful activation.",

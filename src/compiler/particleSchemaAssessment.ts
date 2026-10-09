@@ -279,7 +279,11 @@ export function particleSchemaAssessment(c: AssessmentContext, derives: (derived
         c.text(r.wildcard!.namespace.value, r.owner);
         return cardinality && namespaceSubset(wildcardNamespaces(r.wildcard!), namespace) && rank[r.wildcard!.processContents] >= rank[b.wildcard!.processContents];
       }
-      return c.unsupported(r.owner, "S06-PW-01", "The recorded XSD 1.0 group-to-wildcard cardinality qualification (WG R-240) must be resolved before assessing this restriction", b.owner.context.source);
+      if (b.occurs.min !== "0" || b.occurs.max !== "unbounded") return c.unsupported(r.owner, "S06-PW-01", "The recorded XSD 1.0 group-to-wildcard cardinality qualification (WG R-240) must be resolved before assessing this restriction", b.owner.context.source);
+      // Every competing R-240 occurrence reading agrees for 0..unbounded.
+      // Namespace and processing checks still apply to every nested member.
+      for (const child of r.children) if (!(yield [child, b])) return false;
+      return true;
     }
     if (!group(b) || r.kind === "any") return false;
     let members = r.children, kind = r.kind, occurs = r.occurs;
