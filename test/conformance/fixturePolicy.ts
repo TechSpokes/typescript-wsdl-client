@@ -1,9 +1,9 @@
 import {existsSync, readFileSync, readdirSync} from "node:fs";
 import {dirname, isAbsolute, join, relative, resolve} from "node:path";
-import {fileURLToPath} from "node:url";
-import {XMLParser} from "fast-xml-parser";
+import {fileURLToPath, pathToFileURL} from "node:url";
+import {parseOrderedSyntax, syntaxAttribute, syntaxElements, XSD_NAMESPACE, WSDL_NAMESPACE} from "../../src/loader/orderedSyntax.js";
+import type {SyntaxElement} from "../../src/loader/orderedSyntax.js";
 
-const parser = new XMLParser({ignoreAttributes: false, attributeNamePrefix: "@_"});
 const conformanceDir = dirname(fileURLToPath(import.meta.url));
 
 export const fixturesRoot = resolve(conformanceDir, "fixtures");
@@ -71,15 +71,14 @@ function validateXmlDocument(filePath: string, root: string, visited: Set<string
   }
   visited.add(filePath);
 
-  const xml = readFileSync(filePath, "utf8");
-  const parsed = parser.parse(xml);
-  for (const schemaLocation of collectSchemaLocations(parsed)) {
-    const importedPath = resolveSchemaLocation(filePath, schemaLocation, root);
+  const parsed = parseOrderedSyntax(readFileSync(filePath), pathToFileURL(filePath).href);
+  for (const {location, baseUri} of collectSchemaLocations(parsed.root)) {
+    const importedPath = resolveSchemaLocation(filePath, location, baseUri, root);
     validateXmlDocument(importedPath, root, visited);
   }
 }
 
-function resolveSchemaLocation(sourceFile: string, schemaLocation: string, root: string): string {
+function resolveSchemaLocation(sourceFile: string, schemaLocation: string, baseUri: string, root: string): string {
   if (/^https?:\/\//i.test(schemaLocation)) {
     throw new Error(`Conformance fixture ${sourceFile} imports external URL ${schemaLocation}.`);
   }
@@ -87,7 +86,9 @@ function resolveSchemaLocation(sourceFile: string, schemaLocation: string, root:
     throw new Error(`Conformance fixture ${sourceFile} imports absolute path ${schemaLocation}.`);
   }
 
-  const resolved = resolve(dirname(sourceFile), schemaLocation);
+  const effective = new URL(schemaLocation, baseUri);
+  if (effective.protocol !== "file:") throw new Error(`Conformance fixture ${sourceFile} imports external URL through xml:base.`);
+  const resolved = fileURLToPath(effective);
   if (!isWithinRoot(root, resolved)) {
     throw new Error(`Conformance fixture ${sourceFile} imports outside fixture root: ${schemaLocation}.`);
   }
@@ -98,32 +99,16 @@ function resolveSchemaLocation(sourceFile: string, schemaLocation: string, root:
   return resolved;
 }
 
-function collectSchemaLocations(value: unknown): string[] {
-  const locations: string[] = [];
-
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      locations.push(...collectSchemaLocations(item));
-    }
-    return locations;
+function collectSchemaLocations(root: SyntaxElement): {location: string; baseUri: string}[] {
+  const locations: {location: string; baseUri: string}[] = [];
+  const pending = [root];
+  while (pending.length) {
+    const node = pending.pop()!;
+    const schemaReference = node.name.namespace === XSD_NAMESPACE && ["import", "include"].includes(node.name.local);
+    const wsdlReference = node.name.namespace === WSDL_NAMESPACE && node.name.local === "import";
+    const location = schemaReference ? syntaxAttribute(node, "schemaLocation") : wsdlReference ? syntaxAttribute(node, "location") : undefined;
+    if (location) locations.push({location, baseUri: node.baseUri});
+    pending.push(...syntaxElements(node));
   }
-
-  if (!value || typeof value !== "object") {
-    return locations;
-  }
-
-  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-    const local = key.includes(":") ? key.split(":").pop() : key;
-    if ((local === "import" || local === "include") && child && typeof child === "object") {
-      for (const node of Array.isArray(child) ? child : [child]) {
-        const loc = (node as Record<string, unknown>)["@_schemaLocation"];
-        if (typeof loc === "string" && loc.length > 0) {
-          locations.push(loc);
-        }
-      }
-    }
-    locations.push(...collectSchemaLocations(child));
-  }
-
   return locations;
 }

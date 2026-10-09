@@ -67,4 +67,14 @@ describe("conformance fixture policy", () => {
     expect(readFileUnder(join(root, "gateway"), "plugin.ts")).toContain("export default");
     expect(() => readFileUnder(join(root, "gateway"), "../outside.ts")).toThrow("outside");
   });
+
+  it("honors inherited xml:base while keeping every reference local", () => {
+    const root = makeFixtureRoot();
+    const schema = writeFixture(root, "root.xsd", '<schema xmlns="http://www.w3.org/2001/XMLSchema" xml:base="nested/"><include schemaLocation="child.xsd"/></schema>');
+    writeFixture(root, "nested/child.xsd", '<schema xmlns="http://www.w3.org/2001/XMLSchema" xml:base="../"><include schemaLocation="leaf.xsd"/></schema>');
+    writeFixture(root, "leaf.xsd", '<schema xmlns="http://www.w3.org/2001/XMLSchema"/>');
+    expect(() => validateConformanceFixtureGraph(schema, root)).not.toThrow();
+    const remote = writeFixture(root, "remote.xsd", '<schema xmlns="http://www.w3.org/2001/XMLSchema" xml:base="https://example.test/"><include schemaLocation="child.xsd"/></schema>');
+    expect(() => validateConformanceFixtureGraph(remote, root)).toThrow("external URL");
+  });
 });
