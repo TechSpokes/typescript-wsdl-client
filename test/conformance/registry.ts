@@ -3,6 +3,7 @@ import {resolve, join} from "node:path";
 import {pathToFileURL} from "node:url";
 import Fastify from "fastify";
 import {verifyOccurrenceTransport} from "../helpers/occurrenceTransport.mjs";
+import {assertBaselineCatalog, semanticBaseline} from "./semanticBaseline.js";
 
 function requireSchema(doc: any, name: string): any {
   const schema = doc.components?.schemas?.[name];
@@ -45,6 +46,46 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 }
 
 export const capabilities: CapabilityCase[] = [
+  {
+    id: "content-model-boundaries",
+    title: "Bounded content-model characterization for S01",
+    status: "research",
+    featureTags: ["xsd", "sequence", "choice", "wildcard", "occurrence"],
+    fixture: "xsd/compositors/content-model-boundaries.wsdl",
+    publicContract: "Characterization records current projection limits; it does not claim faithful content-model support.",
+    decision: "defer",
+    decisionReason: "The S01 manifest assigns ordering, disabled content, repeated choices, empty branches and count gaps to their semantic owners.",
+    authority: "XML Schema 1.0; independent libxml2 reference qualification",
+    provenance: "Repository-authored legal minimal cases for the fixed #166 corpus.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compilerOptions: {choice: "union"},
+    compile: {
+      outcome: "success",
+      assert: compiled => assertBaselineCatalog(compiled,
+        semanticBaseline.cases.filter(entry => entry.capabilityId === "content-model-boundaries")),
+    },
+  },
+  {
+    id: "content-model-invalid-all",
+    title: "Illegal nested sequence beneath xs:all",
+    status: "research",
+    featureTags: ["xsd", "all", "schema-legality"],
+    fixture: "xsd/compositors/content-model-invalid-all.wsdl",
+    publicContract: "Legacy compiler acceptance is characterized separately from independent schema rejection.",
+    decision: "defer",
+    decisionReason: "Schema legality belongs to #179; this historical recovery case is not valid supported XSD.",
+    authority: "XML Schema 1.0 all content restriction",
+    provenance: "Committed version of the historical all-nested-sequence-legacy regression input.",
+    license: "MIT",
+    fixtureKind: "recovery",
+    compilerOptions: {choice: "union"},
+    compile: {
+      outcome: "success",
+      assert: compiled => assertBaselineCatalog(compiled,
+        semanticBaseline.cases.filter(entry => entry.capabilityId === "content-model-invalid-all")),
+    },
+  },
   {
     id: "sequence-occurrence-wrappers",
     title: "Occurrence bounds through uninterrupted sequence ancestry",

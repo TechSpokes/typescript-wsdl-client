@@ -208,6 +208,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |-------|-------------|
 | [Start Here](docs/start-here.md) | What this is, who it is for, choose your path |
 | [Supported Patterns](docs/supported-patterns.md) | WSDL/XSD features handled and current limitations |
+| [Content Model Baseline](docs/content-model-baseline.md) | Reproducible S01 reference evidence and current semantic limits |
 | [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
 
 ### Adopt

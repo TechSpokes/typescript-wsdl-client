@@ -6,7 +6,9 @@
     "package": "lxml",
     "version": "6.0.2",
     "engine": "libxml2",
-    "engineVersion": "2.14.6"
+    "engineVersion": "2.14.6",
+    "secondaryVersion": "4.2.0",
+    "elementpathVersion": "5.0.4"
   },
   "cases": [
     {
@@ -93,7 +95,7 @@
           "test/integration/sequence-occurrence-transport.test.ts",
           "test/helpers/occurrenceTransport.mjs"
         ],
-        "assertions": "Real singleton/two-item SOAP requests, normalized response arrays, omitted fields and gateway response JSON for both wrapper modes."
+        "assertions": "Real singleton/two-item SOAP responses, omitted/two-item bounded and unbounded SOAP requests, normalized arrays and gateway response JSON for both wrapper modes."
       }
     },
     {
@@ -273,11 +275,32 @@
               }
             }
           ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "email: string;",
+            "phone: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "phone"
+            ]
+          }
         }
       },
-      "intended": "Exactly one named branch is selected in union mode. Default all-optional remains an approximation.",
+      "intended": "Exactly one named branch is selected. Opt-in union expresses this simple case; current default all-optional actually requires both scalar fields.",
       "disposition": {
-        "summary": "XML ordering and datatype validation are outside this simple union projection.",
+        "summary": "Default output requires both branches; opt-in simple union has no XML ordering or datatype validation.",
         "owners": [
           178,
           179,
@@ -476,11 +499,32 @@
               }
             }
           ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "email: string;",
+            "phone: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "phone"
+            ]
+          }
         }
       },
       "intended": "Zero to five independent choice selections are legal under the enclosing sequence.",
       "disposition": {
-        "summary": "Sequence bounds stop at choice; the emitted exclusive scalar union rejects legal repeated/empty values.",
+        "summary": "Sequence bounds stop at choice; union emits scalar XOR while default requires both scalar fields. Neither admits the legal repeated/empty values.",
         "owners": [
           178,
           179,
@@ -589,7 +633,8 @@
         },
         {
           "fixture": "xsd/compositors/instances/zero-element-unbounded-2.xml",
-          "expected": "rejected"
+          "expected": "accepted",
+          "secondaryExpected": "rejected"
         }
       ],
       "current": {
@@ -626,12 +671,17 @@
           180,
           182,
           188,
-          198
+          198,
+          181
         ]
       },
       "downstream": {
         "status": "not-executed",
         "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      },
+      "referenceDisagreement": {
+        "summary": "libxml2 2.14.6 accepts the disabled row under an unbounded sequence; xmlschema 4.2.0 rejects it. Primary acceptance is a characterized validator limitation, not intended validity.",
+        "owner": 181
       }
     },
     {
@@ -697,11 +747,27 @@
               ]
             }
           ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "item: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "item": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "item"
+            ]
+          }
         }
       },
       "intended": "One nonempty branch must occur; union mode retains that requirement.",
       "disposition": {
-        "summary": "Default all-optional mode does not enforce required choice presence.",
+        "summary": "Single nonempty branch presence is represented in both current modes; dynamic particle validation remains a downstream obligation.",
         "owners": [
           178,
           179,
@@ -814,11 +880,32 @@
               }
             }
           ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "email: string;",
+            "phone: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "phone"
+            ]
+          }
         }
       },
       "intended": "Exactly two selections may use the same or different branches in XML order.",
       "disposition": {
-        "summary": "Choice metadata stores 2..2 but scalar XOR output represents one selection.",
+        "summary": "Choice metadata stores 2..2 but union represents one scalar selection and default requires both scalar branches; same-branch repetition is lost.",
         "owners": [
           178,
           179,
@@ -901,11 +988,27 @@
               ]
             }
           ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "item: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "item": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "item"
+            ]
+          }
         }
       },
       "intended": "Required choice admits an empty realization; XML does not identify the empty branch selection.",
       "disposition": {
-        "summary": "Empty branch disappears; generated contracts require item and cannot represent empty realization.",
+        "summary": "Empty branch disappears; both current modes require item and cannot represent empty realization.",
         "owners": [
           178,
           179,
