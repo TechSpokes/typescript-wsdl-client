@@ -43,7 +43,8 @@ S05's missing-reference and forbidden-cycle diagnostics remain applicable beneat
 A repeated pair can have interval `2..4` while admitting only counts 2 and 4.
 Order, gaps and correlated branches remain in the original grammar for #180/#181; summaries are not payload validators.
 An opaque builtin contribution remains original data.
-The scope `declared-particles-with-opaque-builtin` means named counts describe declared contributions only, not possible opaque content.
+The scope `declared-particles-with-opaque-builtin` qualifies every child summary, including named/wildcard counts, effective total range and both emptiness predicates.
+They describe declared contributions only; they cannot certify the counts or emptiness of the whole opaque content language.
 Analysis never promotes builtin or skip/lax content to full concrete validation.
 
 ## Budgets and evidence

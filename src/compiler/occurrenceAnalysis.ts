@@ -55,7 +55,7 @@ export type ParticleSummary = Readonly<{
 }>;
 export type TypeSummary = Readonly<{
   id: NodeId; children: Omit<ParticleSummary, "id">;
-  /** Named contributions cover declared particles only when opaque builtin content exists. */
+  /** All child summaries, including ETR, cover declared particles only beside opaque builtin content. */
   scope: "declared-particles" | "declared-particles-with-opaque-builtin";
 }>;
 export type OccurrenceAnalysis = Readonly<{
