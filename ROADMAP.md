@@ -22,6 +22,9 @@ S01's [bounded baseline](docs/content-model-baseline.md) is delivered through [P
 
 The [S02 handoff](docs/content-model-s02-handoff.md) records [ADR-003](docs/decisions/003-content-model-contracts.md), the decision register and independently reviewed SOAP/gateway feasibility probes in [PR #224](https://github.com/TechSpokes/typescript-wsdl-client/pull/224). #149's joint acceptance and verified merge gate [S03 #150](https://github.com/TechSpokes/typescript-wsdl-client/issues/150), beginning with ordered-input task #171; #172 follows its reviewed adapter. S02 implements no S03 production code.
 
+[Ordered schema loading](docs/content-model-loading.md) now supplies S03's internal syntax/provenance and policy-controlled contextual resolution boundaries through PRs #225/#226.
+#150's combined acceptance gates S04 #151, beginning with immutable graph task #173; S03 does not activate new compiler defaults.
+
 The selected architecture release train is 2.0.0. The 1.x legacy default remains in place; default activation requires integrated S17/S18 qualification and a separately approved major-release activation PR. Open transport/security qualifications block their affected consumers, while the ordered-input/profile/resource contracts for S03 are resolved.
 
 ### Delivery Clusters

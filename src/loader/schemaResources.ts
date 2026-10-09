@@ -1,6 +1,7 @@
 /** Policy-checked, bounded I/O for schema inputs only. Legacy fetching is separate. */
 import {createHash} from "node:crypto";
-import {open, realpath} from "node:fs/promises";
+import {open, realpath, lstat} from "node:fs/promises";
+import {constants} from "node:fs";
 import path from "node:path";
 import {fileURLToPath, pathToFileURL} from "node:url";
 import {SchemaLoadingError} from "./orderedSyntax.js";
@@ -61,11 +62,14 @@ export class SchemaResourceLoader {
   private readonly resourceKeys = new Map<string, string>();
   private totalBytes = 0;
   private ioMs = 0;
-  private constructor(private readonly roots: readonly string[], private readonly origins: ReadonlySet<string>,
+  private constructor(private readonly roots: readonly string[], private readonly lexicalRoots: readonly string[], private readonly origins: ReadonlySet<string>,
     limits: LoadingLimits, private readonly offline?: ReadonlyMap<string, OfflineSchemaResource>) { this.limits = limits; }
 
   static async create(policy: SchemaResourcePolicy, overrides?: Partial<LoadingLimits>, offline?: ReadonlyMap<string, OfflineSchemaResource>): Promise<SchemaResourceLoader> {
-    const roots = await Promise.all((policy.fileRoots ?? []).map(root => realpath(path.resolve(root))));
+    const configuredRoots = (policy.fileRoots ?? []).map(root => path.resolve(root));
+    let roots: string[];
+    try { roots = await Promise.all(configuredRoots.map(root => realpath(root))); }
+    catch { throw new SchemaLoadingError("transport", "An authorized schema root is unavailable"); }
     const origins = new Set((policy.allowedOrigins ?? []).map(origin => {
       const url = new URL(origin);
       if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
@@ -75,7 +79,7 @@ export class SchemaResourceLoader {
     }));
     // Copy the manifest; byte copies occur only after per-resource/aggregate checks.
     const snapshots = offline && new Map([...offline].map(([uri, value]) => [resolveResourceUri(uri), {bytes: value.bytes, digest: value.digest}]));
-    return new SchemaResourceLoader(roots, origins, loadingLimits(overrides), snapshots);
+    return new SchemaResourceLoader(roots, [...configuredRoots, ...roots], origins, loadingLimits(overrides), snapshots);
   }
 
   get metadata(): readonly ResourceMetadata[] {
@@ -93,7 +97,7 @@ export class SchemaResourceLoader {
     }
     const file = fileURLToPath(url);
     // Check lexical traversal before touching the filesystem, then symlink-resolved identity.
-    if (!this.roots.some(root => withinRoot(file, root))) throw new SchemaLoadingError("unsupported-capability", "Schema file is outside authorized roots");
+    if (!this.lexicalRoots.some(root => withinRoot(file, root))) throw new SchemaLoadingError("unsupported-capability", "Schema file is outside authorized roots");
     const actual = await realpath(file);
     if (!this.roots.some(root => withinRoot(actual, root))) throw new SchemaLoadingError("unsupported-capability", "Schema symlink is outside authorized roots");
     return pathToFileURL(actual).href;
@@ -101,13 +105,16 @@ export class SchemaResourceLoader {
 
   async fetchResource(reference: string): Promise<FetchedSchemaResource> {
     const requested = resolveResourceUri(reference);
+    // A previously authorized alias returns the compilation's pinned bytes without new I/O.
+    const pinned = this.resources.get(this.resourceKeys.get(this.aliases.get(requested) ?? requested) ?? "");
+    if (pinned) return pinned;
     const started = performance.now();
     const remaining = this.limits.totalIoMs - this.ioMs;
     if (remaining < 0) throw new SchemaLoadingError("transport", "Total schema I/O deadline exhausted");
     const budget = Math.min(this.limits.resourceMs, remaining);
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
-    let performedIo = false;
+    let performedIo = new URL(requested).protocol === "file:";
     const timeout = new Promise<never>((_, reject) => {
       // Limits are inclusive: an exactly-at-deadline completed resource is admitted.
       timer = setTimeout(() => { controller.abort(); reject(new SchemaLoadingError("transport", "Schema resource or total I/O deadline exceeded")); }, budget + 1);
@@ -115,9 +122,12 @@ export class SchemaResourceLoader {
     try {
       const task = (async () => {
         let uri = await this.authorize(requested);
+        if (controller.signal.aborted || performance.now() - started > budget) throw new SchemaLoadingError("transport", "Schema I/O deadline exceeded");
         const cached = this.resources.get(this.resourceKeys.get(this.aliases.get(uri) ?? uri) ?? "");
         if (cached) return cached;
-        if (this.resources.size >= this.limits.resources) throw new SchemaLoadingError("resource-limit", `Schema resource count exceeds ${this.limits.resources}`);
+        const checkResourceCount = () => {
+          if (this.resources.size >= this.limits.resources) throw new SchemaLoadingError("resource-limit", `Schema resource count exceeds ${this.limits.resources}`);
+        };
         performedIo = true;
         const redirectAliases = [requested, uri];
         const chunks: Uint8Array[] = [];
@@ -131,13 +141,17 @@ export class SchemaResourceLoader {
           chunks.push(Uint8Array.from(chunk));
         };
         if (this.offline) {
+          checkResourceCount();
           const snapshot = this.offline.get(uri);
           if (!snapshot) throw new SchemaLoadingError("transport", "Schema resource is absent from the offline snapshot");
           accept(snapshot.bytes);
           const digest = createHash("sha256").update(snapshot.bytes).digest("hex");
           if (digest !== snapshot.digest) throw new SchemaLoadingError("invalid-schema", "Offline schema digest mismatch");
         } else if (new URL(uri).protocol === "file:") {
-          const file = await open(fileURLToPath(uri), "r");
+          checkResourceCount();
+          const localPath = fileURLToPath(uri);
+          if (!(await lstat(localPath)).isFile()) throw new SchemaLoadingError("unsupported-capability", "Schema resource must be a regular file");
+          const file = await open(localPath, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0) | (constants.O_NONBLOCK ?? 0));
           try {
             if (!(await file.stat()).isFile()) throw new SchemaLoadingError("unsupported-capability", "Schema resource must be a regular file");
             const stream = file.createReadStream({autoClose: false, signal: controller.signal});
@@ -156,10 +170,18 @@ export class SchemaResourceLoader {
               if (new URL(uri).protocol === "file:") throw new SchemaLoadingError("unsupported-capability", "HTTP redirects cannot select file resources");
               redirectAliases.push(uri);
               const redirectedCache = this.resources.get(this.resourceKeys.get(this.aliases.get(uri) ?? uri) ?? "");
-              if (redirectedCache) { for (const alias of redirectAliases) this.aliases.set(alias, redirectedCache.uri); return redirectedCache; }
+              if (redirectedCache) {
+                if (controller.signal.aborted || performance.now() - started > budget) throw new SchemaLoadingError("transport", "Schema I/O deadline exceeded");
+                for (const alias of redirectAliases) this.aliases.set(alias, redirectedCache.uri);
+                return redirectedCache;
+              }
               continue;
             }
             if (!response.ok) { await response.body?.cancel(); throw new SchemaLoadingError("transport", `Schema retrieval returned HTTP ${response.status}`); }
+            if (this.resources.size >= this.limits.resources) {
+              await response.body?.cancel();
+              checkResourceCount();
+            }
             // Manual fetch must preserve identity; an opaque/auto-following transport is rejected.
             if (response.redirected || (response.url && resolveResourceUri(response.url) !== uri)) {
               await response.body?.cancel();

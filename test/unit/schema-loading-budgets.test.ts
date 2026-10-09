@@ -75,6 +75,68 @@ describe("provisional schema loading budgets", () => {
     await expect(loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources})).rejects.toMatchObject({category: "resource-limit"});
   });
 
+  it("counts cached WSDL inline schema chains at the WSDL's effective depth", async () => {
+    const wsdl = (body: string) => `<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:x="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:wsdl">${body}</w:definitions>`;
+    const imp = (name: string) => `<w:import namespace="urn:wsdl" location="${name}.wsdl"/>`;
+    const documents = new Map<string, OfflineSchemaResource>([
+      [`${origin}/root.wsdl`, pinned(Buffer.from(wsdl(imp("cached") + imp("deep"))))],
+      [`${origin}/cached.wsdl`, pinned(Buffer.from(wsdl('<w:types><x:schema targetNamespace="urn:budget"><x:include schemaLocation="1.xsd"/></x:schema></w:types>')))],
+      [`${origin}/deep.wsdl`, pinned(Buffer.from(wsdl(imp("cached"))))],
+      [uri(1), pinned(Buffer.from(schema(include(2))))], [uri(2), pinned(Buffer.from(schema()))],
+    ]);
+    await expect(loadSchemaInput(`${origin}/root.wsdl`, {policy: {allowedOrigins: [origin]}, offlineResources: documents, limits: {resolutionDepth: 3}})).rejects.toMatchObject({category: "resource-limit"});
+    const admitted = await loadSchemaInput(`${origin}/root.wsdl`, {policy: {allowedOrigins: [origin]}, offlineResources: documents, limits: {resolutionDepth: 4}});
+    expect(admitted.resources).toHaveLength(5);
+  });
+
+  it("preserves the cycle cutoff when an include repeats at the depth boundary", async () => {
+    for (const repeated of [false, true]) {
+      const resources = new Map([[uri(0), pinned(Buffer.from(schema(include(1))))], [uri(1), pinned(Buffer.from(schema(include(2) + (repeated ? include(2) : ""))))], [uri(2), pinned(Buffer.from(schema(include(1))))]]);
+      const input = await loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources, limits: {resolutionDepth: 3}});
+      expect(input.resources).toHaveLength(3);
+      expect(input.edges.some(e => e.cycle)).toBe(true);
+    }
+  });
+
+  it("checks dense cached DAG depth without enumerating every path", async () => {
+    const count = 30;
+    const resources = new Map(Array.from({length: count}, (_, n) => [uri(n), pinned(Buffer.from(schema(Array.from({length: count - n - 1}, (_, i) => include(n + i + 1)).join(""))))]));
+    const input = await loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources});
+    expect(input.resources).toHaveLength(count);
+    expect(input.edges).toHaveLength(count * (count - 1) / 2);
+    await expect(loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources, limits: {resolutionDepth: 28}})).rejects.toMatchObject({category: "resource-limit"});
+  });
+
+  it("retains many repeated include edges without repeating control-graph work", async () => {
+    const count = 16_000;
+    const resources = new Map([[uri(0), pinned(Buffer.from(schema(include(1).repeat(count))))], [uri(1), pinned(Buffer.from(schema()))]]);
+    const input = await loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources});
+    expect(input.resources).toHaveLength(2);
+    expect(input.schemas).toHaveLength(2);
+    expect(input.edges).toHaveLength(count);
+  });
+
+  it("counts a cycle closing edge from an alternate cached entry", async () => {
+    const resources = new Map([
+      [uri(0), pinned(Buffer.from(schema(include(1) + include(4))))],
+      [uri(1), pinned(Buffer.from(schema(include(2))))],
+      [uri(2), pinned(Buffer.from(schema(include(3))))],
+      [uri(3), pinned(Buffer.from(schema(include(1))))],
+      [uri(4), pinned(Buffer.from(schema(include(2))))],
+    ]);
+    await expect(loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources, limits: {resolutionDepth: 4}})).rejects.toMatchObject({category: "resource-limit"});
+    const input = await loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources, limits: {resolutionDepth: 5}});
+    expect(input.resources).toHaveLength(5);
+    expect(input.edges.some(e => e.cycle)).toBe(true);
+  });
+
+  it("admits a closed cycle at its edge budget and rejects one edge below", async () => {
+    const resources = new Map(Array.from({length: 32}, (_, n) => [uri(n), pinned(Buffer.from(schema(include(n === 31 ? 1 : n + 1))))]));
+    const input = await loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources, limits: {resolutionDepth: 32}});
+    expect(input.resources).toHaveLength(32);
+    await expect(loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources, limits: {resolutionDepth: 31}})).rejects.toMatchObject({category: "resource-limit"});
+  });
+
   it("measures five redirects and rejects the sixth before its destination fetch", async () => {
     for (const redirects of [5, 6]) {
       const fetch = vi.fn(async (url: string) => {

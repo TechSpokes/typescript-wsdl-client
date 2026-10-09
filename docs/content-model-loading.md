@@ -60,6 +60,11 @@ An import without a schema location remains an unresolved edge for S05; it never
 Include without a location fails as invalid input.
 Cycle edges remain in the result and stop active expansion; unresolved declaration diagnostics belong to S05 after traversal.
 
+Cached depth checks include inline schemas at zero edge cost and count the cycle-closing edge against current active ancestry.
+The [depth helper](../src/loader/resolutionDepth.ts) collapses strongly connected components and computes a polynomial upper bound on the condensed graph.
+Acyclic chains and closed simple cycles retain exact boundaries; cyclic components with branches or exits may exhaust this conservative budget earlier.
+An explicit caller depth override can admit them; no cycle edges or schema declarations disappear from the result.
+
 `SchemaInterpretation` exposes `syntax`, `documentUri`, `digest`, `baseUri`, `targetNamespace`, `context` and `key`.
 The context records root/inline/include/import kind and the namespace requested by that relationship.
 Its key is a deterministic tuple of digest, final document URI, effective base URI, effective target namespace, context kind/namespace and syntax path.
@@ -72,6 +77,8 @@ Identical bytes at `/base-a/common.xsd` and `/base-b/common.xsd` keep distinct i
 The raw byte cache uses `(canonical final retrieval URI, SHA-256 digest)` and request/redirect aliases.
 Fetches and traversal are serialized within a compilation; each successful final resource is fetched once.
 The interpretation cache is separate and never keyed by digest alone.
+Previously authorized aliases reuse the compilation's pinned bytes without new filesystem or network I/O.
+Authorization I/O for a newly encountered file spelling still consumes the remaining deadline, even when it resolves to cached bytes.
 
 ## URI and security policy
 
@@ -102,16 +109,18 @@ Positive safe-integer overrides permit explicit caller increases or lower limits
 
 | Budget | Inclusive default | Outcome beyond limit |
 |---|---|---|
-| Distinct final resources | 128 | `resource-limit` before next fetch |
+| Distinct final resources | 128 | `resource-limit` before new final body |
 | Decompressed resource bytes | 8 MiB | `resource-limit` before parse |
 | Aggregate decompressed bytes | 64 MiB | `resource-limit` before parse |
-| Active resolution chain | 32 edges | `resource-limit`, including cached subtrees |
+| Resolution depth bound | 32 edges | `resource-limit`, including cached subtrees |
 | Redirects per fetch | 5 | `resource-limit` before sixth destination |
 | Resource I/O | 15,000 ms | `transport`, abort/cancel input |
 | Total compilation I/O | 120,000 ms | `transport`, abort/cancel input |
 | XML element nesting | 256 | `resource-limit` in syntax adapter |
 
 HTTP response bodies and files are read incrementally; decompressed chunks count against both byte budgets.
+At the resource-count limit, bounded HTTP redirect discovery may still identify a cached final resource; a new final body is cancelled.
+Local special files are rejected before opening; nonblocking/no-follow open flags and a descriptor check guard the final file boundary.
 The deadline covers fetching, redirects and body reads; parsing is outside the I/O clock.
 The total counts serial resource I/O, with monotonic timing and the remaining total budget constraining each fetch.
 No rejected load returns a partial schema model.
@@ -148,6 +157,7 @@ These boundary measurements do not qualify production network latency, private v
 #172 starts from that merge and consumes its exact syntax contract.
 The final #150 acceptance record pins both reviewed heads, merge revisions, full repository checks and merged-main checks.
 
-S04 #173 reads `SchemaInput.schemas` and the immutable ordered syntax, preserving interpretation context in global and local identities.
+S04 #173 reads `SchemaInput.schemas` and the immutable ordered syntax, deriving global identities from effective namespace, local name and role.
+Scoped local identities use containing declarations and source-relative paths; interpretation context remains resolution/provenance data.
 #174 serializes artifact-safe provenance separately from semantic fingerprints and implements catalog routing.
 S05 resolves declaration/reference semantics from the recorded edges; S03 does not create canonical graph nodes, projections or codecs.

@@ -2,6 +2,7 @@ import {createHash} from "node:crypto";
 import {readFileSync, mkdtempSync, symlinkSync, rmSync, writeFileSync, mkdirSync} from "node:fs";
 import path from "node:path";
 import {pathToFileURL} from "node:url";
+import {execFileSync} from "node:child_process";
 import {describe, expect, it, vi, afterEach} from "vitest";
 import {loadSchemaInput} from "../../src/loader/schemaInput.js";
 import {resolveResourceUri} from "../../src/loader/schemaResources.js";
@@ -84,6 +85,20 @@ describe("contextual schema inputs", () => {
     expect(input.edges.every(e => e.referenceUri === uri("types/common.xsd"))).toBe(true);
   });
 
+  it("admits redirects to cached resources at the distinct-resource limit", async () => {
+    const fetch = vi.fn(async (url: string) => {
+      if (url === uri("root.xsd")) return new Response(schema('<include schemaLocation="leaf.xsd"/><include schemaLocation="alias.xsd"/>'));
+      if (url === uri("alias.xsd")) return new Response(null, {status: 302, headers: {location: "leaf.xsd"}});
+      return new Response(schema());
+    }); vi.stubGlobal("fetch", fetch);
+    const input = await loadSchemaInput(uri("root.xsd"), {policy: {allowedOrigins: [origin]}, limits: {resources: 2}});
+    expect(input.resources).toHaveLength(2);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(input.edges[0].to).toBe(input.edges[1].to);
+    fetch.mockImplementation(async (url: string) => new Response(url === uri("root.xsd") ? schema('<include schemaLocation="leaf.xsd"/><include schemaLocation="new.xsd"/>') : schema()));
+    await expect(loadSchemaInput(uri("root.xsd"), {policy: {allowedOrigins: [origin]}, limits: {resources: 2}})).rejects.toMatchObject({category: "resource-limit"});
+  });
+
   it("preserves query identity and verifies pinned offline bytes without network", async () => {
     const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
     const resources = offline([["root.xsd", schema('<include schemaLocation="common.xsd?v=1"/><include schemaLocation="common.xsd?v=2"/>')], ["common.xsd?v=1", schema("", "")], ["common.xsd?v=2", schema("", "")]]);
@@ -123,10 +138,25 @@ describe("contextual schema inputs", () => {
       const allowed = path.join(temp, "allowed"); mkdirSync(allowed);
       writeFileSync(path.join(temp, "outside.xsd"), schema());
       symlinkSync(path.join(temp, "outside.xsd"), path.join(allowed, "escape.xsd"));
+      writeFileSync(path.join(allowed, "root.xsd"), schema());
+      const rootAlias = path.join(temp, "authorized-alias");
+      symlinkSync(allowed, rootAlias, "dir");
+      const aliased = await loadSchemaInput(path.join(rootAlias, "root.xsd"), {policy: {fileRoots: [rootAlias]}});
+      expect(aliased.root.uri).toBe(pathToFileURL(path.join(allowed, "root.xsd")).href);
       for (const file of [path.join(allowed, "escape.xsd"), path.join(allowed, "../outside.xsd")]) {
         await expect(loadSchemaInput(file, {policy: {fileRoots: [allowed]}})).rejects.toMatchObject({category: "unsupported-capability"});
       }
       await expect(loadSchemaInput(pathToFileURL(path.join(temp, "outside.xsd")).href, {policy: {}})).rejects.toMatchObject({category: "unsupported-capability"});
+    } finally { rmSync(temp, {recursive: true, force: true}); }
+  });
+
+  it.skipIf(process.platform === "win32")("rejects special files before opening a blocking read", async () => {
+    mkdirSync("tmp/conformance", {recursive: true});
+    const temp = mkdtempSync(path.resolve("tmp/conformance/resolution-fifo-"));
+    try {
+      const fifo = path.join(temp, "schema.xsd");
+      execFileSync("mkfifo", [fifo]);
+      await expect(loadSchemaInput(fifo, {policy: {fileRoots: [temp]}, limits: {resourceMs: 100}})).rejects.toMatchObject({category: "unsupported-capability"});
     } finally { rmSync(temp, {recursive: true, force: true}); }
   });
 });

@@ -3,6 +3,8 @@ import {parseOrderedSyntax, SchemaLoadingError, syntaxAttribute, syntaxElements,
 import type {SyntaxDocument, SyntaxElement, SyntaxSource} from "./orderedSyntax.js";
 import {SchemaResourceLoader, resolveResourceUri} from "./schemaResources.js";
 import type {LoadingLimits, OfflineSchemaResource, ResourceMetadata, SchemaResourcePolicy} from "./schemaResources.js";
+import {resolutionDepthBound} from "./resolutionDepth.js";
+import type {ResolutionArc} from "./resolutionDepth.js";
 
 export type SchemaContext = Readonly<{kind: "root" | "inline" | "include" | "import"; namespace: string}>;
 export type SchemaInterpretation = Readonly<{
@@ -48,13 +50,22 @@ export async function loadSchemaInput(source: string, options: {
   const edges: ResolutionEdge[] = [];
   const active = new Set<string>();
   const wsdlVisited = new Set<string>();
-  const outgoing = new Map<string, ResolutionEdge[]>();
+  const depthGraph = new Map<string, ResolutionArc[]>();
+  const depthTargets = new Map<string, Set<string>>();
+  const recordDepthArc = (from: string, to: string, cost: 0 | 1) => {
+    const target = JSON.stringify([to, cost]);
+    const targets = depthTargets.get(from) ?? new Set<string>();
+    if (targets.has(target)) return;
+    targets.add(target);
+    depthTargets.set(from, targets);
+    const arcs = depthGraph.get(from) ?? [];
+    arcs.push({to, cost});
+    depthGraph.set(from, arcs);
+  };
   const recordEdge = (edge: ResolutionEdge) => {
     const frozen = Object.freeze(edge);
     edges.push(frozen);
-    const list = outgoing.get(edge.from) ?? [];
-    list.push(frozen);
-    outgoing.set(edge.from, list);
+    if (edge.to) recordDepthArc(edge.from, edge.to, 1);
   };
   const checkDepth = (depth: number, node?: SyntaxElement) => {
     if (depth > loader.limits.resolutionDepth) throw new SchemaLoadingError("resource-limit", `Schema resolution depth exceeds ${loader.limits.resolutionDepth} edges`, node?.source);
@@ -70,17 +81,10 @@ export async function loadSchemaInput(source: string, options: {
   };
   const is = (node: SyntaxElement, namespace: string, local: string) => node.name.namespace === namespace && node.name.local === local;
   // Cached interpretations still consume resolution depth on a later, deeper route.
-  const checkCachedDepth = (key: string, depth: number, ancestry = new Set<string>()) => {
-    if (ancestry.has(key)) return;
-    ancestry.add(key);
-    const targets = new Set<string>();
-    for (const edge of outgoing.get(key) ?? []) {
-      if (!edge.to || targets.has(edge.to)) continue;
-      targets.add(edge.to);
-      if (depth + 1 > loader.limits.resolutionDepth) throw new SchemaLoadingError("resource-limit", `Schema resolution depth exceeds ${loader.limits.resolutionDepth} edges`, edge.source);
-      checkCachedDepth(edge.to, depth + 1, ancestry);
+  const checkCachedDepth = (key: string, depth: number) => {
+    if (depth + resolutionDepthBound(key, depthGraph, active) > loader.limits.resolutionDepth) {
+      throw new SchemaLoadingError("resource-limit", `Schema resolution depth exceeds ${loader.limits.resolutionDepth} edges`, schemas.get(key)?.syntax.source ?? documents.get(key)?.root.source);
     }
-    ancestry.delete(key);
   };
   const referencedDocument = async (reference: string, node: SyntaxElement): Promise<{referenceUri: string; doc: SyntaxDocument}> => {
     try {
@@ -135,7 +139,10 @@ export async function loadSchemaInput(source: string, options: {
     active.add(doc.uri);
     for (const child of syntaxElements(doc.root, WSDL_NAMESPACE)) {
       if (child.name.local === "types") {
-        for (const schema of syntaxElements(child, XSD_NAMESPACE, "schema")) await interpret(schema, {kind: "inline", namespace: ""}, depth);
+        for (const schema of syntaxElements(child, XSD_NAMESPACE, "schema")) {
+          const key = await interpret(schema, {kind: "inline", namespace: ""}, depth);
+          recordDepthArc(doc.uri, key, 0);
+        }
       } else if (child.name.local === "import") {
         const location = syntaxAttribute(child, "location");
         if (!location) throw new SchemaLoadingError("invalid-schema", "WSDL import requires location", child.source);
