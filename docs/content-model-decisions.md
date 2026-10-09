@@ -34,6 +34,9 @@ The lead S02 implementation agent owns decision drafting/integration; independen
 
 ## Findings traceability
 
+S04's [immutable graph](content-model-graph.md) and [format 2 catalog boundary](content-model-catalog.md) implement the early D01/D04/D09/D10 consumers without changing the approved decisions or activating faithful generation.
+The #151 final handoff records independently reviewed revisions, validation results and the unchanged downstream qualification gates.
+
 | Finding | Decision and disposition | Implementation owner / evidence |
 |---|---|---|
 | CM-01/02/03 | D01/D02/D04 implement exact particles/projections | #178/#179/#180/#182/#198; S01 manifest |

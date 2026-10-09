@@ -2,14 +2,13 @@
 import {resolveLexicalQName, syntaxAttribute, syntaxElements, XSD_NAMESPACE, WSDL_NAMESPACE} from "../loader/orderedSyntax.js";
 import type {ExpandedName, SyntaxElement} from "../loader/orderedSyntax.js";
 import type {SchemaInput, SchemaInterpretation} from "../loader/schemaInput.js";
-import {DEFAULT_GRAPH_NODES, GRAPH_MODEL, GraphError, globalId, scopedId, deepFreeze} from "./canonicalGraph.js";
+import {DEFAULT_GRAPH_NODES, GRAPH_MODEL, GraphError, globalId, scopedId, deepFreeze, isBuiltinType, wsdlReferenceRoles} from "./canonicalGraph.js";
 import type {CanonicalGraph, GraphNode, GraphContext, Identity, NodeId, SymbolRole, Reference, LexicalValue, Occurs, ValueConstraint, Facet, Wildcard, GraphOrigin} from "./canonicalGraph.js";
 
 type Scope = {schema: SchemaInterpretation; owner: NodeId; rootPath: string};
 const declarationRoles: Record<string, SymbolRole> = Object.assign(Object.create(null), {element: "element", attribute: "attribute", simpleType: "type", complexType: "type", group: "group", attributeGroup: "attributeGroup"});
 const particleKinds = new Set(["sequence", "choice", "all", "element", "group", "any"]);
 const facetKinds = new Set(["enumeration", "pattern", "whiteSpace", "length", "minLength", "maxLength", "minInclusive", "minExclusive", "maxInclusive", "maxExclusive", "totalDigits", "fractionDigits"]);
-const builtinTypes = new Set("anyType anySimpleType string boolean decimal float double duration dateTime time date gYearMonth gYear gMonthDay gDay gMonth hexBinary base64Binary anyURI QName NOTATION normalizedString token language NMTOKEN NMTOKENS Name NCName ID IDREF IDREFS ENTITY ENTITIES integer nonPositiveInteger negativeInteger long int short byte nonNegativeInteger unsignedLong unsignedInt unsignedShort unsignedByte positiveInteger".split(" "));
 
 export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: number} = {}): CanonicalGraph {
   const maxNodes = options.maxNodes ?? DEFAULT_GRAPH_NODES;
@@ -65,7 +64,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
     // XSD chameleon adoption changes component interpretation, never lexical namespace bindings.
     const name = !lexicalName.namespace && context(node, scope.schema).chameleon
       ? {namespace: scope.schema.targetNamespace, local: lexicalName.local} : lexicalName;
-    if (role === "type" && name.namespace === XSD_NAMESPACE && builtinTypes.has(name.local)) return {kind: "builtin", name, lexical: lexical(value, node, scope)};
+    if (role === "type" && name.namespace === XSD_NAMESPACE && isBuiltinType(name.local)) return {kind: "builtin", name, lexical: lexical(value, node, scope)};
     return {kind: "symbol", role, name, lexical: lexical(value, node, scope)};
   };
   const builtin = (local: string): Reference => ({kind: "builtin", name: {namespace: XSD_NAMESPACE, local}});
@@ -238,8 +237,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
       const scope: Scope = {schema, owner: id, rootPath: node.source.path};
       const references: {path: string; attribute: string; reference: Reference}[] = [];
       const visit = (n: SyntaxElement) => {
-        const roles: Record<string, SymbolRole> = n.name.namespace === WSDL_NAMESPACE ? (n.name.local === "part" ? {element: "element", type: "type"}
-          : n.name.local === "binding" ? {type: "portType"} : n.name.local === "port" ? {binding: "binding"} : ["input", "output", "fault"].includes(n.name.local) ? {message: "message"} : {}) : {};
+        const roles = wsdlReferenceRoles(n);
         for (const [attribute, targetRole] of Object.entries(roles)) {
           const value = syntaxAttribute(n, attribute); if (value !== undefined) references.push({path: n.source.path.slice(node.source.path.length) || "/", attribute, reference: ref(value, targetRole, n, scope)});
         }

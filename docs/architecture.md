@@ -8,6 +8,7 @@ See [CONTRIBUTING](../CONTRIBUTING.md) for development setup and [README](../REA
 
 [Ordered schema loading](content-model-loading.md) documents S03's internal input adapter and its migration boundary.
 [Canonical graph construction](content-model-graph.md) documents S04's immutable declarations and independent use-site particles.
+[Semantic catalog persistence](content-model-catalog.md) documents format 2 validation and the explicit legacy-reader boundary.
 Its controlled resource resolver supplies contextual syntax to S04 #173 while graph construction and downstream semantics remain separate owners.
 
 [ADR-003](decisions/003-content-model-contracts.md) defines the intended faithful content-model path and [decision register](content-model-decisions.md) assigns its owners. The S02 feasibility records and [handoff](content-model-s02-handoff.md) distinguish executed adapter/dialect evidence from later production implementation. The pipeline below describes current legacy behavior; S02 does not activate new defaults.

@@ -21,6 +21,7 @@
  *     routes.ts      - Route registration module
  */
 import fs from "node:fs";
+import {readLegacyCatalogFile} from "../compiler/semanticCatalog.js";
 import path from "node:path";
 import * as yaml from "js-yaml";
 import {
@@ -190,8 +191,7 @@ export async function generateGateway(opts: GenerateGatewayOptions): Promise<voi
   // Load catalog if provided (for operation metadata)
   let catalog: any = undefined;
   if (opts.catalogFile && fs.existsSync(opts.catalogFile)) {
-    const catalogRaw = fs.readFileSync(opts.catalogFile, "utf8");
-    catalog = JSON.parse(catalogRaw);
+    catalog = readLegacyCatalogFile(opts.catalogFile);
   }
 
   // Resolve client metadata for full handler generation

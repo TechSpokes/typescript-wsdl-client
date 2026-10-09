@@ -14,13 +14,13 @@
  *   - Existing buffered generation stays byte-for-byte identical when no
  *     streamConfig.shapeCatalogs entries are declared.
  */
-import fs from "node:fs";
 import path from "node:path";
 import {compileCatalog, type CompiledAlias, type CompiledCatalog, type CompiledType} from "./schemaCompiler.js";
 import {loadWsdl} from "../loader/wsdlLoader.js";
 import {resolveCompilerOptions} from "../config.js";
 import type {ShapeCatalogRef, StreamConfig} from "../util/streamConfig.js";
 import {WsdlCompilationError} from "../util/errors.js";
+import {readLegacyCatalogFile, CatalogError} from "./semanticCatalog.js";
 
 export interface ApplyShapeCatalogsOptions {
   /** Directory against which relative `catalogFile`/`wsdlSource` paths resolve. Defaults to process.cwd(). */
@@ -103,20 +103,13 @@ async function loadCompanionCatalog(
 ): Promise<CompiledCatalog> {
   if (ref.catalogFile) {
     const abs = path.resolve(baseDir, ref.catalogFile);
-    let text: string;
     try {
-      text = fs.readFileSync(abs, "utf-8");
+      return readLegacyCatalogFile(abs);
     } catch (err) {
+      if (err instanceof CatalogError) throw err;
       throw new WsdlCompilationError(
         `Failed to read companion catalog "${name}" at ${abs}: ${(err as Error).message}`,
         {suggestion: `Check that shapeCatalogs.${name}.catalogFile points to an existing catalog.json.`},
-      );
-    }
-    try {
-      return JSON.parse(text) as CompiledCatalog;
-    } catch (err) {
-      throw new WsdlCompilationError(
-        `Companion catalog "${name}" at ${abs} is not valid JSON: ${(err as Error).message}`,
       );
     }
   }
