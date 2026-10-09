@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-10-09
+
 - fix(client): use named SOAP runtime imports and explicit type-only imports in generated clients
 - test(client): typecheck integration tests and run compiled-client coverage in Node 26 CI
 
