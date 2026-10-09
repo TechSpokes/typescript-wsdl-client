@@ -1,8 +1,9 @@
 /** Select WSDL operation contracts before walking schema capability closures. */
 import type {GraphNode, NodeId, Reference, WsdlNode} from "./canonicalGraph.js";
 import type {AssessmentContext} from "./schemaAssessmentContext.js";
-import {resolveLexicalQName, syntaxAttribute, WSDL_NAMESPACE} from "../loader/orderedSyntax.js";
+import {resolveLexicalQName, SchemaLoadingError, syntaxAttribute, WSDL_NAMESPACE} from "../loader/orderedSyntax.js";
 import type {SyntaxElement} from "../loader/orderedSyntax.js";
+import {normalizeWhitespace} from "./schemaDatatypeValues.js";
 
 export type AssessmentSelection = Readonly<
   {kind: "components"; id: string; roots: readonly NodeId[]} |
@@ -27,6 +28,14 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
   const owner = c.get(selection.binding); c.setCurrent(owner);
   if (owner.kind !== "wsdl" || owner.role !== "binding") c.fail(owner, "wsdl-binding", "Operation selection requires a WSDL binding");
   const binding = owner as WsdlNode;
+  const qname = (value: string, syntax: SyntaxElement) => {
+    c.text(value, owner);
+    try {return resolveLexicalQName(value, syntax);}
+    catch (error) {
+      if (error instanceof SchemaLoadingError && error.category === "invalid-schema") return c.fail(owner, "wsdl-qname", error.message, error.source);
+      throw error;
+    }
+  };
   const children = (node: SyntaxElement, namespace?: string, local?: string): SyntaxElement[] => {
     const result: SyntaxElement[] = [];
     for (const child of node.children) {
@@ -50,7 +59,7 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
   };
   const lexicalReference = (value: string, role: "message" | "binding" | "portType", syntax: SyntaxElement): Reference => {
     c.text(value, owner);
-    const name = resolveLexicalQName(value, syntax);
+    const name = qname(value, syntax);
     return {kind: "symbol", role, name, lexical: {value, context: {...owner.context, namespaces: syntax.namespaces, baseUri: syntax.baseUri, source: syntax.source}}};
   };
   const portTypeName = syntaxAttribute(binding.syntax, "type");
@@ -64,16 +73,18 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
   const transport = syntaxAttribute(soapBinding, "transport");
   if (transport !== HTTP) c.unsupported(owner, "binding-transport", "SOAP binding transport is outside the evidenced HTTP contract", soapBinding.source);
   const soapOperation = children(bindingOperation, namespace, "operation")[0];
+  if (version === "soap11" && (!soapOperation || syntaxAttribute(soapOperation, "soapAction") === undefined)) c.fail(owner, "soap-action", "SOAP 1.1 HTTP requires an explicit soapAction (which may be empty)", bindingOperation.source);
   const style = soapOperation && syntaxAttribute(soapOperation, "style") || syntaxAttribute(soapBinding, "style") || "document";
   if (style !== "document") c.unsupported(owner, "binding-style", "RPC/encoded binding requires a separately approved codec contract", soapOperation?.source ?? soapBinding.source);
   const capabilities = new Set<string>([version, "document-literal", "selected-binding-action", "declared-faults"]);
-  const messageParts = (syntax: SyntaxElement, specified?: readonly string[]) => {
+  const messageParts = (syntax: SyntaxElement, specified?: readonly string[], fault = false) => {
     const value = syntaxAttribute(syntax, "message");
     if (value === undefined) c.fail(owner, "wsdl-message", "Operation direction is missing its message", syntax.source);
     const message = c.get(c.target(lexicalReference(value!, "message", syntax), owner)!);
     if (message.kind !== "wsdl" || message.role !== "message") c.fail(owner, "wsdl-message", "Direction requires a message", syntax.source);
-    const found = new Set<string>();
-    for (const part of children((message as WsdlNode).syntax, WSDL_NAMESPACE, "part")) {
+    const found = new Set<string>(), parts = children((message as WsdlNode).syntax, WSDL_NAMESPACE, "part");
+    if (fault && parts.length !== 1) c.fail(message, "soap-fault-part", "A SOAP fault message requires exactly one part", syntax.source);
+    for (const part of parts) {
       const name = syntaxAttribute(part, "name");
       if (!name || found.has(name)) c.fail(message, "wsdl-part", "Message part names must be present and unique", part.source);
       found.add(name!);
@@ -82,7 +93,7 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
       if ((element === undefined) === (type === undefined)) c.fail(message, "wsdl-part", "Part requires exactly one element or type", part.source);
       const partValue = element ?? type!;
       c.text(partValue, message);
-      const reference: Reference = {kind: "symbol", role: element === undefined ? "type" : "element", name: resolveLexicalQName(partValue, part), lexical: {value: partValue, context: {...message.context, namespaces: part.namespaces, source: part.source}}};
+      const reference: Reference = {kind: "symbol", role: element === undefined ? "type" : "element", name: qname(partValue, part), lexical: {value: partValue, context: {...message.context, namespaces: part.namespaces, source: part.source}}};
       if (reference.role === "type" && reference.name.namespace === "http://www.w3.org/2001/XMLSchema") {
         // SOAP document/literal type parts require wrapper/name conventions
         // absent from this profile's element-root binding contract.
@@ -93,29 +104,32 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
     }
     if (specified) for (const name of specified) {c.step(owner); if (!found.has(name)) c.fail(message, "wsdl-part", "Selected body/header part is not declared", syntax.source);}
   };
-  const extensionTree = [bindingOperation];
-  while (extensionTree.length) {
-    const syntax = extensionTree.pop()!; c.step(owner);
-    for (const child of children(syntax)) {
+  const assessExtensions = (extensionTree: SyntaxElement[]) => {while (extensionTree.length) {
+      const child = extensionTree.pop()!;
       c.step(owner);
       if (child.name.namespace === "http://schemas.xmlsoap.org/wsdl/mime/") c.unsupported(owner, "attachments", "Attachments/MTOM are excluded", child.source);
       if (child.name.namespace !== WSDL_NAMESPACE && child.name.namespace !== namespace) {
-        const required = syntaxAttribute(child, "required", WSDL_NAMESPACE);
+        const rawRequired = syntaxAttribute(child, "required", WSDL_NAMESPACE), required = rawRequired === undefined ? undefined : normalizeWhitespace(rawRequired, "collapse");
+        if (required !== undefined && !["true", "false", "1", "0"].includes(required)) c.fail(owner, "wsdl-required", "Invalid required-extension boolean", child.source);
         if (required === "true" || required === "1") c.unsupported(owner, "required-binding-extension", "Required binding extension has no assessed capability", child.source);
       }
-      extensionTree.push(child);
-    }
-  }
+      for (const nested of children(child)) extensionTree.push(nested);
+  }};
+  // Binding-wide extension semantics apply to every selected operation;
+  // other operation subtrees remain outside this operation's assessment.
+  assessExtensions([...children(binding.syntax).filter(child => child.name.namespace !== WSDL_NAMESPACE), bindingOperation]);
   for (const direction of children(abstractOperation, WSDL_NAMESPACE)) {
     if (!["input", "output", "fault"].includes(direction.name.local)) continue;
     const corresponding = children(bindingOperation, WSDL_NAMESPACE, direction.name.local).find(n => direction.name.local !== "fault" || syntaxAttribute(n, "name") === syntaxAttribute(direction, "name"));
     const bodies = corresponding ? children(corresponding, namespace, direction.name.local === "fault" ? "fault" : "body") : [];
-    if (direction.name.local !== "fault" && bodies.length !== 1) c.fail(owner, "soap-body", "Each bound direction requires one SOAP body", corresponding?.source ?? bindingOperation.source);
+    if (bodies.length !== 1) c.fail(owner, "soap-body", "Each bound direction/fault requires one SOAP body/fault", corresponding?.source ?? bindingOperation.source);
     const body = bodies[0];
+    if (direction.name.local === "fault" && syntaxAttribute(body, "name") !== syntaxAttribute(direction, "name")) c.fail(owner, "soap-fault", "SOAP fault name must match its declared WSDL fault", body.source);
     if (body && syntaxAttribute(body, "use") !== "literal") c.unsupported(owner, "binding-use", "Encoded SOAP bodies are excluded", body.source);
     const rawParts = body && syntaxAttribute(body, "parts");
     if (rawParts !== undefined) c.text(rawParts, owner);
-    messageParts(direction, rawParts === undefined ? undefined : rawParts.trim() ? rawParts.trim().split(/\s+/) : []);
+    const parts = rawParts === undefined ? undefined : normalizeWhitespace(rawParts, "collapse");
+    messageParts(direction, parts === undefined ? undefined : parts ? parts.split(" ") : [], direction.name.local === "fault");
     if (corresponding) for (const header of children(corresponding, namespace, "header")) {
       if (syntaxAttribute(header, "use") !== "literal") c.unsupported(owner, "binding-header-use", "Encoded SOAP headers are excluded", header.source);
       const part = syntaxAttribute(header, "part"); if (!part) c.fail(owner, "soap-header", "Header requires a selected message part", header.source);
@@ -134,6 +148,7 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
     const ports = children((service as WsdlNode).syntax, WSDL_NAMESPACE, "port").filter(p => syntaxAttribute(p, "name") === selection.port!.name);
     if (ports.length !== 1) c.fail(service, "wsdl-port", "Select one declared service port");
     const port = ports[0], bindingName = syntaxAttribute(port, "binding");
+    assessExtensions(children(port).filter(child => child.name.namespace !== WSDL_NAMESPACE));
     if (!bindingName || c.target(lexicalReference(bindingName, "binding", port), service) !== owner.id) c.fail(service, "wsdl-port", "Selected port does not use the selected binding", port.source);
     const address = children(port, namespace, "address");
     if (address.length !== 1 || !syntaxAttribute(address[0], "location")) c.fail(service, "soap-address", "Selected SOAP port requires an endpoint", port.source);

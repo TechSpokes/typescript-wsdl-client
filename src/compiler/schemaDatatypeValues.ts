@@ -2,11 +2,14 @@
 import type {GraphNode, LexicalValue} from "./canonicalGraph.js";
 import type {AssessmentContext} from "./schemaAssessmentContext.js";
 import {isXmlNCName, isXmlName, isXmlNmtoken} from "../loader/orderedSyntax.js";
+import {schemaUri} from "./schemaUri.js";
 
 export type DecimalOperand = Readonly<{coefficient: bigint; scale: number; /** Conservative digit bound, charged before conversion/copying. */ digits?: number}>;
 export type SchemaOperand = Readonly<{
   family: string; canonical: string; length?: string; decimal?: DecimalOperand;
   ordered?: readonly DecimalOperand[]; zoned?: boolean;
+  /** Successful datatype/member normalization, only for schema operand checks. */
+  normalized?: string;
 }>;
 export const builtinParents: Readonly<Record<string, string>> = Object.freeze({
   normalizedString: "string", token: "normalizedString", language: "token", NMTOKEN: "token", Name: "token", NCName: "Name",
@@ -71,7 +74,7 @@ export function schemaDatatypeValues(c: AssessmentContext) {
       gYear: /^(-?[0-9]{4,})(Z|[+-]\d{2}:\d{2})?$/,
       gMonthDay: /^--(\d{2})-(\d{2})(Z|[+-]\d{2}:\d{2})?$/,
       gDay: /^---(\d{2})(Z|[+-]\d{2}:\d{2})?$/,
-      gMonth: /^--(\d{2})(?:--)?(Z|[+-]\d{2}:\d{2})?$/,
+      gMonth: /^--(\d{2})(Z|[+-]\d{2}:\d{2})?$/,
     };
     const match = patterns[name].exec(value); if (!match) return invalid(owner, lexical);
     const zone = match.at(-1), zoned = zone !== undefined;
@@ -85,7 +88,7 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     if (["dateTime", "date", "gYearMonth", "gYear"].includes(name)) {
       c.text(match[1], owner); year = BigInt(match[1]);
       if (year === 0n || match[1].replace(/^-/, "").length > 4 && match[1].replace(/^-/, "")[0] === "0") return invalid(owner, lexical);
-      if (year < 0n) year++; // XSD 1.0 has no year zero; arithmetic uses astronomical years.
+      if (year < 0n) c.unsupported(owner, "S06-DT-01", "The recorded XSD 1.0 negative-year calendar qualification must be resolved before interpreting this schema operand", lexical.context.source);
     }
     if (["dateTime", "date", "gYearMonth"].includes(name)) month = Number(match[2]);
     if (["dateTime", "date"].includes(name)) day = Number(match[3]);
@@ -107,8 +110,45 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     // comparison algorithm. Type tags prevent cross-family equality.
     return {family: name, canonical: `${zoned ? "zoned" : "local"}:${decimalKey(seconds, owner)}`, ordered: [seconds], zoned};
   };
+  /** Round the exact decimal rational directly to its declared IEEE format. */
+  const ieee = (value: string, single: boolean, owner: GraphNode): number => {
+    const negative = value[0] === "-", unsigned = value.replace(/^[+-]/, "");
+    const [mantissa, rawExponent = "0"] = unsigned.split(/[eE]/), dot = mantissa.indexOf(".");
+    const digits = mantissa.replace(".", "").replace(/^0+/, "");
+    if (!digits) return 0;
+    const exponent = BigInt(rawExponent) - BigInt(dot < 0 ? 0 : mantissa.length - dot - 1);
+    const order = exponent + BigInt(digits.length - 1);
+    // Outside these conservative thresholds, exact IEEE rounding is known
+    // without constructing a power from an adversarial exponent literal.
+    if (order > BigInt(single ? 39 : 309)) return negative ? -Infinity : Infinity;
+    if (order < BigInt(single ? -47 : -326)) return 0;
+    const magnitude = exponent < 0n ? -exponent : exponent;
+    // The inequalities above bound magnitude by input length + 327. Charge
+    // decimal powers and binary representations before constructing either.
+    c.step(owner, digits.length * 4 + Number(magnitude) * 4 + 32);
+    const power = 10n ** magnitude;
+    let numerator = BigInt(digits), denominator = 1n;
+    if (exponent >= 0n) numerator *= power; else denominator = power;
+    const bits = (number: bigint) => number.toString(2).length;
+    let binaryExponent = bits(numerator) - bits(denominator);
+    const below = binaryExponent >= 0 ? numerator < denominator << BigInt(binaryExponent) : numerator << BigInt(-binaryExponent) < denominator;
+    if (below) binaryExponent--;
+    const precision = single ? 24 : 53, minimum = single ? -126 : -1022, maximum = single ? 127 : 1023;
+    binaryExponent = Math.max(minimum, binaryExponent);
+    const shift = precision - 1 - binaryExponent;
+    c.step(owner, Math.abs(shift) + 1);
+    if (shift >= 0) numerator <<= BigInt(shift); else denominator <<= BigInt(-shift);
+    let significand = numerator / denominator;
+    const twiceRemainder = numerator % denominator * 2n;
+    if (twiceRemainder > denominator || twiceRemainder === denominator && significand % 2n !== 0n) significand++;
+    if (significand === 1n << BigInt(precision)) {significand >>= 1n; binaryExponent++;}
+    if (binaryExponent > maximum) return negative ? -Infinity : Infinity;
+    const number = Number(significand) * 2 ** (binaryExponent - precision + 1);
+    return negative ? -number : number;
+  };
   const atomic = (name: string, lexical: LexicalValue, owner: GraphNode, whitespace = whitespaceFor(name)): SchemaOperand => {
     c.text(lexical.value, owner); const value = normalizeWhitespace(lexical.value, whitespace), family = builtinPrimitive(name);
+    if (name === "ENTITY") c.unsupported(owner, "datatype:ENTITY", "A schema ENTITY operand requires a DTD declaration context excluded by the loading policy", lexical.context.source);
     if (family === "decimal") {
       if (name !== "decimal" && !/^[+-]?[0-9]+$/.test(value)) return invalid(owner, lexical);
       const d = decimal(value, owner), bound = integerBounds[name];
@@ -121,9 +161,7 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     }
     if (family === "float" || family === "double") {
       if (!["INF", "-INF", "NaN"].includes(value) && !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value)) return invalid(owner, lexical);
-      // IEEE values are the declared datatype, not coercion of arbitrary JS input.
-      const number = value === "INF" ? Infinity : value === "-INF" ? -Infinity : value === "NaN" ? NaN : Number(value);
-      const typed = family === "float" ? Math.fround(number) : number;
+      const typed = value === "INF" ? Infinity : value === "-INF" ? -Infinity : value === "NaN" ? NaN : ieee(value, family === "float", owner);
       return {family, canonical: Number.isNaN(typed) ? "NaN" : typed === 0 ? "0" : String(typed)};
     }
     if (family === "QName") {
@@ -159,11 +197,11 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     }
     if (family === "string" || family === "anySimpleType" || family === "anyURI") {
       if (name === "language" && !/^[a-zA-Z]{1,8}(?:-[a-zA-Z0-9]{1,8})*$/.test(value)) return invalid(owner, lexical);
-      if (["Name", "NCName", "NMTOKEN"].includes(name)) {
-        if (!(name === "NMTOKEN" ? isXmlNmtoken(value) : name === "NCName" ? isXmlNCName(value) : isXmlName(value))) return invalid(owner, lexical);
+      if (["Name", "NCName", "NMTOKEN", "ID", "IDREF", "ENTITY"].includes(name)) {
+        if (!(name === "NMTOKEN" ? isXmlNmtoken(value) : name === "Name" ? isXmlName(value) : isXmlNCName(value))) return invalid(owner, lexical);
       }
       // anyURI is an IRI reference after escaping; relative/empty values are legal.
-      if (family === "anyURI" && /%(?![0-9a-fA-F]{2})/.test(value)) return invalid(owner, lexical);
+      if (family === "anyURI" && !schemaUri(value, owner, c)) return invalid(owner, lexical);
       let length = 0; for (const ignored of value) {c.step(owner); length++;}
       return {family: family === "anySimpleType" ? "string" : family, canonical: value, length: length.toString()};
     }
@@ -174,7 +212,7 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     if (a.family !== b.family) return undefined;
     if (a.decimal && b.decimal) return compareDecimal(a.decimal, b.decimal, owner);
     if (a.family === "float" || a.family === "double") {
-      if (a.canonical === "NaN" || b.canonical === "NaN") return undefined;
+      if (a.canonical === "NaN" || b.canonical === "NaN") return a.canonical === b.canonical ? 0 : undefined;
       const x = Number(a.canonical), y = Number(b.canonical); return x === y ? 0 : x < y ? -1 : 1;
     }
     if (a.ordered && b.ordered) {

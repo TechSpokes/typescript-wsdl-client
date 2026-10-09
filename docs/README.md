@@ -50,6 +50,11 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 - [Ordered schema loading](content-model-loading.md): internal syntax, provenance and controlled resolution contracts
 - [Canonical schema graph](content-model-graph.md): immutable declarations, use sites and lexical reference context
 - [Semantic catalog format 2](content-model-catalog.md): deterministic persistence, validation and compatibility routing
+- [Semantic resolution](content-model-resolution.md): role-aware references, legal recursion and bounded cycle checks
+- [Derivation composition](content-model-composition.md): ordered contributions and obligations for schema assessment
+- [Structural companions](content-model-companions.md): common source/catalog dispatch and faithful compatibility routing
+- [Occurrence analysis](content-model-analysis.md): exact bounded summaries over immutable ordered particles
+- [Schema assessment](content-model-assessment.md): selected-operation legality, scalar enforcement plans and open qualifications
 
 - [Root README](../README.md): project overview, quick start, and authoritative Documentation section
 - [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow

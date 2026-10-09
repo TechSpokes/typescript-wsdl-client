@@ -47,6 +47,21 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 
 export const capabilities: CapabilityCase[] = [
   {
+    id: "faithful-schema-assessment",
+    title: "Internal S06 selected-closure schema assessment",
+    status: "research",
+    featureTags: ["xsd", "schema-legality", "capability", "scalar", "derivation"],
+    fixture: "xsd/assessment/float-direct-rounding.xsd",
+    publicContract: "Internal faithful schema planning has independent executable contrasts; public legacy compilation and payload acceptance retain their existing contracts.",
+    decision: "defer",
+    decisionReason: "schema-assessment.test.ts and its pinned primary/reference manifest assess the internal interface; open S06 qualifications and downstream enforcement gates prevent public faithful activation.",
+    authority: "XML Schema 1.0 second edition; independently recorded xmlschema 4.2.0 and libxml2 2.14.6 observations",
+    provenance: "Repository-owned primary-rule contrasts; fixed expectations never use production occurrence or assessment helpers.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {outcome: "research", reason: "Internal assessment is exercised by schema-assessment.test.ts, separate from the legacy compiler/emitter runner."},
+  },
+  {
     id: "declared-derivation-boundaries",
     title: "Group, derivation and recursion characterization for S05",
     status: "research",

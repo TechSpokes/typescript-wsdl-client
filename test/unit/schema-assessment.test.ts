@@ -11,7 +11,10 @@ import {prepareResolvedCompilationInput} from "../../src/compiler/semanticCatalo
 const ns = "urn:assessment", id = (local: string, role: "type" | "element" = "type") => globalId(role, {namespace: ns, local});
 const schema = (body: string) => `<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="${ns}" targetNamespace="${ns}" elementFormDefault="qualified">${body}</xs:schema>`;
 async function load(body: string): Promise<OccurrenceAnalysis> {
-  const source = "https://assessment.test/schema.xsd", bytes = Buffer.from(schema(body));
+  return loadSource(schema(body));
+}
+async function loadSource(text: string): Promise<OccurrenceAnalysis> {
+  const source = "https://assessment.test/schema.xsd", bytes = Buffer.from(text);
   const input = await prepareResolvedCompilationInput({kind: "source", source}, {loading: {policy: {allowedOrigins: ["https://assessment.test"]}, offlineResources: new Map([[source, {bytes, digest: createHash("sha256").update(bytes).digest("hex")}]])}});
   if (input.kind !== "semantic") throw Error("semantic");
   const analyzed = analyzeOccurrences(input.composed); if (analyzed.kind !== "analyzed") throw analyzed.diagnostic;
@@ -24,6 +27,28 @@ const assess = (analysis: OccurrenceAnalysis, local = "T", role: "type" | "eleme
 const element = (name: string, occurs = "") => `<xs:element name="${name}" type="xs:string" ${occurs}/>`;
 
 describe("reachable XSD 1.0 schema assessment", () => {
+  it("assesses selected WSDL bodies and reachable headers independently", async () => {
+    const operation = (name: string, body: string) => `<wsdl:operation name="${name}"><soap:operation soapAction="${name}"/><wsdl:input>${body}</wsdl:input></wsdl:operation>`;
+    const wsdl = `<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="${ns}" targetNamespace="${ns}"><wsdl:types>${schema('<xs:element name="safe" type="xs:string"/><xs:complexType name="Excluded" abstract="true"/><xs:element name="excluded" type="t:Excluded"/>')}</wsdl:types><wsdl:message name="Safe"><wsdl:part name="body" element="t:safe"/></wsdl:message><wsdl:message name="Excluded"><wsdl:part name="body" element="t:excluded"/></wsdl:message><wsdl:portType name="Port">${["safe", "excluded", "header", "encoded", "missing"].map(name => `<wsdl:operation name="${name}"><wsdl:input message="t:${name === "excluded" ? "Excluded" : "Safe"}"/></wsdl:operation>`).join("")}</wsdl:portType><wsdl:binding name="Binding" type="t:Port"><soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>${operation("safe", '<soap:body use="literal"/>')}${operation("excluded", '<soap:body use="literal"/>')}${operation("header", '<soap:body use="literal"/><soap:header use="literal" message="t:Excluded" part="body"/>')}${operation("encoded", '<soap:body use="encoded"/>')}${operation("missing", "")}</wsdl:binding></wsdl:definitions>`;
+    const a = await loadSource(wsdl), selection = ["safe", "excluded", "header", "encoded", "missing"].map(operation => ({kind: "operation" as const, id: operation, binding: globalId("binding", {namespace: ns, local: "Binding"}), operation}));
+    const result = assessSchemaProfile(a, selection); expect(result.kind).toBe("assessed");
+    if (result.kind === "assessed") {
+      expect(result.assessment.operations.map(o => o.kind)).toEqual(["supported", "unsupported-capability", "unsupported-capability", "unsupported-capability", "invalid-schema"]);
+      expect(result.assessment.operations[0]).toMatchObject({binding: {version: "soap11", style: "document", use: "literal", dispatchQualification: "required-before-dispatch"}});
+      expect(result.assessment.operations[2]).toMatchObject({diagnostic: {rule: "polymorphism", operations: ["header"]}});
+      expect(result.assessment.operations[3]).toMatchObject({diagnostic: {rule: "binding-use"}});
+      expect(result.assessment.operations[4]).toMatchObject({diagnostic: {rule: "soap-body"}});
+    }
+  });
+
+  it("bounds shared group-use copying before expanding an adversarial DAG", async () => {
+    let body = `<xs:group name="G0"><xs:sequence>${element("a")}</xs:sequence></xs:group>`;
+    for (let n = 1; n <= 20; n++) body += `<xs:group name="G${n}"><xs:sequence><xs:group ref="t:G${n - 1}"/><xs:group ref="t:G${n - 1}"/></xs:sequence></xs:group>`;
+    const a = await load(`${body}<xs:complexType name="T"><xs:sequence><xs:group ref="t:G20"/></xs:sequence></xs:complexType>`);
+    const result = assessSchemaProfile(a, [{kind: "components", id: "shared", roots: [id("T")]}]);
+    expect(result).toMatchObject({kind: "failure", diagnostic: {category: "resource-limit", scope: "request"}});
+    expect("assessment" in result).toBe(false);
+  });
   it.each([
     ["exact adjacent repeats", `<xs:sequence>${element("a", 'minOccurs="2" maxOccurs="2"')}${element("a", 'minOccurs="3" maxOccurs="3"')}</xs:sequence>`, "supported"],
     ["variable adjacent repeats", `<xs:sequence>${element("a", 'minOccurs="2" maxOccurs="3"')}${element("a")}</xs:sequence>`, "invalid-schema"],
@@ -124,9 +149,21 @@ describe("reachable XSD 1.0 schema assessment", () => {
     expect(assess(a, "d", "element").kind).toBe("invalid-schema"); expect(assess(a, "q", "element").kind).toBe("supported");
   });
 
-  it("preserves restricted union members and rejects list-of-list types", async () => {
+  it("interprets enumeration in the base value space independently of local facet order", async () => {
+    const enumFacet = '<xs:enumeration value=" a "/>', whitespace = '<xs:whiteSpace value="collapse"/>';
+    for (const facets of [enumFacet + whitespace, whitespace + enumFacet]) {
+      const a = await load(`<xs:simpleType name="T"><xs:restriction base="xs:string">${facets}</xs:restriction></xs:simpleType><xs:element name="e" type="t:T" fixed="a"/>`);
+      expect(assess(a, "e", "element").kind).toBe("invalid-schema");
+    }
+    const invalid = await load(`<xs:simpleType name="T"><xs:restriction base="xs:decimal"><xs:totalDigits value="&#160;1&#160;"/></xs:restriction></xs:simpleType>`);
+    expect(assess(invalid).kind).toBe("invalid-schema");
+  });
+
+  it("retains declared unions while applying XSD 1.0 member flattening and rejecting list-of-list types", async () => {
     const a = await load(`<xs:simpleType name="U"><xs:union memberTypes="xs:integer xs:boolean"/></xs:simpleType><xs:simpleType name="R"><xs:restriction base="t:U"><xs:enumeration value="1"/></xs:restriction></xs:simpleType><xs:simpleType name="T"><xs:union memberTypes="t:R"/></xs:simpleType><xs:element name="e" type="t:T" fixed="2"/><xs:simpleType name="L"><xs:list itemType="xs:string"/></xs:simpleType><xs:simpleType name="LL"><xs:list itemType="t:L"/></xs:simpleType>`);
-    expect(assess(a, "e", "element").kind).toBe("invalid-schema"); expect(assess(a, "LL").kind).toBe("invalid-schema");
+    const result = assess(a, "e", "element"); expect(result.kind).toBe("supported");
+    if (result.kind === "supported") expect(result.scalars.find(s => s.id === id("T"))).toMatchObject({unionMapping: "xsd10-flattened", declaredMembers: [{name: {local: "R"}}], members: [{name: {local: "integer"}}, {name: {local: "boolean"}}]});
+    expect(assess(a, "LL").kind).toBe("invalid-schema");
   });
 
   it("accepts constrained nested atomic unions as list items and derived union-member attribute types", async () => {

@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review" targetNamespace="urn:review">
+  <xs:simpleType name="T">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="a" fixed="true" bogus="x"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="D">
+    <xs:simpleContent>
+      <xs:extension base="t:T"/>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

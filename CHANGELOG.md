@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): assess selected faithful schema closures with typed legality diagnostics and scalar enforcement plans.
+
 - feat(compiler): add exact particle analysis for internal faithful models while preserving legacy defaults.
 
 - feat(compiler): resolve reusable schema semantics with immutable derivation composition and structural companion reuse.

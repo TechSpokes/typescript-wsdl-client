@@ -201,10 +201,19 @@ export function particleSchemaAssessment(c: AssessmentContext, derives: (derived
     const stack = [{particle: root, path: [] as SchemaParticle[]}];
     while (stack.length) {
       const {particle: p, path} = stack.pop()!; c.step(p.owner);
-      if (p.occurs.max === "0" || !p.hasRealization) continue;
+      if (p.occurs.max === "0") continue;
       c.step(p.owner, path.length + 1); const here = [...path, p];
       if (group(p)) {
-        for (let i = p.children.length - 1; i >= 0; i--) {c.step(p.owner); stack.push({particle: p.children[i], path: here});}
+        const reachable: SchemaParticle[] = []; let prefix = true;
+        for (const child of p.children) {
+          c.step(p.owner);
+          if (p.kind !== "sequence" || prefix) reachable.push(child);
+          // UPA concerns the next validation attempt, including prefixes of
+          // dead branches. A following sequence member is reached only after
+          // a realization of every prior member, not after an interval claim.
+          if (p.kind === "sequence") prefix &&= child.hasRealization;
+        }
+        for (let i = reachable.length - 1; i >= 0; i--) {c.step(p.owner); stack.push({particle: reachable[i], path: here});}
       } else leaves.push({particle: p, path: here});
     }
     for (let i = 0; i < leaves.length; i++) for (let j = i + 1; j < leaves.length; j++) {
@@ -270,9 +279,7 @@ export function particleSchemaAssessment(c: AssessmentContext, derives: (derived
         c.text(r.wildcard!.namespace.value, r.owner);
         return cardinality && namespaceSubset(wildcardNamespaces(r.wildcard!), namespace) && rank[r.wildcard!.processContents] >= rank[b.wildcard!.processContents];
       }
-      if (!rangeOK(r.range, b.occurs)) return false;
-      for (const child of r.children) {if (!(yield [child, b, true])) return false;}
-      return true;
+      return c.unsupported(r.owner, "S06-PW-01", "The recorded XSD 1.0 group-to-wildcard cardinality qualification (WG R-240) must be resolved before assessing this restriction", b.owner.context.source);
     }
     if (!group(b) || r.kind === "any") return false;
     let members = r.children, kind = r.kind, occurs = r.occurs;

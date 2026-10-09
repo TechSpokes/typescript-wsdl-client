@@ -59,7 +59,10 @@ export function schemaPatterns(c: AssessmentContext) {
           if (rangeEnd && /\\[pP]\{/.test(escape)) return invalid();
           body += escape;
           canEndRange = !/\\[pP]\{/.test(escape) && !rangeEnd;
-        } else {body += char === "^" ? "\\^" : char; i++; canEndRange = !rangeEnd;}
+        } else {
+          const point = source.codePointAt(i)!, literal = String.fromCodePoint(point);
+          body += literal === "^" ? "\\^" : literal; i += point > 0xffff ? 2 : 1; canEndRange = !rangeEnd;
+        }
         if (rangeEnd) {rangeEnd = false; canEndRange = false;}
         count++;
       }
@@ -83,7 +86,7 @@ export function schemaPatterns(c: AssessmentContext) {
           max = next === i ? "unbounded" : source.slice(next, i).replace(/^0+(?=\d)/, "");
         }
         if (source[i++] !== "}") return invalid();
-        c.setCurrent(owner); c.algebra.validate({min, max});
+        if (c.algebra.compare(min, max) > 0) return invalid();
       }
       return min === "1" && max === "1" ? atom : add({kind: "repeat", child: atom, min, max});
     };

@@ -1,0 +1,54 @@
+{
+  "formatVersion": 1,
+  "namespace": "urn:binding",
+  "cases": [
+    {
+      "id": "binding-control",
+      "fixture": "xsd/assessment/binding-control.wsdl",
+      "sha256": "8764297b4bcd5c92b7912f7f5ac1ac75a9c3f1111b209d1391d05a34b320ffd1",
+      "assessment": "supported",
+      "rule": null,
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "binding-action-absent",
+      "fixture": "xsd/assessment/binding-action-absent.wsdl",
+      "sha256": "5716be7d0e0902c60c15cffc429606d227b32c7cadae82cb259be2fc981aa9fa",
+      "assessment": "invalid-schema",
+      "rule": "soap-action",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "binding-required-extension",
+      "fixture": "xsd/assessment/binding-required-extension.wsdl",
+      "sha256": "3ac312003806f015fb917bc95c493cec05b1968c600c851f8ba5ebae1c8a913a",
+      "assessment": "unsupported-capability",
+      "rule": "required-binding-extension",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "port-required-extension",
+      "fixture": "xsd/assessment/port-required-extension.wsdl",
+      "sha256": "f01827215b08cc9b2f6b2b85480b8a85d4c39ffe3adcfebd42d05f18eb71f87b",
+      "assessment": "unsupported-capability",
+      "rule": "required-binding-extension",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "fault-multipart",
+      "fixture": "xsd/assessment/fault-multipart.wsdl",
+      "sha256": "52fe58742af1f5fde5c06325ca08d4d83a9abfaa5b1a1b306fd6c1d5b15fe92e",
+      "assessment": "invalid-schema",
+      "rule": "soap-fault-part",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "fault-control",
+      "fixture": "xsd/assessment/fault-control.wsdl",
+      "sha256": "89bdb6e7fcb05aa0469493c92579836ccb4825f49aae96b6faf172ec3c1e1e74",
+      "assessment": "supported",
+      "rule": null,
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    }
+  ]
+}

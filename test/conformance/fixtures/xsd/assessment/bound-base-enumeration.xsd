@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:assessment" targetNamespace="urn:assessment" elementFormDefault="qualified">
+  <xs:simpleType name="B">
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="2"/>
+      <xs:enumeration value="4"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="D">
+    <xs:restriction base="t:B">
+      <xs:minInclusive value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

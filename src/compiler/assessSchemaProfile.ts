@@ -35,7 +35,7 @@ export type AssessedType = Readonly<{
   effectiveContent: EffectiveContent;
   assessment: "schema-assessed";
 }>;
-export type AssessmentScope = Readonly<{component: NodeId; kind: "opaque-builtin" | "wildcard-lax" | "wildcard-skip" | "absent-source"; description: string}>;
+export type AssessmentScope = Readonly<{component: NodeId; kind: "opaque-builtin" | "wildcard-lax" | "wildcard-skip" | "absent-source" | "schema-only"; description: string}>;
 export type OperationAssessment = Readonly<
   {kind: "supported"; operation: string; selection: AssessmentSelection; roots: readonly NodeId[]; closure: readonly NodeId[];
     types: readonly AssessedType[]; scalars: readonly ScalarSupportPlan[]; scopes: readonly AssessmentScope[]; binding?: BindingSupportPlan;
@@ -67,6 +67,12 @@ function freezeAssessment<T>(value: T, c: AssessmentContext, metrics: {steps: nu
 }
 
 const unsupportedSyntax = new Set(["key", "keyref", "unique", "assert", "assertion", "alternative", "openContent", "defaultOpenContent", "explicitTimezone", "redefine"]);
+/** Charge the upper bound before helpers create reference/containment arrays. */
+function chargeEdges(c: AssessmentContext, node: GraphNode) {
+  const references = node.kind === "simpleType" && node.variety.kind === "union" ? node.variety.members.length : node.kind === "wsdl" ? node.references.length : 2;
+  const contained = node.kind === "complexType" || node.kind === "attributeGroup" ? node.attributes.length + 1 : node.kind === "particle" && "children" in node.term ? node.term.children.length : 1;
+  c.step(node, references + contained);
+}
 const allowedAttributes: Readonly<Record<GraphNode["kind"], readonly string[]>> = {
   element: ["id", "name", "type", "form", "default", "fixed", "nillable", "abstract", "block", "final", "substitutionGroup", "minOccurs", "maxOccurs"],
   attribute: ["id", "name", "type", "form", "default", "fixed", "use"],
@@ -102,7 +108,9 @@ function checkSyntax(c: AssessmentContext, node: GraphNode) {
   }
   for (const retained of c.graph.schemaRetained) {
     c.step(node);
-    if (retained.context.source.uri === node.context.source.uri && unsupportedSyntax.has(retained.syntax.name.local)) c.unsupported(node, `xsd:${retained.syntax.name.local}`, "Reachable schema interpretation requires an excluded feature", retained.syntax.source);
+    if (retained.context.source.uri !== node.context.source.uri) continue;
+    if (retained.syntax.name.namespace === XSD_NAMESPACE && unsupportedSyntax.has(retained.syntax.name.local)) c.unsupported(node, `xsd:${retained.syntax.name.local}`, "Reachable schema interpretation requires an excluded feature", retained.syntax.source);
+    if (retained.syntax.name.namespace !== XSD_NAMESPACE || !["include", "import", "notation"].includes(retained.syntax.name.local)) c.fail(node, "schema-for-schemas", "Unexpected child of a reachable schema document", retained.syntax.source);
   }
 }
 
@@ -135,6 +143,13 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
     });
     scalars = scalarSchemaAssessment(c, node => c!.types.get(node.id)?.scalar ? undefined : particles.effective(node).scalar);
     const attributes = attributeSchemaAssessment(c, scalars);
+    // A dead use creates no runtime requirement, but an existing referenced
+    // global declaration still has schema-level operands/facet constraints.
+    let sourceScalars: ReturnType<typeof scalarSchemaAssessment>;
+    const sourceParticles = particleSchemaAssessment(c, (...args) => sourceScalars.derives(...args), (a, b) =>
+      b.value?.kind !== "fixed" || a.value?.kind === "fixed" && sourceScalars.equivalent(a.type, a.value.lexical, b.type, b.value.lexical, a));
+    sourceScalars = scalarSchemaAssessment(c, node => c!.types.get(node.id)?.scalar ? undefined : sourceParticles.effective(node).scalar, {schemaOperandsOnly: true});
+    const sourceAttributes = attributeSchemaAssessment(c, sourceScalars);
     const checked = new Map<NodeId, AssessedType>(), operations: OperationAssessment[] = [], ids = new Set<string>();
     for (const originalSelection of selections) {
       c.step(); c.text(originalSelection.id);
@@ -142,12 +157,17 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
       let selection: AssessmentSelection;
       if (originalSelection.kind === "components") {
         c.step(undefined, originalSelection.roots.length); for (const root of originalSelection.roots) c.text(root);
-        selection = {...originalSelection, roots: [...originalSelection.roots]};
+        selection = {kind: "components", id: originalSelection.id, roots: [...originalSelection.roots]};
       } else {
         c.text(originalSelection.binding); c.text(originalSelection.operation);
+        if (originalSelection.inputName !== undefined) c.text(originalSelection.inputName);
+        if (originalSelection.outputName !== undefined) c.text(originalSelection.outputName);
         if (originalSelection.additionalRoots) {c.step(undefined, originalSelection.additionalRoots.length); for (const root of originalSelection.additionalRoots) c.text(root);}
         if (originalSelection.port) {c.text(originalSelection.port.service); c.text(originalSelection.port.name);}
-        selection = {...originalSelection, port: originalSelection.port && {...originalSelection.port}, additionalRoots: originalSelection.additionalRoots && [...originalSelection.additionalRoots]};
+        selection = {kind: "operation", id: originalSelection.id, binding: originalSelection.binding, operation: originalSelection.operation,
+          inputName: originalSelection.inputName, outputName: originalSelection.outputName,
+          port: originalSelection.port && {service: originalSelection.port.service, name: originalSelection.port.name},
+          additionalRoots: originalSelection.additionalRoots && [...originalSelection.additionalRoots]};
       }
       c.step(); c.text(selection.id);
       if (!selection.id || ids.has(selection.id)) throw new SemanticError("invalid-schema", "Assessment selection IDs must be present and unique");
@@ -180,9 +200,24 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
           if (seen.has(visit)) continue; seen.add(visit);
           if (sourceOnly) {
             c.setCurrent(node); checkSchemaSyntax(c, node);
-            scope.push({component: node.id, kind: "absent-source", description: "Source syntax has no surviving particle/attribute-use component; S05 reference and cycle diagnostics remain applicable"});
+            if (node.identity.kind === "global") {
+              if (node.kind === "simpleType") sourceScalars.ensure({kind: "local", target: node.id}, node);
+              if (node.kind === "complexType") {sourceParticles.check(node); sourceAttributes.ensure(node); if (sourceParticles.effective(node).scalar) sourceScalars.ensure({kind: "local", target: node.id}, node);}
+              if (node.kind === "attributeGroup") sourceAttributes.group(node);
+              if ((node.kind === "element" || node.kind === "attribute") && node.value) {
+                let type = node.type;
+                const target = type.kind === "builtin" ? undefined : c.get(c.target(type, node)!);
+                if (target?.kind === "complexType" && !sourceParticles.effective(target).scalar) {
+                  const content = sourceParticles.effective(target);
+                  if (!content.mixed || !content.particle?.schemaEmptiable || content.opaque) c.fail(node, "e-props-correct", "Global value constraint requires scalar or mixed formally emptiable content");
+                  type = {kind: "builtin", name: {namespace: XSD_NAMESPACE, local: "string"}};
+                }
+                sourceScalars.checkValue(type, node.value, node);
+              }
+              scope.push({component: node.id, kind: "schema-only", description: "Existing global declaration retains schema-level constraints; this dead reference adds no runtime scalar capability"});
+            } else scope.push({component: node.id, kind: "absent-source", description: "Source syntax has no surviving particle/attribute-use component; S05 reference and cycle diagnostics remain applicable"});
+            chargeEdges(c, node);
             const refs = referenceSlots(node), children = containedNodes(node);
-            c.step(node, refs.length + children.length);
             for (const slot of refs) if (slot.reference.kind !== "builtin") {c.step(node); queue.push({id: c.target(slot.reference, node)!, sourceOnly: true});}
             for (const child of children) {c.step(node); queue.push({id: child, sourceOnly: true});}
             continue;
@@ -215,7 +250,8 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
                   scalars.checkFinal(node.derivation.base, node.derivation.kind, node);
                   const baseId = c.target(node.derivation.base, node), base = baseId && c.get(baseId);
                   if (node.derivation.kind === "restriction" && base && base.kind === "complexType" && !c.types.get(base.id)?.scalar) {
-                    if (!c.types.get(base.id)?.mixed || !c.typeSummaries.get(base.id)?.children.schemaEmptiable || !node.derivation.inlineType) c.fail(node, "src-ct", "Simple-content restriction of a mixed base requires formal emptiability and an inline scalar type");
+                    const baseContent = particles.effective(base);
+                    if (!baseContent.mixed || !baseContent.particle?.schemaEmptiable || !node.derivation.inlineType) c.fail(node, "src-ct", "Simple-content restriction of a mixed base requires formal emptiability and an inline scalar type");
                   }
                 }
               }
@@ -239,9 +275,7 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
           if (node.kind === "particle" && node.term.kind === "any") {
             c.text(node.term.wildcard.namespace.value, node); wildcard(node, wildcardNamespaces(node.term.wildcard), node.term.wildcard.processContents, "element");
           }
-          const referenceCount = node.kind === "simpleType" && node.variety.kind === "union" ? node.variety.members.length : node.kind === "wsdl" ? node.references.length : 3;
-          const containedCount = node.kind === "complexType" || node.kind === "attributeGroup" ? node.attributes.length + 1 : node.kind === "particle" && "children" in node.term ? node.term.children.length : 1;
-          c.step(node, referenceCount + containedCount);
+          chargeEdges(c, node);
           for (const slot of referenceSlots(node)) {
             c.step(node);
             if (slot.reference.kind === "builtin") {

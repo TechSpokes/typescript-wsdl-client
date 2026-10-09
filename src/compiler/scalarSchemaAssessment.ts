@@ -13,7 +13,8 @@ export type ScalarConstraintLayer = Readonly<{owner: NodeId; facets: readonly Fa
 export type ScalarSupportPlan = Readonly<{
   id: NodeId; reference: Reference; variety: "atomic" | "list" | "union"; primitive?: string;
   builtin?: string; item?: Reference; members?: readonly Reference[]; layers: readonly ScalarConstraintLayer[];
-  whitespace: "preserve" | "replace" | "collapse";
+  declaredMembers?: readonly Reference[]; unionMapping?: "xsd10-flattened";
+  whitespace: "preserve" | "replace" | "collapse" | "member";
   enforcement: readonly ScalarEnforcement[]; runtimeOwner: "#184"; consumers: readonly ["#188", "#189", "#198"];
 }>;
 type Description = {
@@ -29,7 +30,8 @@ const integerFacets = new Set([...lengthNames, "totalDigits", "fractionDigits"])
 const lower = (name: string) => name.startsWith("min");
 const exclusive = (name: string) => name.endsWith("Exclusive");
 
-export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (node: Extract<GraphNode, {kind: "complexType"}>) => Reference | undefined = () => undefined) {
+export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (node: Extract<GraphNode, {kind: "complexType"}>) => Reference | undefined = () => undefined,
+  options: {schemaOperandsOnly?: boolean} = {}) {
   const descriptions = new Map<string, Description>(), values = schemaDatatypeValues(c), patterns = schemaPatterns(c);
   const referenceKey = (reference: Reference, owner: GraphNode) => reference.kind === "builtin" ? `builtin:${reference.name.local}` : c.target(reference, owner)!;
   const checkFinal = (base: Reference, method: string, owner: GraphNode) => {
@@ -44,11 +46,11 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
   const builtin = (reference: Extract<Reference, {kind: "builtin"}>, owner: GraphNode): Description => {
     const name = reference.name.local;
     if (reference.name.namespace !== XSD_NAMESPACE) c.fail(owner, "src-resolve", "Builtin type requires the XSD namespace");
-    if (excluded.has(name)) c.unsupported(owner, `datatype:${name}`, "Document identity, DTD-dependent and NOTATION datatypes are excluded");
+    if (excluded.has(name) && !options.schemaOperandsOnly) c.unsupported(owner, `datatype:${name}`, "Document identity, DTD-dependent and NOTATION datatypes are excluded");
     if (name === "anyType") c.fail(owner, "src-simple-type", "A scalar declaration cannot use complex anyType");
     const key = `builtin:${name}`, existing = descriptions.get(key); if (existing) return existing;
-    if (name === "NMTOKENS") {
-      const item: Reference = {kind: "builtin", name: {namespace: XSD_NAMESPACE, local: "NMTOKEN"}};
+    if (["NMTOKENS", "IDREFS", "ENTITIES"].includes(name)) {
+      const item: Reference = {kind: "builtin", name: {namespace: XSD_NAMESPACE, local: name === "NMTOKENS" ? "NMTOKEN" : name === "IDREFS" ? "IDREF" : "ENTITY"}};
       const itemDescription = builtin(item, owner);
       const result: Description = {definition: key, plan: {id: key, reference, variety: "list", builtin: name, item, layers: [], whitespace: "collapse", enforcement: ["lexical-space", "whitespace", "list", "length"], runtimeOwner: "#184", consumers: ["#188", "#189", "#198"]}, item: itemDescription, facets: new Map()};
       descriptions.set(key, result); return result;
@@ -61,9 +63,11 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
   type OperandRequest = {description: Description; lexical: LexicalValue; owner: GraphNode};
   function* operandStep({description, lexical, owner}: OperandRequest): Generator<OperandRequest, SchemaOperand, SchemaOperand> {
     const cache = operands.get(description), cached = cache?.get(lexical); if (cached) return cached;
-    c.text(lexical.value, owner); const normalized = normalizeWhitespace(lexical.value, description.plan.whitespace);
+    c.text(lexical.value, owner);
+    const whitespace = description.plan.whitespace === "member" ? "preserve" : description.plan.whitespace;
+    const normalized = normalizeWhitespace(lexical.value, whitespace);
     let result: SchemaOperand;
-    if (description.plan.variety === "atomic") result = values.atomic(description.plan.builtin ?? description.plan.primitive!, lexical, owner, description.plan.whitespace);
+    if (description.plan.variety === "atomic") result = {...values.atomic(description.plan.builtin ?? description.plan.primitive!, lexical, owner, whitespace), normalized};
     else if (description.plan.variety === "list") {
       const keys: string[] = [], tokens = normalized ? normalized.split(" ") : [];
       c.step(owner, tokens.length);
@@ -71,8 +75,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
         c.step(owner); const item = yield {description: description.item!, lexical: {...lexical, value: token}, owner};
         c.text(item.canonical, owner); keys.push(JSON.stringify([item.family, item.canonical]));
       }
-      if (description.plan.builtin === "NMTOKENS" && !tokens.length) c.fail(owner, "cvc-minLength-valid", "NMTOKENS requires at least one item", lexical.context.source);
-      c.step(owner, keys.length); result = {family: "list", canonical: JSON.stringify(keys), length: tokens.length.toString()};
+      if (["NMTOKENS", "IDREFS", "ENTITIES"].includes(description.plan.builtin ?? "") && !tokens.length) c.fail(owner, "cvc-minLength-valid", "Builtin token list requires at least one item", lexical.context.source);
+      c.step(owner, keys.length); result = {family: "list", canonical: JSON.stringify(keys), length: tokens.length.toString(), normalized};
     } else {
       let chosen: SchemaOperand | undefined;
       for (const member of description.members!) {
@@ -87,7 +91,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
       c.step(owner);
       if (layer.patterns.length) {
         let accepted = false;
-        for (const pattern of layer.patterns) {if (patterns.acceptsOperand(pattern, normalized, owner)) {accepted = true; break;}}
+        for (const pattern of layer.patterns) {if (patterns.acceptsOperand(pattern, result.normalized!, owner)) {accepted = true; break;}}
         if (!accepted) c.fail(owner, "cvc-pattern-valid", "Schema operand violates its inherited pattern layer", lexical.context.source);
       }
       const enumeration: SchemaOperand[] = [];
@@ -149,6 +153,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
     if (!allowed.includes(facet.name)) c.fail(owner, "facet-applicability", "Facet is not permitted on this datatype variety", facet.lexical.context.source);
   };
   const layer = (base: Description, reference: Reference, owner: GraphNode, facets: readonly Facet[]): Description => {
+    if (base.plan.builtin === "anySimpleType") c.fail(owner, "cos-st-restricts", "The simple ur-type has absent variety and is not an atomic restriction base");
     c.step(owner, base.plan.layers.length + base.facets.size + base.plan.enforcement.length);
     const result: Description = {definition: owner.kind === "complexType" ? `content:${owner.id}` : owner.id, parent: base, plan: {...base.plan, id: owner.id, reference}, item: base.item, members: base.members, facets: new Map(base.facets)};
     const seen = new Set<string>(), compiled: SchemaPattern[] = [], requirements = new Set(base.plan.enforcement);
@@ -161,14 +166,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
       if (facet.name === "enumeration") {enumerations.set(facet, operand(base, facet.lexical, owner)); requirements.add("enumeration"); continue;}
       if (facet.name === "whiteSpace") {
         const mode = normalizeWhitespace(facet.lexical.value, "collapse"), rank = {preserve: 0, replace: 1, collapse: 2};
-        if (!(mode in rank) || rank[mode as keyof typeof rank] < rank[base.plan.whitespace]) c.fail(owner, "whiteSpace-valid-restriction", "Whitespace facet cannot weaken normalization", facet.lexical.context.source);
+        if (base.plan.whitespace === "member" || !(mode in rank) || rank[mode as keyof typeof rank] < rank[base.plan.whitespace]) c.fail(owner, "whiteSpace-valid-restriction", "Whitespace facet cannot weaken normalization", facet.lexical.context.source);
         result.plan = {...result.plan, whitespace: mode as keyof typeof rank}; requirements.add("whitespace"); locals.set(facet.name, {facet});
       } else if (integerFacets.has(facet.name)) {
         const raw = normalizeWhitespace(facet.lexical.value, "collapse");
-        if (!/^[+]?[0-9]+$/.test(raw)) c.fail(owner, "facet-value", "Facet requires a nonnegative integer", facet.lexical.context.source);
-        const integer = raw.replace(/^\+/, "").replace(/^0+(?=\d)/, "");
+        if (!/^[+-]?[0-9]+$/.test(raw)) c.fail(owner, "facet-value", "Facet requires a nonnegative integer", facet.lexical.context.source);
+        const integer = raw.replace(/^[+-]/, "").replace(/^0+(?=\d)/, "");
+        if (raw.startsWith("-") && integer !== "0") c.fail(owner, "facet-value", "Facet requires a nonnegative integer", facet.lexical.context.source);
         if (facet.name === "totalDigits" && integer === "0") c.fail(owner, "totalDigits-valid-restriction", "totalDigits must be positive", facet.lexical.context.source);
         if (facet.name === "fractionDigits" && builtinPrimitive(base.plan.builtin ?? "") === "decimal" && base.plan.builtin !== "decimal" && integer !== "0") c.fail(owner, "fractionDigits-valid-restriction", "Integer fractionDigits is fixed at zero", facet.lexical.context.source);
+        if (["NMTOKENS", "IDREFS", "ENTITIES"].includes(base.plan.builtin ?? "") && lengthNames.includes(facet.name) && integer === "0") c.fail(owner, "length-minLength-maxLength", "Builtin token list has intrinsic minLength 1", facet.lexical.context.source);
         const prior = base.facets.get(facet.name)?.integer;
         if (prior !== undefined) {
           const order = c.algebra.compare(integer, prior);
@@ -176,10 +183,18 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
         }
         locals.set(facet.name, {facet, integer}); requirements.add(lengthNames.includes(facet.name) ? "length" : "numeric-precision");
       } else if (boundNames.includes(facet.name)) {
-        // A bound is a value of the base's primitive space. The inherited
-        // bound itself need not satisfy the base's exclusive endpoint.
-        const primitive = {...base, facets: new Map<string, {facet: Facet}>(), plan: {...base.plan, layers: []}};
-        const value = operand(primitive, facet.lexical, owner);
+        // rf-min/maxInclusive require the base's value space, including its
+        // enum/pattern/precision layers. The exclusive facets alone admit
+        // equality with the corresponding inherited exclusive endpoint.
+        let value: SchemaOperand;
+        try {value = operand(base, facet.lexical, owner);}
+        catch (error) {
+          const inherited = base.facets.get(facet.name)?.operand;
+          if (!(error instanceof SchemaAssessmentError) || error.category !== "invalid-schema" || !exclusive(facet.name) || !inherited) throw error;
+          const primitive = {...base, facets: new Map<string, {facet: Facet}>(), plan: {...base.plan, layers: []}};
+          value = operand(primitive, facet.lexical, owner);
+          if (value.family !== inherited.family || value.canonical !== inherited.canonical) throw error;
+        }
         locals.set(facet.name, {facet, operand: value}); requirements.add("numeric-bounds");
       }
       const inherited = base.facets.get(facet.name);
@@ -191,13 +206,15 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
     for (const [name, constraint] of locals) {
       c.step(owner); result.facets.set(name, constraint);
       if (boundNames.includes(name)) {
-        const opposite = lower(name) ? "min" : "max";
+        const sameSide = lower(name) ? "min" : "max";
         for (const priorName of boundNames) {
           const prior = base.facets.get(priorName); if (!prior?.operand) continue;
           const order = values.compare(constraint.operand!, prior.operand, owner);
           if (order === undefined) c.fail(owner, "facet-bound-order", "Facet bounds are not ordered in the datatype value space", constraint.facet.lexical.context.source);
-          if (priorName.startsWith(opposite)) {
+          if (priorName.startsWith(sameSide)) {
             if (lower(name) ? order! < 0 || order === 0 && !exclusive(name) && exclusive(priorName) : order! > 0 || order === 0 && !exclusive(name) && exclusive(priorName)) c.fail(owner, `${name}-valid-restriction`, "Facet widens an inherited bound", constraint.facet.lexical.context.source);
+          } else if (lower(name) ? order! > 0 || order === 0 && exclusive(priorName) : order! < 0 || order === 0 && (exclusive(name) || exclusive(priorName))) {
+            c.fail(owner, `${name}-valid-restriction`, "Facet crosses an inherited opposite endpoint", constraint.facet.lexical.context.source);
           }
         }
       }
@@ -210,7 +227,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
     const lowers = boundNames.filter(n => lower(n) && result.facets.has(n)), uppers = boundNames.filter(n => !lower(n) && result.facets.has(n));
     for (const a of lowers) for (const b of uppers) {
       c.step(owner); const order = values.compare(result.facets.get(a)!.operand!, result.facets.get(b)!.operand!, owner);
-      if (order === undefined || order > 0 || order === 0 && (exclusive(a) || exclusive(b))) c.fail(owner, "facet-bound-order", "Lower and upper facet constraints are inconsistent");
+      if (order === undefined || order > 0 || order === 0 && exclusive(a) !== exclusive(b)) c.fail(owner, "facet-bound-order", "Lower and upper facet constraints are inconsistent");
     }
     const total = result.facets.get("totalDigits")?.integer, fraction = result.facets.get("fractionDigits")?.integer;
     if (total && fraction && c.algebra.compare(fraction, total) > 0) c.fail(owner, "fractionDigits-totalDigits", "fractionDigits cannot exceed totalDigits");
@@ -267,7 +284,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
           while (members.length) {
             const member = members.pop()!; c.step(node);
             if (visited.has(member.definition)) continue; visited.add(member.definition);
-            if (member.plan.variety === "list") c.fail(node, "cos-st-restricts", "List items must be atomic or a union of atomic types");
+            if (member.plan.variety === "list" || member.plan.builtin === "anySimpleType") c.fail(node, "cos-st-restricts", "List items must be atomic or a union of atomic types");
             if (member.members) for (const nested of member.members) {c.step(node); members.push(nested);}
           }
           result = {definition: node.id, plan: {id: node.id, reference: frame.reference, variety: "list", item: node.variety.item, layers: [], whitespace: "collapse", enforcement: ["lexical-space", "whitespace", "list"], runtimeOwner: "#184", consumers: ["#188", "#189", "#198"]}, item, facets: new Map()};
@@ -275,11 +292,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, inheritedScalar: (n
           const members: Description[] = [], references: Reference[] = [];
           for (const ref of node.variety.members) {
             c.step(node); checkFinal(ref, "union", node); const member = description(ref);
-            if (member.plan.variety === "union" && member.plan.layers.length === 0) {
+            if (member.plan.builtin === "anySimpleType") c.fail(node, "cos-st-restricts", "Union members must have atomic or list variety");
+            // XSD 1.0's XML component mapping flattens every union member,
+            // including constrained unions. WG bug2044 changed this only in
+            // XSD1.1; the original graph still retains the discarded layers.
+            if (member.plan.variety === "union") {
               for (const nested of member.members!) {c.step(node); members.push(nested); references.push(nested.plan.reference);}
             } else {members.push(member); references.push(ref);}
           }
-          result = {definition: node.id, plan: {id: node.id, reference: frame.reference, variety: "union", members: references, layers: [], whitespace: "collapse", enforcement: ["lexical-space", "union", "whitespace"], runtimeOwner: "#184", consumers: ["#188", "#189", "#198"]}, members, facets: new Map()};
+          result = {definition: node.id, plan: {id: node.id, reference: frame.reference, variety: "union", members: references, declaredMembers: node.variety.members,
+            unionMapping: "xsd10-flattened", layers: [], whitespace: "member", enforcement: ["lexical-space", "union", "whitespace"], runtimeOwner: "#184", consumers: ["#188", "#189", "#198"]}, members, facets: new Map()};
         }
       } else if (node.kind === "complexType") {
         const scalar = c.types.get(node.id)!.scalar;

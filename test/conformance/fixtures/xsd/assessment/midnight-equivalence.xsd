@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review" targetNamespace="urn:review">
+  <xs:simpleType name="T">
+    <xs:restriction base="xs:time">
+      <xs:enumeration value="00:00:00Z"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="v" type="t:T" default="24:00:00Z"/>
+  <xs:complexType name="D">
+    <xs:sequence>
+      <xs:element ref="t:v"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

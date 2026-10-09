@@ -221,6 +221,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Canonical Derivation Composition](docs/content-model-composition.md) | Distinct extension/restriction views, attributes, wildcards and legality obligations |
 | [Structural Companion Catalogs](docs/content-model-companions.md) | Required closures, actual structural equality, provenance and shared semantic dispatch |
 | [Exact Particle Analysis](docs/content-model-analysis.md) | Exact contributions, particle emptiness and bounded immutable summaries |
+| [Schema and Capability Assessment](docs/content-model-assessment.md) | Selected schema closures, scalar enforcement plans, primary-rule evidence and open assessment gates |
 | [Semantic Catalog Format 2](docs/content-model-catalog.md) | Deterministic persistence, typed validation and early compatibility routing |
 | [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
 

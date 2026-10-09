@@ -11,12 +11,12 @@ const excluded = new Set(["key", "keyref", "unique", "assert", "assertion", "alt
 export function checkSchemaSyntax(c: AssessmentContext, node: GraphNode) {
   if (node.kind === "wsdl") return;
   const fail = (message: string, source = node.context.source): never => c.fail(node, "schema-for-schemas", message, source);
-  const attrs = (attributes: readonly SyntaxAttribute[], allowed: readonly string[], source: SyntaxSource) => {
+  const attrs = (attributes: readonly SyntaxAttribute[], allowed: readonly string[], source: SyntaxSource, facet = false) => {
     for (const a of attributes) {
       c.step(node); c.text(a.name.local, node); c.text(a.value, node);
-      if (!a.name.namespace && !allowed.includes(a.name.local)) fail("Attribute is not permitted in this XSD syntax context", source);
-      if (!a.name.namespace && a.name.local === "id" && !isXmlNCName(a.value)) fail("Schema id must be an XML NCName", source);
-      if (!a.name.namespace && ["abstract", "nillable", "mixed"].includes(a.name.local) && !["true", "false", "1", "0"].includes(normalizeWhitespace(a.value, "collapse"))) fail("Invalid XML Schema boolean spelling", source);
+      if (a.name.namespace === XSD_NAMESPACE || !a.name.namespace && !allowed.includes(a.name.local)) fail("Attribute is not permitted in this XSD syntax context", source);
+      if (!a.name.namespace && a.name.local === "id" && !isXmlNCName(normalizeWhitespace(a.value, "collapse"))) fail("Schema id must be an XML NCName", source);
+      if (!a.name.namespace && (["abstract", "nillable", "mixed"].includes(a.name.local) || facet && a.name.local === "fixed") && !["true", "false", "1", "0"].includes(normalizeWhitespace(a.value, "collapse"))) fail("Invalid XML Schema boolean spelling", source);
       if (!a.name.namespace && ["minOccurs", "maxOccurs"].includes(a.name.local)) {
         const value = normalizeWhitespace(a.value, "collapse");
         if (!(a.name.local === "maxOccurs" && value === "unbounded") && !/^[+-]?[0-9]+$/.test(value)) fail("Invalid XML Schema occurrence integer spelling", source);
@@ -42,6 +42,42 @@ export function checkSchemaSyntax(c: AssessmentContext, node: GraphNode) {
     }
   }
   attrs(node.declaredAttributes, allowed, node.context.source);
+  attrs(node.context.schemaAttributes, ["id", "attributeFormDefault", "elementFormDefault", "blockDefault", "finalDefault", "targetNamespace", "version"], node.context.source);
+  for (const a of node.context.schemaAttributes) if (!a.name.namespace && ["attributeFormDefault", "elementFormDefault"].includes(a.name.local)
+    && !["qualified", "unqualified"].includes(normalizeWhitespace(a.value, "collapse"))) fail("Invalid schema form default");
+  for (const a of node.declaredAttributes) if (!a.name.namespace && ["form", "processContents", "use", "whiteSpace"].includes(a.name.local)) {
+    const domains: Record<string, string[]> = {form: ["qualified", "unqualified"], processContents: ["strict", "lax", "skip"], use: ["optional", "required", "prohibited"]};
+    if (domains[a.name.local] && !domains[a.name.local].includes(normalizeWhitespace(a.value, "collapse"))) fail("Invalid XSD token spelling");
+  }
+  // Graph construction retains roles and source positions rather than a
+  // second syntax tree. Reconstruct direct-child ordering from those original
+  // positions; do not infer it from composed/flattened properties.
+  const children: {role: string; source: SyntaxSource}[] = [];
+  const child = (role: string, source: SyntaxSource) => {
+    c.step(node); c.text(source.path, node);
+    const prefix = node.context.source.path + "/";
+    if (source.uri === node.context.source.uri && source.path.startsWith(prefix) && !source.path.slice(prefix.length).includes("/")) children.push({role, source});
+  };
+  for (const annotation of node.annotations) child("annotation", annotation.source);
+  for (const syntax of node.syntaxDetails) child("content", syntax.source);
+  if (node.kind === "complexType") {
+    if (node.content) child("content", c.get(node.content).context.source);
+    for (const id of node.attributes) {const n = c.get(id); child(n.kind === "attributeWildcard" ? "wildcard" : "attribute", n.context.source);}
+  } else if (node.kind === "attributeGroup") {
+    for (const id of node.attributes) {const n = c.get(id); child(n.kind === "attributeWildcard" ? "wildcard" : "attribute", n.context.source);}
+  } else if (node.kind === "group") child("content", c.get(node.content).context.source);
+  else if (node.kind === "particle" && "children" in node.term) for (const id of node.term.children) child("member", c.get(id).context.source);
+  else if ((node.kind === "element" || node.kind === "attribute") && node.type.kind === "local") child("content", c.get(node.type.target).context.source);
+  c.step(node, children.length * (Math.ceil(Math.log2(children.length || 1)) + 1));
+  children.sort((a, b) => a.source.start.offset - b.source.start.offset);
+  let seenAnnotation = false, stage = 0;
+  for (const item of children) {
+    c.step(node);
+    if (item.role === "annotation") {if (stage || seenAnnotation) fail("Annotation must occur once before declaration content", item.source); seenAnnotation = true; continue;}
+    const next = item.role === "content" || item.role === "member" ? 1 : item.role === "attribute" ? 2 : 3;
+    if (next < stage || stage === 3) fail("Declaration child violates the XSD source ordering", item.source);
+    stage = next;
+  }
   if (node.kind === "attributeUse" && node.value?.kind === "default" && node.use !== "optional") c.fail(node, "src-attribute", "Attribute default requires an optional use");
   for (const attribute of node.context.schemaAttributes) {
     c.step(node);
@@ -84,7 +120,7 @@ export function checkSchemaSyntax(c: AssessmentContext, node: GraphNode) {
       if (name === "annotation") {if (stage || annotation) fail("Annotation must occur once before the content", child.source); annotation = true; continue;}
       if (name === "simpleType" && context !== "complex" && stage <= 1 && (body.name.local === "union" || !scalarType)) {scalarType = true; stage = 1; continue;}
       if (facetNames.has(name) && body.name.local === "restriction" && context !== "complex" && stage <= 2) {
-        stage = 2; attrs(child.attributes, ["id", "value", ...(["enumeration", "pattern"].includes(name) ? [] : ["fixed"])], child.source);
+        stage = 2; attrs(child.attributes, ["id", "value", ...(["enumeration", "pattern"].includes(name) ? [] : ["fixed"])], child.source, true);
         const contents = elements(child);
         if (contents.length > 1 || contents.some(n => n.name.namespace !== XSD_NAMESPACE || n.name.local !== "annotation")) fail("Facet permits only an optional annotation", child.source);
         continue;
