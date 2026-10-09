@@ -49,3 +49,27 @@ class AnalysisContractTests(unittest.TestCase):
                 xml = f'<{name} xmlns="urn:analysis">{content}</{name}>'
                 self.assertEqual(primary.is_valid(xml), expected)
                 self.assertEqual(secondary.validate(etree.fromstring(xml.encode())), expected)
+
+        # XSD 1.0 cvc-model-group explicitly gives an empty required choice no
+        # realization, including when nested. cvc-particle permits epsilon by
+        # zero repetitions of the *enclosing* optional particle. xmlschema 4.2
+        # skips the nested choice, contradicting its isolated-choice result.
+        # Preserve engine observations separately from the primary-rule result;
+        # these are fixed expectations, not computed from TypeScript summaries.
+        disagreements = [
+            ("deadRequired", "<a>x</a>", True, False),
+            ("deadOptional", "<a>x</a>", True, False),
+            ("deadAndRequired", "<a>x</a><b>x</b>", True, False),
+            ("deadWildcard", "<unknown/>", True, False),
+        ]
+        for name, content, observed_primary, normative_and_secondary in disagreements:
+            with self.subTest(disagreement=name):
+                xml = f'<{name} xmlns="urn:analysis">{content}</{name}>'
+                self.assertEqual(primary.is_valid(xml), observed_primary)
+                self.assertEqual(secondary.validate(etree.fromstring(xml.encode())), normative_and_secondary)
+        for name, content in [("deadOptional", ""), ("deadWildcard", ""),
+                              ("deadAndRequired", "<b>x</b>")]:
+            with self.subTest(epsilon=name):
+                xml = f'<{name} xmlns="urn:analysis">{content}</{name}>'
+                self.assertTrue(primary.is_valid(xml))
+                self.assertTrue(secondary.validate(etree.fromstring(xml.encode())))

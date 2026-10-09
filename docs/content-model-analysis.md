@@ -55,6 +55,22 @@ Later matcher, payload scalar and generated-output budgets retain their [ADR-003
 [`analysis.xsd`](../test/conformance/fixtures/xsd/analysis/analysis.xsd) and [pinned reference checks](../test/conformance/reference/analysis_contract_test.py) qualify schema validity separately from payload acceptance.
 The reference check raises xmlschema's documented model-depth setting from 15 to 32 for nested shared-group wrappers and treats qualification warnings as errors.
 Libxml2 qualifies the small language cases with only the unused huge bound reduced; xmlschema qualifies that original exact bound.
+
+### Nested empty-choice qualification
+
+XSD 1.0 second-edition [Element Sequence Valid](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cvc-model-group) expressly states that no sequence is valid against an empty choice, while epsilon is valid against an empty sequence or all group.
+[Particle validity](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cvc-particle) applies that rule to each repetition; an optional enclosing particle can choose zero repetitions.
+The [restriction rule](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-restrict) only calls an empty choice pointless when its minimum is zero, and does not remove a required empty choice during payload assessment.
+The complete original second-edition XML source was read through a [pinned mirror](https://github.com/jacoelho/xsd/blob/142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/structures.xml), whose publication URI and October 2004 source header identify the Recommendation; direct W3C retrieval was unavailable in the managed network.
+
+The executable `deadRequired`, `deadOptional`, `deadAndRequired` and `deadWildcard` cases retain a pinned-engine disagreement.
+Xmlschema 4.2.0 skips the nested required empty choice and accepts the preceding child, although it rejects an isolated required empty choice.
+Libxml2 2.14.6 rejects those children and accepts only zero enclosing repetitions where applicable, matching the primary rule.
+The analysis follows that primary rule; the test records both engine observations without declaring the primary engine's acceptance normative.
+#180/#181 must retain these cases when qualifying payload matching and independent enumeration; #179 retains schema validity separately.
+
+### Commands and measurements
+
 [Unit tests](../test/unit/occurrence-analysis.test.ts) cover arithmetic, zero, alternatives, recursion, immutability and configured boundaries.
 Ignored measurements go to `tmp/conformance/analysis/measurements.json`; platform/broad qualification remains #208's responsibility.
 S01/#181 and S05 oracle disagreements and [S02 security qualifications](content-model-decisions.md) remain assigned downstream.

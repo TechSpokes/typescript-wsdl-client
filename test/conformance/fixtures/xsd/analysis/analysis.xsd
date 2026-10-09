@@ -18,6 +18,7 @@
   <xs:complexType name="OptionalEmptyChoice"><xs:choice minOccurs="0"/></xs:complexType>
   <xs:complexType name="EmptySequence"><xs:sequence/></xs:complexType>
   <xs:complexType name="DeadOptional"><xs:sequence minOccurs="0" maxOccurs="3"><xs:element name="a" type="xs:string"/><xs:choice/></xs:sequence></xs:complexType>
+  <xs:complexType name="DeadRequired"><xs:sequence><xs:element name="a" type="xs:string"/><xs:choice/></xs:sequence></xs:complexType>
   <xs:complexType name="DeadAndRequired"><xs:sequence><xs:sequence minOccurs="0" maxOccurs="3"><xs:element name="a" type="xs:string"/><xs:choice/></xs:sequence><xs:element name="b" type="xs:string"/></xs:sequence></xs:complexType>
   <xs:complexType name="DeadWildcard"><xs:sequence minOccurs="0" maxOccurs="3"><xs:any processContents="skip"/><xs:choice/></xs:sequence></xs:complexType>
   <xs:complexType name="Gap"><xs:sequence minOccurs="1" maxOccurs="2"><xs:element name="a" type="xs:string" minOccurs="2" maxOccurs="2"/></xs:sequence></xs:complexType>
@@ -39,4 +40,8 @@
   <xs:element name="recursive" type="t:Recursive"/>
   <xs:element name="all" type="t:All"/>
   <xs:element name="disabled" type="t:Disabled"/>
+  <xs:element name="deadOptional" type="t:DeadOptional"/>
+  <xs:element name="deadRequired" type="t:DeadRequired"/>
+  <xs:element name="deadAndRequired" type="t:DeadAndRequired"/>
+  <xs:element name="deadWildcard" type="t:DeadWildcard"/>
 </xs:schema>
