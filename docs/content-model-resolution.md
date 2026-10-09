@@ -30,6 +30,9 @@ Chameleon references retain their lexical namespace scope and use the effective 
 Missing targets produce `invalid-schema` with the referring component and source path even when another symbol role has that name.
 Prefix aliases and output names never supply permission or identity.
 
+WSDL reference nodes receive role-qualified target linking here; XSD import checks apply to schema references.
+Complete WSDL import, binding and transport legality remains with downstream capability/binding assessment.
+
 ## Catalog evidence
 
 The builder now retains import/include syntax in the existing `schemaRetained` field, including imports without locations.
