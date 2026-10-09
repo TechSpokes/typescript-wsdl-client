@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:references" targetNamespace="urn:references">
+  <xs:group name="A"><xs:sequence><xs:group ref="t:B"/></xs:sequence></xs:group>
+  <xs:group name="B"><xs:choice><xs:group ref="t:A" minOccurs="0"/></xs:choice></xs:group>
+</xs:schema>

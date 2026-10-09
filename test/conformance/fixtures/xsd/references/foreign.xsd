@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:foreign">
+  <xs:complexType name="Shared"><xs:sequence><xs:element name="foreign" type="xs:boolean"/></xs:sequence></xs:complexType>
+  <xs:element name="Shared" type="xs:string"/>
+</xs:schema>

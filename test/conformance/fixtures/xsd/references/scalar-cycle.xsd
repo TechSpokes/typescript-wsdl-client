@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:references" targetNamespace="urn:references">
+  <xs:simpleType name="A"><xs:list itemType="t:B"/></xs:simpleType>
+  <xs:simpleType name="B"><xs:union memberTypes="t:A xs:string"/></xs:simpleType>
+</xs:schema>

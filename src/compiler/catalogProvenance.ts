@@ -146,7 +146,8 @@ export function semanticGraphFingerprint(graph: CanonicalGraph): string {
     if (o.kind === "text" && typeof o.value === "string" && !/[^\t\r\n ]/.test(o.value) && [XSD_NAMESPACE, WSDL_NAMESPACE].includes(parentName?.namespace ?? "")) return undefined;
     if (o.kind === "symbol" || o.kind === "builtin") return Object.fromEntries(Object.entries(o).filter(([k]) => k !== "lexical").map(([k, c]) => [k, semantic(c)]));
     if (o.name && typeof o.value === "string" && (o.name as {namespace: string; local: string}).namespace === XML_NAMESPACE && (o.name as {local: string}).local === "base") return undefined;
-    return Object.fromEntries(Object.entries(o).filter(([k]) => !omit.has(k) && !(k === "path" && Object.hasOwn(o, "reference") && Object.hasOwn(o, "attribute"))).map(([k, c]) => [k, semantic(c, k === "children" && o.kind === "element" ? o.name as ExpandedName : undefined)]));
+    if (o.name && typeof o.value === "string" && (o.name as ExpandedName).namespace === "" && (o.name as ExpandedName).local === "schemaLocation" && parentName?.namespace === XSD_NAMESPACE && ["include", "import"].includes(parentName.local)) return undefined;
+    return Object.fromEntries(Object.entries(o).filter(([k]) => !omit.has(k) && !(k === "path" && Object.hasOwn(o, "reference") && Object.hasOwn(o, "attribute"))).map(([k, c]) => [k, semantic(c, ["children", "attributes"].includes(k) && o.kind === "element" ? o.name as ExpandedName : undefined)]));
   };
   return sha256(canonicalJson(semantic(stable)));
 }

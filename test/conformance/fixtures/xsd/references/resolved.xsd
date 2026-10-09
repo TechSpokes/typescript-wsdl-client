@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:references" xmlns:f="urn:foreign" targetNamespace="urn:references" elementFormDefault="qualified">
+  <xs:import namespace="urn:foreign" schemaLocation="foreign.xsd"/>
+  <xs:group name="Pair"><xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:int"/></xs:sequence></xs:group>
+  <xs:attribute name="Shared" type="xs:string"/>
+  <xs:attributeGroup name="Inner"><xs:attribute ref="t:Shared"/></xs:attributeGroup>
+  <xs:attributeGroup name="Flags"><xs:attributeGroup ref="t:Inner"/></xs:attributeGroup>
+  <xs:complexType name="Shared"><xs:sequence><xs:element name="next" type="t:Other" minOccurs="0"/></xs:sequence><xs:attributeGroup ref="t:Flags"/></xs:complexType>
+  <xs:complexType name="Other"><xs:sequence><xs:element ref="t:Shared" minOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:element name="Shared" type="t:Shared"/>
+  <xs:complexType name="Uses"><xs:sequence>
+    <xs:group ref="t:Pair" minOccurs="0" maxOccurs="2"/>
+    <xs:element name="separator" type="xs:string"/>
+    <xs:group ref="t:Pair" minOccurs="3" maxOccurs="4"/>
+    <xs:element name="foreign" type="f:Shared"/>
+    <xs:element ref="f:Shared"/>
+    <xs:element name="local"><xs:complexType><xs:sequence><xs:element name="value" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element>
+  </xs:sequence></xs:complexType>
+  <xs:complexType name="Inline"><xs:sequence><xs:sequence minOccurs="0" maxOccurs="2"><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:int"/></xs:sequence></xs:sequence></xs:complexType>
+</xs:schema>

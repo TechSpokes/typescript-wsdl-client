@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:references" targetNamespace="urn:references">
+  <xs:complexType name="A"><xs:complexContent><xs:extension base="t:B"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+</xs:schema>

@@ -202,7 +202,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
     elementOnly(schema.syntax);
     annotations.push(...syntaxElements(schema.syntax, XSD_NAMESPACE, "annotation"));
     for (const child of syntaxElements(schema.syntax)) {
-      if (child.name.namespace !== XSD_NAMESPACE || !["annotation", "include", "import", ...Object.keys(declarationRoles)].includes(child.name.local)) schemaRetained.push({context: context(child, schema), syntax: child});
+      if (child.name.namespace !== XSD_NAMESPACE || !["annotation", ...Object.keys(declarationRoles)].includes(child.name.local)) schemaRetained.push({context: context(child, schema), syntax: child});
     }
     for (const node of syntaxElements(schema.syntax, XSD_NAMESPACE)) {
       const role = declarationRoles[node.name.local]; if (!role) continue;
