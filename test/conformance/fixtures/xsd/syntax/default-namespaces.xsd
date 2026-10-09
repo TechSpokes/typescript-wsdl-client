@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:q="urn:one" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:syntax" elementFormDefault="qualified" attributeFormDefault="unqualified" xml:base="schemas/">
+  <annotation><appinfo>before<q:note plain="1" q:code="2"/>after</appinfo></annotation>
+  <complexType name="First">
+    <sequence xml:base="nested/">
+      <element name="a" type="q:First" form="unqualified"/>
+      <choice xmlns:q="urn:two"><element name="b" type="q:Second"/></choice>
+      <element name="a" type="q:First"/>
+      <any processContents="lax"/>
+      <sequence><element name="c" type="xs:string"/></sequence>
+    </sequence>
+  </complexType>
+  <complexType name="Second"><all><element name="a" type="xs:int"/></all></complexType>
+</schema>

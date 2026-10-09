@@ -7,6 +7,7 @@
     "rootDir": "../.."
   },
   "include": [
+    "ordered-syntax.test.ts",
     "preamble.test.ts",
     "app-security.test.ts",
     "client-choice-union-types.test.ts",
