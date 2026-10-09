@@ -38,7 +38,7 @@ The lead S02 implementation agent owns decision drafting/integration; independen
 |---|---|---|
 | CM-01/02/03 | D01/D02/D04 implement exact particles/projections | #178/#179/#180/#182/#198; S01 manifest |
 | CM-04/05 | D02/D03/D07 implement ordered values, normalize invisible history | #171 [ordered input](content-model-loading.md); later #182/#188/#189/#190/#192; SOAP probe |
-| CM-06/07 | D01/D04 implement namespace identity, references and derivation | #171/#172 [loading evidence](content-model-loading.md); later #175/#176/#179/#184 |
+| CM-06/07 | D01/D04 implement namespace identity, references and derivation | #171/#172 [loading evidence](content-model-loading.md); #173 [graph contract](content-model-graph.md); later #175/#176/#179/#184 |
 | CM-08 | D02/D04 retain absence/empty/nil/attributes | #182/#183/#184/#187/#189; committed SOAP/gateway probes |
 | CM-09/10 | D06 non-mutating validation and independent serialization | #197/#198/#199/#200; committed gateway probe |
 | CM-11/17 | D05/D10 version/fingerprint routing; explicit activation | #174/#185/#186/#195/#196/#201/#204 |

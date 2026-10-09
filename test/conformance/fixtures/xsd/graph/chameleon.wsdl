@@ -1,0 +1,6 @@
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:graph:wsdl">
+  <w:types>
+    <xs:schema targetNamespace="urn:graph:a"><xs:include schemaLocation="chameleon.xsd"/><xs:include schemaLocation="chameleon.xsd"/></xs:schema>
+    <xs:schema targetNamespace="urn:graph:b"><xs:include schemaLocation="chameleon.xsd"/></xs:schema>
+  </w:types>
+</w:definitions>

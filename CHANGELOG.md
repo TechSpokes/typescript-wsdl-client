@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): retain immutable schema declarations, ordered particles, exact bounds and contextual references internally.
+
 - feat(loader): bound policy-controlled schema fetching and cache interpretations by namespace and base-URI context.
 
 - feat(loader): retain ordered XML syntax, scoped namespaces and source provenance for the internal faithful compiler.
