@@ -79,3 +79,5 @@ The disabled-element instance is an explicit CM-15 oracle disagreement: libxml2 
 7. Which numeric resource limits apply, with what units, failure categories and enforcement owners?
 
 The decisions about representations, bundles, transport and compatibility are foundational gates for S03. Draft #168 is the next entry task after S01 closure; #169/#170 remain blocked until its reviewed ADR draft exists. This handoff starts no S02 implementation and activates no new public behavior.
+
+The subsequent [S02 handoff](content-model-s02-handoff.md) records ADR-003 and the independently reviewed draft/probe gates. This section preserves S01's historical starting state; current decisions and readiness belong to that later record and #149.

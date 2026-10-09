@@ -4,7 +4,7 @@ Architecture contracts for S02 and the later content-model implementation. See t
 
 ## Status and authority
 
-Initial draft for independent review, October 9, 2026. Final acceptance requires executed #169/#170 evidence and joint review; this draft activates no production behavior. The [decision register](../content-model-decisions.md) is the single disposition/ownership register.
+S02 contracts reconciled with the executed [SOAP probe](../content-model-soap-feasibility.md) and [gateway probe](../content-model-gateway-feasibility.md), October 9, 2026. The initial draft passed independent semantic and integration review at `2f88ec81f77f4fc5a06b78f2d507ae8e20fe7a7c` before either probe began. The [decision register](../content-model-decisions.md) is the single disposition/ownership register; [S02's handoff](../content-model-s02-handoff.md) and #149 record final review/check/delivery checkpoints. This ADR activates no production behavior.
 
 [Epic #147](https://github.com/TechSpokes/typescript-wsdl-client/issues/147), [S02 #149](https://github.com/TechSpokes/typescript-wsdl-client/issues/149) and #168/#169/#170 supply the acceptance gates. [S01 baseline](../content-model-baseline.md) and [shipped-fix reconciliation](../content-model-shipped-fix.md) are evidence, including BCsabaEngine's separately attributed production report. Their [manifest](../../test/conformance/semantic-baseline.json) remains authoritative for case IDs and expected outcomes.
 
@@ -26,7 +26,7 @@ References retain their roles and identities; recursion remains a reference. #17
 
 ## Runtime values and projections: S02-D02
 
-The graph describes allowed values; an XML value describes one value. #187 owns ordered XML values/events, with expanded element/attribute names, ordered children/text, namespace context for QName lexical values, nil state and scalar lexical/value context. Comments, processing instructions, prefix spelling, attribute order, entity spellings and transport chunk boundaries are outside fidelity; significant mixed text and child order are inside it.
+The graph describes allowed values; an XML value describes one value. #187 owns ordered XML values/events, with expanded element/attribute names, ordered children/text, namespace context for QName lexical values, nil state and scalar lexical/value context. Namespace declarations supply context and interpreted `xsi:nil` supplies nil state, rather than becoming ordinary application attributes; the lexical boundary retains their raw forms for security processing. Comments, processing instructions, prefix spelling, attribute order, entity spellings and transport chunk boundaries are outside fidelity; significant mixed text and child order are inside it.
 
 Boundary shapes below are illustrative data contracts, not prescribed class or function APIs.
 
@@ -50,7 +50,7 @@ Nil is independent of attributes. For a nillable element with attribute `id="7"`
 
 ## Equivalence and normalization: S02-D03
 
-Target schema-defined XML values, not byte identity. `normalizeXml` compares expanded names, allowed attributes, meaningful ordered content, nil and type-specific scalar value meaning under the operation's resolved schema context. Only element-only insignificant whitespace is discarded; mixed-content whitespace remains. QName prefix changes are equivalent only when they resolve to the same expanded name.
+Target schema-defined XML values, not byte identity. `normalizeXml` compares expanded names, allowed attributes, meaningful ordered content, nil and type-specific scalar value meaning under the operation's resolved schema context. It applies the same declared default/fixed augmentation as XML assessment, so an absent defaulted attribute and its explicitly encoded assessed value compare equally. Only element-only insignificant whitespace is discarded; mixed-content whitespace remains. QName prefix changes are equivalent only when they resolve to the same expanded name.
 
 `normalizeValue` returns a fresh value without mutating caller objects. It chooses the projection's documented canonical representative of invisible grouping, empty realizations and scalar lexical equivalence. It must preserve observable order and multiplicity; it cannot turn invalid branches into valid ones. Lexical-sensitive facets require retaining an admitted lexical witness or proving the selected representative satisfies every facet; value equality alone does not authorize rewriting a pattern-constrained lexical form.
 
@@ -126,19 +126,21 @@ Diagnostic paths include operation, type/particle ID, expanded name, source loca
 
 #182 owns the client projection; #183 owns HTTP JSON projection; #184 owns scalar rules. Type references remain structured until a backend resolves deterministic names. Exact integers/decimals use decimal strings in HTTP JSON, QName uses expanded names, binary uses canonical encoded text and nonfinite floats use explicit tagged/string representations. Client mappings may use exact runtime scalar types; those types never leak through JSON.stringify accidentally.
 
-#185/#186 persist one data-only portable bundle: format/model/profile versions, graph/source digests, projection and codec plans, binding selection, declared capabilities, limits, validation/completion scope and fingerprint. Proposed first format is `catalogFormat:2`, `bundleFormat:1`, `model:"xsd10-faithful-v1"`; these are independent of npm version. No generated-source parsing or OpenAPI reconstruction creates missing XML structure.
+#185/#186 persist one data-only portable bundle: format/model/profile versions, graph/source digests, projection and codec plans, binding selection, declared capabilities, limits, validation/completion scope and fingerprint. The first formats are `catalogFormat:2`, `bundleFormat:1`, `model:"xsd10-faithful-v1"`; these are independent of npm version. No generated-source parsing or OpenAPI reconstruction creates missing XML structure.
 
-Fingerprint SHA-256 covers a deterministic semantic serialization of graph, selected projections, profile, binding/capabilities and scope. Exclude timestamps, machine paths and documentation from semantic identity; include source digests separately for provenance. Consumers negotiate exact format major/model/profile and supported required capabilities, and compare the same bundle fingerprint before dispatch. Unknown mandatory fields/capabilities fail closed; optional annotations can be ignored within a supported format.
+Fingerprint SHA-256 covers a deterministic semantic serialization of graph, selected projections, profile, binding/capabilities and scope. Exclude timestamps, machine paths and documentation from semantic identity; include source digests separately for provenance. #185 validates bundle structure, references and limits before #186 compares compatibility; a digest detects mismatch but does not authenticate an untrusted artifact. Consumers negotiate exact format major/model/profile and supported required capabilities, and compare the same bundle fingerprint before dispatch. Unknown mandatory fields/capabilities fail closed; optional annotations can be ignored within a supported format.
 
-OpenAPI 3.1.1 / its 2020-12-based schema dialect is the documentation target. Runtime JSON Schema and serializer schemas are separately emitted lowerings; they do not consume arbitrary OpenAPI schemas. Initial candidate runtime/serializer dialect is draft-07 with a route-scoped non-mutating Ajv compiler and independent shared semantic validation. #170 must prove closure, recursion, nullable boundaries, facets and data-preserving fallback before this choice is final.
+OpenAPI 3.1.1 / its 2020-12-based schema dialect is the selected documentation target. Current output is 3.1.0; #197 implements the new target with completeness metadata. Runtime JSON Schema and serializer schemas are separately emitted draft-07 lowerings; they do not consume arbitrary OpenAPI schemas. The [gateway probe](../content-model-gateway-feasibility.md) executes strict route-local Ajv without coercion/defaults/removal, recursion, nullable boundaries, closure, facets and byte preservation. Unknown dialect keywords and missing supplemental plans fail closed.
 
 JSON Schema constrains JSON representations; XSD regex, QName scope, exact decimal facets and complete particle languages require supplemental #184/#180 checks where the lowering is incomplete. Each plan declares completeness and supplemental requirements. The serializer is never a validator. #197 emits dialect-specific plans; #198 supplies validators; #199/#200 integrate validation and explicit conversion independently from serialization.
 
+Use tested draft-07 serializer plans where they preserve admitted JSON values. Otherwise select explicit validated `JSON.stringify` fallback, retaining the independent response validator and shared supplemental rules. The current 150-reference heuristic is an executed existing policy, not a measured serializer maximum; #200 owns its qualified replacement or retention. Current generic `allOf` flattening changes meaning for closed disjoint members, and current fallback accepts invalid responses; neither behavior is adopted as faithful validation. Validate returned HTTP JSON independently and prove the serialized bytes preserve every admitted field/value; #200 must reject field loss before sending.
+
 ## SOAP adapters and security ordering: S02-D07
 
-Retain ADR-002's dedicated streaming transport as the candidate; #169 must execute the current buffered and streaming paths before final adoption. #190 owns buffered integration and #192 owns shared request encoding plus streamed decoder integration. One #188 encoder produces ordered body content for both; transports own envelopes, namespace bindings, SOAP version/action/headers, endpoint selection and I/O, without a second particle/scalar engine.
+Retain ADR-002's dedicated streaming transport. The [SOAP probe](../content-model-soap-feasibility.md) establishes SOAP 1.1 document/literal feasibility through both actual generated execution paths with bounded raw-body/raw-response seams. #190 owns buffered integration and #192 owns shared request encoding plus streamed decoder integration. One #188 encoder produces ordered body content for both; transports own envelopes, namespace bindings, SOAP version/action/headers, endpoint selection and I/O, without a second particle/scalar engine.
 
-The buffered adapter can use node-soap's documented raw XML request hook and raw response before name-keyed parsing if #169 proves it preserves relevant binding/security behavior. Name-keyed parsed objects alone cannot carry `a,b,a` order. Streaming supplies namespace-aware ordered events from the body to #189's decoder.
+Select node-soap's executed `_xml` complete-body or documented `$xml` child-content hook before its security stage, plus the dependency response event before name-keyed parsing. Buffered Basic/header/UsernameToken/signature/mTLS checks pass through that seam; incoming security verification remains a separately enforced qualification gate. Name-keyed parsed objects alone cannot carry `a,b,a` order. Streaming injects that same content at its envelope boundary and supplies namespace-aware ordered events from actual HTTP chunks to #189's decoder.
 
 Select an operation's declared binding/version/port explicitly, not the first service port. Dispatch checks endpoint overrides, actions, HTTP/SOAP headers, faults, auth/security, cancellation and capabilities against the bundle. Unsupported/unverified combinations fail before sending; never silently omit credentials or signatures. #169's matrix must distinguish executed success/failure from source inspection and upstream documentation.
 
@@ -149,6 +151,8 @@ For a signature whose verification scope closes only at response EOF, records mu
 The S02 minimum feasibility gate is local SOAP 1.1 document/literal HTTP: both actual paths must preserve a shared pre-encoded ordered body and expose response order/namespace/nil context before name-keyed parsing; buffered calls must preserve endpoint overrides, actions, HTTP Basic and HTTP/SOAP headers and faults; streaming calls must establish declared binding endpoint/action/HTTP response headers, HTTP failure, before-EOF records and a consumption/completion seam. Streaming auth, SOAP headers, SOAP faults and cancellation must be executed and classified even when the current path fails. A current omission is not a verified capability: the selected contract must name a fail-closed first-consumer owner and concrete seam for correction. Existing buffered security cannot be dropped; a new required security/transport combination with no evidenced adapter seam blocks S02 closure.
 
 HTTP Basic/header auth, WS-Security, TLS client certificates, SOAP 1.2 and cancellation are separate capabilities. Preserve the legacy buffered capability surface through its legacy adapter. Only combinations executed by #169 may count as verified on the proposed faithful path; isolated later capability qualification can block #190/#192 without changing graph/value contracts, provided the required base transport feasibility is established.
+
+The executed minimum passes, including per-call selected-port/action and buffered abort seams, raw namespace/nil context, streamed records before EOF, fault detection and cancellation correction seams. The locked dependency's shared-port-type action collision requires immutable selected-port routing and per-call version-appropriate action headers in #190; a mutable global action setter is rejected. Current streaming omits configured endpoint/security/headers/version overrides, accepts HTTP-200 faults as empty results, loses namespace/nil context during materialization and leaves input open after early return. #192/#193 must replace those narrow responsibilities with the demonstrated seams and reject every unqualified capability before dispatch; current omissions are executed failures, not support.
 
 ## Stream completion: S02-D08
 
@@ -183,7 +187,7 @@ Streaming has no global document-byte cap by default; it enforces depth, record,
 
 ## Compatibility and activation: S02-D10
 
-Preserve the current legacy default for the 1.x line. Faithful behavior is explicit opt-in when its consumers and qualification gates exist; a default public-shape switch requires the next major release (2.0.0), integrated S17/S18 evidence and a separately approved activation PR. S02 merges docs/probes only; it neither announces a new release nor changes the default.
+Preserve the current legacy default for the 1.x line. The planned architecture release train is 2.0.0; earlier faithful evaluation is limited to unreleased opt-in development artifacts unless a reviewed ADR amendment authorizes an earlier supported release. A default public-shape switch requires that major release, integrated S17/S18 evidence and a separately approved activation PR. S02 merges docs/probes only; it neither announces a new release nor changes the default.
 
 | Input / requested mode | Selected behavior | Diagnostic and first owner |
 |---|---|---|
@@ -197,7 +201,7 @@ Preserve the current legacy default for the 1.x line. Faithful behavior is expli
 | Unknown format major/model/profile or required capability | Reject with expected/actual contract identifiers | #174/#186 runtime compatibility error |
 | OpenAPI-only faithful gateway generation | Regeneration-required with portable bundle | #196/#201 missing SOAP contract diagnostic |
 
-Names derive deterministically from symbol identities with stable namespace collision suffixes and source-relative anonymous paths. Keep legacy names on the legacy route; faithful mode may introduce new names/shapes explicitly. #195 owns name mapping and collision fixtures; a documentation edit or digest change cannot randomly rename symbols. Flattened information is never reconstructed by assertion. #204 qualifies integrated migration; #205 removes duplicate semantic ownership only after compatibility coverage.
+Names derive deterministically from symbol identities with stable namespace collision suffixes and source-relative anonymous paths. Keep legacy names on the legacy route; faithful mode may introduce new names/shapes explicitly. #184 owns naming rules and #195 consumes them with generator collision fixtures; a documentation edit or digest change cannot randomly rename symbols. Flattened information is never reconstructed by assertion. #204 qualifies integrated migration; #205 removes duplicate semantic ownership only after compatibility coverage.
 
 ## Rejected alternatives: S02-D11
 
@@ -207,7 +211,7 @@ One schema for all backends conflates XML semantics, HTTP representation, OpenAP
 
 ## Evidence and final gate
 
-S01 executes the finite manifest and real occurrence transport harness, not these new faithful contracts. #169 must commit local HTTP assertions for both actual paths, raw/ordered seams, invisible boundaries, namespaces/nil, streaming-before-EOF and capabilities. #170 must compare submitted, validator-visible, returned and byte-serialized values, preserving a host control route.
+S01 executes the finite manifest and real occurrence transport harness, not these new faithful contracts. #169 commits eleven local HTTP/TLS/signing assertions for both actual paths, raw/ordered seams, invisible boundaries, namespaces/nil, streaming-before-EOF and capabilities. #170 commits nineteen route assertions comparing submitted, validator-visible, returned and byte-serialized values, preserving a host control route. Their [SOAP](../content-model-soap-feasibility.md) and [gateway](../content-model-gateway-feasibility.md) records distinguish generated behavior, test-only adapter feasibility and unverified combinations.
 
 Final #168/#149 acceptance requires both reviewed probes, reconciled register entries, reviewed delivery revisions, local aggregate CI, hosted Node 24/26 and merged-main checks. Any unresolved graph, projection, bundle/runtime, required base transport or compatibility choice blocks S03. Later isolated capability qualification has an explicit affected consumer and cannot count as verified support.
 
@@ -216,5 +220,6 @@ Final #168/#149 acceptance requires both reviewed probes, reconciled register en
 - [XSD 1.0 structures, second edition](https://www.w3.org/TR/xmlschema-1/)
 - [XSD 1.0 datatypes, second edition](https://www.w3.org/TR/xmlschema-2/)
 - [Namespaces in XML 1.0, third edition](https://www.w3.org/TR/xml-names/)
+- [XML Base, second edition](https://www.w3.org/TR/xmlbase/)
 - [OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html)
 - [ADR-002](002-streamable-responses.md): current dedicated streaming decision and shipped behavior

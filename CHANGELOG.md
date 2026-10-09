@@ -9,7 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-- docs(content-model): define S02 fidelity, profile and integration contracts with executable feasibility gates.
+- test(content-model): establish reviewed architecture contracts and executable SOAP/gateway feasibility evidence.
 
 - docs(content-model): reconcile shipped occurrence fixes and qualify a corrected XSD validator pin for the S02 handoff
 - test(conformance): qualify the bounded content-model baseline with independent offline XSD evidence and assigned limits

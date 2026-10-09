@@ -46,6 +46,8 @@ Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. T
 
 ## Related
 
+- [S02 handoff](content-model-s02-handoff.md): architecture decisions, feasibility evidence and S03 entry contracts
+
 - [Root README](../README.md): project overview, quick start, and authoritative Documentation section
 - [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow
 - [CHANGELOG.md](../CHANGELOG.md): version history

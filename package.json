@@ -72,6 +72,7 @@
     "test:unit": "vitest run test/unit",
     "test:snap": "vitest run test/snapshot",
     "test:integration": "vitest run test/integration",
+    "test:feasibility": "vitest run test/integration/content-model-soap-feasibility.test.ts test/integration/content-model-gateway-feasibility.test.ts",
     "test:github": "vitest run test/unit test/snapshot test/integration",
     "test:conformance": "vitest run test/conformance --reporter=verbose",
     "test:conformance:contracts": "vitest run --config vitest.conformance.config.ts test/conformance/stages/contracts.stage.ts --reporter=verbose",

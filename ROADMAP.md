@@ -18,9 +18,11 @@ The [execution index](https://github.com/TechSpokes/typescript-wsdl-client/issue
 
 [Imports maintenance #209](https://github.com/TechSpokes/typescript-wsdl-client/issues/209) is complete through [PR #218](https://github.com/TechSpokes/typescript-wsdl-client/pull/218) and published in v1.1.4. The roadmap refresh tracked by [#217](https://github.com/TechSpokes/typescript-wsdl-client/issues/217) is independent of architecture implementation.
 
-S01's [bounded baseline](docs/content-model-baseline.md) is delivered through [PR #221](https://github.com/TechSpokes/typescript-wsdl-client/pull/221). The [shipped-fix reconciliation](docs/content-model-shipped-fix.md) records [#167](https://github.com/TechSpokes/typescript-wsdl-client/issues/167)'s contributor attribution, actual client/gateway behavior and remaining owned limits. [S01 #148](https://github.com/TechSpokes/typescript-wsdl-client/issues/148) closes after both deliveries and its combined gate pass.
+S01's [bounded baseline](docs/content-model-baseline.md) is delivered through [PR #221](https://github.com/TechSpokes/typescript-wsdl-client/pull/221). The [shipped-fix reconciliation](docs/content-model-shipped-fix.md) records [#167](https://github.com/TechSpokes/typescript-wsdl-client/issues/167)'s contributor attribution, actual client/gateway behavior and remaining owned limits. [S01 #148](https://github.com/TechSpokes/typescript-wsdl-client/issues/148) is complete through PRs #221/#223.
 
-The S01 handoff supplies the entry artifacts for [S02 #149](https://github.com/TechSpokes/typescript-wsdl-client/issues/149). Draft [#168](https://github.com/TechSpokes/typescript-wsdl-client/issues/168) next; feasibility probes #169/#170 require that reviewed ADR draft before becoming Ready. S02 must establish compatibility policy, the architecture release version, and any public shape or default activation before downstream delivery commits to them.
+The [S02 handoff](docs/content-model-s02-handoff.md) records [ADR-003](docs/decisions/003-content-model-contracts.md), the decision register and independently reviewed SOAP/gateway feasibility probes in [PR #224](https://github.com/TechSpokes/typescript-wsdl-client/pull/224). #149's joint acceptance and verified merge gate [S03 #150](https://github.com/TechSpokes/typescript-wsdl-client/issues/150), beginning with ordered-input task #171; #172 follows its reviewed adapter. S02 implements no S03 production code.
+
+The selected architecture release train is 2.0.0. The 1.x legacy default remains in place; default activation requires integrated S17/S18 qualification and a separately approved major-release activation PR. Open transport/security qualifications block their affected consumers, while the ordered-input/profile/resource contracts for S03 are resolved.
 
 ### Delivery Clusters
 
@@ -242,7 +244,7 @@ Choice union mode and JSON array streaming are implemented. The conformance regi
 
 ### OpenAPI And Fastify Compatibility
 
-Compatibility research is complete for released choice union schemas and JSON array streaming behavior. S02 must test dialect, non-mutating validation, and serialization decisions before the architecture's schema and gateway changes.
+Compatibility research is complete for released choice union schemas and JSON array streaming behavior. [S02 gateway evidence](docs/content-model-gateway-feasibility.md) selects separate OAS 3.1.1 documentation and draft-07 runtime/serializer plans, route-local non-mutating validation and independently validated fallback. #197/#198/#199/#200 implement those contracts; the probe does not migrate production schemas.
 
 ### Streaming
 
