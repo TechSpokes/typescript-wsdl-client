@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(roadmap): refresh the published baseline and link the current content-model backlog and historical 1.0 plan
+
 ## [1.1.4] - 2026-10-09
 
 - fix(client): use named SOAP runtime imports and explicit type-only imports in generated clients

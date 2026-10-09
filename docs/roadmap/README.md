@@ -2,11 +2,11 @@
 
 Completed plan for moving `@techspokes/typescript-wsdl-client` from the `0.x` line to the stable `1.0.0` release.
 
-See the root [README.md](../../README.md) for project overview and the root [ROADMAP.md](../../ROADMAP.md) for the public roadmap summary.
+See the root [README.md](../../README.md) for project overview and the [current roadmap](../../ROADMAP.md#active-backlog) for the active backlog and delivery milestones. This document is the historical 1.0 plan; its original version-specific gates are preserved below.
 
 ## Purpose
 
-This plan turns the 1.0 roadmap into implementation slices that can be picked up independently. Each slice has its own plan document with scope, testing strategy, acceptance gates, and release implications.
+This plan organized the 1.0 roadmap into implementation slices. Each slice retains its plan document with scope, testing strategy, acceptance gates, and release implications.
 
 The plan preserves the stable 1.0 contract. Choice union mode, JSON array streaming, `xs:anyAttribute` wildcard bags, stage-specific conformance, executable unsupported diagnostics, and repeatable release gates shipped before or with `1.0.0`.
 
