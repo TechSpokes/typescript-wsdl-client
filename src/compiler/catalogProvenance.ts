@@ -4,7 +4,7 @@ import path from "node:path";
 import {XML_NAMESPACE, XSD_NAMESPACE, WSDL_NAMESPACE} from "../loader/orderedSyntax.js";
 import type {ExpandedName} from "../loader/orderedSyntax.js";
 import type {SyntaxElement, SyntaxSource, SyntaxAttribute} from "../loader/orderedSyntax.js";
-import type {CanonicalGraph} from "./canonicalGraph.js";
+import type {CanonicalGraph, GraphNode, Reference} from "./canonicalGraph.js";
 import {canonicalJson, CatalogError} from "./catalogErrors.js";
 
 export const sha256 = (text: string): string => createHash("sha256").update(text, "utf8").digest("hex");
@@ -85,14 +85,55 @@ export function normalizeGraphTables(result: CanonicalGraph): CanonicalGraph {
 /** Excludes source digests/locations, machine paths, documentation and loading policy. */
 export function semanticGraphFingerprint(graph: CanonicalGraph): string {
   const portable = artifactGraph(graph);
-  const omit = new Set(["source", "uri", "digest", "baseUri", "origins", "loading", "schemaAnnotations", "annotations", "lexicalName"]);
-  const semantic = (v: unknown): unknown => {
-    if (Array.isArray(v)) return v.filter(c => !(c && typeof c === "object" && (((c as SyntaxElement).name?.local === "annotation" && (c as SyntaxElement).name?.namespace === XSD_NAMESPACE) || ((c as SyntaxElement).name?.local === "documentation" && [XSD_NAMESPACE, WSDL_NAMESPACE].includes((c as SyntaxElement).name?.namespace))))).map(semantic).filter(c => c !== undefined);
+  // Source-relative scoped IDs remain artifact identity. Fingerprint-only IDs follow semantic
+  // containment instead, so inserting documentation cannot change their identity or table order.
+  const ids = new Map<string, string>(), paths = new Map<string, string>();
+  const nodes = new Map(portable.nodes.map(n => [n.id, n]));
+  const children = (n: GraphNode): [string, string][] => {
+    const result: [string, string][] = [];
+    const ref = (r: Reference | undefined, edge: string) => {if (r?.kind === "local") result.push([r.target, edge]);};
+    if (n.kind === "element" || n.kind === "attribute") ref(n.type, "type");
+    if (n.kind === "attributeUse") ref(n.declaration, "declaration");
+    if (n.kind === "particle") {
+      if (n.term.kind === "element") ref(n.term.declaration, "declaration");
+      else if (n.term.kind === "sequence" || n.term.kind === "choice" || n.term.kind === "all") n.term.children.forEach((id, i) => result.push([id, `children/${i}`]));
+    }
+    if (n.kind === "group" || n.kind === "complexType") {if (n.content) result.push([n.content, "content"]);}
+    if (n.kind === "attributeGroup" || n.kind === "complexType") n.attributes.forEach((id, i) => result.push([id, `attributes/${i}`]));
+    if (n.kind === "complexType") {ref(n.derivation?.base, "base"); ref(n.derivation?.inlineType, "inlineType");}
+    if (n.kind === "simpleType") {
+      if (n.variety.kind === "restriction") ref(n.variety.base, "base");
+      else if (n.variety.kind === "list") ref(n.variety.item, "item");
+      else n.variety.members.forEach((r, i) => ref(r, `members/${i}`));
+    }
+    return result;
+  };
+  const stack = portable.globals.map(id => ({id, path: id}));
+  while (stack.length) {
+    const item = stack.pop()!, n = nodes.get(item.id)!;
+    if (ids.has(n.id)) continue;
+    const id = n.identity.kind === "global" ? n.id : `semantic:${sha256(item.path)}`;
+    ids.set(n.id, id); paths.set(n.id, item.path);
+    for (const [child, edge] of children(n)) stack.push({id: child, path: `${item.path}/${edge}`});
+  }
+  const remap = (v: unknown, key?: string): unknown => {
+    if (typeof v === "string") return ["id", "owner", "target", "content", "children", "attributes", "globals"].includes(key ?? "") ? ids.get(v) ?? v : v;
+    if (Array.isArray(v)) return v.map(c => remap(c, key));
     if (!v || typeof v !== "object") return v;
     const o = v as Record<string, unknown>;
+    return Object.fromEntries(Object.entries(o).map(([k, c]) => [k, remap(c, k)]));
+  };
+  const mapped = remap(portable) as CanonicalGraph;
+  const stable = {...mapped, nodes: mapped.nodes.map((n, i) => n.identity.kind === "scoped" ? {...n, identity: {...n.identity, path: paths.get(portable.nodes[i].id)!}} : n).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)};
+  const omit = new Set(["source", "uri", "digest", "baseUri", "origins", "loading", "schemaAnnotations", "annotations", "lexicalName"]);
+  const semantic = (v: unknown, parentName?: ExpandedName): unknown => {
+    if (Array.isArray(v)) return v.filter(c => !(c && typeof c === "object" && (((c as SyntaxElement).name?.local === "annotation" && (c as SyntaxElement).name?.namespace === XSD_NAMESPACE) || ((c as SyntaxElement).name?.local === "documentation" && [XSD_NAMESPACE, WSDL_NAMESPACE].includes((c as SyntaxElement).name?.namespace))))).map(c => semantic(c, parentName)).filter(c => c !== undefined);
+    if (!v || typeof v !== "object") return v;
+    const o = v as Record<string, unknown>;
+    if (o.kind === "text" && typeof o.value === "string" && !/[^\t\r\n ]/.test(o.value) && [XSD_NAMESPACE, WSDL_NAMESPACE].includes(parentName?.namespace ?? "")) return undefined;
     if (o.kind === "symbol" || o.kind === "builtin") return Object.fromEntries(Object.entries(o).filter(([k]) => k !== "lexical").map(([k, c]) => [k, semantic(c)]));
     if (o.name && typeof o.value === "string" && (o.name as {namespace: string; local: string}).namespace === XML_NAMESPACE && (o.name as {local: string}).local === "base") return undefined;
-    return Object.fromEntries(Object.entries(o).filter(([k]) => !omit.has(k)).map(([k, c]) => [k, semantic(c)]));
+    return Object.fromEntries(Object.entries(o).filter(([k]) => !omit.has(k) && !(k === "path" && Object.hasOwn(o, "reference") && Object.hasOwn(o, "attribute"))).map(([k, c]) => [k, semantic(c, k === "children" && o.kind === "element" ? o.name as ExpandedName : undefined)]));
   };
-  return sha256(canonicalJson(semantic(portable)));
+  return sha256(canonicalJson(semantic(stable)));
 }

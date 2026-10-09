@@ -142,6 +142,23 @@ describe("versioned semantic catalogs", () => {
     expect(scopedId("parent", "/0/1", "type")).toBe("scoped:f325bc3d3205fbca17c95034c3a1093ed14ce66b9db6347931ad6890c026f65f");
   });
 
+  it("excludes parsed documentation additions while detecting changed semantic order and bounds", async () => {
+    for (const [relative, insert] of [
+      ["soap/content-model/probe.wsdl", (xml: string) => xml.replace(/(<wsdl:portType\b[^>]*>)/, "$1<wsdl:documentation>New documentation</wsdl:documentation>\n")],
+      ["xsd/graph/shared-recursive.xsd", (xml: string) => xml.replace('<xs:complexType name="Shared" mixed="true">', '<xs:complexType name="Shared" mixed="true"><xs:annotation><xs:documentation>New documentation</xs:documentation></xs:annotation>\n')],
+    ] as const) {
+      const dir = temp(), source = path.join(fixtures, relative), changed = path.join(dir, path.basename(source));
+      writeFileSync(changed, insert(readFileSync(source, "utf8")));
+      const modified = buildCanonicalGraph(await loadSchemaInput(changed, {policy: {fileRoots: [dir]}}));
+      expect(semanticGraphFingerprint(modified)).toBe(semanticGraphFingerprint(await build(source)));
+    }
+    const c = await catalog(), modified = JSON.parse(JSON.stringify(c.graph));
+    modified.nodes.find((n: any) => n.kind === "particle" && n.term.kind === "choice").term.children.reverse();
+    expect(semanticGraphFingerprint(modified)).not.toBe(c.semanticFingerprint);
+    modified.nodes.find((n: any) => n.kind === "particle").occurs.max = "999";
+    expect(semanticGraphFingerprint(modified)).not.toBe(c.semanticFingerprint);
+  });
+
   it("rejects oversized UTF-8 input, deep JSON, invalid encoding and special files", async () => {
     const text = serializeSemanticCatalog(await catalog());
     expect(read(text, {maxBytes: Buffer.byteLength(text)}).kind).toBe("semantic");

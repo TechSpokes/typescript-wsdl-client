@@ -55,6 +55,8 @@ No serialization can infer secrets embedded in arbitrary schema text: input anno
 
 The SHA-256 semantic fingerprint excludes source digests/locations, retrieval bases, loading policy/edges, origin tables, documentation and annotations.
 Reference fingerprints use expanded role-qualified names, rather than prefix spelling, while the artifact preserves original lexical QName context for validation and later interpretation.
+Fingerprint-only scoped IDs follow ordered structural containment; serialized source-relative identities and WSDL syntax paths remain unchanged.
+This keeps inserted documentation and element-only formatting whitespace out of semantic identity without changing semantic child order.
 Remaining scalar/facet/default/fixed lexical values and namespace context participate conservatively; S04 does not assert datatype equivalence.
 The fingerprint detects semantic mismatch, not authenticity or provenance tampering; this is not the later bundle fingerprint combining projections/binding/capabilities/scope.
 #185/#186 own bundle format 1 and integrated compatibility checks.
@@ -108,6 +110,7 @@ npm run test:reference:full
 ```
 
 #151's final handoff pins reviewed heads, merge revisions, versions, fixtures, exact commands/results and S05 readiness.
-#175 resolves references, #176 builds derived summaries/composition, and #177 validates derivation/restriction.
+#175 resolves references, #176 implements derivation/attribute composition, and #177 integrates companion closures and diagnostics.
+#178 owns later occurrence summaries.
 S02's open streaming/incoming-security qualifications and S01's #181-owned oracle disagreement remain downstream gates.
 Production codecs, projections, emitter rewrites, package publication and default activation remain outside S04.
