@@ -7,6 +7,8 @@
     "rootDir": "../.."
   },
   "include": [
+    "canonical-graph.test.ts",
+    "canonical-graph-budgets.test.ts",
     "ordered-syntax.test.ts",
     "schema-input.test.ts",
     "schema-loading-budgets.test.ts",
