@@ -60,7 +60,7 @@
    * SOAP address. Falls back to the \`source\` URL when the descriptor is
    * unavailable (e.g., \`source\` was given as a direct endpoint URL).
    */
-  protected resolveStreamEndpoint(client: soap.Client): string {
+  protected resolveStreamEndpoint(client: __SOAP_CLIENT_TYPE__): string {
     const services = (client as any)?.wsdl?.definitions?.services ?? {};
     for (const svc of Object.values(services)) {
       const ports = (svc as any)?.ports ?? {};
