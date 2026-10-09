@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:references" targetNamespace="urn:references">
+  <xs:attributeGroup name="A"><xs:attributeGroup ref="t:B"/></xs:attributeGroup>
+  <xs:attributeGroup name="B"><xs:attributeGroup ref="t:A"/></xs:attributeGroup>
+</xs:schema>

@@ -1,0 +1,3 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:f="urn:foreign" targetNamespace="urn:references">
+  <xs:element name="root" type="f:Shared"/>
+</xs:schema>

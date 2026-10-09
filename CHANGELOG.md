@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): resolve reusable schema semantics with immutable derivation composition and structural companion reuse.
+
 - feat(compiler): persist versioned semantic catalogs with deterministic validation and explicit legacy compatibility routing.
 
 - feat(compiler): retain immutable schema declarations, ordered particles, exact bounds and contextual references internally.

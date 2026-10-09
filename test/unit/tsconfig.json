@@ -7,6 +7,8 @@
     "rootDir": "../.."
   },
   "include": [
+    "composed-graph.test.ts",
+    "resolved-graph.test.ts",
     "semantic-catalog.test.ts",
     "canonical-graph.test.ts",
     "canonical-graph-budgets.test.ts",

@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:references">
+  <xs:import namespace="urn:foreign" schemaLocation="foreign.xsd"/>
+  <xs:include schemaLocation="import-leak-included.xsd"/>
+</xs:schema>

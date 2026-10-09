@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:composition" targetNamespace="urn:composition">
+  <xs:complexType name="OpaqueBase"><xs:complexContent><xs:extension base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Text"><xs:simpleContent><xs:restriction base="t:OpaqueBase"><xs:simpleType><xs:restriction base="xs:string"/></xs:simpleType></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:attributeGroup name="IgnoredProhibition"><xs:attribute name="a" type="xs:string" use="prohibited"/></xs:attributeGroup>
+  <xs:complexType name="OptionalBase"><xs:attribute name="a" type="xs:string"/></xs:complexType>
+  <xs:complexType name="Inherited"><xs:complexContent><xs:restriction base="t:OptionalBase"><xs:attributeGroup ref="t:IgnoredProhibition"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:element name="text" type="t:Text"/>
+  <xs:element name="inherited" type="t:Inherited"/>
+</xs:schema>

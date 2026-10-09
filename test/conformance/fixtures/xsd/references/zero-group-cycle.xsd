@@ -1,0 +1,3 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:references" targetNamespace="urn:references">
+  <xs:group name="A"><xs:sequence><xs:group ref="t:A" maxOccurs="0" minOccurs="0"/></xs:sequence></xs:group>
+</xs:schema>

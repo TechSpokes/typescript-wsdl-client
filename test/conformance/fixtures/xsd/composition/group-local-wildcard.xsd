@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:composition" targetNamespace="urn:composition">
+  <xs:attributeGroup name="G"><xs:anyAttribute namespace="urn:external urn:more" processContents="lax"/></xs:attributeGroup>
+  <xs:complexType name="D"><xs:attributeGroup ref="t:G"/><xs:anyAttribute namespace="urn:external" processContents="strict"/></xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

@@ -1,0 +1,23 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:composition:public" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="urn:composition:public">
+  <wsdl:types><xs:schema targetNamespace="urn:composition:public" elementFormDefault="qualified">
+    <xs:group name="Pair"><xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:int"/></xs:sequence></xs:group>
+    <xs:attributeGroup name="Flags"><xs:attribute name="id" type="xs:string" use="required"/></xs:attributeGroup>
+    <xs:complexType name="Uses"><xs:sequence><xs:group ref="t:Pair" minOccurs="0" maxOccurs="2"/><xs:element name="separator" type="xs:string"/><xs:group ref="t:Pair" minOccurs="3" maxOccurs="4"/></xs:sequence><xs:attributeGroup ref="t:Flags"/></xs:complexType>
+    <xs:complexType name="Base"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0"/><xs:element name="b" type="xs:int" minOccurs="0"/></xs:sequence><xs:attribute name="gone" type="xs:string"/></xs:complexType>
+    <xs:complexType name="Extended"><xs:complexContent><xs:extension base="t:Base"><xs:sequence><xs:element name="extra" type="xs:string"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+    <xs:complexType name="Restricted"><xs:complexContent><xs:restriction base="t:Base"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0"/></xs:sequence><xs:attribute name="gone" type="xs:string" use="prohibited"/></xs:restriction></xs:complexContent></xs:complexType>
+    <xs:complexType name="Empty"><xs:complexContent><xs:restriction base="t:Base"><xs:attribute name="gone" type="xs:string" use="prohibited"/></xs:restriction></xs:complexContent></xs:complexType>
+    <xs:complexType name="Recursive"><xs:sequence><xs:element name="next" type="t:Recursive" minOccurs="0"/></xs:sequence></xs:complexType>
+    <xs:complexType name="MutualA"><xs:sequence><xs:element name="b" type="t:MutualB" minOccurs="0"/></xs:sequence></xs:complexType>
+    <xs:complexType name="MutualB"><xs:sequence><xs:element name="a" type="t:MutualA" minOccurs="0"/></xs:sequence></xs:complexType>
+    <xs:element name="PayloadRestricted" type="t:Restricted"/>
+    <xs:element name="PayloadEmpty" type="t:Empty"/>
+    <xs:element name="PayloadExtended" type="t:Extended"/>
+    <xs:element name="PayloadRecursive" type="t:Recursive"/>
+    <xs:element name="Submit"><xs:complexType><xs:sequence><xs:element name="uses" type="t:Uses"/><xs:element name="extended" type="t:Extended"/><xs:element name="restricted" type="t:Restricted"/><xs:element name="empty" type="t:Empty"/><xs:element name="recursive" type="t:Recursive"/><xs:element name="mutual" type="t:MutualA"/></xs:sequence></xs:complexType></xs:element>
+  </xs:schema></wsdl:types>
+  <wsdl:message name="Input"><wsdl:part name="parameters" element="t:Submit"/></wsdl:message>
+  <wsdl:portType name="PortType"><wsdl:operation name="Submit"><wsdl:input message="t:Input"/><wsdl:output message="t:Input"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="Binding" type="t:PortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="Submit"><soap:operation soapAction="urn:Submit"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation></wsdl:binding>
+  <wsdl:service name="Service"><wsdl:port name="Port" binding="t:Binding"><soap:address location="http://example.com/derivation"/></wsdl:port></wsdl:service>
+</wsdl:definitions>
