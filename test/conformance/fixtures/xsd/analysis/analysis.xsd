@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:analysis" targetNamespace="urn:analysis" elementFormDefault="qualified">
+  <xs:group name="Pair"><xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:sequence></xs:group>
+  <xs:group name="Shared0"><xs:sequence><xs:element name="shared" type="xs:string"/></xs:sequence></xs:group>
+  <xs:group name="Shared1"><xs:sequence><xs:group ref="t:Shared0"/><xs:group ref="t:Shared0"/></xs:sequence></xs:group>
+  <xs:group name="Shared2"><xs:sequence><xs:group ref="t:Shared1"/><xs:group ref="t:Shared1"/></xs:sequence></xs:group>
+  <xs:group name="Shared3"><xs:sequence><xs:group ref="t:Shared2"/><xs:group ref="t:Shared2"/></xs:sequence></xs:group>
+  <xs:group name="Shared4"><xs:sequence><xs:group ref="t:Shared3"/><xs:group ref="t:Shared3"/></xs:sequence></xs:group>
+  <xs:group name="Shared5"><xs:sequence><xs:group ref="t:Shared4"/><xs:group ref="t:Shared4"/></xs:sequence></xs:group>
+  <xs:group name="Shared6"><xs:sequence><xs:group ref="t:Shared5"/><xs:group ref="t:Shared5"/></xs:sequence></xs:group>
+  <xs:group name="Shared7"><xs:sequence><xs:group ref="t:Shared6"/><xs:group ref="t:Shared6"/></xs:sequence></xs:group>
+  <xs:group name="Shared8"><xs:sequence><xs:group ref="t:Shared7"/><xs:group ref="t:Shared7"/></xs:sequence></xs:group>
+  <xs:complexType name="Shared"><xs:group ref="t:Shared8"/></xs:complexType>
+  <xs:complexType name="Single"><xs:choice><xs:element name="a" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="Common"><xs:choice minOccurs="2" maxOccurs="3"><xs:sequence><xs:element name="b" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:sequence><xs:sequence><xs:element name="c" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:choice></xs:complexType>
+  <xs:complexType name="Epsilon"><xs:choice><xs:sequence/><xs:element name="a" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="EmptyChoice"><xs:choice/></xs:complexType>
+  <xs:complexType name="OptionalEmptyChoice"><xs:choice minOccurs="0"/></xs:complexType>
+  <xs:complexType name="EmptySequence"><xs:sequence/></xs:complexType>
+  <xs:complexType name="DeadOptional"><xs:sequence minOccurs="0" maxOccurs="3"><xs:element name="a" type="xs:string"/><xs:choice/></xs:sequence></xs:complexType>
+  <xs:complexType name="DeadRequired"><xs:sequence><xs:element name="a" type="xs:string"/><xs:choice/></xs:sequence></xs:complexType>
+  <xs:complexType name="DeadAndRequired"><xs:sequence><xs:sequence minOccurs="0" maxOccurs="3"><xs:element name="a" type="xs:string"/><xs:choice/></xs:sequence><xs:element name="b" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="DeadWildcard"><xs:sequence minOccurs="0" maxOccurs="3"><xs:any processContents="skip"/><xs:choice/></xs:sequence></xs:complexType>
+  <xs:complexType name="Gap"><xs:sequence minOccurs="1" maxOccurs="2"><xs:element name="a" type="xs:string" minOccurs="2" maxOccurs="2"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Grouped"><xs:sequence><xs:group ref="t:Pair" minOccurs="0" maxOccurs="2"/><xs:element name="separator" type="xs:string"/><xs:group ref="t:Pair" minOccurs="3" maxOccurs="4"/></xs:sequence></xs:complexType>
+  <xs:complexType name="All"><xs:all><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string" minOccurs="0"/></xs:all></xs:complexType>
+  <xs:complexType name="Disabled"><xs:sequence minOccurs="0" maxOccurs="0"><xs:sequence maxOccurs="unbounded"><xs:element name="a" type="xs:string"/></xs:sequence></xs:sequence></xs:complexType>
+  <xs:complexType name="DisabledChoice"><xs:choice><xs:sequence minOccurs="0" maxOccurs="0"><xs:element name="a" type="xs:string"/></xs:sequence><xs:element name="b" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="DisabledElementChoice"><xs:choice><xs:element name="a" type="xs:string" minOccurs="0" maxOccurs="0"/><xs:element name="b" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="ZeroElement"><xs:sequence maxOccurs="unbounded"><xs:element name="a" type="xs:string" minOccurs="0" maxOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Huge"><xs:sequence minOccurs="2" maxOccurs="2"><xs:element name="a" type="xs:string" minOccurs="900719925474099312345678901234567890" maxOccurs="900719925474099312345678901234567890"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Recursive"><xs:sequence><xs:element name="next" type="t:Recursive" minOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Container"><xs:sequence><xs:element name="child" type="t:EmptySequence"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Opaque"><xs:complexContent mixed="true"><xs:extension base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:element name="single" type="t:Single"/>
+  <xs:element name="common" type="t:Common"/>
+  <xs:element name="epsilon" type="t:Epsilon"/>
+  <xs:element name="gap" type="t:Gap"/>
+  <xs:element name="emptyChoice" type="t:EmptyChoice"/>
+  <xs:element name="optionalEmptyChoice" type="t:OptionalEmptyChoice"/>
+  <xs:element name="container" type="t:Container"/>
+  <xs:element name="recursive" type="t:Recursive"/>
+  <xs:element name="all" type="t:All"/>
+  <xs:element name="disabled" type="t:Disabled"/>
+  <xs:element name="disabledChoice" type="t:DisabledChoice"/>
+  <xs:element name="disabledElementChoice" type="t:DisabledElementChoice"/>
+  <xs:element name="deadOptional" type="t:DeadOptional"/>
+  <xs:element name="deadRequired" type="t:DeadRequired"/>
+  <xs:element name="deadAndRequired" type="t:DeadAndRequired"/>
+  <xs:element name="deadWildcard" type="t:DeadWildcard"/>
+</xs:schema>

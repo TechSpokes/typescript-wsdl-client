@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): add exact particle analysis for internal faithful models while preserving legacy defaults.
+
 - feat(compiler): resolve reusable schema semantics with immutable derivation composition and structural companion reuse.
 
 - feat(compiler): persist versioned semantic catalogs with deterministic validation and explicit legacy compatibility routing.

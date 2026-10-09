@@ -220,6 +220,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Canonical Reference Resolution](docs/content-model-resolution.md) | Namespace visibility, complete targets, legal recursion and component-cycle diagnostics |
 | [Canonical Derivation Composition](docs/content-model-composition.md) | Distinct extension/restriction views, attributes, wildcards and legality obligations |
 | [Structural Companion Catalogs](docs/content-model-companions.md) | Required closures, actual structural equality, provenance and shared semantic dispatch |
+| [Exact Particle Analysis](docs/content-model-analysis.md) | Exact contributions, particle emptiness and bounded immutable summaries |
 | [Semantic Catalog Format 2](docs/content-model-catalog.md) | Deterministic persistence, typed validation and early compatibility routing |
 | [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
 
