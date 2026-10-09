@@ -1,0 +1,23 @@
+{
+  "closedChoice": {
+    "type": "object",
+    "oneOf": [
+      {"type": "object", "properties": {"email": {"type": "string"}}, "required": ["email"], "additionalProperties": false},
+      {"type": "object", "properties": {"phone": {"type": "string"}}, "required": ["phone"], "additionalProperties": false}
+    ]
+  },
+  "overlappingOneOf": {
+    "type": "object",
+    "properties": {"a": {"type": "string"}, "b": {"type": "string"}},
+    "additionalProperties": false,
+    "oneOf": [{"properties": {"a": {}}, "required": ["a"]}, {"properties": {"b": {}}, "required": ["b"]}]
+  },
+  "overlappingAnyOf": {
+    "type": "object",
+    "properties": {"a": {"type": "string"}, "b": {"type": "string"}},
+    "additionalProperties": false,
+    "anyOf": [{"properties": {"a": {}}, "required": ["a"]}, {"properties": {"b": {}}, "required": ["b"]}]
+  },
+  "emptyOverlap": {"type": "object", "additionalProperties": false, "oneOf": [{}, {}]},
+  "emptyLanguage": {"type": "object", "additionalProperties": false, "anyOf": [{}, {}]}
+}

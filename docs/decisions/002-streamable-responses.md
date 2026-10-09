@@ -314,6 +314,8 @@ Companion catalogs are required for vendors that split stream wrappers and concr
 
 ## Implementation Notes
 
+[ADR-003](003-content-model-contracts.md) retains the dedicated streaming boundary and adds shared ordered encoding/decoding, explicit binding/security capabilities, verification-before-yield and declared completion scope. [S02's SOAP probe](../content-model-soap-feasibility.md) supplies current-path evidence and owned corrections; the phase-0 measurements above remain historical provenance.
+
 Captured after the 0.17.0 ship for future maintainers:
 
 - `--stream-config` is wired onto the `compile`, `client`, and `pipeline` CLI commands. It is intentionally not accepted on `openapi`, `gateway`, or `app` because those commands consume a pre-compiled `catalog.json` that already carries the normalized `OperationStreamMetadata`. The original proposal text that listed the flag on every command reflected the design intent; the shipped surface is narrower for that reason.

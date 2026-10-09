@@ -4,6 +4,10 @@ Internal architecture of the wsdl-tsc code generator for contributors.
 
 See [CONTRIBUTING](../CONTRIBUTING.md) for development setup and [README](../README.md) for user documentation.
 
+## Planned Content Model Contracts
+
+[ADR-003](decisions/003-content-model-contracts.md) defines the intended faithful content-model path and [decision register](content-model-decisions.md) assigns its owners. The S02 feasibility records and [handoff](content-model-s02-handoff.md) distinguish executed adapter/dialect evidence from later production implementation. The pipeline below describes current legacy behavior; S02 does not activate new defaults.
+
 ## Generated Source Policy
 
 Complete TypeScript writes pass through `src/generation/writeGeneratedSource.ts` after any scaffold ownership guard. Runtime/template loaders remain fragment loaders; provenance and documentation are preserved when the final body receives its preamble.

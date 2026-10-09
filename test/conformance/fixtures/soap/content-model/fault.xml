@@ -1,0 +1,1 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>probe failure</faultstring><detail><reason xmlns="urn:content-model:probe">dummy</reason></detail></soap:Fault></soap:Body></soap:Envelope>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:content-model:probe" targetNamespace="urn:content-model:probe">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:content-model:probe" elementFormDefault="qualified">
+      <xs:complexType name="RecordType">
+        <xs:sequence>
+          <xs:element name="selection"><xs:complexType><xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:sequence>
+            <xs:element name="c" type="xs:string"/>
+          </xs:choice></xs:complexType></xs:element>
+          <xs:element name="pairs"><xs:complexType><xs:sequence minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="p" type="xs:string"/><xs:element name="q" type="xs:string"/>
+          </xs:sequence></xs:complexType></xs:element>
+          <xs:element name="ambiguous"><xs:complexType><xs:sequence minOccurs="1" maxOccurs="2">
+            <xs:element name="token" type="xs:string" minOccurs="1" maxOccurs="2"/>
+          </xs:sequence></xs:complexType></xs:element>
+          <xs:element name="kind" type="xs:QName"/>
+          <xs:element name="nullable" nillable="true"><xs:complexType><xs:attribute name="id" type="xs:string" use="required"/></xs:complexType></xs:element>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="Submit" type="tns:RecordType"/>
+      <xs:element name="SubmitResponse"><xs:complexType><xs:sequence>
+        <xs:element name="records"><xs:complexType><xs:sequence>
+          <xs:element name="record" type="tns:RecordType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence></xs:complexType></xs:element>
+      </xs:sequence></xs:complexType></xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="Input"><wsdl:part name="parameters" element="tns:Submit"/></wsdl:message>
+  <wsdl:message name="Output"><wsdl:part name="parameters" element="tns:SubmitResponse"/></wsdl:message>
+  <wsdl:portType name="ProbePortType">
+    <wsdl:operation name="Submit"><wsdl:input message="tns:Input"/><wsdl:output message="tns:Output"/></wsdl:operation>
+    <wsdl:operation name="StreamSubmit"><wsdl:input message="tns:Input"/><wsdl:output message="tns:Output"/></wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="Soap11" type="tns:ProbePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Submit"><soap:operation soapAction="urn:probe:submit"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation>
+    <wsdl:operation name="StreamSubmit"><soap:operation soapAction="urn:probe:stream"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="Soap12" type="tns:ProbePortType">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Submit"><soap12:operation soapAction="urn:probe:submit12"/><wsdl:input><soap12:body use="literal"/></wsdl:input><wsdl:output><soap12:body use="literal"/></wsdl:output></wsdl:operation>
+    <wsdl:operation name="StreamSubmit"><soap12:operation soapAction="urn:probe:stream12"/><wsdl:input><soap12:body use="literal"/></wsdl:input><wsdl:output><soap12:body use="literal"/></wsdl:output></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SoapProbe">
+    <wsdl:port name="First11" binding="tns:Soap11"><soap:address location="http://127.0.0.1:1/first"/></wsdl:port>
+    <wsdl:port name="Second11" binding="tns:Soap11"><soap:address location="http://127.0.0.1:1/second"/></wsdl:port>
+    <wsdl:port name="Port12" binding="tns:Soap12"><soap12:address location="http://127.0.0.1:1/soap12"/></wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
