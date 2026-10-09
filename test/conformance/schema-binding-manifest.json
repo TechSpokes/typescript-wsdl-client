@@ -129,6 +129,46 @@
       "assessment": "supported",
       "rule": null,
       "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "soap-required-binding",
+      "fixture": "xsd/assessment/soap-required-binding.wsdl",
+      "sha256": "7a0bfe94f2ead16b8e0ed7b93e82ef1cd14d63fe307a0c47fed11dfbc3012f3d",
+      "assessment": "unsupported-capability",
+      "rule": "required-binding-extension",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "soap-required-port",
+      "fixture": "xsd/assessment/soap-required-port.wsdl",
+      "sha256": "7dc1070d2843e05cfec9573ab6ec50afe193de602263248fde8c95c5d7190459",
+      "assessment": "unsupported-capability",
+      "rule": "required-binding-extension",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "soap-required-operation",
+      "fixture": "xsd/assessment/soap-required-operation.wsdl",
+      "sha256": "4713f2fc9ef52b20d64281b47ba51ec0b85a5392effa7bec55e29d62e150d84d",
+      "assessment": "unsupported-capability",
+      "rule": "required-binding-extension",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "soap-required-boolean-invalid",
+      "fixture": "xsd/assessment/soap-required-boolean-invalid.wsdl",
+      "sha256": "d5b486efac3be40babdb2957f7020b905630c3b778f174117438cc0e6fe5e13b",
+      "assessment": "invalid-schema",
+      "rule": "wsdl-required",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "soap-extension-position-invalid",
+      "fixture": "xsd/assessment/soap-extension-position-invalid.wsdl",
+      "sha256": "0a90c8f25ba0f8a5737a44c7f19d7e550832e9aebd5b79954cd50a163a0135c9",
+      "assessment": "invalid-schema",
+      "rule": "soap-extension-position",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
     }
   ]
 }

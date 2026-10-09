@@ -125,20 +125,30 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
     }
     if (specified) for (const name of specified) {c.step(owner); if (!found.has(name)) c.fail(message, "wsdl-part", "Selected body/header part is not declared", syntax.source);}
   };
-  const assessExtensions = (extensionTree: SyntaxElement[]) => {while (extensionTree.length) {
-      const child = extensionTree.pop()!;
+  const soapPositions: Readonly<Record<string, readonly [string, string]>> = {
+    binding: [WSDL_NAMESPACE, "binding"], operation: [WSDL_NAMESPACE, "operation"],
+    body: [WSDL_NAMESPACE, "input|output"], fault: [WSDL_NAMESPACE, "fault"],
+    header: [WSDL_NAMESPACE, "input|output"], headerfault: [namespace, "header"], address: [WSDL_NAMESPACE, "port"],
+  };
+  const assessExtensions = (extensionTree: {syntax: SyntaxElement; parent: SyntaxElement}[]) => {while (extensionTree.length) {
+      const {syntax: child, parent} = extensionTree.pop()!;
       c.step(owner);
       if (child.name.namespace === "http://schemas.xmlsoap.org/wsdl/mime/") c.unsupported(owner, "attachments", "Attachments/MTOM are excluded", child.source);
-      if (child.name.namespace !== WSDL_NAMESPACE && child.name.namespace !== namespace) {
-        const rawRequired = syntaxAttribute(child, "required", WSDL_NAMESPACE), required = rawRequired === undefined ? undefined : normalizeWhitespace(rawRequired, "collapse");
+      const position = child.name.namespace === namespace ? soapPositions[child.name.local] : undefined;
+      if (position && (parent.name.namespace !== position[0] || !position[1].split("|").includes(parent.name.local))) c.fail(owner, "soap-extension-position", "SOAP extension is not permitted in this WSDL position", child.source);
+      if (child.name.namespace !== WSDL_NAMESPACE) {
+        const rawRequired = syntaxAttribute(child, "required", WSDL_NAMESPACE);
+        if (rawRequired !== undefined) c.text(rawRequired, owner);
+        const required = rawRequired === undefined ? undefined : normalizeWhitespace(rawRequired, "collapse");
         if (required !== undefined && !["true", "false", "1", "0"].includes(required)) c.fail(owner, "wsdl-required", "Invalid required-extension boolean", child.source);
-        if (required === "true" || required === "1") c.unsupported(owner, "required-binding-extension", "Required binding extension has no assessed capability", child.source);
+        if (!position && (required === "true" || required === "1")) c.unsupported(owner, "required-binding-extension", "Required binding extension has no assessed capability", child.source);
       }
-      for (const nested of children(child)) extensionTree.push(nested);
+      for (const nested of children(child)) extensionTree.push({syntax: nested, parent: child});
   }};
   // Binding-wide extension semantics apply to every selected operation;
   // other operation subtrees remain outside this operation's assessment.
-  assessExtensions([...children(binding.syntax).filter(child => child.name.namespace !== WSDL_NAMESPACE), bindingOperation]);
+  const extensions = children(binding.syntax).filter(child => child.name.namespace !== WSDL_NAMESPACE).map(syntax => ({syntax, parent: binding.syntax}));
+  extensions.push({syntax: bindingOperation, parent: binding.syntax}); assessExtensions(extensions);
   for (const direction of children(abstractOperation, WSDL_NAMESPACE)) {
     if (!["input", "output", "fault"].includes(direction.name.local)) continue;
     const corresponding = children(bindingOperation, WSDL_NAMESPACE, direction.name.local).find(n => direction.name.local !== "fault" || token(n, "name") === token(direction, "name"));
@@ -170,7 +180,7 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
     const ports = children((service as WsdlNode).syntax, WSDL_NAMESPACE, "port").filter(p => token(p, "name") === selection.port!.name);
     if (ports.length !== 1) c.fail(service, "wsdl-port", "Select one declared service port");
     const port = ports[0], bindingName = syntaxAttribute(port, "binding");
-    assessExtensions(children(port).filter(child => child.name.namespace !== WSDL_NAMESPACE));
+    assessExtensions(children(port).filter(child => child.name.namespace !== WSDL_NAMESPACE).map(syntax => ({syntax, parent: port})));
     if (!bindingName || c.target(lexicalReference(bindingName, "binding", port), service) !== owner.id) c.fail(service, "wsdl-port", "Selected port does not use the selected binding", port.source);
     const address = children(port, namespace, "address");
     if (address.length !== 1 || !syntaxAttribute(address[0], "location")) c.fail(service, "soap-address", "Selected SOAP port requires an endpoint", port.source);

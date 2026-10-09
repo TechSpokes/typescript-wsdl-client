@@ -116,6 +116,7 @@ Selected binding assessment includes operation bodies, headers, header faults an
 String style/use enumerations retain exact spelling; NMTOKEN names/parts and anyURI transport/action values use their declared XML whitespace normalization while preserving source operands.
 [WSDL 1.1](https://www.w3.org/TR/2001/NOTE-wsdl-20010315) sections 2.1.3, 3.4 and 3.6 require understood mandatory extensions, explicit SOAPAction for SOAP 1.1 HTTP (including an explicit empty value), and one fault-message part.
 Other operation/port extension subtrees do not enlarge the selected capability claim.
+Recognized SOAP extension local names must occur in their declared WSDL positions; a familiar namespace does not qualify an unknown mandatory local name.
 SOAP 1.1/1.2 adapter qualification remains required before dispatch and belongs to #190/#192.
 
 An enumeration on base `xs:string` with value `" a "` denotes that base string value.
