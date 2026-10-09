@@ -1,4 +1,5 @@
 import path from "node:path";
+import {createHash} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {describe, expect, it} from "vitest";
 import {globalId, DEFAULT_GRAPH_NODES} from "../../src/compiler/canonicalGraph.js";
@@ -44,6 +45,9 @@ describe("exact occurrence analysis", () => {
     expect(type(a, "EmptyChoice").children).toMatchObject({nullable: false, hasRealization: false});
     expect(type(a, "OptionalEmptyChoice").children).toMatchObject({nullable: true, hasRealization: true});
     expect(type(a, "EmptySequence").children).toMatchObject({nullable: true, hasRealization: true});
+    expect(counts(a, "DeadOptional")).toEqual({});
+    expect(counts(a, "DeadAndRequired")).toEqual({b: {min: "1", max: "1"}});
+    expect(type(a, "DeadWildcard").children.wildcard).toEqual({min: "0", max: "0"});
     expect(type(a, "Container").children.nullable).toBe(false);
     expect(counts(a, "Container")).toEqual({child: {min: "1", max: "1"}});
     expect(type(a, "Recursive").children.nullable).toBe(true);
@@ -104,5 +108,13 @@ describe("exact occurrence analysis", () => {
     expect(measurements.map(r => r.outcome)).toEqual(["passes", "resource-limit"]);
     mkdirSync("tmp/conformance/analysis", {recursive: true});
     writeFileSync("tmp/conformance/analysis/node-measurements.json", JSON.stringify(measurements, null, 2) + "\n");
+  });
+
+  it("charges expanded-name serialization before allocating large property keys", async () => {
+    const source = "https://analysis.test/large-name.xsd";
+    const bytes = Buffer.from(`<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:complexType name="T"><xs:sequence><xs:element name="${"a".repeat(20_000)}" type="xs:string"/></xs:sequence></xs:complexType></xs:schema>`);
+    const input = await prepareResolvedCompilationInput({kind: "source", source}, {loading: {policy: {allowedOrigins: ["https://analysis.test"]}, offlineResources: new Map([[source, {bytes, digest: createHash("sha256").update(bytes).digest("hex")}]])}});
+    if (input.kind !== "semantic") throw Error("semantic");
+    expect(analyzeOccurrences(input.composed, {maxSteps: 1000})).toMatchObject({kind: "failure", diagnostic: {category: "resource-limit", component: expect.any(String), source: expect.objectContaining({path: expect.any(String)})}});
   });
 });

@@ -1,6 +1,6 @@
 /** Exact S06 summaries of child particles. Intervals never describe the full language. */
 import {deepFreeze} from "./canonicalGraph.js";
-import type {GraphNode, NodeId, Occurs, ParticleNode} from "./canonicalGraph.js";
+import type {GraphNode, NodeId, Occurs, ParticleNode, Reference} from "./canonicalGraph.js";
 import type {ExpandedName} from "../loader/orderedSyntax.js";
 import type {ComposedGraph} from "./composeCanonicalGraph.js";
 import {referenceTarget, SemanticError, semanticBudget} from "./resolveCanonicalGraph.js";
@@ -76,7 +76,14 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
     const summaries = new Map<NodeId, ParticleSummary>(), active = new Set<NodeId>();
     const algebra = occurrenceAlgebra(() => budget.step(current));
     const get = (id: NodeId): GraphNode => nodes.get(id) ?? (() => {throw new SemanticError("invalid-schema", "Missing structural component", id, current?.context.source);})();
-    const key = (name: ExpandedName) => JSON.stringify([name.namespace, name.local]);
+    const key = (name: ExpandedName) => {
+      for (const value of [name.namespace, name.local]) for (let i = 0; i < value.length; i++) budget.step(current);
+      return JSON.stringify([name.namespace, name.local]);
+    };
+    const target = (reference: Reference, owner: GraphNode) => {
+      if (reference.kind === "symbol") for (const value of [reference.role, reference.name.namespace, reference.name.local]) for (let i = 0; i < value.length; i++) budget.step(owner);
+      return referenceTarget(reference, nodes, owner);
+    };
     const copyIds = (a: readonly NodeId[], b: readonly NodeId[]): readonly NodeId[] => {
       const unique = new Set<NodeId>();
       for (const list of [a, b]) for (const id of list) {budget.step(current); for (let i = 0; i < id.length; i++) budget.step(current); unique.add(id);}
@@ -90,6 +97,7 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
       const elements = new Map<string, PropertyContribution>();
       let wildcard = ZERO_OCCURS, nullable = !choice;
       const hasRealization = choice ? parts.length > 0 : parts.every(p => p.hasRealization);
+      if (!hasRealization) return {nullable: false, hasRealization: false, elements: [], wildcard: ZERO_OCCURS};
       for (let i = 0; i < parts.length; i++) {
         budget.step(current); const part = parts[i], present = new Set<string>();
         nullable = choice ? nullable || part.nullable : nullable && part.nullable;
@@ -110,12 +118,12 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
         const result: NodeId[] = []; for (const id of node.term.children) {budget.step(node); result.push(id);} return result;
       }
       if (node.term.kind === "group") {
-        const id = referenceTarget(node.term.reference, nodes, node), group = id ? get(id) : undefined;
+        const id = target(node.term.reference, node), group = id ? get(id) : undefined;
         if (group?.kind !== "group") throw new SemanticError("invalid-schema", "Group particle requires a model group", node.id, node.context.source);
         return [group.content];
       }
       if (node.term.kind === "element") {
-        const id = referenceTarget(node.term.declaration, nodes, node);
+        const id = target(node.term.declaration, node);
         if (!id || get(id).kind !== "element") throw new SemanticError("invalid-schema", "Element particle requires an element declaration", node.id, node.context.source);
       }
       return [];
@@ -137,7 +145,7 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
         const node = f.node;
         let content: Content;
         if (node.term.kind === "element") {
-          const id = referenceTarget(node.term.declaration, nodes, node)!, declaration = get(id);
+          const id = target(node.term.declaration, node)!, declaration = get(id);
           if (declaration.kind !== "element") throw new Error("Checked element target changed");
           content = {nullable: false, hasRealization: true, elements: [{name: declaration.name, occurs: ONE_OCCURS, declarations: [id], particles: [node.id]}], wildcard: ZERO_OCCURS};
         } else if (node.term.kind === "any") content = {nullable: false, hasRealization: true, elements: [], wildcard: ONE_OCCURS};
