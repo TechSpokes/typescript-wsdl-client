@@ -210,6 +210,8 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Supported Patterns](docs/supported-patterns.md) | WSDL/XSD features handled and current limitations |
 | [Content Model Baseline](docs/content-model-baseline.md) | Reproducible S01 reference evidence and current semantic limits |
 | [Shipped Fix Reconciliation](docs/content-model-shipped-fix.md) | Contributor attribution, delivered occurrence behavior and S02 handoff |
+| [Content Model Contracts (ADR-003)](docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
+| [Content Model Decision Register](docs/content-model-decisions.md) | Stable S02 decisions, evidence, owners and prerequisite gates |
 | [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
 
 ### Adopt
