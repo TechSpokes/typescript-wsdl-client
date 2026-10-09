@@ -93,9 +93,12 @@ export function semanticGraphFingerprint(graph: CanonicalGraph): string {
     const result: [string, string][] = [];
     const ref = (r: Reference | undefined, edge: string) => {if (r?.kind === "local") result.push([r.target, edge]);};
     if (n.kind === "element" || n.kind === "attribute") ref(n.type, "type");
+    if (n.kind === "element") ref(n.substitutionGroup, "substitutionGroup");
     if (n.kind === "attributeUse") ref(n.declaration, "declaration");
+    if (n.kind === "attributeGroupUse") ref(n.reference, "attributeGroup");
     if (n.kind === "particle") {
       if (n.term.kind === "element") ref(n.term.declaration, "declaration");
+      else if (n.term.kind === "group") ref(n.term.reference, "group");
       else if (n.term.kind === "sequence" || n.term.kind === "choice" || n.term.kind === "all") n.term.children.forEach((id, i) => result.push([id, `children/${i}`]));
     }
     if (n.kind === "group" || n.kind === "complexType") {if (n.content) result.push([n.content, "content"]);}
@@ -116,15 +119,25 @@ export function semanticGraphFingerprint(graph: CanonicalGraph): string {
     ids.set(n.id, id); paths.set(n.id, item.path);
     for (const [child, edge] of children(n)) stack.push({id: child, path: `${item.path}/${edge}`});
   }
-  const remap = (v: unknown, key?: string): unknown => {
-    if (typeof v === "string") return ["id", "owner", "target", "content", "children", "attributes", "globals"].includes(key ?? "") ? ids.get(v) ?? v : v;
-    if (Array.isArray(v)) return v.map(c => remap(c, key));
-    if (!v || typeof v !== "object") return v;
-    const o = v as Record<string, unknown>;
-    return Object.fromEntries(Object.entries(o).map(([k, c]) => [k, remap(c, k)]));
+  const mappedId = (id: string): string => ids.get(id)!;
+  const reference = (r: Reference): Reference => r.kind === "local" ? {...r, target: mappedId(r.target)} : r;
+  const mapNode = (n: GraphNode): GraphNode => {
+    const common = {...n, id: mappedId(n.id), identity: n.identity.kind === "scoped" ? {...n.identity, owner: mappedId(n.identity.owner), path: paths.get(n.id)!} : n.identity};
+    switch (n.kind) {
+      case "element": return {...common, kind: n.kind, name: n.name, type: reference(n.type), nillable: n.nillable, abstract: n.abstract, value: n.value, substitutionGroup: n.substitutionGroup ? reference(n.substitutionGroup) : undefined};
+      case "attribute": return {...common, kind: n.kind, name: n.name, type: reference(n.type), value: n.value};
+      case "attributeUse": return {...common, kind: n.kind, declaration: reference(n.declaration), use: n.use, value: n.value};
+      case "particle": return {...common, kind: n.kind, occurs: n.occurs, term: n.term.kind === "element" ? {...n.term, declaration: reference(n.term.declaration)} : n.term.kind === "group" ? {...n.term, reference: reference(n.term.reference)} : n.term.kind === "sequence" || n.term.kind === "choice" || n.term.kind === "all" ? {...n.term, children: n.term.children.map(mappedId)} : n.term};
+      case "group": return {...common, kind: n.kind, content: mappedId(n.content)};
+      case "attributeGroup": return {...common, kind: n.kind, attributes: n.attributes.map(mappedId)};
+      case "complexType": return {...common, kind: n.kind, mixed: n.mixed, abstract: n.abstract, content: n.content ? mappedId(n.content) : undefined, attributes: n.attributes.map(mappedId), derivation: n.derivation ? {...n.derivation, base: reference(n.derivation.base), inlineType: n.derivation.inlineType ? reference(n.derivation.inlineType) : undefined} : undefined};
+      case "simpleType": return {...common, kind: n.kind, variety: n.variety.kind === "restriction" ? {...n.variety, base: reference(n.variety.base)} : n.variety.kind === "list" ? {...n.variety, item: reference(n.variety.item)} : {...n.variety, members: n.variety.members.map(reference)}};
+      case "attributeGroupUse": return {...common, kind: n.kind, reference: reference(n.reference)};
+      case "attributeWildcard": return {...common, kind: n.kind, wildcard: n.wildcard};
+      case "wsdl": return {...common, kind: n.kind, name: n.name, role: n.role, syntax: n.syntax, references: n.references};
+    }
   };
-  const mapped = remap(portable) as CanonicalGraph;
-  const stable = {...mapped, nodes: mapped.nodes.map((n, i) => n.identity.kind === "scoped" ? {...n, identity: {...n.identity, path: paths.get(portable.nodes[i].id)!}} : n).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)};
+  const stable = {...portable, nodes: portable.nodes.map(mapNode).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)};
   const omit = new Set(["source", "uri", "digest", "baseUri", "origins", "loading", "schemaAnnotations", "annotations", "lexicalName"]);
   const semantic = (v: unknown, parentName?: ExpandedName): unknown => {
     if (Array.isArray(v)) return v.filter(c => !(c && typeof c === "object" && (((c as SyntaxElement).name?.local === "annotation" && (c as SyntaxElement).name?.namespace === XSD_NAMESPACE) || ((c as SyntaxElement).name?.local === "documentation" && [XSD_NAMESPACE, WSDL_NAMESPACE].includes((c as SyntaxElement).name?.namespace))))).map(c => semantic(c, parentName)).filter(c => c !== undefined);

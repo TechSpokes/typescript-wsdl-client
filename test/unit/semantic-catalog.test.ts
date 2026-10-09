@@ -159,6 +159,17 @@ describe("versioned semantic catalogs", () => {
     expect(semanticGraphFingerprint(modified)).not.toBe(c.semanticFingerprint);
   });
 
+  it("never remaps lexical namespace dictionaries as structural references", async () => {
+    const id = (await build()).nodes.find(n => n.kind === "complexType" && n.identity.kind === "global" && n.identity.name.local === "Shared")! as ComplexTypeNode;
+    const xml = readFileSync(path.join(fixtures, "xsd/graph/shared-recursive.xsd"), "utf8").replace('xmlns:q="urn:qname"', `xmlns:q="urn:qname" xmlns:target="${id.content}"`);
+    const dir = temp(), fingerprints: string[] = [];
+    for (const [i, text] of [xml, xml.replace('<xs:complexType name="Shared" mixed="true">', '<xs:complexType name="Shared" mixed="true"><xs:annotation><xs:documentation>New</xs:documentation></xs:annotation>')].entries()) {
+      const source = path.join(dir, `${i}.xsd`); writeFileSync(source, text);
+      fingerprints.push(semanticGraphFingerprint(buildCanonicalGraph(await loadSchemaInput(source, {policy: {fileRoots: [dir]}}))));
+    }
+    expect(fingerprints[0]).toBe(fingerprints[1]);
+  });
+
   it("rejects oversized UTF-8 input, deep JSON, invalid encoding and special files", async () => {
     const text = serializeSemanticCatalog(await catalog());
     expect(read(text, {maxBytes: Buffer.byteLength(text)}).kind).toBe("semantic");
