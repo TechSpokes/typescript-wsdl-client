@@ -75,6 +75,9 @@ Consequently a required empty choice has `schemaEmptiable: true` and `nullable: 
 #179 uses the former only where the specification invokes that formal schema predicate; #180 uses language nullability.
 Formal ranges include unrealizable branches and are not accepted count intervals.
 Declared zero-maximum particles remain in the graph for diagnostics and provenance; their range is zero as for the absent particle in the XSD component mapping, including an unbounded descendant.
+Zero-bound children are omitted from their containing choice's alternatives, while an optional non-disabled empty sequence remains an epsilon alternative.
+Root zero repetitions still admit epsilon.
+The `disabledChoice` and `disabledElementChoice` cases record pinned-engine deviations from this mapping; the terminal case preserves the S01/#181 zero-bound attribution qualification.
 
 ### Commands and measurements
 

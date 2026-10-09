@@ -62,6 +62,10 @@ describe("exact occurrence analysis", () => {
     const input = await load(), before = JSON.stringify(input), a = analyze(input);
     expect(counts(a, "Disabled")).toEqual({a: {min: "0", max: "0"}});
     expect(type(a, "Disabled").children.effectiveTotalRange).toEqual({min: "0", max: "0"});
+    for (const name of ["DisabledChoice", "DisabledElementChoice"]) {
+      expect(counts(a, name)).toEqual({b: {min: "1", max: "1"}});
+      expect(type(a, name).children).toMatchObject({nullable: false, effectiveTotalRange: {min: "1", max: "1"}});
+    }
     expect(counts(a, "ZeroElement")).toEqual({a: {min: "0", max: "0"}});
     expect(counts(a, "Huge")).toEqual({a: {min: "1801439850948198624691357802469135780", max: "1801439850948198624691357802469135780"}});
     expect(counts(a, "Gap")).toEqual({a: {min: "2", max: "4"}});

@@ -25,6 +25,8 @@
   <xs:complexType name="Grouped"><xs:sequence><xs:group ref="t:Pair" minOccurs="0" maxOccurs="2"/><xs:element name="separator" type="xs:string"/><xs:group ref="t:Pair" minOccurs="3" maxOccurs="4"/></xs:sequence></xs:complexType>
   <xs:complexType name="All"><xs:all><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string" minOccurs="0"/></xs:all></xs:complexType>
   <xs:complexType name="Disabled"><xs:sequence minOccurs="0" maxOccurs="0"><xs:sequence maxOccurs="unbounded"><xs:element name="a" type="xs:string"/></xs:sequence></xs:sequence></xs:complexType>
+  <xs:complexType name="DisabledChoice"><xs:choice><xs:sequence minOccurs="0" maxOccurs="0"><xs:element name="a" type="xs:string"/></xs:sequence><xs:element name="b" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="DisabledElementChoice"><xs:choice><xs:element name="a" type="xs:string" minOccurs="0" maxOccurs="0"/><xs:element name="b" type="xs:string"/></xs:choice></xs:complexType>
   <xs:complexType name="ZeroElement"><xs:sequence maxOccurs="unbounded"><xs:element name="a" type="xs:string" minOccurs="0" maxOccurs="0"/></xs:sequence></xs:complexType>
   <xs:complexType name="Huge"><xs:sequence minOccurs="2" maxOccurs="2"><xs:element name="a" type="xs:string" minOccurs="900719925474099312345678901234567890" maxOccurs="900719925474099312345678901234567890"/></xs:sequence></xs:complexType>
   <xs:complexType name="Recursive"><xs:sequence><xs:element name="next" type="t:Recursive" minOccurs="0"/></xs:sequence></xs:complexType>
@@ -40,6 +42,8 @@
   <xs:element name="recursive" type="t:Recursive"/>
   <xs:element name="all" type="t:All"/>
   <xs:element name="disabled" type="t:Disabled"/>
+  <xs:element name="disabledChoice" type="t:DisabledChoice"/>
+  <xs:element name="disabledElementChoice" type="t:DisabledElementChoice"/>
   <xs:element name="deadOptional" type="t:DeadOptional"/>
   <xs:element name="deadRequired" type="t:DeadRequired"/>
   <xs:element name="deadAndRequired" type="t:DeadAndRequired"/>

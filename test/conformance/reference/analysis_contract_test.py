@@ -61,6 +61,7 @@ class AnalysisContractTests(unittest.TestCase):
             ("deadOptional", "<a>x</a>", True, False),
             ("deadAndRequired", "<a>x</a><b>x</b>", True, False),
             ("deadWildcard", "<unknown/>", True, False),
+            ("disabledChoice", "", True, False),
         ]
         for name, content, observed_primary, normative_and_secondary in disagreements:
             with self.subTest(disagreement=name):
@@ -73,3 +74,13 @@ class AnalysisContractTests(unittest.TestCase):
                 xml = f'<{name} xmlns="urn:analysis">{content}</{name}>'
                 self.assertTrue(primary.is_valid(xml))
                 self.assertTrue(secondary.validate(etree.fromstring(xml.encode())))
+        # Known zero-bound terminal attribution disagreement belongs to #181.
+        # The XSD mapping admits only b; record observations without accepting
+        # either engine's epsilon behavior or libxml2's disabled a behavior.
+        for content, observed_primary, observed_secondary in [
+                ("", True, True), ("<a>x</a>", False, True),
+                ("<b>x</b>", True, True)]:
+            with self.subTest(disabled_terminal=content):
+                xml = f'<disabledElementChoice xmlns="urn:analysis">{content}</disabledElementChoice>'
+                self.assertEqual(primary.is_valid(xml), observed_primary)
+                self.assertEqual(secondary.validate(etree.fromstring(xml.encode())), observed_secondary)

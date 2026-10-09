@@ -160,7 +160,14 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
         } else if (node.term.kind === "any") content = {nullable: false, hasRealization: true, elements: [], wildcard: ONE_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
         else {
           const parts: ParticleSummary[] = [];
-          for (const id of f.children) {budget.step(node); parts.push(summaries.get(id)!);}
+          for (const id of f.children) {
+            budget.step(node);
+            // XSD syntax with 0..0 maps to no particle. Traverse it above for
+            // diagnostics, but never create an epsilon *choice alternative*.
+            const child = get(id);
+            if (node.term.kind === "choice" && child.kind === "particle" && child.occurs.max === "0") continue;
+            parts.push(summaries.get(id)!);
+          }
           content = combine(parts, node.term.kind === "choice");
         }
         const elements: PropertyContribution[] = [];
