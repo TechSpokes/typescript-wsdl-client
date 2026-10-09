@@ -18,7 +18,7 @@ Resolve relative references against the declaring document's absolute URI. Initi
 
 Cache fetched bytes by canonical absolute retrieval URI and digest. Cache schema interpretation separately by `(resource digest, effective target namespace, include/import context)`; a chameleon include interpreted in two namespaces produces two contexts. Preserve cycle edges, fetch once per resource, and diagnose unresolved declarations after traversal rather than substituting empty types. #172 must define URI normalization without collapsing distinct query strings or filesystem identities.
 
-The immutable graph (#173/#174) contains separate element/type/attribute/group declarations, particle nodes, local occurrence bounds, structured references, derivation edges, namespace constraints, source provenance and operation bindings. Symbol identity is `(namespace URI, local name, symbol role)`; anonymous identities use stable source-relative paths. Prefixes and generated TypeScript names are not identity.
+The immutable graph (#173/#174) contains separate element/type/attribute/group declarations, particle nodes, local occurrence bounds, structured references, derivation edges, namespace constraints, source provenance and operation bindings. Global symbol identity is `(namespace URI, local name, symbol role)`; named local declarations and anonymous types additionally use containing declaration identity and stable source-relative paths. The same local element QName in two containing types may have different types and must remain distinct; #177 owns that fixture. Prefixes and generated TypeScript names are not identity.
 
 Finite bounds use exact integers; persisted finite bounds are decimal strings and unbounded is a distinct token. Zero annihilates descendant bounds, including an unbounded descendant. #178 calculates summaries; #180 matches complete particle languages, including gaps, correlation and order. A min/max interval is never a complete validator.
 
@@ -52,7 +52,7 @@ Nil is independent of attributes. For a nillable element with attribute `id="7"`
 
 Target schema-defined XML values, not byte identity. `normalizeXml` compares expanded names, allowed attributes, meaningful ordered content, nil and type-specific scalar value meaning under the operation's resolved schema context. Only element-only insignificant whitespace is discarded; mixed-content whitespace remains. QName prefix changes are equivalent only when they resolve to the same expanded name.
 
-`normalizeValue` returns a fresh value without mutating caller objects. It chooses the projection's documented canonical representative of invisible grouping, empty realizations and scalar lexical equivalence. It must preserve observable order and multiplicity; it cannot turn invalid branches into valid ones.
+`normalizeValue` returns a fresh value without mutating caller objects. It chooses the projection's documented canonical representative of invisible grouping, empty realizations and scalar lexical equivalence. It must preserve observable order and multiplicity; it cannot turn invalid branches into valid ones. Lexical-sensitive facets require retaining an admitted lexical witness or proving the selected representative satisfies every facet; value equality alone does not authorize rewriting a pattern-constrained lexical form.
 
 The laws apply to schema/profile-valid XML and runtime-valid values within the selected faithful projection and declared validation scope. They do not promise equivalence for unsupported, invalid or lossy data.
 
@@ -73,7 +73,8 @@ normalizeValue(normalizeValue(value)) = normalizeValue(value)
 | Empty alternatives | Zero, one or several empty selections normalize to the same empty content |
 | Nil attributes | Nil `x` with `id=7` retains `id=7` through both round trips |
 | QName aliases | `p:T` and `q:T` with equal namespace bindings normalize equally |
-| Scalar lexical form | Valid decimal `+01.00` maps to value `1`; original caller text stays untouched |
+| Scalar lexical form | Unconstrained decimal `+01.00` maps to value `1`; original caller text stays untouched |
+| Lexical-sensitive facet | Decimal pattern `[+]0[0-9][.][0-9]{2}` retains an admitted witness such as `+01.00`, not `1` |
 | Invalid input | A branch object containing mutually exclusive fields is rejected, never repaired |
 
 Standards-defined whitespace/value normalization belongs to #184. API representation conversion is a separate explicit boundary (#183/#184/#198): HTTP decimal strings become exact scalar values in a new object. No JavaScript numeric coercion, removal of unknown fields or validator defaults may rescue an invalid submission.
@@ -109,11 +110,11 @@ Each fixture below is an independent acceptance input: S01 IDs link to the exist
 | Length facets | XSD units: characters, bytes or list items according to type | #184; backend keywords only where equivalent | #184 non-BMP string and binary lengths |
 | Default/fixed | Explicit schema assessment; fixed checked after scalar conversion | #179/#184/#189; API validator defaults disabled | #184 absent attribute/present empty element/fixed mismatch |
 | List | Whitespace-separated supported atomic items; ordered item array | #179 legality; #184 item/facet validation; #183 JSON array | #184 empty/invalid item and list-length fixtures |
-| Union | Declaration-order member assessment; retain selected type and canonical value | #179/#184; #183 tagged mapping; never infer from JS coercion | #184 overlapping lexical/member-order fixtures |
+| Union | Declaration-order lexical member assessment; retain selected type, value and needed lexical witness | #179/#184; #183 tagged mapping; never infer from JS coercion | #184 overlapping lexical/member-order fixtures |
 
 `anySimpleType` accepts lexical text with no invented constraints. `anyType` is an explicit opaque scope, not a validated concrete structure. NOTATION, ID/IDREF document identity, keys/keyrefs/unique, substitution-group and dynamic `xsi:type` polymorphism, `redefine`, attachments/MTOM and XSD 1.1 assertions/open content are excluded with `unsupported-capability`. #179 owns diagnosis; legacy behavior remains routed by S02-D10.
 
-Supported pattern planning initially admits only an evidenced equivalent subset; it must diagnose every other construct rather than copy arbitrary XSD regex into JSON Schema. List/union of supported members are in scope; members using excluded constraints make the reachable type unsupported. New scalar families cannot be marked verified from a profile label or a serializer test alone.
+Supported pattern planning initially admits only an evidenced equivalent subset; it must diagnose every other construct rather than copy arbitrary XSD regex into JSON Schema. List/union of supported members are in scope; members using excluded constraints make the reachable type unsupported. Union member tags describe the member determined from encoded lexical data; a caller's alternative member tag that produces identical XML normalizes to the declaration-order assessment result, rather than promising unrecoverable member history. New scalar families cannot be marked verified from a profile label or a serializer test alone.
 
 ### Scalar pipeline
 
@@ -142,6 +143,10 @@ The buffered adapter can use node-soap's documented raw XML request hook and raw
 Select an operation's declared binding/version/port explicitly, not the first service port. Dispatch checks endpoint overrides, actions, HTTP/SOAP headers, faults, auth/security, cancellation and capabilities against the bundle. Unsupported/unverified combinations fail before sending; never silently omit credentials or signatures. #169's matrix must distinguish executed success/failure from source inspection and upstream documentation.
 
 Validate/encode application input, build the envelope, then apply security-sensitive signatures to the final envelope before dispatch. Incoming signature/security verification precedes semantic normalization; preserve required raw bytes at that boundary. Changing prefixes, text or grouping after signing can invalidate signatures. No XML-value equivalence contract promises a byte-preserving signed round trip.
+
+For a signature whose verification scope closes only at response EOF, records must not be exposed as authenticated before verification. #190 may use bounded buffering; #192/#193 must either use a separately proven incremental verification protocol or reject that streaming/security combination before dispatch. A signature failure is terminal failure and never successful completion. The verification-before-yield rule is mandatory even if record datatype validation succeeds.
+
+The S02 minimum feasibility gate is local SOAP 1.1 document/literal HTTP: both actual paths must preserve a shared pre-encoded ordered body and expose response order/namespace/nil context before name-keyed parsing; buffered calls must preserve endpoint overrides, actions, HTTP Basic and HTTP/SOAP headers and faults; streaming calls must establish declared binding endpoint/action/HTTP response headers, HTTP failure, before-EOF records and a consumption/completion seam. Streaming auth, SOAP headers, SOAP faults and cancellation must be executed and classified even when the current path fails. A current omission is not a verified capability: the selected contract must name a fail-closed first-consumer owner and concrete seam for correction. Existing buffered security cannot be dropped; a new required security/transport combination with no evidenced adapter seam blocks S02 closure.
 
 HTTP Basic/header auth, WS-Security, TLS client certificates, SOAP 1.2 and cancellation are separate capabilities. Preserve the legacy buffered capability surface through its legacy adapter. Only combinations executed by #169 may count as verified on the proposed faithful path; isolated later capability qualification can block #190/#192 without changing graph/value contracts, provided the required base transport feasibility is established.
 
