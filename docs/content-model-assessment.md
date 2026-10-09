@@ -125,7 +125,7 @@ The [SOAP 1.2 WSDL submission](https://www.w3.org/submissions/wsdl11soap12/) sec
 `actionRequired` records the effective default-true boolean; an explicit false permits an absent action.
 Its `tParts` list may be empty, unlike SOAP 1.1 `NMTOKENS`.
 Absent body/fault `use` is legal but lacks explicit literal capability evidence and returns `unsupported-capability`; header/headerfault `use` is required.
-Document bindings forbid `encodingStyle` on these content extensions.
+Encoding/namespace checks retain the declared binding style and body use; forbidden hints are invalid, while legal encoded bodies remain unsupported.
 Section 2.3 gives normative text precedence over outlines/schema, resolving fault-name `NMTOKEN` versus Appendix `NCName` and optional fault `use` without selecting a validator's interpretation.
 SOAP 1.1/1.2 adapter qualification remains required before dispatch and belongs to #190/#192.
 

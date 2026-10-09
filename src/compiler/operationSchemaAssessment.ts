@@ -159,10 +159,15 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
   const literal = (syntax: SyntaxElement) => {
     const use = syntaxAttribute(syntax, "use");
     if (version === "soap12") {
-      // This selected contract is document/literal: the submission forbids
-      // encodingStyle here even though it permits it in RPC/encoded bindings.
-      if (syntaxAttribute(syntax, "encodingStyle") !== undefined) c.fail(owner, "soap-encoding-style", "SOAP 1.2 document binding forbids encodingStyle", syntax.source);
+      // The primary predicate uses the declared binding style, not the
+      // effective operation override. Legal encoded bodies remain excluded.
+      const encoding = syntaxAttribute(syntax, "encodingStyle");
+      if (encoding !== undefined) {
+        if (!(bindingStyle === "rpc" && syntax.name.local === "body" && use === "encoded")) c.fail(owner, "soap-encoding-style", "SOAP 1.2 encodingStyle requires declared RPC binding and encoded body", syntax.source);
+        c.text(encoding, owner); absoluteUri(normalizeWhitespace(encoding, "collapse"), syntax, "soap-encoding-style");
+      }
       const rawNamespace = syntaxAttribute(syntax, "namespace");
+      if (rawNamespace === undefined && bindingStyle === "rpc" && ["body", "fault", "headerfault"].includes(syntax.name.local)) c.fail(owner, "soap-namespace", "Declared SOAP 1.2 RPC binding requires this namespace operand", syntax.source);
       if (rawNamespace !== undefined) {c.text(rawNamespace, owner); absoluteUri(normalizeWhitespace(rawNamespace, "collapse"), syntax, "soap-namespace");}
       if (use === undefined && ["body", "fault"].includes(syntax.name.local)) c.unsupported(owner, "binding-use-unspecified", "SOAP 1.2 permits absent body/fault use, but this binding has no explicit literal capability evidence", syntax.source);
     }

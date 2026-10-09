@@ -538,6 +538,38 @@
       "assessment": "unsupported-capability",
       "rule": "binding-incomplete",
       "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "soap12-rpc-document-encoded",
+      "fixture": "xsd/assessment/soap12-rpc-document-encoded.wsdl",
+      "sha256": "053d6a912d9e780aa05841b78d5e0e3bb44d3b53f9f61a2797040b5a421c759c",
+      "assessment": "unsupported-capability",
+      "rule": "binding-use",
+      "primaryRule": "https://www.w3.org/submissions/wsdl11soap12/"
+    },
+    {
+      "id": "soap12-rpc-document-encoded-relative",
+      "fixture": "xsd/assessment/soap12-rpc-document-encoded-relative.wsdl",
+      "sha256": "a5c51397edfe8d5dff0b7e89420a95a773e70d1c939ac89e6a236f9d7d6a1611",
+      "assessment": "invalid-schema",
+      "rule": "soap-encoding-style",
+      "primaryRule": "https://www.w3.org/submissions/wsdl11soap12/"
+    },
+    {
+      "id": "soap12-rpc-document-literal",
+      "fixture": "xsd/assessment/soap12-rpc-document-literal.wsdl",
+      "sha256": "8c9c3d99df20385f168ce13a8d058155df313e423c5705d4ebd1cd6abf95b947",
+      "assessment": "supported",
+      "rule": null,
+      "primaryRule": "https://www.w3.org/submissions/wsdl11soap12/"
+    },
+    {
+      "id": "soap12-rpc-document-namespace-absent",
+      "fixture": "xsd/assessment/soap12-rpc-document-namespace-absent.wsdl",
+      "sha256": "b8b840b326b92e6781bab73e5618c862e55dcafa4528bb13e0332eef28184c1d",
+      "assessment": "invalid-schema",
+      "rule": "soap-namespace",
+      "primaryRule": "https://www.w3.org/submissions/wsdl11soap12/"
     }
   ]
 }
