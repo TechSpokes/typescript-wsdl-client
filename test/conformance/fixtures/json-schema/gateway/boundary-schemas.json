@@ -1,0 +1,46 @@
+{
+  "mutation": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "code": {"type": "string"},
+      "label": {"type": "string", "default": "inserted"}
+    },
+    "required": ["code", "label"],
+    "additionalProperties": false
+  },
+  "nullableItems": {
+    "type": "object",
+    "properties": {"items": {"type": "array", "items": {"type": ["string", "null"]}}},
+    "required": ["items"],
+    "additionalProperties": false
+  },
+  "nullableWrapper": {
+    "type": "object",
+    "properties": {"items": {"type": ["array", "null"], "items": {"type": "string"}}},
+    "required": ["items"],
+    "additionalProperties": false
+  },
+  "recursive": {
+    "$id": "urn:gateway-probe:recursive",
+    "type": "object",
+    "properties": {"value": {"type": "string"}, "child": {"anyOf": [{"$ref": "#"}, {"type": "null"}]}},
+    "required": ["value"],
+    "additionalProperties": false
+  },
+  "facets": {
+    "type": "object",
+    "properties": {
+      "label": {"type": "string", "pattern": "^[A-Z]+$", "minLength": 2, "maxLength": 4},
+      "count": {"type": "integer", "minimum": 1, "maximum": 3},
+      "items": {"type": "array", "items": {"type": "string", "enum": ["a", "b"]}, "minItems": 1, "maxItems": 2}
+    },
+    "required": ["label", "count", "items"],
+    "additionalProperties": false
+  },
+  "openResponse": {
+    "type": "object",
+    "properties": {"known": {"type": "string"}},
+    "required": ["known"]
+  }
+}

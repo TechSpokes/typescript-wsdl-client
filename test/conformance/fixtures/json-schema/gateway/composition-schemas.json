@@ -1,0 +1,23 @@
+{
+  "closedMembers": {
+    "allOf": [
+      {"type": "object", "properties": {"a": {"type": "string"}}, "required": ["a"], "additionalProperties": false},
+      {"type": "object", "properties": {"b": {"type": "string"}}, "required": ["b"], "additionalProperties": false}
+    ]
+  },
+  "outerClosure": {
+    "type": "object",
+    "properties": {"a": {"type": "string"}, "b": {"type": "string"}},
+    "additionalProperties": false,
+    "allOf": [{"properties": {"a": {}}, "required": ["a"]}, {"properties": {"b": {}}, "required": ["b"]}]
+  },
+  "modernClosure": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "allOf": [
+      {"properties": {"a": {"type": "string"}}, "required": ["a"]},
+      {"properties": {"b": {"type": "string"}}, "required": ["b"]}
+    ],
+    "unevaluatedProperties": false
+  }
+}
