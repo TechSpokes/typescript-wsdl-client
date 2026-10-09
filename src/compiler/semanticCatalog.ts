@@ -13,6 +13,11 @@ import {CatalogError, DEFAULT_CATALOG_BYTES, canonicalJson, parseCatalogJson, po
 import type {CatalogLimits} from "./catalogErrors.js";
 import {artifactGraph, normalizeGraphTables, semanticGraphFingerprint} from "./catalogProvenance.js";
 import {validateSemanticGraph} from "./validateSemanticGraph.js";
+import {mergeStructuralCompanions} from "./structuralCompanions.js";
+import {resolveCanonicalGraph} from "./resolveCanonicalGraph.js";
+import type {SemanticLimits} from "./resolveCanonicalGraph.js";
+import {composeCanonicalGraph} from "./composeCanonicalGraph.js";
+import type {NodeId} from "./canonicalGraph.js";
 
 export {CatalogError} from "./catalogErrors.js";
 export const CATALOG_FORMAT = 2 as const;
@@ -113,4 +118,30 @@ export async function prepareCompilationInput(input: {kind: "source"; source: st
 /** Inspectable transitional view, always derived; it cannot replace the structural graph or feed emitters. */
 export function deriveCompatibilityView(graph: CanonicalGraph) {
   return deepFreeze({derived: true as const, model: graph.model, symbols: graph.nodes.filter(n => n.identity.kind === "global").map(n => ({id: n.id, kind: n.kind, identity: n.identity})).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)});
+}
+
+/** Internal faithful companion dispatch. Regeneration never fabricates missing structure. */
+export async function prepareResolvedCompilationInput(
+  input: Parameters<typeof prepareCompilationInput>[0] | {kind: "catalog-file"; file: string},
+  options: Omit<NonNullable<Parameters<typeof prepareCompilationInput>[1]>, "mode"> & {
+    companions?: readonly Readonly<{input: Parameters<typeof prepareCompilationInput>[0] | {kind: "catalog-file"; file: string}; roots: readonly NodeId[]}>[];
+    semantics?: SemanticLimits;
+  } = {},
+) {
+  const read = (source: typeof input) => source.kind === "catalog-file" ? readCatalogFile(source.file, {mode: "faithful", ...options.limits}) : prepareCompilationInput(source, {...options, mode: "faithful"});
+  const primary = await read(input);
+  if (primary.kind !== "semantic") return primary;
+  const companions = [];
+  for (const request of options.companions ?? []) {
+    // No requested root means no file read, source loading or unrelated component copy.
+    if (!request.roots.length) continue;
+    const companion = await read(request.input);
+    if (companion.kind !== "semantic") return companion;
+    companions.push({graph: companion.catalog.graph, roots: request.roots});
+  }
+  const merge = mergeStructuralCompanions(primary.catalog.graph, companions, options.semantics);
+  const catalog = createSemanticCatalog(merge.graph, options.limits);
+  const resolved = resolveCanonicalGraph(catalog.graph, options.semantics);
+  const composed = composeCanonicalGraph(resolved, options.semantics);
+  return deepFreeze({kind: "semantic" as const, catalog, resolved, composed, merge: {copied: merge.copied, deduplicated: merge.deduplicated, metrics: merge.metrics}});
 }

@@ -83,7 +83,7 @@ export function normalizeGraphTables(result: CanonicalGraph): CanonicalGraph {
 }
 
 /** Excludes source digests/locations, machine paths, documentation and loading policy. */
-export function semanticGraphFingerprint(graph: CanonicalGraph): string {
+export function semanticGraphRepresentation(graph: CanonicalGraph, options: {referenceIdentityOnly?: boolean} = {}): {structure: string; identities: ReadonlyMap<string, string>} {
   const portable = artifactGraph(graph);
   // Source-relative scoped IDs remain artifact identity. Fingerprint-only IDs follow semantic
   // containment instead, so inserting documentation cannot change their identity or table order.
@@ -144,10 +144,15 @@ export function semanticGraphFingerprint(graph: CanonicalGraph): string {
     if (!v || typeof v !== "object") return v;
     const o = v as Record<string, unknown>;
     if (o.kind === "text" && typeof o.value === "string" && !/[^\t\r\n ]/.test(o.value) && [XSD_NAMESPACE, WSDL_NAMESPACE].includes(parentName?.namespace ?? "")) return undefined;
-    if (o.kind === "symbol" || o.kind === "builtin") return Object.fromEntries(Object.entries(o).filter(([k]) => k !== "lexical").map(([k, c]) => [k, semantic(c)]));
+    if (o.kind === "symbol" || o.kind === "builtin") return Object.fromEntries(Object.entries(o).filter(([k]) => k !== "lexical" && !(options.referenceIdentityOnly && k === "target")).map(([k, c]) => [k, semantic(c)]));
     if (o.name && typeof o.value === "string" && (o.name as {namespace: string; local: string}).namespace === XML_NAMESPACE && (o.name as {local: string}).local === "base") return undefined;
     if (o.name && typeof o.value === "string" && (o.name as ExpandedName).namespace === "" && (o.name as ExpandedName).local === "schemaLocation" && parentName?.namespace === XSD_NAMESPACE && ["include", "import"].includes(parentName.local)) return undefined;
     return Object.fromEntries(Object.entries(o).filter(([k]) => !omit.has(k) && !(k === "path" && Object.hasOwn(o, "reference") && Object.hasOwn(o, "attribute"))).map(([k, c]) => [k, semantic(c, ["children", "attributes"].includes(k) && o.kind === "element" ? o.name as ExpandedName : undefined)]));
   };
-  return sha256(canonicalJson(semantic(stable)));
+  return {structure: canonicalJson(semantic(stable)), identities: ids};
+}
+
+/** Fingerprinting and companion comparison share the same actual normalized structure. */
+export function semanticGraphFingerprint(graph: CanonicalGraph): string {
+  return sha256(semanticGraphRepresentation(graph).structure);
 }

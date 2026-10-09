@@ -8,6 +8,24 @@ FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "xsd" / "compositi
 
 
 class CompositionContractTests(unittest.TestCase):
+    def test_public_characterization_schema_and_payloads(self):
+        wsdl = etree.parse(str(FIXTURES / "derivation-boundaries.wsdl"))
+        schema = wsdl.find("{http://schemas.xmlsoap.org/wsdl/}types/{http://www.w3.org/2001/XMLSchema}schema")
+        primary = xmlschema.XMLSchema(etree.tostring(schema))
+        secondary = etree.XMLSchema(etree.fromstring(etree.tostring(schema)))
+        for xml, expected in [
+            ('<PayloadRestricted xmlns="urn:composition:public"><a>x</a></PayloadRestricted>', True),
+            ('<PayloadRestricted xmlns="urn:composition:public"><b>1</b></PayloadRestricted>', False),
+            ('<PayloadRestricted xmlns="urn:composition:public" gone="x"/>', False),
+            ('<PayloadEmpty xmlns="urn:composition:public"/>', True),
+            ('<PayloadEmpty xmlns="urn:composition:public"><a>x</a></PayloadEmpty>', False),
+            ('<PayloadExtended xmlns="urn:composition:public"><a>x</a><b>1</b><extra>x</extra></PayloadExtended>', True),
+            ('<PayloadRecursive xmlns="urn:composition:public"><next><next/></next></PayloadRecursive>', True),
+        ]:
+            with self.subTest(xml=xml):
+                self.assertEqual(primary.is_valid(xml), expected)
+                self.assertEqual(secondary.validate(etree.fromstring(xml.encode())), expected)
+
     def test_schema_and_restriction_payloads(self):
         path = FIXTURES / "derivations.xsd"
         primary = xmlschema.XMLSchema(path)

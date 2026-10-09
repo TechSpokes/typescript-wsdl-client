@@ -9,6 +9,7 @@ The rows below are backed by committed conformance fixtures under `test/conforma
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `declared-derivation-boundaries` | research | Legacy compilation characterizes omitted groups, appended restriction content and named recursive references; faithful resolution/composition remain internal. |
 | `content-model-boundaries` | research | Characterization records current projection limits; it does not claim faithful content-model support. |
 | `content-model-invalid-all` | research | Legacy compiler acceptance is characterized separately from independent schema rejection. |
 | `sequence-occurrence-wrappers` | supported | Wrapping sequences with nonzero maxima propagate element bounds and optionality without crossing choice or all boundaries. |
@@ -39,11 +40,10 @@ Wrapping sequence bounds propagate through uninterrupted sequence ancestry to el
 
 Generated clients normalize present, non-null singleton responses into arrays for repeated element properties. Real SOAP transport regressions cover singleton and multiple items, omitted optional request fields, and gateway serialization with wrapper flattening enabled and disabled. Regenerate clients to receive this runtime correction; omitted optional response properties remain absent.
 
-- Complex types with `<xs:sequence>`, `<xs:all>`, and `<xs:choice>` compositors, including recursive nesting
+- Complex types with nested `<xs:sequence>`, `<xs:all>`, and `<xs:choice>` compositors, subject to the projection limits above
 - Simple content with attributes using the `$value` pattern to preserve text content alongside attribute properties
 - Named simple type restrictions and enumerations emitted as TypeScript aliases and OpenAPI scalar schemas
 - Named `xs:union` simple types emitted as TypeScript alias unions and OpenAPI `oneOf` schemas
-- Type inheritance through `<xs:extension>` and `<xs:restriction>` on both simple and complex content
 - Nested XSD imports across multiple schema files with relative and absolute URI resolution
 - Multiple namespaces with deterministic collision resolution via PascalCase uniqueness
 - `<xs:choice>` elements modeled as parallel optional alternatives by default
@@ -51,7 +51,6 @@ Generated clients normalize present, non-null singleton responses into arrays fo
 - Optional and nillable fields using `minOccurs`, `maxOccurs`, and `nillable` attributes
 - `ArrayOf*` wrapper types with automatic unwrapping in OpenAPI and runtime bridging in gateway code
 - WSDL/XSD documentation annotations propagated into TypeScript JSDoc comments and OpenAPI descriptions
-- Circular type references detected and broken with minimal stub types
 - Multiple WSDL ports and bindings; the first SOAP binding is selected, all ports are documented in service metadata
 - SOAP 1.1 and SOAP 1.2 binding detection
 - Streamable SOAP responses, opt-in per operation via `--stream-config` (ADR-002): client exposes `AsyncIterable<RecordType>`, gateway emits NDJSON or JSON array streams with backpressure, OpenAPI advertises the record schema via `x-wsdl-tsc-stream`
@@ -100,7 +99,11 @@ The compiler scans inline policies for UsernameToken, TransportBinding, and X509
 
 ### xs:group and xs:attributeGroup
 
-Groups are inlined into the parent type during schema compilation. The group identity is not preserved as a separate named type in the output, but all elements and attributes from the group appear correctly in the containing type.
+The `declared-derivation-boundaries` fixture characterizes the legacy default: its named group elements and attribute-group uses are omitted from the containing compiled type. General group support is therefore unqualified. Internal [reference resolution](content-model-resolution.md) preserves complete group definitions and separate use-site bounds; [companion reuse](content-model-companions.md) carries their required closures. These internal results do not establish public generation support.
+
+### Extension and restriction
+
+The same executable fixture distinguishes current legacy behavior: extension appends local properties, but restriction also appends them and empty restriction retains base content. A prohibited optional attribute remains in legacy metadata. Faithful restriction, attribute composition and immutable sibling behavior are covered by internal [derivation tests](content-model-composition.md), with full legality assessment assigned to #179. Public faithful derivation support remains unqualified.
 
 ### xs:list
 
@@ -129,7 +132,7 @@ Gateway generation measures the `$ref` graph depth for each operation response. 
 
 ### Circular references
 
-Recursive type references are detected during compilation and broken with a minimal stub. The generated TypeScript types are correct for non-recursive paths, but deeply recursive structures may produce simplified types at the recursion boundary.
+The S05 characterization fixture preserves named self and mutual recursive references in legacy metadata. This does not establish complete graph resolution, forbidden-cycle diagnostics or faithful runtime handling. Internal S05 resolution and companion traversal retain complete immutable declarations and terminate on recursive values; those guarantees are not yet activated in public emitters.
 
 ### First binding selection
 

@@ -22,6 +22,10 @@ import type {ShapeCatalogRef, StreamConfig} from "../util/streamConfig.js";
 import {WsdlCompilationError} from "../util/errors.js";
 import {readLegacyCatalogFile, CatalogError} from "./semanticCatalog.js";
 
+// Internal faithful counterpart consumes namespace/role roots and the typed reader.
+// Public StreamConfig generation continues to call the legacy adapter below.
+export {prepareResolvedCompilationInput} from "./semanticCatalog.js";
+
 export interface ApplyShapeCatalogsOptions {
   /** Directory against which relative `catalogFile`/`wsdlSource` paths resolve. Defaults to process.cwd(). */
   baseDir?: string;

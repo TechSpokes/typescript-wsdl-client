@@ -47,6 +47,39 @@ function assertSuccessEnvelope(body: any, expectedData: unknown): void {
 
 export const capabilities: CapabilityCase[] = [
   {
+    id: "declared-derivation-boundaries",
+    title: "Group, derivation and recursion characterization for S05",
+    status: "research",
+    featureTags: ["xsd", "group", "attribute-group", "derivation", "recursion"],
+    fixture: "xsd/composition/derivation-boundaries.wsdl",
+    publicContract: "Legacy compilation characterizes omitted groups, appended restriction content and named recursive references; faithful resolution/composition remain internal.",
+    decision: "defer",
+    decisionReason: "S05 establishes internal declared semantics; #179 assessment and downstream emitters must qualify faithful public behavior before activation.",
+    authority: "XML Schema 1.0; pinned xmlschema and libxml2 schema/payload qualification",
+    provenance: "Repository-authored minimal contrasts shared by legacy characterization and faithful companion tests.",
+    license: "MIT",
+    fixtureKind: "standards-valid",
+    compile: {
+      outcome: "success",
+      operationNames: ["Submit"],
+      assert: compiled => {
+        const type = (name: string) => {
+          const found = compiled.types.find(t => t.name === name);
+          if (!found) throw Error(`Missing characterized type ${name}`); return found;
+        };
+        assertJsonEqual(type("Uses").elems.map(e => e.name), ["separator"], "Legacy group elements remain omitted.");
+        assertJsonEqual(type("Uses").attrs, [], "Legacy attribute groups remain omitted.");
+        assertJsonEqual(type("Extended").elems.map(e => e.name), ["a", "b", "extra"], "Legacy extension appends local properties.");
+        assertJsonEqual(type("Restricted").elems.map(e => e.name), ["a", "b", "a"], "Legacy restriction appends instead of replacing content.");
+        assertJsonEqual(type("Empty").elems.map(e => e.name), ["a", "b"], "Legacy empty restriction keeps base properties.");
+        assertJsonEqual(type("Restricted").attrs.map(a => ({name: a.name, use: a.use})), [{name: "gone", use: "optional"}, {name: "gone", use: "optional"}], "Legacy prohibition is not enforced.");
+        assertJsonEqual(type("Recursive").elems.map(e => e.tsType), ["Recursive"], "Legacy self-recursion retains a named reference.");
+        assertJsonEqual(type("MutualA").elems.map(e => e.tsType), ["MutualB"], "Legacy mutual recursion retains the B reference.");
+        assertJsonEqual(type("MutualB").elems.map(e => e.tsType), ["MutualA"], "Legacy mutual recursion retains the A reference.");
+      },
+    },
+  },
+  {
     id: "content-model-boundaries",
     title: "Bounded content-model characterization for S01",
     status: "research",
