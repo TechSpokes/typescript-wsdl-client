@@ -1,0 +1,1314 @@
+{
+  "formatVersion": 1,
+  "sourceRevision": "b633cd1561ccb2689134a7289cf48bb097b0d1f1",
+  "reference": {
+    "adapter": "test/conformance/reference/validate.py",
+    "package": "lxml",
+    "version": "6.0.2",
+    "engine": "libxml2",
+    "engineVersion": "2.14.6",
+    "secondaryVersion": "4.2.0",
+    "elementpathVersion": "5.0.4"
+  },
+  "cases": [
+    {
+      "id": "original-sequence",
+      "family": "repeated-sequence",
+      "capabilityId": "sequence-occurrence-wrappers",
+      "fixture": "xsd/sequences/sequence-occurrence-wrappers.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; public #141 reproducer, BCsabaEngine diagnosis, merged #145 and #210.",
+      "findings": [
+        "CM-01",
+        "CM-03",
+        "CM-15"
+      ],
+      "schema": "accepted",
+      "fast": true,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "Addresses",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/original-sequence-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/original-sequence-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/original-sequence-3.xml",
+          "expected": "rejected"
+        },
+        {
+          "fixture": "xsd/compositors/instances/original-sequence-4.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "address",
+              "min": 1,
+              "max": 2
+            }
+          ],
+          "choices": [],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "address: AddressType[];"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/AddressType"
+              }
+            }
+          },
+          "required": [
+            "address"
+          ]
+        }
+      },
+      "intended": "One or two addresses are valid; typed arrays preserve both; maximum remains a runtime obligation.",
+      "disposition": {
+        "summary": "Finite length is not enforced by generated TypeScript/OpenAPI; regenerate stale catalogs from WSDL.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "executed-by-existing-harness",
+        "tests": [
+          "test/integration/sequence-occurrence-transport.test.ts",
+          "test/helpers/occurrenceTransport.mjs"
+        ],
+        "assertions": "Real singleton/two-item SOAP responses, omitted/two-item bounded and unbounded SOAP requests, normalized arrays and gateway response JSON for both wrapper modes."
+      }
+    },
+    {
+      "id": "optional-sequence",
+      "family": "optional-sequence",
+      "capabilityId": "sequence-occurrence-wrappers",
+      "fixture": "xsd/sequences/sequence-occurrence-wrappers.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; public #141 reproducer, BCsabaEngine diagnosis, merged #145 and #210.",
+      "findings": [
+        "CM-01",
+        "CM-03",
+        "CM-08"
+      ],
+      "schema": "accepted",
+      "fast": false,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "OptionalAddresses",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/optional-sequence-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/optional-sequence-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/optional-sequence-3.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "address",
+              "min": 0,
+              "max": 5
+            }
+          ],
+          "choices": [],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "address?: AddressType[];"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/AddressType"
+              }
+            }
+          }
+        }
+      },
+      "intended": "The optional wrapper and its children may be absent; when present zero through five addresses are permitted.",
+      "disposition": {
+        "summary": "Finite length is not enforced; wrapper flattening is a separate HTTP representation.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "executed-by-existing-harness",
+        "tests": [
+          "test/integration/sequence-occurrence-transport.test.ts",
+          "test/helpers/occurrenceTransport.mjs"
+        ],
+        "assertions": "Omitted optional wrapper and singleton optional array, with flattened and wrapped gateway representations."
+      }
+    },
+    {
+      "id": "simple-choice",
+      "family": "simple-choice",
+      "capabilityId": "choice-union-simple",
+      "fixture": "xsd/compositors/choice-union-simple.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-02",
+        "CM-15"
+      ],
+      "schema": "accepted",
+      "fast": true,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "ChoiceRequest",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/simple-choice-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/simple-choice-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/simple-choice-3.xml",
+          "expected": "rejected"
+        },
+        {
+          "fixture": "xsd/compositors/instances/simple-choice-4.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "email",
+              "min": 1,
+              "max": 1
+            },
+            {
+              "name": "phone",
+              "min": 1,
+              "max": 1
+            }
+          ],
+          "choices": [
+            {
+              "min": 1,
+              "max": 1,
+              "branches": [
+                "email",
+                "phone"
+              ]
+            }
+          ],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "email: string;",
+          "phone?: never;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "email"
+              ],
+              "not": {
+                "required": [
+                  "phone"
+                ]
+              }
+            },
+            {
+              "required": [
+                "phone"
+              ],
+              "not": {
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "email: string;",
+            "phone: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "phone"
+            ]
+          }
+        }
+      },
+      "intended": "Exactly one named branch is selected. Opt-in union expresses this simple case; current default all-optional actually requires both scalar fields.",
+      "disposition": {
+        "summary": "Default output requires both branches; opt-in simple union has no XML ordering or datatype validation.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "registry-mock-evidence",
+        "tests": [
+          "test/conformance/registry.ts"
+        ],
+        "assertions": "Simple valid gateway request and generated choice-validation tests; no independent SOAP choice exchange."
+      }
+    },
+    {
+      "id": "sequence-order",
+      "family": "ordering",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-03",
+        "CM-05"
+      ],
+      "schema": "accepted",
+      "fast": true,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "Ordering",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/sequence-order-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/sequence-order-2.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "a",
+              "min": 1,
+              "max": 2
+            },
+            {
+              "name": "b",
+              "min": 1,
+              "max": 2
+            }
+          ],
+          "choices": [],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "a: string[];",
+          "b: string[];"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "a": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "b": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "a",
+            "b"
+          ]
+        }
+      },
+      "intended": "Repeated (a,b) order and pair correlation survive; independent property arrays cannot recover arbitrary XML order.",
+      "disposition": {
+        "summary": "Flattened fields lose ordered group relationships.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "choice-boundary",
+      "family": "choice-boundary",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-01",
+        "CM-02",
+        "CM-03"
+      ],
+      "schema": "accepted",
+      "fast": false,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "ChoiceBoundary",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/choice-boundary-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/choice-boundary-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/choice-boundary-3.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "email",
+              "min": 1,
+              "max": 1
+            },
+            {
+              "name": "phone",
+              "min": 1,
+              "max": 1
+            }
+          ],
+          "choices": [
+            {
+              "min": 1,
+              "max": 1,
+              "branches": [
+                "email",
+                "phone"
+              ]
+            }
+          ],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "email: string;",
+          "phone?: never;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "email"
+              ],
+              "not": {
+                "required": [
+                  "phone"
+                ]
+              }
+            },
+            {
+              "required": [
+                "phone"
+              ],
+              "not": {
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "email: string;",
+            "phone: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "phone"
+            ]
+          }
+        }
+      },
+      "intended": "Zero to five independent choice selections are legal under the enclosing sequence.",
+      "disposition": {
+        "summary": "Sequence bounds stop at choice; union emits scalar XOR while default requires both scalar fields. Neither admits the legal repeated/empty values.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "zero-group-unbounded",
+      "family": "zero-group",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-01",
+        "CM-03"
+      ],
+      "schema": "accepted",
+      "fast": true,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "ZeroGroup",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/zero-group-unbounded-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/zero-group-unbounded-2.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "row",
+              "min": 1,
+              "max": 1
+            }
+          ],
+          "choices": [],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "row: string;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "row"
+          ]
+        }
+      },
+      "intended": "Disabled groups contribute zero even with unbounded descendants.",
+      "disposition": {
+        "summary": "Disabled sequence subtree preserves legacy child bounds and wrongly requires a field.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "zero-element-unbounded",
+      "family": "zero-element",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-01",
+        "CM-03"
+      ],
+      "schema": "accepted",
+      "fast": false,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "ZeroElement",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/zero-element-unbounded-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/zero-element-unbounded-2.xml",
+          "expected": "accepted",
+          "secondaryExpected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "row",
+              "min": 0,
+              "max": 0
+            }
+          ],
+          "choices": [],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "row?: string;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "intended": "An explicitly disabled element remains absent beneath an unbounded group.",
+      "disposition": {
+        "summary": "Catalog zero is retained, but generated optional scalar permits prohibited content.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198,
+          181
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      },
+      "referenceDisagreement": {
+        "summary": "libxml2 2.14.6 accepts the disabled row under an unbounded sequence; xmlschema 4.2.0 rejects it. Primary acceptance is a characterized validator limitation, not intended validity.",
+        "owner": 181
+      }
+    },
+    {
+      "id": "required-single",
+      "family": "required-single-choice",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-02"
+      ],
+      "schema": "accepted",
+      "fast": false,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "RequiredSingle",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/required-single-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/required-single-2.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "item",
+              "min": 1,
+              "max": 1
+            }
+          ],
+          "choices": [
+            {
+              "min": 1,
+              "max": 1,
+              "branches": [
+                "item"
+              ]
+            }
+          ],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "item: string;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "item": {
+              "type": "string"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "item"
+              ]
+            }
+          ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "item: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "item": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "item"
+            ]
+          }
+        }
+      },
+      "intended": "One nonempty branch must occur; union mode retains that requirement.",
+      "disposition": {
+        "summary": "Single nonempty branch presence is represented in both current modes; dynamic particle validation remains a downstream obligation.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "required-multiple",
+      "family": "required-multiple-choice",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-02",
+        "CM-03",
+        "CM-05"
+      ],
+      "schema": "accepted",
+      "fast": false,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "RequiredMultiple",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/required-multiple-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/required-multiple-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/required-multiple-3.xml",
+          "expected": "rejected"
+        },
+        {
+          "fixture": "xsd/compositors/instances/required-multiple-4.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "email",
+              "min": 1,
+              "max": 1
+            },
+            {
+              "name": "phone",
+              "min": 1,
+              "max": 1
+            }
+          ],
+          "choices": [
+            {
+              "min": 2,
+              "max": 2,
+              "branches": [
+                "email",
+                "phone"
+              ]
+            }
+          ],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "email: string;",
+          "phone?: never;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "email"
+              ],
+              "not": {
+                "required": [
+                  "phone"
+                ]
+              }
+            },
+            {
+              "required": [
+                "phone"
+              ],
+              "not": {
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "email: string;",
+            "phone: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email",
+              "phone"
+            ]
+          }
+        }
+      },
+      "intended": "Exactly two selections may use the same or different branches in XML order.",
+      "disposition": {
+        "summary": "Choice metadata stores 2..2 but union represents one scalar selection and default requires both scalar branches; same-branch repetition is lost.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "empty-alternative",
+      "family": "empty-alternative",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-02",
+        "CM-04"
+      ],
+      "schema": "accepted",
+      "fast": false,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "EmptyAlternative",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/empty-alternative-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/empty-alternative-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/empty-alternative-3.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "item",
+              "min": 1,
+              "max": 1
+            }
+          ],
+          "choices": [
+            {
+              "min": 1,
+              "max": 1,
+              "branches": [
+                "item"
+              ]
+            }
+          ],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "item: string;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "item": {
+              "type": "string"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "item"
+              ]
+            }
+          ]
+        },
+        "defaultChoice": {
+          "clientIncludes": [
+            "item: string;"
+          ],
+          "openapi": {
+            "type": "object",
+            "properties": {
+              "item": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "item"
+            ]
+          }
+        }
+      },
+      "intended": "Required choice admits an empty realization; XML does not identify the empty branch selection.",
+      "disposition": {
+        "summary": "Empty branch disappears; both current modes require item and cannot represent empty realization.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "finite-count-gap",
+      "family": "finite-count-gap",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-03"
+      ],
+      "schema": "accepted",
+      "fast": true,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "CountGap",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/finite-count-gap-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/finite-count-gap-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/finite-count-gap-3.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "item",
+              "min": 2,
+              "max": 4
+            }
+          ],
+          "choices": [],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "item: string[];"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "item": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "item"
+          ]
+        }
+      },
+      "intended": "Only two or four items are valid; an interval 2..4 omits the count hole.",
+      "disposition": {
+        "summary": "Neither flattened bounds nor unconstrained array schemas validate the 2-or-4 language.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "optional-all",
+      "family": "all-boundary",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-01",
+        "CM-02"
+      ],
+      "schema": "accepted",
+      "fast": false,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "OptionalAll",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/optional-all-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/optional-all-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/optional-all-3.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "item",
+              "min": 1,
+              "max": 1
+            }
+          ],
+          "choices": [],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "item: string;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "item": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "item"
+          ]
+        }
+      },
+      "intended": "Legal optional all permits omission of the entire group.",
+      "disposition": {
+        "summary": "All boundary retains element-local requirement; empty group is not represented.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "wildcard-sequence",
+      "family": "wildcard",
+      "capabilityId": "content-model-boundaries",
+      "fixture": "xsd/compositors/content-model-boundaries.wsdl",
+      "provenance": "Repository-authored minimal XSD 1.0 case; bounded #166 corpus and historical compiler-compositor-occurs tests.",
+      "findings": [
+        "CM-01",
+        "CM-05"
+      ],
+      "schema": "accepted",
+      "fast": false,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "Wildcard",
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-1.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-2.xml",
+          "expected": "accepted"
+        },
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-3.xml",
+          "expected": "rejected"
+        },
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-4.xml",
+          "expected": "rejected"
+        },
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-5.xml",
+          "expected": "rejected"
+        }
+      ],
+      "current": {
+        "catalog": {
+          "elements": [],
+          "choices": [],
+          "wildcards": [
+            {
+              "min": 1,
+              "max": 1,
+              "namespace": "##other",
+              "processContents": "lax"
+            }
+          ]
+        },
+        "clientIncludes": [
+          "export interface Wildcard {\n}"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "intended": "One or two other-namespace elements in order, subject to lax validation for known declarations.",
+      "disposition": {
+        "summary": "Wildcard metadata keeps local 1..1; client/OpenAPI omit content, order, namespace and ancestor bounds.",
+        "owners": [
+          178,
+          179,
+          180,
+          182,
+          188,
+          198
+        ]
+      },
+      "downstream": {
+        "status": "not-executed",
+        "reason": "No consumer transport claim for this boundary; catalog/types/OpenAPI characterization only. S02 and named owners establish runtime contracts."
+      }
+    },
+    {
+      "id": "invalid-all-sequence",
+      "family": "invalid-schema",
+      "capabilityId": "content-model-invalid-all",
+      "fixture": "xsd/compositors/content-model-invalid-all.wsdl",
+      "provenance": "Committed form of all-nested-sequence-legacy in compiler-compositor-occurs.test.ts. Legal counterpart: optional-all.",
+      "findings": [
+        "CM-01",
+        "CM-15"
+      ],
+      "schema": "rejected",
+      "schemaDiagnostic": "content is not valid",
+      "fast": true,
+      "compilerOptions": {
+        "choice": "union"
+      },
+      "catalogType": "InvalidAll",
+      "instances": [],
+      "current": {
+        "catalog": {
+          "elements": [
+            {
+              "name": "item",
+              "min": 1,
+              "max": 1
+            }
+          ],
+          "choices": [],
+          "wildcards": []
+        },
+        "clientIncludes": [
+          "item: string;"
+        ],
+        "clientExcludes": [],
+        "openapi": {
+          "type": "object",
+          "properties": {
+            "item": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "item"
+          ]
+        }
+      },
+      "intended": "XSD 1.0 all accepts element children only; reject at schema compilation before evaluating any instance.",
+      "disposition": {
+        "summary": "Legacy compiler accepts an illegal schema; this is schema-legality evidence, not valid supported XSD.",
+        "owners": [
+          179
+        ]
+      },
+      "downstream": {
+        "status": "not-applicable",
+        "reason": "Schema compilation rejection precedes instance/transport evidence."
+      }
+    }
+  ]
+}

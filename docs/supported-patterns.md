@@ -9,6 +9,8 @@ The rows below are backed by committed conformance fixtures under `test/conforma
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
+| `content-model-boundaries` | research | Characterization records current projection limits; it does not claim faithful content-model support. |
+| `content-model-invalid-all` | research | Legacy compiler acceptance is characterized separately from independent schema rejection. |
 | `sequence-occurrence-wrappers` | supported | Wrapping sequences with nonzero maxima propagate element bounds and optionality without crossing choice or all boundaries. |
 | `weather-document-literal-soap` | supported | The canonical weather WSDL compiles through client, OpenAPI, gateway, generated-test, and app artifacts with document-literal SOAP operations. |
 | `sequence-baseline-complex` | supported | Complex type sequences support nested complex references, repeated elements, optional fields, and all-optional request wrappers. |

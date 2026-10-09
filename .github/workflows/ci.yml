@@ -19,6 +19,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: npm run reference:setup
       - run: npm run ci:github
 
   node-compat:
@@ -33,4 +37,8 @@ jobs:
           node-version: 26
           cache: npm
       - run: npm ci
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: npm run reference:setup
       - run: npm run ci:github:node26
