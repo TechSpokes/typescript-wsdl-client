@@ -28,6 +28,7 @@ import * as path from "path";
 import * as yaml from "js-yaml";
 import {loadWsdl} from "../loader/wsdlLoader.js";
 import {compileCatalog, type CompiledCatalog} from "../compiler/schemaCompiler.js";
+import {readLegacyCatalogFile} from "../compiler/semanticCatalog.js";
 import {generateSchemas} from "./generateSchemas.js";
 import {generatePaths} from "./generatePaths.js";
 import {error, info, warn} from "../util/cli.js";
@@ -113,8 +114,7 @@ export async function generateOpenAPI(opts: GenerateOpenAPIOptions): Promise<{
   if (opts.compiledCatalog) {
     compiled = opts.compiledCatalog;
   } else if (opts.catalogFile) {
-    const raw = fs.readFileSync(opts.catalogFile, "utf8");
-    compiled = JSON.parse(raw);
+    compiled = readLegacyCatalogFile(opts.catalogFile);
   } else {
     const wsdlCatalog = await loadWsdl(String(opts.wsdl));
     compiled = compileCatalog(wsdlCatalog, {

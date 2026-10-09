@@ -23,6 +23,7 @@
  * - Skip-if-exists protection for scaffold files (override with force option)
  */
 import fs from "node:fs";
+import {readLegacyCatalogFile, CatalogError} from "../compiler/semanticCatalog.js";
 import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import path from "node:path";
 import {deriveClientName} from "../util/tools.js";
@@ -193,9 +194,9 @@ function shouldWriteScaffoldFile(filePath: string, force: boolean): boolean {
  */
 function readCatalog(catalogPath: string): any {
   try {
-    const content = fs.readFileSync(catalogPath, "utf-8");
-    return JSON.parse(content);
+    return readLegacyCatalogFile(catalogPath);
   } catch (err) {
+    if (err instanceof CatalogError) throw err;
     throw new Error(`Failed to read or parse catalog file: ${err instanceof Error ? err.message : String(err)}`);
   }
 }

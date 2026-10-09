@@ -12,6 +12,7 @@
  * 5. For each file: skip-if-exists check, then write
  */
 import fs from "node:fs";
+import {readLegacyCatalogFile} from "../compiler/semanticCatalog.js";
 import {writeGeneratedSource} from "../generation/writeGeneratedSource.js";
 import path from "node:path";
 import {info, success} from "../util/cli.js";
@@ -93,8 +94,7 @@ export async function generateTests(opts: GenerateTestsOptions): Promise<void> {
   }
 
   // Read and parse catalog
-  const catalogRaw = fs.readFileSync(catalogFile, "utf-8");
-  const catalog: CatalogForMocks = JSON.parse(catalogRaw);
+  const catalog: CatalogForMocks = readLegacyCatalogFile(catalogFile);
 
   // Resolve client metadata
   const clientMeta = resolveClientMeta({

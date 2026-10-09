@@ -89,7 +89,7 @@ Annotations preserve ordered element/text syntax, attributes and namespaces, inc
 `syntaxDetails` preserves restriction/list/union and content-wrapper syntax; facets retain their complete declaring syntax.
 Known element-only XSD containers reject significant text explicitly, while mixed annotation content remains ordered.
 Uninterpreted declarations remain `retained` or contextual `schemaRetained` for S06 assessment; preservation is not support certification.
-Full internal URIs and loading edges remain provenance; #174 owns artifact-safe serialization and semantic fingerprints.
+Full internal URIs and loading edges remain provenance; [format 2 persistence](content-model-catalog.md) implements #174's artifact-safe serialization and semantic fingerprints.
 
 ## Resource and validation boundaries
 

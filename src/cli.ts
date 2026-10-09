@@ -20,6 +20,7 @@ import {compileCatalog} from "./compiler/schemaCompiler.js";
 import {generateTypes} from "./client/generateTypes.js";
 import {generateUtils} from "./client/generateUtils.js";
 import {generateCatalog} from "./compiler/generateCatalog.js";
+import {readLegacyCatalogFile, CatalogError} from "./compiler/semanticCatalog.js";
 import {generateClient} from "./client/generateClient.js";
 import {generateOperations} from "./client/generateOperations.js";
 import {generateOpenAPI} from "./openapi/generateOpenAPI.js";
@@ -224,8 +225,7 @@ if (rawArgs[0] === "client") {
   } else {
     // Only catalog-file provided: it's an input, load it
     const catalogPath = path.resolve(String(clientArgv["catalog-file"]));
-    const catalogContent = fs.readFileSync(catalogPath, "utf-8");
-    compiled = JSON.parse(catalogContent);
+    compiled = readLegacyCatalogFile(catalogPath);
     success(`Loaded catalog from ${catalogPath}`);
   }
 
@@ -605,10 +605,10 @@ if (rawArgs[0] === "app") {
   let imports = appArgv["import-extensions"] as "js" | "ts" | "bare" | undefined;
   if (!imports && fs.existsSync(catalogFile)) {
     try {
-      const catalogContent = fs.readFileSync(catalogFile, "utf-8");
-      const catalog = JSON.parse(catalogContent);
+      const catalog = readLegacyCatalogFile(catalogFile);
       imports = catalog?.options?.imports || "js";
     } catch (err) {
+      if (err instanceof CatalogError && err.category === "incompatible-artifact") throw err;
       // If catalog read fails, fall back to "js"
       imports = "js";
     }
