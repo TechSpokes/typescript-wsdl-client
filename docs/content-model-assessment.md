@@ -43,6 +43,8 @@ Their source syntax remains visible and S05's reference/cycle gates still apply;
 An existing global declaration referenced through an absent use still receives schema-only legality checking, including its surviving local declarations, facets, fixed operands and particle constraints.
 Derivation bases retain schema-only operand closure; only effective inherited/surviving elements, attributes and declared wildcards acquire runtime capability requirements.
 Explicit prohibition removes an optional inherited attribute; simply omitting its declaration still inherits it.
+Ordinary syntax, final/block domains and retained children are checked in schema-only operand closures; excluded identity rules remain explicitly unassessed there.
+Runtime polymorphism exclusions apply to surviving runtime members, without rejecting a legal abstract type solely needed as a schema operand.
 
 ## Particle rules
 

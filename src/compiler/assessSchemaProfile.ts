@@ -85,7 +85,7 @@ const allowedAttributes: Readonly<Record<GraphNode["kind"], readonly string[]>> 
   attributeWildcard: ["id", "namespace", "processContents"], simpleType: ["id", "name", "final"],
   complexType: ["id", "name", "mixed", "abstract", "block", "final"], group: ["id", "name"], attributeGroup: ["id", "name"], wsdl: [],
 };
-function checkSyntax(c: AssessmentContext, node: GraphNode) {
+function checkSyntax(c: AssessmentContext, node: GraphNode, runtime = true) {
   c.setCurrent(node); c.step(node);
   checkSchemaSyntax(c, node);
   if (node.kind !== "wsdl") for (const attribute of node.declaredAttributes) {
@@ -105,7 +105,7 @@ function checkSyntax(c: AssessmentContext, node: GraphNode) {
     }
     c.fail(node, "schema-for-schemas", "Foreign child belongs in annotation/appinfo rather than the XSD content grammar", retained.source);
   }
-  if (node.kind === "element" && (node.abstract || node.substitutionGroup) || node.kind === "complexType" && node.abstract) c.unsupported(node, "polymorphism", "Abstract/substitution-group polymorphism is excluded");
+  if (runtime && (node.kind === "element" && (node.abstract || node.substitutionGroup) || node.kind === "complexType" && node.abstract)) c.unsupported(node, "polymorphism", "Abstract/substitution-group polymorphism is excluded");
   if (node.kind === "group") {
     const content = c.get(node.content);
     if (content.kind !== "particle" || content.declaredAttributes.some(a => !a.name.namespace && ["minOccurs", "maxOccurs"].includes(a.name.local))) c.fail(node, "src-group", "Named group compositors cannot declare occurrence attributes");
@@ -240,7 +240,7 @@ export function assessSchemaProfile(analysis: OccurrenceAnalysis, selections: re
           const visit = `${mode}:${entry.id}`;
           if (seen.has(visit)) continue; seen.add(visit);
           if (sourceOnly) {
-            c.setCurrent(node); checkSchemaSyntax(c, node);
+            c.setCurrent(node); checkSyntax(c, node, false);
             const componentExists = mode === "schema" || node.identity.kind === "global";
             if (componentExists) {
               if (node.kind === "attribute") checkAttributeType(c, node);
