@@ -56,7 +56,7 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
     const result: SyntaxElement[] = [];
     for (const operation of children(node, WSDL_NAMESPACE, "operation")) {
       c.step(owner);
-      if (syntaxAttribute(operation, "name") !== selection.operation) continue;
+      if (token(operation, "name") !== selection.operation) continue;
       const input = children(operation, WSDL_NAMESPACE, "input")[0], output = children(operation, WSDL_NAMESPACE, "output")[0];
       const io = children(operation, WSDL_NAMESPACE).filter(n => ["input", "output"].includes(n.name.local));
       const effectiveName = (direction: SyntaxElement | undefined) => direction && (token(direction, "name") ?? (abstract ? selection.operation +
@@ -99,16 +99,18 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
     c.text(name!, owner); faultNames.add(name!);
   }
   const boundIo = boundDirections.filter(n => n.name.local !== "fault");
+  const boundShape = boundIo.map(n => n.name.local);
   if (boundDirections.some(n => !["input", "output", "fault"].includes(n.name.local)) ||
-      boundIo.map(n => n.name.local).join(",") !== abstractIo.join(",") ||
-      boundDirections.slice(0, boundIo.length).map(n => n.name.local).join(",") !== abstractIo.join(",")) c.fail(owner, "wsdl-operation-shape", "Bound directions must match the abstract operation exactly", bindingOperation.source);
+      !["", "input", "output", "input,output"].includes(boundShape.join(",")) ||
+      boundShape.some(n => !abstractIo.includes(n)) ||
+      boundDirections.slice(0, boundIo.length).map(n => n.name.local).join(",") !== boundShape.join(",")) c.fail(owner, "wsdl-operation-shape", "Bound directions must identify the abstract operation without duplicates or surplus directions", bindingOperation.source);
   const boundFaults = new Set<string>();
   for (const fault of boundDirections.filter(n => n.name.local === "fault")) {
     const name = token(fault, "name");
     if (!name || boundFaults.has(name) || !faultNames.has(name)) c.fail(owner, "wsdl-operation-shape", "Bound faults must match unique declared abstract faults", fault.source);
     c.text(name!, owner); boundFaults.add(name!);
   }
-  if (boundFaults.size !== faultNames.size) c.fail(owner, "wsdl-operation-shape", "Every declared abstract fault requires its bound fault", bindingOperation.source);
+  if (boundIo.length !== abstractIo.length || boundFaults.size !== faultNames.size) c.unsupported(owner, "binding-incomplete", "Missing direction/fault binding has no complete selected-operation capability evidence", bindingOperation.source);
   if (abstractIo[0] === "output") c.unsupported(owner, "binding-message-exchange", "Notification and solicit-response require an independently qualified binding", abstractOperation.source);
   for (let index = 0; index < boundIo.length; index++) {
     const boundName = token(boundIo[index], "name"), abstractName = token(abstractDirections[index], "name") ??
@@ -262,8 +264,8 @@ export function selectedOperationRoots(c: AssessmentContext, selection: Assessme
     if (!schemaUri(endpoint, service, c)) c.fail(service, "soap-address", "SOAP endpoint is not an anyURI value", address[0].source);
     if (version === "soap12") {
       absoluteUri(endpoint, address[0], "soap-address");
-      if (!/^https?:/i.test(endpoint)) c.fail(service, "soap-address-transport", "SOAP HTTP endpoint requires HTTP or HTTPS transport", address[0].source);
     }
+    if (!/^https?:/i.test(endpoint)) c.fail(service, "soap-address-transport", "SOAP HTTP endpoint requires HTTP or HTTPS transport", address[0].source);
   }
   for (const id of selection.additionalRoots ?? []) add(id, owner);
   c.step(owner, capabilities.size);

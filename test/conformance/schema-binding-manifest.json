@@ -506,6 +506,38 @@
       "assessment": "supported",
       "rule": null,
       "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "operation-name-collapsed",
+      "fixture": "xsd/assessment/operation-name-collapsed.wsdl",
+      "sha256": "6b22f0bc46d77777454f52f01de7eae57ef7fc938d20cc745736d0cc83d9c302",
+      "assessment": "supported",
+      "rule": null,
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "soap11-address-transport",
+      "fixture": "xsd/assessment/soap11-address-transport.wsdl",
+      "sha256": "30c36af9c78fb61be6eac3d49c5991d943c556f593fd48ea142f2a2a683164e7",
+      "assessment": "invalid-schema",
+      "rule": "soap-address-transport",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "direction-binding-absent",
+      "fixture": "xsd/assessment/direction-binding-absent.wsdl",
+      "sha256": "edb26c17c6e2886366e4ddbb5584c4dac78c1dbe64aff7d3b7da12d3022914da",
+      "assessment": "unsupported-capability",
+      "rule": "binding-incomplete",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
+    },
+    {
+      "id": "fault-binding-absent",
+      "fixture": "xsd/assessment/fault-binding-absent.wsdl",
+      "sha256": "67d4e87aa8227757df4c629479c19299456bb46d22c950d749643ef41623fdce",
+      "assessment": "unsupported-capability",
+      "rule": "binding-incomplete",
+      "primaryRule": "https://www.w3.org/TR/2001/NOTE-wsdl-20010315"
     }
   ]
 }

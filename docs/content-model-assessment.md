@@ -118,6 +118,8 @@ String style/use enumerations retain exact spelling; NMTOKEN names/parts and any
 Other operation/port extension subtrees do not enlarge the selected capability claim.
 Recognized SOAP extension local names must occur in their declared WSDL positions; a familiar namespace does not qualify an unknown mandatory local name.
 Selected abstract/bound directions, names and faults must agree, without duplicate or surplus directions, competing protocols or addresses.
+Omitted bound directions/faults are a capability-completeness qualification, not invented schema-invalidity; WSDL 1.1 section 2.5 permits their omission.
+Both SOAP versions require the selected endpoint scheme to match the HTTP transport.
 Notification/solicit-response binding capabilities remain unqualified under WSDL 1.1 section 2.4.
 The [SOAP 1.2 WSDL submission](https://www.w3.org/submissions/wsdl11soap12/) sections 3.1–3.7 require first-child binding/operation/body/fault/address extensions, absolute action/namespace URIs and a transport-compatible endpoint.
 `actionRequired` records the effective default-true boolean; an explicit false permits an absent action.
