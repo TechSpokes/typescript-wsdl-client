@@ -92,6 +92,11 @@ export function attributeSchemaAssessment(c: AssessmentContext, scalars: ReturnT
       for (const attribute of current.uses) {
         c.step(owner); const k = key(attribute), prior = attributes.get(k);
         if (prior) {
+          if (owner.kind === "attributeGroup") {
+            const first = prior.sources[0];
+            for (const id of prior.sources) {c.step(owner); if (id !== first) c.fail(owner, "ag-props-correct", "Distinct attribute-use members cannot share a QName");}
+            for (const id of attribute.sources) {c.step(owner); if (id !== first) c.fail(owner, "ag-props-correct", "Distinct attribute-use members cannot share a QName");}
+          }
           if (prior.declaration !== attribute.declaration) c.fail(owner, "ct-props-correct/ag-props-correct", "Distinct attribute declarations cannot share a QName", undefined, [c.get(prior.declaration).context.source, c.get(attribute.declaration).context.source]);
           compatibleUses(prior, attribute, owner);
           c.step(owner, prior.sources.length + attribute.sources.length + prior.constraints.length + attribute.constraints.length);

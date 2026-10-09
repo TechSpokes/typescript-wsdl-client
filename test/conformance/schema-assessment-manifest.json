@@ -1499,6 +1499,60 @@
       "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#a-props-correct",
       "sha256": "305f4e7497ec4b0bf7f11f23055930a0275911cc72dd593a5cc7be640bdc090f",
       "referenceNote": "XMLSchema checks a prohibited local declaration that maps to no component under XSD 1.0; libxml2 and the primary component mapping accept. This retained disagreement does not add a payload capability."
+    },
+    {
+      "id": "group-direct-distinct-au",
+      "fixture": "xsd/assessment/group-direct-distinct-au.xsd",
+      "namespace": "urn:review",
+      "root": "D",
+      "role": "type",
+      "assessment": "invalid-schema",
+      "primarySchema": "invalid",
+      "xmlschema": "rejected",
+      "libxml2": "rejected",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#ag-props-correct",
+      "sha256": "db8bcf4acec3f10aa9602ed255ca6cc07048c5bbd7e55f534e47ca107f2a41cc"
+    },
+    {
+      "id": "group-nested-distinct-au",
+      "fixture": "xsd/assessment/group-nested-distinct-au.xsd",
+      "namespace": "urn:review",
+      "root": "D",
+      "role": "type",
+      "assessment": "invalid-schema",
+      "primarySchema": "invalid",
+      "xmlschema": "rejected",
+      "libxml2": "rejected",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#ag-props-correct",
+      "sha256": "e5c2a03c4055443822e4c6abd38107ae306a5e4770ff6c71deb9bbee62a73205"
+    },
+    {
+      "id": "group-reused-identical-au",
+      "fixture": "xsd/assessment/group-reused-identical-au.xsd",
+      "namespace": "urn:review",
+      "root": "D",
+      "role": "type",
+      "assessment": "supported",
+      "primarySchema": "valid",
+      "xmlschema": "rejected",
+      "libxml2": "rejected",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#ag-props-correct",
+      "sha256": "6b89269e6b7d3f4c3a87f1cb1bd1f517875ebd814abe0bce9e2118dfa7d8763f",
+      "referenceNote": "Both engines reject duplicate source references; the primary group set-union / complex-type distinct-declaration rule permits this identical-operand control. Distinct AU identities remain separate for group constraints."
+    },
+    {
+      "id": "complex-distinct-same-global-au",
+      "fixture": "xsd/assessment/complex-distinct-same-global-au.xsd",
+      "namespace": "urn:review",
+      "root": "D",
+      "role": "type",
+      "assessment": "supported",
+      "primarySchema": "valid",
+      "xmlschema": "rejected",
+      "libxml2": "rejected",
+      "primaryRule": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#ct-props-correct",
+      "sha256": "ebb189d61064ada2643710967d41b257189b57a243594af0fcc5842342d60ae6",
+      "referenceNote": "Both engines reject duplicate source references; the primary group set-union / complex-type distinct-declaration rule permits this identical-operand control. Distinct AU identities remain separate for group constraints."
     }
   ]
 }

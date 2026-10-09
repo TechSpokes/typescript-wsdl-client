@@ -72,6 +72,7 @@ A prohibited local use contributes no AU, even during extension, and cannot dele
 Distinct declaration identities sharing an attribute QName violate component constraints.
 Surviving attribute declarations require simple type definitions; scalar-content complex types remain complex definitions.
 Complex types permit at most one distinct ID-derived attribute declaration, and attribute groups permit at most one distinct ID-derived AU member; prohibited local syntax contributes neither.
+Attribute groups separately enforce QName uniqueness over distinct AU identities; repeated references to the same group contribute its existing AU members by set union.
 Equivalent uses of the same global declaration retain original use constraints and provenance.
 The unresolved differing-use case is qualified below.
 
@@ -155,6 +156,7 @@ An engine majority does not decide the primary rule.
 The named-ID restriction/default contrast records libxml2 acceptance beside explicit primary invalidity and XMLSchema rejection; the source-only ID value law remains enforced.
 Conversely, XMLSchema checks prohibited local ID/complex-type attribute syntax as a component and rejects it; the primary mapping creates no component, and libxml2 accepts both controls.
 Those explicit disagreements preserve the absent-component boundary rather than adding a runtime exclusion.
+Both engines also reject identical repeated group/declaration references that the primary set-union and distinct-declaration constraints permit; independent controls distinguish those cases from forbidden distinct group AUs.
 The invalid disabled-global mixed/simple-content restriction also records XMLSchema 4.2.0's `AttributeError` separately from schema rejection; a validator crash is not a validity answer.
 S01/#181 and [S05 disagreements](content-model-composition.md), plus [S02 platform/security qualifications](content-model-decisions.md), remain assigned to their existing owners.
 
