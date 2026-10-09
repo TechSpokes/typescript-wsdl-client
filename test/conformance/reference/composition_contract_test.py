@@ -37,15 +37,28 @@ class CompositionContractTests(unittest.TestCase):
                 with self.assertRaises(etree.XMLSchemaParseError):
                     etree.XMLSchema(etree.parse(str(FIXTURES / (name + ".xsd"))))
 
+    def test_effective_mixed_base_and_group_prohibition(self):
+        path = FIXTURES / "reviewed-boundaries.xsd"
+        primary = xmlschema.XMLSchema(path)
+        secondary = etree.XMLSchema(etree.parse(str(path)))
+        for xml, expected in [('<text xmlns="urn:composition">value</text>', True),
+                              ('<text xmlns="urn:composition"><child/></text>', False),
+                              ('<inherited xmlns="urn:composition" a="x"/>', True)]:
+            with self.subTest(xml=xml):
+                self.assertEqual(primary.is_valid(xml), expected)
+                self.assertEqual(secondary.validate(etree.fromstring(xml.encode())), expected)
+
     def test_recorded_constraint_disagreements(self):
         # Integer value-equivalent fixed spelling: strict xmlschema rejects, libxml2 admits.
         with self.assertRaises(xmlschema.XMLSchemaException):
             xmlschema.XMLSchema(FIXTURES / "fixed-restriction.xsd")
         etree.XMLSchema(etree.parse(str(FIXTURES / "fixed-restriction.xsd")))
         # Namespace intersection agrees; processing mode differs for group plus local wildcard.
-        path = FIXTURES / "group-local-wildcard.xsd"
-        primary = xmlschema.XMLSchema(path)
-        secondary = etree.XMLSchema(etree.parse(str(path)))
-        xml = '<root xmlns="urn:composition" xmlns:e="urn:external" e:unknown="x"/>'
-        self.assertTrue(primary.is_valid(xml))
-        self.assertFalse(secondary.validate(etree.fromstring(xml.encode())))
+        for name in ["group-local-wildcard", "nested-group-wildcard"]:
+            with self.subTest(name=name):
+                path = FIXTURES / (name + ".xsd")
+                primary = xmlschema.XMLSchema(path)
+                secondary = etree.XMLSchema(etree.parse(str(path)))
+                xml = '<root xmlns="urn:composition" xmlns:e="urn:external" e:unknown="x"/>'
+                self.assertTrue(primary.is_valid(xml))
+                self.assertFalse(secondary.validate(etree.fromstring(xml.encode())))

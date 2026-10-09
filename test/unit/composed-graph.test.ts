@@ -1,4 +1,5 @@
 import path from "node:path";
+import {createHash} from "node:crypto";
 import {describe, expect, it} from "vitest";
 import {loadSchemaInput} from "../../src/loader/schemaInput.js";
 import {buildCanonicalGraph} from "../../src/compiler/buildCanonicalGraph.js";
@@ -70,6 +71,26 @@ describe("immutable derivation composition", () => {
     expect(view(result, "OpaqueRestriction").wildcard).toBeUndefined();
   });
 
+  it("uses effective mixed bases and ignores group-contained prohibitions", async () => {
+    const result = composeCanonicalGraph(resolveCanonicalGraph(await load("reviewed-boundaries")));
+    expect(view(result, "OpaqueBase").mixed).toBe(true);
+    expect(view(result, "Text").scalar?.base).toMatchObject({kind: "local"});
+    expect(view(result, "Inherited").attributes.find(a => a.name.local === "a")?.use).toBe("optional");
+    expect(view(result, "OptionalBase").attributes.find(a => a.name.local === "a")?.use).toBe("optional");
+  });
+
+  it("bounds duplicate provenance copying before allocating expanded arrays", async () => {
+    const uri = "https://budget.test/schema.xsd";
+    const bytes = Buffer.from(`<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:composition" targetNamespace="urn:composition"><xs:attribute name="a" type="xs:string"/><xs:complexType name="Repeated">${'<xs:attribute ref="t:a"/>'.repeat(80)}</xs:complexType></xs:schema>`);
+    const graph = buildCanonicalGraph(await loadSchemaInput(uri, {policy: {allowedOrigins: ["https://budget.test"]}, offlineResources: new Map([[uri, {bytes, digest: createHash("sha256").update(bytes).digest("hex")}]])}));
+    const resolved = resolveCanonicalGraph(graph);
+    expect(() => composeCanonicalGraph(resolved, {maxSteps: 1000})).toThrowError(expect.objectContaining({category: "resource-limit"}));
+    const result = composeCanonicalGraph(resolved);
+    expect(view(result, "Repeated").attributes[0].sources).toHaveLength(80);
+    expect(composeCanonicalGraph(resolved, {maxSteps: result.metrics.steps}).metrics.steps).toBe(result.metrics.steps);
+    expect(() => composeCanonicalGraph(resolved, {maxSteps: result.metrics.steps - 1})).toThrowError(expect.objectContaining({category: "resource-limit"}));
+  });
+
   it.each(["required-prohibition", "new-attribute", "wildcard-widening", "wildcard-weakening"])("diagnoses %s explicitly", async name => {
     const graph = await load(name);
     expect(() => composeCanonicalGraph(resolveCanonicalGraph(graph))).toThrowError(expect.objectContaining({category: "invalid-schema", source: expect.objectContaining({path: expect.any(String)})}));
@@ -81,6 +102,9 @@ describe("immutable derivation composition", () => {
     const grouped = composeCanonicalGraph(resolveCanonicalGraph(await load("group-local-wildcard")));
     expect(view(grouped, "D").wildcard?.processContents).toEqual({kind: "assessment-required", alternatives: ["lax", "strict"]});
     expect(view(grouped, "D").assessment).toBe("requires-schema-assessment");
+    const nested = composeCanonicalGraph(resolveCanonicalGraph(await load("nested-group-wildcard")));
+    expect(view(nested, "D").wildcard?.processContents).toEqual({kind: "assessment-required", alternatives: ["lax", "strict"]});
+    expect(view(nested, "D").obligations).toContainEqual(expect.objectContaining({kind: "group-local-wildcard-process", owner: globalId("attributeGroup", {namespace: "urn:composition", local: "G"})}));
   });
 
   it("round trips declared catalogs and recomputes deterministic bounded composition", async () => {

@@ -84,50 +84,82 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
   const nodes = new Map(graph.nodes.map(n => [n.id, n])), composed = new Map<NodeId, ComposedType>();
   const fail = (node: GraphNode, message: string): never => {throw new SemanticError("invalid-schema", message, node.id, node.context.source);};
   const get = (id: NodeId): GraphNode => nodes.get(id) ?? (() => {throw new SemanticError("invalid-schema", `Missing component ${id}`);})();
+  const count = (node: GraphNode, ...lists: readonly (readonly unknown[])[]) => {
+    for (const list of lists) for (const ignored of list) budget.step(node);
+  };
+  const copySources = (node: GraphNode, a: readonly NodeId[], b: readonly NodeId[]) => {
+    count(node, a, b); return [...a, ...b];
+  };
+  type AttributeContainer = ComplexTypeNode | Extract<GraphNode, {kind: "attributeGroup"}>;
+  type AttributeCollection = {attributes: readonly AttributePlan[]; wildcard?: WildcardPlan; obligations: readonly DerivationObligation[]};
+  const groups = new Map<NodeId, AttributeCollection>();
   const localAttributes = (owner: ComplexTypeNode, obligations: DerivationObligation[]) => {
-    const attributes = new Map<string, AttributePlan>(), wildcards: WildcardPlan[] = []; let explicit: WildcardPlan | undefined;
-    const direct = new Set(owner.attributes), stack = [...owner.attributes].reverse();
+    type Frame = {node: AttributeContainer; index: number; attributes: Map<string, AttributePlan>; groups: WildcardPlan[]; explicit?: WildcardPlan; obligations: DerivationObligation[]};
+    const frame = (node: AttributeContainer): Frame => ({node, index: 0, attributes: new Map(), groups: [], obligations: []});
+    const stack = [frame(owner)];
+    const add = (current: Frame, attribute: AttributePlan) => {
+      budget.step(current.node);
+      const existing = current.attributes.get(key(attribute.name));
+      if (existing) current.obligations.push({kind: "attribute-extension-equivalence", owner: current.node.id, base: existing.declaration, local: attribute.declaration});
+      current.attributes.set(key(attribute.name), existing ? {...attribute, sources: copySources(current.node, existing.sources, attribute.sources)} : attribute);
+    };
     while (stack.length) {
-      const node = get(stack.pop()!); budget.step(node);
-      if (node.kind === "attributeGroupUse") {
-        const target = referenceTarget(node.reference, nodes, node), group = target ? get(target) : undefined;
-        if (group?.kind !== "attributeGroup") fail(node, "Attribute group reference requires an attribute-group definition");
-        for (const id of [...(group as Extract<GraphNode, {kind: "attributeGroup"}>).attributes].reverse()) {budget.step(node); stack.push(id);} continue;
+      const current = stack[stack.length - 1], container = current.node;
+      if (current.index < container.attributes.length) {
+        const node = get(container.attributes[current.index]); budget.step(node);
+        if (node.kind === "attributeGroupUse") {
+          const target = referenceTarget(node.reference, nodes, node), group = target ? get(target) : undefined;
+          if (group?.kind !== "attributeGroup") fail(node, "Attribute group reference requires an attribute-group definition");
+          const plan = groups.get(group!.id);
+          if (!plan) {stack.push(frame(group as AttributeContainer)); continue;}
+          for (const attribute of plan.attributes) add(current, attribute);
+          count(node, plan.obligations); current.obligations.push(...plan.obligations);
+          if (plan.wildcard) current.groups.push(plan.wildcard);
+        } else if (node.kind === "attributeWildcard") {
+          for (let i = 0; i < node.wildcard.namespace.value.length; i++) budget.step(node);
+          if (current.explicit) fail(node, "Multiple local attribute wildcards");
+          const namespace = wildcardNamespaces(node.wildcard); count(node, namespace.namespaces);
+          current.explicit = {namespace, processContents: node.wildcard.processContents, sources: [node.id]};
+        } else {
+          if (node.kind !== "attributeUse") fail(node, "Expected an attribute use");
+          const use = node as AttributeUseNode;
+          // A prohibition inside a group contributes no use. Only a direct type
+          // restriction can remove an inherited optional attribute.
+          if (!(container.kind === "attributeGroup" && use.use === "prohibited")) {
+            const target = referenceTarget(use.declaration, nodes, use), declaration = target ? get(target) : undefined;
+            if (declaration?.kind !== "attribute") fail(node, "Attribute use requires an attribute declaration");
+            const attribute = declaration as Extract<GraphNode, {kind: "attribute"}>;
+            const value = use.value ?? attribute.value;
+            if (use.value && attribute.value?.kind === "fixed") current.obligations.push({kind: "fixed-value-equivalence", owner: container.id, base: attribute.value, local: use.value});
+            add(current, {name: attribute.name, declaration: attribute.id, type: attribute.type, use: use.use, value, sources: [use.id]});
+          }
+        }
+        current.index++; continue;
       }
-      if (node.kind === "attributeWildcard") {
-        // Count lexical scanning before tokenization can allocate an oversized namespace list.
-        for (let i = 0; i < node.wildcard.namespace.value.length; i++) budget.step(node);
-        const wildcard: WildcardPlan = {namespace: wildcardNamespaces(node.wildcard), processContents: node.wildcard.processContents, sources: [node.id]};
-        for (const ignored of wildcard.namespace.namespaces) budget.step(node);
-        wildcards.push(wildcard);
-        if (direct.has(node.id)) {if (explicit) fail(node, "Multiple local attribute wildcards"); explicit = wildcard;}
-        continue;
+      let wildcard = current.groups[0];
+      const intersect = (other: WildcardPlan) => {
+        if (!wildcard) {wildcard = other; return;}
+        count(container, wildcard.namespace.namespaces, other.namespace.namespaces);
+        wildcard = {...wildcard, namespace: namespaceIntersection(wildcard.namespace, other.namespace), sources: copySources(container, wildcard.sources, other.sources)};
+      };
+      for (const other of current.groups.slice(1)) intersect(other);
+      if (current.explicit) {
+        const groupProcess = wildcard?.processContents, localProcess = current.explicit.processContents as WildcardProcess;
+        intersect(current.explicit);
+        if (groupProcess && (typeof groupProcess !== "string" || groupProcess !== localProcess)) {
+          current.obligations.push({kind: "group-local-wildcard-process", owner: container.id, local: current.explicit.sources[0]});
+          wildcard = {...wildcard!, processContents: {kind: "assessment-required", alternatives: canonicalSet([...(typeof groupProcess === "string" ? [groupProcess] : groupProcess.alternatives), localProcess]) as readonly WildcardProcess[]}};
+        }
       }
-      if (node.kind !== "attributeUse") fail(node, "Expected an attribute use");
-      const use = node as AttributeUseNode, target = referenceTarget(use.declaration, nodes, use), declaration = target ? get(target) : undefined;
-      if (declaration?.kind !== "attribute") fail(node, "Attribute use requires an attribute declaration");
-      const attribute = declaration as Extract<GraphNode, {kind: "attribute"}>;
-      const value = use.value ?? attribute.value;
-      if (use.value && attribute.value?.kind === "fixed") obligations.push({kind: "fixed-value-equivalence", owner: owner.id, base: attribute.value, local: use.value});
-      const result: AttributePlan = {name: attribute.name, declaration: attribute.id, type: attribute.type, use: use.use, value, sources: [use.id]};
-      const existing = attributes.get(key(attribute.name));
-      if (existing) obligations.push({kind: "attribute-extension-equivalence", owner: owner.id, base: existing.declaration, local: result.declaration});
-      attributes.set(key(attribute.name), existing ? {...result, sources: [...existing.sources, ...result.sources]} : result);
+      if (wildcard) current.obligations.push({kind: "wildcard-expressibility", owner: container.id});
+      count(container, [...current.attributes.values()], current.obligations);
+      const result: AttributeCollection = {attributes: [...current.attributes.values()], wildcard, obligations: current.obligations};
+      stack.pop();
+      if (container.kind === "attributeGroup") {groups.set(container.id, result); continue;}
+      count(owner, result.obligations); obligations.push(...result.obligations);
+      return result;
     }
-    let wildcard = wildcards[0];
-    if (wildcard) {
-      for (const other of wildcards.slice(1)) {
-        budget.step(owner);
-        for (const ignored of [...wildcard.namespace.namespaces, ...other.namespace.namespaces, ...wildcard.sources, ...other.sources]) budget.step(owner);
-        wildcard = {...wildcard, namespace: namespaceIntersection(wildcard.namespace, other.namespace), sources: [...wildcard.sources, ...other.sources]};
-      }
-      if (explicit && wildcard.processContents !== explicit.processContents) {
-        obligations.push({kind: "group-local-wildcard-process", owner: owner.id, local: explicit.sources[0]});
-        wildcard = {...wildcard, processContents: {kind: "assessment-required", alternatives: canonicalSet([wildcard.processContents as WildcardProcess, explicit.processContents as WildcardProcess]) as readonly WildcardProcess[]}};
-      }
-      obligations.push({kind: "wildcard-expressibility", owner: owner.id});
-    }
-    return {attributes: [...attributes.values()], wildcard};
+    throw new Error("Attribute composition lost its root");
   };
   const compose = (node: ComplexTypeNode): ComposedType => {
     const obligations: DerivationObligation[] = [], local = localAttributes(node, obligations), derivation = node.derivation;
@@ -140,7 +172,7 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
       if (derivation.contentKind === "complex" && baseNode?.kind !== "complexType" && !(derivation.base.kind === "builtin" && derivation.base.name.local === "anyType")) fail(node, "Complex content requires a complex base");
       if (derivation.contentKind === "simple") {
         if (node.content) fail(node, "Simple content cannot contribute particles");
-        if (baseNode?.kind === "complexType" && !base?.scalar && (derivation.kind === "extension" || !baseNode.mixed)) fail(node, "Simple content base has no scalar content");
+        if (baseNode?.kind === "complexType" && !base?.scalar && (derivation.kind === "extension" || !base?.mixed)) fail(node, "Simple content base has no scalar content");
         if (derivation.base.kind === "builtin" && derivation.base.name.local === "anyType" && (derivation.kind === "extension" || !derivation.inlineType)) fail(node, "Simple content requires a scalar base or an inline restriction type");
         if (derivation.kind === "restriction" && !base && baseNode?.kind !== "complexType") fail(node, "Simple-content restriction requires a complex base");
         const inherited = base?.scalar;
@@ -149,8 +181,8 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
         obligations.push({kind: "scalar-derivation", owner: node.id, base: derivation.base, local: derivation.inlineType});
       }
       if (base) {
-        for (const ignored of [...base.content, ...base.attributes, ...base.obligations]) budget.step(node);
-        for (const ignored of base.wildcard?.namespace.namespaces ?? []) budget.step(node);
+        count(node, base.content, base.attributes, base.obligations);
+        count(node, base.wildcard?.namespace.namespaces ?? []);
         obligations.push(...base.obligations);
         if (derivation.kind === "extension") {
           if (derivation.contentKind === "complex") {content = extendContent(base.content, node.content); if (!node.content) mixed = base.mixed;}
@@ -166,10 +198,13 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
               obligations.push({kind: "attribute-extension-equivalence", owner: node.id, base: prior.declaration, local: a.declaration});
               if (prior.value?.kind === "fixed") obligations.push({kind: "fixed-value-equivalence", owner: node.id, base: prior.value, local: a.value});
             }
-            merged.set(key(a.name), prior ? {...a, sources: [...prior.sources, ...a.sources]} : a);
+            merged.set(key(a.name), prior ? {...a, sources: copySources(node, prior.sources, a.sources)} : a);
           }
           attributes = [...merged.values()];
-          if (base.wildcard && local.wildcard) wildcard = {...local.wildcard, namespace: namespaceUnion(base.wildcard.namespace, local.wildcard.namespace), sources: [...base.wildcard.sources, ...local.wildcard.sources]};
+          if (base.wildcard && local.wildcard) {
+            count(node, local.wildcard.namespace.namespaces);
+            wildcard = {...local.wildcard, namespace: namespaceUnion(base.wildcard.namespace, local.wildcard.namespace), sources: copySources(node, base.wildcard.sources, local.wildcard.sources)};
+          }
           else wildcard = local.wildcard ?? base.wildcard;
           obligations.push({kind: "particle-extension", owner: node.id, base: baseId ?? derivation.base, local: node.content});
         } else {
@@ -180,7 +215,7 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
             if (!prior && a.use !== "prohibited" && (!base.wildcard || !allows(base.wildcard.namespace, a.name.namespace))) fail(node, "New restricted attribute is outside the base wildcard");
             if (prior?.value?.kind === "fixed") obligations.push({kind: "fixed-value-equivalence", owner: node.id, base: prior.value, local: a.value});
             if (prior && a.use !== "prohibited") obligations.push({kind: "attribute-type-restriction", owner: node.id, base: prior.type, local: a.type});
-            merged.set(key(a.name), prior ? {...a, sources: [...prior.sources, ...a.sources]} : a);
+            merged.set(key(a.name), prior ? {...a, sources: copySources(node, prior.sources, a.sources)} : a);
           }
           attributes = [...merged.values()]; wildcard = local.wildcard; // Omitted restriction wildcard is removed.
           if (wildcard) {
@@ -193,7 +228,7 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
         obligations.push({kind: "mixed-content", owner: node.id, base: baseId ?? derivation.base});
       }
     }
-    for (const ignored of [...content, ...attributes, ...obligations]) budget.step(node);
+    count(node, content, attributes, obligations);
     return deepFreeze({id: node.id, content, mixed, attributes, wildcard, scalar, derivation, obligations, assessment: "requires-schema-assessment" as const});
   };
   // Derivation order only, never recursively traverse element/type value graphs.

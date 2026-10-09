@@ -31,6 +31,7 @@ Empty restriction: no child particles
 
 Complex-content derivation requires a complex base; simple-content extension requires a scalar-bearing base.
 Simple-content restriction retains facets and optional inline scalar types as ordered owner layers.
+Its mixed-base check uses the composed base, including effective mixed content inherited through an empty `anyType` extension.
 Named scalar restriction/list/union definitions and lexical contexts remain original graph data for #179/#184.
 
 Extension with no local content inherits the base's effective mixed content.
@@ -42,6 +43,7 @@ Restriction of `anyType` replaces child content and permits declared attributes 
 Attribute groups are traversed separately from child model groups.
 Omitted restriction uses inherit base required/optional uses and their constraints.
 A declared prohibition removes an explicit optional use; weakening or prohibiting a required base attribute fails with `invalid-schema`.
+This applies to a direct type restriction; a prohibited use inside an attribute group contributes no attribute use and leaves inherited uses intact.
 
 Prohibitions remain traceable tombstones in the view rather than becoming wildcard QName exclusions.
 A matching retained wildcard can still admit that QName; prohibition removes an explicit use only.
@@ -72,6 +74,7 @@ They also disagree on fixed-value restrictions, group-plus-local wildcard proces
 These cases are not added to verified support from either engine alone.
 
 Conflicting group/local processing returns `assessment-required` alternatives and original wildcard sources, with no invented selected mode.
+Each nested attribute group preserves its own processing obligation through callers.
 Fixed-value obligations retain both lexical values and type context, including value-equivalent integer spellings such as `1` and `+01`.
 Particle language inclusion, extension/mixed legality, attribute-type derivation, wildcard expressibility and scalar derivation remain explicit #179 obligations; #184 owns payload scalar enforcement.
 
@@ -84,6 +87,7 @@ The S01/#181 disagreement and S02 transport/security qualifications remain uncha
 Composition defaults to 100,000 graph nodes and 1,000,000 work steps with positive safe-integer overrides.
 Iterative derivation order and bounded attribute-group expansion terminate independently of legal element/type recursion.
 Inherited content, attribute, wildcard and obligation copying consumes work; exhaustion returns `resource-limit` without a partial view.
+Provenance source-array copying is counted before allocation, including repeated references and derived merges.
 
 [Unit tests](../test/unit/composed-graph.test.ts) exercise contrasting extension/restriction, empty content, immutable siblings, attributes, wildcard operations, scalar/list/union contexts, opaque bases, catalog round trips and exact configured budgets.
 [Independent fixtures](../test/conformance/fixtures/xsd/composition/derivations.xsd) and [Python qualification](../test/conformance/reference/composition_contract_test.py) assert schema validity, ordered payload acceptance/rejection and documented disagreements.
