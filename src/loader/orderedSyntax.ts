@@ -135,7 +135,7 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: {max
   };
   parser.on("text", value => { const end = text[parser.position - 1] === "<" ? parser.position - 1 : parser.position; appendText(value, cursor, end); cursor = end; });
   parser.on("cdata", value => { appendText(value, cursor + 9, parser.position - 3); cursor = parser.position; });
-  parser.on("comment", () => { cursor = parser.position; });
+  parser.on("comment", () => { cursor = parser.position + 1; });
   parser.on("processinginstruction", () => { cursor = parser.position; });
   parser.on("closetag", () => {
     const node = stack.pop()!;

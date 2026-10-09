@@ -96,5 +96,9 @@ describe("ordered syntax boundary", () => {
     expect(parseOrderedSyntax(Buffer.concat([Buffer.from([255, 254]), Buffer.from('<r>é</r>', 'utf16le')]), "file:///a.xsd").root.children[0]).toMatchObject({value: "é"});
     expect(() => parseOrderedSyntax(Buffer.from([0xff]), "file:///a.xsd")).toThrow();
     expect(() => parse('<?xml version="1.0" encoding="ISO-8859-1"?><r/>')).toThrow(expect.objectContaining({category: "unsupported-capability"}));
+    for (const xml of ['<r><!--z-->a</r>', '<r><?t z?>a</r>']) {
+      const text = parse(xml).root.children[0];
+      expect(xml.slice(text.source.start.offset, text.source.end.offset)).toBe("a");
+    }
   });
 });
