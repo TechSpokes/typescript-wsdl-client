@@ -18,9 +18,9 @@ The [execution index](https://github.com/TechSpokes/typescript-wsdl-client/issue
 
 [Imports maintenance #209](https://github.com/TechSpokes/typescript-wsdl-client/issues/209) is complete through [PR #218](https://github.com/TechSpokes/typescript-wsdl-client/pull/218) and published in v1.1.4. The roadmap refresh tracked by [#217](https://github.com/TechSpokes/typescript-wsdl-client/issues/217) is independent of architecture implementation.
 
-Start the remaining architecture work with [S01 baseline evidence #166](https://github.com/TechSpokes/typescript-wsdl-client/issues/166), reusing the shipped fixtures and fixes. Then [#167](https://github.com/TechSpokes/typescript-wsdl-client/issues/167) records the delivered integration and remaining limits to complete [S01 #148](https://github.com/TechSpokes/typescript-wsdl-client/issues/148).
+S01's [bounded baseline](docs/content-model-baseline.md) is delivered through [PR #221](https://github.com/TechSpokes/typescript-wsdl-client/pull/221). The [shipped-fix reconciliation](docs/content-model-shipped-fix.md) records [#167](https://github.com/TechSpokes/typescript-wsdl-client/issues/167)'s contributor attribution, actual client/gateway behavior and remaining owned limits. [S01 #148](https://github.com/TechSpokes/typescript-wsdl-client/issues/148) closes after both deliveries and its combined gate pass.
 
-The S01 handoff unlocks [S02 #149](https://github.com/TechSpokes/typescript-wsdl-client/issues/149): architecture contracts and SOAP/gateway feasibility probes. S02 must establish compatibility policy, the architecture release version, and any public shape or default activation before downstream delivery commits to them.
+The S01 handoff supplies the entry artifacts for [S02 #149](https://github.com/TechSpokes/typescript-wsdl-client/issues/149). Draft [#168](https://github.com/TechSpokes/typescript-wsdl-client/issues/168) next; feasibility probes #169/#170 require that reviewed ADR draft before becoming Ready. S02 must establish compatibility policy, the architecture release version, and any public shape or default activation before downstream delivery commits to them.
 
 ### Delivery Clusters
 
@@ -69,7 +69,7 @@ Existing public behavior stays in place until the S02 compatibility policy permi
 - Normalized singleton SOAP responses to their declared array shape for clients and gateways.
 - Included the correction from the abandoned v1.1.1 candidate and credited the original contributor.
 
-This focused fix adds no finite-array-length or sequence-order validation. Broader semantic evidence remains in S01.
+This focused fix adds no finite-array-length or sequence-order validation. The [S01 baseline](docs/content-model-baseline.md) records independently qualified current output and remaining downstream gaps.
 
 ### 1.1.0
 

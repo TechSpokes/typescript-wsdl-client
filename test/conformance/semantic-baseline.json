@@ -4,7 +4,7 @@
   "reference": {
     "adapter": "test/conformance/reference/validate.py",
     "package": "lxml",
-    "version": "6.0.2",
+    "version": "6.1.0",
     "engine": "libxml2",
     "engineVersion": "2.14.6",
     "secondaryVersion": "4.2.0",
