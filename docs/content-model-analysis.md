@@ -53,6 +53,8 @@ Positive safe-integer overrides follow existing semantic policy; exhausted analy
 Later matcher, payload scalar and generated-output budgets retain their [ADR-003 D09 owners](decisions/003-content-model-contracts.md#provisional-resource-budgets-s02-d09).
 
 [`analysis.xsd`](../test/conformance/fixtures/xsd/analysis/analysis.xsd) and [pinned reference checks](../test/conformance/reference/analysis_contract_test.py) qualify schema validity separately from payload acceptance.
+The reference check raises xmlschema's documented model-depth setting from 15 to 32 for nested shared-group wrappers and treats qualification warnings as errors.
+Libxml2 qualifies the small language cases with only the unused huge bound reduced; xmlschema qualifies that original exact bound.
 [Unit tests](../test/unit/occurrence-analysis.test.ts) cover arithmetic, zero, alternatives, recursion, immutability and configured boundaries.
 Ignored measurements go to `tmp/conformance/analysis/measurements.json`; platform/broad qualification remains #208's responsibility.
 S01/#181 and S05 oracle disagreements and [S02 security qualifications](content-model-decisions.md) remain assigned downstream.

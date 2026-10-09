@@ -1,15 +1,27 @@
 """Independent S06 schema/payload evidence; no production analysis imports."""
 from pathlib import Path
 import unittest
+import warnings
 from lxml import etree
 import xmlschema
+from xmlschema.exceptions import XMLSchemaWarning
 
 FIXTURE = Path(__file__).resolve().parents[1] / "fixtures/xsd/analysis/analysis.xsd"
 
 
 class AnalysisContractTests(unittest.TestCase):
     def test_exact_schema_and_small_particle_languages(self):
-        primary = xmlschema.XMLSchema(FIXTURE)
+        # Each shared group reference adds an engine wrapper, exceeding its
+        # default model-depth 15. Use the documented override; warnings cannot
+        # silently turn skipped attribution checks into schema qualification.
+        previous = xmlschema.limits.MAX_MODEL_DEPTH
+        try:
+            xmlschema.limits.MAX_MODEL_DEPTH = 32
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", XMLSchemaWarning)
+                primary = xmlschema.XMLSchema(FIXTURE)
+        finally:
+            xmlschema.limits.MAX_MODEL_DEPTH = previous
         # libxml2 has a bounded occurrence representation. Limit only the unused
         # huge declaration here; xmlschema above qualifies the original schema.
         tree = etree.parse(str(FIXTURE))
