@@ -1,0 +1,29 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:composition" targetNamespace="urn:composition" elementFormDefault="qualified">
+  <xs:complexType name="Base"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0"/><xs:element name="b" type="xs:int" minOccurs="0"/></xs:sequence>
+    <xs:attribute name="id" type="xs:int" use="required"/><xs:attribute name="tag" type="xs:token" default="base"/><xs:attribute name="gone" type="xs:string"/>
+    <xs:anyAttribute namespace="urn:external" processContents="lax"/>
+  </xs:complexType>
+  <xs:complexType name="Extended"><xs:complexContent><xs:extension base="t:Base"><xs:sequence><xs:element name="extra" type="xs:string"/></xs:sequence>
+    <xs:attribute name="flag" type="xs:boolean"/><xs:anyAttribute namespace="urn:more" processContents="strict"/>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="Restricted"><xs:complexContent><xs:restriction base="t:Base"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0"/></xs:sequence>
+    <xs:attribute name="gone" type="xs:string" use="prohibited"/><xs:anyAttribute namespace="urn:external" processContents="strict"/>
+  </xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="Empty"><xs:complexContent><xs:restriction base="t:Base"><xs:attribute name="gone" type="xs:string" use="prohibited"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="Sibling"><xs:complexContent><xs:extension base="t:Base"><xs:attribute name="sibling" type="xs:string" fixed="yes"/></xs:extension></xs:complexContent></xs:complexType>
+  <xs:simpleType name="Exact"><xs:restriction base="xs:decimal"><xs:minInclusive value="0"/><xs:fractionDigits value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="List"><xs:list itemType="t:Exact"/></xs:simpleType>
+  <xs:simpleType name="Union"><xs:union memberTypes="t:List xs:string"/></xs:simpleType>
+  <xs:complexType name="Scalar"><xs:simpleContent><xs:extension base="t:Exact"><xs:attribute name="gone" type="xs:string"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ScalarExtended"><xs:simpleContent><xs:extension base="t:Scalar"><xs:attribute name="tag" type="xs:QName" fixed="t:value"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ScalarRestricted"><xs:simpleContent><xs:restriction base="t:Scalar"><xs:maxInclusive value="10"/><xs:attribute name="gone" type="xs:string" use="prohibited"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ListContent"><xs:simpleContent><xs:extension base="t:List"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="UnionContent"><xs:simpleContent><xs:extension base="t:Union"/></xs:simpleContent></xs:complexType>
+  <xs:attributeGroup name="Wide"><xs:anyAttribute namespace="urn:external urn:more" processContents="lax"/></xs:attributeGroup>
+  <xs:attributeGroup name="Narrow"><xs:anyAttribute namespace="urn:external" processContents="strict"/></xs:attributeGroup>
+  <xs:complexType name="Grouped"><xs:attributeGroup ref="t:Wide"/><xs:attributeGroup ref="t:Narrow"/></xs:complexType>
+  <xs:complexType name="OpaqueExtension"><xs:complexContent><xs:extension base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="OpaqueRestriction"><xs:complexContent><xs:restriction base="xs:anyType"><xs:sequence><xs:element name="a" type="xs:string"/></xs:sequence><xs:attribute name="id" type="xs:int"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:element name="extended" type="t:Extended"/><xs:element name="restricted" type="t:Restricted"/><xs:element name="empty" type="t:Empty"/>
+  <xs:element name="scalar" type="t:ScalarRestricted"/><xs:element name="opaque" type="t:OpaqueExtension"/>
+</xs:schema>

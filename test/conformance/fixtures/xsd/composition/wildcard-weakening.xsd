@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:composition" targetNamespace="urn:composition">
+  <xs:complexType name="Base"><xs:anyAttribute namespace="urn:external" processContents="strict"/></xs:complexType>
+  <xs:complexType name="Derived"><xs:complexContent><xs:restriction base="t:Base"><xs:anyAttribute namespace="urn:external" processContents="lax"/></xs:restriction></xs:complexContent></xs:complexType>
+</xs:schema>

@@ -52,6 +52,10 @@ The #151 final handoff records independently reviewed revisions, validation resu
 
 ## Probe and acceptance checkpoints
 
+S05's [derivation evidence](content-model-composition.md) adds concrete #179 qualification inputs without changing the approved profile.
+Duplicate extension uses, fixed-value equivalence, group/local wildcard processing and imported wildcard expressibility require independent reconciliation before affected plans are assessed.
+S05 preserves these as typed obligations with original operands; this is not a new scalar checker or a declaration of verified arbitrary derivation support.
+
 The [S02 handoff](content-model-s02-handoff.md) and #149 acceptance record pin reviewed draft/probe revisions and final delivery review/checks/merge. The SOAP source probe at `4d1d3972fbb0f8170232a3bd143f0fcf0adc842d` passed independent integration review; the gateway source probe at `d826ff506a80437bca1b747f40b772727643a506` passed independent semantic/gateway review.
 
 No foundational graph, projection, bundle/runtime, base transport or compatibility question remains open. The two open qualification entries block their affected transport/security consumers; their rejection and verification-order contracts are already resolved, so they do not change S03's input contract. Future shared scalar/particle, completion and compatibility implementations remain mandatory first-consumer gates, not already implemented features. S03 starts only after S02's joint gate closes.

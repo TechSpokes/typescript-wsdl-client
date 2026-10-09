@@ -218,6 +218,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Ordered Schema Loading](docs/content-model-loading.md) | Internal ordered syntax, provenance and controlled resolution contracts |
 | [Canonical Schema Graph](docs/content-model-graph.md) | Immutable declarations, use-site particles, references and lexical context |
 | [Canonical Reference Resolution](docs/content-model-resolution.md) | Namespace visibility, complete targets, legal recursion and component-cycle diagnostics |
+| [Canonical Derivation Composition](docs/content-model-composition.md) | Distinct extension/restriction views, attributes, wildcards and legality obligations |
 | [Semantic Catalog Format 2](docs/content-model-catalog.md) | Deterministic persistence, typed validation and early compatibility routing |
 | [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
 
