@@ -43,10 +43,13 @@ describe("exact occurrence analysis", () => {
   it("distinguishes epsilon, empty language, element occurrence and recursive child content", async () => {
     const a = analyze(await load());
     expect(type(a, "EmptyChoice").children).toMatchObject({nullable: false, hasRealization: false});
+    expect(type(a, "EmptyChoice").children).toMatchObject({effectiveTotalRange: {min: "0", max: "0"}, schemaEmptiable: true});
+    expect(type(a, "DeadRequired").children).toMatchObject({nullable: false, hasRealization: false, effectiveTotalRange: {min: "1", max: "1"}, schemaEmptiable: false});
     expect(type(a, "OptionalEmptyChoice").children).toMatchObject({nullable: true, hasRealization: true});
     expect(type(a, "EmptySequence").children).toMatchObject({nullable: true, hasRealization: true});
     expect(counts(a, "DeadOptional")).toEqual({});
     expect(counts(a, "DeadAndRequired")).toEqual({b: {min: "1", max: "1"}});
+    expect(type(a, "DeadAndRequired").children.effectiveTotalRange).toEqual({min: "1", max: "4"});
     expect(type(a, "DeadWildcard").children.wildcard).toEqual({min: "0", max: "0"});
     expect(type(a, "Container").children.nullable).toBe(false);
     expect(counts(a, "Container")).toEqual({child: {min: "1", max: "1"}});
@@ -58,6 +61,7 @@ describe("exact occurrence analysis", () => {
   it("preserves count gaps, declared bounds, ordered branches and deterministic immutable inputs", async () => {
     const input = await load(), before = JSON.stringify(input), a = analyze(input);
     expect(counts(a, "Disabled")).toEqual({a: {min: "0", max: "0"}});
+    expect(type(a, "Disabled").children.effectiveTotalRange).toEqual({min: "0", max: "0"});
     expect(counts(a, "ZeroElement")).toEqual({a: {min: "0", max: "0"}});
     expect(counts(a, "Huge")).toEqual({a: {min: "1801439850948198624691357802469135780", max: "1801439850948198624691357802469135780"}});
     expect(counts(a, "Gap")).toEqual({a: {min: "2", max: "4"}});

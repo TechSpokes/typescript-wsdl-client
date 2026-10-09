@@ -9,6 +9,7 @@ It returns `analyzed {analysis}` or `failure {diagnostic}` without partial succe
 The analysis retains the original composed/resolved/canonical graph and the `requires-schema-assessment` gate.
 
 Each particle summary records exact named-element and wildcard contributions, `nullable` and `hasRealization`.
+It also records `effectiveTotalRange` and `schemaEmptiable`, the formal XSD schema predicates, using the same exact occurrence algebra.
 Type summaries combine the ordered composed roots, preserving restriction replacement versus extension concatenation.
 The particle table and original graph retain alternative-local guarantees and ordered relationships; object-wide intervals cannot replace them.
 
@@ -68,6 +69,12 @@ Xmlschema 4.2.0 skips the nested required empty choice and accepts the preceding
 Libxml2 2.14.6 rejects those children and accepts only zero enclosing repetitions where applicable, matching the primary rule.
 The analysis follows that primary rule; the test records both engine observations without declaring the primary engine's acceptance normative.
 #180/#181 must retain these cases when qualifying payload matching and independent enumeration; #179 retains schema validity separately.
+
+The formal [Particle Emptiable](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-group-emptiable) predicate uses [effective total range](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-choice-range), which assigns an empty choice a zero range.
+Consequently a required empty choice has `schemaEmptiable: true` and `nullable: false`.
+#179 uses the former only where the specification invokes that formal schema predicate; #180 uses language nullability.
+Formal ranges include unrealizable branches and are not accepted count intervals.
+Declared zero-maximum particles remain in the graph for diagnostics and provenance; their range is zero as for the absent particle in the XSD component mapping, including an unbounded descendant.
 
 ### Commands and measurements
 

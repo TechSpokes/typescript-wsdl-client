@@ -50,6 +50,8 @@ export type PropertyContribution = Readonly<{
 }>;
 export type ParticleSummary = Readonly<{
   id: NodeId; nullable: boolean; hasRealization: boolean; elements: readonly PropertyContribution[]; wildcard: Occurs;
+  /** XSD's formal ETR / Particle Emptiable predicate, not language emptiness. */
+  effectiveTotalRange: Occurs; schemaEmptiable: boolean;
 }>;
 export type TypeSummary = Readonly<{
   id: NodeId; children: Omit<ParticleSummary, "id">;
@@ -90,14 +92,21 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
       return [...unique];
     };
     type Content = Omit<ParticleSummary, "id">;
-    const empty = (): Content => ({nullable: true, hasRealization: true, elements: [], wildcard: ZERO_OCCURS});
+    const empty = (): Content => ({nullable: true, hasRealization: true, elements: [], wildcard: ZERO_OCCURS, effectiveTotalRange: ZERO_OCCURS, schemaEmptiable: true});
     const combine = (input: readonly Content[], choice: boolean): Content => {
       const parts: Content[] = [];
-      for (const part of input) {budget.step(current); if (!choice || part.hasRealization) parts.push(part);}
+      let effectiveTotalRange = ZERO_OCCURS;
+      for (let i = 0; i < input.length; i++) {
+        const part = input[i]; budget.step(current);
+        // Formal ETR includes all declared alternatives, even an empty choice.
+        effectiveTotalRange = choice ? i === 0 ? part.effectiveTotalRange : algebra.alternative(effectiveTotalRange, part.effectiveTotalRange) : algebra.sum(effectiveTotalRange, part.effectiveTotalRange);
+        if (!choice || part.hasRealization) parts.push(part);
+      }
+      const formal = {effectiveTotalRange, schemaEmptiable: effectiveTotalRange.min === "0"};
       const elements = new Map<string, PropertyContribution>();
       let wildcard = ZERO_OCCURS, nullable = !choice;
       const hasRealization = choice ? parts.length > 0 : parts.every(p => p.hasRealization);
-      if (!hasRealization) return {nullable: false, hasRealization: false, elements: [], wildcard: ZERO_OCCURS};
+      if (!hasRealization) return {...formal, nullable: false, hasRealization: false, elements: [], wildcard: ZERO_OCCURS};
       for (let i = 0; i < parts.length; i++) {
         budget.step(current); const part = parts[i], present = new Set<string>();
         nullable = choice ? nullable || part.nullable : nullable && part.nullable;
@@ -111,7 +120,7 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
           budget.step(current); if (!present.has(k)) elements.set(k, {...p, occurs: algebra.alternative(p.occurs, ZERO_OCCURS)});
         }
       }
-      return {nullable, hasRealization, elements: [...elements.values()], wildcard};
+      return {...formal, nullable, hasRealization, elements: [...elements.values()], wildcard};
     };
     const dependencies = (node: ParticleNode): NodeId[] => {
       if ("children" in node.term) {
@@ -147,8 +156,8 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
         if (node.term.kind === "element") {
           const id = target(node.term.declaration, node)!, declaration = get(id);
           if (declaration.kind !== "element") throw new Error("Checked element target changed");
-          content = {nullable: false, hasRealization: true, elements: [{name: declaration.name, occurs: ONE_OCCURS, declarations: [id], particles: [node.id]}], wildcard: ZERO_OCCURS};
-        } else if (node.term.kind === "any") content = {nullable: false, hasRealization: true, elements: [], wildcard: ONE_OCCURS};
+          content = {nullable: false, hasRealization: true, elements: [{name: declaration.name, occurs: ONE_OCCURS, declarations: [id], particles: [node.id]}], wildcard: ZERO_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
+        } else if (node.term.kind === "any") content = {nullable: false, hasRealization: true, elements: [], wildcard: ONE_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
         else {
           const parts: ParticleSummary[] = [];
           for (const id of f.children) {budget.step(node); parts.push(summaries.get(id)!);}
@@ -156,7 +165,8 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
         }
         const elements: PropertyContribution[] = [];
         for (const p of content.elements) {budget.step(node); elements.push({...p, occurs: algebra.product(p.occurs, node.occurs)});}
-        summaries.set(node.id, {id: node.id, nullable: node.occurs.min === "0" || content.nullable, hasRealization: node.occurs.min === "0" || content.hasRealization, elements, wildcard: algebra.product(content.wildcard, node.occurs)});
+        const effectiveTotalRange = algebra.product(content.effectiveTotalRange, node.occurs);
+        summaries.set(node.id, {id: node.id, nullable: node.occurs.min === "0" || content.nullable, hasRealization: node.occurs.min === "0" || content.hasRealization, elements, wildcard: algebra.product(content.wildcard, node.occurs), effectiveTotalRange, schemaEmptiable: effectiveTotalRange.min === "0"});
         active.delete(node.id); stack.pop();
       }
     }
