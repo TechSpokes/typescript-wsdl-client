@@ -6,6 +6,8 @@ Formal component witnesses, a finite particle construction and the remaining ful
 
 Issue [#234](https://github.com/TechSpokes/typescript-wsdl-client/issues/234) remains open for complete decision-procedure acceptance. This record recommends the numbered existential rule and supplies executable positive feasibility evidence, including the counterexamples that defeat suffix copying. It does not certify a complete negative procedure over the approved profile.
 
+The standalone [#256 resolver specification](content-model-s06-re-01-resolver.md) fixes the D1/E2 research context, identity, membership/comparison boundaries, predicate ownership and ordered implementation handoff. Its retained-substitution negative control qualifies an explicit context; neither the specification nor that control discharges the full witness theorem below.
+
 The research owner is the RE01 agent in epic #232; substantive review belongs to the separately assigned epic reviewer. The coordinator records the exact reviewed revision and findings in the joint handoff. No production assessment guard, profile exclusion, catalog format or legacy default changes here.
 
 The baseline is accepted main `5876065b00d4eeb6d2324eaa63ff9b70e2279198`. The unaccepted assessment draft is inspected at `460f5b8379c68ffef79917284e445b5ab046429e`, without importing its assessment modules. [Composition](content-model-composition.md), [analysis](content-model-analysis.md) and [ADR-003](decisions/003-content-model-contracts.md) retain their existing owners and contracts.

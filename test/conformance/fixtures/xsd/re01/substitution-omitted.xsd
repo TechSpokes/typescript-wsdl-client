@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:retained-substitution" targetNamespace="urn:re01:retained-substitution">
+  <xs:complexType name="A"/>
+  <xs:complexType name="T">
+    <xs:complexContent><xs:extension base="t:A"/></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="B">
+    <xs:complexContent><xs:restriction base="t:A"/></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent><xs:restriction base="t:T"/></xs:complexContent>
+  </xs:complexType>
+  <xs:element name="H" type="t:B"/>
+</xs:schema>

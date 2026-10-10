@@ -223,6 +223,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Exact Particle Analysis](docs/content-model-analysis.md) | Exact contributions, particle emptiness and bounded immutable summaries |
 | [S06 Attribute Research](docs/content-model-s06-au-01.md) | Repeated attribute-use identities, constraints and interpretation alternatives |
 | [S06 Reordered Derivation Research](docs/content-model-s06-re-01.md) | Constructive witnesses, counterexamples and decision-procedure proof obligations |
+| [S06 Hypothetical Resolver Specification](docs/content-model-s06-re-01-resolver.md) | Candidate contexts, component identity, validation ownership and implementation tasks |
 | [S06 Wildcard Research](docs/content-model-s06-pw-01.md) | Member and whole-group cardinality, original namespace context and authority |
 | [S06 Calendar Research](docs/content-model-s06-dt-01.md) | Exact negative-year calendar alternatives and corrected reference observations |
 | [S06 Research Handoff](docs/content-model-s06-research-handoff.md) | Joint contracts, reproducible evidence, unresolved gates and production ownership |

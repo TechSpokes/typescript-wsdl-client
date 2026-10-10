@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "b20bbbaaa2aca607a1c4e4986e46a43f7c0acae6e5a6ec75ad86829b6a50c486",
+          "sha256": "d99742f4aaa00255ed7e90ccd784de7dd4a6f116bb50dea3f4fd4746d5a09e59",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -647,6 +647,31 @@
           "path": "test/conformance/reference/re01-endpoint-continuation.test.ts",
           "role": "reference",
           "sha256": "ead0a814d3a96b76a7f08523ff8aeece13a179ce5ad94e8041383e407c4148a4"
+        },
+        {
+          "path": "docs/content-model-s06-re-01-resolver.md",
+          "role": "decision",
+          "sha256": "b7cbe8f84b5dd7cb8dc7f6a29de3149d30bbd71eb99cd00c28d485a61a726f2a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/substitution-actual.xsd",
+          "role": "fixture",
+          "sha256": "980d315341eaa1aaebb8684f1c285ce58a9ccf1daf21c93650c49a47d99c6489"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/substitution-retained.xsd",
+          "role": "fixture",
+          "sha256": "f73af4981d61c7a6263a8b5290650fc17a64f2a62ad6b758378eece8fbb33161"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/substitution-omitted.xsd",
+          "role": "fixture",
+          "sha256": "4248763e0507d6a9a356e345a10fbfb08462a8eaee9414c12d772952b37a5761"
+        },
+        {
+          "path": "test/conformance/reference/re01-substitution-context.test.ts",
+          "role": "reference",
+          "sha256": "396edb1f7ef14efd8e62262ee0558bb819eb9abd8bdf117aaa9b87e6cffbeced"
         }
       ]
     },
@@ -1038,6 +1063,6 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 186
+    "currentArtifactCount": 191
   }
 }
