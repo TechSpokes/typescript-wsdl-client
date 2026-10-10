@@ -191,6 +191,7 @@ class AU01ContractTests(unittest.TestCase):
             "global-fixed-equivalent": (False, True),
             "global-fixed-conflicting": (False, True),
             "global-fixed-default": (True, False),
+            "global-default-required": (True, True),
             "extension-required-fixed-optional-none": (False, False),
             "extension-optional-none-required-fixed": (True, False),
             "extension-required-none-optional-none": (False, False),
@@ -214,6 +215,16 @@ class AU01ContractTests(unittest.TestCase):
             schema = etree.XMLSchema(etree.parse(str(FIXTURES / (name + ".xsd"))))
             self.assertTrue(schema.validate(etree.fromstring(b'<root xmlns="urn:s06:au01" a="x"/>')))
             self.assertFalse(schema.validate(etree.fromstring(b'<root xmlns="urn:s06:au01"/>')))
+        path = FIXTURES / "global-default-required.xsd"
+        for schema in (xmlschema.XMLSchema(path), etree.XMLSchema(etree.parse(str(path)))):
+            present = b'<root xmlns="urn:s06:au01" xmlns:t="urn:s06:au01" t:a="2"/>'
+            absent = b'<root xmlns="urn:s06:au01"/>'
+            if isinstance(schema, etree.XMLSchema):
+                self.assertTrue(schema.validate(etree.fromstring(present)))
+                self.assertFalse(schema.validate(etree.fromstring(absent)))
+            else:
+                self.assertTrue(schema.is_valid(present))
+                self.assertFalse(schema.is_valid(absent))
 
     def test_xmlschema_order_dependent_default_observations(self):
         for a, b, augmentation in (("default-one", "default-two", 2),

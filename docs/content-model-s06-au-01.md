@@ -222,7 +222,7 @@ Semantic defaults remain independently applied 100,000 nodes and 1,000,000 work 
 
 ## Independent reference observations
 
-All 45 committed [AU01 fixtures](../test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-none.xsd) are new minimal sources authored for this research. The pinned draft's differing-use/group/prohibited fixtures remain historical evidence; none is silently rewritten or imported by the executable probe.
+All 46 committed [AU01 fixtures](../test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-none.xsd) are new minimal sources authored for this research. The pinned draft's differing-use/group/prohibited fixtures remain historical evidence; none is silently rewritten or imported by the executable probe.
 
 [The discovered test](../test/conformance/reference/s06_au01_contract_test.py) hand-authors conditional expectations and reference observations separately; [the bounded candidate](../test/conformance/reference/s06_au01_probe.py) imports no production compiler or unaccepted draft modules. The established `*_test.py` discovery executes nine AU01 test methods, including 25 optional pairs and both requiredness orderings.
 
@@ -258,6 +258,7 @@ These order-dependent results illustrate implementation policy, not primary sele
 | Global fixed `1`, own fixed `2` | Invalid `au-props-correct` | R | A |
 | Global fixed `1`, own default `1` | Invalid `au-props-correct` | A | R |
 | Required explicit default | Invalid `src-attribute` | R | R |
+| Global default, required reference without own default | Legal; presence required | A | A |
 | Base optional none/local required fixed | AU01 present choice qualified | A | R |
 | Base required fixed/local optional none | AU01 present choice qualified | R | R |
 | QName fixed `p:item`, input `q:item`, same binding | S02 value-equivalent | Reject input | Accept input |
@@ -270,14 +271,16 @@ Fresh reference installation was performed by the coordinator with `npm run refe
 
 ```bash
 npm run reference:setup
-python -m unittest discover -s test/conformance/reference -p 's06_au01*_test.py' -v
+tmp/conformance/reference-venv/bin/python -m unittest discover -s test/conformance/reference -p 's06_au01*_test.py' -v
 npm run test:reference:full
 npm run ci
 npm run test:conformance
 git diff --check
 ```
 
-The focused command used the coordinator's fresh reference environment via its Python executable and passed all nine test methods. Aggregate full-reference, CI, conformance and documentation/support-matrix results belong to the coordinator's exact final integration record; they are not inferred from these scoped checks or old #231 results.
+The focused command used the coordinator's fresh reference environment via its Python executable and passed all nine test methods. On Windows, use `tmp/conformance/reference-venv/Scripts/python.exe` for that focused command; setup does not activate the environment in the shell.
+
+Aggregate full-reference, CI, conformance and documentation/support-matrix results belong to the coordinator's exact final integration record; they are not inferred from these scoped checks or old #231 results.
 
 Leaf `npm run docs:validate` and `git diff --check` also pass, including the support-matrix check. These portable checks supplement the XML/reference probes; the coordinator reruns required aggregate gates on the integrated final revision.
 
