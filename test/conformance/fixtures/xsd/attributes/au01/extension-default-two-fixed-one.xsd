@@ -1,0 +1,7 @@
+<!-- Original AU01 research contrast; no copied production assessment fixture. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:s06:au01" targetNamespace="urn:s06:au01" elementFormDefault="qualified">
+  <xs:attribute name="a" type="xs:integer"/>
+  <xs:complexType name="Base"><xs:attribute ref="t:a" default="2"/></xs:complexType>
+  <xs:complexType name="Derived"><xs:complexContent><xs:extension base="t:Base"><xs:attribute ref="t:a" fixed="1"/></xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="root" type="t:Derived"/>
+</xs:schema>

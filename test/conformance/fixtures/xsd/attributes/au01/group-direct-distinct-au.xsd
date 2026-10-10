@@ -1,0 +1,4 @@
+<!-- Original AU01 research contrast; expectations in s06_au01_contract_test.py. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:s06:au01" targetNamespace="urn:s06:au01" elementFormDefault="qualified">
+<xs:attribute name="a" type="xs:integer"/><xs:attributeGroup name="G"><xs:attribute ref="t:a"/><xs:attribute ref="t:a"/></xs:attributeGroup>
+</xs:schema>
