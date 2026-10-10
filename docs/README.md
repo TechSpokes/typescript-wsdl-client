@@ -52,6 +52,7 @@ The [S06 research handoff](content-model-s06-research-handoff.md) links the four
 - [Ordered schema loading](content-model-loading.md): internal syntax, provenance and controlled resolution contracts
 - [Canonical schema graph](content-model-graph.md): immutable declarations, use sites and lexical reference context
 - [Semantic catalog format 2](content-model-catalog.md): deterministic persistence, validation and compatibility routing
+- [RE01 research resolver implementation](content-model-s06-re-01-resolver-implementation.md): supplied-candidate checks, qualification limits and the future production adapter
 
 - [Root README](../README.md): project overview, quick start, and authoritative Documentation section
 - [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow
