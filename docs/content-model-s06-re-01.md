@@ -103,7 +103,7 @@ The owning component checker supplies source-valid schema operands, restriction-
 | Ancestor component view | Candidate family |
 |---|---|
 | Any existing particle | Vacuous extension followed by checked restriction of the original pair |
-| Source-mapped absence, with original raw extension legality certified | One `##any/skip` wildcard with `0..unbounded` bounds |
+| Certified disappearing comparison prefix, with raw extension legality checked | One `##any/skip` wildcard with `0..unbounded` bounds |
 | Meaningful prefix, legal nonvacuous extension | Original prefix, required empty choice, one universal wildcard per unmatched final direct member |
 
 The meaningful-prefix candidate applies to a final normalized element or a normalized sequence whose root bounds are `1..1`. A final element uses `RecurseAsIfGroup`; a sequence uses `Recurse`. All members matched to the ancestor retain original identity and bounds; each unmatched tail member maps to its own wildcard.
@@ -126,7 +126,7 @@ For a meaningful prefix, `cos-particle-extend` fixes every nonvacuous intermedia
 
 The required empty choice makes every added wildcard unreachable without adding a named declaration. Its formal emptiability permits skipping it during `Recurse`; each universal wildcard can absorb any restricted leaf or group under the agreed `0..unbounded` rule. Thus a valid ordered prefix mapping supplies a constructive witness independent of the original extension suffixes.
 
-For a prefix absent after certified source mapping, with original raw extension legality certified, no original meaningful particle must remain before the suffix. A single universal wildcard suffices after normalization and admits all finite or unbounded original repetitions in the group-to-wildcard rule. This separate branch is required by the repeated-root contrast above; restriction-only pointlessness cannot supply its premise.
+For a certified disappearing comparison prefix, no original meaningful particle remains before the suffix after restriction normalization. A single universal wildcard suffices after normalization and admits all finite or unbounded original repetitions in the group-to-wildcard rule. Source-mapped absence is one case; a real mixed-content empty sequence is another, provided its raw extension is independently legal as established in the audit below.
 
 This argument is a useful finite particle construction, not a published or accepted full-domain theorem. Before using failed family search as a negative proof, independent review must establish that every source-valid normalization path, all placement and component identity case falls into these branches and that the full type's AU/scalar constraints can be synthesized consistently. The prototype intentionally refuses to infer that theorem from its positive tests.
 
@@ -391,6 +391,161 @@ The premise-table tests validate finite construction control flow and accounting
 [The TypeScript measurement program](../test/research/re01/measure.ts) reproduces those deterministic counts without ignored logs. The shared-DAG terminal retains a recursive type-reference ID; this measures nonexpansion of legal element/type recursion, not an implementation of recursive payload validity. The adversarial exhaustion reports no partial successful witness and no invalidity.
 
 The coordinator owns the final `ci`, full reference, conformance, installed-consumer and documentation/support-matrix checks on the integrated tree. Those results and the exact reviewed commit are recorded in the joint handoff; the old #231 results do not substitute. IDE inspections are unavailable in this environment; repository-local checks and independent review supply verification.
+
+## Full proof audit after resolver delivery
+
+This continuation starts from verified main `b0992d00768cff5891cb924a734892ea675a55b8`, tree `cec7d141dfa3b9f3b2e4d96e0f17ca9626c3a6b3`.
+The owner is the current Codex coordinator; fresh independent review derives the controls separately and reviews the final artifact revision in the delivery ledger.
+The new [strict reference controls](../test/conformance/reference/re01-ambient-completeness.test.ts) contain seven invoked tests over nine new sources, without production assessment imports.
+
+The full theorem is not discharged by the resolver or this audit.
+Two proposed reductions fail on concrete examples: choosing only the smallest outgoing closure, and assigning every fresh intermediate an empty `block` set.
+There is also an unresolved distinction between literal abstract extension constraints and D1's source-style AU construction algebra; a complete theorem must state its witness domain before quantifying over candidates.
+
+### Ambient membership is not monotone
+
+[The original source](../test/conformance/fixtures/xsd/re01/ambient-choice-original.xsd) declares global `h:anyType`, affiliate `m:string`, and ancestor `A` with global `h[2..2]` inside a singleton sequence.
+`B` restricts `A` to two mandatory qualified local `h:anyType` declarations; `D` extends `B` vacuously.
+Existing `T` extends `A` vacuously, giving the [retained proposed source](../test/conformance/fixtures/xsd/re01/ambient-choice-retained.xsd) a two-step construction with the same final content properties.
+
+[Particle restriction](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-restrict) 2.2 removes `A`'s singleton `1..1` sequence for comparison.
+Clause 2.1 expands the remaining global `h[2..2]` into `choice(h[1..1],m[1..1])[2..2]`, because its in-context substitution group contains `m` as well as `h`.
+The final local declarations do not undergo this global-head expansion.
+
+[MapAndSum](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-MapAndSum) maps both local members to the same synthetic `h[1..1]` member.
+Each NameAndTypeOK comparison has the same QName, identical `anyType`, unit bounds, false nillability and no fixed or identity constraints; the two declarations also satisfy EDC's named-type identity requirement.
+The restricted root's `1..1` bounds multiplied by its two direct members give `2..2`, exactly the base choice's range.
+
+[The omitted source](../test/conformance/fixtures/xsd/re01/ambient-choice-omitted.xsd) changes only the presence of `m` in the proposed schema.
+With no nonself affiliate, clause 2.1 no longer expands `h`, so the table dispatches sequence-to-element as Forbidden.
+This failure affects both proposed `D` and unchanged original `B`; the resolver explicitly retains `B` as an original endpoint-chain operand.
+
+The omitted incoming affiliate is not an outgoing target needed for structural closure.
+Consequently, minimal outgoing closure need not preserve a valid component restriction, and larger closed membership need not be dispensable.
+The earlier [retained-substitution control](content-model-s06-re-01-resolver.md#established-retained-substitution-negative-control) shows the opposite direction: adding a retained affiliate can invalidate proposed ancestry.
+
+No monotone membership pruning theorem follows from structural closure.
+If the witness domain permits smaller schemas, every permitted closed membership choice must be covered or replaced by a proved reduction.
+The allowance and bound for fresh auxiliary globals also need definition: incoming fresh affiliates can change the same implicit-choice normalization and are not part of endpoint incidence comparison.
+
+### A terminating negative proof for one fixed ambient requirement
+
+In the earlier retained-substitution control, retain original `M:D` affiliated to original `H:B`, where original `B` restricts `A` and `A` has base `anyType`.
+Every allowed two-step endpoint has ancestry `D -> E -> A -> anyType`, with `E` immediately extending `A`.
+`E` cannot be original `B`, whose immutable method is restriction, nor can a fresh type take anchored `B`'s identity.
+
+Thus the complex TypeDerivationOK query from proposed `D` to original `B` fails for every such intermediate, regardless of its content, AU set, wildcard or fresh auxiliary members.
+[Element properties](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#e-props-correct) 4 therefore fails for retained `M/H` under that fixed ambient requirement.
+This is an exhaustive identity/path obstruction, not a finite sample of failed candidates.
+
+The proof uses only the fixed four-identity proposed ancestry and terminates without enumerating particles or occurrence counts.
+It establishes nonexistence only in contexts required to retain `M/H`; the permitted omission control has no such obligation.
+A configured computation still needs to pay for preparation, comparisons and its receipt; inability to pay returns resource-limit rather than this negative result.
+
+### Fresh intermediate blocking cannot default to empty
+
+[The block control](../test/conformance/fixtures/xsd/re01/ambient-block-original.xsd) has empty `A`, `B` restricting `A` with `block="restriction"`, and `D` extending `B`.
+Global `M:D` is affiliated to `H:A`, while retained `C` contains `choice(ref H,ref M)`.
+The original schema has no original type immediately extending `A` that could supply a named intermediate.
+
+[Substitution Group OK](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec) 2.3 unions the head and intermediate types' prohibited substitutions.
+Original `B.block` suppresses `M` from `H`'s effective substitution set, so `C`'s mandatory alternative positions are disjoint.
+The affiliation remains legal; suppression of substitutability is a different predicate.
+
+Replacing `D` by a restriction of fresh `E` extending `A` with [empty block](../test/conformance/fixtures/xsd/re01/ambient-block-empty.xsd) admits `M` into `H`'s effective substitution set and makes `C` ambiguous on `M`.
+Giving `E` [restriction block](../test/conformance/fixtures/xsd/re01/ambient-block-restriction.xsd) restores the original effective set and removes that ambiguity.
+`block` is not `final`: this setting does not prohibit `D`'s restriction derivation.
+
+A complete fresh-intermediate family must cover the four subsets of complex-type `block`, or prove a contextual reduction with the same results.
+Enumerating only particle shapes and original immediately-extending types misses this parameter when `C` is retained.
+The conditional source and relation checks do not establish that these options cover all other intermediate properties.
+
+### Abstract AU extension and mapped inheritance have different premises
+
+[The fixed restoration source](../test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd) declares unconstrained global integer `g`, optional `A/g` fixed to `1`, `B` prohibiting it, and final `D/g` fixed to `2`.
+Each original operand is valid against the same original scalar declaration; the actual source mapping distinguishes the two AU identities.
+No calendar, QName alias or scalar-order decision is needed for the exact integer inequality `1 != 2`.
+
+D1 requires every intermediate extension to preserve `A/g`'s identity and constraint.
+Its final action cannot retain that identity while producing only `D/g`; replacing it by fixed `2` fails accepted AU01's universal original-fixed predicate, and prohibition cannot yield the nonempty final set.
+This is a complete negative argument for this AU projection under D1's construction algebra.
+
+The literal [extension constraint](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends) 1.2 expands its word "subset" by matching declaration name, namespace and simple type.
+It does not mention the AU ID, requiredness or own fixed value in that expansion.
+An abstract intermediate containing only original `D/g` matches the original declaration and passes that local property condition; retaining it at the final restriction does not compare it with removed `A/g`.
+
+[Conformance](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#concepts-conformance) permits non-XML component schemas, but does not prove that every such extension is source-style set union.
+The accepted AU01 contract supplies that union for actual mapped extensions; it does not settle completeness of D1 relative to every literal abstract-component construction.
+This contrast is a witness-domain obligation, not a proposal to weaken AU01 source replacement or treat conflicting runtime values as schema-invalidity.
+
+Choosing source-style construction or literal abstract components changes the domain of the existence theorem.
+The proof must justify its choice against the approved rule; an implementation can check D1 plans without establishing that D1 covers the full rule.
+XML-source witnesses introduce separate fresh-AU/local-scope and anonymous-scalar correspondence obligations and cannot be substituted silently.
+
+### Mixed empty prefixes require raw construction and normalized comparison
+
+[The mixed original](../test/conformance/fixtures/xsd/re01/mixed-empty-prefix-original.xsd) has a real empty sequence in mixed `A`; its final mixed content is exactly seventeen `a,b` pairs.
+Under complex-content [mapping](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#declare-type) 2.1.4, mixed empty syntax maps to a real `1..1` empty sequence particle, rather than absent content.
+The [shadow](../test/conformance/fixtures/xsd/re01/mixed-empty-prefix-shadow.xsd) extends `A` by a source-valid singleton sequence containing `##any/skip[0..unbounded]`.
+
+Its raw intermediate is `sequence(A.emptySequence,sequence(W))`, preserving the original first member as ParticleExtension requires.
+Restriction normalization removes the empty prefix and pointless singleton wrappers, leaving `W`; selected PW01 checks the final group's exact `34..34` formal range against `0..unbounded`.
+No required dead separator is inserted, and no raw all group is erased for extension placement.
+
+This discharges one preparation category that source-mapped absence alone did not cover.
+It does not prove the complete normalization lemma for every pointless all/choice/sequence, repeated root, mixed/simple transition or recursive identity case.
+The unchanged prototype accepts already prepared comparison views; its null ancestor cannot stand in for unverified raw particle absence.
+
+### What a complete candidate reduction still has to prove
+
+The existing finite particle mapping and D1 AU criterion are conditional projections, not a complete full-type family.
+The full family must cover original intermediate identities, permitted fresh content/flag/AU variants, every permitted ambient membership choice and every necessary fresh auxiliary component.
+Anonymous identities, original owners, endpoint sharing, scalar operands and raw extension placement remain anchored constraints, rather than properties that may be discarded during reduction.
+
+Trivial one-extension chains also need a proved vacuous/no-op case outside a cyclic endpoint overlay.
+The extension rule's note explicitly covers the only-extension case, but choosing the endpoint itself as ancestor and then adding `E extends D; D restricts E` creates a prohibited base cycle.
+The full theorem must cover direct ur-type and ordinary simple-builtin ancestry without treating that resolver-plan rejection as semantic nonexistence.
+
+Soundness requires complete proposed-context component legality and exact endpoint correspondence under the selected witness domain.
+Completeness requires transforming an arbitrary allowed witness into an enumerated candidate while preserving those obligations, including implicit substitution normalization, UPA/EDC and all unchanged members' derivation constraints.
+The resolver's conditional test owners supply no authority for that transformation or for unimplemented semantic predicates.
+
+Other retained extension types can themselves carry `cos-ct-extends` 1.5 obligations.
+A complete argument must show those obligations transfer or provide a terminating joint treatment; recursively assuming the RE01 search succeeds is circular.
+The resolver's direct predicates intentionally do not perform that recursive search.
+
+A finite verified family and terminating qualified predicates would yield terminating negatives by complete enumeration of that family.
+Enumeration of arbitrary finite graphs instead supplies positive semidecision only, unless a small-witness bound or equivalent decision theorem is proved.
+Neither the node/work defaults nor a configured candidate count can supply that missing bound.
+
+### Joint contract and diagnostic reconciliation
+
+AU01 C1 v1, PW01 R-240 v1 and DT01 A v1 share reviewed head `c5f6e38600e7acbd700bf15eaea3092ba15fb174`, tree `28a0907ffe4ccc068197c16014c87915b00df495`.
+Their normal merged acceptance is `f4e39e819f2d9aa264cfdd14d16154c6443c9bac` with the identical tree; the current manifest preserves historical pins beside current TypeScript artifact hashes.
+The [AU](https://github.com/TechSpokes/typescript-wsdl-client/issues/233#issuecomment-6096188422), [PW](https://github.com/TechSpokes/typescript-wsdl-client/issues/235#issuecomment-6096188941) and [DT](https://github.com/TechSpokes/typescript-wsdl-client/issues/236#issuecomment-6096189431) acceptance records identify the independent review and precise local scopes.
+
+| Consumer | Original operands required | Delegated assumption still required by RE01 |
+|---|---|---|
+| AU01 C1 | Every original AU/declaration/type ID, own/declaration value, source role and namespace context | Prepared uses, qualified scalar derivation/equality and wildcard legality |
+| PW01 R-240 | Raw and normalized particles, original member/use bounds, wildcard namespace/process/identity | Legal raw placement, UPA/EDC, certified normalization and #178 formal ranges |
+| DT01 A | Original scalar identity, lexical witness, timezone, facets and member order | Full original-type assessment; calendars only within DT01's reviewed domain |
+| RE01 resolver | Actual chain, anchored endpoint incidence, original source records and declared membership | Selected witness domain and all-member semantic receipts |
+
+The new controls use identical `anyType` or exact integer facts; they do not delegate calendar behavior to an invented alternate engine.
+General AU fixed/default comparison must still assess each operand under its original scalar type, whitespace, facet, list/union and QName context before invoking selected equality.
+DT01's indeterminate order is not inequality or failed equality, and an invalid operand cannot be converted into distinct values.
+
+All stages preserve independent inclusive defaults of 100,000 nodes and 1,000,000 work units, with charging before construction, indexing, fixed points, comparisons and copying.
+A future integrated witness request must share its accounting across candidates and semantic owners rather than restart each candidate at the full default and call that one bounded run.
+The resolver's existing request accounting and numeric boundary ledger remain valid for one candidate; they do not measure the unimplemented global search.
+
+A rejected candidate is not witness nonexistence; a missing preparation or predicate authority is unresolved; exhausted accounting is resource-limit with no partial receipt.
+Only an exhaustive proved criterion may establish an RE01 invalid-schema answer; C1 conflicting absence remains payload invalid-value under #184.
+Production unsupported-capability remains #179's existing qualification boundary and cannot become a permanent exclusion for these unresolved proof cases.
+
+Current libxml2 2.15.1 accepts all three ambient-choice sources despite the independently derived omitted-context component failure.
+It accepts the AU restoration and both mixed-prefix controls, accepts the original/blocked-intermediate sources, and rejects the empty-block source.
+These nine observations remain separate from the sourced clause expectations and prove no complete RE01 procedure or product capability.
 
 ## Missing proof, options and recommendation
 

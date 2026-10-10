@@ -112,6 +112,14 @@ It checks one supplied construction and preserves original identity/source opera
 Resolver readiness does not discharge the full-type witness theorem or #232's joint acceptance gate.
 The linked delivery handoff records exact revised parent, reviewed implementation and merged-main checkpoints; the earlier unmerged-parent observations above remain historical.
 
+The [post-resolver proof audit](content-model-s06-re-01.md#full-proof-audit-after-resolver-delivery) starts from verified main `b0992d00768cff5891cb924a734892ea675a55b8`, tree `cec7d141dfa3b9f3b2e4d96e0f17ca9626c3a6b3`.
+Nine new source controls and seven independently specified strict TypeScript tests demonstrate nonmonotone ambient membership, intermediate `block` sensitivity, a mixed empty-prefix normalization case and the source-style versus literal abstract AU-extension gap.
+They also support a terminating identity/path negative proof when the earlier `M:D/H:B` affiliation must be retained; that proof applies to the stated ambient requirement rather than every permitted smaller schema.
+
+The audit pins AU01 C1, PW01 R-240 and DT01 A to their shared independently reviewed head `c5f6e38600e7acbd700bf15eaea3092ba15fb174`, tree `28a0907ffe4ccc068197c16014c87915b00df495`, normally merged at `f4e39e819f2d9aa264cfdd14d16154c6443c9bac` with the same tree.
+Its joint map reconciles original operands, schema-versus-payload diagnostics, inclusive accounting and #184 scalar ownership without claiming delegated preparation assumptions passed.
+Joint acceptance remains blocked by the unresolved full witness-domain and candidate-reduction theorem, not by sibling closure or a failed budgeted search.
+
 The particle controls separately expose nontransitive MapAndSum restriction, original singleton-all placement, base final exclusions and ordinary simple-content ancestors.
 An empty-facet no-inline simple-content restriction is not proved to create a fresh anonymous scalar, so no source-impossibility claim relies on that assumption.
 Keep #234 and #232 open until the complete procedure is justified and substantively reviewed; do not substitute a smaller permanent profile or a search cutoff.
@@ -169,9 +177,10 @@ That factual correction does not authorize removing negative-year or crossing-ze
 ## Downstream qualifications and next ready work
 
 The next ready work is completing the RE01 full-type criterion and negative-answer proof using locally accepted selected sibling contracts.
-The implementing research owner should follow the [resolver task plan](content-model-s06-re-01-resolver.md#implementation-tasks), starting with R1 context preparation after its independent specification readiness gate, then verify the resolver and delegated predicate inventory before integrating the conditional AU criterion with particle/content cases.
-The focused prerequisite must preserve actual graph identities, distinguish actual and hypothetical recursive queries, retain existing named intermediate identity, isolate caches by context and check hypothetical legality and inclusive budgets.
-Its acceptance would not discharge full candidate completeness, original normalization or the negative-answer theorem.
+The [resolver task plan](content-model-s06-re-01-resolver.md#implementation-tasks) has been delivered through #257/#258; repeating R1 is not the next assignment.
+The research owner must define the quantified ambient and abstract-construction domain, then prove a complete reduction covering original intermediates, fresh flags, disappearing raw prefixes and permitted auxiliary members.
+Minimal outgoing closure and empty intermediate `block` are disproved reductions; the audit supplies explicit controls that every replacement theorem must preserve.
+All-member semantic legality and other retained types' existential derivation obligations require a transfer or terminating joint argument before a failed complete enumeration can establish nonexistence.
 The new incidence checker remains an evidence tool; it is not that integration or an approved negative-answer procedure.
 #179 may inspect these research inputs while keeping affected assessment gates open; the full accepted research epic must precede production activation.
 #153 remains the combined S06 acceptance owner and S07/S08 retain their existing dependencies.

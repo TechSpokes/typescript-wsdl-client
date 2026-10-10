@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "d99742f4aaa00255ed7e90ccd784de7dd4a6f116bb50dea3f4fd4746d5a09e59",
+          "sha256": "a71f30db02f557a57751bc85bc57bfb9049ca4589eb2da16c5eb79fbdfe4496d",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -767,6 +767,56 @@
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
           "sha256": "2acb9adb6b71a5edfe5454c0a6b1e90b1e75d011a119b6a05246b118dcdaf4af"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
+          "role": "fixture",
+          "sha256": "cab5566e1c4294686585b3aa15a3cb0f8707ff4fd95cad9b5a7ac6dc431f5ac6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-block-empty.xsd",
+          "role": "fixture",
+          "sha256": "2e74faefe1b52a48c4f69f3cb237c13026ff601660369d0e0a82264e4b95254c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-block-original.xsd",
+          "role": "fixture",
+          "sha256": "35469d9742bd8c20c94ea211f1c82431152389a2860cd990228943bf13ed2ac0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-block-restriction.xsd",
+          "role": "fixture",
+          "sha256": "86677dfeee38d339fa314a67e25e8809f7ecb8f7ca9c889da73b5d005aa7a661"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-choice-omitted.xsd",
+          "role": "fixture",
+          "sha256": "3cd141ab161a82df6e0d36805abac66d85f8a2772d8ec94158e7ce48238a935d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-choice-original.xsd",
+          "role": "fixture",
+          "sha256": "88336f75998e2580bbbd55ab12a1b5411555401ed4b505e505db85b0fbcc2a7e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/ambient-choice-retained.xsd",
+          "role": "fixture",
+          "sha256": "e603a645c8d5b97e48764c596d2013de6ebc27af48ca88f6bffccb8486ef1932"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/mixed-empty-prefix-original.xsd",
+          "role": "fixture",
+          "sha256": "c74de9a602cd61a9dd282119207f3fe077e89ab13f29a36c6c3d2a04415a4c14"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/mixed-empty-prefix-shadow.xsd",
+          "role": "fixture",
+          "sha256": "6a5ac4b3b2e1e616ec734e288c6c3de384f60fa92e27f8a3bdecf84c4be2725e"
+        },
+        {
+          "path": "test/conformance/reference/re01-ambient-completeness.test.ts",
+          "role": "reference",
+          "sha256": "bf6433d9b7e401a3e8a292d0e6135b8f2f59a5e21183e01e552ac4d6ee1661ef"
         }
       ]
     },
@@ -1158,6 +1208,6 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 210
+    "currentArtifactCount": 220
   }
 }

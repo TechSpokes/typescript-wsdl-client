@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:ambient-block" targetNamespace="urn:re01:ambient-block">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B" block="restriction"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:B"/></xs:complexContent></xs:complexType>
+  <xs:element name="H" type="t:A"/>
+  <xs:element name="M" type="t:D" substitutionGroup="t:H"/>
+  <xs:complexType name="C"><xs:choice><xs:element ref="t:H"/><xs:element ref="t:M"/></xs:choice></xs:complexType>
+  <xs:element name="root" type="t:C"/>
+</xs:schema>

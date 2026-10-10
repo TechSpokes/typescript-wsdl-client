@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:ambient-map" targetNamespace="urn:re01:ambient-map" elementFormDefault="qualified">
+  <xs:element name="h" type="xs:anyType"/>
+  <xs:element name="m" type="xs:string" substitutionGroup="t:h"/>
+  <xs:complexType name="A">
+    <xs:sequence><xs:element ref="t:h" minOccurs="2" maxOccurs="2"/></xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="T">
+    <xs:complexContent><xs:extension base="t:A"/></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="B">
+    <xs:complexContent><xs:restriction base="t:A">
+      <xs:sequence><xs:element name="h" type="xs:anyType"/><xs:element name="h" type="xs:anyType"/></xs:sequence>
+    </xs:restriction></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent><xs:extension base="t:B"/></xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>
