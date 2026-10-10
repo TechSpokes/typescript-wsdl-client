@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="date" type="xs:date"/>
+  <xs:element name="dateTime" type="xs:dateTime"/>
+  <xs:element name="time" type="xs:time"/>
+  <xs:element name="gYear" type="xs:gYear"/>
+  <xs:element name="gYearMonth" type="xs:gYearMonth"/>
+  <xs:element name="gMonth" type="xs:gMonth"/>
+  <xs:element name="gMonthDay" type="xs:gMonthDay"/>
+  <xs:element name="gDay" type="xs:gDay"/>
+  <xs:element name="duration" type="xs:duration"/>
+</xs:schema>

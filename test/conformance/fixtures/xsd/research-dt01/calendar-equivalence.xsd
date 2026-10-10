@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="boundary" type="xs:dateTime" fixed="0001-01-01T00:00:00Z"/>
+  <xs:element name="zoneBoundary" type="xs:dateTime" fixed="-0001-12-31T10:00:00Z"/>
+  <xs:element name="dateInterval" type="xs:date" fixed="-0001-12-31-10:00"/>
+  <xs:element name="durationYear" type="xs:duration" fixed="P1Y"/>
+  <xs:element name="durationDay" type="xs:duration" fixed="P1D"/>
+  <xs:element name="durationMonth" type="xs:duration" fixed="P1M"/>
+  <xs:element name="timeMidnight" type="xs:time" fixed="00:00:00Z"/>
+</xs:schema>
