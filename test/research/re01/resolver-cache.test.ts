@@ -68,6 +68,21 @@ function withElements(headBlock: readonly (Method | 'substitution')[] = none, ex
 }
 
 describe('RE01 private request and context cache isolation', () => {
+  it.each(['input-error', 'candidate-rejected', 'unresolved'] as const)(
+    'starts a fresh valid request after a %s relation result', failureKind => {
+      const failed = prepared(candidate('same-public-key'));
+      const failure = failureKind === 'input-error'
+        ? checkTypeDerivation(failed.actual, reference('absent'), reference('B'), none)
+        : failureKind === 'candidate-rejected'
+          ? checkTypeDerivation(failed.actual, reference('D'), reference('B'), ['extension'])
+          : checkTypeDerivation(failed.actual,
+            {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'boolean'}},
+            {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'string'}}, none);
+      expect(failure.kind).toBe(failureKind);
+      const fresh = prepared(candidate('same-public-key'));
+      expect(checkTypeDerivation(fresh.actual, reference('D'), reference('B'), none).kind).toBe('ok');
+    });
+
   it('recomputes fixed predicate owners when authority changes in the same request', () => {
     const contexts = prepared();
     const obligation: ValidationObligation = {adapter: 'type-construction', rule: 'ct-props-correct',
