@@ -271,17 +271,25 @@ describe('interpreter execution qualification controls', () => {
         });
         expect(preparation.targets).toEqual(expect.arrayContaining([
             { path: regular, kind: 'file', permission: 'X' },
-            { path: canonical, kind: 'file', permission: 'RX' },
-            { path: storeAlias.path, kind: 'link', permission: 'RX' },
+            { path: canonical, kind: 'file', permission: 'RD,X' },
+            { path: storeAlias.path, kind: 'link', permission: 'RD,X' },
         ]));
         expect(preparation.targets).toHaveLength(3);
         expect(preparation.errors).toEqual([]);
         expect(preparation.aliasLookups).toEqual([{ alias: storeAlias, canonicalization: { outcome: 'resolved', target: canonical } }]);
     });
+    it('uses data/execute rights for scripts and versioned wrappers while ordinary executables retain execute denial', () => {
+        const wrappers = ['python3.14', 'pip3.13', 'custom-launcher', 'PY.js'].map(name => 'C:\\wrappers\\' + name);
+        const executable = 'C:\\tools\\python.exe';
+        const preparation = prepareWindowsTargets([...wrappers, executable], [], { canonicalize: path => path });
+        expect(preparation.errors).toEqual([]);
+        for (const path of wrappers) expect(preparation.targets).toContainEqual({ path, kind: 'file', permission: 'RD,X' });
+        expect(preparation.targets).toContainEqual({ path: executable, kind: 'file', permission: 'X' });
+    });
     it('controls an identified symbolic link directly while treating lookup failures as diagnostic evidence', () => {
         for (const code of ['EACCES', 'EPERM', 'ENOENT', 'ENOTDIR', 'EINVAL', 'EIO']) {
             const preparation = prepareWindowsTargets([storeAlias.path], [storeAlias], failedLookup(code));
-            expect(preparation.targets).toEqual([{ path: storeAlias.path, kind: 'link', permission: 'RX' }]);
+            expect(preparation.targets).toEqual([{ path: storeAlias.path, kind: 'link', permission: 'RD,X' }]);
             expect(preparation.errors).toEqual([]);
             expect(preparation.aliasLookups).toEqual([{ alias: storeAlias,
                 canonicalization: { outcome: 'failed', errorCode: code, error: storeAlias.path + ': ' + code } }]);
@@ -292,9 +300,9 @@ describe('interpreter execution qualification controls', () => {
             expect(prepareWindowsTargets([storeAlias.path], [fileInAliasDirectory], failedLookup(code)).errors).toHaveLength(1);
         }
     });
-    it('uses /L for link save, RX denial and matching parent-directory restoration, saving all originals first', () => {
+    it('uses /L for link save, data/execute denial and matching parent-directory restoration, saving all originals first', () => {
         const physical = 'C:\\Applications\\python.exe';
-        const targets: AclTarget[] = [{ path: physical, kind: 'file', permission: 'RX' }, { path: storeAlias.path, kind: 'link', permission: 'RX' }];
+        const targets: AclTarget[] = [{ path: physical, kind: 'file', permission: 'RD,X' }, { path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
         const backups: AclBackup[] = [];
         const commands: { args: readonly string[]; cwd?: string }[] = [];
         const invoke = (args: readonly string[], cwd?: string): void => {
@@ -308,8 +316,8 @@ describe('interpreter execution qualification controls', () => {
         expect(commands[0]).toEqual({ args: ['python.exe', '/save', backups[0]!.backup, '/q'], cwd: 'C:\\Applications' });
         expect(commands[1]).toEqual({ args: ['python.exe', '/save', backups[1]!.backup, '/L', '/q'],
             cwd: 'C:\\Users\\runner\\AppData\\Local\\Microsoft\\WindowsApps' });
-        expect(commands[2]!.args).toEqual([physical, '/deny', '*S-1-5-21-239:(RX)', '/q']);
-        expect(commands[3]!.args).toEqual([storeAlias.path, '/deny', '*S-1-5-21-239:(RX)', '/L', '/q']);
+        expect(commands[2]!.args).toEqual([physical, '/deny', '*S-1-5-21-239:(RD,X)', '/q']);
+        expect(commands[3]!.args).toEqual([storeAlias.path, '/deny', '*S-1-5-21-239:(RD,X)', '/L', '/q']);
         expect(persisted).toBe(4); // Each saved original and each mutation intent was persisted.
         expect(restoreAclBackups(backups, invoke)).toEqual([]);
         expect(commands.slice(4).map(command => command.args)).toEqual([
@@ -318,9 +326,45 @@ describe('interpreter execution qualification controls', () => {
         ]);
         expect(backups.every(backup => backup.restored)).toBe(true);
     });
+    it('blocks file data and execution while preserving ACL inspection, restoration and original denies', () => {
+        // Documented Win32 access masks: RD=FILE_READ_DATA, X=FILE_EXECUTE,
+        // RC=READ_CONTROL and WDAC=WRITE_DAC. RX also includes READ_CONTROL.
+        const rights: Readonly<Record<string, number>> = { RD: 0x1, X: 0x20, RX: 0x1200a9 };
+        const management = 0x20000 | 0x40000;
+        expect(rights.RX! & management).toBe(0x20000); // Regression control: broad RX prevents ACL inspection.
+        for (const kind of ['file', 'link'] as const) {
+            const target: AclTarget = { path: kind === 'link' ? storeAlias.path : 'C:\\wrappers\\PY.js', kind, permission: 'RD,X' };
+            const backups: AclBackup[] = [];
+            const originalDenied = 0x2; // An existing FILE_WRITE_DATA denial must survive restoration.
+            let denied = originalDenied;
+            let saved: number | undefined;
+            const invoke = (args: readonly string[]): void => {
+                if (args.includes('/save')) saved = denied;
+                if (args.includes('/deny')) {
+                    const permission = args[2]?.match(/:\(([^)]+)\)$/)?.[1];
+                    if (!permission) throw new Error('Missing explicit deny rights');
+                    denied |= permission.split(',').reduce((mask, right) => {
+                        if (!(right in rights)) throw new Error('Unexpected deny right: ' + right);
+                        return mask | rights[right]!;
+                    }, 0);
+                }
+                if (args.includes('/restore')) {
+                    if (denied & management) throw new Error('ACL management is denied');
+                    if (saved === undefined) throw new Error('No original ACL saved');
+                    denied = saved;
+                }
+            };
+            saveAndDenyTargets([target], backups, 'tmp/conformance/icacls-rights-control', 'S-1-5-21-239', invoke);
+            expect(denied & (rights.RD! | rights.X!)).toBe(rights.RD! | rights.X!);
+            expect(denied & management).toBe(0);
+            expect(restoreAclBackups(backups, invoke)).toEqual([]);
+            expect(denied).toBe(originalDenied);
+            expect(backups[0]?.restored).toBe(true);
+        }
+    });
     it('restores successful and partially failed denial intents in reverse with their original link/file modes', () => {
         const physical = 'C:\\Applications\\python.exe';
-        const targets: AclTarget[] = [{ path: physical, kind: 'file', permission: 'X' }, { path: storeAlias.path, kind: 'link', permission: 'RX' }];
+        const targets: AclTarget[] = [{ path: physical, kind: 'file', permission: 'X' }, { path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
         const backups: AclBackup[] = [];
         const calls: string[][] = [];
         const invoke = (args: readonly string[]): void => {
@@ -339,7 +383,7 @@ describe('interpreter execution qualification controls', () => {
     });
     it('never mutates ACLs when saving an original link ACL fails', () => {
         const targets: AclTarget[] = [{ path: 'C:\\Applications\\python.exe', kind: 'file', permission: 'X' },
-            { path: storeAlias.path, kind: 'link', permission: 'RX' }];
+            { path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
         const backups: AclBackup[] = [];
         const calls: string[][] = [];
         expect(() => saveAndDenyTargets(targets, backups, 'tmp/conformance/icacls-save-failure-control', 'S-1-5-21-239', args => {
@@ -353,7 +397,7 @@ describe('interpreter execution qualification controls', () => {
         expect(restore).not.toHaveBeenCalled();
     });
     it('keeps original link absolute, native/read and named probes after installation, including disappeared links', () => {
-        const targets: AclTarget[] = [{ path: storeAlias.path, kind: 'link', permission: 'RX' }];
+        const targets: AclTarget[] = [{ path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
         const native = vi.fn((path: string) => failedProbe(path, 'spawn', 'ENOENT'));
         const read = vi.fn((path: string) => failedProbe(path, 'script-read', 'ENOENT'));
         const probes = probeAclLinks(targets, { native, read });
@@ -366,7 +410,7 @@ describe('interpreter execution qualification controls', () => {
             .toEqual(expect.arrayContaining([disappearedVersionedWrapper, 'pypy3.10.cmd']));
     });
     it('rejects started AppInstaller stubs, readable aliases and unresolved probes after link ACL denial', () => {
-        const targets: AclTarget[] = [{ path: storeAlias.path, kind: 'link', permission: 'RX' }];
+        const targets: AclTarget[] = [{ path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
         const native = (path: string) => failedProbe(path, 'spawn');
         const read = (path: string) => failedProbe(path, 'script-read');
         expect(() => assertProbes(probeAclLinks(targets, { native, read }))).not.toThrow();

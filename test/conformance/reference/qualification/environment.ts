@@ -69,7 +69,8 @@ export type Canonicalization = { readonly outcome: 'resolved'; readonly target: 
 export interface AclTarget {
     readonly path: string;
     readonly kind: 'link' | 'file';
-    readonly permission: 'X' | 'RX';
+    // Deny file data and execution without READ_CONTROL, which native ACL restoration needs.
+    readonly permission: 'X' | 'RD,X';
 }
 export interface AclBackup extends AclTarget {
     readonly backup: string;
@@ -172,10 +173,10 @@ export function prepareWindowsTargets(paths: readonly string[], fileAliases: rea
     const add = (target: AclTarget): void => {
         const key = target.kind + ':' + target.path.toLowerCase();
         const previous = targets.get(key);
-        targets.set(key, previous?.permission === 'RX' ? previous : target);
+        targets.set(key, previous?.permission === 'RD,X' ? previous : target);
     };
     const file = (path: string): AclTarget => ({ path, kind: 'file',
-        permission: scriptExtension.test(path) || isWindowsLogicalWrapperPath(path) ? 'RX' : 'X' });
+        permission: scriptExtension.test(path) || isWindowsLogicalWrapperPath(path) ? 'RD,X' : 'X' });
     const aliases = new Map(fileAliases.map(alias => [alias.path.toLowerCase(), alias]));
     const aliasLookups: AliasLookup[] = [];
     const errors: string[] = [];
@@ -186,9 +187,9 @@ export function prepareWindowsTargets(paths: readonly string[], fileAliases: rea
         if (alias?.dirent === 'symbolic-link') {
             // Lookup errors do not prove denial. Control the inventoried link object itself;
             // only actual negative probes after icacls /L can establish blocked execution.
-            add({ path, kind: 'link', permission: 'RX' });
+            add({ path, kind: 'link', permission: 'RD,X' });
             if (lookup.outcome === 'resolved' && lookup.target.toLowerCase() !== path.toLowerCase())
-                add({ path: lookup.target, kind: 'file', permission: 'RX' });
+                add({ path: lookup.target, kind: 'file', permission: 'RD,X' });
         } else if (lookup.outcome === 'resolved') {
             add(file(path));
             add(file(lookup.target));
