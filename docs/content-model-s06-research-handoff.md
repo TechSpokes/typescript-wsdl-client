@@ -107,6 +107,11 @@ This is a research recommendation, not an adopted production interpretation or a
 
 The standalone [#256 resolver specification](content-model-s06-re-01-resolver.md) now defines those research interfaces and ownership: explicit D1/E2 membership with outgoing closure, excluded incoming relationships, anchored endpoint correspondence and all-member proposed-context checks. Its independently established retained-substitution contrast prevents reusing actual-schema affiliation answers after ancestry changes; complete candidate-family and ambient-schema preservation proofs remain #234 obligations.
 
+The [R1–R7 implementation record](content-model-s06-re-01-resolver-implementation.md) documents the bounded research resolver, its authority limits, combined controls and future production adapter.
+It checks one supplied construction and preserves original identity/source operands; complete semantic owners require qualified receipts or report unresolved obligations.
+Resolver readiness does not discharge the full-type witness theorem or #232's joint acceptance gate.
+The linked delivery handoff records exact revised parent, reviewed implementation and merged-main checkpoints; the earlier unmerged-parent observations above remain historical.
+
 The particle controls separately expose nontransitive MapAndSum restriction, original singleton-all placement, base final exclusions and ordinary simple-content ancestors.
 An empty-facet no-inline simple-content restriction is not proved to create a fresh anonymous scalar, so no source-impossibility claim relies on that assumption.
 Keep #234 and #232 open until the complete procedure is justified and substantively reviewed; do not substitute a smaller permanent profile or a search cutoff.

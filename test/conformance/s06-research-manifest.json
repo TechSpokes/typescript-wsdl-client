@@ -672,6 +672,101 @@
           "path": "test/conformance/reference/re01-substitution-context.test.ts",
           "role": "reference",
           "sha256": "396edb1f7ef14efd8e62262ee0558bb819eb9abd8bdf117aaa9b87e6cffbeced"
+        },
+        {
+          "path": "test/research/re01/resolver-budget.test.ts",
+          "role": "reference",
+          "sha256": "1bd933d71eeb07385c144530262958544b6fe41f26a12916a419f2facfc05bb5"
+        },
+        {
+          "path": "test/research/re01/resolver-budget.ts",
+          "role": "prototype",
+          "sha256": "3a640b973a314545c99c11517077e10440e95fb04be4ab02dcc2e66cca1bf0f8"
+        },
+        {
+          "path": "test/research/re01/resolver-cache.test.ts",
+          "role": "reference",
+          "sha256": "5c1db7c634fa98feef36c5bf8c3a7c7257d3b949e3c87b5019b6ede364e94d47"
+        },
+        {
+          "path": "test/research/re01/resolver-comparison.test.ts",
+          "role": "reference",
+          "sha256": "7c27fb3b00efdb3b50cc94798fcaf3dc5b86809bf881432b5b7329fff8bc78fd"
+        },
+        {
+          "path": "test/research/re01/resolver-comparison.ts",
+          "role": "prototype",
+          "sha256": "7f2a1bd1d761265a657c5330e088d6a14450d84a513d4254e86f78ffa41cd671"
+        },
+        {
+          "path": "test/research/re01/resolver-context.test.ts",
+          "role": "reference",
+          "sha256": "86fc99adcaffaf5177a39bdb555c2f43d9d2436b89ea1f09aeed8adca6170243"
+        },
+        {
+          "path": "test/research/re01/resolver-context.ts",
+          "role": "prototype",
+          "sha256": "b2f0b8b275a0deafe5a66a2821e64c06c9ca897268ef70c2411767420f22c846"
+        },
+        {
+          "path": "test/research/re01/resolver-fixtures.ts",
+          "role": "prototype",
+          "sha256": "894b34e0d3ea64f33b8a60b8dce5632b7b1f58da73546ad495cc1a60af6d8934"
+        },
+        {
+          "path": "test/research/re01/resolver-integration.test.ts",
+          "role": "reference",
+          "sha256": "f156af147e659d58b143c68a409c90762f5f9fa74c1aa3aa1a4da0bf602d6b42"
+        },
+        {
+          "path": "test/research/re01/resolver-relations.test.ts",
+          "role": "reference",
+          "sha256": "14a4e5a7a599e773fd683c92d5226c94c6155471210b943c3af4565490fbc4ba"
+        },
+        {
+          "path": "test/research/re01/resolver-relations.ts",
+          "role": "prototype",
+          "sha256": "13ca1845794b13ca37f55b5be24c1f1858534c97e1f9d7c20b3eaf07c912adc3"
+        },
+        {
+          "path": "test/research/re01/resolver-resolution-records.ts",
+          "role": "prototype",
+          "sha256": "cb85ac2b55d4827e32352ff7d2b2a3bd28f1b1219be6dbc95c1251e401c3cf44"
+        },
+        {
+          "path": "test/research/re01/resolver-resolution.test.ts",
+          "role": "reference",
+          "sha256": "55019416ecb9ac038e76692de679a235014a588bd50ecff101bfb7e814a72e11"
+        },
+        {
+          "path": "test/research/re01/resolver-resolution.ts",
+          "role": "prototype",
+          "sha256": "ae1ddcd322cef4aeb079afbf7538f281363edbf16d633b37b3326e6f8326853d"
+        },
+        {
+          "path": "test/research/re01/resolver-types.ts",
+          "role": "prototype",
+          "sha256": "1b84dbef641894cdacbe12c2d2037f6bd37d88e1bbb28c292c2d6f8bdc6f238d"
+        },
+        {
+          "path": "test/research/re01/resolver-validation.test.ts",
+          "role": "reference",
+          "sha256": "4b6d9473c75c3681d239a85c93c2f598502c906a44e9f3a7cb239d3c24e5c699"
+        },
+        {
+          "path": "test/research/re01/resolver-validation.ts",
+          "role": "prototype",
+          "sha256": "ee7f0aeff1a088dac4e864da0e8a318d19c673d3c1884e4363e7725607493334"
+        },
+        {
+          "path": "test/research/re01/resolver-work-ledger.test.ts",
+          "role": "reference",
+          "sha256": "de7308bdaab5d40a1fc786cc6a1a44f56742534334b750bb74d6af12a1298ceb"
+        },
+        {
+          "path": "docs/content-model-s06-re-01-resolver-implementation.md",
+          "role": "decision",
+          "sha256": "2acb9adb6b71a5edfe5454c0a6b1e90b1e75d011a119b6a05246b118dcdaf4af"
         }
       ]
     },
@@ -1063,6 +1158,6 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 191
+    "currentArtifactCount": 210
   }
 }

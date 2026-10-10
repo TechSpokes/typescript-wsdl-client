@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(content-model): implement the bounded RE01 research resolver with explicit predicate qualification and endpoint correspondence.
+
 - docs(content-model): specify RE01 hypothetical contexts and implementation handoff with retained-substitution controls.
 
 - test(content-model): add bounded RE01 incidence certificates and source, particle and recursive endpoint contrasts for the remaining witness proof.
