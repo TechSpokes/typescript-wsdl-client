@@ -1,0 +1,28 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:re01:group" targetNamespace="urn:re01:group">
+  <xs:attribute name="g" type="xs:int"/>
+  <xs:attribute name="h" type="xs:int"/>
+  <xs:attributeGroup name="G">
+    <xs:attribute ref="t:g" fixed="2"/>
+    <xs:attribute ref="t:h"/>
+  </xs:attributeGroup>
+  <xs:complexType name="A">
+    <xs:attribute ref="t:g" fixed="1"/>
+    <xs:attribute name="h" type="xs:int" form="qualified"/>
+  </xs:complexType>
+  <xs:complexType name="B">
+    <xs:complexContent>
+      <xs:restriction base="t:A">
+        <xs:attribute name="h" form="qualified" use="prohibited"/>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent>
+      <xs:extension base="t:B">
+        <xs:attributeGroup ref="t:G"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

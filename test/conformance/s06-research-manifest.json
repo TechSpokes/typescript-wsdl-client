@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "de4b290f97bb18388282961fc0df0835a8c1f0db33f310e2732b0f3121056856",
+          "sha256": "8aa81d20b3cdcc86d902006d23b98151ab5e337d0c8f395aa5d3ed7642f19f23",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -537,6 +537,101 @@
           "path": "test/research/re01/witness-probe.test.ts",
           "role": "reference",
           "sha256": "2f70fb441817e88e446d9f24792022826d17b9ba34b37a67562ff9cf51873439"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/au-group-original.xsd",
+          "role": "fixture",
+          "sha256": "8ff9ffa913bea4a2ec01e1655d505c6bbafa0a82b5113569f09932977a0850d3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/au-group-witness.xsd",
+          "role": "fixture",
+          "sha256": "f886e75371e3361b106b1bea2dbe4c196ab376f82758046fc24fe17d0b5d1f78"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-direct-int-restriction.xsd",
+          "role": "fixture",
+          "sha256": "f243d3b1ab8027fce89b616c4d024883cc458d23689aa0c2755298e2527f1624"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-direct-token-restriction.xsd",
+          "role": "fixture",
+          "sha256": "a8bb6e16dbd21049ce325ea7fd6ca8620687f64c474c55382dc1b49a49d26e5d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-final-extension-prohibited.xsd",
+          "role": "fixture",
+          "sha256": "cecca03afdeecebaa9d16249e604e305fbcec1d232c508ea863355ffd37c4904"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-map-and-sum-chain.xsd",
+          "role": "fixture",
+          "sha256": "fd7ab44e79c61540eea4bf2ad02d29390e2f79556f79eeba57b39c053da8ce42"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-map-and-sum-direct.xsd",
+          "role": "fixture",
+          "sha256": "932571e1a4d181ee6e3bbae14c7a40227ad28d9b5a0c4dbe6633d192ca2b3761"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-map-and-sum-step.xsd",
+          "role": "fixture",
+          "sha256": "64c413dbd22c730b56220d567e549d4fc7828877051f14a29fb18ec9a50edc18"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-simple-content-inline-anchor-witness.xsd",
+          "role": "fixture",
+          "sha256": "bd89afe08457c378b851e83285d709136e7eb1884aa00667cf1d44d7b4aa56d3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-simple-content-no-inline-restriction.xsd",
+          "role": "fixture",
+          "sha256": "59d7e3f51acd817f15ccbf67a75fbaa27b7cb7e29b96b06a999f09f32db0e892"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-simple-content-original-chain.xsd",
+          "role": "fixture",
+          "sha256": "b12f401b4cfd54fd4fd26a149e02e07bd2ae69de1c00929fb52bdb81fa91e5cb"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-singleton-all-nested-extension.xsd",
+          "role": "fixture",
+          "sha256": "873ec10ed18de22c7fd383e99e50b09c6540f58a94f9bcaf73108a2799c9f1a3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-singleton-all-restoration.xsd",
+          "role": "fixture",
+          "sha256": "6ecbd0c31bf4b0d8ba003c647dc9c1d84b55d1f6171e3d95daabd0eecd4fde23"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/particle-singleton-all-vacuous.xsd",
+          "role": "fixture",
+          "sha256": "e57c35040e7c573db5227bb8725f455c513efcd7cb5444a21504cb74b5d0b65e"
+        },
+        {
+          "path": "test/research/re01/incidence-probe.ts",
+          "role": "prototype",
+          "sha256": "578d24ba9acd5a1b83e1bef1675a5e411d7fc88993bf705ecdc2c888c5a900cb"
+        },
+        {
+          "path": "test/research/re01/incidence-case.ts",
+          "role": "prototype",
+          "sha256": "c6bdb17ee7599ef6bf3c572a999abc00022b6df7fd449e4332b44d4fb958adb1"
+        },
+        {
+          "path": "test/research/re01/incidence-probe.test.ts",
+          "role": "reference",
+          "sha256": "583a4e220e3b0f119cf4feb4f19986e72b52bddf1e1c51a8d8af1306832af91f"
+        },
+        {
+          "path": "test/conformance/reference/re01-source-incidence.test.ts",
+          "role": "reference",
+          "sha256": "2ee4b926b5ca19b007ef54ceba791586ec2be64f54bb05312d6247b3d6ee2f0b"
+        },
+        {
+          "path": "test/conformance/reference/re01-particle-continuation.test.ts",
+          "role": "reference",
+          "sha256": "f3ae1b921e09d634c4e1d477f7a6118ec3ab89f0cd033a89d7507e3871edd24d"
         }
       ]
     },
@@ -928,6 +1023,6 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 164
+    "currentArtifactCount": 183
   }
 }

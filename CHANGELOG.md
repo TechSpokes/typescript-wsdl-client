@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(content-model): add bounded RE01 incidence certificates and source/particle contrasts for the remaining witness proof.
+
 - chore(tooling): replace operational Python with strict TypeScript reference and research checks under NT-CONT-01.
 
 - test(content-model): add independent S06 research, selected attribute/wildcard/calendar contracts and bounded prototypes.

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01-particle" targetNamespace="urn:re01-particle" elementFormDefault="qualified">
+  <xs:complexType name="A">
+    <xs:all minOccurs="0">
+      <xs:element name="a" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="E">
+    <xs:complexContent>
+      <xs:extension base="t:A"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:E"/>
+</xs:schema>

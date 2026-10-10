@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01-particle" targetNamespace="urn:re01-particle" elementFormDefault="qualified">
+  <xs:complexType name="A">
+    <xs:choice minOccurs="2" maxOccurs="2">
+      <xs:element name="a" type="xs:string" minOccurs="0"/>
+      <xs:element name="b" type="xs:string" minOccurs="0"/>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="B">
+    <xs:complexContent>
+      <xs:restriction base="t:A">
+        <xs:sequence>
+          <xs:element name="a" type="xs:string" minOccurs="0"/>
+          <xs:element name="b" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent>
+      <xs:restriction base="t:B">
+        <xs:sequence>
+          <xs:element name="a" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

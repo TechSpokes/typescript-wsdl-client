@@ -6,6 +6,7 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 This delivery records executable research and the maintainer's selected AU01, PW01 and DT01 contracts.
 Each selected leaf requires complete independent semantic review and exact delivery gates; its issue handoff records final acceptance.
+AU01/#233, PW01/#235 and DT01/#236 have completed their local acceptance and are closed; their selected contracts remain the continuation predicates.
 RE01's full-type completeness proof, #232's joint gate and the production assessment draft #179/#231 remain open, so S06/#153 and S07/S08 readiness remain blocked.
 
 The approved [ADR-003](decisions/003-content-model-contracts.md), [decision register](content-model-decisions.md), catalog format 2 and `xsd10-faithful-v1` remain unchanged.
@@ -15,6 +16,10 @@ Original-source regeneration for flattened catalogs, structural companions and t
 ## Checkpoints and source authority
 
 The research branch starts from accepted main `5876065b00d4eeb6d2324eaa63ff9b70e2279198`, tree `b647d9b0343d421426a539fc008c3cffa82c7875`.
+The TypeScript continuation starts from [PR #254](https://github.com/TechSpokes/typescript-wsdl-client/pull/254), commit `ddd90663aa88670edcca4371f7a142d94a5d36da`, tree `f00f442b4306285c20e0f6524ae50c652e0e50b6`.
+That migration candidate is unmerged at this checkpoint; #239's normal review, protected merge and closure remain separate from permission to continue isolated research.
+Its [NT-CONT-01 handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6099806801) distinguishes one live Node primary, selected independent contract checks, pinned historical secondary observations and explicitly unqualified capabilities.
+The continuation preserves those evidence limits and introduces no Python execution or dependency.
 [The exact #178 handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/178#issuecomment-6086062948) defines the single occurrence-analysis input.
 The unaccepted #231 draft is inspected separately at `460f5b8379c68ffef79917284e445b5ab046429e`, tree `56830b28d1006b019918a364aa62f1ed9d7d8817`.
 
@@ -34,10 +39,10 @@ The official [second-edition errata](https://www.w3.org/2004/03/xmlschema-errata
 
 | Contract | Research record | Input and downstream owner | Acceptance status |
 |---|---|---|---|
-| AU01 C1 v1 | [Attribute uses](content-model-s06-au-01.md) | Original AU/declaration identities and typed constraints; #179/#184 | Selected; local review/delivery gate |
+| AU01 C1 v1 | [Attribute uses](content-model-s06-au-01.md) | Original AU/declaration identities and typed constraints; #179/#184 | Locally accepted; #233 closed |
 | RE01 candidate v1 | [Reordered derivation](content-model-s06-re-01.md) | Original derivation operands plus reviewed AU/PW/scalar predicates; #179 | Complete procedure/proof gate open |
-| PW01 R-240 v1 | [Wildcard cardinality](content-model-s06-pw-01.md) | Original member/group ranges, wildcard namespace/process context; #179/RE01 | Selected; local review/delivery gate |
-| DT01 A v1 | [Calendar semantics](content-model-s06-dt-01.md) | Original lexical/type context, exact years/fractions; #179/#184 | Selected; local review/delivery gate |
+| PW01 R-240 v1 | [Wildcard cardinality](content-model-s06-pw-01.md) | Original member/group ranges, wildcard namespace/process context; #179/RE01 | Locally accepted; #235 closed |
+| DT01 A v1 | [Calendar semantics](content-model-s06-dt-01.md) | Original lexical/type context, exact years/fractions; #179/#184 | Locally accepted; #236 closed |
 
 DT01 feeds AU01 only where compared operands use calendar semantics.
 AU01 and PW01 feed RE01; DT01 feeds RE01 only where an actual proof invokes scalar predicates.
@@ -90,8 +95,17 @@ The remaining theorem must cover normalization/all placement, mixed/simple conte
 The dated specification's component-identity note leaves some unnamed identities incompletely defined.
 The [concrete RE01 equality options](content-model-s06-re-01.md#concrete-equality-options) therefore distinguish literal original IDs, abstract sharing and a source-representable incidence-preserving correspondence; fresh direct AUs cannot silently become inherited original uses.
 
-The recommended direction preserves all real original operands and proves a property-and-incidence-preserving correspondence for hypothetical witnesses.
-That correspondence still needs a precise reviewed definition and sufficiency proof; no interpretation selection alone supplies the full theorem.
+The new [named-group contrast](content-model-s06-re-01.md#executable-named-group-comparison-contrast) supplies executable evidence for the witness-domain and comparison-closure distinction.
+A bounded supplied-certificate checker verifies final AU incidence without claiming complete witness existence or general scalar equivalence.
+Fresh Node observations are recorded separately from the selected component predicates; duplicate-use rejections do not decide the C1 or RE contracts.
+
+The [RE-M1 proposal](content-model-s06-re-01.md#witness-domain-and-comparison-decision) uses abstract hypothetical AU plans with literal original sharing and counterfactual relation records over immutable original type references.
+RE-M2 instead requires XML-source reconstruction with an explicit final-root correspondence; stricter original group anchoring rejects the supplied XML construction.
+The primary abstract-component domain favors investigating RE-M1, but hypothetical contribution roles and endpoint behavior require explicit selection and soundness/reflection proof.
+Neither option is accepted by this continuation, and no interpretation selection alone supplies the full theorem.
+
+The particle controls separately expose nontransitive MapAndSum restriction, original singleton-all placement, base final exclusions and ordinary simple-content ancestors.
+An empty-facet no-inline simple-content restriction is not proved to create a fresh anonymous scalar, so no source-impossibility claim relies on that assumption.
 Keep #234 and #232 open until the complete procedure is justified and substantively reviewed; do not substitute a smaller permanent profile or a search cutoff.
 
 ## Joint consistency assessment
@@ -147,6 +161,8 @@ That factual correction does not authorize removing negative-year or crossing-ze
 ## Downstream qualifications and next ready work
 
 The next ready work is completing the RE01 full-type criterion and negative-answer proof using locally accepted selected sibling contracts.
+The implementing research owner must first resolve the explicit RE-M1/RE-M2 decision, then prove the chosen endpoint semantics and every ancestry-sensitive predicate before integrating the conditional AU criterion with particle/content cases.
+The new incidence checker remains an evidence tool; it is not that integration or an approved negative-answer procedure.
 #179 may inspect these research inputs while keeping affected assessment gates open; the full accepted research epic must precede production activation.
 #153 remains the combined S06 acceptance owner and S07/S08 retain their existing dependencies.
 
