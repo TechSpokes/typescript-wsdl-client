@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01-particle" targetNamespace="urn:re01-particle">
+  <xs:complexType name="E">
+    <xs:simpleContent>
+      <xs:extension base="xs:string"/>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:simpleContent>
+      <xs:restriction base="t:E"/>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>
