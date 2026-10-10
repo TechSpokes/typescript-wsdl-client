@@ -105,6 +105,8 @@ Requiring XML reconstruction adds source-mapping obligations; freezing actual an
 The [recursive all-group contrast](content-model-s06-re-01.md#recursive-endpoint-and-existing-intermediate-contrast) demonstrates that concrete difference in an invoked NameAndTypeOK query and adds an original intermediate-identity completeness obligation.
 This is a research recommendation, not an adopted production interpretation or a complete theorem; hypothetical roles, comparison closure and context-sensitive component checks remain open.
 
+The standalone [#256 resolver specification](content-model-s06-re-01-resolver.md) now defines those research interfaces and ownership: explicit D1/E2 membership with outgoing closure, excluded incoming relationships, anchored endpoint correspondence and all-member proposed-context checks. Its independently established retained-substitution contrast prevents reusing actual-schema affiliation answers after ancestry changes; complete candidate-family and ambient-schema preservation proofs remain #234 obligations.
+
 The particle controls separately expose nontransitive MapAndSum restriction, original singleton-all placement, base final exclusions and ordinary simple-content ancestors.
 An empty-facet no-inline simple-content restriction is not proved to create a fresh anonymous scalar, so no source-impossibility claim relies on that assumption.
 Keep #234 and #232 open until the complete procedure is justified and substantively reviewed; do not substitute a smaller permanent profile or a search cutoff.
@@ -162,7 +164,7 @@ That factual correction does not authorize removing negative-year or crossing-ze
 ## Downstream qualifications and next ready work
 
 The next ready work is completing the RE01 full-type criterion and negative-answer proof using locally accepted selected sibling contracts.
-The implementing research owner should specify and test the recommended hypothetical resolver and endpoint comparison closure, then prove every ancestry-sensitive predicate before integrating the conditional AU criterion with particle/content cases.
+The implementing research owner should follow the [resolver task plan](content-model-s06-re-01-resolver.md#implementation-tasks), starting with R1 context preparation after its independent specification readiness gate, then verify the resolver and delegated predicate inventory before integrating the conditional AU criterion with particle/content cases.
 The focused prerequisite must preserve actual graph identities, distinguish actual and hypothetical recursive queries, retain existing named intermediate identity, isolate caches by context and check hypothetical legality and inclusive budgets.
 Its acceptance would not discharge full candidate completeness, original normalization or the negative-answer theorem.
 The new incidence checker remains an evidence tool; it is not that integration or an approved negative-answer procedure.

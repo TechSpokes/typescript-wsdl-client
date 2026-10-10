@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(content-model): specify RE01 hypothetical contexts and implementation handoff with retained-substitution controls.
+
 - test(content-model): add bounded RE01 incidence certificates and source, particle and recursive endpoint contrasts for the remaining witness proof.
 
 - chore(tooling): replace operational Python with strict TypeScript reference and research checks under NT-CONT-01.
