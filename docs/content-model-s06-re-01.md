@@ -108,7 +108,7 @@ The meaningful-prefix candidate applies to a final normalized element or a norma
 
 One wildcard is insufficient for several remaining direct sequence members: the order-preserving mapping must send successive restricted members to successive base members. The construction therefore uses at most the number of final direct members, instead of expanding repetitions or guessing an arbitrary candidate-length cutoff.
 
-An ancestor with a non-pointless all group cannot simply be embedded in the sequence candidate. `cos-all-limited` still applies before approval; vacuous witnesses remain possible. The executable probe makes the nonvacuous extension predicate an explicit caller input instead of declaring all such types outside the approved profile.
+An ancestor whose original raw particle is an all group cannot simply be embedded in the sequence candidate, including a singleton all deemed pointless for restriction. `cos-all-limited` still applies before approval; vacuous witnesses remain possible. The executable probe makes the nonvacuous extension predicate an explicit caller input instead of declaring all such types outside the approved profile.
 
 ### Mapping and termination
 
@@ -124,7 +124,7 @@ For a meaningful prefix, `cos-particle-extend` fixes every nonvacuous intermedia
 
 The required empty choice makes every added wildcard unreachable without adding a named declaration. Its formal emptiability permits skipping it during `Recurse`; each universal wildcard can absorb any restricted leaf or group under the agreed `0..unbounded` rule. Thus a valid ordered prefix mapping supplies a constructive witness independent of the original extension suffixes.
 
-For a genuinely absent/pointless prefix, no original meaningful particle must remain before the suffix. A single universal wildcard suffices after normalization and admits all finite or unbounded original repetitions in the group-to-wildcard rule. This separate branch is required by the repeated-root contrast above.
+For a prefix absent after certified source mapping, with original raw extension legality certified, no original meaningful particle must remain before the suffix. A single universal wildcard suffices after normalization and admits all finite or unbounded original repetitions in the group-to-wildcard rule. This separate branch is required by the repeated-root contrast above; restriction-only pointlessness cannot supply its premise.
 
 This argument is a useful finite particle construction, not a published or accepted full-domain theorem. Before using failed family search as a negative proof, independent review must establish that every source-valid normalization path, all placement and component identity case falls into these branches and that the full type's AU/scalar constraints can be synthesized consistently. The prototype intentionally refuses to infer that theorem from its positive tests.
 
