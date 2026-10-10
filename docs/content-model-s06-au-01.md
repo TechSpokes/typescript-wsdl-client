@@ -224,7 +224,7 @@ Semantic defaults remain independently applied 100,000 nodes and 1,000,000 work 
 
 All 46 committed [AU01 fixtures](../test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-none.xsd) are new minimal sources authored for this research. The pinned draft's differing-use/group/prohibited fixtures remain historical evidence; none is silently rewritten or imported by the executable probe.
 
-[The discovered test](../test/conformance/reference/s06_au01_contract_test.py) hand-authors conditional expectations and reference observations separately; [the bounded candidate](../test/conformance/reference/s06_au01_probe.py) imports no production compiler or unaccepted draft modules. The established `*_test.py` discovery executes nine AU01 test methods, including 25 optional pairs and both requiredness orderings.
+[The discovered test](../test/conformance/reference/s06_au01_contract_test.py) hand-authors conditional expectations and reference observations separately; [the bounded candidate](../test/research/s06-au01/probe.py) imports no production compiler or unaccepted draft modules. The established `*_test.py` discovery executes nine AU01 test methods, including 25 optional pairs and both requiredness orderings.
 
 ### Optional matrix: XMLSchema 4.2.0 schema observations
 

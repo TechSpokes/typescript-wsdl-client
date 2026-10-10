@@ -1,13 +1,22 @@
 """Independent AU01 rules, conditional candidate and pinned-engine observations."""
 import itertools
+import importlib.util
 from pathlib import Path
+import sys
 import unittest
 
 from lxml import etree
 import xmlschema
 
-from s06_au01_probe import (Budget, Operand, ProbeFailure, Use,
-                          conditional_constraints, same_value, union_uses)
+ROOT = Path(__file__).resolve().parents[3]
+SPEC = importlib.util.spec_from_file_location(
+    "s06_au01_probe", ROOT / "test/research/s06-au01/probe.py")
+PROBE = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = PROBE
+SPEC.loader.exec_module(PROBE)
+Budget, Operand, ProbeFailure, Use = PROBE.Budget, PROBE.Operand, PROBE.ProbeFailure, PROBE.Use
+conditional_constraints = PROBE.conditional_constraints
+same_value, union_uses = PROBE.same_value, PROBE.union_uses
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/xsd/attributes/au01"
 STATES = ("none", "default-one", "default-two", "fixed-one", "fixed-two")
