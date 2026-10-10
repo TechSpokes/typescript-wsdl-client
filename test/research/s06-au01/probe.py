@@ -1,8 +1,8 @@
 """Bounded AU01 candidate, never a schema/payload validity oracle.
 
-The all-use fixed conjunction and single consistent augmentation are conditional
-interpretation C in docs/content-model-s06-au-01.md. Only identity rules are
-unqualified. This narrow scalar probe covers integer/string/token/QName and
+The selected C1 interpretation and source-replacement all-match contract are
+recorded in docs/content-model-s06-au-01.md. This research probe does not activate
+production semantics. Its scalar coverage is integer/string/token/QName and
 flat lists/unions thereof; full facet/calendar enforcement belongs to #179/#184.
 """
 from dataclasses import dataclass
@@ -59,6 +59,9 @@ class Use:
     source: str = "independent-case"
     id_derived: bool = False
     constraint_origin: str = "use"
+    # Original declaration/type identity. Named same-type identities are allowed;
+    # different named types require the owning complete scalar derivation plan.
+    scalar_type: str = "integer"
 
 
 def value(operand, budget):
@@ -215,3 +218,152 @@ def conditional_constraints(uses, budget):
             # XSD1.0 invalid-value result until the interpretation is accepted.
             "proposed_C1_absent": "invalid-value" if required or conflict else "accepted",
             "originals": originals}
+
+
+def conditional_c1_augmentation(uses, budget):
+    """One original-context augmentation plan under the chosen C1 hypothesis.
+
+    Never emit canonical text as a replacement lexical witness. The input
+    operand carries an already-admitted witness in its original type/context;
+    full facets and eventual XML namespace emission belong to #179/#184/#188.
+    """
+    summary = conditional_constraints(uses, budget)
+    if summary["proposed_C1_absent"] == "invalid-value":
+        raise ProbeFailure("invalid-value", "conditional-C1-absent")
+    if summary["absent"] == "absent":
+        return None
+    for original in summary["originals"]:
+        budget.charge()
+        if not original.required and original.kind != "none":
+            budget.charge(7)
+            return {"status": "conditional-C1", "name": original.name,
+                    "declaration": original.declaration,
+                    "scalar_type": original.scalar_type,
+                    "value": summary["absent"], "admitted_witness": original.operand,
+                    "contributing_uses": summary["originals"]}
+    raise AssertionError("augmentation requires an original optional operand")
+
+
+def scalar_derives(derived, base, budget):
+    """Narrow independent original-type predicate, not value-space inclusion."""
+    budget.charge(1 + len(derived) + len(base))
+    if derived == base:
+        return True
+    budget.charge(6)  # bounded type index before allocation
+    parents = {"token": "normalizedString", "normalizedString": "string",
+               "string": "anySimpleType", "integer": "decimal",
+               "decimal": "anySimpleType", "QName": "anySimpleType"}
+    if derived not in parents and derived != "anySimpleType":
+        raise ProbeFailure("unsupported-capability", "probe-type-derivation-domain")
+    current = derived
+    while current in parents:
+        budget.charge(1 + len(current) + len(base))
+        current = parents[current]
+        if current == base:
+            return True
+    return False
+
+
+def _restriction_attributes(base_uses, local_uses, direct_prohibitions,
+                            wildcard_namespaces, budget, include_inherited):
+    """Finite pair check after exact source replacement/prohibition mapping.
+
+    Inputs are validated surviving source AU records; prohibited group syntax
+    contributes neither an AU nor a direct tombstone. Wildcards are an existing
+    S05 namespace-admission predicate represented here as finite strings or '*'.
+    No particle/group/type recursion is expanded by this narrow predicate.
+    """
+    budget.nodes(len(base_uses) + len(local_uses) + len(direct_prohibitions))
+    bases = union_uses(base_uses, "complexType", budget)
+    locals_ = union_uses(local_uses, "complexType", budget)
+    budget.charge(2)
+    by_name, replaced = {}, set()
+    for original in bases:
+        budget.charge(1 + len(original.name[0]) + len(original.name[1]))
+        if original.name not in by_name:
+            budget.charge(2)
+            by_name[original.name] = []
+        budget.charge()
+        by_name[original.name].append(original)
+    for original in locals_:
+        budget.charge(1 + len(original.name[0]) + len(original.name[1]))
+        replaced.add(original.name)
+    for name in direct_prohibitions:
+        budget.charge(1 + len(name[0]) + len(name[1]))
+        replaced.add(name)
+    # Borrow original records; charge all list and tuple copies before allocation.
+    budget.charge(1 + len(locals_))
+    effective = list(locals_)
+    for original in bases:
+        budget.charge(1 + len(original.name[0]) + len(original.name[1]))
+        if original.name not in replaced:
+            budget.charge()
+            effective.append(original)
+    budget.charge(len(effective))
+    effective = tuple(effective)
+    effective = union_uses(effective, "complexType", budget)
+    # Individual own/declaration operands stay schema operands even if replaced.
+    for originals in (bases, locals_):
+        for original in originals:
+            budget.charge()
+            if original.kind == "default" and original.required and original.constraint_origin == "use":
+                raise ProbeFailure("invalid-schema", "src-attribute")
+            if original.kind != "none":
+                if original.operand is None:
+                    raise ValueError("constraint operand required")
+                value(original.operand, budget)
+    checks = effective if include_inherited else locals_
+    pair_count = 0
+    for derived in checks:
+        budget.charge(1 + len(derived.name[0]) + len(derived.name[1]))
+        matches = by_name.get(derived.name, ())
+        if not matches:
+            allowed = False
+            for namespace in wildcard_namespaces:
+                budget.charge(1 + len(namespace) + len(derived.name[0]))
+                if namespace == "*" or namespace == derived.name[0]:
+                    allowed = True
+            if not allowed:
+                raise ProbeFailure("invalid-schema", "restricted-new-attribute-wildcard")
+        for original in matches:
+            budget.charge()
+            pair_count += 1
+            if original.required and not derived.required:
+                raise ProbeFailure("invalid-schema", "all-matches-requiredness")
+            if not scalar_derives(derived.scalar_type, original.scalar_type, budget):
+                raise ProbeFailure("invalid-schema", "all-matches-original-type")
+            if original.kind == "fixed":
+                if derived.kind != "fixed" or not same_value(
+                        original.operand, derived.operand, budget):
+                    raise ProbeFailure("invalid-schema", "all-matches-original-fixed")
+    # Required inherited names must have a required effective AU after mapping.
+    # A direct prohibition masks bases, not any separately declared local AU.
+    for original in bases:
+        budget.charge()
+        if original.required:
+            found = False
+            for derived in effective:
+                budget.charge(1 + len(original.name[0]) + len(original.name[1]) +
+                              len(derived.name[0]) + len(derived.name[1]))
+                if derived.name == original.name and derived.required:
+                    found = True
+            if not found:
+                raise ProbeFailure("invalid-schema", "required-base-name-missing")
+    budget.charge(4)
+    return {"status": "conditional-final-all-pairs" if include_inherited
+            else "conditional-replacement-all-matches", "effective": effective,
+            "original_bases": bases, "pair_count": pair_count}
+
+
+def replacement_restriction_attributes(base_uses, local_uses, budget,
+                                       direct_prohibitions=(), wildcard_namespaces=()):
+    """Selected question's scope: all bases for each SOURCE replacement AU."""
+    return _restriction_attributes(base_uses, local_uses, direct_prohibitions,
+                                   wildcard_namespaces, budget, False)
+
+
+def literal_restriction_attributes(base_uses, local_uses, budget,
+                                   direct_prohibitions=(), wildcard_namespaces=()):
+    """Unselected literal alternative: each FINAL AU checks each matching base."""
+    return _restriction_attributes(base_uses, local_uses, direct_prohibitions,
+                                   wildcard_namespaces, budget, True)

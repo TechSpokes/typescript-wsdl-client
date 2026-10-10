@@ -1,0 +1,8 @@
+<!-- Independent original-source restriction quantifier contrast; engine validity is separate. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:s06:au01" targetNamespace="urn:s06:au01" elementFormDefault="qualified">
+<xs:attribute name="a" type="xs:integer"/>
+<xs:complexType name="Base0"><xs:attribute ref="t:a"/></xs:complexType>
+<xs:complexType name="Base"><xs:complexContent><xs:extension base="t:Base0"><xs:attribute ref="t:a" use="required"/></xs:extension></xs:complexContent></xs:complexType>
+<xs:complexType name="Derived"><xs:complexContent><xs:restriction base="t:Base"><xs:attribute ref="t:a" use="required"/></xs:restriction></xs:complexContent></xs:complexType>
+<xs:element name="root" type="t:Derived"/>
+</xs:schema>
