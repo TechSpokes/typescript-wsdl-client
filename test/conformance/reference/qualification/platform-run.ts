@@ -8,9 +8,11 @@ const script = 'test/conformance/reference/qualification/platform-run.ts';
 const enforcement = 'test/conformance/reference/qualification/environment.ts';
 const git = (...args: string[]) => execFileSync('git', args, {encoding: 'utf8'}).trim();
 function command(file: string, args: string[]): void {
-    console.log('Qualification command: ' + [file, ...args].join(' '));
+    // Docker arguments can contain an environment-derived certificate path.
+    // Keep exact safe command vectors in the qualification report, not the bootstrap log.
+    console.log('Qualification executable: ' + file);
     const result = spawnSync(file, args, {stdio: 'inherit', shell: process.platform === 'win32' && file === 'npm', env: {...process.env, npm_config_cache: resolve('tmp/cache/npm')}});
-    if (result.error || result.status !== 0) throw new Error('Qualification command failed: ' + [file, ...args].join(' ') + '; ' + String(result.error ?? result.status));
+    if (result.error || result.status !== 0) throw new Error('Qualification executable failed: ' + file + '; ' + (result.error ? 'could not start' : 'exit status ' + String(result.status)));
 }
 function sourceHashes(): Record<string, string> {
     const paths = execFileSync('git', ['ls-files', '-z'], {encoding: 'utf8'}).split('\0').filter(Boolean);
@@ -104,4 +106,8 @@ try {
     else if (mode === '--bootstrap') bootstrap();
     else if (mode === '--windows' && process.platform === 'win32') inside();
     else throw new Error('Use --container 24|26 or --windows');
-} catch (error) { console.error(String(error)); process.exitCode = 1; }
+} catch {
+    // Bootstrap exceptions may also carry the sensitive argument vector.
+    console.error('Platform qualification failed; inspect command output and the qualification report.');
+    process.exitCode = 1;
+}
