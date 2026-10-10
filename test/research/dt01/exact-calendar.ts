@@ -1,7 +1,9 @@
-/** DT01 option A research probe; not a production or payload scalar engine. */
+/** Selected DT01 option A research probe; not a production/payload scalar engine. */
 export type Decimal = Readonly<{coefficient: bigint; scale: number; digits: number}>;
+export type ReducedFamily = "time" | "gYear" | "gYearMonth" | "gMonthDay" | "gDay" | "gMonth";
+export type CalendarFamily = "date" | "dateTime" | ReducedFamily;
 export type Calendar = Readonly<{
-  family: "date" | "dateTime"; year: bigint; month: number; day: number;
+  family: CalendarFamily; year: bigint; month: number; day: number;
   seconds: Decimal; zoned: boolean; lexical: string; digits: number;
 }>;
 export type Duration = Readonly<{months: bigint; seconds: Decimal; digits: number; lexical: string}>;
@@ -130,6 +132,59 @@ export function parseCalendar(family: "date" | "dateTime", lexical: string, budg
   // in UTC. Appendix E's raw field-tuple timezone conversion is a separate use.
   const normalized = fromOrdinal(floor(seconds.coefficient, 86400n * 10n ** BigInt(seconds.scale)), budget, seconds.digits);
   return {family, ...normalized, seconds, zoned: zone !== undefined, lexical, digits: lexical.length + 8};
+}
+
+/** Exact schema comparison representatives; omitted fields remain type context. */
+export function parseReduced(family: ReducedFamily, lexical: string, budget: Budget): Calendar {
+  budget.text(lexical);
+  const value = lexical.replace(/[\t\r\n ]+/g, " ").replace(/^ | $/g, "");
+  // Six fixed regex objects and their lookup record, before creation.
+  budget.charge(7);
+  const patterns: Readonly<Record<ReducedFamily, RegExp>> = {
+    time: /^([0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?)(Z|[+-][0-9]{2}:[0-9]{2})?$/,
+    gYear: /^(-?[0-9]{4,})(Z|[+-][0-9]{2}:[0-9]{2})?$/,
+    gYearMonth: /^(-?[0-9]{4,})-([0-9]{2})(Z|[+-][0-9]{2}:[0-9]{2})?$/,
+    gMonthDay: /^--([0-9]{2})-([0-9]{2})(Z|[+-][0-9]{2}:[0-9]{2})?$/,
+    gDay: /^---([0-9]{2})(Z|[+-][0-9]{2}:[0-9]{2})?$/,
+    gMonth: /^--([0-9]{2})(Z|[+-][0-9]{2}:[0-9]{2})?$/,
+  };
+  const match = patterns[family].exec(value);
+  if (!match) return invalid("Reduced calendar lexical form is invalid");
+  const zone = match.at(-1) ?? "";
+  // Pay for constructing the fixed reference tuple before its allocation.
+  budget.charge(value.length + 32);
+  const reference = family === "time" ? `2000-01-01T${match[1]}${zone}`
+    : family === "gYear" ? `${match[1]}-01-01T00:00:00${zone}`
+    : family === "gYearMonth" ? `${match[1]}-${match[2]}-01T00:00:00${zone}`
+    : family === "gMonthDay" ? `2000-${match[1]}-${match[2]}T00:00:00${zone}`
+    : family === "gDay" ? `2000-01-${match[1]}T00:00:00${zone}`
+    : `2000-${match[1]}-01T00:00:00${zone}`;
+  const assessed = parseCalendar("dateTime", reference, budget);
+  if (family !== "time") {
+    budget.charge(10); // Returned record and its copied fixed-width fields.
+    return {...assessed, family, lexical};
+  }
+
+  // Selected time law: normalize zoned clocks modulo one day and rebase on
+  // the common date. Unknown clocks retain their unshifted clock on that date;
+  // legal 24:00 and second-60 overflow use the selected midnight alias.
+  budget.arithmetic(assessed.seconds.digits + assessed.seconds.scale + 8);
+  const day = 86400n * 10n ** BigInt(assessed.seconds.scale);
+  budget.charge(3); // Decimal record copied before modulo-clock allocation.
+  const clock = {...assessed.seconds, coefficient: mod(assessed.seconds.coefficient, day)};
+  const seconds = sum(integer(ordinal(2000n, 1, 1, budget, 4) * 86400n, 12), clock, budget);
+  budget.charge(10); // Returned reference record and copied fixed-width fields.
+  return {...assessed, family, year: 2000n, month: 1, day: 1, seconds, lexical};
+}
+
+/** Internal coordinate display, with the value timeline explicit and no zone suffix. */
+export function showRepresentative(value: Calendar, budget: Budget): Readonly<{
+  family: CalendarFamily; timeline: "zoned" | "local"; coordinate: string;
+}> {
+  budget.charge(value.digits + value.seconds.scale + 32);
+  budget.charge(3); // Display record container, before allocation.
+  return {family: value.family, timeline: value.zoned ? "zoned" : "local",
+    coordinate: showInstant(value.seconds, budget).slice(0, -1)};
 }
 
 export function parseDuration(lexical: string, budget: Budget): Duration {

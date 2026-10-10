@@ -1,5 +1,5 @@
 {
-  "authority": "Independent literal expectations for proposed option A; not XSD 1.0 activation evidence",
+  "authority": "Independent literal expectations for selected option A, issue 236 comment 6095933213; not production activation evidence",
   "calendarLexical": [
     {"id": "bce-400-leap", "family": "date", "lexical": "-0400-02-29Z", "valid": true},
     {"id": "bce-100-common", "family": "date", "lexical": "-0100-02-29Z", "valid": false},
