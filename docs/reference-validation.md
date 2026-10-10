@@ -40,9 +40,10 @@ AU01 and RE01 retain the 100,000-node and 1,000,000-work defaults; failed finite
 
 ## Migration inventory
 
-The map records all 14 legacy Python files, 53 methods, complete pinned method bodies and their loop/subcase families.
+The map pins all 14 legacy Python files, 53 method blocks and their loop/subcase families with hashes and source links.
 It also maps baseline manifest rows and instances, mixed-file pure versus external ownership, SOAP consumers, setup, documentation and manifest discovery.
 Follow each method's pinned source link for every literal input and module-level expectation table; total test counts are only a cross-check.
+The map does not contain the full source text; the continuation requires a non-executable historical snapshot for offline verification after deletion.
 
 Inventory verification uses Node; Python must not run to generate migration scripts or expected answers.
 The required fast launcher currently runs all legacy test methods as well as its 6-schema/15-instance subset; full baseline selection is 14 schemas/40 instances.
@@ -165,7 +166,55 @@ The outstanding approval concerns replacing the required second general-purpose 
 Ordinary defaults, datatype precision and content order need adequate replacement assertions before cutover; a lack of rare sampled declarations does not authorize dropping them.
 Gate S, required launchers and #232/#234 proof obligations remain unchanged until that contract is explicitly accepted and its replacements pass.
 
-### Reproduction
+## Reviewed continuation
+
+The [NT-CONT-01 contract](../test/conformance/reference/continuation-contract.json) prepares continuation from staged revision `a69f04442b4766f7e9068c61fafd94ce1d02577b`.
+The user authorized an architectural review in place of the unavailable Task Analysis skill.
+The contract is a proposal awaiting explicit Gate S acceptance, and records every affected method's treatment and remaining unqualified capability.
+
+### Decision and effect
+
+The legacy requirement runs two general-purpose XSD validators; no adequate second Node package has been qualified.
+The proposed required lane runs the qualified Node primary, independent TypeScript checks of selected contracts and pinned historical xmlschema observations.
+Accepting NT-CONT-01 permits that narrower evidence policy: one live general-purpose engine, with fresh scoped assertions that never claim full second-engine validation.
+
+All 23 affected methods, the secondary zero-bound baseline instance and all 13 SOAP consumers have assigned replacement scopes.
+Ordinary defaults and typed fixed values must retain executable checks of exact value, datatype, original lexical/namespace/source provenance and source identity.
+The original huge-bound schemas retain exact contract checks and an explicit unqualified full-schema status; adjusted copies cannot qualify them.
+
+The public-schema research supports prioritizing this Node path but cannot establish that rare cases never occur.
+Large input/provenance limits observed in eBay and Travelport require separate Node product work when support is needed.
+Neither an uncommon declaration nor an existing budget limit establishes a Python requirement; reconsider Python when a reproducible required capability and a concrete replacement justify the tradeoff.
+
+### Execution order
+
+| Issues | Work before the next stage |
+| --- | --- |
+| #240, #244, #246 | Offline source snapshot, exact occurrence guard, trustworthy new run provenance |
+| #245, #247 | Accepted contract, evidence kinds and bounded shared interfaces |
+| #248 through #251 | All mapped family checks, baseline selections and captured SOAP consumers |
+| #252 | Atomic command cutover, Python/allowance deletion and manifest/document reconciliation |
+| #253 | Verified Python absence/denial on Linux and Windows with Node 24 and 26 |
+
+#247 owns common interfaces and reporting mechanics; family-specific contract checks belong to their existing suite owners.
+It does not become a general XSD engine or reopen the RE01 proof.
+Use the existing AU01/RE01/PW01/DT01 probes with independent literal expectations and preserve all exact domains and resource limits.
+
+### Review findings and completion checks
+
+The contract assigns eight concrete findings to their existing issues, including Git-history dependence and occurrence spellings that bypass the guard.
+The SOAP replacement must stage in a separate helper because the migration guard freezes the entire original helper until #252.
+Both reference selections must retain every migrated method, enforce nonempty discovery and preserve 6/15 fast and 14/40 full baseline coverage.
+
+The final guard removes its allowance reader and file together and runs in required CI commands.
+Launcher tests, S06 TypeScript discovery, all 147 artifact entries, engine identities and documentation must match the actual cutover.
+New qualification records must capture source/input hashes at execution and reject stale raw output rather than attaching current hashes to an earlier run.
+
+All four platform/version lanes require normal `npm ci` and execution under verified interpreter absence or denial.
+Enforcement must cover named and absolute interpreter paths with negative controls; removing `setup-python` or masking PATH alone is insufficient.
+Current hosted successes qualify the staged work and retain Python setup; the final matrix remains pending.
+
+## Reproduction of relevance investigation
 
 Use the existing Node dependencies and proxy/CA configuration appropriate to the environment.
 Downloads verify pinned Git blobs, use four workers and enforce 8 MiB per input and 64 MiB per download run.

@@ -1,0 +1,624 @@
+{
+  "formatVersion": 1,
+  "id": "NT-CONT-01",
+  "status": "proposed-awaiting-Gate-S-acceptance",
+  "review": {
+    "date": "2026-10-10",
+    "method": "Architectural and task-scope review; the user waived the unavailable Task Analysis skill.",
+    "sourceRevision": "a69f04442b4766f7e9068c61fafd94ce1d02577b",
+    "sourceTree": "9fd84dc6951d3cd1c710fc6e4a59505c8a8840a2",
+    "baseline": {
+      "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
+      "tree": "28a0907ffe4ccc068197c16014c87915b00df495"
+    },
+    "epic": 239,
+    "pullRequest": 254,
+    "codeChangesAuthorizedByThisArtifact": false
+  },
+  "decision": {
+    "context": "Required legacy evidence uses lxml/libxml2 and xmlschema as two live general-purpose validators. Node primary qualification succeeded within explicit limits; the two investigated independent Node candidates failed construction/precision controls.",
+    "proposal": "Remove Python after implementing every mapped port. Use current libxml2-wasm observations, independently authored strict TypeScript checks of selected contracts, and pinned historical xmlschema observations with explicit remaining unqualified capabilities.",
+    "acceptance": "Accept this versioned treatment for the 23 methods, one secondary baseline instance and 13 SOAP calls before #247 and dependent ports count as accepted replacements. Unblocking the goal should name NT-CONT-01; this proposal itself does not pass Gate S.",
+    "consequence": "The final required lane has one live general-purpose XSD engine. Contract checks provide fresh scoped evidence but do not claim a second full XSD validator or full post-schema augmentation.",
+    "evidenceKinds": [
+      "current-primary-observation",
+      "selected-contract-assertion",
+      "historical-external-observation",
+      "unqualified-capability"
+    ],
+    "dependencyBoundary": "Existing Node/npm/tsc/tsx/Vitest/XML tooling plus exact test-only prebuilt libxml2-wasm@0.7.2. No Python/pip/venv, JDK, native compiler, remote oracle or new general-purpose validation framework.",
+    "alternative": "Retaining the requirement for two full live XSD engines leaves Gate S blocked. Building a general XSD engine or maintaining/rebuilding a native wrapper requires a separate scope decision.",
+    "reopenTrigger": "A reproducible required API fails because the scoped contracts cannot cover a needed schema or typed-value capability, and a concrete Python implementation provides that capability after comparison with feasible Node options."
+  },
+  "invariants": [
+    "All 53 mapped methods, their loop/subcase families and module-level literal tables remain traceable; no count-only replacement.",
+    "Required baseline selection remains 6 schemas/15 instances; full selection remains 14/40. Both selections execute every migrated reference method and reject empty discovery.",
+    "A selected contract answer is never labeled general schema-construction acceptance or a second external-engine result.",
+    "Original huge-bound inputs remain byte-identical and explicitly unqualified as full schemas where unsupported; adjusted copies cannot qualify them.",
+    "Exact integer/decimal/calendar domains, original identity, lexical namespace/source witnesses and pre-allocation work limits remain intact.",
+    "Expected answers come from independent literals/reviewed source contracts, never production compiler or semantic helpers.",
+    "Historical answers keep their original engine/version/input/source identity; no relabeling as fresh Node evidence.",
+    "Missing setup, malformed/forbidden input, schema rejection, instance rejection, unsupported capability and exhausted resources remain distinguishable.",
+    "No product semantics, public formats, support-profile claims, #232/#234 proof status, draft #231 or release status changes."
+  ],
+  "methodTreatments": [
+    {
+      "id": "NT-analysis_contract-exact_schema_and_small_particle_languages",
+      "owner": 248,
+      "target": "test/conformance/reference/analysis-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/analysis_contract_test.py#L13-L87",
+      "sourceContractSha256": "e6679662c46d6811ff128826d4797f54baf15f5a57b973c7274fa92d2d36772d",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation",
+        "exact-bounds"
+      ],
+      "currentPrimary": "Original analysis.xsd returns unsupported-capability for its exact huge particle. A separately hashed analysis-small copy may exercise all literal instance rows under the primary.",
+      "selectedContract": "Read the original huge min/max as exact strings; assert selected empty-choice, disabled-particle, repetition-gap and recursive language cases against independently authored literal tables. Keep selected answers distinct from each engine's disagreements.",
+      "remainingUnqualified": "Fresh full-schema construction and instance validation of the original huge-bound schema.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-composition_contract-public_characterization_schema_and_payloads",
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L11-L28",
+      "sourceContractSha256": "f85ab7aa7908f99f8f7125eb052be073af4036b3893be60ce0cbbfa9d5c2cdbe",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Construct the original derivation-boundaries.wsdl schema and run all seven literal payloads.",
+      "selectedContract": "Assert the fixture-specific extension/restriction child order, required/prohibited attributes, empty content and recursive payload structure from original syntax and literal expectations.",
+      "remainingUnqualified": "A second general-purpose validator for derivation legality and recursive instance validity.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-composition_contract-schema_and_restriction_payloads",
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L29-L49",
+      "sourceContractSha256": "ced89b485877f05afbd993288a2613463d82155a02ee8c387005d6f67c8c37ea",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Construct original derivations.xsd and run all ten literal payloads.",
+      "selectedContract": "Assert the selected derivation order, absence/prohibition, scalar-facet and opaque-content controls using the existing literal inputs. No production catalog supplies expectations.",
+      "remainingUnqualified": "Independent complete derivation/facet qualification by a second XSD engine.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-composition_contract-invalid_attribute_and_wildcard_restrictions",
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L50-L57",
+      "sourceContractSha256": "8d45aca508489e6e4a751772c01bdffd1596380e859c296b7dfa4b102d3460fb",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Attempt construction of all four original invalid restriction schemas; retain schema-phase diagnostics and no instance results.",
+      "selectedContract": "Check required-prohibition, new-attribute, namespace-widening and processContents-weakening conditions with finite fixture-specific assertions.",
+      "remainingUnqualified": "General XSD restriction validity beyond the four declared contract conditions.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-composition_contract-effective_mixed_base_and_group_prohibition",
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L58-L68",
+      "sourceContractSha256": "71fcfe36a3605cdc6df53e89b4ec826508f535cbe6d15073b93cbaf04ce28f2f",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Construct original reviewed-boundaries.xsd and run its three payloads.",
+      "selectedContract": "Assert selected inherited mixed-content, child rejection and group-prohibition source rules directly from the finite fixture and payload syntax.",
+      "remainingUnqualified": "Complete mixed-content and attribute-group assessment by a second engine.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-composition_contract-recorded_constraint_disagreements",
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L69-L83",
+      "sourceContractSha256": "af2835c832065437b84c10bd0a47c8f4d341029f92e6960dea4f7fce2ce66cc4",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Observe fixed-restriction construction and both group wildcard payloads under the current primary identity.",
+      "selectedContract": "Retain exact integer-value equivalence, namespace intersection and processContents assertions as distinct selected contracts; historical xmlschema disagreement never becomes their authority.",
+      "remainingUnqualified": "Fresh xmlschema-specific schema/fixed/wildcard behavior.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-dt01_calendar_contract-historical_schema_observations_with_copy_provenance",
+      "owner": 250,
+      "target": "test/conformance/reference/dt01-calendar-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/dt01_calendar_contract_test.py#L58-L76",
+      "sourceContractSha256": "4558f55d9eb0194f7a1f2f4a992ac96616cf602e9f5e8693b5258ce1821703c4",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Attempt construction of all five byte-identical copied schemas with current primary diagnostics.",
+      "selectedContract": "Verify all five hashes and the pinned draft revision. Reuse DT01 exact-calendar for selected signed-year and duration contracts against independent literals.",
+      "remainingUnqualified": "Fresh second-engine schema construction of the copied calendar cases.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-dt01_calendar_contract-related_calendar_lexical_instance_observations",
+      "owner": 250,
+      "target": "test/conformance/reference/dt01-calendar-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/dt01_calendar_contract_test.py#L77-L85",
+      "sourceContractSha256": "79ae5409ab439fbc34d54dc7cd79fae129a78c2099f595adab21be70ed28db78",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Construct original calendar-scalars.xsd and execute all 28 literal lexical instances.",
+      "selectedContract": "Reuse test/research/dt01/exact-calendar.ts for the supported declared calendar domain, including BCE/no year zero, second-60 overflow, zones and arbitrary decimal precision. Declare unsupported lexical forms explicitly.",
+      "remainingUnqualified": "General XSD datatype validity outside the selected exact-calendar domain.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-dt01_calendar_contract-equality_observations_are_distinct_from_candidate_authority",
+      "owner": 250,
+      "target": "test/conformance/reference/dt01-calendar-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/dt01_calendar_contract_test.py#L86-L95",
+      "sourceContractSha256": "3894c2a64d82a1c44687f072858b89a4beee6e39f667de5d6e34a8a3943a7f3d",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Construct original calendar-equivalence.xsd and execute all seven equality payloads.",
+      "selectedContract": "Reuse DT01 exact equality on all seven literals, keeping Candidate A, selected project interpretation, fresh primary and historical engine answers separate.",
+      "remainingUnqualified": "Fresh second-engine fixed-value equality or typed post-schema augmentation.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-graph_contract-recursive_scalar_and_group_fixture",
+      "owner": 248,
+      "target": "test/conformance/reference/graph-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/graph_contract_test.py#L11-L20",
+      "sourceContractSha256": "3ab90e970b788eb9e2007a5d7241db8aa4c245da4e675fa94f06455940c5082c",
+      "capabilities": [
+        "schema-construction",
+        "exact-bounds"
+      ],
+      "currentPrimary": "The original shared-recursive.xsd remains unsupported for its huge bound; a separately hashed max=4 copy only observes the adjusted schema.",
+      "selectedContract": "Retain the original exact bound and recursive/shared reference structure without expansion or identity substitution.",
+      "remainingUnqualified": "Fresh complete construction of the original arbitrary-precision recursive schema.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-graph_contract-chameleon_schema",
+      "owner": 248,
+      "target": "test/conformance/reference/graph-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/graph_contract_test.py#L21-L26",
+      "sourceContractSha256": "f13879e4dc64829307c70e0756920bab23cd2c4e382f975e5386d104f21f964e",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Construct original chameleon.xsd with explicitly registered local resources when required.",
+      "selectedContract": "Assert the fixture's absent target namespace and adopted namespace/source identity directly from source syntax.",
+      "remainingUnqualified": "General chameleon composition qualification by a second XSD engine.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-resolution_contract-complete_recursive_references",
+      "owner": 248,
+      "target": "test/conformance/reference/resolution-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/resolution_contract_test.py#L11-L15",
+      "sourceContractSha256": "d3170f19d8d87e56838cb3e2c2f58271d40bf8a7c96849feaa8daec7036ae5eb",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Construct both resolved.xsd and group-values.xsd with original local resource identities.",
+      "selectedContract": "Assert declaration/reference QName resolution and recursive edges for the two finite fixtures without production graph helpers.",
+      "remainingUnqualified": "Complete independent schema construction of all legal recursive-reference forms.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-resolution_contract-missing_and_forbidden_cycles",
+      "owner": 248,
+      "target": "test/conformance/reference/resolution-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/resolution_contract_test.py#L16-L23",
+      "sourceContractSha256": "5585adf298bc20133c0404979d820edec0df9f5126ad5ad284604f086fa7ab09",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Attempt construction of all six original missing/cycle/import-leak schemas; input-resolution failure must remain distinct from schema rejection.",
+      "selectedContract": "Assert missing declaration, forbidden group/attribute/base/scalar cycles and import visibility for these finite original graphs.",
+      "remainingUnqualified": "A second complete resolver and schema validity engine.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-resolution_contract-zero_bound_oracle_disagreement",
+      "owner": 248,
+      "target": "test/conformance/reference/resolution-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/resolution_contract_test.py#L24-L31",
+      "sourceContractSha256": "1537df007a15c0ddfa9bbe57ea058f000e81c86068d48181d9f28308a4d9cb1e",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Observe both zero-group-cycle and zero-missing-group constructions under the current primary identity.",
+      "selectedContract": "Check source-component reference/cycle obligations even when maxOccurs=0; keep them distinct from libxml2's disabled-particle optimization.",
+      "remainingUnqualified": "Fresh full-schema secondary rejection of zero-bound source components.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_au01_contract-25_schema_observations_keep_reference_separate",
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L223-L235",
+      "sourceContractSha256": "fb2861086ef8e807acc28447be23109303f777ff06f49e2228f9f448184a2ece",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Attempt construction of every original member of the 5x5 optional-state matrix.",
+      "selectedContract": "Reuse AU01 fixture-input and conditional-C/C1 checks for all 25 combinations and both source orders against independent literal tables, preserving every original use.",
+      "remainingUnqualified": "Fresh xmlschema 4.2's order-dependent schema acceptance matrix.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_au01_contract-identity_prohibition_and_global_constraint_observations",
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L236-L284",
+      "sourceContractSha256": "c4134a9f2358c65a3448fab3f6475ac28614d536c25e7c1b4d834958bf286f06",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Attempt all 20 original schema cases and all required/prohibited present/absent payload controls.",
+      "selectedContract": "Reuse AU01 source-use/declaration identity and conditional attribute rules. Retain direct versus group prohibition, global default/fixed origin and both extension orders.",
+      "remainingUnqualified": "General independent attribute-group/schema assessment beyond the declared AU01 domain.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_au01_contract-xmlschema_order_dependent_default_observations",
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L285-L294",
+      "sourceContractSha256": "3d8e798444cb256f3f138a13dac31cb5776cf728a28e47d02ba69524a9f0b756",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation",
+        "typed-augmentation"
+      ],
+      "currentPrimary": "Record current primary construction for both original orderings; retain any schema rejection as such.",
+      "selectedContract": "Execute C1 typed augmentation on original AU01 operands: value, datatype, original lexical witness, namespace/source and contributing-use identity. Conflicting optional defaults reject absence in both orders. Add ordinary unambiguous default/fixed controls and present values 1,2,3.",
+      "remainingUnqualified": "Live xmlschema.to_dict last-default-wins behavior and full XSD post-schema augmentation; retain its two historical outputs 2 and 1 explicitly.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_au01_contract-restriction_20_reference_observations_are_separate_from_selected_predicate",
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L351-L383",
+      "sourceContractSha256": "ab66b16251340e720497e50366863f4ce3b8b66be32a658edbc594bf98ebd83a",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Attempt construction of all 20 original restriction fixtures.",
+      "selectedContract": "Reuse selected SOURCE-replacement/all-matching-original rules and the separate unselected FINAL-AU comparison; preserve omission identity, required/fixed and QName contrasts.",
+      "remainingUnqualified": "Fresh complete xmlschema restriction-construction observations.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_au01_contract-typed_fixed_payload_contrasts",
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L431-L450",
+      "sourceContractSha256": "c16a0c342628371b0d1df9f3fa2d02fcdd5959b012c70d48fdc6d83ca935773d",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Construct original typed-fixed-values.xsd and execute all 14 literal fixed-value payloads.",
+      "selectedContract": "Check exact integer, string/token whitespace, QName original namespaces, ordered integer list, declared xs:integer|xs:string union and the fixture's 0[0-9]+ pattern facet. Bound adapters to these declared types/facets; no arbitrary union or regex engine.",
+      "remainingUnqualified": "General independent simple-type/facet validation and full typed augmentation.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_pw01_contract-fixed_schema_observations",
+      "owner": 250,
+      "target": "test/conformance/reference/s06-pw01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_pw01_contract_test.py#L23-L44",
+      "sourceContractSha256": "b94eb6c2e297d5a16ba4922ecc3c237c0b9d28a3c53e48a4033be3f8d4e354fa",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Attempt all 38 original schemas; classify huge occurrences as unsupported instead of invalid.",
+      "selectedContract": "Reuse the PW01 prototype with independently authored arithmetic/namespace callbacks checked against literal expectations; preserve complete-group minimum, member minimum zero, exact huge bounds and literal2004 versus selected R-240 interpretation.",
+      "remainingUnqualified": "Fresh second-engine full-schema construction of all 38 cases, including original huge-bound validity.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_pw01_contract-fixed_payload_observations_separate_from_schema_validity",
+      "owner": 250,
+      "target": "test/conformance/reference/s06-pw01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_pw01_contract_test.py#L45-L61",
+      "sourceContractSha256": "f14ffa047dabd6641601d75edccf6a0273e8541640dffc7bd1e37fc752ee0591",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "currentPrimary": "Execute all eight original payloads only after their own original schema constructs. Preserve unavailable-schema results.",
+      "selectedContract": "Assert the selected finite PW01 content controls separately from schema legality and historical engine answers.",
+      "remainingUnqualified": "Second-engine instance checks or unavailable-schema outcomes as fresh external evidence.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_re01_contract-all_eleven_fixed_schema_observations_ran",
+      "owner": 249,
+      "target": "test/conformance/reference/s06-re01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L22-L41",
+      "sourceContractSha256": "d19009424b095ddb9ee6f51d317c2016f3dcec96ea00d5b32a3fbdfbce5d590d",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "currentPrimary": "Attempt construction of all eleven hash-pinned original RE01 schemas.",
+      "selectedContract": "Verify input hashes and retain existing conditional RE01 probe/source-incidence assertions without turning failed searches into schema invalidity.",
+      "remainingUnqualified": "Fresh complete second-engine schema construction or RE01 completeness proof.",
+      "executionStatus": "pending"
+    },
+    {
+      "id": "NT-s06_re01_contract-pointless_prefix_repeated_final_accepts_exact_seventeen_pairs",
+      "owner": 249,
+      "target": "test/conformance/reference/s06-re01-contract.test.ts",
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L75-L84",
+      "sourceContractSha256": "d778db68082d93511f1680c591a3b37e69b944fd0c5cf706d5f7cd0602a22571",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation",
+        "exact-bounds"
+      ],
+      "currentPrimary": "Construct the original schema and execute 16,17,18 pair payloads.",
+      "selectedContract": "Check exact ordered (a,b) pairs and the finite seventeen-pair interval directly from source and independently authored payload expectations.",
+      "remainingUnqualified": "General independent language inclusion or RE01 witness completeness.",
+      "executionStatus": "pending"
+    }
+  ],
+  "wholeMapDisposition": {
+    "methods": 53,
+    "verifiedStagingMethods": 28,
+    "affectedSecondaryMethods": 23,
+    "additionalPendingMethods": [
+      {
+        "id": "NT-s06_re01_contract-au_witness_changes_hypothetical_source_incidence_not_real_identity",
+        "owner": 249,
+        "target": "test/conformance/reference/s06-re01-contract.test.ts",
+        "sourceContractSha256": "7c776bfb065388f30a07499c5a7fc888f6073aa75e3197b434a445578587b2e9",
+        "treatment": "Parse both original/hypothetical fixture documents with Node syntax-only I/O. Preserve the global declaration and original A/g properties, direct extension versus intermediate/restriction incidence, and distinct object identity; no production graph or validator identity substitution.",
+        "executionStatus": "pending"
+      },
+      {
+        "id": "NT-s06_re01_contract-dead_intermediate_instance_is_separate_from_schema_mapping",
+        "owner": 249,
+        "target": "test/conformance/reference/s06-re01-contract.test.ts",
+        "sourceContractSha256": "798b8ef2deb35f5fde5ebd38cc6d9c8a91f0ce55a90bd3c703fa0098b743cae2",
+        "treatment": "Construct the original dead-intermediate schema with the Node primary and reject both literal empty/a payloads as instance results. Keep that outcome separate from schema construction and conditional RE01 mapping.",
+        "executionStatus": "pending"
+      }
+    ]
+  },
+  "secondaryBaseline": {
+    "id": "NT-baseline-zero-element-unbounded",
+    "owner": 248,
+    "source": "test/conformance/semantic-baseline.json",
+    "fixture": "xsd/compositors/instances/zero-element-unbounded-2.xml",
+    "currentPrimary": "Observe the original schema and payload; preserve the libxml2 acceptance under its current engine identity.",
+    "selectedContract": "Read original row maxOccurs=0 and assert empty content admitted, one row rejected. Retain the historical xmlschema rejection independently.",
+    "remainingUnqualified": "A fresh second-engine validity result for the original schema/payload.",
+    "executionStatus": "pending"
+  },
+  "soap": {
+    "owner": 251,
+    "calls": 13,
+    "consumer": "test/integration/content-model-soap-feasibility.test.ts",
+    "stagedHelper": "test/helpers/contentModelSoapReference.ts",
+    "originalHelper": "test/helpers/contentModelSoapProbe.ts",
+    "sourceSchema": "test/conformance/fixtures/soap/content-model/probe.wsdl",
+    "currentPrimary": "Validate original schema and all captured payloads through the Node primary.",
+    "selectedContract": "Use a fixture-specific ordered record checker on the actual captured XML: selection (a,b)|c, repeated (p,q), token count 1..4, required QName namespace, nullable/nil and required id, Submit/SubmitResponse record order. Parse original schema syntax and assert the checker matches its declared finite grammar; never consume production models.",
+    "boundary": "SOAP 1.1/1.2, exactly one Body payload, admitted bare roots, inherited QName namespace, malformed XML, unknown envelope and DTD rejection. Preserve real HTTP/TLS/auth/raw/streaming behavior.",
+    "identity": "Return separately named primary and selectedContract results; never return fabricated lxml/xmlschema identities.",
+    "staging": "Add separate Node helper and move 13 consumers/imports to its async API; leave the frozen original helper body untouched until #252.",
+    "remainingUnqualified": "Second general-purpose engine validation of captured SOAP payloads.",
+    "executionStatus": "pending"
+  },
+  "reviewFindings": [
+    {
+      "id": "F01",
+      "owners": [
+        240,
+        252
+      ],
+      "finding": "Coverage verification and qualification recording use git show at the baseline; shallow checkouts or deleted sources may lack those objects. The existing map pins source blocks but does not contain full source bytes/module-level tables.",
+      "action": "Archive all 14 original source texts and literal tables in non-executable historical JSON with baseline/hashes. Verify inventory offline from that snapshot; do not require extra history or network."
+    },
+    {
+      "id": "F02",
+      "owners": [
+        244,
+        246
+      ],
+      "finding": "The primary huge-bound guard only matches digits and any attribute local name; legal leading-plus/whitespace bounds can bypass it and foreign annotation attributes can trigger it.",
+      "action": "Guard unqualified occurrence attributes on XSD particles only, using exact nonNegativeInteger lexical forms before engine allocation. Test leading plus, whitespace, zeros, exact threshold/above threshold and foreign annotations without modifying original inputs."
+    },
+    {
+      "id": "F03",
+      "owners": [
+        251,
+        252
+      ],
+      "finding": "The frozen guard hashes the whole existing SOAP helper, conflicting with a pre-cutover edit of that helper.",
+      "action": "Stage contentModelSoapReference.ts separately and migrate async consumers; remove the Python helper function and its allowance only in #252."
+    },
+    {
+      "id": "F04",
+      "owners": [
+        241,
+        252
+      ],
+      "finding": "The staging guard still reads the legacy allowance and npm CI scripts do not all invoke it.",
+      "action": "Remove allowance loading/code/file together; require the final guard in normal required CI lanes and retain draft #231 rejection controls."
+    },
+    {
+      "id": "F05",
+      "owners": [
+        252
+      ],
+      "finding": "Launcher tests still expect missing Python, and S06 discovery still names Python tests.",
+      "action": "Use Node setup/version, empty-discovery, changed-observation and command failure controls. Reconcile actual executed TS files, all 147 S06 entries and hashes, engine metadata, docs and registry."
+    },
+    {
+      "id": "F06",
+      "owners": [
+        253
+      ],
+      "finding": "Existing hosted jobs run only Linux and install Python; PATH aliases do not deny absolute interpreters.",
+      "action": "Provide verified absence or execution denial on all four OS/Node combinations before normal npm ci and execution; validate name and absolute-path negative controls, record mechanism and attempts, and block if the environment cannot enforce it."
+    },
+    {
+      "id": "F07",
+      "owners": [
+        246,
+        253
+      ],
+      "finding": "Platform-sensitive local URI/path/symlink checks and worker execution are not qualified on Windows or Node 26.",
+      "action": "Exercise Windows drive/UNC/backslash/file-URL/namespace/resource cases and available symlink controls in the maintained Windows environment without skipping required boundary behavior."
+    },
+    {
+      "id": "F08",
+      "owners": [
+        244,
+        245,
+        253
+      ],
+      "finding": "Research recorders hash current sources while reading prior raw output; environment equality alone does not prove code/run correspondence.",
+      "action": "Capture source/input/engine hashes at execution and refuse stale raw-result/source mismatches before generating any new qualification record. Preserve existing historical records unchanged."
+    }
+  ],
+  "continuation": [
+    {
+      "issues": [
+        240,
+        244,
+        246
+      ],
+      "entry": "Goal resumed; these inventory/primary fixes do not depend on Gate S.",
+      "scope": "Resolve F01/F02/F08 for new runs, preserve frozen sources and recheck affected primary boundaries."
+    },
+    {
+      "issues": [
+        245,
+        247
+      ],
+      "entry": "Explicit acceptance of NT-CONT-01.",
+      "scope": "#245 records acceptance. #247 owns evidence-kind/capability/provenance interfaces and bounded common mechanics only; no full validator or family-specific semantic engine."
+    },
+    {
+      "issues": [
+        248,
+        249,
+        250,
+        251
+      ],
+      "entry": "Accepted contract plus shared primary/contract interfaces.",
+      "scope": "Implement the exact family checks and fresh/historical/unqualified treatments above, reusing existing AU01/RE01/PW01/DT01 probes with independent literals. Each suite supplies focused tests, strict tsc and case-level traceability."
+    },
+    {
+      "issues": [
+        252
+      ],
+      "entry": "All 53 method ports, baseline selections and 13 SOAP consumers pass under the accepted contract.",
+      "scope": "Switch required commands and delete all Python/setup/allowance atomically; resolve F03/F04/F05 and reconcile docs/discovery/manifests without a release."
+    },
+    {
+      "issues": [
+        253
+      ],
+      "entry": "Complete cutover candidate and verified qualification environments.",
+      "scope": "Run the four-lane matrix, review exact final sources/case dispositions, prepare PR delivery and cleanup. Keep issues open until review/merge acceptance."
+    }
+  ],
+  "qualificationMatrix": [
+    {
+      "os": "linux",
+      "node": 24,
+      "commands": [
+        "npm ci",
+        "npm run check:toolchain",
+        "npm run typecheck:tooling",
+        "npm run typecheck:research",
+        "npx tsc -p test/conformance/reference/tsconfig.json",
+        "npm run ci",
+        "npm run test:reference:full"
+      ],
+      "status": "pending-final-cutover"
+    },
+    {
+      "os": "linux",
+      "node": 26,
+      "commands": [
+        "npm ci",
+        "npm run check:toolchain",
+        "npm run typecheck:tooling",
+        "npm run typecheck:research",
+        "npx tsc -p test/conformance/reference/tsconfig.json",
+        "npm run ci:github:node26",
+        "npm run test:reference:full"
+      ],
+      "status": "pending-final-cutover"
+    },
+    {
+      "os": "win32",
+      "node": 24,
+      "commands": [
+        "npm ci",
+        "npm run check:toolchain",
+        "npm run typecheck:tooling",
+        "npm run typecheck:research",
+        "npx tsc -p test/conformance/reference/tsconfig.json",
+        "npm run typecheck:integration",
+        "npm run test:reference:full",
+        "npm run test:research:ports",
+        "npx vitest run test/research/s06-pw01 test/research/dt01",
+        "npm run test:feasibility"
+      ],
+      "status": "pending-final-cutover"
+    },
+    {
+      "os": "win32",
+      "node": 26,
+      "commands": [
+        "npm ci",
+        "npm run check:toolchain",
+        "npm run typecheck:tooling",
+        "npm run typecheck:research",
+        "npx tsc -p test/conformance/reference/tsconfig.json",
+        "npm run typecheck:integration",
+        "npm run test:reference:full",
+        "npm run test:research:ports",
+        "npx vitest run test/research/s06-pw01 test/research/dt01",
+        "npm run test:feasibility"
+      ],
+      "status": "pending-final-cutover"
+    }
+  ],
+  "qualificationEnforcement": {
+    "linux": "Use disposable prebuilt Node 24/26 slim containers with no Python/Pip/venv; inspect interpreter inventory and verify named and known absolute-path negative controls before normal npm ci.",
+    "win32": "Use ephemeral Windows hosted runners. Inventory Python/Pip/py-launcher executables in runner toolcache, PATH and known system/app installation roots; deny their execution with runner-local file ACLs before normal npm ci. Probe every inventoried absolute executable plus named controls, record attempts and restore ACLs in always-run cleanup.",
+    "prerequisite": "Prove the chosen mechanism blocks the negative controls on each actual runner. If inventory, permissions or enforcement is incomplete, leave #253 blocked and obtain a suitable environment; never infer success from PATH masking or source inspection."
+  },
+  "finalEvidence": "Every lane must identify exact commit/tree/dirty status, source/input/package hashes, OS/Node/npm, enforcement mechanism and normal-install/command results. Existing Linux jobs and staging PATH denial do not satisfy this matrix.",
+  "outOfScope": [
+    "Increasing production schema budgets or optimizing Travelport syntax/provenance storage.",
+    "Adding eBay abstract/polymorphic support or authorizing ONVIF network imports.",
+    "Implementing a general second XSD engine, full PSVI augmentation, native/WASM build pipeline or a remote reference service.",
+    "Solving RE01 proof obligations, modifying draft #231, releasing or merging."
+  ]
+}
