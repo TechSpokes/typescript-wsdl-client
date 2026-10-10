@@ -10,6 +10,8 @@ The research owner is the RE01 agent in epic #232; substantive review belongs to
 
 The baseline is accepted main `5876065b00d4eeb6d2324eaa63ff9b70e2279198`. The unaccepted assessment draft is inspected at `460f5b8379c68ffef79917284e445b5ab046429e`, without importing its assessment modules. [Composition](content-model-composition.md), [analysis](content-model-analysis.md) and [ADR-003](decisions/003-content-model-contracts.md) retain their existing owners and contracts.
 
+The maintainer [accepted NT-CONT-01 for #239](https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6098237195), allowing Node tooling to combine one live libxml2 engine, independent scoped TypeScript checks and historical xmlschema observations. The [reference-validation contract](reference-validation.md) states the remaining unqualified capabilities; that tooling decision does not supply the missing RE01 witness-equivalence or completeness proof.
+
 ## Primary rule and interpretation
 
 The dated [XSD 1.0 second-edition Extension constraint](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends), clause 1.5, states:
@@ -46,9 +48,9 @@ The controls `re-dead-wildcard-intermediate.xsd` and `re-dead-wildcard-final-res
 
 ## Independent contrasts
 
-The [fixed research manifest](../test/conformance/fixtures/xsd/re01/expectations.json) keeps primary recommendations, historical primary scope and each reference engine's observations separate. Eight original fixtures are copied byte-for-byte from the pinned draft with source revision, original directory and per-file SHA-256. Three additional fixtures independently contrast normalization and hypothetical AU incidence.
+The [fixed research manifest](../test/conformance/fixtures/xsd/re01/expectations.json) keeps primary recommendations, historical primary scope and each historical reference engine's observations separate. Eight original fixtures are copied byte-for-byte from the pinned draft with source revision, original directory and per-file SHA-256. Three additional fixtures independently contrast normalization and hypothetical AU incidence.
 
-| Contrast | Formal result or remaining condition | XMLSchema 4.2.0 | libxml2 2.14.6 |
+| Contrast | Formal result or remaining condition | Historical XMLSchema 4.2.0 | Historical libxml2 2.14.6 |
 |---|---|---|---|
 | Optional particle string restored as string | Vacuous witness | Accept | Accept |
 | Optional particle string restored as token | Vacuous witness | Accept | Accept |
@@ -63,6 +65,8 @@ The [fixed research manifest](../test/conformance/fixtures/xsd/re01/expectations
 | Hypothetical source with the same two AU predicates inherited | RE equality/source-incidence gate | Reject | Reject |
 
 The particle-int row's pinned historical primary outcome remains `unresolved`; the new recommendation is explicitly identified as conditional on adopting the numbered-rule reading. This record does not silently rewrite that historical manifest or turn agreement among engines into authority.
+
+[The current scoped reference tests](../test/conformance/reference/s06-re01-contract.test.ts) verify all eleven original fixture hashes and obtain fresh primary observations from `libxml2-wasm` 0.7.2/libxml2 2.15.1. Exact seventeen-pair payload checks and original versus hypothetical AU source-node identities remain separate selected assertions; fresh full-schema secondary validation remains unqualified.
 
 ### Particle integer restoration
 
@@ -128,7 +132,7 @@ This argument is a useful finite particle construction, not a published or accep
 
 The proposed production input is immutable accepted analysis plus a specific extension type and its original ancestor chain. It retains original particles/group uses, local and group-use bounds, original attribute uses/declarations, wildcard namespace/process contexts, scalar and element fixed/default operands, `final`/`block`, content mode and all source/QName/chameleon context. An effective interval or flattened attribute object is insufficient.
 
-The research [probe](../test/research/re01/witness_probe.py) accepts small prepared `View` records with original source IDs, exact decimal occurrence strings and atomic original type references. A certified preparation stage is an explicit precondition; it performs no schema loading, normalization, occurrence arithmetic, datatype interpretation or payload matching. The pair predicate is supplied separately and charges the same budget.
+The research [probe](../test/research/re01/witness-probe.ts) accepts small prepared `View` records with original source IDs, exact decimal occurrence strings and atomic original type references. A certified preparation stage is an explicit precondition; it performs no schema loading, normalization, occurrence arithmetic, datatype interpretation or payload matching. The pair predicate is supplied separately and charges the same budget.
 
 | Result | Meaning |
 |---|---|
@@ -171,7 +175,7 @@ Let `A` contain an optional AU to global declaration `g:xs:int`, with use-fixed 
 
 If a hypothetical intermediate contains only the original AU plus an attribute wildcard, declaring both final uses as source replacements forces fixed `2` to be checked against the original fixed `1`, so the replacement fails. Instead, an intermediate can extend with the second use and a vacuous final restriction can inherit both unchanged. Thus source replacement and source omission must remain distinct during witness synthesis.
 
-[The original-source fixture](../test/conformance/fixtures/xsd/re01/au-source-original.xsd) combines that AU contrast with removal/restoration of optional particle `a`, restored as integer. [The hypothetical-source fixture](../test/conformance/fixtures/xsd/re01/au-source-witness.xsd) supplies the required empty-choice/wildcard intermediate and puts fixed `2` in the intermediate extension, while the final restriction omits attribute `g`. Both reference engines reject both schemas; those observations do not decide the selected C1 or RE equality question.
+[The original-source fixture](../test/conformance/fixtures/xsd/re01/au-source-original.xsd) combines that AU contrast with removal/restoration of optional particle `a`, restored as integer. [The hypothetical-source fixture](../test/conformance/fixtures/xsd/re01/au-source-witness.xsd) supplies the required empty-choice/wildcard intermediate and puts fixed `2` in the intermediate extension, while the final restriction omits attribute `g`. Both historical reference engines rejected both schemas; those observations do not decide the selected C1 or RE equality question.
 
 The final AU predicates and global declaration reference have the same values and incidence pattern in the two sources. The new direct AU occurs under original `D` in one source and intermediate `E` in the other, however, so these are different newly mapped AU components. The committed reference check explicitly verifies the changed source contribution and does not label the new component as the original inherited ID.
 
@@ -240,21 +244,25 @@ The production preparation stage must separately charge original graph indexing,
 
 ### Commands
 
-The coordinator's fresh `npm run reference:setup` provides the pinned reference runtime. On a fresh delivery checkout, use the declared setup and the existing full discovery lane:
+On Node 24 or Node 26, reproduce the current pure research and scoped reference checks after normal npm installation:
 
 ```bash
-npm run reference:setup
+npm ci
+npm run typecheck:research
+npm run typecheck:reference
+npm run test:research:ports
+npx vitest run test/conformance/reference/s06-re01-contract.test.ts
+npm run research:re01:measure
 npm run test:reference:full
-tmp/conformance/reference-venv/bin/python test/research/re01/measure.py
 ```
 
-The last command uses the setup environment's POSIX Python path explicitly; setup does not activate the caller's `PATH`. On Windows, substitute `tmp/conformance/reference-venv/Scripts/python.exe`. A focused POSIX command is `tmp/conformance/reference-venv/bin/python -m unittest discover -s test/conformance/reference -p 's06_re01_contract_test.py' -v`.
+These commands use the same TypeScript entrypoints on POSIX and Windows. [Pure witness tests](../test/research/re01/witness-probe.test.ts) retain the original predicate, identity and budget controls; the scoped reference file retains construction, payload and hypothetical-source checks.
 
-The reference runner's `*_test.py` discovery includes this filename; a zero-match run is not acceptance. The development leaf used the coordinator's declared freshly installed reference runtime for those focused commands.
+The full reference lane requires discovered TypeScript test files and rejects empty discovery. The [historical source snapshot](../test/conformance/reference/legacy-source-snapshot.json) retains the complete old method contracts as hash-verified, non-executable data; it does not execute an interpreter or depend on Git history.
 
-### Recorded development evidence
+### Historical development evidence
 
-The focused probe uses Python 3.12.14, XMLSchema 4.2.0, lxml 6.1.0 and libxml2 2.14.6. Eighteen focused test methods cover eleven schemas, fixed engine observations, instance and hypothetical-incidence contrasts, explicit premise tables, conditional witnesses, failed-family classification and budget boundaries. The pair-premise tables and asserted expected witnesses are written independently in the test; no production helper or prototype result generates those expectations.
+The historical focused probe used Python 3.12.14, XMLSchema 4.2.0, lxml 6.1.0 and libxml2 2.14.6. Eighteen original test methods covered eleven schemas, fixed engine observations, instance and hypothetical-incidence contrasts, explicit premise tables, conditional witnesses, failed-family classification and budget boundaries. The pair-premise tables and asserted expected witnesses were written independently in the test; no production helper or prototype result generated those expectations.
 
 The premise-table tests validate finite construction control flow and accounting, rather than proving the original pair premises themselves. The fixture/reference contrasts independently support the selected simple cases; full source normalization, type legality and AU/scalar premises remain external and unresolved where this record says so.
 
@@ -268,7 +276,7 @@ The premise-table tests validate finite construction control flow and accounting
 | Default node limit with 100,001 inputs | Resource limit | 100,000 indexed | 600,006 |
 | Adversarial prefix state search | Resource limit | 1,603 | 1,000,000 |
 
-[The measurement program](../test/research/re01/measure.py) reproduces those deterministic counts without ignored logs. The shared-DAG terminal retains a recursive type-reference ID; this measures nonexpansion of legal element/type recursion, not an implementation of recursive payload validity. The adversarial exhaustion reports no partial successful witness and no invalidity.
+[The TypeScript measurement program](../test/research/re01/measure.ts) reproduces those deterministic counts without ignored logs. The shared-DAG terminal retains a recursive type-reference ID; this measures nonexpansion of legal element/type recursion, not an implementation of recursive payload validity. The adversarial exhaustion reports no partial successful witness and no invalidity.
 
 The coordinator owns the final `ci`, full reference, conformance, installed-consumer and documentation/support-matrix checks on the integrated tree. Those results and the exact reviewed commit are recorded in the joint handoff; the old #231 results do not substitute. IDE inspections are unavailable in this environment; repository-local checks and independent review supply verification.
 

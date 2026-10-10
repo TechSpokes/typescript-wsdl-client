@@ -1,0 +1,63 @@
+name: Node reference qualification
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Python absent (Linux Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [24, 26]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node test/conformance/reference/qualification/platform-run.ts --container ${{ matrix.node }}
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: linux-node-${{ matrix.node }}-reference
+          path: tmp/conformance/platform-${{ matrix.node }}/results
+          if-no-files-found: error
+
+  windows:
+    name: Python absent (Windows Node ${{ matrix.node }})
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      NODE_REFERENCE_DISPOSABLE_WINDOWS: 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [24, 26]
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node test/conformance/reference/qualification/platform-run.ts --windows
+      - run: node test/conformance/reference/qualification/environment.ts cleanup
+        if: always()
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: windows-node-${{ matrix.node }}-reference
+          path: tmp/conformance
+          if-no-files-found: error

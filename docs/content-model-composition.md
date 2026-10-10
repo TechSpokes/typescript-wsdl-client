@@ -90,7 +90,7 @@ Inherited content, attribute, wildcard and obligation copying consumes work; exh
 Provenance source-array copying is counted before allocation, including repeated references and derived merges.
 
 [Unit tests](../test/unit/composed-graph.test.ts) exercise contrasting extension/restriction, empty content, immutable siblings, attributes, wildcard operations, scalar/list/union contexts, opaque bases, catalog round trips and exact configured budgets.
-[Independent fixtures](../test/conformance/fixtures/xsd/composition/derivations.xsd) and [Python qualification](../test/conformance/reference/composition_contract_test.py) assert schema validity, ordered payload acceptance/rejection and documented disagreements.
+[Independent fixtures](../test/conformance/fixtures/xsd/composition/derivations.xsd) and [Node qualification](../test/conformance/reference/composition-contract.test.ts) assert current schema observations, scoped ordered payload contracts and separately recorded historical disagreements under [NT-CONT-01](reference-validation.md).
 
 ```bash
 npx vitest run test/unit/composed-graph.test.ts test/unit/resolved-graph.test.ts

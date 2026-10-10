@@ -24,17 +24,17 @@ npm run docs:validate
 npm run smoke:pipeline
 ```
 
-`S01_REFERENCE_PYTHON` can select an already provisioned reference interpreter. Missing or mismatched reference dependencies fail the probe; the independent lane is never silently skipped.
+Normal `npm ci` supplies the pinned Node/WASM dependency. Missing or mismatched dependencies fail the probe; required validation is never silently skipped.
 
-The reviewed starting revision is `2f88ec81f77f4fc5a06b78f2d507ae8e20fe7a7c`. Executed versions are Node 24.19.0, Python 3.12.14, soap 1.13.3, saxes 6.0.0, Axios 1.20.0, Vitest 5.0.3 and TypeScript 6.0.3. Signature verification uses soap's locked transitive xml-crypto 6.3.3 and @xmldom/xmldom 0.8.15; no dependency is added.
+The historical starting revision is `2f88ec81f77f4fc5a06b78f2d507ae8e20fe7a7c`, tested with Node 24.19.0, Python 3.12.14, soap 1.13.3, saxes 6.0.0, Axios 1.20.0, Vitest 5.0.3 and TypeScript 6.0.3. Current signature verification retains the locked transitive xml-crypto 6.3.3 and @xmldom/xmldom 0.8.15; no dependency is added.
 
 Local validation passed eleven probe tests, 138 conformance tests, integration TypeScript checking, documentation validation and the pipeline smoke check. The signing test emits an upstream xml-crypto deprecation warning from node-soap's existing signature implementation; the signature verification and tamper rejection still pass.
 
-The [independent capture validator](../test/conformance/reference/soap_probe.py) reuses the baseline's pinned reference tooling: lxml 6.1.0/libxml2 2.14.6, xmlschema 4.2.0 and elementpath 5.0.4. It extracts the captured SOAP body payload and validates it against the embedded XSD with both engines; no production semantic implementation supplies expected validity. External resources and DTDs are prohibited.
+The [independent capture helper](../test/helpers/contentModelSoapReference.ts) validates actual captured bytes using `libxml2-wasm@0.7.2`/libxml2 2.15.1 and a separately named scoped fixture grammar under [NT-CONT-01](reference-validation.md). Historical lxml/xmlschema results remain historical; no production model supplies expected validity. Inherited QName namespaces survive payload extraction, and external resources, DTDs and ambiguous Body boundaries are prohibited.
 
 ## Payload and incoming context
 
-The [ordered fixture](../test/conformance/fixtures/soap/content-model/ordered.xml) contains repeated composite choice `(a,b)|c` with mixed selections, repeated `(p,q)` sequences, invisible repeated-token grouping, a namespace-qualified QName value and a nil element retaining `id="7"`. Both independent engines accept it and reject the [grouped-by-name fixture](../test/conformance/fixtures/soap/content-model/name-keyed-invalid.xml).
+The [ordered fixture](../test/conformance/fixtures/soap/content-model/ordered.xml) contains repeated choice `(a,b)|c`, repeated `(p,q)`, invisible token grouping, a QName and a nil element retaining `id="7"`. Historical engines, the current primary and scoped grammar accept it and reject the [grouped-by-name fixture](../test/conformance/fixtures/soap/content-model/name-keyed-invalid.xml).
 
 Captured generated legacy requests group sibling values as `a,a,b,b,c` and `p,p,q,q`. The buffered request is schema-invalid; the streaming request also lacks the namespace declaration needed by its manually supplied `xsi:nil` attribute. The faithful pre-encoded body preserves `a,b,c,a,b`, `p,q,p,q`, namespace context and nil attributes on both paths, and the captured outbound envelopes independently validate.
 

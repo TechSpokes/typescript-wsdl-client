@@ -3,7 +3,6 @@ import {createServer as createTlsServer} from "node:https";
 import {readFileSync, mkdirSync, mkdtempSync, writeFileSync, rmSync} from "node:fs";
 import {join, resolve} from "node:path";
 import {pathToFileURL} from "node:url";
-import {execFileSync} from "node:child_process";
 import {SaxesParser, type SaxesTagNS} from "saxes";
 import type {Client, IOptions, ISecurity} from "soap";
 import {runGenerationPipeline} from "../../src/pipeline.js";
@@ -127,14 +126,6 @@ export async function generateProbe(url: string) {
     },
     cleanup() {rmSync(directory, {recursive: true, force: true});},
   };
-}
-
-export function independentValidation(xml: string): {lxml: boolean; xmlschema: boolean} {
-  const python = process.env.S01_REFERENCE_PYTHON ?? resolve("tmp/conformance/reference-venv",
-    process.platform === "win32" ? "Scripts/python.exe" : "bin/python");
-  return JSON.parse(execFileSync(python, ["test/conformance/reference/soap_probe.py"], {
-    input: xml, encoding: "utf8", env: {...process.env, PYTHONDONTWRITEBYTECODE: "1"},
-  }));
 }
 
 export interface OrderedNode {

@@ -1,0 +1,1822 @@
+{
+  "evidenceId": "NT-T06-R",
+  "recordedAt": "2026-10-10T12:49:37.392Z",
+  "revision": "bc5c47023ebe3cf5051ba0992fd816d3a579c497",
+  "tree": "dcbce4a14ef04f6bb90f389a55942b6059f1fdb1",
+  "dirty": true,
+  "node": "v24.19.0",
+  "platform": "linux",
+  "sourceHashes": {
+    "test/conformance/reference/qualification/relevance.ts": "e8e572405602a8fceae40a5b3101413b961d7032016eb9966a6ac3369fa20ab5",
+    "test/conformance/reference/qualification/relevance-probes.ts": "0ef749b8b294ac54478e00473c12a16730ba3b359e0f04d9f55141e89226844f",
+    "test/conformance/reference/qualification/relevance-record.ts": "6d72b47e8b244ef9e7e59f60cc3679886f2f37686df7078e52f932e0e8953945",
+    "test/conformance/reference/qualification/relevance-sources.json": "3e2cee740d083785034e00d5ef08f31da406dbd4fe24145c2750225afc6e8ebd",
+    "test/conformance/reference/qualification/probe.ts": "bb1817b78a73dba60ab9afe0eabfacdc3b52e9feae014969edb18684ee5fb864",
+    "test/conformance/reference/qualification/primary-checks.ts": "8b86c0aae4fde7c86f6be1e01f290437f7fb096160e562a2a2c0d3950e5aac81",
+    "test/conformance/reference/qualification/primary-corpus.ts": "dfc42350dfff412a3b28b854af099b3f05d7bb8ad39b0916f61a261740160cb4",
+    "test/conformance/reference/qualification/observations.json": "8db7746b84d2557af60232a7f8918e0db49198382d25cbd0ee681fa40ec17aca",
+    "test/conformance/reference/validate.test.ts": "916a16a21f614f0756d313d0bce005b4fef877129baab3394ba62e58dcf397ed",
+    "test/conformance/semantic-baseline.json": "e6614d23888130f7a086e5219023b36daebda3015db6e28c5105ca486bc34ab7",
+    "test/conformance/s06-research-manifest.json": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
+    "test/conformance/fixtures/xsd/s06-pw01/expectations.json": "e718191a8ebd11e386db40370f85f297247d767a18c68be4dca5ccd3e97b74be",
+    "test/conformance/reference/adapter.ts": "0ed2281be40ef33b6b2d7a2c5c4d04b2b01c479d7d0b4eb4234a9bd5805ebd6d",
+    "test/conformance/reference/primary.ts": "54b11ac3a04c53c82822232265440438a7f1d56833effa0debf29e99860a394e",
+    "test/conformance/reference/primary-worker.ts": "be5906aadd25456f68a76c49e8c9fa1ea3dc3d4e10e6a229df75fe86dafadd4c",
+    "test/conformance/reference/xml-input.ts": "8f9f0a04375ff83b278712a6e92615266e234c3ca778b76e1322de4e0559151e",
+    "src/cli.ts": "fd687f667422ac49cf7b7317a200e2a1694e644e1f4aac2d27d35ba8a63d2f2d",
+    "src/pipeline.ts": "29c5bbe043a31fd0da15bd485f217c6b60c4f217f2a1336a140c5935ecec89dd",
+    "src/compiler/schemaCompiler.ts": "b6e5b62b8aca3d8ccac80f6525884d9f1ef02032f693f0edac0aaae1b734716a",
+    "src/compiler/semanticCatalog.ts": "7776422bdb7bb76116f62f8dfe34892a13e516c6559b0eb2b63f57bf8559e593",
+    "src/compiler/resolveCanonicalGraph.ts": "d851e4b8f5598ee99b288d9c75e39435d46ca95d0799da8e8cbabfd85a39215a",
+    "src/compiler/occurrenceAnalysis.ts": "8f30cb66a05ff8d3e962a534937bf4e65138b0f177f825d5d93820e47640bdd5",
+    "src/compiler/catalogProvenance.ts": "a88599fb2704f43558d59fefa8f3b9cd428eef439b28db0d94ae3f840804bad3",
+    "src/loader/schemaResources.ts": "8e9ff11d10f7ee2152f76dc516249ab28f8fbccb725353d7b0299fe8f11b9381",
+    "src/xsd/primitives.ts": "d801d7bb332ba3e99ac57de54b9f6a662fe4706a2eaf3e241b3b70307f60d5aa",
+    "test/conformance/fixtures/soap/content-model/probe.wsdl": "e570b68f224893889e623ada50d655acab3c5456368d91d83df9a7f8d867cfb2",
+    "test/conformance/fixtures/soap/content-model/ordered.xml": "4bda6b1eeb23aa9297d863862760c07995d003d59a52051b4bd19ff2ef0250f4",
+    "test/conformance/fixtures/soap/content-model/name-keyed-invalid.xml": "3277f65f7986f5c34a0a590f4b23be4823e4ec3ae7cecf6b964051eece1e5b8b"
+  },
+  "engine": {
+    "package": "libxml2-wasm",
+    "version": "0.7.2",
+    "artifact": "lib/libxml2raw.mjs",
+    "artifactSha256": "df6c8801906c0dad66e0da3db8c3849e3e8528246db513de4d4716cb82792d2e"
+  },
+  "audit": {
+    "evidenceId": "NT-T06-R1",
+    "scope": "Purposive sample of official published schema artifacts, not observed production payloads or a frequency estimate.",
+    "groups": [
+      {
+        "id": "onvif",
+        "repository": "onvif/specs",
+        "revision": "68ee1b540a40f848c9599eba2c55b87547c588d6",
+        "artifactDate": "2026-08-18",
+        "scope": "All checked-in WSDL/XSD files under the pinned official tree."
+      },
+      {
+        "id": "ebay",
+        "repository": "eBay/trading-api-java-sdk",
+        "revision": "62814429a9ffd7617b1e4ac4b3a6dcc904ddc6bf",
+        "artifactDate": "2024-11-26",
+        "scope": "SDK-shipped WSDL version 1379; latest-host retrieval returned HTTP 403, so current latest equivalence is not claimed."
+      },
+      {
+        "id": "travelport",
+        "repository": "Travelport/travelport-uapi-tutorial-c-sharp",
+        "revision": "b8a06b804c29e49c47d5e0d5e3324f2e103037ce",
+        "artifactDate": "2018-05-21",
+        "scope": "Official tutorial schemas are historical; current 26.2.2 archive retrieval returned HTTP 403 and was not analyzed."
+      }
+    ],
+    "summary": {
+      "onvif": {
+        "uniqueFiles": 38,
+        "bytes": 2325971,
+        "xmlElements": 28888,
+        "schemas": 38,
+        "maximumFiniteOccurrence": "3",
+        "finiteAboveEngineRange": 0,
+        "finiteAboveSafeInteger": 0,
+        "zeroMaximum": 0,
+        "unusualCalendarDefaultsOrFixed": 0,
+        "features": {
+          "complexType": 2112,
+          "maxOccurs:unbounded": 1096,
+          "attribute": 537,
+          "restriction": 205,
+          "constraint:default": 39,
+          "QName-type-reference": 16,
+          "extension": 61,
+          "precision-sensitive-scalar-reference": 40,
+          "calendar-type-reference": 130,
+          "compositor-nondefault-occurrence": 5,
+          "attribute-reference": 2
+        }
+      },
+      "ebay": {
+        "uniqueFiles": 1,
+        "bytes": 4603721,
+        "xmlElements": 47869,
+        "schemas": 1,
+        "maximumFiniteOccurrence": "8",
+        "finiteAboveEngineRange": 0,
+        "finiteAboveSafeInteger": 0,
+        "zeroMaximum": 0,
+        "unusualCalendarDefaultsOrFixed": 0,
+        "features": {
+          "complexType": 641,
+          "extension": 183,
+          "calendar-type-reference": 160,
+          "maxOccurs:unbounded": 644,
+          "precision-sensitive-scalar-reference": 41,
+          "restriction": 204,
+          "attribute": 17,
+          "constraint:default": 6
+        }
+      },
+      "travelport": {
+        "uniqueFiles": 157,
+        "bytes": 7385132,
+        "xmlElements": 97173,
+        "schemas": 131,
+        "maximumFiniteOccurrence": "9999",
+        "finiteAboveEngineRange": 0,
+        "finiteAboveSafeInteger": 0,
+        "zeroMaximum": 0,
+        "unusualCalendarDefaultsOrFixed": 0,
+        "features": {
+          "complexType": 4984,
+          "extension": 1598,
+          "maxOccurs:unbounded": 2778,
+          "attribute": 13312,
+          "restriction": 3272,
+          "attributeGroup": 1223,
+          "calendar-type-reference": 487,
+          "precision-sensitive-scalar-reference": 573,
+          "constraint:default": 740,
+          "attribute-reference": 4,
+          "global-attribute": 3,
+          "compositor-nondefault-occurrence": 29
+        }
+      }
+    },
+    "inputs": [
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/accessrules/wsdl/accessrules.wsdl",
+        "gitBlob": "0e4ddba19712e0bcb1847402cba576e58a829109",
+        "bytes": 30006,
+        "sha256": "af71419a58098173b3568a50f0efdbc0aef7a289f5231952cb596d113b3a11b2"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/actionengine.wsdl",
+        "gitBlob": "bd8bd87addf64c0d4bdbe2532d89b89dc83affbb",
+        "bytes": 55763,
+        "sha256": "0334892e43029fb90103ac4d64417f602b01b28687dadb19c9891daa4c1321be"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/advancedsecurity/wsdl/advancedsecurity.wsdl",
+        "gitBlob": "d8f6bcd6a76e3aa2c7e00f31b32cccba358b3f3a",
+        "bytes": 205248,
+        "sha256": "fe4958605373b1401751ed4a0be7370ae60c96971f89565b08f92834f8c0113b"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/analyticsdevice.wsdl",
+        "gitBlob": "ec2a95bbd4dd28dbc77003769987bb2df0cbba64",
+        "bytes": 30999,
+        "sha256": "1a75c1c4e0a89dd1086874cb67a89ba29e3f68e6b935504c366b09e4d8995621"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/appmgmt/wsdl/appmgmt.wsdl",
+        "gitBlob": "c08a0aeecd37f3d96188fd263ad1cc18b18dd081",
+        "bytes": 24676,
+        "sha256": "d78f5cbcf879353258c7a7011a930309bd0d624b57a2b2cfaf68517fb5c4b963"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/authenticationbehavior/wsdl/authenticationbehavior.wsdl",
+        "gitBlob": "1e9b292f4091d7a0350a8074f003b8927dcf4211",
+        "bytes": 58250,
+        "sha256": "753124ca89cc51122a514854b9a044830db58716de766195633b8faafc91a424"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/credential/wsdl/credential.wsdl",
+        "gitBlob": "525be285934f271914a59b534e979136250843ee",
+        "bytes": 85715,
+        "sha256": "14e82a5497e37ff7db39053a73dfb435f0fa610b3933fc402c481f34d3c1c319"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/device/wsdl/devicemgmt.wsdl",
+        "gitBlob": "374b8d98ca1922d9b359430199476498c425a9d0",
+        "bytes": 194973,
+        "sha256": "5b1a155e801d5d3af3ce61230084871ec9fa589c0e53a9583c0028204ce06e54"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/deviceio.wsdl",
+        "gitBlob": "75bbb5984ae39dfa5bd64d1ed0138a75f7ae7269",
+        "bytes": 64785,
+        "sha256": "f70cd19f8ff73e496c5cb9d7b9049852076094618c5d383337d86eedc05612e9"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/display.wsdl",
+        "gitBlob": "5fef7568d297bb3592ddebd2ae24e882d4d9e3ec",
+        "bytes": 23864,
+        "sha256": "d148dc27ad42fdd9413830ce13ea081c49476afb6ba8428de341d79e173081c2"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/display/display.wsdl",
+        "gitBlob": "872350224be464b58fcd6b95686dc06e1b59b623",
+        "bytes": 20747,
+        "sha256": "01ce0c2a2061b243d5221dc7bda3c0d3051c699a23c83bb27bada1f53746d3f3"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/events/wsdl/bw-2-vs-mod.wsdl",
+        "gitBlob": "cc4e85959b9e8ff39f55d5a37cc7c0ade734d931",
+        "bytes": 20274,
+        "sha256": "0a16081420a9f1838a94528d728540b98dc26a502c230778579e8fdc306c0d93"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/events/wsdl/event-vs.wsdl",
+        "gitBlob": "6aae1ea0d369b3423b09e721be05eb6ab41297e5",
+        "bytes": 47443,
+        "sha256": "37242a814fef9a1e6117f7a3a8f377351c4973c1bc724bf722ec0ef3ca003400"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/events/wsdl/event.wsdl",
+        "gitBlob": "9075ea713069094bb44a7f71893f1d68e4bee30b",
+        "bytes": 47411,
+        "sha256": "96e86818dcd348d334cd7b032e0a182f2dbc0af3c564adbc80b16086fbe1398e"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/federatedsearch.wsdl",
+        "gitBlob": "6c5a87f5f5569bac3a26369bd54a1162e75d1f46",
+        "bytes": 15785,
+        "sha256": "2526c80a9140554d8b81b9eaab3cf6628ef178723d5525ad02196db2d94355e8"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/media/wsdl/media.wsdl",
+        "gitBlob": "8efdadf95f648129b89edac05f89a00157b4147a",
+        "bytes": 171458,
+        "sha256": "09ee51ef000d58c4c52ed33f30eea6331a14e53355c0d7dcfb129deb7e40e63e"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/pacs/accesscontrol.wsdl",
+        "gitBlob": "3255c190b2ffac83d47193210aa68305b1deb479",
+        "bytes": 78387,
+        "sha256": "0a9aedb21b90b49be6ffc83ff85b784936061f5572ccbd16fb1634fa30f2205b"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/pacs/doorcontrol.wsdl",
+        "gitBlob": "c3fd3aaee26ab9486aaea6affd795efdcf5bf48b",
+        "bytes": 69658,
+        "sha256": "74f868f8c9dc042c18cc20253d208046b3d9ec953a65b52931f0135a302743f0"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/pacs/types.xsd",
+        "gitBlob": "7e37002a75e2c8694173e530aa336f3f62972273",
+        "bytes": 7239,
+        "sha256": "0c40baa435b63a6996774f9788fa27df7db1c096f9e9359bbf544802d2314f8f"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/provisioning/wsdl/provisioning.wsdl",
+        "gitBlob": "13039de3612af47933d1b055b60bdc0696138fd6",
+        "bytes": 24588,
+        "sha256": "979804945410a7b9cb3c367d6648e39d3c2275d248ea4d8738620ea62c242077"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/receiver.wsdl",
+        "gitBlob": "108985d0d21582d61caa98386ce8c5f1d58ec2d0",
+        "bytes": 16593,
+        "sha256": "ed82b0be481f8a9cc609c6b51b66db893e5802e8eb286dd53cef8f69aace92df"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/recording.wsdl",
+        "gitBlob": "7f67d64478a253c942645b6e242df444dbd8d8c3",
+        "bytes": 60609,
+        "sha256": "09af0775cb4d3a9958bcbe4b60b5132e7ef056eddba4c85c006c8687c2d682f8"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/replay.wsdl",
+        "gitBlob": "63a295e60dbe77d1e4a639e6d8316a26a1d60a19",
+        "bytes": 10533,
+        "sha256": "197dddae8f57ee631696ee977c99e8a37fc8146746fc9b6d0e4c82ed37b7fc32"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/schedule/wsdl/schedule.wsdl",
+        "gitBlob": "de9d4f46da77d74ab5fb51246d02bab2cd4efedc",
+        "bytes": 56036,
+        "sha256": "9c091930a2089ac529eae2b9fd5739dd50b8b13ad4b1a53cf0134d7504da5d1f"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/schema/common.xsd",
+        "gitBlob": "1279e4f1309dc8f3e4047b41812712bc8fc88283",
+        "bytes": 19097,
+        "sha256": "95082958627179a712f7aa4152b8230528d4e4f14e6e8c9ce143705263434adc"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/schema/metadatastream.xsd",
+        "gitBlob": "093270ad7dee4f22ba78623bd4a2c9425a8d5781",
+        "bytes": 26550,
+        "sha256": "f149fa6ed167512d99b6f36e8185c75bf39e50a03c9a30c215fe571d950b7918"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/schema/onvif.xsd",
+        "gitBlob": "b500b20789dd43b7ab16a514a72e267c052523ff",
+        "bytes": 422488,
+        "sha256": "4ae8673bb71ac5c31a3cad83f83e4c6092b998d4b40072acd3107d62bf36abb6"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/search.wsdl",
+        "gitBlob": "93dec1a5e8f25db95987e5f45a818f82b68134d8",
+        "bytes": 54129,
+        "sha256": "ab2cceee65c46dfd5ddb8b75e2c6832a01a096614523fb20bfef8d97e2966302"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/thermal/wsdl/thermal.wsdl",
+        "gitBlob": "4dde63ea72c04f082cba10618ae9beb6598053b9",
+        "bytes": 33353,
+        "sha256": "806bf8253118c2d5d6ed14b6244ab6b7bde8dba8fe76f75fad18acfd19500461"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver10/uplink/wsdl/uplink.wsdl",
+        "gitBlob": "7a9363f9c7d6b5e8fd7ac61e1574cb5d4ac214e8",
+        "bytes": 12857,
+        "sha256": "3cc72a5ba3b92c07b3521b32dea6997081d6ea1ea097d079f2f292fdde6b4d30"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver20/analytics/humanbody.xsd",
+        "gitBlob": "24ff7bc1bac880e03f95207b2a39dd9bd3f43943",
+        "bytes": 21445,
+        "sha256": "097a0371cc184d238af0013af480b5f95353fbc09b50dd2c6038826a7339a0cc"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver20/analytics/humanface.xsd",
+        "gitBlob": "6507908d194b81972b1f31370b2041887925e249",
+        "bytes": 21479,
+        "sha256": "f12831ce58261c70a38b46d7d7c8e486ec52a4070781e515148c30521958333b"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver20/analytics/radiometry.xsd",
+        "gitBlob": "08c5d3c0c70cf6cc685c7877d6bffbe5c83dca3b",
+        "bytes": 17909,
+        "sha256": "53dd3846dba207267ea8d918332dc4ca0c19573766fd591bb94dc4bb7d3b1296"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver20/analytics/rules.xsd",
+        "gitBlob": "3b0a2d40b19d2a630b4df542606cfc99f35448c5",
+        "bytes": 6480,
+        "sha256": "a60751ab82e97095d2e94f7e84bb7592aeba2f65af12ee8d941c0967e0a2d2dc"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver20/analytics/wsdl/analytics.wsdl",
+        "gitBlob": "9be78c691e0efea7add189d6776239a9d1575bf7",
+        "bytes": 33245,
+        "sha256": "cc09117371c94791b2d1bae610970f76a764bf70405d4a4a56b0375d508f02e5"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver20/imaging/wsdl/imaging.wsdl",
+        "gitBlob": "6cd32882ea2126ddb6425e51dede54d52f2d59b3",
+        "bytes": 26153,
+        "sha256": "81b35e25bb4b633034440a0d63492bd93f06e2b9cf0ec400f4b145c11bd944a8"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver20/media/wsdl/media.wsdl",
+        "gitBlob": "c8740e170e8dd22a096c5bb6e640ab836cca0121",
+        "bytes": 149149,
+        "sha256": "61af80d4056a9bd0d98b024a8f5601e8c4d4cfa8a3fe2a9abb182c1e026cc305"
+      },
+      {
+        "group": "onvif",
+        "path": "wsdl/ver20/ptz/wsdl/ptz.wsdl",
+        "gitBlob": "209d7315eea03a5373fa90517ae06edef55283f0",
+        "bytes": 60597,
+        "sha256": "d2133db7c30244497a060bc830e7109a2c3d5b37e548feb2025858e95f13371a"
+      },
+      {
+        "group": "ebay",
+        "path": "eBaySvc.wsdl",
+        "gitBlob": "7e1e30a1788bae6e56cb38acc5a4e93ddbd5ce03",
+        "bytes": 4603721,
+        "sha256": "3af094e71507f44a8fa9e62b63340b0877dd1a7b5206a39bd7e1003fc63a0cc2"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/Air.xsd",
+        "gitBlob": "b018a4cfbfad35168fa9b5712e8c1608f6a9de75",
+        "bytes": 464759,
+        "sha256": "db67a5b23ec250a8c9d6fd171ff643ab8da9abba24b3d333dec95b4ddfe3804b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/AirService/AirReqRsp.xsd",
+        "gitBlob": "0a576a969a71241861e3ae3d340117fd44a16713",
+        "bytes": 98066,
+        "sha256": "c8ccec6313addc9c366df5cba7aabb14cf31a15a7fee472e7296e8bf0cb3ea32"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/AirService/AirService.wsdl",
+        "gitBlob": "d746d4893bbc445dec41166948868650052fa108",
+        "bytes": 15131,
+        "sha256": "fa1ce147ffe438b79f6ee6d4961db723d1e005871e575d4520777f37aea9a1e8"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/AirService/AirService1.wsdl",
+        "gitBlob": "02301d51a2ccb57416ffd509881f15856305917e",
+        "bytes": 20219,
+        "sha256": "1f310d8e9279cac954ba7c0a530584f409e1ab7a61b22b537c025a9f5ae0fc54"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/VehicleService/Common.xsd",
+        "gitBlob": "e150e3dbce330c1c418dfe09970285957ae29462",
+        "bytes": 342706,
+        "sha256": "46a91f92fcb3e27c5f8776d7060f920ff388105a3159b45cd66d28c3f57dd4de"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/VehicleService/CommonReqRsp.xsd",
+        "gitBlob": "571701e7440da298cce187e2b7568d1206769b80",
+        "bytes": 11160,
+        "sha256": "1837ba5e5179678d0380e93bd4cfb28720b3830525d03801a1b43ce055a2a626"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/Rail.xsd",
+        "gitBlob": "094442cd9f71a18f29c7dd4dfa5916294851c930",
+        "bytes": 56538,
+        "sha256": "2a8d6c55b4411168c60c580772dc5c041d043882245ea2844a3b4c97b902814b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/VehicleService/SessionContext_v1.xsd",
+        "gitBlob": "46177d504d598b95cff60218f0daa26902c88d83",
+        "bytes": 1871,
+        "sha256": "9763692d9acea09e9be0f1f195d7b2cbb499241ab535a8d8eb5ae13d10ca662b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/HotelService/AbstractHotelServices.wsdl",
+        "gitBlob": "b41bdb8fc5ca9396f238539d27f11815086f2c21",
+        "bytes": 6252,
+        "sha256": "8f0fb67593e2420d4b4e95b1155a6da74dddf895df75527fbf0c180632c063c6"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/Hotel.xsd",
+        "gitBlob": "9c5d497bc75bd7c42fb8ed26dc1f33167fdd9ecc",
+        "bytes": 108179,
+        "sha256": "adfbe63ae8130cf3d6aa9ec141af2f181afb292597b3a2ac1371477a49eeb3ed"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/HotelService/HotelReqRsp.xsd",
+        "gitBlob": "a8a4bf5987765a4f8aacab327623060885810156",
+        "bytes": 23144,
+        "sha256": "1782d694702a17554a9e8bb0a00207f225e4c16bdbe2b4493ecb974a11a4ad99"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/HotelService/HotelServices.wsdl",
+        "gitBlob": "fe9b4e3ad76c77f34c397df7ae90ec9ed88cf2dd",
+        "bytes": 7955,
+        "sha256": "182b0a8edfed96e4a96ef1444ef2ad861b9dd698843a947538b7f0ea703c3324"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/SystemService/Common.xsd",
+        "gitBlob": "c7a2be71847152afc7f426e8ed98906bc30dc2c6",
+        "bytes": 329133,
+        "sha256": "fe6c19b4110dc0351768da6df9e215edb289d3447ab18e3fc0b7d159bf0cab3f"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/SystemService/CommonReqRsp.xsd",
+        "gitBlob": "f66a80e2361acfd4020db8430fd2e029b832390d",
+        "bytes": 10946,
+        "sha256": "754bca447738164b98f61a054fe6cb39148271af15d13ca383147b94e0e68349"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/SystemService/System.xsd",
+        "gitBlob": "7667069abc86f893020776dd63ea6bd3e0f8464f",
+        "bytes": 8508,
+        "sha256": "7edd3d0f242c93f858a76bc171c40de378b765461ada53eef43fa91d45208a3a"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/SystemService/SystemService1.wsdl",
+        "gitBlob": "de651eac0a7d4f105bd43af8509e4dc171359d22",
+        "bytes": 3433,
+        "sha256": "8978a2ba451e0894a38a913ce34dade4f987f4be51bfc292a4efd30be059836e"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/SystemService/SystemService.wsdl",
+        "gitBlob": "27558fb487c77da9552aacef89d7da4284ce3514",
+        "bytes": 2836,
+        "sha256": "4739bcdbb8ebdfd6893a548c914f6792e5cf06481131d3bc0074b882a46d7544"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/AbstractUniversalRecordServices.wsdl",
+        "gitBlob": "f11befd4f55216dbedcfe4bccd8f8a6bf0d37edd",
+        "bytes": 16077,
+        "sha256": "16dedff9bcf640f00e1bb5af447589b56d1b3646a979c1e2f14d970143d68071"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/Cruise.xsd",
+        "gitBlob": "1b8ff21c882fdd0ca3cf728562e81171d9161fc0",
+        "bytes": 31299,
+        "sha256": "f8c647c1de55f76c2f25f75817912602e31fff85c177c0d39242ea9898210803"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/Passive.xsd",
+        "gitBlob": "62dfb2e9b2b226c4a55b6aba49940630a21359b5",
+        "bytes": 9563,
+        "sha256": "c1bb0d39e57e58e08ebd7ab7f4e2c4cff51b2b724a2ef83cf09c3f47e2b80978"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/UniversalRecord.xsd",
+        "gitBlob": "37e7200fbbdf4f605ccedc66107079eb1d06dd27",
+        "bytes": 117072,
+        "sha256": "7261b61eebd176bdcbf684fa7b726345d21eb1301c67d02054408fdabab4e62b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/UniversalRecordReqRsp.xsd",
+        "gitBlob": "a966ad66ab3ef3827abb11967d8a3fa652d3e042",
+        "bytes": 59168,
+        "sha256": "600c5565948e28d18a40aa5e1e62332f17ba91db9184673682dbd0dffb6c4fe4"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/UniversalService/UniversalRecordServices.wsdl",
+        "gitBlob": "be79f2adf7b9c782ae1e37e5d84ac201d08ba23b",
+        "bytes": 22843,
+        "sha256": "3b0e0ae9a02a3b6352c83ec8cb1cd19e5b6bff19328ca8fd873bedd05a2c7b33"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/VehicleService/Vehicle.xsd",
+        "gitBlob": "64d27258aed36363e379dea09e9e104f2b1397e5",
+        "bytes": 85320,
+        "sha256": "762ff002a0e844772b5883f78fa1c7210d79445ad4b2828aeffad52d04428959"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication1/ConsoleApplication1/Service References/UtilService/Util.xsd",
+        "gitBlob": "63ec6b2c82a42d90a8744e668beb9f4a35f03218",
+        "bytes": 102235,
+        "sha256": "8809a330faa1eadd3e62720d7657af69ed5d23b1aba980ca9d265635e470f1d9"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication1/ConsoleApplication1/Service References/UtilService/UtilService.wsdl",
+        "gitBlob": "03501045249d23a6c1cc366100662b98c85f6c73",
+        "bytes": 14967,
+        "sha256": "4af0029b3d6ad8a7679db11678cc31b083d162e0d61bb8136dfeddf7e76d1c75"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication1/ConsoleApplication1/Service References/UtilService/UtilService1.wsdl",
+        "gitBlob": "7e850ef2eb89a68099a192358ffa7999342fa1e1",
+        "bytes": 10652,
+        "sha256": "eae83611d6543d10705c08666237af2ca75c75dc8f29b3d48403af74282d0b54"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/VehicleService/AbstractVehicleServices.wsdl",
+        "gitBlob": "be0a486b1efae6eab8d39ff0ab5a26b7b5438ffb",
+        "bytes": 5543,
+        "sha256": "14907c9c0061cd1b7df40ff1502fa08e8b343ce91dd402db747138bb51127f40"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/VehicleService/VehicleReqRsp.xsd",
+        "gitBlob": "22552e834cb708715545bf866b4c9538ddee02ef",
+        "bytes": 22269,
+        "sha256": "a7bd02e88b73fee6ae6f5134952862841aee8a77a3f50dcce0126569a2030628"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/VehicleService/VehicleServices.wsdl",
+        "gitBlob": "af1859e03809d54bb4bc8232f647ce10044d71ea",
+        "bytes": 6642,
+        "sha256": "856b39782b090b1fd8f7d40d273d78924347e39e50bdd3a5b20b9fb7e66b061a"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/SessionContext_v1/SessionContext_v1.xsd",
+        "gitBlob": "aef0126ecfeafe0b7d7239009e9c2ca6dd0b5287",
+        "bytes": 1778,
+        "sha256": "707a24843a522d24203605e2a9d7396f33742e5ab97ab7415a703ab2ba1c69e9"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/air_v40_0/Air.wsdl",
+        "gitBlob": "5cc00593ccfcdc7189906fadc01aef2930dcc03a",
+        "bytes": 18835,
+        "sha256": "b5cb143ced05d53308c3da8e43eed7d7eab5651182a662570e70488a1897db14"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/air_v40_0/Air.xsd",
+        "gitBlob": "270646b238d8868890ed9116be88d000f8ff7311",
+        "bytes": 531443,
+        "sha256": "09613c032406a7ba1730aa06f065cb68a45af08ba35148973d57511e8d33af77"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/air_v40_0/AirAbstract.wsdl",
+        "gitBlob": "3dba3afbf873a2a3e99424ee542cea7dca260c52",
+        "bytes": 14394,
+        "sha256": "8dac2c18025f30c8aa04761e6881d36bf42537b9b6e2baa2f896d48dec93e2cd"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/air_v40_0/AirReqRsp.xsd",
+        "gitBlob": "5ad2dfe41969abe7b5c5c1372465a3947cb50521",
+        "bytes": 116213,
+        "sha256": "7f2b9676c7608e69835cfc275954d5a091ec405ab56b67f0492f93c835f8d828"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/air_v40_0/Kestrel.xsd",
+        "gitBlob": "16666f92051e7bef5872819c4e1b52306558d3e2",
+        "bytes": 568,
+        "sha256": "d2ea969358295166df18bf2152f4c4a82aa9792731bff8b27787959978871747"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v32_0/Common.xsd",
+        "gitBlob": "e7012b71d3a433369287ed0644f7ebdd7634105f",
+        "bytes": 317608,
+        "sha256": "2598ce5e1b280c3521a0040bdf83e9f1ccf49cf1e4763a4e56c061042482e2dd"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v32_0/CommonReqRsp.xsd",
+        "gitBlob": "77fdaac71127aaa167b30832beb3bc178a4c79be",
+        "bytes": 12237,
+        "sha256": "e283aff4f96f2d6e35f0bda3cc739ed87c49737646ea1fcc34144c7a612bbe12"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v32_0/Kestrel.xsd",
+        "gitBlob": "9cafcf2baa1bb1e115eeedfbc98c9254f3500cd4",
+        "bytes": 584,
+        "sha256": "0a16f340bddb6a57af076fdaf0f0e17d62ff8fd40e7225efe0834d99249ab335"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v33_0/Common.xsd",
+        "gitBlob": "a1bbb309bf1335e43a3676b3438f74ca8d7d8c2c",
+        "bytes": 318253,
+        "sha256": "71044400910d5050ca5f3b6f0b45b77461088046d225ae75de1510df88c5e003"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v33_0/CommonReqRsp.xsd",
+        "gitBlob": "182b97f8431212391e6bbf0ed44f0bcdfa1405ba",
+        "bytes": 12237,
+        "sha256": "920e3bdc5971358917c4c59a208f90c8b36c0fc83308cf0ddc03660d1d72ed26"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v33_0/Kestrel.xsd",
+        "gitBlob": "3c061013abc2bd444846e4aeb892e2a639e3e131",
+        "bytes": 584,
+        "sha256": "1f78dfb1c01993b5fd45da99ff41d8d7310de5d935500fb365d41e50b9e2588a"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v35_0/Common.xsd",
+        "gitBlob": "3850c5be7336e0f791d9b5fd897179a032286b75",
+        "bytes": 321744,
+        "sha256": "238da0e8eac1cadcb24887a9ff4d7a8e62705850f2c0069acc6ea48e0bc3b1b8"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v35_0/CommonReqRsp.xsd",
+        "gitBlob": "7c9e50ec37cec7abb27271a321cc0c79db9f66d2",
+        "bytes": 12237,
+        "sha256": "ced2f59d93446f461611f3ae2f992a11fec150b3e8a6531ab753a7dcc44be262"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v35_0/Kestrel.xsd",
+        "gitBlob": "2b533bd6c3b165f583de7452a07cf4a20ba51bb7",
+        "bytes": 584,
+        "sha256": "5452828e8447fb61c3b612b6d2fae67cbb04c7ed6d250089255f5eaa6ae5d289"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v37_0/Common.xsd",
+        "gitBlob": "6f3827dbfffd3480fad13a86774766bfb71130b2",
+        "bytes": 327614,
+        "sha256": "8e0955fb8b72ccddd991fb4be62724d3a4bb0e1ad3e3d55d82c6968b24ea1cee"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v37_0/CommonReqRsp.xsd",
+        "gitBlob": "c2c179a3da56fb27c56f563361c80e32f9ac1736",
+        "bytes": 12448,
+        "sha256": "ce9d6fa3ecba5024bd80eadc8cc533cf16cb992bbf75b943e4755104048e6765"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v37_0/Kestrel.xsd",
+        "gitBlob": "f8cf6ebd09443cfcc4f50230c21f7c20061cfb83",
+        "bytes": 584,
+        "sha256": "dd3fc7ac1983e626602652e880b8f54c37721b1239b2c9e55a3bcb95f2c9126e"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v38_0/Common.xsd",
+        "gitBlob": "88d6e977f83d1fafe37ce9c1d19f669c77e747c3",
+        "bytes": 328467,
+        "sha256": "41a492bf866bfae80cc118c1fb2d1cbbda2f4ebcb21c7d33fb0c3eb080f8ec76"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v38_0/CommonReqRsp.xsd",
+        "gitBlob": "87a74110fae3c8b2a13ccbdfabd8d330471148e3",
+        "bytes": 12448,
+        "sha256": "1e7e1e8811de9527165b6d1e0f0f08292097fc7191b7315eb135227303790943"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v38_0/Kestrel.xsd",
+        "gitBlob": "7133a4a78fc0c3263ac0383d65a23b3574b7e7ac",
+        "bytes": 584,
+        "sha256": "48fa9b7597bb01e2e4d7231c768b83b0d5c4bcb5fc6c7adc6015454cf9f3259d"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v40_0/Common.xsd",
+        "gitBlob": "ca9980cbf2e7ed67ec4403d7f475f0fd03ab2afa",
+        "bytes": 332011,
+        "sha256": "5f5557012a0cffc99cfa94b185d16d8ebc88c7ceb70139170fd2c730200893eb"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v40_0/CommonReqRsp.xsd",
+        "gitBlob": "a304ecedb3bff6c7913835bdc8f1b60a27d335ee",
+        "bytes": 12448,
+        "sha256": "2eaa3d97081d0560d82312e3f2845f2e6eb7dd0cbdfedc73bfb5d23c1ffeb6b8"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/common_v40_0/Kestrel.xsd",
+        "gitBlob": "18c6c2c18312b5d039bb1bb9dc206ad4c108ce3f",
+        "bytes": 584,
+        "sha256": "70ccdde4ca70be8e7ef3bccc27cd4adbdc1ff4734dfb3bbb395624dd585a6ee7"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/cruise_v40_0/Cruise.xsd",
+        "gitBlob": "59c1d4565c08b853c4dcc05e115901f79cc8499d",
+        "bytes": 29218,
+        "sha256": "3073eca27ac175b78138b80e49ef196972ef1b48e23b93281579eb9de76e352d"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/cruise_v40_0/CruiseReqRsp.xsd",
+        "gitBlob": "596f0f0b2c2fd9f6572d55f85d483989ebe69e00",
+        "bytes": 568,
+        "sha256": "f4aaf64814c3983e604455e2498b0bc7d64457836aa2d3aff3b8cc6685094690"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/cruise_v40_0/Kestrel.xsd",
+        "gitBlob": "2bc46c225e40fdb36e01ea672f7f4f7339964af7",
+        "bytes": 577,
+        "sha256": "ceaea18b66fb63d57cf7f7de4ebbfed18979e60e14b1c9fd98a5c7f5e71af76c"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopPreference_v32_0/DesktopPreference.wsdl",
+        "gitBlob": "f219190309577c554a932b99d712b3dbf845c2b2",
+        "bytes": 3539,
+        "sha256": "ca7250a277023e90cbb235ea0b5461f58f205d26f4d65980cbd2a6f8505387a7"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopPreference_v32_0/DesktopPreference.xsd",
+        "gitBlob": "fa11b600743b83b1f9e0e1b6d79162c196791ef1",
+        "bytes": 10701,
+        "sha256": "45c66901f51d3ed625cbd7dda4146c30b323d04b50f2aaf8e6384ccec07161ba"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopPreference_v32_0/DesktopPreferenceAbstract.wsdl",
+        "gitBlob": "8d165bb52535496ace684e96cb3608e327b2e521",
+        "bytes": 3085,
+        "sha256": "c7646d38a8754aafa900b66b83a027853c3f8cf9a1f37cfc8724e6151419437f"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopPreference_v32_0/Kestrel.xsd",
+        "gitBlob": "40868b6719207a2026b67b2bdb61e6d733501da8",
+        "bytes": 611,
+        "sha256": "e2259e07790982cae0d9fba587b580fb60d183a4cc0a4b9538287d7e64f26e63"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopServices_v32_0/DTSCommon.xsd",
+        "gitBlob": "6bc7a747e67d03e89e68a0180561d4a893db4d38",
+        "bytes": 2619,
+        "sha256": "b3ff40a641acd8d21cc67ff2cc2a44d965d8fa2266470749952c4750d02b5ab6"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopServices_v32_0/Deployment.xsd",
+        "gitBlob": "006c43fc0c76625eeca949d497097602dec5f865",
+        "bytes": 11881,
+        "sha256": "0ac72111b57601680898dcc8948a5b3d01c261ad577daa64fdb905e25ecda24c"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopServices_v32_0/DeploymentReqRsp.xsd",
+        "gitBlob": "5a3c31061a4ac0d241ec86acafbec62972fe8682",
+        "bytes": 26028,
+        "sha256": "1705671d02b1d978b3fc9b520a8ebcdebf51442f1131a8c6d2086b2df5b6485c"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopServices_v32_0/DesktopServices.wsdl",
+        "gitBlob": "03fc51b660f8c4d0342f7d4f9ac7c39f728aedf4",
+        "bytes": 45148,
+        "sha256": "1a14318a52bc976aedbe3d8c8b390637750b91bd12c9492fef796943bfd22848"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopServices_v32_0/DesktopServices.xsd",
+        "gitBlob": "3abba64167b2edbdb3bcc59910b331d96a0ca3c6",
+        "bytes": 41603,
+        "sha256": "b34bbb88b66c2e4d68e14241aaba2506053fb5dda87c5d3680f63ba518bf2814"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopServices_v32_0/DesktopServicesAbstract.wsdl",
+        "gitBlob": "830b024f82ea71046b6b606c7394c5e72cf1d262",
+        "bytes": 31433,
+        "sha256": "455427644d77323c19fc01c122127dfe9c2a7af852a555edd6e1444ed7cae87b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopServices_v32_0/DesktopServicesReqRsp.xsd",
+        "gitBlob": "48d2572c0622582ad43c5c9b30df8ff6c16759ab",
+        "bytes": 40898,
+        "sha256": "9e76600a6d8c5f4037b5f62974a97a6846672a1811632fdf9ddc4ad90b7bff7d"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/desktopServices_v32_0/Kestrel.xsd",
+        "gitBlob": "0cf1df889818e83140b1b255d1eb903efd23b4be",
+        "bytes": 616,
+        "sha256": "d720e77aa4125b6001cc278d4173f0f1a1cd4f3dcd6d87eac113191a42e35734"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/filefinishing_v32_0/FileFinishing.wsdl",
+        "gitBlob": "e602775232016cd8181d7e725819fe1c0a4b8943",
+        "bytes": 7729,
+        "sha256": "a2f4e1c25266f2716dea3ab574d37e06609f7ce0fcb3baa4221a01c008097e5a"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/filefinishing_v32_0/FileFinishing.xsd",
+        "gitBlob": "b74783e0ab99bd98fac2ca3080b49226abf04146",
+        "bytes": 21801,
+        "sha256": "a7babfbe1643504124e279006a717112e868af535b6f74b7695758d091a696b5"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/filefinishing_v32_0/FileFinishingAbstract.wsdl",
+        "gitBlob": "051975b479727610b353a4312017a0cd89afb684",
+        "bytes": 5621,
+        "sha256": "9625f8ab3120b1f8d4bc19d80a5ac89a5dafc3827e3f95a78fb05de7079f392a"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/filefinishing_v32_0/FileFinishingReqRsp.xsd",
+        "gitBlob": "12dc340d93111efac685c54c5b08d8869d26ad54",
+        "bytes": 16060,
+        "sha256": "30b033202b9c2500177f90f74f0223f35e6778b4ab95abc6ec5b1605cea5a6d6"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/filefinishing_v32_0/Kestrel.xsd",
+        "gitBlob": "be59ef9d59a1d325596f0dd1d4b2c1a165c25252",
+        "bytes": 594,
+        "sha256": "c657a4074ceebc953aea78fc745be445e620787fc4edad9fb9184b4eae1b01d7"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/gdsQueue_v40_0/GDSQueue.wsdl",
+        "gitBlob": "09ac8490e23a0c9da584f052d520f1269afdc47b",
+        "bytes": 7600,
+        "sha256": "d1c005645af585b14b1ded338ec050f70d9c271bc536b387fc574028fb92aa8e"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/gdsQueue_v40_0/GDSQueue.xsd",
+        "gitBlob": "ad5ca61279e65b1409c5a337f964a520da6d7f0f",
+        "bytes": 24686,
+        "sha256": "a1abae00f6696ee622f75501945c7b0a5bcdfb4ba9d67037c23a4c92cd7cf9f9"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/gdsQueue_v40_0/GDSQueueAbstract.wsdl",
+        "gitBlob": "ddc707c75a15fd4554fde099a3d63db5e421ab3d",
+        "bytes": 5725,
+        "sha256": "f93cf8cf39c62fa0c608bef110bb8a56258b8fc1ee6065ad14861b2726ef7eda"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/gdsQueue_v40_0/Kestrel.xsd",
+        "gitBlob": "44f9268ed42a52b952a05a5b0001f33abb69e122",
+        "bytes": 584,
+        "sha256": "a148a87cdce5681a27082b228e1749a65bac2ad1ba42652faa42243c0261b102"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/hotel_v40_0/Hotel.wsdl",
+        "gitBlob": "e8fc304ab211400525097bd86ee338cbeffa7156",
+        "bytes": 9302,
+        "sha256": "f563ecc6d9ae23e8e3b4ec347f0d4d5601f8e50c27785aff6f0761c861c9fd4b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/hotel_v40_0/Hotel.xsd",
+        "gitBlob": "a04ccc779c59ae404c617906b1df5211e371bfa8",
+        "bytes": 120427,
+        "sha256": "2e2bb2ffd8b19eab34c87b18ce0727f9ac89d9ed04f96af6f496751d6c2cad8b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/hotel_v40_0/HotelAbstract.wsdl",
+        "gitBlob": "a9b52037c176b2b361b5a226fe63920ed398fee1",
+        "bytes": 6944,
+        "sha256": "700035897533f6c18fe1fdd037ddb860e43c87f0d3a7d80e78cb0ab3aa83f9cb"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/hotel_v40_0/HotelReqRsp.xsd",
+        "gitBlob": "db3c559bfa5ee6e7a61a9743ade3fa0aa53cb07a",
+        "bytes": 26962,
+        "sha256": "f6c40c2327e885a6452db9a491f7f5cd2f0518d8c200d0458b58bd4bb49f07e2"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/hotel_v40_0/Kestrel.xsd",
+        "gitBlob": "38dd23649776d093459146da83052a7be506623d",
+        "bytes": 581,
+        "sha256": "ad72b63fcd79aa6002be43dc5e2133da93c9d92911685d5a50004821f435675b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/inventory_v38_0/Inventory.wsdl",
+        "gitBlob": "2f640268775efafa06cf288b415b33d0b987974a",
+        "bytes": 1514,
+        "sha256": "2ef578939e835e0cda14855630ef50d95862c655478e0d48a901d76014d0bdc5"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/inventory_v38_0/Inventory.xsd",
+        "gitBlob": "a3a2d3865c50a75d77c64a14f38a02525a723666",
+        "bytes": 9434,
+        "sha256": "2d0873cf33a1f7f48e6393e045a2d7b45203164879a9df8aba39890cb495f077"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/inventory_v38_0/InventoryAbstract.wsdl",
+        "gitBlob": "8048b526ba36b8190573bfd8061c5c34cedf0c03",
+        "bytes": 1801,
+        "sha256": "95caa824629847de1e06316740d63b635ca07787944a189494f1280c3b4f39c3"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/inventory_v38_0/InventoryReqRsp.xsd",
+        "gitBlob": "dfd22dc1ab36c89d3c93483b296311b4e6e5229c",
+        "bytes": 2800,
+        "sha256": "7db3c0ac36ef247fa9bad0c252722cffb27c6591a13e6eda1ad1b0bc670313c6"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/inventory_v38_0/Kestrel.xsd",
+        "gitBlob": "9df870f13c6206bc8f01a0e280f781a0cac89904",
+        "bytes": 593,
+        "sha256": "b983a1bb89d1ad1eb975ac15a1e0404f75b33b0e9fbf9d32b27c1c992b7ef222"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/passive_v40_0/Kestrel.xsd",
+        "gitBlob": "eb421c605bde7e6a43ea8fa7890db5cf584d4b95",
+        "bytes": 624,
+        "sha256": "a922bf363cf78c156dd575497b8c283bc69f2616d92e98350eb2d86fd259b89b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/passive_v40_0/Passive.xsd",
+        "gitBlob": "61af551c5cf8f6a9285b350847dd5cef189fd065",
+        "bytes": 8961,
+        "sha256": "504cb291b813aa23c497d0622d0fef1bf68b8caa894d20cec7930b4777c904df"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/provisioning_v34_0/Kestrel.xsd",
+        "gitBlob": "bd0f2e80c195aad8288e36b7c57de75e02a62ca9",
+        "bytes": 607,
+        "sha256": "cfd9851de182a4d735c089cadba26fa1fc525e1b9acd2376953c8a06a4bfa92c"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/provisioning_v34_0/Provisioning.wsdl",
+        "gitBlob": "c5175ea42772bc777f0802a64bcddf65ee2128cc",
+        "bytes": 12902,
+        "sha256": "0d0341f6fb779c9360d875ae32c5397ae9c5818472e38a4551dbe6d8d3aa89af"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/provisioning_v34_0/Provisioning.xsd",
+        "gitBlob": "98253389bd74084ae751a1896834fa8340e419a3",
+        "bytes": 37977,
+        "sha256": "211eb93f346ffe6fea1575e82db3110c5afa93b020a86584b781d02043a5975c"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/provisioning_v34_0/ProvisioningAbstract.wsdl",
+        "gitBlob": "4e5a2bbc0d0e9633208c4335b4e5fba2a5c9f374",
+        "bytes": 9438,
+        "sha256": "434611d64ba9a3f660579345cbbad892ba6d1eff7c3a8eed9878e206a9fc9c56"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/provisioning_v34_0/ProvisioningReqRsp.xsd",
+        "gitBlob": "3d48d9e5f7ca11a306ef03a0b5531cc94eb50394",
+        "bytes": 25798,
+        "sha256": "bb2edc57a23223ea0bd78607321abef8d26cb2aaae933b34a8075cf1b30c4597"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/rail_v40_0/Kestrel.xsd",
+        "gitBlob": "ca658364753c422c809d199d1de595c3ab3b5a39",
+        "bytes": 578,
+        "sha256": "eb6f49cef9424435aa32cc85a0658b96d8dda4982c95699f06cf75453b55fddc"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/rail_v40_0/Rail.wsdl",
+        "gitBlob": "a904b900ac38c6eb293ee4345006c463dc5c20b0",
+        "bytes": 5718,
+        "sha256": "dc2a09b856e7fb514aa448d9b0e13fcfab696f502a22b65c04b52cd62f3437bb"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/rail_v40_0/Rail.xsd",
+        "gitBlob": "92246b789ca8bf3fdc9cb8d24ce577e15ee0b22d",
+        "bytes": 64514,
+        "sha256": "36f73c14f82aa6eb89d2e2a9e72fe02a1e186184772e788434834f0a5cac4246"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/rail_v40_0/RailAbstract.wsdl",
+        "gitBlob": "307b3c3b3270bf3b7ac2d8c513f5955879106559",
+        "bytes": 4525,
+        "sha256": "edf890a1f0fb45100640d8fa3f280a9cfe8c1e90b0d03a595f9e328d66bd908d"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/rail_v40_0/RailReqRsp.xsd",
+        "gitBlob": "ab720431ee24dd9a09b1109ce6ab1b61e66f89b2",
+        "bytes": 15190,
+        "sha256": "c502469e807a585d8a26e11724b39c03a5cbd09bc331f4783f78f7ff96f9d0e7"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/reporting_v35_0/Kestrel.xsd",
+        "gitBlob": "060b74c056f059dd3567c7f5ea704610adf78341",
+        "bytes": 593,
+        "sha256": "3a9f70f992570b8b73ca4e453056867859106adf7410433634eb3147394a7c4e"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/reporting_v35_0/Reporting.wsdl",
+        "gitBlob": "324360ad89b785a2452c0ddca097d37dc9e43e81",
+        "bytes": 2706,
+        "sha256": "6c4d73ba9688306c51f6f4ba4958f5db2daea51a4e28327a2bb8bc8206f816be"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/reporting_v35_0/Reporting.xsd",
+        "gitBlob": "ca807c17357cb06405ab1cc497d8f245b11d20f4",
+        "bytes": 39919,
+        "sha256": "4e92639f3701b01ec94008cc14d3b14b418a071b7831bb02c6da20da65f31d2b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/reporting_v35_0/ReportingAbstract.wsdl",
+        "gitBlob": "73b3ba6611b87d9c39b8d4f9ad5cd249b4baaf0f",
+        "bytes": 2393,
+        "sha256": "e9f731b3b1adc53d08a95341442176cbeaa8c436d06b88cc634ea16cf6b48f07"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/reporting_v35_0/ReportingReqRsp.xsd",
+        "gitBlob": "558c5593277dd7e11501830b67225ad5928087b6",
+        "bytes": 7081,
+        "sha256": "6b4090340064380efe8040887d1c091597fc2a70d6d8669b18230cb322d2e76c"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/security_v32_0/Kestrel.xsd",
+        "gitBlob": "fb5fddb94c24939a646aa1282d29ab2682bc3992",
+        "bytes": 528,
+        "sha256": "8092f72040e270134de7c2a6ec4fb9ff4a296c471fc1cf8cc20f8e6322666c98"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/security_v32_0/Security.wsdl",
+        "gitBlob": "b566d307876d657bf04aaa7a777619620234b87a",
+        "bytes": 16834,
+        "sha256": "5e0e4dbf809f647cd68f59cc01a03bbc0c54c0973da77dd8a8665654898b6436"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/security_v32_0/Security.xsd",
+        "gitBlob": "ab11cba955a4f320938bc74393b5f93261a152be",
+        "bytes": 30357,
+        "sha256": "04241cd4d1ff306edff34372f0023ed926068b915b7f34c054563519d627e0b1"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/security_v32_0/SecurityAbstract.wsdl",
+        "gitBlob": "74e628d735774a716fc9f95d0c778b3623948969",
+        "bytes": 12471,
+        "sha256": "6b0e40ad181b8099c84d7fd0688eceb8ed9ebea9921b08ba091e00139534d416"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/security_v32_0/SecurityReqRsp.xsd",
+        "gitBlob": "eb31800e81732541008e274e28a1d488314ab21e",
+        "bytes": 35992,
+        "sha256": "77c9ce6d81288039cc01fea88280c44ca25629ad1e2a44838106a20e25dbb319"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedBooking_v40_0/Kestrel.xsd",
+        "gitBlob": "ca858fe7eba1f5014e14af7869a582f97335820f",
+        "bytes": 599,
+        "sha256": "1f8cfbe9d3dd51e43f4457f4c1012d198aa4783035fbe7fbdd69c78d1a17166b"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedBooking_v40_0/SharedBooking.wsdl",
+        "gitBlob": "dc05c88238dfa2265dd463747f55ca2c175dcd4b",
+        "bytes": 12004,
+        "sha256": "c34ca0ca64695363ce3cf8e040c1f374cf3ab025e51ce2289422a33ca47dc43e"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedBooking_v40_0/SharedBooking.xsd",
+        "gitBlob": "c746d8a6d0c53ee9d439a3826361447ed52b111c",
+        "bytes": 17232,
+        "sha256": "92c5058b6f2bffb1f012a7e491ffffbfc2de785e3266d2d20a1f372716d5aa35"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedBooking_v40_0/SharedBookingAbstract.wsdl",
+        "gitBlob": "522416faed330dde5141f19ca4429ff4b5052166",
+        "bytes": 9078,
+        "sha256": "cd6ea75f44c6c4791f7b49ba64f5587d14ba42dc22756b4d85fbd6abb788c2f6"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedBooking_v40_0/SharedBookingReqRsp.xsd",
+        "gitBlob": "cb6105afdb2b7666bf6b96eafaa2063e9c293e41",
+        "bytes": 20125,
+        "sha256": "0a3345b5dadaaa7194223d9e6dedc4f70c9dc56f4ff07f0428084f38cf3aee37"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedUprofile_v20_0/CustomerProfile.wsdl",
+        "gitBlob": "d9ea454a504736fdbd80746e3553b197fc2237d7",
+        "bytes": 18190,
+        "sha256": "1a11123101432addd604785f4fe580f198ecc85b3cbab57415efb9cbc3f0ca2e"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication1/ConsoleApplication1/Wsdl/sharedUprofile_v20_0/CustomerProfileAbstract.wsdl",
+        "gitBlob": "f684ce47c51e57e3c68ac3d68518d863318be0f1",
+        "bytes": 11805,
+        "sha256": "6086fbc8cb5e5b52a037183a4467307f69d27cd9d5b4422d72a1654b56b65216"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedUprofile_v20_0/Kestrel.xsd",
+        "gitBlob": "d1d478f6738a80ac07343c798567f3450086cde0",
+        "bytes": 770,
+        "sha256": "fa91ffbed635daa8d75c1462390f5d0709fe0577c83c2cca2e0bfa7ed208e194"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedUprofile_v20_0/UProfileAdminReqRsp.xsd",
+        "gitBlob": "566c2c574b0f9a2fad9aec2f169e9fedee845bf4",
+        "bytes": 29518,
+        "sha256": "cc2e6f812c170715c6c8dad9eee3ae5b313b787873f843a2923632ef97d09d73"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedUprofile_v20_0/UProfileCoreReqRsp.xsd",
+        "gitBlob": "1600c5627e0b330db3e1ddb0b6ff898f6afdd738",
+        "bytes": 9857,
+        "sha256": "44a9f47c948ccd71e6a8935064d3e0f9323288af05480c4a7acf61583c840a7e"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedUprofile_v20_0/UProfileSearchReqRsp.xsd",
+        "gitBlob": "e1bb1c1768cea0fce9709a70ed809e268b9fc135",
+        "bytes": 8509,
+        "sha256": "46185dc11c3a7dc0c002a6991ddbee6cf21662e152daf7501b97cfd051e00019"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedUprofile_v20_0/UProfileShared.xsd",
+        "gitBlob": "d4ae2b85d177f2df5d1dcad341f3d997803e442e",
+        "bytes": 436929,
+        "sha256": "b328bc6b5a84fbb362dbf76e471cff9f65cdd86762916cb9c207718291ce6469"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/system_v32_0/Kestrel.xsd",
+        "gitBlob": "0e67d40aa0ecf97c751c7b5baf77b325bfe42394",
+        "bytes": 568,
+        "sha256": "e97d09ebb12d959a22a238bfc63e63d31f1d1791891a81bc9c13935427843e85"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/system_v32_0/System.wsdl",
+        "gitBlob": "0cb1ed15780cef9b75003332a994f65dcfb5124a",
+        "bytes": 4086,
+        "sha256": "f88a7b623b6d6e049e1e88c3817e23b4b7f9f56fe1a661d5e9cd18a210933f37"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/system_v32_0/System.xsd",
+        "gitBlob": "cca8385b1a74eb75539b864cd72a7428fa47f28d",
+        "bytes": 10165,
+        "sha256": "b9d65261974a8b3a4ade176903df296a847b6c20ba1ea5c52929247d2c813ad1"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/system_v32_0/SystemAbstract.wsdl",
+        "gitBlob": "7510f115a7202b5de8c678009b85880c63148436",
+        "bytes": 3401,
+        "sha256": "330a602b66386e8eaed0614a2bc217a8d188afb635bc996be2b831e2ffadd4de"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/terminal_v33_0/Kestrel.xsd",
+        "gitBlob": "5e3ff4d309f93b821a2015517cd9590563fff087",
+        "bytes": 585,
+        "sha256": "421eb50386816db506677789b61427406faa914a39ff88e321bb1ab352149481"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/terminal_v33_0/Terminal.wsdl",
+        "gitBlob": "ce4e6b6e543b026cfd20fa4395e91b4d9a9187fd",
+        "bytes": 3245,
+        "sha256": "1f57573c160af6c45a0ae522ddd0cbe6256bea46795d92c8f7e963fcec03bc7d"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/terminal_v33_0/Terminal.xsd",
+        "gitBlob": "bac7b97f112e5024b8d33586eac8dd8f79f8ea5f",
+        "bytes": 5971,
+        "sha256": "63575f1dd713d47c98fa5e098c731234dc812329832c94a681cfb06c92e8dec3"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/terminal_v33_0/TerminalAbstract.wsdl",
+        "gitBlob": "d51f5eef43ae2dcf4f6e7d1f33b77d748791c244",
+        "bytes": 2798,
+        "sha256": "79588c75db51d1789ab978502959f8dc93c45c52921e6e7f45ff98b6014afe2a"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/universal_v40_0/Kestrel.xsd",
+        "gitBlob": "49a7f9666182509048ebd239624d38a3fcd160ff",
+        "bytes": 642,
+        "sha256": "3b4720faaf550f829d77b8483df696f15765906e0cf6959aeb37c1cb92eddff5"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/universal_v40_0/UniversalRecord.wsdl",
+        "gitBlob": "8bc924e7402563391104d37e5e8662a0db0d471b",
+        "bytes": 21376,
+        "sha256": "0e3331cedce53b9010ae3aff28898d5d0ff9334c62999085a6b1881cfe052b1f"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/universal_v40_0/UniversalRecord.xsd",
+        "gitBlob": "62427835e18fd313e19a77a1cd681dcd1dc3af4c",
+        "bytes": 136277,
+        "sha256": "70357c9957a35f75c18972b60dd0fb324a0a27995fe04799b3f4907d25bc41c5"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/universal_v40_0/UniversalRecordAbstract.wsdl",
+        "gitBlob": "905a9b5156e6dbb13aeda057c66f0ada4586523c",
+        "bytes": 15302,
+        "sha256": "bf3170b02f89b95b08e445491c4796dceb8b5f5c3e89fc5b8da6b235e0930648"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/universal_v40_0/UniversalRecordReqRsp.xsd",
+        "gitBlob": "4ce33cd988220931f0fdf46206e3d87b8050108d",
+        "bytes": 70512,
+        "sha256": "62717e166c2c6f96576444cf43842b52ab3b43fbc6ebcbc5c5ea1e8c68af9894"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofileCommon_v30_0/Kestrel.xsd",
+        "gitBlob": "c6b1791b03288746f97673d9ca428bc5247dcd6d",
+        "bytes": 608,
+        "sha256": "90212b1d18e872210cde5f2a9bbd960658b277b150992f9fbebec57ffb04ddd2"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofileCommon_v30_0/UprofileCommon.xsd",
+        "gitBlob": "72323ee9740f714a897d67093187595fc8d8ce5a",
+        "bytes": 43763,
+        "sha256": "5627727693e32cb9f0a9b24ed18d462d6695a9ee7e2c4d9a768bdc936f552cf2"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofileCommon_v30_0/UprofileCommonReqRsp.xsd",
+        "gitBlob": "fece38231e9dab86b8398db295f4910bb6c8fb43",
+        "bytes": 7460,
+        "sha256": "8e19a0efebfe07a811df3e6d119acf7e75c43088503e83ec049a1d78e07524e9"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofile_v37_0/Kestrel.xsd",
+        "gitBlob": "abdc2645a03de30ded10e5a60dad4eeef7181ace",
+        "bytes": 628,
+        "sha256": "73c0df34f2177260a9931152465060cc6a65072402db0f240c480e386f569463"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofile_v37_0/UProfile.wsdl",
+        "gitBlob": "88c1a0d4e126647d55512ce0b078b67de389c294",
+        "bytes": 23231,
+        "sha256": "e478fc02dfed73cbfdc39c89ba1cb4150b4f7037c4c242fe54d293e463233298"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofile_v37_0/UProfile.xsd",
+        "gitBlob": "1bffa8033856cb9f108d23ecd813f031fdfbfde7",
+        "bytes": 490988,
+        "sha256": "7b46593a53c9f6f882f5b2d1ff439587a2a926b734f857097cffb675aa5e44eb"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofile_v37_0/UProfileAbstract.wsdl",
+        "gitBlob": "a2cb1db3bd2b5f6666339e23272bc01111e7c5f7",
+        "bytes": 16994,
+        "sha256": "020abc5d7f4fc69d30c3d6ab10373e8b0d8db54fef10353c0d67a8377e46ced8"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofile_v37_0/UProfileCoreReqRsp.xsd",
+        "gitBlob": "c91a670bf421068c2500723ac44abc1041209726",
+        "bytes": 16220,
+        "sha256": "c6e35ff4723fbad786f0b0fca2a111235c79fff15fdc2f12929de0027f875c64"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/uprofile_v37_0/UProfileReqRsp.xsd",
+        "gitBlob": "95b03ebfb74291a6ce73a692cf54f7bb2849931c",
+        "bytes": 43310,
+        "sha256": "5c517d43c64c3da7e3600ea1b40c81cdf301f776ab626a35bff62b87a4609552"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/util_v40_0/Kestrel.xsd",
+        "gitBlob": "1ea90ba47ba302d50e8ca7c19ba582db01c0abb3",
+        "bytes": 509,
+        "sha256": "88182b4b5aceff44b0b19d1d46b11c964c398af1b45107673cf1893231fb56b0"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/util_v40_0/Util.wsdl",
+        "gitBlob": "517e4a0534cc0e18a56f3506846208e6593b63c0",
+        "bytes": 17891,
+        "sha256": "6d69bb7990d2a5d81d87bcc32feeb61a382f98c67d9de4ed1055db468408c0f2"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/util_v40_0/Util.xsd",
+        "gitBlob": "d596691f8f33e2c8620930c28ab8ba529bae6759",
+        "bytes": 119670,
+        "sha256": "5a75573adab45c3e1060edb1b9e45f9e101325ba631e6636b281ce3065bb90f6"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/util_v40_0/UtilAbstract.wsdl",
+        "gitBlob": "f88ad40fed5a304660976de4d48fe6cb4c8cb14a",
+        "bytes": 11848,
+        "sha256": "724e0fefa048cff657eca9d1f3c04cff3c39cc291dde38aa89a91d8f6a5e11f5"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/vehicle_v40_0/Kestrel.xsd",
+        "gitBlob": "0ab2e2047c8cb7b9fd6a4a367d0047898f5db759",
+        "bytes": 587,
+        "sha256": "f73bca4b713ddd7949a7adadb0db170e624f98d43c0f7368f8e7ea2b7fc345ac"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/vehicle_v40_0/Vehicle.wsdl",
+        "gitBlob": "9f96bf362c7334ea4c7aeb4f0cda92e4c5c5bf0a",
+        "bytes": 6223,
+        "sha256": "7bd92ceedb70456618e758ba3966c7284063744b3f524caf7115053a91701cef"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/vehicle_v40_0/Vehicle.xsd",
+        "gitBlob": "9c2f794b04da4414aa1178d96be959357f3b9300",
+        "bytes": 93974,
+        "sha256": "af96487e00f36e49d4a5869faa78f035dd060d1bc8662d13ee0e0fa442e4e532"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/vehicle_v40_0/VehicleAbstract.wsdl",
+        "gitBlob": "f32def0a75c75695956d41a586b0d681e2e27315",
+        "bytes": 5288,
+        "sha256": "924f5944f99cefe044f6439775166cf04d9bd290e5d9b77771fb26bec3317c62"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/vehicle_v40_0/VehicleReqRsp.xsd",
+        "gitBlob": "f6d8e526f39ff989658c11c35615cbad0f17d251",
+        "bytes": 26524,
+        "sha256": "23765fbbeffa2d4fc9bc18a503ebc569a3804160362c5499c4072b8eb3646d46"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Wsdl/sharedUprofile_v20_0/CustomerProfileAbstract.wsdl",
+        "gitBlob": "c33e8ebcc29e8298c2bedffead1df89895531306",
+        "bytes": 11811,
+        "sha256": "95f4eb2c5f459c9e56a1365531ea0541d08aeaa0bb8b3e103845d9dea5be2427"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/RailService/RailReqRsp.xsd",
+        "gitBlob": "abb51a1ec5d9812882acec43cb415a57c3fe83cb",
+        "bytes": 13242,
+        "sha256": "0793c8e426b7229d171ab7921427fd4b13f8c8de7b8fbcf1b9c7df9f683f1c93"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/RailService/RailService.wsdl",
+        "gitBlob": "90d70fd73f513aad445fae68fc4c8eb72f374acd",
+        "bytes": 4822,
+        "sha256": "45c1ba3beccff305a0d91037e0c5fb452f77dbe75c140a206f7a5c5849e5d810"
+      },
+      {
+        "group": "travelport",
+        "path": "ConsoleApplication3/ConsoleApplication3/Service References/RailService/RailService1.wsdl",
+        "gitBlob": "39ad7c1aad3097d53ced7c01c0efe73a1551f53d",
+        "bytes": 4035,
+        "sha256": "87aaca572ee42fdf1e191fc07123e2e163cfe5a3fbe2806ce32f8bcbd92a9d18"
+      }
+    ],
+    "extensionAttributeScreen": {
+      "screenedExtensions": 1842,
+      "potentialDuplicateNames": [],
+      "unresolvedExtensions": 935,
+      "limitations": "Descriptive screen of unique-name-resolved extension/group chains, including anonymous extension types. Ambiguous/missing imports, restriction composition and value-space equivalence are not fully assessed; this is not an AU or XSD validator.",
+      "conclusion": "Incomplete descriptive screen cannot establish absence or prevalence of conflicting attribute-use cases."
+    },
+    "interpretationLimits": [
+      "No live production service or customer payload was accessed.",
+      "Purposive published-schema sample cannot estimate market prevalence or prove absence elsewhere.",
+      "Finite occurrence counts describe declarations; unbounded is separate, and large scalar values are a separate domain.",
+      "Absence of BCE/leap-second defaults does not exclude such instance values from xs:dateTime.",
+      "Repeated copies are counted once per Git blob for descriptive totals; URI aliases remain explicit."
+    ]
+  },
+  "probes": {
+    "evidenceId": "NT-T06-R2",
+    "node": "v24.19.0",
+    "platform": "linux",
+    "inputs": {
+      "ebay": {
+        "path": "tmp/conformance/realworld/ebay/eBaySvc.wsdl",
+        "sha256": "3af094e71507f44a8fa9e62b63340b0877dd1a7b5206a39bd7e1003fc63a0cc2"
+      },
+      "onvif": {
+        "path": "tmp/conformance/realworld/onvif/wsdl/ver10/schema/onvif.xsd",
+        "sha256": "4ae8673bb71ac5c31a3cad83f83e4c6092b998d4b40072acd3107d62bf36abb6"
+      },
+      "travelportHotel": {
+        "path": "tmp/conformance/realworld/travelport/ConsoleApplication1/ConsoleApplication1/Wsdl/hotel_v40_0/Hotel.xsd",
+        "sha256": "2e2bb2ffd8b19eab34c87b18ce0727f9ac89d9ed04f96af6f496751d6c2cad8b"
+      }
+    },
+    "observations": {
+      "ebayDefaultReferenceBudget": {
+        "phase": "input",
+        "outcome": "resource-limit",
+        "diagnostic": "input byte limit",
+        "undisposed": {}
+      },
+      "ebayIncreasedTotalOnly": {
+        "phase": "input",
+        "outcome": "resource-limit",
+        "diagnostic": "Error: input byte limit",
+        "undisposed": {}
+      },
+      "ebayExplicitLargerExtraction": {
+        "phase": "schema",
+        "outcome": "rejected",
+        "diagnostic": "Error: Element '{http://www.w3.org/2001/XMLSchema}element': The attribute 'maxOccur' is not allowed.\nElement '{http://www.w3.org/2001/XMLSchema}element': The attribute 'maxOccur' is not allowed.\n",
+        "undisposed": {}
+      },
+      "soapOrderControl": {
+        "phase": "schema",
+        "outcome": "accepted",
+        "instances": [
+          {
+            "outcome": "accepted"
+          },
+          {
+            "outcome": "rejected",
+            "diagnostic": "Error: Element '{urn:content-model:probe}a': This element is not expected. Expected is ( {urn:content-model:probe}b ).\nElement '{urn:content-model:probe}p': This element is not expected. Expected is ( {urn:content-model:probe}q ).\n"
+          }
+        ],
+        "undisposed": {},
+        "fixtureHashes": {
+          "soap/content-model/probe.wsdl": "e570b68f224893889e623ada50d655acab3c5456368d91d83df9a7f8d867cfb2"
+        }
+      },
+      "travelportLoadedStructure": {
+        "graphNodes": 3562,
+        "loadingEdges": 1,
+        "serializedCatalogBytes": 22784144,
+        "gatheringSteps": 19529525,
+        "measurementLimit": 32000000
+      },
+      "ebay:internal-semantic:1000000": {
+        "name": "CatalogError",
+        "diagnostic": "CatalogError: Credential-bearing URI cannot be serialized",
+        "category": "incompatible-artifact",
+        "milliseconds": 1613.8904189999998
+      },
+      "ebay:internal-semantic:16000000": {
+        "name": "CatalogError",
+        "diagnostic": "CatalogError: Credential-bearing URI cannot be serialized",
+        "category": "incompatible-artifact",
+        "milliseconds": 1579.9941450000006
+      },
+      "onvif:internal-semantic:1000000": {
+        "name": "SchemaLoadingError",
+        "diagnostic": "SchemaLoadingError: Schema resource origin is not authorized",
+        "category": "unsupported-capability",
+        "milliseconds": 71.28966300000047
+      },
+      "onvif:internal-semantic:16000000": {
+        "name": "SchemaLoadingError",
+        "diagnostic": "SchemaLoadingError: Schema resource origin is not authorized",
+        "category": "unsupported-capability",
+        "milliseconds": 75.90993000000071
+      },
+      "travelportHotel:internal-semantic:1000000": {
+        "name": "SemanticError",
+        "diagnostic": "SemanticError: Semantic traversal exceeds 1000000 steps",
+        "category": "resource-limit",
+        "milliseconds": 2102.9443519999995
+      },
+      "travelportHotel:internal-semantic:16000000": {
+        "name": "SemanticError",
+        "diagnostic": "SemanticError: Semantic traversal exceeds 16000000 steps",
+        "category": "resource-limit",
+        "milliseconds": 2254.590559
+      },
+      "ebayPublicLegacyCompiler": {
+        "name": "WsdlCompilationError",
+        "diagnostic": "WsdlCompilationError: Unsupported abstract complex type \"AbstractRequestType\"."
+      }
+    },
+    "limits": [
+      "No live endpoint or production payload was accessed.",
+      "Budget experiments do not change product defaults or discharge schema assessment.",
+      "The explicit extraction override is a test-only experiment; the default reference policy remains unchanged.",
+      "Internal faithful analysis is separate from public legacy generation.",
+      "Schema acceptance and two selected instances do not qualify every API operation or service."
+    ]
+  },
+  "primaryRecheck": {
+    "testedRevision": "bc5c47023ebe3cf5051ba0992fd816d3a579c497",
+    "testedTree": "dcbce4a14ef04f6bb90f389a55942b6059f1fdb1",
+    "workingTreeDirty": true,
+    "summary": {
+      "baselineSchemas": 14,
+      "baselineInstances": 40,
+      "pwSchemas": 38,
+      "pwInstances": 8,
+      "additionalInstances": 113,
+      "additionalTotal": 113
+    },
+    "rawReportSha256": "0b1126bae2fbe5726cb027fea5617e30bc494cb529db50457c63d722fd4f818f",
+    "boundaries": {
+      "node": "v24.19.0",
+      "platform": "linux",
+      "observations": {
+        "positiveNegative": {
+          "phase": "schema",
+          "outcome": "accepted",
+          "instances": [
+            {
+              "outcome": "accepted"
+            },
+            {
+              "outcome": "rejected",
+              "diagnostic": "Error: Element 'root': 'x' is not a valid value of the atomic type 'xs:int'.\n"
+            }
+          ],
+          "undisposed": {}
+        },
+        "repeatedDisposal": {
+          "phase": "schema",
+          "outcome": "accepted",
+          "instances": [
+            {
+              "outcome": "accepted"
+            },
+            {
+              "outcome": "rejected",
+              "diagnostic": "Error: Element 'root': 'x' is not a valid value of the atomic type 'xs:int'.\n"
+            }
+          ],
+          "undisposed": {}
+        },
+        "namespaceInheritance": {
+          "phase": "schema",
+          "outcome": "accepted",
+          "instances": [
+            {
+              "outcome": "accepted"
+            }
+          ],
+          "undisposed": {}
+        },
+        "localComposition": {
+          "phase": "schema",
+          "outcome": "accepted",
+          "instances": [
+            {
+              "outcome": "accepted"
+            },
+            {
+              "outcome": "accepted"
+            }
+          ],
+          "undisposed": {}
+        },
+        "unknownResource": {
+          "phase": "input",
+          "outcome": "rejected",
+          "diagnostic": "Error: Unknown resource: fixture:///a/same.xsd",
+          "undisposed": {}
+        },
+        "networkResource": {
+          "phase": "input",
+          "outcome": "rejected",
+          "diagnostic": "Error: Unknown resource: https://example.test/remote.xsd",
+          "undisposed": {}
+        },
+        "doctype": {
+          "phase": "input",
+          "outcome": "rejected",
+          "diagnostic": "Error: DOCTYPE prohibited",
+          "undisposed": {}
+        },
+        "malformed": {
+          "phase": "input",
+          "outcome": "rejected",
+          "diagnostic": "Error: 1:10: document must contain a root element.",
+          "undisposed": {}
+        },
+        "malformedInstance": {
+          "phase": "input",
+          "outcome": "rejected",
+          "diagnostic": "Error: Premature end of data in tag root line 1\n",
+          "undisposed": {}
+        },
+        "invalidSchema": {
+          "phase": "schema",
+          "outcome": "rejected",
+          "diagnostic": "Error: Element '{http://www.w3.org/2001/XMLSchema}all': The content is not valid. Expected is (annotation?, (annotation?, element*).\n",
+          "undisposed": {}
+        },
+        "bytesAt": {
+          "phase": "schema",
+          "outcome": "accepted",
+          "instances": [
+            {
+              "outcome": "accepted"
+            },
+            {
+              "outcome": "rejected",
+              "diagnostic": "Error: Element 'root': 'x' is not a valid value of the atomic type 'xs:int'.\n"
+            }
+          ],
+          "undisposed": {}
+        },
+        "bytesBeyond": {
+          "phase": "input",
+          "outcome": "resource-limit",
+          "diagnostic": "input byte limit",
+          "undisposed": {}
+        },
+        "elapsedBeyond": {
+          "phase": "schema",
+          "outcome": "resource-limit",
+          "diagnostic": "worker elapsed limit"
+        },
+        "pathEscape": {
+          "phase": "input",
+          "outcome": "rejected",
+          "diagnostic": "Error: Nonlocal or noncanonical fixture URI: fixture:///../../outside.xsd",
+          "undisposed": {}
+        },
+        "missingEngine": {
+          "phase": "setup",
+          "outcome": "rejected",
+          "diagnostic": "Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/workspace/epic239/tmp/conformance/missing-candidate/node_modules/libxml2-wasm/lib/index.mjs' imported from /workspace/epic239/test/conformance/reference/primary-worker.ts"
+        }
+      },
+      "limits": "Worker JS heap limits do not cap WASM linear memory or total process RSS. Final platform qualification remains #253."
+    },
+    "limitations": "Fresh measured Linux Node 24 recheck; historical observations.json remains attributed to its original run. No Gate S or final platform-matrix claim."
+  },
+  "codeReview": [
+    {
+      "source": "src/compiler/schemaCompiler.ts:readOccurrence",
+      "finding": "The current public legacy projection converts occurrence counts with Number; arbitrary exact counts are not an existing public guarantee."
+    },
+    {
+      "source": "src/xsd/primitives.ts",
+      "finding": "String-first scalar handling separates exact integer/decimal values from particle occurrence counts; financial scalar precision must remain protected."
+    },
+    {
+      "source": "src/compiler/schemaCompiler.ts:rejectUnsupportedSchemaConstructs",
+      "finding": "Abstract types, substitution groups and expectedContentTypes already trigger public generation guards."
+    },
+    {
+      "source": "src/compiler/schemaCompiler.ts:collectAttributes",
+      "finding": "The public legacy attribute projection does not perform full typed default/fixed augmentation."
+    },
+    {
+      "source": "src/compiler/semanticCatalog.ts:prepareResolvedCompilationInput",
+      "finding": "The internal faithful path charges structural data before retention; it is separate from the public legacy generator."
+    },
+    {
+      "source": "src/compiler/occurrenceAnalysis.ts",
+      "finding": "Exact bounded interval analysis returns requires-schema-assessment, not a complete content-language validity proof."
+    }
+  ],
+  "interpretation": [
+    "No sampled declaration exceeded the primary occurrence guard; this supports prioritization, not a reduction of the exact research domain.",
+    "Large WSDL input and faithful work budgets are observed limits, not theoretical scenarios; raising a budget does not establish schema validity.",
+    "The unmodified SDK WSDL reached independent schema construction under explicit larger input limits and was rejected for maxOccur spelling; it did not qualify instances.",
+    "The Travelport canonical structure has 3562 nodes, below the node limit, but large retained syntax/provenance makes data charging exceed both tested work budgets.",
+    "Defaults, restrictions, dates, QName references and precise scalar types appear in the sample, so those replacement contracts remain necessary.",
+    "No evidence here demonstrates that a current production API requires Python rather than an adequately implemented Node path.",
+    "Gate S remains blocked pending an explicit evidence-policy decision; #232/#234 proof obligations and all public guards remain unchanged."
+  ]
+}

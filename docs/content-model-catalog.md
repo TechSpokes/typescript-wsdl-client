@@ -100,7 +100,7 @@ S03 loading limits, denial defaults and conservative cyclic-depth behavior are c
 Later scalar/projection/codec budgets retain their [assigned owners](content-model-decisions.md).
 
 [Catalog tests](../test/unit/semantic-catalog.test.ts) reuse independent graph, chameleon and SOAP fixtures and cover relocation, lexical facets, large bounds, recursion, corrupt artifacts and consumer rejection.
-[Independent graph schema evidence](../test/conformance/reference/graph_contract_test.py) retains the documented xmlschema/libxml2 large-bound distinction.
+[Independent graph schema evidence](../test/conformance/reference/graph-contract.test.ts) retains the historical xmlschema/libxml2 large-bound distinction and explicit current qualification limits under [NT-CONT-01](reference-validation.md).
 
 ```bash
 npx vitest run test/unit/semantic-catalog.test.ts test/unit/canonical-graph.test.ts

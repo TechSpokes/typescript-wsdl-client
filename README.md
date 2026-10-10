@@ -260,6 +260,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Programmatic API](docs/api-reference.md) | TypeScript functions for build tools |
 | [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
 | [Architecture](docs/architecture.md) | Internal pipeline for contributors |
+| [Reference Validation](docs/reference-validation.md) | Internal evidence contract and Node tooling migration inventory |
 | [File Naming And Path Organization](docs/file-naming-and-path-organization.md) | Contributor convention for taxonomy paths and fixture retrieval |
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Current Roadmap](ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |

@@ -67,7 +67,7 @@ Each reference/origin/edge and DFS transition consumes work; exhaustion returns 
 S03 loading limits and its conservative cyclic-depth behavior remain unchanged.
 
 [Resolver tests](../test/unit/resolved-graph.test.ts) reuse graph/chameleon fixtures and cover role collisions, repeated bounds, missing targets, cycles, visibility, unlocated imports, immutability and catalog round trips.
-[Independent reference fixtures](../test/conformance/fixtures/xsd/references/resolved.xsd) and [Python qualification](../test/conformance/reference/resolution_contract_test.py) provide schema-engine evidence independently of the TypeScript graph.
+[Independent reference fixtures](../test/conformance/fixtures/xsd/references/resolved.xsd) and [Node qualification](../test/conformance/reference/resolution-contract.test.ts) provide current primary, scoped source checks and historical evidence independently of the production graph under [NT-CONT-01](reference-validation.md).
 
 ```bash
 npx vitest run test/unit/resolved-graph.test.ts test/unit/semantic-catalog.test.ts

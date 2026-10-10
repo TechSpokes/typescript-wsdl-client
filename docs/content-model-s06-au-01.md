@@ -20,6 +20,8 @@ The separate [restriction selection](https://github.com/TechSpokes/typescript-ws
 
 These choices resolve the project interpretation questions. Final substantive review assesses the complete selected contract and scoped algorithms at exact revisions; research tests alone still do not certify #179 production support or close later acceptance gates.
 
+The maintainer [accepted NT-CONT-01 for #239](https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6098237195): the Node tooling uses one live libxml2 engine, independent scoped TypeScript checks and pinned historical xmlschema observations. The [reference-validation contract](reference-validation.md) distinguishes those evidence kinds and the remaining unqualified full-schema and PSVI capabilities; this tooling acceptance does not discharge RE01 or activate production assessment.
+
 ## Authority and qualification
 
 The dated [XSD 1.0 structures second edition](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/) supplies the rules below. The complete original XML was inspected through the [pinned source mirror](https://github.com/jacoelho/xsd/blob/142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/structures.xml), ignoring editorial `diff="del"` text; its SHA-256 is `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
@@ -300,11 +302,13 @@ Semantic defaults remain independently applied 100,000 nodes and 1,000,000 work 
 
 All 66 committed [AU01 fixtures](../test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-none.xsd) are new minimal sources authored for this research. The pinned draft's differing-use/group/prohibited fixtures remain historical evidence; none is silently rewritten or imported by the executable probe.
 
-[The discovered test](../test/conformance/reference/s06_au01_contract_test.py) hand-authors selected/project expectations and reference observations separately; [the bounded candidate](../test/research/s06-au01/probe.py) imports no production compiler or unaccepted draft modules. The established `*_test.py` discovery executes fourteen AU01 test methods, including 25 optional pairs, both requiredness orderings, twenty original-source restriction contrasts and one-attribute augmentation provenance.
+[The scoped reference tests](../test/conformance/reference/s06-au01-contract.test.ts) separate current primary observations, selected project assertions and historical engine answers. [The bounded candidate](../test/research/s06-au01/probe.ts) and [its pure tests](../test/research/s06-au01/probe.test.ts) import no production compiler or unaccepted draft modules.
 
-### Optional matrix: XMLSchema 4.2.0 schema observations
+The fourteen original AU01 method obligations are traced across those two test files using the hash-verified [historical source snapshot](../test/conformance/reference/legacy-source-snapshot.json). They retain 25 optional pairs, both requiredness orderings, twenty original-source restriction contrasts and one-attribute augmentation provenance; the snapshot is non-executable data.
 
-`A` means accepted by this engine, `R` rejected; the table is not a normative verdict. libxml2 2.14.6 rejects every one of these 25 extension pairs.
+### Historical optional matrix: XMLSchema 4.2.0 schema observations
+
+`A` means accepted by the historical engine run, `R` rejected; the table is not a normative verdict or a fresh Node result. Historical libxml2 2.14.6 rejected every one of these 25 extension pairs.
 
 | Base / local | N | D(1) | D(2) | F(1) | F(2) |
 |---|---|---|---|---|---|
@@ -314,13 +318,13 @@ All 66 committed [AU01 fixtures](../test/conformance/fixtures/xsd/attributes/au0
 | F(1) | R | R | R | A | R |
 | F(2) | R | R | R | R | A |
 
-XMLSchema accepts conflicting defaults and augments absence with the local value: base `D(1)`/local `D(2)` produces `2`, the reversed schema produces `1`; present integer `1`, `2` or `3` is accepted in both. Base default/local fixed `2` is accepted with fixed `2` behavior, whereas reversing to base fixed/local default is rejected.
+Historical XMLSchema accepted conflicting defaults and augmented absence with the local value: base `D(1)`/local `D(2)` produced `2`, the reversed schema produced `1`; present integer `1`, `2` or `3` was accepted in both. Base default/local fixed `2` was accepted with fixed `2` behavior, whereas reversing to base fixed/local default was rejected.
 
 These order-dependent results illustrate implementation policy, not primary selection authority. They refute a blanket claim that both engines reject every mismatched repeated-use combination; the original required-fixed/optional-none example is still rejected by both.
 
-### Identity, source controls and scalar contrasts
+### Historical identity, source controls and scalar contrasts
 
-| Fixture or contrast | Primary/project conclusion | XMLSchema | libxml2 |
+| Fixture or contrast | Primary/project conclusion | Historical XMLSchema 4.2.0 | Historical libxml2 2.14.6 |
 |---|---|---|---|
 | Direct same-global repeated references | CT identity permits; equivalent unconstrained checks | R | R |
 | Reused group AU | Legal member set union | R | R |
@@ -339,30 +343,30 @@ These order-dependent results illustrate implementation policy, not primary sele
 | Base required fixed/local optional none | Selected C1 retains requiredness and fixed value | R | R |
 | QName fixed `p:item`, input `q:item`, same binding | S02 value-equivalent | Reject input | Accept input |
 
-The valid inherited-required controls each accept presence and reject absence in libxml2. The single-AU typed fixture supplies 14 present-value contrasts for integer, string, token, QName, list, union and pattern; the QName alias disagreement remains recorded rather than changing the independent S02 expected value.
+The valid inherited-required controls each accepted presence and rejected absence in historical libxml2. The single-AU typed fixture supplies 14 present-value contrasts for integer, string, token, QName, list, union and pattern; the historical QName alias disagreement remains recorded rather than changing the independent S02 expected value.
 
 The twenty new `restriction-matches-*` fixtures independently contrast the selected source partition against literal final-AU matching. Pinned engines reject many complete schemas before reaching the derived restriction because they reject the repeated base AU sets; these observations cannot prove the selected restriction predicate wrong.
 
-XMLSchema accepts the required-second/required-replacement and changed-default replacement schemas while libxml2 rejects their repeated bases. Both accept string-to-token and reject unrelated string-to-integer; XMLSchema rejects equivalent QName fixed aliases while libxml2 accepts them, and both accept the same fixed spelling with a different original namespace binding even though selected typed equality distinguishes it.
+Historical XMLSchema accepted the required-second/required-replacement and changed-default replacement schemas while libxml2 rejected their repeated bases. Both accepted string-to-token and rejected unrelated string-to-integer; XMLSchema rejected equivalent QName fixed aliases while libxml2 accepted them, and both accepted the same fixed spelling with a different original namespace binding even though selected typed equality distinguishes it.
 
 ## Executed checks and limits
 
-Fresh reference installation was performed by the coordinator with `npm run reference:setup` before leaf probes. Observed versions are Python 3.12.14, xmlschema 4.2.0, lxml 6.1.0/libxml2 2.14.6 and elementpath 5.0.4; no second installation route was introduced.
+The current reproduction uses normal npm installation on Node 24 or Node 26. The scoped tests construct the original supported schemas with `libxml2-wasm` 0.7.2/libxml2 2.15.1 and independently execute the selected AU01 rules; unavailable complete-schema results do not become payload rejection or selected-rule authority.
 
 ```bash
-npm run reference:setup
-tmp/conformance/reference-venv/bin/python -m unittest discover -s test/conformance/reference -p 's06_au01*_test.py' -v
+npm ci
+npm run typecheck:research
+npm run typecheck:reference
+npm run test:research:ports
+npx vitest run test/conformance/reference/s06-au01-contract.test.ts
 npm run test:reference:full
-npm run ci
-npm run test:conformance
-git diff --check
 ```
 
-The original focused command passed nine methods; the selected restriction/augmentation follow-up passes all fourteen methods through the same fresh reference executable. On Windows, use `tmp/conformance/reference-venv/Scripts/python.exe` for that focused command; setup does not activate the environment in the shell.
+The historical research installation used Python 3.12.14, xmlschema 4.2.0, lxml 6.1.0/libxml2 2.14.6 and elementpath 5.0.4. Its original focused run passed nine methods, followed by all fourteen after the selected restriction/augmentation work; those recorded runs are preserved as historical evidence and are not repeated by the current Node commands.
 
 Aggregate full-reference, CI, conformance and documentation/support-matrix results belong to the coordinator's exact final integration record; they are not inferred from these scoped checks or old #231 results.
 
-The original leaf delivery passed `npm run docs:validate`, including the support-matrix check. The selected-contract follow-up passes `git diff --check` and the fourteen focused methods; its cross-leaf DT01 link and the complete documentation/support-matrix checks are verified on the coherent integrated final revision by the coordinator.
+The historical leaf delivery passed `npm run docs:validate`, including the support-matrix check. Its selected-contract follow-up passed the fourteen focused methods and diff checks; current cross-leaf links and complete documentation/support-matrix checks belong to the coordinator's integrated final revision.
 
 | Boundary probe | Measured outcome |
 |---|---|

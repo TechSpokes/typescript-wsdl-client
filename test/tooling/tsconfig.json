@@ -1,0 +1,1 @@
+{"extends":"../../tsconfig.json","compilerOptions":{"declaration":false,"declarationMap":false,"noEmit":true,"rootDir":"../..","allowImportingTsExtensions":true},"include":["*.ts","../../scripts/check-toolchain.ts","../../scripts/semantic-reference.ts"]}

@@ -54,9 +54,8 @@ Indexing, traversal, arithmetic digits, conservative multiplication work and con
 Positive safe-integer overrides follow existing semantic policy; exhausted analysis returns `resource-limit` without partial success.
 Later matcher, payload scalar and generated-output budgets retain their [ADR-003 D09 owners](decisions/003-content-model-contracts.md#provisional-resource-budgets-s02-d09).
 
-[`analysis.xsd`](../test/conformance/fixtures/xsd/analysis/analysis.xsd) and [pinned reference checks](../test/conformance/reference/analysis_contract_test.py) qualify schema validity separately from payload acceptance.
-The reference check raises xmlschema's documented model-depth setting from 15 to 32 for nested shared-group wrappers and treats qualification warnings as errors.
-Libxml2 qualifies the small language cases with only the unused huge bound reduced; xmlschema qualifies that original exact bound.
+[`analysis.xsd`](../test/conformance/fixtures/xsd/analysis/analysis.xsd) and [Node reference checks](../test/conformance/reference/analysis-contract.test.ts) retain historical qualification separately from current primary and scoped payload checks under [NT-CONT-01](reference-validation.md). Original huge-schema construction remains unqualified; the adjusted small copy is a separately hashed input.
+The historical reference check raised xmlschema's model-depth setting from 15 to 32 and treated warnings as errors. Current libxml2 observations use the explicitly separate small copy; the original exact schema retains historical xmlschema qualification and current unsupported status.
 
 ### Nested empty-choice qualification
 
