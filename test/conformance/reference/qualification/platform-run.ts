@@ -41,14 +41,31 @@ function inside(): void {
         if (git('status', '--porcelain') || JSON.stringify(sourceHashes()) !== JSON.stringify(hashes)) throw new Error('Qualification candidate changed during execution');
     } catch (error) { failure = String(error); }
     finally {
+        let enforcementEvidence: unknown = null;
+        const restoration: {status: 'passed' | 'failed'; failure?: string} = {status: 'passed'};
+        try {
+            if (existsSync('tmp/conformance/platform-enforcement.json'))
+                enforcementEvidence = JSON.parse(readFileSync('tmp/conformance/platform-enforcement.json', 'utf8')) as unknown;
+        } catch (error) {
+            failure = [failure, 'Cannot read enforcement evidence: ' + String(error)].filter(Boolean).join('; ');
+        } finally {
+            // Cleanup precedes report metadata/persistence, which can fail independently.
+            try { command(process.execPath, [enforcement, 'restore']); }
+            catch (error) {
+                restoration.status = 'failed';
+                restoration.failure = String(error);
+                failure = [failure, 'Environment restoration failed: ' + String(error)].filter(Boolean).join('; ');
+            }
+        }
+        let npmVersion: string | undefined;
+        try { npmVersion = execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['--version'], {encoding: 'utf8', shell: process.platform === 'win32'}).trim(); }
+        catch (error) { failure = [failure, 'Cannot read npm version: ' + String(error)].filter(Boolean).join('; '); }
         const report = {formatVersion: 1, startedAt, finishedAt: new Date().toISOString(), testedRevision: revision, testedTree: tree,
             workingTreeDirty: !!git('status', '--porcelain'), platform: process.platform, osRelease: release(), node: process.version,
-            npm: execFileSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['--version'], {encoding: 'utf8', shell: process.platform === 'win32'}).trim(),
+            npm: npmVersion,
             sourceHashes: hashes, packageLockSha256: hashes['package-lock.json'], commands,
-            enforcement: existsSync('tmp/conformance/platform-enforcement.json') ? JSON.parse(readFileSync('tmp/conformance/platform-enforcement.json', 'utf8')) as unknown : null,
-            status: failure ? 'failed' : 'passed', failure};
+            enforcement: enforcementEvidence, status: failure ? 'failed' : 'passed', failure, restoration};
         writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
-        command(process.execPath, [enforcement, 'restore']);
     }
     if (failure) throw new Error(failure);
 }

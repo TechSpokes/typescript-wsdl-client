@@ -383,7 +383,7 @@
         {
           "path": "test/conformance/reference/syntax.ts",
           "role": "prototype",
-          "sha256": "fd979956d87a59eead6c2e456dfa3820bc5f245637519750a9d5eab1451e7fa4"
+          "sha256": "9419be7012e3afce959fd02c9563fb8a924b009a68206191d174c8e3c67a6c38"
         },
         {
           "path": "test/conformance/reference/evidence.ts",
@@ -521,7 +521,7 @@
         {
           "path": "test/conformance/reference/syntax.ts",
           "role": "prototype",
-          "sha256": "fd979956d87a59eead6c2e456dfa3820bc5f245637519750a9d5eab1451e7fa4"
+          "sha256": "9419be7012e3afce959fd02c9563fb8a924b009a68206191d174c8e3c67a6c38"
         },
         {
           "path": "test/conformance/reference/evidence.ts",
@@ -789,7 +789,7 @@
         {
           "path": "test/conformance/reference/syntax.ts",
           "role": "prototype",
-          "sha256": "fd979956d87a59eead6c2e456dfa3820bc5f245637519750a9d5eab1451e7fa4"
+          "sha256": "9419be7012e3afce959fd02c9563fb8a924b009a68206191d174c8e3c67a6c38"
         },
         {
           "path": "test/conformance/reference/evidence.ts",
@@ -907,7 +907,7 @@
         {
           "path": "test/conformance/reference/syntax.ts",
           "role": "prototype",
-          "sha256": "fd979956d87a59eead6c2e456dfa3820bc5f245637519750a9d5eab1451e7fa4"
+          "sha256": "9419be7012e3afce959fd02c9563fb8a924b009a68206191d174c8e3c67a6c38"
         },
         {
           "path": "test/conformance/reference/evidence.ts",

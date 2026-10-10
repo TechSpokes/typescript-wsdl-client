@@ -13,7 +13,7 @@ export interface Violation {
     entry: string;
     reason: string;
 }
-const forbiddenCommand = /(?:^|[\s;&|"'`/\\])(?:python(?:\d+(?:\.\d+)*)?|pip\d*|virtualenv|venv|java|javac|node-gyp|emcc|emmake)(?:\.exe)?(?=$|[\s;&|"'`])/i;
+const forbiddenCommand = /(?:^|[\s;&|"'`/\\])(?:pythonw?(?:\d+(?:\.\d+)*)?(?:t|w|_d)?|pypy(?:\d+(?:\.\d+)*)?|pip(?:\d+(?:\.\d+)*)?|pyw?|ipython\d*|pipx|pipenv|virtualenv|venv|java|javac|node-gyp|emcc|emmake)(?:\.(?:exe|com|bin|real|cmd|bat|ps1|vbs|vbe|js|jse|wsf|wsh))?(?=$|[\s;&|"'`])/i;
 const forbiddenSource = /\.(?:py|pyw|java|c|cpp|cxx)$/i;
 const forbiddenManifest = /(?:^|\/)(?:requirements(?:[-.][^/]*)?\.txt|Pipfile(?:\.lock)?|pyproject\.toml|poetry\.lock|uv\.lock)$/i;
 const forbiddenAction = /^actions\/setup-(?:python|java)@/;
@@ -66,7 +66,7 @@ export function checkFiles(files: readonly InputFile[]): Violation[] {
                         const scan = (child: ts.Node): void => {
                             if (ts.isStringLiteralLike(child) && (forbiddenCommand.test(child.text) || /\.(?:py|pyw)$/.test(child.text)))
                                 found = true;
-                            if (ts.isIdentifier(child) && /^(?:python\d*|pip\d*|javac|java)$/.test(child.text))
+                            if (ts.isIdentifier(child) && forbiddenCommand.test(child.text))
                                 found = true;
                             ts.forEachChild(child, scan);
                         };

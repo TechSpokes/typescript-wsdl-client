@@ -565,7 +565,7 @@
         "npm run ci",
         "npm run test:reference:full"
       ],
-      "status": "pending-final-cutover"
+      "status": "cutover implemented; exact-candidate execution results recorded in external epic delivery ledger"
     },
     {
       "os": "linux",
@@ -579,7 +579,7 @@
         "npm run ci:github:node26",
         "npm run test:reference:full"
       ],
-      "status": "pending-final-cutover"
+      "status": "cutover implemented; exact-candidate execution results recorded in external epic delivery ledger"
     },
     {
       "os": "win32",
@@ -596,7 +596,7 @@
         "npx vitest run test/research/s06-pw01 test/research/dt01",
         "npm run test:feasibility"
       ],
-      "status": "pending-final-cutover"
+      "status": "cutover implemented; exact-candidate execution results recorded in external epic delivery ledger"
     },
     {
       "os": "win32",
@@ -613,7 +613,7 @@
         "npx vitest run test/research/s06-pw01 test/research/dt01",
         "npm run test:feasibility"
       ],
-      "status": "pending-final-cutover"
+      "status": "cutover implemented; exact-candidate execution results recorded in external epic delivery ledger"
     }
   ],
   "qualificationEnforcement": {

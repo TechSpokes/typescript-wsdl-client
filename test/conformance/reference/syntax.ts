@@ -33,7 +33,7 @@ export function parseXml(xml: string, source = 'literal', maxBytes = 2000000): X
         const node: MutableNode = {
             uri: tag.uri, local: tag.local,
             attributes: Object.values(tag.attributes).map(a => ({ uri: a.uri, local: a.local, value: a.value })),
-            namespaces: { ...parent?.namespaces, ...tag.ns }, children: [], text: '', xml: '', source,
+            namespaces: { xml: 'http://www.w3.org/XML/1998/namespace', ...parent?.namespaces, ...tag.ns }, children: [], text: '', xml: '', source,
             path: (parent?.path ?? '') + '/' + tag.local + '[' + ((parent?.children.length ?? 0) + 1) + ']',
             start: xml.lastIndexOf('<', parser.position - 1),
         };
@@ -63,11 +63,19 @@ export function descendants(node: XmlNode, local: string, uri = XSD): readonly X
     return result;
 }
 export function expandedQName(node: XmlNode, value: string): Readonly<{ uri: string; local: string }> {
-    const match = /^(?:([A-Za-z_][\w.-]*):)?([A-Za-z_][\w.-]*)$/.exec(value);
-    if (!match) throw new Error('Malformed scoped QName: ' + value);
-    const prefix = match[1] ?? '', uri = node.namespaces[prefix];
+    const parts = value.split(':');
+    if (parts.length > 2 || parts.some(part => !part)) throw new Error('Malformed scoped QName: ' + value);
+    for (const part of parts) {
+        // Reuse XML name syntax, including Unicode, without another datatype engine.
+        const parser = new SaxesParser();
+        parser.on('opentag', tag => {
+            if (tag.name !== part || Object.keys(tag.attributes).length) throw new Error('Malformed scoped QName: ' + value);
+        });
+        parser.write('<' + part + '/>').close();
+    }
+    const prefix = parts.length === 2 ? parts[0] : '', uri = node.namespaces[prefix];
     if (prefix && uri === undefined) throw new Error('Unknown QName prefix: ' + prefix);
-    return { uri: uri ?? '', local: match[2] };
+    return { uri: uri ?? '', local: parts.at(-1)! };
 }
 /** Materialize inherited bindings on the original subtree without changing content. */
 export function standaloneXml(node: XmlNode): string {
@@ -79,8 +87,10 @@ export function standaloneXml(node: XmlNode): string {
         else if (c === '>') break;
     }
     const escape = (s: string) => s.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
-    const namespaces = Object.entries(node.namespaces).filter(([p]) => p !== 'xml')
+    const declared = new Set(node.attributes.filter(a => a.uri === 'http://www.w3.org/2000/xmlns/')
+        .map(a => a.local === 'xmlns' ? '' : a.local));
+    const namespaces = Object.entries(node.namespaces).filter(([p]) => p !== 'xml' && !declared.has(p))
         .map(([p, uri]) => ` xmlns${p ? ':' + p : ''}="${escape(uri)}"`).join('');
-    const opening = node.xml.slice(0, end).replace(/\sxmlns(?::[^=\s]+)?\s*=\s*(?:"[^"]*"|'[^']*')/g, '');
+    const opening = node.xml.slice(0, end);
     return opening.replace(/\/$/, '') + namespaces + (opening.endsWith('/') ? '/' : '') + node.xml.slice(end);
 }

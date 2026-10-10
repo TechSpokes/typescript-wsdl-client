@@ -3,17 +3,45 @@ import { spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { accessSync, chmodSync, constants, copyFileSync, existsSync, mkdirSync, readFileSync,
     readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import type { Dirent } from 'node:fs';
+import { basename, dirname, join, resolve, sep, win32 } from 'node:path';
 import { release } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export type EnforcementPlatform = 'linux' | 'win32';
-export interface InventoryRoot { readonly path: string; readonly recursive: boolean }
+export interface InventoryRoot {
+    readonly path: string;
+    readonly recursive: boolean;
+    readonly reason?: string;
+    readonly selection?: 'path' | 'registry';
+}
+export interface InventoryExclusion { readonly path: string; readonly reason: string }
+export interface CanonicalAlias { readonly path: string; readonly target: string }
+export interface RegistryObservation {
+    readonly key: string;
+    readonly view: '32' | '64';
+    readonly outcome: 'found' | 'missing' | 'error';
+    readonly installPaths: readonly string[];
+    readonly executablePaths: readonly string[];
+    readonly error?: string;
+}
+export interface InventoryPlan {
+    readonly roots: readonly InventoryRoot[];
+    readonly exclusions: readonly InventoryExclusion[];
+    readonly aliases: readonly CanonicalAlias[];
+    readonly candidates: readonly string[];
+    readonly registry: readonly RegistryObservation[];
+    readonly errors: readonly string[];
+}
 export interface Inventory {
     readonly roots: readonly InventoryRoot[];
     readonly paths: readonly string[];
     readonly directoriesRead: number;
     readonly errors: readonly string[];
+    readonly aliases: readonly CanonicalAlias[];
+    readonly scopeExclusions: readonly InventoryExclusion[];
+    readonly missingRoots: readonly string[];
+    readonly registry: readonly RegistryObservation[];
 }
 export interface Probe {
     readonly candidate: string;
@@ -67,11 +95,13 @@ export interface EnvironmentEnforcement {
     restoreErrors?: readonly string[];
 }
 
-const names = ['python', 'python2', 'python2.7', 'python3', 'pythonw', 'py', 'pip', 'pip2', 'pip3',
+const names = ['python', 'python2', 'python2.7', 'python3', 'pythonw', 'py', 'pyw', 'pip', 'pip2', 'pip3',
     'pypy', 'pypy3', 'ipython', 'pipx', 'pipenv', 'virtualenv',
     ...Array.from({ length: 10 }, (_, index) => 'python3.' + (index + 7))];
-const interpreter = /^(?:pythonw?(?:\d+(?:\.\d+)*)?(?:t|w|_d)?|pypy(?:\d+(?:\.\d+)*)?|pip(?:\d+(?:\.\d+)*)?|py|ipython\d*|pipx|pipenv|virtualenv)(?:\.(?:exe|com|bin|real|cmd|bat|ps1|vbs|vbe|js|jse|wsf|wsh))?$/i;
+const interpreter = /^(?:pythonw?(?:\d+(?:\.\d+)*)?(?:t|w|_d)?|pypy(?:\d+(?:\.\d+)*)?|pip(?:\d+(?:\.\d+)*)?|pyw?|ipython\d*|pipx|pipenv|virtualenv)(?:\.(?:exe|com|bin|real|cmd|bat|ps1|vbs|vbe|js|jse|wsf|wsh))?$/i;
 const scriptExtension = /\.(?:cmd|bat|ps1|vbs|vbe|js|jse|wsf|wsh)$/i;
+const candidateSuffix = /\.(?:exe|com|bin|real|cmd|bat|ps1|vbs|vbe|js|jse|wsf|wsh)$/i;
+const windowsFileLink = /\.(?:exe|com|cmd|bat|ps1|vbs|vbe|js|jse|wsf|wsh)$/i;
 const sha = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
 const message = (error: unknown) => error instanceof Error ? error.message : String(error);
 export const isInterpreterName = (name: string): boolean => interpreter.test(name);
@@ -103,70 +133,289 @@ function probeScriptRead(candidate: string): Probe {
 }
 const probe = (candidate: string, platform: EnforcementPlatform) =>
     platform === 'win32' && scriptExtension.test(candidate) ? probeScriptRead(candidate) : probeExecutable(candidate);
+/** Numeric version dots are part of a logical name, not a binary or script suffix. */
+export function isWindowsLogicalWrapperPath(path: string): boolean {
+    const name = win32.basename(path);
+    return win32.isAbsolute(path) && !candidateSuffix.test(name) && (isInterpreterName(name) || !win32.extname(name));
+}
+export function probesForCandidate(candidate: string, platform: EnforcementPlatform): Probe[] {
+    return platform === 'win32' && isWindowsLogicalWrapperPath(candidate)
+        ? [probeExecutable(candidate), probeScriptRead(candidate)] : [probe(candidate, platform)];
+}
 
-/** Follow directory links once, retain every interpreter alias, and report unreadable inventory. */
-export function inventoryInterpreters(roots: readonly InventoryRoot[], excluded: readonly string[] = []): Inventory {
-    const paths = new Set<string>();
-    const errors: string[] = [];
+export type DirectoryReader = (path: string) => readonly Dirent[];
+const readDirectory: DirectoryReader = path => readdirSync(path, { withFileTypes: true });
+interface InventoryOptions {
+    readonly platform?: EnforcementPlatform;
+    readonly readDirectory?: DirectoryReader;
+    readonly candidates?: readonly string[];
+    readonly aliases?: readonly CanonicalAlias[];
+    readonly registry?: readonly RegistryObservation[];
+    readonly errors?: readonly string[];
+}
+
+/** Enumerate canonical directory targets once; file aliases remain separate ACL/probe candidates. */
+export function inventoryInterpreters(roots: readonly InventoryRoot[], excluded: readonly (string | InventoryExclusion)[] = [],
+    options: InventoryOptions = {}): Inventory {
+    const paths = new Set<string>(options.candidates ?? []);
+    const errors: string[] = [...options.errors ?? []];
+    const aliases: CanonicalAlias[] = [...options.aliases ?? []];
+    const missingRoots: string[] = [];
     const visited = new Map<string, boolean>();
-    const exclusions = new Set(excluded.map(path => resolve(path)));
-    const pending = [...roots];
+    const platform = options.platform ?? process.platform;
+    const key = (path: string) => platform === 'win32' ? path.toLowerCase() : path;
+    const scopeExclusions = excluded.map(entry => typeof entry === 'string'
+        ? { path: resolve(entry), reason: 'Non-installation filesystem root' } : entry);
+    const exclusions = new Set(scopeExclusions.map(entry => key(resolve(entry.path))));
+    const pending = roots.map(root => ({ root, explicit: true }));
+    const reader = options.readDirectory ?? readDirectory;
+    const exclusionFor = (path: string, subtree: boolean): string | undefined => {
+        const actual = key(path);
+        return [...exclusions].find(excluded => actual === excluded || subtree && actual.startsWith(excluded + sep));
+    };
+    const excludedRoot = (root: InventoryRoot, path: string, explicit: boolean): boolean => {
+        const excluded = exclusionFor(path, explicit && !!root.selection);
+        if (!excluded) return false;
+        if (explicit) errors.push('Selected ' + (root.selection ?? 'installation') + ' inventory root conflicts with scope exclusion: '
+            + resolve(root.path) + ' -> ' + path + ' (excluded ' + excluded + ')');
+        return true;
+    };
     let directoriesRead = 0;
     while (pending.length) {
-        const root = pending.pop()!;
+        const { root, explicit } = pending.pop()!;
         const path = resolve(root.path);
-        if (exclusions.has(path)) continue;
+        if (excludedRoot(root, path, explicit)) continue;
         try {
             const canonical = realpathSync(path);
-            const key = process.platform === 'win32' ? canonical.toLowerCase() : canonical;
-            if (visited.get(key) || visited.has(key) && !root.recursive) continue;
-            visited.set(key, root.recursive);
-            const entries = readdirSync(path, { withFileTypes: true });
+            if (path !== canonical) aliases.push({ path, target: canonical });
+            const canonicalKey = key(canonical);
+            if (excludedRoot(root, canonical, explicit)) continue;
+            if (visited.get(canonicalKey) || visited.has(canonicalKey) && !root.recursive) continue;
+            // Legacy profile junctions can deny listing the alias while their physical target is readable.
+            // Do not mark a target visited until its enumeration succeeds.
+            const entries = reader(canonical);
+            visited.set(canonicalKey, root.recursive);
             directoriesRead++;
             for (const entry of entries) {
-                const child = join(path, entry.name);
+                const child = join(canonical, entry.name);
                 const named = isInterpreterName(entry.name);
                 if (entry.isFile() && named) paths.add(child);
-                else if (entry.isDirectory() && root.recursive) pending.push({ path: child, recursive: true });
+                else if (entry.isDirectory() && root.recursive) pending.push({ root: { path: child, recursive: true }, explicit: false });
                 else if (entry.isSymbolicLink()) {
                     if (named) paths.add(child);
+                    // Windows AppExecLinks are file aliases, not directory links. Statting unrelated
+                    // .exe aliases can return EACCES even though the containing install directory was read.
+                    if (platform === 'win32' && windowsFileLink.test(entry.name)) continue;
                     try {
-                        if (root.recursive && statSync(child).isDirectory()) pending.push({ path: child, recursive: true });
+                        if (root.recursive && statSync(child).isDirectory()) pending.push({ root: { path: child, recursive: true }, explicit: false });
                     } catch (error) {
                         if ((error as NodeJS.ErrnoException).code !== 'ENOENT') errors.push(child + ': ' + message(error));
                     }
                 }
             }
         } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') missingRoots.push(path);
+            else errors.push(path + ': ' + message(error));
+        }
+    }
+    return { roots, paths: [...paths].sort(), directoriesRead, errors,
+        aliases: [...new Map(aliases.map(alias => [alias.path, alias])).values()],
+        scopeExclusions, missingRoots: [...new Set(missingRoots)].sort(), registry: options.registry ?? [] };
+}
+
+export interface WindowsInstallationContext {
+    readonly driveRoot: string;
+    readonly windows: string;
+    readonly users: string;
+    readonly programData: string;
+    readonly programFiles: readonly string[];
+    readonly recursiveDirectories: readonly string[];
+    readonly pathDirectories: readonly string[];
+    readonly profiles?: readonly string[];
+    readonly localAppData?: string;
+    readonly appData?: string;
+    readonly registry?: readonly RegistryObservation[];
+}
+
+/** Installation trees and direct system commands, not recursive OS logs, databases or profile data. */
+export function windowsInstallationPlan(context: WindowsInstallationContext): InventoryPlan {
+    const roots = new Map<string, InventoryRoot>();
+    const errors: string[] = [];
+    const aliases: CanonicalAlias[] = [];
+    const add = (path: string, recursive: boolean, reason: string, selection?: InventoryRoot['selection']): void => {
+        const key = resolve(path).toLowerCase();
+        const previous = roots.get(key);
+        roots.set(key, { path: resolve(path), recursive: recursive || !!previous?.recursive,
+            reason: selection ? reason : previous?.reason ?? reason, selection: selection ?? previous?.selection });
+    };
+    const discover = (path: string): readonly Dirent[] => {
+        try {
+            const canonical = realpathSync(path);
+            if (resolve(path) !== canonical) aliases.push({ path: resolve(path), target: canonical });
+            return readDirectory(canonical);
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') errors.push(path + ': ' + message(error));
+            return [];
+        }
+    };
+    const installationName = /(?:python|pypy|conda|portable|apps|tools|pipx|pyenv|virtualenv|venv|scoop|^\.?uv$)/i;
+    const dynamic = (path: string): void => {
+        for (const entry of discover(path))
+            if ((entry.isDirectory() || entry.isSymbolicLink() && !windowsFileLink.test(entry.name)) && installationName.test(entry.name))
+                add(join(path, entry.name), true, 'Named interpreter/tool installation tree');
+    };
+    for (const path of context.recursiveDirectories) add(path, true, 'Workspace, temporary or hosted tool installation tree');
+    for (const path of context.programFiles) add(path, true, 'Application installations, including embedded interpreters');
+    for (const name of ['hostedtoolcache', 'tools', 'msys64', 'mingw64', 'cygwin64', 'scoop'])
+        add(join(context.driveRoot, name), true, 'Machine tool installation tree');
+    dynamic(context.driveRoot);
+    add(context.driveRoot, false, 'Direct system-drive commands');
+    for (const path of [context.windows, join(context.windows, 'System32'), join(context.windows, 'SysWOW64')])
+        add(path, false, 'Direct OS commands');
+    for (const path of context.pathDirectories) add(path, false, 'Direct PATH commands', 'path');
+    add(context.programData, false, 'Direct shared installation commands');
+    dynamic(context.programData);
+    dynamic(join(context.programData, 'Microsoft'));
+    for (const name of ['chocolatey', 'scoop', 'pipx', 'uv', 'pyenv'])
+        add(join(context.programData, name), true, 'Shared package-manager installations');
+    add(join(context.programData, 'Microsoft', 'VisualStudio', 'Packages'), true, 'Visual Studio installation packages');
+
+    const local = (path: string): void => {
+        add(path, false, 'Direct user application commands');
+        dynamic(path);
+        for (const name of ['Programs', 'uv', 'pipx', 'pypoetry', 'pyenv', 'virtualenv'])
+            add(join(path, name), true, 'User application/interpreter installation tree');
+        add(join(path, 'Microsoft', 'WindowsApps'), false, 'Store interpreter command aliases');
+        dynamic(join(path, 'Packages')); // Include Python Store package-local scripts without unrelated package data.
+    };
+    const roaming = (path: string): void => {
+        add(path, false, 'Direct roaming application commands');
+        dynamic(path);
+        for (const name of ['Python', 'uv', 'pipx', 'pypoetry', 'pyenv', 'virtualenv'])
+            add(join(path, name), true, 'Roaming interpreter/user package installations');
+    };
+    const profiles = new Set(context.profiles ?? []);
+    for (const entry of discover(context.users)) {
+        if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
+        const path = join(context.users, entry.name);
+        try {
+            const canonical = realpathSync(path);
+            if (resolve(path) !== canonical) aliases.push({ path: resolve(path), target: canonical });
+            profiles.add(canonical);
+        } catch (error) {
             if ((error as NodeJS.ErrnoException).code !== 'ENOENT') errors.push(path + ': ' + message(error));
         }
     }
-    return { roots, paths: [...paths].sort(), directoriesRead, errors };
+    for (const profile of profiles) {
+        add(profile, false, 'Direct physical user-profile commands');
+        dynamic(profile);
+        for (const name of ['.local', '.pyenv', '.conda', '.virtualenvs', '.venv', 'venv', 'scoop'])
+            add(join(profile, name), true, 'User interpreter/package-manager installations');
+        local(join(profile, 'AppData', 'Local'));
+        roaming(join(profile, 'AppData', 'Roaming'));
+    }
+    if (context.localAppData) local(context.localAppData);
+    if (context.appData) roaming(context.appData);
+    // System accounts have their own Store aliases; do not recursively traverse the OS configuration tree.
+    for (const profile of [join(context.windows, 'System32', 'config', 'systemprofile'),
+        join(context.windows, 'ServiceProfiles', 'LocalService'), join(context.windows, 'ServiceProfiles', 'NetworkService')]) {
+        add(join(profile, 'AppData', 'Local', 'Programs'), true, 'System-profile application installations');
+        add(join(profile, 'AppData', 'Local', 'Microsoft', 'WindowsApps'), false, 'System-profile interpreter aliases');
+    }
+    const registry = context.registry ?? [];
+    const candidates: string[] = [];
+    for (const observation of registry) {
+        if (observation.outcome === 'error') errors.push(observation.key + ' (' + observation.view + '-bit): ' + observation.error);
+        for (const path of observation.installPaths) add(path, true, 'PEP 514 registered interpreter installation', 'registry');
+        for (const path of observation.executablePaths) {
+            candidates.push(path);
+            add(dirname(path), true, 'PEP 514 registered interpreter executable directory', 'registry');
+        }
+    }
+    const exclusions: InventoryExclusion[] = [
+        { path: join(context.windows, 'System32', 'LogFiles'), reason: 'OS log data; only direct system commands are audited' },
+        { path: join(context.windows, 'System32', 'config'), reason: 'OS configuration data; explicit system-profile installation roots remain audited' },
+        { path: join(context.programData, 'Microsoft', 'Windows'), reason: 'OS shared data; shared application installation roots are separately audited' },
+        { path: join(context.programData, 'Microsoft', 'Windows Defender Advanced Threat Protection'), reason: 'Protected security-service data, outside interpreter installation scope' },
+        ...context.programFiles.flatMap(path => ['Classification', 'Configuration'].map(name => ({
+            path: join(path, 'Windows Defender Advanced Threat Protection', name),
+            reason: 'Protected security-service configuration, outside interpreter installation scope',
+        }))),
+    ];
+    return { roots: [...roots.values()], exclusions, aliases, candidates, registry, errors };
 }
-export function platformRoots(platform: EnforcementPlatform): InventoryRoot[] {
-    if (platform === 'linux') return [{ path: '/', recursive: true }];
-    const drive = process.env.SystemDrive ?? 'C:';
-    const windows = process.env.SystemRoot ?? drive + '\\Windows';
-    const recursive = [process.cwd(), process.env.GITHUB_WORKSPACE, process.env.RUNNER_TEMP,
-        process.env.RUNNER_TOOL_CACHE, process.env.AGENT_TOOLSDIRECTORY,
-        process.env.USERPROFILE, process.env.LOCALAPPDATA, process.env.APPDATA,
-        process.env.ProgramFiles, process.env['ProgramFiles(x86)'], process.env.ProgramW6432,
-        drive + '\\hostedtoolcache', drive + '\\Users', drive + '\\Program Files',
-        drive + '\\Program Files (x86)', drive + '\\ProgramData', drive + '\\tools',
-        drive + '\\msys64', drive + '\\mingw64', drive + '\\cygwin64',
-        join(windows, 'System32'), join(windows, 'SysWOW64')].filter((path): path is string => !!path);
-    for (const entry of readdirSync(drive + '\\', { withFileTypes: true }))
-        if (entry.isDirectory() && /(?:python|conda|pypy|portable|apps|tools)/i.test(entry.name)) recursive.push(drive + '\\' + entry.name);
-    const direct = [drive + '\\', windows, ...(process.env.PATH ?? '').split(';')].filter(Boolean);
-    return [...new Set(recursive)].map(path => ({ path, recursive: true }))
-        .concat([...new Set(direct)].map(path => ({ path, recursive: false })));
+
+export function parseRegistryInstallPaths(output: string, environment: NodeJS.ProcessEnv = process.env): {
+    installPaths: string[]; executablePaths: string[]; errors: string[];
+} {
+    const installPaths: string[] = [];
+    const executablePaths: string[] = [];
+    const errors: string[] = [];
+    let key = '';
+    for (const line of output.split(/\r?\n/)) {
+        if (/^HKEY_/i.test(line.trim())) { key = line.trim(); continue; }
+        if (!/\\InstallPath$/i.test(key)) continue;
+        const value = /^\s+(.+?)\s{2,}(REG_SZ|REG_EXPAND_SZ)\s{2,}(.*)$/i.exec(line);
+        if (!value) continue;
+        const name = value[1]!.trim();
+        const executable = /^(?:ExecutablePath|WindowedExecutablePath)$/i.test(name);
+        if (!executable && name !== '(Default)') continue;
+        const path = value[3]!.trim().replace(/%([^%]+)%/g, (match: string, variable: string) => {
+            const actual = Object.keys(environment).find(name => name.toLowerCase() === variable.toLowerCase());
+            return actual ? environment[actual] ?? match : match;
+        });
+        if (!win32.isAbsolute(path) || /%[^%]+%/.test(path)) errors.push(key + ': unresolved or non-absolute installation value ' + name);
+        else (executable ? executablePaths : installPaths).push(path);
+    }
+    return { installPaths: [...new Set(installPaths)], executablePaths: [...new Set(executablePaths)], errors };
+}
+
+function registryInstallations(): RegistryObservation[] {
+    const command = systemCommand('reg.exe');
+    const observations: RegistryObservation[] = [];
+    const keys = ['HKLM\\SOFTWARE\\Python', 'HKCU\\SOFTWARE\\Python'];
+    for (const key of keys) for (const view of ['64', '32'] as const) {
+        const result = spawnSync(command, ['query', key, '/s', '/reg:' + view], {
+            encoding: 'utf8', windowsHide: true, timeout: 30000, maxBuffer: 4 * 1024 * 1024,
+        });
+        const output = (result.stdout ?? '') + (result.stderr ?? '');
+        if (!result.error && result.status === 1 && /unable to find the specified registry key or value/i.test(output)
+            && !/access (?:is )?denied/i.test(output)) {
+            observations.push({ key, view, outcome: 'missing', installPaths: [], executablePaths: [] });
+        } else if (result.error || result.status !== 0) {
+            observations.push({ key, view, outcome: 'error', installPaths: [], executablePaths: [],
+                error: result.error ? message(result.error) : 'Registry query failed: ' + output.trim() });
+        } else {
+            const parsed = parseRegistryInstallPaths(output);
+            observations.push({ key, view, outcome: parsed.errors.length ? 'error' : 'found',
+                installPaths: parsed.installPaths, executablePaths: parsed.executablePaths,
+                ...(parsed.errors.length ? { error: parsed.errors.join('; ') } : {}) });
+        }
+    }
+    return observations;
+}
+
+function platformInventory(platform: EnforcementPlatform): Inventory {
+    if (platform === 'linux') return inventoryInterpreters([{ path: '/', recursive: true }], ['/proc', '/sys', '/dev']);
+    const driveRoot = (process.env.SystemDrive ?? 'C:') + '\\';
+    const windows = process.env.SystemRoot ?? join(driveRoot, 'Windows');
+    const present = (paths: readonly (string | undefined)[]) => paths.filter((path): path is string => !!path);
+    const plan = windowsInstallationPlan({ driveRoot, windows, users: join(driveRoot, 'Users'),
+        programData: process.env.ProgramData ?? join(driveRoot, 'ProgramData'),
+        programFiles: present([process.env.ProgramFiles, process.env['ProgramFiles(x86)'], process.env.ProgramW6432,
+            join(driveRoot, 'Program Files'), join(driveRoot, 'Program Files (x86)')]),
+        recursiveDirectories: present([process.cwd(), process.env.GITHUB_WORKSPACE, process.env.RUNNER_TEMP,
+            process.env.RUNNER_TOOL_CACHE, process.env.AGENT_TOOLSDIRECTORY]),
+        profiles: present([process.env.USERPROFILE]), localAppData: process.env.LOCALAPPDATA, appData: process.env.APPDATA,
+        pathDirectories: (process.env.PATH ?? '').split(';').filter(Boolean), registry: registryInstallations() });
+    return inventoryInterpreters(plan.roots, plan.exclusions, { ...plan, platform });
 }
 function knownPaths(platform: EnforcementPlatform): string[] {
     if (platform === 'linux') return ['/bin', '/usr/bin', '/usr/local/bin', '/opt/bin']
         .flatMap(directory => names.map(name => join(directory, name)));
     const drive = process.env.SystemDrive ?? 'C:';
     const windows = process.env.SystemRoot ?? drive + '\\Windows';
-    const directories = [join(windows, 'System32'), windows,
+    const directories = [join(windows, 'System32'), join(windows, 'SysWOW64'), windows,
         process.env.LOCALAPPDATA && join(process.env.LOCALAPPDATA, 'Microsoft', 'WindowsApps'),
         ...(process.env.PATH ?? '').split(';')].filter((path): path is string => !!path);
     return directories.flatMap(directory => names.flatMap(name => [join(directory, name + '.exe'),
@@ -174,7 +423,7 @@ function knownPaths(platform: EnforcementPlatform): string[] {
 }
 function collectProbes(inventory: Inventory, platform: EnforcementPlatform): Probe[] {
     return [...new Set([...names, ...inventory.paths.map(path => basename(path)),
-        ...knownPaths(platform), ...inventory.paths])].map(candidate => probe(candidate, platform));
+        ...knownPaths(platform), ...inventory.paths])].flatMap(candidate => probesForCandidate(candidate, platform));
 }
 function assertProbes(probes: readonly Probe[]): void {
     const failed = probes.filter(probe => probe.outcome !== 'denied' && probe.outcome !== 'unavailable');
@@ -208,7 +457,7 @@ function saveAndDeny(state: EnvironmentEnforcement, report: string, paths: reado
     for (const path of [...new Set(paths)].sort()) {
         const backup = join(state.stateDirectory, 'acl-' + String(state.aclBackups.length).padStart(5, '0') + '.txt');
         icacls([basename(path), '/save', backup, '/q'], dirname(path));
-        state.aclBackups.push({ path, backup, permission: scriptExtension.test(path) ? 'RX' : 'X', applied: false, restored: false });
+        state.aclBackups.push({ path, backup, permission: scriptExtension.test(path) || isWindowsLogicalWrapperPath(path) ? 'RX' : 'X', applied: false, restored: false });
         writeState(report, state);
     }
     for (const entry of state.aclBackups) {
@@ -255,7 +504,7 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
         stateDirectory, phase: 'preparing', qualified: false, aclBackups: [] };
     writeState(report, state);
     try {
-        state.inventory = inventoryInterpreters(platformRoots(platform), platform === 'linux' ? ['/proc', '/sys', '/dev'] : []);
+        state.inventory = platformInventory(platform);
         if (state.inventory.errors.length) throw new Error('Incomplete interpreter inventory: ' + state.inventory.errors.join('; '));
         if (platform === 'linux') {
             const executable = state.inventory.paths.filter(path => {
@@ -320,7 +569,7 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
         const git = (...args: string[]) => execFileSync('git', args, { encoding: 'utf8' }).trim();
         if (state.testedRevision !== git('rev-parse', 'HEAD') || state.testedTree !== git('rev-parse', 'HEAD^{tree}'))
             throw new Error('Git candidate changed during qualification');
-        state.verificationInventory = inventoryInterpreters(platformRoots(state.platform), state.platform === 'linux' ? ['/proc', '/sys', '/dev'] : []);
+        state.verificationInventory = platformInventory(state.platform);
         if (state.verificationInventory.errors.length) throw new Error('Incomplete verification inventory: ' + state.verificationInventory.errors.join('; '));
         if (state.platform === 'win32') {
             const controlled = new Set(state.aclBackups.map(entry => entry.path.toLowerCase()));

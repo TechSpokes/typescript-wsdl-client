@@ -113,6 +113,7 @@ npx tsx test/conformance/reference/qualification/record.ts
 These are bounded investigations, not a supported alternate required lane.
 Failed candidates are installed only in the classified disposable directory; only the qualified primary package is a pinned development dependency.
 The original candidate investigation used PATH denial and remains historical staging evidence. Final qualification uses physical interpreter inventory and absolute-path negative controls on Linux, and execution/read ACL denial with saved rollback on Windows.
+The Windows audit records its installation roots, registry-discovered paths, canonical aliases and protected OS-data exclusions. Unreadable selected installation roots fail qualification; the audit does not claim that arbitrarily renamed executables across the entire host filesystem are absent.
 `record.ts` accepts an optional installation-evidence JSON path; without it, regeneration makes no installation claim.
 New producer runs capture source/input/engine hashes at execution. Recorders reject stale output and write ignored `recorded-report.json` or `recorded-observations.json`; checked historical reports remain unchanged.
 

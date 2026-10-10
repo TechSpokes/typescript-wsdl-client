@@ -59,8 +59,9 @@ function recordAccepted(record: XmlNode): boolean {
     try { expandedQName(kind, kind.text.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, '')); } catch { return false; }
     if (nullable.children.length || !elementOnly(nullable) || attribute(nullable, 'id') === undefined) return false;
     if (ordinaryAttributes(nullable).some(a => !(a.uri === '' && a.local === 'id') && !(a.uri === xsi && a.local === 'nil'))) return false;
-    const nil = attribute(nullable, 'nil', xsi);
-    return nil === undefined || ['true', 'false', '1', '0'].includes(nil.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, ''));
+    const nil = attribute(nullable, 'nil', xsi)?.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, '');
+    if ((nil === 'true' || nil === '1') && nullable.text !== '') return false;
+    return nil === undefined || ['true', 'false', '1', '0'].includes(nil);
 }
 function selectedAccepted(payload: XmlNode): boolean {
     if (payload.local === 'Submit') return recordAccepted(payload);

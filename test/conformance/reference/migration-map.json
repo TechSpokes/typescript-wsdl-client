@@ -1648,7 +1648,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": true,
       "instances": [
         {
@@ -1668,8 +1668,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-optional-sequence",
@@ -1678,7 +1678,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": false,
       "instances": [
         {
@@ -1694,8 +1694,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-simple-choice",
@@ -1704,7 +1704,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": true,
       "instances": [
         {
@@ -1724,8 +1724,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-sequence-order",
@@ -1734,7 +1734,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": true,
       "instances": [
         {
@@ -1746,8 +1746,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-choice-boundary",
@@ -1756,7 +1756,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": false,
       "instances": [
         {
@@ -1772,8 +1772,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-zero-group-unbounded",
@@ -1782,7 +1782,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": true,
       "instances": [
         {
@@ -1794,8 +1794,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-zero-element-unbounded",
@@ -1804,7 +1804,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": false,
       "instances": [
         {
@@ -1816,8 +1816,8 @@
           "secondary": true
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-required-single",
@@ -1826,7 +1826,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": false,
       "instances": [
         {
@@ -1838,8 +1838,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-required-multiple",
@@ -1848,7 +1848,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": false,
       "instances": [
         {
@@ -1868,8 +1868,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-empty-alternative",
@@ -1878,7 +1878,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": false,
       "instances": [
         {
@@ -1894,8 +1894,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-finite-count-gap",
@@ -1904,7 +1904,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": true,
       "instances": [
         {
@@ -1920,8 +1920,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-optional-all",
@@ -1930,7 +1930,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": false,
       "instances": [
         {
@@ -1946,8 +1946,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-wildcard-sequence",
@@ -1956,7 +1956,7 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": false,
       "instances": [
         {
@@ -1980,8 +1980,8 @@
           "secondary": false
         }
       ],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     },
     {
       "id": "NT-baseline-invalid-all-sequence",
@@ -1990,11 +1990,11 @@
       "owner": 248,
       "target": "test/conformance/reference/baseline.test.ts",
       "command": "npm run test:reference:full",
-      "evidence": "live-external-observation",
+      "evidence": "current-primary-observation; historical-external-observation; selected-contract-assertion for designated zero-bound instance; explicit unqualified-capability",
       "fast": true,
       "instances": [],
-      "status": "pending",
-      "gap": "Gate S unresolved"
+      "status": "verified",
+      "acceptedContract": "NT-CONT-01"
     }
   ],
   "operations": [
@@ -2080,7 +2080,7 @@
       "sha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
       "owner": 252,
       "action": "Original inventory preserved; coordinated Node cutover completed.",
-      "currentSha256": "5c40c2c05cfc2a5c2af28e5afd8f6f6c7938850a2ca27fd738054bf510cd132f"
+      "currentSha256": "68bcbd3d718bcef86401c43d0ede8ded1b538421821f77e2628d46bd39835a52"
     }
   ],
   "purePrograms": [
@@ -2106,7 +2106,7 @@
     "source": "test/helpers/contentModelSoapProbe.ts",
     "target": "test/helpers/contentModelSoapReference.ts",
     "command": "npx vitest run test/integration/content-model-soap-feasibility.test.ts",
-    "targetSha256": "4c772ce1c38d60567bb123f07fa07ca6fbeef7063918fc8215a7961383a8810f",
+    "targetSha256": "3764773c6a44c3e196c06119f58266aafd30991699ed295860463d511ae14343",
     "status": "verified-13-async-consumers"
   },
   "historicalExpectations": [

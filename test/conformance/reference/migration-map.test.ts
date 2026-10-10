@@ -34,6 +34,8 @@ const map = JSON.parse(readFileSync(new URL("./migration-map.json", import.meta.
     baselineCases: Array<{
         instances: unknown[];
         fast: boolean;
+        status: string;
+        acceptedContract: string;
     }>;
 };
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
@@ -74,6 +76,10 @@ describe("frozen Python migration coverage", () => {
             expect(row.status, row.id).toBe('verified');
             expect(row.acceptedContract, row.id).toBe('NT-CONT-01');
             expect(digest(readFileSync(row.target, 'utf8')), row.id).toBe(row.targetSha256);
+        }
+        for (const row of map.baselineCases) {
+            expect(row.status).toBe('verified');
+            expect(row.acceptedContract).toBe('NT-CONT-01');
         }
     });
 });
