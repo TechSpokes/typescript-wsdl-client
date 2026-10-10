@@ -376,7 +376,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "63dbd400e85de27ec2f15e8e4a8cd3be01d5546e15e92c647c9641fa2c544513"
+          "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944"
         },
         {
           "path": "test/conformance/reference/s06_re01_contract_test.py",
