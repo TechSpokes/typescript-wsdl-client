@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(content-model): expose RE01 ambient, blocking and AU witness-domain obstructions with independent source controls.
+
 - test(content-model): implement the bounded RE01 research resolver with explicit predicate qualification and endpoint correspondence.
 
 - docs(content-model): specify RE01 hypothetical contexts and implementation handoff with retained-substitution controls.

@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:mixed-empty" targetNamespace="urn:re01:mixed-empty" elementFormDefault="qualified">
+  <xs:complexType name="A" mixed="true"><xs:sequence/></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="E">
+    <xs:complexContent mixed="true"><xs:extension base="t:A"><xs:sequence><xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/></xs:sequence></xs:extension></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent mixed="true"><xs:restriction base="t:E">
+      <xs:sequence minOccurs="17" maxOccurs="17"><xs:element name="a" type="xs:int"/><xs:element name="b" type="xs:int"/></xs:sequence>
+    </xs:restriction></xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>
