@@ -52,6 +52,7 @@ export function groupWildcardPredicate(root: DecisionParticle, base: DecisionPar
   const within = (actual: Occurs, min: string) => algebra.compare(actual.min, min) >= 0 && algebra.compare(actual.max, base.occurs.max) <= 0;
   try {
     if (inputNodes > maxNodes) fail("resource-limit", "PW01 predicate exceeds input node limit");
+    current = base.owner;
     if (base.kind !== "any" || !base.wildcard) fail("invalid-schema", "PW01 requires an original wildcard particle");
     algebra.validate(base.occurs);
     charge();

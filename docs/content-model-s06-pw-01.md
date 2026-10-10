@@ -276,7 +276,7 @@ npm run ci
 npm run test:conformance
 ```
 
-At the leaf checkpoint, scoped TypeScript passed and focused Vitest passed 39 tests in one file.
+At the leaf checkpoint, scoped TypeScript passed and focused Vitest passed 40 tests in one file.
 The focused reference discovery passed two tests with 76 schema-load observations and 16 recorded payload observations; two are explicit unavailable-schema results.
 The shared freshly provisioned reference runtime was used by explicit path, without creating another installation route.
 

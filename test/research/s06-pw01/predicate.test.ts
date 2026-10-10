@@ -109,6 +109,14 @@ describe("PW01 independent restriction candidates", () => {
     input.assertUnchanged();
   });
 
+  it("classifies malformed original base ranges with their own source", async () => {
+    const input = await operands("zero-min-control.xsd");
+    const malformed = {...input.base, occurs: {min: "2", max: "1"}};
+    const result = groupWildcardPredicate(input.root, malformed, "proposed2232", input.inputNodes, callbacks);
+    expect(result).toMatchObject({kind: "failure", diagnostic: {category: "invalid-schema", component: input.base.owner.id, source: input.base.owner.context.source}});
+    expect("validRestriction" in result).toBe(false);
+  });
+
   it("measures exact node/work boundaries, huge digits and preserves source context", async () => {
     const input = await operands("huge-exact-repetition.xsd");
     const first = groupWildcardPredicate(input.root, input.base, "proposed2232", input.inputNodes, callbacks);
