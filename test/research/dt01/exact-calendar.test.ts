@@ -11,7 +11,7 @@ const cases = JSON.parse(readFileSync(new URL("./dt01-cases.json", import.meta.u
   durationRelations: {a: string; b: string; equal: boolean; order: string}[];
 };
 
-describe("DT01 proposed option A exact research contract", () => {
+describe("DT01 selected option A exact research contract", () => {
   it.each(cases.calendarLexical)("lexical $id", ({family, lexical, valid}) => {
     const budget = new Budget();
     if (valid) expect(parseCalendar(family, lexical, budget).lexical).toBe(lexical);

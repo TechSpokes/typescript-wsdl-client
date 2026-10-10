@@ -1,14 +1,18 @@
 # S06 DT01: Exact XSD 1.0 calendar decision
 
-Complete calendar candidates and independent evidence for schema operands and the later shared scalar owner.
+Selected exact calendar contract and independent evidence for schema operands and the later shared scalar owner.
 
 See the [root README](../README.md), [S02 contracts](decisions/003-content-model-contracts.md), and [research epic #232](https://github.com/TechSpokes/typescript-wsdl-client/issues/232).
 
 ## Disposition and ownership
 
-`S06-DT-01` remains open: no adopted XSD 1.0 correction establishes a complete year-zero rollover contract. The investigation delivers a concrete, total candidate, alternatives, exact tests and reference observations; passing those tests does not approve its interpretation or activate product support.
+No adopted XSD 1.0 correction establishes a complete year-zero rollover contract.
+The maintainer [selected candidate A's three explicit repairs on October 10, 2026](https://github.com/TechSpokes/typescript-wsdl-client/issues/236#issuecomment-6095933213): preserve lexical BCE leap dates while skipping zero, normalize second 60 as overflow, and order normalized recurring-time clocks consistently with aliases.
+Independent semantic review and final delivery govern local acceptance; passing the probes alone does not activate product support.
 
-The recommendation is candidate A, subject to an explicit decision on its skip-zero repair, second-60 normalization and recurring-time comparison. Its lexical-year leap calculation preserves the recorded BCE domain, but its rollover repair is an interpretation added to the written Appendix E algorithm. Candidate B changes which BCE leap dates are legal, while literal Appendix E does not remain closed over the XSD 1.0 value domain.
+The selected project contract is candidate A, including its skip-zero repair, second-60 normalization and recurring-time comparison.
+Its lexical-year leap calculation preserves the recorded BCE domain, but its rollover repair is an interpretation added to the written Appendix E algorithm.
+Candidate B changes which BCE leap dates are legal, while literal Appendix E does not remain closed over the XSD 1.0 value domain.
 
 [#179](https://github.com/TechSpokes/typescript-wsdl-client/issues/179) owns schema integration. [#184](https://github.com/TechSpokes/typescript-wsdl-client/issues/184) owns the later shared payload implementation; #188/#189/#198 consume it. This research imports no production scalar/assessment helper and supplies no payload validator, conversion policy, calendar feature switch or public encoding change.
 
@@ -51,14 +55,16 @@ Agreement on four BCE schemas is no proof about month addition, day rollover, ti
 
 | Option | Lexical years and leap calculation | Rollover | Consequence |
 |---|---|---|---|
-| A, recommended proposal | Reject zero; leap test on lexical signed `y` | Continuous year/month coordinate skips zero | Preserves BCE observations; adds an explicit Appendix E repair |
+| A, selected contract | Reject zero; leap test on lexical signed `y` | Continuous year/month coordinate skips zero | Preserves BCE observations; adds an explicit Appendix E repair |
 | B, astronomical repair | Reject zero; use `a=y+1` for negative `y` | Ordinary Gregorian arithmetic on `a` | Makes `-0001` leap and `-0004` common; changes valid BCE schemas |
 | C, literal Appendix E | Reject lexical zero; use arithmetic `y` | Ordinary integer addition, including zero | Produces values with forbidden year zero; not a complete closed contract |
 | D, XSD 1.1 | Permit zero and reinterpret negative years | XSD 1.1 Gregorian coordinate | Changes the approved profile and is not authorized |
 
 Candidate C cannot be completed merely by hiding zero as an internal year. A full internal zero year adds 366 days between `-0001` and `0001`, contradicting their described adjacency; folding zero into a neighbor changes month/day order or leap validity. Removing its days is candidate A's explicit repair; shifting negative year meanings is candidate B's explicit repair.
 
-The requested choice is whether to adopt A's specified repairs, adopt B with its recorded compatibility consequences, or retain the qualification while seeking a standards interpretation. Until chosen, impacted schemas return the existing `unsupported-capability` qualification; this is a temporary gate, not a permanent BCE exclusion. Unaffected lexical, positive-year and duration-equality work continues.
+The alternatives record A's selected repairs and B's different compatibility consequences.
+Production impacted schemas retain the existing `unsupported-capability` qualification until #179 implements and validates the accepted research contract; this is a temporary gate, not a permanent BCE exclusion.
+Unaffected lexical, positive-year and duration-equality work continues.
 
 Candidate B is fully specified by replacing A's leap/ordinal coordinate with `a(y)=y` for positive lexical years and `a(y)=y+1` for negative years. Apply the ordinary Gregorian leap test and `G(a)` ordinal, including internal astronomical zero; inverse conversion emits `y=a` when `a>0` and `y=a-1` otherwise. Month addition uses `12*(a-1)+(m-1)`, then all of A's exact clipping, fractions, timezone-presence, ordering and anchor procedures remain the same, including their separately stated second-60 and recurring-time choices.
 
@@ -81,10 +87,28 @@ type OperandContext = Readonly<{
 }>;
 type SameValueResult = "equal" | "distinct" | "unresolved" | "resource-limit";
 type CalendarOrder = "less" | "equal" | "greater" | "indeterminate";
-declare function sameValue(a: OperandContext, b: OperandContext): SameValueResult;
+type CalendarFamily = "dateTime" | "date" | "time" | "gYearMonth"
+  | "gYear" | "gMonthDay" | "gDay" | "gMonth";
+type ExactDecimal = Readonly<{coefficient: bigint; scale: number}>;
+type CalendarValue = Readonly<{
+  family: CalendarFamily; timezoned: boolean;
+  representative: ExactDecimal; original: OperandContext;
+}>;
+type SemanticBudget = Readonly<{charge(work: number): void; admitNodes(count: number): void}>;
+declare function assessCalendarOperand(
+  family: CalendarFamily, context: OperandContext, budget: SemanticBudget
+): CalendarValue;
+declare function sameValue(
+  a: OperandContext, b: OperandContext, budget: SemanticBudget
+): SameValueResult;
+declare function compareCalendarValue(
+  a: CalendarValue, b: CalendarValue, budget: SemanticBudget
+): CalendarOrder;
 ```
 
 `sameValue` first assesses each operand against its own original type and context. Invalid schema operands retain their `invalid-schema` failure rather than becoming `distinct`. For compatible typed primitive values it uses that primitive's exact equality; lists compare corresponding item values and length, and unions preserve the selected member context before applying its value predicate.
+
+The calendar output retains family, timezone presence, exact internal reference coordinate and original operand context. A reduced family's reference date supplies comparison fields only; it does not expose an invented date in the public scalar encoding. The research display makes its `zoned/local` timeline explicit and never uses its internal coordinate string as a replacement for the original lexical witness.
 
 Calendar equality requires the same primitive calendar family and the same timezone-presence timeline, followed by exact normalized value equality. A date interval does not equal a dateTime instant merely because their starting instants coincide. Different timelines are distinct values even when their clock fields match; their ordering can remain indeterminate.
 
@@ -98,9 +122,11 @@ Duration equality compares exact signed total months and exact signed decimal se
 
 Diagnostics retain operation, graph/type ID, expanded name, schema source and instance path where available, without copying operand values into messages. Semantic normalization returns fresh values, preserves timezone presence and never mutates caller data. Internal UTC coordinates do not authorize public UTC conversion or replacing the original pattern-admitted lexical witness; the [S02 normalization laws](decisions/003-content-model-contracts.md#equivalence-and-normalization-s02-d03) remain controlling.
 
-For AU01/RE01, calendar equality requiring disputed BCE rollover returns `unresolved` pending the decision. Exact duration equality uses no reference calendar and can proceed independently. Numeric/QName/string/list/union claims must invoke the established original-type predicates, not claim the entire scalar domain proved by this narrow calendar prototype.
+For AU01/RE01, calendar equality uses selected A once its independent contract review passes; before that gate it returns `unresolved`.
+Exact duration equality uses no reference calendar and can proceed independently.
+Numeric/QName/string/list/union claims must invoke the established original-type predicates, not claim the entire scalar domain proved by this narrow calendar prototype.
 
-## Complete candidate A arithmetic
+## Selected candidate A arithmetic
 
 ### Lexical and value coordinates
 
@@ -133,13 +159,13 @@ Timezone lexical offsets are exact integral minutes from -14:00 through +14:00, 
 
 Raw field-tuple timezone normalization remains a use of Appendix E's field arithmetic, before the literal becomes its UTC value. The retained lexical offset supplies provenance and an admitted wire witness; it does not cause subsequent value-level addition to depend on spelling.
 
-### Second 60 qualification
+### Selected second 60 interpretation
 
 [Appendix D.1](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#isoformats) admits whole seconds 0 through 60 with arbitrary fractions and discusses rolling an inappropriate leap-second operand into the following minute. Appendix E explicitly treats second 60 as overflow and thereafter uses sixty seconds per minute. Both pinned engines reject `23:59:60Z`; their rejection does not erase this XSD 1.0 text.
 
 Candidate A accepts `0<=second<61` and uses that stable overflow interpretation, including for explicit UTC operands. The probe consequently maps `2001-12-31T23:59:60.25Z` to `2002-01-01T00:00:00.25Z`. It imports no contemporary leap-second table or host clock behavior.
 
-This alias is also an interpretation requiring review: 3.2.7's canonical paragraph says literals are one-to-one except fractional zeros, 24:00 and timezone, without a second-60 exception, while its order algorithm applies timezone conversion only to non-Z operands. The candidate does not claim its second-60 alias follows unambiguously from those clauses. #179's draft `second>=60` invalidity check cannot silently become the XSD 1.0 contract; #184 must consume the resolved interpretation rather than an engine's rejection.
+This selected alias is an explicit project interpretation: 3.2.7's canonical paragraph says literals are one-to-one except fractional zeros, 24:00 and timezone, without a second-60 exception, while its order algorithm applies timezone conversion only to non-Z operands. The selected contract does not claim that the alias follows unambiguously from those clauses. #179's draft `second>=60` invalidity check must be reconciled with the selected interpretation; #184 consumes this resolved contract rather than an engine's rejection.
 
 ### Related calendar families
 
@@ -158,13 +184,17 @@ All approved families retain a distinct primitive family tag and timezone-presen
 
 Date equality compares interval starts on the same timeline. It does not truncate the UTC start to midnight: `0001-01-01+14:00` and `-0001-12-31-10:00` denote the same interval under A. For a canonical date spelling, derive the date portion from the interval's UTC midpoint and retain the recoverable offset in -11:59 through +12:00 as 3.2.9 specifies.
 
-The reduced Gregorian families use their type-specific reference fields and retain the exact timezone shift of their starting instant during comparison. Periodic-family ordering is the stated arbitrary reference-period ordering, not a circular order or an inferred BCE host-calendar recurrence. The narrow TS prototype implements date/dateTime/duration only; the other six representatives are specified here and their lexical contrasts are independently exercised by the reference probe, not claimed as a complete runtime implementation.
+The reduced Gregorian families use their type-specific reference fields and retain the exact timezone shift of their starting instant during comparison. Periodic-family ordering is the stated arbitrary reference-period ordering, not a circular order or an inferred BCE host-calendar recurrence. The research-only TS prototype now implements exact representatives, equality and ordering for all eight calendar families plus duration; #184's payload enforcement remains a later implementation.
 
 The `time` modulo step is a third explicit candidate interpretation. [3.2.8](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#time) prescribes dateTime ordering with an arbitrary date while its canonical representation removes the date and uses UTC. Comparing `01:00:00+14:00` with `02:00:00Z` after normalization on a common arbitrary date gives previous-day 11:00 versus same-day 02:00, hence less; comparing their normalized modulo-day clocks gives 11:00 versus 02:00, hence greater.
 
-A chooses modulo-day value representatives consistently for equality and ordering, preserving canonical-alias substitutability. A date-lift alternative retains the shifted reference day and follows the literal arbitrary-date order, but must decide whether `01:00:00+14:00` and canonical `11:00:00Z` remain equal despite different lifted days. Neither reading is silently declared settled; this related-family reconciliation belongs in the shared #179/#184 interpretation decision and no new production order is activated here.
+A selects modulo-day value representatives consistently for equality and ordering, preserving canonical-alias substitutability. Zoned clocks are reduced modulo 86,400 seconds and rebased on 2000-01-01; unknown-zone clocks remain their unshifted clocks on that reference date. Legal 24:00 and selected second-60 overflow normalize to their midnight aliases on the same timeline.
+
+The rejected date-lift alternative retains the shifted reference day and follows the literal arbitrary-date order, but cannot preserve `01:00:00+14:00 = 11:00:00Z` while assigning them different comparison days. The maintainer's recorded recurring-time choice resolves this project contract; it is not a new fourth circular-offset decision and it activates no production order here.
 
 Same-family, same-timeline order compares exact representatives. For a known-zone representative `z` and unknown-zone representative `u`, known is less only when `z<u-50400`, greater only when `z>u+50400`, and otherwise indeterminate; reverse the direction when the unknown operand is first. At exactly either endpoint the result remains indeterminate.
+
+The resulting time order is linear on the selected common reference date rather than circular. Thus `00:00:00Z < 23:00:00` and `23:00:00Z > 00:00:00`, while `23:00:00-14:00` becomes 13:00Z and is incomparable with unknown 23:00 because their representative difference is ten hours. These wrap consequences are intentional results of the selected model, not unresolved timezone inference.
 
 ### Duration equality and ordering
 
@@ -172,7 +202,7 @@ Parse duration fields into `months=sign*(12*years+months)` and `seconds=sign*(86
 
 Equality is the exact ordered pair `(months,seconds)`. Ordering first checks that equality, then adds each operand independently to `1696-09-01`, `1697-02-01`, `1903-03-01` and `1903-07-01`, all at midnight Z, using the candidate's exact addition. Return strict less or strict greater only if every anchor gives that same strict result; otherwise return indeterminate.
 
-An equality at one anchor mixed with strict comparisons at others is indeterminate. Even equality at every anchor does not prove exact pair equality: `P400Y` and `P146097D` produce identical positive-anchor additions but remain distinct duration values in this contract. Anchor additions that cross zero use A's repaired coordinates and therefore remain under the DT01 decision gate.
+An equality at one anchor mixed with strict comparisons at others is indeterminate. Even equality at every anchor does not prove exact pair equality: `P400Y` and `P146097D` produce identical positive-anchor additions but remain distinct duration values in this contract. Anchor additions that cross zero use the selected A coordinates and retain the production integration guard until #179 implements this contract.
 
 ## Independent truth tables
 
@@ -210,6 +240,29 @@ An equality at one anchor mixed with strict comparisons at others is indetermina
 
 [Literal proposal cases](../test/research/dt01/dt01-cases.json) were authored independently of the prototype. They include invalid positive/negative zero, extended leading zero, plus year, XML-only whitespace, fractional boundary comparisons and illegal independently signed duration fields. Assertions read those literal expectations; neither production analysis nor prototype output manufactures them.
 
+### Reduced-family exact value coverage
+
+[Reduced-family expectations](../test/research/dt01/dt01-reduced-cases.json) are separately hand-authored under the recorded selection, including the independently checked leap-day and day-offset alias contrasts. Their [research tests](../test/research/dt01/reduced-calendar.test.ts) verify normalized internal representatives, retained lexical witnesses, exact equality, order reversal, alias substitution and refusal before work/copy budget exhaustion.
+
+| Family/contrast | Independent selected result |
+|---|---|
+| `gYear 0001+14:00` | Zoned start `-0001-12-31T10:00:00` |
+| `gYearMonth 0001-01+14:00` | Same coordinate, distinct family from `gYear` |
+| `gYearMonth -0004-03+01:00` | Zoned start `-0004-02-29T23:00:00` |
+| `gYearMonth -0001-03+01:00` | Zoned start `-0001-02-28T23:00:00` |
+| `gMonthDay --02-29+14:00` versus `--02-28-10:00` | Equal at leap-year reference start |
+| `gDay ---31+14:00` versus `---30-10:00` | Equal at January reference start |
+| `gMonth --03+14:00` | Zoned start `2000-02-29T10:00:00` |
+| `gMonthDay --01-01+14:00` versus `--12-31-10:00` | Less; shifted reference year remains significant |
+| `time 01:00:00+14:00` versus `11:00:00Z` | Equal; both greater than `02:00:00Z` |
+| `time 14:00:00Z` versus unknown midnight | Distinct values; indeterminate endpoint order |
+| Known 14:00Z plus 10^-30 seconds versus unknown midnight | Greater by exact strict endpoint test |
+| Known midnight versus unknown 14:00 plus 10^-30 seconds | Less by exact strict endpoint test |
+
+The reduced fixture table contains 23 normalization cases, 29 equality/order pairs, four alias-substitution contrasts and ten invalid lexical operands. Its huge positive `gYear` and huge negative leap `gYearMonth` operands preserve years beyond Number precision exactly. Each pair also checks reverse ordering, and dedicated cases verify cross-family identity and the exact reduced-normalization work boundary.
+
+These are executable evidence for every selected reduced-family rule, without claiming a separate payload implementation.
+
 ### Engine observations versus interpretation
 
 | Fixture/payload comparison | Candidate A acceptance | XMLSchema 4.2.0 | libxml2 2.14.6 |
@@ -229,13 +282,15 @@ The [calendar scalar fixture](../test/conformance/fixtures/xsd/research-dt01/cal
 
 ## Bounded research procedure and measurements
 
-The [exact TS probe](../test/research/dt01/exact-calendar.ts) implements candidate A for schema-style date/dateTime/duration operands only. It uses BigInt year/month/day counts and exact decimal coefficient/scale arithmetic, with no JavaScript Date, floating approximation, production imports or pinned-draft runtime dependency. The procedure terminates for every valid finite operand given sufficient resources: fixed lexical scans, constant calendar cycle decomposition, at most twelve month steps and exactly four comparison anchors.
+The [exact TS probe](../test/research/dt01/exact-calendar.ts) implements selected A's schema comparison rules for all eight calendar families and duration. It uses BigInt year/month/day counts and exact decimal coefficient/scale arithmetic, with no JavaScript Date, floating approximation, production imports or pinned-draft runtime dependency. The procedure terminates for every valid finite operand given sufficient resources: fixed lexical scans, constant calendar cycle decomposition, at most twelve month steps and exactly four duration comparison anchors.
 
 The independent S06 defaults remain 100,000 input graph nodes and 1,000,000 work steps, inclusive. The prototype's graph admission method is a synthetic budget boundary test; it does not reimplement graph indexing, replace S03/S04 limits or claim the matcher/payload/output stages are implemented. Existing conservative cyclic-depth handling remains with its owning stage.
 
 Charge lexical scans/copies before regex matching, whitespace normalization, capture allocation and BigInt conversion. Charge conservative `(digits+2)^2` arithmetic work before exact products, powers, scaling and ordinal operations; charge month/cycle bookkeeping and fractional trimming separately. Stored digit bounds come from the validated lexical input and conservative carry/scale bounds; low-level ordinal helpers take trusted internal bounds and are not an untrusted operand API.
 
 The precharged arithmetic envelope covers the small fixed month-length array and repeated modulo operations used by a calendar conversion. Copy/output estimates include signs, carries and fractional scale. Failure occurs before the refused charge, does not exceed either configured counter, and throws without returning a scalar/equality result; exhaustion is not a proof of inequality or invalidity.
+
+Reduced-family parsing additionally charges seven fixed regex/lookup objects before creation, the reference-tuple copy before allocation, three fields for a copied modulo-clock decimal record, and ten fixed fields for each returned representative record. Representative display charges its string copy and three-field result container before allocation. These request-specific charges leave the original date/dateTime/duration measurements unchanged.
 
 The probe does not import #184's later 4,096-digit scalar limit. A 5,000-digit schema year completes when enough work is supplied and returns resource-limit at the normal budget before BigInt conversion. A finite budget can prevent a decision but cannot redefine the approved scalar domain.
 
@@ -251,6 +306,10 @@ Measurements from [the committed measurement entry point](../test/research/dt01/
 | 200-digit negative year and 100 fraction digits | 10,000,000 | 1,345,158 | Exact round trip | 0.135 |
 | 5,000-digit year | 1,000,000 | 20,036 | Resource-limit before conversion | 0.159 |
 | 5,000-digit year | 2,000,000,000 | 125,821,674 | Exact assessment | 0.166 |
+| Reduced wrapped time, exact boundary | 15,487 | 15,487 | Exact representative returned | 0.088 |
+| Same reduced computation, one step less | 15,486 | 15,486 | Resource-limit before final output | 0.066 |
+| Reduced `gYear` offset crossing BCE | 1,000,000 | 11,641 | Exact representative returned | 0.100 |
+| Reduced time strict endpoint plus 10^-30 seconds | 1,000,000 | 103,931 | Greater | 0.141 |
 
 Times are observations and will vary; counters/outcomes are deterministic. The large year plus fraction round trips use an explicit increased work budget, not an assertion that they fit the default. Separate tests pay the full default 1,000,000 steps and reject the next step, and independently admit/reject the node boundary.
 
@@ -259,7 +318,7 @@ Times are observations and will vary; counters/outcomes are deterministic. The l
 The committed artifacts reproduce from the research delivery checkout plus [the existing reference setup](testing.md). Five historical source fixtures were copied without editing from the pinned draft's `test/conformance/fixtures/xsd/assessment/`; the reference test records each exact SHA-256 and the original commit. Fresh `npm run reference:setup` was executed by the epic coordinator before this leaf used its pinned Python environment.
 
 ```bash
-npx vitest run test/research/dt01/exact-calendar.test.ts
+npx vitest run test/research/dt01
 npx tsc -p test/research/dt01/tsconfig.json
 npx tsx test/research/dt01/measure.ts
 tmp/conformance/reference-venv/bin/python -m unittest discover -s test/conformance/reference -p dt01_calendar_contract_test.py -v
@@ -267,14 +326,16 @@ tmp/conformance/reference-venv/bin/python -m unittest discover -s test/conforman
 
 On Windows the equivalent interpreter is `tmp\conformance\reference-venv\Scripts\python.exe`. This interpreter is created by `npm run reference:setup`; it requires XMLSchema 4.2.0, lxml 6.1.0/libxml2 2.14.6 and elementpath 5.0.4. The leaf used the coordinator's fresh environment through its explicit interpreter path.
 
-This uniquely named `*_test.py` participates in established `test:reference` and `test:reference:full` discovery. Local leaf verification passed 71 Vitest tests, scoped TypeScript 6.0.3 and three Python unittest methods with 5 schema/10 engine checks, 28 lexical/56 engine checks and 7 equality/14 engine checks.
+This uniquely named `*_test.py` participates in established `test:reference` and `test:reference:full` discovery. Local leaf verification passed 139 Vitest tests in two files, scoped TypeScript 6.0.3 and three Python unittest methods with 5 schema/10 engine checks, 28 lexical/56 engine checks and 7 equality/14 engine checks. The 68 reduced-family tests supplement the original 71 exact calendar/duration tests.
 
 IDE inspection tools were unavailable; repository TypeScript, fixture parsing and documentation checks supply the portable verification. The epic integration record owns final `npm run ci`, `npm run test:reference:full`, `npm run test:conformance`, documentation/support-matrix checks, installed-consumer coverage and the final reviewed delivery revision. These leaf results do not substitute for that combined final content gate.
 
-Inspecting the pinned `schemaDatatypeValues.ts` identified two DT01 guards: every negative year returns `S06-DT-01`, and duration ordering returns it when anchor month addition reaches year<=0 or second addition reaches a negative timeline count. A reviewed A implementation could replace both with the specified exact repaired operations; it would also need to correct its ordinary astronomical ordinal formula, distinguish value addition from lexical tuples, and reconcile second-60 handling. No guard is removed here.
+Inspecting the pinned `schemaDatatypeValues.ts` identified two DT01 guards: every negative year returns `S06-DT-01`, and duration ordering returns it when anchor month addition reaches year<=0 or second addition reaches a negative timeline count. After accepted local review, #179 can replace both with the selected exact repaired operations; it must also correct its ordinary astronomical ordinal formula, distinguish value addition from lexical tuples, and apply selected second-60 and reduced-family rules. No guard is removed here.
 
 The pinned `scalarSchemaAssessment.ts` retains facet layers and typed contexts, `attributeSchemaAssessment.ts` uses scalar equivalence for use/declaration fixed values, and `ElementValuePlan`/`ScalarSupportPlan` assign runtime scalar enforcement to #184. Their future integration must preserve that single owner, invalid/unsupported/resource distinctions, QName contexts, default/fixed augmentation and lexical witnesses.
 
 Shared ADR/enforcement-matrix, evidence manifest, registry/traceability, indexes and changelog edits remain serialized under the epic coordinator. The required correction is a new current evidence statement; it does not change the historical pinned manifest, production support claims, catalog format 2, `xsd10-faithful-v1`, legacy routing, D07/platform/S01/S05 qualifications or later production gates.
 
-Independent review must assess A's repairs against the conflicting primary clauses and verify its exact examples and accounting, rather than merely rerun the prototype. Until authority and the combined handoff are accepted, #236, #232, #179 and #153 remain open. Any chosen profile or persisted-contract change requires an explicit reviewed decision; none is made by this research delivery.
+The recorded maintainer selection settles the three project interpretation choices while preserving the primary conflicts and alternatives as evidence. Independent review must verify the complete selected local contract, all-family examples, original-context handoff and bounded accounting rather than merely rerun the prototype. #236's research gate requires that complete review, final delivery checks and merged artifacts; the separate #232 joint handoff and #179/#153 production integration gates remain with their owners.
+
+No additional maintainer calendar choice remains pending in this delivery. No production support claim, payload implementation, profile narrowing or persisted-contract change is made by the research probe.

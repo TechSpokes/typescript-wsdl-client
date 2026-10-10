@@ -4,9 +4,9 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
-This delivery records executable research, candidate contracts and concrete unresolved choices.
-It does not accept #232/#233/#234/#235/#236 or the production assessment draft #179/#231.
-No unresolved case becomes a permanent profile exclusion, and S06/#153 and S07/S08 readiness remain blocked.
+This delivery records executable research and the maintainer's selected AU01, PW01 and DT01 contracts.
+Each selected leaf requires complete independent semantic review and exact delivery gates; its issue handoff records final acceptance.
+RE01's full-type completeness proof, #232's joint gate and the production assessment draft #179/#231 remain open, so S06/#153 and S07/S08 readiness remain blocked.
 
 The approved [ADR-003](decisions/003-content-model-contracts.md), [decision register](content-model-decisions.md), catalog format 2 and `xsd10-faithful-v1` remain unchanged.
 Original-source regeneration for flattened catalogs, structural companions and the legacy public default retain their existing contracts.
@@ -34,59 +34,64 @@ The official [second-edition errata](https://www.w3.org/2004/03/xmlschema-errata
 
 | Contract | Research record | Input and downstream owner | Acceptance status |
 |---|---|---|---|
-| AU01 candidate v1 | [Attribute uses](content-model-s06-au-01.md) | Original AU/declaration identities and typed constraints; #179/#184 | Multi-use selection/default gate open |
+| AU01 C1 v1 | [Attribute uses](content-model-s06-au-01.md) | Original AU/declaration identities and typed constraints; #179/#184 | Selected; local review/delivery gate |
 | RE01 candidate v1 | [Reordered derivation](content-model-s06-re-01.md) | Original derivation operands plus reviewed AU/PW/scalar predicates; #179 | Complete procedure/proof gate open |
-| PW01 alternatives v1 | [Wildcard cardinality](content-model-s06-pw-01.md) | Original member/group ranges, wildcard namespace/process context; #179/RE01 | Interpretation gate open |
-| DT01 candidate v1 | [Calendar semantics](content-model-s06-dt-01.md) | Original lexical/type context, exact years/fractions; #179/#184 | Complete calendar authority gate open |
+| PW01 R-240 v1 | [Wildcard cardinality](content-model-s06-pw-01.md) | Original member/group ranges, wildcard namespace/process context; #179/RE01 | Selected; local review/delivery gate |
+| DT01 A v1 | [Calendar semantics](content-model-s06-dt-01.md) | Original lexical/type context, exact years/fractions; #179/#184 | Selected; local review/delivery gate |
 
 DT01 feeds AU01 only where compared operands use calendar semantics.
 AU01 and PW01 feed RE01; DT01 feeds RE01 only where an actual proof invokes scalar predicates.
-Candidate interfaces permit research progress, but do not count as accepted predicates for a final completeness claim.
+Selected interfaces count as accepted predicates only after their independent local review and delivery gates pass.
 
 A leaf's own contract, evidence, independent review and protected delivery govern its acceptance.
 No leaf waits for sibling or parent closure, and the epic separately assesses joint consistency.
-The unresolved foundational choices below prevent full local and joint acceptance; a successful probe does not discharge them.
+The selected interpretations below are project decisions; successful probes alone do not establish their complete contracts.
+The missing RE01 proof prevents joint acceptance even after sibling local acceptance.
 
-## Concrete remaining decisions
+## Selected interpretations and remaining proof
 
 ### AU01: Multiple uses and conflicting augmentation
 
-The proposed C1 interpretation retains the AU set, combines requiredness with logical OR and checks every present fixed constraint.
+The [selected C1 interpretation](https://github.com/TechSpokes/typescript-wsdl-client/issues/233#issuecomment-6095916709) retains the AU set, combines requiredness with logical OR and checks every present fixed constraint.
 An absent optional attribute remains absent when unconstrained, receives one equivalent candidate value when augmentation is unambiguous, and fails that instance when candidates conflict.
 Conflicting fixed values can produce an empty accepted-instance set without inventing schema invalidity.
 
-C1's absent-instance rejection and universal matching are explicit proposed interpretations, not existing primary rules established by this investigation.
+C1's absent-instance rejection is an explicit project interpretation, not existing primary text established by this investigation.
+The maintainer [also selected universal matching for source replacement](https://github.com/TechSpokes/typescript-wsdl-client/issues/233#issuecomment-6095977338): each replacement satisfies every matching original base AU, while omitted uses retain unchanged identities and obligations.
 The local-most selection alternative can weaken inherited fixed constraints and changes default behavior according to source order.
 Blanket duplicate-schema rejection would introduce an additional profile rule; the [complete AU01 table](content-model-s06-au-01.md) records the consequences and the C1 recommendation.
 
 ### PW01: Original versus adjusted member bounds
 
 The literal 2004 alternative compares every member with the original wildcard minimum and maximum, then checks the group's original effective total range.
-The recommended R-240 proposal compares members recursively with `0..original-max` while checking the whole group against the original `min..max`.
+The [selected R-240 proposal](https://github.com/TechSpokes/typescript-wsdl-client/issues/235#issuecomment-6095922074) compares members recursively with `0..original-max` while checking the whole group against the original `min..max`.
 The proposal admits optional-member and repeated-group controls rejected by the literal reading, retaining namespace, maximum and processing checks.
 
 The [PW01 investigation](content-model-s06-pw-01.md) explains why neither reference engine's result establishes the interpretation.
-Selecting R-240 requires an explicit project interpretation decision because the proposal was never adopted as XSD 1.0 errata.
+R-240 is an explicitly selected project interpretation because the proposal was never adopted as XSD 1.0 errata.
 
 ### DT01: A closed calendar across the BCE boundary
 
-Recommended option A preserves the lexical negative-year leap calculation and supplies contiguous rollover that skips year zero.
+[Selected option A](https://github.com/TechSpokes/typescript-wsdl-client/issues/236#issuecomment-6095933213) preserves the lexical negative-year leap calculation and supplies contiguous rollover that skips year zero.
 Option B shifts BCE years into astronomical coordinates, changing which negative-year leap dates are valid.
 Literal Appendix E option C can calculate forbidden year zero and fails closure; adopting XSD 1.1 changes the approved profile.
 
-The [DT01 contract](content-model-s06-dt-01.md) provides the exact candidate arithmetic, truth tables and unresolved normalization authority.
-Selecting option A is a concrete repair decision and does not become normative merely because its probe passes.
+The [DT01 contract](content-model-s06-dt-01.md) provides the exact selected arithmetic, truth tables and conflicting original authority.
+Option A is a concrete project repair decision and does not become W3C errata merely because its probe passes.
 The record also distinguishes value-level addition and field-tuple arithmetic.
-Second-60 overflow and recurring-time ordering are separate proposed reconciliations: a modulo-day clock comparison can reverse the written arbitrary-date ordering at an offset wraparound.
-Candidate A includes those choices explicitly; they require review along with the BCE rollover repair.
+Second-60 overflow and recurring-time ordering were separately selected: a modulo-day clock comparison can reverse the written arbitrary-date ordering at an offset wraparound.
+Candidate A includes those choices explicitly, with alias consistency and exact known/unknown-zone endpoints in the shared contract.
 
 ### RE01: A missing proof cannot be approved into existence
 
 The recommended direction applies the numbered existential component rule, preserving known vacuous and dead/wildcard witnesses.
 The [RE01 prototype](content-model-s06-re-01.md) supplies useful checked positive constructions, but lacks a complete full-type negative theorem.
-The remaining theorem must cover normalization/all placement, mixed/simple content, source/final/block identity and AU/scalar witness synthesis with accepted predicates.
+The remaining theorem must cover normalization/all placement, mixed/simple content, source/final/block identity and AU witness synthesis with accepted scalar predicates.
+The dated specification's component-identity note leaves some unnamed identities incompletely defined.
+The [concrete RE01 equality options](content-model-s06-re-01.md#concrete-equality-options) therefore distinguish literal original IDs, abstract sharing and a source-representable incidence-preserving correspondence; fresh direct AUs cannot silently become inherited original uses.
 
-No interpretation selection alone supplies that proof.
+The recommended direction preserves all real original operands and proves a property-and-incidence-preserving correspondence for hypothetical witnesses.
+That correspondence still needs a precise reviewed definition and sufficiency proof; no interpretation selection alone supplies the full theorem.
 Keep #234 and #232 open until the complete procedure is justified and substantively reviewed; do not substitute a smaller permanent profile or a search cutoff.
 
 ## Joint consistency assessment
@@ -141,8 +146,8 @@ That factual correction does not authorize removing negative-year or crossing-ze
 
 ## Downstream qualifications and next ready work
 
-The next ready work is settling the concrete interpretation proposals and completing the RE01 negative-answer proof.
-#179 may inspect these research inputs while keeping affected assessment gates open; accepted research must precede production activation.
+The next ready work is completing the RE01 full-type criterion and negative-answer proof using locally accepted selected sibling contracts.
+#179 may inspect these research inputs while keeping affected assessment gates open; the full accepted research epic must precede production activation.
 #153 remains the combined S06 acceptance owner and S07/S08 retain their existing dependencies.
 
 S01/#181 oracle disagreements, S05 reference disagreements, D07 streaming/incoming-security gates and SOAP/gateway/platform qualifications remain owned and open where previously recorded.

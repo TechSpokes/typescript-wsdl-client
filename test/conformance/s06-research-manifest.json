@@ -17,18 +17,18 @@
     {
       "qualification": "S06-AU-01",
       "issue": 233,
-      "disposition": "open",
+      "disposition": "selected",
       "productionOwner": 179,
       "artifacts": [
         {
           "path": "docs/content-model-s06-au-01.md",
           "role": "decision",
-          "sha256": "1149ce3e8f7c58e4ea4058e239e196f8d9416544b8ebd3793349f3715b8fc668"
+          "sha256": "025f81da984fa1efdd0dfa98c0e117a47b5c4b0b6f86e8f58dc46d4bb1c65170"
         },
         {
           "path": "test/conformance/reference/s06_au01_contract_test.py",
           "role": "reference",
-          "sha256": "6af8c2bd96a2c1b230205efe0de3939c08eb580930a2ef7b1ff5fc081baa25b6"
+          "sha256": "4a5a4537be47ad5a72cad51ee5d2fa4a10970159ac23fee05b56f30e55ea42fe"
         },
         {
           "path": "test/conformance/fixtures/xsd/attributes/au01/direct-distinct-local.xsd",
@@ -246,6 +246,106 @@
           "sha256": "97feebfbb95e462b3ce479c14bda8c34700579ea75fd445adfe2a1570ca62c32"
         },
         {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-default-conflict-default-replacement.xsd",
+          "role": "fixture",
+          "sha256": "849f3a182ce69c2bd894b234ea2446938605cd8afbdfb6e284c6bc55a64eaf00"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-first-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "56515c6679909596be4f91fe658c3a770dff05f65d5abf12f957c38f9cdc6c27"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-group-prohibited.xsd",
+          "role": "fixture",
+          "sha256": "2974e8ef5422cbd0990fad965591969cc4fbde3e4bddc767ca88c29886394b42"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-omitted.xsd",
+          "role": "fixture",
+          "sha256": "1931996d8592dbef2b1cf4b80d51732110ee94948d7e49f0b636d551765e848a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-prohibited.xsd",
+          "role": "fixture",
+          "sha256": "5cf797a19aa86af14cb82158ba9165cd2e225f467fa56a1d4b7978413c3f393c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-conflict-second-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "248106b97eb3108699fec0e4da834afddf1c5533bbfb14d666953db221093b20"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-equivalent-first-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "734d0c5435342ff26f7963c83e60d06c0adbba493b2f23d0d0dff428d5e6ca70"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-equivalent-second-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "2cb4d3a5ae5a3e437d98f56c20d70be25d6da6e1991b630d1cf466f1c7facf87"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-none-one-replacement.xsd",
+          "role": "fixture",
+          "sha256": "9efc112dacd01de8a97d64fd6cc425724f0d809c9efa121ab77a6eb1ddeafc3b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-fixed-none-unfixed-replacement.xsd",
+          "role": "fixture",
+          "sha256": "d9337f3dbfecacd69ca53336ea506a839c899e4e758e001a35927dc41ec1efa1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-qname-distinct.xsd",
+          "role": "fixture",
+          "sha256": "c00c65e95fa5399a070d93b90e5742b42598c7a0849c0e0350275e71dc0fafdd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-qname-equivalent.xsd",
+          "role": "fixture",
+          "sha256": "ebde285551b2611096e9b0f5d7018d89282f199de25a6b39a1b2c5664315b43e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-first-optional-replacement.xsd",
+          "role": "fixture",
+          "sha256": "0cf83e45a8b72f3067039f4da37aa62c313881fb24d5f54949fc2b09252cfbca"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-first-required-replacement.xsd",
+          "role": "fixture",
+          "sha256": "0107f868fb8215a54e436e767cb053c212a45c3a245b0d5a878ae9e32e6aaec6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-mixed-omitted.xsd",
+          "role": "fixture",
+          "sha256": "93b10c01820a370b15d363fd477d31129755aaff3fdb25aaee2cdc09076be5c2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-mixed-prohibited.xsd",
+          "role": "fixture",
+          "sha256": "587e40aff30a471519c53dca73b726020b6d14ab9b9d9a9688fa4223ddb11d82"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-second-optional-replacement.xsd",
+          "role": "fixture",
+          "sha256": "ce800ec07cd48c9301502a6837ac66db8f9d661ee722c583940da42d62d15871"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-required-second-required-replacement.xsd",
+          "role": "fixture",
+          "sha256": "4634c03ac592ffb8a67c72f71ebf2db4eb74b0a86212656e6629b91eda9e5c7b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-type-token.xsd",
+          "role": "fixture",
+          "sha256": "8285d947180f8147573ba75fb6b165fc8fc3d6b0ccee833cba5cda8d4a7fecc2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-matches-type-unrelated.xsd",
+          "role": "fixture",
+          "sha256": "97c89660a15018633c65265217a4a95d932d51eccde2a43a1fbe5520cccba86d"
+        },
+        {
           "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-omitted-required.xsd",
           "role": "fixture",
           "sha256": "4c1df7f82f5123c2ae9c1b35d614d669390457a80b052f6d34a26bc9092c0e2e"
@@ -263,7 +363,7 @@
         {
           "path": "test/research/s06-au01/probe.py",
           "role": "prototype",
-          "sha256": "602768b9fa36a42b73d99cc7b23aa2a66419f3143bd267c86225d277c8276386"
+          "sha256": "420253fd040aaa90d1281de1f05dfffcb04bda170f2cbc1e0387c0865427e9c1"
         }
       ]
     },
@@ -276,17 +376,27 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "b38e89258bf4ea912736936ee3f514055ac52931a0528b3e57690d6abd647776"
+          "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944"
         },
         {
           "path": "test/conformance/reference/s06_re01_contract_test.py",
           "role": "reference",
-          "sha256": "198f6a7bf0abadbe00fdb76358baeccf746bf5f6b6e57dbd033ae5360f3dfbfa"
+          "sha256": "803e8788fcfbccd5195a1a4e72959e0b76c7c0fe2556e22fe8f7fef069266f9f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/au-source-original.xsd",
+          "role": "fixture",
+          "sha256": "ce1f22c9d765ff1e6c2852dcb477bf41f446e627c7b7f54df80903292bd7ed22"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/au-source-witness.xsd",
+          "role": "fixture",
+          "sha256": "12a66557c79691d8f18b64644f267e70c651e3119ef1006ad918ea0db9df32db"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/expectations.json",
           "role": "expectations",
-          "sha256": "34ea79fdc7e173b972909e3fc6278cfa8c8b9502206ea8ca593c817deef3a0b4"
+          "sha256": "84703e05620dd30872af5b268872727b668c03608bb52b9f1075ce14aae464a8"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/pointless-prefix-repeated-final.xsd",
@@ -348,13 +458,13 @@
     {
       "qualification": "S06-PW-01",
       "issue": 235,
-      "disposition": "open",
+      "disposition": "selected",
       "productionOwner": 179,
       "artifacts": [
         {
           "path": "docs/content-model-s06-pw-01.md",
           "role": "decision",
-          "sha256": "7fbb7a8d92f2c85d19a07d1c29c14011b7f0a7346d6349c362008850018b04ab"
+          "sha256": "d812fbb23336074d2b09c09ee0461be631800e1495f81e7cec9ae08b40dd081f"
         },
         {
           "path": "test/conformance/reference/s06_pw01_contract_test.py",
@@ -586,13 +696,13 @@
     {
       "qualification": "S06-DT-01",
       "issue": 236,
-      "disposition": "open",
+      "disposition": "selected",
       "productionOwner": 179,
       "artifacts": [
         {
           "path": "docs/content-model-s06-dt-01.md",
           "role": "decision",
-          "sha256": "10af9f34d4418fec585f0c96b85e81f1354d710c67466b1042e85c646027dba2"
+          "sha256": "abdca1524c4cdec535f493df62efff640ce2da26b6b28abaca4ece7c2a09b1d5"
         },
         {
           "path": "test/conformance/reference/dt01_calendar_contract_test.py",
@@ -637,22 +747,32 @@
         {
           "path": "test/research/dt01/dt01-cases.json",
           "role": "expectations",
-          "sha256": "c2c1c0f226f7654ebc8c87493b5c580bde161ce597004c89f5712ae3623f4730"
+          "sha256": "9c9c60abfd9f847b4c181767232c38b937af28b0554b328eb3c366649b6a3e81"
+        },
+        {
+          "path": "test/research/dt01/dt01-reduced-cases.json",
+          "role": "expectations",
+          "sha256": "c9639ea4be3ac41f9d36d0b9259fd0e6bd3f7798446cde99ff39599b72c0739f"
         },
         {
           "path": "test/research/dt01/exact-calendar.test.ts",
           "role": "expectations",
-          "sha256": "48aec87a001e99f0444074f4e91e0f807232fd879336d8a2185374dfa3e95223"
+          "sha256": "e6bec087c36b34175f6a55002746ff836a8391291b666d30632e6150d95d2583"
         },
         {
           "path": "test/research/dt01/exact-calendar.ts",
           "role": "prototype",
-          "sha256": "b220e4dd64da8e537e007f6e3d1574f12f2c049c05cfc7283d51ecb009e2ebf1"
+          "sha256": "689d3b1cced72e4c0e0eb83bac44bc03953f602b14fd92d52197c5729343cc1e"
         },
         {
           "path": "test/research/dt01/measure.ts",
           "role": "prototype",
-          "sha256": "3e2e2f507c8c018d280a78de315eca27325e07ab71550ddcba174fe8c275b649"
+          "sha256": "0c1093f376eb191af0912e429c71ae5269546b2571cf8de8140c549530cf3ebc"
+        },
+        {
+          "path": "test/research/dt01/reduced-calendar.test.ts",
+          "role": "expectations",
+          "sha256": "6ce187de31f9fd2a448c8602021fed7b9788a9ffac3ba49e34e305af5f50458f"
         },
         {
           "path": "test/research/dt01/tsconfig.json",

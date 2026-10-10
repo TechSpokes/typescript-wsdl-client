@@ -71,6 +71,24 @@
       "xmlschema": "accepted",
       "libxml2": "accepted",
       "sha256": "2f3e3a1326976f9eec1e8cfb3841e137ed2cf588c67b4ac2a957c19779a2a5f7"
+    },
+    {
+      "fixture": "au-source-original.xsd",
+      "primary": "unresolved-RE-witness-equivalence",
+      "primaryScope": "selected-AU-C1-plus-hypothetical-incidence-contrast-only",
+      "provenance": "new independently authored RE01 AU identity/representation contrast",
+      "xmlschema": "rejected",
+      "libxml2": "rejected",
+      "sha256": "ce1f22c9d765ff1e6c2852dcb477bf41f446e627c7b7f54df80903292bd7ed22"
+    },
+    {
+      "fixture": "au-source-witness.xsd",
+      "primary": "unresolved-RE-witness-equivalence",
+      "primaryScope": "selected-AU-C1-plus-hypothetical-incidence-contrast-only",
+      "provenance": "new independently authored RE01 AU identity/representation contrast",
+      "xmlschema": "rejected",
+      "libxml2": "rejected",
+      "sha256": "12a66557c79691d8f18b64644f267e70c651e3119ef1006ad918ea0db9df32db"
     }
   ]
 }

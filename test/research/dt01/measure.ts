@@ -1,6 +1,7 @@
 /** Reproducible DT01 proposal measurements; stdout is retained in the decision record. */
 import {performance} from "node:perf_hooks";
-import {Budget, parseCalendar, parseDuration, ProbeFailure, sameDuration, showInstant} from "./exact-calendar.js";
+import {Budget, compareCalendar, parseCalendar, parseDuration, parseReduced, ProbeFailure,
+  sameDuration, showInstant, showRepresentative} from "./exact-calendar.js";
 
 function measure(id: string, budget: Budget, run: () => unknown): void {
   const start = performance.now();
@@ -33,4 +34,20 @@ for (const sign of ["", "-"]) {
 for (const maxWork of [1_000_000, 2_000_000_000]) {
   const budget = new Budget(maxWork), lexical = "9".repeat(5000) + "-01-01Z";
   measure(`5000-digit-year-work-${maxWork}`, budget, () => parseCalendar("date", lexical, budget));
+}
+const reducedSample = new Budget();
+showRepresentative(parseReduced("time", "01:00:00+14:00", reducedSample), reducedSample);
+for (const [id, maxWork] of [["reduced-time-at-work", reducedSample.used], ["reduced-time-beyond-work", reducedSample.used - 1]] as const) {
+  const budget = new Budget(maxWork);
+  measure(id, budget, () => showRepresentative(parseReduced("time", "01:00:00+14:00", budget), budget));
+}
+{
+  const budget = new Budget();
+  measure("reduced-year-crosses-bce", budget, () => showRepresentative(parseReduced("gYear", "0001+14:00", budget), budget));
+}
+{
+  const budget = new Budget();
+  measure("reduced-time-endpoint-exact-fraction", budget,
+    () => compareCalendar(parseReduced("time", "14:00:00.000000000000000000000000000001Z", budget),
+      parseReduced("time", "00:00:00", budget), budget));
 }

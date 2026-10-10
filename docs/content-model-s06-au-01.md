@@ -4,13 +4,21 @@ Research rule tables, original-operand interfaces and independently reproducible
 
 ## Disposition and delivery boundary
 
-`S06-AU-01` remains open: the XSD 1.0 component identity rules settle which uses survive, but do not settle selection among differing matching uses or conflicting absent-attribute augmentation. This record supplies complete conditional outcomes, concrete alternatives and their compatibility effects; it does not certify the affected schemas or production support.
+The maintainer selected C1 runtime/default interpretation and universal checks for source-declared restriction replacements. The primary-source gaps below explain those explicit project decisions; exact-revision review, combined delivery checks and #179 production implementation remain separate gates.
 
-The base requiring global integer `a`, fixed to `1`, and the extension repeating it as optional without a constraint retains both original AUs by component mapping. Absence violates the independently quantified requiredness rule; for a present attribute, whether the base fixed check must also apply is the unresolved selection question.
+The base requiring global integer `a`, fixed to `1`, and the extension repeating it as optional without a constraint retains both original AUs by component mapping. Under selected C1, absence is invalid and present input must satisfy the inherited fixed value `1`; the optional repeated use does not weaken either obligation.
 
 The coordinator integrates this main-based research leaf with #232, assigns substantive independent review at its exact revision and records aggregate checks. #179 owns eventual schema assessment; #184 owns later scalar payload enforcement; RE01 consumes the predicates below conditionally until the semantic gate is accepted.
 
-Accepted main is `5876065b00d4eeb6d2324eaa63ff9b70e2279198`. The inspected, unaccepted #231 draft is `460f5b8379c68ffef79917284e445b5ab046429e`, tree `56830b28d1006b019918a364aa62f1ed9d7d8817`; its implementation is neither imported nor merged into this research runtime.
+Original research starting main is `5876065b00d4eeb6d2324eaa63ff9b70e2279198`. The inspected, unaccepted #231 draft is `460f5b8379c68ffef79917284e445b5ab046429e`, tree `56830b28d1006b019918a364aa62f1ed9d7d8817`; its implementation is neither imported nor merged into this research runtime.
+
+### Recorded project selections
+
+The maintainer [selected C1 on October 10, 2026](https://github.com/TechSpokes/typescript-wsdl-client/issues/233#issuecomment-6095916709): preserve every surviving AU, conjoin present fixed predicates, and use one consistent absent augmentation; conflicting absent candidates reject that instance without adding a schema-invalidity rule.
+
+The separate [restriction selection](https://github.com/TechSpokes/typescript-wsdl-client/issues/233#issuecomment-6095977338) requires every same-QName original base AU to pass for a source-declared local/group replacement. Omitted attributes retain their inherited original AU identities and obligations; they are not fabricated local replacements or subjected to the unselected final-AU/all-base alternative below.
+
+These choices resolve the project interpretation questions. Final substantive review assesses the complete selected contract and scoped algorithms at exact revisions; research tests alone still do not certify #179 production support or close later acceptance gates.
 
 ## Authority and qualification
 
@@ -80,9 +88,9 @@ No tombstone becomes a wildcard QName exclusion. A retained wildcard may admit a
 
 ## Complete conditional constraint table
 
-This table is candidate C, not an accepted normative all-use rule. Each cell gives present-value requirement and absent result for two optional AUs of the same global declaration; `T` is the declared type's admitted value space, `D(v)` an effective default, `F(v)` an effective fixed value and `A(v)` a single augmentation to `v`.
+This table gives selected C1's value predicates while keeping the primary-source qualification explicit. Each cell gives present-value requirement and absent result for two optional AUs of the same global declaration; `T` is the declared type's admitted value space, `D(v)` an effective default, `F(v)` an effective fixed value and `A(v)` a single augmentation to `v`.
 
-`E` means conflicting augmentation candidates remain unresolved; it is not an invalid-schema proof or a declared invalid-payload result. `empty` means no present value satisfies candidate C's conjunction; an empty accepted-instance set alone does not violate a stated schema component constraint.
+`E` means conflicting augmentation candidates: selected C1 rejects that absent instance as `invalid-value`; it is not an invalid-schema proof. `empty` means no present value satisfies the fixed conjunction; an empty accepted-instance set alone does not violate a stated schema component constraint.
 
 | Base / local | N | D(1) | D(2) | F(1) | F(2) |
 |---|---|---|---|---|---|
@@ -104,7 +112,7 @@ Rows and columns deliberately cover both source orderings. Equality classes use 
 
 Requiredness is independently established by `cvc-complex-type 4`; defaults cannot satisfy missing required input by repair. When a required AU coexists with an optional default/fixed AU, the absent input remains invalid regardless of proposed PSVI augmentation order.
 
-For any number of same-declaration AUs, C uses requiredness OR, intersection of fixed-value predicates, and the set of eligible optional augmentation values. Zero candidates preserves absence; one value-equivalence class proposes one augmentation; multiple classes produces `E`; this generalization terminates without enumerating possible payload values.
+For any number of same-declaration AUs, selected C1 uses requiredness OR, intersection of fixed-value predicates, and the set of eligible optional augmentation values. Zero candidates preserves absence; one value-equivalence class creates one augmentation; multiple classes produce `E`; this generalization terminates without enumerating possible payload values.
 
 The table assumes individual source operands are valid and declaration-fixed compatibility passes. A globally fixed declaration plus an explicit conflicting fixed value or a default is independently invalid under `au-props-correct 2`; conflicting fixed values on two AUs of a declaration with no global fixed constraint do not have that proof.
 
@@ -125,21 +133,21 @@ S gives absent optional attributes every candidate augmentation value unless a f
 
 L is not a faithful interpretation of the extension mapping or requiredness rule. U adds a uniqueness rule the complex-type constraint does not state and would be a new permanent exclusion; neither is authorized by this research scope.
 
-Recommendation: retain all original AUs and use C as the concrete proposed contract for maintainer review, with competing augmentations exposed and no invalid-schema inference from unsatisfiable present fixed constraints. C respects inherited obligations and source-order independence, but adopting it for differing matching uses and PSVI coalescing requires an explicit reviewed interpretation; research evidence alone does not close this gate.
+The research recommendation was to retain all original AUs and complete C with an explicit absent-instance rule, without inferring schema invalidity from unsatisfiable present fixed constraints. The maintainer selected that completion as C1. The primary-source gap remains visible; the recorded project interpretation and its substantive review, rather than research evidence alone, authorize removing the corresponding qualification.
 
-### Total proposed interpretation C1
+### Selected total interpretation C1
 
-For a concrete decision, C1 completes C's augmentation rule: required absence is invalid; optional absence with no augmentation candidates is accepted unchanged; optional absence with one equivalent candidate class is accepted with one augmented attribute; optional absence with different candidate classes is rejected as `invalid-value`. Present input requires the original datatype and every fixed predicate, while defaults impose no present-value constraint.
+C1 completes C's augmentation rule: required absence is invalid; optional absence with no augmentation candidates is accepted unchanged; optional absence with one equivalent candidate class is accepted with one augmented attribute; optional absence with different candidate classes is rejected as `invalid-value`. Present input requires the original datatype and every fixed predicate, while defaults impose no present-value constraint.
 
-This is the proposed tuple `(union by AU identity, requiredness OR, all-fixed present intersection, one equivalent absent augmentation, reject conflicting absent augmentation)`. It never rejects a schema merely because fixed predicates have no common value: two optional conflicting fixed AUs can therefore have an empty accepted-instance language under C1, while no stated component rule has proved the schema invalid.
+This is the selected tuple `(union by AU identity, requiredness OR, all-fixed present intersection, one equivalent absent augmentation, reject conflicting absent augmentation)`. It never rejects a schema merely because fixed predicates have no common value: two optional conflicting fixed AUs can therefore have an empty accepted-instance language under C1, while no stated component rule has proved the schema invalid.
 
 Conflicting defaults alone under C1 admit every otherwise valid present value and reject only the unaugmentable absent input. Conflicting default/fixed values admit the fixed present value and reject absence; requiredness independently rejects every missing input, so this rule is total for all table entries and both orderings.
 
-C1's rejection of conflicting absent augmentation is a proposed additional instance interpretation, not text already supplied by an adopted XSD 1.0 erratum. The executable summary labels it `proposed_C1_absent`; its `augmentation-conflict` field preserves the unqualified authority gap instead of substituting a normative invalid-value proof.
+C1's rejection of conflicting absent augmentation is an explicitly selected project interpretation, not text supplied by an adopted XSD 1.0 erratum. The executable summary retains its historical field name `proposed_C1_absent`; its `augmentation-conflict` field records why the selected instance rejection applies without substituting a primary-source invalid-schema proof.
 
 A concrete total S1 alternative retains requiredness OR but chooses the most-local source AU for present fixed checking and the most-local optional constrained AU for absent augmentation, with stable declared source order resolving same-level duplicates. S1 accepts absence with differing defaults using the selected value and can admit present `2` beside inherited fixed `1`; source-order precedence is an explicitly chosen interpretation, not a property of an unordered set.
 
-Recommendation is C1 because it retains inherited checks and gives deterministic single-attribute normalization without a new schema-invalidity condition. Approving C1's conflicting-absence rejection or choosing S1 requires maintainer review of this concrete compatibility change; until then, affected assessment returns `unsupported-capability` with `S06-AU-01`, preserving independently proven invalid-schema and resource-limit results.
+The maintainer selected C1 because it retains inherited checks and gives deterministic single-attribute normalization without a new schema-invalidity condition. S1 and literal final-AU restriction matching remain documented alternatives, not selected behavior; #179 removes its qualifications only after the selected combined contract and owning implementation are reviewed.
 
 ## Original-type scalar predicate
 
@@ -165,9 +173,11 @@ Recommendation is C1 because it retains inherited checks and gives deterministic
 
 The narrow probe implements exact integer/string/token/QName and flat list/union contrasts only; it is not a complete datatype or facet engine. Datatype derivation remains an independent predicate: equal values of unrelated types do not prove a legal attribute restriction.
 
-DT01 supplies the shared calendar predicate. Explicit-zone aliases require exact normalized instants; absent-zone values retain timezone-presence semantics; duration equality compares exact signed months and seconds separately from anchor-based ordering, so `P1Y=P12M`, `P1D=PT24H` and `P1M!=P30D`.
+The [DT01 shared scalar interface](content-model-s06-dt-01.md#shared-scalar-interface) supplies the selected candidate A calendar predicate. Explicit-zone aliases require exact normalized instants; absent-zone values retain timezone-presence semantics; duration equality compares exact signed months and seconds separately from anchor-based ordering, so `P1Y=P12M`, `P1D=PT24H` and `P1M!=P30D`.
 
-The complete BCE/calendar-crossing equality interpretation is still qualified by DT01; no calendar equality result is invented here. Original lexical witnesses, namespaces, selected union type and ordered list item values remain necessary for #184, #188/#189 and #198.
+Candidate A uses the lexical signed-year leap test with explicit skip-zero rollover, second-60 overflow normalization and normalized recurring-time clock comparison. The maintainer [selected those repairs](https://github.com/TechSpokes/typescript-wsdl-client/issues/236#issuecomment-6095933213); the selected interface is pinned at DT01 leaf `899106a3b7b0321043f4a570184de8b8408a76a5`, tree `db83ef379c15678be44c79526b35ed1a530e1a46`. Exact final dependent review confirmation is retained by the coordinator's joint ledger.
+
+AU comparisons assess each operand in its original type/source/namespace/whitespace/facet context and then call that one reviewed DT predicate. No alternate calendar implementation or raw-string fallback exists here; before its exact semantic review gate passes the dependent predicate remains `unresolved`, not ordinary inequality or invalid-schema.
 
 ## Pure assessment and retained-constraint contract
 
@@ -176,6 +186,10 @@ Inputs come only from immutable canonical/resolved/composed graphs through `prep
 Each original AU record retains its component ID, owner ID, declaration ID, QName, original scalar type reference, required boolean, own constraint and declaration constraint separately. Every operand retains lexical text, source path/digest/location, namespace bindings, whitespace/facet layer and selected list/union type context; the effective constraint retains its origin.
 
 Outputs separate `schemaOperands`, `effectiveRuntimeUses`, identity/derivation diagnostics, and the conditional repeated-use qualification. A matching restriction removes replaced base uses from runtime closure while preserving them as original schema/derivation operands; conjoining removed base defaults into the new runtime plan would be wrong.
+
+C1 augmentation emits exactly one assessed attribute with its original global declaration/type, expanded QName, every contributing original AU and one already-admitted lexical witness with its original namespace context. Equivalent candidates authorize a single typed value; they do not authorize replacing a patterned lexical witness with canonical text or copying a QName prefix into a destination without its binding.
+
+The narrow `conditional_c1_augmentation` plan borrows those immutable original records and keeps the typed value separate from its witness. Tests retain `p:item` and its original binding while preserving contributors with the equivalent `q:item`, and preserve integer `+01` rather than rewriting it to `1`; #184/#188 own facet-complete validation and namespace-safe encoding.
 
 The #231 `AssessedAttribute.constraints` entry containing only owner/use/value relies on the outer attribute type and cannot express this full independent contract after replacing operands. #179 should retain original AU references or add the original declaration/type and own-versus-declaration constraint origin per entry, instead of synthesizing a merged fixed/default operand.
 
@@ -187,7 +201,64 @@ This is an internal assessed-plan change only; format 2 already preserves origin
 
 `RestrictionAttributes(B, local)` performs the XSD replacement/omission/prohibition mapping first. For one matching base AU it requires requiredness preservation, valid scalar type derivation from the original base type, and the effective fixed constraint condition under the accepted S02 typed-value interpretation.
 
-For several matching base AUs, C proposes applying those checks against every matched original base AU and retaining every relevant original fixed operand. The primary rule names a matching `B` without settling multiple-match choice; RE01 must parameterize or return the AU01 qualification rather than claim this universal predicate has been accepted.
+For a source-declared replacement AU, the selected predicate applies those checks against every matched original base AU and retains every original type/fixed operand. Requiredness cannot choose only an optional base member; fixed `1` cannot choose only the matching fixed `1` member when another base member fixes `2`; an attribute wildcard cannot bypass those named matches.
+
+For an omitted QName, the original base AU identities are inherited unchanged with all C1 runtime obligations; no local replacement is invented. A prohibited member inside a group contributes no AU and therefore leaves this inheritance branch intact; direct prohibition masks inherited names and must still leave every required base name represented by an effective required AU.
+
+The distinction uses source contribution provenance, not property equality or a convenient reclassification of AU identities. Even reusing a base group's original AU ID as an explicit local group contribution is a source replacement and invokes all matched base checks; omission is the branch that inherits without replacement.
+
+### Complete selected matching table and unselected literal alternative
+
+The following outcomes assume independently valid individual scalar operands and the other existing schema gates. A restriction failure here is a failure of the selected derivation predicate, not a proof that its base schema is invalid merely because its instance language is empty.
+
+| Original base uses | Restriction source | Selected replacement-only | Literal final-AU/all-base |
+|---|---|---|---|
+| Required + optional, either order | Optional local replacement | Invalid requiredness | Invalid requiredness |
+| Required + optional, either order | Required local replacement | Pass | Pass |
+| Fixed 1 + fixed 2, either order | Local fixed 1 | Invalid fixed retention | Invalid fixed retention |
+| Fixed 1 + equivalent fixed +01 | Local fixed 1 | Pass typed equality | Pass typed equality |
+| Fixed 1 + fixed 2 | Omitted QName | Preserve both originals | Invalid pairwise fixed retention |
+| Required + optional | Omitted QName | Preserve both originals | Invalid optional/required pair |
+| Optional fixed 1 + optional fixed 2 | Direct prohibition | Both removed; pass | Both removed; pass |
+| Required + optional | Direct prohibition without replacement | Invalid missing required name | Invalid missing required name |
+| Fixed 1 + fixed 2 | Group-internal prohibition | Preserve both originals | Invalid pairwise fixed retention |
+| Default 1 + default 2 | Local default 3 | Pass; defaults may change | Pass |
+| Fixed 1 + unconstrained | Local fixed 1 | Pass | Pass |
+| Fixed 1 + unconstrained | Unfixed local replacement | Invalid fixed retention | Invalid fixed retention |
+| Original string type | Local token type | Pass original-type derivation | Pass |
+| Original string type | Local integer type | Invalid unrelated type | Invalid unrelated type |
+| QName fixed prefixes, same original expanded value | Local equivalent alias | Pass original contexts | Pass |
+| Same QName fixed spelling, rebound namespace | Local distinct expanded value | Invalid fixed retention | Invalid fixed retention |
+
+The literal alternative checks every final AU against every matched original base AU, including AUs inherited through omission. It would reject vacuous restriction of a base containing conflicting fixed AUs, and even a base containing required/optional AUs; those are material additional consequences absent from the maintainer's source-replacement question and were not selected.
+
+Recommendation is the selected source partition: preserve existing inherited identities/obligations, and universally check only actual source replacements. RE01 must retain that provenance in a reordered witness and separately prove any synthetic intermediate's legal component/source construction; copying direct attribute syntax creates a new AU, while a group reference may reuse an existing group AU.
+
+### Finite all-match procedure and budget guarantee
+
+```text
+reserve aggregate base/local/prohibition node count before indexing
+deduplicate original base and local AUs by actual component identity
+index every original base AU under its expanded QName
+collect replacement names from local/group AUs and direct prohibitions
+effective := local AUs plus bases whose names are not replaced
+retain every original base as a schema operand and diagnostic source
+for each actual local/group replacement R:
+    matches := every indexed original base AU of R's QName
+    if matches is empty: require admission by the original base wildcard
+    for each original B in matches:
+        require B.optional or R.required
+        require R.originalType validly derived from B.originalType
+        if B.effectiveConstraint is fixed:
+            require R.effectiveConstraint fixed and original-context SameValue
+for each required original B:
+    require an effective required AU with B's QName
+reserve output/provenance copies before allocation; return immutable views
+```
+
+Each loop consumes a finite input sequence; no candidate-type, payload-value or recursion enumeration occurs. With sufficient resources, the algorithm completely decides the chosen predicate over its explicitly narrow original-type/scalar domain; the production contract delegates complete scalar derivation and SameValue to their existing owning plans.
+
+Work is linear for source mapping plus at most `local AUs * matching base AUs` comparisons and finite required-name checks; indexing, namespace keys, inherited-record copies and result containers are charged first. A matching-pair budget failure returns `resource-limit` without a partially accepted restriction or a negative derivation proof.
 
 Restoration of unrelated scalar types cannot follow merely from equal values or merged QName properties. Original base types stay explicit; a reordered witness must satisfy whichever complete AU predicate is ultimately reviewed, and resource exhaustion cannot prove no witness exists.
 
@@ -207,8 +278,13 @@ check distinct-declaration complex-type QName and ID constraints
 partition surviving AUs by QName/declaration identity
 validate each original own/declaration operand with shared scalar predicate
 record requiredness OR and all original fixed/default candidates
-for qualified multiple matches: return S06-AU-01 with source operands
-only after accepted interpretation: compute complete reviewed predicates
+for each source-declared replacement: check every matching original base AU
+for omitted names: inherit original AU IDs and all runtime obligations unchanged
+for direct prohibition: mask inherited names, then check required base names
+for present attributes: assess original type and every surviving fixed predicate
+for absent attributes: reject required absence or conflicting augmentation values
+for one augmentation class: retain one admitted witness and every AU provenance
+for unsupported scalar plans: return unsupported-capability with original operands
 charge result arrays/strings and diagnostics before allocation; freeze result
 ```
 
@@ -222,9 +298,9 @@ Semantic defaults remain independently applied 100,000 nodes and 1,000,000 work 
 
 ## Independent reference observations
 
-All 46 committed [AU01 fixtures](../test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-none.xsd) are new minimal sources authored for this research. The pinned draft's differing-use/group/prohibited fixtures remain historical evidence; none is silently rewritten or imported by the executable probe.
+All 66 committed [AU01 fixtures](../test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-none.xsd) are new minimal sources authored for this research. The pinned draft's differing-use/group/prohibited fixtures remain historical evidence; none is silently rewritten or imported by the executable probe.
 
-[The discovered test](../test/conformance/reference/s06_au01_contract_test.py) hand-authors conditional expectations and reference observations separately; [the bounded candidate](../test/research/s06-au01/probe.py) imports no production compiler or unaccepted draft modules. The established `*_test.py` discovery executes nine AU01 test methods, including 25 optional pairs and both requiredness orderings.
+[The discovered test](../test/conformance/reference/s06_au01_contract_test.py) hand-authors selected/project expectations and reference observations separately; [the bounded candidate](../test/research/s06-au01/probe.py) imports no production compiler or unaccepted draft modules. The established `*_test.py` discovery executes fourteen AU01 test methods, including 25 optional pairs, both requiredness orderings, twenty original-source restriction contrasts and one-attribute augmentation provenance.
 
 ### Optional matrix: XMLSchema 4.2.0 schema observations
 
@@ -259,11 +335,15 @@ These order-dependent results illustrate implementation policy, not primary sele
 | Global fixed `1`, own default `1` | Invalid `au-props-correct` | A | R |
 | Required explicit default | Invalid `src-attribute` | R | R |
 | Global default, required reference without own default | Legal; presence required | A | A |
-| Base optional none/local required fixed | AU01 present choice qualified | A | R |
-| Base required fixed/local optional none | AU01 present choice qualified | R | R |
+| Base optional none/local required fixed | Selected C1 requires presence and fixed value | A | R |
+| Base required fixed/local optional none | Selected C1 retains requiredness and fixed value | R | R |
 | QName fixed `p:item`, input `q:item`, same binding | S02 value-equivalent | Reject input | Accept input |
 
 The valid inherited-required controls each accept presence and reject absence in libxml2. The single-AU typed fixture supplies 14 present-value contrasts for integer, string, token, QName, list, union and pattern; the QName alias disagreement remains recorded rather than changing the independent S02 expected value.
+
+The twenty new `restriction-matches-*` fixtures independently contrast the selected source partition against literal final-AU matching. Pinned engines reject many complete schemas before reaching the derived restriction because they reject the repeated base AU sets; these observations cannot prove the selected restriction predicate wrong.
+
+XMLSchema accepts the required-second/required-replacement and changed-default replacement schemas while libxml2 rejects their repeated bases. Both accept string-to-token and reject unrelated string-to-integer; XMLSchema rejects equivalent QName fixed aliases while libxml2 accepts them, and both accept the same fixed spelling with a different original namespace binding even though selected typed equality distinguishes it.
 
 ## Executed checks and limits
 
@@ -278,11 +358,11 @@ npm run test:conformance
 git diff --check
 ```
 
-The focused command used the coordinator's fresh reference environment via its Python executable and passed all nine test methods. On Windows, use `tmp/conformance/reference-venv/Scripts/python.exe` for that focused command; setup does not activate the environment in the shell.
+The original focused command passed nine methods; the selected restriction/augmentation follow-up passes all fourteen methods through the same fresh reference executable. On Windows, use `tmp/conformance/reference-venv/Scripts/python.exe` for that focused command; setup does not activate the environment in the shell.
 
 Aggregate full-reference, CI, conformance and documentation/support-matrix results belong to the coordinator's exact final integration record; they are not inferred from these scoped checks or old #231 results.
 
-Leaf `npm run docs:validate` and `git diff --check` also pass, including the support-matrix check. These portable checks supplement the XML/reference probes; the coordinator reruns required aggregate gates on the integrated final revision.
+The original leaf delivery passed `npm run docs:validate`, including the support-matrix check. The selected-contract follow-up passes `git diff --check` and the fourteen focused methods; its cross-leaf DT01 link and the complete documentation/support-matrix checks are verified on the coherent integrated final revision by the coordinator.
 
 | Boundary probe | Measured outcome |
 |---|---|
@@ -294,6 +374,10 @@ Leaf `npm run docs:validate` and `git diff --check` also pass, including the sup
 | Two 83,332-digit operands plus two operand visits | `resource-limit`; no inequality/acceptance result |
 | 10,000-digit integer alternate spelling | Exact equality succeeds |
 | 10,000-character namespace URI aliases | Exact equality succeeds; lower work budget fails |
+| Two base matches and one local fixed/required replacement | Pass at 384 work units; 383 returns resource-limit |
+| Same restriction at three input nodes / two-node override | Pass / resource-limit before indexing; zero work retained |
+| 4,000 original base matches and one local replacement | Pass within default; 327,001 work units |
+| 4,000 bases and 4,000 replacements | Default work exhaustion; no partial result or invalidity proof |
 
 The node and work limits are independent: reaching the node limit does not grant extra work, and the documented override isolates that boundary. Input fixture allocation is caller-owned; the candidate bounds its own indexing, normalized buffers, list outputs and comparisons before allocation/work.
 
@@ -307,4 +391,4 @@ IDE inspections are unavailable; repository checks and reference XML parsing pro
 
 The accepted path remains canonical/resolved/composed graph, accepted #178 occurrence analysis and #179 assessment. Legacy default generation, format 2, `xsd10-faithful-v1`, companion regeneration policy, D07 qualifications, S01/S05 disagreements and later production activation remain unchanged.
 
-The local acceptance gate requires an explicit reviewed answer for multiple present AU selection and absent/default/fixed augmentation, not just passing reference probes. It also requires pinning any dependent reviewed DT01 predicate, substantive independent review at an exact delivered revision and the coordinator's final delivery checks/normal merge; these obligations remain open until separately recorded.
+The maintainer's recorded C1 and source-replacement all-match selections provide the project answers for present/absent behavior and multiple-base restriction matching. Local acceptance still requires the complete selected contract's substantive exact-revision review, the pinned reviewed DT01 predicate and final coordinator delivery checks/normal merge; production implementation and joint RE01 witness acceptance remain separate downstream gates.

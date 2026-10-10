@@ -17,6 +17,9 @@ SPEC.loader.exec_module(PROBE)
 Budget, Operand, ProbeFailure, Use = PROBE.Budget, PROBE.Operand, PROBE.ProbeFailure, PROBE.Use
 conditional_constraints = PROBE.conditional_constraints
 same_value, union_uses = PROBE.same_value, PROBE.union_uses
+replacement_restriction_attributes = PROBE.replacement_restriction_attributes
+literal_restriction_attributes = PROBE.literal_restriction_attributes
+conditional_c1_augmentation = PROBE.conditional_c1_augmentation
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/xsd/attributes/au01"
 STATES = ("none", "default-one", "default-two", "fixed-one", "fixed-two")
@@ -50,6 +53,50 @@ def summary_label(result):
     absent = result["absent"]
     return ("any" if present == "type-space" else present[1] if isinstance(present, tuple) else present,
             "conflict" if absent == "augmentation-conflict" else absent[1] if isinstance(absent, tuple) else absent)
+
+
+def restriction_fixture(path):
+    """Read these minimal fixtures independently, not through compiler helpers.
+
+    This fixture adapter supplies caller-owned immutable original inputs; it is
+    not part of the budgeted assessment prototype or a general XSD compiler.
+    """
+    root = etree.parse(str(path)).getroot()
+    ns = {"xs": "http://www.w3.org/2001/XMLSchema"}
+    globals_ = {node.get("name"): node for node in root.findall("xs:attribute", ns)}
+
+    def original(node):
+        ref = node.get("ref")
+        identity = node.getroottree().getpath(node)
+        if ref:
+            prefix, local = ref.split(":")
+            name = (node.nsmap[prefix], local)
+            declaration = globals_[local]
+            declaration_id = "global:" + name[0] + ":" + local
+        else:
+            name = ("", node.get("name"))
+            declaration, declaration_id = node, identity + ":declaration"
+        kind = "fixed" if node.get("fixed") is not None else "default" if node.get("default") is not None else "none"
+        constraint_node, origin = node, "use"
+        if kind == "none" and ref:
+            kind = "fixed" if declaration.get("fixed") is not None else "default" if declaration.get("default") is not None else "none"
+            constraint_node, origin = declaration, "declaration"
+        scalar_type = declaration.get("type", "xs:string").split(":")[-1]
+        operand = None if kind == "none" else Operand(
+            scalar_type, constraint_node.get(kind),
+            tuple((prefix or "", uri) for prefix, uri in constraint_node.nsmap.items()),
+            source=constraint_node.getroottree().getpath(constraint_node))
+        return Use(identity, declaration_id, name, node.get("use") == "required",
+                   kind, operand, source=identity, constraint_origin=origin, scalar_type=scalar_type)
+
+    bases = tuple(original(node) for node in root.findall("xs:complexType[@name='Base0']/xs:attribute", ns))
+    bases += tuple(original(node) for node in root.findall("xs:complexType[@name='Base']/xs:complexContent/xs:extension/xs:attribute", ns))
+    local_nodes = root.findall("xs:complexType[@name='Derived']/xs:complexContent/xs:restriction/xs:attribute", ns)
+    locals_ = tuple(original(node) for node in local_nodes if node.get("use") != "prohibited")
+    prohibited = tuple(original(node).name for node in local_nodes if node.get("use") == "prohibited")
+    # This fixture's only group member is prohibited and contributes no AU or
+    # direct tombstone; the independent expected table checks that distinction.
+    return bases, locals_, prohibited
 
 
 class AU01ContractTests(unittest.TestCase):
@@ -244,6 +291,142 @@ class AU01ContractTests(unittest.TestCase):
             self.assertEqual(schema.to_dict(absent)["@a"], augmentation)
             for value in (1, 2, 3):
                 self.assertTrue(schema.is_valid('<root xmlns="urn:s06:au01" xmlns:t="urn:s06:au01" t:a="' + str(value) + '"/>'))
+
+    def test_restriction_source_replacement_all_matches_independent_matrix(self):
+        # (selected SOURCE-replacement-only, unselected FINAL-AU/all-base).
+        cases = {
+            "required-first-optional-replacement": (False, False),
+            "required-second-optional-replacement": (False, False),
+            "required-first-required-replacement": (True, True),
+            "required-second-required-replacement": (True, True),
+            "fixed-conflict-first-one-replacement": (False, False),
+            "fixed-conflict-second-one-replacement": (False, False),
+            "fixed-equivalent-first-one-replacement": (True, True),
+            "fixed-equivalent-second-one-replacement": (True, True),
+            "fixed-conflict-omitted": (True, False),
+            "required-mixed-omitted": (True, False),
+            "fixed-conflict-prohibited": (True, True),
+            "required-mixed-prohibited": (False, False),
+            "fixed-conflict-group-prohibited": (True, False),
+            "default-conflict-default-replacement": (True, True),
+            "fixed-none-one-replacement": (True, True),
+            "fixed-none-unfixed-replacement": (False, False),
+            "type-token": (True, True), "type-unrelated": (False, False),
+            "qname-equivalent": (True, True), "qname-distinct": (False, False),
+        }
+        for name, expected in cases.items():
+            path = FIXTURES / ("restriction-matches-" + name + ".xsd")
+            bases, locals_, prohibited = restriction_fixture(path)
+            with self.subTest(name=name):
+                for fn, accepted in ((replacement_restriction_attributes, expected[0]),
+                                     (literal_restriction_attributes, expected[1])):
+                    if accepted:
+                        result = fn(bases, locals_, Budget(), direct_prohibitions=prohibited)
+                        self.assertEqual(result["original_bases"], bases)
+                        if name.endswith("omitted") or name.endswith("group-prohibited"):
+                            self.assertEqual(result["effective"], bases)
+                            for actual, original in zip(result["effective"], bases):
+                                self.assertIs(actual, original)
+                    else:
+                        self.assert_failure("invalid-schema", lambda: fn(
+                            bases, locals_, Budget(), direct_prohibitions=prohibited))
+
+    def test_restriction_wildcard_does_not_bypass_matching_originals_or_source_role(self):
+        first, extra = use("first", "fixed-one"), use("extra", "fixed-two")
+        self.assert_failure("invalid-schema", lambda: replacement_restriction_attributes(
+            (first,), (extra,), Budget(), wildcard_namespaces=("*",)))
+        # Actual inheritance preserves originals; merely passing the same IDs as
+        # declared source replacements still invokes the selected all-match rule.
+        inherited = replacement_restriction_attributes((first, extra), (), Budget())
+        self.assertEqual(inherited["effective"], (first, extra))
+        self.assertEqual(inherited["pair_count"], 0)
+        self.assert_failure("invalid-schema", lambda: replacement_restriction_attributes(
+            (first, extra), (first, extra), Budget()))
+        new = Use("new", "new-global", ("urn:new", "b"))
+        self.assert_failure("invalid-schema", lambda: replacement_restriction_attributes(
+            (first,), (new,), Budget()))
+        self.assertEqual(replacement_restriction_attributes(
+            (first,), (new,), Budget(), wildcard_namespaces=("urn:new",))["effective"], (new, first))
+
+    def test_restriction_20_reference_observations_are_separate_from_selected_predicate(self):
+        observations = {
+            "required-first-optional-replacement": (False, False),
+            "required-second-optional-replacement": (False, False),
+            "required-first-required-replacement": (False, False),
+            "required-second-required-replacement": (True, False),
+            "fixed-conflict-first-one-replacement": (False, False),
+            "fixed-conflict-second-one-replacement": (False, False),
+            "fixed-equivalent-first-one-replacement": (False, False),
+            "fixed-equivalent-second-one-replacement": (False, False),
+            "fixed-conflict-omitted": (False, False),
+            "required-mixed-omitted": (False, False),
+            "fixed-conflict-prohibited": (False, False),
+            "required-mixed-prohibited": (False, False),
+            "fixed-conflict-group-prohibited": (False, False),
+            "default-conflict-default-replacement": (True, False),
+            "fixed-none-one-replacement": (False, False),
+            "fixed-none-unfixed-replacement": (False, False),
+            "type-token": (True, True), "type-unrelated": (False, False),
+            "qname-equivalent": (False, True), "qname-distinct": (True, True),
+        }
+        for name, expected in observations.items():
+            path = FIXTURES / ("restriction-matches-" + name + ".xsd")
+            with self.subTest(name=name):
+                for build, accepted, error in (
+                    (lambda: xmlschema.XMLSchema(path), expected[0], xmlschema.XMLSchemaException),
+                    (lambda: etree.XMLSchema(etree.parse(str(path))), expected[1], etree.XMLSchemaParseError)):
+                    if accepted:
+                        build()
+                    else:
+                        with self.assertRaises(error):
+                            build()
+
+    def test_restriction_finite_pair_search_preallocation_and_work_limits(self):
+        bases = (use("one", "fixed-one"), use("two", "fixed-one", True))
+        local = (use("local", "fixed-one", True),)
+        measured = Budget(max_nodes=3)
+        result = replacement_restriction_attributes(bases, local, measured)
+        self.assertEqual(result["pair_count"], 2)
+        boundary = measured.work
+        replacement_restriction_attributes(bases, local, Budget(max_nodes=3, max_work=boundary))
+        exhausted = Budget(max_work=boundary - 1)
+        self.assert_failure("resource-limit", lambda: replacement_restriction_attributes(
+            bases, local, exhausted))
+        self.assertLessEqual(exhausted.work, boundary - 1)
+        nodes = Budget(max_nodes=2)
+        self.assert_failure("resource-limit", lambda: replacement_restriction_attributes(bases, local, nodes))
+        self.assertEqual(nodes.work, 0)
+        many_bases = tuple(use("base-" + str(index), "none") for index in range(4_000))
+        useful = replacement_restriction_attributes(many_bases, (use("local", "none"),), Budget())
+        self.assertEqual(useful["pair_count"], 4_000)
+        many_locals = tuple(use("local-" + str(index), "none") for index in range(4_000))
+        finite_exhausted = Budget()
+        self.assert_failure("resource-limit", lambda: replacement_restriction_attributes(
+            many_bases, many_locals, finite_exhausted))
+        self.assertLessEqual(finite_exhausted.work, 1_000_000)
+
+    def test_c1_one_typed_augmentation_preserves_every_original_and_admitted_witness(self):
+        first_operand = Operand("QName", "p:item", (("p", "urn:one"),), source="base-default")
+        second_operand = Operand("QName", "q:item", (("q", "urn:one"),), source="local-fixed")
+        a = Use("none", "global-q", ("urn:attrs", "a"), scalar_type="QName")
+        b = Use("default", "global-q", a.name, False, "default", first_operand, scalar_type="QName")
+        c = Use("fixed", "global-q", a.name, False, "fixed", second_operand, scalar_type="QName")
+        result = conditional_c1_augmentation((a, b, c), Budget())
+        self.assertEqual(result["name"], ("urn:attrs", "a"))
+        self.assertEqual(result["declaration"], "global-q")
+        self.assertEqual(result["scalar_type"], "QName")
+        self.assertEqual(result["value"], ("QName", ("urn:one", "item")))
+        self.assertIs(result["admitted_witness"], first_operand)
+        self.assertEqual(result["admitted_witness"].lexical, "p:item")
+        self.assertEqual(result["admitted_witness"].namespaces, (("p", "urn:one"),))
+        self.assertEqual(result["contributing_uses"], (a, b, c))
+        for actual, original in zip(result["contributing_uses"], (a, b, c)):
+            self.assertIs(actual, original)
+        integer = Use("integer", "global-integer", ("", "a"), False, "fixed",
+                      Operand("integer", "+01", source="admitted-original"))
+        self.assertEqual(conditional_c1_augmentation((integer,), Budget())["admitted_witness"].lexical, "+01")
+        self.assert_failure("invalid-value", lambda: conditional_c1_augmentation(
+            (use("one", "default-one"), use("two", "default-two")), Budget()))
 
     def test_typed_fixed_payload_contrasts(self):
         path = FIXTURES / "typed-fixed-values.xsd"

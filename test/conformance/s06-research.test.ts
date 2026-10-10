@@ -14,7 +14,7 @@ interface ResearchArtifact {
 interface ResearchContract {
   qualification: string;
   issue: number;
-  disposition: "open";
+  disposition: "open" | "selected";
   productionOwner: number;
   artifacts: ResearchArtifact[];
 }
@@ -32,7 +32,7 @@ const repository = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const manifest = JSON.parse(readFileSync(s06ResearchManifestUrl, "utf8")) as ResearchManifest;
 
 describe("S06 research provenance and delivery scope", () => {
-  it("pins all four open contracts without certifying production support", () => {
+  it("pins selected research contracts and the open proof without certifying production support", () => {
     expect(manifest.formatVersion).toBe(1);
     expect(manifest.scope).toBe("research-only; no production assessment acceptance");
     expect(manifest.baseline).toEqual({revision: "5876065b00d4eeb6d2324eaa63ff9b70e2279198",
@@ -42,8 +42,8 @@ describe("S06 research provenance and delivery scope", () => {
     expect(manifest.semanticDefaults).toEqual({maxNodes: 100_000, maxWork: 1_000_000});
     expect(manifest.contracts.map(contract => [contract.qualification, contract.issue,
       contract.disposition, contract.productionOwner])).toEqual([
-      ["S06-AU-01", 233, "open", 179], ["S06-RE-01", 234, "open", 179],
-      ["S06-PW-01", 235, "open", 179], ["S06-DT-01", 236, "open", 179],
+      ["S06-AU-01", 233, "selected", 179], ["S06-RE-01", 234, "open", 179],
+      ["S06-PW-01", 235, "selected", 179], ["S06-DT-01", 236, "selected", 179],
     ]);
   });
 
