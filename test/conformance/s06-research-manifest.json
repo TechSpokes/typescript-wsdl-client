@@ -651,7 +651,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver.md",
           "role": "decision",
-          "sha256": "29d5920add5f609784ff01efa14ae9863a5b28bb34dfd79d34d5583c81918849"
+          "sha256": "b7cbe8f84b5dd7cb8dc7f6a29de3149d30bbd71eb99cd00c28d485a61a726f2a"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/substitution-actual.xsd",

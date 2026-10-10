@@ -99,7 +99,7 @@ type Facts = Readonly<
     base: Ref; method: Method; final: readonly Method[];
     block: readonly ("extension" | "restriction")[]; abstract: boolean;
     content: Content; declaredContent: Content;
-    attributeUses: readonly Id[]; wildcard?: Wildcard;
+    attributeUses: readonly Id[]; wildcard?: Wildcard; declaredWildcard?: Wildcard;
     items: readonly Ref[]; facets: readonly Facet[]} |
   {kind: "element"; name: Name; type: Ref; nillable: boolean; abstract: boolean;
     final: readonly Method[]; block: readonly (Method | "substitution")[];
@@ -110,21 +110,30 @@ type Facts = Readonly<
     | "sequence" | "choice" | "all"; reference?: Ref;
     children: readonly Id[]; wildcard?: Wildcard} |
   {kind: "group"; root: Id} |
-  {kind: "attributeGroup"; uses: readonly Id[]}
+  {kind: "attributeGroup"; uses: readonly Id[]; wildcard?: Wildcard}
 >;
 type Identity = Readonly<
   {kind: "global"; role: Kind; name: Name} |
   {kind: "local"; owner: Id; path: string; role: Kind} |
   {kind: "fresh"; owner?: Id; path: string; role: Kind}
 >;
-type SourceUse = Readonly<{
-  owner: Id; origin: Id; declaration: Ref;
-  role: "local" | "group" | "direct-prohibition" | "group-prohibition";
-  source: Source;
+type SourceUse = Readonly<
+  {kind: "admitted"; owner: Id; origin: string; use: Id;
+    role: "local" | "group"; ownValue?: Value; source: Source} |
+  {kind: "local-prohibition"; owner: Id; origin: string; name: Name;
+    role: "direct-prohibition" | "group-prohibition"; source: Source;
+    representationChecks: readonly string[]} |
+  {kind: "reference-prohibition"; owner: Id; origin: string; declaration: Ref;
+    role: "direct-prohibition" | "group-prohibition"; source: Source;
+    representationChecks: readonly string[]}
+>;
+type SourceGroupUse = Readonly<{
+  owner: Id; origin: string; reference: Ref; source: Source;
 }>;
 type Component = Readonly<{
   id: Id; identity: Identity; facts: Facts; owns: readonly Id[];
   source: Source; sourceUses: readonly SourceUse[];
+  sourceGroups: readonly SourceGroupUse[];
   unassessed: readonly Readonly<{rule: string; owner: string; source: Source}>[];
   provenance: Readonly<{kind: "actual" | "constructed" | "endpoint-replacement";
     originals: readonly Id[]}>;
@@ -184,11 +193,15 @@ Facet operands retain their original ID, name, fixed flag, ordered layer positio
 
 Particle `reference` is required only for element/group terms, `wildcard` only for `any`, and children only for compositors. Exact finite bounds are canonical nonnegative decimal strings; `unbounded` is admitted only for maximum. A group's root is a compositor; AU declaration references target attributes; element/attribute type references target types; head references target global elements.
 
-`owns` lists original syntactic containment, preserving order; effective shared property edges are not additional ownership edges. Each local identity has its original containing declaration, not its immediate use position. `sourceUses` retains prohibited and otherwise nonsurviving original operands even when no effective AU exists.
+`owns` lists containment of mapped semantic components, preserving order; effective shared property edges are not additional ownership edges. Each local identity has its original containing declaration, not its immediate use position. Noncomponent prohibited attributes and source group-use syntax are nested records, never fabricated declarations/AUs or members of `owns`.
+
+`sourceUses.kind="admitted"` points to the original AU and preserves its own value/source operand independently of any declaration constraint. A local prohibition has only its expanded matching name and source representation checks, with no declaration/type/runtime scalar obligation; prohibited global references retain their actual declaration target and that declaration's own legality obligations. Representation checks preserve relevant name/ref, default/fixed and lexical syntax rules without constructing a nonexistent local scalar operand.
+
+`sourceGroups` preserves every original attribute-group use/reference, even empty and repeated references, in source order. It has a resolved attribute-group target, owner and original source key; it preserves outgoing closure, incoming boundary evidence and group-expansion cycle edges that a flattened AU set cannot recover. `attributeGroup.wildcard`, `type.declaredWildcard` and their original contexts retain group/own wildcard operands independently of the prepared effective type wildcard.
 
 `unassessed` carries every retained component constraint or unsupported syntax operand not represented by the narrow facts view. R4 must emit unresolved for each entry lacking a qualified owner receipt; an empty list is a preparation-authority assertion checked by the future production adapter, never inferred merely because the resolver recognizes the other fields.
 
-Reference slots are fixed names: `base`, `items/<index>`, `content/type`, `declaredContent/type`, `type`, `head`, `declaration`, `value/operand/type`, `facets/<index>/operand/type`, `sourceUses/<index>/declaration` and `reference`. Nonreference edges use `content/roots/<index>`, `declaredContent/roots/<index>`, `attributeUses/<index>`, `children/<index>`, `root`, `uses/<index>`, `owns/<index>` and `identity/owner`. Unknown slots, wrong field combinations or mismatched kinds are input errors; consumers never provide a replacement arbitrary reference to bypass slot validation.
+Reference slots are fixed names: `base`, `items/<index>`, `content/type`, `declaredContent/type`, `type`, `head`, `declaration`, `value/operand/type`, `facets/<index>/operand/type`, `sourceUses/<index>/declaration` for reference prohibitions, `sourceUses/<index>/ownValue/operand/type` for admitted own constraints, `sourceGroups/<index>/reference` and `reference`. Nonreference edges use `content/roots/<index>`, `declaredContent/roots/<index>`, `attributeUses/<index>`, `children/<index>`, `root`, `uses/<index>`, `sourceUses/<index>/use`, `owns/<index>` and `identity/owner`. Unknown slots, wrong field combinations or mismatched kinds are input errors; consumers never provide a replacement arbitrary reference to bypass slot validation.
 
 ### Explicit semantic dependencies and receipts
 
@@ -216,6 +229,8 @@ For a proposed lookup the order is membership check, designated endpoint definit
 
 Legal self/mutual content recursion and sharing remain references. Preparation separately rejects cycles in local ownership, syntactic containment, group expansion, AU-group expansion, simple derivation/item/member expansion, complex base derivation and substitution affiliation. The builtin `anyType` ur-type sentinel terminates traversal and is not a user derivation cycle; no other cycle exemption exists.
 
+The AU-group cycle check follows `sourceGroups` references even when every effective use set is empty; it never follows admitted AU declaration/type references as expansion edges. Source-only local prohibition records contribute representation checks but no semantic target edge, while reference prohibitions contribute declaration closure without inventing an AU.
+
 A malformed actual input, invalid plan shape or missing/wrong target is an input error. A well-formed proposed edge set with a prohibited cycle is candidate-rejected with its cycle rule and related sources; an actual cycle violates the resolved-input precondition and is an input error. Failed semantic predicates also reject only the supplied candidate, while missing authority is unresolved.
 
 Keep reference resolution separate from predicate evaluation. A validly resolved type can still fail derivation, final/block, substitution or particle predicates. A recursive predicate dependency must use its owner's proved termination rule; an active cache entry is not a proof of success.
@@ -224,11 +239,11 @@ Keep reference resolution separate from predicate evaluation. A validly resolved
 
 The single comparison root is actual final endpoint `D` against proposed `D`. The compared projection follows every non-derivation effective property: content roots and particles, element declarations, AU/declaration/value operands, scalar content, facets, local scopes and sharing. It omits the endpoint's derivation edge and syntactic source contribution classification, which are replaced by the explicit construction plan and checked separately.
 
-The ancestor and existing intermediate are exact reused identities, verified by plan preparation. Every actual ID reached by the endpoint property projection is anchored, including named/global types and declarations, original AUs, local owner identities and anonymous scalar operands. A fresh component is allowed only at a construction position outside that anchored projection, or as a fresh particle wrapper whose explicit correspondence preserves all non-annotation properties and edge incidence.
+The ancestor and existing intermediate are exact reused identities, verified by plan preparation. Every actual ID reached by the endpoint property projection is anchored, including particles/wrappers, named/global types and declarations, original AUs, local owner identities and anonymous scalar operands. Fresh components, including construction wrappers, may occur only outside the endpoint projection, such as in a fresh intermediate; no endpoint wrapper-renaming or insertion exception is permitted.
 
 The projection stops at referenced type definitions and local-owner identities: it compares their anchored IDs, not their ancestry, content or other roots' properties. Element recursion is therefore represented by an anchored reference to `D`, while semantic queries on that reference use the selected context. Particle/group expansion and AU component properties remain in the projection; no type-content unfolding crosses an element/type reference.
 
-The supplied certificate must be a total injective bijection over those two finite projections, map the root to the root, fix all anchored identities, preserve component kind, exact occurrences, content variety, mixed/abstract/final/block properties, declarations, scopes, original constraint operands and edge order/multiplicity, and preserve shared versus distinct nodes. Annotations and diagnostic source paths may differ for genuinely constructed wrappers; they remain honest provenance. Text equality never substitutes for typed scalar equality, whose owner supplies a separate receipt when needed.
+The supplied certificate must be a total injective bijection over those two finite projections, map the root to the root, fix all anchored identities, preserve component kind, exact occurrences, content variety, mixed/abstract/final/block properties, declarations, scopes, original constraint operands and edge order/multiplicity, and preserve shared versus distinct nodes. Because every endpoint projection component is anchored, the certificate is an identity mapping; requiring it explicitly prevents hidden root/closure changes. Annotations are excluded from semantic comparison, while original source provenance remains immutable; text equality never substitutes for typed scalar equality.
 
 Correspondence failure rejects only this certificate/candidate projection. It proves neither that no certificate exists nor that no RE01 witness exists. The existing [incidence checker](../test/research/re01/incidence-probe.ts) supplies bounded AU certificate mechanics, not automatic whole-endpoint equality; the future adapter must preserve order for particle child edges rather than reuse its unordered edge-multiset check indiscriminately.
 
@@ -393,12 +408,15 @@ These are future observable resolver tests, not placeholder executable calls to 
 | B15 inclusive resources | Same finite request succeeds at its charged count; one less exhausts with no partial result | Published cost model; separately authored operation ledger in `resolver-budget.test.ts` | R5 |
 | B16 node sharing/exact values | 100,000 distinct input/addition IDs admitted with sufficient work; 100,001 fails; repeated refs do not expand | #178 and existing probe boundary evidence; independent ledger | R5 |
 | B17 endpoint certificate | Distinct equal AUs cannot collapse; wrong local scope/fixed operand/order fails; D derivation alone may differ | Existing [incidence tests](../test/research/re01/incidence-probe.test.ts); `resolver-comparison.test.ts` | R2 |
+| B17a particle identity | Replacing/inserting an endpoint wrapper rejects; fresh wrappers outside that projection do not change its certificate | Explicit anchored-particle policy; independent original/fresh wrapper records | R2 |
 | B18 AU roles | Omission/retain preserves original IDs; replacement checks all original matching fixed/required uses | Accepted AU01 literal matching table and group-incidence control | R4 |
 | B19 delegated authority | Missing UPA/scalar/normalization authority returns named unresolved; lookup can still succeed | Success scope and inventory contract; `resolver-validation.test.ts` | R4 |
 | B20 original particle constraints | Raw singleton all cannot become appendable through restriction normalization; direct restriction need not be transitive | Existing particle continuation controls | R4 |
 | B21 attribution/EDC inputs | Distinct group use positions and implicit retained affiliates reach the owning checker | Dated UPA/EDC clauses; independently authored request-capture records | R4 |
+| B22 source-only prohibitions | Local prohibition has no target/type; global-reference prohibition retains original declaration checks; neither adds an AU | Accepted AU01 prohibited/omitted table; `resolver-context.test.ts` and validation captures | R1/R4 |
+| B23 original group references | Empty/repeated group refs remain explicit; indirect cycles or excluded group target fail; original group wildcard survives | `src-attribute_group` and group properties; hand-written group/source records | R1/R4 |
 
-B01/B02/B08/B10/B18/B20 have established narrow clause or selected-contract expectations now. B03-B07/B09/B11-B17/B19/B21 are contract-level expectations independently specified here and require handwritten prepared records, not expectations generated from the implementation. B15's complete numeric work ledger must be authored and independently reviewed in R5 before accepting exact-boundary results; old probe counts are not resolver counts.
+B01/B02/B08/B10/B18/B20/B22/B23 have established narrow clause or selected-contract expectations now. B03-B07/B09/B11-B17/B19/B21 are contract-level expectations independently specified here and require handwritten prepared records, not expectations generated from the implementation. B15's complete numeric work ledger must be authored and independently reviewed in R5 before accepting exact-boundary results; old probe counts are not resolver counts.
 
 The matrix does not establish general UPA, scalar equivalence, source-normalization or full restriction predicates by supplying truth tables. R4 adapter tests verify context/operand delivery and refusal when authority is missing; actual predicate acceptance remains with its semantic owner. No essential resolver behavior waits on a theorem about all possible RE01 candidates.
 
@@ -420,7 +438,7 @@ All modules above live in `test/research/re01/`; no implementation issue is open
 
 ### R1: Prepare explicit identities and contexts
 
-Implement the readonly view validation, original/addition indexes, endpoint-only replacement, membership/outgoing closure, excluded-incoming manifest and forbidden-edge traversal. Own `resolver-context.ts`, a minimal shared type file and context tests only. Acceptance is B03-B05/B07/B13/B14 plus preallocation exhaustion controls; the review gate checks every reference/owner edge and all actual-source roles.
+Implement the readonly view validation, original/addition indexes, endpoint-only replacement, membership/outgoing closure, excluded-incoming manifest and forbidden-edge traversal. Own `resolver-context.ts`, a minimal shared type file and context tests only. Acceptance is B03-B05/B07/B13/B14/B22/B23 plus preallocation exhaustion controls; the review gate checks every reference/owner edge and all actual-source roles.
 
 Semantic uncertainty is low at this structural boundary because actual IDs/owners are supplied and all membership rules are explicit. Integration depends on independently prepared research facts, not production extraction. Verification is moderately involved: cycle-kind distinctions, transitive excluded affiliation and local owner sharing need separate literal fixtures.
 
@@ -438,7 +456,7 @@ Semantic uncertainty concerns authority coverage, not how contexts resolve: supp
 
 ### R4: Enumerate required checks and integrate owned predicates
 
-Implement the finite all-member obligation inventory and narrow direct adapters with context/operand/authority receipts. Own validation module/tests; integrate accepted AU01 source roles and PW01/DT01 only where invoked, while treating unimplemented complete component predicates as explicit unresolved entries. Acceptance is B08/B10/B18-B21 and a scoped checked-candidate receipt only when the entire named inventory has qualified passes.
+Implement the finite all-member obligation inventory and narrow direct adapters with context/operand/authority receipts. Own validation module/tests; integrate accepted AU01 source roles and PW01/DT01 only where invoked, while treating unimplemented complete component predicates as explicit unresolved entries. Acceptance is B08/B10/B18-B23 and a scoped checked-candidate receipt only when the entire named inventory has qualified passes.
 
 Semantic uncertainty remains in broader RE01 full-type predicates and is not hidden inside coding: this task implements context delivery and an honest completeness ledger, not their missing proofs. Integration depends on R3 and the accepted sibling artifacts; verification must capture original raw particles, every AU constraint, excluded substitution members and distinct attribution positions. Independent review rejects any subset-of-checks shortcut or reuse of actual context receipts.
 
