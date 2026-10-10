@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(content-model): add independent S06 rule investigations and bounded prototypes with explicit unresolved acceptance gates.
+
 - feat(compiler): add exact particle analysis for internal faithful models while preserving legacy defaults.
 
 - feat(compiler): resolve reusable schema semantics with immutable derivation composition and structural companion reuse.

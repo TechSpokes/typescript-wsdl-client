@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:b="urn:pw01:base" xmlns:t="urn:pw01" targetNamespace="urn:pw01" elementFormDefault="qualified">
+  <xs:import namespace="urn:pw01:base" schemaLocation="imported-base.xsd"/>
+  <xs:complexType name="D"><xs:complexContent><xs:restriction base="b:B"><xs:sequence><xs:element name="local" type="xs:string" minOccurs="1" maxOccurs="1" form="unqualified"/><xs:element name="a" type="xs:string" minOccurs="1" maxOccurs="1" /></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

@@ -1,0 +1,4 @@
+<!-- Original AU01 research contrast; expectations in s06_au01_contract_test.py. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:s06:au01" targetNamespace="urn:s06:au01" elementFormDefault="qualified">
+<xs:attributeGroup name="G"><xs:attribute name="a" use="prohibited"/></xs:attributeGroup><xs:complexType name="B"><xs:attribute name="a" use="required"/></xs:complexType><xs:complexType name="D"><xs:complexContent><xs:restriction base="t:B"><xs:attributeGroup ref="t:G"/></xs:restriction></xs:complexContent></xs:complexType><xs:element name="root" type="t:D"/>
+</xs:schema>

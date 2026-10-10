@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:assessment" targetNamespace="urn:assessment" elementFormDefault="qualified">
+  <xs:simpleType name="D">
+    <xs:restriction base="xs:duration">
+      <xs:minInclusive value="-P1700Y"/>
+      <xs:maxInclusive value="-P1600Y"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

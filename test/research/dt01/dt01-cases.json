@@ -1,0 +1,70 @@
+{
+  "authority": "Independent literal expectations for proposed option A; not XSD 1.0 activation evidence",
+  "calendarLexical": [
+    {"id": "bce-400-leap", "family": "date", "lexical": "-0400-02-29Z", "valid": true},
+    {"id": "bce-100-common", "family": "date", "lexical": "-0100-02-29Z", "valid": false},
+    {"id": "bce-4-leap", "family": "date", "lexical": "-0004-02-29Z", "valid": true},
+    {"id": "bce-1-common", "family": "date", "lexical": "-0001-02-29Z", "valid": false},
+    {"id": "ce-1-common", "family": "date", "lexical": "0001-02-29Z", "valid": false},
+    {"id": "ce-4-leap", "family": "date", "lexical": "0004-02-29Z", "valid": true},
+    {"id": "year-zero", "family": "date", "lexical": "0000-01-01Z", "valid": false},
+    {"id": "negative-zero", "family": "date", "lexical": "-0000-01-01Z", "valid": false},
+    {"id": "leading-zero", "family": "date", "lexical": "00001-01-01Z", "valid": false},
+    {"id": "plus-year", "family": "date", "lexical": "+0001-01-01Z", "valid": false},
+    {"id": "zone-over", "family": "dateTime", "lexical": "0001-01-01T00:00:00+14:01", "valid": false},
+    {"id": "hour-24-nonzero", "family": "dateTime", "lexical": "0001-01-01T24:00:00.1Z", "valid": false},
+    {"id": "hour-24-zero", "family": "dateTime", "lexical": "-0001-12-31T24:00:00.000Z", "valid": true},
+    {"id": "xml-whitespace", "family": "date", "lexical": " \t-0004-02-29Z\r\n", "valid": true},
+    {"id": "unicode-whitespace", "family": "date", "lexical": " -0004-02-29Z", "valid": false},
+    {"id": "leap-second-overflow", "family": "dateTime", "lexical": "2001-12-31T23:59:60.25Z", "valid": true},
+    {"id": "seconds-61", "family": "dateTime", "lexical": "2001-12-31T23:59:61Z", "valid": false}
+  ],
+  "normalization": [
+    {"lexical": "-0001-12-31T24:00:00Z", "expected": "0001-01-01T00:00:00Z"},
+    {"lexical": "0001-01-01T00:00:00+14:00", "expected": "-0001-12-31T10:00:00Z"},
+    {"lexical": "-0001-12-31T23:59:59.999999999999999999999999999999-00:01", "expected": "0001-01-01T00:00:59.999999999999999999999999999999Z"},
+    {"lexical": "-0004-02-28T24:00:00Z", "expected": "-0004-02-29T00:00:00Z"},
+    {"lexical": "2001-12-31T23:59:60.25Z", "expected": "2002-01-01T00:00:00.25Z"}
+  ],
+  "additions": [
+    {"start": "0001-01-01T00:00:00Z", "duration": "-P1D", "expected": "-0001-12-31T00:00:00Z"},
+    {"start": "-0001-12-31T00:00:00Z", "duration": "P1D", "expected": "0001-01-01T00:00:00Z"},
+    {"start": "0001-01-01T00:00:00Z", "duration": "-P1Y", "expected": "-0001-01-01T00:00:00Z"},
+    {"start": "-0001-12-31T00:00:00Z", "duration": "P1M", "expected": "0001-01-31T00:00:00Z"},
+    {"start": "-0004-01-31T00:00:00Z", "duration": "P1M", "expected": "-0004-02-29T00:00:00Z"},
+    {"start": "-0001-01-31T00:00:00Z", "duration": "P1M", "expected": "-0001-02-28T00:00:00Z"},
+    {"start": "-0001-02-28T00:00:00Z", "duration": "P1D", "expected": "-0001-03-01T00:00:00Z"},
+    {"start": "1696-09-01T00:00:00Z", "duration": "-P1696Y", "expected": "-0001-09-01T00:00:00Z"},
+    {"start": "0001-01-01T00:00:00Z", "duration": "-PT0.000000000000000000000000000001S", "expected": "-0001-12-31T23:59:59.999999999999999999999999999999Z"},
+    {"start": "2001-01-31T00:00:00Z", "duration": "P1M1D", "expected": "2001-03-01T00:00:00Z"},
+    {"start": "2001-03-01T00:00:00+14:00", "duration": "P1M", "expected": "2001-03-28T10:00:00Z"},
+    {"start": "2001-02-28T10:00:00Z", "duration": "P1M", "expected": "2001-03-28T10:00:00Z"},
+    {"start": "-0001-12-31T24:00:00+14:00", "duration": "P1M", "expected": "0001-01-31T10:00:00Z"}
+  ],
+  "calendarRelations": [
+    {"a": "0001-01-01T00:00:00Z", "b": "-0001-12-31T24:00:00+00:00", "equal": true, "order": "equal"},
+    {"a": "0001-01-01T00:00:00", "b": "0001-01-01T00:00:00Z", "equal": false, "order": "indeterminate"},
+    {"a": "0001-01-01T14:00:00Z", "b": "0001-01-01T00:00:00", "equal": false, "order": "indeterminate"},
+    {"a": "0001-01-01T14:00:00.000000000000000000000000000001Z", "b": "0001-01-01T00:00:00", "equal": false, "order": "greater"},
+    {"a": "-0001-12-31T09:59:59.999Z", "b": "0001-01-01T00:00:00", "equal": false, "order": "less"},
+    {"a": "0001-01-01T00:00:00", "b": "0001-01-01T14:00:00.000000000000000000000000000001Z", "equal": false, "order": "less"}
+  ],
+  "durationRelations": [
+    {"a": "P1Y", "b": "P12M", "equal": true, "order": "equal"},
+    {"a": "P1D", "b": "PT24H", "equal": true, "order": "equal"},
+    {"a": "PT60.00S", "b": "PT1M", "equal": true, "order": "equal"},
+    {"a": "-P0D", "b": "PT0S", "equal": true, "order": "equal"},
+    {"a": "P1M", "b": "P30D", "equal": false, "order": "indeterminate"},
+    {"a": "P1Y", "b": "P365D", "equal": false, "order": "indeterminate"},
+    {"a": "P1Y", "b": "P366D", "equal": false, "order": "indeterminate"},
+    {"a": "P1Y", "b": "P364D", "equal": false, "order": "greater"},
+    {"a": "P1Y", "b": "P367D", "equal": false, "order": "less"},
+    {"a": "P1M", "b": "P27D", "equal": false, "order": "greater"},
+    {"a": "P1M", "b": "P32D", "equal": false, "order": "less"},
+    {"a": "-P1M", "b": "-P27D", "equal": false, "order": "less"},
+    {"a": "P1M1D", "b": "P30D", "equal": false, "order": "indeterminate"},
+    {"a": "-P1700Y", "b": "-P1600Y", "equal": false, "order": "less"},
+    {"a": "PT0.100000000000000000000000000001S", "b": "PT0.1S", "equal": false, "order": "greater"},
+    {"a": "P400Y", "b": "P146097D", "equal": false, "order": "indeterminate"}
+  ]
+}

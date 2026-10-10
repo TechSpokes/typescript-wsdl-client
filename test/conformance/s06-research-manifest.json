@@ -1,0 +1,665 @@
+{
+  "formatVersion": 1,
+  "scope": "research-only; no production assessment acceptance",
+  "baseline": {
+    "revision": "5876065b00d4eeb6d2324eaa63ff9b70e2279198",
+    "tree": "b647d9b0343d421426a539fc008c3cffa82c7875"
+  },
+  "historicalDraft": {
+    "revision": "460f5b8379c68ffef79917284e445b5ab046429e",
+    "tree": "56830b28d1006b019918a364aa62f1ed9d7d8817"
+  },
+  "semanticDefaults": {
+    "maxNodes": 100000,
+    "maxWork": 1000000
+  },
+  "contracts": [
+    {
+      "qualification": "S06-AU-01",
+      "issue": 233,
+      "disposition": "open",
+      "productionOwner": 179,
+      "artifacts": [
+        {
+          "path": "docs/content-model-s06-au-01.md",
+          "role": "decision",
+          "sha256": "1149ce3e8f7c58e4ea4058e239e196f8d9416544b8ebd3793349f3715b8fc668"
+        },
+        {
+          "path": "test/conformance/reference/s06_au01_contract_test.py",
+          "role": "reference",
+          "sha256": "6af8c2bd96a2c1b230205efe0de3939c08eb580930a2ef7b1ff5fc081baa25b6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/direct-distinct-local.xsd",
+          "role": "fixture",
+          "sha256": "3ce7f4be8056469aebff48880f75fd1b623500421296aab2b191577ffecb7d18"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/direct-same-global.xsd",
+          "role": "fixture",
+          "sha256": "2479d8887eedbf3a265577b7c23a1ba42e94fa6be4b56f05dd7fd48484e95705"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-default-one.xsd",
+          "role": "fixture",
+          "sha256": "308fa68f8ec9eb87105379b1305ad87fc0bc91e108cc1b736615b617998cf4f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-default-two.xsd",
+          "role": "fixture",
+          "sha256": "56721803c3413a44b0a54b2e6282a67367419e513e468f2a837d1015f5124b0b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "e54c84e8a239b455667d69ad58b0d438b5f201ea4aa7b4807d6b8e31bffbb307"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "a44c9e09faaf1e5a7d39abd9d8f10d3203a610222694f6721232caca1cfcf240"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-one-none.xsd",
+          "role": "fixture",
+          "sha256": "3eea7a4fd39ea748de503808ff45b94293e44ad8f4799bc1304f0282fd22a967"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-default-one.xsd",
+          "role": "fixture",
+          "sha256": "636ef7a720de80ad1a5206a05741e9ea4311dbfa46bd76ee55c8d9533cab04dc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-default-two.xsd",
+          "role": "fixture",
+          "sha256": "1bac99e6291160c89ff3a666fc56c66f06d9e20fe9ead8943e067a49ad96b496"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "f7d50a0b3d4e1204471ef1653a44278262cfbeebad4eb19f2d187299fd66227f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "86430604ba5b8df2800959a5e43304db1c5b6c82008212e0d7d8f37b87d253cf"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-default-two-none.xsd",
+          "role": "fixture",
+          "sha256": "84de052adaf93300ab03a42ae4a788dfc8844437027177b9b152e57d066199db"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-default-one.xsd",
+          "role": "fixture",
+          "sha256": "d2ddc4e7fef2520549b7e74d75bf67e10c6d8e4d15f1058cb555be05c987ffa7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-default-two.xsd",
+          "role": "fixture",
+          "sha256": "771571e410c24529ca1d9c8e096bf7f898d3dcd25dd743dcd059ce7e51b27bcd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "c7ff93e82ae1351271b6e57391b8bbdc86d839c1d631ab2a9b1abce9f1ff867d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "d6b89faad9b1119e5b59472837ee53df6ed04bb52f5067f200809ef02e5677ce"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-one-none.xsd",
+          "role": "fixture",
+          "sha256": "12e94c8963e9d69d7d1bf91e3ab594c1a4af9d1d1922fc090fcd03c5de8d895c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-default-one.xsd",
+          "role": "fixture",
+          "sha256": "b31e775ed2ffe7d76cf73fa207e5fbf4fe565977c50fd1da49d21eff514b326f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-default-two.xsd",
+          "role": "fixture",
+          "sha256": "8b2b5b9d593c79a1d9cd067080c44559009eb691af72e286cf04756e7bbf4121"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "d63ca9377133090c2f45ed66bab0b2343432a3351558097909b22b26daebb88e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "fd317de2c7a7226af21d6f09cdebaec91b89fb4663c375a0114b9ff954987924"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-fixed-two-none.xsd",
+          "role": "fixture",
+          "sha256": "77043cc28abcd94eff12f33f28b9d9eacdd1aca28b30a8d4d31c4539d6432fad"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-default-one.xsd",
+          "role": "fixture",
+          "sha256": "9941676beb1a1191d616b53943d2ad22faf3e95d458f7a1f0e57e0374e3f5f2e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-default-two.xsd",
+          "role": "fixture",
+          "sha256": "918b5a6ed287b2b361dd4172332e9032f782470ce24a2f2c92aab4bc5897b699"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-fixed-one.xsd",
+          "role": "fixture",
+          "sha256": "965dbd42221574402b2d31dc7a6e4d34ad8238cbc170308ba0e57307666d122d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-fixed-two.xsd",
+          "role": "fixture",
+          "sha256": "7e5b38ab211307a2f4561e62f71f53012937757b85de8be56bc87affbd7ef1bb"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-none-none.xsd",
+          "role": "fixture",
+          "sha256": "c78128fe10687532683ab836c5af6aec06a14aaeb1dd163a2a8ea8797dc4a72f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-optional-fixed-required-fixed.xsd",
+          "role": "fixture",
+          "sha256": "c0539dcea620c1c2030a135eb42d7c979f5d6cc1419027b1bcd854e4de2873b6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-optional-none-required-fixed.xsd",
+          "role": "fixture",
+          "sha256": "359cff2edeb87a07500baf43ff160a06ae5bad4e6785742d68f047927e64143b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-optional-none-required-none.xsd",
+          "role": "fixture",
+          "sha256": "cd369f8a088fa964c832939e8024da578761b476ea0c540e531d781172f14b01"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-prohibited-required.xsd",
+          "role": "fixture",
+          "sha256": "673b5ebf3f8f2cf22b63c607461e1d5cd52df89c9dea04acd9b2f69b25f53478"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-fixed.xsd",
+          "role": "fixture",
+          "sha256": "a42b9072449c5cd965cfd04d4cc81ae1744201be77e7b1999eb14b864827f2e9"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-required-fixed-optional-none.xsd",
+          "role": "fixture",
+          "sha256": "c9272f3bc16f8cd742068a9edd8bd4750189e661d6a31861073b0bcb226a5b37"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/extension-required-none-optional-none.xsd",
+          "role": "fixture",
+          "sha256": "0070c65084b4d733ab55042e22903d8e2afc8bd56bf7af820d402d9ee3f21240"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/global-default-required.xsd",
+          "role": "fixture",
+          "sha256": "c90d4dd2a87f088f402dba8792fe870503f7da5762004dfc3bfc289b6928526d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/global-fixed-conflicting.xsd",
+          "role": "fixture",
+          "sha256": "c24b916c9a97a3fbfad8465097f0deb18128f50a4f9d75124df4d072dde97af0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/global-fixed-default.xsd",
+          "role": "fixture",
+          "sha256": "01b238d27ea8ef6079923fd274fac0206ed5f3dd3a683320252dc92cb3190cf8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/global-fixed-equivalent.xsd",
+          "role": "fixture",
+          "sha256": "8a2c97e7c678ad1aa76deaa535086b48da6a84a226b7ed0a276b22341ab7d52f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/group-direct-distinct-au.xsd",
+          "role": "fixture",
+          "sha256": "fca6dc9f7c189ac5160efe352faebf932679a88e4210e1f0fb22b1b22e6e1d5b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/group-nested-distinct-au.xsd",
+          "role": "fixture",
+          "sha256": "bbe102b44484e422324310c2887f53fdb23122c93b330ff5132114dc29904240"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/group-prohibited-required.xsd",
+          "role": "fixture",
+          "sha256": "1c942be0327f3968aba8e2e4eea49c34443a326c87fcac5ae390c836dc55b6d1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/group-reused-au.xsd",
+          "role": "fixture",
+          "sha256": "4c99a093beb3fb59862418b42a311bf30d4aa61fa8ff14208e076af32f37e3ce"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/required-default.xsd",
+          "role": "fixture",
+          "sha256": "97feebfbb95e462b3ce479c14bda8c34700579ea75fd445adfe2a1570ca62c32"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-omitted-required.xsd",
+          "role": "fixture",
+          "sha256": "4c1df7f82f5123c2ae9c1b35d614d669390457a80b052f6d34a26bc9092c0e2e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/restriction-prohibited-required.xsd",
+          "role": "fixture",
+          "sha256": "b7d3b4795449f5dfc3efe31d652917f30de23e48184229f65faebfb3daee1595"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/attributes/au01/typed-fixed-values.xsd",
+          "role": "fixture",
+          "sha256": "e3e2e7c9629241ea08da63abe3a651ae670a9fa708f35b6676e640a669192786"
+        },
+        {
+          "path": "test/research/s06-au01/probe.py",
+          "role": "prototype",
+          "sha256": "602768b9fa36a42b73d99cc7b23aa2a66419f3143bd267c86225d277c8276386"
+        }
+      ]
+    },
+    {
+      "qualification": "S06-RE-01",
+      "issue": 234,
+      "disposition": "open",
+      "productionOwner": 179,
+      "artifacts": [
+        {
+          "path": "docs/content-model-s06-re-01.md",
+          "role": "decision",
+          "sha256": "b38e89258bf4ea912736936ee3f514055ac52931a0528b3e57690d6abd647776"
+        },
+        {
+          "path": "test/conformance/reference/s06_re01_contract_test.py",
+          "role": "reference",
+          "sha256": "198f6a7bf0abadbe00fdb76358baeccf746bf5f6b6e57dbd033ae5360f3dfbfa"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/expectations.json",
+          "role": "expectations",
+          "sha256": "34ea79fdc7e173b972909e3fc6278cfa8c8b9502206ea8ca593c817deef3a0b4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/pointless-prefix-repeated-final.xsd",
+          "role": "fixture",
+          "sha256": "2f3e3a1326976f9eec1e8cfb3841e137ed2cf588c67b4ac2a957c19779a2a5f7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/re-dead-wildcard-final-restriction.xsd",
+          "role": "fixture",
+          "sha256": "45dd2ef3f8df03c433a3077e34c9449fe01259229d914827354b024de192e463"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/re-dead-wildcard-intermediate.xsd",
+          "role": "fixture",
+          "sha256": "ecbe91c7765ff85ee013ca9c3abd947c2020e1c007a59efa9e152a2c1356958c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-attribute-int.xsd",
+          "role": "fixture",
+          "sha256": "676410cdb6e3891069c5a9a71e3825e697a4cc567f73e39733a27a3ea368e892"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-attribute-string.xsd",
+          "role": "fixture",
+          "sha256": "c8335d094b7536c40ba5ae4fd3c07bd6d3bb187a718b09baf6e8a1cf6ee9c575"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-attribute-token.xsd",
+          "role": "fixture",
+          "sha256": "4241e5ba980df143ee9567ec42b702a55b21768bdda8b051e6fee65fec0cad2d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-particle-int.xsd",
+          "role": "fixture",
+          "sha256": "998b3dc8756bc18c1347e3f6223364f271b5d3c6d152648bccf604dbb396a6f6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-particle-string.xsd",
+          "role": "fixture",
+          "sha256": "b8d348a7fbc3ca810d3f881c8a74a3951efc58fa7a5423d36cddbb0ea87722b5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/reordered-particle-token.xsd",
+          "role": "fixture",
+          "sha256": "818f0ae03dfe006f34589c06b36356c074e39809d25c46d4cb1a803805acf0d3"
+        },
+        {
+          "path": "test/research/re01/measure.py",
+          "role": "prototype",
+          "sha256": "8193839372dcb30d2c948c4a1728668f9f9052f669ea88b34080fdcaf2779800"
+        },
+        {
+          "path": "test/research/re01/witness_probe.py",
+          "role": "prototype",
+          "sha256": "5db4fe156cdbb0db22559fac9c1ca2288ac69b35109b847dde89d8b53c863566"
+        }
+      ]
+    },
+    {
+      "qualification": "S06-PW-01",
+      "issue": 235,
+      "disposition": "open",
+      "productionOwner": 179,
+      "artifacts": [
+        {
+          "path": "docs/content-model-s06-pw-01.md",
+          "role": "decision",
+          "sha256": "7fbb7a8d92f2c85d19a07d1c29c14011b7f0a7346d6349c362008850018b04ab"
+        },
+        {
+          "path": "test/conformance/reference/s06_pw01_contract_test.py",
+          "role": "reference",
+          "sha256": "8f7af27e5fcdbe74bf8615b1cb006a7517f3c5583e21dc50a82d95efe664b1dc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/all-optional-member.xsd",
+          "role": "fixture",
+          "sha256": "b1209d8f06c9ebc0be89dc9ff44bd05d74c7252658518da1ff0287de3053e076"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/all-optional-root-failure.xsd",
+          "role": "fixture",
+          "sha256": "bea92b571275498174453ccb7d0f348d1388aa52befc8cf417a63db6ce5d9db5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/all-positive-control.xsd",
+          "role": "fixture",
+          "sha256": "c5a6c9e676b0d2a34b560c9ddc59ed2c0a30473cf78f6b396ad705ef579e58d4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/chameleon-base.xsd",
+          "role": "fixture",
+          "sha256": "964935c708c3f8b3b41d0bdb87a0f7a538270868b7e61e54fc052d2e25a4015b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/chameleon-other-failure.xsd",
+          "role": "fixture",
+          "sha256": "d9e1468ca5a7d0c09e6f212778d647f098a7012113bf3984ace470d11bf894ac"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/choice-positive-control.xsd",
+          "role": "fixture",
+          "sha256": "4173555afa1608e7a8460354e79af437353e83c57f3774fbc8e0109773a09f06"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/count-gap.xsd",
+          "role": "fixture",
+          "sha256": "0fcacda339dff590d5b7576a54f48c220d3a6035acc787922ff3b460842e9274"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/dead-sequence.xsd",
+          "role": "fixture",
+          "sha256": "03cff4b9fc52a190a19b8dd8d19319a66ec3b5175a796c65e0848feedbd36826"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/direct-optional-member.xsd",
+          "role": "fixture",
+          "sha256": "a3b383c6febb1d58f636e8c7fe975269ab64f314f6e50c73b8424f6824e29668"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/empty-required-choice.xsd",
+          "role": "fixture",
+          "sha256": "5271242e619313f5002fa6f5e781e7af378d572106b24ebc0003ee837aaac832"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/empty-required-positive-min.xsd",
+          "role": "fixture",
+          "sha256": "bef233c61465db05816a99882c26ebe0f3cd6132fe363efa2fb9eeccbabeb534"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/epsilon-choice-failure.xsd",
+          "role": "fixture",
+          "sha256": "7e3cbcbf14e08fcc45690bf85381aee3f05b5e0d010f35b4b83544459339113d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/expectations.json",
+          "role": "expectations",
+          "sha256": "e718191a8ebd11e386db40370f85f297247d767a18c68be4dca5ccd3e97b74be"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/huge-exact-repetition.xsd",
+          "role": "fixture",
+          "sha256": "12941e5549419a6a818e0488fa5455b009920ebace187146cd0df33ce1bd296a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/imported-base.xsd",
+          "role": "fixture",
+          "sha256": "dcdf83ba1d729d80b84ef92c4e7e32c6963f7b65d025bb3e680df8f46d51a140"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/imported-other-absent-failure.xsd",
+          "role": "fixture",
+          "sha256": "4bd6813d5478dd57a334f80d2839995da53a9c22fc7023499df2d7bc800d10c5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/imported-other-base-failure.xsd",
+          "role": "fixture",
+          "sha256": "922144478692f12898791ffd615ea310b1a41a279f30f19b08d48ebfa19cae53"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/imported-other-valid.xsd",
+          "role": "fixture",
+          "sha256": "46d0f91b75904316123d15f88288076bf7982602389b1b42fc08563688453e3f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/literal-positive-control.xsd",
+          "role": "fixture",
+          "sha256": "90cf2379639742b169556d5ed561668b779967330062ad2303e5e41a2b03fae7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/namespace-failure.xsd",
+          "role": "fixture",
+          "sha256": "59bac900736399c661f7921fcfc1c6266a9777da60f41a0df4d51174680f24ec"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/nested-epsilon-choice.xsd",
+          "role": "fixture",
+          "sha256": "109414f945b9f80cc2af23b6631f3b9eccfe0d2e298b3136b493ad6d2ead2c9b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/nested-optional-member.xsd",
+          "role": "fixture",
+          "sha256": "e5ee1ab43d4f2dfb177cd15fdec1232f54398f3346452e178a81b72e92b5a073"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/optional-namespace-failure.xsd",
+          "role": "fixture",
+          "sha256": "0c2e5d4f5c5ab29bc440333c906736108b27ef8e0fb790cbb81e5b8397a32497"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/pinned-nested-optional.xsd",
+          "role": "fixture",
+          "sha256": "1795040f9bdb7b592f389340262167d56927e9ec4a5735b1955366e305ed93ca"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/positive-unbounded-members.xsd",
+          "role": "fixture",
+          "sha256": "48074b2be42c196fe10ae05c96729be65c87f832d3c89323b9d6aac5fd55cc99"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/recursive-element-control.xsd",
+          "role": "fixture",
+          "sha256": "efad9bd3124669be4f842a3310bfb990eb1bbf01c5007c3417999a41039d2909"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/removable-epsilon-control.xsd",
+          "role": "fixture",
+          "sha256": "2824fc11090b77f4237dbd16a89063c6ca411c6bd5c58bafe5a89268d9a7590a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/repeated-choice.xsd",
+          "role": "fixture",
+          "sha256": "1b53071c3e52c8571301000916f10fcd60ef0407b2d215bfb6cce6f716209761"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/repeated-group-use.xsd",
+          "role": "fixture",
+          "sha256": "c55edff03dd35d860234c3229f32ac129ea10b5b08867e066e91cbef58e7ef11"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/repeated-sequence.xsd",
+          "role": "fixture",
+          "sha256": "d6048eaafafc3cfd49bd5b7b93de63707a28d3b8fdbe49f44c3f280578ccebc1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/required-wildcard-strength-failure.xsd",
+          "role": "fixture",
+          "sha256": "2f4cc06e0e20b32380efc0a667ad36c9d6e1b7c15875f3edc926cb2936c6fc93"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/shared-group-uses.xsd",
+          "role": "fixture",
+          "sha256": "295cefac89496ef956dc99535bd463e8e90fb821bd6d11ae3c89627e4a7db329"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/unbounded-control.xsd",
+          "role": "fixture",
+          "sha256": "f2e73eaceaceb35b1526ad5d66e65aab22e56dfe3aaa1e25bf4cf4d7cc311c3e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/unbounded-member-failure.xsd",
+          "role": "fixture",
+          "sha256": "964d2a3b341a245645a3a481d84ad78bfeb63bb15a3f46e62574a132fdec037b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/whole-maximum-failure.xsd",
+          "role": "fixture",
+          "sha256": "c2858091aa21005c6668824385ebb16d242a2e970d1cd3d0e480c0262716f67b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/whole-minimum-failure.xsd",
+          "role": "fixture",
+          "sha256": "e132bf29d3a811197a2a09a2f7e6bd2839aff2739fc314b832ad5a7f1374a20a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/wildcard-strength-failure.xsd",
+          "role": "fixture",
+          "sha256": "aef906c46b2435ae33926bbb505470f38fef9ab927c5447fb3b6e45fc49ffa7a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/wildcard-strength-valid.xsd",
+          "role": "fixture",
+          "sha256": "4ec868b5fd09eb1e6119da34a542573f09b4ec221fe7b6efbdd8da6fc4b18e83"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/zero-disabled-choice.xsd",
+          "role": "fixture",
+          "sha256": "82abcebcbd44f803e5194e9ac2f3bfb7bcb9546872ffcc9d366f7229e43d8966"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/zero-group.xsd",
+          "role": "fixture",
+          "sha256": "c5236f62efa30dc9ac80716ecd05c1f3535a6619e405a5fdacb63a183c0aabe8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/s06-pw01/zero-min-control.xsd",
+          "role": "fixture",
+          "sha256": "ed0095d6484be0a0e07109ccc22d2402ed090c7725df9892f56f694cf3f6d273"
+        },
+        {
+          "path": "test/research/s06-pw01/predicate.test.ts",
+          "role": "expectations",
+          "sha256": "3d4902cea5a593f3e7d59e6f587dc91a8b9e5f732b1098fb72a120e009b1a3e7"
+        },
+        {
+          "path": "test/research/s06-pw01/predicate.ts",
+          "role": "prototype",
+          "sha256": "152c2b71e9567a6c019ce99c2c192429db23729d3cf154b8c40a700169742497"
+        },
+        {
+          "path": "test/research/s06-pw01/tsconfig.json",
+          "role": "prototype",
+          "sha256": "3dd9cc9e746c7e03bee40eb40b8e532b2535d1abc4217a251f9748ebb33db4a7"
+        }
+      ]
+    },
+    {
+      "qualification": "S06-DT-01",
+      "issue": 236,
+      "disposition": "open",
+      "productionOwner": 179,
+      "artifacts": [
+        {
+          "path": "docs/content-model-s06-dt-01.md",
+          "role": "decision",
+          "sha256": "10af9f34d4418fec585f0c96b85e81f1354d710c67466b1042e85c646027dba2"
+        },
+        {
+          "path": "test/conformance/reference/dt01_calendar_contract_test.py",
+          "role": "reference",
+          "sha256": "b8e6018e3fe9fe14cbe75327c291aa357bc09a87093759405014fbd060774ed5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/bce-date-0001.xsd",
+          "role": "fixture",
+          "sha256": "ad760e2275c3bd8c463c1b4315d9cb3d10b458d8e426b12a59594a19ef98ab0d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/bce-date-0004.xsd",
+          "role": "fixture",
+          "sha256": "b83e97d1397c31e201cf59f1b130b9d29fe82c6ba46f8714473e1016c6aee89a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/bce-dateTime-0001.xsd",
+          "role": "fixture",
+          "sha256": "aba2ca3526ee2f75679be6b73c5947dbe19f95dc528ff06011f37bd6b5c3e225"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/bce-dateTime-0004.xsd",
+          "role": "fixture",
+          "sha256": "ca3483fa31ab72a58c19e86ab82b88559526cbcf7a7a0cf7fdd9b7eaa3da1eb4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/calendar-equivalence.xsd",
+          "role": "fixture",
+          "sha256": "30f4f732bf62c06a3df67bfa3112d4ff0189a91e373e6705fed0329fde01ad33"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/calendar-scalars.xsd",
+          "role": "fixture",
+          "sha256": "8e58ecbebffbf7ec39dfba8d946e4d6693fd7b53deaf8216d4cc978d7a114ec0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/research-dt01/duration-cross-year-zero.xsd",
+          "role": "fixture",
+          "sha256": "a6d62e72b51b686aa756cd93c6e586c812b2f5cb6bbbe81da9f8208f19e225b6"
+        },
+        {
+          "path": "test/research/dt01/dt01-cases.json",
+          "role": "expectations",
+          "sha256": "c2c1c0f226f7654ebc8c87493b5c580bde161ce597004c89f5712ae3623f4730"
+        },
+        {
+          "path": "test/research/dt01/exact-calendar.test.ts",
+          "role": "expectations",
+          "sha256": "48aec87a001e99f0444074f4e91e0f807232fd879336d8a2185374dfa3e95223"
+        },
+        {
+          "path": "test/research/dt01/exact-calendar.ts",
+          "role": "prototype",
+          "sha256": "b220e4dd64da8e537e007f6e3d1574f12f2c049c05cfc7283d51ecb009e2ebf1"
+        },
+        {
+          "path": "test/research/dt01/measure.ts",
+          "role": "prototype",
+          "sha256": "3e2e2f507c8c018d280a78de315eca27325e07ab71550ddcba174fe8c275b649"
+        },
+        {
+          "path": "test/research/dt01/tsconfig.json",
+          "role": "prototype",
+          "sha256": "3dd9cc9e746c7e03bee40eb40b8e532b2535d1abc4217a251f9748ebb33db4a7"
+        }
+      ]
+    }
+  ]
+}

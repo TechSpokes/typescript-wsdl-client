@@ -1,0 +1,6 @@
+<!-- Original AU01 source-local default versus declaration-fallback contrast. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:s06:au01" targetNamespace="urn:s06:au01" elementFormDefault="qualified">
+  <xs:attribute name="a" type="xs:integer" default="1"/>
+  <xs:complexType name="D"><xs:attribute ref="t:a" use="required"/></xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

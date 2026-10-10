@@ -31,6 +31,10 @@ The lead S02 implementation agent owns decision drafting/integration; independen
 | S02-D09 Resolved | Numeric provisional budgets and errors; ADR budget table | Epic CM-16 boundedness requirement | S02 lead / #171/#172/#179/#180/#184/#193 | All first consumers; #208 refines measured limits |
 | S02-D10 Resolved | Legacy support, source regeneration, mixed rejection; 1.x default preserved; ADR compatibility section | S01 lost structure; current release v1.1.4 | S02 lead / #174/#185/#186/#195/#196/#201 | #204 qualification/#205 retirement; 2.0.0 release/default gate |
 | S02-D11 Resolved | Reject bounds-only, flattening, parse DTOs, one dialect and security bypass; ADR alternatives section | S01 counterexamples; ADR-002 | S02 lead / all semantic and adapter owners | Architecture PRs; reviewed draft and final joint gate |
+| S06-AU-01 Open/blocking | [Repeated attribute-use research](content-model-s06-au-01.md) | Dated component rules; independent typed/default contrasts | #233 research / #179 schema; #184 payload | Complete multi-use/default interpretation and independent acceptance |
+| S06-RE-01 Open/blocking | [Reordered derivation research](content-model-s06-re-01.md) | Formal witnesses; empty-choice and wildcard counterexamples | #234 research / #179 integration | Complete approved-domain procedure, reviewed predicates and proof |
+| S06-PW-01 Open/blocking | [Group-to-wildcard research](content-model-s06-pw-01.md) | Dated rules; unadopted WG 2232; reference disagreement | #235 research / #179 integration | Member/whole-group interpretation and independent acceptance |
+| S06-DT-01 Open/blocking | [Calendar research](content-model-s06-dt-01.md) | Dated Appendix E; BCE correction; rollover contrasts | #236 research / #179 schema; #184 payload | Complete calendar interpretation and independent acceptance |
 
 ## Findings traceability
 
@@ -55,6 +59,10 @@ The #151 final handoff records independently reviewed revisions, validation resu
 S05's [derivation evidence](content-model-composition.md) adds concrete #179 qualification inputs without changing the approved profile.
 Duplicate extension uses, fixed-value equivalence, group/local wildcard processing and imported wildcard expressibility require independent reconciliation before affected plans are assessed.
 S05 preserves these as typed obligations with original operands; this is not a new scalar checker or a declaration of verified arbitrary derivation support.
+
+The [joint research handoff](content-model-s06-research-handoff.md) coordinates #232 and its four leaves against accepted #178 and the pinned unaccepted #231 draft.
+Its research-only manifest and separately invoked probes preserve primary expectations, conditional proposals and engine observations.
+Green research checks do not discharge the four decision gates, accept #179/#153 or make S07/S08 Ready.
 
 The [S02 handoff](content-model-s02-handoff.md) and #149 acceptance record pin reviewed draft/probe revisions and final delivery review/checks/merge. The SOAP source probe at `4d1d3972fbb0f8170232a3bd143f0fcf0adc842d` passed independent integration review; the gateway source probe at `d826ff506a80437bca1b747f40b772727643a506` passed independent semantic/gateway review.
 

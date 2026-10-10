@@ -1,0 +1,6 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:pw01" targetNamespace="urn:pw01" elementFormDefault="qualified">
+
+  <xs:complexType name="B"><xs:sequence><xs:any minOccurs="1" maxOccurs="2" processContents="lax"/></xs:sequence></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:restriction base="t:B"><xs:all minOccurs="0"><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:all></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

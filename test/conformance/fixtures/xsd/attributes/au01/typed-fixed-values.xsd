@@ -1,0 +1,13 @@
+<!-- Original AU01 research contrast; expectations in s06_au01_contract_test.py. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:s06:au01" targetNamespace="urn:s06:au01" elementFormDefault="qualified">
+<xs:simpleType name="Numbers"><xs:list itemType="xs:integer"/></xs:simpleType>
+<xs:simpleType name="Union"><xs:union memberTypes="xs:integer xs:string"/></xs:simpleType>
+<xs:simpleType name="Code"><xs:restriction base="xs:string"><xs:pattern value="0[0-9]+"/></xs:restriction></xs:simpleType>
+<xs:element name="integer"><xs:complexType><xs:attribute name="a" type="xs:integer" fixed="+01"/></xs:complexType></xs:element>
+<xs:element name="string"><xs:complexType><xs:attribute name="a" type="xs:string" fixed=" a "/></xs:complexType></xs:element>
+<xs:element name="token"><xs:complexType><xs:attribute name="a" type="xs:token" fixed=" a  b "/></xs:complexType></xs:element>
+<xs:element name="qname"><xs:complexType><xs:attribute xmlns:p="urn:one" name="a" type="xs:QName" fixed="p:item"/></xs:complexType></xs:element>
+<xs:element name="list"><xs:complexType><xs:attribute name="a" type="t:Numbers" fixed="+01 2"/></xs:complexType></xs:element>
+<xs:element name="union"><xs:complexType><xs:attribute name="a" type="t:Union" fixed="+01"/></xs:complexType></xs:element>
+<xs:element name="pattern"><xs:complexType><xs:attribute name="a" type="t:Code" fixed="01"/></xs:complexType></xs:element>
+</xs:schema>

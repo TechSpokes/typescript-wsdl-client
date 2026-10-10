@@ -118,6 +118,10 @@ Supported pattern planning initially admits only an evidenced equivalent subset;
 
 ### Scalar pipeline
 
+The [S06 research handoff](../content-model-s06-research-handoff.md) supplies separate AU01, RE01, PW01 and DT01 evidence and candidate interfaces.
+Repeated attribute defaults and negative-year/calendar ordering retain their explicit interpretation gates; the new BCE observation correction is factual evidence, not approval of a rollover rule.
+The existing profile and this enforcement matrix remain authoritative, with #179 owning schema integration and #184 owning the shared payload scalar implementation.
+
 XML lexical assessment (#187/#189) retains lexical text and namespace context, then #184 validates/converts according to the type plan. #188 validates application values before encoding. #198 validates HTTP representation before explicit conversion; #199/#200 call the same scalar/particle owners for request and response semantics.
 
 Diagnostic paths include operation, type/particle ID, expanded name, source location and instance path where available; values and credential-bearing headers are not copied into errors. `invalid-schema`, `invalid-value`, `unsupported-capability`, `resource-limit`, `incompatible-artifact`, `transport`, `soap-fault` and `cancelled` are distinct categories. #179/#180/#184 own semantic detail; adapters attach I/O context without changing categories.

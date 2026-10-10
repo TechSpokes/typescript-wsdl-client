@@ -2,6 +2,8 @@
 
 Human-maintained reference documents for `@techspokes/typescript-wsdl-client`. The root [README.md](../README.md) Documentation section is the authoritative index with descriptions; the list below is a quick local reference organized by reader intent.
 
+The [S06 research handoff](content-model-s06-research-handoff.md) links the four rule investigations and their unresolved acceptance gates.
+
 ## Evaluate
 
 - [start-here.md](start-here.md): what this is, who it is for, choose your path

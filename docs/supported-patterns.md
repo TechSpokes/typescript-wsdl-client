@@ -6,6 +6,9 @@ This document lists the WSDL and XSD features handled by the generator, along wi
 
 The rows below are backed by committed conformance fixtures under `test/conformance/fixtures/`. Status means the current product contract, not the full standards surface.
 
+The [S06 research handoff](content-model-s06-research-handoff.md) records separate attribute, derivation, wildcard and calendar evidence.
+Candidate interpretations and test-only prototypes do not certify production assessment or change these public capability rows.
+
 <!-- support-matrix:start -->
 | Capability ID | Status | Public contract |
 |---|---|---|
