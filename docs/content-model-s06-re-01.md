@@ -86,7 +86,7 @@ The final integer attribute cannot be validly derived from the retained original
 
 [The new schema](../test/conformance/fixtures/xsd/re01/pointless-prefix-repeated-final.xsd) starts with empty `A`, extends to a repeating choice, restricts to exactly seventeen `a,b` pairs, and performs a vacuous final extension. It independently exercises `MapAndSum`, repeated composite bounds and the reordered ancestor selection.
 
-Appending a required empty choice plus wildcard preserves an outer `1..1` sequence, which cannot absorb the final repeated root through the sequence occurrence rule. A genuinely absent/pointless prefix instead permits a single `0..unbounded` wildcard without a separator, so normalization yields that wildcard as the complete intermediate particle. Every final group can restrict it under the agreed universal-wildcard case.
+Appending a required empty choice plus wildcard preserves an outer `1..1` sequence, which cannot absorb the final repeated root through the sequence occurrence rule. A prefix absent after certified source mapping permits a single `0..unbounded` wildcard without a separator when the original raw extension checks pass, so normalization yields that wildcard as the complete intermediate particle. Every final group can restrict it under the agreed universal-wildcard case. Restriction-only pointlessness is insufficient for this branch.
 
 An empty accepted language is not enough to take this branch. A required empty choice remains a meaningful particle and must never be converted to an absent prefix merely because it has no realizations or no terminal positions.
 
@@ -101,7 +101,7 @@ The owning component checker supplies source-valid schema operands, restriction-
 | Ancestor component view | Candidate family |
 |---|---|
 | Any existing particle | Vacuous extension followed by checked restriction of the original pair |
-| Actually absent or pointless prefix | One `##any/skip` wildcard with `0..unbounded` bounds |
+| Source-mapped absence, with original raw extension legality certified | One `##any/skip` wildcard with `0..unbounded` bounds |
 | Meaningful prefix, legal nonvacuous extension | Original prefix, required empty choice, one universal wildcard per unmatched final direct member |
 
 The meaningful-prefix candidate applies to a final normalized element or a normalized sequence whose root bounds are `1..1`. A final element uses `RecurseAsIfGroup`; a sequence uses `Recurse`. All members matched to the ancestor retain original identity and bounds; each unmatched tail member maps to its own wildcard.
