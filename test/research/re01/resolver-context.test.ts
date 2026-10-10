@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { prepareContexts, samePreparedRequest, withContext } from './resolver-context.js';
+import { checkImmediateTypeFinal } from './resolver-relations.js';
 import { baselineRequest, builtin, fixtureName, fixtureSource, literalComponent, local, symbol, typeFacts } from './resolver-fixtures.js';
 import type { Candidate, Component, Context, Facts, SourceUse } from './resolver-types.js';
 
@@ -87,6 +88,66 @@ describe('R1 explicit component contexts (structural scope only)', () => {
             expect(result.diagnostic.rule).toBe('complex-derivation');
             expect(result.diagnostic.related.map(s => s.path)).toEqual(expect.arrayContaining(['/E', '/F', '/A', '/D']));
         }
+    });
+
+    it('reports the motivating original source for a fresh intermediate ancestry rejection', () => {
+        const {input, candidate} = baselineRequest();
+        const actual = {...input, components: input.components.map(component => component.id === 'A'
+            ? {...component, facts: {...component.facts as Extract<Facts, {kind: 'type'}>, final: ['extension'] as const}}
+            : component)};
+        const intermediate = {...fresh('fresh-T', typeFacts(symbol('A'), 'extension')),
+            provenance: {kind: 'constructed' as const, originals: ['T']}};
+        const prepared = prepareContexts(actual, {...candidate, intermediate: intermediate.id, additions: [intermediate],
+            endpointDefinition: {...candidate.endpointDefinition, facts: typeFacts(local(intermediate.id))}});
+        expect(prepared.kind).toBe('ok');
+        if (prepared.kind !== 'ok') return;
+        const rejected = checkImmediateTypeFinal(prepared.value.proposed, local(intermediate.id));
+        expect(rejected.kind).toBe('candidate-rejected');
+        if (rejected.kind === 'candidate-rejected') {
+            expect(rejected.diagnostic.code).toBe('base-final-method');
+            expect(rejected.diagnostic.component).toBe('fresh-T');
+            expect(rejected.diagnostic.source?.path).toBe('/fresh-T');
+            expect(rejected.diagnostic.related.map(source => source.path)).toEqual(['/T']);
+            expect(Object.isFrozen(rejected.diagnostic.related[0])).toBe(true);
+        }
+    });
+
+    it('reports nonendpoint original operands for an endpoint ancestry rejection', () => {
+        const {input, candidate} = baselineRequest();
+        const actual = {...input, components: input.components.map(component => component.id === 'T'
+            ? {...component, facts: {...component.facts as Extract<Facts, {kind: 'type'}>, final: ['restriction'] as const}}
+            : component)};
+        const endpointDefinition = {...candidate.endpointDefinition,
+            provenance: {kind: 'endpoint-replacement' as const, originals: ['B', 'A']}};
+        const prepared = prepareContexts(actual, {...candidate, endpointDefinition});
+        expect(prepared.kind).toBe('ok');
+        if (prepared.kind !== 'ok') return;
+        const rejected = checkImmediateTypeFinal(prepared.value.proposed, symbol('D'));
+        expect(rejected.kind).toBe('candidate-rejected');
+        if (rejected.kind === 'candidate-rejected') {
+            expect(rejected.diagnostic.code).toBe('base-final-method');
+            expect(rejected.diagnostic.component).toBe('D');
+            expect(rejected.diagnostic.related.map(source => source.path)).toEqual(['/D', '/B', '/A']);
+        }
+    });
+
+    it('skips accessor entries while reporting malformed diagnostic metadata', () => {
+        const {input, candidate} = baselineRequest();
+        let invoked = false;
+        const additionEntries: Component[] = [];
+        Object.defineProperty(additionEntries, '0', {get() { invoked = true; return fresh('X', typeFacts()); }, enumerable: true});
+        const broken = literalComponent('X', typeFacts(symbol('missing')));
+        const additionError = prepareContexts({...input, components: [...input.components, broken]}, {...candidate, additions: additionEntries});
+        expect(additionError.kind).toBe('input-error');
+        expect(invoked).toBe(false);
+        const originalEntries: string[] = [];
+        Object.defineProperty(originalEntries, '0', {get() { invoked = true; return 'B'; }, enumerable: true});
+        const endpointDefinition = {...candidate.endpointDefinition,
+            provenance: {kind: 'endpoint-replacement' as const, originals: originalEntries}};
+        const endpointError = prepareContexts({...input, components: input.components.map(component => component.id === 'D'
+            ? {...component, facts: typeFacts(symbol('missing'), 'extension')} : component)}, {...candidate, endpointDefinition});
+        expect(endpointError.kind).toBe('input-error');
+        expect(invoked).toBe(false);
     });
 
     it('admits an ownerless fresh intermediate as a distinct candidate root', () => {

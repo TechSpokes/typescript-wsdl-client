@@ -187,6 +187,12 @@ function data(value: unknown, key: string, budget?: ResolverBudget): unknown {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
     return descriptor && 'value' in descriptor ? descriptor.value : undefined;
 }
+/** Read diagnostic metadata entries without invoking malformed array accessors. */
+function arrayData(value: readonly unknown[], key: string, budget: ResolverBudget): unknown {
+    budget.chargeWork(44 + key.length);
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    return descriptor && 'value' in descriptor ? descriptor.value : undefined;
+}
 function requiredData(value: unknown, keys: readonly string[], budget: ResolverBudget): void {
     assert(record(value), 'invalid-record');
     for (const key of keys) {
@@ -929,7 +935,7 @@ function diagnosis(error: Invalid, state: Pick<State, 'budget' | 'candidate' | '
         budget.chargeWork(); const length = additions.length;
         for (let index = 0; index < length; index++) {
             budget.chargeWork(11); const key = String(index);
-            const addition = data(additions, key, budget);
+            const addition = arrayData(additions, key, budget);
             const id = data(addition, 'id', budget);
             if (text(id) && error.component !== undefined && budget.compareText(id, error.component) === 0) {
                 if (record(addition)) component = addition;
@@ -942,7 +948,7 @@ function diagnosis(error: Invalid, state: Pick<State, 'budget' | 'candidate' | '
         budget.chargeWork(); const length = originals.length;
         for (let index = 0; index < length; index++) {
             budget.chargeWork(11); const key = String(index);
-            const id = data(originals, key, budget);
+            const id = arrayData(originals, key, budget);
             if (!text(id)) continue;
             budget.chargeWork(1 + id.length); const original = state.actual.get(id);
             if (original) { budget.chargeWork(2); related.push(original.source); }

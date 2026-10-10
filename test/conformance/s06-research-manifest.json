@@ -701,12 +701,12 @@
         {
           "path": "test/research/re01/resolver-context.test.ts",
           "role": "reference",
-          "sha256": "43a8d06d8e0373c2628f57abec366f22b381268254a3431f3370d41ab6b3a223"
+          "sha256": "86fc99adcaffaf5177a39bdb555c2f43d9d2436b89ea1f09aeed8adca6170243"
         },
         {
           "path": "test/research/re01/resolver-context.ts",
           "role": "prototype",
-          "sha256": "e65e0bd3abcd17550c29e8c6cdb75268318382697d9629fbb2e230dc67ae0f73"
+          "sha256": "b2f0b8b275a0deafe5a66a2821e64c06c9ca897268ef70c2411767420f22c846"
         },
         {
           "path": "test/research/re01/resolver-fixtures.ts",
@@ -761,7 +761,7 @@
         {
           "path": "test/research/re01/resolver-work-ledger.test.ts",
           "role": "reference",
-          "sha256": "22a3dc429e03b8ed23984f999ca264e5ee21e814a422ee2a144185e8822637b3"
+          "sha256": "de7308bdaab5d40a1fc786cc6a1a44f56742534334b750bb74d6af12a1298ceb"
         },
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",

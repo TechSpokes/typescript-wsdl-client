@@ -10,7 +10,7 @@ import type { ActualInput, Candidate, Component, Facts, Name, Ref, Source } from
  * cost constants nor fixture generators. Its scope is preparation and one lookup;
  * it supplies no XSD assessment or candidate-legality receipt.
  *
- * Reviewed implementation: context e65e0bd3abcd17550c29e8c6cdb75268318382697d9629fbb2e230dc67ae0f73,
+ * Reviewed implementation: context b2f0b8b275a0deafe5a66a2821e64c06c9ca897268ef70c2411767420f22c846,
  * budget 3a640b973a314545c99c11517077e10440e95fb04be4ab02dcc2e66cca1bf0f8,
  * resolution ae1ddcd322cef4aeb079afbf7538f281363edbf16d633b37b3326e6f8326853d.
  *
