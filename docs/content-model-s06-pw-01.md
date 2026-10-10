@@ -4,13 +4,14 @@ Research contract, competing interpretations and independent evidence for S06-PW
 
 ## Disposition and decision request
 
-[Issue #235](https://github.com/TechSpokes/typescript-wsdl-client/issues/235) has a complete research proposal and executable evidence, but its material interpretation gate remains open.
+[Issue #235](https://github.com/TechSpokes/typescript-wsdl-client/issues/235) has a complete research contract and executable evidence.
+The maintainer [selected option B on October 10, 2026](https://github.com/TechSpokes/typescript-wsdl-client/issues/235#issuecomment-6095922074); final independent semantic review and delivery govern local acceptance.
 The published XSD 1.0 text and proposed R-240 correction yield different answers for 13 cases below.
-Independent review can accept the accuracy of this report without selecting the correction or closing #235.
+The literal alternative remains comparison evidence, while B is the selected project interpretation.
 
-The recommended project interpretation is option B, the proposed R-240 zero member minimum.
+The selected project interpretation is option B, the proposed R-240 zero member minimum.
 Its authority is a documented WG proposal, not an adopted XSD 1.0 erratum.
-The maintainer must choose between these concrete contracts after independent review; this report makes no such choice implicitly.
+Its explicit selection does not authorize product guard removal before #179 integration.
 
 | Option | Member comparisons | Whole retained group | Compatibility consequence |
 |---|---|---|---|
@@ -99,7 +100,8 @@ Neither file imports the unaccepted #231 assessment code, recalculates effective
 
 The prototype returns `answer {validRestriction, steps}` or `failure {diagnostic, steps}`.
 Malformed operand callbacks report `invalid-schema`; exhaustion reports `resource-limit` with original component/source and no relation result.
-A consumer must retain `unsupported-capability` for material interpretation disagreement until A or B is selected; budget exhaustion must never become an invalidity answer.
+A research consumer uses selected option B; production retains its qualification until #179 implements and validates that contract.
+Budget exhaustion must never become an invalidity answer.
 
 ## Normalization, emptiness and original operands
 
@@ -284,6 +286,6 @@ Observed tools: Node 24.19.0, npm 11.9.0, TypeScript 6.0.3, Vitest 5.0.3, Python
 The exact final combined commands, versions, result counts and reviewer revision belong to the [joint execution record](content-model-s06-research-handoff.md).
 IDE inspections were unavailable; terminal TypeScript, fixture/reference and repository documentation checks supply local verification.
 
-The delivered research does not claim #179 production guard removal, approved interpretation selection, complete S06 acceptance, #180 matching, #181 enumeration, #184 payload enforcement, downstream activation, merged-main or hosted checks.
-To resume #179, select and substantively review A or B, implement the bounded predicate in the existing assessment path, preserve original/normalized ranges, and requalify the affected selected-operation plans.
-Keep #235 and the affected joint gate open until that interpretation and normal delivery acceptance are recorded.
+The delivered research does not claim #179 production guard removal, complete S06 acceptance, #180 matching, #181 enumeration, #184 payload enforcement or downstream activation.
+To resume the PW01 part of #179 after local acceptance, implement selected B in the existing assessment path, preserve original/normalized ranges, and requalify the affected selected-operation plans.
+The final issue handoff records independent semantic review, exact delivered revisions and normal delivery acceptance; sibling or parent closure is not a local prerequisite.
