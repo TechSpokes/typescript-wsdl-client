@@ -6,9 +6,13 @@ See the [root README](../README.md), [S02 contracts](decisions/003-content-model
 
 ## Disposition and ownership
 
-`S06-DT-01` remains open: no adopted XSD 1.0 correction establishes a complete year-zero rollover contract. The investigation delivers a concrete, total candidate, alternatives, exact tests and reference observations; passing those tests does not approve its interpretation or activate product support.
+No adopted XSD 1.0 correction establishes a complete year-zero rollover contract.
+The maintainer [selected candidate A's three explicit repairs on October 10, 2026](https://github.com/TechSpokes/typescript-wsdl-client/issues/236#issuecomment-6095933213): preserve lexical BCE leap dates while skipping zero, normalize second 60 as overflow, and order normalized recurring-time clocks consistently with aliases.
+Independent semantic review and final delivery govern local acceptance; passing the probes alone does not activate product support.
 
-The recommendation is candidate A, subject to an explicit decision on its skip-zero repair, second-60 normalization and recurring-time comparison. Its lexical-year leap calculation preserves the recorded BCE domain, but its rollover repair is an interpretation added to the written Appendix E algorithm. Candidate B changes which BCE leap dates are legal, while literal Appendix E does not remain closed over the XSD 1.0 value domain.
+The selected project contract is candidate A, including its skip-zero repair, second-60 normalization and recurring-time comparison.
+Its lexical-year leap calculation preserves the recorded BCE domain, but its rollover repair is an interpretation added to the written Appendix E algorithm.
+Candidate B changes which BCE leap dates are legal, while literal Appendix E does not remain closed over the XSD 1.0 value domain.
 
 [#179](https://github.com/TechSpokes/typescript-wsdl-client/issues/179) owns schema integration. [#184](https://github.com/TechSpokes/typescript-wsdl-client/issues/184) owns the later shared payload implementation; #188/#189/#198 consume it. This research imports no production scalar/assessment helper and supplies no payload validator, conversion policy, calendar feature switch or public encoding change.
 
@@ -58,7 +62,9 @@ Agreement on four BCE schemas is no proof about month addition, day rollover, ti
 
 Candidate C cannot be completed merely by hiding zero as an internal year. A full internal zero year adds 366 days between `-0001` and `0001`, contradicting their described adjacency; folding zero into a neighbor changes month/day order or leap validity. Removing its days is candidate A's explicit repair; shifting negative year meanings is candidate B's explicit repair.
 
-The requested choice is whether to adopt A's specified repairs, adopt B with its recorded compatibility consequences, or retain the qualification while seeking a standards interpretation. Until chosen, impacted schemas return the existing `unsupported-capability` qualification; this is a temporary gate, not a permanent BCE exclusion. Unaffected lexical, positive-year and duration-equality work continues.
+The alternatives record A's selected repairs and B's different compatibility consequences.
+Production impacted schemas retain the existing `unsupported-capability` qualification until #179 implements and validates the accepted research contract; this is a temporary gate, not a permanent BCE exclusion.
+Unaffected lexical, positive-year and duration-equality work continues.
 
 Candidate B is fully specified by replacing A's leap/ordinal coordinate with `a(y)=y` for positive lexical years and `a(y)=y+1` for negative years. Apply the ordinary Gregorian leap test and `G(a)` ordinal, including internal astronomical zero; inverse conversion emits `y=a` when `a>0` and `y=a-1` otherwise. Month addition uses `12*(a-1)+(m-1)`, then all of A's exact clipping, fractions, timezone-presence, ordering and anchor procedures remain the same, including their separately stated second-60 and recurring-time choices.
 
@@ -98,7 +104,9 @@ Duration equality compares exact signed total months and exact signed decimal se
 
 Diagnostics retain operation, graph/type ID, expanded name, schema source and instance path where available, without copying operand values into messages. Semantic normalization returns fresh values, preserves timezone presence and never mutates caller data. Internal UTC coordinates do not authorize public UTC conversion or replacing the original pattern-admitted lexical witness; the [S02 normalization laws](decisions/003-content-model-contracts.md#equivalence-and-normalization-s02-d03) remain controlling.
 
-For AU01/RE01, calendar equality requiring disputed BCE rollover returns `unresolved` pending the decision. Exact duration equality uses no reference calendar and can proceed independently. Numeric/QName/string/list/union claims must invoke the established original-type predicates, not claim the entire scalar domain proved by this narrow calendar prototype.
+For AU01/RE01, calendar equality uses selected A once its independent contract review passes; before that gate it returns `unresolved`.
+Exact duration equality uses no reference calendar and can proceed independently.
+Numeric/QName/string/list/union claims must invoke the established original-type predicates, not claim the entire scalar domain proved by this narrow calendar prototype.
 
 ## Complete candidate A arithmetic
 
