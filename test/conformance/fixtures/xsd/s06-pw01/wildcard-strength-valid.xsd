@@ -1,0 +1,7 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:pw01" targetNamespace="urn:pw01" elementFormDefault="qualified">
+  <!-- Independently authored PW01 research contrast; no product-support claim. -->
+
+  <xs:complexType name="B"><xs:sequence><xs:any minOccurs="0" maxOccurs="unbounded" namespace="##any" processContents="lax"/></xs:sequence></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:restriction base="t:B"><xs:sequence minOccurs="1" maxOccurs="1"><xs:any minOccurs="0" maxOccurs="1" namespace="urn:external" processContents="strict"/><xs:element name="b" type="xs:string" minOccurs="1" maxOccurs="1" /></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

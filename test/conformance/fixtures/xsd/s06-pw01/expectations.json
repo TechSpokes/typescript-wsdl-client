@@ -1,0 +1,720 @@
+{
+  "scope": "research-only",
+  "cases": [
+    {
+      "id": "zero-min-control",
+      "file": "zero-min-control.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "3"
+      },
+      "reason": "Member minima and total fit original zero minimum.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "direct-optional-member",
+      "file": "direct-optional-member.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "3"
+      },
+      "reason": "Optional and unit members fail original minimum; group total fits.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "nested-optional-member",
+      "file": "nested-optional-member.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "3"
+      },
+      "reason": "Nested optional group range 0..1 fails original member minimum.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "literal-positive-control",
+      "file": "literal-positive-control.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "4",
+        "max": "4"
+      },
+      "reason": "Each member and whole group meet original bounds.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "whole-minimum-failure",
+      "file": "whole-minimum-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "2"
+      },
+      "reason": "Whole group minimum remains checked against original 2.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "whole-maximum-failure",
+      "file": "whole-maximum-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "4",
+        "max": "4"
+      },
+      "reason": "Whole group maximum exceeds original 3.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "choice-positive-control",
+      "file": "choice-positive-control.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "3"
+      },
+      "reason": "Each choice alternative and total fit 2..3.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "repeated-choice",
+      "file": "repeated-choice.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Use-site repetition affects total, not declared member minima.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "epsilon-choice-failure",
+      "file": "epsilon-choice-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "0",
+        "max": "1"
+      },
+      "reason": "Epsilon alternative lowers whole total minimum.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "nested-epsilon-choice",
+      "file": "nested-epsilon-choice.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "2"
+      },
+      "reason": "Nested choice range 0..1 uses zero minimum only under proposed rule.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "removable-epsilon-control",
+      "file": "removable-epsilon-control.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "0",
+        "max": "1"
+      },
+      "reason": "Restriction ignores pointless empty sequence and singleton choice; original payload epsilon remains.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "required-wildcard-strength-failure",
+      "file": "required-wildcard-strength-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Required wildcard processContents cannot weaken lax base.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "optional-namespace-failure",
+      "file": "optional-namespace-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "2"
+      },
+      "reason": "Optional member still must satisfy original namespace constraint.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "all-optional-member",
+      "file": "all-optional-member.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "3"
+      },
+      "reason": "Legal all root; optional member violates literal minimum.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "all-positive-control",
+      "file": "all-positive-control.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Legal all root and unit members meet original range.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "repeated-sequence",
+      "file": "repeated-sequence.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "4",
+        "max": "6"
+      },
+      "reason": "Group occurrence multiplication belongs to formal total only.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "shared-group-uses",
+      "file": "shared-group-uses.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "4",
+        "max": "4"
+      },
+      "reason": "Two use-site views retain one shared group definition.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "count-gap",
+      "file": "count-gap.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "4"
+      },
+      "reason": "Accepted counts are 2 and 4, not every integer in the total range.",
+      "payloads": [
+        {
+          "xml": "<root xmlns=\"urn:pw01\"><a>x</a><b>x</b></root>",
+          "primary": true,
+          "observed": {
+            "xmlschema420": true,
+            "libxml22146": true
+          }
+        },
+        {
+          "xml": "<root xmlns=\"urn:pw01\"><a>x</a><b>x</b><a>x</a></root>",
+          "primary": false,
+          "observed": {
+            "xmlschema420": false,
+            "libxml22146": false
+          }
+        },
+        {
+          "xml": "<root xmlns=\"urn:pw01\"><a>x</a><b>x</b><a>x</a><b>x</b></root>",
+          "primary": true,
+          "observed": {
+            "xmlschema420": true,
+            "libxml22146": true
+          }
+        }
+      ],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "unbounded-control",
+      "file": "unbounded-control.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "unbounded"
+      },
+      "reason": "Original discharged subset preserves namespace and processing checks.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "unbounded-member-failure",
+      "file": "unbounded-member-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "unbounded"
+      },
+      "reason": "Unbounded member and whole total cannot fit finite maximum.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "empty-required-choice",
+      "file": "empty-required-choice.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "0",
+        "max": "0"
+      },
+      "reason": "Required empty choice has formal zero total but no payload realization.",
+      "payloads": [
+        {
+          "xml": "<root xmlns=\"urn:pw01\"/>",
+          "primary": false,
+          "observed": {
+            "xmlschema420": false,
+            "libxml22146": false
+          }
+        }
+      ],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "empty-required-positive-min",
+      "file": "empty-required-positive-min.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "0",
+        "max": "0"
+      },
+      "reason": "Formal zero total cannot meet original positive minimum.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "dead-sequence",
+      "file": "dead-sequence.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Required dead choice has formal zero total and is not pointless.",
+      "payloads": [
+        {
+          "xml": "<root xmlns=\"urn:pw01\"><a>x</a><b>x</b></root>",
+          "primary": false,
+          "observed": {
+            "xmlschema420": true,
+            "libxml22146": false
+          }
+        }
+      ],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "zero-disabled-choice",
+      "file": "zero-disabled-choice.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "1"
+      },
+      "reason": "Disabled member contributes no particle; remaining choice is pointless.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "zero-group",
+      "file": "zero-group.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "0",
+        "max": "0"
+      },
+      "reason": "Absent derived and base content uses owning empty-content check.",
+      "payloads": [
+        {
+          "xml": "<root xmlns=\"urn:pw01\"/>",
+          "primary": true,
+          "observed": {
+            "xmlschema420": "unavailable-schema",
+            "libxml22146": true
+          }
+        },
+        {
+          "xml": "<root xmlns=\"urn:pw01\"><a>x</a></root>",
+          "primary": false,
+          "observed": {
+            "xmlschema420": "unavailable-schema",
+            "libxml22146": false
+          }
+        }
+      ],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "wildcard-strength-valid",
+      "file": "wildcard-strength-valid.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "2"
+      },
+      "reason": "Strict wildcard narrows lax base and namespace subset.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "wildcard-strength-failure",
+      "file": "wildcard-strength-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "2"
+      },
+      "reason": "Skip wildcard weakens lax base.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "namespace-failure",
+      "file": "namespace-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Qualified local namespace is excluded by ##other in original context.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "recursive-element-control",
+      "file": "recursive-element-control.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "1",
+        "max": "2"
+      },
+      "reason": "Element/type recursion is atomic to the particle restriction.",
+      "payloads": [
+        {
+          "xml": "<root xmlns=\"urn:pw01\"><next><b>x</b></next><b>x</b></root>",
+          "primary": true,
+          "observed": {
+            "xmlschema420": true,
+            "libxml22146": true
+          }
+        }
+      ],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "huge-exact-repetition",
+      "file": "huge-exact-repetition.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "1801439850948198624691357802469135780",
+        "max": "1801439850948198624691357802469135780"
+      },
+      "reason": "Exact huge multiplication; no finite repetition expansion.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "parse-range-limit"
+      }
+    },
+    {
+      "id": "imported-other-valid",
+      "file": "imported-other-valid.xsd",
+      "literal2004": true,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Imported ##other retains base effective namespace.",
+      "payloads": [],
+      "primarySchema": "valid",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "imported-other-base-failure",
+      "file": "imported-other-base-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Imported ##other retains base effective namespace.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "imported-other-absent-failure",
+      "file": "imported-other-absent-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Imported ##other retains base effective namespace.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "chameleon-other-failure",
+      "file": "chameleon-other-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Chameleon effective namespace, not absent declared namespace, binds ##other.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "pinned-nested-optional",
+      "file": "pinned-nested-optional.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "3"
+      },
+      "reason": "Exact fixture copied from draft 460f5b8.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "all-optional-root-failure",
+      "file": "all-optional-root-failure.xsd",
+      "literal2004": false,
+      "proposed2232": false,
+      "effectiveTotalRange": {
+        "min": "0",
+        "max": "2"
+      },
+      "reason": "Legal optional all root retains its own minimum.",
+      "payloads": [],
+      "primarySchema": "invalid",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "positive-unbounded-members",
+      "file": "positive-unbounded-members.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "2",
+        "max": "2"
+      },
+      "reason": "Unbounded maximum does not erase positive original member minimum.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "accepted",
+        "libxml22146": "accepted"
+      }
+    },
+    {
+      "id": "repeated-group-use",
+      "file": "repeated-group-use.xsd",
+      "literal2004": false,
+      "proposed2232": true,
+      "effectiveTotalRange": {
+        "min": "4",
+        "max": "6"
+      },
+      "reason": "Named group use-site bounds survive singleton outer normalization.",
+      "payloads": [],
+      "primarySchema": "unresolved",
+      "observed": {
+        "xmlschema420": "rejected",
+        "libxml22146": "accepted"
+      }
+    }
+  ]
+}

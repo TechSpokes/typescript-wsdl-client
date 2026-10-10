@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:pw01:base" elementFormDefault="qualified">
+  <xs:complexType name="B"><xs:sequence><xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/></xs:sequence></xs:complexType>
+  <xs:element name="foreign" type="xs:string"/>
+</xs:schema>
