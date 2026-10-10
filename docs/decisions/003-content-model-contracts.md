@@ -119,7 +119,8 @@ Supported pattern planning initially admits only an evidenced equivalent subset;
 ### Scalar pipeline
 
 The [S06 research handoff](../content-model-s06-research-handoff.md) supplies separate AU01, RE01, PW01 and DT01 evidence and candidate interfaces.
-Repeated attribute defaults and negative-year/calendar ordering retain their explicit interpretation gates; the new BCE observation correction is factual evidence, not approval of a rollover rule.
+The maintainer explicitly selected C1 attribute semantics with universal source-replacement matching, R-240 wildcard bounds and candidate A's calendar repairs.
+Their local research acceptance is separate from RE01's missing completeness proof, #179 implementation and the factual BCE reference correction.
 The existing profile and this enforcement matrix remain authoritative, with #179 owning schema integration and #184 owning the shared payload scalar implementation.
 
 XML lexical assessment (#187/#189) retains lexical text and namespace context, then #184 validates/converts according to the type plan. #188 validates application values before encoding. #198 validates HTTP representation before explicit conversion; #199/#200 call the same scalar/particle owners for request and response semantics.
