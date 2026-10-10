@@ -99,10 +99,11 @@ The new [named-group contrast](content-model-s06-re-01.md#executable-named-group
 A bounded supplied-certificate checker verifies final AU incidence without claiming complete witness existence or general scalar equivalence.
 Fresh Node observations are recorded separately from the selected component predicates; duplicate-use rejections do not decide the C1 or RE contracts.
 
-The [RE-M1 proposal](content-model-s06-re-01.md#witness-domain-and-comparison-decision) uses abstract hypothetical AU plans with literal original sharing and counterfactual relation records over immutable original type references.
-RE-M2 instead requires XML-source reconstruction with an explicit final-root correspondence; stricter original group anchoring rejects the supplied XML construction.
-The primary abstract-component domain favors investigating RE-M1, but hypothetical contribution roles and endpoint behavior require explicit selection and soundness/reflection proof.
-Neither option is accepted by this continuation, and no interpretation selection alone supplies the full theorem.
+The [revised recommendation](content-model-s06-re-01.md#witness-domain-and-comparison-decision) separates component representation from hypothetical endpoint resolution.
+It recommends abstract construction plans with original AU sharing and a separately checked hypothetical graph overlay, preserving the immutable actual graph and diagnostic provenance.
+Requiring XML reconstruction adds source-mapping obligations; freezing actual ancestry in hypothetical queries can exclude the supplied existing-intermediate construction.
+The [recursive all-group contrast](content-model-s06-re-01.md#recursive-endpoint-and-existing-intermediate-contrast) demonstrates that concrete difference in an invoked NameAndTypeOK query and adds an original intermediate-identity completeness obligation.
+This is a research recommendation, not an adopted production interpretation or a complete theorem; hypothetical roles, comparison closure and context-sensitive component checks remain open.
 
 The particle controls separately expose nontransitive MapAndSum restriction, original singleton-all placement, base final exclusions and ordinary simple-content ancestors.
 An empty-facet no-inline simple-content restriction is not proved to create a fresh anonymous scalar, so no source-impossibility claim relies on that assumption.
@@ -161,7 +162,9 @@ That factual correction does not authorize removing negative-year or crossing-ze
 ## Downstream qualifications and next ready work
 
 The next ready work is completing the RE01 full-type criterion and negative-answer proof using locally accepted selected sibling contracts.
-The implementing research owner must first resolve the explicit RE-M1/RE-M2 decision, then prove the chosen endpoint semantics and every ancestry-sensitive predicate before integrating the conditional AU criterion with particle/content cases.
+The implementing research owner should specify and test the recommended hypothetical resolver and endpoint comparison closure, then prove every ancestry-sensitive predicate before integrating the conditional AU criterion with particle/content cases.
+The focused prerequisite must preserve actual graph identities, distinguish actual and hypothetical recursive queries, retain existing named intermediate identity, isolate caches by context and check hypothetical legality and inclusive budgets.
+Its acceptance would not discharge full candidate completeness, original normalization or the negative-answer theorem.
 The new incidence checker remains an evidence tool; it is not that integration or an approved negative-answer procedure.
 #179 may inspect these research inputs while keeping affected assessment gates open; the full accepted research epic must precede production activation.
 #153 remains the combined S06 acceptance owner and S07/S08 retain their existing dependencies.

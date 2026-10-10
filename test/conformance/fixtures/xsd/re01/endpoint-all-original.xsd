@@ -1,0 +1,17 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:recursive-reflection" targetNamespace="urn:re01:recursive-reflection">
+  <xs:complexType name="A">
+    <xs:all><xs:element name="n" type="t:T" minOccurs="0"/><xs:element name="m" type="xs:int" minOccurs="0"/></xs:all>
+  </xs:complexType>
+  <xs:complexType name="T">
+    <xs:complexContent><xs:extension base="t:A"/></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="B">
+    <xs:complexContent><xs:restriction base="t:A"/></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent><xs:extension base="t:B">
+      <xs:all><xs:element name="n" type="t:D" minOccurs="0"/><xs:element name="m" type="xs:int" minOccurs="0"/></xs:all>
+    </xs:extension></xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "f4accb58f45ba5479ee06a725f6e9cb5c4a83b08e280462fcd3563f0e9e8cff1",
+          "sha256": "b20bbbaaa2aca607a1c4e4986e46a43f7c0acae6e5a6ec75ad86829b6a50c486",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -632,6 +632,21 @@
           "path": "test/conformance/reference/re01-particle-continuation.test.ts",
           "role": "reference",
           "sha256": "f3ae1b921e09d634c4e1d477f7a6118ec3ab89f0cd033a89d7507e3871edd24d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/endpoint-all-original.xsd",
+          "role": "fixture",
+          "sha256": "b47cd197f897e027833209351b4407282f21198407ac0921a8c57549b22be84b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/endpoint-all-shadow.xsd",
+          "role": "fixture",
+          "sha256": "d052d6dc5dd933a7333566376c97dc96a08233eab6dfc9ded0044ffa690568ca"
+        },
+        {
+          "path": "test/conformance/reference/re01-endpoint-continuation.test.ts",
+          "role": "reference",
+          "sha256": "ead0a814d3a96b76a7f08523ff8aeece13a179ce5ad94e8041383e407c4148a4"
         }
       ]
     },
@@ -1023,6 +1038,6 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 183
+    "currentArtifactCount": 186
   }
 }

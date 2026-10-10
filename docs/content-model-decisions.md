@@ -65,8 +65,8 @@ Its research-only manifest and separately invoked probes preserve primary expect
 The maintainer selected C1 with universal source-replacement matching, R-240 and candidate A's three calendar repairs after reviewing concrete alternatives.
 Local acceptance still requires complete independent review and exact delivery gates; RE01's complete negative proof remains open.
 Green research checks do not accept #232/#179/#153 or make S07/S08 Ready.
-The [TypeScript RE01 continuation](content-model-s06-re-01.md#witness-domain-and-comparison-decision) starts from unmerged #254 and exposes the abstract-component versus XML-source witness decision with executable group-incidence and particle controls.
-RE-M1 hypothetical plans and immutable counterfactual operands are recommended for investigation; their interpretation and full proof remain open, with accepted sibling contracts and existing production guards preserved.
+The [TypeScript RE01 continuation](content-model-s06-re-01.md#witness-domain-and-comparison-decision) starts from unmerged #254 and separates component representation from recursive endpoint resolution with executable group-incidence, particle and existing-intermediate controls.
+Abstract construction plans plus a separately checked hypothetical graph overlay are recommended for investigation; comparison closure, context-sensitive legality and the full proof remain open, with accepted sibling contracts and existing production guards preserved.
 
 The [S02 handoff](content-model-s02-handoff.md) and #149 acceptance record pin reviewed draft/probe revisions and final delivery review/checks/merge. The SOAP source probe at `4d1d3972fbb0f8170232a3bd143f0fcf0adc842d` passed independent integration review; the gateway source probe at `d826ff506a80437bca1b747f40b772727643a506` passed independent semantic/gateway review.
 
