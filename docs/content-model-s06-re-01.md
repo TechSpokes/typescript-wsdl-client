@@ -30,7 +30,9 @@ The ancestor is the type on the actual immutable derivation chain whose base is 
 
 The complete [pinned structures source](https://github.com/jacoelho/xsd/blob/142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/structures.xml) identifies the 28 October 2004 Recommendation and matches SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`. Deleted editorial text is excluded when reading final clauses. The [published second-edition errata](https://www.w3.org/2004/03/xmlschema-errata) do not supply a replacement RE01 rule or a completeness proof for witness construction.
 
-[PW01](content-model-s06-pw-01.md) separately records WG issue 2232's proposed occurrence adjustment; it is not an adopted XSD 1.0 correction. The universal wildcards used below have exactly `0..unbounded` bounds, where the competing occurrence readings agree. [AU01](content-model-s06-au-01.md) and [DT01](content-model-s06-dt-01.md) retain their own unresolved authority questions.
+[PW01](content-model-s06-pw-01.md) separately records WG issue 2232's proposed occurrence adjustment; it is not an adopted XSD 1.0 correction. The universal wildcards used below have exactly `0..unbounded` bounds, where the competing occurrence readings agree. Subsequent maintainer selections are AU C1 with universal checking for source replacements, PW B and DT A; the joint handoff pins their reviewed records.
+
+Those local selections do not settle RE01's hypothetical witness equivalence or source-incidence theorem. A selected scalar relation or source-replacement predicate is parameterized below without reopening its local decision.
 
 ## Component mapping and payload languages
 
@@ -44,7 +46,7 @@ The controls `re-dead-wildcard-intermediate.xsd` and `re-dead-wildcard-final-res
 
 ## Independent contrasts
 
-The [fixed research manifest](../test/conformance/fixtures/xsd/re01/expectations.json) keeps primary recommendations, historical primary scope and each reference engine's observations separate. Eight original fixtures are copied byte-for-byte from the pinned draft with source revision, original directory and per-file SHA-256. The ninth fixture is independently authored here.
+The [fixed research manifest](../test/conformance/fixtures/xsd/re01/expectations.json) keeps primary recommendations, historical primary scope and each reference engine's observations separate. Eight original fixtures are copied byte-for-byte from the pinned draft with source revision, original directory and per-file SHA-256. Three additional fixtures independently contrast normalization and hypothetical AU incidence.
 
 | Contrast | Formal result or remaining condition | XMLSchema 4.2.0 | libxml2 2.14.6 |
 |---|---|---|---|
@@ -57,6 +59,8 @@ The [fixed research manifest](../test/conformance/fixtures/xsd/re01/expectations
 | Dead wildcard intermediate | Component mapping only | Reject | Accept |
 | Restriction of dead wildcard intermediate | Component mapping only | Reject | Accept |
 | Empty ancestor and repeated final sequence | Universal wildcard with no separator | Accept | Accept |
+| Original chain with surviving fixed 1 and added fixed 2 AUs | RE equality/source-incidence gate | Reject | Reject |
+| Hypothetical source with the same two AU predicates inherited | RE equality/source-incidence gate | Reject | Reject |
 
 The particle-int row's pinned historical primary outcome remains `unresolved`; the new recommendation is explicitly identified as conditional on adopting the numbered-rule reading. This record does not silently rewrite that historical manifest or turn agreement among engines into authority.
 
@@ -141,9 +145,9 @@ Production #179 must check the complete intermediate and final restriction befor
 
 [AU01](content-model-s06-au-01.md) supplies the original deduplicated AU-ID set, declaration identities, requiredness, effective value constraints and source provenance. Extension preserves all original AUs and unions local sets; QName/declaration uniqueness is checked before restriction. It does not replace inherited uses with a scalar keyed by QName.
 
-For a single unambiguous base use, restriction preserves requiredness, checks valid simple-type derivation and retains applicable fixed constraints. When several original AUs have matching QNames, the restriction predicate must expose the reviewed AU01 quantification and may return unresolved. Synthesizing extra intermediate uses must not bypass an original fixed or required use by silently picking a favorable match.
+For a single unambiguous base use, restriction preserves requiredness, checks valid simple-type derivation and retains applicable fixed constraints. The selected multi-use contract checks each actual source replacement against every matching original base use; omission retains the original use set unchanged. It does not cross-check every retained inherited fixed use against every other retained use.
 
-Adding an intermediate `##any/skip` attribute wildcard appears sufficient for final QNames absent from the preserved base AU set. It does not solve repeated-use matching or default/fixed ambiguity. A complete finite AU witness theorem, or an equivalent reviewed criterion, remains required for complete RE01 type-level negative answers.
+Adding an intermediate `##any/skip` attribute wildcard appears sufficient for final QNames absent from the preserved base AU set. A complete finite AU witness theorem must additionally specify hypothetical source incidence and final component equivalence, as detailed below. A wildcard cannot bypass the selected checks for an actual replacement of a matching QName.
 
 ### PW01
 
@@ -153,9 +157,74 @@ Pass formal ranges of the actual operand at the point where the restriction rule
 
 ### DT01 and scalar relations
 
-[DT01](content-model-s06-dt-01.md) supplies exact typed value equality and a separate ordered comparison returning less, equal, greater or indeterminate. Original type, lexical value, QName context, list items, declared union-member order and facet layers accompany each operand. An unresolved BCE/calendar normalization relation or indeterminate ordering must never become a false equality/type-restriction result.
+[DT01](content-model-s06-dt-01.md) supplies exact typed value equality and a separate ordered comparison returning less, equal, greater or indeterminate under the selected calendar contract. Original type, lexical value, QName context, list items, declared union-member order and facet layers accompany each operand. An unavailable or exhausted scalar implementation, or legitimate indeterminate ordering, must never become a false equality/type-restriction result.
 
-The fixtures here use string/token/int without calendar operands. Full-domain RE01 proofs still depend on the reviewed scalar predicates where original element or attribute fixed/default constraints invoke them. No local Date-based or approximate scalar engine is introduced.
+The initial fixtures use string/token/int without calendar operands. Full-domain RE01 proofs depend on the reviewed selected scalar predicates where original element or attribute fixed/default constraints invoke them. No local Date-based or approximate scalar engine is introduced.
+
+## Follow-up: finite AU synthesis and witness identity
+
+The selected source-replacement contract gives a finite conditional AU synthesis direction. It also exposes a specific missing RE01 theorem about the final hypothetical type's identity and representation. This gap belongs to reordered witnesses, rather than reopening AU01's selected predicate for real source declarations.
+
+### Why the minimal intermediate is insufficient
+
+Let `A` contain an optional AU to global declaration `g:xs:int`, with use-fixed value `1` and no declaration-fixed constraint. Let the final type retain that original AU and add a second optional AU to the same global declaration, use-fixed `2`. The selected C1 rule admits those individually valid schema components and preserves both predicates, even though no instance satisfies them.
+
+If a hypothetical intermediate contains only the original AU plus an attribute wildcard, declaring both final uses as source replacements forces fixed `2` to be checked against the original fixed `1`, so the replacement fails. Instead, an intermediate can extend with the second use and a vacuous final restriction can inherit both unchanged. Thus source replacement and source omission must remain distinct during witness synthesis.
+
+[The original-source fixture](../test/conformance/fixtures/xsd/re01/au-source-original.xsd) combines that AU contrast with removal/restoration of optional particle `a`, restored as integer. [The hypothetical-source fixture](../test/conformance/fixtures/xsd/re01/au-source-witness.xsd) supplies the required empty-choice/wildcard intermediate and puts fixed `2` in the intermediate extension, while the final restriction omits attribute `g`. Both reference engines reject both schemas; those observations do not decide the selected C1 or RE equality question.
+
+The final AU predicates and global declaration reference have the same values and incidence pattern in the two sources. The new direct AU occurs under original `D` in one source and intermediate `E` in the other, however, so these are different newly mapped AU components. The committed reference check explicitly verifies the changed source contribution and does not label the new component as the original inherited ID.
+
+### Conditional finite AU criterion
+
+Assume that final witness equality and source representation have been specified and proved for the following construction. Partition original ancestor and final AU sets by expanded QName, preserving distinct AU identities, declaration identity, original scalar references and original typed constraints. Every intermediate retains the ancestor's original AU set.
+
+For an ancestor QName whose original AU set is contained in the intended final set, add the extra final uses in the first extension and omit that QName in the final restriction. For any other ancestor QName, keep only its original uses in the intermediate and construct the final set as source replacement; each replacement must pass every original matching base-use predicate. An empty final set instead needs a legal prohibition of every original optional use; an original required use makes that branch impossible.
+
+For QNames absent from the ancestor, a universal intermediate attribute wildcard admits the final source declarations. The wildcard's `##any/skip` namespace/process combination is an expressible XSD 1.0 extension union and supports every legal final wildcard restriction. It adds no second ID-derived declaration to the intermediate.
+
+Necessity of the replacement/prohibition branches follows from preservation: arbitrary additional intermediate uses cannot remove an original base use. Omission can only inherit a final set containing all originals; actual source replacement must check every original match under the selected contract. Additional uses cannot rescue a replacement that fails an original predicate.
+
+The remaining sufficiency obligation is not a search bound. It is to prove that adding the final extra uses in the intermediate and inheriting them produces the same permissible final type definition, with the required AU identity/sharing and declaration-scope incidence, under the chosen RE equality rule. Direct attribute syntax creates fresh AU components; group references can reuse existing members but cannot automatically reference an arbitrary direct use owned by `D`.
+
+### Primary evidence about component identity
+
+[Components and Properties](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#scIntro) models a schema as a labeled directed graph and states:
+
+> Equality of components for the purposes of this specification is always defined as equality of names (including target namespaces) within symbol spaces.
+
+The added [component-identity note](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#no-identity) under Type Derivation OK expressly qualifies the identity relation:
+
+> The wording of clause 2.1 above appeals to a notion of component identity which is only incompletely defined by this version of this specification.
+
+It identifies named top-level components, necessarily identical types and identity by construction, including inherited attribute declarations, as settled cases. It then states:
+
+> In other cases two conforming implementations may disagree as to whether components are identical.
+
+[Attribute Use properties](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#AU_details) are requiredness, attribute declaration and value constraint. They contain no intrinsic original-source owner or source-replacement flag; those arise from representation mapping. [Attribute declaration scope](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#Attribute_Declaration_details) does carry a global or owning-complex-type scope, with separate treatment for group declarations.
+
+[Schema Information](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#sic-schema) defines an information item isomorphic to a component for PSVI contributions. It supplies useful graph vocabulary, but does not by itself adopt isomorphic unnamed components as identical reordered witnesses. The abstract-model description likewise does not automatically discharge source-representability.
+
+### Concrete equality options
+
+| RE witness equality option | Benefit | Missing obligation or compatibility effect |
+|---|---|---|
+| Literal original component identities | Strong operand retention | Arbitrary direct AU sharing may lack an XML source representation |
+| Abstract component sharing without source reconstruction | Finite AU set construction | Must justify this as the numbered rule's intended witness domain |
+| Source-representable final type with incidence-preserving bijection | Represents fresh intermediate AUs honestly | Must define permitted renaming and preservation of local scopes and scalar identities |
+| Property-only AU or QName equality | Simple comparison | Loses duplicate-use sharing and can erase original constraints |
+
+The recommended research direction is an explicit property-and-incidence-preserving bijection for hypothetical artifacts, with all real original operands immutable and provenance retained. It must fix named/global declaration references, distinguish distinct versus shared AU members, preserve requiredness and original typed fixed/default constraints, respect local declaration scopes and anonymous scalar derivation identity, and identify which hypothetical source determines replacement versus omission. This is a concrete proposal awaiting proof and independent review, rather than an accepted replacement for literal original identities.
+
+The original real `D` source and its AU plan never change. A hypothetical restriction uses its own declared local/group contributions to classify replacement; it cannot reuse the real original `D` contribution flags while pretending freshly constructed intermediate uses were already inherited. A witness-to-original correspondence would retain original source operands as diagnostic/provenance targets instead of rewriting their IDs or context.
+
+### Other finite full-type obligations
+
+Content categories give further necessary cases. A simple-content ancestor can only extend with the same scalar component; its final scalar restriction therefore needs the original scalar derivation predicate. An ancestor with particle content cannot make its formal minimum smaller by appending a suffix; a final empty-content restriction or mixed-to-simple restriction consequently requires the ancestor's formal emptiability.
+
+A meaningful all-group ancestor allows the vacuous particle candidate but cannot be embedded in a new sequence that violates `cos-all-limited`. A genuinely absent/pointless particle uses the separate universal-wildcard branch. Mixed parity, original ancestor `final` exclusion of extension and the final type's local/scalar component incidence remain explicit inputs to the complete theorem; element/type recursion stays atomic and no finite repetition is expanded.
+
+These observations reduce the missing proof to finite component categories and the witness equality/representation theorem above. They do not yet prove a complete terminating negative criterion for every source-valid normalization, anonymous scalar identity and AU incidence case. No additional incomplete search or diagnostic-only profile is approved as a substitute.
 
 ## Resource accounting and reproducibility
 
@@ -181,7 +250,7 @@ The reference runner's `*_test.py` discovery includes this filename; a zero-matc
 
 ### Recorded development evidence
 
-The focused probe uses Python 3.12.14, XMLSchema 4.2.0, lxml 6.1.0 and libxml2 2.14.6. Seventeen focused test methods cover nine schemas, fixed engine observations, instance contrasts, explicit premise tables, conditional witnesses, failed-family classification and budget boundaries. The pair-premise tables and asserted expected witnesses are written independently in the test; no production helper or prototype result generates those expectations.
+The focused probe uses Python 3.12.14, XMLSchema 4.2.0, lxml 6.1.0 and libxml2 2.14.6. Eighteen focused test methods cover eleven schemas, fixed engine observations, instance and hypothetical-incidence contrasts, explicit premise tables, conditional witnesses, failed-family classification and budget boundaries. The pair-premise tables and asserted expected witnesses are written independently in the test; no production helper or prototype result generates those expectations.
 
 The premise-table tests validate finite construction control flow and accounting, rather than proving the original pair premises themselves. The fixture/reference contrasts independently support the selected simple cases; full source normalization, type legality and AU/scalar premises remain external and unresolved where this record says so.
 
@@ -201,7 +270,7 @@ The coordinator owns the final `ci`, full reference, conformance, installed-cons
 
 ## Missing proof, options and recommendation
 
-The unresolved implementation obligation is precise: prove a terminating negative criterion for every approved complex type, including source-valid pointless normalization/all placement, mixed-to-simple and simple-content restrictions, original final/block/type identity, AU witness synthesis and unresolved scalar operand predicates. The finite particle family demonstrates useful constructive progress; its failure cannot yet establish that no full type witness exists.
+The unresolved implementation obligation is precise: prove a terminating negative criterion for every approved complex type, including source-valid pointless normalization/all placement, mixed-to-simple and simple-content restrictions, original final/block/type identity, and AU witness equality/representation. Selected sibling predicates discharge their own interpretation questions; they do not supply that RE theorem. The finite particle family demonstrates useful constructive progress; its failure cannot yet establish that no full type witness exists.
 
 | Option | Consequence | Recommendation |
 |---|---|---|
@@ -220,6 +289,6 @@ Keep `checkReorderedDerivation` guarded until the full proof and sibling predica
 
 Integrate the reviewed component normalization/prefix extraction and certified candidate construction into `particleSchemaAssessment`, rather than creating another occurrence or payload engine. Feed original AU sets and exact typed fixed/default predicates through the existing attribute/scalar owners; validate hypothetical intermediate component constraints and the final complete restriction. Charge every preparation, pair state and copy before allocation.
 
-Add regressions for all nine fixture contrasts, required empty choice versus optional/absent choice, multiple unrelated suffix members, all-root vacuity and nonvacuous limitations, mixed/simple transitions, final/block preservation, fixed/default alias contexts and multiple matching original AUs. Include recursive type references, shared DAGs, huge exact repetitions and at/beyond-budget request-wide failure without partial operations.
+Add regressions for all eleven fixture contrasts, required empty choice versus optional/absent choice, multiple unrelated suffix members, all-root vacuity and nonvacuous limitations, mixed/simple transitions, final/block preservation, fixed/default alias contexts and multiple matching original AUs. Include recursive type references, shared DAGs, huge exact repetitions and at/beyond-budget request-wide failure without partial operations.
 
 Only a complete reviewed type-level result can discharge `S06-RE-01` for an affected operation. Complete RE01 acceptance, full production #179 tests and combined #153 acceptance remain distinct gates; this research record changes no public support claim.

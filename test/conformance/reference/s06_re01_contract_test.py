@@ -19,9 +19,9 @@ View, Prepared, Budget = PROBE.View, PROBE.Prepared, PROBE.Budget
 
 
 class ReorderedReferenceTests(unittest.TestCase):
-    def test_all_nine_fixed_schema_observations_ran(self):
+    def test_all_eleven_fixed_schema_observations_ran(self):
         rows = json.loads((FIXTURES / "expectations.json").read_text())["cases"]
-        self.assertEqual(len(rows), 9)
+        self.assertEqual(len(rows), 11)
         for row in rows:
             path = FIXTURES / row["fixture"]
             with self.subTest(fixture=row["fixture"]):
@@ -38,6 +38,39 @@ class ReorderedReferenceTests(unittest.TestCase):
                     secondary = "rejected"
                 self.assertEqual(primary, row["xmlschema"])
                 self.assertEqual(secondary, row["libxml2"])
+
+    def test_au_witness_changes_hypothetical_source_incidence_not_real_identity(self):
+        ns = {"xs": "http://www.w3.org/2001/XMLSchema"}
+        original = etree.parse(str(FIXTURES / "au-source-original.xsd"))
+        witness = etree.parse(str(FIXTURES / "au-source-witness.xsd"))
+        for document in (original, witness):
+            global_declaration = document.xpath("/xs:schema/xs:attribute", namespaces=ns)
+            self.assertEqual(len(global_declaration), 1)
+            self.assertEqual(global_declaration[0].attrib, {"name": "g", "type": "xs:int"})
+            original_base_use = document.xpath(
+                "/xs:schema/xs:complexType[@name='A']/xs:attribute", namespaces=ns)
+            self.assertEqual(len(original_base_use), 1)
+            self.assertEqual(original_base_use[0].attrib, {"ref": "t:g", "fixed": "1"})
+        original_local = original.xpath(
+            "/xs:schema/xs:complexType[@name='D']/xs:complexContent/xs:extension/xs:attribute",
+            namespaces=ns)
+        intermediate_local = witness.xpath(
+            "/xs:schema/xs:complexType[@name='E']/xs:complexContent/xs:extension/xs:attribute",
+            namespaces=ns)
+        final_local = witness.xpath(
+            "/xs:schema/xs:complexType[@name='D']/xs:complexContent/xs:restriction/xs:attribute",
+            namespaces=ns)
+        self.assertEqual(len(original_local), 1)
+        self.assertEqual(original_local[0].attrib, {"ref": "t:g", "fixed": "2"})
+        self.assertEqual(len(intermediate_local), 1)
+        self.assertEqual(intermediate_local[0].attrib, {"ref": "t:g", "fixed": "2"})
+        self.assertEqual(final_local, [])
+        self.assertNotEqual(original_local[0].getparent().tag,
+                            witness.xpath("/xs:schema/xs:complexType[@name='D']/xs:complexContent/*",
+                                          namespaces=ns)[0].tag)
+        # Equal use properties and the same global declaration do not mean
+        # these direct source contributions are the same original AU object.
+        self.assertIsNot(original_local[0], intermediate_local[0])
 
     def test_pointless_prefix_repeated_final_accepts_exact_seventeen_pairs(self):
         path = FIXTURES / "pointless-prefix-repeated-final.xsd"
