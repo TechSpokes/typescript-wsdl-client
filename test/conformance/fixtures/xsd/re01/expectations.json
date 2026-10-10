@@ -1,0 +1,76 @@
+{
+  "scope": "research-component-mapping-and-reference-observations-only",
+  "copiedFromRevision": "460f5b8379c68ffef79917284e445b5ab046429e",
+  "copiedFromDirectory": "test/conformance/fixtures/xsd/assessment",
+  "ruleRecommendation": "numbered existential component constraint takes precedence over explanatory no-addback claim",
+  "cases": [
+    {
+      "fixture": "reordered-particle-string.xsd",
+      "primary": "valid-vacuous-witness",
+      "xmlschema": "accepted",
+      "libxml2": "accepted",
+      "sha256": "b8d348a7fbc3ca810d3f881c8a74a3951efc58fa7a5423d36cddbb0ea87722b5"
+    },
+    {
+      "fixture": "reordered-particle-token.xsd",
+      "primary": "valid-vacuous-witness",
+      "xmlschema": "accepted",
+      "libxml2": "accepted",
+      "sha256": "818f0ae03dfe006f34589c06b36356c074e39809d25c46d4cb1a803805acf0d3"
+    },
+    {
+      "fixture": "reordered-particle-int.xsd",
+      "primary": "valid-under-formal-rule-recommendation",
+      "historicalPrimary": "unresolved",
+      "xmlschema": "accepted",
+      "libxml2": "accepted",
+      "sha256": "998b3dc8756bc18c1347e3f6223364f271b5d3c6d152648bccf604dbb396a6f6"
+    },
+    {
+      "fixture": "reordered-attribute-string.xsd",
+      "primary": "valid-vacuous-witness",
+      "xmlschema": "rejected",
+      "libxml2": "accepted",
+      "sha256": "c8335d094b7536c40ba5ae4fd3c07bd6d3bb187a718b09baf6e8a1cf6ee9c575"
+    },
+    {
+      "fixture": "reordered-attribute-token.xsd",
+      "primary": "valid-vacuous-witness",
+      "xmlschema": "rejected",
+      "libxml2": "accepted",
+      "sha256": "4241e5ba980df143ee9567ec42b702a55b21768bdda8b051e6fee65fec0cad2d"
+    },
+    {
+      "fixture": "reordered-attribute-int.xsd",
+      "primary": "invalid-unrelated-original-attribute-type",
+      "xmlschema": "rejected",
+      "libxml2": "accepted",
+      "sha256": "676410cdb6e3891069c5a9a71e3825e697a4cc567f73e39733a27a3ea368e892"
+    },
+    {
+      "fixture": "re-dead-wildcard-intermediate.xsd",
+      "primary": "valid",
+      "primaryScope": "normative-component-mapping-only",
+      "xmlschema": "rejected",
+      "libxml2": "accepted",
+      "sha256": "ecbe91c7765ff85ee013ca9c3abd947c2020e1c007a59efa9e152a2c1356958c"
+    },
+    {
+      "fixture": "re-dead-wildcard-final-restriction.xsd",
+      "primary": "valid",
+      "primaryScope": "normative-component-mapping-only",
+      "xmlschema": "rejected",
+      "libxml2": "accepted",
+      "sha256": "45dd2ef3f8df03c433a3077e34c9449fe01259229d914827354b024de192e463"
+    },
+    {
+      "fixture": "pointless-prefix-repeated-final.xsd",
+      "primary": "valid",
+      "primaryScope": "normative-component-mapping-only",
+      "provenance": "new independently authored RE01 normalization contrast",
+      "xmlschema": "accepted",
+      "libxml2": "accepted",
+      "sha256": "2f3e3a1326976f9eec1e8cfb3841e137ed2cf588c67b4ac2a957c19779a2a5f7"
+    }
+  ]
+}
