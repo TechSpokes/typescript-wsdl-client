@@ -59,6 +59,13 @@ describe('primary reference adapter staging', () => {
         expect(timeout.outcome).toBe('resource-limit');
         expect(timeout.instances).toBeUndefined();
     });
+    it('requires an explicit extraction budget for a large valid schema', async () => {
+        const schema = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:annotation><xs:documentation>' + 'x'.repeat(1000000) + '</xs:documentation></xs:annotation><xs:element name="root" type="xs:string"/></xs:schema>';
+        const request = { candidateRoot: resolve('.'), uri: 'fixture:///large.xsd', schema, resources: {}, instances: ['<root/>', '<other/>'] };
+        expect(await isolated(request)).toMatchObject({ phase: 'input', outcome: 'resource-limit' });
+        expect(await isolated({ ...request, schemaMaxBytes: Buffer.byteLength(schema) })).toMatchObject({ phase: 'schema', outcome: 'accepted', instances: [{ outcome: 'accepted' }, { outcome: 'rejected' }], undisposed: {} });
+        expect(await isolated({ ...request, schemaMaxBytes: Buffer.byteLength(schema) - 1 })).toMatchObject({ phase: 'input', outcome: 'resource-limit' });
+    });
     it('rejects symlink escapes from local inputs', () => {
         const directory = mkdtempSync('tmp/conformance/adapter-');
         try {

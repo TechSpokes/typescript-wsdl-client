@@ -1,7 +1,9 @@
 import { SaxesParser } from 'saxes';
 // Syntax extraction only: retain inherited QName bindings without production helpers.
-export function schemaText(xml: string): string {
-    if (Buffer.byteLength(xml) > 1000000)
+export function schemaText(xml: string, maxBytes = 1000000): string {
+    if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0)
+        throw new RangeError('positive safe-integer schema byte limit required');
+    if (Buffer.byteLength(xml) > maxBytes)
         throw new Error('input byte limit');
     if (/<!DOCTYPE\b/i.test(xml))
         throw new Error('DOCTYPE prohibited');

@@ -116,3 +116,68 @@ These are bounded investigations, not a supported alternate required lane.
 Failed candidates are installed only in the classified disposable directory; only the qualified primary package is a pinned development dependency.
 Normal installation and candidate execution passed with Python/Pip PATH aliases denied, but final Python-free tree and Windows/Node 26 qualification remain blocked with #252/#253.
 `record.ts` accepts an optional installation-evidence JSON path; without it, regeneration makes no installation claim.
+
+## Real-world relevance investigation
+
+The [pinned source inventory](../test/conformance/reference/qualification/relevance-sources.json) covers 196 distinct published XML documents from the official ONVIF repository, eBay's SDK and Travelport's C# tutorial.
+The [compact observations](../test/conformance/reference/qualification/relevance-observations.json) identify every input hash, measured environment, code source hash and sampling limitation.
+This is a purposive schema sample; it does not measure deployed API prevalence or inspect production payloads.
+
+| Sample | Snapshot | Distinct files | Largest finite occurrence |
+| --- | --- | --- | --- |
+| ONVIF official tree | 2026-08-18 | 38 | 3 |
+| eBay SDK WSDL 1379 | 2024-11-26 | 1 | 8 |
+| Travelport tutorial | 2018-05-21 | 157 | 9999 |
+
+No sampled declaration exceeded the primary occurrence guard of 2147483647 or contained a BCE/leap-second default or fixed value.
+Dates, exact numeric scalar types, defaults, restrictions, unbounded particles and repeating compositors are present.
+Instance calendar values remain unrestricted by this absence finding, and scalar precision is separate from occurrence counts.
+
+The extension/attribute screen is incomplete: 935 of 1842 extension chains contain unresolved or ambiguous references.
+Its zero candidate collisions cannot establish that conflicting attribute-use cases are absent or rare.
+The eBay latest-host and current Travelport archive downloads returned HTTP 403, so neither historical sample is presented as the current release.
+
+### Observed limits
+
+The 4.6 MB eBay WSDL exceeds the staged reference adapter's extraction and total-input budgets.
+An explicit 8 MiB extraction/total-input experiment reached independent schema construction, which rejected two `maxOccur` attributes in the unmodified SDK artifact.
+A separate large valid-schema control passes with an explicit budget and retains schema/instance separation; product and default adapter limits remain unchanged.
+
+Travelport's historical Hotel/Common pair loads into 3562 internal graph nodes but serializes about 22.8 MB of syntax/provenance.
+Charging that graph requires 19529525 work units; the internal faithful preparation exhausts both tested 1000000 and 16000000 budgets before schema assessment.
+This motivates Node representation/accounting work before claiming large-schema faithful support; it is not an RE01 witness failure or evidence that Python is required.
+
+The ONVIF probe stops at its unauthorized external import under the deliberately offline policy.
+The eBay internal probe stops at a provenance guard, and public legacy compilation rejects its abstract request type.
+These observations do not qualify those APIs and do not change existing generation guards.
+
+The Node primary accepts the existing ordered SOAP body and rejects the existing reordered body.
+That establishes feasibility for these two controls; the 13 integration consumers still require a complete port and validation.
+The recorded primary recheck also preserves 14/40 baseline, 38/8 PW01, 113 additional instance observations and 15 boundary controls after the extraction experiment was added.
+
+### Recommendation and remaining contract decision
+
+Proceed toward Python removal using the qualified Node primary and independently authored strict TypeScript contract checks.
+Retain all original exact research domains, historical external observations, required selections and method families.
+Document unavailable full-schema or typed-augmentation evidence explicitly; do not convert it into a passing validator result.
+
+The outstanding approval concerns replacing the required second general-purpose live XSD engine with this narrower evidence contract.
+Ordinary defaults, datatype precision and content order need adequate replacement assertions before cutover; a lack of rare sampled declarations does not authorize dropping them.
+Gate S, required launchers and #232/#234 proof obligations remain unchanged until that contract is explicitly accepted and its replacements pass.
+
+### Reproduction
+
+Use the existing Node dependencies and proxy/CA configuration appropriate to the environment.
+Downloads verify pinned Git blobs, use four workers and enforce 8 MiB per input and 64 MiB per download run.
+Full descriptive outputs and downloaded public schemas stay in the classified, ignored research directory.
+The two primary recheck commands use the disposable candidate installation documented under [Validator gates](#validator-gates).
+
+```bash
+npx tsx test/conformance/reference/qualification/relevance.ts --download
+npx tsx test/conformance/reference/qualification/relevance-probes.ts
+npx tsx test/conformance/reference/qualification/primary-checks.ts
+npx tsx test/conformance/reference/qualification/probe.ts
+npx tsx test/conformance/reference/qualification/relevance-record.ts
+npx tsc -p test/conformance/reference/tsconfig.json
+npx vitest run test/conformance/reference/validate.test.ts
+```

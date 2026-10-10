@@ -43,6 +43,8 @@ export interface Request {
     instances: readonly string[];
     resources: Readonly<Record<string, string>>;
     maxBytes?: number;
+    /** Explicit qualification experiment; default extraction policy remains 1 MB. */
+    schemaMaxBytes?: number;
     iterations?: number;
 }
 export interface Observation {
@@ -84,7 +86,7 @@ try {
                 unknown = uri;
                 return undefined;
             } return provider.open(uri); }, read: provider.read.bind(provider), close: provider.close.bind(provider) });
-        doc = lib.XmlDocument.fromString(schemaText(request.schema), { url: request.uri });
+        doc = lib.XmlDocument.fromString(schemaText(request.schema, request.schemaMaxBytes), { url: request.uri });
         phase = 'schema';
         try {
             validator = lib.XsdValidator.fromDoc(doc);
