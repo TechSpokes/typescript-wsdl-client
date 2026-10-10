@@ -4,7 +4,10 @@ import { resolve } from 'node:path';
 import { schemaText } from '../xml-input.js';
 import type { Request, Observation } from '../primary-worker.ts';
 import { isolated } from '../primary.js';
+import { captureProvenance, finishProvenance, fixtureInputs, referenceSources } from './provenance.js';
 const root = resolve(process.argv[2] ?? 'tmp/conformance/node-qualification');
+const execution = captureProvenance(referenceSources(), fixtureInputs(),
+    ['package.json', 'lib/index.mjs', 'lib/libxml2raw.mjs'].map(path => resolve(root, 'node_modules/libxml2-wasm', path)));
 const xsd = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="root" type="xs:int"/></xs:schema>';
 const base: Request = { candidateRoot: root, schema: xsd, uri: 'fixture:///main.xsd', instances: ['<root>1</root>', '<root>x</root>'], resources: {} };
 const observations: Record<string, Observation> = {};
@@ -54,5 +57,5 @@ assert.equal(observations.missingEngine.phase, 'setup');
 for (const [name, result] of Object.entries(observations))
     if (result.undisposed !== undefined)
         assert.deepEqual(result.undisposed, {}, name + ' leaked objects');
-writeFileSync('tmp/conformance/node-qualification/primary-boundaries.json', JSON.stringify({ node: process.version, platform: process.platform, observations, limits: 'Worker JS heap limits do not cap WASM linear memory or total process RSS. Final platform qualification remains #253.' }, null, 2) + '\n');
+writeFileSync('tmp/conformance/node-qualification/primary-boundaries.json', JSON.stringify({ provenance: finishProvenance(execution), node: process.version, platform: process.platform, observations, limits: 'Worker JS heap limits do not cap WASM linear memory or total process RSS. Final platform qualification remains #253.' }, null, 2) + '\n');
 console.log('Primary candidate boundary checks passed (15 cases; no platform matrix claim).');

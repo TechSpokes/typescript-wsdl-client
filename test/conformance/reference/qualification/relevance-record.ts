@@ -1,8 +1,9 @@
 /** Compact, attributable research record; never an expected-answer generator. */
 import { createHash } from 'node:crypto';
-import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
+import { verifyProvenance } from './provenance.js';
+import type { RunProvenance } from './provenance.js';
 
 interface Stats {
     files: number; bytes: number; xmlElements: number; schemas: number;
@@ -12,16 +13,19 @@ interface Stats {
 }
 interface Input { group: string; path: string; gitBlob: string; bytes: number; sha256: string }
 interface Audit {
+    provenance?: RunProvenance;
     evidenceId: string; scope: string; node: string; platform: string; groups: unknown[];
     summary: Record<string, Stats>; inputs: Input[]; interpretationLimits: string[];
     extensionAttributeScreen: { screenedExtensions: number; potentialDuplicateNames: unknown[]; unresolved: unknown[]; limitations: string };
 }
 interface Probes {
+    provenance?: RunProvenance;
     evidenceId: string; node: string; platform: string;
     inputs: Record<string, { path: string; sha256: string }>;
     observations: Record<string, unknown>; limits: string[];
 }
 interface PrimaryRecheck {
+    provenance?: RunProvenance;
     testedRevision: string; testedTree: string; workingTreeDirty: boolean; node: string; platform: string;
     summary: Record<string, number>;
 }
@@ -30,6 +34,9 @@ const read = <T>(name: string): T => JSON.parse(readFileSync(resolve(directory, 
 const audit = read<Audit>('relevance-report.json'), probes = read<Probes>('relevance-probes.json');
 const recheckPath = 'tmp/conformance/node-qualification/report.json';
 const recheck = JSON.parse(readFileSync(recheckPath, 'utf8')) as PrimaryRecheck;
+verifyProvenance(audit.provenance);
+verifyProvenance(probes.provenance);
+verifyProvenance(recheck.provenance);
 if (recheck.node !== process.version || recheck.platform !== process.platform)
     throw new Error('Primary recheck and recorder environments differ');
 for (const [name, count] of Object.entries({ baselineSchemas: 14, baselineInstances: 40, pwSchemas: 38, pwInstances: 8, additionalInstances: 113, additionalTotal: 113 }))
@@ -62,14 +69,14 @@ const files = [
     'test/conformance/fixtures/soap/content-model/name-keyed-invalid.xml',
 ];
 const sha256 = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
-const git = (...args: string[]) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const relevantFeatures = new Set(['complexType', 'extension', 'restriction', 'attributeGroup', 'attribute', 'attribute-reference', 'global-attribute', 'compositor-nondefault-occurrence', 'constraint:default', 'constraint:fixed', 'attribute-prohibited', 'maxOccurs:unbounded', 'calendar-type-reference', 'precision-sensitive-scalar-reference', 'QName-type-reference']);
 const record = {
     evidenceId: 'NT-T06-R', recordedAt: new Date().toISOString(),
-    revision: git('rev-parse', 'HEAD'), tree: git('rev-parse', 'HEAD^{tree}'),
-    dirty: git('status', '--porcelain').length > 0,
+    revision: probes.provenance.testedRevision, tree: probes.provenance.testedTree,
+    dirty: probes.provenance.workingTreeDirty,
     node: process.version, platform: process.platform,
-    sourceHashes: Object.fromEntries(files.map(path => [path, sha256(path)])),
+    sourceHashes: probes.provenance.sourceHashes,
+    provenance: { audit: audit.provenance, probes: probes.provenance, primary: recheck.provenance },
     engine: { package: 'libxml2-wasm', version: JSON.parse(readFileSync('node_modules/libxml2-wasm/package.json', 'utf8')).version as string, artifact: 'lib/libxml2raw.mjs', artifactSha256: sha256('node_modules/libxml2-wasm/lib/libxml2raw.mjs') },
     audit: {
         evidenceId: audit.evidenceId, scope: audit.scope, groups: audit.groups,
@@ -113,9 +120,9 @@ const record = {
         'The Travelport canonical structure has 3562 nodes, below the node limit, but large retained syntax/provenance makes data charging exceed both tested work budgets.',
         'Defaults, restrictions, dates, QName references and precise scalar types appear in the sample, so those replacement contracts remain necessary.',
         'No evidence here demonstrates that a current production API requires Python rather than an adequately implemented Node path.',
-        'Gate S remains blocked pending an explicit evidence-policy decision; #232/#234 proof obligations and all public guards remain unchanged.',
+        'Gate S accepts NT-CONT-01 through maintainer comment 6098237195; #232/#234 proof obligations and all public guards remain unchanged.',
     ],
 };
 if (record.engine.version !== '0.7.2') throw new Error('Unexpected reference package');
-writeFileSync(new URL('./relevance-observations.json', import.meta.url), JSON.stringify(record, null, 2) + '\n');
-console.log(JSON.stringify({ evidenceId: record.evidenceId, files: audit.inputs.length, sourceHashes: files.length, dirty: record.dirty }));
+writeFileSync(resolve(directory, 'recorded-observations.json'), JSON.stringify(record, null, 2) + '\n');
+console.log(JSON.stringify({ evidenceId: record.evidenceId, files: audit.inputs.length, sourceHashes: Object.keys(record.sourceHashes).length, dirty: record.dirty }));

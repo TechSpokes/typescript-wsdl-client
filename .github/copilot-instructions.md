@@ -60,8 +60,8 @@ Maintainer: Serge Liatko ([@sergeliatko](https://github.com/sergeliatko)). Vendo
 - Repository-owned new implementation, tests, research and automation use strict TypeScript on supported Node.
 - Existing unrelated JavaScript automation may remain; test-only and temporary migration work have no language exception.
 - Adding Python, pip, venv, JDK or native compiler setup requires an explicit maintainer scope decision.
-- Run `npm run check:toolchain` to reject executable toolchain reintroduction and changes to frozen #239 legacy sources.
-- The exact migration allowance is frozen at #240 and must be removed by #252; never refresh it from discovery.
+- Run `npm run check:toolchain` to reject executable toolchain reintroduction, including removed #239 sources.
+- There is no legacy allowance; port downstream sources to strict TypeScript instead of exempting them.
 - Historical prose, pinned source links and legitimate license metadata remain permitted.
 - The static guard does not prove absence of dynamically constructed commands; #253 requires execution qualification.
 

@@ -5,10 +5,11 @@ import * as soap from "soap";
 import {SignedXml} from "xml-crypto";
 import {DOMParser} from "@xmldom/xmldom";
 import {
-  children, fixtureDir, faultBody, generateProbe, independentValidation, installOrderedStreamSeams,
+  children, fixtureDir, faultBody, generateProbe, installOrderedStreamSeams,
   invalidBody, orderedBody, orderedCapture, pinBufferedPort, responseParts, soap11, soap12, startProbeServer,
   type GeneratedProbe, type OrderedNode,
 } from "../helpers/contentModelSoapProbe.js";
+import {validateCapturedSoap} from "../helpers/contentModelSoapReference.js";
 
 // This evidence intentionally asserts legacy failures. It is not a new public
 // faithful runtime or a capability support claim for unexercised combinations.
@@ -48,9 +49,9 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     return values;
   }
 
-  it("qualifies fixture schema and rejects name-keyed order independently", () => {
-    expect(independentValidation(orderedBody)).toMatchObject({lxml: true, xmlschema: true});
-    expect(independentValidation(invalidBody)).toMatchObject({lxml: false, xmlschema: false});
+  it("qualifies fixture schema and rejects name-keyed order independently", async () => {
+    expect(await validateCapturedSoap(orderedBody)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
+    expect(await validateCapturedSoap(invalidBody)).toMatchObject({primary: {accepted: false}, selectedContract: {accepted: false}});
     // Invisible grouping history is absent from the wire. Both are the same
     // ordered token value, without an invented recoverable group boundary.
     const first = [["x"], ["y", "z"]];
@@ -84,8 +85,8 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(result.headers).toMatchObject({trace: "response"});
     expect(dependency.lastResponseHeaders?.["x-probe"]).toBe("response");
     expect(seen).toEqual(["raw", "parse"]);
-    expect(independentValidation(request.xml)).toMatchObject({lxml: true, xmlschema: true});
-    expect(independentValidation(result.responseRaw)).toMatchObject({lxml: true, xmlschema: true});
+    expect(await validateCapturedSoap(request.xml)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
+    expect(await validateCapturedSoap(result.responseRaw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     dependency.setEndpoint(`${server.url}/set-endpoint`);
     pinBufferedPort(dependency, "First11", "urn:probe:submit");
     await preencoded(client);
@@ -100,7 +101,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
       .replace(/<(pairs|ambiguous|kind|nullable)(?=[ >])/g, '<$1 xmlns="urn:content-model:probe"')
       .replace('<nullable ', '<nullable xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ');
     await client.Submit({$xml: rawChildren});
-    expect(independentValidation(server.requests.at(-1)!.xml)).toMatchObject({lxml: true, xmlschema: true});
+    expect(await validateCapturedSoap(server.requests.at(-1)!.xml)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     const legacy = {
       selection: {a: ["1", "4"], b: ["2", "5"], c: "3"},
       pairs: {p: ["6", "8"], q: ["7", "9"]}, ambiguous: {token: ["x", "y", "z"]},
@@ -108,9 +109,9 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
       nullable: {$attributes: {"xsi:nil": "true", id: "7"}},
     };
     await client.Submit(legacy);
-    expect(independentValidation(server.requests.at(-1)!.xml)).toMatchObject({lxml: false, xmlschema: false});
+    expect(await validateCapturedSoap(server.requests.at(-1)!.xml)).toMatchObject({primary: {accepted: false}, selectedContract: {accepted: false}});
     await client.StreamSubmit(legacy).then(result => drain(result.records));
-    expect(independentValidation(server.requests.at(-1)!.xml)).toMatchObject({lxml: false, xmlschema: false});
+    expect(await validateCapturedSoap(server.requests.at(-1)!.xml)).toMatchObject({primary: {accepted: false}, selectedContract: {accepted: false}});
   });
 
   it("feeds the same preencoded body into actual callStream and captures ordered context before EOF", async () => {
@@ -138,7 +139,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(children(soapHeader, "trace")[0].name.namespace).toBe("urn:headers");
     expect(request.xml).toContain(orderedBody);
     expect(result.requestRaw).toBe(request.xml);
-    expect(independentValidation(request.xml)).toMatchObject({lxml: true, xmlschema: true});
+    expect(await validateCapturedSoap(request.xml)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     server.release();
     expect((await iterator.next()).done).toBe(false);
     expect((await iterator.next()).done).toBe(true);
@@ -146,7 +147,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(capture.records).toHaveLength(2);
     assertContext(capture.records[1]);
     expect(capture.raw).toBe(responseParts().join(""));
-    expect(independentValidation(capture.raw)).toMatchObject({lxml: true, xmlschema: true});
+    expect(await validateCapturedSoap(capture.raw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
   });
 
   it("retains expanded names and nil aliases from HTTP chunks before the namespace-blind record parser", async () => {
@@ -165,7 +166,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(seam.capture.records).toHaveLength(2);
     assertContext(seam.capture.records[0]);
     expect(seam.capture.raw).toBe(xml);
-    expect(independentValidation(seam.capture.raw)).toMatchObject({lxml: true, xmlschema: true});
+    expect(await validateCapturedSoap(seam.capture.raw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
   });
 
   it("executes explicit buffered ports/SOAP1.2 while streaming ignores node-soap binding overrides", async () => {
@@ -190,7 +191,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     expect(server.requests.at(-1)!.headers["content-type"]).toContain('application/soap+xml; charset=utf-8; action="urn:probe:submit12"');
     expect(server.requests.at(-1)!.xml).toContain(soap12);
     expect(dep12.lastResponseHeaders?.["content-type"]).toBe("application/soap+xml; charset=utf-8");
-    expect(independentValidation(result12.requestRaw)).toMatchObject({lxml: true, xmlschema: true});
+    expect(await validateCapturedSoap(result12.requestRaw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     server.configure({});
     const streamed = generated.create({endpoint: `${server.url}/override`, forceSoap12Headers: true});
     const streamDep = await streamed.soapClient();
@@ -238,7 +239,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
       const client = tlsGenerated.create({}, new soap.ClientSSLSecurity(key, cert, cert));
       await preencoded(client);
       expect(tls.requests.at(-1)!.tlsAuthorized).toBe(true);
-      expect(independentValidation(tls.requests.at(-1)!.xml)).toMatchObject({lxml: true, xmlschema: true});
+      expect(await validateCapturedSoap(tls.requests.at(-1)!.xml)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
       installOrderedStreamSeams(client);
       await expect(client.StreamSubmit({})).rejects.toThrow("fetch failed");
       expect(tls.requests).toHaveLength(1);
@@ -258,7 +259,7 @@ describe("#169 bounded generated SOAP adapter feasibility", () => {
     verifier.loadSignature(signature);
     expect(verifier.checkSignature(result.requestRaw)).toBe(true);
     expect(verifier.checkSignature(result.requestRaw.replace("<a>1</a>", "<a>changed</a>"))).toBe(false);
-    expect(independentValidation(result.requestRaw)).toMatchObject({lxml: true, xmlschema: true});
+    expect(await validateCapturedSoap(result.requestRaw)).toMatchObject({primary: {accepted: true}, selectedContract: {accepted: true}});
     installOrderedStreamSeams(client);
     await client.StreamSubmit({}).then(result => drain(result.records));
     expect(server.requests.at(-1)!.xml).not.toContain("Signature");

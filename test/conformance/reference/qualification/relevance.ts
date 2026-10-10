@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, resolve, relative } from 'node:path';
 import { SaxesParser } from 'saxes';
+import { addInputProvenance, captureProvenance, finishProvenance, referenceSources } from './provenance.js';
 
 interface Source { group: string; path: string; url: string; gitBlob: string }
 interface Manifest { evidenceId: string; scope: string; groups: unknown[]; sources: Source[] }
@@ -22,6 +23,8 @@ interface Component { key: string; source: string; attributes: AttributeUse[]; g
 interface Scope { namespaces: Record<string, string>; targetNamespace: string; attributeForm: string; schema: boolean; xsdKind?: string; component?: Component; path: string }
 
 const directory = resolve('tmp/conformance/realworld');
+const execution = captureProvenance(referenceSources(), ['test/conformance/reference/qualification/relevance-sources.json'],
+    ['node_modules/saxes/package.json', 'node_modules/saxes/saxes.js']);
 const manifest = JSON.parse(readFileSync(new URL('./relevance-sources.json', import.meta.url), 'utf8')) as Manifest;
 const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 const local = (source: Source) => {
@@ -60,6 +63,7 @@ if (process.argv.includes('--download')) {
 }
 
 const stats = (): Stats => ({ files: 0, bytes: 0, xmlElements: 0, schemas: 0, features: {}, maximumFiniteBound: '0', finiteAboveEngineRange: [], finiteAboveSafeInteger: [], zeroMaximum: [], unusualCalendarLiterals: [], examples: {} });
+const corpusExecution = addInputProvenance(execution, manifest.sources.map(local));
 const groups: Record<string, Stats> = {};
 const components = new Map<string, Component[]>();
 const inputs: unknown[] = [];
@@ -149,7 +153,7 @@ for (const values of components.values()) for (const component of values) {
     for (const use of result.uses) { const prior = names.get(use.name) ?? []; prior.push(use); names.set(use.name, prior); }
     for (const [name, uses] of names) if (uses.length > 1) collisions.push({ source: component.source, name, uses, unresolved: result.unresolved });
 }
-const report = { evidenceId: manifest.evidenceId, scope: manifest.scope, node: process.version, platform: process.platform, groups: manifest.groups, summary: groups, inputs,
+const report = { evidenceId: manifest.evidenceId, provenance: finishProvenance(corpusExecution), scope: manifest.scope, node: process.version, platform: process.platform, groups: manifest.groups, summary: groups, inputs,
     extensionAttributeScreen: { screenedExtensions, potentialDuplicateNames: collisions, unresolved: unresolvedExtensions, limitations: 'Descriptive screen of unique-name-resolved extension/group chains, including anonymous extension types. Ambiguous/missing imports, restriction composition and value-space equivalence are not fully assessed; this is not an AU or XSD validator.' },
     interpretationLimits: ['No live production service or customer payload was accessed.', 'Purposive published-schema sample cannot estimate market prevalence or prove absence elsewhere.', 'Finite occurrence counts describe declarations; unbounded is separate, and large scalar values are a separate domain.', 'Absence of BCE/leap-second defaults does not exclude such instance values from xs:dateTime.', 'Repeated copies are counted once per Git blob for descriptive totals; URI aliases remain explicit.'] };
 mkdirSync(directory, { recursive: true });

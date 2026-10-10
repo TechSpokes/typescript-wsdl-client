@@ -1,13 +1,15 @@
-/** Internal test-only primary reference adapter. Required lanes remain legacy until Gate S. */
+/** Internal test-only primary observations under the accepted NT-CONT-01 contract. */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, realpathSync, statSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SaxesParser } from 'saxes';
-import { schemaText } from './xml-input.js';
+import { schemaText, schemaFeatures } from './xml-input.js';
 import { isolated } from './primary.js';
 import type { Observation, Request } from './primary-worker.ts';
+import { parseXml, descendants } from './syntax.js';
+import { zeroElementAccepted } from './structural-selected.js';
+import { selected } from './evidence.js';
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const fixtures = resolve(repository, 'test/conformance/fixtures');
 export const engine = { package: 'libxml2-wasm', version: '0.7.2', engine: 'libxml2', engineVersion: '2.15.1', sourceRevision: '6e4dc82a323b6d27f2b3aca6dbec868949be83b7', engineSource: 'f52e859efe97cf3f0b78d731976402748878529a' } as const;
@@ -71,19 +73,10 @@ export async function validateFixture(name: string, instances: readonly string[]
         }
         schema = read(name);
         const standalone = schemaText(schema);
-        const parser = new SaxesParser({ xmlns: true });
-        let composition = false, largeBound = false;
-        parser.on('opentag', tag => {
-            if (tag.uri === 'http://www.w3.org/2001/XMLSchema' && ['import', 'include', 'redefine'].includes(tag.local))
-                composition = true;
-            for (const attr of Object.values(tag.attributes))
-                if (['minOccurs', 'maxOccurs'].includes(attr.local) && /^[0-9]+$/.test(attr.value) && BigInt(attr.value) > 2147483647n)
-                    largeBound = true;
-        });
-        parser.write(standalone).close();
-        if (composition && options.resources === undefined)
+        const features = schemaFeatures(standalone);
+        if (features.composition && options.resources === undefined)
             throw new Error('Schema dependencies are outside this bounded adapter');
-        if (largeBound)
+        if (features.largeBound)
             return { phase: 'schema', outcome: 'unsupported-capability', diagnostic: 'libxml2 finite occurrence representation; original huge input is unqualified, never adjusted implicitly.', fixtureHashes };
         resources = Object.fromEntries((options.resources ?? []).map(path => ['fixture:///' + path, read(path)]));
     }
@@ -124,7 +117,21 @@ export async function qualifyPrimary(manifest: {
         }
         const result = await validateFixture(c.fixture, xml);
         const schema = { phase: result.phase, outcome: result.outcome, diagnostic: result.diagnostic };
-        const instances = (result.instances ?? []).map((r, i) => ({ ...r, fixture: c.instances[i].fixture, sha256: digest(xml[i]), secondary: c.instances[i].secondaryExpected === undefined ? 'not-requested' : 'pending-Gate-S' }));
+        const instances = (result.instances ?? []).map((r, i) => {
+            const instance = c.instances[i];
+            if (instance.secondaryExpected !== undefined) {
+                if (c.id !== 'zero-element-unbounded') throw new Error('Unmapped secondary baseline obligation: ' + c.id);
+                const schema = descendants(parseXml(readFileSync(localFixture(c.fixture), 'utf8'), c.fixture), 'schema')[0];
+                const contract = selected('original row maxOccurs=0', zeroElementAccepted(schema, parseXml(xml[i], instance.fixture)));
+                if (contract.accepted !== (instance.secondaryExpected === 'accepted')) failures.push(c.id + ': selected contract disagreement ' + instance.fixture);
+                return {...r, fixture: instance.fixture, sha256: digest(xml[i]), secondary: {
+                    kind: 'historical-external-observation', engine: 'xmlschema 4.2.0', outcome: instance.secondaryExpected,
+                    baseline: 'f4e39e819f2d9aa264cfdd14d16154c6443c9bac', selectedContract: contract,
+                    unqualified: 'Fresh second general-purpose engine validation',
+                }};
+            }
+            return {...r, fixture: instance.fixture, sha256: digest(xml[i]), secondary: undefined};
+        });
         if (result.phase !== 'schema' || result.outcome !== c.schema)
             failures.push(`${c.id}: expected schema ${c.schema}, got ${result.phase}/${result.outcome}`);
         if (c.schemaDiagnostic && !result.diagnostic?.includes(c.schemaDiagnostic))
@@ -135,5 +142,5 @@ export async function qualifyPrimary(manifest: {
             failures.push(c.id + ': instance disagreement ' + r.fixture); });
         results.push({ id: c.id, schema, instances, fixtureHashes: result.fixtureHashes });
     }
-    return { lane: full ? 'full-primary-staging' : 'required-subset-primary-staging', evidence: 'current-primary-only; no secondary acceptance claim', validator: engine, testedRevision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repository, encoding: 'utf8' }).trim(), testedTree: execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: repository, encoding: 'utf8' }).trim(), workingTreeDirty: !!execFileSync('git', ['status', '--porcelain'], { cwd: repository, encoding: 'utf8' }).trim(), platform: process.platform, node: process.version, cases: results, failures };
+    return { lane: full ? 'full-primary' : 'required-subset-primary', evidence: 'current-primary-observation; selected contracts and historical secondary results separately identified', validator: engine, testedRevision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repository, encoding: 'utf8' }).trim(), testedTree: execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: repository, encoding: 'utf8' }).trim(), workingTreeDirty: !!execFileSync('git', ['status', '--porcelain'], { cwd: repository, encoding: 'utf8' }).trim(), platform: process.platform, node: process.version, cases: results, failures };
 }

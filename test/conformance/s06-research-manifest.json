@@ -23,12 +23,22 @@
         {
           "path": "docs/content-model-s06-au-01.md",
           "role": "decision",
-          "sha256": "025f81da984fa1efdd0dfa98c0e117a47b5c4b0b6f86e8f58dc46d4bb1c65170"
+          "sha256": "d10c3a765bf16a494dc7b5a0785f565aa2d99c645c181f7a081e2e1fa270ce85",
+          "historical": {
+            "path": "docs/content-model-s06-au-01.md",
+            "sha256": "025f81da984fa1efdd0dfa98c0e117a47b5c4b0b6f86e8f58dc46d4bb1c65170",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
-          "path": "test/conformance/reference/s06_au01_contract_test.py",
+          "path": "test/conformance/reference/s06-au01-contract.test.ts",
           "role": "reference",
-          "sha256": "4a5a4537be47ad5a72cad51ee5d2fa4a10970159ac23fee05b56f30e55ea42fe"
+          "sha256": "01c7dc5a636801dbd02ad22f8ad926bb86a646d744ab9399408ccedf00f283f2",
+          "historical": {
+            "path": "test/conformance/reference/s06_au01_contract_test.py",
+            "sha256": "4a5a4537be47ad5a72cad51ee5d2fa4a10970159ac23fee05b56f30e55ea42fe",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
           "path": "test/conformance/fixtures/xsd/attributes/au01/direct-distinct-local.xsd",
@@ -361,9 +371,44 @@
           "sha256": "e3e2e7c9629241ea08da63abe3a651ae670a9fa708f35b6676e640a669192786"
         },
         {
-          "path": "test/research/s06-au01/probe.py",
+          "path": "test/research/s06-au01/probe.ts",
           "role": "prototype",
-          "sha256": "420253fd040aaa90d1281de1f05dfffcb04bda170f2cbc1e0387c0865427e9c1"
+          "sha256": "59d76cd9c48b5a728df7d5baae137168c53e72afb885671d464cde51a89857ae",
+          "historical": {
+            "path": "test/research/s06-au01/probe.py",
+            "sha256": "420253fd040aaa90d1281de1f05dfffcb04bda170f2cbc1e0387c0865427e9c1",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "test/conformance/reference/syntax.ts",
+          "role": "prototype",
+          "sha256": "fd979956d87a59eead6c2e456dfa3820bc5f245637519750a9d5eab1451e7fa4"
+        },
+        {
+          "path": "test/conformance/reference/evidence.ts",
+          "role": "prototype",
+          "sha256": "12ac2ab234cd3335318cf34dcdeaf1cfe94d5a1f011c4acf29ec2afb2bab66ec"
+        },
+        {
+          "path": "test/conformance/reference/legacy-source-snapshot.json",
+          "role": "expectations",
+          "sha256": "e20a324027d5d438213bec6ad46805f88041586b994ea4ac846a2501f5791213"
+        },
+        {
+          "path": "test/research/s06-au01/probe.test.ts",
+          "role": "reference",
+          "sha256": "710e46ea1603713dcbfc505ecd4e552382574370f8385a94a78acb4a7fd88b75"
+        },
+        {
+          "path": "test/research/s06-au01/fixture-input.ts",
+          "role": "prototype",
+          "sha256": "a3d67dbe0a619f3927363f0a243516802b3ebc7dab9c5ba20e2f40911e945219"
+        },
+        {
+          "path": "test/conformance/reference/scoped-au.ts",
+          "role": "prototype",
+          "sha256": "53e3e81bdbb364a50279c3121d5e7235069ec59db0d6e7c19f837a6fe5f1dfd5"
         }
       ]
     },
@@ -376,12 +421,22 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944"
+          "sha256": "de4b290f97bb18388282961fc0df0835a8c1f0db33f310e2732b0f3121056856",
+          "historical": {
+            "path": "docs/content-model-s06-re-01.md",
+            "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
-          "path": "test/conformance/reference/s06_re01_contract_test.py",
+          "path": "test/conformance/reference/s06-re01-contract.test.ts",
           "role": "reference",
-          "sha256": "803e8788fcfbccd5195a1a4e72959e0b76c7c0fe2556e22fe8f7fef069266f9f"
+          "sha256": "efdc556fbdce3fdd3ca30a15e49d9d3979493a70ad06e4c2670d4742c4e82833",
+          "historical": {
+            "path": "test/conformance/reference/s06_re01_contract_test.py",
+            "sha256": "803e8788fcfbccd5195a1a4e72959e0b76c7c0fe2556e22fe8f7fef069266f9f",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/au-source-original.xsd",
@@ -444,14 +499,44 @@
           "sha256": "818f0ae03dfe006f34589c06b36356c074e39809d25c46d4cb1a803805acf0d3"
         },
         {
-          "path": "test/research/re01/measure.py",
+          "path": "test/research/re01/measure.ts",
           "role": "prototype",
-          "sha256": "8193839372dcb30d2c948c4a1728668f9f9052f669ea88b34080fdcaf2779800"
+          "sha256": "5c1a9d7dd8fe15c6faf11c693d54ad90cc5d4c5cf8172ac8bc1e4930d74674a3",
+          "historical": {
+            "path": "test/research/re01/measure.py",
+            "sha256": "8193839372dcb30d2c948c4a1728668f9f9052f669ea88b34080fdcaf2779800",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
-          "path": "test/research/re01/witness_probe.py",
+          "path": "test/research/re01/witness-probe.ts",
           "role": "prototype",
-          "sha256": "5db4fe156cdbb0db22559fac9c1ca2288ac69b35109b847dde89d8b53c863566"
+          "sha256": "de3d616880c0b8a124bb6975b726104ab0c7e680dfe3fb0dd6571295bfdfec46",
+          "historical": {
+            "path": "test/research/re01/witness_probe.py",
+            "sha256": "5db4fe156cdbb0db22559fac9c1ca2288ac69b35109b847dde89d8b53c863566",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
+        },
+        {
+          "path": "test/conformance/reference/syntax.ts",
+          "role": "prototype",
+          "sha256": "fd979956d87a59eead6c2e456dfa3820bc5f245637519750a9d5eab1451e7fa4"
+        },
+        {
+          "path": "test/conformance/reference/evidence.ts",
+          "role": "prototype",
+          "sha256": "12ac2ab234cd3335318cf34dcdeaf1cfe94d5a1f011c4acf29ec2afb2bab66ec"
+        },
+        {
+          "path": "test/conformance/reference/legacy-source-snapshot.json",
+          "role": "expectations",
+          "sha256": "e20a324027d5d438213bec6ad46805f88041586b994ea4ac846a2501f5791213"
+        },
+        {
+          "path": "test/research/re01/witness-probe.test.ts",
+          "role": "reference",
+          "sha256": "2f70fb441817e88e446d9f24792022826d17b9ba34b37a67562ff9cf51873439"
         }
       ]
     },
@@ -464,12 +549,22 @@
         {
           "path": "docs/content-model-s06-pw-01.md",
           "role": "decision",
-          "sha256": "d812fbb23336074d2b09c09ee0461be631800e1495f81e7cec9ae08b40dd081f"
+          "sha256": "0460b29f546295fb4795b4ebfdfb74f7f8e6616e3aaf50446342c5757801123b",
+          "historical": {
+            "path": "docs/content-model-s06-pw-01.md",
+            "sha256": "d812fbb23336074d2b09c09ee0461be631800e1495f81e7cec9ae08b40dd081f",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
-          "path": "test/conformance/reference/s06_pw01_contract_test.py",
+          "path": "test/conformance/reference/s06-pw01-contract.test.ts",
           "role": "reference",
-          "sha256": "8f7af27e5fcdbe74bf8615b1cb006a7517f3c5583e21dc50a82d95efe664b1dc"
+          "sha256": "0f0c072ccf2d14f4da71b9f7ccab9df2428018b70f04d62fc615890d84d680ba",
+          "historical": {
+            "path": "test/conformance/reference/s06_pw01_contract_test.py",
+            "sha256": "8f7af27e5fcdbe74bf8615b1cb006a7517f3c5583e21dc50a82d95efe664b1dc",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
           "path": "test/conformance/fixtures/xsd/s06-pw01/all-optional-member.xsd",
@@ -690,6 +785,26 @@
           "path": "test/research/s06-pw01/tsconfig.json",
           "role": "prototype",
           "sha256": "3dd9cc9e746c7e03bee40eb40b8e532b2535d1abc4217a251f9748ebb33db4a7"
+        },
+        {
+          "path": "test/conformance/reference/syntax.ts",
+          "role": "prototype",
+          "sha256": "fd979956d87a59eead6c2e456dfa3820bc5f245637519750a9d5eab1451e7fa4"
+        },
+        {
+          "path": "test/conformance/reference/evidence.ts",
+          "role": "prototype",
+          "sha256": "12ac2ab234cd3335318cf34dcdeaf1cfe94d5a1f011c4acf29ec2afb2bab66ec"
+        },
+        {
+          "path": "test/conformance/reference/legacy-source-snapshot.json",
+          "role": "expectations",
+          "sha256": "e20a324027d5d438213bec6ad46805f88041586b994ea4ac846a2501f5791213"
+        },
+        {
+          "path": "test/conformance/reference/scoped-pw.ts",
+          "role": "prototype",
+          "sha256": "a56ce98509a39474c979528e7790b6b3ac70503a9e88efb951d9951feaf58e8e"
         }
       ]
     },
@@ -702,12 +817,22 @@
         {
           "path": "docs/content-model-s06-dt-01.md",
           "role": "decision",
-          "sha256": "abdca1524c4cdec535f493df62efff640ce2da26b6b28abaca4ece7c2a09b1d5"
+          "sha256": "c0458310c33a8e8669843a206ec03dc76e3f072136c3663c0289f0669add49c6",
+          "historical": {
+            "path": "docs/content-model-s06-dt-01.md",
+            "sha256": "abdca1524c4cdec535f493df62efff640ce2da26b6b28abaca4ece7c2a09b1d5",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
-          "path": "test/conformance/reference/dt01_calendar_contract_test.py",
+          "path": "test/conformance/reference/dt01-calendar-contract.test.ts",
           "role": "reference",
-          "sha256": "b8e6018e3fe9fe14cbe75327c291aa357bc09a87093759405014fbd060774ed5"
+          "sha256": "49a6a3a4d0eb2da16db94f90ff6577feba537632dc264bca72175324f14885ea",
+          "historical": {
+            "path": "test/conformance/reference/dt01_calendar_contract_test.py",
+            "sha256": "b8e6018e3fe9fe14cbe75327c291aa357bc09a87093759405014fbd060774ed5",
+            "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac"
+          }
         },
         {
           "path": "test/conformance/fixtures/xsd/research-dt01/bce-date-0001.xsd",
@@ -778,8 +903,31 @@
           "path": "test/research/dt01/tsconfig.json",
           "role": "prototype",
           "sha256": "3dd9cc9e746c7e03bee40eb40b8e532b2535d1abc4217a251f9748ebb33db4a7"
+        },
+        {
+          "path": "test/conformance/reference/syntax.ts",
+          "role": "prototype",
+          "sha256": "fd979956d87a59eead6c2e456dfa3820bc5f245637519750a9d5eab1451e7fa4"
+        },
+        {
+          "path": "test/conformance/reference/evidence.ts",
+          "role": "prototype",
+          "sha256": "12ac2ab234cd3335318cf34dcdeaf1cfe94d5a1f011c4acf29ec2afb2bab66ec"
+        },
+        {
+          "path": "test/conformance/reference/legacy-source-snapshot.json",
+          "role": "expectations",
+          "sha256": "e20a324027d5d438213bec6ad46805f88041586b994ea4ac846a2501f5791213"
         }
       ]
     }
-  ]
+  ],
+  "migration": {
+    "contract": "NT-CONT-01",
+    "acceptance": "https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6098237195",
+    "originalArtifactCount": 147,
+    "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
+    "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
+    "currentArtifactCount": 164
+  }
 }

@@ -4,9 +4,9 @@ Internal evidence contracts for the Node tooling migration. See the root [README
 
 ## Status
 
-[Epic #239](https://github.com/TechSpokes/typescript-wsdl-client/issues/239) stages a tooling migration without changing production semantics.
+[Epic #239](https://github.com/TechSpokes/typescript-wsdl-client/issues/239) replaces operational Python with strict TypeScript without changing production semantics.
 The [migration map](../test/conformance/reference/migration-map.json) pins every Python method, assertion block and parameterized family at the refreshed main revision.
-Pending destinations are proposals, not accepted executable evidence. Required commands retain the frozen legacy path until both validator gates and every replacement pass.
+All 53 mapped methods and 13 SOAP consumers have executable replacements. Gate S passed through the maintainer's [NT-CONT-01 acceptance](https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6098237195); final platform evidence is recorded in the delivery ledger.
 
 ## Evidence policy
 
@@ -43,17 +43,16 @@ AU01 and RE01 retain the 100,000-node and 1,000,000-work defaults; failed finite
 The map pins all 14 legacy Python files, 53 method blocks and their loop/subcase families with hashes and source links.
 It also maps baseline manifest rows and instances, mixed-file pure versus external ownership, SOAP consumers, setup, documentation and manifest discovery.
 Follow each method's pinned source link for every literal input and module-level expectation table; total test counts are only a cross-check.
-The map does not contain the full source text; the continuation requires a non-executable historical snapshot for offline verification after deletion.
+The [historical source snapshot](../test/conformance/reference/legacy-source-snapshot.json) preserves all complete source bytes and module-level tables as non-executable data. Its hashes verify coverage offline after deletion, including shallow checkouts.
 
 Inventory verification uses Node; Python must not run to generate migration scripts or expected answers.
-The required fast launcher currently runs all legacy test methods as well as its 6-schema/15-instance subset; full baseline selection is 14 schemas/40 instances.
-The replacement must preserve both selections and reject empty discovery.
+Both required and full launchers verify actual execution of all 53 mapped TypeScript methods. They preserve the 6-schema/15-instance required subset and 14-schema/40-instance full selection, and reject empty or missing discovery.
 
 ## Draft #231 handoff
 
 Draft [PR #231](https://github.com/TechSpokes/typescript-wsdl-client/pull/231) remains untouched at `460f5b8379c68ffef79917284e445b5ab046429e`.
 Its additional Python reference test belongs to #179's later rebase and must be ported to strict TypeScript through the accepted reference contract.
-The migration guard must reject that file rather than refreshing its frozen allowance automatically.
+The migration guard rejects that file and every removed executable source; no legacy allowance remains.
 
 ## Verification commands
 
@@ -63,14 +62,11 @@ npm run docs:validate
 ```
 
 Run each executable port's focused Vitest command and scoped TypeScript project from the migration map.
-Pending external destinations require accepted Gate P and Gate S before becoming live evidence.
-Final Linux/Windows Node 24/26 qualification must prove Python unavailable or execution denied during normal installation and execution.
+Gate P qualifies one live engine within its limits; Gate S accepts the narrower scoped evidence policy below. Linux/Windows Node 24/26 qualification proves interpreter absence or execution denial during normal installation and execution.
 
-## Executable staging ports
+## Executable ports
 
-The pure AU01 and RE01 ports execute alongside frozen legacy evidence.
-No required reference or SOAP command has switched to Node yet, and the existing 147-artifact S06 manifest remains unchanged.
-The migration map marks each staged pure/adapter method as verified without accepting dependent external coverage.
+Pure AU01/RE01 research and all structural, AU/RE, PW/DT reference suites execute through Node. SOAP consumers validate the actual captured wire bytes with separately named primary and selected-contract results. The S06 manifest reconciles every original artifact with its current path/hash and retains original inventory provenance.
 
 ```bash
 npm ci
@@ -79,7 +75,7 @@ npm run typecheck:tooling
 npm run typecheck:research
 npx tsc -p test/conformance/reference/tsconfig.json
 npm run test:research:ports
-npx vitest run test/conformance/reference/migration-map.test.ts test/conformance/reference/validate.test.ts
+npm run test:reference:full
 npm run research:re01:measure
 ```
 
@@ -102,9 +98,10 @@ The measured primary corpus matches 14 baseline schema and 40 instance outcomes,
 Original huge-bound schemas remain unsupported by the primary adapter; adjusted analysis inputs are explicitly separate.
 Worker elapsed limits and JavaScript heap limits are checked; JavaScript heap limits do not cap WASM linear memory or total process RSS.
 
-Gate S requires a maintainer decision.
+Gate S passes through accepted NT-CONT-01.
 The [decision packet](https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6097034663) documents the exact 23 live xmlschema method families, secondary baseline instance and 13 SOAP calls at risk.
 Published Xerces 2.0.2 fails schema-construction controls; TypeScript engine 1.7.3 accepts invalid-all construction and rounds exact bounds.
+The required lane therefore has one live general-purpose XSD engine, independent selected-contract assertions, pinned historical external observations and explicit unqualified capabilities. These checks do not supply full second-engine validation or PSVI augmentation.
 
 ```bash
 npm install --prefix tmp/conformance/node-qualification --cache tmp/cache/npm libxml2-wasm@0.7.2 xerces-wasm@2.0.2 xml-xsd-engine@1.7.3
@@ -115,8 +112,9 @@ npx tsx test/conformance/reference/qualification/record.ts
 
 These are bounded investigations, not a supported alternate required lane.
 Failed candidates are installed only in the classified disposable directory; only the qualified primary package is a pinned development dependency.
-Normal installation and candidate execution passed with Python/Pip PATH aliases denied, but final Python-free tree and Windows/Node 26 qualification remain blocked with #252/#253.
+The original candidate investigation used PATH denial and remains historical staging evidence. Final qualification uses physical interpreter inventory and absolute-path negative controls on Linux, and execution/read ACL denial with saved rollback on Windows.
 `record.ts` accepts an optional installation-evidence JSON path; without it, regeneration makes no installation claim.
+New producer runs capture source/input/engine hashes at execution. Recorders reject stale output and write ignored `recorded-report.json` or `recorded-observations.json`; checked historical reports remain unchanged.
 
 ## Real-world relevance investigation
 
@@ -152,31 +150,27 @@ The ONVIF probe stops at its unauthorized external import under the deliberately
 The eBay internal probe stops at a provenance guard, and public legacy compilation rejects its abstract request type.
 These observations do not qualify those APIs and do not change existing generation guards.
 
-The Node primary accepts the existing ordered SOAP body and rejects the existing reordered body.
-That establishes feasibility for these two controls; the 13 integration consumers still require a complete port and validation.
+The Node primary and scoped fixture grammar accept the existing ordered SOAP body and reject the reordered body. All 13 integration consumers now use the async Node helper and retain real transport, TLS, authentication and streaming coverage.
 The recorded primary recheck also preserves 14/40 baseline, 38/8 PW01, 113 additional instance observations and 15 boundary controls after the extraction experiment was added.
 
-### Recommendation and remaining contract decision
+### Accepted approach
 
 Proceed toward Python removal using the qualified Node primary and independently authored strict TypeScript contract checks.
 Retain all original exact research domains, historical external observations, required selections and method families.
 Document unavailable full-schema or typed-augmentation evidence explicitly; do not convert it into a passing validator result.
 
-The outstanding approval concerns replacing the required second general-purpose live XSD engine with this narrower evidence contract.
-Ordinary defaults, datatype precision and content order need adequate replacement assertions before cutover; a lack of rare sampled declarations does not authorize dropping them.
-Gate S, required launchers and #232/#234 proof obligations remain unchanged until that contract is explicitly accepted and its replacements pass.
+The maintainer accepted replacing the required second general-purpose live engine with this narrower evidence contract. Ordinary defaults, datatype precision and content order retain executable scoped assertions. The #232/#234 proof obligations and production guards remain unchanged.
 
 ## Reviewed continuation
 
 The [NT-CONT-01 contract](../test/conformance/reference/continuation-contract.json) prepares continuation from staged revision `a69f04442b4766f7e9068c61fafd94ce1d02577b`.
 The user authorized an architectural review in place of the unavailable Task Analysis skill.
-The contract is a proposal awaiting explicit Gate S acceptance, and records every affected method's treatment and remaining unqualified capability.
+The maintainer accepted the contract and authorized delivery; it records every affected method's treatment and remaining unqualified capability.
 
 ### Decision and effect
 
 The legacy requirement runs two general-purpose XSD validators; no adequate second Node package has been qualified.
-The proposed required lane runs the qualified Node primary, independent TypeScript checks of selected contracts and pinned historical xmlschema observations.
-Accepting NT-CONT-01 permits that narrower evidence policy: one live general-purpose engine, with fresh scoped assertions that never claim full second-engine validation.
+The required lane runs the qualified Node primary, independent TypeScript checks of selected contracts and pinned historical xmlschema observations. NT-CONT-01 accepts one live general-purpose engine, with fresh scoped assertions that never claim full second-engine validation.
 
 All 23 affected methods, the secondary zero-bound baseline instance and all 13 SOAP consumers have assigned replacement scopes.
 Ordinary defaults and typed fixed values must retain executable checks of exact value, datatype, original lexical/namespace/source provenance and source identity.
@@ -203,7 +197,7 @@ Use the existing AU01/RE01/PW01/DT01 probes with independent literal expectation
 ### Review findings and completion checks
 
 The contract assigns eight concrete findings to their existing issues, including Git-history dependence and occurrence spellings that bypass the guard.
-The SOAP replacement must stage in a separate helper because the migration guard freezes the entire original helper until #252.
+The SOAP replacement stages in a separate helper; cutover removed the original executable validation function after replacement verification.
 Both reference selections must retain every migrated method, enforce nonempty discovery and preserve 6/15 fast and 14/40 full baseline coverage.
 
 The final guard removes its allowance reader and file together and runs in required CI commands.
@@ -212,7 +206,7 @@ New qualification records must capture source/input hashes at execution and reje
 
 All four platform/version lanes require normal `npm ci` and execution under verified interpreter absence or denial.
 Enforcement must cover named and absolute interpreter paths with negative controls; removing `setup-python` or masking PATH alone is insufficient.
-Current hosted successes qualify the staged work and retain Python setup; the final matrix remains pending.
+The [qualification workflow](../.github/workflows/node-reference.yml) runs the four lanes on the exact PR head. It pins npm 11.9.0 so normal install hooks execute, verifies controls before/after installation and checks, and uploads actual reports. The external delivery ledger records successful and unrun lanes without inferring results.
 
 ## Reproduction of relevance investigation
 

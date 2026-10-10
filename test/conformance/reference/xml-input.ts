@@ -1,4 +1,29 @@
 import { SaxesParser } from 'saxes';
+/** Conservative engine capability guard, distinct from schema validity assessment. */
+export function schemaFeatures(xml: string): Readonly<{ composition: boolean; largeBound: boolean }> {
+    const parser = new SaxesParser({ xmlns: true });
+    let composition = false, largeBound = false, annotationDepth = 0;
+    const xsd = 'http://www.w3.org/2001/XMLSchema';
+    const particles = new Set(['element', 'group', 'any', 'sequence', 'choice', 'all']);
+    parser.on('doctype', () => { throw new Error('DOCTYPE prohibited'); });
+    parser.on('opentag', tag => {
+        if (annotationDepth || (tag.uri === xsd && tag.local === 'annotation')) {
+            annotationDepth++;
+            return;
+        }
+        if (tag.uri !== xsd) return;
+        if (['import', 'include', 'redefine'].includes(tag.local)) composition = true;
+        if (!particles.has(tag.local)) return;
+        for (const attr of Object.values(tag.attributes)) {
+            if (attr.uri !== '' || !['minOccurs', 'maxOccurs'].includes(attr.local)) continue;
+            const lexical = attr.value.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, '');
+            if (/^\+?[0-9]+$/.test(lexical) && BigInt(lexical) > 2147483647n) largeBound = true;
+        }
+    });
+    parser.on('closetag', () => { if (annotationDepth) annotationDepth--; });
+    parser.write(xml).close();
+    return { composition, largeBound };
+}
 // Syntax extraction only: retain inherited QName bindings without production helpers.
 export function schemaText(xml: string, maxBytes = 1000000): string {
     if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0)

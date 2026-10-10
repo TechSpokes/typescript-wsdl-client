@@ -1,8 +1,9 @@
 /** Assemble a reviewable candidate report; never activate required reference commands. */
-import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { engine } from '../adapter.js';
+import { historicalSources } from '../historical-source.js';
+import { verifyProvenance } from './provenance.js';
+import type { RunProvenance } from './provenance.js';
 
 interface Obligation {
     id: string;
@@ -26,20 +27,23 @@ interface Observation {
     historicalRef?: string;
 }
 interface Report {
+    provenance?: RunProvenance;
     observations: Observation[];
     [key: string]: unknown;
 }
 const read = (path: string) => readFileSync(path, 'utf8');
 const map = JSON.parse(read('test/conformance/reference/migration-map.json')) as Map;
 const report = JSON.parse(read('tmp/conformance/node-qualification/report.json')) as Report;
+verifyProvenance(report.provenance);
+const archive = historicalSources();
 report.secondaryGaps = map.obligations.filter(obligation => {
-    const source = execFileSync('git', ['show', `${map.baseline.revision}:${obligation.source}`], { encoding: 'utf8' });
+    const source = archive.get(obligation.source)!;
     return /xmlschema\./.test(source.split('\n').slice(obligation.line - 1, obligation.endLine).join('\n'));
 }).map(obligation => ({
     id: obligation.id, source: obligation.source, method: obligation.method,
     sourceUrl: obligation.sourceUrl, capabilities: obligation.capabilities,
     status: 'unresolved-fresh-independent-external',
-    proposal: 'Preserve this complete method and its family as pinned historical xmlschema evidence; execute qualified libxml2 where supported plus independently authored bounded contracts; do not label bounded contracts full XSD qualification. Requires explicit maintainer approval.',
+    proposal: 'Accepted NT-CONT-01 retains this complete family as historical xmlschema evidence, qualified libxml2 observations and scoped contracts. Full fresh second-engine qualification remains unavailable; maintainer acceptance is recorded in #239 comment 6098237195.',
 }));
 report.secondaryBaselineGaps = map.baselineCases.filter(c => c.instances.some(i => i.secondary)).map(c => ({
     id: c.id, instances: c.instances.filter(i => i.secondary), status: 'unresolved-fresh-independent-external',
@@ -52,7 +56,9 @@ for (const observation of report.observations) {
         delete observation.historical;
     }
 }
-report.primaryBoundaries = JSON.parse(read('tmp/conformance/node-qualification/primary-boundaries.json')) as unknown;
+const boundaries = JSON.parse(read('tmp/conformance/node-qualification/primary-boundaries.json')) as { provenance?: RunProvenance };
+verifyProvenance(boundaries.provenance);
+report.primaryBoundaries = boundaries;
 report.engineProvenance = {
     primary: engine,
     secondarySourceInspection: {
@@ -64,10 +70,9 @@ report.engineProvenance = {
         limit: 'Artifact hashes identify delivered packages; inspecting upstream source does not establish a reproducible binary build.',
     },
 };
-const sources = execFileSync('git', ['ls-files', '-z', 'test/conformance/reference', 'test/research/s06-au01', 'test/research/re01', 'scripts/check-toolchain.ts', 'test/tooling'], { encoding: 'utf8' }).split('\0').filter(path => path.endsWith('.ts'));
-report.sourceHashes = Object.fromEntries(sources.map(path => [path, createHash('sha256').update(read(path)).digest('hex')]));
+report.sourceHashes = report.provenance.sourceHashes;
 // Installation evidence must be supplied from an actual run, never inferred from package metadata.
 if (process.argv[2]) report.installation = JSON.parse(read(process.argv[2])) as unknown;
 else report.installation = { status: 'not-recorded-by-this-invocation' };
-writeFileSync('test/conformance/reference/qualification/observations.json', JSON.stringify(report, null, 2) + '\n');
+writeFileSync('tmp/conformance/node-qualification/recorded-report.json', JSON.stringify(report, null, 2) + '\n');
 console.log('Recorded candidate findings, exact source hashes and unresolved evidence gaps.');

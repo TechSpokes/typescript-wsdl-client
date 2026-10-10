@@ -2,7 +2,7 @@
 import { parentPort, workerData } from 'node:worker_threads';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { schemaText } from './xml-input.ts';
+import { schemaText, schemaFeatures } from './xml-input.ts';
 interface Disposable {
     dispose(): void;
 }
@@ -49,7 +49,7 @@ export interface Request {
 }
 export interface Observation {
     phase: 'setup' | 'input' | 'schema' | 'instance';
-    outcome: 'accepted' | 'rejected' | 'resource-limit';
+    outcome: 'accepted' | 'rejected' | 'resource-limit' | 'unsupported-capability';
     diagnostic?: string;
     instances?: readonly {
         outcome: 'accepted' | 'rejected';
@@ -76,9 +76,13 @@ try {
         }
         for (const uri of [request.uri, ...Object.keys(request.resources)]) {
             const parsed = new URL(uri);
-            if (parsed.protocol !== 'fixture:' || parsed.host || parsed.search || parsed.hash || parsed.href !== uri || /%2e/i.test(uri))
+            if (parsed.protocol !== 'fixture:' || parsed.host || parsed.search || parsed.hash || parsed.href !== uri || uri.includes('\\') || /%2e/i.test(uri))
                 throw new Error('Nonlocal or noncanonical fixture URI: ' + uri);
         }
+        const schema = schemaText(request.schema, request.schemaMaxBytes);
+        if ([schema, ...Object.values(request.resources)].some(text => schemaFeatures(text).largeBound)) {
+            observation = { phase: 'schema', outcome: 'unsupported-capability', diagnostic: 'libxml2 finite occurrence representation; original huge input is unqualified, never adjusted implicitly.' };
+        } else {
         const buffers = Object.fromEntries(Object.entries(request.resources).map(([uri, text]) => [uri, Buffer.from(text)]));
         const provider = new lib.XmlBufferInputProvider(buffers);
         let unknown: string | undefined;
@@ -86,7 +90,7 @@ try {
                 unknown = uri;
                 return undefined;
             } return provider.open(uri); }, read: provider.read.bind(provider), close: provider.close.bind(provider) });
-        doc = lib.XmlDocument.fromString(schemaText(request.schema, request.schemaMaxBytes), { url: request.uri });
+        doc = lib.XmlDocument.fromString(schema, { url: request.uri });
         phase = 'schema';
         try {
             validator = lib.XsdValidator.fromDoc(doc);
@@ -131,6 +135,7 @@ try {
                 for (const input of inputs)
                     input.dispose();
             }
+        }
         }
     }
 }

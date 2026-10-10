@@ -8,7 +8,7 @@ Thank you for contributing to `typescript-wsdl-client`. This guide covers local 
 
 Node.js >= 24 and npm are required.
 
-Python 3.12 with `venv` is required for the independent XSD reference lane in local CI. Run `npm run reference:setup` once after installing dependencies; see [Content Model Baseline](docs/content-model-baseline.md) for pinned tools, offline reproduction and the full qualification command.
+The offline reference lane uses the pinned test-only Node/WASM dependency installed by npm. Run `npm run reference:setup` to check it; see [Reference Validation](docs/reference-validation.md) for the accepted evidence contract, limits and platform qualification.
 
 ### Clone and Install
 

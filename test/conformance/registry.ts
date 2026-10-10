@@ -58,7 +58,7 @@ export const capabilities: CapabilityCase[] = [
     publicContract: "Legacy compilation characterizes omitted groups, appended restriction content and named recursive references; faithful resolution/composition remain internal.",
     decision: "defer",
     decisionReason: "S05 establishes internal declared semantics; #179 assessment and downstream emitters must qualify faithful public behavior before activation.",
-    authority: "XML Schema 1.0; pinned xmlschema and libxml2 schema/payload qualification",
+    authority: "XML Schema 1.0; Node libxml2 observations and selected NT-CONT-01 contracts with historical xmlschema evidence",
     provenance: "Repository-authored minimal contrasts shared by legacy characterization and faithful companion tests.",
     license: "MIT",
     fixtureKind: "standards-valid",

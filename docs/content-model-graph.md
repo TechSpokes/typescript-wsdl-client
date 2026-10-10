@@ -106,9 +106,8 @@ UPA, scalar/facet legality, complete component-cycle rules and production codecs
 [Graph tests](../test/unit/canonical-graph.test.ts) reuse independent S01/S02 and S03 fixtures.
 [Graph fixtures](../test/conformance/fixtures/xsd/graph/shared-recursive.xsd) add shared definitions, recursion, local names, anonymous types, large bounds and scalar lexical context.
 [Chameleon input](../test/conformance/fixtures/xsd/graph/chameleon.wsdl) proves namespace adoption without rewriting lexical bindings.
-[Independent schema qualification](../test/conformance/reference/graph_contract_test.py) accepts the complete graph fixture with xmlschema 4.2.0.
-Pinned libxml2 rejects that fixture's huge bound; it accepts the variant with only that maximum changed to `4`.
-The graph's exact-bound tests and unchanged xmlschema acceptance establish the large-bound evidence separately from libxml2's limited range.
+[Independent schema qualification](../test/conformance/reference/graph-contract.test.ts) preserves historical xmlschema 4.2.0 acceptance of the complete graph fixture. Current primary construction of the original huge bound remains unqualified under [NT-CONT-01](reference-validation.md), with exact scoped assertions and a separately hashed small copy.
+Historical libxml2 rejected that fixture's huge bound; the current adapter reports unsupported capability before engine allocation. The separate variant with maximum `4` constructs successfully; exact-bound assertions and archived xmlschema acceptance remain distinct from that fresh result.
 
 ```bash
 npx vitest run test/unit/canonical-graph.test.ts test/unit/canonical-graph-budgets.test.ts

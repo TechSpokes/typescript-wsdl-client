@@ -1,7 +1,13 @@
 {
   "formatVersion": 1,
   "id": "NT-CONT-01",
-  "status": "proposed-awaiting-Gate-S-acceptance",
+  "status": "accepted-implemented; platform qualification recorded externally",
+  "acceptance": {
+    "date": "2026-10-10",
+    "authority": "Maintainer acceptance and full delivery authorization in this chat",
+    "evidence": "https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6098237195",
+    "gateS": "accepted scoped evidence contract NT-CONT-01"
+  },
   "review": {
     "date": "2026-10-10",
     "method": "Architectural and task-scope review; the user waived the unavailable Task Analysis skill.",
@@ -18,7 +24,7 @@
   "decision": {
     "context": "Required legacy evidence uses lxml/libxml2 and xmlschema as two live general-purpose validators. Node primary qualification succeeded within explicit limits; the two investigated independent Node candidates failed construction/precision controls.",
     "proposal": "Remove Python after implementing every mapped port. Use current libxml2-wasm observations, independently authored strict TypeScript checks of selected contracts, and pinned historical xmlschema observations with explicit remaining unqualified capabilities.",
-    "acceptance": "Accept this versioned treatment for the 23 methods, one secondary baseline instance and 13 SOAP calls before #247 and dependent ports count as accepted replacements. Unblocking the goal should name NT-CONT-01; this proposal itself does not pass Gate S.",
+    "acceptance": "The maintainer accepted NT-CONT-01 and authorized full delivery. Gate S passes through this explicit change to the 23 methods, one secondary baseline instance and 13 SOAP calls; implementation and execution qualification remain separate requirements.",
     "consequence": "The final required lane has one live general-purpose XSD engine. Contract checks provide fresh scoped evidence but do not claim a second full XSD validator or full post-schema augmentation.",
     "evidenceKinds": [
       "current-primary-observation",
@@ -56,7 +62,7 @@
       "currentPrimary": "Original analysis.xsd returns unsupported-capability for its exact huge particle. A separately hashed analysis-small copy may exercise all literal instance rows under the primary.",
       "selectedContract": "Read the original huge min/max as exact strings; assert selected empty-choice, disabled-particle, repetition-gap and recursive language cases against independently authored literal tables. Keep selected answers distinct from each engine's disagreements.",
       "remainingUnqualified": "Fresh full-schema construction and instance validation of the original huge-bound schema.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-composition_contract-public_characterization_schema_and_payloads",
@@ -71,7 +77,7 @@
       "currentPrimary": "Construct the original derivation-boundaries.wsdl schema and run all seven literal payloads.",
       "selectedContract": "Assert the fixture-specific extension/restriction child order, required/prohibited attributes, empty content and recursive payload structure from original syntax and literal expectations.",
       "remainingUnqualified": "A second general-purpose validator for derivation legality and recursive instance validity.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-composition_contract-schema_and_restriction_payloads",
@@ -86,7 +92,7 @@
       "currentPrimary": "Construct original derivations.xsd and run all ten literal payloads.",
       "selectedContract": "Assert the selected derivation order, absence/prohibition, scalar-facet and opaque-content controls using the existing literal inputs. No production catalog supplies expectations.",
       "remainingUnqualified": "Independent complete derivation/facet qualification by a second XSD engine.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-composition_contract-invalid_attribute_and_wildcard_restrictions",
@@ -100,7 +106,7 @@
       "currentPrimary": "Attempt construction of all four original invalid restriction schemas; retain schema-phase diagnostics and no instance results.",
       "selectedContract": "Check required-prohibition, new-attribute, namespace-widening and processContents-weakening conditions with finite fixture-specific assertions.",
       "remainingUnqualified": "General XSD restriction validity beyond the four declared contract conditions.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-composition_contract-effective_mixed_base_and_group_prohibition",
@@ -115,7 +121,7 @@
       "currentPrimary": "Construct original reviewed-boundaries.xsd and run its three payloads.",
       "selectedContract": "Assert selected inherited mixed-content, child rejection and group-prohibition source rules directly from the finite fixture and payload syntax.",
       "remainingUnqualified": "Complete mixed-content and attribute-group assessment by a second engine.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-composition_contract-recorded_constraint_disagreements",
@@ -130,7 +136,7 @@
       "currentPrimary": "Observe fixed-restriction construction and both group wildcard payloads under the current primary identity.",
       "selectedContract": "Retain exact integer-value equivalence, namespace intersection and processContents assertions as distinct selected contracts; historical xmlschema disagreement never becomes their authority.",
       "remainingUnqualified": "Fresh xmlschema-specific schema/fixed/wildcard behavior.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-dt01_calendar_contract-historical_schema_observations_with_copy_provenance",
@@ -144,7 +150,7 @@
       "currentPrimary": "Attempt construction of all five byte-identical copied schemas with current primary diagnostics.",
       "selectedContract": "Verify all five hashes and the pinned draft revision. Reuse DT01 exact-calendar for selected signed-year and duration contracts against independent literals.",
       "remainingUnqualified": "Fresh second-engine schema construction of the copied calendar cases.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-dt01_calendar_contract-related_calendar_lexical_instance_observations",
@@ -159,7 +165,7 @@
       "currentPrimary": "Construct original calendar-scalars.xsd and execute all 28 literal lexical instances.",
       "selectedContract": "Reuse test/research/dt01/exact-calendar.ts for the supported declared calendar domain, including BCE/no year zero, second-60 overflow, zones and arbitrary decimal precision. Declare unsupported lexical forms explicitly.",
       "remainingUnqualified": "General XSD datatype validity outside the selected exact-calendar domain.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-dt01_calendar_contract-equality_observations_are_distinct_from_candidate_authority",
@@ -174,7 +180,7 @@
       "currentPrimary": "Construct original calendar-equivalence.xsd and execute all seven equality payloads.",
       "selectedContract": "Reuse DT01 exact equality on all seven literals, keeping Candidate A, selected project interpretation, fresh primary and historical engine answers separate.",
       "remainingUnqualified": "Fresh second-engine fixed-value equality or typed post-schema augmentation.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-graph_contract-recursive_scalar_and_group_fixture",
@@ -189,7 +195,7 @@
       "currentPrimary": "The original shared-recursive.xsd remains unsupported for its huge bound; a separately hashed max=4 copy only observes the adjusted schema.",
       "selectedContract": "Retain the original exact bound and recursive/shared reference structure without expansion or identity substitution.",
       "remainingUnqualified": "Fresh complete construction of the original arbitrary-precision recursive schema.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-graph_contract-chameleon_schema",
@@ -203,7 +209,7 @@
       "currentPrimary": "Construct original chameleon.xsd with explicitly registered local resources when required.",
       "selectedContract": "Assert the fixture's absent target namespace and adopted namespace/source identity directly from source syntax.",
       "remainingUnqualified": "General chameleon composition qualification by a second XSD engine.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-resolution_contract-complete_recursive_references",
@@ -217,7 +223,7 @@
       "currentPrimary": "Construct both resolved.xsd and group-values.xsd with original local resource identities.",
       "selectedContract": "Assert declaration/reference QName resolution and recursive edges for the two finite fixtures without production graph helpers.",
       "remainingUnqualified": "Complete independent schema construction of all legal recursive-reference forms.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-resolution_contract-missing_and_forbidden_cycles",
@@ -231,7 +237,7 @@
       "currentPrimary": "Attempt construction of all six original missing/cycle/import-leak schemas; input-resolution failure must remain distinct from schema rejection.",
       "selectedContract": "Assert missing declaration, forbidden group/attribute/base/scalar cycles and import visibility for these finite original graphs.",
       "remainingUnqualified": "A second complete resolver and schema validity engine.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-resolution_contract-zero_bound_oracle_disagreement",
@@ -245,7 +251,7 @@
       "currentPrimary": "Observe both zero-group-cycle and zero-missing-group constructions under the current primary identity.",
       "selectedContract": "Check source-component reference/cycle obligations even when maxOccurs=0; keep them distinct from libxml2's disabled-particle optimization.",
       "remainingUnqualified": "Fresh full-schema secondary rejection of zero-bound source components.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_au01_contract-25_schema_observations_keep_reference_separate",
@@ -259,7 +265,7 @@
       "currentPrimary": "Attempt construction of every original member of the 5x5 optional-state matrix.",
       "selectedContract": "Reuse AU01 fixture-input and conditional-C/C1 checks for all 25 combinations and both source orders against independent literal tables, preserving every original use.",
       "remainingUnqualified": "Fresh xmlschema 4.2's order-dependent schema acceptance matrix.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_au01_contract-identity_prohibition_and_global_constraint_observations",
@@ -274,7 +280,7 @@
       "currentPrimary": "Attempt all 20 original schema cases and all required/prohibited present/absent payload controls.",
       "selectedContract": "Reuse AU01 source-use/declaration identity and conditional attribute rules. Retain direct versus group prohibition, global default/fixed origin and both extension orders.",
       "remainingUnqualified": "General independent attribute-group/schema assessment beyond the declared AU01 domain.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_au01_contract-xmlschema_order_dependent_default_observations",
@@ -290,7 +296,7 @@
       "currentPrimary": "Record current primary construction for both original orderings; retain any schema rejection as such.",
       "selectedContract": "Execute C1 typed augmentation on original AU01 operands: value, datatype, original lexical witness, namespace/source and contributing-use identity. Conflicting optional defaults reject absence in both orders. Add ordinary unambiguous default/fixed controls and present values 1,2,3.",
       "remainingUnqualified": "Live xmlschema.to_dict last-default-wins behavior and full XSD post-schema augmentation; retain its two historical outputs 2 and 1 explicitly.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_au01_contract-restriction_20_reference_observations_are_separate_from_selected_predicate",
@@ -304,7 +310,7 @@
       "currentPrimary": "Attempt construction of all 20 original restriction fixtures.",
       "selectedContract": "Reuse selected SOURCE-replacement/all-matching-original rules and the separate unselected FINAL-AU comparison; preserve omission identity, required/fixed and QName contrasts.",
       "remainingUnqualified": "Fresh complete xmlschema restriction-construction observations.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_au01_contract-typed_fixed_payload_contrasts",
@@ -319,7 +325,7 @@
       "currentPrimary": "Construct original typed-fixed-values.xsd and execute all 14 literal fixed-value payloads.",
       "selectedContract": "Check exact integer, string/token whitespace, QName original namespaces, ordered integer list, declared xs:integer|xs:string union and the fixture's 0[0-9]+ pattern facet. Bound adapters to these declared types/facets; no arbitrary union or regex engine.",
       "remainingUnqualified": "General independent simple-type/facet validation and full typed augmentation.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_pw01_contract-fixed_schema_observations",
@@ -333,7 +339,7 @@
       "currentPrimary": "Attempt all 38 original schemas; classify huge occurrences as unsupported instead of invalid.",
       "selectedContract": "Reuse the PW01 prototype with independently authored arithmetic/namespace callbacks checked against literal expectations; preserve complete-group minimum, member minimum zero, exact huge bounds and literal2004 versus selected R-240 interpretation.",
       "remainingUnqualified": "Fresh second-engine full-schema construction of all 38 cases, including original huge-bound validity.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_pw01_contract-fixed_payload_observations_separate_from_schema_validity",
@@ -348,7 +354,7 @@
       "currentPrimary": "Execute all eight original payloads only after their own original schema constructs. Preserve unavailable-schema results.",
       "selectedContract": "Assert the selected finite PW01 content controls separately from schema legality and historical engine answers.",
       "remainingUnqualified": "Second-engine instance checks or unavailable-schema outcomes as fresh external evidence.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_re01_contract-all_eleven_fixed_schema_observations_ran",
@@ -362,7 +368,7 @@
       "currentPrimary": "Attempt construction of all eleven hash-pinned original RE01 schemas.",
       "selectedContract": "Verify input hashes and retain existing conditional RE01 probe/source-incidence assertions without turning failed searches into schema invalidity.",
       "remainingUnqualified": "Fresh complete second-engine schema construction or RE01 completeness proof.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     },
     {
       "id": "NT-s06_re01_contract-pointless_prefix_repeated_final_accepts_exact_seventeen_pairs",
@@ -378,7 +384,7 @@
       "currentPrimary": "Construct the original schema and execute 16,17,18 pair payloads.",
       "selectedContract": "Check exact ordered (a,b) pairs and the finite seventeen-pair interval directly from source and independently authored payload expectations.",
       "remainingUnqualified": "General independent language inclusion or RE01 witness completeness.",
-      "executionStatus": "pending"
+      "executionStatus": "verified-TypeScript-port"
     }
   ],
   "wholeMapDisposition": {
@@ -392,7 +398,7 @@
         "target": "test/conformance/reference/s06-re01-contract.test.ts",
         "sourceContractSha256": "7c776bfb065388f30a07499c5a7fc888f6073aa75e3197b434a445578587b2e9",
         "treatment": "Parse both original/hypothetical fixture documents with Node syntax-only I/O. Preserve the global declaration and original A/g properties, direct extension versus intermediate/restriction incidence, and distinct object identity; no production graph or validator identity substitution.",
-        "executionStatus": "pending"
+        "executionStatus": "verified-TypeScript-port"
       },
       {
         "id": "NT-s06_re01_contract-dead_intermediate_instance_is_separate_from_schema_mapping",
@@ -400,9 +406,10 @@
         "target": "test/conformance/reference/s06-re01-contract.test.ts",
         "sourceContractSha256": "798b8ef2deb35f5fde5ebd38cc6d9c8a91f0ce55a90bd3c703fa0098b743cae2",
         "treatment": "Construct the original dead-intermediate schema with the Node primary and reject both literal empty/a payloads as instance results. Keep that outcome separate from schema construction and conditional RE01 mapping.",
-        "executionStatus": "pending"
+        "executionStatus": "verified-TypeScript-port"
       }
-    ]
+    ],
+    "verifiedMethods": 53
   },
   "secondaryBaseline": {
     "id": "NT-baseline-zero-element-unbounded",
@@ -412,7 +419,7 @@
     "currentPrimary": "Observe the original schema and payload; preserve the libxml2 acceptance under its current engine identity.",
     "selectedContract": "Read original row maxOccurs=0 and assert empty content admitted, one row rejected. Retain the historical xmlschema rejection independently.",
     "remainingUnqualified": "A fresh second-engine validity result for the original schema/payload.",
-    "executionStatus": "pending"
+    "executionStatus": "verified"
   },
   "soap": {
     "owner": 251,
@@ -427,7 +434,7 @@
     "identity": "Return separately named primary and selectedContract results; never return fabricated lxml/xmlschema identities.",
     "staging": "Add separate Node helper and move 13 consumers/imports to its async API; leave the frozen original helper body untouched until #252.",
     "remainingUnqualified": "Second general-purpose engine validation of captured SOAP payloads.",
-    "executionStatus": "pending"
+    "executionStatus": "verified-13-async-consumers"
   },
   "reviewFindings": [
     {

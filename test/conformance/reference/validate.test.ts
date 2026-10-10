@@ -4,10 +4,30 @@ import { resolve } from 'node:path';
 import { localFixture, validateFixture, qualifyPrimary } from './adapter.js';
 import type { BaselineCase } from './adapter.js';
 import { isolated } from './primary.js';
+import { schemaFeatures } from './xml-input.js';
 const manifest = JSON.parse(readFileSync('test/conformance/semantic-baseline.json', 'utf8')) as {
     cases: BaselineCase[];
 };
 describe('primary reference adapter staging', () => {
+    it('guards exact legal occurrence spellings and ignores foreign annotation attributes', async () => {
+        const wrap = (particle: string) => '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:f="urn:foreign"><xs:element name="root"><xs:complexType><xs:sequence>' + particle + '</xs:sequence></xs:complexType></xs:element></xs:schema>';
+        for (const bound of ['2147483648', '+2147483648', '  +0002147483648  ', '900719925474099312345678901234567890']) {
+            const schema = wrap('<xs:element name="a" type="xs:string" maxOccurs="' + bound + '"/>');
+            expect(schemaFeatures(schema).largeBound).toBe(true);
+            expect(await isolated({ candidateRoot: resolve('.'), uri: 'fixture:///guard.xsd', schema, instances: ['<root/>'], resources: {} }))
+                .toMatchObject({ phase: 'schema', outcome: 'unsupported-capability', undisposed: {} });
+        }
+        for (const bound of ['2147483647', '+0002147483647', ' 2147483647 ', 'unbounded', '0'])
+            expect(schemaFeatures(wrap('<xs:element name="a" maxOccurs="' + bound + '"/>')).largeBound).toBe(false);
+        const foreign = wrap('<xs:element name="a" type="xs:string" f:maxOccurs="900719925474099312345678901234567890"/>');
+        expect(schemaFeatures(foreign).largeBound).toBe(false);
+        const annotation = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:annotation><xs:appinfo><xs:element maxOccurs="999999999999999999999"/></xs:appinfo></xs:annotation><xs:element name="root" type="xs:string"/></xs:schema>';
+        expect(schemaFeatures(annotation).largeBound).toBe(false);
+        expect(await isolated({ candidateRoot: resolve('.'), uri: 'fixture:///annotation.xsd', schema: annotation, instances: ['<root/>'], resources: {} }))
+            .toMatchObject({ phase: 'schema', outcome: 'accepted', instances: [{ outcome: 'accepted' }] });
+        expect(await isolated({ candidateRoot: resolve('.'), uri: 'fixture:///main.xsd', schema: '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:include schemaLocation="huge.xsd"/></xs:schema>', instances: [], resources: { 'fixture:///huge.xsd': wrap('<xs:element name="a" maxOccurs=" +2147483648 "/>') } }))
+            .toMatchObject({ phase: 'schema', outcome: 'unsupported-capability' });
+    });
     it('missing_fixture_is_input_failure', async () => {
         expect(() => localFixture('does-not-exist.xml')).toThrow('Missing or nonlocal');
         expect(await validateFixture('does-not-exist.xml')).toMatchObject({ phase: 'input', outcome: 'rejected' });
@@ -70,12 +90,24 @@ describe('primary reference adapter staging', () => {
         const directory = mkdtempSync('tmp/conformance/adapter-');
         try {
             writeFileSync(resolve(directory, 'control.xml'), '<root/>');
-            symlinkSync(resolve('package.json'), resolve(directory, 'escape.xml'));
-            expect(() => localFixture('escape.xml', resolve(directory))).toThrow('nonlocal');
+            if (process.platform === 'win32') {
+                symlinkSync(resolve('.'), resolve(directory, 'escape'), 'junction');
+                expect(() => localFixture('escape/package.json', resolve(directory))).toThrow('nonlocal');
+            } else {
+                symlinkSync(resolve('package.json'), resolve(directory, 'escape.xml'));
+                expect(() => localFixture('escape.xml', resolve(directory))).toThrow('nonlocal');
+            }
             expect(localFixture('control.xml', resolve(directory))).toBe(resolve(directory, 'control.xml'));
         }
         finally {
             rmSync(directory, { recursive: true, force: true });
         }
+    });
+    it('rejects drive, UNC, backslash and file/network URI inputs on every platform', async () => {
+        for (const path of ['C:\\Windows\\System32\\drivers\\etc\\hosts', '\\\\server\\share\\schema.xsd', 'file:///C:/Windows/schema.xsd', '..\\..\\..\\package.json', 'https://example.test/schema.xsd'])
+            expect(() => localFixture(path)).toThrow('nonlocal');
+        const request = { candidateRoot: resolve('.'), schema: '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="root" type="xs:string"/></xs:schema>', instances: ['<root/>'], resources: {} };
+        for (const uri of ['file:///C:/schema.xsd', 'file://server/share/schema.xsd', 'fixture:\\\\server\\share\\schema.xsd', 'fixture:///../schema.xsd', 'fixture://server/schema.xsd'])
+            expect(await isolated({...request, uri})).toMatchObject({phase: 'input', outcome: 'rejected'});
     });
 });

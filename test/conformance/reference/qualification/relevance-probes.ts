@@ -12,8 +12,14 @@ import { countSemanticData, semanticBudget } from '../../../../src/compiler/reso
 import { isolated } from '../primary.js';
 import type { Request } from '../primary-worker.ts';
 import { validateFixture } from '../adapter.js';
+import { captureProvenance, finishProvenance, fixtureInputs, referenceSources } from './provenance.js';
 
 const root = resolve('tmp/conformance/realworld');
+const manifest = JSON.parse(readFileSync('test/conformance/reference/qualification/relevance-sources.json', 'utf8')) as { sources: Array<{ group: string; path: string }> };
+const execution = captureProvenance(referenceSources(true), [...fixtureInputs(),
+    'test/conformance/reference/qualification/relevance-sources.json',
+    ...manifest.sources.map(source => resolve(root, source.group, source.path))],
+    ['package-lock.json', 'node_modules/libxml2-wasm/package.json', 'node_modules/libxml2-wasm/lib/index.mjs', 'node_modules/libxml2-wasm/lib/libxml2raw.mjs']);
 const ebay = resolve(root, 'ebay/eBaySvc.wsdl');
 const onvif = resolve(root, 'onvif/wsdl/ver10/schema/onvif.xsd');
 const travelport = resolve(root, 'travelport/ConsoleApplication1/ConsoleApplication1/Wsdl/hotel_v40_0/Hotel.xsd');
@@ -51,7 +57,7 @@ try {
     const catalog = compileCatalog(wsdl, resolveCompilerOptions({}, { wsdl: ebay, out: '' }));
     observations.ebayPublicLegacyCompiler = { outcome: 'compiled', types: catalog.types.length, operations: catalog.operations.length };
 } catch (error) { observations.ebayPublicLegacyCompiler = errors(error); }
-const report = { evidenceId: 'NT-T06-R2', node: process.version, platform: process.platform,
+const report = { evidenceId: 'NT-T06-R2', provenance: finishProvenance(execution), node: process.version, platform: process.platform,
     inputs: { ebay: { path: ebay, sha256: digest(ebay) }, onvif: { path: onvif, sha256: digest(onvif) }, travelportHotel: { path: travelport, sha256: digest(travelport) } }, observations,
     limits: ['No live endpoint or production payload was accessed.', 'Budget experiments do not change product defaults or discharge schema assessment.', 'The explicit extraction override is a test-only experiment; the default reference policy remains unchanged.', 'Internal faithful analysis is separate from public legacy generation.', 'Schema acceptance and two selected instances do not qualify every API operation or service.'] };
 writeFileSync(resolve(root, 'relevance-probes.json'), JSON.stringify(report, null, 2) + '\n');

@@ -37,7 +37,7 @@ The [characterization suite](../test/conformance/semantic-baseline.test.ts) comp
 
 ## Setup and reproduction
 
-Python 3.12 with `venv` and Node 24 or 26 are required for reference qualification. The test-only [requirements](../test/conformance/reference/requirements.txt) pin lxml 6.1.0, libxml2 2.14.6 as checked at runtime, xmlschema 4.2.0 and elementpath 5.0.4; incompatible engines fail with a setup diagnostic.
+Node 24 or 26 and npm provide reference qualification through pinned test-only `libxml2-wasm@0.7.2` and libxml2 2.15.1. [NT-CONT-01](reference-validation.md) retains fresh scoped TypeScript checks and historical xmlschema observations separately; it does not claim two live general-purpose validators.
 
 Run setup once with package-index access, then validation requires only committed inputs and installed tools. No production dependency or runtime validator is introduced.
 
@@ -50,43 +50,43 @@ npx vitest run test/conformance/semantic-baseline.test.ts test/integration/seque
 npx tsc -p test/conformance/tsconfig.json
 ```
 
-`reference:setup` creates `tmp/conformance/reference-venv` and installs pinned binary wheels. On Windows the launcher selects `Scripts/python.exe`; elsewhere it selects `bin/python`. `S01_SETUP_PYTHON` selects the interpreter used to create the environment, and `S01_REFERENCE_PYTHON` selects an already provisioned matching interpreter.
+`reference:setup` checks the installed package version and executes a schema-construction control. Normal `npm ci` installs the prebuilt artifact; no interpreter environment or activation is needed.
 
-Keep these executables outside generated consumer artifacts. `npm run clean:tmp` deletes the virtual environment, so repeat setup afterward; ordinary pipeline resets remove only `tmp/smoke`.
+The engine remains a development dependency outside generated consumer artifacts. Reports stay under `tmp/conformance/reference`; ordinary pipeline resets remove only `tmp/smoke`.
 
 ### Required and full lanes
 
-`npm run test:reference` runs six deterministic cases: original-sequence, simple-choice, sequence-order, zero-group-unbounded, finite-count-gap and invalid-all-sequence. Both existing hosted Node 24 and Node 26 jobs provision Python and run this command through their aggregate scripts; `npm run ci` also requires it.
+`npm run test:reference` runs six deterministic cases and 15 instances: original-sequence, simple-choice, sequence-order, zero-group-unbounded, finite-count-gap and invalid-all-sequence. Node 24/26 CI requires this command, the toolchain guard and scoped strict TypeScript checks.
 
-`npm run test:reference:full` qualifies every manifest entry, including the secondary check for the documented disabled-element disagreement. Ordinary Vitest characterization without the tool is not passing reference evidence. Missing tooling, wrong versions, missing fixtures, forbidden dependencies and result disagreements exit nonzero.
+`npm run test:reference:full` executes all 14 schemas and 40 instances, including the selected contract and historical secondary answer for the disabled-element disagreement. Both selections execute all 53 mapped methods and reject missing execution; setup, input, version and observation failures exit nonzero.
 
-The launcher also executes small adapter tests for setup failure, missing input, schema rejection, reference disagreement and prohibited external resources. The TypeScript unit test verifies that a missing interpreter fails the required lane.
+The launcher also exercises setup/input/schema failures, observation disagreements, offline boundaries and resource limits. Unit controls reject unsupported Node versions, empty discovery and failed test commands.
 
-To retain machine-readable full evidence on a committed tree:
+The launcher writes machine-readable evidence and actual executed-method traceability automatically:
 
 ```bash
-npm run --silent test:reference:full > tmp/conformance/semantic-reference-full.json
+npm run test:reference:full
 ```
 
 ## Reference adapter responsibilities
 
-The [Python adapter](../test/conformance/reference/validate.py) extracts one embedded schema and materializes inherited namespace bindings before compiling it. This preserves prefixes used only in QName-valued attributes, such as `type="tns:AddressType"`; losing those bindings would manufacture schema failures.
+The [Node adapter](../test/conformance/reference/adapter.ts) extracts one embedded schema and materializes inherited namespace bindings before compiling it. This preserves prefixes used only in QName-valued attributes, such as `type="tns:AddressType"`; losing those bindings would manufacture schema failures.
 
 libxml2 supplies primary schema and instance results without importing production semantic helpers. Expected results are literal independent assertions in the manifest, not computations from catalog bounds.
 
-The adapter rejects DTDs and schema import/include/redefine directives, disables entity resolution and networking, and confines inputs to the committed fixture root. This boundary is sufficient for the selected self-contained corpus; broader schema loading remains with its downstream owners rather than a second production loader.
+The adapter rejects DTDs, unknown external resources and path escapes, and confines inputs to the committed fixture root. Composition requires an explicit local registered resource set; broader schema loading remains with downstream owners.
 
 Schema compilation and instance validation have separate output fields. A rejected schema produces no instance results; malformed or missing inputs and missing tooling are setup/input failures rather than expected instance rejection. Successful qualification means recorded observations agree, including explicitly assigned disagreements; it does not prove the future faithful model is implemented.
 
 ## Executed outcomes
 
-Full qualification covers 14 cases: 13 schema-accepted cases, one schema-rejected case and 40 primary instance checks. These span four distinct WSDL fixtures; schema results are cached per fixture but reported per case. The required subset covers six cases and 15 instances.
+Full qualification covers 14 cases: 13 schema-accepted cases, one schema-rejected case and 40 primary instance checks. These span four distinct WSDL fixtures and report each case independently. The required subset covers six cases and 15 instances.
 
 The illegal nested sequence beneath `xs:all` fails schema compilation before instance evaluation. Its legal optional-all counterpart accepts the empty group and a single item, and rejects two items; production output still requires the item.
 
 ### Validator disagreement
 
-For `zero-element-unbounded`, libxml2 2.14.6 accepts both the empty instance and the instance containing a disabled `row`. The independently pinned xmlschema 4.2.0 implementation rejects that row, agreeing with the intended zero-occurrence semantics; the full runner executes and reports this secondary outcome.
+For `zero-element-unbounded`, historical libxml2 2.14.6 and current 2.15.1 accept both the empty instance and the disabled `row`. Historical xmlschema 4.2.0 rejects the row; the fresh scoped rule also rejects it from its original `maxOccurs=0` source. The runner labels these distinct evidence kinds and leaves fresh full second-engine validation unqualified.
 
 The primary `accepted` expectation characterizes libxml2's limitation, not valid XSD semantics. [#181](https://github.com/TechSpokes/typescript-wsdl-client/issues/181) owns reference-oracle follow-up under CM-15, while schema analysis, matching and projection owners retain the implementation gap. Do not use primary acceptance here to approve a future codec.
 

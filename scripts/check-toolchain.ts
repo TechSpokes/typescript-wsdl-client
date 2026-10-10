@@ -1,5 +1,4 @@
 /** Static migration guard. Execution qualification is still required for dynamic commands. */
-import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -14,31 +13,21 @@ export interface Violation {
     entry: string;
     reason: string;
 }
-export interface Allowance {
-    sources: Record<string, string>;
-    entries: Record<string, readonly string[]>;
-}
-const digest = (text: string) => createHash('sha256').update(text).digest('hex');
 const forbiddenCommand = /(?:^|[\s;&|"'`/\\])(?:python(?:\d+(?:\.\d+)*)?|pip\d*|virtualenv|venv|java|javac|node-gyp|emcc|emmake)(?:\.exe)?(?=$|[\s;&|"'`])/i;
 const forbiddenSource = /\.(?:py|pyw|java|c|cpp|cxx)$/i;
 const forbiddenManifest = /(?:^|\/)(?:requirements(?:[-.][^/]*)?\.txt|Pipfile(?:\.lock)?|pyproject\.toml|poetry\.lock|uv\.lock)$/i;
 const forbiddenAction = /^actions\/setup-(?:python|java)@/;
 const processCalls = new Set(['execFile', 'execFileSync', 'exec', 'execSync', 'spawn', 'spawnSync']);
-export function checkFiles(files: readonly InputFile[], allowance: Allowance = { sources: {}, entries: {} }): Violation[] {
+export function checkFiles(files: readonly InputFile[]): Violation[] {
     const violations: Violation[] = [];
     for (const { path, text } of files) {
         const fail = (entry: string, reason: string) => violations.push({ path, entry, reason });
-        if (path in allowance.sources) {
-            if (digest(text) !== allowance.sources[path])
-                fail('frozen-source', 'Legacy content changed; port it to TypeScript instead of expanding the allowance.');
-            continue; // Deleted frozen files need no exception.
-        }
         if (forbiddenSource.test(path) || forbiddenManifest.test(path)) {
             fail('filename', 'Additional language source or Python setup manifest is prohibited.');
             continue;
         }
         const checkEntry = (entry: string, value: string, action = false) => {
-            if ((action ? forbiddenAction.test(value) : forbiddenCommand.test(value)) && !allowance.entries[path]?.includes(`${entry}=${value}`))
+            if (action ? forbiddenAction.test(value) : forbiddenCommand.test(value))
                 fail(entry, 'Executable toolchain setup/invocation requires an explicit scope decision.');
         };
         if (path === 'package.json') {
@@ -94,9 +83,7 @@ export function checkFiles(files: readonly InputFile[], allowance: Allowance = {
     return violations;
 }
 export function checkRepository(): Violation[] {
-    // Explicit staging input, frozen at #240. Never regenerate this allowance from discovery.
-    const allowance = JSON.parse(readFileSync(new URL('../test/tooling/legacy-toolchain-allowance.json', import.meta.url), 'utf8')) as Allowance;
-    const paths = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+    const paths = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
     const files: InputFile[] = [];
     for (const path of paths) {
         try {
@@ -107,7 +94,7 @@ export function checkRepository(): Violation[] {
                 throw error;
         }
     }
-    return checkFiles(files, allowance);
+    return checkFiles(files);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
     const violations = checkRepository();
@@ -116,5 +103,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (violations.length)
         process.exitCode = 1;
     else
-        console.log('Toolchain guard passed (frozen migration allowance active).');
+        console.log('Toolchain guard passed (no legacy allowance).');
 }

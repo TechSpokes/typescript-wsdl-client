@@ -156,18 +156,22 @@ No packages, release tags or releases are published in this delivery.
 
 ## Reproduction and acceptance ledger
 
-Run from a clean checkout of the delivered revision with Node 24 or later and Python 3.12:
+Run from a clean checkout of the delivered revision with Node 24 or 26 and npm:
 
 ```bash
 npm ci --cache tmp/cache/npm
 npm run reference:setup
+npm run check:toolchain
+npm run typecheck:research
+npm run typecheck:reference
+npm run test:research:ports
 npm run ci
 npm run test:reference:full
 npm run test:conformance
 npx tsc -p test/conformance/tsconfig.json
 npx tsc -p test/research/s06-pw01/tsconfig.json
 npx tsc -p test/research/dt01/tsconfig.json
-tmp/conformance/reference-venv/bin/python test/research/re01/measure.py
+npm run research:re01:measure
 npx tsx test/research/dt01/measure.ts
 git diff --check
 ```

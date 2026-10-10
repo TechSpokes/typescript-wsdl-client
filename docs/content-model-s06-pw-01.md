@@ -98,6 +98,10 @@ The pure [prototype](../test/research/s06-pw01/predicate.ts) has no production i
 Its [test adapter](../test/research/s06-pw01/predicate.test.ts) injects accepted main's occurrence arithmetic and namespace relations as the subject under test; all expected outcomes are independently authored in the fixture file.
 Neither file imports the unaccepted #231 assessment code, recalculates effective ranges with a second algorithm, or creates the #181 enumeration harness.
 
+The current [TypeScript reference suite](../test/conformance/reference/s06-pw01-contract.test.ts) also invokes the pure prototype with an independent [fixture syntax adapter](../test/conformance/reference/scoped-pw.ts).
+That adapter computes exact ranges and namespace constraints only for these fixed source fixtures, using original source identities and literal expectations.
+It supplies scoped reference assertions; #179 still consumes the single #178 evaluator for production occurrence analysis.
+
 The prototype returns `answer {validRestriction, steps}` or `failure {diagnostic, steps}`.
 Malformed operand callbacks report `invalid-schema`; exhaustion reports `resource-limit` with original component/source and no relation result.
 A research consumer uses selected option B; production retains its qualification until #179 implements and validates that contract.
@@ -148,7 +152,7 @@ These PW01 particle controls do not settle those other obligations or change the
 
 ## Independent fixtures and engine investigation
 
-[The fixed fixture expectations](../test/conformance/fixtures/xsd/s06-pw01/expectations.json) separate `literal2004`, `proposed2232`, `primarySchema`, and observed engine answers.
+[The fixed fixture expectations](../test/conformance/fixtures/xsd/s06-pw01/expectations.json) separate `literal2004`, `proposed2232`, `primarySchema`, and historical engine answers.
 `primarySchema=unresolved` means the candidate rules differ; neither engine observation fills that field.
 Payload primary entries describe the original particle language independently of whether a validator accepted the derivation declaration.
 
@@ -156,7 +160,7 @@ The exact [pinned nested fixture](../test/conformance/fixtures/xsd/s06-pw01/pinn
 Its SHA-256 is `1795040f9bdb7b592f389340262167d56927e9ec4a5735b1955366e305ed93ca`.
 All other fixtures in this family are independently authored research contrasts.
 
-XMLSchema 4.2.0 accepts `direct-optional-member` but rejects the otherwise equivalent `nested-optional-member` and the pinned fixture.
+Historical XMLSchema 4.2.0 observations accept `direct-optional-member` but reject the otherwise equivalent `nested-optional-member` and the pinned fixture.
 Its [groups.py at v4.2.0](https://github.com/sissaschool/xmlschema/blob/v4.2.0/xmlschema/validators/groups.py) `XsdGroup.is_element_restriction`, lines 685-714, first checks group occurrence compatibility, then rejects a retained `XsdGroup` member at lines 697-698.
 The nested fixture reaches that branch with direct members `[sequence 0..1, element 1..1, element 1..1]`; the rejection is not proof that the published rule requires each leaf minimum 2.
 
@@ -164,15 +168,15 @@ That same method bypasses member restriction checking for a zero-minimum termina
 The optional namespace and wildcard-strength controls expose its resulting acceptance of primary-invalid comparisons.
 Empty-group early success also explains acceptance of `empty-required-positive-min` despite its zero formal total.
 
-libxml2 2.14.6 accepts the nested fixture and every ordinary negative particle restriction control here.
+Historical libxml2 2.14.6 observations accept the nested fixture and every ordinary negative particle restriction control here.
 Its [versioned xmlschemas.c](https://github.com/GNOME/libxml2/blob/v2.14.6/xmlschemas.c), lines 16521-16528, leaves the owning derivation particle check as an urgent TODO.
 The separate particle restriction code is guarded by `ENABLE_PARTICLE_RESTRICTION`; `xmlSchemaCheckRCaseNSRecurseCheckCardinality` is additionally under `#if 0` at lines 17026-17079.
 
 The fetched libxml2 source SHA-256 is `a74cd24a7ab2835a27abd5a0da7ff9343301aa284d29ef5ecd0b725fd00f433c`.
-Installed XMLSchema `groups.py` SHA-256 is `c49a47da49d3146bbfd692da02e138f084cd50b8d52212e24cd4b63d2de9e063`.
+The historically inspected XMLSchema `groups.py` SHA-256 is `c49a47da49d3146bbfd692da02e138f084cd50b8d52212e24cd4b63d2de9e063`.
 Source inspection and independently executed negative controls explain the disagreement without promoting either validator to semantic authority.
 
-libxml2 rejects the huge exact fixture during `maxOccurs` parsing; the reference record calls this `parse-range-limit` rather than a validity verdict.
+Historical libxml2 2.14.6 rejected the huge exact fixture during `maxOccurs` parsing; the archived reference record calls this `parse-range-limit` rather than a validity verdict.
 The source integer is legal and exact; the TypeScript predicate and accepted #178 arithmetic decide the proposed comparison without repetition expansion.
 Reference engines' finite representations do not redefine the schema's allowed integer domain.
 
@@ -180,7 +184,7 @@ Reference engines' finite representations do not redefine the schema's allowed i
 
 `A/B` are relation outcomes after owning component mapping and restriction normalization.
 `ETR` is the independently specified original formal range; the removable epsilon row deliberately dispatches a surviving element instead.
-Engine columns are schema-load observations, including cases both candidates classify invalid.
+Engine columns retain historical schema-load observations, including cases both candidates classify invalid.
 
 | Case | Original ETR | A | B | XMLSchema 4.2.0 | libxml2 2.14.6 |
 |---|---|---|---|---|---|
@@ -228,8 +232,18 @@ The count-gap fixture admits counts 2 and 4 while rejecting count 3 despite its 
 Its repeated sequence also retains order; no interval proves admission of `a,a,b,b`.
 
 The eight fixed payload contrasts include the required empty choice, the dead sequence, zero content and recursive element values.
-Both engines reject the isolated required empty choice payload, while XMLSchema accepts the dead sequence payload that the primary language rule and libxml2 reject.
-XMLSchema cannot run the two zero-group payload checks because it rejects that schema; those two observations are explicitly `unavailable-schema`, not skipped passes.
+In the historical observations, both engines reject the isolated required empty choice payload, while XMLSchema accepts the dead sequence payload that the primary language rule and libxml2 reject.
+Historical XMLSchema could not run the two zero-group payload checks because it rejected that schema; those two observations remain explicitly `unavailable-schema`, not skipped passes.
+
+### Current reference evidence
+
+The accepted [NT-CONT-01 evidence policy](reference-validation.md) runs `libxml2-wasm@0.7.2` with libxml2 2.15.1 as the current primary, scoped TypeScript assertions of selected option B, and pinned historical external observations.
+The current reference suite attempts all 38 original schemas and validates all eight original payloads after their schemas construct.
+The primary classifies the original huge occurrence as `unsupported-capability`; the selected exact predicate still evaluates its original integer without expansion.
+
+Current primary results, selected contract answers, historical XMLSchema/libxml2 answers and unqualified capabilities have separate identities in the report.
+The historical source and tables remain hash-verified [non-executable data](../test/conformance/reference/legacy-source-snapshot.json).
+Fresh second-engine full-schema construction, including validity of the original huge schema, remains unqualified under the accepted policy.
 
 ## Bounded implementation and completeness
 
@@ -265,24 +279,25 @@ The exact huge fixture is a useful nontrivial successful decision, unlike a prob
 
 ## Reproduction and handoff
 
-Commands below run from a fresh delivery checkout after `npm install`; the joint handoff records the fresh `reference:setup` run and final complete gates.
-The narrow tests are discovered by the existing Vitest pattern and established Python `*_test.py` reference discovery.
-No ignored log is needed to know the fixed results.
+Use Node 24 as the supported floor and Node 26 for current-line qualification from a fresh delivery checkout.
+The current [reference setup and evidence contract](reference-validation.md) uses normal `npm ci`; both reference commands discover the strict TypeScript suite.
+The committed literal fixtures and historical source snapshot establish the fixed results without an ignored log.
 
 ```bash
-npm run reference:setup
-npx tsc -p test/research/s06-pw01/tsconfig.json --noEmit
-npx vitest run test/research/s06-pw01/predicate.test.ts
+npm ci
+npm run typecheck:research
+npm run typecheck:reference
+npx vitest run test/conformance/reference/s06-pw01-contract.test.ts test/research/s06-pw01
 npm run test:reference:full
 npm run ci
 npm run test:conformance
 ```
 
-At the leaf checkpoint, scoped TypeScript passed and focused Vitest passed 40 tests in one file.
-The focused reference discovery passed two tests with 76 schema-load observations and 16 recorded payload observations; two are explicit unavailable-schema results.
-The shared freshly provisioned reference runtime was used by explicit path, without creating another installation route.
+At the historical leaf checkpoint, scoped TypeScript passed and focused Vitest passed 40 tests in one file.
+The retired reference suite passed two methods with 76 historical schema-load observations and 16 historical payload observations; two are explicit unavailable-schema results.
+The current TypeScript suite preserves those two method families and every historical answer while adding current primary and independent scoped checks.
 
-Observed tools: Node 24.19.0, npm 11.9.0, TypeScript 6.0.3, Vitest 5.0.3, Python 3.12.14, XMLSchema 4.2.0, lxml 6.1.0 and libxml2 2.14.6.
+The historical leaf environment used Node 24.19.0, npm 11.9.0, TypeScript 6.0.3, Vitest 5.0.3, Python 3.12.14, XMLSchema 4.2.0, lxml 6.1.0 and libxml2 2.14.6.
 The exact final combined commands, versions, result counts and reviewer revision belong to the [joint execution record](content-model-s06-research-handoff.md).
 IDE inspections were unavailable; terminal TypeScript, fixture/reference and repository documentation checks supply local verification.
 

@@ -45,11 +45,11 @@ The official [second-edition errata](https://www.w3.org/2004/03/xmlschema-errata
 
 ### Correction of the BCE engine sentence
 
-The draft assessment says pinned engines disagree with unshifted BCE leap arithmetic. That sentence is factually wrong. Both XMLSchema 4.2.0 and libxml2 2.14.6 accept the `-0004-02-29Z` date/dateTime schema defaults and reject the `-0001-02-29Z` counterparts, consistent with the unshifted leap test.
+The draft assessment says pinned engines disagree with unshifted BCE leap arithmetic. That sentence is factually wrong. Historical XMLSchema 4.2.0 and libxml2 2.14.6 observations accept the `-0004-02-29Z` date/dateTime schema defaults and reject the `-0001-02-29Z` counterparts, consistent with the unshifted leap test.
 
-The five copied fixtures retain their exact bytes and original [pinned manifest](https://github.com/TechSpokes/typescript-wsdl-client/blob/460f5b8379c68ffef79917284e445b5ab046429e/test/conformance/schema-assessment-manifest.json) provenance. [The new reference probe](../test/conformance/reference/dt01_calendar_contract_test.py) verifies their digests and reproduces their observations. The historical document and observations are not rewritten; #179 must replace the incorrect sentence when updating its future accepted assessment evidence.
+The five copied fixtures retain their exact bytes and original [pinned manifest](https://github.com/TechSpokes/typescript-wsdl-client/blob/460f5b8379c68ffef79917284e445b5ab046429e/test/conformance/schema-assessment-manifest.json) provenance. The current [TypeScript reference suite](../test/conformance/reference/dt01-calendar-contract.test.ts) verifies their digests and records current primary observations beside selected contracts and historical answers. The historical document and observations are not rewritten; #179 must replace the incorrect sentence when updating its future accepted assessment evidence.
 
-Agreement on four BCE schemas is no proof about month addition, day rollover, timezone normalization, 24:00, cross-zero duration anchors or exact equality. Both engines also accept the historical `duration-cross-year-zero.xsd` schema; this is schema-loading evidence, not proof that either supplies the required faithful ordering.
+Agreement on four BCE schemas is no proof about month addition, day rollover, timezone normalization, 24:00, cross-zero duration anchors or exact equality. Both historical engines also accepted `duration-cross-year-zero.xsd`; this is schema-loading evidence, not proof that either supplies the required faithful ordering.
 
 ## Concrete contract alternatives
 
@@ -161,7 +161,7 @@ Raw field-tuple timezone normalization remains a use of Appendix E's field arith
 
 ### Selected second 60 interpretation
 
-[Appendix D.1](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#isoformats) admits whole seconds 0 through 60 with arbitrary fractions and discusses rolling an inappropriate leap-second operand into the following minute. Appendix E explicitly treats second 60 as overflow and thereafter uses sixty seconds per minute. Both pinned engines reject `23:59:60Z`; their rejection does not erase this XSD 1.0 text.
+[Appendix D.1](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#isoformats) admits whole seconds 0 through 60 with arbitrary fractions and discusses rolling an inappropriate leap-second operand into the following minute. Appendix E explicitly treats second 60 as overflow and thereafter uses sixty seconds per minute. Both historically pinned engines reject `23:59:60Z`; their rejection does not erase this XSD 1.0 text.
 
 Candidate A accepts `0<=second<61` and uses that stable overflow interpretation, including for explicit UTC operands. The probe consequently maps `2001-12-31T23:59:60.25Z` to `2002-01-01T00:00:00.25Z`. It imports no contemporary leap-second table or host clock behavior.
 
@@ -278,7 +278,18 @@ These are executable evidence for every selected reduced-family rule, without cl
 | Fixed time midnight, payload `24:00:00Z` | Accept | Accept | Reject |
 | Lexical time `23:59:60Z` | Admit under candidate second-60 rule | Reject | Reject |
 
-The [calendar scalar fixture](../test/conformance/fixtures/xsd/research-dt01/calendar-scalars.xsd) tests instance lexical observations separately from [fixed-value equality observations](../test/conformance/fixtures/xsd/research-dt01/calendar-equivalence.xsd). Validator disagreement or agreement is never relabeled schema invalidity or production assessment support. These contrasts explain compatibility consequences, including why engine voting cannot close the decision.
+The table preserves the original XMLSchema 4.2.0 and libxml2 2.14.6 observations.
+The [calendar scalar fixture](../test/conformance/fixtures/xsd/research-dt01/calendar-scalars.xsd) tests instance lexical observations separately from [fixed-value equality observations](../test/conformance/fixtures/xsd/research-dt01/calendar-equivalence.xsd).
+Validator disagreement or agreement is never relabeled schema invalidity or production assessment support; these contrasts explain compatibility consequences without making engine voting the decision authority.
+
+### Current reference evidence
+
+The accepted [NT-CONT-01 evidence policy](reference-validation.md) uses `libxml2-wasm@0.7.2` with libxml2 2.15.1 as the current primary and the existing exact-calendar prototype for scoped selected-contract assertions.
+The TypeScript reference suite attempts all five copied schemas, validates all 28 lexical payloads and all seven fixed-value payloads, and verifies its literal tables against the hash-pinned [historical source snapshot](../test/conformance/reference/legacy-source-snapshot.json).
+The current primary, selected candidate A, historical external answers and unqualified capabilities remain separately named.
+
+The selected second-60 overflow assertion accepts the original time operand while the primary rejects it; selected fixed-value equality likewise remains distinct from the primary's seven rejections.
+These finite checks preserve the accepted exact calendar domain without claiming general XSD datatype validity, full PSVI or a fresh second-engine construction/equality result.
 
 ## Bounded research procedure and measurements
 
@@ -315,18 +326,24 @@ Times are observations and will vary; counters/outcomes are deterministic. The l
 
 ## Reproduction and handoff
 
-The committed artifacts reproduce from the research delivery checkout plus [the existing reference setup](testing.md). Five historical source fixtures were copied without editing from the pinned draft's `test/conformance/fixtures/xsd/assessment/`; the reference test records each exact SHA-256 and the original commit. Fresh `npm run reference:setup` was executed by the epic coordinator before this leaf used its pinned Python environment.
+Use Node 24 as the supported floor and Node 26 for current-line qualification from a fresh delivery checkout.
+The current [reference setup and evidence contract](reference-validation.md) uses normal `npm ci` and strict TypeScript discovery.
+Five historical source fixtures remain byte-identical to the pinned draft's `test/conformance/fixtures/xsd/assessment/`; the reference suite verifies each exact SHA-256 and the original commit.
 
 ```bash
-npx vitest run test/research/dt01
-npx tsc -p test/research/dt01/tsconfig.json
+npm ci
+npm run typecheck:research
+npm run typecheck:reference
+npx vitest run test/conformance/reference/dt01-calendar-contract.test.ts test/research/dt01
 npx tsx test/research/dt01/measure.ts
-tmp/conformance/reference-venv/bin/python -m unittest discover -s test/conformance/reference -p dt01_calendar_contract_test.py -v
+npm run test:reference:full
 ```
 
-On Windows the equivalent interpreter is `tmp\conformance\reference-venv\Scripts\python.exe`. This interpreter is created by `npm run reference:setup`; it requires XMLSchema 4.2.0, lxml 6.1.0/libxml2 2.14.6 and elementpath 5.0.4. The leaf used the coordinator's fresh environment through its explicit interpreter path.
+The same commands apply on Linux and Windows. Normal installation supplies the pinned Node primary; the four-lane qualification record owns actual execution evidence for each OS/Node combination.
 
-This uniquely named `*_test.py` participates in established `test:reference` and `test:reference:full` discovery. Local leaf verification passed 139 Vitest tests in two files, scoped TypeScript 6.0.3 and three Python unittest methods with 5 schema/10 engine checks, 28 lexical/56 engine checks and 7 equality/14 engine checks. The 68 reduced-family tests supplement the original 71 exact calendar/duration tests.
+Both `test:reference` and `test:reference:full` now discover the current TypeScript reference suite and retain all three original method families.
+The historical leaf checkpoint passed 139 Vitest tests in two files, scoped TypeScript 6.0.3 and three retired reference methods with 5 schema/10 engine checks, 28 lexical/56 engine checks and 7 equality/14 engine checks.
+Its archived environment used XMLSchema 4.2.0, lxml 6.1.0/libxml2 2.14.6 and elementpath 5.0.4; the 68 reduced-family tests supplement the original 71 exact calendar/duration tests.
 
 IDE inspection tools were unavailable; repository TypeScript, fixture parsing and documentation checks supply the portable verification. The epic integration record owns final `npm run ci`, `npm run test:reference:full`, `npm run test:conformance`, documentation/support-matrix checks, installed-consumer coverage and the final reviewed delivery revision. These leaf results do not substitute for that combined final content gate.
 

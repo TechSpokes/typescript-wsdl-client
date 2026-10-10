@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { instanceCorpus } from './primary-corpus.js';
 import { schemaText } from '../xml-input.js';
+import { captureProvenance, finishProvenance, fixtureInputs, referenceSources } from './provenance.js';
 interface Disposable {
     dispose(): void;
 }
@@ -68,6 +69,12 @@ interface TypeScriptEngine {
     };
 }
 const candidateRoot = resolve(process.argv[2] ?? 'tmp/conformance/node-qualification');
+const execution = captureProvenance(referenceSources(), [...fixtureInputs(),
+    'test/conformance/semantic-baseline.json', 'test/conformance/reference/migration-map.json'],
+    ['libxml2-wasm/lib/libxml2raw.mjs', 'libxml2-wasm/lib/index.mjs',
+        'xerces-wasm/wasm/xerces_validator.wasm', 'xerces-wasm/dist/index.js',
+        'xml-xsd-engine/dist/esm/index.js', ...['libxml2-wasm', 'xerces-wasm', 'xml-xsd-engine'].map(name => name + '/package.json')]
+        .map(path => resolve(candidateRoot, 'node_modules', path)));
 const digest = (text: string | Buffer) => createHash('sha256').update(text).digest('hex');
 const read = (path: string) => readFileSync(path, 'utf8');
 const modulePath = (pkg: string, file: string) => pathToFileURL(resolve(candidateRoot, 'node_modules', pkg, file)).href;
@@ -222,7 +229,8 @@ const map = JSON.parse(read('test/conformance/reference/migration-map.json')) as
         method: string;
     }>;
 };
-const report = { evidenceId: 'NT-T05-T06', sourceProgramSha256: digest(readFileSync(import.meta.filename)), testedRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), testedTree: execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { encoding: 'utf8' }).trim(), workingTreeDirty: !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(), platform: process.platform, node: process.version, packages, summary: { baselineSchemas, baselineInstances, pwSchemas, pwInstances, additionalInstances, additionalTotal: instanceCorpus.length }, secondaryGaps: map.obligations.filter(o => o.evidence === 'live-external-observation').map(o => ({ id: o.id, source: o.source, method: o.method, status: 'unresolved-full-independent-qualification', proposal: 'Keep legacy live until maintainer accepts a particular changed evidence contract; candidate controls do not establish this obligation.' })), observations };
+const provenance = finishProvenance(execution);
+const report = { evidenceId: 'NT-T05-T06', provenance, sourceProgramSha256: provenance.sourceHashes['test/conformance/reference/qualification/probe.ts'], testedRevision: provenance.testedRevision, testedTree: provenance.testedTree, workingTreeDirty: provenance.workingTreeDirty, platform: process.platform, node: process.version, packages, summary: { baselineSchemas, baselineInstances, pwSchemas, pwInstances, additionalInstances, additionalTotal: instanceCorpus.length }, secondaryGaps: map.obligations.filter(o => o.evidence === 'live-external-observation').map(o => ({ id: o.id, source: o.source, method: o.method, status: 'historical-secondary; NT-CONT-01 scoped replacement accepted', proposal: 'Execute each accepted NT-CONT-01 treatment; these candidate controls do not establish full second-engine qualification.' })), observations };
 mkdirSync('tmp/conformance/node-qualification', { recursive: true });
 writeFileSync('tmp/conformance/node-qualification/report.json', JSON.stringify(report, null, 2) + '\n');
 lib.xmlCleanupInputProvider();

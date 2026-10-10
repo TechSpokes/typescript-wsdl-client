@@ -54,13 +54,13 @@ describe("S06 research provenance and delivery scope", () => {
       expect(contract.artifacts.some(artifact => artifact.role === "decision")).toBe(true);
       expect(contract.artifacts.some(artifact => artifact.role === "fixture")).toBe(true);
       const discovered = contract.artifacts.filter(artifact => artifact.role === "reference" &&
-        /test\/conformance\/reference\/[^/]+_test\.py$/.test(artifact.path));
+        /test\/conformance\/reference\/[^/]+\.test\.ts$/.test(artifact.path));
       expect(discovered.length).toBeGreaterThan(0);
       for (const artifact of contract.artifacts) {
         expect(artifact.path).not.toMatch(/^(?:\/|[A-Za-z]+:)|(?:^|\/)\.\.(?:\/|$)/);
         const bytes = readFileSync(resolve(repository, artifact.path));
         expect(createHash("sha256").update(bytes).digest("hex"), artifact.path).toBe(artifact.sha256);
-        if (artifact.role === "prototype" && /\.(?:ts|mjs|py)$/.test(artifact.path)) {
+        if (artifact.role === "prototype" && /\.(?:ts|mjs)$/.test(artifact.path)) {
           expect(bytes.toString("utf8"), artifact.path).not.toMatch(/(?:from\s*|import\s*\()\s*["'][^"']*src\//);
         }
       }
