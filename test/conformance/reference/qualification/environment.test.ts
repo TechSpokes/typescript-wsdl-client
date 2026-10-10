@@ -1,9 +1,10 @@
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { classifySpawn, inventoryInterpreters, isInterpreterName, isWindowsLogicalWrapperPath, parseRegistryInstallPaths, probeExecutable, probesForCandidate,
+import { describe, expect, it, vi } from 'vitest';
+import { classifySpawn, inventoryInterpreters, isInterpreterName, isWindowsLogicalWrapperPath, observeInaccessibleAlias,
+    parseRegistryInstallPaths, prepareWindowsTargets, probeCandidates, probeExecutable, probesForCandidate, verifyInaccessibleAliases,
     windowsInstallationPlan } from './environment.js';
-import type { WindowsInstallationContext } from './environment.js';
+import type { AliasOperations, FileAlias, Probe, WindowsInstallationContext } from './environment.js';
 
 function fixtureContext(root: string): WindowsInstallationContext {
     return { driveRoot: resolve(root), windows: resolve(root, 'Windows'), users: resolve(root, 'Users'),
@@ -16,6 +17,15 @@ function fixtureFile(root: string, path: string): string {
     mkdirSync(resolve(absolute, '..'), { recursive: true });
     writeFileSync(absolute, 'non-executable inventory fixture');
     return absolute;
+}
+const storeAlias: FileAlias = { path: 'C:\\Users\\runner\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe',
+    dirent: 'symbolic-link', identification: 'symbolic-file-alias' };
+function failedProbe(candidate: string, method: Probe['method'], code = 'EACCES'): Probe {
+    return { ...classifySpawn(candidate, { status: null, error: Object.assign(new Error(code), { code }) }), method };
+}
+function deniedAliasOperations(code = 'EACCES'): AliasOperations {
+    return { canonicalize: path => { throw Object.assign(new Error(path + ': ' + code), { code }); },
+        native: path => failedProbe(path, 'spawn', code), read: path => failedProbe(path, 'script-read', code) };
 }
 
 describe('interpreter execution qualification controls', () => {
@@ -130,6 +140,8 @@ describe('interpreter execution qualification controls', () => {
             expect(inventory.errors).toEqual([]);
             expect(inventory.paths).toEqual([...paths].sort());
             expect(inventory.registry).toEqual(plan.registry);
+            expect(inventory.fileAliases).toContainEqual({ path: resolve(root, 'Users/runner/AppData/Local/Microsoft/WindowsApps/python.exe'),
+                dirent: 'file', identification: 'windows-apps-command-entry' });
             expect(inventory.roots.some(entry => entry.path === resolve(root, 'Windows', 'System32') && !entry.recursive)).toBe(true);
             expect(inventory.roots.some(entry => entry.path === resolve(root, 'ProgramData') && !entry.recursive)).toBe(true);
         } finally { rmSync(root, { recursive: true, force: true }); }
@@ -244,11 +256,98 @@ describe('interpreter execution qualification controls', () => {
             const inventory = inventoryInterpreters([{ path: root, recursive: true }], [], { platform: 'win32' });
             expect(inventory.errors).toEqual([]);
             expect(inventory.paths).toEqual([resolve(root, 'python.exe')]);
+            expect(inventory.fileAliases).toEqual([{ path: resolve(root, 'python.exe'), dirent: 'symbolic-link', identification: 'symbolic-file-alias' }]);
             const plan = windowsInstallationPlan(fixtureContext(root));
             expect(plan.errors).toEqual([]);
             expect(plan.roots.some(entry => entry.path === resolve(root, 'python.exe'))).toBe(false);
             expect(inventoryInterpreters(plan.roots, plan.exclusions, { ...plan, platform: 'win32' }).errors).toEqual([]);
         } finally { rmSync(root, { recursive: true, force: true }); }
+    });
+    it('keeps canonicalizable executables and aliases as ACL targets without running them first', () => {
+        const canonical = 'C:\\tools\\python.exe';
+        const regular = 'C:\\control\\python.exe';
+        const native = vi.fn((path: string) => failedProbe(path, 'spawn'));
+        const read = vi.fn((path: string) => failedProbe(path, 'script-read'));
+        const preparation = prepareWindowsTargets([regular, storeAlias.path], [storeAlias], {
+            canonicalize: path => path === storeAlias.path ? canonical : path, native, read,
+        });
+        expect(preparation.targets).toEqual([regular, canonical, storeAlias.path].sort());
+        expect(preparation.alreadyInaccessibleAliases).toEqual([]);
+        expect(preparation.errors).toEqual([]);
+        expect(native).not.toHaveBeenCalled();
+        expect(read).not.toHaveBeenCalled();
+    });
+    it('requires inventoried alias identity and both actual negative observations before omitting an ACL target', () => {
+        for (const code of ['EACCES', 'EPERM', 'ENOENT', 'ENOTDIR']) {
+            const preparation = prepareWindowsTargets([storeAlias.path], [storeAlias], deniedAliasOperations(code));
+            expect(preparation.targets).toEqual([]);
+            expect(preparation.errors).toEqual([]);
+            expect(preparation.alreadyInaccessibleAliases).toHaveLength(1);
+            expect(preparation.alreadyInaccessibleAliases[0]!.before).toMatchObject({ qualified: true, alias: storeAlias,
+                canonicalization: { outcome: 'failed', errorCode: code } });
+            expect(preparation.alreadyInaccessibleAliases[0]!.before.probes.map(probe => probe.method)).toEqual(['spawn', 'script-read']);
+            const ordinary = prepareWindowsTargets([storeAlias.path], [], deniedAliasOperations(code));
+            expect(ordinary.targets).toEqual([]);
+            expect(ordinary.alreadyInaccessibleAliases).toEqual([]);
+            expect(ordinary.errors).toHaveLength(1); // Missing/stat-denied ordinary targets are not silently dropped.
+        }
+    });
+    it('records and rejects a started process, readable alias, unresolved probe or unsupported metadata failure', () => {
+        const started: Probe = classifySpawn(storeAlias.path, { pid: 123, status: 9 });
+        const readable: Probe = { candidate: storeAlias.path, method: 'script-read', outcome: 'unresolved', status: null };
+        const unresolved = failedProbe(storeAlias.path, 'spawn', 'EINVAL');
+        const cases: AliasOperations[] = [
+            { ...deniedAliasOperations(), native: () => started },
+            { ...deniedAliasOperations(), read: () => readable },
+            { ...deniedAliasOperations(), native: () => unresolved },
+            deniedAliasOperations('EIO'),
+        ];
+        for (const operations of cases) {
+            const preparation = prepareWindowsTargets([storeAlias.path], [storeAlias], operations);
+            expect(preparation.errors).toHaveLength(1);
+            expect(preparation.alreadyInaccessibleAliases[0]!.before.qualified).toBe(false);
+            expect(preparation.alreadyInaccessibleAliases[0]!.before.canonicalization).toMatchObject({ outcome: 'failed' });
+        }
+        expect(observeInaccessibleAlias(storeAlias, cases[0]).probes[0]).toMatchObject({ outcome: 'started', status: 9 });
+        expect(observeInaccessibleAlias(storeAlias, cases[1]).probes[1]).toMatchObject({ outcome: 'unresolved', method: 'script-read' });
+    });
+    it('rechecks every original observational alias when it disappears from the later inventory', () => {
+        const controls = prepareWindowsTargets([storeAlias.path], [storeAlias], deniedAliasOperations()).alreadyInaccessibleAliases;
+        const operations = deniedAliasOperations('ENOENT');
+        const canonicalize = vi.fn(operations.canonicalize);
+        const native = vi.fn(operations.native);
+        const read = vi.fn(operations.read);
+        const laterInventoryPaths: string[] = [];
+        const verification = verifyInaccessibleAliases(controls, { canonicalize, native, read });
+        expect(verification.errors).toEqual([]);
+        expect(verification.controlledPaths).toEqual([storeAlias.path]);
+        expect(verification.observations[0]).toMatchObject({ qualified: true, canonicalization: { outcome: 'failed', errorCode: 'ENOENT' } });
+        expect(laterInventoryPaths).not.toContain(storeAlias.path);
+        expect(canonicalize).toHaveBeenCalledExactlyOnceWith(storeAlias.path);
+        expect(native).toHaveBeenCalledExactlyOnceWith(storeAlias.path);
+        expect(read).toHaveBeenCalledExactlyOnceWith(storeAlias.path);
+        const disappearedVersionedWrapper = 'C:\\Users\\runner\\AppData\\Local\\Microsoft\\WindowsApps\\pypy3.10.cmd';
+        expect(probeCandidates(laterInventoryPaths, 'win32', [disappearedVersionedWrapper]))
+            .toEqual(expect.arrayContaining([disappearedVersionedWrapper, 'pypy3.10.cmd']));
+    });
+    it('withholds the observational controlled set when an alias becomes canonicalizable or readable after installation', () => {
+        const controls = prepareWindowsTargets([storeAlias.path], [storeAlias], deniedAliasOperations()).alreadyInaccessibleAliases;
+        const native = vi.fn((path: string) => failedProbe(path, 'spawn'));
+        const read = vi.fn((path: string) => failedProbe(path, 'script-read'));
+        const canonical = verifyInaccessibleAliases(controls, { canonicalize: path => path, native, read });
+        expect(canonical.errors).toHaveLength(1);
+        expect(canonical.controlledPaths).toEqual([]);
+        expect(canonical.observations[0]!.canonicalization).toMatchObject({ outcome: 'resolved' });
+        expect(native).not.toHaveBeenCalled(); // A newly canonicalizable interpreter must not be executed before ACL enforcement.
+        expect(read).not.toHaveBeenCalled();
+        const readable = verifyInaccessibleAliases(controls, { ...deniedAliasOperations(),
+            read: candidate => ({ candidate, method: 'script-read', outcome: 'unresolved', status: null }) });
+        expect(readable.errors).toHaveLength(1);
+        expect(readable.controlledPaths).toEqual([]);
+        const started = verifyInaccessibleAliases(controls, { ...deniedAliasOperations(),
+            native: candidate => classifySpawn(candidate, { pid: 123, status: 1 }) });
+        expect(started.errors).toHaveLength(1);
+        expect(started.controlledPaths).toEqual([]);
     });
     it('reads both PEP 514 executable paths and expanded installation roots, and preserves registry failures', () => {
         const output = ['HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\3.14\\InstallPath',

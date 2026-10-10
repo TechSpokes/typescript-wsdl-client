@@ -17,6 +17,11 @@ export interface InventoryRoot {
 }
 export interface InventoryExclusion { readonly path: string; readonly reason: string }
 export interface CanonicalAlias { readonly path: string; readonly target: string }
+export interface FileAlias {
+    readonly path: string;
+    readonly dirent: 'symbolic-link' | 'file';
+    readonly identification: 'symbolic-file-alias' | 'windows-apps-command-entry';
+}
 export interface RegistryObservation {
     readonly key: string;
     readonly view: '32' | '64';
@@ -39,6 +44,7 @@ export interface Inventory {
     readonly directoriesRead: number;
     readonly errors: readonly string[];
     readonly aliases: readonly CanonicalAlias[];
+    readonly fileAliases: readonly FileAlias[];
     readonly scopeExclusions: readonly InventoryExclusion[];
     readonly missingRoots: readonly string[];
     readonly registry: readonly RegistryObservation[];
@@ -57,6 +63,19 @@ export interface SpawnObservation {
     readonly status: number | null;
     readonly signal?: string | null;
     readonly error?: NodeJS.ErrnoException;
+}
+export type Canonicalization = { readonly outcome: 'resolved'; readonly target: string }
+    | { readonly outcome: 'failed'; readonly errorCode?: string; readonly error: string };
+export interface InaccessibleAliasObservation {
+    readonly alias: FileAlias;
+    readonly observedAt: string;
+    readonly canonicalization: Canonicalization;
+    readonly probes: readonly Probe[];
+    readonly qualified: boolean;
+}
+export interface InaccessibleAliasControl {
+    readonly before: InaccessibleAliasObservation;
+    after?: InaccessibleAliasObservation;
 }
 interface AclBackup {
     readonly path: string;
@@ -87,6 +106,8 @@ export interface EnvironmentEnforcement {
     verificationProbes?: readonly Probe[];
     sid?: string;
     aclBackups: AclBackup[];
+    alreadyInaccessibleAliases: InaccessibleAliasControl[];
+    targetPreparationErrors?: readonly string[];
     control?: { path: string; sourceHash: string; before: Probe; after?: Probe };
     enforcedAt?: string;
     verifiedAt?: string;
@@ -143,6 +164,61 @@ export function probesForCandidate(candidate: string, platform: EnforcementPlatf
         ? [probeExecutable(candidate), probeScriptRead(candidate)] : [probe(candidate, platform)];
 }
 
+export interface AliasOperations {
+    readonly canonicalize: (path: string) => string;
+    readonly native: (path: string) => Probe;
+    readonly read: (path: string) => Probe;
+}
+const aliasOperations: AliasOperations = { canonicalize: path => realpathSync(path), native: probeExecutable, read: probeScriptRead };
+function canonicalization(path: string, operations: AliasOperations): Canonicalization {
+    try { return { outcome: 'resolved', target: operations.canonicalize(path) }; }
+    catch (error) { return { outcome: 'failed', errorCode: (error as NodeJS.ErrnoException).code, error: message(error) }; }
+}
+const absentOrDenied = (code: string | undefined) => ['ENOENT', 'ENOTDIR', 'EACCES', 'EPERM'].includes(code ?? '');
+function blockedObservation(probe: Probe, candidate: string, method: Probe['method']): boolean {
+    return probe.candidate === candidate && probe.method === method && probe.status === null && !(probe.pid ?? 0)
+        && absentOrDenied(probe.errorCode) && (probe.outcome === 'denied' || probe.outcome === 'unavailable');
+}
+function aliasObservation(alias: FileAlias, lookup: Canonicalization, operations: AliasOperations): InaccessibleAliasObservation {
+    // Never invoke a canonicalizable interpreter before its target has received an ACL denial.
+    const probes = lookup.outcome === 'failed' && absentOrDenied(lookup.errorCode)
+        ? [operations.native(alias.path), operations.read(alias.path)] : [];
+    return { alias, observedAt: new Date().toISOString(), canonicalization: lookup, probes,
+        qualified: lookup.outcome === 'failed' && absentOrDenied(lookup.errorCode)
+            && probes.length === 2 && blockedObservation(probes[0]!, alias.path, 'spawn')
+            && blockedObservation(probes[1]!, alias.path, 'script-read') };
+}
+export function observeInaccessibleAlias(alias: FileAlias, operations: AliasOperations = aliasOperations): InaccessibleAliasObservation {
+    return aliasObservation(alias, canonicalization(alias.path, operations), operations);
+}
+export function prepareWindowsTargets(paths: readonly string[], fileAliases: readonly FileAlias[], operations: AliasOperations = aliasOperations): {
+    targets: string[]; alreadyInaccessibleAliases: InaccessibleAliasControl[]; errors: string[];
+} {
+    const targets = new Set<string>();
+    const aliases = new Map(fileAliases.map(alias => [alias.path.toLowerCase(), alias]));
+    const alreadyInaccessibleAliases: InaccessibleAliasControl[] = [];
+    const errors: string[] = [];
+    for (const path of [...new Set(paths)].sort()) {
+        const lookup = canonicalization(path, operations);
+        if (lookup.outcome === 'resolved') { targets.add(path); targets.add(lookup.target); continue; }
+        const alias = aliases.get(path.toLowerCase());
+        if (!alias) { errors.push('Ordinary ACL target cannot be canonicalized: ' + path + ' (' + lookup.error + ')'); continue; }
+        const before = aliasObservation(alias, lookup, operations);
+        alreadyInaccessibleAliases.push({ before });
+        if (!before.qualified) errors.push('File alias is not proven inaccessible: ' + path + ' (' + lookup.error + ')');
+    }
+    return { targets: [...targets].sort(), alreadyInaccessibleAliases, errors };
+}
+/** Every original alias is rechecked, including paths that disappeared from the new inventory. */
+export function verifyInaccessibleAliases(controls: readonly InaccessibleAliasControl[], operations: AliasOperations = aliasOperations): {
+    observations: InaccessibleAliasObservation[]; controlledPaths: string[]; errors: string[];
+} {
+    const observations = controls.map(control => observeInaccessibleAlias(control.before.alias, operations));
+    const errors = observations.flatMap((observation, index) => !controls[index]!.before.qualified || !observation.qualified
+        ? ['Previously inaccessible alias changed or cannot be proven blocked: ' + observation.alias.path] : []);
+    return { observations, controlledPaths: errors.length ? [] : observations.map(observation => observation.alias.path), errors };
+}
+
 export type DirectoryReader = (path: string) => readonly Dirent[];
 const readDirectory: DirectoryReader = path => readdirSync(path, { withFileTypes: true });
 interface InventoryOptions {
@@ -150,6 +226,7 @@ interface InventoryOptions {
     readonly readDirectory?: DirectoryReader;
     readonly candidates?: readonly string[];
     readonly aliases?: readonly CanonicalAlias[];
+    readonly fileAliases?: readonly FileAlias[];
     readonly registry?: readonly RegistryObservation[];
     readonly errors?: readonly string[];
 }
@@ -160,10 +237,12 @@ export function inventoryInterpreters(roots: readonly InventoryRoot[], excluded:
     const paths = new Set<string>(options.candidates ?? []);
     const errors: string[] = [...options.errors ?? []];
     const aliases: CanonicalAlias[] = [...options.aliases ?? []];
+    const fileAliases: FileAlias[] = [...options.fileAliases ?? []];
     const missingRoots: string[] = [];
     const visited = new Map<string, boolean>();
     const platform = options.platform ?? process.platform;
     const key = (path: string) => platform === 'win32' ? path.toLowerCase() : path;
+    const registeredCandidates = new Set((options.candidates ?? []).map(key));
     const scopeExclusions = excluded.map(entry => typeof entry === 'string'
         ? { path: resolve(entry), reason: 'Non-installation filesystem root' } : entry);
     const exclusions = new Set(scopeExclusions.map(entry => key(resolve(entry.path))));
@@ -199,10 +278,21 @@ export function inventoryInterpreters(roots: readonly InventoryRoot[], excluded:
             for (const entry of entries) {
                 const child = join(canonical, entry.name);
                 const named = isInterpreterName(entry.name);
-                if (entry.isFile() && named) paths.add(child);
+                const candidate = named || registeredCandidates.has(key(child));
+                if (entry.isFile() && candidate) {
+                    paths.add(child);
+                    // AppExecLinks can be reported as files rather than symbolic links. Record the
+                    // observed type and command-alias location, without asserting an unseen reparse tag.
+                    if (platform === 'win32' && win32.basename(canonical).toLowerCase() === 'windowsapps'
+                        && win32.basename(win32.dirname(canonical)).toLowerCase() === 'microsoft')
+                        fileAliases.push({ path: child, dirent: 'file', identification: 'windows-apps-command-entry' });
+                }
                 else if (entry.isDirectory() && root.recursive) pending.push({ root: { path: child, recursive: true }, explicit: false });
                 else if (entry.isSymbolicLink()) {
-                    if (named) paths.add(child);
+                    if (candidate) {
+                        paths.add(child);
+                        fileAliases.push({ path: child, dirent: 'symbolic-link', identification: 'symbolic-file-alias' });
+                    }
                     // Windows AppExecLinks are file aliases, not directory links. Statting unrelated
                     // .exe aliases can return EACCES even though the containing install directory was read.
                     if (platform === 'win32' && windowsFileLink.test(entry.name)) continue;
@@ -220,6 +310,7 @@ export function inventoryInterpreters(roots: readonly InventoryRoot[], excluded:
     }
     return { roots, paths: [...paths].sort(), directoriesRead, errors,
         aliases: [...new Map(aliases.map(alias => [alias.path, alias])).values()],
+        fileAliases: [...new Map(fileAliases.map(alias => [alias.path, alias])).values()],
         scopeExclusions, missingRoots: [...new Set(missingRoots)].sort(), registry: options.registry ?? [] };
 }
 
@@ -421,9 +512,13 @@ function knownPaths(platform: EnforcementPlatform): string[] {
     return directories.flatMap(directory => names.flatMap(name => [join(directory, name + '.exe'),
         join(directory, name + '.cmd'), join(directory, name + '.bat')]));
 }
-function collectProbes(inventory: Inventory, platform: EnforcementPlatform): Probe[] {
-    return [...new Set([...names, ...inventory.paths.map(path => basename(path)),
-        ...knownPaths(platform), ...inventory.paths])].flatMap(candidate => probesForCandidate(candidate, platform));
+export function probeCandidates(paths: readonly string[], platform: EnforcementPlatform, previousPaths: readonly string[] = []): string[] {
+    const retained = [...new Set([...previousPaths, ...paths])];
+    return [...new Set([...names, ...retained.map(path => platform === 'win32' ? win32.basename(path) : basename(path)),
+        ...knownPaths(platform), ...retained])];
+}
+function collectProbes(inventory: Inventory, platform: EnforcementPlatform, previousPaths: readonly string[] = []): Probe[] {
+    return probeCandidates(inventory.paths, platform, previousPaths).flatMap(candidate => probesForCandidate(candidate, platform));
 }
 function assertProbes(probes: readonly Probe[]): void {
     const failed = probes.filter(probe => probe.outcome !== 'denied' && probe.outcome !== 'unavailable');
@@ -501,7 +596,7 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
         workingTreeDirty: git('status', '--porcelain').length > 0,
         sourceHash: sha(fileURLToPath(import.meta.url)),
         packageLockHash: sha('package-lock.json'), nodeExecutableHash: sha(process.execPath),
-        stateDirectory, phase: 'preparing', qualified: false, aclBackups: [] };
+        stateDirectory, phase: 'preparing', qualified: false, aclBackups: [], alreadyInaccessibleAliases: [] };
     writeState(report, state);
     try {
         state.inventory = platformInventory(platform);
@@ -532,17 +627,18 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
             if (before.outcome !== 'started' || before.status !== 0) throw new Error('Copied Node control cannot execute before ACL denial');
             state.control = { path: controlPath, sourceHash: sha(controlPath), before };
             writeState(report, state);
-            const targets = [...state.inventory.paths, controlPath];
-            for (const path of state.inventory.paths) {
-                try { targets.push(realpathSync(path)); } catch (error) {
-                    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-                }
-            }
-            saveAndDeny(state, report, targets.filter(path => existsSync(path)));
+            const preparation = prepareWindowsTargets([...state.inventory.paths, controlPath], state.inventory.fileAliases);
+            state.alreadyInaccessibleAliases = preparation.alreadyInaccessibleAliases;
+            state.targetPreparationErrors = preparation.errors;
+            // Persist failed as well as passing alias observations before any ACL mutation or install.
+            writeState(report, state);
+            if (preparation.errors.length) throw new Error('Incomplete Windows target enforcement: ' + preparation.errors.join('; '));
+            saveAndDeny(state, report, preparation.targets);
             state.control.after = probeExecutable(controlPath);
             if (state.control.after.outcome !== 'denied') throw new Error('Windows execute ACL did not block the copied Node control');
         }
-        state.initialProbes = collectProbes(state.inventory, platform);
+        state.initialProbes = [...collectProbes(state.inventory, platform),
+            ...state.alreadyInaccessibleAliases.flatMap(control => control.before.probes)];
         assertProbes(state.initialProbes);
         state.phase = 'enforced';
         state.enforcedAt = new Date().toISOString();
@@ -572,7 +668,12 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
         state.verificationInventory = platformInventory(state.platform);
         if (state.verificationInventory.errors.length) throw new Error('Incomplete verification inventory: ' + state.verificationInventory.errors.join('; '));
         if (state.platform === 'win32') {
-            const controlled = new Set(state.aclBackups.map(entry => entry.path.toLowerCase()));
+            const aliases = verifyInaccessibleAliases(state.alreadyInaccessibleAliases ?? []);
+            for (const [index, observation] of aliases.observations.entries()) state.alreadyInaccessibleAliases[index]!.after = observation;
+            writeState(report, state);
+            if (aliases.errors.length) throw new Error(aliases.errors.join('; '));
+            const controlled = new Set([...state.aclBackups.filter(entry => entry.applied && !entry.restored).map(entry => entry.path),
+                ...aliases.controlledPaths].map(path => path.toLowerCase()));
             const additions = state.verificationInventory.paths.filter(path => !controlled.has(path.toLowerCase()));
             if (additions.length) throw new Error('Install introduced uncontrolled interpreter paths: ' + additions.join(', '));
             if (!state.control || probeExecutable(state.control.path).outcome !== 'denied') throw new Error('Windows execute ACL control no longer blocks execution');
@@ -587,7 +688,8 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
             });
             if (executable.length) throw new Error('Install introduced executable interpreters: ' + executable.join(', '));
         }
-        state.verificationProbes = collectProbes(state.verificationInventory, state.platform);
+        state.verificationProbes = [...collectProbes(state.verificationInventory, state.platform, state.inventory?.paths ?? []),
+            ...(state.alreadyInaccessibleAliases ?? []).flatMap(control => control.after?.probes ?? [])];
         assertProbes(state.verificationProbes);
         state.phase = 'verified';
         state.verifiedAt = new Date().toISOString();
