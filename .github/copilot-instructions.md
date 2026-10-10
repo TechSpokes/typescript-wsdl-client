@@ -57,6 +57,14 @@ Maintainer: Serge Liatko ([@sergeliatko](https://github.com/sergeliatko)). Vendo
 
 ### Runtime and tooling
 
+- Repository-owned new implementation, tests, research and automation use strict TypeScript on supported Node.
+- Existing unrelated JavaScript automation may remain; test-only and temporary migration work have no language exception.
+- Adding Python, pip, venv, JDK or native compiler setup requires an explicit maintainer scope decision.
+- Run `npm run check:toolchain` to reject executable toolchain reintroduction and changes to frozen #239 legacy sources.
+- The exact migration allowance is frozen at #240 and must be removed by #252; never refresh it from discovery.
+- Historical prose, pinned source links and legitimate license metadata remain permitted.
+- The static guard does not prove absence of dynamically constructed commands; #253 requires execution qualification.
+
 - Node.js `>= 24.0.0` (see `engines.node` in `package.json`).
 - TypeScript strict, ES2022, `type: "module"` (ESM/NodeNext style).
 - CLI binary: `wsdl-tsc` (entry: `dist/cli.js`), orchestrating the pipeline.

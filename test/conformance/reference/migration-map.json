@@ -1,0 +1,2089 @@
+{
+  "formatVersion": 1,
+  "baseline": {
+    "revision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
+    "tree": "28a0907ffe4ccc068197c16014c87915b00df495"
+  },
+  "policy": "Method blocks include every assertion, literal input and parameterized family. Pinned source is the expectations authority; destinations are proposals until status verified. Historical observations never count as a current engine run.",
+  "sources": [
+    {
+      "path": "test/conformance/reference/analysis_contract_test.py",
+      "sha256": "f6edb024edd0ac6166d148f932199728a03f6ced09d638ecd2b1605cb7dcc043",
+      "lines": 86,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/analysis_contract_test.py"
+    },
+    {
+      "path": "test/conformance/reference/composition_contract_test.py",
+      "sha256": "5f12c16e2e8d6105bf0a78ec7283406730013faff7d527e4c02d22fd15ed4741",
+      "lines": 82,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py"
+    },
+    {
+      "path": "test/conformance/reference/dt01_calendar_contract_test.py",
+      "sha256": "b8e6018e3fe9fe14cbe75327c291aa357bc09a87093759405014fbd060774ed5",
+      "lines": 94,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/dt01_calendar_contract_test.py"
+    },
+    {
+      "path": "test/conformance/reference/graph_contract_test.py",
+      "sha256": "80b08759446e8938b410788ae1859c54f374d8de6274be5748608812c8c3fa49",
+      "lines": 28,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/graph_contract_test.py"
+    },
+    {
+      "path": "test/conformance/reference/resolution_contract_test.py",
+      "sha256": "0cf4c7b90d2f5b1eae904bd38d8c7fb6a1f2ae9fd01e262ad6f4f5986464b2b7",
+      "lines": 30,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/resolution_contract_test.py"
+    },
+    {
+      "path": "test/conformance/reference/s06_au01_contract_test.py",
+      "sha256": "4a5a4537be47ad5a72cad51ee5d2fa4a10970159ac23fee05b56f30e55ea42fe",
+      "lines": 452,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py"
+    },
+    {
+      "path": "test/conformance/reference/s06_pw01_contract_test.py",
+      "sha256": "8f7af27e5fcdbe74bf8615b1cb006a7517f3c5583e21dc50a82d95efe664b1dc",
+      "lines": 60,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_pw01_contract_test.py"
+    },
+    {
+      "path": "test/conformance/reference/s06_re01_contract_test.py",
+      "sha256": "803e8788fcfbccd5195a1a4e72959e0b76c7c0fe2556e22fe8f7fef069266f9f",
+      "lines": 243,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py"
+    },
+    {
+      "path": "test/conformance/reference/soap_probe.py",
+      "sha256": "8750eca790055b8bac2455c6b22535671775e76bd0a053d85471d14d66a73e8e",
+      "lines": 49,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/soap_probe.py"
+    },
+    {
+      "path": "test/conformance/reference/validate.py",
+      "sha256": "7e5daf3ff08871a86e6a8a9e441080c03dd003d3291a92cb514d15e097ff4365",
+      "lines": 133,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/validate.py"
+    },
+    {
+      "path": "test/conformance/reference/validate_test.py",
+      "sha256": "f2f05e78848bfbc68e6159a0381f21c42de76d8f1d08f006ee2f0f2c9a00a2a4",
+      "lines": 49,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/validate_test.py"
+    },
+    {
+      "path": "test/research/re01/measure.py",
+      "sha256": "8193839372dcb30d2c948c4a1728668f9f9052f669ea88b34080fdcaf2779800",
+      "lines": 43,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/research/re01/measure.py"
+    },
+    {
+      "path": "test/research/re01/witness_probe.py",
+      "sha256": "5db4fe156cdbb0db22559fac9c1ca2288ac69b35109b847dde89d8b53c863566",
+      "lines": 201,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/research/re01/witness_probe.py"
+    },
+    {
+      "path": "test/research/s06-au01/probe.py",
+      "sha256": "420253fd040aaa90d1281de1f05dfffcb04bda170f2cbc1e0387c0865427e9c1",
+      "lines": 369,
+      "url": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/research/s06-au01/probe.py"
+    }
+  ],
+  "obligations": [
+    {
+      "id": "NT-analysis_contract-exact_schema_and_small_particle_languages",
+      "source": "test/conformance/reference/analysis_contract_test.py",
+      "method": "test_exact_schema_and_small_particle_languages",
+      "line": 13,
+      "endLine": 87,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/analysis_contract_test.py#L13-L87",
+      "sourceContractSha256": "e6679662c46d6811ff128826d4797f54baf15f5a57b973c7274fa92d2d36772d",
+      "caseFamilies": [
+        {
+          "line": 29,
+          "expression": "for attr in [\"minOccurs\", \"maxOccurs\"]:"
+        },
+        {
+          "line": 47,
+          "expression": "for name, content, expected in cases:"
+        },
+        {
+          "line": 48,
+          "expression": "with self.subTest(name=name, content=content):"
+        },
+        {
+          "line": 66,
+          "expression": "for name, content, observed_primary, normative_and_secondary in disagreements:"
+        },
+        {
+          "line": 67,
+          "expression": "with self.subTest(disagreement=name):"
+        },
+        {
+          "line": 71,
+          "expression": "for name, content in [(\"deadOptional\", \"\"), (\"deadWildcard\", \"\"),"
+        },
+        {
+          "line": 73,
+          "expression": "with self.subTest(epsilon=name):"
+        },
+        {
+          "line": 80,
+          "expression": "for content, observed_primary, observed_secondary in ["
+        },
+        {
+          "line": 83,
+          "expression": "with self.subTest(disabled_terminal=content):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation",
+        "exact-bounds"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/analysis-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/analysis-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-composition_contract-public_characterization_schema_and_payloads",
+      "source": "test/conformance/reference/composition_contract_test.py",
+      "method": "test_public_characterization_schema_and_payloads",
+      "line": 11,
+      "endLine": 28,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L11-L28",
+      "sourceContractSha256": "f85ab7aa7908f99f8f7125eb052be073af4036b3893be60ce0cbbfa9d5c2cdbe",
+      "caseFamilies": [
+        {
+          "line": 16,
+          "expression": "for xml, expected in ["
+        },
+        {
+          "line": 25,
+          "expression": "with self.subTest(xml=xml):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/composition-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-composition_contract-schema_and_restriction_payloads",
+      "source": "test/conformance/reference/composition_contract_test.py",
+      "method": "test_schema_and_restriction_payloads",
+      "line": 29,
+      "endLine": 49,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L29-L49",
+      "sourceContractSha256": "ced89b485877f05afbd993288a2613463d82155a02ee8c387005d6f67c8c37ea",
+      "caseFamilies": [
+        {
+          "line": 45,
+          "expression": "for xml, expected in cases:"
+        },
+        {
+          "line": 46,
+          "expression": "with self.subTest(xml=xml):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/composition-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-composition_contract-invalid_attribute_and_wildcard_restrictions",
+      "source": "test/conformance/reference/composition_contract_test.py",
+      "method": "test_invalid_attribute_and_wildcard_restrictions",
+      "line": 50,
+      "endLine": 57,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L50-L57",
+      "sourceContractSha256": "8d45aca508489e6e4a751772c01bdffd1596380e859c296b7dfa4b102d3460fb",
+      "caseFamilies": [
+        {
+          "line": 51,
+          "expression": "for name in [\"required-prohibition\", \"new-attribute\", \"wildcard-widening\", \"wildcard-weakening\"]:"
+        },
+        {
+          "line": 52,
+          "expression": "with self.subTest(name=name):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/composition-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-composition_contract-effective_mixed_base_and_group_prohibition",
+      "source": "test/conformance/reference/composition_contract_test.py",
+      "method": "test_effective_mixed_base_and_group_prohibition",
+      "line": 58,
+      "endLine": 68,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L58-L68",
+      "sourceContractSha256": "71fcfe36a3605cdc6df53e89b4ec826508f535cbe6d15073b93cbaf04ce28f2f",
+      "caseFamilies": [
+        {
+          "line": 62,
+          "expression": "for xml, expected in [('<text xmlns=\"urn:composition\">value</text>', True),"
+        },
+        {
+          "line": 65,
+          "expression": "with self.subTest(xml=xml):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/composition-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-composition_contract-recorded_constraint_disagreements",
+      "source": "test/conformance/reference/composition_contract_test.py",
+      "method": "test_recorded_constraint_disagreements",
+      "line": 69,
+      "endLine": 83,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/composition_contract_test.py#L69-L83",
+      "sourceContractSha256": "af2835c832065437b84c10bd0a47c8f4d341029f92e6960dea4f7fce2ce66cc4",
+      "caseFamilies": [
+        {
+          "line": 75,
+          "expression": "for name in [\"group-local-wildcard\", \"nested-group-wildcard\"]:"
+        },
+        {
+          "line": 76,
+          "expression": "with self.subTest(name=name):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/composition-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/composition-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-dt01_calendar_contract-historical_schema_observations_with_copy_provenance",
+      "source": "test/conformance/reference/dt01_calendar_contract_test.py",
+      "method": "test_historical_schema_observations_with_copy_provenance",
+      "line": 58,
+      "endLine": 76,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/dt01_calendar_contract_test.py#L58-L76",
+      "sourceContractSha256": "4558f55d9eb0194f7a1f2f4a992ac96616cf602e9f5e8693b5258ce1821703c4",
+      "caseFamilies": [
+        {
+          "line": 60,
+          "expression": "for filename, (observed, digest) in COPIED.items():"
+        },
+        {
+          "line": 63,
+          "expression": "for engine in [\"xmlschema\", \"libxml2\"]:"
+        },
+        {
+          "line": 64,
+          "expression": "with self.subTest(fixture=filename, engine=engine):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 250,
+      "target": "test/conformance/reference/dt01-calendar-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/dt01-calendar-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-dt01_calendar_contract-related_calendar_lexical_instance_observations",
+      "source": "test/conformance/reference/dt01_calendar_contract_test.py",
+      "method": "test_related_calendar_lexical_instance_observations",
+      "line": 77,
+      "endLine": 85,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/dt01_calendar_contract_test.py#L77-L85",
+      "sourceContractSha256": "79ae5409ab439fbc34d54dc7cd79fae129a78c2099f595adab21be70ed28db78",
+      "caseFamilies": [
+        {
+          "line": 80,
+          "expression": "for family, value, observed in LEXICAL:"
+        },
+        {
+          "line": 81,
+          "expression": "with self.subTest(family=family, value=value):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 250,
+      "target": "test/conformance/reference/dt01-calendar-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/dt01-calendar-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-dt01_calendar_contract-equality_observations_are_distinct_from_candidate_authority",
+      "source": "test/conformance/reference/dt01_calendar_contract_test.py",
+      "method": "test_equality_observations_are_distinct_from_candidate_authority",
+      "line": 86,
+      "endLine": 95,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/dt01_calendar_contract_test.py#L86-L95",
+      "sourceContractSha256": "3894c2a64d82a1c44687f072858b89a4beee6e39f667de5d6e34a8a3943a7f3d",
+      "caseFamilies": [
+        {
+          "line": 89,
+          "expression": "for name, value, candidate_a, first, second in EQUALITY:"
+        },
+        {
+          "line": 90,
+          "expression": "with self.subTest(name=name, value=value):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 250,
+      "target": "test/conformance/reference/dt01-calendar-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/dt01-calendar-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-graph_contract-recursive_scalar_and_group_fixture",
+      "source": "test/conformance/reference/graph_contract_test.py",
+      "method": "test_recursive_scalar_and_group_fixture",
+      "line": 11,
+      "endLine": 20,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/graph_contract_test.py#L11-L20",
+      "sourceContractSha256": "3ab90e970b788eb9e2007a5d7241db8aa4c245da4e675fa94f06455940c5082c",
+      "caseFamilies": [],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "exact-bounds"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/graph-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/graph-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-graph_contract-chameleon_schema",
+      "source": "test/conformance/reference/graph_contract_test.py",
+      "method": "test_chameleon_schema",
+      "line": 21,
+      "endLine": 26,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/graph_contract_test.py#L21-L26",
+      "sourceContractSha256": "f13879e4dc64829307c70e0756920bab23cd2c4e382f975e5386d104f21f964e",
+      "caseFamilies": [],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/graph-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/graph-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-resolution_contract-complete_recursive_references",
+      "source": "test/conformance/reference/resolution_contract_test.py",
+      "method": "test_complete_recursive_references",
+      "line": 11,
+      "endLine": 15,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/resolution_contract_test.py#L11-L15",
+      "sourceContractSha256": "d3170f19d8d87e56838cb3e2c2f58271d40bf8a7c96849feaa8daec7036ae5eb",
+      "caseFamilies": [
+        {
+          "line": 12,
+          "expression": "for name in [\"resolved\", \"group-values\"]:"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/resolution-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/resolution-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-resolution_contract-missing_and_forbidden_cycles",
+      "source": "test/conformance/reference/resolution_contract_test.py",
+      "method": "test_missing_and_forbidden_cycles",
+      "line": 16,
+      "endLine": 23,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/resolution_contract_test.py#L16-L23",
+      "sourceContractSha256": "5585adf298bc20133c0404979d820edec0df9f5126ad5ad284604f086fa7ab09",
+      "caseFamilies": [
+        {
+          "line": 17,
+          "expression": "for name in [\"missing\", \"group-cycle\", \"attribute-cycle\", \"base-cycle\", \"scalar-cycle\", \"import-leak\"]:"
+        },
+        {
+          "line": 18,
+          "expression": "with self.subTest(name=name):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/resolution-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/resolution-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-resolution_contract-zero_bound_oracle_disagreement",
+      "source": "test/conformance/reference/resolution_contract_test.py",
+      "method": "test_zero_bound_oracle_disagreement",
+      "line": 24,
+      "endLine": 31,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/resolution_contract_test.py#L24-L31",
+      "sourceContractSha256": "1537df007a15c0ddfa9bbe57ea058f000e81c86068d48181d9f28308a4d9cb1e",
+      "caseFamilies": [
+        {
+          "line": 26,
+          "expression": "for name in [\"zero-group-cycle\", \"zero-missing-group\"]:"
+        },
+        {
+          "line": 27,
+          "expression": "with self.subTest(name=name):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 248,
+      "target": "test/conformance/reference/resolution-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/resolution-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_au01_contract-all_25_optional_combinations_both_orderings",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_all_25_optional_combinations_both_orderings",
+      "line": 108,
+      "endLine": 119,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L108-L119",
+      "sourceContractSha256": "a2d74986236625f28efeb9b134016ac4898da24fe8f5c73217eba4fd44891407",
+      "caseFamilies": [
+        {
+          "line": 109,
+          "expression": "for a, b in itertools.product(STATES, repeat=2):"
+        },
+        {
+          "line": 110,
+          "expression": "with self.subTest(base=a, local=b):"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "all_25_optional_combinations_both_orderings",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-required_optional_and_fixed_conflicts_do_not_prove_schema_invalid",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_required_optional_and_fixed_conflicts_do_not_prove_schema_invalid",
+      "line": 120,
+      "endLine": 134,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L120-L134",
+      "sourceContractSha256": "4bcb752939a84541eaa1f1b029429d93e434a349db6208915e21c4d131e9d70c",
+      "caseFamilies": [
+        {
+          "line": 121,
+          "expression": "for required in ((True, False), (False, True), (True, True)):"
+        },
+        {
+          "line": 128,
+          "expression": "for a, b in ((\"fixed-one\", \"none\"), (\"none\", \"fixed-one\")):"
+        },
+        {
+          "line": 129,
+          "expression": "for required in ((True, False), (False, True)):"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "required_optional_and_fixed_conflicts_do_not_prove_schema_invalid",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-identity_rules_separate_declaration_and_use_identity",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_identity_rules_separate_declaration_and_use_identity",
+      "line": 135,
+      "endLine": 154,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L135-L154",
+      "sourceContractSha256": "302c73a83ff20551e69b2da51403ff389270f09782576342b7c99c2f3f8a5c3b",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "identity_rules_separate_declaration_and_use_identity",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-original_context_value_equivalence_independent_expectations",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_original_context_value_equivalence_independent_expectations",
+      "line": 155,
+      "endLine": 180,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L155-L180",
+      "sourceContractSha256": "26e554c440ff04a437129b05f82e75fe55caccc2e5bbbb7c96d8271e626a72cc",
+      "caseFamilies": [
+        {
+          "line": 173,
+          "expression": "for a, b, expected in cases:"
+        },
+        {
+          "line": 174,
+          "expression": "with self.subTest(a=a, b=b):"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "original_context_value_equivalence_independent_expectations",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-budget_nodes_work_copying_and_large_exact_operands",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_budget_nodes_work_copying_and_large_exact_operands",
+      "line": 181,
+      "endLine": 222,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L181-L222",
+      "sourceContractSha256": "213a6d5a72f1500a912e5c8fe11b295d0d2ac7c71f9f40622e1a042968c0d055",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "budget_nodes_work_copying_and_large_exact_operands",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-25_schema_observations_keep_reference_separate",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_25_schema_observations_keep_reference_separate",
+      "line": 223,
+      "endLine": 235,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L223-L235",
+      "sourceContractSha256": "fb2861086ef8e807acc28447be23109303f777ff06f49e2228f9f448184a2ece",
+      "caseFamilies": [
+        {
+          "line": 224,
+          "expression": "for a, b in itertools.product(STATES, repeat=2):"
+        },
+        {
+          "line": 226,
+          "expression": "with self.subTest(path=path.name):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-au01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_au01_contract-identity_prohibition_and_global_constraint_observations",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_identity_prohibition_and_global_constraint_observations",
+      "line": 236,
+      "endLine": 284,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L236-L284",
+      "sourceContractSha256": "c4134a9f2358c65a3448fab3f6475ac28614d536c25e7c1b4d834958bf286f06",
+      "caseFamilies": [
+        {
+          "line": 258,
+          "expression": "for name, expected in cases.items():"
+        },
+        {
+          "line": 259,
+          "expression": "with self.subTest(name=name):"
+        },
+        {
+          "line": 261,
+          "expression": "for build, accepted, error in ("
+        },
+        {
+          "line": 269,
+          "expression": "for name in (\"restriction-omitted-required\", \"extension-prohibited-required\","
+        },
+        {
+          "line": 275,
+          "expression": "for schema in (xmlschema.XMLSchema(path), etree.XMLSchema(etree.parse(str(path)))):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-au01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_au01_contract-xmlschema_order_dependent_default_observations",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_xmlschema_order_dependent_default_observations",
+      "line": 285,
+      "endLine": 294,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L285-L294",
+      "sourceContractSha256": "3d8e798444cb256f3f138a13dac31cb5776cf728a28e47d02ba69524a9f0b756",
+      "caseFamilies": [
+        {
+          "line": 286,
+          "expression": "for a, b, augmentation in ((\"default-one\", \"default-two\", 2),"
+        },
+        {
+          "line": 292,
+          "expression": "for value in (1, 2, 3):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation",
+        "typed-augmentation"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-au01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_au01_contract-restriction_source_replacement_all_matches_independent_matrix",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_restriction_source_replacement_all_matches_independent_matrix",
+      "line": 295,
+      "endLine": 333,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L295-L333",
+      "sourceContractSha256": "43da4eeb1a85a890d48257663d309fc2b31042530d3001d8fcd5c31b334b0a24",
+      "caseFamilies": [
+        {
+          "line": 317,
+          "expression": "for name, expected in cases.items():"
+        },
+        {
+          "line": 320,
+          "expression": "with self.subTest(name=name):"
+        },
+        {
+          "line": 321,
+          "expression": "for fn, accepted in ((replacement_restriction_attributes, expected[0]),"
+        },
+        {
+          "line": 328,
+          "expression": "for actual, original in zip(result[\"effective\"], bases):"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "restriction_source_replacement_all_matches_independent_matrix",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-restriction_wildcard_does_not_bypass_matching_originals_or_source_role",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_restriction_wildcard_does_not_bypass_matching_originals_or_source_role",
+      "line": 334,
+      "endLine": 350,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L334-L350",
+      "sourceContractSha256": "1c87b91c01f8366905c239ab34709e7e1b996b06b117e79e77a61a321cce92ea",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "restriction_wildcard_does_not_bypass_matching_originals_or_source_role",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-restriction_20_reference_observations_are_separate_from_selected_predicate",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_restriction_20_reference_observations_are_separate_from_selected_predicate",
+      "line": 351,
+      "endLine": 383,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L351-L383",
+      "sourceContractSha256": "ab66b16251340e720497e50366863f4ce3b8b66be32a658edbc594bf98ebd83a",
+      "caseFamilies": [
+        {
+          "line": 372,
+          "expression": "for name, expected in observations.items():"
+        },
+        {
+          "line": 374,
+          "expression": "with self.subTest(name=name):"
+        },
+        {
+          "line": 375,
+          "expression": "for build, accepted, error in ("
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-au01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_au01_contract-restriction_finite_pair_search_preallocation_and_work_limits",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_restriction_finite_pair_search_preallocation_and_work_limits",
+      "line": 384,
+      "endLine": 407,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L384-L407",
+      "sourceContractSha256": "54881dac60c40f6dbc4897a4c4fd5f509fcaf8ce5bb53cb7f5e74a75800d4055",
+      "caseFamilies": [
+        {
+          "line": 399,
+          "expression": "many_bases = tuple(use(\"base-\" + str(index), \"none\") for index in range(4_000))"
+        },
+        {
+          "line": 402,
+          "expression": "many_locals = tuple(use(\"local-\" + str(index), \"none\") for index in range(4_000))"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "restriction_finite_pair_search_preallocation_and_work_limits",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-c1_one_typed_augmentation_preserves_every_original_and_admitted_witness",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_c1_one_typed_augmentation_preserves_every_original_and_admitted_witness",
+      "line": 408,
+      "endLine": 430,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L408-L430",
+      "sourceContractSha256": "b11893dfb24872a1d81a62c26167ef6b20bbe8522f426791739c56974c737650",
+      "caseFamilies": [
+        {
+          "line": 423,
+          "expression": "for actual, original in zip(result[\"contributing_uses\"], (a, b, c)):"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 242,
+      "target": "test/research/s06-au01/probe.test.ts",
+      "command": "npx vitest run test/research/s06-au01/probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "c1_one_typed_augmentation_preserves_every_original_and_admitted_witness",
+      "typecheck": "npx tsc -p test/research/s06-au01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_au01_contract-typed_fixed_payload_contrasts",
+      "source": "test/conformance/reference/s06_au01_contract_test.py",
+      "method": "test_typed_fixed_payload_contrasts",
+      "line": 431,
+      "endLine": 450,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_au01_contract_test.py#L431-L450",
+      "sourceContractSha256": "c16a0c342628371b0d1df9f3fa2d02fcdd5959b012c70d48fdc6d83ca935773d",
+      "caseFamilies": [
+        {
+          "line": 441,
+          "expression": "for name, lexical, expected in cases:"
+        },
+        {
+          "line": 442,
+          "expression": "with self.subTest(name=name, lexical=lexical):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-au01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-au01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_pw01_contract-fixed_schema_observations",
+      "source": "test/conformance/reference/s06_pw01_contract_test.py",
+      "method": "test_fixed_schema_observations",
+      "line": 23,
+      "endLine": 44,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_pw01_contract_test.py#L23-L44",
+      "sourceContractSha256": "b94eb6c2e297d5a16ba4922ecc3c237c0b9d28a3c53e48a4033be3f8d4e354fa",
+      "caseFamilies": [
+        {
+          "line": 26,
+          "expression": "for case in CASES:"
+        },
+        {
+          "line": 27,
+          "expression": "for engine, expected in case[\"observed\"].items():"
+        },
+        {
+          "line": 28,
+          "expression": "with self.subTest(case=case[\"id\"], engine=engine):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 250,
+      "target": "test/conformance/reference/s06-pw01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-pw01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_pw01_contract-fixed_payload_observations_separate_from_schema_validity",
+      "source": "test/conformance/reference/s06_pw01_contract_test.py",
+      "method": "test_fixed_payload_observations_separate_from_schema_validity",
+      "line": 45,
+      "endLine": 61,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_pw01_contract_test.py#L45-L61",
+      "sourceContractSha256": "f14ffa047dabd6641601d75edccf6a0273e8541640dffc7bd1e37fc752ee0591",
+      "caseFamilies": [
+        {
+          "line": 47,
+          "expression": "for case in CASES:"
+        },
+        {
+          "line": 48,
+          "expression": "for payload in case[\"payloads\"]:"
+        },
+        {
+          "line": 49,
+          "expression": "for engine, expected in payload[\"observed\"].items():"
+        },
+        {
+          "line": 50,
+          "expression": "with self.subTest(case=case[\"id\"], engine=engine, xml=payload[\"xml\"]):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 250,
+      "target": "test/conformance/reference/s06-pw01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-pw01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_re01_contract-all_eleven_fixed_schema_observations_ran",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_all_eleven_fixed_schema_observations_ran",
+      "line": 22,
+      "endLine": 41,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L22-L41",
+      "sourceContractSha256": "d19009424b095ddb9ee6f51d317c2016f3dcec96ea00d5b32a3fbdfbce5d590d",
+      "caseFamilies": [
+        {
+          "line": 25,
+          "expression": "for row in rows:"
+        },
+        {
+          "line": 27,
+          "expression": "with self.subTest(fixture=row[\"fixture\"]):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-re01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-re01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_re01_contract-au_witness_changes_hypothetical_source_incidence_not_real_identity",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_au_witness_changes_hypothetical_source_incidence_not_real_identity",
+      "line": 42,
+      "endLine": 74,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L42-L74",
+      "sourceContractSha256": "7c776bfb065388f30a07499c5a7fc888f6073aa75e3197b434a445578587b2e9",
+      "caseFamilies": [
+        {
+          "line": 46,
+          "expression": "for document in (original, witness):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-re01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-re01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_re01_contract-pointless_prefix_repeated_final_accepts_exact_seventeen_pairs",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_pointless_prefix_repeated_final_accepts_exact_seventeen_pairs",
+      "line": 75,
+      "endLine": 84,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L75-L84",
+      "sourceContractSha256": "d778db68082d93511f1680c591a3b37e69b944fd0c5cf706d5f7cd0602a22571",
+      "caseFamilies": [
+        {
+          "line": 79,
+          "expression": "for repeats, expected in [(16, False), (17, True), (18, False)]:"
+        },
+        {
+          "line": 81,
+          "expression": "with self.subTest(repeats=repeats):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation",
+        "exact-bounds"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-re01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-re01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_re01_contract-dead_intermediate_instance_is_separate_from_schema_mapping",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_dead_intermediate_instance_is_separate_from_schema_mapping",
+      "line": 85,
+      "endLine": 98,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L85-L98",
+      "sourceContractSha256": "798b8ef2deb35f5fde5ebd38cc6d9c8a91f0ce55a90bd3c703fa0098b743cae2",
+      "caseFamilies": [
+        {
+          "line": 88,
+          "expression": "for xml in [\"<root xmlns='urn:review'/>\","
+        },
+        {
+          "line": 90,
+          "expression": "with self.subTest(xml=xml):"
+        }
+      ],
+      "evidence": "live-external-observation",
+      "capabilities": [
+        "schema-construction",
+        "instance-validation"
+      ],
+      "owner": 249,
+      "target": "test/conformance/reference/s06-re01-contract.test.ts",
+      "command": "npx vitest run test/conformance/reference/s06-re01-contract.test.ts",
+      "status": "pending",
+      "gap": "Requires accepted Gate P/S and adapter; legacy remains live."
+    },
+    {
+      "id": "NT-s06_re01_contract-string_and_token_vacuous_witnesses",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_string_and_token_vacuous_witnesses",
+      "line": 99,
+      "endLine": 108,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L99-L108",
+      "sourceContractSha256": "f90e9fec733c310ae1ce3f4ae71d462442c53978c7ded7afb27d9e8a2588810e",
+      "caseFamilies": [
+        {
+          "line": 102,
+          "expression": "for kind in [\"string\", \"token\"]:"
+        },
+        {
+          "line": 103,
+          "expression": "with self.subTest(kind=kind):"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "string_and_token_vacuous_witnesses",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-integer_particle_uses_dead_separator_and_wildcard",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_integer_particle_uses_dead_separator_and_wildcard",
+      "line": 109,
+      "endLine": 118,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L109-L118",
+      "sourceContractSha256": "0446612acb18615f8650022ecde529d65f0296a84f23ad82922e44a25f0d780b",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "integer_particle_uses_dead_separator_and_wildcard",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-required_prefix_and_multiple_unrelated_suffixes",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_required_prefix_and_multiple_unrelated_suffixes",
+      "line": 119,
+      "endLine": 131,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L119-L131",
+      "sourceContractSha256": "40ddd055e312602e3367de8cfd3a5299dc9b02af7c3bfc0a43406acd22f36edd",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "required_prefix_and_multiple_unrelated_suffixes",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-empty_choice_is_not_erased_as_empty_language",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_empty_choice_is_not_erased_as_empty_language",
+      "line": 132,
+      "endLine": 138,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L132-L138",
+      "sourceContractSha256": "00da918689ea80958088784c183dc046acf77c5bb72ef3f0e9f62fd43056da25",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "empty_choice_is_not_erased_as_empty_language",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-pointless_prefix_can_absorb_repeated_nonsequence_root",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_pointless_prefix_can_absorb_repeated_nonsequence_root",
+      "line": 139,
+      "endLine": 147,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L139-L147",
+      "sourceContractSha256": "d71d519eabefe4effb19a37ec8a269a5f5176229f79a346181805cdfe2bfcfd6",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "pointless_prefix_can_absorb_repeated_nonsequence_root",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-failed_candidates_never_become_invalid_schema",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_failed_candidates_never_become_invalid_schema",
+      "line": 148,
+      "endLine": 154,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L148-L154",
+      "sourceContractSha256": "2ada1fa5b90b3526bdd284145126e207adf776619d7afbf1c4fedb40eca99732",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "failed_candidates_never_become_invalid_schema",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-unresolved_predicate_is_not_false",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_unresolved_predicate_is_not_false",
+      "line": 155,
+      "endLine": 161,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L155-L161",
+      "sourceContractSha256": "274efbc0c4fb3222fed441b4652f8bfb7b99ec361df506536ecad8f7dc10c27d",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "unresolved_predicate_is_not_false",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-all_and_final_or_content_gates_are_external",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_all_and_final_or_content_gates_are_external",
+      "line": 162,
+      "endLine": 168,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L162-L168",
+      "sourceContractSha256": "28cb55808ae6da2f4c6ec04243520d01125b55a2f28791db4e90c3ee3498d567",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "all_and_final_or_content_gates_are_external",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-huge_repetition_preserves_original_operand",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_huge_repetition_preserves_original_operand",
+      "line": 169,
+      "endLine": 177,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L169-L177",
+      "sourceContractSha256": "410dc30bbb55db3bc6c64b88f63c67668beb88ab8d1293fb8c819cb962bdd45e",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "huge_repetition_preserves_original_operand",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-shared_dag_and_recursive_type_reference_do_not_expand",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_shared_dag_and_recursive_type_reference_do_not_expand",
+      "line": 178,
+      "endLine": 188,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L178-L188",
+      "sourceContractSha256": "4d2c902bfa6969d4a8f35303011e50b155aa8ba976ac594b350d7b189e8de942",
+      "caseFamilies": [
+        {
+          "line": 181,
+          "expression": "for depth in range(20):"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "shared_dag_and_recursive_type_reference_do_not_expand",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-exact_work_boundary_and_no_partial_mapping",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_exact_work_boundary_and_no_partial_mapping",
+      "line": 189,
+      "endLine": 202,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L189-L202",
+      "sourceContractSha256": "36fb2488463e3c4dda02eceac7f26b69407533d1c819591350aae50bbe77ca5d",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "exact_work_boundary_and_no_partial_mapping",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-default_node_boundary_before_index_allocation",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_default_node_boundary_before_index_allocation",
+      "line": 203,
+      "endLine": 214,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L203-L214",
+      "sourceContractSha256": "cd6a02d8990f947726e691ce158d0625502183aae57ed512d82ec7836d0f0428",
+      "caseFamilies": [
+        {
+          "line": 204,
+          "expression": "leaves = tuple(View(\"n\", \"element\") for _ in range(99_999))"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "default_node_boundary_before_index_allocation",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-adversarial_prefix_exhausts_default_work_without_answer",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_adversarial_prefix_exhausts_default_work_without_answer",
+      "line": 215,
+      "endLine": 230,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L215-L230",
+      "sourceContractSha256": "091804dec50db3af1d48a3ab06c453122784d5a9316c74250477ddaef7796b4f",
+      "caseFamilies": [
+        {
+          "line": 217,
+          "expression": "for i in range(800)) + (View(\"mandatory\", \"element\"),)"
+        },
+        {
+          "line": 218,
+          "expression": "children = tuple(View(\"d\" + str(i), \"element\") for i in range(800))"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "adversarial_prefix_exhausts_default_work_without_answer",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-s06_re01_contract-bad_limits_and_uncertified_normalization",
+      "source": "test/conformance/reference/s06_re01_contract_test.py",
+      "method": "test_bad_limits_and_uncertified_normalization",
+      "line": 231,
+      "endLine": 241,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/s06_re01_contract_test.py#L231-L241",
+      "sourceContractSha256": "4127440ef7bbde208bab2ce20575bb80720a5a97168a99db84a8824d3207718c",
+      "caseFamilies": [
+        {
+          "line": 233,
+          "expression": "for limit in [0, -1, True, 2**53, 1.5]:"
+        },
+        {
+          "line": 234,
+          "expression": "with self.subTest(limit=limit):"
+        }
+      ],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 243,
+      "target": "test/research/re01/witness-probe.test.ts",
+      "command": "npx vitest run test/research/re01/witness-probe.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "bad_limits_and_uncertified_normalization",
+      "typecheck": "npx tsc -p test/research/re01/tsconfig.json"
+    },
+    {
+      "id": "NT-validate-missing_fixture_is_input_failure",
+      "source": "test/conformance/reference/validate_test.py",
+      "method": "test_missing_fixture_is_input_failure",
+      "line": 14,
+      "endLine": 17,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/validate_test.py#L14-L17",
+      "sourceContractSha256": "e647d0d4c60cb8f3229a2e26432a0a087c738268c9062a36a31268f7590db1c6",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 246,
+      "target": "test/conformance/reference/validate.test.ts",
+      "command": "npx vitest run test/conformance/reference/validate.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "missing_fixture_is_input_failure",
+      "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json"
+    },
+    {
+      "id": "NT-validate-wrong_tool_version_is_setup_failure",
+      "source": "test/conformance/reference/validate_test.py",
+      "method": "test_wrong_tool_version_is_setup_failure",
+      "line": 18,
+      "endLine": 23,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/validate_test.py#L18-L23",
+      "sourceContractSha256": "e3e7dda7185b41b2a246ed3653787978a90281ded3107ae49cf34ee6efc5b257",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 246,
+      "target": "test/conformance/reference/validate.test.ts",
+      "command": "npx vitest run test/conformance/reference/validate.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "wrong_tool_version_is_setup_failure",
+      "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json"
+    },
+    {
+      "id": "NT-validate-schema_rejection_never_becomes_instance_rejection",
+      "source": "test/conformance/reference/validate_test.py",
+      "method": "test_schema_rejection_never_becomes_instance_rejection",
+      "line": 24,
+      "endLine": 29,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/validate_test.py#L24-L29",
+      "sourceContractSha256": "6428060f156f574be4f5edf9fdb93577f06820f9e61572ac72df8e6c3c5ae212",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 246,
+      "target": "test/conformance/reference/validate.test.ts",
+      "command": "npx vitest run test/conformance/reference/validate.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "schema_rejection_never_becomes_instance_rejection",
+      "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json"
+    },
+    {
+      "id": "NT-validate-disagreement_fails_qualification",
+      "source": "test/conformance/reference/validate_test.py",
+      "method": "test_disagreement_fails_qualification",
+      "line": 30,
+      "endLine": 38,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/validate_test.py#L30-L38",
+      "sourceContractSha256": "c19e734f559b5820f434c5720f5773612feb6866c9612568f7434127340d9ae4",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 246,
+      "target": "test/conformance/reference/validate.test.ts",
+      "command": "npx vitest run test/conformance/reference/validate.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "disagreement_fails_qualification",
+      "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json"
+    },
+    {
+      "id": "NT-validate-network_schema_and_doctype_are_input_failures",
+      "source": "test/conformance/reference/validate_test.py",
+      "method": "test_network_schema_and_doctype_are_input_failures",
+      "line": 39,
+      "endLine": 50,
+      "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/f4e39e819f2d9aa264cfdd14d16154c6443c9bac/test/conformance/reference/validate_test.py#L39-L50",
+      "sourceContractSha256": "9795c21b6c51f12c9bdf018d05728e5a266cbd2fd13f029179b3ad3d46e4b022",
+      "caseFamilies": [],
+      "evidence": "pure-contract",
+      "capabilities": [
+        "identity",
+        "exact-values",
+        "bounded-work"
+      ],
+      "owner": 246,
+      "target": "test/conformance/reference/validate.test.ts",
+      "command": "npx vitest run test/conformance/reference/validate.test.ts",
+      "status": "verified-staging",
+      "gap": null,
+      "testName": "network_schema_and_doctype_are_input_failures",
+      "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json"
+    }
+  ],
+  "baselineCases": [
+    {
+      "id": "NT-baseline-original-sequence",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=original-sequence]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": true,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/original-sequence-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/original-sequence-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/original-sequence-3.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/original-sequence-4.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-optional-sequence",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=optional-sequence]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": false,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/optional-sequence-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/optional-sequence-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/optional-sequence-3.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-simple-choice",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=simple-choice]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": true,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/simple-choice-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/simple-choice-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/simple-choice-3.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/simple-choice-4.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-sequence-order",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=sequence-order]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": true,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/sequence-order-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/sequence-order-2.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-choice-boundary",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=choice-boundary]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": false,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/choice-boundary-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/choice-boundary-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/choice-boundary-3.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-zero-group-unbounded",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=zero-group-unbounded]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": true,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/zero-group-unbounded-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/zero-group-unbounded-2.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-zero-element-unbounded",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=zero-element-unbounded]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": false,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/zero-element-unbounded-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/zero-element-unbounded-2.xml",
+          "secondary": true
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-required-single",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=required-single]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": false,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/required-single-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/required-single-2.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-required-multiple",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=required-multiple]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": false,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/required-multiple-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/required-multiple-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/required-multiple-3.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/required-multiple-4.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-empty-alternative",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=empty-alternative]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": false,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/empty-alternative-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/empty-alternative-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/empty-alternative-3.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-finite-count-gap",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=finite-count-gap]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": true,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/finite-count-gap-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/finite-count-gap-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/finite-count-gap-3.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-optional-all",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=optional-all]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": false,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/optional-all-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/optional-all-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/optional-all-3.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-wildcard-sequence",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=wildcard-sequence]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": false,
+      "instances": [
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-1.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-2.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-3.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-4.xml",
+          "secondary": false
+        },
+        {
+          "fixture": "xsd/compositors/instances/wildcard-sequence-5.xml",
+          "secondary": false
+        }
+      ],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    },
+    {
+      "id": "NT-baseline-invalid-all-sequence",
+      "source": "test/conformance/semantic-baseline.json",
+      "selector": "cases[id=invalid-all-sequence]",
+      "owner": 248,
+      "target": "test/conformance/reference/baseline.test.ts",
+      "command": "npm run test:reference:full",
+      "evidence": "live-external-observation",
+      "fast": true,
+      "instances": [],
+      "status": "pending",
+      "gap": "Gate S unresolved"
+    }
+  ],
+  "operations": [
+    {
+      "path": "scripts/semantic-reference.mjs",
+      "sha256": "1dc0d89d5161ff2c2284f095bcfae142c9a32e03409503f4a22a9099af9b3beb",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "test/conformance/reference/requirements.txt",
+      "sha256": "b34bfc3ace94a924b82425dcdb1b99301f4982d10c22afb700314c3d856ae0c1",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "test/helpers/contentModelSoapProbe.ts",
+      "sha256": "8dc64e60c073d20264660aefca09864ac2d63f52df0f1fa4c8b819969bb996b9",
+      "owner": 251,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "test/integration/content-model-soap-feasibility.test.ts",
+      "sha256": "87b16c51212faded7c2a722da82fc03e58bc85849577c1c2a44fe615ffe11d46",
+      "owner": 251,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "package.json",
+      "sha256": "a12a06e55b5dc0f273d7dc5c0752feff2a1261a8f7cb2cc3bde0b16f7d890998",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "51d7fd9d6f66940b9c25319c6e4405a1a7ba2f31a0d382162bad3366e5f063fc",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "sha256": "51286df2bb0ed197748b5710b7d1066e94cbc42cb9670b9a6b9b4195dad4622f",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "82c0be7847412ed83afb8513682d1043f97c92283af9cd20c7cef90051520ffe",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "test/unit/semantic-reference.test.ts",
+      "sha256": "1e39b2f844dc2cec31826533be626d46ac14ada71abd5799d92da895388549b2",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "test/conformance/registry.ts",
+      "sha256": "71abf43bfd00261d17b035c6149bbe1460b2edda88f52b670142c9a42f90a65a",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "test/conformance/s06-research.test.ts",
+      "sha256": "0a14a30b4d0c1f38470b504ed12b8a516b5e58d58c920c84e994e76aac910771",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    },
+    {
+      "path": "test/conformance/s06-research-manifest.json",
+      "sha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
+      "owner": 252,
+      "action": "Preserve legacy frozen until accepted coordinated cutover; replace executable consumers and reconcile current identities/hashes."
+    }
+  ],
+  "purePrograms": [
+    {
+      "source": "test/research/s06-au01/probe.py",
+      "target": "test/research/s06-au01/probe.ts",
+      "owner": 242
+    },
+    {
+      "source": "test/research/re01/witness_probe.py",
+      "target": "test/research/re01/witness-probe.ts",
+      "owner": 243
+    },
+    {
+      "source": "test/research/re01/measure.py",
+      "target": "test/research/re01/measure.ts",
+      "owner": 243
+    }
+  ],
+  "soap": {
+    "owner": 251,
+    "calls": 13,
+    "source": "test/helpers/contentModelSoapProbe.ts",
+    "target": "test/helpers/contentModelSoapProbe.ts",
+    "command": "npx vitest run test/integration/content-model-soap-feasibility.test.ts"
+  },
+  "historicalExpectations": [
+    "test/conformance/semantic-baseline.json",
+    "test/conformance/fixtures/xsd/s06-pw01/expectations.json",
+    "test/conformance/fixtures/xsd/re01/expectations.json",
+    "test/conformance/s06-research-manifest.json"
+  ],
+  "draftHazard": {
+    "revision": "460f5b8379c68ffef79917284e445b5ab046429e",
+    "owner": 179,
+    "pr": 231,
+    "status": "outside-epic; port on rebase; frozen allowance must reject additional Python",
+    "path": "test/conformance/reference/schema_assessment_contract_test.py",
+    "methods": [
+      "test_schema_observations_and_explicit_open_qualifications",
+      "test_separate_literal_primary_payload_contrasts"
+    ],
+    "sourceUrl": "https://github.com/TechSpokes/typescript-wsdl-client/blob/460f5b8379c68ffef79917284e445b5ab046429e/test/conformance/reference/schema_assessment_contract_test.py"
+  },
+  "summary": {
+    "files": 14,
+    "lines": 1919,
+    "methods": 53,
+    "baselineSchemas": 14,
+    "baselineInstances": 40
+  },
+  "qualifications": {
+    "primary": {
+      "issue": 244,
+      "evidenceId": "NT-T05",
+      "gate": "qualified-with-explicit-limits",
+      "report": "test/conformance/reference/qualification/observations.json",
+      "limits": [
+        "Original huge bounds unsupported; they still require secondary full-schema qualification.",
+        "No full process RSS cap; worker JavaScript heap and elapsed limits only.",
+        "Linux Node 24 demonstrated; #253 platform matrix pending."
+      ]
+    },
+    "secondary": {
+      "issue": 245,
+      "evidenceId": "NT-T06",
+      "gate": "requires-maintainer-decision",
+      "canStart247": false
+    }
+  }
+}
