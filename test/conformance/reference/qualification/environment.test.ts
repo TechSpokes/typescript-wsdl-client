@@ -1,11 +1,11 @@
-import { mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { assertProbes, classifySpawn, inventoryInterpreters, isInterpreterName, isWindowsLogicalWrapperPath,
-    parseRegistryInstallPaths, prepareWindowsTargets, probeAclLinks, probeCandidates, probeExecutable, probesForCandidate,
-    restoreAclBackups, saveAndDenyTargets,
+import { assertDisposableWindows, assertProbes, assertRemovalInventory, assertUnavailableProbes, classifySpawn, cleanupEnvironment,
+    inventoryInterpreters, isInterpreterName, isWindowsLogicalWrapperPath,
+    parseRegistryInstallPaths, prepareWindowsRemoval, probeCandidates, probeExecutable, probeRemovalPaths, probesForCandidate, removeTargets,
     windowsInstallationPlan } from './environment.js';
-import type { AclBackup, AclTarget, FileAlias, Probe, TargetOperations, WindowsInstallationContext } from './environment.js';
+import type { EnvironmentEnforcement, FileAlias, Probe, RemovalRecord, RemovalTarget, TargetOperations, WindowsInstallationContext } from './environment.js';
 
 function fixtureContext(root: string): WindowsInstallationContext {
     return { driveRoot: resolve(root), windows: resolve(root, 'Windows'), users: resolve(root, 'Users'),
@@ -81,7 +81,7 @@ describe('interpreter execution qualification controls', () => {
         } finally { rmSync(root, { recursive: true, force: true }); }
     });
     it('follows Linux directory aliases once and retains interpreter aliases', () => {
-        if (process.platform === 'win32') return; // Windows alias creation requires privileges; hosted ACL controls are separate.
+        if (process.platform === 'win32') return; // Windows alias creation requires privileges; hosted removal controls are separate.
         mkdirSync('tmp/conformance', { recursive: true });
         const root = mkdtempSync('tmp/conformance/platform-links-');
         try {
@@ -263,163 +263,177 @@ describe('interpreter execution qualification controls', () => {
             expect(inventoryInterpreters(plan.roots, plan.exclusions, { ...plan, platform: 'win32' }).errors).toEqual([]);
         } finally { rmSync(root, { recursive: true, force: true }); }
     });
-    it('prepares separate link-object and resolved file targets with the stronger read denial preserved', () => {
-        const canonical = 'C:\\tools\\python.exe';
-        const regular = 'C:\\control\\python.exe';
-        const preparation = prepareWindowsTargets([regular, canonical, storeAlias.path], [storeAlias], {
-            canonicalize: path => path === storeAlias.path ? canonical : path,
+    it('plans every original path and canonical physical destination before any removal', () => {
+        const physical = 'C:\\tools\\embedded-runtime.exe';
+        const registered = 'C:\\registered\\custom-launcher.exe';
+        const wrapper = 'C:\\wrappers\\python3.14';
+        const preparation = prepareWindowsRemoval([registered, wrapper, physical, storeAlias.path], [storeAlias], {
+            canonicalize: path => path === storeAlias.path ? physical : path,
         });
+        expect(preparation.errors).toEqual([]);
         expect(preparation.targets).toEqual(expect.arrayContaining([
-            { path: regular, kind: 'file', permission: 'X' },
-            { path: canonical, kind: 'file', permission: 'RD,X' },
-            { path: storeAlias.path, kind: 'link', permission: 'RD,X' },
+            { path: physical, kind: 'file' }, { path: registered, kind: 'file' },
+            { path: wrapper, kind: 'file' }, { path: storeAlias.path, kind: 'link' },
         ]));
-        expect(preparation.targets).toHaveLength(3);
-        expect(preparation.errors).toEqual([]);
-        expect(preparation.aliasLookups).toEqual([{ alias: storeAlias, canonicalization: { outcome: 'resolved', target: canonical } }]);
+        expect(preparation.targets).toHaveLength(4);
+        expect(preparation.targetLookups).toHaveLength(4);
+        expect(preparation.aliasLookups).toEqual([{ alias: storeAlias, canonicalization: { outcome: 'resolved', target: physical } }]);
+        expect(Object.isFrozen(preparation.targets)).toBe(true);
+        expect(preparation.targets.every(Object.isFrozen)).toBe(true);
     });
-    it('uses data/execute rights for scripts and versioned wrappers while ordinary executables retain execute denial', () => {
-        const wrappers = ['python3.14', 'pip3.13', 'custom-launcher', 'PY.js'].map(name => 'C:\\wrappers\\' + name);
-        const executable = 'C:\\tools\\python.exe';
-        const preparation = prepareWindowsTargets([...wrappers, executable], [], { canonicalize: path => path });
-        expect(preparation.errors).toEqual([]);
-        for (const path of wrappers) expect(preparation.targets).toContainEqual({ path, kind: 'file', permission: 'RD,X' });
-        expect(preparation.targets).toContainEqual({ path: executable, kind: 'file', permission: 'X' });
-    });
-    it('controls an identified symbolic link directly while treating lookup failures as diagnostic evidence', () => {
+    it('can plan an identified link object with failed lookup while rejecting unresolved ordinary targets', () => {
         for (const code of ['EACCES', 'EPERM', 'ENOENT', 'ENOTDIR', 'EINVAL', 'EIO']) {
-            const preparation = prepareWindowsTargets([storeAlias.path], [storeAlias], failedLookup(code));
-            expect(preparation.targets).toEqual([{ path: storeAlias.path, kind: 'link', permission: 'RD,X' }]);
+            const preparation = prepareWindowsRemoval([storeAlias.path], [storeAlias], failedLookup(code));
+            expect(preparation.targets).toEqual([{ path: storeAlias.path, kind: 'link' }]);
             expect(preparation.errors).toEqual([]);
             expect(preparation.aliasLookups).toEqual([{ alias: storeAlias,
                 canonicalization: { outcome: 'failed', errorCode: code, error: storeAlias.path + ': ' + code } }]);
-            const ordinary = prepareWindowsTargets([storeAlias.path], [], failedLookup(code));
+            const ordinary = prepareWindowsRemoval([storeAlias.path], [], failedLookup(code));
             expect(ordinary.targets).toEqual([]);
-            expect(ordinary.errors).toHaveLength(1); // Missing/stat-denied ordinary targets are not silently dropped.
+            expect(ordinary.errors).toHaveLength(1);
             const fileInAliasDirectory: FileAlias = { ...storeAlias, dirent: 'file', identification: 'windows-apps-command-entry' };
-            expect(prepareWindowsTargets([storeAlias.path], [fileInAliasDirectory], failedLookup(code)).errors).toHaveLength(1);
+            expect(prepareWindowsRemoval([storeAlias.path], [fileInAliasDirectory], failedLookup(code)).errors).toHaveLength(1);
         }
     });
-    it('uses /L for link save, data/execute denial and matching parent-directory restoration, saving all originals first', () => {
-        const physical = 'C:\\Applications\\python.exe';
-        const targets: AclTarget[] = [{ path: physical, kind: 'file', permission: 'RD,X' }, { path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
-        const backups: AclBackup[] = [];
-        const commands: { args: readonly string[]; cwd?: string }[] = [];
-        const invoke = (args: readonly string[], cwd?: string): void => {
-            if (args.includes('/deny')) expect(backups.every(backup => !!backup.backup)).toBe(true);
-            if (args.includes('/deny')) expect(backups.find(backup => backup.path === args[0])?.applied).toBe(true);
-            commands.push({ args: [...args], cwd });
-        };
-        let persisted = 0;
-        saveAndDenyTargets(targets, backups, 'tmp/conformance/icacls-command-control', 'S-1-5-21-239', invoke, () => { persisted++; });
-        expect(commands.map(command => command.args[1])).toEqual(['/save', '/save', '/deny', '/deny']);
-        expect(commands[0]).toEqual({ args: ['python.exe', '/save', backups[0]!.backup, '/q'], cwd: 'C:\\Applications' });
-        expect(commands[1]).toEqual({ args: ['python.exe', '/save', backups[1]!.backup, '/L', '/q'],
-            cwd: 'C:\\Users\\runner\\AppData\\Local\\Microsoft\\WindowsApps' });
-        expect(commands[2]!.args).toEqual([physical, '/deny', '*S-1-5-21-239:(RD,X)', '/q']);
-        expect(commands[3]!.args).toEqual([storeAlias.path, '/deny', '*S-1-5-21-239:(RD,X)', '/L', '/q']);
-        expect(persisted).toBe(4); // Each saved original and each mutation intent was persisted.
-        expect(restoreAclBackups(backups, invoke)).toEqual([]);
-        expect(commands.slice(4).map(command => command.args)).toEqual([
-            ['C:\\Users\\runner\\AppData\\Local\\Microsoft\\WindowsApps', '/restore', backups[1]!.backup, '/L', '/q'],
-            ['C:\\Applications', '/restore', backups[0]!.backup, '/q'],
-        ]);
-        expect(backups.every(backup => backup.restored)).toBe(true);
-    });
-    it('blocks file data and execution while preserving ACL inspection, restoration and original denies', () => {
-        // Documented Win32 access masks: RD=FILE_READ_DATA, X=FILE_EXECUTE,
-        // RC=READ_CONTROL and WDAC=WRITE_DAC. RX also includes READ_CONTROL.
-        const rights: Readonly<Record<string, number>> = { RD: 0x1, X: 0x20, RX: 0x1200a9 };
-        const management = 0x20000 | 0x40000;
-        expect(rights.RX! & management).toBe(0x20000); // Regression control: broad RX prevents ACL inspection.
-        for (const kind of ['file', 'link'] as const) {
-            const target: AclTarget = { path: kind === 'link' ? storeAlias.path : 'C:\\wrappers\\PY.js', kind, permission: 'RD,X' };
-            const backups: AclBackup[] = [];
-            const originalDenied = 0x2; // An existing FILE_WRITE_DATA denial must survive restoration.
-            let denied = originalDenied;
-            let saved: number | undefined;
-            const invoke = (args: readonly string[]): void => {
-                if (args.includes('/save')) saved = denied;
-                if (args.includes('/deny')) {
-                    const permission = args[2]?.match(/:\(([^)]+)\)$/)?.[1];
-                    if (!permission) throw new Error('Missing explicit deny rights');
-                    denied |= permission.split(',').reduce((mask, right) => {
-                        if (!(right in rights)) throw new Error('Unexpected deny right: ' + right);
-                        return mask | rights[right]!;
-                    }, 0);
-                }
-                if (args.includes('/restore')) {
-                    if (denied & management) throw new Error('ACL management is denied');
-                    if (saved === undefined) throw new Error('No original ACL saved');
-                    denied = saved;
-                }
-            };
-            saveAndDenyTargets([target], backups, 'tmp/conformance/icacls-rights-control', 'S-1-5-21-239', invoke);
-            expect(denied & (rights.RD! | rights.X!)).toBe(rights.RD! | rights.X!);
-            expect(denied & management).toBe(0);
-            expect(restoreAclBackups(backups, invoke)).toEqual([]);
-            expect(denied).toBe(originalDenied);
-            expect(backups[0]?.restored).toBe(true);
+    it('protects both the running Node path and its resolved executable from direct or aliased removal', () => {
+        const node = 'C:\\tools\\node.exe';
+        const physical = 'C:\\physical\\node.exe';
+        const alias: FileAlias = { ...storeAlias, path: 'C:\\aliases\\python.exe' };
+        for (const protectedPath of [node, physical]) {
+            const preparation = prepareWindowsRemoval([protectedPath.toUpperCase(), alias.path], [alias], {
+                canonicalize: path => path === alias.path ? protectedPath : path,
+            }, [node, physical]);
+            expect(preparation.errors.some(error => error.includes('running Node executable'))).toBe(true);
+            expect(preparation.targets).not.toEqual(expect.arrayContaining([{ path: protectedPath, kind: 'file' }]));
+            expect(preparation.targets.filter(target => target.kind === 'file')).toEqual([]);
         }
     });
-    it('restores successful and partially failed denial intents in reverse with their original link/file modes', () => {
-        const physical = 'C:\\Applications\\python.exe';
-        const targets: AclTarget[] = [{ path: physical, kind: 'file', permission: 'X' }, { path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
-        const backups: AclBackup[] = [];
-        const calls: string[][] = [];
-        const invoke = (args: readonly string[]): void => {
-            calls.push([...args]);
-            if (args[0] === storeAlias.path && args.includes('/deny')) throw new Error('partial link denial failure');
-        };
-        expect(() => saveAndDenyTargets(targets, backups, 'tmp/conformance/icacls-failure-control', 'S-1-5-21-239', invoke)).toThrow('partial link denial failure');
-        expect(calls.slice(0, 2).every(args => args.includes('/save'))).toBe(true);
-        expect(backups.map(backup => backup.applied)).toEqual([true, true]);
-        expect(restoreAclBackups(backups, invoke)).toEqual([]);
-        expect(calls.slice(-2).map(args => ({ directory: args[0], link: args.includes('/L') }))).toEqual([
-            { directory: 'C:\\Users\\runner\\AppData\\Local\\Microsoft\\WindowsApps', link: true },
-            { directory: 'C:\\Applications', link: false },
-        ]);
-        expect(backups.every(backup => backup.restored)).toBe(true);
+    it('requires Windows, GitHub-hosted infrastructure and the explicit task marker for native removal', () => {
+        const accepted = { GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'github-hosted', NODE_REFERENCE_DISPOSABLE_WINDOWS: 'true' };
+        expect(assertDisposableWindows('win32', accepted)).toEqual({
+            githubActions: 'true', runnerEnvironment: 'github-hosted', taskMarker: 'true',
+        });
+        for (const platform of ['linux', 'darwin'] as const)
+            expect(() => assertDisposableWindows(platform, accepted)).toThrow('disposable GitHub-hosted Windows runner');
+        for (const key of Object.keys(accepted)) {
+            const missing: NodeJS.ProcessEnv = { ...accepted };
+            delete missing[key];
+            expect(() => assertDisposableWindows('win32', missing)).toThrow('disposable GitHub-hosted Windows runner');
+        }
+        for (const rejected of [
+            { ...accepted, GITHUB_ACTIONS: 'True' }, { ...accepted, RUNNER_ENVIRONMENT: 'self-hosted' },
+            { ...accepted, NODE_REFERENCE_DISPOSABLE_WINDOWS: 'false' }, {},
+        ]) expect(() => assertDisposableWindows('win32', rejected)).toThrow('disposable GitHub-hosted Windows runner');
     });
-    it('never mutates ACLs when saving an original link ACL fails', () => {
-        const targets: AclTarget[] = [{ path: 'C:\\Applications\\python.exe', kind: 'file', permission: 'X' },
-            { path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
-        const backups: AclBackup[] = [];
-        const calls: string[][] = [];
-        expect(() => saveAndDenyTargets(targets, backups, 'tmp/conformance/icacls-save-failure-control', 'S-1-5-21-239', args => {
-            calls.push([...args]);
-            if (args.includes('/L')) throw new Error('link ACL save failed');
-        })).toThrow('link ACL save failed');
-        expect(calls.every(args => args.includes('/save'))).toBe(true);
-        expect(backups.every(backup => !backup.applied)).toBe(true);
-        const restore = vi.fn();
-        expect(restoreAclBackups(backups, restore)).toEqual([]);
-        expect(restore).not.toHaveBeenCalled();
+    it('persists the whole plan and each removal intent, records every error and never skips a target', () => {
+        const targets: RemovalTarget[] = [
+            { path: 'C:\\tools\\python.exe', kind: 'file' }, { path: storeAlias.path, kind: 'link' },
+            { path: 'C:\\tools\\pip.exe', kind: 'file' },
+        ];
+        const records: RemovalRecord[] = [];
+        const snapshots: string[][] = [];
+        const calls: string[] = [];
+        const errors = removeTargets(targets, records, path => {
+            expect(records).toHaveLength(targets.length);
+            expect(records.find(record => record.path === path)?.outcome).toBe('removing');
+            expect(snapshots.at(-1)).toContain(path + ':removing');
+            calls.push(path);
+            if (path === storeAlias.path) throw Object.assign(new Error('Cannot unlink alias'), { code: 'EACCES' });
+        }, () => { snapshots.push(records.map(record => record.path + ':' + record.outcome)); });
+        expect(snapshots[0]).toEqual(targets.map(target => target.path + ':planned'));
+        expect(calls).toEqual(targets.map(target => target.path));
+        expect(records.map(record => record.outcome)).toEqual(['removed', 'failed', 'removed']);
+        expect(records[1]).toMatchObject({ errorCode: 'EACCES', error: 'Cannot unlink alias' });
+        expect(errors).toEqual([storeAlias.path + ': Cannot unlink alias']);
     });
-    it('keeps original link absolute, native/read and named probes after installation, including disappeared links', () => {
-        const targets: AclTarget[] = [{ path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
+    it('records explicit native absence separately and treats other deletion failures as fatal', () => {
+        for (const code of ['ENOENT', 'ENOTDIR', 'EPERM', 'EBUSY', 'EIO']) {
+            const records: RemovalRecord[] = [];
+            const errors = removeTargets([{ path: storeAlias.path, kind: 'link' }], records, () => {
+                throw Object.assign(new Error(code), { code });
+            });
+            expect(records[0]?.errorCode).toBe(code);
+            const missing = code === 'ENOENT' || code === 'ENOTDIR';
+            expect(records[0]?.outcome).toBe(missing ? 'missing' : 'failed');
+            expect(errors).toHaveLength(missing ? 0 : 1);
+        }
+    });
+    it('proves a copied Node control starts before removal and is actually unavailable afterward', () => {
+        mkdirSync('tmp/conformance', { recursive: true });
+        const root = mkdtempSync('tmp/conformance/removal-node-control-');
+        const candidate = resolve(root, 'python.exe');
+        try {
+            copyFileSync(process.execPath, candidate);
+            expect(probeExecutable(candidate, ['--version'])).toMatchObject({ outcome: 'started', status: 0 });
+            expect(() => assertUnavailableProbes(probeRemovalPaths([candidate]))).toThrow('unavailable controls');
+            const records: RemovalRecord[] = [];
+            expect(removeTargets([{ path: candidate, kind: 'file' }], records, path => unlinkSync(path))).toEqual([]);
+            expect(records[0]?.outcome).toBe('removed');
+            const probes = probeRemovalPaths([candidate]);
+            expect(probes.map(probe => probe.method)).toEqual(['spawn', 'script-read']);
+            expect(probes.every(probe => probe.outcome === 'unavailable')).toBe(true);
+            expect(() => assertUnavailableProbes(probes)).not.toThrow();
+        } finally { rmSync(root, { recursive: true, force: true }); }
+    });
+    it('retains disappeared original aliases, physical destinations and their names while probing registry-retained candidates', () => {
+        const physical = 'C:\\tools\\embedded-runtime.exe';
+        const registered = 'C:\\registered\\custom-launcher.exe';
+        const originals = [storeAlias.path, physical, registered];
+        expect(() => assertRemovalInventory([registered], originals)).not.toThrow(); // Registry metadata can outlive a deleted file.
         const native = vi.fn((path: string) => failedProbe(path, 'spawn', 'ENOENT'));
         const read = vi.fn((path: string) => failedProbe(path, 'script-read', 'ENOENT'));
-        const probes = probeAclLinks(targets, { native, read });
-        expect(probes.map(probe => probe.method)).toEqual(['spawn', 'script-read']);
-        expect(() => assertProbes(probes)).not.toThrow();
-        expect(native).toHaveBeenCalledExactlyOnceWith(storeAlias.path);
-        expect(read).toHaveBeenCalledExactlyOnceWith(storeAlias.path);
+        const probes = probeRemovalPaths([...originals, registered], { native, read });
+        expect(probes).toHaveLength(6);
+        expect(() => assertUnavailableProbes(probes)).not.toThrow();
+        for (const path of originals) {
+            expect(native).toHaveBeenCalledWith(path);
+            expect(read).toHaveBeenCalledWith(path);
+        }
         const disappearedVersionedWrapper = 'C:\\Users\\runner\\AppData\\Local\\Microsoft\\WindowsApps\\pypy3.10.cmd';
-        expect(probeCandidates([], 'win32', [storeAlias.path, disappearedVersionedWrapper]))
-            .toEqual(expect.arrayContaining([disappearedVersionedWrapper, 'pypy3.10.cmd']));
+        expect(probeCandidates([registered], 'win32', [...originals, disappearedVersionedWrapper]))
+            .toEqual(expect.arrayContaining([storeAlias.path, physical, registered, disappearedVersionedWrapper, 'pypy3.10.cmd']));
+        expect(() => assertRemovalInventory([...originals, 'C:\\new\\python.exe'], originals)).toThrow('new interpreter paths');
     });
-    it('rejects started AppInstaller stubs, readable aliases and unresolved probes after link ACL denial', () => {
-        const targets: AclTarget[] = [{ path: storeAlias.path, kind: 'link', permission: 'RD,X' }];
-        const native = (path: string) => failedProbe(path, 'spawn');
-        const read = (path: string) => failedProbe(path, 'script-read');
-        expect(() => assertProbes(probeAclLinks(targets, { native, read }))).not.toThrow();
-        expect(() => assertProbes(probeAclLinks(targets, { native: candidate => classifySpawn(candidate, { pid: 8216, status: 9009 }), read })))
-            .toThrow('Interpreter execution is not blocked');
-        expect(() => assertProbes(probeAclLinks(targets, { native, read: candidate => ({ candidate, method: 'script-read', outcome: 'unresolved', status: null }) })))
-            .toThrow('Interpreter execution is not blocked');
-        expect(() => assertProbes(probeAclLinks(targets, { native: candidate => failedProbe(candidate, 'spawn', 'EINVAL'), read })))
-            .toThrow('Interpreter execution is not blocked');
+    it('rejects residual readable files, denied controls, unresolved failures and started AppInstaller stubs', () => {
+        const native = (path: string) => failedProbe(path, 'spawn', 'ENOENT');
+        const read = (path: string) => failedProbe(path, 'script-read', 'ENOENT');
+        expect(() => assertUnavailableProbes(probeRemovalPaths([storeAlias.path], { native, read }))).not.toThrow();
+        expect(() => assertUnavailableProbes(probeRemovalPaths([storeAlias.path], {
+            native: candidate => classifySpawn(candidate, { pid: 8216, status: 9009 }), read,
+        }))).toThrow('unavailable controls');
+        expect(() => assertUnavailableProbes(probeRemovalPaths([storeAlias.path], {
+            native, read: candidate => ({ candidate, method: 'script-read', outcome: 'unresolved', status: null }),
+        }))).toThrow('unavailable controls');
+        for (const code of ['EACCES', 'EPERM', 'EINVAL'])
+            expect(() => assertUnavailableProbes(probeRemovalPaths([storeAlias.path], {
+                native: candidate => failedProbe(candidate, 'spawn', code), read,
+            }))).toThrow('unavailable controls');
+    });
+    it('cleans only task-owned control state idempotently without restoring interpreters or changing a failed result', () => {
+        mkdirSync('tmp/conformance', { recursive: true });
+        const root = mkdtempSync('tmp/conformance/removal-cleanup-control-');
+        const report = resolve(root, 'platform-enforcement.json');
+        const stateDirectory = resolve(root, 'platform-enforcement-state');
+        mkdirSync(stateDirectory);
+        fixtureFile(stateDirectory, 'python');
+        const state: EnvironmentEnforcement = {
+            formatVersion: 1, platform: 'linux', node: process.version, arch: process.arch, osRelease: 'fixture',
+            startedAt: 'fixture', testedRevision: 'fixture', testedTree: 'fixture', workingTreeDirty: false,
+            sourceHash: 'fixture', packageLockHash: 'fixture', nodeExecutableHash: 'fixture', stateDirectory,
+            strategy: 'linux-absence', phase: 'failed', qualified: false, removalTargets: [], removals: [], failure: 'native removal failed',
+        };
+        writeFileSync(report, JSON.stringify(state));
+        try {
+            const first = cleanupEnvironment(report);
+            const second = cleanupEnvironment(report);
+            expect(first.phase).toBe('cleaned');
+            expect(second.cleanedAt).toBe(first.cleanedAt);
+            expect(second.qualified).toBe(false);
+            expect(second.failure).toBe('native removal failed');
+            expect(second.cleanupErrors).toEqual([]);
+            expect(JSON.parse(readFileSync(report, 'utf8')) as unknown).not.toHaveProperty('restoredAt');
+            expect(() => readFileSync(resolve(stateDirectory, 'python'))).toThrow();
+        } finally { rmSync(root, { recursive: true, force: true }); }
     });
     it('reads both PEP 514 executable paths and expanded installation roots, and preserves registry failures', () => {
         const output = ['HKEY_LOCAL_MACHINE\\SOFTWARE\\Python\\PythonCore\\3.14\\InstallPath',

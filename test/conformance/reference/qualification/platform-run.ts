@@ -42,7 +42,7 @@ function inside(): void {
     } catch (error) { failure = String(error); }
     finally {
         let enforcementEvidence: unknown = null;
-        const restoration: {status: 'passed' | 'failed'; failure?: string} = {status: 'passed'};
+        const cleanup: {status: 'passed' | 'failed'; failure?: string} = {status: 'passed'};
         try {
             if (existsSync('tmp/conformance/platform-enforcement.json'))
                 enforcementEvidence = JSON.parse(readFileSync('tmp/conformance/platform-enforcement.json', 'utf8')) as unknown;
@@ -50,11 +50,11 @@ function inside(): void {
             failure = [failure, 'Cannot read enforcement evidence: ' + String(error)].filter(Boolean).join('; ');
         } finally {
             // Cleanup precedes report metadata/persistence, which can fail independently.
-            try { command(process.execPath, [enforcement, 'restore']); }
+            try { command(process.execPath, [enforcement, 'cleanup']); }
             catch (error) {
-                restoration.status = 'failed';
-                restoration.failure = String(error);
-                failure = [failure, 'Environment restoration failed: ' + String(error)].filter(Boolean).join('; ');
+                cleanup.status = 'failed';
+                cleanup.failure = String(error);
+                failure = [failure, 'Environment cleanup failed: ' + String(error)].filter(Boolean).join('; ');
             }
         }
         let npmVersion: string | undefined;
@@ -64,7 +64,7 @@ function inside(): void {
             workingTreeDirty: !!git('status', '--porcelain'), platform: process.platform, osRelease: release(), node: process.version,
             npm: npmVersion,
             sourceHashes: hashes, packageLockSha256: hashes['package-lock.json'], commands,
-            enforcement: enforcementEvidence, status: failure ? 'failed' : 'passed', failure, restoration};
+            enforcement: enforcementEvidence, status: failure ? 'failed' : 'passed', failure, cleanup};
         writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
     }
     if (failure) throw new Error(failure);

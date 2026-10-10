@@ -34,9 +34,11 @@ jobs:
           if-no-files-found: error
 
   windows:
-    name: Python denied (Windows Node ${{ matrix.node }})
+    name: Python absent (Windows Node ${{ matrix.node }})
     runs-on: windows-latest
     timeout-minutes: 30
+    env:
+      NODE_REFERENCE_DISPOSABLE_WINDOWS: 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -51,7 +53,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: node test/conformance/reference/qualification/platform-run.ts --windows
-      - run: node test/conformance/reference/qualification/environment.ts restore
+      - run: node test/conformance/reference/qualification/environment.ts cleanup
         if: always()
       - uses: actions/upload-artifact@v6
         if: always()

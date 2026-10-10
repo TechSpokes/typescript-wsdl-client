@@ -2,7 +2,7 @@
 import { spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { accessSync, chmodSync, constants, copyFileSync, existsSync, mkdirSync, readFileSync,
-    readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+    readdirSync, realpathSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import type { Dirent } from 'node:fs';
 import { basename, dirname, join, resolve, sep, win32 } from 'node:path';
 import { release } from 'node:os';
@@ -66,18 +66,22 @@ export interface SpawnObservation {
 }
 export type Canonicalization = { readonly outcome: 'resolved'; readonly target: string }
     | { readonly outcome: 'failed'; readonly errorCode?: string; readonly error: string };
-export interface AclTarget {
+export interface RemovalTarget {
     readonly path: string;
     readonly kind: 'link' | 'file';
-    // Deny file data and execution without READ_CONTROL, which native ACL restoration needs.
-    readonly permission: 'X' | 'RD,X';
 }
-export interface AclBackup extends AclTarget {
-    readonly backup: string;
-    applied: boolean;
-    restored: boolean;
+export interface RemovalRecord extends RemovalTarget {
+    outcome: 'planned' | 'removing' | 'removed' | 'missing' | 'failed';
+    errorCode?: string;
+    error?: string;
 }
 export interface AliasLookup { readonly alias: FileAlias; readonly canonicalization: Canonicalization }
+export interface TargetLookup { readonly path: string; readonly canonicalization: Canonicalization }
+export interface DisposableWindowsHost {
+    readonly githubActions: 'true';
+    readonly runnerEnvironment: 'github-hosted';
+    readonly taskMarker: 'true';
+}
 export interface EnvironmentEnforcement {
     readonly formatVersion: 1;
     readonly platform: EnforcementPlatform;
@@ -92,22 +96,26 @@ export interface EnvironmentEnforcement {
     readonly packageLockHash: string;
     readonly nodeExecutableHash: string;
     readonly stateDirectory: string;
-    phase: 'preparing' | 'enforced' | 'verified' | 'failed' | 'restored';
+    readonly strategy: 'linux-absence' | 'disposable-windows-removal';
+    readonly disposableHost?: DisposableWindowsHost;
+    phase: 'preparing' | 'enforced' | 'verified' | 'failed' | 'cleaned';
     qualified: boolean;
     inventory?: Inventory;
     verificationInventory?: Inventory;
     initialProbes?: readonly Probe[];
     verificationProbes?: readonly Probe[];
-    sid?: string;
-    aclBackups: AclBackup[];
+    removalTargets: readonly RemovalTarget[];
+    removals: RemovalRecord[];
+    removalErrors?: readonly string[];
+    targetLookups?: readonly TargetLookup[];
     aliasLookups?: readonly AliasLookup[];
     targetPreparationErrors?: readonly string[];
     control?: { path: string; sourceHash: string; before: Probe; after?: Probe };
     enforcedAt?: string;
     verifiedAt?: string;
-    restoredAt?: string;
+    cleanedAt?: string;
     failure?: string;
-    restoreErrors?: readonly string[];
+    cleanupErrors?: readonly string[];
 }
 
 const names = ['python', 'python2', 'python2.7', 'python3', 'pythonw', 'py', 'pyw', 'pip', 'pip2', 'pip3',
@@ -166,36 +174,45 @@ function canonicalization(path: string, operations: TargetOperations): Canonical
     try { return { outcome: 'resolved', target: operations.canonicalize(path) }; }
     catch (error) { return { outcome: 'failed', errorCode: (error as NodeJS.ErrnoException).code, error: message(error) }; }
 }
-export function prepareWindowsTargets(paths: readonly string[], fileAliases: readonly FileAlias[], operations: TargetOperations = targetOperations): {
-    targets: AclTarget[]; aliasLookups: AliasLookup[]; errors: string[];
+const windowsPathKey = (path: string): string => win32.normalize(path).toLowerCase();
+export function assertDisposableWindows(platform: NodeJS.Platform = process.platform, environment: NodeJS.ProcessEnv = process.env): DisposableWindowsHost {
+    if (platform !== 'win32' || environment.GITHUB_ACTIONS !== 'true' || environment.RUNNER_ENVIRONMENT !== 'github-hosted'
+        || environment.NODE_REFERENCE_DISPOSABLE_WINDOWS !== 'true')
+        throw new Error('Interpreter removal requires an explicitly marked disposable GitHub-hosted Windows runner');
+    return { githubActions: 'true', runnerEnvironment: 'github-hosted', taskMarker: 'true' };
+}
+export function prepareWindowsRemoval(paths: readonly string[], fileAliases: readonly FileAlias[], operations: TargetOperations = targetOperations,
+    protectedPaths: readonly string[] = [process.execPath, realpathSync(process.execPath)]): {
+    targets: readonly RemovalTarget[]; targetLookups: TargetLookup[]; aliasLookups: AliasLookup[]; errors: string[];
 } {
-    const targets = new Map<string, AclTarget>();
-    const add = (target: AclTarget): void => {
-        const key = target.kind + ':' + target.path.toLowerCase();
-        const previous = targets.get(key);
-        targets.set(key, previous?.permission === 'RD,X' ? previous : target);
-    };
-    const file = (path: string): AclTarget => ({ path, kind: 'file',
-        permission: scriptExtension.test(path) || isWindowsLogicalWrapperPath(path) ? 'RD,X' : 'X' });
-    const aliases = new Map(fileAliases.map(alias => [alias.path.toLowerCase(), alias]));
-    const aliasLookups: AliasLookup[] = [];
+    const targets = new Map<string, RemovalTarget>();
+    const protectedKeys = new Set(protectedPaths.map(windowsPathKey));
     const errors: string[] = [];
+    const add = (target: RemovalTarget): void => {
+        const key = windowsPathKey(target.path);
+        if (protectedKeys.has(key)) errors.push('Removal target is the running Node executable: ' + target.path);
+        else targets.set(key, Object.freeze(target));
+    };
+    const aliases = new Map(fileAliases.map(alias => [alias.path.toLowerCase(), alias]));
+    const targetLookups: TargetLookup[] = [];
+    const aliasLookups: AliasLookup[] = [];
     for (const path of [...new Set(paths)].sort()) {
         const lookup = canonicalization(path, operations);
+        targetLookups.push({ path, canonicalization: lookup });
         const alias = aliases.get(path.toLowerCase());
         if (alias) aliasLookups.push({ alias, canonicalization: lookup });
         if (alias?.dirent === 'symbolic-link') {
-            // Lookup errors do not prove denial. Control the inventoried link object itself;
-            // only actual negative probes after icacls /L can establish blocked execution.
-            add({ path, kind: 'link', permission: 'RD,X' });
+            // An identified link can be unlinked without opening its destination.
+            // Failed lookup is diagnostic; actual unavailable probes are still required.
+            add({ path, kind: 'link' });
             if (lookup.outcome === 'resolved' && lookup.target.toLowerCase() !== path.toLowerCase())
-                add({ path: lookup.target, kind: 'file', permission: 'RD,X' });
+                add({ path: lookup.target, kind: 'file' });
         } else if (lookup.outcome === 'resolved') {
-            add(file(path));
-            add(file(lookup.target));
-        } else errors.push('Ordinary ACL target cannot be canonicalized: ' + path + ' (' + lookup.error + ')');
+            add({ path, kind: 'file' });
+            add({ path: lookup.target, kind: 'file' });
+        } else errors.push('Ordinary removal target cannot be canonicalized: ' + path + ' (' + lookup.error + ')');
     }
-    return { targets: [...targets.values()].sort((left, right) => left.path.localeCompare(right.path) || left.kind.localeCompare(right.kind)), aliasLookups, errors };
+    return { targets: Object.freeze([...targets.values()].sort((left, right) => left.path.localeCompare(right.path))), targetLookups, aliasLookups, errors };
 }
 
 export type DirectoryReader = (path: string) => readonly Dirent[];
@@ -210,7 +227,7 @@ interface InventoryOptions {
     readonly errors?: readonly string[];
 }
 
-/** Enumerate canonical directory targets once; file aliases remain separate ACL/probe candidates. */
+/** Enumerate canonical directory targets once; retain file aliases as separate candidates. */
 export function inventoryInterpreters(roots: readonly InventoryRoot[], excluded: readonly (string | InventoryExclusion)[] = [],
     options: InventoryOptions = {}): Inventory {
     const paths = new Set<string>(options.candidates ?? []);
@@ -504,6 +521,11 @@ export function assertProbes(probes: readonly Probe[]): void {
     if (failed.length) throw new Error('Interpreter execution is not blocked: ' +
         failed.map(probe => probe.candidate + ' (' + probe.outcome + ')').join(', '));
 }
+export function assertUnavailableProbes(probes: readonly Probe[]): void {
+    const failed = probes.filter(probe => probe.outcome !== 'unavailable');
+    if (failed.length) throw new Error('Interpreter removal did not produce unavailable controls: ' +
+        failed.map(probe => probe.candidate + ' (' + probe.outcome + ')').join(', '));
+}
 function writeState(path: string, state: EnvironmentEnforcement): void {
     mkdirSync(dirname(path), { recursive: true });
     const temporary = path + '.partial';
@@ -512,73 +534,74 @@ function writeState(path: string, state: EnvironmentEnforcement): void {
 }
 function readState(path: string): EnvironmentEnforcement {
     const state = JSON.parse(readFileSync(path, 'utf8')) as EnvironmentEnforcement;
-    if (state.formatVersion !== 1 || !['linux', 'win32'].includes(state.platform) || !Array.isArray(state.aclBackups))
+    if (state.formatVersion !== 1 || !['linux', 'win32'].includes(state.platform)
+        || !Array.isArray(state.removalTargets) || !Array.isArray(state.removals))
         throw new Error('Invalid platform enforcement state');
     return state;
 }
 const systemCommand = (name: string) => join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', name);
-function icacls(args: readonly string[], cwd?: string): void {
-    const command = systemCommand('icacls.exe');
-    execFileSync(command, [...args], { cwd, encoding: 'utf8', windowsHide: true });
-}
-export type AclInvoker = (args: readonly string[], cwd?: string) => void;
-const linkOptions = (target: AclTarget): string[] => target.kind === 'link' ? ['/L'] : [];
-export function saveAndDenyTargets(targets: readonly AclTarget[], backups: AclBackup[], stateDirectory: string, sid: string,
-    invoke: AclInvoker = icacls, persist: () => void = () => {}): void {
-    // Save every link-object and physical-file original before mutating either one.
-    for (const target of targets) {
-        const backup = join(stateDirectory, 'acl-' + String(backups.length).padStart(5, '0') + '.txt');
-        invoke([win32.basename(target.path), '/save', backup, ...linkOptions(target), '/q'], win32.dirname(target.path));
-        backups.push({ ...target, backup, applied: false, restored: false });
-        persist();
-    }
-    for (const entry of backups) {
-        entry.applied = true; // Persist intent before a partially failing native mutation too.
-        persist();
-        invoke([entry.path, '/deny', '*' + sid + ':(' + entry.permission + ')', ...linkOptions(entry), '/q']);
-    }
-}
-export function restoreAclBackups(backups: readonly AclBackup[], invoke: AclInvoker = icacls, persist: () => void = () => {}): string[] {
+/** Pure controller: callers provide the removal operation; the native Windows operation guards itself. */
+export function removeTargets(targets: readonly RemovalTarget[], records: RemovalRecord[], remove: (path: string) => void,
+    persist: () => void = () => {}): string[] {
+    records.push(...targets.map(target => ({ ...target, outcome: 'planned' as const })));
+    persist(); // Persist the whole plan before any target can be removed.
     const errors: string[] = [];
-    for (const entry of [...backups].reverse()) {
-        if (!entry.applied || entry.restored) continue;
+    for (const entry of records) {
+        entry.outcome = 'removing';
+        persist(); // Persist intent even if a native call partially succeeds before failing.
         try {
-            invoke([win32.dirname(entry.path), '/restore', entry.backup, ...linkOptions(entry), '/q']);
-            entry.restored = true;
-            persist();
-        } catch (error) { errors.push(entry.path + ': ' + message(error)); }
+            remove(entry.path);
+            entry.outcome = 'removed';
+        } catch (error) {
+            entry.errorCode = (error as NodeJS.ErrnoException).code;
+            entry.error = message(error);
+            if (entry.errorCode === 'ENOENT' || entry.errorCode === 'ENOTDIR') entry.outcome = 'missing';
+            else {
+                entry.outcome = 'failed';
+                errors.push(entry.path + ': ' + entry.error);
+            }
+        }
+        persist();
     }
     return errors;
 }
-export interface LinkProbeOperations { readonly native: (path: string) => Probe; readonly read: (path: string) => Probe }
-export function probeAclLinks(targets: readonly AclTarget[], operations: LinkProbeOperations = { native: probeExecutable, read: probeScriptRead }): Probe[] {
-    return targets.filter(target => target.kind === 'link').flatMap(target => [operations.native(target.path), operations.read(target.path)]);
+export interface RemovalProbeOperations { readonly native: (path: string) => Probe; readonly read: (path: string) => Probe }
+export function probeRemovalPaths(paths: readonly string[], operations: RemovalProbeOperations = { native: probeExecutable, read: probeScriptRead }): Probe[] {
+    return [...new Set(paths)].flatMap(path => [operations.native(path), operations.read(path)]);
 }
-function saveAndDeny(state: EnvironmentEnforcement, report: string, targets: readonly AclTarget[]): void {
-    const command = systemCommand('whoami.exe');
-    const output = execFileSync(command, ['/user', '/fo', 'csv', '/nh'], { encoding: 'utf8', windowsHide: true });
-    const sid = output.match(/S-\d+(?:-\d+)+/)?.[0];
-    if (!sid) throw new Error('Cannot identify Windows runner SID');
-    state.sid = sid;
-    saveAndDenyTargets(targets, state.aclBackups, state.stateDirectory, sid, icacls, () => writeState(report, state));
+function removeWindowsFile(path: string): void {
+    assertDisposableWindows();
+    if ([process.execPath, realpathSync(process.execPath)].some(protectedPath => windowsPathKey(path) === windowsPathKey(protectedPath)))
+        throw new Error('Cannot remove the running Node executable: ' + path);
+    unlinkSync(path); // File/link primitive: no pre-stat, recursive removal or permission changes.
 }
-export function restoreEnvironment(report: string): EnvironmentEnforcement {
+export function assertRemovalInventory(paths: readonly string[], originalPaths: readonly string[]): void {
+    const originals = new Set(originalPaths.map(windowsPathKey));
+    const additions = paths.filter(path => !originals.has(windowsPathKey(path)));
+    if (additions.length) throw new Error('Install introduced new interpreter paths: ' + additions.join(', '));
+}
+export function cleanupEnvironment(report: string): EnvironmentEnforcement {
     const state = readState(report);
-    const errors = restoreAclBackups(state.aclBackups, icacls, () => writeState(report, state));
-    state.restoreErrors = errors;
+    if (state.platform === 'win32') assertDisposableWindows();
+    const expectedDirectory = resolve(dirname(report), 'platform-enforcement-state');
+    if (resolve(state.stateDirectory) !== expectedDirectory) throw new Error('Unexpected task-control state directory');
+    const errors: string[] = [];
+    try { rmSync(expectedDirectory, { recursive: true, force: true }); }
+    catch (error) { errors.push(message(error)); }
+    state.cleanupErrors = errors;
     if (!errors.length) {
-        state.phase = 'restored';
-        state.restoredAt = new Date().toISOString();
-        if (state.control) rmSync(state.control.path, { force: true });
+        state.phase = 'cleaned';
+        state.cleanedAt ??= new Date().toISOString();
     }
     writeState(report, state);
-    if (errors.length) throw new Error('Windows ACL restoration failed: ' + errors.join('; '));
+    if (errors.length) throw new Error('Task-control cleanup failed: ' + errors.join('; '));
     return state;
 }
 export function enforceEnvironment(report: string): EnvironmentEnforcement {
     if (process.platform !== 'linux' && process.platform !== 'win32') throw new Error('Unqualified platform: ' + process.platform);
-    if (existsSync(report) && readState(report).phase !== 'restored') throw new Error('Restore the previous enforcement state before replacing it');
     const platform = process.platform;
+    const disposableHost = platform === 'win32' ? assertDisposableWindows() : undefined;
+    if (existsSync(report) && readState(report).phase !== 'cleaned') throw new Error('Clean the previous enforcement state before replacing it');
     const git = (...args: string[]) => execFileSync('git', args, { encoding: 'utf8' }).trim();
     const stateDirectory = resolve(dirname(report), 'platform-enforcement-state');
     mkdirSync(stateDirectory, { recursive: true });
@@ -588,7 +611,8 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
         workingTreeDirty: git('status', '--porcelain').length > 0,
         sourceHash: sha(fileURLToPath(import.meta.url)),
         packageLockHash: sha('package-lock.json'), nodeExecutableHash: sha(process.execPath),
-        stateDirectory, phase: 'preparing', qualified: false, aclBackups: [] };
+        stateDirectory, strategy: platform === 'win32' ? 'disposable-windows-removal' : 'linux-absence',
+        disposableHost, phase: 'preparing', qualified: false, removalTargets: [], removals: [] };
     writeState(report, state);
     try {
         state.inventory = platformInventory(platform);
@@ -616,22 +640,26 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
             const controlPath = join(stateDirectory, 'python.exe');
             copyFileSync(process.execPath, controlPath);
             const before = probeExecutable(controlPath, ['--version']);
-            if (before.outcome !== 'started' || before.status !== 0) throw new Error('Copied Node control cannot execute before ACL denial');
+            if (before.outcome !== 'started' || before.status !== 0) throw new Error('Copied Node control cannot execute before removal');
             state.control = { path: controlPath, sourceHash: sha(controlPath), before };
             writeState(report, state);
-            const preparation = prepareWindowsTargets([...state.inventory.paths, controlPath], state.inventory.fileAliases);
+            const preparation = prepareWindowsRemoval([...state.inventory.paths, controlPath], state.inventory.fileAliases);
+            state.removalTargets = preparation.targets;
+            state.targetLookups = preparation.targetLookups;
             state.aliasLookups = preparation.aliasLookups;
             state.targetPreparationErrors = preparation.errors;
-            // Lookup failures remain diagnostic; only denied execution/read probes after ACLs qualify.
             writeState(report, state);
             if (preparation.errors.length) throw new Error('Incomplete Windows target enforcement: ' + preparation.errors.join('; '));
-            saveAndDeny(state, report, preparation.targets);
+            state.removalErrors = removeTargets(state.removalTargets, state.removals, removeWindowsFile, () => writeState(report, state));
+            if (state.removalErrors.length) throw new Error('Windows interpreter removal failed: ' + state.removalErrors.join('; '));
             state.control.after = probeExecutable(controlPath);
-            if (state.control.after.outcome !== 'denied') throw new Error('Windows execute ACL did not block the copied Node control');
+            assertUnavailableProbes([state.control.after]);
         }
-        state.initialProbes = [...collectProbes(state.inventory, platform),
-            ...(platform === 'win32' ? probeAclLinks(state.aclBackups) : [])];
-        assertProbes(state.initialProbes);
+        const removedPaths = state.removalTargets.map(target => target.path);
+        state.initialProbes = [...collectProbes(state.inventory, platform, removedPaths),
+            ...(platform === 'win32' ? probeRemovalPaths(removedPaths) : [])];
+        if (platform === 'win32') assertUnavailableProbes(state.initialProbes);
+        else assertProbes(state.initialProbes);
         state.phase = 'enforced';
         state.enforcedAt = new Date().toISOString();
         state.qualified = true;
@@ -642,7 +670,7 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
         state.qualified = false;
         state.failure = message(error);
         writeState(report, state);
-        try { restoreEnvironment(report); } catch { /* The persisted rollback failures remain visible. */ }
+        try { cleanupEnvironment(report); } catch { /* The persisted cleanup failures remain visible. */ }
         throw error;
     }
 }
@@ -650,6 +678,7 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
     const state = readState(report);
     if (!['enforced', 'verified'].includes(state.phase) || !state.qualified) throw new Error('No active qualified environment control');
     try {
+        if (state.platform === 'win32') assertDisposableWindows();
         if (state.platform !== process.platform || state.node !== process.version || state.nodeExecutableHash !== sha(process.execPath))
             throw new Error('Environment changed after interpreter enforcement');
         if (state.packageLockHash !== sha('package-lock.json')) throw new Error('Install changed the package lock');
@@ -660,14 +689,8 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
         state.verificationInventory = platformInventory(state.platform);
         if (state.verificationInventory.errors.length) throw new Error('Incomplete verification inventory: ' + state.verificationInventory.errors.join('; '));
         if (state.platform === 'win32') {
-            const controlled = new Set(state.aclBackups.filter(entry => entry.applied && !entry.restored)
-                .map(entry => entry.kind + ':' + entry.path.toLowerCase()));
-            const links = new Set(state.verificationInventory.fileAliases.filter(alias => alias.dirent === 'symbolic-link')
-                .map(alias => alias.path.toLowerCase()));
-            const additions = state.verificationInventory.paths.filter(path =>
-                !controlled.has((links.has(path.toLowerCase()) ? 'link:' : 'file:') + path.toLowerCase()));
-            if (additions.length) throw new Error('Install introduced uncontrolled interpreter paths: ' + additions.join(', '));
-            if (!state.control || probeExecutable(state.control.path).outcome !== 'denied') throw new Error('Windows execute ACL control no longer blocks execution');
+            if (!state.control) throw new Error('Missing copied Node removal control');
+            assertUnavailableProbes([probeExecutable(state.control.path)]);
         } else {
             if (!state.control || probeExecutable(state.control.path).outcome !== 'denied') throw new Error('Linux execute mode control no longer blocks execution');
             const executable = state.verificationInventory.paths.filter(path => {
@@ -679,9 +702,14 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
             });
             if (executable.length) throw new Error('Install introduced executable interpreters: ' + executable.join(', '));
         }
-        state.verificationProbes = [...collectProbes(state.verificationInventory, state.platform, state.inventory?.paths ?? []),
-            ...(state.platform === 'win32' ? probeAclLinks(state.aclBackups.filter(entry => entry.applied && !entry.restored)) : [])];
-        assertProbes(state.verificationProbes);
+        const originalPaths = [...state.inventory?.paths ?? [], ...state.removalTargets.map(target => target.path)];
+        state.verificationProbes = [...collectProbes(state.verificationInventory, state.platform, originalPaths),
+            ...(state.platform === 'win32' ? probeRemovalPaths([...originalPaths, ...state.verificationInventory.paths]) : [])];
+        if (state.platform === 'win32') {
+            // Registered paths can remain inventoried after deletion; actual unavailable probes decide absence.
+            assertRemovalInventory(state.verificationInventory.paths, originalPaths);
+            assertUnavailableProbes(state.verificationProbes);
+        } else assertProbes(state.verificationProbes);
         state.phase = 'verified';
         state.verifiedAt = new Date().toISOString();
         writeState(report, state);
@@ -700,9 +728,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     const action = process.argv[2];
     try {
         const result = action === 'enforce' ? enforceEnvironment(report) : action === 'verify' ? verifyEnvironment(report)
-            : action === 'restore' ? restoreEnvironment(report) : (() => { throw new Error('Expected enforce, verify or restore'); })();
+            : action === 'cleanup' ? cleanupEnvironment(report) : (() => { throw new Error('Expected enforce, verify or cleanup'); })();
         console.log(JSON.stringify({ report, phase: result.phase, qualified: result.qualified,
             inventoriedPaths: result.inventory?.paths.length, directoriesRead: result.inventory?.directoriesRead,
-            probes: (result.verificationProbes ?? result.initialProbes)?.length, restoreErrors: result.restoreErrors }));
+            probes: (result.verificationProbes ?? result.initialProbes)?.length,
+            removals: result.removals.length, removalErrors: result.removalErrors, cleanupErrors: result.cleanupErrors }));
     } catch (error) { console.error(message(error)); process.exitCode = 1; }
 }
