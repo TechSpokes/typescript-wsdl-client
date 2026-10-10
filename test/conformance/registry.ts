@@ -5,6 +5,9 @@ import Fastify from "fastify";
 import {verifyOccurrenceTransport} from "../helpers/occurrenceTransport.mjs";
 import {assertBaselineCatalog, semanticBaseline} from "./semanticBaseline.js";
 
+// Research provenance is audited separately from public generator capability rows.
+export const s06ResearchManifestUrl = new URL("./s06-research-manifest.json", import.meta.url);
+
 function requireSchema(doc: any, name: string): any {
   const schema = doc.components?.schemas?.[name];
   if (!schema) {

@@ -221,6 +221,11 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Canonical Derivation Composition](docs/content-model-composition.md) | Distinct extension/restriction views, attributes, wildcards and legality obligations |
 | [Structural Companion Catalogs](docs/content-model-companions.md) | Required closures, actual structural equality, provenance and shared semantic dispatch |
 | [Exact Particle Analysis](docs/content-model-analysis.md) | Exact contributions, particle emptiness and bounded immutable summaries |
+| [S06 Attribute Research](docs/content-model-s06-au-01.md) | Repeated attribute-use identities, constraints and interpretation alternatives |
+| [S06 Reordered Derivation Research](docs/content-model-s06-re-01.md) | Constructive witnesses, counterexamples and decision-procedure proof obligations |
+| [S06 Wildcard Research](docs/content-model-s06-pw-01.md) | Member and whole-group cardinality, original namespace context and authority |
+| [S06 Calendar Research](docs/content-model-s06-dt-01.md) | Exact negative-year calendar alternatives and corrected reference observations |
+| [S06 Research Handoff](docs/content-model-s06-research-handoff.md) | Joint contracts, reproducible evidence, unresolved gates and production ownership |
 | [Semantic Catalog Format 2](docs/content-model-catalog.md) | Deterministic persistence, typed validation and early compatibility routing |
 | [Output Anatomy](docs/output-anatomy.md) | What gets generated and how to use it |
 
