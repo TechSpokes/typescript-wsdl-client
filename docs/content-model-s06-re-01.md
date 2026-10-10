@@ -172,10 +172,12 @@ The coordinator's fresh `npm run reference:setup` provides the pinned reference 
 ```bash
 npm run reference:setup
 npm run test:reference:full
-python test/research/re01/measure.py
+tmp/conformance/reference-venv/bin/python test/research/re01/measure.py
 ```
 
-The measurement command uses the Python executable from the setup environment, rather than an unrelated system interpreter. A focused command with that executable is `python -m unittest discover -s test/conformance/reference -p 's06_re01_contract_test.py' -v`. The reference runner's `*_test.py` discovery includes this filename; a zero-match run is not acceptance.
+The last command uses the setup environment's POSIX Python path explicitly; setup does not activate the caller's `PATH`. On Windows, substitute `tmp/conformance/reference-venv/Scripts/python.exe`. A focused POSIX command is `tmp/conformance/reference-venv/bin/python -m unittest discover -s test/conformance/reference -p 's06_re01_contract_test.py' -v`.
+
+The reference runner's `*_test.py` discovery includes this filename; a zero-match run is not acceptance. The development leaf used the coordinator's declared freshly installed reference runtime for those focused commands.
 
 ### Recorded development evidence
 
@@ -185,9 +187,9 @@ The premise-table tests validate finite construction control flow and accounting
 
 | Input | Result | Nodes | Charged work |
 |---|---|---|---|
-| Dead/wildcard particle witness, work limit 28 | Conditional particle witness | 2 | 28 |
-| Same witness, work limit 27 | Resource limit | 2 | 27 |
-| Two hundred-digit exact finite maximum | Conditional particle witness | 2 | 227 |
+| Dead/wildcard particle witness, work limit 29 | Conditional particle witness | 2 | 29 |
+| Same witness, work limit 28 | Resource limit | 2 | 28 |
+| Two hundred-digit exact finite maximum | Conditional particle witness | 2 | 228 |
 | Shared binary DAG, depth 20 | Conditional particle witness | 21 | 218 |
 | Default node limit at 100,000 | Conditional particle witness | 100,000 | 600,007 |
 | Default node limit with 100,001 inputs | Resource limit | 100,000 indexed | 600,006 |

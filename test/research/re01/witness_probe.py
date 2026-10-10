@@ -64,10 +64,10 @@ class Result:
 Restriction = Callable[[View, View, Budget], Optional[bool]]
 
 
-def index_views(roots, budget):
+def index_views(ancestor, final, budget):
     """Charge nodes, reference text and edge/stack copying before allocation."""
-    budget.charge(len(roots))
-    stack = list(roots)
+    budget.charge(2)
+    stack = [ancestor, final]
     seen = set()
     while stack:
         budget.charge()
@@ -108,7 +108,7 @@ def probe(prepared: Prepared, restriction: Restriction,
                       budget.nodes, budget.work, reason)
 
     try:
-        index_views((prepared.ancestor, prepared.final), budget)
+        index_views(prepared.ancestor, prepared.final, budget)
         if not prepared.normalization_certified:
             return result("unresolved", reason="uncertified component normalization")
         base, final = prepared.ancestor, prepared.final
@@ -131,8 +131,11 @@ def probe(prepared: Prepared, restriction: Restriction,
             restricted = final.children
         else:
             return result("unresolved", reason="no candidate; full-type negative not proved")
-        prefix = (base.children if base.kind == "sequence" and
-                  base.minimum == base.maximum == "1" else (base,))
+        if base.kind == "sequence" and base.minimum == base.maximum == "1":
+            prefix = base.children
+        else:
+            budget.charge(1)
+            prefix = (base,)
         # Sparse ordered Recurse states: (number consumed from R, number from
         # immutable A prefix). Each predecessor/mapping link is charged before
         # insertion; there is no uncharged Cartesian table or candidate copy.
