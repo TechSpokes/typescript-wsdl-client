@@ -133,7 +133,9 @@ describe('RE01 independently specified affiliation and derivability contrast', (
 
     it.each(expectations.cases)('records separately qualified live construction: $fixture', async row => {
         expect(engine).toMatchObject({package: 'libxml2-wasm', version: '0.7.2', engineVersion: '2.15.1'});
-        const instances = row.instances === undefined ? [] : row.fixture === 'affiliation-local-fresh.xsd'
+        const instances = row.instances === undefined ? [] : row.fixture.startsWith('affiliation-holder-')
+            ? [payload('holder', '<H><b>x</b></H>'), payload('holder', '<M><b>x</b><c>y</c></M>')]
+            : row.fixture === 'affiliation-local-fresh.xsd'
             ? [payload('root', '<b>x</b><c>y</c>'), payload('root', '<b>x</b>'), payload('root', '<b>x</b><c>y</c><d>z</d>')]
             : actualInstances;
         const observation = await validateFixture(directory + row.fixture, instances);
