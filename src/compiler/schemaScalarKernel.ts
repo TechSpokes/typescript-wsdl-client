@@ -76,6 +76,7 @@ function makeKernel(context: SemanticContext) {
   return {
     describe: (reference: Reference, owner: NodeId) => run(() => capture(input(reference), owner)),
     contentIdentity: (reference: Reference, owner: NodeId) => run(() => {const frozen = input(reference); capture(frozen, owner); return core.contentIdentity(frozen, c.get(owner));}),
+    contentProperties: (reference: Reference, owner: NodeId) => run(() => {const frozen = input(reference); capture(frozen, owner); return core.contentProperties(frozen, c.get(owner));}),
     contentDerivation: (derived: Reference, base: Reference, owner: NodeId) => run(() => {const frozen = input({derived, base}); capture(frozen.derived, owner); capture(frozen.base, owner); return core.contentDerivation(frozen.derived, frozen.base, c.get(owner));}),
     facetPropertiesEquivalent: (a: Reference, b: Reference, owner: NodeId) => run(() => {const frozen = input({a, b}); capture(frozen.a, owner); capture(frozen.b, owner); return core.facetPropertiesEquivalent(frozen.a, frozen.b, c.get(owner));}),
     assess,

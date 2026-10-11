@@ -1,0 +1,30 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:literal-pattern-witness" targetNamespace="urn:recovery:literal-pattern-witness">
+  <xs:element name="Owner" type="xs:string"/>
+  <xs:simpleType name="Template"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="LongLiteral"><xs:restriction base="xs:decimal"><xs:pattern value="0000000001"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ChoiceProduct"><xs:restriction base="xs:decimal"><xs:pattern value="(00|000)(1|2)"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BoundedRepeat"><xs:restriction base="xs:decimal"><xs:pattern value="0{4,6}1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="GroupedRepeat"><xs:restriction base="xs:decimal"><xs:pattern value="(00){2,3}1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ZeroRepeat"><xs:restriction base="xs:decimal"><xs:pattern value="(00){0,1}0001"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EscapedPlus"><xs:restriction base="xs:decimal"><xs:pattern value="\+0001"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OtherValue"><xs:restriction base="xs:decimal"><xs:pattern value="0000000002"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OutsideClass"><xs:restriction base="xs:decimal"><xs:pattern value="[0]{4}1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OutsideInfinite"><xs:restriction base="xs:decimal"><xs:pattern value="0{4,}1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="LayerOne"><xs:restriction base="xs:decimal"><xs:pattern value="(0001|0002)"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="LayerTwo"><xs:restriction base="t:LayerOne"><xs:pattern value="0002"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BooleanFirst"><xs:union memberTypes="xs:boolean xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="UnionTrap"><xs:restriction base="t:BooleanFirst"><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="UnionDecimal"><xs:restriction base="t:BooleanFirst"><xs:pattern value="0001"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DecimalOrString"><xs:union memberTypes="xs:decimal xs:string"/></xs:simpleType>
+  <xs:simpleType name="MixedList"><xs:list itemType="t:DecimalOrString"/></xs:simpleType>
+  <xs:simpleType name="UnicodeList"><xs:restriction base="t:MixedList"><xs:pattern value="😀 0001"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ApplicationNamePattern"><xs:restriction base="xs:string"><xs:pattern value="\i\c*"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="MinThree"><xs:restriction base="xs:string"><xs:minLength value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="MaxThree"><xs:restriction base="xs:string"><xs:maxLength value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ThreeDigits"><xs:restriction base="xs:decimal"><xs:totalDigits value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ThreeToFive"><xs:restriction base="xs:string"><xs:minLength value="3"/><xs:maxLength value="5"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="MultiPattern"><xs:restriction base="xs:string"><xs:pattern value="a"/><xs:pattern value="b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumAB"><xs:restriction base="xs:string"><xs:enumeration value="A"/><xs:enumeration value="B"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="MinZero"><xs:restriction base="xs:decimal"><xs:minInclusive value="0"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="FixedMinZero"><xs:restriction base="xs:decimal"><xs:minInclusive value="0" fixed="true"/></xs:restriction></xs:simpleType>
+</xs:schema>

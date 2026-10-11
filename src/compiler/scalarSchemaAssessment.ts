@@ -2,7 +2,7 @@
 import {isBuiltinType} from "./canonicalGraph.js";
 import type {GraphNode, LexicalValue, NodeId, Reference, ValueConstraint} from "./canonicalGraph.js";
 import type {ScalarFacet as Facet} from "./schemaSimpleTypeProperties.js";
-import {checkTypeDerivation, declarationMethods, RelationProblem} from "./schemaTypeRelations.js";
+import {checkTypeDerivation, declarationMethods, immediateTypeBase, RelationProblem} from "./schemaTypeRelations.js";
 import type {AssessmentContext} from "./schemaScalarContext.js";
 import {SchemaAssessmentError} from "./schemaScalarContext.js";
 import {builtinListItem, builtinParents, builtinPrimitive, integerBounds, normalizeWhitespace, schemaDatatypeValues, whitespaceFor} from "./schemaDatatypeValues.js";
@@ -14,7 +14,7 @@ import {LIST_CONSTRUCTOR_FACETS, schemaBuiltinFacetProperties} from './schemaBui
 import type {IntrinsicFacetProperties} from './schemaBuiltinFacets.js';
 import type {SchemaPattern} from "./schemaPattern.js";
 import {XSD_NAMESPACE} from "../loader/orderedSyntax.js";
-import type {SyntaxSource} from '../loader/orderedSyntax.js';
+import type {ExpandedName, SyntaxSource} from '../loader/orderedSyntax.js';
 
 export type ScalarEnforcement = "lexical-space" | "enumeration" | "pattern" | "whitespace" | "numeric-bounds" | "numeric-precision" | "length" | "QName-context" | "default-fixed" | "list" | "union";
 export type ScalarConstraintLayer = Readonly<{owner: NodeId; facets: readonly Facet[]; patterns: readonly SchemaPattern[]}>;
@@ -26,6 +26,18 @@ export type ScalarSupportPlan = Readonly<{
   declaredMembers?: readonly Reference[]; unionMapping?: "xsd10-flattened";
   whitespace: "preserve" | "replace" | "collapse" | "member";
   enforcement: readonly ScalarEnforcement[]; runtimeOwner: "#184"; consumers: readonly ["#188", "#189", "#198"];
+}>;
+/** References in this view select scalar content, including the private scalar
+ * of a complex source owner. They are not synthetic GraphNode references.
+ * Fundamental-facet equality follows equal complete determining properties;
+ * this view does not publish unevaluated cardinality/finiteness values.
+ */
+export type ScalarContentProperties = Readonly<{
+  definition: string; name?: ExpandedName; targetNamespace: string;
+  final: readonly string[]; base?: Reference;
+  variety: 'atomic' | 'list' | 'union' | 'absent'; primitive?: string;
+  item?: Reference; members?: readonly Reference[];
+  generatedPolicy?: 'GSC1'; annotation: 'absent' | 'source';
 }>;
 type Description = {
   plan: ScalarSupportPlan; item?: Description; members?: Description[];
@@ -84,6 +96,26 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     const primitive = builtinPrimitive(name);
     const result: Description = {definition: key, intrinsic, plan: {id: key, reference, variety: "atomic", primitive, builtin: name, layers: [], whitespace: whitespaceFor(name), enforcement: ["lexical-space", "whitespace", ...(primitive === "QName" ? ["QName-context" as const] : []), ...(integerBounds[name] ? ["numeric-bounds" as const] : []), ...(builtinParents[name] && primitive === "decimal" ? ["numeric-precision" as const] : [])], runtimeOwner: "#184", consumers: ["#188", "#189", "#198"]}, facets: new Map()};
     descriptions.set(key, result); return result;
+  };
+  const descriptionReference = (value: Description, owner: GraphNode): Reference => {
+    c.text(value.definition, owner); c.step(owner, 4);
+    if (value.definition.startsWith('builtin:')) return {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: value.definition.slice(8)}};
+    return {kind: 'local', target: value.definition.startsWith('content:') ? value.definition.slice(8) : value.definition};
+  };
+  const descriptionFinal = (value: Description, owner: GraphNode): readonly string[] => {
+    c.text(value.definition, owner);
+    // GSC1 assigns the generated scalar its own empty final; a complex
+    // container's final is a different property with a different authority.
+    if (value.definition.startsWith('content:') || value.definition.startsWith('builtin:')) return [];
+    try {return declarationMethods(c.context, c.get(value.definition), 'final');}
+    catch (error) {
+      if (!(error instanceof RelationProblem)) throw error;
+      if (error.result.kind === 'unresolved') return c.unresolved(owner, error.result.rule, error.message);
+      return c.fail(owner, error.result.rule, error.message);
+    }
+  };
+  const checkStartingFinal = (value: Description, owner: GraphNode): void => {
+    if (descriptionFinal(value, owner).includes('restriction')) c.fail(owner, 'cos-st-restricts', 'The exact starting scalar prohibits restriction');
   };
   const operands = new WeakMap<Description, WeakMap<LexicalValue, SchemaOperand>>();
   type OperandRequest = {description: Description; lexical: LexicalValue; owner: GraphNode};
@@ -183,9 +215,20 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     return false;
   };
   const membershipWitness = (base: Description, expected: SchemaOperand, lexical: LexicalValue, owner: GraphNode): boolean => {
-    for (const candidate of schemaScalarWitnesses(expected, lexical, owner, c)) {
-      try {if (values.sameValue(expected, operand(base, candidate, owner), owner)) return true;}
+    c.step(owner);
+    const accepts = (candidate: LexicalValue): boolean => {
+      try {return values.sameValue(expected, operand(base, candidate, owner), owner);}
       catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+      return false;
+    };
+    for (const candidate of schemaScalarWitnesses(expected, lexical, owner, c)) if (accepts(candidate)) return true;
+    for (const layer of base.plan.layers) for (const pattern of layer.patterns) {
+      c.step(owner); const language = patterns.literalLanguage(pattern, owner);
+      if (language.kind !== 'finite-literal') continue;
+      for (const value of language.words) {
+        c.step(owner, 3);
+        if (accepts({...lexical, value})) return true;
+      }
     }
     return false;
   };
@@ -255,6 +298,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     if (intrinsic.kind === 'integer') return {fixed: intrinsic.fixed, integer: intrinsic.value};
     if (intrinsic.kind === 'bound') return {fixed: intrinsic.fixed, operand: {family: 'decimal', canonical: intrinsic.value, decimal: values.decimal(intrinsic.value, owner)}};
     return {fixed: intrinsic.fixed, lexical: intrinsic.value};
+  };
+  const sameFacetProperty = (left: FacetProperty, right: FacetProperty, owner: GraphNode): boolean => {
+    c.step(owner);
+    if (left.integer !== undefined) c.text(left.integer, owner);
+    if (right.integer !== undefined) c.text(right.integer, owner);
+    if (left.fixed !== right.fixed || left.integer !== right.integer) return false;
+    if (left.integer !== undefined) return true;
+    if (left.operand || right.operand) return !!left.operand && !!right.operand && values.sameValue(left.operand, right.operand, owner);
+    c.text(left.lexical!, owner); c.text(right.lexical!, owner);
+    return normalizeWhitespace(left.lexical!, 'collapse') === normalizeWhitespace(right.lexical!, 'collapse');
   };
   const facetNames = (description: Description, owner: GraphNode): readonly string[] => {
     c.step(owner, description.facets.size * 2 + (description.intrinsic?.scalars.length ?? 0) * 2 + 2);
@@ -428,14 +481,24 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       const keepInclusive = side === "min" ? order > 0 : order < 0;
       effective.delete(side + (keepInclusive ? "Exclusive" : "Inclusive"));
     }
-    c.step(owner, effective.size + 1);
-    const facets = [...effective.values()].map(constraint => constraint.facet);
+    c.step(owner, effective.size + 3);
+    const facets: Facet[] = [], preserved = new Set<string>();
+    for (const [name, constraint] of effective) {
+      c.step(owner, 8); const inherited = facetProperty(base, name, owner);
+      const supplied = {fixed: constraint.facet.fixed, integer: constraint.integer,
+        operand: constraint.operand, lexical: constraint.facet.lexical.value};
+      // Derive the local S from the complete property view: an exact inherited
+      // tuple can remain in B, without being redeclared in S. In particular,
+      // a preserved bound need not belong to B's later narrowed enumeration.
+      if (inherited && sameFacetProperty(inherited, supplied, owner)) preserved.add(name);
+      else facets.push(constraint.facet);
+    }
     // This checks exact bounds, length, precision, whitespace and fixed values
     // against the base; it does not inject hidden constraints into assessment.
     if (reductionDeterminate) layer(base, reference, owner, facets, false);
     for (const [name, constraint] of effective) {
       c.step(owner);
-      if (!boundNames.includes(name) || !constraint.facet.operand || !constraint.operand) continue;
+      if (preserved.has(name) || !boundNames.includes(name) || !constraint.facet.operand || !constraint.operand) continue;
       // A privately assessed typed value establishes its original datatype,
       // not membership in this restriction's base value space. Exclusive
       // bounds alone may repeat their same-kind inherited endpoint.
@@ -446,15 +509,43 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     result.facets = effective;
     checkLengthProperties(result, owner);
+    const inheritedNames = facetNames(base, owner);
+    const inheritedPatterns = patternProperties(base, owner), suppliedPatterns = patternProperties(result, owner);
+    // Presence comes from the supplied component inventory, before scalar
+    // reduction. A qualified reduction can hide a supplied kind in the map;
+    // that is missing correspondence evidence, not an omitted component.
+    c.step(owner, 2); const suppliedKinds = new Set<string>();
+    for (const group of result.plan.layers) for (const facet of group.facets) {
+      c.step(owner, 2); suppliedKinds.add(facet.name);
+    }
+    for (const facet of result.intrinsic?.scalars ?? []) {c.step(owner, 2); suppliedKinds.add(facet.name);}
+    if (result.intrinsic?.patterns.length) {c.step(owner, 2); suppliedKinds.add('pattern');}
+    const hasEnumeration = (description: Description): boolean => {
+      for (const group of description.plan.layers) {
+        c.step(owner, group.facets.length + 1);
+        if (group.facets.some(facet => facet.name === 'enumeration')) return true;
+      }
+      return false;
+    };
+    const omitted = (name: string): void => {
+      c.step(owner);
+      // c-fr's union/replacement cannot remove a known kind without leaving
+      // that kind in the complete result. The reviewed nonfixed bound normal
+      // form is handled before calling this predicate.
+      if (!base.plan.obligations?.length && !suppliedKinds.has(name)) c.fail(owner, 'st-restrict-facets', 'Complete facet properties omit an inherited component kind');
+      complete = false;
+    };
     // Compare the supplied view with the exact source/builtin properties;
     // retained builtin execution is never evidence that a tuple was supplied.
-    for (const name of facetNames(base, owner)) {
+    for (const name of inheritedNames) {
       c.step(owner); const inherited = facetProperty(base, name, owner)!;
       const represented = facetProperty(result, name, owner) !== undefined || !inherited.fixed && (
         name.startsWith("min") && boundNames.includes(name) && (effective.has("minInclusive") || effective.has("minExclusive"))
         || name.startsWith("max") && boundNames.includes(name) && (effective.has("maxInclusive") || effective.has("maxExclusive")));
-      if (!represented) complete = false;
+      if (!represented) omitted(name);
     }
+    if (inheritedPatterns.length && !suppliedKinds.has('pattern')) omitted('pattern');
+    if (hasEnumeration(base) && !suppliedKinds.has('enumeration')) omitted('enumeration');
     const groupEqual = (a: ScalarConstraintLayer, b: ScalarConstraintLayer, name: string): boolean => {
       c.step(owner, a.facets.length + b.facets.length + 1);
       const left = a.facets.filter(facet => facet.name === name), right = b.facets.filter(facet => facet.name === name);
@@ -471,15 +562,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       };
       return left.every(x => right.some(y => same(x, y))) && right.every(y => left.some(x => same(x, y)));
     };
-    const inheritedPatterns = patternProperties(base, owner), suppliedPatterns = patternProperties(result, owner);
     for (const prior of inheritedPatterns) {
       c.step(owner);
+      if (!suppliedKinds.has('pattern')) continue;
       if (suppliedPatterns.some(group => samePatternProperty(prior, group, owner))) continue;
       if (prior.expressions.length === 1 && suppliedPatterns.every(group => group.expressions.length === 1)) c.fail(owner, 'st-restrict-facets', 'Complete raw facet properties omit an inherited pattern expression');
       complete = false;
     }
     for (const prior of base.plan.layers) for (const name of ["enumeration"]) {
       c.step(owner, prior.facets.length + 1);
+      if (!suppliedKinds.has(name)) continue;
       if (prior.facets.some(facet => facet.name === name) && !result.plan.layers.some(group => groupEqual(prior, group, name))) {
         if (name === "enumeration") c.fail(owner, "st-restrict-facets", "Complete raw facet properties omit an inherited enumeration component");
       }
@@ -663,7 +755,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         const base = description(derivation.base);
         if (!base) {
           const baseId = c.target(derivation.base, node)!;
-          result = layer(description(derivation.inlineType!), frame.reference, node, derivation.facets);
+          const starting = description(derivation.inlineType!); checkStartingFinal(starting, node);
+          result = layer(starting, frame.reference, node, derivation.facets);
           result = {...result, plan: {...result.plan, obligations: [...(result.plan.obligations ?? []), {rule: "simple-content-base-mixed-emptiable", component: baseId}]}};
           descriptions.set(key, result); active.delete(key); stack.pop(); continue;
         }
@@ -673,6 +766,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
             result = description(derivation.inlineType);
             if (!contentDerivation(derivation.inlineType, derivation.base, node)) return c.fail(node, "simple-content-inline-derivation", "Inline simple type does not derive from the original scalar content type");
           }
+          checkStartingFinal(result, node);
           result = layer(result, frame.reference, node, derivation.facets);
         }
         result = {...result, plan: {...result.plan, id: node.id, reference: frame.reference}};
@@ -723,6 +817,35 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     if (value.definition.startsWith("content:")) return {definition: value.definition};
     return {definition: value.definition, reference: {kind: "local", target: value.definition}};
   };
+  const contentProperties = (reference: Reference, owner: GraphNode): ScalarContentProperties => {
+    const value = ensure(reference, owner), selected = descriptionReference(value, owner);
+    c.step(owner, 18);
+    const generated = value.definition.startsWith('content:');
+    const node = selected.kind === 'local' ? c.get(selected.target) : undefined;
+    const original = node ? c.context.sourceNode(node.id) : undefined;
+    const raw = node?.kind === 'simpleType' ? c.context.rawSimpleTypeProperties(node.id) : undefined;
+    if (generated && (original?.kind !== 'complexType' || original.derivation?.kind !== 'restriction' || original.derivation.contentKind !== 'simple')) return c.unresolved(owner, 'generated-scalar-properties', 'Generated scalar requires its authentic source restriction owner');
+    const name = generated ? undefined : selected.kind === 'builtin' ? selected.name : node?.identity.kind === 'global' ? node.identity.name : undefined;
+    const targetNamespace = generated ? original!.context.effectiveNamespace
+      : name?.namespace ?? raw?.targetNamespace ?? original?.context.effectiveNamespace;
+    if (targetNamespace === undefined) return c.unresolved(owner, 'raw-simple-target-namespace', 'Anonymous scalar requires an explicit target namespace property');
+    let base: Reference | undefined;
+    if (value.parent) base = descriptionReference(value.parent, owner);
+    else {
+      const relation = immediateTypeBase(c.context, selected);
+      if (relation.kind === 'resource-limit') {c.step(owner); throw new Error('Unreachable exhausted scalar budget');}
+      if (relation.kind !== 'checked') {
+        if (relation.kind === 'unresolved') return c.unresolved(owner, relation.rule, relation.message);
+        return c.fail(owner, relation.rule, relation.message);
+      }
+      base = relation.value;
+    }
+    return {definition: value.definition, name, targetNamespace, final: descriptionFinal(value, owner), base,
+      variety: value.plan.builtin === 'anySimpleType' ? 'absent' : value.plan.variety,
+      primitive: value.plan.builtin === 'anySimpleType' ? undefined : value.plan.primitive,
+      item: value.plan.item, members: value.plan.members,
+      generatedPolicy: generated ? 'GSC1' : undefined, annotation: generated || !node?.annotations.length ? 'absent' : 'source'};
+  };
   /** Concrete facet property comparison; datatype value equality remains owned here. */
   const facetPropertiesEquivalent = (a: Reference, b: Reference, owner: GraphNode): boolean => {
     const x = ensure(a, owner), y = ensure(b, owner);
@@ -739,16 +862,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       c.step(owner); const left = facetProperty(x, name, owner), right = facetProperty(y, name, owner);
       if (!left && !right) continue;
       if (!left || !right) return false;
-      if (left.integer !== undefined) c.text(left.integer, owner);
-      if (right.integer !== undefined) c.text(right.integer, owner);
-      if (left.fixed !== right.fixed || left.integer !== right.integer) return false;
-      if (left.integer !== undefined) continue;
-      if (left.operand || right.operand) {
-        if (!left.operand || !right.operand || !values.sameValue(left.operand, right.operand, owner)) return false;
-      } else {
-        c.text(left.lexical!, owner); c.text(right.lexical!, owner);
-        if (normalizeWhitespace(left.lexical!, "collapse") !== normalizeWhitespace(right.lexical!, "collapse")) return false;
-      }
+      if (!sameFacetProperty(left, right, owner)) return false;
     }
     const leftPatterns = patternProperties(x, owner), rightPatterns = patternProperties(y, owner);
     if (!leftPatterns.every(group => rightPatterns.some(other => samePatternProperty(group, other, owner)))
@@ -782,7 +896,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     return true;
   };
   return {ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, equivalent,
-    contentIdentity, contentDerivation, facetPropertiesEquivalent,
+    contentIdentity, contentProperties, contentDerivation, facetPropertiesEquivalent,
     assess: (reference: Reference, lexical: LexicalValue, owner: GraphNode) => operand(ensure(reference, owner), lexical, owner),
     compare: values.compare};
 }

@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "bec765b5cea25fbb2923a99355e4d46face52ea99fe6c0219c40bebe0f83a497",
+          "sha256": "b8e683198e897b75f5ce293b2155e9a68a7787c5479a45886158ce757800ae50",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "88ccaff77c6c65eb85c494b1ea4ae04abfd8f728729a2165cdfbaf808f096614"
+          "sha256": "ba37cfd2733cf2e8edefb4d89e1e6b67ab8d79fbc475e48a441d0db4c48d7174"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1081,7 +1081,7 @@
         {
           "path": "src/compiler/complexTypeContent.ts",
           "role": "semantic-source",
-          "sha256": "c4c23ef62f4cd39cbf0a1cf63251eb49e7b40d3d9a3f68d88cf4167898ba85dd"
+          "sha256": "a254cfc2859790d6b1fd74837a239c69386d94ae881ee63078c04ba1fd3b6445"
         },
         {
           "path": "src/compiler/finiteRe01Verification.ts",
@@ -1111,12 +1111,12 @@
         {
           "path": "src/compiler/particleRestriction.ts",
           "role": "semantic-source",
-          "sha256": "64bd45202b26738e8b3f91e25e0e9b1f1daa05c597a96cb325629448cda7ac64"
+          "sha256": "b942e7e26cb1c469e221c26f7cea7cb49d153c2c21dc00e1754ca0c1c59932b8"
         },
         {
           "path": "src/compiler/particleSemanticView.ts",
           "role": "semantic-source",
-          "sha256": "7c09cf68b2b6a221ab5012d613bd55689ce69b4bfd4f84fe6ffb395735628c90"
+          "sha256": "cca74affc66771d9c8854d5112632345c07ebbcde411b817ef7dcd45dd01584c"
         },
         {
           "path": "src/compiler/particleWildcardRelation.ts",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "673cd9f96e4ef4befe879f616c22e67f32f47688ab056ded6b2b21be17952a27"
+          "sha256": "9234b03969f60805f0446df5a0a13c859fc87ad642155d853d234040189ac0e0"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1151,12 +1151,12 @@
         {
           "path": "src/compiler/schemaAttributeUses.ts",
           "role": "semantic-source",
-          "sha256": "f41b0baa0f019c90697af68e0e8f4d7c6849dea120ca568a02850f16adfe472e"
+          "sha256": "95c8a333a43ba373885eac65c9e24d8a1e79796120f2a0f1e45d9548280ec8b8"
         },
         {
           "path": "src/compiler/schemaComponentEquality.ts",
           "role": "semantic-source",
-          "sha256": "57f7cca2f78419bc83c3e0757eb922722c336af81be7c90893937699cfcfa582"
+          "sha256": "62ffdeaa841f2c455ef9c90887f78482d8351463aeb51470fe10336e3b7f4848"
         },
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
@@ -1191,7 +1191,7 @@
         {
           "path": "src/compiler/schemaPattern.ts",
           "role": "semantic-source",
-          "sha256": "72b4e7d130e7c61b2588fa6fa9bdedc5e414bd780b17ec84a9515b07edbbfac0"
+          "sha256": "6216beb60ecaee0064c7fdad4da3f6c6fabbad5881663849533e3db3d3916370"
         },
         {
           "path": "src/compiler/schemaScalarContext.ts",
@@ -1201,7 +1201,7 @@
         {
           "path": "src/compiler/schemaScalarKernel.ts",
           "role": "semantic-source",
-          "sha256": "bbc60a742d9f762a33823afbbbafb8471d018b924dc307db443551d416a4f1c1"
+          "sha256": "edadaa433d1a353cde906393e40e996173c3a37c31a544ee54de673d62bf7a01"
         },
         {
           "path": "src/compiler/schemaSimpleTypeProperties.ts",
@@ -1361,7 +1361,7 @@
         {
           "path": "test/research/re01/preparation-evidence.json",
           "role": "expectations",
-          "sha256": "f68612ecea256ecc98e09c48d5f5217a8f8735180d1d79ea29bdfcaeb730a0e1"
+          "sha256": "eb3b4371c5455b0b09e5ac3f7067e33e28a0119c2e1f2aeaddfb8903bed2c6aa"
         },
         {
           "path": "test/research/re01/preparation-measure.ts",
@@ -1411,7 +1411,7 @@
         {
           "path": "test/unit/particle-restriction-independent.test.ts",
           "role": "expectations",
-          "sha256": "82ee50ef891020db856521dc1236156f5aaf19795b5e4d08159f13068a04a109"
+          "sha256": "787aa1b0fbfad5d24084b3bc5aa7f960afdea1b86fb1cc6ca8ca173c43d51017"
         },
         {
           "path": "test/unit/particle-upa-independent.test.ts",
@@ -1446,7 +1446,7 @@
         {
           "path": "test/unit/schema-attribute-raw-independent.test.ts",
           "role": "expectations",
-          "sha256": "39e652ebb7e97c7544b9346add1268cd3231f2fc7c6acb33eb1be4b873d4c03a"
+          "sha256": "26f4ac66aad64884b468b8afa03df11a7fafeced919fa17db1d209e6fda5cf98"
         },
         {
           "path": "test/unit/schema-attribute-uses.test.ts",
@@ -1461,17 +1461,17 @@
         {
           "path": "test/unit/schema-document-independent.test.ts",
           "role": "expectations",
-          "sha256": "3d62defabc2f8207df969175a16cd26ea8ba775ef42658755f4844320dd2696f"
+          "sha256": "80b1ce93698ecf7adf45c3f5c7ff0b2df97754bdaa7da08f3d2e43496ff50bea"
         },
         {
           "path": "test/unit/schema-document-syntax.test.ts",
           "role": "expectations",
-          "sha256": "1c1580d47b8893b2b758ae11af00ba7c8687ded9978146acdc847e95cb4adb7e"
+          "sha256": "8499defd5c718dbd92b53f8169bf9751338e6ba99527c0e9836e2d8db8991ec2"
         },
         {
           "path": "test/unit/schema-scalar-independent.test.ts",
           "role": "expectations",
-          "sha256": "2fdc48b1d538f26cf06b852c99778c6d010b8c3066b27720a72be5a20903b8d7"
+          "sha256": "75423ad2c7506d628726832067cf3858841e76ef2caaa6fbc15be1452566e1dc"
         },
         {
           "path": "test/unit/schema-syntax-assessment.test.ts",
@@ -1601,7 +1601,7 @@
         {
           "path": "test/unit/schema-component-equality-independent.test.ts",
           "role": "expectations",
-          "sha256": "ccca0ec83856d3666cf071345c22cd3cae235a422fdc1e96d308ce2c09c6e7de"
+          "sha256": "7fd923d4b9b253762bc054b368655ae325595faffcfd5a014192e4b358a46124"
         },
         {
           "path": "test/conformance/fixtures/xsd/syntax/default-namespaces.xsd",
@@ -1631,7 +1631,7 @@
         {
           "path": "src/compiler/schemaSourceWildcards.ts",
           "role": "semantic-source",
-          "sha256": "ea9edc01589ed22956f5ca1ac4642ea746863fab7a48c39cba6baf17195d49ce"
+          "sha256": "bac7152ee7aee72b6a3ea7c491b4dafcc1a981c60d87ab85f593d6487cb7122c"
         },
         {
           "path": "src/compiler/sourceSchemaBinding.ts",
@@ -1686,7 +1686,7 @@
         {
           "path": "test/conformance/fixtures/xsd/recovery/scalar-typed-bound-membership-independent.xsd",
           "role": "fixture",
-          "sha256": "a64e1feabd1d72b313614d4efff741fd5b3235fb675d0f7360dffa50ed11b433"
+          "sha256": "ea1d826bc7eb677e15c2906c46004114e06c770403bd6fc311ba3c59478e9ab2"
         },
         {
           "path": "test/unit/schema-pattern-property-independent.test.ts",
@@ -1696,7 +1696,7 @@
         {
           "path": "test/unit/schema-raw-facet-independent.test.ts",
           "role": "expectations",
-          "sha256": "822a784b1a01e6ce9e8ea0f7826960a6d0189fc31472de39f3ca3f7da4e5b79c"
+          "sha256": "83bc9006cc0d725fee6779f3d7a7493275d1c4f02debdf2f28c40e4ed9bc7055"
         },
         {
           "path": "test/unit/schema-scalar-witness-independent.test.ts",
@@ -1721,12 +1721,12 @@
         {
           "path": "src/compiler/schemaSourceGrammar.ts",
           "role": "semantic-source",
-          "sha256": "6666b3b50935c157f0c4541ef9473e917dd0a7885a1e687e17aec7baa71874d4"
+          "sha256": "173d211830c16fa462171fc5c966d003151bde39e0aaab825bf5e413a32363cc"
         },
         {
           "path": "src/compiler/schemaSourceValues.ts",
           "role": "semantic-source",
-          "sha256": "71ed8bf8a6580768c378f2a32241cdb9aa1f52bc788b3aaccd395806dee070d2"
+          "sha256": "21d6feccdd10fc42d66dd423bfd1b6b9527fccfd49a5f5008b65380239a6e486"
         },
         {
           "path": "src/compiler/schemaValueContext.ts",
@@ -1756,22 +1756,87 @@
         {
           "path": "test/unit/schema-attribute-reuse-independent.test.ts",
           "role": "expectations",
-          "sha256": "60cdb1eaca78dc113bffe3cc6f41ccefb8218690a6e58039e705b15aefeeb916"
+          "sha256": "a8994331289c10614f589922c65beeaf470ae8813e79e1ee16f9519fd4c557bc"
         },
         {
           "path": "test/unit/schema-scalar-membership-independent.test.ts",
           "role": "expectations",
-          "sha256": "634e34931b33ac2a9c982e0015bcd42743e3dbd374dc0bbe0e856d2a06df65e7"
+          "sha256": "a90716b6db7e65a57647b953ad7d4a771d2f1ee540f48da8255fb2cd4fb6c67d"
         },
         {
           "path": "test/unit/schema-scalar-properties-independent.test.ts",
           "role": "expectations",
-          "sha256": "9274ab8993d9bdf6138f167f956dea85d83275942d366ab873f4f571993f1eeb"
+          "sha256": "cce743e2976cb904ff9abd00a62b5cab0a5a8f6730d6c80fa8afbc4841e5d435"
         },
         {
           "path": "test/unit/schema-source-assessment-independent.test.ts",
           "role": "expectations",
-          "sha256": "bab691b2902e765f885db4e52befbe26ce6479bd1a5703ab132839a38d645c88"
+          "sha256": "d1dcc0348e83fab1081c78969afea84983ac7491c2424eccf5dc92f0de17eb95"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/particle-mapping-alternatives.xsd",
+          "role": "fixture",
+          "sha256": "b505c5622b1306aec770b7bae2303703a77ae20388d9bdd0f9ef3f80fb6615dc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-witness-independent.xsd",
+          "role": "fixture",
+          "sha256": "a0f2d8a059dcba72b9e8514ab3e582376e4d65e565c1b6fd74aea157f7495bf2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-au-independent.xsd",
+          "role": "fixture",
+          "sha256": "4b81829d09fda5092bc174431a41381dd388eae5055e3a8e97fd0d5a934ac0d3"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-gsc-chameleon.xsd",
+          "role": "fixture",
+          "sha256": "177231cf30c0bc61c074a2b96c781f155b8769cb0c86d6591068eeeeb83f2096"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-gsc-independent.xsd",
+          "role": "fixture",
+          "sha256": "ee81a98def4e6629b5bf5543f8b0bceb24a2547fa39329ff3b34aa37174860fc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-gsc-other.xsd",
+          "role": "fixture",
+          "sha256": "5b1daa7e0d41d4929131fb8624d3e34abe8af46e7f5a8528b258a9d978994ceb"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/selected-particle-order.xsd",
+          "role": "fixture",
+          "sha256": "35bd2cf219d0e55c63a8ec83090b93304ce184ccef82bf71a1c05133ec516695"
+        },
+        {
+          "path": "test/unit/particle-mapping-alternatives.test.ts",
+          "role": "expectations",
+          "sha256": "46630a29cb0fd12b695cbfff6fb41e94447faae46e1ec5f17b1432c522786282"
+        },
+        {
+          "path": "test/unit/particle-selected-order-independent.test.ts",
+          "role": "expectations",
+          "sha256": "c2007b471bc1c0c7a0bed51d2371f6d30fc73a6d6fb4e9eae8233d4b97c2d504"
+        },
+        {
+          "path": "test/unit/schema-pattern-witness-independent.test.ts",
+          "role": "expectations",
+          "sha256": "ce6fe20a5a96f2c801bec243fdac0fe2e9d1b345244b33fe4fc7beaa9466f7c7"
+        },
+        {
+          "path": "test/unit/schema-selected-au-independent.test.ts",
+          "role": "expectations",
+          "sha256": "fb8d5322e32f6d752a65e8bbae3f4395489875848490451993aa31a4081ee660"
+        },
+        {
+          "path": "test/unit/schema-selected-gsc-independent.test.ts",
+          "role": "expectations",
+          "sha256": "53427791d3e8218856e284b53ac472ee19c8cac2e3920137831853532ff84e57"
+        },
+        {
+          "path": "test/unit/schema-xml-inventory-independent.test.ts",
+          "role": "expectations",
+          "sha256": "e0fafe2356d4dcf3269021b4bfefefb0bfe8ba4238d1a100a062679899416141"
         }
       ]
     },

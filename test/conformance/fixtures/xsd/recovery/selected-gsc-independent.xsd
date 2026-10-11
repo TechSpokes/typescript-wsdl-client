@@ -1,0 +1,27 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:selected-gsc" targetNamespace="urn:recovery:selected-gsc" finalDefault="restriction">
+  <xs:include schemaLocation="selected-gsc-chameleon.xsd"/>
+  <xs:import namespace="urn:recovery:selected-gsc-other" schemaLocation="selected-gsc-other.xsd"/>
+  <xs:complexType name="Base" final=""><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="R1" final=""><xs:annotation><xs:documentation>Container annotation is original source evidence.</xs:documentation></xs:annotation><xs:simpleContent><xs:restriction base="t:Base"><xs:minLength value="1"><xs:annotation><xs:documentation>Facet annotation.</xs:documentation></xs:annotation></xs:minLength></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="R2" final=""><xs:simpleContent><xs:restriction base="t:Base"><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Empty1" final=""><xs:simpleContent><xs:restriction base="t:Base"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Empty2" final=""><xs:simpleContent><xs:restriction base="t:Base"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Extension" final=""><xs:simpleContent><xs:extension base="t:R1"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="OwnFinal" final="extension"><xs:simpleContent><xs:restriction base="t:Base"/></xs:simpleContent></xs:complexType>
+  <xs:simpleType name="List" final=""><xs:list itemType="xs:string"/></xs:simpleType>
+  <xs:complexType name="ListBase" final=""><xs:simpleContent><xs:extension base="t:List"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ListR" final=""><xs:simpleContent><xs:restriction base="t:ListBase"><xs:length value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:simpleType name="Union" final=""><xs:union memberTypes="xs:boolean xs:int"/></xs:simpleType>
+  <xs:complexType name="UnionBase" final=""><xs:simpleContent><xs:extension base="t:Union"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="UnionR" final=""><xs:simpleContent><xs:restriction base="t:UnionBase"/></xs:simpleContent></xs:complexType>
+  <xs:simpleType name="FinalScalar" final="restriction"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:complexType name="FinalBase" final=""><xs:simpleContent><xs:extension base="t:FinalScalar"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="InvalidFinalR" final=""><xs:simpleContent><xs:restriction base="t:FinalBase"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Mixed" mixed="true" final=""/>
+  <xs:complexType name="MixedR" final=""><xs:simpleContent><xs:restriction base="t:Mixed"><xs:simpleType final=""><xs:restriction base="xs:string"/></xs:simpleType><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Owner" final=""><xs:sequence>
+    <xs:element name="left"><xs:complexType final=""><xs:simpleContent><xs:restriction base="t:Base"><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="right"><xs:complexType final=""><xs:simpleContent><xs:restriction base="t:Base"><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="changed"><xs:complexType final=""><xs:simpleContent><xs:restriction base="t:Base"><xs:minLength value="2"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+  </xs:sequence></xs:complexType>
+</xs:schema>

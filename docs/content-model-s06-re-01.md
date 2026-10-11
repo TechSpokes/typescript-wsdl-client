@@ -81,6 +81,34 @@ Structural/local kernels retain their stated scope and cannot self-certify compl
 No public profile, catalog format, legacy default or faithful activation gate changes.
 The primary source is the pinned 2004 Structures XML with SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
 
+### Selected raw matching, implicit order and generated scalar properties
+
+The maintainer [selected three additional interpretations](https://github.com/TechSpokes/typescript-wsdl-client/issues/266#issuecomment-6114343952) after independent review of their discriminating cases.
+These choices refine the B-domain local predicates; they do not discharge the full witness theorem or change the public profile.
+
+Where a raw restriction matches a derived AU to same-name base uses, at least one such base use must satisfy the applicable compatibility checks.
+An unmatched derived AU still follows the prescribed base-wildcard allowance.
+Required-base coverage, requiredness, wildcard and other obligations remain independent requirements.
+This existential raw-property matching does not fabricate an inherited source role or replace AU01 C1's universal checks for actual source replacements.
+
+An implicit substitution-group set satisfies an order-sensitive restriction rule when some enumeration of that set satisfies the prescribed mapping.
+Every explicit list retains its original order; QName, NodeId and discovery order are not governing enumerations.
+One implicit particle/head has one coherent enumeration throughout a root restriction query, including repeated references and flattened blocks; separate queries choose independently.
+Flattening preserves explicit blocks around each implicit choice, so its members cannot cross neighboring explicit positions.
+A complete finite mapping procedure or equivalent criterion must preserve the one request budget, and interrupted search cannot establish a negative.
+
+Generated simple-content scalar policy GSC1 creates one distinct anonymous scalar per exact source restriction slot, including zero-facet restrictions.
+Its name and own annotation are absent, its target namespace is the containing complex type's mapped namespace, and its own final set is empty independently of complex final and schema defaults.
+Its base is the exact selected starting scalar; variety, primitive, list item and ordered union members are inherited from that scalar.
+The shared facet owner retains every applicable restriction check and facet annotation; fundamental properties follow the completed datatype's rules.
+Extension inherits the exact generated identity, while repeated references share the component belonging to their original restriction slot.
+The private property view preserves source-construction and scalar prerequisites; raw scalars still require their explicit complete abstract properties.
+No invented XML simpleType, namespace declaration, public graph role or persisted representation supplies these facts.
+
+These are selected project interpretations, not retroactive claims that the dated primary text uniquely determines the choices.
+Independent multi-pattern expression mapping and arbitrary repeated facet-component reduction retain their separately recorded interpretation boundaries.
+The [complete dated XML import inventory](content-model-s06-re-01-resolver-implementation.md#concrete-source-verification-apis) is now recovered from primary evidence and reviewed separately from these project choices.
+
 ### Conditional finite-evidence soundness
 
 Let J(c,s) denote an exact obligation for authenticated context c and subject s in an independently accepted domain.

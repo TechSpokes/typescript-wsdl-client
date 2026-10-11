@@ -112,6 +112,7 @@ export function sourceRoleTypeName(role: SourceGrammarRole): string | undefined 
 export function abstractSourceRole(role: SourceGrammarRole): boolean {return roles[role].abstract === true;}
 
 export type SourceGrammarResult = Readonly<{kind: 'checked';
+  hasIdAttributeUse: boolean;
   attributes: readonly Readonly<{index: number; type: string}>[];
   children: readonly Readonly<{index: number; role?: SourceGrammarRole}>[];
 }> | Readonly<{kind: 'invalid-schema'; rule: 'schema-for-schemas'; message: string; source: SyntaxSource}>;
@@ -216,5 +217,7 @@ export function assessSourceGrammar(role: SourceGrammarRole, node: SyntaxElement
     case 'none': break;
   }
   if (at !== elements.length) return invalid('Children do not match the selected contextual S4S grammar');
-  return {kind: 'checked', attributes, children};
+  // Every ID use in this closed grammar is the unqualified id declaration.
+  // cvc-complex-type 5.2 depends on the use even when the attribute is absent.
+  return {kind: 'checked', hasIdAttributeUse: definition.attrs.id === 'ID', attributes, children};
 }

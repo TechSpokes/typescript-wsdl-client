@@ -185,7 +185,7 @@ describe('independent exact-context attribute fact reuse', () => {
       expect(standalone.value.declarations[0]).toMatchObject({component: declaration,
         scalarObligations: expect.arrayContaining([expect.objectContaining(debt)])});
       expect(standalone.value.uses[0].declared?.value.owner).toBe(declaration);
-      expect(standalone.authority).toBe('AU01-C1-raw-v1');
+      expect(standalone.authority).toBe('AU01-C1-raw-v2');
       expect(standalone.obligations).toEqual(['owning-type-or-group-validity']);
       expect(checked(assessRawAttributeUses(context, owner), context)).toEqual(aggregate);
       expect(checked(assessAttributeUse(context, ids[1]), context)).toEqual(standalone);

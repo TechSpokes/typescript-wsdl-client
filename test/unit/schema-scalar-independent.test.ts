@@ -38,6 +38,33 @@ function value<T>(result: ScalarResult<T>): T {
 }
 
 describe('independently specified schema scalar operands', () => {
+  it.each([false, true])('preserves exact inherited effective bounds without replaying them as local facets: typed=%s', async typed => {
+    const {request, source, owner, kernel} = await setup('scalar-typed-bound-membership-independent.xsd');
+    expect(kernel.describe(named('ExplicitInheritedEndpoint'), owner)).toMatchObject({kind: 'invalid-schema', rule: 'cvc-enumeration-valid'});
+    const found = request.actual.lookup(globalId('type', {namespace, local: 'FiniteIntBase'}));
+    if (found.kind !== 'found' || found.node.kind !== 'simpleType') throw new Error('Expected inherited-facet base');
+    const seed = found.node;
+    const prepare = (changed: boolean) => {
+      const local = `InheritedInt-${typed}-${changed}`, id = globalId('type', {namespace, local}), base = named('FiniteIntBase');
+      const facet = (name: string, value: string, fixed = false) => ({name, lexical: {value, context: source}, fixed});
+      const bound = (name: string, value: string) => ({...facet(name, value),
+        ...(typed ? {operand: {type: builtin('int'), owner, context: 'original' as const}} : {})});
+      const candidate = request.candidate({key: local, active: [...request.actual.members, id],
+        additions: [{...seed, id, identity: {kind: 'global', role: 'type', name: {namespace, local}}, variety: {kind: 'restriction', base, facets: []}}],
+        rawSimpleTypes: [{type: id, base, final: [], variety: {kind: 'atomic'}, facetLayers: [{facets: [
+          facet('pattern', '[\\-+]?[0-9]+'), facet('fractionDigits', '0', true),
+          bound('minInclusive', changed ? '-2147483647' : '-02147483648'), bound('maxInclusive', '+2147483647'),
+          facet('enumeration', '0'), facet('enumeration', '10'),
+        ]}], provenance: {kind: 'hypothetical-abstract', originals: []}}]});
+      if (candidate.kind !== 'prepared') throw new Error('Expected complete raw-property candidate');
+      return createSchemaScalarKernel(candidate.context).describe({kind: 'local', target: id}, owner);
+    };
+    // c-fr admits the unchanged inherited components with empty local S.
+    // A changed tuple must still satisfy the base-membership requirement.
+    expect(prepare(false)).toMatchObject({kind: 'checked', obligations: []});
+    expect(prepare(true)).toMatchObject({kind: 'invalid-schema'});
+  });
+
   it('does not certify typed raw bound values outside the base value space', async () => {
     const {request, source, owner, kernel, lexical} = await setup('scalar-typed-bound-membership-independent.xsd');
     const original = request.actual.lookup(globalId('type', {namespace, local: 'ZeroOrTen'}));
@@ -53,9 +80,10 @@ describe('independently specified schema scalar operands', () => {
       const candidate = request.candidate({key: name, active: [...request.actual.members, id], additions: [fresh],
         rawSimpleTypes: [{type: id, base: named(base), final: [], variety: {kind: 'atomic'},
           facetLayers: [{facets: [
-            // Preserve the exact inherited integer pattern; this test isolates
-            // typed bound membership rather than a missing pattern property.
+            // Preserve both inherited integer facet components; the source
+            // integer base adds no unrelated finite-range endpoint properties.
             {name: 'pattern', lexical: {value: '[\\-+]?[0-9]+', context: source}, fixed: false},
+            {name: 'fractionDigits', lexical: {value: '0', context: source}, fixed: true},
             ...(copyEnumeration ? ['0', '10'].map(value => ({name: 'enumeration', lexical: {value, context: source}, fixed: false})) : []),
             {name: facet, lexical: {value: bound, context: source}, fixed: false,
               operand: {type: builtin('int'), owner, context: 'original'}},
@@ -72,20 +100,14 @@ describe('independently specified schema scalar operands', () => {
       expect(prepare('ZeroOrTen', facet, '5', true).result).toMatchObject({kind: 'invalid-schema'});
       const member = facet.startsWith('min') ? '0' : '10';
       const admitted = prepare('ZeroOrTen', facet, member, true);
-      // Membership is established; the supplied tuple still omits the exact
-      // inherited integer precision/bound properties, so correspondence stays open.
-      expect(admitted.result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-        expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: admitted.id}),
-      ])});
+      expect(admitted.result).toMatchObject({kind: 'checked', obligations: []});
     }
     // The exclusive bound property has the explicit same-kind inherited
     // endpoint exception; that endpoint need not be a member of the base.
     for (const [base, facet] of [['AboveFive', 'minExclusive'], ['BelowFive', 'maxExclusive']]) {
       expect(kernel.assess(named(base), lexical('5'), owner)).toMatchObject({kind: 'invalid-schema'});
       const admitted = prepare(base, facet, '5', false);
-      expect(admitted.result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-        expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: admitted.id}),
-      ])});
+      expect(admitted.result).toMatchObject({kind: 'checked', obligations: []});
     }
   });
 

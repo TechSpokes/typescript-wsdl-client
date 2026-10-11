@@ -1,0 +1,17 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:selected-order" targetNamespace="urn:recovery:selected-order">
+  <xs:element name="head" type="xs:string" abstract="true"/>
+  <xs:element name="a" type="xs:string" substitutionGroup="t:head"/>
+  <xs:element name="b" type="xs:string" substitutionGroup="t:head"/>
+  <xs:element name="left" type="xs:string"/><xs:element name="right" type="xs:string"/>
+  <xs:complexType name="Implicit"><xs:sequence><xs:element ref="t:head"/></xs:sequence></xs:complexType>
+  <xs:complexType name="ImplicitCopy"><xs:sequence><xs:element ref="t:head"/></xs:sequence></xs:complexType>
+  <xs:complexType name="ExplicitAB"><xs:choice><xs:element ref="t:a"/><xs:element ref="t:b"/></xs:choice></xs:complexType>
+  <xs:complexType name="ExplicitBA"><xs:choice><xs:element ref="t:b"/><xs:element ref="t:a"/></xs:choice></xs:complexType>
+  <xs:complexType name="ImplicitBlock"><xs:choice><xs:element ref="t:left"/><xs:element ref="t:head"/><xs:element ref="t:right"/></xs:choice></xs:complexType>
+  <xs:complexType name="ReverseBlock"><xs:choice><xs:element ref="t:left"/><xs:element ref="t:b"/><xs:element ref="t:a"/><xs:element ref="t:right"/></xs:choice></xs:complexType>
+  <xs:complexType name="Interleaved"><xs:choice><xs:element ref="t:a"/><xs:element ref="t:left"/><xs:element ref="t:b"/><xs:element ref="t:right"/></xs:choice></xs:complexType>
+  <xs:complexType name="ImplicitTwo"><xs:choice minOccurs="2" maxOccurs="2"><xs:element ref="t:head" minOccurs="0" maxOccurs="2"/></xs:choice></xs:complexType>
+  <xs:complexType name="DistinctImplicitBlocks"><xs:sequence><xs:element ref="t:head" minOccurs="0" maxOccurs="2"/><xs:element ref="t:head" minOccurs="0" maxOccurs="2"/></xs:sequence></xs:complexType>
+  <xs:complexType name="OppositeUses"><xs:sequence><xs:choice minOccurs="0" maxOccurs="2"><xs:element ref="t:a"/><xs:element ref="t:b"/></xs:choice><xs:choice minOccurs="0" maxOccurs="2"><xs:element ref="t:b"/><xs:element ref="t:a"/></xs:choice></xs:sequence></xs:complexType>
+  <xs:complexType name="SameReverseUses"><xs:sequence><xs:choice minOccurs="0" maxOccurs="2"><xs:element ref="t:b"/><xs:element ref="t:a"/></xs:choice><xs:choice minOccurs="0" maxOccurs="2"><xs:element ref="t:b"/><xs:element ref="t:a"/></xs:choice></xs:sequence></xs:complexType>
+</xs:schema>

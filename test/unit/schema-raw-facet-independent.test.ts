@@ -144,7 +144,7 @@ describe('independent effective length ancestry', () => {
 // a differently named inherited component property.
 describe('independent raw facet correspondence qualifications', () => {
   it.each(['fixed-bound-cross-kind', 'equal-value-fixed-metadata', 'missing-inherited-bound-kind', 'missing-inherited-length-kind'] as const)
-    ('retains a property-mapping obligation for %s', async variation => {
+    ('checks supplied component presence and mapping for %s', async variation => {
       const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/scalar-primitives.xsd'), {policy: {fileRoots: [fixtures]}});
       const prepared = prepareSourceSchemaRequest(input, {budget: createSemanticBudget({maxWork: 100_000_000})});
       if (prepared.kind !== 'prepared') throw new Error('Expected source context');
@@ -173,8 +173,10 @@ describe('independent raw facet correspondence qualifications', () => {
       const candidate = request.candidate({key: 'fixed-property-normalization', active: [...request.actual.members, baseId, childId],
         additions: [node(baseId, 'PropertyBase', builtin), node(childId, 'PropertyChild', base)], rawSimpleTypes: properties});
       if (candidate.kind !== 'prepared') throw new Error('Expected structural candidate');
-      expect(createSchemaScalarKernel(candidate.context).describe({kind: 'local', target: childId}, named('Owner')))
-        .toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
+      const result = createSchemaScalarKernel(candidate.context).describe({kind: 'local', target: childId}, named('Owner'));
+      if (variation.startsWith('missing-inherited')) {
+        expect(result).toMatchObject({kind: 'invalid-schema', rule: 'st-restrict-facets'});
+      } else expect(result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
           expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: childId}),
         ])});
     });
@@ -253,14 +255,16 @@ describe('independent intrinsic builtin list properties', () => {
     if (candidate.kind !== 'prepared') throw new Error('Expected structural candidate');
     const kernel = createSchemaScalarKernel(candidate.context), result = kernel.describe(reference, named('Owner'));
     if (variant === 'zero-minimum') {expect(result).toMatchObject({kind: 'invalid-schema'}); return;}
-    if (variant === 'omitted' || variant === 'length-only' || variant === 'explicit-minimum') {
-      expect(result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-        expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: id}),
-      ])});
-      if (variant === 'omitted') expect(kernel.assess(reference, {value: '', context: seed.context}, named('Owner')))
-        .toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-          expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: id}),
-        ])});
+    if (variant === 'omitted') {
+      // Both inherited scalar components have known presence; no replacement
+      // set can yield a complete empty inventory (review #268 6114295468).
+      expect(result).toMatchObject({kind: 'invalid-schema', rule: 'st-restrict-facets'});
+      return;
+    }
+    if (variant === 'length-only' || variant === 'explicit-minimum') {
+      // A complete supplied set cannot omit the inherited minLength or
+      // whiteSpace kind merely by retaining another scalar constraint.
+      expect(result).toMatchObject({kind: 'invalid-schema', rule: 'st-restrict-facets'});
       return;
     }
     expect(result).toMatchObject({kind: 'checked', obligations: []});
@@ -344,6 +348,11 @@ describe('independent raw builtin property completeness', () => {
     // Exact derived-builtin singleton pattern properties are now known.
     // Their omission is a concrete property mismatch, not an opaque debt.
     if (baseName === 'int' || baseName === 'Name') {
+      expect(described).toMatchObject({kind: 'invalid-schema', rule: 'st-restrict-facets'}); return;
+    }
+    // An empty complete output cannot contain the sole inherited whitespace
+    // component or a replacement of its kind (review #268 6114189969).
+    if (explicitWhitespace === undefined && (baseName === 'token' || baseName === 'normalizedString')) {
       expect(described).toMatchObject({kind: 'invalid-schema', rule: 'st-restrict-facets'}); return;
     }
     expect(described).toMatchObject({kind: 'checked', obligations: complete ? [] : expect.arrayContaining([

@@ -124,15 +124,15 @@ describe('independent exact intrinsic scalar facet properties', () => {
     expect(kernel.facetPropertiesEquivalent(named('RawEmpty'), builtin('string'), owner)).toBe(request.budget.failure());
   });
 
-  // Independent pre-code ordinary correction oracle: #268 comment 6113899093.
-  it('assesses a raw tuple locally without silently supplying omitted int bounds, retaining its full correspondence debt', async () => {
+  // The missing-kind proof (#268 6114364926) now establishes invalidity before
+  // local value assessment; the earlier qualified local-evaluator case no
+  // longer has an unresolved component-validity premise.
+  it('rejects a complete raw int tuple that omits known bounds and precision rather than supplying them implicitly', async () => {
     const {raw, facet, seed} = await setup();
     const supplied = raw(builtin('int'), {kind: 'atomic'}, [facet('pattern', String.raw`[\-+]?[0-9]+`)]);
-    const description = supplied.kernel.describe(supplied.reference, owner);
-    expect(description).toMatchObject({kind: 'checked', obligations: [expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'})]});
-    if (description.kind !== 'checked') throw new Error('Expected represented tuple with unresolved restriction authority');
+    expect(supplied.kernel.describe(supplied.reference, owner)).toMatchObject({kind: 'invalid-schema', rule: 'st-restrict-facets'});
     expect(supplied.kernel.assess(supplied.reference, {value: '2147483648', context: seed.context}, owner))
-      .toMatchObject({kind: 'checked', value: {operand: {family: 'decimal', canonical: '2147483648'}}, obligations: description.obligations});
+      .toMatchObject({kind: 'invalid-schema', rule: 'st-restrict-facets'});
     expect(supplied.kernel.assess(supplied.reference, {value: '1.5', context: seed.context}, owner))
       .toMatchObject({kind: 'invalid-schema'});
   });

@@ -1,5 +1,5 @@
 /** Fixed S4S datatype values. No application components, lookup callbacks or hints. */
-import {XML_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import {builtinParents, schemaDatatypeValues} from './schemaDatatypeValues.js';
 import type {SchemaOperand} from './schemaDatatypeValues.js';
@@ -19,8 +19,7 @@ export type SourceValueResult = Readonly<{kind: 'checked'; value: SchemaOperand;
   selectedMembers: readonly FixedSimpleTypeHandle[]; identityFacts: readonly SourceIdentityFact[];
   obligations: readonly SourceValueObligation[]}> | SourceValueFailure | ResourceLimitFailure;
 export type FixedSimpleTypeLookup = Readonly<{kind: 'found'; type: FixedSimpleTypeHandle}>
-  | Readonly<{kind: 'missing'}> | Readonly<{kind: 'unresolved'; rule: 'schema-for-schemas-xml-import-version'}>
-  | ResourceLimitFailure;
+  | Readonly<{kind: 'missing'}> | ResourceLimitFailure;
 
 type Descriptor = Readonly<{kind: 'builtin'; name: string} | {kind: 'enum'; base: string; values: readonly string[]}
   | {kind: 'list'; item: string} | {kind: 'union'; members: readonly string[]}
@@ -62,6 +61,7 @@ const definitions: Readonly<Record<string, Descriptor>> = Object.freeze({
   '#use': {kind: 'enum', base: 'NMTOKEN', values: ['prohibited', 'optional', 'required']},
   '#process': {kind: 'enum', base: 'NMTOKEN', values: ['skip', 'lax', 'strict']},
   '#whiteSpace': {kind: 'enum', base: 'NMTOKEN', values: ['preserve', 'replace', 'collapse']},
+  '#xmlSpace': {kind: 'enum', base: 'NCName', values: ['default', 'preserve']},
   '#zeroOne': {kind: 'enum', base: 'nonNegativeInteger', values: ['0', '1']},
   '#one': {kind: 'enum', base: 'nonNegativeInteger', values: ['1']},
   '#maxZeroOne': {kind: 'enum', base: 'allNNI', values: ['0', '1']},
@@ -188,7 +188,8 @@ export function createSchemaSourceValues(budget: SemanticBudget) {
     fixed,
     lookup: (name: ExpandedName): FixedSimpleTypeLookup => budget.guard(() => {
       budget.chargeWork(5 + name.namespace.length + name.local.length);
-      if (name.namespace === XML_NAMESPACE) return Object.freeze({kind: 'unresolved', rule: 'schema-for-schemas-xml-import-version'});
+      // The immutable October 2004 XML import has no named types. Its space
+      // restriction is anonymous and cannot be resolved by an XML QName.
       return name.namespace === XSD_NAMESPACE && named.has(name.local)
         ? Object.freeze({kind: 'found', type: fixed(name.local)}) : Object.freeze({kind: 'missing'});
     }),

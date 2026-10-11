@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="CamelBase"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="CamelR"><xs:simpleContent><xs:restriction base="CamelBase"><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+</xs:schema>

@@ -90,7 +90,7 @@ describe('independent literal raw AU construction boundaries', () => {
     const candidate = request.candidate({key: 'literal-extension', active: request.actual.members, rawTypes: [base, extension]});
     if (candidate.kind !== 'prepared') throw new Error('Expected literal candidate');
     const result = assessRawAttributeUses(candidate.context, extension.type);
-    expect(result).toMatchObject({kind: 'checked', authority: 'AU01-C1-raw-v1',
+    expect(result).toMatchObject({kind: 'checked', authority: 'AU01-C1-raw-v2',
       obligations: ['aggregate-type-validity', 'raw-type-property-correspondence']});
     if (result.kind !== 'checked') throw new Error('Expected local raw extension check');
     expect(result.value.uses.map(use => use.id)).toEqual(extension.attributeUses);
@@ -110,7 +110,7 @@ describe('independent literal raw AU construction boundaries', () => {
     expect(assessRawAttributeUses(candidate.context, named(owner))).toMatchObject({kind: expected});
   });
 
-  it('keeps duplicate raw matching unresolved even when original AU IDs are reused', async () => {
+  it('uses the selected existential raw matches without fabricating source inheritance roles', async () => {
     const request = await setup();
     const source = assessSourceAttributeUses(request.actual, named('VacuousDouble'));
     expect(source).toMatchObject({kind: 'checked'});
@@ -118,7 +118,7 @@ describe('independent literal raw AU construction boundaries', () => {
     const candidate = request.candidate({key: 'unproven-source-roles', active: request.actual.members,
       rawTypes: [base, raw(request.actual, 'VacuousDouble', base.attributeUses)]});
     if (candidate.kind !== 'prepared') throw new Error('Expected literal candidate');
-    expect(assessRawAttributeUses(candidate.context, named('VacuousDouble'))).toMatchObject({kind: 'unresolved', rule: 'raw-au-match-quantifier'});
+    expect(assessRawAttributeUses(candidate.context, named('VacuousDouble'))).toMatchObject({kind: 'checked', authority: 'AU01-C1-raw-v2'});
   });
 
   it('separates abstract required/default properties from invalid explicit source grammar', async () => {
