@@ -39,6 +39,25 @@ export type AttributeFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rej
 export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v1'; value: SourceAttributePlan;
   obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]}> | AttributeFailure | ResourceLimitFailure;
 type Container = ComplexTypeNode | Extract<GraphNode, {kind: 'attributeGroup'}>;
+type AttributeRole = 'source' | 'raw';
+type DeclarationFact = Readonly<{
+  receipt: DeclarationReceipt; value: TypedAttributeConstraint | undefined;
+  scalarObligations: readonly ScalarObligation[];
+}>;
+type AttributeUseFact = Readonly<{
+  kind: 'present'; value: OriginalAttributeUse; declaration: DeclarationFact;
+  scalarObligations: readonly ScalarObligation[];
+} | {
+  kind: 'absent'; declaration?: DeclarationFact;
+  scalarObligations: readonly ScalarObligation[];
+}>;
+type AttributeFactCache = Readonly<{
+  declarations: Map<NodeId, DeclarationFact>; uses: Map<NodeId, AttributeUseFact>;
+}>;
+// Only immutable, completely evaluated local facts are retained. Context identity
+// captures active membership, raw properties and original/active operand roles;
+// shared source nodes never authorize transfer to another authentic context.
+const attributeFacts = new WeakMap<SemanticContext, Map<AttributeRole, AttributeFactCache>>();
 class AttributeAbort extends Error {
   constructor(readonly result: AttributeFailure | ResourceLimitFailure) {super(result.kind);}
 }
@@ -49,6 +68,7 @@ export function assessSourceAttributeUses(context: SemanticContext, ownerId: Nod
 
 /** Check one available original/fresh AU even if no effective type retains it. */
 export function assessAttributeUse(context: SemanticContext, useId: NodeId): AttributeResult {
+  assertSemanticContext(context);
   const result = assessAttributeUses(context, useId, context.kind === 'actual' ? 'source' : 'raw', true);
   return context.kind === 'candidate' && result.kind === 'invalid-schema' ? context.budget.guard(() => {
     context.budget.chargeWork(8); return Object.freeze({...result, kind: 'candidate-rejected' as const});
@@ -63,7 +83,7 @@ export function assessRawAttributeUses(context: SemanticContext, ownerId: NodeId
   }) : result;
 }
 
-function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: 'source' | 'raw', standalone = false): AttributeResult {
+function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: AttributeRole, standalone = false): AttributeResult {
   assertSemanticContext(context);
   const budget = context.budget, charge = budget.chargeWork;
   return budget.guard(() => {
@@ -86,10 +106,10 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: 's
     };
     const scalar = createSchemaScalarKernel(context);
     charge(); const scalarObligations: ScalarObligation[] = [];
-    const unwrap = <T>(result: ScalarResult<T> | RelationResult<T>, node: GraphNode): T => {
+    const unwrap = <T>(result: ScalarResult<T> | RelationResult<T>, node: GraphNode, obligations = scalarObligations): T => {
       if (result.kind === 'checked') {
         if (result.authority === 'XSD10-schema-scalars-DT01-A-v1') {
-          for (const obligation of result.obligations) {charge(); scalarObligations.push(obligation);}
+          for (const obligation of result.obligations) {charge(); obligations.push(obligation);}
         }
         return result.value;
       }
@@ -99,14 +119,14 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: 's
     const nameKey = (name: ExpandedName): string => {
       charge(8 + 2 * (name.namespace.length + name.local.length)); return JSON.stringify([name.namespace, name.local]);
     };
-    const typed = (declaration: AttributeNode, constraint: ValueConstraint | undefined, owner: GraphNode, origin: 'use' | 'declaration'): TypedAttributeConstraint | undefined => {
+    const typed = (declaration: AttributeNode, constraint: ValueConstraint | undefined, owner: GraphNode, origin: 'use' | 'declaration', obligations = scalarObligations): TypedAttributeConstraint | undefined => {
       if (!constraint) return undefined;
-      unwrap(scalar.checkValue(declaration.type, constraint, owner.id), owner);
-      const value = unwrap(scalar.assess(declaration.type, constraint.lexical, owner.id), owner);
+      unwrap(scalar.checkValue(declaration.type, constraint, owner.id), owner, obligations);
+      const value = unwrap(scalar.assess(declaration.type, constraint.lexical, owner.id), owner, obligations);
       charge(5); return Object.freeze({kind: constraint.kind, origin, value});
     };
-    const equal = (a: TypedAttributeConstraint, b: TypedAttributeConstraint, owner: GraphNode): boolean => unwrap(
-      scalar.equivalent(a.value.type, a.value.lexical, b.value.type, b.value.lexical, owner.id), owner);
+    const equal = (a: TypedAttributeConstraint, b: TypedAttributeConstraint, owner: GraphNode, obligations = scalarObligations): boolean => unwrap(
+      scalar.equivalent(a.value.type, a.value.lexical, b.value.type, b.value.lexical, owner.id), owner, obligations);
     const asContainer = (node: GraphNode): Container => {
       if (node.kind !== 'complexType' && node.kind !== 'attributeGroup') return problem(node, 'src-attribute-group', 'Expected a type or attribute group');
       return node;
@@ -118,33 +138,77 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: 's
     try {
       const requested = get(ownerId);
       if (role === 'source' && context.kind !== 'actual') return problem(requested, 'source-construction-role', 'Actual source mapping cannot certify abstract hypothetical AU construction', 'unresolved');
+      charge(); let roles = attributeFacts.get(context);
+      if (!roles) {charge(3); roles = new Map(); attributeFacts.set(context, roles);}
+      charge(); let cached = roles.get(role);
+      if (!cached) {
+        charge(9); cached = Object.freeze({declarations: new Map<NodeId, DeclarationFact>(), uses: new Map<NodeId, AttributeUseFact>()});
+        roles.set(role, cached);
+      }
       charge(4);
-      const plans = new Map<NodeId, SourceAttributePlan>(), useCache = new Map<NodeId, OriginalAttributeUse>();
-      const declarationCache = new Map<NodeId, TypedAttributeConstraint | undefined>();
+      const plans = new Map<NodeId, SourceAttributePlan>(), useCache = new Map<NodeId, AttributeUseFact>();
       charge(); const declarationEvidence = new Map<NodeId, DeclarationReceipt>();
-      const declaration = (node: AttributeNode): TypedAttributeConstraint | undefined => {
-        charge(); if (declarationCache.has(node.id)) return declarationCache.get(node.id);
+      const declaration = (node: AttributeNode): DeclarationFact => {
+        charge(1 + node.id.length); const previous = cached.declarations.get(node.id);
+        if (previous) return previous;
         const checked = checkDeclaration(context, node.id);
         if (checked.kind !== 'checked') throw new AttributeAbort(checked);
-        charge(); declarationEvidence.set(node.id, checked);
-        unwrap(scalar.describe(node.type, node.id), node);
-        const value = typed(node, node.value, node, 'declaration');
-        charge(); declarationCache.set(node.id, value); return value;
+        charge(); const obligations: ScalarObligation[] = [];
+        unwrap(scalar.describe(node.type, node.id), node, obligations);
+        const value = typed(node, node.value, node, 'declaration', obligations);
+        charge(10 + obligations.length + node.id.length);
+        const fact = Object.freeze({receipt: checked, value, scalarObligations: Object.freeze(obligations)});
+        cached.declarations.set(node.id, fact); return fact;
+      };
+      const replay = (fact: AttributeUseFact): OriginalAttributeUse | undefined => {
+        const dependency = fact.declaration;
+        if (dependency) {
+          const id = dependency.receipt.component;
+          charge(1 + id.length);
+          if (!declarationEvidence.has(id)) {
+            charge(2 + id.length); declarationEvidence.set(id, dependency.receipt);
+            for (const obligation of dependency.scalarObligations) {charge(2); scalarObligations.push(obligation);}
+          }
+        }
+        for (const obligation of fact.scalarObligations) {charge(2); scalarObligations.push(obligation);}
+        return fact.kind === 'present' ? fact.value : undefined;
       };
       const use = (node: AttributeUseNode): OriginalAttributeUse | undefined => {
-        charge(); const previous = useCache.get(node.id); if (previous) return previous;
+        charge(1 + node.id.length); const previous = useCache.get(node.id);
+        if (previous) return previous.kind === 'present' ? previous.value : undefined;
+        charge(1 + node.id.length); const stored = cached.uses.get(node.id);
+        if (stored) {
+          const result = replay(stored);
+          charge(1 + node.id.length); useCache.set(node.id, stored); return result;
+        }
         const attribute = target(node.declaration, node);
         if (attribute.kind !== 'attribute') return problem(node, 'src-attribute', 'AU requires an attribute declaration');
         // A prohibited local declaration maps to no semantic AU/declaration.
         // A referenced global still owes its own scalar/declaration obligations.
-        if (node.use === 'prohibited') {if (attribute.identity.kind === 'global') declaration(attribute); return undefined;}
-        const declared = declaration(attribute);
-        if (role === 'source' && node.value?.kind === 'default' && node.use !== 'optional') return problem(node, 'src-attribute.2', 'An explicit source default requires an optional use');
-        const own = typed(attribute, node.value, node, 'use');
-        if (own && declared?.kind === 'fixed' && (own.kind !== 'fixed' || !equal(own, declared, node))) return problem(node, 'au-props-correct.2', 'Use constraint disagrees with declaration fixed value');
-        charge(9);
-        const result = Object.freeze({id: node.id, declaration: attribute, source: node, required: node.use === 'required', own, declared, effective: own ?? declared});
-        useCache.set(node.id, result); return result;
+        let fact: AttributeUseFact;
+        if (node.use === 'prohibited') {
+          const dependency = attribute.identity.kind === 'global' ? declaration(attribute) : undefined;
+          charge(9); fact = Object.freeze({kind: 'absent', declaration: dependency, scalarObligations: Object.freeze([])});
+        } else {
+          // Retain the complete dependency even when another AU has already
+          // replayed it in this invocation. Ambient inventory deltas are not a
+          // dependency closure (notably for two uses of one global declaration).
+          const dependency = declaration(attribute), declared = dependency.value;
+          if (role === 'source' && node.value?.kind === 'default' && node.use !== 'optional') return problem(node, 'src-attribute.2', 'An explicit source default requires an optional use');
+          charge(); const obligations: ScalarObligation[] = [];
+          const own = typed(attribute, node.value, node, 'use', obligations);
+          if (own && declared?.kind === 'fixed' && (own.kind !== 'fixed' || !equal(own, declared, node, obligations))) return problem(node, 'au-props-correct.2', 'Use constraint disagrees with declaration fixed value');
+          charge(9);
+          const value = Object.freeze({id: node.id, declaration: attribute, source: node, required: node.use === 'required', own, declared, effective: own ?? declared});
+          charge(11 + obligations.length);
+          fact = Object.freeze({kind: 'present', value, declaration: dependency, scalarObligations: Object.freeze(obligations)});
+        }
+        const result = replay(fact);
+        // Publish only after the entire local evaluation and evidence replay
+        // succeeded. Later container-specific failures do not invalidate this
+        // fact, and none of those container judgments is cached here.
+        charge(2 + 2 * node.id.length);
+        cached.uses.set(node.id, fact); useCache.set(node.id, fact); return result;
       };
       const combine = (a: AttributeWildcard | undefined, b: AttributeWildcard | undefined, owner: GraphNode, union: boolean): AttributeWildcard | undefined => {
         if (!a) return b; if (!b) return a;

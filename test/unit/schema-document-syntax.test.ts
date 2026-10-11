@@ -45,12 +45,17 @@ const schema = (content = '', attributes = '') => `<xs:schema xmlns:xs="http://w
 
 describe('authenticated schema document syntax', () => {
   it('checks useful ordered source roots, preserves annotation payload and returns exact source interpretation', async () => {
-    const source = await input(), request = prepare(source);
+    // The formerly unassessed payload ID now belongs to this validation root.
+    const source = await input(xml.replace('id="schemaId" name="payload"', 'id="payloadId" name="payload"')), request = prepare(source);
     const result = checkSchemaDocumentSyntax(request.actual);
     expect(result).toMatchObject({kind: 'checked', contextId: request.actual.contextId,
       authority: 'XSD10-schema-document-syntax-v1', scope: 'schema-document-source-syntax',
-      remaining: ['child-component-syntax', 'semantic-construction', 'annotation-payload-assessment'],
+      remaining: ['child-component-syntax', 'semantic-construction'],
       sources: [{key: source.schemas[0].key, digest: source.root.digest, source: source.root.root.source}]});
+  });
+
+  it('rejects a newly assessed payload ID that duplicates the source root ID', async () => {
+    expect(checkSchemaDocumentSyntax(prepare(await input()).actual)).toMatchObject({kind: 'invalid-schema', rule: 'schema-id'});
   });
 
   it('requires loader issuance and an exact source-bound actual context', async () => {
@@ -121,15 +126,13 @@ describe('authenticated schema document syntax', () => {
     expect(checkSchemaDocumentSyntax(componentForeign.actual)).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
   });
 
-  it('recurses through lax payload and keeps exact known-declaration and schema-instance debts', async () => {
+  it('recurses through lax payload and assesses known declarations and schema-instance values', async () => {
     const body = '<xs:annotation><xs:appinfo><app:unknown><xs:element/><app:typed xsi:type="xs:int"/></app:unknown></xs:appinfo></xs:annotation>';
     const request = prepare(await input(schema(body, 'xmlns:app="urn:app" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')));
-    expect(checkSchemaDocumentSyntax(request.actual)).toMatchObject({kind: 'checked',
-      remaining: ['child-component-syntax', 'semantic-construction', 'annotation-payload-assessment'],
-      wildcardObligations: [
-        {category: 'annotation-payload-assessment', rule: 'schema-for-schemas-element-assessment', name: {local: 'element'}},
-        {category: 'annotation-payload-assessment', rule: 'schema-instance-assessment', name: {local: 'type'}},
-      ]});
+    expect(checkSchemaDocumentSyntax(request.actual)).toMatchObject({kind: 'invalid-schema', rule: 'schema-for-schemas'});
+    const valid = body.replace('<xs:element/><app:typed xsi:type="xs:int"/>', '<xs:element name="e"/><app:typed xsi:type="xs:int">1</app:typed>');
+    expect(checkSchemaDocumentSyntax(prepare(await input(schema(valid, 'xmlns:app="urn:app" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'))).actual)).toMatchObject({kind: 'checked',
+      remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
     const absent = body.replace('<xs:element/><app:typed xsi:type="xs:int"/>', '<xs:assert/><xs:extension/>');
     expect(checkSchemaDocumentSyntax(prepare(await input(schema(absent, 'xmlns:app="urn:app"'))).actual)).toMatchObject({
       kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});

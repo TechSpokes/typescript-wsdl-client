@@ -14,8 +14,27 @@ export function* schemaScalarWitnesses(value: SchemaOperand, original: LexicalVa
     };
     if (operand.normalized !== undefined) add(operand.normalized);
     if (['string', 'anyURI', 'decimal', 'boolean'].includes(operand.family)) add(operand.canonical);
-    if (operand.family === 'decimal' && !operand.canonical.startsWith('-')) {
-      c.step(owner, operand.canonical.length + 1); add('+' + operand.canonical);
+    if (operand.family === 'decimal') {
+      c.text(operand.canonical, owner);
+      const negative = operand.canonical.startsWith('-'), unsigned = negative ? operand.canonical.slice(1) : operand.canonical;
+      c.step(owner, operand.canonical.length * 4 + 8);
+      const forms = [operand.canonical, (negative ? '-' : '') + '0' + unsigned,
+        operand.canonical + (operand.canonical.includes('.') ? '0' : '.0')];
+      for (const form of forms) {
+        add(form);
+        if (!negative) {c.step(owner, form.length + 1); add('+' + form);}
+      }
+    }
+    if (operand.family === 'boolean') add(operand.canonical === 'true' ? '1' : '0');
+    if (operand.family === 'hexBinary') {
+      c.step(owner, operand.canonical.length * 2 + 2);
+      add(operand.canonical); add(operand.canonical.toUpperCase());
+    }
+    if (operand.family === 'base64Binary') {
+      // Canonical binary data was issued as hexadecimal octets by the value
+      // owner. The primitive family is still checked by exact reassessment.
+      c.step(owner, operand.canonical.length * 4 + 8);
+      add(Buffer.from(operand.canonical, 'hex').toString('base64'));
     }
     if (operand.family === 'QName' || operand.family === 'NOTATION') {
       // Canonical values here were privately issued by the shared value owner.

@@ -103,8 +103,14 @@ describe('independent sufficient recursive component-property equality', () => {
       variety: {kind: 'restriction', base: builtin('int'), facets: []}}));
     const candidate = request.candidate({key: 'scalar-properties', active: [...request.actual.members, ...ids], additions,
       rawSimpleTypes: ids.map((id, index) => ({type: id, targetNamespace: namespace, base: builtin('int'), final: [],
-        variety: {kind: 'atomic'}, facetLayers: [{facets: [{name: 'minInclusive', fixed: false,
-          lexical: {value: index === 0 ? '01' : literal, context: template.context}}]}], provenance: {kind: 'hypothetical-abstract', originals: []}}))});
+        // Complete effective int properties from the reviewed Appendix A map;
+        // the tested local lower bound replaces int's inherited lower bound.
+        variety: {kind: 'atomic'}, facetLayers: [{facets: [
+          {name: 'minInclusive', fixed: false, lexical: {value: index === 0 ? '01' : literal, context: template.context}},
+          {name: 'maxInclusive', fixed: false, lexical: {value: '2147483647', context: template.context}},
+          {name: 'fractionDigits', fixed: true, lexical: {value: '0', context: template.context}},
+          {name: 'pattern', fixed: false, lexical: {value: String.raw`[\-+]?[0-9]+`, context: template.context}},
+        ]}], provenance: {kind: 'hypothetical-abstract', originals: []}}))});
     if (candidate.kind !== 'prepared') throw new Error('Expected represented scalar properties');
     const a = candidate.context.lookup(ids[0]), b = candidate.context.lookup(ids[1]);
     if (a.kind !== 'found' || b.kind !== 'found') throw new Error('Expected active anonymous scalars');

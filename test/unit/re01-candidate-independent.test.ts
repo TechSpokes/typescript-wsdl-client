@@ -1,4 +1,6 @@
 import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
 import {describe, expect, it} from 'vitest';
 import {loadSchemaInput} from '../../src/loader/schemaInput.js';
 import {globalId, scopedId} from '../../src/compiler/canonicalGraph.js';
@@ -10,6 +12,7 @@ import {assertFiniteCandidateReceipt, verifyFiniteRe01Evidence} from '../../src/
 import type {FiniteRe01Evidence, FiniteRe01EvidenceNode} from '../../src/compiler/finiteRe01Verification.js';
 import type {RawComplexTypeProperties} from '../../src/compiler/re01TypeProperties.js';
 import {checkCandidateCorrespondence} from '../../src/compiler/re01CandidateCorrespondence.js';
+import {assertComponentConstruction} from '../../src/compiler/schemaConstructionAssessment.js';
 
 // Expected concrete construction and rejection controls published before driver:
 // https://github.com/TechSpokes/typescript-wsdl-client/issues/271#issuecomment-6112039450
@@ -19,10 +22,21 @@ const named = (local: string) => globalId('type', {namespace, local});
 const builtin = (local: string): Reference => ({kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local}});
 const local = (target: string): Reference => ({kind: 'local', target});
 type Variation = 'valid' | 'wrong-scalar' | 'lost-attribute' | 'unproved-helper' | 'invalid-original';
-async function setup(variation: Variation = 'valid') {
-  const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery', variation === 'invalid-original'
-    ? 'finite-proof-invalid-original.xsd' : 'finite-proof-independent.xsd'), {policy: {fileRoots: [fixtures]}});
-  const prepared = prepareSourceSchemaRequest(input, {budget: createSemanticBudget({maxWork: 100_000_000})});
+async function defaultFixtureInput(file: string) {
+  // Identical fixture bytes and a platform-independent source URI: URI length
+  // is legitimately charged, but a CI checkout path is not this test's input.
+  const origin = 'https://recovery-proof.example';
+  const uri = origin + '/finite-proof-independent.xsd', bytes = readFileSync(file);
+  return loadSchemaInput(uri, {policy: {allowedOrigins: [origin]}, offlineResources: new Map([[uri,
+    {bytes, digest: createHash('sha256').update(bytes).digest('hex')} ]])});
+}
+async function setup(variation: Variation = 'valid', budgetMode: 'diagnostic' | 'default' = 'diagnostic') {
+  const file = path.join(fixtures, 'xsd/recovery', variation === 'invalid-original'
+    ? 'finite-proof-invalid-original.xsd' : 'finite-proof-independent.xsd');
+  const input = budgetMode === 'default' ? await defaultFixtureInput(file)
+    : await loadSchemaInput(file, {policy: {fileRoots: [fixtures]}});
+  const prepared = budgetMode === 'default' ? prepareSourceSchemaRequest(input)
+    : prepareSourceSchemaRequest(input, {budget: createSemanticBudget({maxWork: 100_000_000})});
   if (prepared.kind !== 'prepared') throw new Error(`Expected source structural request: ${prepared.kind}`);
   const request = prepared.request;
   const node = (name: string): ComplexTypeNode => {
@@ -54,6 +68,39 @@ async function setup(variation: Variation = 'valid') {
 }
 
 describe('independent concrete finite RE01 proof checkpoint', () => {
+  it('fully checks the unchanged typed-attribute scalar witness cold under the ordinary default request budget', async () => {
+    // Observable pre-edit oracle: #271 comment 6113993503. Setup performs only
+    // source preparation, necessary component lookups and candidate construction;
+    // there is no semantic warm-up, prior verification or raised limit.
+    const {request, evidence, target, candidate} = await setup('valid', 'default');
+    const result = verifyFiniteRe01Evidence(request.actual, target, evidence);
+    expect(result).toMatchObject({kind: 'checked-candidate', authority: 'RE01-finite-evidence-v1',
+      domain: 'RE01-derivation-B-v1', scope: 'supplied-construction-and-finite-evidence',
+      actualContextId: request.actual.contextId, target, root: 'root', actualNotations: [],
+      claims: {actualObligations: 'checked', suppliedCandidate: 'checked', universalCoverage: false,
+        completeNegativeAnswer: false, searchTermination: false}});
+    if (result.kind !== 'checked-candidate') throw new Error('Expected complete cold default-budget evidence');
+    expect(new Set(result.actualComponents.map(component => component.component))).toEqual(new Set(request.actual.members));
+    expect(result.proof).toHaveLength(1);
+    const step = result.proof[0];
+    expect(step).toMatchObject({evidence: 'root', parentContext: request.actual.contextId, contextId: candidate.contextId,
+      target, premises: [], notations: [], correspondence: {kind: 'checked', target, intermediate: named('E'), scalarObligations: []}});
+    // D/E and their original typed attribute declaration/use are the exact
+    // candidate closure; B remains checked in the immutable actual environment.
+    expect(new Set(step.components.map(component => component.component))).toEqual(
+      new Set([...request.actual.members.filter(id => id !== named('B')), named('E')]));
+    for (const [context, components] of [[request.actual, result.actualComponents], [candidate, step.components]] as const) {
+      for (const component of components) {
+        expect(component).toMatchObject({kind: 'checked', authority: 'XSD10-component-construction-v1',
+          contextId: context.contextId, obligations: []});
+        expect(component.receipts.length).toBeGreaterThan(0);
+        expect(() => assertComponentConstruction(context, component)).not.toThrow();
+      }
+    }
+    expect(() => assertFiniteCandidateReceipt(request.actual, result)).not.toThrow();
+    expect(request.budget.exhausted()).toBe(false);
+  });
+
   it.each(['valid', 'reversed-content', 'lost-wildcard'] as const)
     ('checks integrated particle, typed attribute and wildcard evidence: %s', async variation => {
       const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/finite-particle-independent.xsd'), {policy: {fileRoots: [fixtures]}});

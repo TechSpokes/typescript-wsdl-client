@@ -50,7 +50,9 @@ describe('independent finite lexical membership witnesses', () => {
       .toMatchObject({kind: 'checked', value: false});
     expect(actual.equivalent(named('BaseList'), lexical('+1 2'), named('DecimalList'), lexical('1 2'), owner))
       .toMatchObject({kind: 'checked', value: true});
-    const raw = candidate(named('BaseList'), {kind: 'list', item: named('BooleanFirst')}, [{facets: [{
+    const raw = candidate(named('BaseList'), {kind: 'list', item: named('BooleanFirst')}, [{facets: [
+      // Complete effective list properties retain the constructor whitespace.
+      {name: 'whiteSpace', lexical: lexical('collapse'), fixed: true}, {
       name: 'enumeration', lexical: lexical('1 2'), fixed: false,
       operand: {type: named('DecimalList'), owner, context: 'original'},
     }]}]);

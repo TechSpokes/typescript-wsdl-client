@@ -221,7 +221,7 @@ describe('independent inherited fixed value versus local fixed metadata', () => 
 describe('independent intrinsic builtin list properties', () => {
   const cases = [
     ['NMTOKENS', 'NMTOKEN'], ['IDREFS', 'IDREF'], ['ENTITIES', 'ENTITY'],
-  ].flatMap(([base, item]) => ['omitted', 'length-only', 'explicit-minimum', 'zero-minimum', 'source-inherited'].map(variant => ({base, item, variant})));
+  ].flatMap(([base, item]) => ['omitted', 'length-only', 'explicit-minimum', 'complete-properties', 'zero-minimum', 'source-inherited'].map(variant => ({base, item, variant})));
   it.each(cases)('$base $variant', async ({base: baseName, item: itemName, variant}) => {
     const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/scalar-primitives.xsd'), {policy: {fileRoots: [fixtures]}});
     const prepared = prepareSourceSchemaRequest(input, {budget: createSemanticBudget({maxWork: 100_000_000})});
@@ -245,6 +245,7 @@ describe('independent intrinsic builtin list properties', () => {
     }
     const facets = variant === 'omitted' ? [] : [{name: variant === 'length-only' ? 'length' : 'minLength',
       lexical: {value: variant === 'length-only' ? '2' : variant === 'zero-minimum' ? '0' : '1', context: seed.context}, fixed: false}];
+    if (variant === 'complete-properties') facets.push({name: 'whiteSpace', lexical: {value: 'collapse', context: seed.context}, fixed: true});
     const candidate = request.candidate({key: 'intrinsic-builtin-list', active: [...request.actual.members, id], additions: [{...seed, id,
       identity: {kind: 'global', role: 'type', name: {namespace, local}}, variety: {kind: 'restriction', base, facets: []}}],
       rawSimpleTypes: [{type: id, base, final: [], variety: {kind: 'list', item}, facetLayers: [{facets}],
@@ -252,7 +253,7 @@ describe('independent intrinsic builtin list properties', () => {
     if (candidate.kind !== 'prepared') throw new Error('Expected structural candidate');
     const kernel = createSchemaScalarKernel(candidate.context), result = kernel.describe(reference, named('Owner'));
     if (variant === 'zero-minimum') {expect(result).toMatchObject({kind: 'invalid-schema'}); return;}
-    if (variant === 'omitted' || variant === 'length-only') {
+    if (variant === 'omitted' || variant === 'length-only' || variant === 'explicit-minimum') {
       expect(result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
         expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: id}),
       ])});
@@ -298,8 +299,8 @@ describe('independent effective builtin facet identity', () => {
     {name: 'different intrinsic integer ranges', base: 'int', rightBase: 'byte', facets: '', expected: false},
     {name: 'same fixed integer precision', base: 'integer', rightBase: 'integer', facets: '<xs:fractionDigits value="00" fixed="true"/>', expected: true},
     {name: 'changed integer precision fixed flag', base: 'integer', rightBase: 'integer', facets: '<xs:fractionDigits value="0"/>', expected: false},
-    {name: 'different opaque builtin patterns', base: 'Name', rightBase: 'NCName', facets: '', expected: 'unresolved'},
-    {name: 'explicit component versus opaque inherited pattern', base: 'Name', rightBase: 'Name', facets: '<xs:pattern value=".+"/>', expected: 'unresolved'},
+    {name: 'different exact builtin patterns', base: 'Name', rightBase: 'NCName', facets: '', expected: false},
+    {name: 'additional distinct exact pattern component', base: 'Name', rightBase: 'Name', facets: '<xs:pattern value=".+"/>', expected: false},
   ])('$name', async ({base, rightBase, facets, expected}) => {
     const uri = 'https://intrinsic-facets.example/root.xsd', ns = 'urn:intrinsic-facets';
     const bytes = Buffer.from('<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="' + ns + '">' +
@@ -311,7 +312,7 @@ describe('independent effective builtin facet identity', () => {
     if (prepared.kind !== 'prepared') throw new Error('Expected original source context');
     const left = globalId('type', {namespace: ns, local: 'Left'}), right = globalId('type', {namespace: ns, local: 'Right'});
     const result = createSchemaScalarKernel(prepared.request.actual).facetPropertiesEquivalent({kind: 'local', target: left}, {kind: 'local', target: right}, left);
-    expect(result).toMatchObject(expected === 'unresolved' ? {kind: 'unresolved', rule: 'builtin-facet-properties'} : {kind: 'checked', value: expected, obligations: []});
+    expect(result).toMatchObject({kind: 'checked', value: expected, obligations: []});
   });
 });
 
@@ -340,10 +341,44 @@ describe('independent raw builtin property completeness', () => {
     if (candidate.kind !== 'prepared') throw new Error('Expected structural raw context');
     const kernel = createSchemaScalarKernel(candidate.context), reference: Reference = {kind: 'local', target: id};
     const described = kernel.describe(reference, named('Owner'));
+    // Exact derived-builtin singleton pattern properties are now known.
+    // Their omission is a concrete property mismatch, not an opaque debt.
+    if (baseName === 'int' || baseName === 'Name') {
+      expect(described).toMatchObject({kind: 'invalid-schema', rule: 'st-restrict-facets'}); return;
+    }
     expect(described).toMatchObject({kind: 'checked', obligations: complete ? [] : expect.arrayContaining([
       expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: id}),
     ])});
     if (baseName === 'decimal' || baseName === 'string') expect(kernel.assess(reference, {value: '1.5', context: seed.context}, named('Owner')))
       .toMatchObject({kind: 'checked', obligations: []});
+  });
+});
+
+// Raw effective conjuncts form operands in the primitive family. Inherited
+// integer metadata checks the final supplied facet view, not each temporary
+// nonfixed conjunct before the reviewed comparable normal form is computed.
+describe('independent raw integer conjunction formation', () => {
+  it.each([true, false])('checks the final precision property (conjunction=%s)', async conjunctive => {
+    const loaded = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/scalar-primitives.xsd'), {policy: {fileRoots: [fixtures]}});
+    const prepared = prepareSourceSchemaRequest(loaded, {budget: createSemanticBudget({maxWork: 100_000_000})});
+    if (prepared.kind !== 'prepared') throw new Error('Expected source preparation');
+    const request = prepared.request, found = request.actual.lookup(named('OnlyAB'));
+    if (found.kind !== 'found' || found.node.kind !== 'simpleType') throw new Error('Expected simple template');
+    const seed = found.node, type = named('IntegerConjuncts');
+    const base: Reference = {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'int'}};
+    const facet = (name: string, value: string) => ({name, fixed: false, lexical: {value, context: seed.context}});
+    const candidate = request.candidate({key: 'integer-conjuncts', active: [...request.actual.members, type], additions: [{...seed, id: type,
+      identity: {kind: 'global', role: 'type', name: {namespace, local: 'IntegerConjuncts'}}, variety: {kind: 'restriction', base, facets: []}}],
+      rawSimpleTypes: [{type, base, final: [], variety: {kind: 'atomic'}, facetLayers: [
+        {facets: [facet('pattern', '[\\-+]?[0-9]+'), facet('minInclusive', '-2147483648'), facet('maxInclusive', '2147483647'), facet('fractionDigits', '1')]},
+        ...(conjunctive ? [{facets: [facet('fractionDigits', '0')]}] : []),
+      ], provenance: {kind: 'hypothetical-abstract', originals: []}}]});
+    if (candidate.kind !== 'prepared') throw new Error('Expected structural raw candidate');
+    const kernel = createSchemaScalarKernel(candidate.context), reference: Reference = {kind: 'local', target: type};
+    const result = kernel.describe(reference, named('Owner'));
+    if (!conjunctive) {expect(result).toMatchObject({kind: 'invalid-schema'}); return;}
+    expect(result).toMatchObject({kind: 'checked', obligations: []});
+    expect(kernel.assess(reference, {value: '1', context: seed.context}, named('Owner'))).toMatchObject({kind: 'checked', obligations: []});
+    expect(kernel.assess(reference, {value: '1.5', context: seed.context}, named('Owner'))).toMatchObject({kind: 'invalid-schema'});
   });
 });

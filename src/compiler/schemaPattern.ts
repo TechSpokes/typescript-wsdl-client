@@ -1,6 +1,6 @@
 /** Evidenced XSD regex subset for schema operands and #184's enforcement plan. */
-import type {GraphNode, LexicalValue} from "./canonicalGraph.js";
-import type {AssessmentContext} from "./schemaScalarContext.js";
+import type {SchemaLexicalOperand, SchemaPatternContext} from "./schemaValueContext.js";
+import {XML_NAME_RANGES} from '../loader/orderedSyntax.js';
 
 export type PatternAtom = Readonly<{kind: "character"; expression: string} |
   {kind: "sequence"; children: readonly number[]} | {kind: "choice"; children: readonly number[]} |
@@ -10,8 +10,11 @@ export type SchemaPattern = Readonly<{
   unicode: "code-points"; runtimeOwner: "#184";
 }>;
 
-export function schemaPatterns(c: AssessmentContext) {
-  const compile = (lexical: LexicalValue, owner: GraphNode): SchemaPattern => {
+export function schemaPatterns<Owner>(c: SchemaPatternContext<Owner>) {return createSchemaPatterns(c, false);}
+/** Closed assessment-schema consumer; this does not widen the application profile. */
+export function fixedS4SPatterns<Owner>(c: SchemaPatternContext<Owner>) {return createSchemaPatterns(c, true);}
+function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchemaNames: boolean) {
+  const compile = (lexical: SchemaLexicalOperand, owner: Owner): SchemaPattern => {
     c.text(lexical.value, owner); const source = lexical.value, atoms: PatternAtom[] = [];
     const add = (atom: PatternAtom) => {c.step(owner); atoms.push(atom); return atoms.length - 1;};
     const invalid = (): never => c.fail(owner, "pattern-valid-restriction", "Malformed XSD regular expression", lexical.context.source);
@@ -36,7 +39,13 @@ export function schemaPatterns(c: AssessmentContext) {
         if (!/^(?:L[ultmo]?|M[nce]?|N[dlo]?|P[cdseifo]?|Z[slp]?|S[mcko]?|C[cfon]?)$/.test(category)) return invalid();
         return `\\${char}{${category}}`;
       }
-      if ("iIcCwW".includes(char)) return unsupported();
+      if ("iIcC".includes(char)) {
+        if (!fixedSchemaNames) return unsupported();
+        const range = char === 'i' || char === 'I' ? XML_NAME_RANGES.start : XML_NAME_RANGES.character;
+        c.step(owner, range.length + 3);
+        return `[${char === 'I' || char === 'C' ? '^' : ''}${range}]`;
+      }
+      if ("wW".includes(char)) return unsupported();
       return invalid();
     };
     const characterClass = (): string => {
@@ -117,7 +126,7 @@ export function schemaPatterns(c: AssessmentContext) {
   };
   // Bounded relation evaluation only for schema-declared operand literals.
   // It never expands a finite repetition or runs an unbounded JS regex.
-  const acceptsOperand = (pattern: SchemaPattern, value: string, owner: GraphNode): boolean => {
+  const acceptsOperand = (pattern: SchemaPattern, value: string, owner: Owner): boolean => {
     c.text(value, owner); const chars: string[] = [];
     for (const char of value) {c.step(owner); chars.push(char);}
     type Relation = Set<number>[];

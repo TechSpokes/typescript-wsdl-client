@@ -1,0 +1,20 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:scalar-properties" targetNamespace="urn:recovery:scalar-properties">
+  <xs:element name="Owner" type="xs:string"/>
+  <xs:simpleType name="EmptyString"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="ExplicitPreserve"><xs:restriction base="xs:string"><xs:whiteSpace value="preserve"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EmptyDecimal"><xs:restriction base="xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="ExplicitCollapse"><xs:restriction base="xs:decimal"><xs:whiteSpace value="collapse"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="NormalizedCopy"><xs:restriction base="xs:string"><xs:whiteSpace value="replace"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="TokenCopy"><xs:restriction base="xs:normalizedString"><xs:whiteSpace value="collapse"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="IntegerCopy"><xs:restriction base="xs:decimal"><xs:fractionDigits value="0" fixed="true"/><xs:pattern value="[\-+]?[0-9]+"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="IntCopy"><xs:restriction base="t:IntegerCopy"><xs:minInclusive value="-2147483648"/><xs:maxInclusive value="2147483647"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="IntegerWrongFixed"><xs:restriction base="xs:decimal"><xs:fractionDigits value="0"/><xs:pattern value="[\-+]?[0-9]+"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SourceList"><xs:list itemType="xs:integer"/></xs:simpleType>
+  <xs:simpleType name="ListImplicit"><xs:restriction base="t:SourceList"/></xs:simpleType>
+  <xs:simpleType name="ListFalse"><xs:restriction base="t:SourceList"><xs:whiteSpace value="collapse" fixed="false"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ListDefaultFalse"><xs:restriction base="t:SourceList"><xs:whiteSpace value="collapse"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ListTrue"><xs:restriction base="t:SourceList"><xs:whiteSpace value="collapse" fixed="true"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="NmtokenList"><xs:list itemType="xs:NMTOKEN"/></xs:simpleType>
+  <xs:simpleType name="NmtokensCopy"><xs:restriction base="t:NmtokenList"><xs:minLength value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ApplicationNamePattern"><xs:restriction base="xs:string"><xs:pattern value="\i\c*"/></xs:restriction></xs:simpleType>
+</xs:schema>

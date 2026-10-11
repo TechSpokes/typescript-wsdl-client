@@ -53,6 +53,9 @@ describe('independently specified schema scalar operands', () => {
       const candidate = request.candidate({key: name, active: [...request.actual.members, id], additions: [fresh],
         rawSimpleTypes: [{type: id, base: named(base), final: [], variety: {kind: 'atomic'},
           facetLayers: [{facets: [
+            // Preserve the exact inherited integer pattern; this test isolates
+            // typed bound membership rather than a missing pattern property.
+            {name: 'pattern', lexical: {value: '[\\-+]?[0-9]+', context: source}, fixed: false},
             ...(copyEnumeration ? ['0', '10'].map(value => ({name: 'enumeration', lexical: {value, context: source}, fixed: false})) : []),
             {name: facet, lexical: {value: bound, context: source}, fixed: false,
               operand: {type: builtin('int'), owner, context: 'original'}},
@@ -70,7 +73,7 @@ describe('independently specified schema scalar operands', () => {
       const member = facet.startsWith('min') ? '0' : '10';
       const admitted = prepare('ZeroOrTen', facet, member, true);
       // Membership is established; the supplied tuple still omits the exact
-      // inherited integer facet properties, so type correspondence stays open.
+      // inherited integer precision/bound properties, so correspondence stays open.
       expect(admitted.result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
         expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: admitted.id}),
       ])});
