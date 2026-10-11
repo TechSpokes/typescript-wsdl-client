@@ -571,3 +571,310 @@ Integrate the reviewed component normalization/prefix extraction and certified c
 Add regressions for all eleven fixture contrasts, required empty choice versus optional/absent choice, multiple unrelated suffix members, all-root vacuity and nonvacuous limitations, mixed/simple transitions, final/block preservation, fixed/default alias contexts and multiple matching original AUs. Include recursive type references, shared DAGs, huge exact repetitions and at/beyond-budget request-wide failure without partial operations.
 
 Only a complete reviewed type-level result can discharge `S06-RE-01` for an affected operation. Complete RE01 acceptance, full production #179 tests and combined #153 acceptance remain distinct gates; this research record changes no public support claim.
+
+## Executed design investigation for #260
+
+This continuation executes [#260](https://github.com/TechSpokes/typescript-wsdl-client/issues/260), rather than accepting the complete #234 theorem.
+The coordinating author is Codex `/root`; the separate nonauthor reviewer is `/root/independent_review`.
+The starting revision is freshly fetched main `9e3a22f6b494fff19e08d606486d54e55f19a5e7`, tree `37ae20f143e3e73af8980474192cf3259c2145cf`.
+
+### Task 1: Current evidence inventory
+
+The latest [#234 audit handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6103550655) and [#232 joint status](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6103555825) qualify this baseline.
+The unaccepted #231 draft remains `460f5b8379c68ffef79917284e445b5ab046429e`; it was inspected separately and contributes no executable dependency.
+Current instructions require strict TypeScript, Node 24 or 26 and the Node reference lane.
+
+| Question | Present conclusion | Classification | Concrete evidence | Domain and dependency |
+|---|---|---|---|---|
+| May a removed optional field return? | A vacuous witness can permit it | Established scoped contrast | [Original contract controls](../test/conformance/reference/s06-re01-contract.test.ts) | Numbered existential rule; complete local restriction |
+| Does message-language inclusion decide RE01? | It does not replace formal mapping | Refuted substitution | Required-empty-choice controls above | Component rules versus payload languages |
+| Can extension suffix copying cover witnesses? | Universal wildcard constructions defeat it | Refuted family | [Witness probe](../test/research/re01/witness-probe.test.ts) | Qualified particle preparation/predicates |
+| Can normalized content replace raw construction? | Raw all placement still matters | Refuted shortcut | [Particle continuation](../test/conformance/reference/re01-particle-continuation.test.ts) | Restriction-only pointlessness |
+| Are equal-looking intermediates interchangeable? | Original T can succeed where a copy fails | Refuted identity reduction | [Endpoint controls](../test/conformance/reference/re01-endpoint-continuation.test.ts) | Anchored local type relation, E2 context |
+| Does deleting ambient membership only help? | It can enable or disable formal validity | Refuted monotonicity | [Ambient controls](../test/conformance/reference/re01-ambient-completeness.test.ts) | Explicit retained declaration universe |
+| Can fresh block default to empty? | A nonempty block can prevent UPA overlap | Refuted simplification | Ambient controls and new experiment below | Block affects substitution, not derivation final |
+| Does D1 represent every abstract extension? | Literal declaration matching is weaker | Open equivalence | Fixed-restoration control and clause 1.2 | Original AU IDs, requiredness and fixed operands |
+| Does one checked candidate decide existence? | It checks only its declared context/predicates | Established limited guarantee | [Resolver implementation](content-model-s06-re-01-resolver-implementation.md) | Six qualified owners; no full schema engine |
+| Are sibling local meanings accepted? | AU C1, PW R-240, DT A remain accepted | Established local contracts | [Joint contract map](content-model-s06-research-handoff.md#four-rule-contract-map) | Original operands and reviewed prerequisites |
+| Can retained predicates transfer unchanged? | Context-sensitive ones require rechecking | Conditional transfer only | Resolver validation/relations controls | Changed composition, substitution and endpoint |
+| Is there an unrestricted finite witness bound? | No such bound is established here | Open theorem | Earlier audit plus Task 6 below | All content categories, helpers and identities |
+| Are resource limits a witness bound? | They bound execution only | Refuted negative inference | Resolver ledger and finite shared-run control | Charge preparation, checking and output |
+
+The genuine unresolved questions are witness-domain quantification, endpoint correspondence, complete legality/normalization, retained-obligation transfer and an exhaustive terminating negative method.
+More engine agreement or a larger arbitrary graph cutoff cannot settle those questions.
+The new records preserve established, conditional, refuted and open claims separately.
+
+### Task 2: Construction and preservation decision packet
+
+The pinned complete structures XML was freshly retrieved and reproduced SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+Final clauses were read with deleted editorial text excluded.
+The [source-access record](../test/research/re01/decision-sources.json) identifies external sources, access scope and limitations.
+
+The [published second-edition errata](https://www.w3.org/2004/03/xmlschema-errata) were freshly read without extraction truncation.
+Their Part 1 entry E1-56 concerns default-value/PSVI contributions; it supplies no new RE01 quantifier, construction equivalence or negative theorem.
+The reviewed PW01 WG proposal remains distinct from an adopted correction.
+
+`concepts-conformance` permits dynamically constructed non-XML schemas; `conformance-schemaValidity` still requires all applicable component constraints recursively.
+`layer1` permits lazy assembly but requires established definitions/declarations to remain unchanged and acquisition to preserve assessment results.
+These clauses describe assessment and representation; they do not specify which original ambient components clause 1.5's hypothetical reconstruction may omit or add.
+
+`cos-ct-extends.1.2` expands its subset condition by matching declaration name, namespace and simple type, without explicitly comparing AU identity, requiredness or own fixed value.
+XML extension mapping retains inherited uses; AU01 C1 governs actual source contributions and replacement checks.
+The two rules do not alone prove that every allowed abstract extension is D1's original-use set union.
+
+The mapping introduction also says the abstract correspondence can be constructed from the normative XML representation mapping.
+That is relevant evidence for source constructions, but supplies no demonstrated graph-wide surjectivity preserving original anonymous identities, group sharing, local owners and source roles.
+Likewise `scIntro`'s named equality and `no-identity`'s explicit incomplete identity definition do not select arbitrary property equality for anonymous components.
+
+| Axis | Alternatives | Concrete compatibility consequence | Exact unresolved obligation |
+|---|---|---|---|
+| Ambient membership | Entire original schema; permitted closed sub-schema; additional fresh incoming components | Retained/omitted choice dispatch differs; retained C can force failure | Define allowed membership and required original incoming relationships |
+| AU construction algebra | D1 source-style original-use union; literal component property constraints; XML source witness | Fixed 7 to 8 fails D1 replacement; literal match omits that test | Prove equivalence or adopt and justify the intended construction algebra |
+| Endpoint correspondence | Anchored non-derivation identity/incidence; explicitly permitted fresh correspondence | Group-owned uses and anonymous/local types may distinguish them | Define total comparison closure, scopes and sharing before reduction |
+| Recursive context | E2 proposed queries with actual facts accessible separately | Named T works where actual-query or a fresh copy fails | Prove endpoint/context convention matches the selected existential rule |
+
+The fixed-value comparison is local compatibility evidence, not a globally certified literal-component witness.
+A declared membership policy must also decide whether a fresh affiliate can change an otherwise singleton head's restriction dispatch.
+Selecting a pair of policy options would not establish endpoint soundness, abstract legality or completeness.
+
+The defensible working model for experiments is the delivered resolver model: immutable actual graph, actual ancestor selection, original anchors, one proposed endpoint replacement and E2 queries in an explicit closed context.
+Fresh components have disjoint identities; existing named intermediates remain unchanged; named and anonymous originals retain owners, sharing, lexical namespaces and original scalar operands.
+D1 hypothetical retain/replace/prohibit roles never rewrite actual source roles, and XML proposals additionally require representation legality.
+
+Trivial chains need an explicit no-op certificate rather than making the endpoint its own proposed descendant.
+Simple-content chains can select `anySimpleType` through the original builtin chain; their original named scalar ancestry must still be checked.
+Neither case may turn a malformed cyclic overlay into a universal negative.
+
+Published work was screened for applicability.
+Gelade, Martens and Neven's [ICDT 2007 paper preview](https://page-one.springer.com/pdf/preview/10.1007/11965893_19) discusses language inclusion/equivalence for regular-expression grammars and single-type EDTDs with numerical constraints/interleaving.
+Only its abstract/introduction were available; neither that abstraction nor this inspection establishes the anchored component reconstruction theorem.
+
+The full preprint extraction exceeded the tool's request budget, and two publication endpoints returned security pages.
+[XMLmind's implementation limitations](https://www.xmlmind.com/xmleditor/_distrib/doc/xmltool/xsd_structure_limitations.html) explicitly list RE01 and UPA as unchecked; such processor acceptance cannot supply a theorem.
+This is a bounded literature inspection, not an exhaustive claim that no applicable published result exists.
+
+Task 2's packet is concrete, but selection remains blocked by the ambient/AU/correspondence questions.
+The smallest next investigation is a clause-level construction/identity argument covering the fixed-restoration and retained/omitted controls together, including contrary XML-mapping evidence.
+If evidence cannot settle that argument, the maintainer must decide the explicitly documented witness contract and compatibility consequences before #234 proves that contract.
+
+### Task 3: Complete proposal checking flow and owners
+
+The flow is actual input qualification, original ancestor selection, permitted construction, explicit membership/closure, raw construction legality, proposed relations, certified comparison normalization, anchored endpoint correspondence and all-member semantic checks.
+Every applicable check must pass with a named qualified authority before a complete positive receipt can be issued.
+A failed proposal rejects that proposal; missing authority is unresolved.
+
+| Boundary | Original or constructed inputs | Present guarantee | Missing semantic authority or proof owner |
+|---|---|---|---|
+| Preparation | Actual IDs, ownership, all references and source contributions | Structural closure, prohibited cycles, immutable actual records | #234 permitted witness domain; #179 complete actual adapter |
+| Type construction | Original raw base/content/final; proposed base/method/content | Direct relation/final checks; owner request | #234 every content transition, trivial forms and retained RE obligations |
+| Attributes | Original AU/declaration IDs, own/declaration constraints, source local/group roles | D1 bookkeeping and AU C1 original matching | Prepared scalar qualification, wildcard admission and abstract-equivalence proof |
+| Particle restriction | Raw/effective roots, original group/use/member bounds and wildcard processing | Qualified owner request; conditional particle search | Full dispatch, raw placement, certified normalization; #178 formal range inputs |
+| Attribution | Ordered use positions and proposed implicit substitution members | Context-qualified position inventory | Complete UPA, including repeated/grouped and recursive context consequences |
+| Declarations | Anchored named/local declarations, types, scope and identity constraints | Qualified owner request; relation subchecks | EDC and all declaration/component constraints omitted from narrow Facts |
+| Scalars | Original lexical/type/facet/list/union/namespace context for each operand | Owner inventory; DT A only in its calendar domain | Full original-type assessment, QName/facet validity and typed equality |
+| Endpoint | Actual/proposed non-derivation closure and supplied incidence certificate | Anchored identity/property comparison | #234 justification of the required closure and permitted correspondence |
+| Retained members | Every proposed member, including unchanged/source-only records | Conservative all-member obligation enumeration | Transfer lemma or terminating joint handling of retained RE01 obligations |
+
+`resolver-validation.ts` passes raw declared and effective roots separately, preserves original source operands, and invokes six direct owners.
+Its qualified receipts authenticate the supplied authority/context; conditional test owners only validate orchestration.
+The seven-builtin ancestry table is not a complete scalar, facet or content checker.
+
+Representation facts can transfer when their original source/namespace operands remain identical.
+Scalar validity can transfer only under unchanged original type and namespace/facet context with a qualified receipt.
+An unchanged declaration or particle's context-sensitive validity cannot transfer merely because its bytes are unchanged: new endpoint ancestry changes substitutions, dispatch, UPA/EDC and composition.
+
+The new missing-qualification control obtains successful structural/relational preparation and still returns `unresolved: missing-qualified-authority` with source context.
+This protects the checking boundary from accidentally promoting the finite experiment into complete schema validity.
+No #231 assessment module is imported.
+
+### Task 4: Competing method packet
+
+The finite family F0 combines the existing qualified particle constructions with only fresh intermediates and empty block.
+The revised research family F1 considers every relevant unchanged original intermediate, all four fresh complex block subsets, explicit legal membership and separately certified particle/AU/content constructions.
+F1 remains a conjectural full family: neither fresh helper bounds nor normalization/context reduction is proved.
+
+```text
+qualify original graph, source operands and selected witness contract
+apply proved necessary impossibility criteria in their exact domains
+construct original intermediates and certified fresh standard forms
+for each permitted flag/context/construction choice using one request budget:
+    reject malformed closure separately from semantic candidate failure
+    check raw construction, endpoint correspondence and every context member
+    return yes only with a complete qualified construction
+return no only with a reviewed exhaustive-family certificate
+otherwise return the named unresolved obligation or resource-limit
+```
+
+The independent bounded constraint model uses five intermediate variants: unchanged empty-block T and four fresh block subsets.
+Two membership bits record affiliate M and choice C; closure requires C to imply M because C refers to M.
+An ancestry-only projection, an H:A blocking projection and their H:T joint projection are evaluated separately.
+
+| Method | Positive evidence | Negative meaning | Proof obligations and expected cost | Small falsifier |
+|---|---|---|---|---|
+| F1 standard forms | Fully qualified checked construction | No only after arbitrary-witness reduction | Original identities, flags, helpers, all content/ambient cases; mapping polynomial locally, contexts potentially exponential | Successful allowed construction with no preserving standard form |
+| Bounded constraints | Assignment plus separately checked predicates | Unsat only in the encoded finite projection | Faithful encoding and domain/small-witness theorem; exhaustive finite product here | Independent row or checker disagreeing with encoded clauses |
+| Direct criteria | Construction satisfying jointly sufficient stated conditions | Entire permitted class ruled out by a necessary condition | Joint sufficiency and complete case classification; short ancestry paths here | Locally passing predicates whose combination is impossible |
+
+The constraint model is plain strict TypeScript Boolean enumeration; no solver dependency is selected.
+Its bounded positive result remains a projection, not a complete component construction.
+Direct ancestry arguments are retained as explanation-producing early exits rather than silently promoted to a complete general criterion.
+
+### Task 5: Executed comparative experiments
+
+[The executable finite model](../test/research/re01/decision-experiment.ts) and [independent controls](../test/research/re01/decision-experiment.test.ts) enumerate 20 assignments for each of 12 query settings.
+Five assignments per query violate C-to-M closure and are recorded as outside-context, rather than semantic schema failures.
+The remaining assignments cover every combination of the declared intermediate, flag and membership variables.
+
+| Query | Constraint-admitted assignments | F0 admitted assignments | Independent direct answer |
+|---|---|---|---|
+| H:A blocking, M and C required | 3 | 0 | Some nonempty fresh block exists |
+| Anchored T ancestry only, M required and C optional | 2 | 0 | Original T satisfies the projection |
+| Anchored T plus UPA, M and C required | 0 | 0 | Fixed retained context is impossible |
+| Anchored T plus UPA, M required and C optional | 1 | 0 | Original T works after omitting C in this projection |
+
+These counts reproduce with [decision-measure.ts](../test/research/re01/decision-measure.ts).
+All 12 bounded constraint verdicts agree with independently derived direct answers; F0 misses the blocking and identity positives.
+F1's identity/flag variants cover this finite projection only, not unrestricted RE01.
+
+The independent reviewer derived the block truth table from `cos-equiv-derived-ok-rec.2.3` and ran the relation checker separately.
+For proposed D restricting fresh E extending A, both derivation methods occur, so each nonempty E block suppresses M without invalidating affiliation.
+The tests vary incidental names while preserving symbol references and prove the same relation behavior under renaming.
+
+The new combined example preserves original T and H:T, M:D affiliated to H, and C's two distinct choice positions H/M.
+Actual B restricts T with `block=extension`; actual D extends B, so original affiliation remains legal while B prevents overlap in C.
+The original's complete RE01 status is the question under investigation, not an assumed valid premise.
+
+The meaningful two-member raw all in A/T forces a vacuous-content intermediate by `cos-all-limited`.
+Every final all member requires a complete mapping, even though its XML occurrence is optional; the obligatory n:D-to-n:T pair excludes extension/list/union.
+Only unchanged original T can appear on the required D-to-E-to-A base path and satisfy that anchored comparison.
+
+With E=T, B's blocking edge disappears and M becomes substitutable for H; C's two positions overlap, violating UPA.
+Any fresh disjoint E immediately based on A cannot reach anchored T, regardless of added helpers, content, final or block.
+Fresh incoming affiliates cannot remove the existing H/M overlap, so this is an exhaustive scoped identity/context obstruction, not just five rejected proposals.
+
+[Three new source fixtures](../test/conformance/fixtures/xsd/re01/combined-identity-original.xsd) and [source/reference controls](../test/conformance/reference/re01-decision-investigation.test.ts) preserve the raw all, original ancestry, block and retained declarations.
+Libxml2 2.15.1 accepts the original source and rejects both the reused-T and blocked-copy sources.
+Those engine observations are recorded separately from the primary-clause argument and do not select the ambient or abstract witness contract.
+
+The simple-content control starts with actual D-to-A-to-string ancestry and retained H:string/M:D.
+Current ancestor selection reaches `anySimpleType`; proposed D-to-E-to-anySimpleType loses the anchored string relation.
+This establishes a relation obstruction for that supplied proposal, without claiming complete simple-content formation or a full-domain negative.
+
+AU controls parameterize valid equal/distinct integer values, QName aliases and conflicting original namespace bindings.
+D1 extension retains original uses; replacement checks every original typed fixed operand, while retention from a different literal-model base has different premises.
+An invalid original integer remains `integer-operand` invalidity instead of distinct valid values; no general scalar qualification is inferred.
+
+Existing raw singleton-all, nontransitive restriction, mixed empty-prefix, repeated-root, named-group, recursive endpoint and empty-choice controls were rerun.
+They remain independent normative/selected/conditional/engine evidence categories.
+No transformation that drops declarations, copies identities or erases raw wrappers is assumed harmless.
+
+The finite counterexample enumerator uses the existing sticky request budget and reserves assignment nodes before construction.
+One batch shares accounting for all 12 queries and result copying, requiring 68,384 work units and 240 assignment nodes under the default limits.
+It measures its own finite transition/copy model, not the resolver, WASM memory or an implemented global search.
+
+At the measured inclusive full-run limit it succeeds; one less returns resource-limit with no accumulated receipt.
+Exhaustion with positive remaining allowance permanently stops later candidate construction, and 20/19 node controls admit/reject the exact 20-assignment domain.
+The batch exposes no partial rows if a later query or final copy exhausts the shared allowance.
+
+### Task 6: Coverage, termination and joint assumptions
+
+The attempted reduction fails at three independently observed boundaries: F0 loses original T, empty-block-only loses contextual UPA repairs, and outgoing-only loses enabling substitution dispatch.
+Combining an original-identity solution with a fresh-block solution is invalid when their joint constraints require mutually incompatible intermediates.
+A complete reduction must preserve all these relationships simultaneously.
+
+| Claim | Investigation outcome | Remaining proof or next action |
+|---|---|---|
+| Ordered prefix mapping terminates | Established under terminating qualified pair predicates | At most (r+1)(b+1) states; no repetition expansion |
+| Every witness reduces to F1 | Open | Transform arbitrary context, identities, flags and helper graph preserving all legality |
+| D1 equals literal abstract extension | Open, local premises differ | Resolve Task 2 algebra and full endpoint identity model |
+| Simplified comparison certifies raw placement | Contradicted | Separate raw/source certificate and normalization lemma for all categories |
+| Scoped anchored-T joint negative | Established under fixed context/identity premises | Do not extrapolate to permitted omissions or a different endpoint contract |
+| All retained validity transfers | Contradicted for relations/UPA | Recheck changed contexts; prove RE01 transfer or terminating joint measure |
+| Finite graph enumeration yields general no | Unproved | Small-witness bound or equivalent complete decision theorem |
+| Request budget supplies solution-space bound | False | Inclusive execution accounting only; no semantic nonexistence |
+| Local contracts compose automatically | Unproved | Establish each original-operand/preparation predicate before invoking it |
+
+For F1, unchanged original intermediate count is finite and four complex block subsets are finite.
+Context membership alone can require up to 2^n original subsets before closure pruning; neither relevant-subset reduction nor fresh-helper count is proved.
+The number of helpers/anonymous components is not bounded by the configured node or work limit.
+
+Existing D1 AU synthesis is conditional on prepared original sets and qualified scalar predicates.
+PW R-240 retains both original member bounds and the formal whole-group range supplied by #178; adjusted member bounds cannot replace the whole-group operands.
+DT A supplies its selected calendar meaning only after original type/facet/lexical/QName qualification, including indeterminate ordering as a separate result.
+
+The required result distinctions are checked-candidate, rejected-candidate, malformed/outside-context, missing qualification, invalid original scalar, indeterminate comparison, resource-limit and exhaustively proved nonexistence.
+Only the last can justify a universal RE01 negative.
+AU C1 absent conflicting augmentation remains payload invalid-value owned by #184.
+
+### Task 7: Engineering recommendation and precise handoff
+
+Advance F1 as the next proof candidate after resolving Task 2; retain bounded constraints as its independent counterexample oracle and direct impossibility criteria as scoped early exits.
+The experiments support that research architecture and reject F0's fresh/empty-only family, monotone context pruning and independent local-predicate sufficiency.
+They do not justify selecting any complete RE01 algorithm or accepting D1 as the unrestricted construction domain.
+
+Use the immutable actual graph and proposed resolver overlay as the shared checking seam.
+Separate units should qualify actual operands, certify raw construction/normalization, construct F1 candidates, verify endpoint correspondence, check all context members and combine request-wide results.
+Every candidate generator and semantic owner must use the same request budget, with charging before preparation, construction, checking and copying.
+
+The delivered resolver currently creates its request budget for one supplied candidate.
+An integrated multi-candidate search still needs a reviewed shared-budget preparation/checking interface, cumulative identity accounting, cache isolation and cancellation without partial success.
+The finite enumerator's shared-run evidence does not implement that interface.
+
+| Existing owner | Concrete work unit | Required acceptance evidence |
+|---|---|---|
+| #234 | Witness contract: ambient, AU algebra, endpoint/anonymous correspondence | Clause-level justification and compatibility disposition for Task 2 contrasts |
+| #234 | Complete F1 reduction including originals, helpers and flags | Arbitrary-successful-witness transformation and input-derived finite bound |
+| #234 | Raw/source construction and normalization | All/mixed/simple/repeated/recursive/trivial cases, preserving original bounds and identities |
+| #234 | Full positive semantic premises | Implementable meaning for every missing checker predicate, not conditional passes |
+| #234 | Retained reconstruction obligations | Transfer theorem or well-founded joint procedure, including incoming relationships |
+| #234 | General negative/termination theorem | Exhaustive family/criterion with terminating predicates and no configured cutoff premise |
+| #232 | Joint AU C1/PW R-240/DT A/RE contract | Reviewed original operands, qualification, diagnostics and request budget interfaces |
+| #179 | Actual adapter and complete six predicate implementations | Original graph/source/group/AU/scalar input fidelity and full operation/source diagnostics |
+| #179 | Search request plumbing after accepted research | Shared candidate/preparation accounting and isolated proposed-context caches |
+| #153 | Combined occurrence/schema assessment | Fresh integration acceptance after #179; no capability inference from these probes |
+| #184 | Payload scalar/augmentation enforcement | Consume original qualified scalar contracts; preserve C1 invalid-value meaning |
+
+#181 remains the later general independent enumeration harness; these narrow probes neither depend on it nor replace it.
+Production support, defaults, catalog formats, guarded paths and #231 remain unchanged.
+Final algorithm selection is blocked until the construction contract supports its completeness premises.
+
+### Task 8: Review and delivery disposition
+
+The separate reviewer independently derived relational expectations and challenged the construction/identity/ambient meanings before authoring conclusions were finalized.
+Their closure finding corrected an early experimental model: C cannot remain when its referenced M is omitted; those assignments are outside-context, not semantically invalid schemas.
+Review also corrected simple E's content to match its anySimpleType base and replaced nonterminal work accounting with the existing sticky request budget and batch publication.
+The combined negative remains explicitly scoped, and original engine acceptance does not certify its RE01 premise.
+
+Reproduction uses fresh normal installation and the current Node reference setup:
+
+```bash
+npm ci --cache tmp/cache/npm
+npm run reference:setup
+npm run typecheck:research
+npm run typecheck:reference
+npx vitest run test/research/re01 test/conformance/reference/re01-decision-investigation.test.ts
+node --import tsx test/research/re01/decision-measure.ts
+npm run ci
+npm run test:reference:full
+npm run test:conformance
+git diff --check
+```
+
+The final issue/PR handoff records the exact reviewed head and merged main, actual command results, reviewer findings and hosted checks.
+The final source/fixture manifest binds this continuation's artifacts without modifying historical evidence pins.
+IDE inspections and a live independent second engine are unavailable; the complete published-paper theorem was not inspected.
+
+| Task | Output in this record | Disposition |
+|---|---|---|
+| 1 | Source-linked scoped evidence inventory | Complete |
+| 2 | Reviewed construction/preservation alternatives and compatibility packet | Final contract selection blocked |
+| 3 | Checking flow, operand and six-owner audit | Complete as a research contract; missing authorities named |
+| 4 | F0/F1, bounded constraint and direct-method packet | Complete as comparative research |
+| 5 | Executed finite, source, scalar, relational and budget controls | Complete within declared domains |
+| 6 | Attempted reduction, scoped proof and remaining obligation table | Complete investigation; general theorem open |
+| 7 | Conditional research architecture and actionable existing-owner work units | Complete interim handoff; final selection blocked |
+| 8 | Independent review, normal delivery and exact closure disposition | Evidence delivery; closure blocked by Task 2/7 premises |
+
+#260 must remain open because its construction/preservation model does not yet support an unconditional complete-method recommendation.
+This blocker is semantic, rather than exhausted effort or failed bounded search: ambient quantification, abstract AU algebra and endpoint correspondence change the accepted witness domain.
+The packet and executed evidence can be delivered normally while those precise gates remain open; #234/#232/#179/#153 are not closed by this investigation.

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(content-model): compare RE01 construction methods and deliver a reviewed identity, context and witness-domain decision packet.
+
 - test(content-model): expose RE01 ambient, blocking and AU witness-domain obstructions with independent source controls.
 
 - test(content-model): implement the bounded RE01 research resolver with explicit predicate qualification and endpoint correspondence.

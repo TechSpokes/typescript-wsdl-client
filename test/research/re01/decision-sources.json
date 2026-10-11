@@ -1,0 +1,53 @@
+{
+  "formatVersion": 1,
+  "baseline": "9e3a22f6b494fff19e08d606486d54e55f19a5e7",
+  "evidenceKind": "source-access-record; no general decision theorem",
+  "sources": [
+    {
+      "url": "https://github.com/jacoelho/xsd/blob/142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/structures.xml",
+      "sha256": "e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba",
+      "scope": "complete XML source, final clauses with deleted editorial text excluded",
+      "clauses": [
+        "concepts-conformance",
+        "conformance-schemaValidity",
+        "scIntro",
+        "no-identity",
+        "cos-ct-extends",
+        "layer1",
+        "cos-particle-extend",
+        "cos-all-limited",
+        "cos-equiv-derived-ok-rec",
+        "cos-nonambig"
+      ]
+    },
+    {
+      "url": "https://www.w3.org/2004/03/xmlschema-errata",
+      "observedAt": "2026-10-11T09:21:33.625Z",
+      "scope": "untruncated extraction; Part 1 E1-56 concerns default-value/PSVI contributions, not RE01",
+      "extraction": {
+        "condition": "present",
+        "truncated": false,
+        "originalChars": 6847,
+        "returnedChars": 6847,
+        "maxContentChars": 40000
+      }
+    },
+    {
+      "url": "https://page-one.springer.com/pdf/preview/10.1007/11965893_19",
+      "title": "Optimizing Schema Languages for XML: Numerical Constraints and Interleaving",
+      "authors": [
+        "Wouter Gelade",
+        "Wim Martens",
+        "Frank Neven"
+      ],
+      "publication": "ICDT 2007, LNCS 4353, pp. 269–283",
+      "scope": "first-page abstract/introduction only; schema languages abstracted as regular-expression grammars and single-type EDTDs, not anchored component reconstruction",
+      "qualification": "full Bayreuth preprint extraction exceeded tool request budget; SIAM/ACM returned security pages; no complete paper/theorem verification claimed"
+    },
+    {
+      "url": "https://www.xmlmind.com/xmleditor/_distrib/doc/xmltool/xsd_structure_limitations.html",
+      "scope": "implementation documentation explicitly lists cos-ct-extends.1.5 and UPA among unchecked constraints",
+      "qualification": "not a decision theorem or semantic authority; no implementation installed/executed"
+    }
+  ]
+}
