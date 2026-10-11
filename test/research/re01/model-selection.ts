@@ -120,10 +120,10 @@ export function runModelExperiment(request: unknown, model: ResearchModel,
         receipt?: StructuralReceipt): ExperimentReport {
         const frozenDiagnostic = budget.freeze(budget.snapshot(diagnostic));
         record(budget, 'model,contractVersion,selection,scope,kind,semanticVerdict,existentialVerdict,actualSchemaVerdict,diagnostic,receipt,usage');
-        budget.chargeWork(model.length + MODEL_SELECTION_CONTRACT.length + kind.length + 200);
+        budget.chargeWork(model.length + MODEL_SELECTION_CONTRACT.length + kind.length + 201); // Includes one freeze operation.
         return Object.freeze({model, contractVersion: MODEL_SELECTION_CONTRACT,
             selection: 'explicit', scope: 'supplied-candidate-structural-preparation', kind,
             semanticVerdict: 'unresolved', existentialVerdict: 'unresolved', actualSchemaVerdict: 'unresolved',
-            diagnostic: frozenDiagnostic, ...(receipt ? {receipt} : {}), usage: budget.usage()});
+            diagnostic: frozenDiagnostic, receipt, usage: budget.usage()});
     }
 }

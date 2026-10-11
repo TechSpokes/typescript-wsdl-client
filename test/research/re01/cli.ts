@@ -178,10 +178,12 @@ export function runResearchCli(argv: readonly string[]): CliResult {
                 diagnostic: {code: error instanceof ResearchInputError ? error.code
                     : error instanceof SyntaxError ? 'invalid-json' : 'candidate-file-unreadable',
                     rule: 'research-input', context: '', related: []}, usage: budget.usage()};
+            budget.chargeWork(16); // CliResult: record, two fields and thirteen key units.
             return {exitCode: 1, output: serialize(report, budget)};
         }
         const report = runModelExperiment(request, selected.model, undefined, budget);
         if (report.kind === 'resource-limit') return terminal(selected.model, budget);
+        budget.chargeWork(16); // CliResult, before serialization captures final usage.
         const output = serialize(report, budget);
         return {exitCode: report.kind === 'unresolved' ? 2 : 1, output};
     });
