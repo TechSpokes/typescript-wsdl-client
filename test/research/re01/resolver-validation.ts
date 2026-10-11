@@ -3,7 +3,7 @@
  * component-schema evidence, never a proof of RE01 or production assessment.
  * No scalar, occurrence or complete XSD component engine is supplied here.
  */
-import {samePreparedRequest, withContext} from './resolver-context.js';
+import {isLiteralContext, samePreparedRequest, withContext} from './resolver-context.js';
 import type {ContextAccess} from './resolver-context.js';
 import type {ResolverBudget} from './resolver-budget.js';
 import {compareEndpoint} from './resolver-comparison.js';
@@ -780,6 +780,11 @@ export function assessValidationObligations(context: Context, owners: Validation
     return withContext(context, access => {
         readFields(access.budget, 6);
         if (context.kind !== 'proposed') return access.fail('requires-proposed-context', 'validation-inventory');
+        // The historical ledger implements D1 source-use preservation. Literal
+        // preparation must not route a legal changed-use proposal through those
+        // stronger conditions or accept test-owner receipts as literal authority.
+        if (isLiteralContext(context)) return access.fail('literal-semantic-authorities',
+            'literal-proposal-checking', access.candidate.endpoint, undefined, undefined, 'unresolved');
         const obligations = inventory(access, context, actualContext), b = access.budget;
         b.chargeWork(); const assessments: ObligationAssessment[] = [];
         for (const obligation of obligations) {

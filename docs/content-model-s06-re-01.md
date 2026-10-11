@@ -6,6 +6,9 @@ Formal component witnesses, a finite particle construction and the remaining ful
 
 Issue [#234](https://github.com/TechSpokes/typescript-wsdl-client/issues/234) remains open for complete decision-procedure acceptance. This record recommends the numbered existential rule and supplies executable positive feasibility evidence, including the counterexamples that defeat suffix copying. It does not certify a complete negative procedure over the approved profile.
 
+The [current implementing continuation](#literal-preparation-and-fresh-attribute-helper-continuation) implements fixed-Γ preparation and proves a fresh-intermediate attribute projection with a concrete fresh-helper falsifier.
+The full literal graph reduction, complete checking authorities and terminating general negative theorem remain acceptance blockers.
+
 The standalone [#256 resolver specification](content-model-s06-re-01-resolver.md) fixes the D1/E2 research context, identity, membership/comparison boundaries, predicate ownership and ordered implementation handoff. Its retained-substitution negative control qualifies an explicit context; neither the specification nor that control discharges the full witness theorem below.
 
 The research owner is the RE01 agent in epic #232; substantive review belongs to the separately assigned epic reviewer. The coordinator records the exact reviewed revision and findings in the joint handoff. No production assessment guard, profile exclusion, catalog format or legacy default changes here.
@@ -1105,3 +1108,179 @@ The construction model and engineering recommendation now have concrete outputs;
 Final #260 closure remains gated on exact-revision independent approval and normal head/merged-main delivery verification for this continuation.
 The issue handoff must record those actual revisions, test results, qualifications and owner links before marking Tasks 2/7/8 complete and closing.
 #234/#232/#179/#153 retain their separate proof, joint acceptance and production gates after this design investigation.
+
+## Literal preparation and fresh attribute helper continuation
+
+This implementing continuation starts at fetched main `3434b4c5bf1914cb2972efe589200160801bbe0a`, tree `2150bace3322b0ccebe04076b9b2b2df8966f1b8`.
+Codex `/root` owns implementation and delivery, `/root/behavioral_spec` independently specifies semantic contrasts, and `/root/independent_review` reviews work it did not author.
+The full R1–R6 assignment remains subject to its complete-proof gate; the concrete outputs below support unaffected delivery when that gate fails.
+
+### R1: Domain and pinned authorities
+
+The selected problem is the literal graph domain in the [accepted construction contract](#literal-component-graph-domain), including every component of immutable supplied Γ, exact original anonymous/local/shared identities, all non-derivation properties and one coherent endpoint.
+Legal additions have no assumed cardinality, occurrence or scalar-size bound.
+The relevant ancestor follows the actual chain; preparation establishes structural and scalar prerequisites without assuming the target or dependent RE01 validity.
+
+The following contracts are pinned at the starting revision above; their local acceptance records remain authoritative.
+Their current SHA-256 values are retained in the [research manifest](../test/conformance/s06-research-manifest.json).
+
+| Authority | Version and record | Used preconditions and disposition |
+|---|---|---|
+| AU | C1 v1; [AU01](content-model-s06-au-01.md) | Complete original AU/declaration sets, typed values and source contexts; universal replacement checks remain source-specific |
+| PW | R-240 v1; [PW01](content-model-s06-pw-01.md) | Qualified raw placement, UPA/EDC, normalization, original bounds and #178 ranges; no new general particle proof here |
+| DT | A v1; [DT01](content-model-s06-dt-01.md) | Original calendar type/facets, lexical/QName context and exact arithmetic; no calendar operand is used in the new AU theorem |
+| RE model | #260 continuation / PR #262 | Fixed whole Γ, literal matching, anchored endpoint and E2 context; project preservation choices are explicit |
+| Resolver | #257/#258, with this literal seam | Finite supplied candidate, original operands and request budget; six semantic owners remain incomplete |
+
+The structures XML was retrieved again from its exact pin and reproduced SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+Final `cos-ct-extends`, `ct-props-correct`, `au-props-correct`, `derivation-ok-restriction`, `cos-particle-extend` and `cos-particle-restrict` clauses were read with deleted editorial text excluded.
+The second-edition errata were checked again on October 11, 2026; E1-56 changes default/PSVI contribution, not these construction or termination obligations.
+
+The pinned #231 guard was inspected separately through its exact Git object; no module from that draft is imported.
+Bounded literature inspection found no applicable total literal/fixed-Γ procedure: current suffix-collapse implementations and schema-language inclusion papers do not establish anchored component reconstruction.
+This is a limit of the evidence inspected, not an impossibility theorem or an exhaustive literature claim.
+
+### R2: Executable literal preparation boundary
+
+[`prepareLiteralContexts`](../test/research/re01/resolver-context.ts) consumes `ActualInput`, `Candidate` and either limits or one shared `ResolverBudget`.
+It uses the existing finite graph indexing, outgoing-reference, ownership and forbidden-cycle authorities, then requires every original component in Γ to remain present.
+Every original except the endpoint is reused; the endpoint preserves its identity and all facts/source metadata except its immediate base, derivation method and explicit proposed provenance.
+
+Set-valued final/block/AU/ownership/namespace fields compare canonical identity sets; ordered content, facets, items and source contributions retain their order.
+Equality of component references preserves original targets and sharing, rather than inferring equivalence from equal-looking anonymous copies.
+Restriction comparison does not replace raw construction: both declared and effective content remain preserved and independently available.
+
+Literal input supplies intermediate AU properties directly and has no D1 source actions.
+The original `prepareContexts` entry retains its historical source domain and independently specified work ledger.
+Literal-issued handles are authenticated separately; copied handles do not acquire that authority.
+
+Preparation success certifies structural proposal consistency only.
+The historical D1 semantic ledger returns `unresolved: literal-semantic-authorities` on these handles instead of applying its stronger inherited-AU identity rule or accepting conditional test owners as a complete literal checker.
+Other results distinguish malformed input/preservation failure from sticky resource exhaustion; neither is a universal nonexistence answer.
+
+This seam still uses the historical `Facts` vocabulary.
+Fresh globally named components and incoming affiliations, complete scalar/facet qualification, all component properties, nested context certificates and every raw particle normalization are not fully represented/implemented.
+Those are explicit R2 blockers, rather than a smaller replacement construction domain.
+
+### R3: Fresh-intermediate attribute projection theorem
+
+Let A and D have qualified complete attribute-use sets and declaration/use correctness, without presupposing their RE01 validity.
+Assume literal fresh local declarations may reuse an original QName and exact simple-type identity, including references to anonymous originals without changing their original ownership.
+This theorem concerns only the attribute projection of a fresh intermediate E; content, original intermediate identity and whole-context validity are separate obligations.
+
+For every ancestor QName, construct one fresh local declaration with that QName and exactly the ancestor declaration's simple-type identity, no declaration value constraint, and one optional unconstrained use.
+Give E the universal `any` attribute wildcard with `skip` processing.
+No final-only QName needs a new E declaration because that wildcard admits it.
+
+The necessary and sufficient condition is: for every QName shared by A and D, every matching D use's simple type satisfies the qualified `TypeDerivationOK(Simple)` relation to A's original simple type.
+The scalar authority includes its original finals, list/union semantics and identity premises; generic graph ancestry cannot replace that relation.
+The number of helper declarations and uses is at most twice the number of distinct A QNames, with no fresh scalar definition required by this projection.
+
+Necessity follows from extension clause 1.2 and complex-type declaration uniqueness.
+Every A use requires an E declaration of its QName and exact simple type; two distinct E declarations with that QName are forbidden, so D's matching restriction cannot avoid that scalar relation by choosing another E use.
+Complete restriction checks apply to every matching use.
+
+For sufficiency, E's optional unconstrained uses satisfy each extension QName/type match and impose no requiredness or fixed-value hurdle on D.
+Names omitted by D may be dropped, and D-only names are wildcard-admitted; D's wildcard namespace is a subset of `any`, and its processing is at least as strong as `skip`.
+E has at most one ID-derived declaration because qualified A does; all original operands remain qualified even when their constraints are absent from E.
+
+This is a complete projection proof, not a complete full-type witness reduction.
+Replacing an arbitrary witness's attributes this way can affect identity-sensitive relationships, original intermediates and other retained components, so a separate joint preservation lemma is still required.
+The helper bound above cannot bound fresh particles, incoming declarations, scalar helpers or complete certificates.
+
+[`synthesizeLiteralAu`](../test/research/re01/literal-au-synthesis.ts) executes this projection for the accepted AU probe's named `string`, `token`, `integer` and qualified `QName` domain.
+It validates all original value operands before weakening any use, consumes original C1 declaration/use sets and retains original scalar labels/contexts.
+An unavailable scalar/facet predicate stays unresolved; a qualified unrelated shared-name scalar yields a negative attribute projection only.
+
+The result supplies a fresh-declaration/use plan and universal-skip wildcard, not graph identities or a complete schema receipt.
+Actual declaration correctness, builtin closure and all other constraints are caller qualifications.
+AU C1 and DT A are unchanged; this code uses no calendar claim or payload engine.
+
+### Minimal fresh-helper falsifier
+
+Take empty-content A with an optional local `g:xs:string` use fixed to 7; B restricts A by omitting g; actual D extends B with an optional local `g:xs:token` use fixed to 8.
+Original A/g and D/g declarations have distinct local identities/owners; both have no declaration-level value constraint.
+All types have empty final/block sets; an ordinary root refers to D, with no user affiliation, identity constraint, particle or wildcard.
+
+Fresh E extends A using a fresh optional local `g:xs:string` declaration/use with no value constraint; proposed D restricts E and retains all of its original non-derivation properties.
+E matches A's exact QName/type; token validly restricts string, and E has no fixed 7 to contradict D's fixed 8.
+Using only A's original use fails the fixed-value restriction, while using only D's original use fails extension's exact simple-type identity.
+
+The complete minimal clause inventory is the [fixed-value inventory above](#complete-minimal-fixed-value-contrast), with original A/D local scopes and token-to-string restriction added.
+Local declaration names/namespaces and builtin types are legal, each type contains one non-ID declaration, empty content satisfies both steps, and E's only extension from A has a primitive possibly-vacuous RE01 discharge.
+Qualified builtin/xsi closure remains a premise; this argument does not introduce a self-loop base edge.
+
+The [independently authored graph and tests](../test/research/re01/fresh-helper.test.ts) execute the literal extension and accepted AU restriction pair, preserving original typed fixed operands and local owners.
+The [synthesis controls](../test/research/re01/literal-au-synthesis.test.ts) vary incidental names/values and challenge the projection with an independent bounded scalar/requiredness/constraint matrix.
+This falsifies an original-or-final-use-only specialization, not the broader F1 proposal once fresh helpers are included.
+
+### R4: Retained obligations and a conditional well-founded measure
+
+Retained RE01 certificates must be checked relative to their parent's coherent proposed graph.
+For example, retain original X extending D vacuously in the fixed-restoration graph; after the root certificate changes D to a restriction of E, a child certificate for X must retain that proposed D and E.
+Restarting X's check from original Γ loses established context facts and can create an artificial circular dependency.
+
+A sufficient restricted certificate discipline uses no newly added nonprimitive complex extensions and overlays only targets with a proper designated ancestor A.
+Here primitive means a separately qualified direct extension of that A, whose base is `anyType`; extensions with simple bases use their separate clause-2 constraints and have no clause-1.5 obligation.
+Other complex extensions have rank contribution one; the explanatory note's wording that a case is trivial to check does not itself establish validity.
+
+Overlaying a nonprimitive target changes its method to restriction; its new intermediate extends the unchanged designated A directly and is primitive, while all other existing methods and designated ancestors are preserved.
+The number of nonprimitive extension components therefore strictly decreases by one, and separately qualified primitive/no-op obligations ground checking without changing their derivation to a self-loop.
+
+This proves termination of recursively checking finite certificates satisfying that discipline, assuming each local semantic owner terminates.
+It does not prove every admissible successful graph has such a certificate: the full domain allows new nonprimitive helper types, so rank may increase without a helper-elimination theorem.
+It also does not bound search branching or establish terminating general negative answers.
+
+### R5: Proof-to-code map and resource evidence
+
+| Observable guarantee or proof premise | Executable evidence | Discharged scope |
+|---|---|---|
+| Fixed Γ and coherent anchored endpoint | `literal-context.test.ts` | Structural whole-original preservation; declared/source fields and identities |
+| Fresh-helper necessity | `fresh-helper.test.ts` | Qualified string/token extension/restriction pair, not full semantic checker |
+| Complete fresh-E AU projection | `literal-au-synthesis.test.ts` | Named scalar domain; independent finite falsifiers |
+| Historical source-domain accounting | `resolver-work-ledger.test.ts` | Existing independently recounted numeric ledger unchanged |
+| Incoming affiliation/block/UPA | Existing ambient/decision/substitution controls | Their explicit retained-context domains unchanged |
+| Raw all/empty-choice normalization | Existing particle/endpoint controls | Raw legality kept separate from comparison |
+| Large exact repetitions/shared DAG/recursion | Existing witness/resolver ports | Historical conditional claims remain qualified |
+| Literal complete schema verdict | `re01-literal-continuation.test.ts` | Missing authority remains unresolved, never promoted from projection |
+
+Preparation, scalar qualification, candidate planning, helper reservations, comparisons, snapshots and final result copying share one request budget.
+Charges precede their work/allocation; the semantic defaults remain inclusive 100,000 nodes and 1,000,000 work units.
+[`literal-measure.ts`](../test/research/re01/literal-measure.ts) reproduces whole-request measured success and one-unit-below failure; the terminal result has no plan/partial success and subsequent use remains exhausted.
+
+The complete supplied-proposal preparation plus fresh-AU planning request uses 13 admitted component/plan identities and 214,742 conservative work units.
+That inclusive boundary succeeds; work limit 214,741 stops at 214,572 before final publication, and node limit 12 stops at 11 before either planned helper is allocated.
+Potential owner diagnostic records/messages are reserved before qualification, with final diagnostic publication charged separately; helper records and copying are also precharged.
+
+```bash
+npx tsx test/research/re01/literal-measure.ts
+npx vitest run test/research/re01
+npm run typecheck:research
+npm run test:reference:full
+```
+
+Measurements establish execution behavior, not a complete witness-size bound.
+All existing raw-normalization, fixed/source, identity, blocking and joint UPA counterexamples are retained; no historical failed candidate becomes an unrestricted negative.
+Exact final command versions/counts, independent findings and head/actual-main artifact audits belong to the issue's final delivery ledger.
+
+### R6: Remaining blocker and exact production adapter changes
+
+The unproved lemma is a joint reduction: transform every successful legal finite literal graph into a finitely bounded family while preserving whole Γ, anchored identity/flags, raw construction, normalization, incoming relationships and retained RE01 certificate adequacy.
+The new AU helper theorem does not establish that lemma, and no inspected complete authority supplies all of its local premises.
+Without it or an equivalent total decision theorem, finite rejection and fair enumeration cannot produce complete terminating general negative answers.
+
+Options are to prove the joint helper/content/context reduction, or replace F1 with an independently proved total decision method over the same literal domain.
+The recommended continuation is fresh-AU synthesis plus original-aware/flag-aware particle candidates, with the conditional decreasing certificate rank as a proof target and bounded independent falsification as a challenger.
+An arbitrary cutoff, source-union restriction or diagnostic-only permanent profile is not an accepted alternative.
+
+The responsible owner remains #234; #232's joint acceptance and #179's production entry remain blocked.
+Resumption requires a reviewed joint reduction or equivalent total theorem, complete qualified checking authorities, adequate retained certificates and independently approved negative/termination proofs.
+No maintainer construction-policy choice is requested because #260 already resolved that contract; this is an unfulfilled proof/implementation obligation.
+
+The #179 adapter must keep source-only AU inheritance separate from literal graph properties, fix the original Γ before candidate generation and preserve every original endpoint field except its hypothetical base/method.
+It must represent fresh globally named components and incoming affiliations beyond the historical research vocabulary, retain anonymous scalar references with original owners and implement every semantic owner under literal predicates.
+Use the new AU plan only after declaration/scalar qualification, create disjoint local helper identities and recheck all affected relationships; passing that projection cannot remove `S06-RE-01`.
+
+Nested retained certificates need authenticated parent-proposed contexts, joint shared accounting and a proved well-founded discipline/adequacy theorem.
+Keep invalid original input, rejected candidate, unsupported qualification, scalar indeterminacy, resource exhaustion and proved nonexistence distinct.
+#153 retains combined production acceptance; #184 retains runtime scalar, augmentation and payload work; #231 remains unaccepted and unmerged.

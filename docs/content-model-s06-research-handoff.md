@@ -4,6 +4,10 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [#234 implementing continuation](content-model-s06-re-01.md#literal-preparation-and-fresh-attribute-helper-continuation) adds executable literal preservation and complete fresh-intermediate AU projection evidence, including the fresh string/token helper falsifier.
+Its joint graph reduction, complete literal checking authorities, retained-certificate adequacy and terminating general negative proof remain open; this evidence does not satisfy RE01 or epic joint acceptance.
+The exact production adapter changes and resumption condition are [recorded together](content-model-s06-re-01.md#r6-remaining-blocker-and-exact-production-adapter-changes).
+
 The [executed #260 investigation](content-model-s06-re-01.md#executed-design-investigation-for-260) adds finite method comparisons and an independently reviewed construction-domain packet.
 Its joint identity/UPA obstruction prevents combining separate local repairs; original identity, blocking and membership must be checked together.
 The [#260 continuation](content-model-s06-re-01.md#construction-contract-and-engineering-recommendation-after-260-continuation) specifies a literal abstract graph, preserved assessment context and coherent endpoint, and recommends a shared qualified checker with proof-gated candidate search.

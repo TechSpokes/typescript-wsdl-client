@@ -111,6 +111,7 @@ type State = {
     actualCache?: Map<object, unknown>; proposedCache?: Map<object, unknown>;
 };
 const handles = new WeakMap<Context, State>();
+const literalHandles = new WeakSet<Context>();
 const builtinTargets = new Map(Array.from(BUILTINS, local => [local,
     Object.freeze({kind: 'builtin' as const, name: Object.freeze({namespace: XSD_NAMESPACE, local})})]));
 
@@ -963,9 +964,129 @@ function diagnosis(error: Invalid, state: Pick<State, 'budget' | 'candidate' | '
     return budget.freeze(budget.snapshot(diagnostic));
 }
 
+/**
+ * Compare preservation values after the original view and candidate snapshot
+ * have passed data-record validation. Object copies are not component renames:
+ * reference targets are compared as IDs. Set-valued facts use canonical string
+ * sets; ordered content, item and facet arrays retain their order. Source syntax
+ * arrays retain their complete representation, including source operands.
+ */
+function validateLiteralPreservation(original: Component, replacement: Component, budget: ResolverBudget): void {
+    type Frame = {left: unknown; right: unknown; slot: string; set: boolean};
+    budget.chargeWork(3); // Stack and separate ordered/set object-pair maps.
+    const stack: Frame[] = [], compared = new Map<object, Set<object>>(), comparedSets = new Map<object, Set<object>>();
+    const mismatch = (slot: string): never => invalid('literal-endpoint-preservation',
+        'literal-context', original.id, slot, original.source);
+    const push = (left: unknown, right: unknown, slot: string, set = false): void => {
+        budget.chargeWork(22 + slot.length); // Frame, four fields/key units and stack push.
+        stack.push({left, right, slot, set});
+    };
+    const field = (left: object, right: object, key: string, slot: string, set = false): void => {
+        budget.chargeWork(88 + 2 * key.length); // Both descriptors and field reads.
+        const a = Object.getOwnPropertyDescriptor(left, key), b = Object.getOwnPropertyDescriptor(right, key);
+        if (!a || !b) {
+            if (a || b) mismatch(slot);
+            return;
+        }
+        assert('value' in a && 'value' in b, 'missing-or-accessor-field', original, slot);
+        push(a.value, b.value, slot, set);
+    };
+    for (const key of FIELDS_COMPONENT) {
+        budget.chargeWork(2 + key.length);
+        if (key === 'facts' || key === 'provenance') continue;
+        field(original, replacement, key, key, key === 'owns');
+    }
+    for (const key of FIELDS_TYPE) {
+        budget.chargeWork(2 + key.length);
+        if (key === 'base' || key === 'method') continue;
+        budget.chargeWork(7 + key.length); const slot = `facts/${key}`;
+        field(original.facts, replacement.facts, key, slot,
+            key === 'final' || key === 'block' || key === 'attributeUses');
+    }
+    for (const key of OPTIONAL_TYPE_WILDCARDS) {
+        budget.chargeWork(7 + key.length); const slot = `facts/${key}`;
+        field(original.facts, replacement.facts, key, slot);
+    }
+    const canonical = (values: readonly unknown[], slot: string): readonly string[] => {
+        budget.chargeWork(); const strings: string[] = [];
+        for (let index = 0; index < values.length; index++) {
+            budget.chargeWork(4); const value = values[index];
+            if (text(value)) strings.push(value);
+            else mismatch(slot);
+        }
+        const ordered = budget.sorted(strings, (a, b) => budget.compareText(a, b));
+        budget.chargeWork(); const unique: string[] = [];
+        for (let index = 0; index < ordered.length; index++) {
+            budget.chargeWork(4); const value = ordered[index];
+            if (unique.length && budget.compareText(unique[unique.length - 1], value) === 0) continue;
+            budget.chargeWork(); unique.push(value);
+        }
+        return unique;
+    };
+    while (stack.length) {
+        budget.chargeWork(5); const {left, right, slot, set} = stack.pop()!;
+        if (text(left) || text(right)) {
+            if (!text(left) || !text(right) || budget.compareText(left, right) !== 0) mismatch(slot);
+            continue;
+        }
+        budget.chargeWork(3);
+        if (left === null || right === null || typeof left !== 'object' || typeof right !== 'object') {
+            if (left !== right) mismatch(slot);
+            continue;
+        }
+        budget.chargeWork(2); const aArray = Array.isArray(left), bArray = Array.isArray(right);
+        if (aArray !== bArray) mismatch(slot);
+        budget.chargeWork(2); const pairs = set ? comparedSets : compared;
+        let rights = pairs.get(left);
+        if (rights) { budget.chargeWork(); if (rights.has(right)) continue; }
+        else { budget.chargeWork(2); rights = new Set(); pairs.set(left, rights); }
+        budget.chargeWork(); rights.add(right);
+        if (aArray && bArray) {
+            let a: readonly unknown[] = left as readonly unknown[], b: readonly unknown[] = right as readonly unknown[];
+            if (set) { a = canonical(a, slot); b = canonical(b, slot); }
+            budget.chargeWork(2);
+            if (a.length !== b.length) mismatch(slot);
+            for (let index = 0; index < a.length; index++) {
+                budget.chargeWork(3); push(a[index], b[index], slot);
+            }
+            continue;
+        }
+        for (const key in left) {
+            budget.chargeWork(3 + key.length);
+            if (!Object.hasOwn(left, key) || !Object.hasOwn(right, key)) mismatch(slot);
+            // Only namespace constraints have a semantically unordered values
+            // field in these validated views. All other nested arrays are ordered.
+            field(left, right, key, slot, key === 'values');
+        }
+        for (const key in right) {
+            budget.chargeWork(3 + key.length);
+            if (!Object.hasOwn(right, key) || !Object.hasOwn(left, key)) mismatch(slot);
+        }
+    }
+}
+
+/** Historical source-style preparation and its exact charging ledger. */
 export function prepareContexts(input: ActualInput, candidate: Candidate, limits?: Limits): Result<Prepared> {
+    return prepareContextEngine(input, candidate, limits, false);
+}
+
+/**
+ * Literal graph preparation only. Successful preparation does not assess XSD
+ * predicate legality; the six-owner checker still owns that unresolved work.
+ * A shared request budget carries exhaustion across candidate preparations.
+ */
+export function prepareLiteralContexts(input: ActualInput, candidate: Candidate, limits?: Limits,
+    sharedBudget?: ResolverBudget): Result<Prepared> {
+    return prepareContextEngine(input, candidate, limits, true, sharedBudget);
+}
+
+function prepareContextEngine(input: ActualInput, candidate: Candidate, limits: Limits | undefined,
+    literal: boolean, sharedBudget?: ResolverBudget): Result<Prepared> {
     let budget: ResolverBudget;
-    try { budget = createResolverBudget(limits); }
+    try {
+        if (sharedBudget && limits !== undefined) throw new ResolverInvalidLimitsError();
+        budget = sharedBudget ?? createResolverBudget(limits);
+    }
     catch (error) {
         if (!(error instanceof ResolverInvalidLimitsError)) throw error;
         return {kind: 'input-error', diagnostic: {code: 'invalid-limits', rule: 'resource-limits', context: '', related: []}, usage: {nodes: 0, work: 0}};
@@ -1008,6 +1129,7 @@ export function prepareContexts(input: ActualInput, candidate: Candidate, limits
                     : originalIdentity.kind === 'local' && replacementIdentity.kind === 'local'
                         && budget.compareText(originalIdentity.owner, replacementIdentity.owner) === 0
                         && budget.compareText(originalIdentity.path, replacementIdentity.path) === 0), 'endpoint-identity');
+            if (literal) validateLiteralPreservation(originalEndpoint, snapshot.endpointDefinition, budget);
             const [additions, additionEdges] = indexed(snapshot.additions, budget, false);
             budget.chargeWork();
             for (const addition of additions.values()) {
@@ -1025,6 +1147,16 @@ export function prepareContexts(input: ActualInput, candidate: Candidate, limits
                 budget.chargeWork(4 + 3 * id.length);
                 proposed.set(id, endpoint ? snapshot.endpointDefinition : component);
                 proposedEdges.set(id, endpoint ? componentEdges(snapshot.endpointDefinition, budget) : actualEdges.get(id)!);
+            }
+            if (literal) {
+                budget.chargeWork();
+                for (const id of actual.keys()) {
+                    budget.chargeWork(1 + id.length);
+                    if (!proposed.has(id)) {
+                        budget.chargeWork(2 + id.length);
+                        invalid('literal-original-omitted', 'literal-context', id, 'retained', actual.get(id)!.source);
+                    }
+                }
             }
             budget.chargeWork();
             for (const component of additions.values()) { budget.chargeWork(5 + 3 * component.id.length); const id = component.id; proposed.set(id, component); proposedEdges.set(id, additionEdges.get(id)!); }
@@ -1060,7 +1192,10 @@ export function prepareContexts(input: ActualInput, candidate: Candidate, limits
             validateProvenance(orderedIndex, actual, budget);
             validateEdges(orderedIndex, proposedEdges, budget, actual);
             validateOriginalSources(originalEndpoint, actualEdges, orderedIndex, budget);
-            validateActions(snapshot, orderedIndex, budget);
+            if (literal) {
+                budget.chargeWork();
+                assert(snapshot.attributes.length === 0, 'literal-source-actions', snapshot.endpointDefinition, 'attributes');
+            } else validateActions(snapshot, orderedIndex, budget);
             checkCycles(orderedIndex, proposedEdges, budget, true, actual);
             validateOwnership(orderedIndex, budget);
             budget.chargeWork(2 + 2 * actual.size);
@@ -1083,6 +1218,10 @@ export function prepareContexts(input: ActualInput, candidate: Candidate, limits
             const state: State = {budget, candidate: snapshot, actual, proposed, actualEdges, proposedEdges, identity: {}};
             budget.chargeWork(2);
             handles.set(actualContext, state); handles.set(proposedContext, state);
+            if (literal) {
+                budget.chargeWork(2);
+                literalHandles.add(actualContext); literalHandles.add(proposedContext);
+            }
             chargeRecord(budget, PREPARED_FIELDS); chargeRecord(budget, PREPARED_FIELDS);
             const value = Object.freeze({actual: actualContext, proposed: proposedContext});
             chargeRecord(budget, RESULT_FIELDS, 'ok'.length); chargeRecord(budget, RESULT_FIELDS);
@@ -1096,6 +1235,12 @@ export function prepareContexts(input: ActualInput, candidate: Candidate, limits
             return Object.freeze({kind: error.kind, diagnostic, usage: budget.usage()});
         }
     });
+}
+
+/** Identify issued literal handles without relying on caller-supplied fields. */
+export function isLiteralContext(context: Context, budget?: ResolverBudget): boolean {
+    budget?.chargeWork();
+    return literalHandles.has(context);
 }
 
 export function withContext<T>(context: Context, operation: (access: ContextAccess) => T): Result<T> {
