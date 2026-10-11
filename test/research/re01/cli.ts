@@ -15,6 +15,10 @@ FILE is JSON {"input": ActualInput, "candidate": Candidate}.
 Exit: 0 help; 1 input/candidate error; 2 unresolved; 3 resource-limit.
 `;
 const CLI_TERMINAL_WORK = 2_048;
+// Supported Node Stats metadata has fourteen own numeric fields and 74 name
+// units (89 record/field/name units); reserve 256 for its fixed native record,
+// numeric copies and kind inspection before either stat boundary allocates it.
+const NATIVE_STATS_WORK = 256;
 const CLI_FIELDS = 'model,contractVersion,selection,scope,kind,semanticVerdict,existentialVerdict,actualSchemaVerdict,diagnostic,limit,receipt,usage';
 type Options = {model: ResearchModel; file: string; maxNodes?: number; maxWork?: number};
 type OptionError = {code: string};
@@ -62,14 +66,14 @@ function options(argv: readonly string[]): Options | OptionError {
 
 /** A regular file is bounded from its open descriptor before read/allocation. */
 function readRequest(file: string, budget: ResolverBudget): unknown {
-    budget.chargeWork(68 + file.length);
+    budget.chargeWork(4 + NATIVE_STATS_WORK + file.length);
     if (!statSync(file).isFile()) throw new ResearchInputError('regular-candidate-file-required');
     budget.chargeWork(4 + file.length);
     // A race to a FIFO cannot block the opening request. O_NONBLOCK is zero
     // where absent; regular files are unaffected on supported Node platforms.
     const descriptor = openSync(file, constants.O_RDONLY | (constants.O_NONBLOCK ?? 0));
     try {
-        budget.chargeWork(64); // Fixed fstat record/fields and file-kind decision.
+        budget.chargeWork(NATIVE_STATS_WORK); // Fixed native metadata before allocation.
         const metadata = fstatSync(descriptor);
         if (!metadata.isFile() || !Number.isSafeInteger(metadata.size)) throw new ResearchInputError('regular-candidate-file-required');
         const size = metadata.size;
