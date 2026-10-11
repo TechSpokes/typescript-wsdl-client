@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:combined" targetNamespace="urn:re01:combined">
+  <xs:complexType name="A">
+    <xs:all><xs:element name="n" type="t:T" minOccurs="0"/><xs:element name="m" type="xs:int" minOccurs="0"/></xs:all>
+  </xs:complexType>
+  <xs:complexType name="T"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="B" block="extension"><xs:complexContent><xs:restriction base="t:T"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="E" block="restriction"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:restriction base="t:E">
+    <xs:all><xs:element name="n" type="t:D" minOccurs="0"/><xs:element name="m" type="xs:int" minOccurs="0"/></xs:all>
+  </xs:restriction></xs:complexContent></xs:complexType>
+  <xs:element name="h" type="t:T"/>
+  <xs:element name="affiliate" type="t:D" substitutionGroup="t:h"/>
+  <xs:complexType name="C"><xs:choice><xs:element ref="t:h"/><xs:element ref="t:affiliate"/></xs:choice></xs:complexType>
+</xs:schema>

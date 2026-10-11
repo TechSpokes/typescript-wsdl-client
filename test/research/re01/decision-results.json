@@ -1,0 +1,162 @@
+{
+  "domain": "20 assignments per projection; finite relations only",
+  "totalWork": 68384,
+  "rows": [
+    {
+      "requirements": {
+        "projection": "blocking",
+        "requireAffiliate": false,
+        "requireChoice": false
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 13,
+      "oldFamily": 2,
+      "directCriterion": true,
+      "cumulativeWork": 9684
+    },
+    {
+      "requirements": {
+        "projection": "blocking",
+        "requireAffiliate": false,
+        "requireChoice": true
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 3,
+      "oldFamily": 0,
+      "directCriterion": true,
+      "cumulativeWork": 12305
+    },
+    {
+      "requirements": {
+        "projection": "blocking",
+        "requireAffiliate": true,
+        "requireChoice": false
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 8,
+      "oldFamily": 1,
+      "directCriterion": true,
+      "cumulativeWork": 18409
+    },
+    {
+      "requirements": {
+        "projection": "blocking",
+        "requireAffiliate": true,
+        "requireChoice": true
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 3,
+      "oldFamily": 0,
+      "directCriterion": true,
+      "cumulativeWork": 21030
+    },
+    {
+      "requirements": {
+        "projection": "identity",
+        "requireAffiliate": false,
+        "requireChoice": false
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 3,
+      "oldFamily": 0,
+      "directCriterion": true,
+      "cumulativeWork": 23660
+    },
+    {
+      "requirements": {
+        "projection": "identity",
+        "requireAffiliate": false,
+        "requireChoice": true
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 1,
+      "oldFamily": 0,
+      "directCriterion": true,
+      "cumulativeWork": 24892
+    },
+    {
+      "requirements": {
+        "projection": "identity",
+        "requireAffiliate": true,
+        "requireChoice": false
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 2,
+      "oldFamily": 0,
+      "directCriterion": true,
+      "cumulativeWork": 26823
+    },
+    {
+      "requirements": {
+        "projection": "identity",
+        "requireAffiliate": true,
+        "requireChoice": true
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 1,
+      "oldFamily": 0,
+      "directCriterion": true,
+      "cumulativeWork": 28055
+    },
+    {
+      "requirements": {
+        "projection": "combined",
+        "requireAffiliate": false,
+        "requireChoice": false
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 2,
+      "oldFamily": 0,
+      "directCriterion": true,
+      "cumulativeWork": 29986
+    },
+    {
+      "requirements": {
+        "projection": "combined",
+        "requireAffiliate": false,
+        "requireChoice": true
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 0,
+      "oldFamily": 0,
+      "directCriterion": false,
+      "cumulativeWork": 30519
+    },
+    {
+      "requirements": {
+        "projection": "combined",
+        "requireAffiliate": true,
+        "requireChoice": false
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 1,
+      "oldFamily": 0,
+      "directCriterion": true,
+      "cumulativeWork": 31751
+    },
+    {
+      "requirements": {
+        "projection": "combined",
+        "requireAffiliate": true,
+        "requireChoice": true
+      },
+      "tried": 20,
+      "outsideContext": 5,
+      "admitted": 0,
+      "oldFamily": 0,
+      "directCriterion": false,
+      "cumulativeWork": 32284
+    }
+  ]
+}

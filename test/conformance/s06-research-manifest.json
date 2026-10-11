@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "a71f30db02f557a57751bc85bc57bfb9049ca4589eb2da16c5eb79fbdfe4496d",
+          "sha256": "cbcd6b7b75d6236c7d5e6e72faa595be2f5ddca1adc3e82655ef5d154a1b37e3",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -817,6 +817,51 @@
           "path": "test/conformance/reference/re01-ambient-completeness.test.ts",
           "role": "reference",
           "sha256": "bf6433d9b7e401a3e8a292d0e6135b8f2f59a5e21183e01e552ac4d6ee1661ef"
+        },
+        {
+          "path": "test/research/re01/decision-experiment.ts",
+          "role": "prototype",
+          "sha256": "c46ffcff6e348a2c6534d21c7b88e2b449e15e70810864c60193250d493b5463"
+        },
+        {
+          "path": "test/research/re01/decision-experiment.test.ts",
+          "role": "prototype",
+          "sha256": "273ca61bf7e7ed5cdf828ad7ac2bad0b96bf85b1388e8b93bab1fc17592b8ac3"
+        },
+        {
+          "path": "test/research/re01/decision-measure.ts",
+          "role": "prototype",
+          "sha256": "71857b1429b921fb63d7ec0fccedaaa1cb1acfd2700fe74f4a25b862277c6eba"
+        },
+        {
+          "path": "test/research/re01/decision-sources.json",
+          "role": "expectations",
+          "sha256": "65cb3a0c9dccfd091f266b111c7defb5d54d8035f178f64c326ef2c4019b049c"
+        },
+        {
+          "path": "test/research/re01/decision-results.json",
+          "role": "expectations",
+          "sha256": "9f2919243a15336f05ef4e599d91c4f1cd662ba9ae4304edad29dc9c6292a24f"
+        },
+        {
+          "path": "test/conformance/reference/re01-decision-investigation.test.ts",
+          "role": "reference",
+          "sha256": "3ff16061d1fcab0f35dd2872159e8d754e9d3c7e6598158a8533111d34927b20"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/combined-identity-original.xsd",
+          "role": "fixture",
+          "sha256": "c5be8948cb8136f4c0679d3a77d3fe88205f580012e802dca5c2ab2a765ba086"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/combined-identity-reused.xsd",
+          "role": "fixture",
+          "sha256": "1f661c5a62d502d9bfb41d00083730df07282cc7cc25bc21047b08ba89969543"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/combined-identity-copy.xsd",
+          "role": "fixture",
+          "sha256": "76847d7a24d181620a52c71d4bf9f7c450afad3547ef6e1257473ba897cb6195"
         }
       ]
     },
@@ -1208,6 +1253,6 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 220
+    "currentArtifactCount": 229
   }
 }
