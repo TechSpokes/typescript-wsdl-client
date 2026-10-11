@@ -29,7 +29,8 @@ describe('RE01 explicit research model supplied-candidate experiment', () => {
         for (const report of [derivation, preserving]) {
             expect(report).toMatchObject({kind: 'unresolved', selection: 'explicit', contractVersion: MODEL_SELECTION_CONTRACT,
                 semanticVerdict: 'unresolved', existentialVerdict: 'unresolved', actualSchemaVerdict: 'unresolved',
-                diagnostic: {code: 'missing-complete-semantic-authority'}, receipt: {actualQualification: 'structural-only',
+                diagnostic: {code: 'missing-complete-semantic-authority'}, receipt: {model: report.model,
+                    contractVersion: MODEL_SELECTION_CONTRACT, actualQualification: 'structural-only',
                     proposedQualification: 'structural-only', locality: 'dependency-transfer-unresolved', attributes: 'literal-component-properties'}});
             expect(report.receipt?.actualContext).toContain(`${MODEL_SELECTION_CONTRACT}/${report.model}/`);
             expect(report.receipt?.proposedContext).toContain(`${MODEL_SELECTION_CONTRACT}/${report.model}/`);

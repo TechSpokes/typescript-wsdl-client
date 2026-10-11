@@ -15,6 +15,8 @@ const PREFIXES = Object.freeze({
 
 export type SuppliedCandidateRequest = Readonly<{input: ActualInput; candidate: Candidate}>;
 export type StructuralReceipt = Readonly<{
+    model: ResearchModel;
+    contractVersion: typeof MODEL_SELECTION_CONTRACT;
     scope: 'supplied-candidate-structural-preparation';
     actualContext: string; proposedContext: string;
     actualMembers: readonly string[]; proposedMembers: readonly string[];
@@ -98,8 +100,9 @@ export function runModelExperiment(request: unknown, model: ResearchModel,
         budget.chargeWork();
         if (prepared.kind === 'resource-limit') return terminal();
         if (prepared.kind !== 'ok') return report(prepared.kind, prepared.diagnostic);
-        record(budget, 'scope,actualContext,proposedContext,actualMembers,proposedMembers,excludedIncoming,actualQualification,proposedQualification,locality,attributes');
+        record(budget, 'model,contractVersion,scope,actualContext,proposedContext,actualMembers,proposedMembers,excludedIncoming,actualQualification,proposedQualification,locality,attributes');
         const receipt = budget.freeze(budget.snapshot<StructuralReceipt>({
+            model, contractVersion: MODEL_SELECTION_CONTRACT,
             scope: 'supplied-candidate-structural-preparation',
             actualContext: prepared.value.actual.key, proposedContext: prepared.value.proposed.key,
             actualMembers: prepared.value.actual.members, proposedMembers: prepared.value.proposed.members,
