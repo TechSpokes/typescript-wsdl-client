@@ -8,6 +8,9 @@ The [reviewed resolver specification](content-model-s06-re-01-resolver.md) defin
 Its selected domain is one supplied abstract two-step construction over immutable actual component records.
 The research modules do not construct or search the complete RE01 witness family.
 
+The [literal continuation](content-model-s06-re-01.md#literal-preparation-and-fresh-attribute-helper-continuation) adds `prepareLiteralContexts` with whole-Γ and non-derivation preservation, plus a scoped fresh-AU synthesis theorem/prototype.
+Its structural success does not supply literal semantic authorities; the D1 validation ledger reports that missing qualification explicitly.
+
 All executable resolver material lives under `test/research/re01/` and consumes independently prepared records.
 It imports no production assessment module or unaccepted #231 implementation.
 The [RE01 proof record](content-model-s06-re-01.md) and [joint research handoff](content-model-s06-research-handoff.md) retain their acceptance gates.
