@@ -1031,6 +1031,9 @@ Build one proposal checker around immutable actual `Γ`, a coherent proposed ove
 The checker first validates inputs and preservation, then checks raw construction, both derivation steps, scalar operands and every affected component relationship.
 Its positive result includes the construction and all qualifications; missing authority remains unresolved, rather than becoming either validity or nonexistence.
 
+Up-front qualification covers original identity, representation, structural and scalar prerequisites, not the target RE01 existential or dependent validity that search is establishing.
+Those target-dependent obligations require checked construction/certificate evidence or a justified joint proof; assuming complete actual-schema validity here would make the recommendation circular.
+
 Generate candidates in the literal graph domain, prioritizing original identities, relevant finite flags and certified raw content/AU constructions.
 Treat F1 as a proposed acceleration family whose completeness must be proved against this domain, rather than retaining its historical D1 source-union premise.
 Keep a deliberately bounded independent constraint enumerator to falsify reductions and direct criteria for individually proved impossibility cases.
@@ -1043,7 +1046,8 @@ Use dovetailing for unfinished checking or enumerate finite certificates with a 
 Coverage of finite encodings is distinct from adequacy of those certificates and termination of their verification, which #234/#232 must establish.
 
 ```text
-qualify actual schema, original operands and required context Γ
+qualify actual identity/representation/structural/scalar prerequisites and context Γ
+retain target/dependent RE01 validity as obligations to establish
 select actual ancestor; establish preservation obligations
 for each permitted candidate considered within the shared request budget:
     prepare coherent proposed overlay without pruning Γ
