@@ -64,6 +64,56 @@ describe('independently specified fresh global helper contrasts', () => {
         }
     });
 
+    it('reserves omitted original global identities across the whole immutable actual schema', () => {
+        const request = fixture();
+        const x = literalComponent('X', {kind: 'element', name: fixtureName('X'), type: symbol('A'),
+            nillable: false, abstract: false, final: [], block: [], identityConstraints: []});
+        const input = freezeLiteral({...request.input, components: [...request.input.components,x]});
+        const candidate = {...request.candidate, additions: request.candidate.additions.map(component=>component.id==='c'
+            ? {...component, identity: {kind:'global' as const,role:'element' as const,name:fixtureName('X')},
+                facts: {...component.facts as Extract<Facts,{kind:'element'}>,name:fixtureName('X')}}
+            : component)};
+        expect(candidate.retained).not.toContain('X'); // Omission is intentional.
+        const before = JSON.stringify(input);
+        // Added ID c cannot reuse actual X's element/QName identity merely
+        // because X is omitted from the proposed structural experiment.
+        expect(prepareDerivationContexts(input,candidate).kind).toBe('input-error');
+        expect(JSON.stringify(input)).toBe(before);
+    });
+
+    it('permits a disjoint added global QName while the unrelated original remains omitted', () => {
+        const request = fixture();
+        const x = literalComponent('X', {kind:'element',name:fixtureName('X'),type:symbol('A'),
+            nillable:false,abstract:false,final:[],block:[],identityConstraints:[]});
+        const input = freezeLiteral({...request.input,components:[...request.input.components,x]});
+        const result = prepareDerivationContexts(input,request.candidate);
+        expect(result.kind).toBe('ok');
+        if (result.kind !== 'ok') throw new Error(JSON.stringify(result));
+        expect(result.value.actual.members).toContain('X');
+        expect(result.value.proposed.members).not.toContain('X');
+        expect(result.value.proposed.members).toContain('c');
+        expect(target(resolveReference(result.value.proposed,'c','head')).id).toBe('H');
+    });
+
+    it('permits equal QNames in different global XSD symbol spaces across omission', () => {
+        const request = fixture();
+        const x = literalComponent('X',typeFacts(symbol('A'))); // Type symbol X.
+        const input = freezeLiteral({...request.input,components:[...request.input.components,x]});
+        const candidate = {...request.candidate,additions:request.candidate.additions.map(component=>component.id==='c'
+            ? {...component,identity:{kind:'global' as const,role:'element' as const,name:fixtureName('X')},
+                facts:{...component.facts as Extract<Facts,{kind:'element'}>,name:fixtureName('X')}}
+            : component)};
+        const result = prepareDerivationContexts(input,candidate);
+        expect(result.kind).toBe('ok');
+        if (result.kind !== 'ok') throw new Error(JSON.stringify(result));
+        expect(result.value.actual.members).toContain('X');
+        expect(result.value.proposed.members).not.toContain('X');
+        expect(target(resolveReference(result.value.actual,'X','base')).id).toBe('A');
+        expect(target(resolveReference(result.value.proposed,'c','type')).id).toBe('E');
+        expect(target(resolveReference(result.value.proposed,'c','head')).id).toBe('H');
+        expect(resolveReference(result.value.proposed,'X','base').kind).toBe('input-error');
+    });
+
     it('requires fresh affiliate and helper-type dependencies only in the proposed head census', () => {
         const contexts = prepared();
         expect(collectDerivationDependencies(contexts.actual,'derivation',['H'])).toMatchObject({kind:'ok',value:{members:['A','H']}});
