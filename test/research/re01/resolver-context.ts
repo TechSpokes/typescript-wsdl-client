@@ -1143,11 +1143,37 @@ function prepareContextEngine(input: ActualInput, candidate: Candidate, limits: 
                         && budget.compareText(originalIdentity.path, replacementIdentity.path) === 0), 'endpoint-identity');
             if (literal) validateLiteralPreservation(originalEndpoint, snapshot.endpointDefinition, budget);
             const [additions, additionEdges] = indexed(snapshot.additions, budget, false);
+            // A fresh global must be disjoint from immutable actual identities,
+            // including originals omitted from this experimental proposed view.
+            // Build a charged identity-only union only for the new global seam;
+            // historical preparation and its exact ledger retain their path.
+            let globalAddition = false;
             budget.chargeWork();
             for (const addition of additions.values()) {
                 budget.chargeWork(7 + addition.id.length); assert(!actual.has(addition.id)
                     && budget.compareText(addition.id, snapshot.endpoint) !== 0, 'nonendpoint-override', addition);
-                assert(addition.identity.kind === 'fresh' && addition.provenance.kind === 'constructed', 'addition-identity', addition);
+                if (literal && !preserveWhole) {
+                    budget.chargeWork(4);
+                    globalAddition ||= addition.identity.kind === 'global';
+                }
+                assert((addition.identity.kind === 'fresh'
+                    || literal && !preserveWhole && addition.identity.kind === 'global')
+                    && addition.provenance.kind === 'constructed', 'addition-identity', addition);
+            }
+            if (globalAddition) {
+                budget.chargeWork(2); const identityUniverse: Index = new Map();
+                for (const component of actual.values()) {
+                    budget.chargeWork(3 + component.id.length);
+                    identityUniverse.set(component.id, component);
+                }
+                for (const component of additions.values()) {
+                    budget.chargeWork(2);
+                    if (component.identity.kind === 'global') {
+                        budget.chargeWork(2 + component.id.length);
+                        identityUniverse.set(component.id, component);
+                    }
+                }
+                validateIdentities(identityUniverse, budget);
             }
             budget.chargeWork(2); const proposed: Index = new Map(), proposedEdges: EdgeIndex = new Map();
             for (const id of snapshot.retained) { budget.chargeWork(2); assert(text(id) && id.length > 0, 'invalid-member'); }

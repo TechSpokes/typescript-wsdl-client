@@ -4,9 +4,14 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
-The [#234 implementing continuation](content-model-s06-re-01.md#literal-preparation-and-fresh-attribute-helper-continuation) adds executable literal preservation and complete fresh-intermediate AU projection evidence, including the fresh string/token helper falsifier.
-Its joint graph reduction, complete literal checking authorities, retained-certificate adequacy and terminating general negative proof remain open; this evidence does not satisfy RE01 or epic joint acceptance.
-The exact production adapter changes and resumption condition are [recorded together](content-model-s06-re-01.md#r6-remaining-blocker-and-exact-production-adapter-changes).
+The [October 11 addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical global hypothetical-overlay characterization.
+The [derivability continuation](content-model-s06-re-01.md#derivability-and-affiliation-continuation) executes the independently specified affiliation contrast and implements a structural dependency census and isolated research model selection.
+Actual Γ remains immutable with all actual legality obligations; these concrete outputs do not yet discharge arbitrary-witness coverage, complete semantic checking or the joint acceptance gate.
+
+The [historical #234 literal continuation](content-model-s06-re-01.md#literal-preparation-and-fresh-attribute-helper-continuation) adds executable preservation and fresh-AU projection evidence within its declared model.
+The [revised continuation](content-model-s06-re-01.md#derivability-and-affiliation-continuation) owns the current complete-proof and qualified-authority obligations under the addendum; the old universal overlay requirement is not inherited as a new gate.
+The [current production adapter and resumption condition](content-model-s06-re-01.md#current-blocker-and-production-resumption) follow the amended derivability judgment.
+The [historical literal adapter](content-model-s06-re-01.md#r6-remaining-blocker-and-exact-production-adapter-changes) remains evidence for its experimental preservation policy.
 
 The [executed #260 investigation](content-model-s06-re-01.md#executed-design-investigation-for-260) adds finite method comparisons and an independently reviewed construction-domain packet.
 Its joint identity/UPA obstruction prevents combining separate local repairs; original identity, blocking and membership must be checked together.

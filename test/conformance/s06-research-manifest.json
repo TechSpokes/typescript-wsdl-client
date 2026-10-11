@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "c080ab19c6a44d64e73647a3daf39c741c966a3baebc2e928a779090090986d9",
+          "sha256": "614aaac4887ebdae801f08f4d0466c0df3a7f66d0a4a01164e0a474ed17ab6b1",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -651,7 +651,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver.md",
           "role": "decision",
-          "sha256": "b7cbe8f84b5dd7cb8dc7f6a29de3149d30bbd71eb99cd00c28d485a61a726f2a"
+          "sha256": "4c77660f18ee72dfb0ea57da6fcc081ddafc0b5eb48d13068768b2daf0c4e11c"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/substitution-actual.xsd",
@@ -706,7 +706,7 @@
         {
           "path": "test/research/re01/resolver-context.ts",
           "role": "prototype",
-          "sha256": "f20fdb459ca402e397012b9437482d5a0f4d12204de486d5f8879328eb619561"
+          "sha256": "effcd7170d374a6380f95676cc62747249904d641f596b46a434bc326c07560f"
         },
         {
           "path": "test/research/re01/resolver-fixtures.ts",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "f3203bc4613b91693b2f2ae734402a952161fb0157127bd85fd28ead6816e065"
+          "sha256": "93f278c0489081363b435703bf9f8cc739283266604bc677b013f5332c1b3ba2"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -907,6 +907,141 @@
           "path": "test/conformance/reference/re01-literal-continuation.test.ts",
           "role": "reference",
           "sha256": "1cf41a33fe7fb1fe943d7fcf54d23a1095e5e1f090aa8db4f5794f1af43c9e70"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-actual-block-substitution.xsd",
+          "role": "fixture",
+          "sha256": "07f125c449fdc1715cf33cfb84604ec6b0bd6d818a0d84ed80463bb81b3369a4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-actual-final-extension.xsd",
+          "role": "fixture",
+          "sha256": "44d3c0a0b61d65d1f7bb2f42d26a4b021e00847f3874dbf4f677157421184454"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-actual.xsd",
+          "role": "fixture",
+          "sha256": "c2789eb39434d59bab9f47e180a7c25cf5fac4007e2f786de65d6451a02de3d7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-expectations.json",
+          "role": "expectations",
+          "sha256": "5ea569018ad06d788b62da1b33123d57bbca046e28f2af392b3444623792ee8c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-holder-blocked.xsd",
+          "role": "fixture",
+          "sha256": "30ab0b03ab5208a18ca9460ababda33009766b2b03ae067d7eee324505f67db2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-holder-unblocked.xsd",
+          "role": "fixture",
+          "sha256": "ac6bdff6c9acd9583f41f2bdfb9435ca859346b58445fcf2015f4454d7ba7043"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-local-fresh.xsd",
+          "role": "fixture",
+          "sha256": "8c38a6f08644e8d3a34b89bf5246cc717e33c9ed845fdc8340c233e93211eb86"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-overlay-fresh-block-substitution.xsd",
+          "role": "fixture",
+          "sha256": "a4ae887ff42bd39dabf71ca16cfc48a765de85e306137244c8b8635d191d9519"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-overlay-fresh.xsd",
+          "role": "fixture",
+          "sha256": "1f7d06dbe3e2ba849df2d2f85e0c938ddfeb805eb72b405c2cca58ba25d2df89"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-overlay-original-B.xsd",
+          "role": "fixture",
+          "sha256": "8e8ca40bbe111e5febd93a8c373e4d2a966edc1d94153becf7955cbf1b52d897"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/affiliation-overlay-self.xsd",
+          "role": "fixture",
+          "sha256": "9543269815cb86b85a7bcce29ff67f87865e23e0f409e4f1be04673a1c066e5e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/raw-all-helper-absent.xsd",
+          "role": "fixture",
+          "sha256": "22eca7d1c1fdab871fbc445801c8a33fb37a208b54de7009c6c50d8f2dde804d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/raw-all-helper-actual.xsd",
+          "role": "fixture",
+          "sha256": "4a54570d125638981d8142b1552621238921ec4663b9b5ad641ddb0562bba3ee"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/raw-all-helper-expectations.json",
+          "role": "expectations",
+          "sha256": "a83e6820b2e12a2c8198a04bd5c3739a733d73e78c1c848b586dac5f57eff482"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/raw-all-helper-present.xsd",
+          "role": "fixture",
+          "sha256": "957626517c4e1ffc03ddbbad790214eceafa1bf52f112a4785cb83476619b169"
+        },
+        {
+          "path": "test/conformance/reference/re01-affiliation-derivability.test.ts",
+          "role": "reference",
+          "sha256": "e7c3de8efccd5a4c364a323469f0014ca25f85913bf9f2e79fd04d0e83da0346"
+        },
+        {
+          "path": "test/conformance/reference/re01-global-helper-necessity.test.ts",
+          "role": "reference",
+          "sha256": "b1d58c0bea1fe6b13d7643f33ea18c763e247f7ab93175e21e30672a31cf6abf"
+        },
+        {
+          "path": "test/research/re01/cli.test.ts",
+          "role": "prototype",
+          "sha256": "18695ae69c53f533087d10cfa80a58d41f1ce3c3e68d96873fa00bdc76dc6288"
+        },
+        {
+          "path": "test/research/re01/cli.ts",
+          "role": "prototype",
+          "sha256": "2488e31c1e768252e3394829cac8bf9bb28f5873b61dd6a711137074ce4ef992"
+        },
+        {
+          "path": "test/research/re01/derivation-dependencies.behavior.test.ts",
+          "role": "prototype",
+          "sha256": "52d479aa3803beb8bae9e52320e150f2c1b63c35d823e3f28a05904bb413ef68"
+        },
+        {
+          "path": "test/research/re01/derivation-helper.behavior.test.ts",
+          "role": "prototype",
+          "sha256": "3ccd27b1680adae883effbac11ae26369c6d06abc9d9f6a974a68fbb645d4b07"
+        },
+        {
+          "path": "test/research/re01/helper-affiliation-case.test.ts",
+          "role": "prototype",
+          "sha256": "05a8210a72c68ce5db6211f3f47346ccb8777b4e6b4e7a42408867e677aed4c5"
+        },
+        {
+          "path": "test/research/re01/helper-affiliation-case.ts",
+          "role": "prototype",
+          "sha256": "45baea9e27fd86651070734911f83d32122d570e2cb828d1426dc5e521014db3"
+        },
+        {
+          "path": "test/research/re01/model-selection.test.ts",
+          "role": "prototype",
+          "sha256": "ebbf66642bc02aa55cf6ade99066aa58b93abdfa8a3a236542bcc2facf742064"
+        },
+        {
+          "path": "test/research/re01/model-selection.ts",
+          "role": "prototype",
+          "sha256": "b571c3d83fe5c743b4d2f7516c5e6dc5609b46798c6b1e288a98ca9d6c320453"
+        },
+        {
+          "path": "test/research/re01/derivation-dependencies.ts",
+          "role": "prototype",
+          "sha256": "188614717630350c59e97aee6e30ee2117a8a0223f8c74ee14f114027267633b"
+        },
+        {
+          "path": "test/research/re01/selector-work-ledger.test.ts",
+          "role": "prototype",
+          "sha256": "6de6462fc706f0d10b95188f6ebd5eae79b5ebcc111316ca31e1818defbef5b4"
         }
       ]
     },

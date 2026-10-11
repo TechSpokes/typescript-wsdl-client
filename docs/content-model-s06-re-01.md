@@ -4,10 +4,15 @@ Formal component witnesses, a finite particle construction and the remaining ful
 
 ## Delivery status and scope
 
+The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
+Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
+The [current derivability continuation](#derivability-and-affiliation-continuation) separates that assessment from hypothetical checking; neither the new comparison interface nor a dependency census supplies the missing complete theorem.
+
 Issue [#234](https://github.com/TechSpokes/typescript-wsdl-client/issues/234) remains open for complete decision-procedure acceptance. This record recommends the numbered existential rule and supplies executable positive feasibility evidence, including the counterexamples that defeat suffix copying. It does not certify a complete negative procedure over the approved profile.
 
-The [current implementing continuation](#literal-preparation-and-fresh-attribute-helper-continuation) implements fixed-Γ preparation and proves a fresh-intermediate attribute projection with a concrete fresh-helper falsifier.
-The full literal graph reduction, complete checking authorities and terminating general negative theorem remain acceptance blockers.
+The [current implementing continuation](#derivability-and-affiliation-continuation) executes the affiliation contrast and implements model isolation and dependency accounting under the addendum.
+The [historical literal continuation](#literal-preparation-and-fresh-attribute-helper-continuation) proves a fresh-AU projection within its original model.
+The revised full-domain reduction, complete checking authorities and terminating general negative theorem remain acceptance obligations.
 
 The standalone [#256 resolver specification](content-model-s06-re-01-resolver.md) fixes the D1/E2 research context, identity, membership/comparison boundaries, predicate ownership and ordered implementation handoff. Its retained-substitution negative control qualifies an explicit context; neither the specification nor that control discharges the full witness theorem below.
 
@@ -1265,6 +1270,9 @@ Exact final command versions/counts, independent findings and head/actual-main a
 
 ### R6: Remaining blocker and exact production adapter changes
 
+This subsection records the historical literal preservation model.
+The addendum supersedes its universal whole-Γ hypothetical requirement; use the [current resumption contract](#current-blocker-and-production-resumption) for production entry.
+
 The unproved lemma is a joint reduction: transform every successful legal finite literal graph into a finitely bounded family while preserving whole Γ, anchored identity/flags, raw construction, normalization, incoming relationships and retained RE01 certificate adequacy.
 The new AU helper theorem does not establish that lemma, and no inspected complete authority supplies all of its local premises.
 Without it or an equivalent total decision theorem, finite rejection and fair enumeration cannot produce complete terminating general negative answers.
@@ -1284,3 +1292,161 @@ Use the new AU plan only after declaration/scalar qualification, create disjoint
 Nested retained certificates need authenticated parent-proposed contexts, joint shared accounting and a proved well-founded discipline/adequacy theorem.
 Keep invalid original input, rejected candidate, unsupported qualification, scalar indeterminacy, resource exhaustion and proved nonexistence distinct.
 #153 retains combined production acceptance; #184 retains runtime scalar, augmentation and payload work; #231 remains unaccepted and unmerged.
+
+## Derivability and affiliation continuation
+
+This continuation starts at main `4f3603e250307a414f63a7ca51cc3b3652069e86`, tree `3c73ef62171f0fd85a2da7c1f8c7afe629e55844`.
+Codex `/root` implements and coordinates delivery, `/root/behavioral_spec` authors expected behavior independently, and `/root/independent_review` supplies nonauthor substantive review.
+The addendum changes the investigation contract; it does not accept replacement semantics or the full procedure.
+
+### Separate actual and hypothetical judgments
+
+Actual assessment reads all of supplied Γ, including actual ancestry, incoming affiliations, source constraints and original scalar contexts.
+It must establish each actual derivation's applicable constraints without presupposing the target's or a dependent type's RE01 result.
+Operation capability reachability is a third judgment and does not erase schema obligations.
+
+The revised hypothetical judgment asks whether the clause-1.5 ancestor can produce the endpoint's semantic properties by extension followed by restriction, with separately justified vacuous/composition cases.
+It does not additionally assert that every unrelated actual component remains legal after globally installing the endpoint's hypothetical base.
+This supersedes #260's universal global-overlay characterization as a necessary definition; its results remain evidence for the explicitly experimental schema-preserving policy.
+
+This separation does not authorize arbitrary deletion of context.
+Every hypothetical predicate must resolve its references in one coherent declared witness context and retain the dependencies it actually consumes, or use a proved transfer from qualified actual facts.
+A dependency receipt without that sufficiency argument is structural evidence only.
+
+### Executed affiliation contrast and authority limits
+
+Take empty A, B extending A with required `b:string`, and D extending B with required `c:string`; H has type B and M has type D and affiliates with H.
+Actual Type Derivation OK follows D to B, so actual affiliation satisfies `e-props-correct.4` when the other premises pass.
+The numbered clause-1.5 note explicitly treats extension-only chains as composable and allows a possibly vacuous restriction.
+
+A local E extending A with `(b,c)` supports the intended final component restriction.
+Installing D to E to A globally removes B from D's ancestry, so retaining M's affiliation rejects that specific policy candidate.
+Choosing original B cannot absorb the added required c by Recurse; choosing D as its own base creates a forbidden derivation cycle.
+
+The independent fixtures preserve primary clause expectations separately from live libxml2 observations.
+The engine accepts the original-B restriction with required c even though the complete order-preserving particle mapping has no base member for c.
+That observation exposes its already unqualified full-restriction authority; it does not disprove the primary mapping obligation or supply a complete negative theorem.
+
+### Correspondence, raw operands and context obligations
+
+Original endpoint identity, anonymous/local owners, sharing, flags, original typed values and source/QName contexts remain explicit correspondence obligations.
+Two equal-looking local declarations cannot silently acquire the same identity, and recursive references to the endpoint cannot alternate between actual and proposed definitions in one hypothetical context.
+Original source contributions are evidence of actual mapping, not automatically the syntax of the hypothetical restriction.
+
+Raw hypothetical construction must be represented separately from preserved actual declared-content evidence and restriction-normalized comparison views.
+For example, raw `sequence(sequence(a,b),c)` extends raw `sequence(a,b)` but does not directly preserve raw a as its first child.
+A composition proof must construct the flattened hypothetical extension and justify the final restriction normalization; raw extension is not transitive merely because sequence languages concatenate.
+
+### Implemented dependency census
+
+[`collectDerivationDependencies`](../test/research/re01/derivation-dependencies.ts) traverses declared/effective references, source operands, ownership and local owners in an issued context.
+It also indexes reverse global affiliation edges and includes their transitive members whenever a head is reached, including blocked or abstract affiliates.
+Visited component identities terminate shared-DAG and legal recursive traversal without unfolding content.
+
+The local b/c contrast does not reach H or M through these reads, while content referencing H requires M and its type/ancestry dependencies.
+Each reached unassessed rule produces an explicit unresolved diagnostic instead of a complete census receipt.
+The model/context/version-tagged receipt certifies only represented reference closure; it establishes neither actual validity, complete predicate dependency sufficiency nor transfer under a changed hypothetical graph.
+
+Builtin references remain fixed qualified external handles rather than census members.
+The reverse index inspects each issued member once, and each reached component's edges are traversed once; visited identities bound legal recursive traversal by the finite graph.
+Cache identities are separated by authenticated model and context, and all indexing/traversal/copying work is charged before allocation under the shared request budget.
+
+### Research selection and remaining complete-procedure gate
+
+The narrow comparison entrypoint requires explicit `--re01-model derivation|schema-preserving` until independent model acceptance.
+Each report states whether it concerns supplied-candidate structural preparation, a qualified projection or a complete existential decision.
+The schema-preserving branch remains an experimental policy, and neither branch falls back to the other for success.
+
+```bash
+npm run research:re01:compare -- --re01-model derivation --candidate-file tmp/conformance/re01/request.json
+npm run research:re01:compare -- --re01-model schema-preserving --candidate-file tmp/conformance/re01/request.json
+```
+
+The candidate file contains the resolver's explicit `{input, candidate}` JSON records; public `wsdl-tsc` options are unaffected.
+Current reports concern supplied-candidate structural preparation only, with actual-schema, semantic and existential verdicts explicitly unresolved.
+Exit codes are 0 for help, 1 for input/candidate errors, 2 for unresolved qualification and 3 for resource exhaustion.
+
+The derivation seam admits disjoint constructed global identities so incoming-helper dependencies can be represented and examined.
+It still preserves original endpoint facts/source evidence and coherent references, and cannot issue a complete semantic verdict.
+The historical schema-preserving seam's narrower fresh-local vocabulary remains an experimental implementation limitation, not a derivability restriction.
+
+CLI reading/parsing, preparation, indexing, cache work, receipt copying and report serialization share the inclusive 100,000-node/1,000,000-work budget.
+File kind and size are checked before allocation/read/parse; output allocation is conservatively reserved before serialization.
+The native JSON parser uses a stated source-byte reservation rather than a machine-instruction claim, and terminal exhaustion returns no partial receipt.
+
+AU C1 v1, PW R-240 v1, DT A v1 and accepted #178 remain the required authorities.
+The existing named-scalar AU projection does not qualify arbitrary simple types/facets, and structural preparation does not discharge raw particle, attribution, declaration or scalar legality.
+Their accepted original-operand contracts remain unchanged; the continuation introduces no new calendar or payload claim.
+
+The full gate still requires a reviewed arbitrary-witness reduction or equivalent total criterion, complete semantic authorities, dependency sufficiency/transfer and terminating general negative answers.
+Enumerating original intermediates, fresh block sets or universal suffix candidates is a proof technique under investigation, not proof that no other witness exists.
+The responsible issue remains #234; #232 joint acceptance and #179/#153 entry/delivery gates remain open until those obligations pass.
+
+### Fresh affiliation controls and failed reductions
+
+The independently authored [raw-all schemas and expectations](../test/conformance/fixtures/xsd/re01/raw-all-helper-expectations.json) retain A's optional global H and local z in raw `all`.
+B restricts A to empty, and actual D extends B with raw `all(c:token,z:string)`.
+A vacuous E preserves A's raw particle; the hypothetical final restriction retains D's raw particle.
+
+A fresh global `c:string` affiliated with H enables c's mapping to the virtual substitution choice for H.
+Without that helper the QName mismatch prevents that mapping.
+All:All uses ordered Recurse; Element:Choice uses RecurseAsIfGroup and RecurseLax, whose unmatched base alternatives do not require emptiability.
+Both live libxml2 observations accept, so the [executed primary trace](../test/conformance/reference/re01-global-helper-necessity.test.ts) explicitly separates its disagreement from the normative result.
+
+The [helper type controls](../test/research/re01/helper-affiliation-case.test.ts) independently test H.type=A with H.block containing restriction, E extending A and hypothetical D restricting E.
+A helper c:E remains substitutable for H through extension, and a final c:D can restrict c:E through immediate base identity.
+Replacing the helper's type with D adds restriction to the ultimate-head derivation path and fails substitution.
+An abstract bridge can discharge an immediate head.final constraint in the tested case, but cannot bypass the ultimate head.block.
+
+These controls reject a fixed-original affiliation domain and terminal-type replacement as universal reductions.
+They do not prove that no finite reduction exists, and do not make the actual schema's affiliation facts hypothetical.
+The relation calls use issued proposed contexts; the raw-all particle trace remains independently qualified clause evidence rather than a complete particle checker.
+
+### Proof and executable map
+
+| Obligation | Executable evidence | Qualification |
+|---|---|---|
+| Actual affiliation versus retained replacement | `re01-affiliation-derivability.test.ts` | Minimal primary contrast and live observations |
+| Runtime substitution blocking | Same reference file, holder fixtures | Payload exclusion separate from actual affiliation |
+| Raw-all fresh affiliate | `re01-global-helper-necessity.test.ts` | Primary mapping trace; engine disagreement retained |
+| Helper type and abstract bridge | `helper-affiliation-case.test.ts` | Existing scoped affiliation/type predicates |
+| Correspondence and global uniqueness | `derivation-helper.behavior.test.ts` | Supplied structural candidate only |
+| Ownership, recursion and reverse affiliations | `derivation-dependencies.behavior.test.ts` | Finite represented reference closure only |
+| Selection, isolation and failure categories | `model-selection.test.ts`, `cli.test.ts` | Explicit research selection; all semantic verdicts unresolved |
+| Independent numeric request/output ledger | `selector-work-ledger.test.ts` | Null API 3,513 work; null CLI 12,426 work |
+| Arbitrary witness reduction and complete negatives | No qualified executable authority | Open R3/R4 obligation |
+
+The helper preparation plus scoped relation calls has an independently checked inclusive boundary of 6 nodes and 177,766 work units.
+One below either bound returns sticky resource-limit without a partial receipt.
+The independent null ledgers include normal diagnostic/report allocation and CLI native metadata, reading, parsing and output reservations; they qualify those exact requests, not every valid-request cost or a witness-size theorem.
+
+### Current blocker and production resumption
+
+The exact failed obligation is a universal support/canonical-witness lemma or equivalent total decision theorem over the reviewed derivability domain.
+Every successful arbitrary witness must admit the proposed representation while preserving endpoint and original identities, anonymous owners, recursive references, raw all placement, ordered restriction mappings, substitution expansion cardinality and order, final/block flags, UPA/EDC, scalar/AU facts and every dependency actually read.
+The structural census establishes represented reachability, not this sufficiency or a transfer theorem.
+
+The investigated finite-helper alternative keeps original endpoint leaf QNames and relevant original type identities, permits E on the rebased ancestry, and considers one abstract affiliation bridge per original head plus representatives of zero/one/many expansion classes.
+Its elimination step is unproved: removing fresh members can change normalization and attribution, and collapsing helper types can change derivation-block behavior.
+The raw-all and helper-type controls independently falsify simpler elimination rules.
+For simple types, `cos-st-derived-ok.2.2.4` also permits derivation into a union through a member, so a finite list of original scalar ancestors alone is insufficient without a union-helper reduction preserving member order, facets and typed contexts.
+
+Fair enumeration of all finite witness graphs remains a positive semidecision, while arbitrary cutoffs and exhaustion cannot establish nonexistence.
+A different symbolic total method over the same reviewed domain is an alternative, but no such method has been justified or implemented here.
+The recommendation is to prove the helper reduction jointly with dependency transfer and raw composition, then implement its complete qualified semantic owners; no permanent profile restriction is proposed.
+
+Pure-extension composition also needs a component construction proof, rather than transitivity of raw ParticleValidExtension.
+Attribute vacuity must use the accepted AU C1 source roles and qualified original scalar operands: replacing a hypothetical source against every matching E use is not the same as inheriting the original uses.
+The accepted optional unconstrained fresh-AU projection is useful here, but does not by itself prove the complete content, identity or dependency construction.
+
+Codex's #234 implementing coordinator retains the failed proof obligation, with separate nonauthor review withholding full model and theorem acceptance.
+Resumption requires a reviewed universal reduction or equivalent total theorem, complete qualified authorities with discharged #178/AU/PW/DT premises, and independent soundness, coverage, general-negative and termination approval.
+Until then explicit model selection remains required; the partial interface never defaults or falls back to another model.
+
+The #179 adapter must first verify #232's accepted joint handoff, preserve actual Γ, and separate actual source evidence from hypothetical raw construction.
+It must resolve each predicate in one authenticated context, preserve original endpoint scalar/owner/sharing facts, and implement the dependencies or transfers proved by the accepted judgment.
+It must support fresh global helpers where the accepted procedure requires them, using the canonical shared graph and #178 analysis instead of importing research code or the unaccepted #231 implementation.
+
+All candidate generation, semantic owners, comparisons, caches and publication must share one request budget; rejected candidates, missing authority, indeterminate scalar facts, resource exhaustion and proved nonexistence remain distinct.
+The actual #231 head remains `460f5b8379c68ffef79917284e445b5ab046429e`; its old actual-index helpers cannot establish coherent hypothetical reference resolution.
+#179 production activation and #153's separate combined acceptance remain blocked by the unaccepted #234/#232 gate; #184 retains payload scalar ownership and no S07/S08 readiness is inferred.

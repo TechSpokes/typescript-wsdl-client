@@ -4,6 +4,10 @@ One candidate's component resolution, comparison boundary and research implement
 
 ## Purpose and boundaries
 
+The [current RE01 addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes this historical resolver's global replacement policy as a necessary characterization of every derivability witness.
+The [derivability continuation](content-model-s06-re-01.md#derivability-and-affiliation-continuation) preserves immutable actual Γ and investigates the separate hypothetical judgment with justified predicate dependencies.
+Historical D1/E2 and literal whole-schema tests retain their original scope; structural preparation does not certify either full model.
+
 This is the authoritative specification and issue-ready task plan for [#256](https://github.com/TechSpokes/typescript-wsdl-client/issues/256), supporting [RE01/#234](content-model-s06-re-01.md) within [#232](content-model-s06-research-handoff.md). The caller is the subsequent RE01 research candidate checker. It supplies one explicit two-step construction; this resolver never generates or searches candidates.
 
 The selected research model is abstract component construction plans with a separate hypothetical context, the RE01 record's D1/E2 recommendation. A context contains an explicit component schema over immutable actual inputs. Reused components keep their identities, while every reference query, including a query through an unchanged component, uses its caller's declared context.

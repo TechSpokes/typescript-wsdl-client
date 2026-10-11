@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(content-model): execute RE01 affiliation contrasts and isolate research models with explicit dependency accounting.
+
 - test(content-model): enforce literal RE01 context preservation and synthesize fresh attribute helpers with qualified limits.
 
 - test(content-model): distinguish literal RE01 attribute constructions from source inheritance and specify preserved-context checking.
