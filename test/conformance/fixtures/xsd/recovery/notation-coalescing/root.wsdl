@@ -1,0 +1,7 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:recovery:notation:shared"><xs:include schemaLocation="left.xsd"/><xs:include schemaLocation="right.xsd"/></xs:schema>
+    <xs:schema targetNamespace="urn:recovery:notation:other"><xs:include schemaLocation="common.xsd"/></xs:schema>
+    <xs:schema targetNamespace="urn:recovery:notation:third"><xs:include schemaLocation="common.xsd"/></xs:schema>
+  </wsdl:types>
+</wsdl:definitions>

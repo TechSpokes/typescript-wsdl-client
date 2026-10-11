@@ -129,9 +129,24 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (x.content.kind === 'simple' && y.content.kind === 'simple') {
         // Source anonymous simple-content construction is separately modeled by
         // the scalar owner; only an exposed exact type identity enters here.
-        const left = unwrap(scalar.contentIdentity({kind: 'local', target: x.type}, x.type));
-        const right = unwrap(scalar.contentIdentity({kind: 'local', target: y.type}, y.type));
-        if (!left.reference || !right.reference) return unresolved(x.type, 'component-simple-content-properties', 'Anonymous simple-content properties need a complete scalar component view');
+        charge(6);
+        const leftOperand = {kind: 'local', target: x.type} as const, rightOperand = {kind: 'local', target: y.type} as const;
+        const left = unwrap(scalar.contentIdentity(leftOperand, x.type));
+        const right = unwrap(scalar.contentIdentity(rightOperand, y.type));
+        // Separate extension containers can inherit the same privately mapped
+        // scalar. Both qualified reads retain their prerequisites above; keep
+        // ordinary reference traversal unchanged when a reference is exposed.
+        if (!left.reference && !right.reference && textEqual(left.definition, right.definition)) return true;
+        if (!left.reference || !right.reference) {
+          // st-restrict-facets determines these properties even where the full
+          // generated component metadata is unavailable. One unequal property
+          // refutes recursive equality; equal known facts do not complete it.
+          const leftProperties = unwrap(scalar.describe(leftOperand, x.type)), rightProperties = unwrap(scalar.describe(rightOperand, y.type));
+          charge(4);
+          if (leftProperties.variety !== rightProperties.variety || leftProperties.primitive !== rightProperties.primitive
+            || !unwrap(scalar.facetPropertiesEquivalent(leftOperand, rightOperand, x.type))) return false;
+          return unresolved(x.type, 'component-simple-content-properties', 'Anonymous simple-content properties need a complete scalar component view');
+        }
         return reference(state, left.reference, right.reference);
       }
       if (!('particle' in x.content) || !('particle' in y.content)) return unresolved(x.type, 'component-content-properties', 'Opaque builtin content has no complete component property view');

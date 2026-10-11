@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:finite-scalar-witness" xmlns:p="urn:shared-name" xmlns:q="urn:shared-name" targetNamespace="urn:recovery:finite-scalar-witness">
+  <xs:simpleType name="BooleanFirst"><xs:union memberTypes="xs:boolean xs:int"/></xs:simpleType>
+  <xs:simpleType name="BaseList"><xs:list itemType="t:BooleanFirst"/></xs:simpleType>
+  <xs:simpleType name="DecimalList"><xs:list itemType="xs:int"/></xs:simpleType>
+  <xs:simpleType name="BooleanList"><xs:list itemType="xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="QNamePattern"><xs:restriction base="xs:QName"><xs:pattern value="q:Name"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="IntegerTemplate"><xs:restriction base="xs:int"/></xs:simpleType>
+  <xs:element name="Owner" type="xs:string"/>
+</xs:schema>

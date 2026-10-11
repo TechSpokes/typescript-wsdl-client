@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "699c2f5bcebe07d4965779a11c36c11c1f125331c2c009f9671a07c79c498a51"
+          "sha256": "e752ffd193f2c2aad9293edde786d32c750289bc18d1e7ce04b7109ed361a3dc"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1066,7 +1066,7 @@
         {
           "path": "src/loader/schemaInput.ts",
           "role": "semantic-source",
-          "sha256": "d82e94926b07e22ee72db1722183b80b484839d2fab92c05a711fd34af6758b3"
+          "sha256": "2b3ce859e4d5ca313c3d0da67f9a0380cf54d8afcdbe5241556cb6240649192f"
         },
         {
           "path": "test/research/re01/predicate-dependencies.test.ts",
@@ -1086,7 +1086,7 @@
         {
           "path": "src/compiler/finiteRe01Verification.ts",
           "role": "semantic-source",
-          "sha256": "7afe758fb7fba475f5d9a6823efa7f95409b07b03cc0c5291a171765b47d8e1b"
+          "sha256": "d02ea45b8b5aa8d7637e4d7409ca6ab182713b1097b83070feea7bb58cfa9103"
         },
         {
           "path": "src/compiler/particleAttribution.ts",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "49439f6b875a316fe597b27753b977e463a753a30eb72c136799b93b1ded2754"
+          "sha256": "537ac0c60aaa2a3be78a5145d225f60f6805d7abfde664f1940c73142e2be410"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1156,7 +1156,7 @@
         {
           "path": "src/compiler/schemaComponentEquality.ts",
           "role": "semantic-source",
-          "sha256": "490294ed6455d36050dbd1e0749d52f697d31e360b8f2aed62af9534c2b48fc7"
+          "sha256": "57f7cca2f78419bc83c3e0757eb922722c336af81be7c90893937699cfcfa582"
         },
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
@@ -1166,7 +1166,7 @@
         {
           "path": "src/compiler/schemaDatatypeValues.ts",
           "role": "semantic-source",
-          "sha256": "e400799b4486568eff9d4d3a7ffdc6b1c197b346d8d5feb4e25878203790dbea"
+          "sha256": "6719f1b0fa572aefa546d3e925315d0b47a249a94d6dce17b4692745b6bc2bdf"
         },
         {
           "path": "src/compiler/schemaDeclarationPrimitives.ts",
@@ -1176,7 +1176,7 @@
         {
           "path": "src/compiler/schemaDocumentSyntax.ts",
           "role": "semantic-source",
-          "sha256": "9e07da79c0357ebbcca2ccc37b5053873ecdda865f37d9cd1575f5ae47010c9f"
+          "sha256": "2832f07f8233ddbdcfcd80ddffe0b4b65fa6072c66814107a53bcbacd90387a2"
         },
         {
           "path": "src/compiler/schemaElementProperties.ts",
@@ -1196,7 +1196,7 @@
         {
           "path": "src/compiler/schemaScalarContext.ts",
           "role": "semantic-source",
-          "sha256": "b404a51e5a22eb790bdfacf4f61bbbf35c840cbd6a39e793a7de6154c9fbe510"
+          "sha256": "a28348d12ccc8fe60396289326ba0a2ba38c3bc74d039feebf2d0145dc588fcf"
         },
         {
           "path": "src/compiler/schemaScalarKernel.ts",
@@ -1206,12 +1206,12 @@
         {
           "path": "src/compiler/schemaSimpleTypeProperties.ts",
           "role": "semantic-source",
-          "sha256": "ffc75ae7e469a985ad8b88ebeaf132ca7de9a5ef7c86e33a3124c4acf36469e3"
+          "sha256": "67fdf71e53f506d1681b2d65667661eb21a3b2e33823f3e984ce20a8663ad4b2"
         },
         {
           "path": "src/compiler/schemaSyntaxAssessment.ts",
           "role": "semantic-source",
-          "sha256": "26640ba57bfbddbc63c9180a5814fa78905bdae6e1d9d7b36377ee9895a285ee"
+          "sha256": "0781e8802185d2b97d5970cce78ecfb778bdb3aa6ab2ffa1a73400ce561b87b5"
         },
         {
           "path": "src/compiler/schemaTypeRelations.ts",
@@ -1231,7 +1231,7 @@
         {
           "path": "src/compiler/semanticContext.ts",
           "role": "semantic-source",
-          "sha256": "e8fa84ea668533c4b5929761da1721b4174fd4363242e11b07b72eddec3dbb0c"
+          "sha256": "ced583b60ff6cf5141d2f33642af9220a38515fcfee1be6594bdd0a592d0948d"
         },
         {
           "path": "src/compiler/wildcardAlgebra.ts",
@@ -1361,7 +1361,7 @@
         {
           "path": "test/research/re01/preparation-evidence.json",
           "role": "expectations",
-          "sha256": "f34f6ee489a9b33e849e5fb50c96d30a555369195cbb3ca8b685be681798f7bc"
+          "sha256": "418b4cc261a9fb4483c4f37bb114723d30bc275f61ab59b38b834ac040f6d19e"
         },
         {
           "path": "test/research/re01/preparation-measure.ts",
@@ -1461,17 +1461,17 @@
         {
           "path": "test/unit/schema-document-independent.test.ts",
           "role": "expectations",
-          "sha256": "b25693cefe4628527c95fd85909ff1e9c3f1ac74e62b81d33c7001d0cb908dfe"
+          "sha256": "d6e87e532686728e2878848a09d6ddadbb4c9164a5708f82830f3d95722637b3"
         },
         {
           "path": "test/unit/schema-document-syntax.test.ts",
           "role": "expectations",
-          "sha256": "0cdc8a93321b8f4ba256cd11a472a2a49a650e0d76c097e415687afb666a6b26"
+          "sha256": "40513cd4b8213c5420934cee27045f7a56ae9b3bd7348acaf7197988960d4170"
         },
         {
           "path": "test/unit/schema-scalar-independent.test.ts",
           "role": "expectations",
-          "sha256": "7be1fbbc2dd5dbc4479b03fc01118f96a8aa7d9a9d371822a999fbb8711c6c14"
+          "sha256": "a4d5a3b98532956a1792e12d39d0c81f3c52a302239e4aa54b59c960d166b7bd"
         },
         {
           "path": "test/unit/schema-syntax-assessment.test.ts",
@@ -1481,7 +1481,7 @@
         {
           "path": "test/unit/schema-type-relations.test.ts",
           "role": "expectations",
-          "sha256": "ab401a500694ef3c79688567465ff5b6a04d85fbf344191f5ff9cf0ce000c135"
+          "sha256": "fb466f986fae2b63808ac0c415568aba2760cd2b487e822416969aa451b7cdda"
         },
         {
           "path": "test/unit/semantic-context-independent.test.ts",
@@ -1601,7 +1601,7 @@
         {
           "path": "test/unit/schema-component-equality-independent.test.ts",
           "role": "expectations",
-          "sha256": "650fbad6600b0b9e32bb6ac63066fbd2c45b9706ae58f81e830e1afc34600e42"
+          "sha256": "a139db1d7a1c17fc6052c74f502ccb34565782afb8e78aa41650df8f53a91a2f"
         },
         {
           "path": "test/conformance/fixtures/xsd/syntax/default-namespaces.xsd",
@@ -1612,6 +1612,111 @@
           "path": "test/conformance/fixtures/xsd/syntax/ordered-namespaces.xsd",
           "role": "fixture",
           "sha256": "e15457ac91cdcf4a8f205f6e82c19643d202cc0e89e281ed440e9d99fe68200e"
+        },
+        {
+          "path": "src/compiler/schemaNotationProperties.ts",
+          "role": "semantic-source",
+          "sha256": "ce1ee1450fcdeadf63ffecf03e8e4ce705f8bb2823d057f8c2ff134fb7f66b94"
+        },
+        {
+          "path": "src/compiler/schemaScalarWitnesses.ts",
+          "role": "semantic-source",
+          "sha256": "cd551658a96d3aec7bf29f8c4d413b477cda6e2b0f000c80d66171731f192b9d"
+        },
+        {
+          "path": "src/compiler/schemaSourceLexical.ts",
+          "role": "semantic-source",
+          "sha256": "6835b55ec7d63d9d87f38f43ed9842453b5274c6056f9f9aa6504b2f37ef8815"
+        },
+        {
+          "path": "src/compiler/schemaSourceRepresentation.ts",
+          "role": "semantic-source",
+          "sha256": "ac020e57b96c606e677a68e2c41b53722a9888d162acd1c2829c778e5b751599"
+        },
+        {
+          "path": "src/compiler/schemaSourceWildcards.ts",
+          "role": "semantic-source",
+          "sha256": "9f92c4f15f04af491f162377b97b8d85014a94c416b2cf27717e320f8d55d6a7"
+        },
+        {
+          "path": "src/compiler/sourceSchemaBinding.ts",
+          "role": "semantic-source",
+          "sha256": "96c4a2ed1497272117cfa961ed1be57024cbc65071bb5f5c03ef05fdb550cde7"
+        },
+        {
+          "path": "src/util/xmlWhitespace.ts",
+          "role": "semantic-source",
+          "sha256": "b8fc36f39d85893b788cab2b62a52cf2effbc52840d481b6cfa2d1fbe4dc1e65"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-notation-independent.xsd",
+          "role": "fixture",
+          "sha256": "152d1835f90cfc9cbf73a342e9466d7a88ce4f68b32375c5d16966187f7150e0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/inherited-scalar-equality-independent.xsd",
+          "role": "fixture",
+          "sha256": "1f2c38e4a64f8681a6c24448734ce80f165b97d88d59674afff5b1213deb6f0e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-coalescing/common.xsd",
+          "role": "fixture",
+          "sha256": "c12b82cd73f54d603d987b103322f57e8aab86a26526d92a1246407165cfc231"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-coalescing/left.xsd",
+          "role": "fixture",
+          "sha256": "d1857b41b361004c86b7ad99845b7a2a7884362bc2e4e1932003faba946b60b9"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-coalescing/right.xsd",
+          "role": "fixture",
+          "sha256": "87c6eaaac79a1b6903647afa39570c53a7850d1a3dd1094e29fc9b12b22aba3e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-coalescing/root.wsdl",
+          "role": "fixture",
+          "sha256": "b59a7fec887c03c9eca46860dec6d868b28edfc190dced0419376791a825df1a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-finite-witness-independent.xsd",
+          "role": "fixture",
+          "sha256": "e2b92be63d99b39d7ae234d95ecaeae5d3b499d7ea4c7dd8a24557a3a7dd078d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-property-independent.xsd",
+          "role": "fixture",
+          "sha256": "6dba1925fd13260ecadd241f4b47d8fc04c259c33b77cb442d65ee188ce05f2d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-typed-bound-membership-independent.xsd",
+          "role": "fixture",
+          "sha256": "a64e1feabd1d72b313614d4efff741fd5b3235fb675d0f7360dffa50ed11b433"
+        },
+        {
+          "path": "test/unit/schema-pattern-property-independent.test.ts",
+          "role": "expectations",
+          "sha256": "ac4a521f2a7577c07b0eb5b9fd07a5388570554aa5df3594a291498be2672716"
+        },
+        {
+          "path": "test/unit/schema-raw-facet-independent.test.ts",
+          "role": "expectations",
+          "sha256": "a202147f5c4b912786201dab8e1e51bebce27b3c536dd1aa900e2d787ca2870a"
+        },
+        {
+          "path": "test/unit/schema-scalar-witness-independent.test.ts",
+          "role": "expectations",
+          "sha256": "b04a39e20174c0d18f31fd43a5b90c7c9ac2c2f7df57218ea9631b6d07385adf"
+        },
+        {
+          "path": "test/unit/semantic-notation-independent.test.ts",
+          "role": "expectations",
+          "sha256": "1d8c5bfc9b8ca45404880953fe6601d8dc3980999001a486349a173fef1c2110"
+        },
+        {
+          "path": "test/unit/semantic-source-loading-independent.test.ts",
+          "role": "expectations",
+          "sha256": "ca96429c3d9217fdb6dff40aa71b6f29ce2f03ec6ee451b76243caac512c9247"
         }
       ]
     },

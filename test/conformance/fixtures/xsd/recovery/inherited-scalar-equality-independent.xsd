@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:inherited-scalar-equality" targetNamespace="urn:recovery:inherited-scalar-equality">
+  <xs:complexType name="B"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="R"><xs:simpleContent><xs:restriction base="t:B"><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Mixed" mixed="true"/>
+  <xs:complexType name="MixedR"><xs:simpleContent><xs:restriction base="t:Mixed"><xs:simpleType><xs:restriction base="xs:string"/></xs:simpleType><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Owner"><xs:sequence>
+    <xs:element name="left"><xs:complexType><xs:simpleContent><xs:extension base="t:R"/></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="right"><xs:complexType><xs:annotation><xs:documentation>Same inherited scalar component.</xs:documentation></xs:annotation><xs:simpleContent><xs:extension base="t:R"/></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="changed"><xs:complexType abstract="true"><xs:simpleContent><xs:extension base="t:R"/></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="r1"><xs:complexType><xs:simpleContent><xs:restriction base="t:B"><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="r2"><xs:complexType><xs:simpleContent><xs:restriction base="t:B"><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="r3"><xs:complexType><xs:simpleContent><xs:restriction base="t:B"><xs:minLength value="2"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="mixedLeft"><xs:complexType><xs:simpleContent><xs:extension base="t:MixedR"/></xs:simpleContent></xs:complexType></xs:element>
+    <xs:element name="mixedRight"><xs:complexType><xs:simpleContent><xs:extension base="t:MixedR"/></xs:simpleContent></xs:complexType></xs:element>
+  </xs:sequence></xs:complexType>
+</xs:schema>

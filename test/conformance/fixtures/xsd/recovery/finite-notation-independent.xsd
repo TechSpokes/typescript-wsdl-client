@@ -1,0 +1,7 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:notation-context" targetNamespace="urn:recovery:notation-context">
+  <xs:notation name="Original" public="image/original"/>
+  <xs:simpleType name="OriginalNotation"><xs:restriction base="xs:NOTATION"><xs:enumeration value="t:Original"/></xs:restriction></xs:simpleType>
+  <xs:attribute name="q" type="xs:int"/>
+  <xs:complexType name="B"><xs:simpleContent><xs:extension base="xs:string"><xs:attribute ref="t:q" fixed="+007"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:complexType name="D"><xs:simpleContent><xs:extension base="t:B"/></xs:simpleContent></xs:complexType>
+</xs:schema>

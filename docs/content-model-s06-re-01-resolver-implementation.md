@@ -42,6 +42,23 @@ Remaining local interpretation cases and #234 witness/evidence adequacy stay ope
 Graph-only `prepareSemanticRequest` remains useful structurally, but cannot supply missing source-document qualification to complete verification.
 `forkSemanticCandidate` constructs an authenticated direct child of the actual or hypothetical parent and preserves original source evidence separately from its active raw properties.
 
+The internal `loadSemanticSchemaInput` entry shares the existing loader implementation and applies XML Schema whitespace mapping to XSD namespace and schema-location values before interpretation, comparison and cache keys.
+It preserves original syntax, bytes, digests and namespace bindings; `loadSchemaInput`, WSDL transport behavior and the public defaults are unchanged.
+Import referents must match both namespace presence and value, while an explicitly empty import namespace without a supplied referent is not itself forbidden.
+
+Notation declarations use a private component table without adding a persisted canonical node kind.
+`sourceSchemaBinding.ts` binds complete source interpretations to the exact resolved handle produced from one authenticated input snapshot; copied handles cannot supply that authority.
+`schemaNotationProperties.ts` maps original XML values and checks complete abstract property tuples through one shared implementation.
+Source representations with the same notation QName coalesce only when their complete public/system identifier properties agree, including absence versus an empty value.
+Every original representation still receives its own source grammar, duplicate-root-key and annotation checks.
+
+Schema source wildcards use the schema-for-schemas assessment universe, independently of the application schema being constructed.
+Unknown foreign declarations follow lax assessment, while concrete annotation/appinfo/documentation and facet payload headers share the source representation owner.
+Typed payload IDs participate in the same physical validation-root ID set; an inert pattern payload's string value does not construct a schema regular expression.
+The document receipt retains exact source-qualified `wildcardObligations` for remaining imported-declaration, larger schema-for-schemas and XSI assessment clauses.
+Literal empty `xml:lang` retains `schema-for-schemas-xml-import-version`: historical XML namespace schemas disagree, and the unversioned import does not establish which declaration governs that value.
+Nonempty language tokens and whitespace-only invalid values retain their independently established results; this qualification does not choose a historical import or add a profile exclusion.
+
 `checkCandidateCorrespondence(actual, parent, candidate, target, intermediate, ancestor)` computes the designated ancestor and verifies E extends A, D′ restricts E and every original effective property is preserved.
 Original particle/AU identities are exact; only authenticated source-generated composition wrappers admit a bijection preserving kind, occurrence, child order and sharing.
 Equal normalized languages do not establish raw property correspondence.
@@ -51,6 +68,10 @@ Original scalar operand type, owner and context remain explicit, and scalar prer
 The checker constructs the obligation inventory itself, checks every actual XSD component and required original source obligation, and closes hypothetical dependencies from E, D′ and all fresh components.
 Every nonprimitive nested RE01 requirement must match supplied evidence in that exact parent context.
 Missing children remain unresolved, active proof cycles cannot pass, unrelated extra proof nodes are invalid evidence and component scheduling does not prove a judgment.
+
+Notation availability and active membership have separate completeness conditions.
+The finite checker inventories the authenticated notation table, checks every fresh declaration including unused helpers, and records `actualNotations` and each proof step's `notations` in their exact context.
+Pure property checks may transfer only through the same privately shared immutable property tuple; source syntax and active membership remain independently checked.
 
 Successful privately authenticated `RE01-finite-evidence-v1` receipts report checked actual obligations and the supplied construction.
 Their `universalCoverage`, `completeNegativeAnswer` and `searchTermination` fields are always false.
@@ -66,7 +87,8 @@ The leaf issues retain exact reviewed revisions and unresolved findings; a mappe
 | --- | --- | --- |
 | Complete B availability, collision domains, source identity, original/fork isolation | `semanticContext.ts`: `prepareSemanticRequest`, `forkSemanticCandidate` | `semantic-context-independent.test.ts`, `derivation-domain.behavior.test.ts`; structural authority only |
 | Inclusive request limits and immutable input/output | `semanticBudget.ts` | Context and finite-checker controls; sticky terminal result, charged snapshots and no getter/iterator invocation |
-| Actual document grammar and retained source universe | `schemaDocumentSyntax.ts`: `prepareSourceSchemaRequest`, `checkSchemaDocumentSyntax` | `schema-document-independent.test.ts`; foreign attributes, annotation payload, notation identity and namespace-mapping prerequisites remain explicit when applicable |
+| Actual document grammar and retained source universe | `schemaDocumentSyntax.ts`: `prepareSourceSchemaRequest`, `checkSchemaDocumentSyntax` | `schema-document-independent.test.ts`; complete notation property reconciliation, separate source syntax and namespace-mapping prerequisites |
+| Original and fresh notation component properties | `schemaNotationProperties.ts`, authenticated context notation table | `semantic-notation-independent.test.ts`; source authority, active membership, collision reservations, original operands and unused fresh obligations |
 | Actual component XML grammar, attribute placement and ordered children | `schemaSyntaxAssessment.ts`: `checkActualSchemaSyntax` | Actual-source syntax controls; abstract helpers have no invented XML representation |
 | Complete builtin/simple/complex derivation, exclusions and final | `schemaTypeRelations.ts`: `checkTypeDerivation`, `checkImmediateTypeFinal`, `immediateTypeBase` | `schema-type-relations.test.ts`; component validity remains a separate premise |
 | Declaration type/value legality, affiliation versus effective substitution | `schemaDeclarationPrimitives.ts`: `checkDeclaration`; shared type-relation owner | Declaration controls and `particle-edc-independent.test.ts`; complete declared affiliation dependencies survive effective filtering |
@@ -85,6 +107,12 @@ The leaf issues retain exact reviewed revisions and unresolved findings; a mappe
 
 Every component receipt separates `obligations` from concretely `discharged` predicates by exact rule, component and context ID.
 Original-context scalar prerequisites are discharged only against that actual closure; a candidate receipt for the same component ID cannot replace them.
+Privately typed facet operands also require membership in the restriction's base value space; their original primitive family alone is insufficient.
+Finite inherited enumeration components provide concrete positive or negative membership evidence, while a failed lexical witness alone does not prove a value-space negative.
+Coexisting length and minimum/maximum-length facets require the specified proper restriction ancestor, including intrinsic builtin list bounds, in addition to numeric consistency.
+Raw conjunct reduction retains a correspondence prerequisite when it cannot preserve fixed metadata or an inherited distinct facet property; it does not silently discard that property.
+Known intrinsic builtin facets participate in property comparison, including token-list minimum length and integer bounds and precision.
+Raw helpers must supply their complete effective properties; a retained builtin evaluator does not prove that omitted properties were supplied.
 Unused original model groups receive their own all/UPA/EDC checks, and every fresh component is a hypothetical root.
 The approved pattern subset and schema-only NOTATION/identity/ENTITY obligations retain the distinctions required by ADR-003; runtime payload enforcement remains #184.
 
@@ -97,11 +125,13 @@ The following named cases retain their precise prerequisites; a successful resul
 | --- | --- |
 | Mixed outcomes among duplicate matching raw AUs | `raw-au-match-quantifier`; #266/#269 need the governing raw-property quantifier or authenticated construction-role contract |
 | Ordered mapping involving an implicit substitution set | `cos-particle-restrict` with the unspecified implicit-order reason; #266/#270 need the virtual enumeration contract while preserving explicit list order |
-| Effective raw facet groups outside proved correspondence | `raw-simple-facet-restriction-validity`; #268 owns the remaining concrete facet-property rule |
-| Fresh hypothetical NOTATION names | `notation-context-membership`; #267/#268 need explicit private component membership and declaration properties, without changing persisted catalogs |
-| Distinct original notation declarations with one expanded name | `notation-component-identity`; #271 owns component-property reconciliation after separate source syntax checks |
-| Anonymous simple-content components lacking a complete property view | `component-simple-content-properties`; #268/#271 own the missing mapping facts and qualified equality cases |
-| Foreign schema attributes, annotation payload and legacy namespace normalization | The source-document receipt names each applicable prerequisite; #271 owns assessment or an exact compatibility handoff |
+| Effective raw facet groups outside proved correspondence | Finite typed enumeration membership and explicit lexical witnesses are checked; unresolved facet-component mapping retains `raw-simple-facet-restriction-validity` |
+| Incomplete intrinsic builtin facet properties | Known tuples establish differences or matching properties; opaque pattern and implicit whitespace metadata retain `builtin-facet-properties`, while incomplete raw correspondence retains its separate prerequisite |
+| Independently supplied multi-pattern component values | Singleton expression strings and privately inherited multi-component identity are checked; unspecified construction mapping retains `pattern-property-equality` or `raw-simple-facet-restriction-validity` |
+| Incomplete notation source availability or active membership | Context-qualified lookup retains its named prerequisite; complete source-bound original/fresh tables support concrete property checking |
+| Anonymous simple-content components lacking a complete property view | Shared identity passes and known property differences prove inequality; equal incomplete views retain `component-simple-content-properties` pending the reviewed generated-property interpretation |
+| Foreign schema attributes and annotation payload | The source-document owner checks its fixed schema-for-schemas assessment universe and retains exact unimplemented clause/source obligations |
+| Legacy namespace normalization | The internal semantic loader supplies normalized XSD values; legacy-loaded spellings that disagree retain the source receipt's qualification |
 
 Identity constraints remain outside the approved profile; recovery does not silently add key/keyref/unique support.
 These qualifications are separate from #234's universal witness/evidence adequacy, complete negative answers and termination obligations.
@@ -248,7 +278,7 @@ No larger redistributable real-service snapshot with complete closure was availa
 
 The baseline is archived main `7d652fea79fddce8fd407f5c18dc2645ad203cc5`.
 Reports hash all measured source files, the harness and lockfile, record Node/platform/CPU details, and reject source changes during a run.
-The [issue handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/272#issuecomment-6112618981) separates the measured source snapshot from the later reviewed delivery revision and supersedes provisional runs taken during concurrent implementation.
+The [issue handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/272#issuecomment-6113569258) separates the measured follow-up source snapshot from the later reviewed delivery revision and preserves the first delivery's distinct evidence.
 
 | Complete input | Portable objects before | After | Persisted boundary |
 |---|---:|---:|---|
@@ -277,23 +307,26 @@ The [candidate workload](../test/research/re01/preparation-candidates.ts) compar
 Baseline main has no equivalent real-graph request API, so this is not a historical semantic-API comparison.
 Its three distinct deltas retain full membership, select the endpoint's closure with changed `mixed`, and restore full membership in a sibling with changed `abstract`.
 
-Weather diagnostic actual-plus-delta work is 3,418,272 with reuse versus 9,598,612 with rebuilding, at active sizes 140, 28 and 140.
-The three delta costs are 140,506, 36,179 and 151,338 work units, with original source evidence still available separately from active membership.
+Weather diagnostic actual-plus-delta work is 3,418,436 with reuse versus 9,598,786 with rebuilding, at active sizes 140, 28 and 140.
+The three delta costs are 140,559, 36,232 and 151,391 work units, with original source evidence still available separately from active membership.
 [Request controls](../test/research/re01/preparation-candidates.test.ts) verify actual/sibling isolation, exact inclusive allowance and sticky exhaustion after earlier successful deltas.
 
 The separately named `source-owned-actual-preparation` workload measures the authenticated [source request factory](../src/compiler/schemaDocumentSyntax.ts) used by the finite checker.
 Its loader stage has separate limits; its owned source snapshot and context share one request budget, while canonical construction and reference resolution retain their inherited stage limits.
+The exact immutable resolved handle now binds the complete original source universe, whose notation properties are prepared through the shared property owner.
 This workload reports source-input and request-graph allocation censuses and runs no schema-validity assessment.
 Baseline main has no matching source-owned API, so these current preparation costs are reported separately from both the historical provenance comparison and the structural reuse controls.
 
 | Complete input | Source-owned diagnostic work | Source-owned default outcome |
 |---|---:|---|
-| Weather WSDL | 5,442,846 | Resource limit at 999,964 work, before context nodes |
-| Relative import closure | 685,407 | Prepared |
-| Chameleon closure | 208,739 | Prepared |
-| Shared-recursive XSD | 1,076,410 | Resource limit at 999,972 work, with 52 admitted nodes |
+| Weather WSDL | 5,461,293 | Resource limit at 999,983 work, before context nodes |
+| Relative import closure | 688,469 | Prepared |
+| Chameleon closure | 210,478 | Prepared |
+| Shared-recursive XSD | 1,081,109 | Resource limit at 999,954 work, with 52 admitted nodes |
 
-Synthetic source-owned diagnostic work is 414,520, 1,302,598, 4,856,553 and 9,601,607 at sizes 4, 16, 64 and 128 respectively.
+Synthetic source-owned diagnostic work is 416,485, 1,308,415, 4,877,778 and 9,643,376 at sizes 4, 16, 64 and 128 respectively.
+Charged source work includes original source URI string lengths; the task paths are recorded in the issue handoff, and moving a checkout can change these counts.
+Differences from the first delivery therefore combine source changes and the follow-up worktree location, without attributing them to one isolated optimization.
 
 Default and diagnostic rows remain separate; diagnostic work uses an explicitly named 50,000,000 allowance while defaults remain unchanged.
 Weather source/catalog preparation succeeds at defaults, but its new actual context exhausts the 1,000,000-work allowance before any candidate.

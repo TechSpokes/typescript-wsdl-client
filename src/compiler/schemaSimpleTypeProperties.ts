@@ -5,6 +5,12 @@ export type ScalarFacet = Readonly<{name: string; lexical: LexicalValue; fixed: 
   /** Absent means a newly supplied operand of the intrinsic helper family. */
   operand?: Readonly<{type: Reference; owner: NodeId; context: 'original' | 'active'}>}>;
 /** Each layer is a conjunction; its pattern and enumeration entries are alternatives.
+ * A nonempty enumeration group denotes one set-valued facet component;
+ * a nonempty pattern group denotes one regular-expression branch union.
+ * Multiple pattern operands have no inferred canonical expression spelling;
+ * independent groups retain an exact mapping prerequisite for comparison.
+ * Distinct inherited enumeration components remain present and are matched
+ * by typed set equality, without requiring caller construction history.
  * Comparable nonfixed scalar facets normalize to their strongest effective
  * bound/length/precision/whitespace property. Original operands remain retained.
  * Fixed conflicts, incomparable order and inherited pattern/enum correspondence

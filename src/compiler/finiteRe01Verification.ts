@@ -11,6 +11,8 @@ import type {CorrespondenceReceipt, CorrespondenceFailure} from './re01Candidate
 import {immediateTypeBase} from './schemaTypeRelations.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import {RE01_DERIVATION_DOMAIN} from './re01TypeProperties.js';
+import {checkNotationProperties} from './schemaNotationProperties.js';
+import type {SchemaNotationProperties} from './schemaNotationProperties.js';
 
 export type FiniteRe01EvidenceNode = Readonly<{
   id: string; parent: SemanticContext; context: SemanticContext;
@@ -20,13 +22,17 @@ export type FiniteRe01EvidenceNode = Readonly<{
 }>;
 export type FiniteRe01Evidence = Readonly<{root: string; nodes: readonly FiniteRe01EvidenceNode[]}>;
 export type FiniteVerificationFailure = CorrespondenceFailure & Readonly<{contextId?: string}>;
+export type FiniteNotationReceipt = Readonly<{contextId: string; properties: SchemaNotationProperties;
+  origin: 'original' | 'addition'}>;
 export type FiniteProofStep = Readonly<{evidence: string; parentContext: string; contextId: string; target: NodeId;
   correspondence: CorrespondenceReceipt; components: readonly ComponentConstructionReceipt[];
+  notations: readonly FiniteNotationReceipt[];
   premises: readonly string[]; primitiveNoChange: readonly NodeId[]}>;
 export type FiniteCandidateReceipt = Readonly<{
   kind: 'checked-candidate'; authority: 'RE01-finite-evidence-v1'; domain: typeof RE01_DERIVATION_DOMAIN;
   scope: 'supplied-construction-and-finite-evidence'; actualContextId: string; target: NodeId; root: string;
   actualComponents: readonly ComponentConstructionReceipt[]; actualPrimitiveNoChange: readonly NodeId[];
+  actualNotations: readonly FiniteNotationReceipt[];
   proof: readonly FiniteProofStep[];
   claims: Readonly<{actualObligations: 'checked'; suppliedCandidate: 'checked'; universalCoverage: false; completeNegativeAnswer: false; searchTermination: false}>;
 }>;
@@ -143,6 +149,42 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         charge();
         if (remaining !== 'child-component-syntax' && remaining !== 'semantic-construction') return fail(remaining, 'Original source document has an outstanding assessment obligation', 'unresolved');
       }
+      // Notations have a private component table rather than a persisted graph
+      // role. Its own source and active-universe dimensions must both pass;
+      // neither GraphNode membership nor scalar use inventories cover unused
+      // fresh declarations. Source representation checks above remain separate.
+      charge(4); const notationReceipts = new Map<SemanticContext, readonly FiniteNotationReceipt[]>();
+      const checkedNotationProperties = new WeakSet<SchemaNotationProperties>();
+      const checkNotations = (context: SemanticContext): readonly FiniteNotationReceipt[] => {
+        charge(3);
+        const prior = notationReceipts.get(context);
+        if (prior) return prior;
+        if (context.notationUniverse !== 'source-bound') return fail('notation-source-universe',
+          'Complete original notation availability is required', 'unresolved', context);
+        if (context.notationMembership !== 'complete-original-plus-additions') return fail('notation-active-membership',
+          'The notation table must include every original and fresh declaration', 'unresolved', context);
+        charge(2); const receipts: FiniteNotationReceipt[] = [];
+        for (const name of context.notationMembers) {
+          charge(); const found = context.lookupNotation(name);
+          if (found.kind !== 'found') return fail(found.kind === 'unresolved' ? found.rule : 'notation-context-membership',
+            'A generated notation obligation is unavailable in its context', 'unresolved', context);
+          // This pure property rule depends only on the authenticated immutable
+          // tuple. Reuse it by exact object identity; source syntax and active
+          // membership are independently checked in their own contexts.
+          charge();
+          if (!checkedNotationProperties.has(found.properties)) {
+            const result = checkNotationProperties(found.properties, b);
+            if (result.kind !== 'checked') return fail(result.rule, result.message,
+              context.kind === 'actual' ? 'invalid-schema' : 'candidate-rejected', context);
+            charge(); checkedNotationProperties.add(found.properties);
+          }
+          charge(8 + context.contextId.length);
+          receipts.push(Object.freeze({contextId: context.contextId, properties: found.properties, origin: found.origin}));
+        }
+        charge(2 + receipts.length); const frozen = Object.freeze(receipts);
+        notationReceipts.set(context, frozen); return frozen;
+      };
+      const actualNotations = checkNotations(actual);
       charge(4); const closures = new Map<string, Closure>();
       const close = (context: SemanticContext, roots: readonly NodeId[], correspondence?: CorrespondenceReceipt): Closure => {
         charge(8 + roots.length); const queue = [...roots], byComponent = new Map<NodeId, ComponentConstructionReceipt>();
@@ -203,6 +245,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
           if (!frame.closure) {
             if (active.has(item.id)) return fail('proof-cycle', 'An active proof premise cannot count as checked', 'unresolved', item.parent, item.target);
             charge(); active.add(item.id);
+            checkNotations(item.context);
             const correspondence = checkCandidateCorrespondence(actual, item.parent, item.context, item.target, item.intermediate, item.ancestor);
             if (correspondence.kind !== 'checked') throw new VerificationAbort(correspondence);
             assertCandidateCorrespondence(item.context, correspondence);
@@ -230,6 +273,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
           charge(12 + frame.used.length + frame.primitive.length);
           proof.push(Object.freeze({evidence: item.id, parentContext: item.parent.contextId, contextId: item.context.contextId, target: item.target,
             correspondence: frame.correspondence!, components: frame.closure.components,
+            notations: notationReceipts.get(item.context)!,
             premises: Object.freeze(frame.used), primitiveNoChange: Object.freeze(frame.primitive)}));
           completed.add(item.id); active.delete(item.id); stack.pop();
         }
@@ -268,6 +312,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
       const result: FiniteCandidateReceipt = Object.freeze({kind: 'checked-candidate', authority: 'RE01-finite-evidence-v1', domain: RE01_DERIVATION_DOMAIN,
         scope: 'supplied-construction-and-finite-evidence', actualContextId: actual.contextId, target, root: root.id,
         actualComponents: actualClosure.components, actualPrimitiveNoChange: Object.freeze(actualPrimitiveNoChange), proof: Object.freeze(proof),
+        actualNotations,
         claims: Object.freeze({actualObligations: 'checked', suppliedCandidate: 'checked', universalCoverage: false, completeNegativeAnswer: false, searchTermination: false})});
       issued.set(result, actual); return result;
     } catch (error) {

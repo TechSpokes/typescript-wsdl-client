@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(compiler): check typed facet base membership and private notation and source properties while preserving public defaults.
+
 - feat(compiler): share internal schema contexts and local semantic rules, retain original attribute evidence, and measure provenance preparation.
 
 - test(content-model): execute RE01 affiliation contrasts and isolate research models with explicit dependency accounting.

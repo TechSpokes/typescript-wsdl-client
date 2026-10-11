@@ -209,7 +209,7 @@ describe('shared local XSD type and declaration relations', () => {
     expect(createSchemaScalarKernel(missing.context).describe(local(complex.id), complex.id)).toMatchObject({kind: 'unresolved', rule: 'missing-type-component-properties'});
   });
 
-  it('keeps nested raw effective enumeration conjunction distinct from source restriction steps', async () => {
+  it('checks each raw enumeration component against its base value space', async () => {
     const request = await context(), seed = request.graph.nodes[0];
     const simple = (name: string): SimpleTypeNode => ({...seed, kind: 'simpleType', id: globalId('type', {namespace: 'urn:raw', local: name}),
       identity: {kind: 'global', role: 'type', name: {namespace: 'urn:raw', local: name}}, variety: {kind: 'restriction', base: builtin('string'), facets: []}});
@@ -221,8 +221,7 @@ describe('shared local XSD type and declaration relations', () => {
       rawSimpleTypes: [properties(base, builtin('string'), [['A', 'B']]), properties(child, local(base.id), [['A', 'B'], ['B', 'C']])]});
     if (prepared.kind !== 'prepared') throw Error(prepared.kind);
     const kernel = createSchemaScalarKernel(prepared.context), lexical = (value: string) => ({value, context: seed.context});
-    expect(kernel.assess(local(child.id), lexical('B'), child.id)).toMatchObject({kind: 'checked',
-      obligations: [{rule: 'raw-simple-facet-restriction-validity', component: child.id}]});
+    expect(kernel.assess(local(child.id), lexical('B'), child.id)).toMatchObject({kind: 'invalid-schema', rule: 'enumeration-valid-restriction'});
     for (const value of ['A', 'C']) expect(kernel.assess(local(child.id), lexical(value), child.id)).toMatchObject({kind: 'invalid-schema'});
   });
 
