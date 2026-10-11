@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:content" targetNamespace="urn:recovery:content">
+  <xs:complexType name="B"><xs:sequence><xs:element name="b" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:B"><xs:sequence><xs:element name="c" type="xs:string"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="EmptyExtension"><xs:complexContent><xs:extension base="t:D"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="MixedEmpty" mixed="true"/>
+  <xs:complexType name="Empty"/>
+  <xs:complexType name="Simple"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="UrExtension" mixed="true"><xs:complexContent mixed="true"><xs:extension base="xs:anyType"/></xs:complexContent></xs:complexType>
+</xs:schema>

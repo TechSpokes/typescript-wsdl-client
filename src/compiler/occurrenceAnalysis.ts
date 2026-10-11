@@ -5,6 +5,7 @@ import type {ExpandedName} from "../loader/orderedSyntax.js";
 import type {ComposedGraph} from "./composeCanonicalGraph.js";
 import {referenceTarget, SemanticError, semanticBudget} from "./resolveCanonicalGraph.js";
 import type {SemanticLimits} from "./resolveCanonicalGraph.js";
+import type {ResourceLimitFailure, SemanticBudget} from './semanticBudget.js';
 
 export type Bound = Occurs["max"];
 export const ZERO_OCCURS: Occurs = Object.freeze({min: "0", max: "0"});
@@ -38,7 +39,13 @@ export function occurrenceAlgebra(charge: () => void) {
     for (let i = 0; i < a.length; i++) work(b.length);
     return (BigInt(a) * BigInt(b)).toString();
   };
-  return {compare, validate, add, multiply,
+  const count = (value: string): bigint => {
+    // Conservative quadratic decimal conversion work is charged before BigInt.
+    for (let i = 0; i < value.length; i++) work(value.length);
+    if (!finite(value) || value === 'unbounded') throw new SemanticError('invalid-schema', 'Finite occurrence count required');
+    return BigInt(value);
+  };
+  return {compare, validate, add, multiply, count,
     sum: (a: Occurs, b: Occurs): Occurs => ({min: add(a.min, b.min), max: add(a.max, b.max)}),
     product: (a: Occurs, b: Occurs): Occurs => ({min: multiply(a.min, b.min), max: multiply(a.max, b.max)}),
     alternative: (a: Occurs, b: Occurs): Occurs => ({min: compare(a.min, b.min) <= 0 ? a.min : b.min, max: compare(a.max, b.max) >= 0 ? a.max : b.max}),
@@ -68,18 +75,31 @@ export type AnalysisResult = Readonly<
 >;
 
 /** Pure bounded DAG evaluation. Element/type value recursion is an atomic element boundary. */
-export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits = {}): AnalysisResult {
+export function analyzeOccurrences(composed: ComposedGraph, limits?: SemanticLimits): AnalysisResult;
+export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits, accounting: Readonly<{budget: SemanticBudget}>): AnalysisResult | ResourceLimitFailure;
+export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits = {}, accounting?: Readonly<{budget: SemanticBudget}>): AnalysisResult | ResourceLimitFailure {
+  return accounting ? accounting.budget.guard(() => analyzeOwnedOccurrences(composed, limits, accounting.budget)) : analyzeOwnedOccurrences(composed, limits);
+}
+
+function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits, request?: SemanticBudget): AnalysisResult {
   let current: GraphNode | undefined;
+  const allocate = (units: number) => request?.chargeWork(units);
   try {
-    const graph = composed.resolved.graph, budget = semanticBudget(limits);
+    allocate(128); // Fixed local closures, budget facade and algebra/state containers.
+    const graph = composed.resolved.graph, local = semanticBudget(limits);
+    const budget = request ? {maxNodes: local.maxNodes, get steps() {return local.steps;}, step(node?: GraphNode) {
+      request.chargeWork(); local.step(node);
+    }} : local;
     if (graph.nodes.length > budget.maxNodes) throw new SemanticError("resource-limit", `Analysis exceeds ${budget.maxNodes} graph nodes`);
+    allocate(3);
     const nodes = new Map<NodeId, GraphNode>();
-    for (const n of graph.nodes) {budget.step(n); nodes.set(n.id, n);}
+    for (const n of graph.nodes) {budget.step(n); allocate(2); nodes.set(n.id, n);}
     const summaries = new Map<NodeId, ParticleSummary>(), active = new Set<NodeId>();
     const algebra = occurrenceAlgebra(() => budget.step(current));
     const get = (id: NodeId): GraphNode => nodes.get(id) ?? (() => {throw new SemanticError("invalid-schema", "Missing structural component", id, current?.context.source);})();
     const key = (name: ExpandedName) => {
       for (const value of [name.namespace, name.local]) for (let i = 0; i < value.length; i++) budget.step(current);
+      allocate(8 + 6 * (name.namespace.length + name.local.length));
       return JSON.stringify([name.namespace, name.local]);
     };
     const target = (reference: Reference, owner: GraphNode) => {
@@ -87,68 +107,68 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
       return referenceTarget(reference, nodes, owner);
     };
     const copyIds = (a: readonly NodeId[], b: readonly NodeId[]): readonly NodeId[] => {
-      const unique = new Set<NodeId>();
+      allocate(1); const unique = new Set<NodeId>();
       for (const list of [a, b]) for (const id of list) {budget.step(current); for (let i = 0; i < id.length; i++) budget.step(current); unique.add(id);}
-      return [...unique];
+      allocate(1 + unique.size); return [...unique];
     };
     type Content = Omit<ParticleSummary, "id">;
-    const empty = (): Content => ({nullable: true, hasRealization: true, elements: [], wildcard: ZERO_OCCURS, effectiveTotalRange: ZERO_OCCURS, schemaEmptiable: true});
+    const empty = (): Content => {allocate(8); return {nullable: true, hasRealization: true, elements: [], wildcard: ZERO_OCCURS, effectiveTotalRange: ZERO_OCCURS, schemaEmptiable: true};};
     const combine = (input: readonly Content[], choice: boolean): Content => {
-      const parts: Content[] = [];
+      allocate(5); const parts: Content[] = [];
       let effectiveTotalRange = ZERO_OCCURS;
       for (let i = 0; i < input.length; i++) {
         const part = input[i]; budget.step(current);
         // Formal ETR includes all declared alternatives, even an empty choice.
         effectiveTotalRange = choice ? i === 0 ? part.effectiveTotalRange : algebra.alternative(effectiveTotalRange, part.effectiveTotalRange) : algebra.sum(effectiveTotalRange, part.effectiveTotalRange);
-        if (!choice || part.hasRealization) parts.push(part);
+        if (!choice || part.hasRealization) {allocate(1); parts.push(part);}
       }
       const formal = {effectiveTotalRange, schemaEmptiable: effectiveTotalRange.min === "0"};
       const elements = new Map<string, PropertyContribution>();
       let wildcard = ZERO_OCCURS, nullable = !choice;
       const hasRealization = choice ? parts.length > 0 : parts.every(p => p.hasRealization);
-      if (!hasRealization) return {...formal, nullable: false, hasRealization: false, elements: [], wildcard: ZERO_OCCURS};
+      if (!hasRealization) {allocate(8); return {...formal, nullable: false, hasRealization: false, elements: [], wildcard: ZERO_OCCURS};}
       for (let i = 0; i < parts.length; i++) {
-        budget.step(current); const part = parts[i], present = new Set<string>();
+        budget.step(current); allocate(1); const part = parts[i], present = new Set<string>();
         nullable = choice ? nullable || part.nullable : nullable && part.nullable;
         wildcard = choice && i > 0 ? algebra.alternative(wildcard, part.wildcard) : choice ? part.wildcard : algebra.sum(wildcard, part.wildcard);
         for (const p of part.elements) {
           budget.step(current); const k = key(p.name); present.add(k); const prior = elements.get(k);
           const occurs = prior ? (choice ? algebra.alternative(prior.occurs, p.occurs) : algebra.sum(prior.occurs, p.occurs)) : choice && i > 0 ? algebra.alternative(ZERO_OCCURS, p.occurs) : p.occurs;
-          elements.set(k, {name: p.name, occurs, declarations: copyIds(prior?.declarations ?? [], p.declarations), particles: copyIds(prior?.particles ?? [], p.particles)});
+          allocate(8); elements.set(k, {name: p.name, occurs, declarations: copyIds(prior?.declarations ?? [], p.declarations), particles: copyIds(prior?.particles ?? [], p.particles)});
         }
         if (choice) for (const [k, p] of elements) {
-          budget.step(current); if (!present.has(k)) elements.set(k, {...p, occurs: algebra.alternative(p.occurs, ZERO_OCCURS)});
+          budget.step(current); if (!present.has(k)) {allocate(8); elements.set(k, {...p, occurs: algebra.alternative(p.occurs, ZERO_OCCURS)});}
         }
       }
-      return {...formal, nullable, hasRealization, elements: [...elements.values()], wildcard};
+      allocate(8 + elements.size); return {...formal, nullable, hasRealization, elements: [...elements.values()], wildcard};
     };
     const dependencies = (node: ParticleNode): NodeId[] => {
       if ("children" in node.term) {
-        const result: NodeId[] = []; for (const id of node.term.children) {budget.step(node); result.push(id);} return result;
+        allocate(1 + node.term.children.length); const result: NodeId[] = []; for (const id of node.term.children) {budget.step(node); result.push(id);} return result;
       }
       if (node.term.kind === "group") {
         const id = target(node.term.reference, node), group = id ? get(id) : undefined;
         if (group?.kind !== "group") throw new SemanticError("invalid-schema", "Group particle requires a model group", node.id, node.context.source);
-        return [group.content];
+        allocate(2); return [group.content];
       }
       if (node.term.kind === "element") {
         const id = target(node.term.declaration, node);
         if (!id || get(id).kind !== "element") throw new SemanticError("invalid-schema", "Element particle requires an element declaration", node.id, node.context.source);
       }
-      return [];
+      allocate(1); return [];
     };
     type Frame = {node: ParticleNode; children: NodeId[]; index: number};
-    const frame = (node: ParticleNode): Frame => {current = node; algebra.validate(node.occurs); return {node, children: dependencies(node), index: 0};};
+    const frame = (node: ParticleNode): Frame => {current = node; algebra.validate(node.occurs); allocate(4); return {node, children: dependencies(node), index: 0};};
     for (const root of graph.nodes) {
       if (root.kind !== "particle" || summaries.has(root.id)) continue;
-      const stack = [frame(root)]; active.add(root.id);
+      allocate(3); const stack = [frame(root)]; active.add(root.id);
       while (stack.length) {
         const f = stack[stack.length - 1]; current = f.node; budget.step(current);
         if (f.index < f.children.length) {
           const id = f.children[f.index++], child = get(id);
           if (child.kind !== "particle") throw new SemanticError("invalid-schema", "Content requires a particle", id, child.context.source);
           if (active.has(id)) throw new SemanticError("invalid-schema", "Forbidden particle expansion cycle", id, child.context.source);
-          if (!summaries.has(id)) {active.add(id); stack.push(frame(child));}
+          if (!summaries.has(id)) {allocate(2); active.add(id); stack.push(frame(child));}
           continue;
         }
         const node = f.node;
@@ -156,10 +176,10 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
         if (node.term.kind === "element") {
           const id = target(node.term.declaration, node)!, declaration = get(id);
           if (declaration.kind !== "element") throw new Error("Checked element target changed");
-          content = {nullable: false, hasRealization: true, elements: [{name: declaration.name, occurs: ONE_OCCURS, declarations: [id], particles: [node.id]}], wildcard: ZERO_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
-        } else if (node.term.kind === "any") content = {nullable: false, hasRealization: true, elements: [], wildcard: ONE_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
+          allocate(20); content = {nullable: false, hasRealization: true, elements: [{name: declaration.name, occurs: ONE_OCCURS, declarations: [id], particles: [node.id]}], wildcard: ZERO_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
+        } else if (node.term.kind === "any") {allocate(8); content = {nullable: false, hasRealization: true, elements: [], wildcard: ONE_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};}
         else {
-          const parts: ParticleSummary[] = [];
+          allocate(1 + f.children.length); const parts: ParticleSummary[] = [];
           for (const id of f.children) {
             budget.step(node);
             // XSD syntax with 0..0 maps to no particle. Traverse it above for
@@ -170,16 +190,16 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
           }
           content = combine(parts, node.term.kind === "choice");
         }
-        const elements: PropertyContribution[] = [];
+        allocate(1 + content.elements.length * 6); const elements: PropertyContribution[] = [];
         for (const p of content.elements) {budget.step(node); elements.push({...p, occurs: algebra.product(p.occurs, node.occurs)});}
         const effectiveTotalRange = algebra.product(content.effectiveTotalRange, node.occurs);
-        summaries.set(node.id, {id: node.id, nullable: node.occurs.min === "0" || content.nullable, hasRealization: node.occurs.min === "0" || content.hasRealization, elements, wildcard: algebra.product(content.wildcard, node.occurs), effectiveTotalRange, schemaEmptiable: effectiveTotalRange.min === "0"});
+        allocate(12); summaries.set(node.id, {id: node.id, nullable: node.occurs.min === "0" || content.nullable, hasRealization: node.occurs.min === "0" || content.hasRealization, elements, wildcard: algebra.product(content.wildcard, node.occurs), effectiveTotalRange, schemaEmptiable: effectiveTotalRange.min === "0"});
         active.delete(node.id); stack.pop();
       }
     }
-    const types: TypeSummary[] = [];
+    allocate(1 + composed.types.length * 5); const types: TypeSummary[] = [];
     for (const type of composed.types) {
-      current = get(type.id); budget.step(current); const parts: Content[] = []; let opaque = false;
+      current = get(type.id); budget.step(current); allocate(1 + type.content.length); const parts: Content[] = []; let opaque = false;
       for (const contribution of type.content) {
         budget.step(current);
         if (contribution.kind === "builtin") {opaque = true; continue;}
@@ -189,9 +209,24 @@ export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimi
       }
       types.push({id: type.id, children: parts.length ? combine(parts, false) : empty(), scope: opaque ? "declared-particles-with-opaque-builtin" : "declared-particles"});
     }
-    return deepFreeze({kind: "analyzed" as const, analysis: {composed, particles: [...summaries.values()], types, assessment: "requires-schema-assessment" as const, metrics: {steps: budget.steps}}});
+    allocate(12 + summaries.size);
+    const result = {kind: "analyzed" as const, analysis: {composed, particles: [...summaries.values()], types, assessment: "requires-schema-assessment" as const, metrics: {steps: budget.steps}}};
+    if (!request) return deepFreeze(result);
+    // Freeze new owned output only; the immutable composed input is borrowed.
+    request.chargeWork(3); const stack: unknown[] = [result], seen = new Set<object>();
+    while (stack.length) {
+      request.chargeWork(3); const item = stack.pop();
+      if (!item || typeof item !== 'object' || item === composed || Object.isFrozen(item) || seen.has(item)) continue;
+      request.chargeWork(2); seen.add(item);
+      for (const name in item) {
+        request.chargeWork(2 + name.length);
+        if (Object.hasOwn(item, name)) stack.push((item as Record<string, unknown>)[name]);
+      }
+      Object.freeze(item);
+    }
+    return result;
   } catch (error) {
-    if (error instanceof SemanticError) return Object.freeze({kind: "failure", diagnostic: error.component || !current ? error : new SemanticError(error.category, error.message, current.id, current.context.source, error.related)});
+    if (error instanceof SemanticError) {allocate(10 + error.message.length); return Object.freeze({kind: "failure", diagnostic: error.component || !current ? error : new SemanticError(error.category, error.message, current.id, current.context.source, error.related)});}
     throw error;
   }
 }

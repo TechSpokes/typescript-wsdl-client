@@ -5,7 +5,10 @@ import type {ExpandedName} from "../loader/orderedSyntax.js";
 import {referenceTarget, SemanticError, semanticBudget} from "./resolveCanonicalGraph.js";
 import type {ResolvedGraph, SemanticLimits} from "./resolveCanonicalGraph.js";
 
-export type NamespaceConstraint = Readonly<{kind: "set"; namespaces: readonly string[]} | {kind: "not"; namespaces: readonly string[]}>;
+import {namespaceAllows as allows, namespaceIntersection, namespaceSubset, namespaceUnion, wildcardNamespaces, processContentsRestricts} from "./wildcardAlgebra.js";
+import type {NamespaceConstraint} from "./wildcardAlgebra.js";
+export {namespaceIntersection, namespaceSubset, namespaceUnion, wildcardNamespaces} from "./wildcardAlgebra.js";
+export type {NamespaceConstraint} from "./wildcardAlgebra.js";
 export type WildcardProcess = Wildcard["processContents"];
 export type WildcardPlan = Readonly<{
   namespace: NamespaceConstraint;
@@ -38,35 +41,6 @@ export type ComposedGraph = Readonly<{resolved: ResolvedGraph; types: readonly C
 export type ContentContribution = Readonly<{kind: "particle"; particle: NodeId} | {kind: "builtin"; reference: Reference}>;
 
 const canonicalSet = (values: Iterable<string>): readonly string[] => [...new Set(values)].sort();
-export function wildcardNamespaces(wildcard: Wildcard): NamespaceConstraint {
-  const value = wildcard.namespace.value.trim(), namespace = wildcard.namespace.context.effectiveNamespace;
-  if (value === "##any") return {kind: "not", namespaces: []};
-  if (value === "##other") return {kind: "not", namespaces: canonicalSet(["", namespace])};
-  const tokens = value.split(/\s+/);
-  if (!value || tokens.some(t => t.startsWith("##") && !["##local", "##targetNamespace"].includes(t))) {
-    throw new SemanticError("invalid-schema", "Invalid wildcard namespace constraint", undefined, wildcard.namespace.context.source);
-  }
-  return {kind: "set", namespaces: canonicalSet(tokens.map(t => t === "##local" ? "" : t === "##targetNamespace" ? namespace : t))};
-}
-export function namespaceUnion(a: NamespaceConstraint, b: NamespaceConstraint): NamespaceConstraint {
-  if (a.kind === "set" && b.kind === "set") return {kind: "set", namespaces: canonicalSet([...a.namespaces, ...b.namespaces])};
-  if (a.kind === "not" && b.kind === "not") {const set = new Set(b.namespaces); return {kind: "not", namespaces: a.namespaces.filter(n => set.has(n))};}
-  const excluded = a.kind === "not" ? a : b, included = a.kind === "set" ? a : b;
-  const set = new Set(included.namespaces); return {kind: "not", namespaces: excluded.namespaces.filter(n => !set.has(n))};
-}
-export function namespaceIntersection(a: NamespaceConstraint, b: NamespaceConstraint): NamespaceConstraint {
-  if (a.kind === "set" && b.kind === "set") {const set = new Set(b.namespaces); return {kind: "set", namespaces: a.namespaces.filter(n => set.has(n))};}
-  if (a.kind === "not" && b.kind === "not") return {kind: "not", namespaces: canonicalSet([...a.namespaces, ...b.namespaces])};
-  const excluded = a.kind === "not" ? a : b, included = a.kind === "set" ? a : b;
-  const set = new Set(excluded.namespaces); return {kind: "set", namespaces: included.namespaces.filter(n => !set.has(n))};
-}
-export function namespaceSubset(derived: NamespaceConstraint, base: NamespaceConstraint): boolean {
-  const baseSet = new Set(base.namespaces), derivedSet = new Set(derived.namespaces);
-  if (derived.kind === "set") return derived.namespaces.every(n => base.kind === "set" ? baseSet.has(n) : !baseSet.has(n));
-  return base.kind === "not" && base.namespaces.every(n => derivedSet.has(n));
-}
-const allows = (constraint: NamespaceConstraint, ns: string) => constraint.kind === "set" ? constraint.namespaces.includes(ns) : !constraint.namespaces.includes(ns);
-const rank: Record<WildcardProcess, number> = {skip: 0, lax: 1, strict: 2};
 const key = (name: ExpandedName) => JSON.stringify([name.namespace, name.local]);
 
 /** Extension concatenates root contributions, retaining each root's exact declared occurrence. */
@@ -86,6 +60,9 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
   const get = (id: NodeId): GraphNode => nodes.get(id) ?? (() => {throw new SemanticError("invalid-schema", `Missing component ${id}`);})();
   const count = (node: GraphNode, ...lists: readonly (readonly unknown[])[]) => {
     for (const list of lists) for (const ignored of list) budget.step(node);
+  };
+  const wildcardCharge = (node: GraphNode) => (amount = 1) => {
+    for (let index = 0; index < amount; index++) budget.step(node);
   };
   const copySources = (node: GraphNode, a: readonly NodeId[], b: readonly NodeId[]) => {
     count(node, a, b); return [...a, ...b];
@@ -118,7 +95,7 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
         } else if (node.kind === "attributeWildcard") {
           for (let i = 0; i < node.wildcard.namespace.value.length; i++) budget.step(node);
           if (current.explicit) fail(node, "Multiple local attribute wildcards");
-          const namespace = wildcardNamespaces(node.wildcard); count(node, namespace.namespaces);
+          const namespace = wildcardNamespaces(node.wildcard, wildcardCharge(node)); count(node, namespace.namespaces);
           current.explicit = {namespace, processContents: node.wildcard.processContents, sources: [node.id]};
         } else {
           if (node.kind !== "attributeUse") fail(node, "Expected an attribute use");
@@ -140,7 +117,7 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
       const intersect = (other: WildcardPlan) => {
         if (!wildcard) {wildcard = other; return;}
         count(container, wildcard.namespace.namespaces, other.namespace.namespaces);
-        wildcard = {...wildcard, namespace: namespaceIntersection(wildcard.namespace, other.namespace), sources: copySources(container, wildcard.sources, other.sources)};
+        wildcard = {...wildcard, namespace: namespaceIntersection(wildcard.namespace, other.namespace, wildcardCharge(container)), sources: copySources(container, wildcard.sources, other.sources)};
       };
       for (const other of current.groups.slice(1)) intersect(other);
       if (current.explicit) {
@@ -203,7 +180,7 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
           attributes = [...merged.values()];
           if (base.wildcard && local.wildcard) {
             count(node, local.wildcard.namespace.namespaces);
-            wildcard = {...local.wildcard, namespace: namespaceUnion(base.wildcard.namespace, local.wildcard.namespace), sources: copySources(node, base.wildcard.sources, local.wildcard.sources)};
+            wildcard = {...local.wildcard, namespace: namespaceUnion(base.wildcard.namespace, local.wildcard.namespace, wildcardCharge(node)), sources: copySources(node, base.wildcard.sources, local.wildcard.sources)};
           }
           else wildcard = local.wildcard ?? base.wildcard;
           obligations.push({kind: "particle-extension", owner: node.id, base: baseId ?? derivation.base, local: node.content});
@@ -212,16 +189,16 @@ export function composeCanonicalGraph(resolved: ResolvedGraph, limits: SemanticL
           for (const a of local.attributes) {
             budget.step(node); const prior = merged.get(key(a.name));
             if (prior?.use === "required" && a.use !== "required") fail(node, "Restriction cannot weaken or prohibit a required attribute");
-            if (!prior && a.use !== "prohibited" && (!base.wildcard || !allows(base.wildcard.namespace, a.name.namespace))) fail(node, "New restricted attribute is outside the base wildcard");
+            if (!prior && a.use !== "prohibited" && (!base.wildcard || !allows(base.wildcard.namespace, a.name.namespace, wildcardCharge(node)))) fail(node, "New restricted attribute is outside the base wildcard");
             if (prior?.value?.kind === "fixed") obligations.push({kind: "fixed-value-equivalence", owner: node.id, base: prior.value, local: a.value});
             if (prior && a.use !== "prohibited") obligations.push({kind: "attribute-type-restriction", owner: node.id, base: prior.type, local: a.type});
             merged.set(key(a.name), prior ? {...a, sources: copySources(node, prior.sources, a.sources)} : a);
           }
           attributes = [...merged.values()]; wildcard = local.wildcard; // Omitted restriction wildcard is removed.
           if (wildcard) {
-            if (!base.wildcard || !namespaceSubset(wildcard.namespace, base.wildcard.namespace)) fail(node, "Restricted wildcard is not a subset of its base");
+            if (!base.wildcard || !namespaceSubset(wildcard.namespace, base.wildcard.namespace, wildcardCharge(node))) fail(node, "Restricted wildcard is not a subset of its base");
             const baseProcess = base.wildcard?.processContents;
-            if (typeof wildcard.processContents === "string" && typeof baseProcess === "string" && rank[wildcard.processContents] < rank[baseProcess]) fail(node, "Restricted wildcard weakens processContents");
+            if (typeof wildcard.processContents === "string" && typeof baseProcess === "string" && !processContentsRestricts(wildcard.processContents, baseProcess, wildcardCharge(node))) fail(node, "Restricted wildcard weakens processContents");
           }
           obligations.push({kind: "particle-restriction", owner: node.id, base: baseId ?? derivation.base, local: node.content});
         }

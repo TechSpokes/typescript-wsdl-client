@@ -1,0 +1,12 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:construction" targetNamespace="urn:recovery:construction">
+  <xs:complexType name="B"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="D"><xs:simpleContent><xs:extension base="t:B"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="FinalBase" final="extension"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Blocked"><xs:simpleContent><xs:extension base="t:FinalBase"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Empty"/>
+  <xs:complexType name="EmptyExtension"><xs:complexContent><xs:extension base="t:Empty"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RequiredBase"><xs:sequence><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="OptionalBase"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:complexType name="InvalidEmpty"><xs:complexContent><xs:restriction base="t:RequiredBase"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="ValidEmpty"><xs:complexContent><xs:restriction base="t:OptionalBase"/></xs:complexContent></xs:complexType>
+</xs:schema>

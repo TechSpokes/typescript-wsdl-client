@@ -16,8 +16,10 @@ function affiliationRequest() {
 }
 
 describe('RE01 explicit research model supplied-candidate experiment', () => {
-    it('requires explicit selection while reviewed full-model acceptance is pending', () => {
-        expect(REVISED_MODEL_ACCEPTED).toBe(false);
+    it('accepts reviewed domain B without claiming complete semantic procedure acceptance', () => {
+        expect(REVISED_MODEL_ACCEPTED).toBe(true);
+        expect(runModelExperiment(baselineRequest(), 'derivation')).toMatchObject({model: 'derivation', selection: 'explicit',
+            kind: 'unresolved', semanticVerdict: 'unresolved', existentialVerdict: 'unresolved'});
         expect(() => runModelExperiment(baselineRequest(), 'unknown' as 'derivation')).toThrow('Explicit RE01 research model required');
     });
 
@@ -42,10 +44,11 @@ describe('RE01 explicit research model supplied-candidate experiment', () => {
     it('keeps whole actual Γ and explicit incoming affiliation boundary when the proposal omits M', () => {
         const request = affiliationRequest();
         const report = runModelExperiment(request, 'derivation');
-        expect(report).toMatchObject({kind: 'unresolved', model: 'derivation', receipt: {
+        expect(report).toMatchObject({kind: 'unresolved', model: 'derivation',
+            diagnostic: {code: 'incomplete-domain-membership'}, receipt: {
             actualMembers: ['A', 'B', 'D', 'H', 'M', 'T'], proposedMembers: ['A', 'B', 'D', 'H', 'T'],
             excludedIncoming: expect.arrayContaining([{owner: 'M', slot: 'head', target: 'H'}]),
-            locality: 'dependency-transfer-unresolved'}});
+            locality: 'dependency-transfer-unresolved', domainQualification: 'unavailable'}});
         const preserving = runModelExperiment(request, 'schema-preserving');
         expect(preserving).toMatchObject({model: 'schema-preserving', kind: 'input-error',
             diagnostic: {code: 'literal-original-omitted'}, semanticVerdict: 'unresolved',

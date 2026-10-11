@@ -1,0 +1,21 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:edc"
+  targetNamespace="urn:recovery:edc" elementFormDefault="qualified">
+  <xs:complexType name="NamedOne"/><xs:complexType name="NamedTwo"/>
+  <xs:complexType name="SameNamed"><xs:sequence>
+    <xs:element name="same" type="t:NamedOne"/><xs:element name="same" type="t:NamedOne"/>
+  </xs:sequence></xs:complexType>
+  <xs:complexType name="DifferentNamed"><xs:sequence>
+    <xs:element name="same" type="t:NamedOne"/><xs:element name="same" type="t:NamedTwo"/>
+  </xs:sequence></xs:complexType>
+  <xs:group name="AnonymousGroup"><xs:sequence><xs:element name="anonymous"><xs:complexType/></xs:element></xs:sequence></xs:group>
+  <xs:complexType name="TwoGroupUses"><xs:sequence><xs:group ref="t:AnonymousGroup"/><xs:group ref="t:AnonymousGroup"/></xs:sequence></xs:complexType>
+  <xs:complexType name="OneRepeatedParticle"><xs:sequence><xs:element name="anonymous" maxOccurs="2"><xs:complexType/></xs:element></xs:sequence></xs:complexType>
+  <xs:element name="AnonymousHead"><xs:complexType/></xs:element>
+  <xs:complexType name="OneGlobalAnonymous"><xs:sequence><xs:element ref="t:AnonymousHead"/></xs:sequence></xs:complexType>
+  <xs:element name="AbstractHead" abstract="true"><xs:complexType/></xs:element>
+  <xs:complexType name="TwoAbstractPositions"><xs:sequence><xs:element ref="t:AbstractHead"/><xs:element ref="t:AbstractHead"/></xs:sequence></xs:complexType>
+  <xs:element name="Head" type="t:NamedOne"/>
+  <xs:element name="member" type="t:NamedOne" substitutionGroup="t:Head"/>
+  <xs:complexType name="ImplicitConflict"><xs:sequence><xs:element ref="t:Head"/><xs:element name="member" type="t:NamedTwo"/></xs:sequence></xs:complexType>
+  <xs:complexType name="ZeroBranch"><xs:sequence><xs:element name="same" type="t:NamedOne"/><xs:element name="same" type="t:NamedTwo" minOccurs="0" maxOccurs="0"/></xs:sequence></xs:complexType>
+</xs:schema>

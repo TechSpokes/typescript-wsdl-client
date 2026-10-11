@@ -1,0 +1,39 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:scalars"
+  xmlns:q="urn:scalar:allowed" targetNamespace="urn:recovery:scalars">
+  <xs:complexType name="Owner"/>
+  <xs:simpleType name="MinThree"><xs:restriction base="xs:string"><xs:minLength value="3"/></xs:restriction></xs:simpleType>
+  <xs:notation name="Picture" public="urn:recovery:picture"/>
+  <xs:simpleType name="PictureType"><xs:restriction base="xs:NOTATION"><xs:enumeration value="t:Picture"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="UnboundedNotation"><xs:restriction base="xs:NOTATION"/></xs:simpleType>
+  <xs:simpleType name="DecimalList"><xs:list itemType="xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="BooleanFirst"><xs:union memberTypes="xs:boolean xs:integer"/></xs:simpleType>
+  <xs:simpleType name="IntegerFirst"><xs:union memberTypes="xs:integer xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="HexFirst"><xs:union memberTypes="xs:hexBinary xs:base64Binary"/></xs:simpleType>
+  <xs:simpleType name="Base64First"><xs:union memberTypes="xs:base64Binary xs:hexBinary"/></xs:simpleType>
+  <xs:simpleType name="ShortToken"><xs:restriction base="xs:token">
+    <xs:maxLength value="3"/><xs:pattern value="[A-Z ]+"/>
+    <xs:enumeration value="A B"/><xs:enumeration value="C"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="OnlyAB"><xs:restriction base="t:ShortToken">
+    <xs:enumeration value="  A   B  "/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="QualifiedName"><xs:restriction base="xs:QName">
+    <xs:enumeration value="q:Name"/>
+  </xs:restriction></xs:simpleType>
+  <xs:complexType name="MixedBase" mixed="true"><xs:sequence>
+    <xs:element name="optional" type="xs:string" minOccurs="0"/>
+  </xs:sequence></xs:complexType>
+  <xs:complexType name="MixedScalar"><xs:simpleContent><xs:restriction base="t:MixedBase">
+    <xs:simpleType><xs:restriction base="xs:string"/></xs:simpleType><xs:maxLength value="3"/>
+  </xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="MixedChild"><xs:simpleContent><xs:restriction base="t:MixedScalar">
+    <xs:maxLength value="2"/>
+  </xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ScalarBase"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="IncompatibleInline"><xs:simpleContent><xs:restriction base="t:ScalarBase">
+    <xs:simpleType><xs:restriction base="xs:int"/></xs:simpleType>
+  </xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:simpleType name="ComplexList"><xs:list itemType="t:MixedBase"/></xs:simpleType>
+  <xs:simpleType name="ComplexUnion"><xs:union memberTypes="t:MixedBase"/></xs:simpleType>
+  <xs:simpleType name="ComplexRestriction"><xs:restriction base="t:MixedBase"/></xs:simpleType>
+</xs:schema>

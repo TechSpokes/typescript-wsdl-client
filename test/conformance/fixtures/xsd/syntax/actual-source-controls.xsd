@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:source-controls"
+           xmlns:ext="urn:source-extension" targetNamespace="urn:source-controls" elementFormDefault="qualified">
+  <xs:attribute name="globalDefault" type="xs:string" default="kept"/>
+  <xs:simpleType name="Scalar">
+    <xs:restriction base="xs:string"><xs:pattern value="[a-z]+"/></xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Base">
+    <xs:sequence><xs:element name="item" type="xs:string" minOccurs="-0" maxOccurs="+0001"/></xs:sequence>
+    <xs:attribute ref="t:globalDefault" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="Derived" mixed="false" ext:detail="allowed">
+    <xs:complexContent>
+      <xs:annotation><xs:documentation>One source annotation.</xs:documentation></xs:annotation>
+      <xs:extension base="t:Base"><xs:attribute name="local" type="xs:string"/></xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:Derived" nillable="0"/>
+</xs:schema>

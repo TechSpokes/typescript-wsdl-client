@@ -1,0 +1,34 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:scalars"
+  targetNamespace="urn:recovery:scalars">
+  <xs:complexType name="Owner"/>
+  <xs:simpleType name="InclusivePair"><xs:restriction base="xs:dateTime">
+    <xs:minInclusive value="2000-01-01T00:00:00"/><xs:maxInclusive value="2000-01-01T00:00:00Z"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="ExclusivePair"><xs:restriction base="xs:dateTime">
+    <xs:minExclusive value="2000-01-01T00:00:00"/><xs:maxExclusive value="2000-01-01T00:00:00Z"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="InclusiveExclusivePair"><xs:restriction base="xs:dateTime">
+    <xs:minInclusive value="2000-01-01T00:00:00"/><xs:maxExclusive value="2000-01-01T00:00:00Z"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="ExclusiveInclusivePair"><xs:restriction base="xs:dateTime">
+    <xs:minExclusive value="2000-01-01T00:00:00"/><xs:maxInclusive value="2000-01-01T00:00:00Z"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="DurationPair"><xs:restriction base="xs:duration">
+    <xs:minInclusive value="P1M"/><xs:maxInclusive value="P30D"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="LowerOnly"><xs:restriction base="xs:dateTime">
+    <xs:minInclusive value="2000-01-01T00:00:00"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="InheritedOperandOutsideBase"><xs:restriction base="t:LowerOnly">
+    <xs:maxInclusive value="2000-01-01T00:00:00Z"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="CrossedPair"><xs:restriction base="xs:dateTime">
+    <xs:minInclusive value="2000-01-02T00:00:00Z"/><xs:maxInclusive value="2000-01-01T00:00:00Z"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="EqualMixedPair"><xs:restriction base="xs:dateTime">
+    <xs:minInclusive value="2000-01-01T00:00:00Z"/><xs:maxExclusive value="2000-01-01T00:00:00Z"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="EqualExclusivePair"><xs:restriction base="xs:dateTime">
+    <xs:minExclusive value="2000-01-01T00:00:00Z"/><xs:maxExclusive value="2000-01-01T00:00:00Z"/>
+  </xs:restriction></xs:simpleType>
+</xs:schema>

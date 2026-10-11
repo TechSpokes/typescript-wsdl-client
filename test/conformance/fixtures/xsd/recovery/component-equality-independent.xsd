@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:component-equality">
+  <xs:complexType name="Owner"><xs:sequence>
+    <xs:element name="left"><xs:complexType><xs:sequence><xs:element name="leaf" type="xs:string"/></xs:sequence><xs:attribute name="a" type="xs:int" fixed="01"/><xs:attribute name="b" type="xs:string"/></xs:complexType></xs:element>
+    <xs:element name="right"><xs:complexType><xs:annotation><xs:documentation>Only the annotation differs semantically.</xs:documentation></xs:annotation><xs:sequence><xs:element name="leaf" type="xs:string"/></xs:sequence><xs:attribute name="b" type="xs:string"/><xs:attribute name="a" type="xs:int" fixed="+001"/></xs:complexType></xs:element>
+    <xs:element name="swapped"><xs:complexType><xs:sequence><xs:element name="leaf" type="xs:string"/></xs:sequence><xs:attribute name="b" type="xs:int"/><xs:attribute name="a" type="xs:string" fixed="01"/></xs:complexType></xs:element>
+  </xs:sequence></xs:complexType>
+  <xs:simpleType name="ScalarTemplate"><xs:restriction base="xs:int"><xs:minInclusive value="1"/></xs:restriction></xs:simpleType>
+  <xs:complexType name="NamedA"/>
+  <xs:complexType name="NamedB"/>
+</xs:schema>

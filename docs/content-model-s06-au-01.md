@@ -4,6 +4,33 @@ Research rule tables, original-operand interfaces and independently reproducible
 
 ## Disposition and delivery boundary
 
+The #269 recovery implementation adds `src/compiler/schemaAttributeUses.ts::assessSourceAttributeUses` for actual source contexts.
+It retains original AU/declaration identities, checked typed own/declaration operands, all fixed predicates and a C1 absent plan, using the single shared scalar/type/declaration owners.
+Its result carries outstanding aggregate type and source syntax obligations; hypothetical contexts return unresolved at the source-construction boundary.
+
+Source replacement checks every matching original base use; omitted uses preserve their identities and direct prohibitions remain distinct from group-internal prohibitions.
+Checked declaration receipts retain global declaration evidence even when a prohibited reference contributes no AU.
+Conflicting optional augmentation candidates produce a plan-level conflict, not an invented schema-invalidity rule.
+
+The companion `assessRawAttributeUses` consumes explicit complete abstract properties under domain B, using the same original operand and C1 machinery.
+Literal extension implements `cos-ct-extends` 1.2's declaration QName/type-identity matching and 1.3's normative base-to-derived wildcard subset; neither source identity union nor an extra processing-strength comparison is imposed.
+Literal restriction may omit an optional AU and must cover every required base name with a required use.
+An explicit source default on a required use is source-invalid; that XML mapping condition is not invented for a source-independent abstract AU.
+
+The selected source replacement quantifier does not settle duplicate matches in every literal abstract set.
+Where every matching base operand passes, the local raw relation is checked; where none passes it is rejected; mixed outcomes remain `unresolved/raw-au-match-quantifier` until a matching interpretation or authenticated inherited/replacement rule is accepted.
+This preserves the source omission controls below and does not silently select the rejected all-final/all-base alternative.
+Raw violations return `candidate-rejected`, with their local rule and original component/source, and cannot become actual-schema invalidity or a universal negative.
+Raw receipts retain aggregate and property-correspondence prerequisites, so their existence is not a complete candidate certificate.
+
+The shared `wildcardAlgebra.ts` supplies mathematical union/intersection, membership, abstract namespace-property expressibility and processing strength.
+`namespaceSubset` implements dated `cos-ns-subset`; `namespaceSetSubset` is mathematical inclusion and must not substitute for that rule.
+In particular, unlike non-any negated values fail the XSD relation even when extensional inclusion holds; an empty abstract finite set does not imply a particular XML lexical representation.
+
+Composition uses the same algebra with its stage budget, while semantic consumers pass the shared request charge.
+The actual ur-type identity exception belongs to its invoking rule and cannot be inferred from `##any` or `lax` spelling.
+The [independent correction](https://github.com/TechSpokes/typescript-wsdl-client/issues/269#issuecomment-6111729641) and source AU tests preserve this boundary.
+
 The maintainer selected C1 runtime/default interpretation and universal checks for source-declared restriction replacements. The primary-source gaps below explain those explicit project decisions; exact-revision review, combined delivery checks and #179 production implementation remain separate gates.
 
 The base requiring global integer `a`, fixed to `1`, and the extension repeating it as optional without a constraint retains both original AUs by component mapping. Under selected C1, absence is invalid and present input must satisfy the inherited fixed value `1`; the optional repeated use does not weaken either obligation.

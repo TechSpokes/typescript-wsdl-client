@@ -24,9 +24,12 @@ function baseUri(uri: string, source: SyntaxSource): string {
 
 export function artifactGraph(graph: CanonicalGraph): CanonicalGraph {
   const resources = new Map<string, string>();
+  const collected = new WeakSet<object>();
   const collect = (v: unknown): void => {
     if (typeof v === "string" && /[a-z][a-z0-9+.-]*:\/\/[^\s/]*@/i.test(v)) throw new CatalogError("incompatible-artifact", "Credential-bearing URI cannot be serialized");
     if (!v || typeof v !== "object") return;
+    if (collected.has(v)) return;
+    collected.add(v);
     if (Array.isArray(v)) { for (const c of v) collect(c); return; }
     const o = v as Record<string, unknown>;
     if (typeof o.uri === "string" && typeof o.digest === "string" && typeof o.path === "string") resources.set(o.uri, o.digest);
@@ -42,9 +45,22 @@ export function artifactGraph(graph: CanonicalGraph): CanonicalGraph {
       return canonicalJson([tuple[0], sourceUri(tuple[0]), baseUri(tuple[2], {uri: tuple[1], digest: tuple[0]} as SyntaxSource), ...tuple.slice(3)]);
     } catch { throw new CatalogError("invalid-schema", "Invalid loading interpretation key"); }
   };
+  // Preserve immutable source/syntax sharing internally. Parent namespace and
+  // local name remain part of the key: retrieval attributes and SOAP binding
+  // addresses have different transformations/checks in different XML contexts.
+  // The data-only format-2 materialization remains byte-for-byte unchanged.
+  const transformed = new WeakMap<object, Map<string, unknown>>();
   const transform = (v: unknown, parentName?: ExpandedName): unknown => {
     if (!v || typeof v !== "object") return v;
-    if (Array.isArray(v)) return v.map(c => transform(c, parentName));
+    const context = parentName ? JSON.stringify([parentName.namespace, parentName.local]) : "";
+    let variants = transformed.get(v);
+    if (variants?.has(context)) return variants.get(context);
+    if (!variants) {variants = new Map(); transformed.set(v, variants);}
+    if (Array.isArray(v)) {
+      const result = v.map(c => transform(c, parentName));
+      variants.set(context, result);
+      return result;
+    }
     const o = v as Record<string, unknown>, result: Record<string, unknown> = Object.create(null);
     for (const [k, c] of Object.entries(o)) {
       if (c === undefined) continue;
@@ -71,6 +87,7 @@ export function artifactGraph(graph: CanonicalGraph): CanonicalGraph {
         result.value = artifactUri.test(a.value) ? a.value : `urn:base:sha256:${sha256(a.value.replace(/\?.*$/, ""))}`;
       }
     }
+    variants.set(context, result);
     return result;
   };
   return normalizeGraphTables(transform(graph) as CanonicalGraph);

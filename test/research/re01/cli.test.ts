@@ -17,7 +17,7 @@ const args = (model = 'derivation'): string[] => ['--re01-model', model, '--cand
 const report = (output: string): Record<string, unknown> => JSON.parse(output) as Record<string, unknown>;
 
 describe('dedicated RE01 research CLI', () => {
-    it('documents narrow scope and pending explicit selection', () => {
+    it('documents narrow scope and selected default without claiming a complete procedure', () => {
         const help = runResearchCli(['--help']);
         expect(help.exitCode).toBe(0);
         expect(help.output).toContain('--re01-model derivation|schema-preserving');
@@ -25,8 +25,7 @@ describe('dedicated RE01 research CLI', () => {
     });
 
     it.each([
-        [[], 'model-selection-required'],
-        [['--candidate-file', file], 'model-selection-required'],
+        [[], 'candidate-file-required'],
         [args('unknown'), 'invalid-model'],
         [[...args(), '--unknown', 'yes'], 'unknown-option'],
         [[...args(), '--re01-model', 'derivation'], 'invalid-model'],
@@ -37,6 +36,13 @@ describe('dedicated RE01 research CLI', () => {
         const result = runResearchCli(options as string[]);
         expect(result.exitCode).toBe(1);
         expect(report(result.output)).toMatchObject({kind: 'input-error', diagnostic: {code: expected}});
+    });
+
+    it('uses the selected derivation domain by default while the supplied candidate remains unresolved', () => {
+        const result = runResearchCli(['--candidate-file', file]);
+        expect(result.exitCode).toBe(2);
+        expect(report(result.output)).toMatchObject({model: 'derivation', selection: 'default', kind: 'unresolved',
+            semanticVerdict: 'unresolved', existentialVerdict: 'unresolved', actualSchemaVerdict: 'unresolved'});
     });
 
     it.each(['derivation', 'schema-preserving'])('returns model-tagged unresolved semantic status for %s', model => {

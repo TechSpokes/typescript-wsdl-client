@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:content" targetNamespace="urn:recovery:content">
+  <xs:group name="G"><xs:sequence><xs:element name="item" type="xs:int" fixed="01"/></xs:sequence></xs:group>
+  <xs:complexType name="B"><xs:group ref="t:G"/></xs:complexType>
+</xs:schema>

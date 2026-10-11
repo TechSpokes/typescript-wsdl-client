@@ -2,11 +2,13 @@
 import {contextConstructionModel, withContext} from './resolver-context.js';
 import type {ContextAccess} from './resolver-context.js';
 import type {Context, Id, Result} from './resolver-types.js';
+import {RE01_DERIVATION_DOMAIN} from '../../../src/compiler/re01TypeProperties.js';
 
 export type DependencyModel = 'derivation' | 'schema-preserving';
-export const DEPENDENCY_CONTRACT = 'RE01-dependency-census-v1';
+export const DEPENDENCY_CONTRACT = 'RE01-dependency-census-v2';
 export type DependencyReceipt = Readonly<{
     model: DependencyModel; contract: typeof DEPENDENCY_CONTRACT;
+    domainContract: typeof RE01_DERIVATION_DOMAIN | 'schema-preserving-experimental-v1';
     context: string; contextKind: Context['kind'];
     scope: 'declared-references-ownership-and-reverse-affiliations';
     roots: readonly Id[]; members: readonly Id[];
@@ -107,6 +109,7 @@ export function collectDerivationDependencies(context: Context, model: Dependenc
         const canonicalRoots = b.sorted(Array.from(rootSet), b.compareText);
         b.chargeWork(220 + context.key.length + model.length);
         const receipt: DependencyReceipt = {model, contract: DEPENDENCY_CONTRACT,
+            domainContract: model === 'derivation' ? RE01_DERIVATION_DOMAIN : 'schema-preserving-experimental-v1',
             context: context.key, contextKind: context.kind,
             scope: 'declared-references-ownership-and-reverse-affiliations',
             roots: canonicalRoots, members, qualification: 'structural-census-only'};

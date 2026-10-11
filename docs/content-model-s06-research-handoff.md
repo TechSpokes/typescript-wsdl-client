@@ -4,6 +4,11 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
+It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
+The concrete finite checker verifies supplied nested evidence under that domain; complete local-owner acceptance and the universal theorem retain their separate review gates.
+Source-owned local functions and conditional proof lemmas do not close #232/#234 or activate #179/#153.
+
 The [October 11 addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical global hypothetical-overlay characterization.
 The [derivability continuation](content-model-s06-re-01.md#derivability-and-affiliation-continuation) executes the independently specified affiliation contrast and implements a structural dependency census and isolated research model selection.
 Actual Γ remains immutable with all actual legality obligations; these concrete outputs do not yet discharge arbitrary-witness coverage, complete semantic checking or the joint acceptance gate.
@@ -40,6 +45,26 @@ The unaccepted #231 draft is inspected separately at `460f5b8379c68ffef79917284e
 [Its tested blocked handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/179#issuecomment-6088537340) and [independent review](https://github.com/TechSpokes/typescript-wsdl-client/pull/231#issuecomment-6088474178) are historical inputs.
 No assessment module is imported from that draft into the research runtime.
 Copied fixtures identify that exact source revision; historical expected outcomes are not silently rewritten.
+
+### Architecture recovery reconciliation of #231
+
+Recovery starts on current main `7d652fea79fddce8fd407f5c18dc2645ad203cc5`, tree `77de8bccba79228208c405b8c43582c4f00154f4`.
+The task-owned branch is `codex/architecture-recovery-232`; the original draft branch, checkout and history are preserved.
+The following ports are reviewed against current contracts rather than accepted through the draft's historical checks.
+
+| Draft area | Recovery disposition | Contract correction |
+| --- | --- | --- |
+| `scalarSchemaAssessment.ts`, `schemaDatatypeValues.ts`, `schemaPattern.ts`, `schemaUri.ts` | Deliberately ported behind `schemaScalarKernel.ts` | Authenticated context, shared sticky request budget, original typed operands and explicit aggregate prerequisites; exact calendar implementation shared with DT01 |
+| `schemaAssessmentContext.ts` | Replaced by `semanticContext.ts` and narrow scalar adapter | One immutable actual preparation, isolated deltas, complete context-qualified lookup and original source evidence; no NodeId-only hypothetical cache |
+| `attributeSchemaAssessment.ts` | Replaced by `schemaAttributeUses.ts` and `wildcardAlgebra.ts` | Original AU identities and C1 constraints, universal source replacement, schema operands retained after prohibition, normative wildcard subset distinguished from mathematical inclusion |
+| `schemaSyntaxAssessment.ts` | Deliberate actual-source port | Source checks retain their role; abstract candidates do not acquire invented XML syntax obligations; negative occurrence and simple-content syntax controls corrected |
+| `particleSchemaAssessment.ts` | Reconciled in concrete local particle owners | Shared #178 arithmetic and R-240; normalized comparisons remain distinct from raw extension construction |
+| `assessSchemaProfile.ts` blanket obligation discharge | Not adopted | Every required obligation needs matching concrete evidence; structural preparation and local receipts do not certify aggregate legality |
+| `operationSchemaAssessment.ts` and public orchestration | Preserved as later #179 integration input | Existing selected-closure behavior and operation capability boundaries are not renamed into full-schema acceptance |
+
+Research now consumes the reviewed internal source authorities through compatibility adapters.
+The manifest pins those source entries, and its dependency audit prevents shipping source from importing research implementations.
+This direction of reuse implements #232's staging amendment without activating public faithful assessment or altering persisted catalogs.
 
 The complete October 28, 2004 [structures source](https://github.com/jacoelho/xsd/blob/142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/structures.xml) has SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
 The corresponding [datatypes source](https://github.com/jacoelho/xsd/blob/142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/datatypes.xml) has SHA-256 `430f010df8ed077a4ed11d9d5812ea5e5d62ba67e715f1bbeeaa8ee1765d84c7`.

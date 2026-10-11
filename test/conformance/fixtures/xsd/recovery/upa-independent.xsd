@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:upa" targetNamespace="urn:recovery:upa">
+  <xs:element name="head" type="xs:string"/>
+  <xs:element name="member" type="xs:string" substitutionGroup="t:head"/>
+  <xs:group name="One"><xs:sequence><xs:element name="a" type="xs:string"/></xs:sequence></xs:group>
+  <xs:complexType name="FixedPair"><xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="OptionalPair"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="SharedFixed"><xs:sequence><xs:group ref="t:One"/><xs:group ref="t:One"/></xs:sequence></xs:complexType>
+  <xs:complexType name="SharedOptional"><xs:sequence><xs:group ref="t:One" minOccurs="0"/><xs:group ref="t:One"/></xs:sequence></xs:complexType>
+  <xs:complexType name="SubstitutionConflict"><xs:sequence><xs:element ref="t:head" minOccurs="0"/><xs:element ref="t:member"/></xs:sequence></xs:complexType>
+  <xs:complexType name="WildcardConflict"><xs:choice><xs:element ref="t:head"/><xs:any namespace="##any" processContents="lax"/></xs:choice></xs:complexType>
+  <xs:complexType name="FlatAll"><xs:all><xs:element name="a" type="xs:string"/></xs:all></xs:complexType>
+  <xs:complexType name="OuterRepeat"><xs:choice maxOccurs="2"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0"/><xs:element name="b" type="xs:string"/><xs:element name="a" type="xs:string" minOccurs="0"/></xs:sequence></xs:choice></xs:complexType>
+  <xs:complexType name="FixedGroupBoundary"><xs:sequence><xs:sequence minOccurs="3" maxOccurs="3"><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:sequence><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="DeadPrefixAmbiguous"><xs:choice><xs:sequence><xs:element name="a" type="xs:string"/><xs:choice/></xs:sequence><xs:element name="a" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="UnreachableSuffix"><xs:sequence><xs:choice/><xs:choice><xs:element name="a" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:choice></xs:sequence></xs:complexType>
+</xs:schema>

@@ -34,6 +34,12 @@ export type SchemaInput = Readonly<{
   metrics: Readonly<{resources: number; totalBytes: number; ioMs: number}>;
 }>;
 
+// Source-syntax evidence is issued only by this loader, never by a copied shape.
+const loadedInputs = new WeakSet<object>();
+export function assertLoadedSchemaInput(input: SchemaInput): void {
+  if (!loadedInputs.has(input)) throw new TypeError("Unauthenticated loaded schema input");
+}
+
 export function schemaInterpretationKey(node: SyntaxElement, targetNamespace: string, context: SchemaContext): string {
   return JSON.stringify([node.source.digest, node.source.uri, node.baseUri, targetNamespace, context.kind, context.namespace, node.source.path]);
 }
@@ -162,6 +168,8 @@ export async function loadSchemaInput(source: string, options: {
   if (is(root.root, XSD_NAMESPACE, "schema")) await interpret(root.root, {kind: "root", namespace: ""}, 0);
   else if (is(root.root, WSDL_NAMESPACE, "definitions")) await visitWsdl(root, 0);
   else throw new SchemaLoadingError("unsupported-capability", "Only WSDL 1.1 or XSD schema inputs are accepted; payload hints cannot resolve schemas", root.root.source);
-  return Object.freeze({root, documents: Object.freeze([...documents.values()]), schemas: Object.freeze([...schemas.values()]),
+  const input = Object.freeze({root, documents: Object.freeze([...documents.values()]), schemas: Object.freeze([...schemas.values()]),
     resources: loader.metadata, edges: Object.freeze(edges), limits: loader.limits, metrics: loader.metrics});
+  loadedInputs.add(input);
+  return input;
 }

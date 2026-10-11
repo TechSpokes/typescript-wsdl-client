@@ -4,6 +4,49 @@ Research contract, competing interpretations and independent evidence for S06-PW
 
 ## Disposition and decision request
 
+Recovery #270 moves the shared group-to-wildcard control flow into `src/compiler/particleWildcardRelation.ts`.
+The fixed `restrictParticleToWildcard` source entry uses the caller's authenticated context/budget, accepted #178 exact arithmetic and #269's normative wildcard relation; the historical research entry becomes an adapter.
+Its result is a conditional local relation with explicit normalized-view, occurrence, construction and attribution prerequisites, not full particle/schema validity.
+
+The source entry does not infer the actual ur-type wildcard identity from caller-supplied spelling.
+Recovery now implements normalization, full restriction dispatch, raw extension and UPA/EDC in separate shared owners, while aggregate candidate acceptance remains #271.
+The complete universal witness theorem remains #234.
+
+### Recovery particle authorities
+
+`particleSemanticView.ts` distinguishes authenticated declared views from restriction-normalized comparison views.
+It uses the existing #178 occurrence implementation with the caller's shared budget; it does not replace formal ranges with accepted-count intervals.
+`particleRestriction.ts` implements the specified dispatch and ordered/unmatched mappings, using the shared scalar/type and wildcard owners.
+An implicit substitution set has no established virtual-choice order; comparisons whose ordered mapping depends on that missing order remain unresolved.
+
+`particleExtension.ts` checks the original raw extension relation.
+The same particle identity is a primitive case; a unit sequence with the required recursively equal first member is checked through concrete component properties.
+Annotations and diagnostic storage do not substitute for semantic properties, and normalized language equivalence does not establish raw extension.
+`schemaComponentEquality.ts` owns the recursive property comparison, with scalar and component-validity prerequisites kept explicit.
+
+`particleAttribution.ts` constructs one marked counter automaton from particle-use positions and exact occurrence bounds.
+Finite counts remain `bigint` guards and counter values; numeric bounds do not duplicate event structure.
+Unbounded counters saturate only after their minimum, where the transition guards no longer distinguish larger values.
+The finite alphabet partition distinguishes named elements, remaining names in each mentioned namespace and unmentioned namespaces.
+Effective substitution members and wildcard namespace operations use the same context-qualified owners as restriction.
+Attribution checks overlapping marked transitions at every reachable prefix, including branches whose later required suffix cannot complete.
+The normative requirement to choose without the remainder is corroborated by Appendix H's untrimmed automaton construction; Appendix H is explicitly nonnormative guidance.
+A suffix behind an unreachable required empty choice has no reachable transition and does not create a prefix ambiguity.
+
+Determinization explores exact counter configurations under the shared budget.
+Reviewed acceleration skips only a deterministic counter cycle below its next minimum guard, with the same consuming position, unchanged other counters and no intervening reset or exit.
+It is not an arbitrary cap on repetition counts.
+All finite counters have finite value domains, unbounded counters have the justified saturated domain, and the structural state graph is finite; exploration therefore terminates with sufficient resources.
+Resource interruption yields no UPA verdict or accepted candidate.
+
+`particleDeclarationConsistency.ts` checks EDC across positions, including implicit substitution members and named-type identity.
+`particleLocalAssessment.ts` combines local all/UPA/EDC checks without assuming the containing schema is valid.
+The aggregate owner also checks unused original named groups and compositors; legality cannot depend on whether a complex type happens to reference them.
+
+Independent restriction, extension, EDC and UPA suites use real canonical/resolved inputs.
+The nested-repeat ambiguity `((a?, b, a?)){1,2}` exposed an unsound path heuristic; exact counted attribution now checks that contrast and huge-range boundaries without event duplication.
+Finite language comparisons remain separate bounded review evidence, not proofs of full RE01 coverage.
+
 [Issue #235](https://github.com/TechSpokes/typescript-wsdl-client/issues/235) has a complete research contract and executable evidence.
 The maintainer [selected option B on October 10, 2026](https://github.com/TechSpokes/typescript-wsdl-client/issues/235#issuecomment-6095922074); final independent semantic review and delivery govern local acceptance.
 The published XSD 1.0 text and proposed R-240 correction yield different answers for 13 cases below.
@@ -94,7 +137,7 @@ The caller supplies the restriction-normalized particle view, its #178 formal ra
 The base wildcard's identity distinguishes the actual ur-type exception; neither `##any` spelling nor `lax` alone implies that exception.
 A positive relation result certifies this particle relation only, not complete schema legality, runtime support, finite recursive payload existence or language inclusion.
 
-The pure [prototype](../test/research/s06-pw01/predicate.ts) has no production imports.
+The historical [prototype adapter](../test/research/s06-pw01/predicate.ts) now imports the shared source control flow.
 Its [test adapter](../test/research/s06-pw01/predicate.test.ts) injects accepted main's occurrence arithmetic and namespace relations as the subject under test; all expected outcomes are independently authored in the fixture file.
 Neither file imports the unaccepted #231 assessment code, recalculates effective ranges with a second algorithm, or creates the #181 enumeration harness.
 

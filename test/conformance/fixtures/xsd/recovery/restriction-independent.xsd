@@ -1,0 +1,22 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:restriction" targetNamespace="urn:recovery:restriction">
+  <xs:element name="head" type="xs:string"/>
+  <xs:element name="member" type="xs:string" substitutionGroup="t:head"/>
+  <xs:complexType name="HeadOnly"><xs:sequence><xs:element ref="t:head"/></xs:sequence></xs:complexType>
+  <xs:complexType name="HeadExtended"><xs:complexContent><xs:extension base="t:HeadOnly"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="HeadCopy"><xs:sequence><xs:element ref="t:head"/></xs:sequence></xs:complexType>
+  <xs:complexType name="ChoiceAB"><xs:choice><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="ChoiceBA"><xs:choice><xs:element name="b" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="ChoiceA"><xs:choice><xs:element name="a" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="ChoiceAB2"><xs:choice minOccurs="2" maxOccurs="2"><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:choice></xs:complexType>
+  <xs:complexType name="SeqAB"><xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="SeqBA"><xs:sequence><xs:element name="b" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="SeqAA"><xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="AllAB"><xs:all><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:all></xs:complexType>
+  <xs:complexType name="AllBA"><xs:all><xs:element name="b" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:all></xs:complexType>
+  <xs:complexType name="AllAOptionalB"><xs:all><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string" minOccurs="0"/></xs:all></xs:complexType>
+  <xs:complexType name="OptionalAllA"><xs:all minOccurs="0"><xs:element name="a" type="xs:string"/></xs:all></xs:complexType>
+  <xs:complexType name="RequiredEmptyChoice"><xs:choice/></xs:complexType>
+  <xs:complexType name="Empty"><xs:sequence/></xs:complexType>
+  <xs:complexType name="Big"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="9007199254740993" maxOccurs="9007199254740993"/></xs:sequence></xs:complexType>
+  <xs:complexType name="BigMinusOne"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="9007199254740992" maxOccurs="9007199254740992"/></xs:sequence></xs:complexType>
+</xs:schema>

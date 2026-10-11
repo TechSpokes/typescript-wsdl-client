@@ -3,10 +3,13 @@ import {createResolverBudget} from './resolver-budget.js';
 import type {ResolverBudget, ResolverUsage} from './resolver-budget.js';
 import {prepareDerivationContexts, prepareLiteralContexts} from './resolver-context.js';
 import type {ActualInput, BoundaryEdge, Candidate, Diagnostic, Limits} from './resolver-types.js';
+import {qualifyDerivationEnvironment, RE01_DERIVATION_DOMAIN} from './derivation-domain.js';
+import type {DerivationEnvironmentReceipt} from './derivation-domain.js';
 
 export type ResearchModel = 'derivation' | 'schema-preserving';
-export const MODEL_SELECTION_CONTRACT = 'RE01-supplied-candidate-model-selection-v1';
-export const REVISED_MODEL_ACCEPTED = false;
+export const MODEL_SELECTION_CONTRACT = 'RE01-supplied-candidate-model-selection-v2';
+/** Accepted domain policy; this is not complete procedure acceptance. */
+export const REVISED_MODEL_ACCEPTED = true;
 export const EXPERIMENT_TERMINAL_WORK = 2_048;
 const PREFIXES = Object.freeze({
     derivation: `${MODEL_SELECTION_CONTRACT}/derivation/`,
@@ -25,11 +28,14 @@ export type StructuralReceipt = Readonly<{
     proposedQualification: 'structural-only';
     locality: 'dependency-transfer-unresolved';
     attributes: 'literal-component-properties';
+    domainContract: typeof RE01_DERIVATION_DOMAIN | 'schema-preserving-experimental-v1';
+    domainQualification: 'complete-represented-environment-only' | 'unavailable' | 'experimental';
+    environment?: DerivationEnvironmentReceipt;
 }>;
 export type ExperimentReport = Readonly<{
     model: ResearchModel;
     contractVersion: typeof MODEL_SELECTION_CONTRACT;
-    selection: 'explicit';
+    selection: 'explicit' | 'default';
     scope: 'supplied-candidate-structural-preparation';
     kind: 'unresolved' | 'input-error' | 'candidate-rejected' | 'resource-limit';
     semanticVerdict: 'unresolved';
@@ -61,16 +67,18 @@ function record(budget: ResolverBudget, fields: string): void {
 }
 
 export function runModelExperiment(request: unknown, model: ResearchModel,
-    limits?: Limits, sharedBudget?: ResolverBudget): ExperimentReport {
+    limits?: Limits, sharedBudget?: ResolverBudget, selection: 'explicit' | 'default' = 'explicit'): ExperimentReport {
     if (model !== 'derivation' && model !== 'schema-preserving')
         throw new TypeError('Explicit RE01 research model required');
+    if (selection !== 'explicit' && (selection !== 'default' || model !== 'derivation'))
+        throw new TypeError('Only accepted derivation can be the RE01 default');
     if (sharedBudget && limits !== undefined) throw new TypeError('One request budget required');
     const budget = sharedBudget ?? createResolverBudget(limits);
     // One bounded terminal envelope is escape machinery, just like the shared
     // resolver terminal result. Reserve its report/serialization allowance
     // before any input access; limits below the reservation do no graph work.
     const terminal = (): ExperimentReport => ({model, contractVersion: MODEL_SELECTION_CONTRACT,
-        selection: 'explicit', scope: 'supplied-candidate-structural-preparation',
+        selection, scope: 'supplied-candidate-structural-preparation',
         kind: 'resource-limit', semanticVerdict: 'unresolved', existentialVerdict: 'unresolved',
         actualSchemaVerdict: 'unresolved', limit: budget.failure()!.limit, usage: budget.usage()});
     const result = budget.guard(() => {
@@ -100,7 +108,9 @@ export function runModelExperiment(request: unknown, model: ResearchModel,
         budget.chargeWork();
         if (prepared.kind === 'resource-limit') return terminal();
         if (prepared.kind !== 'ok') return report(prepared.kind, prepared.diagnostic);
-        record(budget, 'model,contractVersion,scope,actualContext,proposedContext,actualMembers,proposedMembers,excludedIncoming,actualQualification,proposedQualification,locality,attributes');
+        const environment = model === 'derivation' ? qualifyDerivationEnvironment(prepared.value) : undefined;
+        if (environment?.kind === 'resource-limit') return terminal();
+        record(budget, 'model,contractVersion,scope,actualContext,proposedContext,actualMembers,proposedMembers,excludedIncoming,actualQualification,proposedQualification,locality,attributes,domainContract,domainQualification,environment');
         const receipt = budget.freeze(budget.snapshot<StructuralReceipt>({
             model, contractVersion: MODEL_SELECTION_CONTRACT,
             scope: 'supplied-candidate-structural-preparation',
@@ -109,7 +119,12 @@ export function runModelExperiment(request: unknown, model: ResearchModel,
             excludedIncoming: prepared.value.proposed.excludedIncoming,
             actualQualification: 'structural-only', proposedQualification: 'structural-only',
             locality: 'dependency-transfer-unresolved', attributes: 'literal-component-properties',
+            domainContract: model === 'derivation' ? RE01_DERIVATION_DOMAIN : 'schema-preserving-experimental-v1',
+            domainQualification: environment?.kind === 'ok' ? 'complete-represented-environment-only'
+                : model === 'derivation' ? 'unavailable' : 'experimental',
+            environment: environment?.kind === 'ok' ? environment.value : undefined,
         }));
+        if (environment && environment.kind !== 'ok') return report(environment.kind, environment.diagnostic, receipt);
         record(budget, 'code,rule,context,related');
         return report('unresolved', {code: 'missing-complete-semantic-authority', rule: 'RE01-complete-procedure',
             context: prepared.value.proposed.key, related: []}, receipt);
@@ -122,7 +137,7 @@ export function runModelExperiment(request: unknown, model: ResearchModel,
         record(budget, 'model,contractVersion,selection,scope,kind,semanticVerdict,existentialVerdict,actualSchemaVerdict,diagnostic,receipt,usage');
         budget.chargeWork(model.length + MODEL_SELECTION_CONTRACT.length + kind.length + 201); // Includes one freeze operation.
         return Object.freeze({model, contractVersion: MODEL_SELECTION_CONTRACT,
-            selection: 'explicit', scope: 'supplied-candidate-structural-preparation', kind,
+            selection, scope: 'supplied-candidate-structural-preparation', kind,
             semanticVerdict: 'unresolved', existentialVerdict: 'unresolved', actualSchemaVerdict: 'unresolved',
             diagnostic: frozenDiagnostic, receipt, usage: budget.usage()});
     }
