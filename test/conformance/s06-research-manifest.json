@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "cbcd6b7b75d6236c7d5e6e72faa595be2f5ddca1adc3e82655ef5d154a1b37e3",
+          "sha256": "81bc9a6b07f83b2bf9fb0579b7876775f0be39ea75afc7233a6e97dd093ac9b9",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -836,7 +836,7 @@
         {
           "path": "test/research/re01/decision-sources.json",
           "role": "expectations",
-          "sha256": "65cb3a0c9dccfd091f266b111c7defb5d54d8035f178f64c326ef2c4019b049c"
+          "sha256": "be37193428a0941f114826c5c73c17656c8a71f0bf9aff13f769911e55f02308"
         },
         {
           "path": "test/research/re01/decision-results.json",
@@ -862,6 +862,16 @@
           "path": "test/conformance/fixtures/xsd/re01/combined-identity-copy.xsd",
           "role": "fixture",
           "sha256": "76847d7a24d181620a52c71d4bf9f7c450afad3547ef6e1257473ba897cb6195"
+        },
+        {
+          "path": "test/research/re01/literal-attribute-extension.ts",
+          "role": "prototype",
+          "sha256": "4c9665991fcbb80e7271e15e6ce89f4b99cde6ada35b1d57ed9a19c02128fbf3"
+        },
+        {
+          "path": "test/research/re01/literal-attribute-extension.test.ts",
+          "role": "prototype",
+          "sha256": "be3f6474f9de98ae69f7aa76368a003cd301491001076920c0a2ecbe2a8a8557"
         }
       ]
     },
@@ -1253,6 +1263,6 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 229
+    "currentArtifactCount": 231
   }
 }

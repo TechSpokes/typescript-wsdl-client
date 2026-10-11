@@ -876,5 +876,232 @@ IDE inspections and a live independent second engine are unavailable; the comple
 | 8 | Independent review, normal delivery and exact closure disposition | Evidence delivery; closure blocked by Task 2/7 premises |
 
 #260 must remain open because its construction/preservation model does not yet support an unconditional complete-method recommendation.
-This blocker is semantic, rather than exhausted effort or failed bounded search: ambient quantification, abstract AU algebra and endpoint correspondence change the accepted witness domain.
-The packet and executed evidence can be delivered normally while those precise gates remain open; #234/#232/#179/#153 are not closed by this investigation.
+
+## Construction contract and engineering recommendation after #260 continuation
+
+This continuation starts from normally merged `f52d621e291c60a3220ec8457d110e42d83092bf`, tree `8a6ee8ed2193185139e967de2ef6bfc1db1a046c`.
+It supersedes the preceding investigation's unresolved construction-model and recommendation disposition; the experiments and limitations at that checkpoint remain historical evidence.
+The research recommendation is a literal abstract component graph with an explicit preserved assessment context, one coherent hypothetical endpoint and a shared qualified checker.
+
+### Research completion and theorem acceptance
+
+Task 7 asks for a defensible procedure or architecture and actionable owner interfaces, rather than an already proved total decision algorithm.
+The preceding phrase “unconditional complete-method selection” imposed a stronger gate than the [execution assignment](https://github.com/TechSpokes/typescript-wsdl-client/issues/260#issuecomment-6107368413).
+The complete arbitrary-witness reduction, general negative answers and mathematical termination remain #234's acceptance obligations.
+
+Task 2 still requires a defensible permitted-construction model.
+The model below makes the preserved context an explicit input and removes the unjustified XML-style AU algebra; it does not claim that clause 1.5 explicitly quantifies every schema root.
+The issue's whole-context preservation requirement supplies that boundary, supported by component closure and the existing incoming-reference contrasts.
+
+### Literal component graph domain
+
+Let `Γ` be the immutable, explicitly supplied whole original assessment schema, including every root already in that schema, its component-property closure and the relation-sensitive declarations supplied to assessment.
+It is an input established before search, not a subset variable that the candidate generator may prune.
+If an application supplies a different assessment schema, it has supplied a different problem; the previous retained/omitted contrasts demonstrate why their answers cannot be merged.
+
+The dated [component model](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#scIntro) defines properties as a graph and permits re-entrant component references.
+[Schema validity](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#conformance-schemaValidity) requires the schema's recursively included components to satisfy their constraints.
+These clauses justify closure and coherent definitions once `Γ` is specified, rather than a theorem that local valid derivation alone requires retaining every available source document.
+
+An admissible proposal contains all required original components, the proposed endpoint and a finite set of additions.
+Additions may include complex/simple types, particles, groups, declarations, attribute uses, scalar/facet helpers and incoming affiliations, with any property values permitted by the component definitions.
+Their legality, ownership, namespace/name uniqueness, closure and effects on every included component must be checked; there is no assumed helper-count or occurrence-size cutoff.
+
+Builtins retain their specified identities and definitions.
+The relevant ancestor is selected from the actual derivation chain exactly as clause 1.5 specifies: the ancestor whose base is the ur-type, with qualified builtin/simple ancestry included.
+It is not silently replaced by the nearest complex ancestor; the existing simple-content contrast demonstrates why that substitution is unsafe.
+
+The intermediate may be an unchanged original component with the required identity, or a fresh legal component.
+It must support extension from that actual ancestor and restriction to the proposed endpoint, including the permitted primitive vacuous cases.
+Source contributions constrain actual XML-derived operands; retain/replace/prohibit flags do not define all possible abstract intermediate properties.
+
+### Endpoint identity and preservation
+
+The proposed endpoint retains the original endpoint's identity and all non-derivation property values, component references, scalar/facet contexts and sharing.
+Only its immediate base and derivation method are replaced for the hypothetical restriction; original provenance remains available in the immutable actual graph.
+Properties such as final, block, abstract, content category and value constraints are preserved even when they influence downstream comparisons.
+
+Every other required original component retains its property values and references.
+An original reference to the endpoint resolves to the single proposed endpoint in the hypothetical graph, so its relationship-dependent answers may change.
+Those changed answers require rechecking; immutable property preservation alone does not transfer semantic validity.
+
+Named originals preserve their expanded names within symbol spaces.
+The component model forbids simultaneous same-name copies, so a named endpoint cannot be a restriction for one comparison and its old extension for a recursive comparison in that same proposed graph.
+This supports E2's coherent overlay and rejects E1's mixed resolution as a construction of one schema.
+
+Anonymous originals, local declarations and utility components are reused with their original identity and ownership.
+[Identity caveats](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#no-identity) permit implementations to differ in incompletely specified cases; this contract chooses reuse and makes that project preservation policy explicit.
+Fresh helpers cannot claim an original identity, and no unnamed-copy equivalence or source reconstruction theorem is assumed.
+
+The contract preserves the desired component's property graph directly; it does not require regenerating an equivalent XML document.
+Whether a proposed standard-form reduction can replace helpers by equivalent copies while preserving every relevant predicate is a #234 proof obligation against this declared model.
+Existing original intermediate identities remain first-class candidates because the all-group control refutes fresh-copy substitution.
+
+### Why XML-style AU inheritance is insufficient
+
+[Conformance](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#concepts-conformance) separates abstract component constraints from XML representation and mapping requirements.
+Consequently, a hypothetical abstract intermediate need not be the source-mapped union of original base attribute uses.
+It must satisfy the actual extension predicate and all other applicable component constraints.
+
+The specific expansion in [extension clause 1.2](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends) compares attribute declaration name, namespace and type definition.
+It does not additionally require equality of attribute-use identity, requiredness or fixed value.
+Reading “subset” as an extra object-identity conjunct would introduce a requirement absent from that expansion; this continuation adopts the specific expanded predicate.
+
+There is contrary explanatory language: [Type Definition Hierarchy](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#Type_Derivation) describes extension as adding content, and the clause 1.5 note recommends reordered extensions.
+Those descriptions explain the intended construction but do not specify an additional fixed-value error predicate; the explicit valid-extension definition refers to the numbered constraint.
+Ordinary XML inheritance remains a sufficient construction recipe where its premises hold, rather than a necessary characterization of every abstract witness.
+
+The official [XSD 1.1 comparison with 1.0](https://www.w3.org/TR/xmlschema11-1/structures.diff-1.0.html#cos-ct-extends) replaces clause 1.2's QName/type expansion with recursively identical AU properties.
+That later strengthening would reject the changed-use construction; it is an edition contrast, not an adopted correction to the dated 1.0 rule used here.
+Clause 1.5 remains present in that later edition.
+
+The official [Recommendation comments inventory](https://www.w3.org/2001/05/xmlschema-rec-comments.html), R-213, reports a formal attribute restriction that conflicts with the introductory language-inclusion description.
+R-243 reports tension between clause 1.5 and its no-restoration note, including an unchanged-original-only proposed repair.
+These entries are marked New/Unclassified with no adopted resolution shown; they expose contrary intentions rather than settle this abstract construction or supply an extra normative error predicate.
+
+Only those public inventory entries were read; their full originating threads and member discussions were not verified.
+The model is the documented component-predicate reading with an explicit preservation policy, not a claim of settled WG intent for every ambiguous phrase.
+
+This distinction changes outcomes without reopening AU01 C1 or its accepted universal source-replacement contract.
+Those contracts continue to consume complete original AU sets and typed operands when their operations apply.
+They must not be used to insert source-inherited uses into a hypothetical graph that does not contain them.
+
+The existing [resolver preparation](../test/research/re01/resolver-context.ts) still validates D1 plans by requiring all ancestor AU identities to be retained, and accepts candidate-selected original membership.
+It therefore does not implement the new fixed-`Γ` literal domain and can reject `E = {u8}` before the component predicate is reached.
+The next adapter must confine that inheritance invariant to source-style plans, add literal AU-property input and enforce retention of every original root in the supplied `Γ` for this contract.
+
+Existing resolver results remain qualified by their historical D1/membership domain.
+The new narrow probe establishes the clause boundary, while the new complete adapter and six-owner checker remain #179 implementation units after #234/#232 accept their interfaces.
+This continuation does not claim that the old resolver has acquired unrestricted graph support.
+
+### Complete minimal fixed-value contrast
+
+Take one original global `g:xs:int` declaration with no declaration-level fixed value.
+User-defined types have empty content, absent attribute wildcards, empty final/block sets and ordinary valid property ranges.
+`A` restricts `anyType` and has optional original use `u7` fixed to 7; `B` restricts `A` and removes that optional use; actual `D` extends `B` with original optional use `u8` fixed to 8.
+
+Construct fresh `E` extending original `A`, with its attribute-use set containing original `u8` alone, and make proposed `D` restrict `E` while retaining `u8`.
+All original declarations, `A`, `B`, the endpoint identity and the root declaration remain present.
+No XML inheritance mapping is asserted for `E`.
+
+| Applicable obligation | Independent reason |
+|---|---|
+| Schema/name/property closure | Unique named types; complete original references |
+| Complex-type properties | Legal ranges; all bases reach `anyType`; one non-ID declaration |
+| Global attribute declaration | Legal name/namespace; qualified builtin `xs:int`; no fixed value |
+| Attribute-use correctness | Boolean requiredness; valid integer values; no declaration-fixed conflict |
+| `A` restriction | Ur-type wildcard admits `g`; ur-type content shortcut permits empty |
+| `B` restriction | Optional `g` may be omitted; empty restricts empty |
+| `E` extension | Same declaration QName/type; empty extends empty; no final/wildcard hurdle |
+| `E` clause 1.5 | Primitive possibly-vacuous two-step case; its only extension follows `A` |
+| Proposed `D` restriction | Identical `u8`, type and fixed value; empty restricts empty |
+| Root and incoming relationships | Preserved ordinary root; no user-defined affiliations or identity constraints |
+
+The complete specified builtin environment is a qualified premise, including `anyType`'s mixed particle/wildcards, builtin datatype ancestry and the four mandatory `xsi` declarations with their scalar closure.
+There are no user-defined particles, wildcards or groups in this contrast.
+The primitive discharge creates no self-loop base edge and does not recursively assume that an unfinished general RE01 search succeeds.
+
+The ordinary root satisfies element-property ranges, has no value constraint or substitution affiliation, and has an empty identity-constraint set.
+Its unchanged type reference resolves proposed `D` coherently, without requiring an instance observation as a schema-validity premise.
+
+Thus the literal component constraints admit this complete minimal abstract construction.
+A source-style intermediate retaining both `u7` and `u8` rejects the final restriction to `u8`, because universal matching compares 8 with original fixed 7.
+This refutes the claim that that source-union algebra characterizes every witness in the selected abstract domain.
+
+The existing [abstract restoration source](../test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd) supplies the corresponding actual pattern using fixed 1/2.
+Its primary-engine observation remains separate from this component argument.
+The [new predicate](../test/research/re01/literal-attribute-extension.ts) executes only the expanded clause 1.2 projection; its result does not represent a reusable full schema-validity checker.
+
+The [nine behavioral controls](../test/research/re01/literal-attribute-extension.test.ts) vary original identity spelling, requiredness, namespace and scalar identity, qualify an invalid original operand before replacement, and distinguish source-union rejection from literal matching.
+They also exercise a shared sticky request budget at the measured inclusive boundary and reject partial conclusions after exhaustion.
+They preserve original operands and use independent clause premises rather than payload snapshots or helper-call counts.
+
+```bash
+npx vitest run test/research/re01/literal-attribute-extension.test.ts
+npm run typecheck:research
+```
+
+The nine controls and strict research typechecks passed on Node 24.19.0, npm 11.9.0, TypeScript 6.0.3 and Vitest 5.0.3.
+The original 12-row finite report is unchanged and remains reproducible with its documented command.
+The new controls establish their declared predicate boundary; the complete minimal certificate above is a clause argument reviewed separately.
+
+### Selected engineering architecture
+
+Build one proposal checker around immutable actual `Γ`, a coherent proposed overlay and qualified semantic owners.
+The checker first validates inputs and preservation, then checks raw construction, both derivation steps, scalar operands and every affected component relationship.
+Its positive result includes the construction and all qualifications; missing authority remains unresolved, rather than becoming either validity or nonexistence.
+
+Up-front qualification covers original identity, representation, structural and scalar prerequisites, not the target RE01 existential or dependent validity that search is establishing.
+Those target-dependent obligations require checked construction/certificate evidence or a justified joint proof; assuming complete actual-schema validity here would make the recommendation circular.
+
+Generate candidates in the literal graph domain, prioritizing original identities, relevant finite flags and certified raw content/AU constructions.
+Treat F1 as a proposed acceleration family whose completeness must be proved against this domain, rather than retaining its historical D1 source-union premise.
+Keep a deliberately bounded independent constraint enumerator to falsify reductions and direct criteria for individually proved impossibility cases.
+
+Fair enumeration of finite serialized graphs and certificates is a specification baseline for possible additions, not a promised terminating implementation.
+With a complete qualified checker, it can establish a found positive; no finite exhaustion proves nonexistence without a separately justified coverage bound or direct theorem.
+Retained RE01 obligations need well-founded certificates or a justified joint method before this baseline becomes a complete semidecision claim.
+
+Use dovetailing for unfinished checking or enumerate finite certificates with a terminating verifier; a preferred family cannot indefinitely starve other candidates.
+Coverage of finite encodings is distinct from adequacy of those certificates and termination of their verification, which #234/#232 must establish.
+
+```text
+qualify actual identity/representation/structural/scalar prerequisites and context Γ
+retain target/dependent RE01 validity as obligations to establish
+select actual ancestor; establish preservation obligations
+for each permitted candidate considered within the shared request budget:
+    prepare coherent proposed overlay without pruning Γ
+    check preservation, raw legality and qualified semantic obligations
+    return established positive only with a complete construction certificate
+return resource-limit if accounting is exhausted
+return unresolved if qualification or proof coverage is missing
+return established negative only under an accepted exhaustive/direct theorem
+```
+
+Preparation, allocation, comparison, checking, rejection and copying share one request budget, with charges before work or allocation.
+Cache identities include context and qualified operands; diagnostics retain the original source and hypothetical relation that failed.
+Candidate rejection, original invalid-schema, scalar indeterminacy, unsupported qualification, resource-limit and proved nonexistence are separate outcomes.
+
+| Alternative | Disposition and concrete reason |
+|---|---|
+| Fresh/empty-block-only F0 | Rejected; recorded identity/blocking controls miss positives |
+| XML/source-union-only witness algebra | Rejected as complete abstract domain; minimal fixed contrast differs |
+| E1 actual queries inside proposed graph | Rejected for coherent named endpoint; mixes two definitions |
+| Unproved context deletion | Rejected; affiliation/dispatch and combined UPA controls change answers |
+| Original-aware F1 | Prioritized proof candidate; raw/AU/helper/context reduction remains required |
+| Bounded constraints | Retained independent falsification tool; bounds qualify every negative |
+| Direct conditions | Retained scoped early exits; joint sufficiency needs proof |
+| New general solver dependency | Deferred; no inspected result covers this complete component domain |
+
+The prior language/grammar literature evidence does not supply anchored identity, recursive relationships or whole-context construction coverage.
+Additional [WG discussion of combined derivation, LC-152](https://www.w3.org/2000/05/12-xmlschema-lcissues.html) explains the historical difficulty of checking simultaneous operations, without furnishing a decision theorem for clause 1.5.
+Michael Kay's [implementation discussion](https://lists.w3.org/Archives/Public/xmlschema-dev/2006Nov/0023.html) describes group-reference identity affecting UPA and explicitly acknowledges identity ambiguity; it is explanatory implementation evidence, not adopted XSD 1.0 text.
+
+### Concrete owner interfaces and acceptance evidence
+
+| Owner | Next implementation or proof unit | Required acceptance evidence |
+|---|---|---|
+| #234 | Literal graph and preserved `Γ` contract | Clause model, original/copy and minimal fixed contrast; explicit project policy |
+| #234 | F1 reduction including fresh helpers | Arbitrary-successful-witness reduction; identity/flag/content/AU/context coverage |
+| #234 | Raw construction and normalization | All, mixed, simple, repeated, recursive and vacuous cases with original bounds |
+| #234 | Retained RE01 obligations and negatives | Transfer or well-founded joint certificates; justified total coverage/termination |
+| #232 | Shared-rule reconciliation | AU C1, PW R-240, DT A and RE consume identical qualified original operands |
+| #179 | Literal AU and fixed-`Γ` adapter, full checker | Source-only inheritance invariant; six owners qualified; coherent context; source diagnostics |
+| #179 | Search and accounting integration | Shared preparation/search/check/copy budget; sticky limits; no partial certificate |
+| #153 | Combined production assessment | Accepted interfaces plus behavioral generation/assessment evidence |
+| #184 | Payload scalar/augmentation | Original typed constraints and namespaces; invalidity/indeterminacy boundaries |
+
+#181 remains the later independent general enumeration harness and is not a prerequisite for this research delivery.
+The unaccepted #231 draft remains an architectural input at its existing pin, with no imported runtime dependency.
+The selected architecture changes no production support, defaults, catalog or public capability claim.
+
+### Continuation review and closure assessment
+
+The separate nonauthor reviewer independently challenged the subset expansion, introductory extension language, XML mapping, endpoint identity and full minimal constraint inventory.
+The review corrected the earlier extra theorem gate and required the context policy to be identified as the assignment's preservation contract rather than an explicit clause 1.5 quantifier.
+It also required qualifying builtin `anyType`'s closure and treating the trivial case as a primitive certificate without a derivation self-loop.
+
+The construction model and engineering recommendation now have concrete outputs; #234 still owns their complete reduction and theorem acceptance.
+Final #260 closure remains gated on exact-revision independent approval and normal head/merged-main delivery verification for this continuation.
+The issue handoff must record those actual revisions, test results, qualifications and owner links before marking Tasks 2/7/8 complete and closing.
+#234/#232/#179/#153 retain their separate proof, joint acceptance and production gates after this design investigation.

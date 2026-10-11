@@ -17,7 +17,12 @@
         "cos-particle-extend",
         "cos-all-limited",
         "cos-equiv-derived-ok-rec",
-        "cos-nonambig"
+        "cos-nonambig",
+        "Type_Derivation",
+        "ct-props-correct",
+        "derivation-ok-restriction",
+        "AU_details",
+        "au-props-correct"
       ]
     },
     {
@@ -48,6 +53,30 @@
       "url": "https://www.xmlmind.com/xmleditor/_distrib/doc/xmltool/xsd_structure_limitations.html",
       "scope": "implementation documentation explicitly lists cos-ct-extends.1.5 and UPA among unchecked constraints",
       "qualification": "not a decision theorem or semantic authority; no implementation installed/executed"
+    },
+    {
+      "url": "https://www.w3.org/2000/05/12-xmlschema-lcissues.html",
+      "scope": "LC-152 description and actual resolution, simultaneous restriction/extension; historical difficulty, no decision theorem",
+      "qualification": "WG discussion is not an adopted replacement for dated clause 1.5"
+    },
+    {
+      "url": "https://lists.w3.org/Archives/Public/xmlschema-dev/2006Nov/0023.html",
+      "title": "RE: UPA Question",
+      "author": "Michael Kay",
+      "date": "2006-11-28",
+      "scope": "relevant implementation explanation: named-group reference versus copy identity can affect UPA",
+      "qualification": "author explicitly notes incomplete component identity specification; implementation discussion is not normative XSD 1.0 text"
+    },
+    {
+      "url": "https://www.w3.org/TR/xmlschema11-1/structures.diff-1.0.html#cos-ct-extends",
+      "scope": "Official 1.1 diff: clause 1.2 replaces QName/type expansion with recursively identical AU properties; clause 1.5 retained",
+      "qualification": "Later-edition contrast only, not imported as XSD 1.0 errata"
+    },
+    {
+      "url": "https://www.w3.org/2001/05/xmlschema-rec-comments.html",
+      "scope": "R-213 and R-243 inventory entries: formal-predicate/overview tension and competing restoration repairs",
+      "qualification": "New/Unclassified entries, no adopted resolution shown; originating threads/member minutes not verified"
     }
-  ]
+  ],
+  "continuationBaseline": "f52d621e291c60a3220ec8457d110e42d83092bf"
 }
