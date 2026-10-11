@@ -107,11 +107,18 @@ describe('independent schema-document source boundaries', () => {
 
   it('retains every source annotation and foreign-attribute obligation after equal notation identity', async () => {
     const result = await notationCopies(files => {
-      editNotation(files, 'right.xsd', '<xs:notation name=', '<xs:notation xmlns:app="urn:app" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string" name=');
-      editNotation(files, 'right.xsd', 'Second notation source.', 'Second notation source.<app:payload><xs:element name="known"/></app:payload>');
+      editNotation(files, 'right.xsd', '<xs:notation name=', '<xs:notation xmlns:app="urn:app" xml:lang="" name=');
+      editNotation(files, 'right.xsd', 'Second notation source.', 'Second notation source.<app:payload xml:unknown="value"><xs:element name="known"/></app:payload>');
     });
     expect(result).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction',
       'foreign-attribute-assessment', 'annotation-payload-assessment']});
+  });
+
+  it('does not let equal notation properties waive a wrong xsi:type on either original source declaration', async () => {
+    const result = await notationCopies(files => {
+      editNotation(files, 'right.xsd', '<xs:notation name=', '<xs:notation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string" name=');
+    });
+    expect(result).toMatchObject({kind: 'invalid-schema'});
   });
 
   it('rejects a malformed second source annotation or duplicate root key despite otherwise equal notation properties', async () => {
@@ -208,16 +215,12 @@ describe('independent schema-document source boundaries', () => {
       remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
   });
 
-  it('retains a concrete known S4S payload obligation under an unknown wrapper and never fetches xsi hints', async () => {
+  it('checks known S4S payload below an unknown wrapper without interpreting or fetching xsi hints', async () => {
     const request = await source(schema('<xs:annotation><xs:documentation><app:payload xmlns:app="urn:app" ' +
       'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:app https://forbidden.example/never.xsd">' +
       '<xs:element name="known"/></app:payload></xs:documentation></xs:annotation>'));
     expect(checkSchemaDocumentSyntax(request.actual)).toMatchObject({kind: 'checked',
-      remaining: ['child-component-syntax', 'semantic-construction', 'annotation-payload-assessment'],
-      wildcardObligations: expect.arrayContaining([
-        expect.objectContaining({rule: 'schema-instance-assessment', name: {namespace: 'http://www.w3.org/2001/XMLSchema-instance', local: 'schemaLocation'}}),
-        expect.objectContaining({rule: 'schema-for-schemas-element-assessment', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'element'}}),
-      ])});
+      remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
   });
 
   it.each([
@@ -270,16 +273,12 @@ describe('independent schema-document source boundaries', () => {
     }
   });
 
-  it('retains XSI and unrelated known-element debts beside locally checked facet payloads', async () => {
+  it('checks exact named XSI type and known element clauses beside facet payloads', async () => {
     const request = await source(schema('<xs:annotation><xs:documentation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
-      '<xs:length value="1" xsi:type="xs:numFacet"/><xs:element name="still-pending"/>' +
+      '<xs:length value="1" xsi:type="xs:numFacet"/><xs:element name="known"/>' +
       '</xs:documentation></xs:annotation>'));
     expect(checkSchemaDocumentSyntax(request.actual)).toMatchObject({kind: 'checked',
-      remaining: ['child-component-syntax', 'semantic-construction', 'annotation-payload-assessment'],
-      wildcardObligations: expect.arrayContaining([
-        expect.objectContaining({rule: 'schema-instance-assessment'}),
-        expect.objectContaining({rule: 'schema-for-schemas-element-assessment', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'element'}}),
-      ])});
+      remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
   });
 
   it('requires privately paired original syntax and refuses copied input/context authority', async () => {

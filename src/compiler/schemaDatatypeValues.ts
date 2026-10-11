@@ -1,6 +1,7 @@
 /** Schema operand values only: facets/defaults/fixed, never application payloads. */
-import type {GraphNode, LexicalValue, Reference} from "./canonicalGraph.js";
-import type {AssessmentContext} from "./schemaScalarContext.js";
+import type {Reference} from "./canonicalGraph.js";
+import type {SchemaLexicalOperand, SchemaValueContext} from "./schemaValueContext.js";
+import type {SyntaxSource} from '../loader/orderedSyntax.js';
 import {isXmlNCName, isXmlName, isXmlNmtoken} from "../loader/orderedSyntax.js";
 import {parseCalendar, parseReduced, parseDuration, compareCalendar, compareDuration, ProbeFailure} from "./schemaExactCalendar.js";
 import type {Calendar, Duration, ReducedFamily, CalendarBudget} from "./schemaExactCalendar.js";
@@ -15,6 +16,9 @@ export type SchemaOperand = Readonly<{
   normalized?: string;
   calendar?: Calendar; duration?: Duration; items?: readonly SchemaOperand[]; selectedMembers?: readonly Reference[];
 }>;
+export type SchemaListTokens = Readonly<{normalized: string; tokens: readonly string[]; source: SyntaxSource}>;
+export const builtinListItem = (name: string): 'NMTOKEN' | 'IDREF' | 'ENTITY' | undefined =>
+  name === 'NMTOKENS' ? 'NMTOKEN' : name === 'IDREFS' ? 'IDREF' : name === 'ENTITIES' ? 'ENTITY' : undefined;
 export const builtinParents: Readonly<Record<string, string>> = Object.freeze({
   normalizedString: "string", token: "normalizedString", language: "token", NMTOKEN: "token", Name: "token", NCName: "Name",
   ID: "NCName", IDREF: "NCName", ENTITY: "NCName", integer: "decimal", nonPositiveInteger: "integer", negativeInteger: "nonPositiveInteger",
@@ -32,9 +36,9 @@ export const builtinPrimitive = (name: string): string => {
 export const whitespaceFor = (name: string): "preserve" | "replace" | "collapse" => name === "string" || name === "anySimpleType" ? "preserve" : name === "normalizedString" ? "replace" : "collapse";
 export {normalizeWhitespace} from '../util/xmlWhitespace.js';
 
-export function schemaDatatypeValues(c: AssessmentContext) {
-  const invalid = (owner: GraphNode, lexical: LexicalValue): never => c.fail(owner, "cvc-datatype-valid", "Schema operand is outside the datatype's lexical/value space", lexical.context.source);
-  const decimal = (text: string, owner: GraphNode): DecimalOperand => {
+export function schemaDatatypeValues<Owner>(c: SchemaValueContext<Owner>) {
+  const invalid = (owner: Owner, lexical: SchemaLexicalOperand): never => c.fail(owner, "cvc-datatype-valid", "Schema operand is outside the datatype's lexical/value space", lexical.context.source);
+  const decimal = (text: string, owner: Owner): DecimalOperand => {
     c.text(text, owner);
     if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(text)) c.fail(owner, "cvc-datatype-valid", "Schema numeric operand must be an exact decimal");
     const dot = text.indexOf("."), scale = dot < 0 ? 0 : text.length - dot - 1;
@@ -43,27 +47,27 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     while (resultScale && coefficient % 10n === 0n) {c.step(owner, text.length + 1); coefficient /= 10n; resultScale--;}
     return {coefficient, scale: resultScale, digits: text.length};
   };
-  const scaleTo = (value: DecimalOperand, scale: number, owner: GraphNode): bigint => {
+  const scaleTo = (value: DecimalOperand, scale: number, owner: Owner): bigint => {
     c.step(owner, (scale - value.scale + (value.digits ?? 20) + 2) ** 2);
     return value.coefficient * 10n ** BigInt(scale - value.scale);
   };
-  const compareDecimal = (a: DecimalOperand, b: DecimalOperand, owner: GraphNode): number => {
+  const compareDecimal = (a: DecimalOperand, b: DecimalOperand, owner: Owner): number => {
     const scale = Math.max(a.scale, b.scale), x = scaleTo(a, scale, owner), y = scaleTo(b, scale, owner);
     return x === y ? 0 : x < y ? -1 : 1;
   };
-  const decimalKey = (d: DecimalOperand, owner: GraphNode) => {
+  const decimalKey = (d: DecimalOperand, owner: Owner) => {
     c.step(owner, d.scale + (d.digits ?? 20) + 2);
     const raw = (d.coefficient < 0n ? -d.coefficient : d.coefficient).toString().padStart(d.scale + 1, "0");
     return `${d.coefficient < 0n ? "-" : ""}${d.scale ? raw.slice(0, -d.scale) + "." + raw.slice(-d.scale) : raw}`;
   };
-  const addDecimal = (a: DecimalOperand, b: DecimalOperand, owner: GraphNode): DecimalOperand => {
+  const addDecimal = (a: DecimalOperand, b: DecimalOperand, owner: Owner): DecimalOperand => {
     const scale = Math.max(a.scale, b.scale);
     return {coefficient: scaleTo(a, scale, owner) + scaleTo(b, scale, owner), scale, digits: Math.max((a.digits ?? 20) + scale - a.scale, (b.digits ?? 20) + scale - b.scale) + 1};
   };
-  const calendarBudget = (owner: GraphNode): CalendarBudget => ({
+  const calendarBudget = (owner: Owner): CalendarBudget => ({
     charge: work => c.step(owner, work), arithmetic: digits => c.step(owner, (digits + 2) ** 2), text: value => c.text(value, owner),
   });
-  const temporal = (name: string, value: string, lexical: LexicalValue, owner: GraphNode): SchemaOperand => {
+  const temporal = (name: string, value: string, lexical: SchemaLexicalOperand, owner: Owner): SchemaOperand => {
     try {
       const budget = calendarBudget(owner);
       const calendar = name === "date" || name === "dateTime" ? parseCalendar(name, value, budget) : parseReduced(name as ReducedFamily, value, budget);
@@ -74,7 +78,7 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     }
   };
   /** Round the exact decimal rational directly to its declared IEEE format. */
-  const ieee = (value: string, single: boolean, owner: GraphNode): number => {
+  const ieee = (value: string, single: boolean, owner: Owner): number => {
     const negative = value[0] === "-", unsigned = value.replace(/^[+-]/, "");
     const [mantissa, rawExponent = "0"] = unsigned.split(/[eE]/), dot = mantissa.indexOf(".");
     const digits = mantissa.replace(".", "").replace(/^0+/, "");
@@ -110,7 +114,7 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     const number = Number(significand) * 2 ** (binaryExponent - precision + 1);
     return negative ? -number : number;
   };
-  const atomic = (name: string, lexical: LexicalValue, owner: GraphNode, whitespace = whitespaceFor(name)): SchemaOperand => {
+  const atomic = (name: string, lexical: SchemaLexicalOperand, owner: Owner, whitespace = whitespaceFor(name)): SchemaOperand => {
     c.text(lexical.value, owner);
     for (const character of lexical.value) {
       c.step(owner); const code = character.codePointAt(0)!;
@@ -177,11 +181,11 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     }
     return c.unsupported(owner, `datatype:${name}`, "Datatype is outside the approved scalar profile", lexical.context.source);
   };
-  const sameValue = (a: SchemaOperand, b: SchemaOperand, owner: GraphNode): boolean => {
+  const sameValue = (a: SchemaOperand, b: SchemaOperand, owner: Owner): boolean => {
     c.text(a.canonical, owner); c.text(b.canonical, owner);
     return a.family === b.family && a.canonical === b.canonical;
   };
-  const compare = (a: SchemaOperand, b: SchemaOperand, owner: GraphNode): number | undefined => {
+  const compare = (a: SchemaOperand, b: SchemaOperand, owner: Owner): number | undefined => {
     c.step(owner);
     if (a.family !== b.family) return undefined;
     if (a.decimal && b.decimal) return compareDecimal(a.decimal, b.decimal, owner);
@@ -196,5 +200,32 @@ export function schemaDatatypeValues(c: AssessmentContext) {
     }
     return sameValue(a, b, owner) ? 0 : undefined;
   };
-  return {atomic, decimal, decimalKey, compareDecimal, sameValue, compare};
+  const listTokens = (lexical: SchemaLexicalOperand, owner: Owner): SchemaListTokens => {
+    c.text(lexical.value, owner);
+    const normalized = normalizeWhitespace(lexical.value, 'collapse');
+    c.step(owner, normalized.length + 3);
+    return {normalized, tokens: normalized ? normalized.split(' ') : [], source: lexical.context.source};
+  };
+  const listOperand = (tokens: SchemaListTokens, items: readonly SchemaOperand[], owner: Owner, builtinName?: string): SchemaOperand => {
+    c.step(owner, items.length * 2 + 4);
+    if (tokens.tokens.length !== items.length) throw new TypeError('Internally assessed list item count differs from token count');
+    if (builtinName && builtinListItem(builtinName) && !items.length) c.fail(owner, 'cvc-minLength-valid', 'Builtin token list requires at least one item', tokens.source);
+    const keys: string[] = [];
+    for (const item of items) {
+      c.step(owner, 8 * (item.family.length + item.canonical.length) + 16);
+      keys.push(JSON.stringify([item.family, item.canonical]));
+    }
+    for (const key of keys) c.step(owner, key.length * 8 + 4);
+    return {family: 'list', canonical: JSON.stringify(keys), length: items.length.toString(), normalized: tokens.normalized, items};
+  };
+  const builtin = (name: string, lexical: SchemaLexicalOperand, owner: Owner): SchemaOperand => {
+    c.step(owner);
+    const itemName = builtinListItem(name);
+    if (!itemName) return atomic(name, lexical, owner);
+    const tokens = listTokens(lexical, owner), items: SchemaOperand[] = [];
+    c.step(owner, tokens.tokens.length * 3);
+    for (const value of tokens.tokens) items.push(atomic(itemName, {value, context: lexical.context}, owner));
+    return listOperand(tokens, items, owner, name);
+  };
+  return {atomic, builtin, listTokens, listOperand, decimal, decimalKey, compareDecimal, sameValue, compare};
 }

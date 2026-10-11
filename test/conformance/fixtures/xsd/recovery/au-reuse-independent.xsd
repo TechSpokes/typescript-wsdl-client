@@ -1,0 +1,38 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:au-reuse"
+  xmlns:v="urn:recovery:au-value" targetNamespace="urn:recovery:au-reuse">
+  <xs:simpleType name="Bounded"><xs:restriction base="xs:int"><xs:maxInclusive value="10"/></xs:restriction></xs:simpleType>
+  <xs:attribute name="Shared" type="xs:QName" fixed="v:Value"/>
+  <xs:attribute name="Number" type="t:Bounded" default="+01"/>
+  <xs:attribute name="Broken" type="xs:int" fixed="not-an-integer"/>
+  <xs:complexType name="Pair">
+    <xs:attribute xmlns:a="urn:recovery:au-value" ref="t:Shared" fixed="a:Value"/>
+    <xs:attribute xmlns:b="urn:recovery:au-value" ref="t:Shared" fixed="b:Value"/>
+  </xs:complexType>
+  <xs:complexType name="PairReverse">
+    <xs:attribute xmlns:b="urn:recovery:au-value" ref="t:Shared" fixed="b:Value"/>
+    <xs:attribute xmlns:a="urn:recovery:au-value" ref="t:Shared" fixed="a:Value"/>
+  </xs:complexType>
+  <xs:complexType name="DebtPair"><xs:attribute ref="t:Number"/><xs:attribute ref="t:Number"/></xs:complexType>
+  <xs:complexType name="DefaultConflict"><xs:attribute ref="t:Number" default="1"/><xs:attribute ref="t:Number" default="2"/></xs:complexType>
+  <xs:complexType name="MixedOrder"><xs:attribute ref="t:Shared"/><xs:attribute ref="t:Number"/><xs:attribute ref="t:Shared"/></xs:complexType>
+  <xs:complexType name="ReverseMixedOrder"><xs:attribute ref="t:Number"/><xs:attribute ref="t:Shared"/><xs:attribute ref="t:Number"/></xs:complexType>
+  <xs:complexType name="AbsentLocal"><xs:attribute name="local" type="xs:int" use="prohibited" fixed="not-an-integer"/></xs:complexType>
+  <xs:complexType name="AbsentGlobals"><xs:attribute ref="t:Shared" use="prohibited"/><xs:attribute ref="t:Shared" use="prohibited"/></xs:complexType>
+  <xs:complexType name="AbsentBroken"><xs:attribute ref="t:Broken" use="prohibited"/></xs:complexType>
+  <xs:attributeGroup name="SharedGroup"><xs:attribute ref="t:Shared"/></xs:attributeGroup>
+  <xs:complexType name="OwnerOne"><xs:attributeGroup ref="t:SharedGroup"/></xs:complexType>
+  <xs:complexType name="OwnerTwo"><xs:attributeGroup ref="t:SharedGroup"/></xs:complexType>
+  <xs:attributeGroup name="DistinctGroup"><xs:attribute ref="t:Shared"/><xs:attribute ref="t:Shared"/></xs:attributeGroup>
+  <xs:attributeGroup name="TwoIds"><xs:attribute name="first" type="xs:ID"/><xs:attribute name="second" type="xs:ID"/></xs:attributeGroup>
+  <xs:complexType name="RequiredBase"><xs:attribute ref="t:Shared" use="required"/></xs:complexType>
+  <xs:complexType name="RemovedRequired"><xs:complexContent><xs:restriction base="t:RequiredBase"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="OptionalBase"><xs:attribute ref="t:Number"/></xs:complexType>
+  <xs:complexType name="Removed"><xs:complexContent><xs:restriction base="t:OptionalBase"><xs:attribute ref="t:Number" use="prohibited"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="WildcardBase"><xs:attribute ref="t:Shared"/><xs:anyAttribute namespace="urn:external" processContents="strict"/></xs:complexType>
+  <xs:complexType name="WeakWildcard"><xs:complexContent><xs:restriction base="t:WildcardBase"><xs:attribute ref="t:Shared"/><xs:anyAttribute namespace="urn:external" processContents="lax"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="WideWildcard"><xs:complexContent><xs:restriction base="t:WildcardBase"><xs:attribute ref="t:Shared"/><xs:anyAttribute namespace="##any" processContents="strict"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:notation name="OriginalNotation" public="image/original"/>
+  <xs:simpleType name="NotationType"><xs:restriction base="xs:NOTATION"><xs:enumeration value="t:OriginalNotation"/></xs:restriction></xs:simpleType>
+  <xs:attribute name="NotationAttribute" type="t:NotationType" default="t:OriginalNotation"/>
+  <xs:complexType name="NotationOwner"><xs:attribute ref="t:NotationAttribute"/></xs:complexType>
+</xs:schema>

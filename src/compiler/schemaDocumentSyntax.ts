@@ -1,16 +1,16 @@
 /**
  * Original parsed schema documents; never a hypothetical-schema validity receipt.
- * Checked means the implemented document clauses below, not full S4S validation:
- * root/directive/notation/annotation representation, element-only text and root IDs/keys.
+ * Checked means document representation plus the fixed S4S instance episode;
+ * explicit imported-XML prerequisites and component construction remain separate.
  * Primary 2004 Structures: declare-schema, src-import, declare-notation,
  * Notation_Declaration_details, no-identity, declare-annotation and sch-props-correct/c-nmd.
  * S4S grammar corroboration: dgis/xsddiagram@9aedeb7dedfdd2fcd6bf916345499468dd4aa931,
  * XSD/XMLSchema.xsd (e767a159c179bd6e4dc2bac2a63a62f50cbd027ec19d6b5cc9eb1c2f33e0cb2e).
- * That independent copy explicitly labels itself nonnormative; it is not passed
- * off as the unavailable exact REC Appendix A. Receipt prerequisites stay explicit.
+ * The complete grammar was independently compared to the dated REC Appendix A
+ * Structures/Datatypes text. Imported XML version prerequisites stay explicit.
  */
 import type {SchemaInput, SchemaInterpretation} from '../loader/schemaInput.js';
-import {isXmlNCName, XSD_NAMESPACE, XML_NAMESPACE} from '../loader/orderedSyntax.js';
+import {XSD_NAMESPACE, XML_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import type {SemanticLimits} from './resolveCanonicalGraph.js';
 import {assertSemanticContext, prepareSemanticRequest} from './semanticContext.js';
@@ -21,7 +21,6 @@ import {normalizeWhitespace} from './schemaDatatypeValues.js';
 import {schemaUri} from './schemaUri.js';
 import {assessSchemaSourceWildcards, validSchemaXmlLanguage} from './schemaSourceWildcards.js';
 import type {SourceWildcardObligation} from './schemaSourceWildcards.js';
-import {assessSchemaSourceRepresentation} from './schemaSourceRepresentation.js';
 import {checkNotationProperties, equalNotationProperties, notationNameKey, readSourceNotationProperties, sourceNotationNamespace} from './schemaNotationProperties.js';
 import type {SchemaNotationProperties} from './schemaNotationProperties.js';
 import {prepareBoundSourceGraph, sourceSchemasForResolvedGraph} from './sourceSchemaBinding.js';
@@ -127,23 +126,6 @@ export function checkSchemaDocumentSyntax(context: SemanticContext): SchemaDocum
       }
       return result;
     };
-    const annotation = (node: SyntaxElement): void => {
-      const header = (item: SyntaxElement): void => {
-        const result = assessSchemaSourceRepresentation(item, budget);
-        if (result.kind === 'resource-limit') {budget.chargeWork(); throw new Error('Unreachable exhausted source budget');}
-        if (result.kind === 'invalid-schema') fail(item, result.rule, result.message);
-      };
-      header(node);
-      for (const child of node.children) {
-        budget.chargeWork();
-        if (child.kind === 'element') header(child);
-      }
-    };
-    const oneAnnotation = (node: SyntaxElement): void => {
-      const content = children(node);
-      if (content.length > 1 || content.some(child => child.name.namespace !== XSD_NAMESPACE || child.name.local !== 'annotation')) fail(node, 'schema-for-schemas', 'Only one optional annotation is permitted');
-      if (content[0]) annotation(content[0]);
-    };
     try {
       for (const schema of schemas) {
         budget.chargeWork(8); text(schema.key); text(schema.digest);
@@ -151,6 +133,20 @@ export function checkSchemaDocumentSyntax(context: SemanticContext): SchemaDocum
         const root = schema.syntax;
         if (checkedRoots.has(root)) continue;
         budget.chargeWork(5); checkedRoots.add(root);
+        // Preserve source-profile classification before evaluating the separate
+        // S4S instance episode. Inert annotation descendants are not components.
+        budget.chargeWork(2); const sourceStack = [root];
+        while (sourceStack.length) {
+          budget.chargeWork(3); const node = sourceStack.pop()!;
+          if (node.name.namespace !== XSD_NAMESPACE) continue;
+          text(node.name.local);
+          if (unsupported.has(node.name.local)) rejectUnsupported(node);
+          if (node.name.local === 'annotation') continue;
+          for (const child of node.children) {
+            budget.chargeWork(2);
+            if (child.kind === 'element') {budget.chargeWork(); sourceStack.push(child);}
+          }
+        }
         const wildcardResult = assessSchemaSourceWildcards(root, budget);
         if (wildcardResult.kind !== 'checked') return wildcardResult;
         budget.chargeWork(wildcardResult.remaining.length + 1);
@@ -176,7 +172,7 @@ export function checkSchemaDocumentSyntax(context: SemanticContext): SchemaDocum
           if (child.name.namespace !== XSD_NAMESPACE) fail(child, 'schema-for-schemas', 'Schema root child must be an XSD declaration');
           const role = child.name.local;
           if (unsupported.has(role)) rejectUnsupported(child);
-          if (role === 'annotation') {annotation(child); continue;}
+          if (role === 'annotation') continue;
           if (role === 'include' || role === 'import') {
             if (declarations) fail(child, 'schema-for-schemas', 'Schema directives must precede declarations');
             attrs(child, role === 'include' ? ['id', 'schemaLocation'] : ['id', 'namespace', 'schemaLocation']);
@@ -188,7 +184,7 @@ export function checkSchemaDocumentSyntax(context: SemanticContext): SchemaDocum
               if (imported !== undefined) {uri(child, imported); if (imported === namespace) fail(child, 'src-import', 'Import namespace must differ from the enclosing target namespace');}
               else if (namespace === undefined) fail(child, 'src-import', 'Import without namespace requires an enclosing target namespace');
             }
-            oneAnnotation(child); continue;
+            continue;
           }
           if (!globals.has(role)) fail(child, 'schema-for-schemas', 'Unexpected schema root child');
           declarations = true;
@@ -203,31 +199,10 @@ export function checkSchemaDocumentSyntax(context: SemanticContext): SchemaDocum
             text(name); budget.chargeWork(2);
             if (notationNames.has(name)) fail(child, 'schema-notation-key', 'Notation names must be unique within their schema validation root');
             notationNames.add(name);
-            oneAnnotation(child);
           }
         }
-        // ID typing is scoped to this schema validation root; repeated chameleon
-        // interpretations share syntax, while distinct inline roots remain separate.
-        budget.chargeWork(3); const ids = new Set<string>(), stack = [root];
-        for (const id of wildcardResult.ids) {
-          budget.chargeWork(4); text(id.value);
-          if (ids.has(id.value)) throw new DocumentProblem('invalid-schema', 'schema-id', 'Schema IDs must be unique within their schema validation root', id.source);
-          budget.chargeWork(); ids.add(id.value);
-        }
-        while (stack.length) {
-          budget.chargeWork(3); const node = stack.pop()!;
-          if (node.name.namespace !== XSD_NAMESPACE) continue;
-          text(node.name.local);
-          if (unsupported.has(node.name.local)) rejectUnsupported(node);
-          const id = value(node, 'id');
-          if (id !== undefined) {
-            text(id);
-            if (!isXmlNCName(id) || ids.has(id)) fail(node, 'schema-id', 'Schema IDs must be NCNames unique within their schema validation root');
-            budget.chargeWork(); ids.add(id);
-          }
-          if (node.name.local === 'annotation') {annotation(node); continue;}
-          for (const child of children(node)) {budget.chargeWork(); stack.push(child);}
-        }
+        // Contextual S4S owns typed ID/IDREF scope across source and payload;
+        // the source profile walk above does not type them a second time.
       }
       // no-identity fixes top-level notation identity by component kind and
       // expanded name. Equal complete property records describe that one

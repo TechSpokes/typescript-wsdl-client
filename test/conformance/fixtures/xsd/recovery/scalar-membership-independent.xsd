@@ -1,0 +1,22 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:scalar-membership" xmlns:p="urn:independent:qname" targetNamespace="urn:recovery:scalar-membership">
+  <xs:element name="Owner" type="xs:string"/>
+  <xs:simpleType name="Template"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="PlusDecimal"><xs:restriction base="xs:decimal"><xs:pattern value="[+]1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ZeroDecimal"><xs:restriction base="xs:decimal"><xs:pattern value="01"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="FractionDecimal"><xs:restriction base="xs:decimal"><xs:pattern value="1[.]0"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DistantDecimal"><xs:restriction base="xs:decimal"><xs:pattern value="0000000001"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OneBoolean"><xs:restriction base="xs:boolean"><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="LowerHex"><xs:restriction base="xs:hexBinary"><xs:pattern value="ff"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="CompactBase64"><xs:restriction base="xs:base64Binary"><xs:pattern value="/w=="/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OverFive"><xs:restriction base="xs:decimal"><xs:minExclusive value="5"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="AtLeastTen"><xs:restriction base="xs:decimal"><xs:minInclusive value="10"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ThreeDigits"><xs:restriction base="xs:decimal"><xs:totalDigits value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OneFractionDigit"><xs:restriction base="xs:decimal"><xs:fractionDigits value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DecimalList"><xs:list itemType="xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="OneItem"><xs:restriction base="t:DecimalList"><xs:length value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OneCharacter"><xs:restriction base="xs:string"><xs:length value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OneOctet"><xs:restriction base="xs:hexBinary"><xs:length value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameLength"><xs:restriction base="xs:QName"><xs:length value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DateLower"><xs:restriction base="xs:dateTime"><xs:minInclusive value="2000-01-01T00:00:00"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="FallbackDecimal"><xs:union memberTypes="t:AtLeastTen xs:decimal"/></xs:simpleType>
+</xs:schema>
