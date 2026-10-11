@@ -1,5 +1,5 @@
 /** Dedicated research entrypoint. Public CLI and persisted formats are unchanged. */
-import {closeSync, fstatSync, openSync, readSync} from 'node:fs';
+import {closeSync, constants, fstatSync, openSync, readSync, statSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createResolverBudget} from './resolver-budget.js';
@@ -19,6 +19,9 @@ const CLI_FIELDS = 'model,contractVersion,selection,scope,kind,semanticVerdict,e
 type Options = {model: ResearchModel; file: string; maxNodes?: number; maxWork?: number};
 type OptionError = {code: string};
 export type CliResult = Readonly<{exitCode: number; output: string}>;
+class ResearchInputError extends TypeError {
+    constructor(readonly code: string) { super(code); }
+}
 
 /**
  * Bounded request-start metadata: at most four flag/value pairs, constant-size
@@ -59,12 +62,16 @@ function options(argv: readonly string[]): Options | OptionError {
 
 /** A regular file is bounded from its open descriptor before read/allocation. */
 function readRequest(file: string, budget: ResolverBudget): unknown {
+    budget.chargeWork(68 + file.length);
+    if (!statSync(file).isFile()) throw new ResearchInputError('regular-candidate-file-required');
     budget.chargeWork(4 + file.length);
-    const descriptor = openSync(file, 'r');
+    // A race to a FIFO cannot block the opening request. O_NONBLOCK is zero
+    // where absent; regular files are unaffected on supported Node platforms.
+    const descriptor = openSync(file, constants.O_RDONLY | (constants.O_NONBLOCK ?? 0));
     try {
         budget.chargeWork(64); // Fixed fstat record/fields and file-kind decision.
         const metadata = fstatSync(descriptor);
-        if (!metadata.isFile() || !Number.isSafeInteger(metadata.size)) throw new TypeError('regular-candidate-file-required');
+        if (!metadata.isFile() || !Number.isSafeInteger(metadata.size)) throw new ResearchInputError('regular-candidate-file-required');
         const size = metadata.size;
         budget.chargeWork(2);
         // Buffer allocation, reading, UTF-8 decoding and native JSON parsing
@@ -78,10 +85,10 @@ function readRequest(file: string, budget: ResolverBudget): unknown {
         while (offset < size) {
             budget.chargeWork(4);
             const count = readSync(descriptor, bytes, offset, size - offset, offset);
-            if (count === 0) throw new TypeError('candidate-file-changed');
+            if (count === 0) throw new ResearchInputError('candidate-file-changed');
             offset += count;
         }
-        if (readSync(descriptor, extra, 0, 1, size) !== 0) throw new TypeError('candidate-file-changed');
+        if (readSync(descriptor, extra, 0, 1, size) !== 0) throw new ResearchInputError('candidate-file-changed');
         const source = bytes.toString('utf8');
         return JSON.parse(source) as unknown;
     } finally {
@@ -100,27 +107,36 @@ function serialize(report: ExperimentReport, budget: ResolverBudget): string {
     const serializable = {...report, usage: {nodes: 0, work: 0}};
     budget.chargeWork(); const stack: unknown[] = [serializable];
     let outputBound = 1; // Newline.
+    const addBound = (amount: number): void => {
+        if (amount > Number.MAX_SAFE_INTEGER - outputBound) {
+            // Positive reservation work was already consumed, so a maximum
+            // safe charge necessarily makes the shared budget terminal.
+            budget.chargeWork(Number.MAX_SAFE_INTEGER);
+        }
+        outputBound += amount;
+    };
     while (stack.length) {
         budget.chargeWork(); const value = stack.pop();
         if (typeof value === 'string') {
             budget.chargeWork(value.length);
-            outputBound += 2 + 6 * value.length;
-        } else if (value === null) outputBound += 4;
-        else if (typeof value === 'number') outputBound += 24;
-        else if (typeof value === 'boolean') outputBound += 5;
+            addBound(2 + 6 * value.length);
+        } else if (value === null) addBound(4);
+        else if (typeof value === 'number') addBound(24);
+        else if (typeof value === 'boolean') addBound(5);
         else if (value && typeof value === 'object') {
-            budget.chargeWork(2); outputBound += 2;
+            budget.chargeWork(2); addBound(2);
             for (const key in value) {
                 budget.chargeWork(44 + key.length);
                 const entry = Object.getOwnPropertyDescriptor(value, key);
                 if (!entry || !('value' in entry)) throw new TypeError('report-data-fields-required');
                 if (entry.value === undefined) continue;
-                outputBound += 4 + 6 * key.length; // Escaped key, colon/comma.
+                addBound(4 + 6 * key.length); // Escaped key, colon/comma.
                 budget.chargeWork(); stack.push(entry.value);
             }
         } else if (value !== undefined) throw new TypeError('report-json-data-required');
     }
-    budget.chargeWork(2 * outputBound); // JSON output allocation and stdout copy.
+    budget.chargeWork(outputBound); // JSON output allocation.
+    budget.chargeWork(outputBound); // Stdout copy, without numeric multiplication overflow.
     serializable.usage.nodes = budget.usage().nodes;
     serializable.usage.work = budget.usage().work;
     return `${JSON.stringify(serializable)}\n`;
@@ -155,7 +171,8 @@ export function runResearchCli(argv: readonly string[]): CliResult {
             const report: ExperimentReport = {model: selected.model, contractVersion: MODEL_SELECTION_CONTRACT,
                 selection: 'explicit', scope: 'supplied-candidate-structural-preparation', kind: 'input-error',
                 semanticVerdict: 'unresolved', existentialVerdict: 'unresolved', actualSchemaVerdict: 'unresolved',
-                diagnostic: {code: error instanceof SyntaxError ? 'invalid-json' : 'candidate-file-unreadable',
+                diagnostic: {code: error instanceof ResearchInputError ? error.code
+                    : error instanceof SyntaxError ? 'invalid-json' : 'candidate-file-unreadable',
                     rule: 'research-input', context: '', related: []}, usage: budget.usage()};
             return {exitCode: 1, output: serialize(report, budget)};
         }

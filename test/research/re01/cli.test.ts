@@ -57,6 +57,13 @@ describe('dedicated RE01 research CLI', () => {
         expect(report(missing.output)).toMatchObject({model: 'schema-preserving', kind: 'input-error', diagnostic: {code: 'candidate-file-unreadable'}});
     });
 
+    it('rejects a nonregular candidate path with an actionable input error', () => {
+        const result = runResearchCli(['--re01-model', 'derivation', '--candidate-file', directory]);
+        expect(result.exitCode).toBe(1);
+        expect(report(result.output)).toMatchObject({kind: 'input-error',
+            diagnostic: {code: 'regular-candidate-file-required'}});
+    });
+
     it('includes read/parse/preparation/report/serialization work in exact inclusive boundaries', () => {
         const first = runResearchCli(args());
         const usage = report(first.output).usage as {nodes: number; work: number};
