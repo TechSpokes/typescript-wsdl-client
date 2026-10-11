@@ -73,9 +73,11 @@ describe('independent sufficient recursive component-property equality', () => {
     if (inherited.kind !== 'checked') throw new Error('Expected same inherited scalar identity');
     expect(inherited.dependencies).toEqual(expect.arrayContaining([left.id, right.id, globalId('type', {namespace: ns, local: 'R'})]));
     expect(compareComponentProperties(request.actual, left, types.get('changed')!)).toMatchObject({kind: 'checked', value: false});
-    expect(compareComponentProperties(request.actual, types.get('r1')!, types.get('r2')!)).toMatchObject({kind: 'unresolved', rule: 'component-simple-content-properties'});
-    // Unequal known scalar properties disprove full equality; equal known
-    // subsets above do not supply missing complete property authority.
+    // GSC1 now supplies the selected complete generated metadata; distinct
+    // restriction identities remain distinct but their properties can agree.
+    expect(compareComponentProperties(request.actual, types.get('r1')!, types.get('r2')!)).toMatchObject({kind: 'checked', value: true,
+      obligations: expect.arrayContaining(['component-validity'])});
+    // Unequal scalar facet properties still disprove complete equality.
     expect(compareComponentProperties(request.actual, types.get('r1')!, types.get('r3')!)).toMatchObject({kind: 'checked', value: false});
     expect(compareComponentProperties(request.actual, types.get('mixedLeft')!, types.get('mixedRight')!)).toMatchObject({
       kind: 'checked', value: true, obligations: ['component-validity'],

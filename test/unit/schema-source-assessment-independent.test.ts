@@ -142,28 +142,22 @@ describe('independent XSI selected type, fixed universe and root identity duties
     expect((await source(payload)).result).toMatchObject({kind: 'invalid-schema'});
   });
 
-  it('retains exact imported XML version debt without inventing missing type authority', async () => {
+  it('uses proven absent imported types while enforcing the dated 2004 lang declaration', async () => {
     const {result} = await source('<app:value xsi:type="xml:UnpinnedType"/>');
-    expect(result).toMatchObject({kind: 'checked', wildcardObligations: expect.arrayContaining([
-      expect.objectContaining({category: 'annotation-payload-assessment'}),
-    ])});
-    expect((await source('<xs:documentation xml:lang=""/>')).result).toMatchObject({kind: 'checked', wildcardObligations: expect.arrayContaining([
-      expect.objectContaining({rule: 'schema-for-schemas-xml-import-version'}),
-    ])});
+    expect(result).toMatchObject({kind: 'checked', wildcardObligations: []});
+    expect((await source('<xs:documentation xml:lang=""/>')).result).toMatchObject({kind: 'invalid-schema'});
   });
 
-  // Nonauthor-reviewed inventory boundary, published before fix: #271 6113909173.
+  // Complete dated inventory now settles the prior boundary: #271 6114595477.
   it.each([
     '<app:value xsi:type="xml:Unknown"><xs:element/></app:value>',
     '<xml:Unknown><xs:element/></xml:Unknown>',
-  ])('does not guess descendant assessment beneath an unresolved imported declaration/type: %s', async payload => {
+  ])('checks descendants through a proven absent imported declaration/type: %s', async payload => {
     const {result} = await source(payload);
-    expect(result).toMatchObject({kind: 'checked', wildcardObligations: expect.arrayContaining([
-      expect.objectContaining({category: 'annotation-payload-assessment'}),
-    ])});
+    expect(result).toMatchObject({kind: 'invalid-schema'});
   });
 
-  it('distinguishes known absent type fallback from blocked named type uncertainty on a known declaration', async () => {
+  it('distinguishes absent type fallback from an absent override on a known declaration', async () => {
     expect((await source('<app:value xsi:type="xs:DefinitelyAbsent"><xs:element/></app:value>')).result)
       .toMatchObject({kind: 'invalid-schema'});
     expect((await source('<xs:length xsi:type="xml:Unknown" value="1"/>')).result)
@@ -171,28 +165,24 @@ describe('independent XSI selected type, fixed universe and root identity duties
   });
 
   it.each([
-    '<app:value xml:id="X"/>',
-    '<app:value xsi:type="xml:Unknown">X</app:value>',
-    '<xml:Unknown id="X"/>',
-  ])('retains cvc-id when an unassessed imported property could contribute identity facts: %s', async unknown => {
+    ['<app:value xml:id="X"/>', true],
+    ['<app:value xsi:type="xml:Unknown">X</app:value>', false],
+    ['<xml:Unknown id="X"/>', false],
+  ] as const)('distinguishes declared imported ID from absent component identity typing: %s', async (unknown, valid) => {
     const {result} = await source('<app:reference xsi:type="xs:IDREF">X</app:reference>' + unknown);
-    expect(result).toMatchObject({kind: 'checked', wildcardObligations: expect.arrayContaining([
-      expect.objectContaining({rule: 'cvc-id', category: 'annotation-payload-assessment'}),
-    ])});
+    expect(result).toMatchObject(valid ? {kind: 'checked', wildcardObligations: []} : {kind: 'invalid-schema', rule: 'cvc-id'});
   });
 
-  it('does not let unrelated import uncertainty erase known duplicate IDs or create impossible language-typed IDs', async () => {
+  it('does not let absent imported attributes erase duplicate IDs or create language-typed IDs', async () => {
     expect((await source('<xs:annotation id="duplicate"/><xs:annotation id="duplicate"/><app:value xml:unknown="value"/>')).result)
       .toMatchObject({kind: 'invalid-schema'});
-    expect((await source('<app:reference xsi:type="xs:IDREF">X</app:reference><app:value xml:lang=""/>')).result)
+    expect((await source('<app:reference xsi:type="xs:IDREF">X</app:reference><app:value xml:lang="en"/>')).result)
       .toMatchObject({kind: 'invalid-schema'});
   });
 
-  it('retains fixed key assessment when an unknown imported type can change selected-field typing', async () => {
+  it('checks fixed descendant keys through an absent imported type', async () => {
     const {result} = await source(`<app:value xsi:type="xml:Unknown">${key(' K ')}</app:value>${key('K')}`);
-    expect(result).toMatchObject({kind: 'checked', wildcardObligations: expect.arrayContaining([
-      expect.objectContaining({rule: 'schema-for-schemas-identity-assessment'}),
-    ])});
+    expect(result).toMatchObject({kind: 'invalid-schema', rule: 'schema-key'});
   });
 
   it('preserves one terminal request budget failure after a successful exact source check', async () => {
@@ -232,12 +222,12 @@ describe('independent shared fixed-source value authority', () => {
       value: {family: 'decimal', canonical: '1'}, identityFacts: [], obligations: []});
   });
 
-  it('distinguishes complete fixed absence from the unpinned XML import', async () => {
+  it('uses complete fixed absence for S4S, application and dated XML named types', async () => {
     const {factory} = await values();
     expect(factory.lookup({namespace: 'http://www.w3.org/2001/XMLSchema', local: 'DefinitelyAbsent'})).toEqual({kind: 'missing'});
     expect(factory.lookup({namespace: 'urn:inert:application', local: 'int'})).toEqual({kind: 'missing'});
     expect(factory.lookup({namespace: 'http://www.w3.org/XML/1998/namespace', local: 'UnpinnedType'}))
-      .toEqual({kind: 'unresolved', rule: 'schema-for-schemas-xml-import-version'});
+      .toEqual({kind: 'missing'});
   });
 
   it('shares list value assembly but retains builtin nonempty versus utility empty-list rules', async () => {

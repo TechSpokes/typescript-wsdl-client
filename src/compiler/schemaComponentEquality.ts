@@ -7,7 +7,7 @@ import {assertSemanticContext} from './semanticContext.js';
 import {createSchemaScalarKernel} from './schemaScalarKernel.js';
 import type {ScalarFailure, ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
-import {declarationMethods, immediateTypeBase, RelationProblem} from './schemaTypeRelations.js';
+import {declarationMethods, RelationProblem} from './schemaTypeRelations.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import {checkDeclaration} from './schemaDeclarationPrimitives.js';
 import {assessRawAttributeUses, assessSourceAttributeUses} from './schemaAttributeUses.js';
@@ -28,9 +28,10 @@ export type ComponentEqualityResult = Readonly<{kind: 'checked'; value: boolean;
 class Incomplete extends Error {constructor(readonly result: Failure) {super(result.kind);}}
 type NodeTask = {kind: 'node'; a: GraphNode; b: GraphNode};
 type Task = NodeTask | {kind: 'particle'; a: SemanticParticle; b: SemanticParticle}
+  | {kind: 'scalar'; a: Reference; b: Reference; owner: NodeId}
   | {kind: 'uses'; a: readonly OriginalAttributeUse[]; b: readonly OriginalAttributeUse[]}
   | {kind: 'use'; a: OriginalAttributeUse; b: OriginalAttributeUse};
-type State = {tasks: Task[]; pairs: Map<NodeId, Set<NodeId>>};
+type State = {tasks: Task[]; pairs: Map<NodeId, Set<NodeId>>; scalarPairs: Map<string, Set<string>>};
 
 export function compareComponentProperties(context: SemanticContext, a: GraphNode, b: GraphNode): ComponentEqualityResult {
   assertSemanticContext(context);
@@ -112,12 +113,38 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (!left.constraint || !right.constraint) return unresolved(x.id, 'component-value-property', 'Typed declaration constraint is unavailable');
       return unwrap(scalar.equivalent(left.constraint.type, left.constraint.lexical, right.constraint.type, right.constraint.lexical, x.id));
     };
-    const pair = (state: State, x: NodeId, y: NodeId): 'new' | 'seen' => {
+    const pair = (pairs: Map<string, Set<string>>, x: string, y: string): 'new' | 'seen' => {
       charge(6 + x.length + y.length);
-      let row = state.pairs.get(x);
+      let row = pairs.get(x);
       if (row?.has(y)) return 'seen';
-      if (!row) {charge(2); row = new Set(); state.pairs.set(x, row);}
+      if (!row) {charge(2); row = new Set(); pairs.set(x, row);}
       row.add(y); return 'new';
+    };
+    const scalarPair = (state: State, x: Reference, y: Reference, owner: NodeId): boolean => {
+      charge(3);
+      for (const selector of [x, y]) {
+        const resolved = context.resolve(selector);
+        if (resolved.kind === 'found') read(resolved.node);
+      }
+      const left = unwrap(scalar.contentProperties(x, owner)), right = unwrap(scalar.contentProperties(y, owner));
+      // GSC1 identities and ordinary scalar identities share one property owner.
+      // Closing this separate pair recurrence proves property equality only.
+      if (textEqual(left.definition, right.definition) || pair(state.scalarPairs, left.definition, right.definition) === 'seen') return true;
+      if (!!left.name !== !!right.name || left.name && right.name && (!textEqual(left.name.namespace, right.name.namespace) || !textEqual(left.name.local, right.name.local))) return false;
+      if (!textEqual(left.targetNamespace, right.targetNamespace) || left.variety !== right.variety || left.primitive !== right.primitive) return false;
+      charge(2 + left.final.length * (right.final.length + 1) + right.final.length * (left.final.length + 1));
+      if (!left.final.every(value => right.final.includes(value)) || !right.final.every(value => left.final.includes(value))) return false;
+      // Annotation is excluded by cos-particle-extend. Equal complete base,
+      // variety constituents and facet properties determine equal fundamental
+      // properties; no unevaluated fundamental value is invented here.
+      if (!unwrap(scalar.facetPropertiesEquivalent(x, y, owner))) return false;
+      if (!!left.base !== !!right.base || !!left.item !== !!right.item || (left.members?.length ?? 0) !== (right.members?.length ?? 0)) return false;
+      if (left.base && right.base) enqueue(state, {kind: 'scalar', a: left.base, b: right.base, owner});
+      if (left.item && right.item) enqueue(state, {kind: 'scalar', a: left.item, b: right.item, owner});
+      for (let index = 0; index < (left.members?.length ?? 0); index++) {
+        charge(); enqueue(state, {kind: 'scalar', a: left.members![index], b: right.members![index], owner});
+      }
+      return true;
     };
     const content = (node: ComplexTypeNode) => {
       const mapped = context.kind === 'actual' ? deriveActualComplexContent(context, node.id) : deriveRawComplexContent(context, node.id);
@@ -127,27 +154,10 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (x.content.kind !== y.content.kind) return false;
       if (x.content.kind === 'empty') return true;
       if (x.content.kind === 'simple' && y.content.kind === 'simple') {
-        // Source anonymous simple-content construction is separately modeled by
-        // the scalar owner; only an exposed exact type identity enters here.
         charge(6);
         const leftOperand = {kind: 'local', target: x.type} as const, rightOperand = {kind: 'local', target: y.type} as const;
-        const left = unwrap(scalar.contentIdentity(leftOperand, x.type));
-        const right = unwrap(scalar.contentIdentity(rightOperand, y.type));
-        // Separate extension containers can inherit the same privately mapped
-        // scalar. Both qualified reads retain their prerequisites above; keep
-        // ordinary reference traversal unchanged when a reference is exposed.
-        if (!left.reference && !right.reference && textEqual(left.definition, right.definition)) return true;
-        if (!left.reference || !right.reference) {
-          // st-restrict-facets determines these properties even where the full
-          // generated component metadata is unavailable. One unequal property
-          // refutes recursive equality; equal known facts do not complete it.
-          const leftProperties = unwrap(scalar.describe(leftOperand, x.type)), rightProperties = unwrap(scalar.describe(rightOperand, y.type));
-          charge(4);
-          if (leftProperties.variety !== rightProperties.variety || leftProperties.primitive !== rightProperties.primitive
-            || !unwrap(scalar.facetPropertiesEquivalent(leftOperand, rightOperand, x.type))) return false;
-          return unresolved(x.type, 'component-simple-content-properties', 'Anonymous simple-content properties need a complete scalar component view');
-        }
-        return reference(state, left.reference, right.reference);
+        enqueue(state, {kind: 'scalar', a: leftOperand, b: rightOperand, owner: x.type});
+        return true;
       }
       if (!('particle' in x.content) || !('particle' in y.content)) return unresolved(x.type, 'component-content-properties', 'Opaque builtin content has no complete component property view');
       const left = prepareSemanticParticleView(context, x, 'declared'), right = prepareSemanticParticleView(context, y, 'declared');
@@ -163,7 +173,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
     };
     const nodePair = (state: State, x: GraphNode, y: GraphNode): boolean => {
       read(x); read(y);
-      if (pair(state, x.id, y.id) === 'seen' || x === y) return true;
+      if (pair(state.pairs, x.id, y.id) === 'seen' || x === y) return true;
       if (x.kind !== y.kind) return false;
       if (x.identity.kind === 'global' || y.identity.kind === 'global') {
         if (x.identity.kind !== 'global' || y.identity.kind !== 'global') return false;
@@ -187,15 +197,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
         return true;
       }
       if (x.kind === 'simpleType' && y.kind === 'simpleType') {
-        if (!textEqual(namespace(x), namespace(y)) || !methods(x, y, 'final')) return false;
-        const left = unwrap(scalar.describe({kind: 'local', target: x.id}, x.id)), right = unwrap(scalar.describe({kind: 'local', target: y.id}, y.id));
-        if (left.variety !== right.variety || left.primitive !== right.primitive || !unwrap(scalar.facetPropertiesEquivalent({kind: 'local', target: x.id}, {kind: 'local', target: y.id}, x.id))) return false;
-        const lb = immediateTypeBase(context, {kind: 'local', target: x.id}), rb = immediateTypeBase(context, {kind: 'local', target: y.id});
-        if (lb.kind !== 'checked') throw new Incomplete(lb); if (rb.kind !== 'checked') throw new Incomplete(rb);
-        if (!!lb.value !== !!rb.value || lb.value && rb.value && !reference(state, lb.value, rb.value)) return false;
-        if (left.item && right.item && !reference(state, left.item, right.item)) return false;
-        if (!!left.item !== !!right.item || (left.members?.length ?? 0) !== (right.members?.length ?? 0)) return false;
-        for (let index = 0; index < (left.members?.length ?? 0); index++) {charge(); if (!reference(state, left.members![index], right.members![index])) return false;}
+        charge(6); enqueue(state, {kind: 'scalar', a: {kind: 'local', target: x.id}, b: {kind: 'local', target: y.id}, owner: x.id});
         return true;
       }
       if (x.kind === 'complexType' && y.kind === 'complexType') {
@@ -223,7 +225,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       return budget.freeze(budget.snapshot({kind: 'checked' as const, value, contextId: context.contextId, authority: 'XSD10-component-properties-v1' as const,
         obligations: [...obligations], scalarObligations, dependencies: [...dependencies]}));
     };
-    charge(10); const states: State[] = [{tasks: [{kind: 'node', a, b}], pairs: new Map()}];
+    charge(12); const states: State[] = [{tasks: [{kind: 'node', a, b}], pairs: new Map(), scalarPairs: new Map()}];
     let unknown: Failure | undefined;
     while (states.length) {
       charge(3); const state = states.pop()!; let valid = true;
@@ -231,6 +233,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
         while (valid && state.tasks.length) {
           charge(4); const task = state.tasks.pop()!;
           if (task.kind === 'node') valid = nodePair(state, task.a, task.b);
+          else if (task.kind === 'scalar') valid = scalarPair(state, task.a, task.b, task.owner);
           else if (task.kind === 'particle') {
             const x = task.a, y = task.b;
             if (x === y || x.originalParticle !== undefined && x.originalParticle === y.originalParticle) continue;
@@ -244,7 +247,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
             for (let index = 0; index < x.children.length; index++) enqueue(state, {kind: 'particle', a: x.children[index], b: y.children[index]});
           } else if (task.kind === 'use') {
             const x = task.a, y = task.b; read(x.source); read(y.source);
-            if (pair(state, x.id, y.id) === 'seen') continue;
+            if (pair(state.pairs, x.id, y.id) === 'seen') continue;
             if (x.required !== y.required || x.own?.kind !== y.own?.kind) {valid = false; continue;}
             enqueue(state, {kind: 'node', a: x.declaration, b: y.declaration});
             if (x.own && y.own) valid = unwrap(scalar.equivalent(x.own.value.type, x.own.value.lexical, y.own.value.type, y.own.value.lexical, x.id));
@@ -255,10 +258,11 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
             for (let index = 0; index < task.b.length; index++) {
               charge(6); const other = task.b[index];
               if (!textEqual(first.declaration.name.namespace, other.declaration.name.namespace) || !textEqual(first.declaration.name.local, other.declaration.name.local)) continue;
-              charge(state.tasks.length + state.pairs.size * 2 + task.a.length + task.b.length + 12);
-              const pairs = new Map<NodeId, Set<NodeId>>();
+              charge(state.tasks.length + (state.pairs.size + state.scalarPairs.size) * 2 + task.a.length + task.b.length + 14);
+              const pairs = new Map<NodeId, Set<NodeId>>(), scalarPairs = new Map<string, Set<string>>();
               for (const [id, row] of state.pairs) {charge(row.size + 3); pairs.set(id, new Set(row));}
-              const fork: State = {tasks: [...state.tasks, {kind: 'uses', a: task.a.slice(1), b: task.b.filter((_, n) => n !== index)}, {kind: 'use', a: first, b: other}], pairs};
+              for (const [id, row] of state.scalarPairs) {charge(row.size + 3); scalarPairs.set(id, new Set(row));}
+              const fork: State = {tasks: [...state.tasks, {kind: 'uses', a: task.a.slice(1), b: task.b.filter((_, n) => n !== index)}, {kind: 'use', a: first, b: other}], pairs, scalarPairs};
               states.push(fork);
             }
             valid = false;

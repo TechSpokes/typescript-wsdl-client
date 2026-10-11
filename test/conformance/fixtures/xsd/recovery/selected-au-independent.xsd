@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:selected-au" targetNamespace="urn:recovery:selected-au">
+  <xs:attribute name="Number" type="xs:int"/>
+  <xs:attribute name="Other" type="xs:string"/>
+  <xs:complexType name="Mixed"><xs:attribute ref="t:Number" fixed="7"/><xs:attribute ref="t:Number"/></xs:complexType>
+  <xs:complexType name="RequiredMixed"><xs:attribute ref="t:Number" use="required" fixed="7"/><xs:attribute ref="t:Number"/></xs:complexType>
+  <xs:complexType name="FixedOnly"><xs:attribute ref="t:Number" fixed="7"/></xs:complexType>
+  <xs:complexType name="Unfixed"><xs:complexContent><xs:restriction base="t:Mixed"><xs:attribute ref="t:Number"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="OptionalRequired"><xs:complexContent><xs:restriction base="t:RequiredMixed"><xs:attribute ref="t:Number"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="UnfixedFixed"><xs:complexContent><xs:restriction base="t:FixedOnly"><xs:attribute ref="t:Number"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="RequiredOmitted"><xs:complexContent><xs:restriction base="t:RequiredMixed"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="WildcardBase"><xs:anyAttribute namespace="##targetNamespace" processContents="strict"/></xs:complexType>
+  <xs:complexType name="WildcardChild"><xs:complexContent><xs:restriction base="t:WildcardBase"><xs:attribute ref="t:Other"/></xs:restriction></xs:complexContent></xs:complexType>
+</xs:schema>

@@ -11,6 +11,11 @@ export type ParticleContentView = Readonly<{
   contextId: string;
   type: NodeId;
   scope: 'actual-source-mapping' | 'candidate-raw-properties' | 'builtin-type' | 'model-group';
+  /** Actual simple content can reference a diagnostic projection node, not an active scalar component.
+   * Semantic scalar properties and the GSC1 identity come from the scalar owner's
+   * contentProperties({kind: 'local', target: type}, type), including its obligations.
+   * Candidate simple content instead carries its supplied raw scalar reference.
+   */
   content: RawComplexContent;
   /** Optional diagnostic materialization, charged on first access; semantic consumers use particleContentNode. */
   graph: CanonicalGraph;
@@ -152,6 +157,10 @@ export function deriveActualComplexContent(context: SemanticContext, type: NodeI
           } else {
             const base = node.derivation.inlineType ?? scalar;
             if (!base) return fail(node.id, 'Simple-content restriction requires a mapped simple base or explicit inline type');
+            // Preserve the legacy diagnostic source projection only. This node
+            // is not the GSC1 component and cannot supply its name, namespace,
+            // final, base or facet-property authority. The scalar owner issues
+            // that complete view at the stable original restriction slot.
             budget.reserveNodes(1);
             const path = '$semantic-simple-content/' + context.contextId + '/' + additions.length;
             budget.chargeWork(110 + 6 * (node.id.length + path.length));

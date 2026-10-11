@@ -36,7 +36,7 @@ export type SourceAttributePlan = Readonly<{
   declarations: readonly DeclarationReceipt[];
 }>;
 export type AttributeFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'unsupported-capability' | 'unresolved'; rule: string; component: NodeId; source?: SyntaxSource; message: string}>;
-export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v1'; value: SourceAttributePlan;
+export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2'; value: SourceAttributePlan;
   obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]}> | AttributeFailure | ResourceLimitFailure;
 type Container = ComplexTypeNode | Extract<GraphNode, {kind: 'attributeGroup'}>;
 type AttributeRole = 'source' | 'raw';
@@ -265,16 +265,16 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         const value = Object.freeze({owner: requested.id, uses, attributes: presence(uses, requested),
           schemaOperands: uses, declarations: Object.freeze([...declarationEvidence.values()])});
         return Object.freeze({kind: 'checked' as const, contextId: context.contextId,
-          authority: role === 'source' ? 'AU01-C1-source-v1' as const : 'AU01-C1-raw-v1' as const,
+          authority: role === 'source' ? 'AU01-C1-source-v1' as const : 'AU01-C1-raw-v2' as const,
           value, obligations: Object.freeze(['owning-type-or-group-validity', ...(role === 'source' ? ['source-representation-syntax'] : [])]),
           scalarObligations: Object.freeze(scalarObligations)});
       }
       const root = asContainer(requested);
-      const replacementFailure = (item: OriginalAttributeUse, original: OriginalAttributeUse): Readonly<{rule: string; message: string}> | undefined => {
+      const replacementFailure = (item: OriginalAttributeUse, original: OriginalAttributeUse, obligations = scalarObligations): Readonly<{rule: string; message: string}> | undefined => {
         charge();
         if (original.required && !item.required) {charge(4); return {rule: 'derivation-ok-restriction.2.1.1', message: 'Replacement weakens required base use'};}
-        if (!unwrap(checkTypeDerivation(context, item.declaration.type, original.declaration.type, []), item.source)) {charge(4); return {rule: 'derivation-ok-restriction.2.1.2', message: 'Replacement type does not derive from original type'};}
-        if (original.effective?.kind === 'fixed' && (item.effective?.kind !== 'fixed' || !equal(original.effective, item.effective, item.source))) {charge(4); return {rule: 'derivation-ok-restriction.2.1.3', message: 'Replacement fails an original fixed constraint'};}
+        if (!unwrap(checkTypeDerivation(context, item.declaration.type, original.declaration.type, []), item.source, obligations)) {charge(4); return {rule: 'derivation-ok-restriction.2.1.2', message: 'Replacement type does not derive from original type'};}
+        if (original.effective?.kind === 'fixed' && (item.effective?.kind !== 'fixed' || !equal(original.effective, item.effective, item.source, obligations))) {charge(4); return {rule: 'derivation-ok-restriction.2.1.3', message: 'Replacement fails an original fixed constraint'};}
         return undefined;
       };
       const checkReplacement = (item: OriginalAttributeUse, original: OriginalAttributeUse): void => {
@@ -297,7 +297,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           charge(15 + uses.length + declarationEvidence.size + scalarObligations.length);
           const value = Object.freeze({owner: root.id, uses, attributes: presence(uses, root), wildcard,
             schemaOperands: uses, declarations: Object.freeze([...declarationEvidence.values()])});
-          return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-raw-v1' as const,
+          return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-raw-v2' as const,
             value, obligations: Object.freeze(['aggregate-group-validity', 'raw-group-property-correspondence']), scalarObligations: Object.freeze(scalarObligations)});
         }
         const sameType = (a: Reference, b: Reference, owner: GraphNode): boolean => {
@@ -343,33 +343,50 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
             if (baseWildcard && (!wildcard || !namespaceSubset(baseWildcard.namespace, wildcard.namespace, charge))) return problem(node, 'cos-ct-extends.1.3', 'Literal extension wildcard must contain the base wildcard');
           } else {
             charge(3); const requiredNames = new Set<string>();
-            let ambiguous: OriginalAttributeUse | undefined;
+            let pendingMatch: AttributeFailure | undefined;
             for (const item of uses) {
               let matched = false, compatible = false;
               let failure: ReturnType<typeof replacementFailure>;
+              let pending: AttributeFailure | undefined, qualified: readonly ScalarObligation[] | undefined;
               const k = nameKey(item.declaration.name);
               for (const original of base?.uses ?? []) if (k === nameKey(original.declaration.name)) {
-                matched = true; const next = replacementFailure(item, original);
-                if (next) failure ??= next; else compatible = true;
+                matched = true;
+                charge(); const pairObligations: ScalarObligation[] = [];
+                try {
+                  const next = replacementFailure(item, original, pairObligations);
+                  if (next) failure ??= next;
+                  else if (pairObligations.length === 0) {compatible = true; break;}
+                  else qualified ??= pairObligations;
+                } catch (error) {
+                  if (!(error instanceof AttributeAbort) || error.result.kind !== 'unresolved' && error.result.kind !== 'unsupported-capability') throw error;
+                  pending ??= error.result;
+                }
               }
               if (!matched && (!baseWildcard || !namespaceAllows(baseWildcard.namespace, item.declaration.name.namespace, charge))) return problem(node, 'derivation-ok-restriction.2.2', 'Literal restriction adds an attribute outside the base wildcard');
-              if (failure && !compatible) return problem(item.source, failure.rule, failure.message);
-              // AU C1 selected universality for SOURCE replacements, and
-              // expressly preserved inherited omissions. It did not settle
-              // duplicate matches in an arbitrary source-independent set.
-              if (failure && compatible) ambiguous ??= item;
+              // Selected literal interpretation: one compatible pair suffices.
+              // Prefer a debt-free pair; otherwise retain one qualified pair's
+              // complete obligations for the aggregate checker to discharge.
+              // Mapped declaration/AU debts remain independently in the receipt.
+              if (!compatible && qualified) {
+                for (const obligation of qualified) {charge(2); scalarObligations.push(obligation);}
+                compatible = true;
+              }
+              if (!compatible) {
+                if (pending) pendingMatch ??= pending;
+                else if (failure) return problem(item.source, failure.rule, failure.message);
+              }
               if (item.required) {charge(); requiredNames.add(k);}
             }
             for (const original of base?.uses ?? []) if (original.required && !requiredNames.has(nameKey(original.declaration.name))) return problem(node, 'derivation-ok-restriction.3', 'Literal restriction omits a required base attribute');
-            if (ambiguous) return problem(ambiguous.source, 'raw-au-match-quantifier', 'Mixed duplicate match outcomes require an accepted literal matching or inherited/replacement provenance rule', 'unresolved');
             if (wildcard && (!baseWildcard || !namespaceSubset(wildcard.namespace, baseWildcard.namespace, charge) || !ur && !processContentsRestricts(wildcard.processContents, baseWildcard.processContents, charge))) return problem(node, 'derivation-ok-restriction.4', 'Literal wildcard is not an admitted restriction');
+            if (pendingMatch) throw new AttributeAbort(pendingMatch);
           }
           charge(12 + uses.length + (base?.schemaOperands.length ?? 0) + declarationEvidence.size);
           const plan = Object.freeze({owner: node.id, uses, attributes: presence(uses, node), wildcard,
             schemaOperands: Object.freeze([...(base?.schemaOperands ?? []), ...uses]), declarations: Object.freeze([...declarationEvidence.values()])});
           plans.set(node.id, plan); active.delete(node.id); stack.pop();
         }
-        charge(10 + scalarObligations.length); return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-raw-v1' as const,
+        charge(10 + scalarObligations.length); return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-raw-v2' as const,
           value: plans.get(root.id)!, obligations: Object.freeze(['aggregate-type-validity', 'raw-type-property-correspondence']), scalarObligations: Object.freeze(scalarObligations)});
       }
       const dependencies = (node: Container): Container[] => {

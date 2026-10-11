@@ -82,6 +82,7 @@ describe('authenticated schema document syntax', () => {
     ['unknown derivation', '', 'blockDefault="list"'],
     ['mixed all derivation', '', 'finalDefault="#all restriction"'],
     ['bad language', '', 'xml:lang="en_US"'],
+    ['empty language in the dated 2004 XML import', '', 'xml:lang=""'],
     ['whitespace-only language', '', 'xml:lang=" "'],
     ['bad XML space', '', 'xml:space="compact"'],
     ['late import', '<xs:notation name="n" public=""/><xs:import namespace="urn:other"/>', ''],
@@ -102,7 +103,7 @@ describe('authenticated schema document syntax', () => {
 
   it.each([
     ['', ''],
-    ['<xs:annotation><xs:documentation xml:lang=""/></xs:annotation>', 'xml:lang=""'],
+    ['<xs:annotation><xs:documentation xml:lang="en"/></xs:annotation>', 'xml:lang="en"'],
     ['', 'xml:lang=" en-US " xml:space=" preserve "'],
     ['<xs:import/>', 'targetNamespace="urn:local"'],
     ['<xs:notation name=" n " public=" a&#9;b "/>', ''],

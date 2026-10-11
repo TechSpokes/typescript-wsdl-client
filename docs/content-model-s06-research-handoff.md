@@ -6,6 +6,7 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
+The maintainer subsequently selected [existential raw-AU matching, satisfying implicit-set order and GSC1 generated scalar properties](content-model-s06-re-01.md#selected-raw-matching-implicit-order-and-generated-scalar-properties); their implementation and exact delivery remain subject to local independent acceptance.
 The concrete finite checker verifies supplied nested evidence under that domain; complete local-owner acceptance and the universal theorem retain their separate review gates.
 Source-owned local functions and conditional proof lemmas do not close #232/#234 or activate #179/#153.
 

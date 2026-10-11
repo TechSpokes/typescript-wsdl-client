@@ -9,23 +9,37 @@ export type SchemaPattern = Readonly<{
   language: "xsd10-whole-string"; atoms: readonly PatternAtom[]; root: number;
   unicode: "code-points"; runtimeOwner: "#184";
 }>;
+type LiteralAtom = Readonly<{kind: 'literal'; value: string} | {kind: 'outside'} |
+  {kind: 'sequence' | 'choice'; children: readonly number[]} |
+  {kind: 'repeat'; child: number; min: string; max: string | 'unbounded'}>;
+type LiteralProgram = Readonly<{atoms: readonly LiteralAtom[]; root: number}>;
 
 export function schemaPatterns<Owner>(c: SchemaPatternContext<Owner>) {return createSchemaPatterns(c, false);}
 /** Closed assessment-schema consumer; this does not widen the application profile. */
 export function fixedS4SPatterns<Owner>(c: SchemaPatternContext<Owner>) {return createSchemaPatterns(c, true);}
 function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchemaNames: boolean) {
+  // Separate privately captured records: mutating an exposed plan cannot
+  // manufacture literal-language authority or alter these compiled facts.
+  const literalPrograms = new WeakMap<SchemaPattern, LiteralProgram>();
   const compile = (lexical: SchemaLexicalOperand, owner: Owner): SchemaPattern => {
-    c.text(lexical.value, owner); const source = lexical.value, atoms: PatternAtom[] = [];
-    const add = (atom: PatternAtom) => {c.step(owner); atoms.push(atom); return atoms.length - 1;};
+    c.text(lexical.value, owner); const source = lexical.value, atoms: PatternAtom[] = [], literals: LiteralAtom[] = [];
+    const add = (atom: PatternAtom, literal?: string) => {
+      c.step(owner, 3 + (atom.kind === 'sequence' || atom.kind === 'choice' ? atom.children.length : 0));
+      atoms.push(atom);
+      literals.push(atom.kind === 'character' ? literal === undefined ? {kind: 'outside'} : {kind: 'literal', value: literal}
+        : atom.kind === 'repeat' ? {...atom} : {kind: atom.kind, children: [...atom.children]});
+      return atoms.length - 1;
+    };
     const invalid = (): never => c.fail(owner, "pattern-valid-restriction", "Malformed XSD regular expression", lexical.context.source);
     const unsupported = (): never => c.unsupported(owner, "pattern-subset", "XSD regex construct requires a separately evidenced equivalent implementation", lexical.context.source);
-    let i = 0;
+    let i = 0, escapedLiteral: string | undefined;
     const escaped = (): string => {
+      escapedLiteral = undefined;
       i++; const char = source[i++]; if (char === undefined) return invalid();
-      if (char === "n") return "\\n";
-      if (char === "r") return "\\r";
-      if (char === "t") return "\\t";
-      if ("\\|.-^?*+{}()[]".includes(char)) return `\\${char}`;
+      if (char === "n") {escapedLiteral = '\n'; return "\\n";}
+      if (char === "r") {escapedLiteral = '\r'; return "\\r";}
+      if (char === "t") {escapedLiteral = '\t'; return "\\t";}
+      if ("\\|.-^?*+{}()[]".includes(char)) {escapedLiteral = char; return `\\${char}`;}
       if (char === "s") return "[ \\t\\n\\r]";
       if (char === "S") return "[^ \\t\\n\\r]";
       if (char === "d") return "\\p{Nd}";
@@ -109,20 +123,89 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
         const atom = add({kind: "choice", children: frame.branches}); frames.pop(); frames.at(-1)!.pieces.push(quantified(atom)); continue;
       }
       if ("?*+{}]".includes(char)) return invalid();
-      let expression: string;
+      let expression: string, literal: string | undefined;
       if (char === "[") expression = characterClass();
-      else if (char === "\\") expression = escaped();
+      else if (char === "\\") {expression = escaped(); literal = escapedLiteral;}
       else if (char === ".") {i++; expression = "[^\\r\\n]";}
       else {
         const point = source.codePointAt(i)!; i += point > 0xffff ? 2 : 1;
-        const literal = String.fromCodePoint(point); expression = literal.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
+        literal = String.fromCodePoint(point); expression = literal.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
       }
-      c.text(expression, owner); frame.pieces.push(quantified(add({kind: "character", expression})));
+      c.text(expression, owner); frame.pieces.push(quantified(add({kind: "character", expression}, literal)));
     }
     if (frames.length !== 1) return invalid();
     closeBranch(frames[0]); c.step(owner, frames[0].branches.length);
     const root = add({kind: "choice", children: frames[0].branches});
-    return {language: "xsd10-whole-string", atoms, root, unicode: "code-points", runtimeOwner: "#184"};
+    c.step(owner, 3);
+    const pattern: SchemaPattern = {language: "xsd10-whole-string", atoms, root, unicode: "code-points", runtimeOwner: "#184"};
+    literalPrograms.set(pattern, {atoms: literals, root});
+    return pattern;
+  };
+  /** Exact finite literal fragment, used only to propose concretely checked operands. */
+  const literalLanguage = (pattern: SchemaPattern, owner: Owner):
+    {kind: 'finite-literal'; words: Generator<string>} | {kind: 'outside-fragment'} => {
+    c.step(owner); const program = literalPrograms.get(pattern);
+    if (!program) throw new TypeError('Literal language requires a pattern issued by this factory');
+    c.step(owner, program.atoms.length * 2 + 2);
+    const finite: boolean[] = [], emptyOnly: boolean[] = [];
+    for (const atom of program.atoms) {
+      c.step(owner, 3); let known = false, empty = false;
+      if (atom.kind === 'literal') known = true;
+      else if (atom.kind === 'sequence' || atom.kind === 'choice') {
+        c.step(owner, atom.children.length * 2);
+        known = atom.children.every(child => finite[child]);
+        empty = atom.children.every(child => emptyOnly[child]);
+      } else if (atom.kind === 'repeat') {
+        c.text(atom.max, owner);
+        empty = atom.max === '0' || emptyOnly[atom.child];
+        known = empty || atom.max !== 'unbounded' && finite[atom.child];
+      }
+      finite.push(known); emptyOnly.push(empty);
+    }
+    if (!finite[program.root]) return {kind: 'outside-fragment'};
+    type Task = {kind: 'node'; node: number} |
+      {kind: 'repeat'; child: number; min: bigint; max: bigint; digits: number};
+    type State = {pending: Task[]; word: string};
+    function* words(): Generator<string> {
+      c.step(owner, 4); const states: State[] = [{pending: [{kind: 'node', node: program!.root}], word: ''}];
+      while (states.length) {
+        c.step(owner); const state = states.pop()!;
+        while (state.pending.length) {
+          c.step(owner); const task = state.pending.pop()!;
+          if (task.kind === 'repeat') {
+            c.step(owner, task.digits * 4 + 6);
+            if (task.max === 0n) continue;
+            const next: Task = {...task, min: task.min > 0n ? task.min - 1n : 0n, max: task.max - 1n};
+            if (task.min > 0n) state.pending.push(next, {kind: 'node', node: task.child});
+            else {
+              c.step(owner, state.pending.length + 4);
+              states.push({word: state.word, pending: [...state.pending, next, {kind: 'node', node: task.child}]});
+            }
+            continue;
+          }
+          if (emptyOnly[task.node]) continue;
+          const atom = program!.atoms[task.node];
+          if (atom.kind === 'literal') {
+            c.step(owner, state.word.length + atom.value.length + 1); state.word += atom.value;
+          } else if (atom.kind === 'sequence') {
+            c.step(owner, atom.children.length * 2);
+            for (let index = atom.children.length - 1; index >= 0; index--) state.pending.push({kind: 'node', node: atom.children[index]});
+          } else if (atom.kind === 'choice') {
+            for (let index = atom.children.length - 1; index > 0; index--) {
+              c.step(owner, state.pending.length + 4);
+              states.push({word: state.word, pending: [...state.pending, {kind: 'node', node: atom.children[index]}]});
+            }
+            c.step(owner); state.pending.push({kind: 'node', node: atom.children[0]});
+          } else if (atom.kind === 'repeat') {
+            c.text(atom.min, owner); c.text(atom.max, owner);
+            c.step(owner, atom.min.length * atom.min.length + atom.max.length * atom.max.length + 3);
+            state.pending.push({kind: 'repeat', child: atom.child, min: BigInt(atom.min), max: BigInt(atom.max), digits: atom.max.length});
+          } else throw new TypeError('Private finite literal program contains an outside-fragment atom');
+        }
+        c.text(state.word, owner); yield state.word;
+      }
+    }
+    c.step(owner); return {kind: 'finite-literal', words: words()};
   };
   // Bounded relation evaluation only for schema-declared operand literals.
   // It never expands a finite repetition or runs an unbounded JS regex.
@@ -173,5 +256,5 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
     }
     return relations[pattern.root][0].has(chars.length);
   };
-  return {compile, acceptsOperand};
+  return {compile, acceptsOperand, literalLanguage};
 }

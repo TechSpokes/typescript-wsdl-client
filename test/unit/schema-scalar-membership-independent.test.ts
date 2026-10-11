@@ -73,13 +73,15 @@ describe('independent finite scalar membership and value exclusion', () => {
     expect(newInclusive.kernel.describe(newInclusive.reference, owner)).toMatchObject({kind: 'invalid-schema'});
   });
 
-  it('retains qualification when a finite lexical search misses a permitted spelling', async () => {
+  it('closes the distant decimal spelling through the independently reviewed finite literal-language producer', async () => {
+    // Generic producer oracle #268 6114185022; outside-fragment misses retain
+    // debt in schema-pattern-witness-independent, without a negative verdict.
     const {candidate, facet, actual, lexical} = await setup();
     expect(actual.assess(named('DistantDecimal'), lexical('0000000001'), owner)).toMatchObject({kind: 'checked'});
     const raw = candidate(named('DistantDecimal'), [facet('pattern', '0000000001'), facet('enumeration', '1', builtin('decimal'))]);
-    expect(raw.kernel.describe(raw.reference, owner)).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-      expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}),
-    ])});
+    expect(raw.kernel.describe(raw.reference, owner)).toMatchObject({kind: 'checked', obligations: []});
+    expect(raw.kernel.assess(raw.reference, lexical('0000000001'), owner))
+      .toMatchObject({kind: 'checked', value: {operand: {family: 'decimal', canonical: '1'}}});
   });
 
   it.each([

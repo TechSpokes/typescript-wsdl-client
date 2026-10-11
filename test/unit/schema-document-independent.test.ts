@@ -105,13 +105,16 @@ describe('independent schema-document source boundaries', () => {
     expect(result).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction']});
   });
 
-  it('retains every source annotation and foreign-attribute obligation after equal notation identity', async () => {
+  it('assesses every original annotation after equal notation identity using the complete XML inventory', async () => {
     const result = await notationCopies(files => {
-      editNotation(files, 'right.xsd', '<xs:notation name=', '<xs:notation xmlns:app="urn:app" xml:lang="" name=');
+      editNotation(files, 'right.xsd', '<xs:notation name=', '<xs:notation xmlns:app="urn:app" xml:unknown="value" name=');
       editNotation(files, 'right.xsd', 'Second notation source.', 'Second notation source.<app:payload xml:unknown="value"><xs:element name="known"/></app:payload>');
     });
-    expect(result).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction',
-      'foreign-attribute-assessment', 'annotation-payload-assessment']});
+    expect(result).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
+    const invalid = await notationCopies(files => {
+      editNotation(files, 'right.xsd', 'Second notation source.', 'Second notation source.<xs:element/>');
+    });
+    expect(invalid).toMatchObject({kind: 'invalid-schema'});
   });
 
   it('does not let equal notation properties waive a wrong xsi:type on either original source declaration', async () => {
@@ -132,26 +135,22 @@ describe('independent schema-document source boundaries', () => {
     expect(duplicate).toMatchObject({kind: 'invalid-schema', rule: 'schema-notation-key'});
   });
 
-  // W3C-owned historical XML imports disagree on whether xml:lang admits
-  // empty string. XML's empty-language reset is not proof of S4S datatype
-  // validity under an unselected imported schema version.
+  // W3C's editor identifies the 2004/10 declaration as xs:language, before
+  // the 2005 union added empty string. This fixes only the known lang
+  // declaration in the dated-2004 assessment, not the full XML inventory.
   it.each(['root', 'documentation', 'payload'] as const)
-    ('retains exact XML import-version evidence for empty language at %s', async location => {
+    ('rejects empty language under the fixed 2004 declaration at %s', async location => {
       const xml = location === 'root' ? schema('', 'xml:lang=""')
         : location === 'documentation' ? schema('<xs:annotation><xs:documentation xml:lang=""/></xs:annotation>')
         : schema('<xs:annotation><xs:documentation><app:payload xmlns:app="urn:app" xml:lang=""/></xs:documentation></xs:annotation>');
       const request = await source(xml), result = checkSchemaDocumentSyntax(request.actual);
-      const category = location === 'payload' ? 'annotation-payload-assessment' : 'foreign-attribute-assessment';
-      expect(result).toMatchObject({kind: 'checked', remaining: expect.arrayContaining([category]),
-        wildcardObligations: [expect.objectContaining({category, rule: 'schema-for-schemas-xml-import-version',
-          name: {namespace: 'http://www.w3.org/XML/1998/namespace', local: 'lang'}, source: expect.objectContaining({uri})})]});
+      expect(result).toMatchObject({kind: 'invalid-schema', source: expect.objectContaining({uri})});
     });
 
-  it.each(['en-US', ''])('assesses a component-free root, empty defaults and xml:lang=%j', async language => {
+  it.each(['en-US', ' en-US '])('assesses a component-free root, empty defaults and xml:lang=%j', async language => {
     const request = await source(schema('', `finalDefault="" blockDefault="" xml:lang="${language}"`));
     expect(checkSchemaDocumentSyntax(request.actual)).toMatchObject({kind: 'checked', scope: 'schema-document-source-syntax',
-      remaining: language === '' ? expect.arrayContaining(['foreign-attribute-assessment'])
-        : ['child-component-syntax', 'semantic-construction']});
+      remaining: ['child-component-syntax', 'semantic-construction']});
   });
 
   it.each([
@@ -224,15 +223,13 @@ describe('independent schema-document source boundaries', () => {
   });
 
   it.each([
-    ['xml:lang=""', true], ['xml:lang=" en-US "', true], ['xml:lang=" "', false],
+    ['xml:lang=""', false], ['xml:lang=" en-US "', true], ['xml:lang=" "', false],
     ['xml:space=" preserve "', true], ['xml:space="invalid"', false], ['xml:base="relative.xml"', true],
   ] as const)('assesses known XML wildcard attribute %s under an unknown annotation element', async (attribute, valid) => {
     const request = await source(schema('<xs:annotation><xs:documentation><app:payload xmlns:app="urn:app" ' + attribute + '/></xs:documentation></xs:annotation>'));
     const result = checkSchemaDocumentSyntax(request.actual);
     expect(result.kind).toBe(valid ? 'checked' : 'invalid-schema');
-    if (valid && attribute === 'xml:lang=""') expect(result).toMatchObject({remaining: expect.arrayContaining(['annotation-payload-assessment']),
-      wildcardObligations: [expect.objectContaining({rule: 'schema-for-schemas-xml-import-version'})]});
-    else if (valid) expect(result).toMatchObject({remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
+    if (valid) expect(result).toMatchObject({remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
   });
 
   // S4S payload representation oracle precedes implementation: #271 6113002862.

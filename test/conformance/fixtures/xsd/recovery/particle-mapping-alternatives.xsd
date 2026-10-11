@@ -1,0 +1,30 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:mapping-alternatives">
+  <!-- These are local relation controls. Component validity remains an explicit
+       prerequisite, including duplicate particles and retained identity rules. -->
+  <xs:complexType name="A"><xs:sequence><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="AB"><xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="AA"><xs:sequence><xs:element name="a" type="xs:string"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="ChoicePendingFirst"><xs:choice>
+    <xs:element name="a" type="xs:string"><xs:key name="k1"><xs:selector xpath="."/><xs:field xpath="."/></xs:key></xs:element>
+    <xs:element name="a" type="xs:string"/>
+  </xs:choice></xs:complexType>
+  <xs:complexType name="ChoiceOnlyPending"><xs:choice>
+    <xs:element name="a" type="xs:string"><xs:key name="k2"><xs:selector xpath="."/><xs:field xpath="."/></xs:key></xs:element>
+    <xs:element name="b" type="xs:string"/>
+  </xs:choice></xs:complexType>
+  <xs:complexType name="SequencePendingFirst"><xs:sequence>
+    <xs:element name="a" type="xs:string" minOccurs="0"><xs:key name="k3"><xs:selector xpath="."/><xs:field xpath="."/></xs:key></xs:element>
+    <xs:element name="a" type="xs:string" minOccurs="0"/><xs:element name="b" type="xs:string"/>
+  </xs:sequence></xs:complexType>
+  <xs:complexType name="AllPendingFirst"><xs:all>
+    <xs:element name="a" type="xs:string" minOccurs="0"><xs:key name="k4"><xs:selector xpath="."/><xs:field xpath="."/></xs:key></xs:element>
+    <xs:element name="a" type="xs:string" minOccurs="0"/><xs:element name="b" type="xs:string"/>
+  </xs:all></xs:complexType>
+  <xs:complexType name="SumPendingFirst"><xs:choice minOccurs="2" maxOccurs="2">
+    <xs:element name="a" type="xs:string"><xs:key name="k5"><xs:selector xpath="."/><xs:field xpath="."/></xs:key></xs:element>
+    <xs:element name="a" type="xs:string"/>
+  </xs:choice></xs:complexType>
+  <xs:complexType name="ChoiceMalformedFirst"><xs:choice>
+    <xs:element name="a" type="xs:string" block="not-a-method"/><xs:element name="a" type="xs:string"/>
+  </xs:choice></xs:complexType>
+</xs:schema>

@@ -31,13 +31,13 @@ function view(context: SemanticContext, local: string, purpose: 'restriction' | 
 }
 
 describe('independent normalized XSD1.0 particle relation controls', () => {
-  it('recognizes the same raw particle across views without choosing an implicit substitution order', async () => {
+  it('recognizes raw particle identity and the selected existential order for distinct implicit copies', async () => {
     const request = await setup();
     const base = view(request.actual, 'HeadOnly'), inherited = view(request.actual, 'HeadExtended');
     expect(base.root.orderUnspecified).toBe(true);
     expect(inherited).not.toBe(base);
     expect(checkParticleRestriction(request.actual, inherited, base)).toMatchObject({kind: 'checked', value: true});
-    expect(checkParticleRestriction(request.actual, view(request.actual, 'HeadCopy'), base)).toMatchObject({kind: 'unresolved'});
+    expect(checkParticleRestriction(request.actual, view(request.actual, 'HeadCopy'), base)).toMatchObject({kind: 'checked', value: true});
   });
 
   it.each([

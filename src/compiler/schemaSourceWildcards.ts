@@ -3,7 +3,7 @@
  * cvc-assess-elt, cvc-elt/type/complex-type/attribute/wildcard and cvc-id/key.
  * Parent-selected local declarations outrank global lookup. Application Gamma
  * and schema-location hints never extend this distinct assessment universe.
- * The historical imported XML component inventory remains explicitly qualified.
+ * Imported XML declarations are fixed by https://www.w3.org/2004/10/xml.xsd.
  */
 import {XML_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
@@ -27,10 +27,10 @@ export type SourceWildcardResult = Readonly<{kind: 'checked'; remaining: readonl
   | Readonly<{kind: 'invalid-schema'; rule: string; message: string; source: SyntaxSource}>
   | ResourceLimitFailure;
 
-/** Empty lang needs import-version qualification; nonempty language values collapse. */
+/** The dated October 2004 XML import declares lang as xs:language. */
 export function validSchemaXmlLanguage(value: string, budget: SemanticBudget): boolean {
   budget.chargeWork(4 + value.length * 4);
-  return value === '' || /^[A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*$/.test(normalizeWhitespace(value, 'collapse'));
+  return /^[A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*$/.test(normalizeWhitespace(value, 'collapse'));
 }
 class SourceProblem extends Error {
   constructor(readonly rule: string, message: string, readonly source: SyntaxSource) {super(message);}
@@ -45,7 +45,6 @@ export function assessSchemaSourceWildcards(root: SyntaxElement, budget: Semanti
     budget.chargeWork(30);
     const remaining: SourceWildcardObligation[] = [], ids: SourceTypedId[] = [], references: RootReference[] = [];
     const idValues = new Set<string>(), values = createSchemaSourceValues(budget);
-    let completeIdUniverse = true;
     const stack: Frame[] = [{node: root, payload: false}];
     const fail = (node: SyntaxElement, message: string, rule = 'schema-for-schemas'): never => {
       budget.chargeWork(6 + message.length + rule.length); throw new SourceProblem(rule, message, node.source);
@@ -81,7 +80,6 @@ export function assessSchemaSourceWildcards(root: SyntaxElement, budget: Semanti
         budget.chargeWork(node.name.namespace.length + node.name.local.length);
         const declaration = frame.role ?? globalSourceRole(node.name);
         let role = declaration, simpleType: FixedSimpleTypeHandle | undefined, typeName: ExpandedName | undefined;
-        let deferredType = false;
         for (const attr of node.attributes) {
           budget.chargeWork(7 + attr.name.namespace.length + attr.name.local.length);
           if (attr.name.namespace !== XSI_NAMESPACE || !Object.hasOwn(xsiTypes, attr.name.local)) continue;
@@ -105,33 +103,16 @@ export function assessSchemaSourceWildcards(root: SyntaxElement, budget: Semanti
           } else {
             const lookup = values.lookup(typeName);
             if (lookup.kind === 'resource-limit') {budget.chargeWork(); throw new Error('Unreachable exhausted source budget');}
-            if (lookup.kind === 'unresolved') {
-              // Any imported XML type is either absent or a distinct named
-              // type. Neither can replace a fixed declaration under block=#all.
-              if (declaration !== undefined) fail(node, 'An imported XML type cannot equal the declared S4S type under blockDefault=#all');
-              pending(node, typeName, category, lookup.rule); deferredType = true;
-            }
-            else if (lookup.kind === 'found') {
+            if (lookup.kind === 'found') {
               if (declaration !== undefined) fail(node, 'A simple xsi:type cannot replace this S4S complex declaration');
               role = undefined; simpleType = lookup.type;
             } else if (declaration !== undefined) fail(node, 'xsi:type is absent from the fixed S4S assessment type universe');
             // Undeclared + genuinely absent type follows lax ur-type fallback.
           }
         }
-        if (declaration === undefined && node.name.namespace === XML_NAMESPACE) {
-          pending(node, node.name, category, 'schema-for-schemas-auxiliary-element-declarations');
-          // An unknown declaration can also supply a value constraint: even a
-          // resolved explicit simple type cannot justify rejecting empty text.
-          deferredType = true;
-        }
-        if (deferredType) {
-          completeIdUniverse = false;
-          // Unknown is not absent: its type may contain a skip wildcard. Do
-          // not assign ur/lax to descendants or fabricate negative local facts.
-          if (frame.scope) pending(node, node.name, category, 'schema-for-schemas-identity-assessment',
-            'Fixed schema-key selectors crossing an unassessed subtree require its typed fields');
-          continue;
-        }
+        // The fixed imported XML schema has no global element declarations.
+        // Undeclared XML names therefore use the same lax fallback as other
+        // genuinely absent declarations; descendants are still assessed.
         if (simpleType) {
           budget.chargeWork(5); const chunks: string[] = [];
           for (const child of node.children) {
@@ -161,17 +142,17 @@ export function assessSchemaSourceWildcards(root: SyntaxElement, budget: Semanti
           budget.chargeWork(6 + attr.name.namespace.length + attr.name.local.length);
           if (attr.name.namespace !== XML_NAMESPACE) continue;
           if (attr.name.local === 'lang') {
-            if (!validSchemaXmlLanguage(attr.value, budget)) fail(node, 'Invalid XML language value');
-            if (attr.value === '') pending(node, attr.name, category, 'schema-for-schemas-xml-import-version');
-            else assess(node, values.fixed('language'), attr.value, attr.name, category);
-          } else if (attr.name.local === 'space') {
-            budget.chargeWork(attr.value.length * 4 + 3);
-            if (!['default', 'preserve'].includes(normalizeWhitespace(attr.value, 'collapse'))) fail(node, 'Invalid XML space value');
-          } else if (attr.name.local === 'base') assess(node, values.fixed('anyURI'), attr.value, attr.name, category);
-          else {
-            pending(node, attr.name, category, 'schema-for-schemas-xml-attribute-declarations');
-            completeIdUniverse = false;
+            assess(node, values.fixed('language'), attr.value, attr.name, category);
+          } else if (attr.name.local === 'space') assess(node, values.fixed('#xmlSpace'), attr.value, attr.name, category);
+          else if (attr.name.local === 'base') assess(node, values.fixed('anyURI'), attr.value, attr.name, category);
+          else if (attr.name.local === 'id') {
+            // This is the sole wildcard ID declaration in the closed schema;
+            // XML expanded-name uniqueness already enforces 5.1. Clause 5.2
+            // forbids it when the selected type has an ID use, even absent.
+            if (grammar.hasIdAttributeUse) fail(node, 'A wildcard ID cannot replace an ID attribute use', 'cvc-complex-type.5.2');
+            assess(node, values.fixed('ID'), attr.value, attr.name, category);
           }
+          // Other XML attribute names are absent from the complete inventory.
         }
         // Seven fixed S4S keys belong to each schema declaration; ID/IDREF
         // duties belong to the outer physical schema validation root.
@@ -209,12 +190,7 @@ export function assessSchemaSourceWildcards(root: SyntaxElement, budget: Semanti
       }
       for (const reference of references) {
         budget.chargeWork(3 + reference.value.length);
-        if (!idValues.has(reference.value)) {
-          if (completeIdUniverse) throw new SourceProblem('cvc-id', 'IDREF has no ID in its physical schema validation root', reference.source);
-          budget.chargeWork(8);
-          remaining.push({category: reference.category, rule: 'cvc-id', source: reference.source,
-            name: {namespace: XSD_NAMESPACE, local: 'IDREF'}, message: 'ID binding requires the unresolved imported XML type/declaration inventory'});
-        }
+        if (!idValues.has(reference.value)) throw new SourceProblem('cvc-id', 'IDREF has no ID in its physical schema validation root', reference.source);
       }
       return budget.freeze(budget.snapshot({kind: 'checked' as const, remaining, ids}));
     } catch (error) {
