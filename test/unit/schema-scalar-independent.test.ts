@@ -2,11 +2,9 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 import {loadSchemaInput} from '../../src/loader/schemaInput.js';
 import {XSD_NAMESPACE} from '../../src/loader/orderedSyntax.js';
-import {buildCanonicalGraph} from '../../src/compiler/buildCanonicalGraph.js';
 import {globalId} from '../../src/compiler/canonicalGraph.js';
 import type {LexicalValue, Reference, SimpleTypeNode} from '../../src/compiler/canonicalGraph.js';
-import {resolveCanonicalGraph} from '../../src/compiler/resolveCanonicalGraph.js';
-import {prepareSemanticRequest} from '../../src/compiler/semanticContext.js';
+import {prepareSourceSchemaRequest} from '../../src/compiler/schemaDocumentSyntax.js';
 import {createSemanticBudget} from '../../src/compiler/semanticBudget.js';
 import {createSchemaScalarKernel} from '../../src/compiler/schemaScalarKernel.js';
 import type {ScalarResult} from '../../src/compiler/schemaScalarKernel.js';
@@ -19,10 +17,9 @@ const namespace = 'urn:recovery:scalars';
 const builtin = (local: string): Reference => ({kind: 'builtin', name: {namespace: XSD_NAMESPACE, local}});
 const named = (local: string): Reference => ({kind: 'local', target: globalId('type', {namespace, local})});
 
-async function setup(file = 'scalar-primitives.xsd') {
+async function setup(file = 'scalar-primitives.xsd', sourceBound = false) {
   const loaded = await loadSchemaInput(path.join(fixtures, 'xsd/recovery', file), {policy: {fileRoots: [fixtures]}});
-  const graph = resolveCanonicalGraph(buildCanonicalGraph(loaded));
-  const prepared = prepareSemanticRequest(graph, {budget: createSemanticBudget({maxWork: 100_000_000})});
+  const prepared = prepareSourceSchemaRequest(loaded, {budget: createSemanticBudget({maxWork: 100_000_000})});
   if (prepared.kind !== 'prepared') throw new Error(`Expected structural preparation, got ${prepared.kind}`);
   const request = prepared.request;
   const owner = globalId('type', {namespace, local: 'Owner'});
@@ -41,6 +38,54 @@ function value<T>(result: ScalarResult<T>): T {
 }
 
 describe('independently specified schema scalar operands', () => {
+  it('does not certify typed raw bound values outside the base value space', async () => {
+    const {request, source, owner, kernel, lexical} = await setup('scalar-typed-bound-membership-independent.xsd');
+    const original = request.actual.lookup(globalId('type', {namespace, local: 'ZeroOrTen'}));
+    if (original.kind !== 'found' || original.node.kind !== 'simpleType') throw new Error('Expected original enumeration base');
+    const seed = original.node;
+    expect(kernel.assess(named('ZeroOrTen'), lexical('5'), owner))
+      .toMatchObject({kind: 'invalid-schema', rule: 'cvc-enumeration-valid'});
+    const prepare = (base: string, facet: string, bound: string, copyEnumeration: boolean) => {
+      const name = `RawBound-${base}-${facet}-${bound}`, id = globalId('type', {namespace, local: name});
+      const fresh: SimpleTypeNode = {...seed, id,
+        identity: {kind: 'global', role: 'type', name: {namespace, local: name}},
+        variety: {kind: 'restriction', base: named(base), facets: []}};
+      const candidate = request.candidate({key: name, active: [...request.actual.members, id], additions: [fresh],
+        rawSimpleTypes: [{type: id, base: named(base), final: [], variety: {kind: 'atomic'},
+          facetLayers: [{facets: [
+            ...(copyEnumeration ? ['0', '10'].map(value => ({name: 'enumeration', lexical: {value, context: source}, fixed: false})) : []),
+            {name: facet, lexical: {value: bound, context: source}, fixed: false,
+              operand: {type: builtin('int'), owner, context: 'original'}},
+          ]}], provenance: {kind: 'hypothetical-abstract', originals: []}}]});
+      if (candidate.kind !== 'prepared') throw new Error('Expected structural raw bound context');
+      return {id, context: candidate.context, result: createSchemaScalarKernel(candidate.context).describe({kind: 'local', target: id}, owner)};
+    };
+    // Abstract datatype bound property tableaux require membership in the
+    // base value space. A privately assessed primitive value alone does not
+    // establish that property, even when the inherited enum group is copied.
+    for (const facet of ['minInclusive', 'maxInclusive', 'minExclusive', 'maxExclusive']) {
+      // Complete base enumeration gives a finite value-space negative,
+      // stronger than merely failing to find a lexical witness.
+      expect(prepare('ZeroOrTen', facet, '5', true).result).toMatchObject({kind: 'invalid-schema'});
+      const member = facet.startsWith('min') ? '0' : '10';
+      const admitted = prepare('ZeroOrTen', facet, member, true);
+      // Membership is established; the supplied tuple still omits the exact
+      // inherited integer facet properties, so type correspondence stays open.
+      expect(admitted.result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
+        expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: admitted.id}),
+      ])});
+    }
+    // The exclusive bound property has the explicit same-kind inherited
+    // endpoint exception; that endpoint need not be a member of the base.
+    for (const [base, facet] of [['AboveFive', 'minExclusive'], ['BelowFive', 'maxExclusive']]) {
+      expect(kernel.assess(named(base), lexical('5'), owner)).toMatchObject({kind: 'invalid-schema'});
+      const admitted = prepare(base, facet, '5', false);
+      expect(admitted.result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
+        expect.objectContaining({rule: 'raw-simple-facet-restriction-validity', component: admitted.id}),
+      ])});
+    }
+  });
+
   it('distinguishes facet component consistency from indeterminate value membership', async () => {
     const {kernel, owner, lexical} = await setup('scalar-facet-bounds-independent.xsd');
     // Datatypes component bodies minInclusive<=maxInclusive / minExclusive<=maxExclusive
@@ -254,7 +299,7 @@ describe('independently specified schema scalar operands', () => {
     }
   });
 
-  it('checks schema-only NOTATION enumeration and keeps unknown hypothetical membership unresolved', async () => {
+  it('checks schema-only NOTATION enumeration and resolves absence in a complete source-bound domain', async () => {
     const {request, kernel, owner, lexical} = await setup();
     const alias = lexical('p:Picture', {p: namespace});
     expect(kernel.assess(named('PictureType'), alias, owner)).toMatchObject({kind: 'checked', value: {operand: {family: 'NOTATION'}}});
@@ -267,6 +312,6 @@ describe('independently specified schema scalar operands', () => {
     if (candidate.kind !== 'prepared') throw new Error('Expected structural full-membership candidate');
     const hypothetical = createSchemaScalarKernel(candidate.context);
     expect(hypothetical.assess(named('PictureType'), alias, owner)).toMatchObject({kind: 'checked'});
-    expect(hypothetical.assess(named('PictureType'), lexical('t:Missing'), owner)).toMatchObject({kind: 'unresolved', rule: 'notation-context-membership'});
+    expect(hypothetical.assess(named('PictureType'), lexical('t:Missing'), owner)).toMatchObject({kind: 'invalid-schema'});
   });
 });

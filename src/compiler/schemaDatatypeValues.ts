@@ -5,6 +5,7 @@ import {isXmlNCName, isXmlName, isXmlNmtoken} from "../loader/orderedSyntax.js";
 import {parseCalendar, parseReduced, parseDuration, compareCalendar, compareDuration, ProbeFailure} from "./schemaExactCalendar.js";
 import type {Calendar, Duration, ReducedFamily, CalendarBudget} from "./schemaExactCalendar.js";
 import {schemaUri} from "./schemaUri.js";
+import {normalizeWhitespace} from '../util/xmlWhitespace.js';
 
 export type DecimalOperand = Readonly<{coefficient: bigint; scale: number; /** Conservative digit bound, charged before conversion/copying. */ digits?: number}>;
 export type SchemaOperand = Readonly<{
@@ -29,9 +30,7 @@ export const builtinPrimitive = (name: string): string => {
   while (builtinParents[name]) name = builtinParents[name]; return name;
 };
 export const whitespaceFor = (name: string): "preserve" | "replace" | "collapse" => name === "string" || name === "anySimpleType" ? "preserve" : name === "normalizedString" ? "replace" : "collapse";
-export function normalizeWhitespace(value: string, mode: "preserve" | "replace" | "collapse"): string {
-  return mode === "preserve" ? value : mode === "replace" ? value.replace(/[\t\r\n]/g, " ") : value.replace(/[\t\r\n ]+/g, " ").replace(/^ | $/g, "");
-}
+export {normalizeWhitespace} from '../util/xmlWhitespace.js';
 
 export function schemaDatatypeValues(c: AssessmentContext) {
   const invalid = (owner: GraphNode, lexical: LexicalValue): never => c.fail(owner, "cvc-datatype-valid", "Schema operand is outside the datatype's lexical/value space", lexical.context.source);

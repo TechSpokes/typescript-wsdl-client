@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:pattern-properties" targetNamespace="urn:recovery:pattern-properties">
+  <xs:simpleType name="AB"><xs:restriction base="xs:string"><xs:pattern value="a|b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ABCopy"><xs:restriction base="xs:string"><xs:pattern value="a|b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BA"><xs:restriction base="xs:string"><xs:pattern value="b|a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="MultiAB"><xs:restriction base="xs:string"><xs:pattern value="a"/><xs:pattern value="b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="MultiABCopy"><xs:restriction base="xs:string"><xs:pattern value="a"/><xs:pattern value="b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="MultiABChild"><xs:restriction base="t:MultiAB"/></xs:simpleType>
+  <xs:simpleType name="MultiBA"><xs:restriction base="xs:string"><xs:pattern value="b"/><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:element name="Owner" type="xs:string"/>
+</xs:schema>

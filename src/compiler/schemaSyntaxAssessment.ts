@@ -10,6 +10,7 @@ import {isXmlNCName, XSD_NAMESPACE} from "../loader/orderedSyntax.js";
 import type {SyntaxAttribute, SyntaxElement, SyntaxSource} from "../loader/orderedSyntax.js";
 import {normalizeWhitespace} from "./schemaDatatypeValues.js";
 import {declarationMethods, RelationProblem} from "./schemaTypeRelations.js";
+import {schemaBooleanLexical, schemaNonNegativeIntegerLexical} from './schemaSourceLexical.js';
 
 const facetNames = new Set(["length", "minLength", "maxLength", "pattern", "enumeration", "whiteSpace", "minInclusive", "maxInclusive", "minExclusive", "maxExclusive", "totalDigits", "fractionDigits"]);
 const particleNames = new Set(["sequence", "choice", "all", "group"]);
@@ -25,10 +26,10 @@ function checkSchemaSyntax(c: AssessmentContext, node: GraphNode) {
       c.step(node); c.text(a.name.local, node); c.text(a.value, node);
       if (a.name.namespace === XSD_NAMESPACE || !a.name.namespace && !allowed.includes(a.name.local)) fail("Attribute is not permitted in this XSD syntax context", source);
       if (!a.name.namespace && a.name.local === "id" && !isXmlNCName(normalizeWhitespace(a.value, "collapse"))) fail("Schema id must be an XML NCName", source);
-      if (!a.name.namespace && (["abstract", "nillable", "mixed"].includes(a.name.local) || facet && a.name.local === "fixed") && !["true", "false", "1", "0"].includes(normalizeWhitespace(a.value, "collapse"))) fail("Invalid XML Schema boolean spelling", source);
+      if (!a.name.namespace && (["abstract", "nillable", "mixed"].includes(a.name.local) || facet && a.name.local === "fixed") && !schemaBooleanLexical(a.value)) fail("Invalid XML Schema boolean spelling", source);
       if (!a.name.namespace && ["minOccurs", "maxOccurs"].includes(a.name.local)) {
         const value = normalizeWhitespace(a.value, "collapse");
-        if (!(a.name.local === "maxOccurs" && value === "unbounded") && !/^(?:\+?[0-9]+|-0+)$/.test(value)) fail("Occurrence requires an exact nonnegative integer", source);
+        if (!(a.name.local === "maxOccurs" && value === "unbounded") && !schemaNonNegativeIntegerLexical(value)) fail("Occurrence requires an exact nonnegative integer", source);
       }
     }
   };

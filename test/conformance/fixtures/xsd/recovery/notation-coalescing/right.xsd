@@ -1,0 +1,3 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:notation:shared">
+  <xs:notation name=" Picture " public="image test" system="viewer.exe"><xs:annotation><xs:documentation>Second notation source.</xs:documentation></xs:annotation></xs:notation>
+</xs:schema>

@@ -16,10 +16,19 @@ import {validateRawElementShape} from './schemaElementProperties.js';
 import type {RawElementProperties} from './schemaElementProperties.js';
 import {validateRawAttributeGroupShape} from './schemaAttributeGroupProperties.js';
 import type {RawAttributeGroupProperties} from './schemaAttributeGroupProperties.js';
+import {equalNotationProperties, notationNameKey, readSourceNotationProperties, sourceNotationNamespace} from './schemaNotationProperties.js';
+import type {SchemaNotationProperties} from './schemaNotationProperties.js';
+import {sourceSchemasForResolvedGraph} from './sourceSchemaBinding.js';
+import type {SyntaxElement} from '../loader/orderedSyntax.js';
 
 export const SEMANTIC_CONTEXT_CONTRACT = 'RE01-domain-boundary-v1' as const;
 export type ContextLookup = Readonly<{kind: 'found'; node: GraphNode} | {kind: 'missing' | 'outside-context'; id: NodeId}>;
 export type ContextResolution = ContextLookup | Readonly<{kind: 'builtin'; name: ExpandedName}>;
+export type ContextNotationLookup = Readonly<
+  {kind: 'found'; properties: SchemaNotationProperties; origin: 'original' | 'addition'} |
+  {kind: 'missing' | 'outside-context'; name: ExpandedName} |
+  {kind: 'unresolved'; name: ExpandedName; rule: 'notation-source-universe' | 'notation-active-membership' | 'notation-original-properties'}
+>;
 export type SemanticContext = Readonly<{
   contextId: string;
   profileVersion: typeof GRAPH_MODEL;
@@ -29,6 +38,11 @@ export type SemanticContext = Readonly<{
   membership: 'complete-actual-plus-additions' | 'structural-subset';
   budget: SemanticBudget;
   members: readonly NodeId[];
+  /** Separate NOTATION symbol space; no persisted GraphNode role is introduced. */
+  notationMembers: readonly ExpandedName[];
+  notationMembership: 'complete-original-plus-additions' | 'structural-subset';
+  notationUniverse: 'source-bound' | 'retained-only';
+  lookupNotation(name: ExpandedName): ContextNotationLookup;
   lookup(id: NodeId): ContextLookup;
   resolve(reference: Reference): ContextResolution;
   sourceNode(id: NodeId): GraphNode | undefined;
@@ -56,6 +70,8 @@ export type SemanticCandidateDelta = Readonly<{
   rawSimpleTypes?: readonly RawSimpleTypeProperties[];
   rawElements?: readonly RawElementProperties[];
   rawAttributeGroups?: readonly RawAttributeGroupProperties[];
+  /** Omission inherits the parent; an explicit selection must include every new addition. */
+  notations?: Readonly<{active: readonly ExpandedName[]; additions?: readonly SchemaNotationProperties[]}>;
 }>;
 export type ContextFailure = Readonly<{
   kind: 'input-error' | 'candidate-rejected';
@@ -143,6 +159,9 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
     };
     try {
       budget.chargeWork(3);
+      // Private exact-handle binding is read before snapshotting loses that identity.
+      // Availability of all source roots is distinct from source/component validity.
+      const sourceSchemas = sourceSchemasForResolvedGraph(resolved);
       const inputGraph = dataField(resolved, 'graph');
       const inputNodes = dataField(inputGraph, 'nodes');
       if (dataField(inputGraph, 'model') !== GRAPH_MODEL || !Array.isArray(inputNodes)) {
@@ -159,12 +178,62 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       const requestAuthority = Object.freeze({});
       const requestId = `semantic-request:${++nextRequest}`;
       let serial = 0;
+      type OriginalNotation = {properties: SchemaNotationProperties; conflicting: boolean};
+      type NotationState = {additions: ReadonlyMap<string, SchemaNotationProperties>; active: ReadonlySet<string>; members: readonly ExpandedName[]};
+      const originalNotations = new Map<string, OriginalNotation>();
       type ContextState = {changes: ReadonlyMap<NodeId, GraphNode>; slots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>;
         edges: ReadonlyMap<NodeId, readonly NodeId[]>; raw: ReadonlyMap<NodeId, RawComplexTypeProperties>;
-        simple: ReadonlyMap<NodeId, RawSimpleTypeProperties>; elements: ReadonlyMap<NodeId, RawElementProperties>; groups: ReadonlyMap<NodeId, RawAttributeGroupProperties>};
+        simple: ReadonlyMap<NodeId, RawSimpleTypeProperties>; elements: ReadonlyMap<NodeId, RawElementProperties>; groups: ReadonlyMap<NodeId, RawAttributeGroupProperties>; notations: NotationState};
       const states = new WeakMap<SemanticContext, ContextState>();
 
       const key = (id: string): void => budget.chargeWork(1 + id.length);
+      const notationField = (value: unknown, field: string): unknown => {
+        budget.chargeWork(44 + field.length);
+        if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Notation properties require data records');
+        const descriptor = Object.getOwnPropertyDescriptor(value, field);
+        if (!descriptor || !('value' in descriptor)) throw new TypeError('Notation properties require explicit own data fields');
+        return descriptor.value;
+      };
+      const notationName = (value: unknown): ExpandedName => {
+        if (typeof notationField(value, 'namespace') !== 'string' || typeof notationField(value, 'local') !== 'string') throw new TypeError('Notation QName fields must be strings');
+        return value as ExpandedName;
+      };
+      const notationProperties = (value: unknown): SchemaNotationProperties => {
+        notationName(notationField(value, 'name'));
+        const publicIdentifier = notationField(value, 'publicIdentifier'), systemIdentifier = notationField(value, 'systemIdentifier');
+        if ((publicIdentifier !== undefined && typeof publicIdentifier !== 'string') || (systemIdentifier !== undefined && typeof systemIdentifier !== 'string')) throw new TypeError('Notation identifiers must be strings or explicit undefined');
+        return value as SchemaNotationProperties;
+      };
+      const retainNotation = (syntax: SyntaxElement, namespace: string): void => {
+        // Each physical representation allocates a tuple, even if later coalesced.
+        budget.reserveNodes(1);
+        const mapped = readSourceNotationProperties(syntax, namespace, budget);
+        if (mapped.kind !== 'properties') return; // Missing names remain source-grammar failures.
+        const id = notationNameKey(mapped.properties.name, budget), prior = originalNotations.get(id);
+        budget.chargeWork(4);
+        if (!prior) originalNotations.set(id, {properties: mapped.properties, conflicting: false});
+        else if (!equalNotationProperties(prior.properties, mapped.properties, budget)) prior.conflicting = true;
+      };
+      if (sourceSchemas !== undefined) {
+        for (const schema of sourceSchemas) {
+          budget.chargeWork(); const namespace = sourceNotationNamespace(schema, budget);
+          for (const child of schema.syntax.children) {
+            budget.chargeWork(4);
+            if (child.kind === 'element') {
+              budget.chargeWork(child.name.namespace.length + child.name.local.length);
+              if (child.name.namespace === XSD_NAMESPACE && child.name.local === 'notation') retainNotation(child, namespace);
+            }
+          }
+        }
+      } else {
+        for (const retained of graph.schemaRetained) {
+          budget.chargeWork(4 + retained.syntax.name.namespace.length + retained.syntax.name.local.length);
+          if (retained.syntax.name.namespace === XSD_NAMESPACE && retained.syntax.name.local === 'notation') retainNotation(retained.syntax, retained.context.effectiveNamespace);
+        }
+      }
+      budget.chargeWork(5 + originalNotations.size * 3);
+      const actualNotations: NotationState = {additions: new Map(), active: new Set(originalNotations.keys()),
+        members: Object.freeze([...originalNotations.values()].map(row => row.properties.name))};
       const identityId = (node: GraphNode): string => {
         if (node.identity.kind === 'global') {
           const role = node.kind === 'simpleType' || node.kind === 'complexType' ? 'type' : node.kind === 'wsdl' ? node.role : node.kind;
@@ -205,7 +274,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       budget.chargeWork(12);
       const sharedMetadata: SemanticGraphMetadata = Object.freeze({model: graph.model, origins: graph.origins,
         schemaAnnotations: graph.schemaAnnotations, schemaRetained: graph.schemaRetained, loading: graph.loading});
-      const buildContext = (kind: SemanticContext['kind'], members: readonly NodeId[], changes: ReadonlyMap<NodeId, GraphNode>, changedSlots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>, changedEdges: ReadonlyMap<NodeId, readonly NodeId[]>, rawTypes: readonly RawComplexTypeProperties[] = [], rawSimpleTypes: readonly RawSimpleTypeProperties[] = [], rawElements: readonly RawElementProperties[] = [], rawGroups: readonly RawAttributeGroupProperties[] = []): SemanticContext => {
+      const buildContext = (kind: SemanticContext['kind'], members: readonly NodeId[], changes: ReadonlyMap<NodeId, GraphNode>, changedSlots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>, changedEdges: ReadonlyMap<NodeId, readonly NodeId[]>, rawTypes: readonly RawComplexTypeProperties[] = [], rawSimpleTypes: readonly RawSimpleTypeProperties[] = [], rawElements: readonly RawElementProperties[] = [], rawGroups: readonly RawAttributeGroupProperties[] = [], notations: NotationState = actualNotations): SemanticContext => {
         budget.chargeWork(5);
         const membership = new Set<NodeId>();
         const rawProperties = new Map<NodeId, RawComplexTypeProperties>();
@@ -407,6 +476,22 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         context = Object.freeze({
           contextId, profileVersion: GRAPH_MODEL, contractVersion: SEMANTIC_CONTEXT_CONTRACT,
           kind, acceptance: 'structural-only', membership: membership.size === expectedMembers ? 'complete-actual-plus-additions' : 'structural-subset', budget, members: frozenMembers,
+          notationMembers: notations.members,
+          notationMembership: notations.active.size === originalNotations.size + notations.additions.size ? 'complete-original-plus-additions' : 'structural-subset',
+          notationUniverse: sourceSchemas !== undefined ? 'source-bound' : 'retained-only',
+          lookupNotation(input: ExpandedName): ContextNotationLookup {
+            authenticate();
+            const name = notationName(budget.freeze(budget.snapshot(input)));
+            const id = notationNameKey(name, budget), original = originalNotations.get(id), addition = notations.additions.get(id);
+            budget.chargeWork(12);
+            if ((original || addition) && !notations.active.has(id)) return Object.freeze({kind: 'outside-context', name});
+            if (original) return original.conflicting ? Object.freeze({kind: 'unresolved', name, rule: 'notation-original-properties'})
+              : Object.freeze({kind: 'found', properties: original.properties, origin: 'original'});
+            if (sourceSchemas === undefined) return Object.freeze({kind: 'unresolved', name, rule: 'notation-source-universe'});
+            if (addition) return Object.freeze({kind: 'found', properties: addition, origin: 'addition'});
+            if (notations.active.size !== originalNotations.size + notations.additions.size) return Object.freeze({kind: 'unresolved', name, rule: 'notation-active-membership'});
+            return Object.freeze({kind: 'missing', name});
+          },
           lookup,
           resolve(reference: Reference): ContextResolution {
             authenticate();
@@ -443,7 +528,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         });
         contexts.add(context); metadata.set(context, sharedMetadata);
         requests.set(context, requestAuthority);
-        states.set(context, {changes, slots: changedSlots, edges: changedEdges, raw: rawProperties, simple: rawSimpleProperties, elements: rawElementProperties, groups: rawGroupProperties});
+        states.set(context, {changes, slots: changedSlots, edges: changedEdges, raw: rawProperties, simple: rawSimpleProperties, elements: rawElementProperties, groups: rawGroupProperties, notations});
         forks.set(context, input => candidate(input, context));
         let projection: CanonicalGraph | undefined;
         projections.set(context, () => {
@@ -471,16 +556,40 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           const candidateKey = dataField(input, 'key'), candidateActive = dataField(input, 'active');
           const additions = dataField(input, 'additions'), endpoint = dataField(input, 'endpoint'), rawTypes = dataField(input, 'rawTypes');
           const rawSimpleTypes = dataField(input, 'rawSimpleTypes'), rawElements = dataField(input, 'rawElements'), rawGroups = dataField(input, 'rawAttributeGroups');
+          const notationDelta = dataField(input, 'notations');
+          const notationActive = notationDelta === undefined ? undefined : dataField(notationDelta, 'active');
+          const notationAdditions = notationDelta === undefined ? undefined : dataField(notationDelta, 'additions');
           if (typeof candidateKey !== 'string' || !Array.isArray(candidateActive)
             || (additions !== undefined && !Array.isArray(additions)) || (rawTypes !== undefined && !Array.isArray(rawTypes))
             || (rawGroups !== undefined && !Array.isArray(rawGroups)) || (rawSimpleTypes !== undefined && !Array.isArray(rawSimpleTypes)) || (rawElements !== undefined && !Array.isArray(rawElements))) throw new InvalidContext('representation');
-          budget.reserveNodes((additions ? dataField(additions, 'length') as number : 0) + (endpoint ? 1 : 0));
+          if (notationDelta !== undefined && (!Array.isArray(notationActive) || (notationAdditions !== undefined && !Array.isArray(notationAdditions)))) throw new InvalidContext('representation');
+          budget.reserveNodes((additions ? dataField(additions, 'length') as number : 0) + (endpoint ? 1 : 0)
+            + (notationAdditions ? dataField(notationAdditions, 'length') as number : 0));
           const delta = budget.freeze(budget.snapshot(input));
           budget.chargeWork(12 + delta.active.length + parent.changes.size * 2 + parent.slots.size * 2 + parent.edges.size * 2
             + parent.raw.size * 2 + parent.simple.size * 2 + parent.elements.size * 2 + parent.groups.size * 2);
           const changes = new Map(parent.changes), slots = new Map(parent.slots), edges = new Map(parent.edges);
           const raw = new Map(parent.raw), simple = new Map(parent.simple), elements = new Map(parent.elements), groups = new Map(parent.groups);
           const active = new Set(delta.active);
+          let notations = parent.notations;
+          if (delta.notations !== undefined) {
+            budget.chargeWork(4 + parent.notations.additions.size * 2);
+            const additions = new Map(parent.notations.additions), selected = new Set<string>(), names: ExpandedName[] = [];
+            for (const rawName of delta.notations.active) {
+              const name = notationName(rawName), id = notationNameKey(name, budget);
+              if (selected.has(id)) throw new InvalidContext('identity', id);
+              budget.chargeWork(2); selected.add(id); names.push(name);
+            }
+            for (const rawProperties of delta.notations.additions ?? []) {
+              const properties = notationProperties(rawProperties), id = notationNameKey(properties.name, budget);
+              if (originalNotations.has(id) || additions.has(id)) throw new InvalidContext('identity', id);
+              if (!selected.has(id)) throw new InvalidContext('outside-context', id);
+              budget.chargeWork(); additions.set(id, properties);
+            }
+            for (const id of selected) {key(id); if (!originalNotations.has(id) && !additions.has(id)) throw new InvalidContext('missing', id);}
+            budget.chargeWork(4 + names.length);
+            notations = {additions, active: selected, members: Object.freeze(names)};
+          }
           for (const node of delta.additions ?? []) {
             key(node.id);
             if (originals.has(node.id) || changes.has(node.id) || originalNames.has(identityId(node)) || node.id !== identityId(node)) throw new InvalidContext('identity', node.id);
@@ -504,7 +613,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           for (const row of delta.rawElements ?? []) {if (!validateRawElementShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.element); unique(row.element, seenElements); budget.chargeWork(); elements.set(row.element, row);}
           for (const row of delta.rawAttributeGroups ?? []) {validateRawAttributeGroupShape(row, budget); permittedProperty(row.group); unique(row.group, seenGroups); budget.chargeWork(); groups.set(row.group, row);}
           budget.chargeWork(4 + raw.size + simple.size + elements.size + groups.size);
-          const context = buildContext('candidate', delta.active, changes, slots, edges, [...raw.values()], [...simple.values()], [...elements.values()], [...groups.values()]);
+          const context = buildContext('candidate', delta.active, changes, slots, edges, [...raw.values()], [...simple.values()], [...elements.values()], [...groups.values()], notations);
           budget.chargeWork(); parents.set(context, from);
           budget.chargeWork(3); return Object.freeze({kind: 'prepared', context});
         } catch (error: unknown) {

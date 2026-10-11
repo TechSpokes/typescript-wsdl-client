@@ -5,6 +5,7 @@ import {SchemaResourceLoader, resolveResourceUri} from "./schemaResources.js";
 import type {LoadingLimits, OfflineSchemaResource, ResourceMetadata, SchemaResourcePolicy} from "./schemaResources.js";
 import {resolutionDepthBound} from "./resolutionDepth.js";
 import type {ResolutionArc} from "./resolutionDepth.js";
+import {normalizeWhitespace} from '../util/xmlWhitespace.js';
 
 export type SchemaContext = Readonly<{kind: "root" | "inline" | "include" | "import"; namespace: string}>;
 export type SchemaInterpretation = Readonly<{
@@ -44,12 +45,23 @@ export function schemaInterpretationKey(node: SyntaxElement, targetNamespace: st
   return JSON.stringify([node.source.digest, node.source.uri, node.baseUri, targetNamespace, context.kind, context.namespace, node.source.path]);
 }
 
-/** A fresh compilation-scoped snapshot, with no implicit network or filesystem permission. */
-export async function loadSchemaInput(source: string, options: {
+type SchemaInputOptions = {
   policy: SchemaResourcePolicy;
   limits?: Partial<LoadingLimits>;
   offlineResources?: ReadonlyMap<string, OfflineSchemaResource>;
-}): Promise<SchemaInput> {
+};
+
+/** A fresh compilation-scoped snapshot, with no implicit network or filesystem permission. */
+export function loadSchemaInput(source: string, options: SchemaInputOptions): Promise<SchemaInput> {
+  return loadSchemaInputWithValues(source, options, false);
+}
+
+/** Internal faithful source entry; preserves syntax and the legacy public entry. */
+export function loadSemanticSchemaInput(source: string, options: SchemaInputOptions): Promise<SchemaInput> {
+  return loadSchemaInputWithValues(source, options, true);
+}
+
+async function loadSchemaInputWithValues(source: string, options: SchemaInputOptions, semanticValues: boolean): Promise<SchemaInput> {
   const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources);
   const documents = new Map<string, SyntaxDocument>();
   const schemas = new Map<string, SchemaInterpretation>();
@@ -86,6 +98,13 @@ export async function loadSchemaInput(source: string, options: {
     return doc;
   };
   const is = (node: SyntaxElement, namespace: string, local: string) => node.name.namespace === namespace && node.name.local === local;
+  // Only XSD anyURI properties use this mapping. Original syntax and namespace
+  // bindings, WSDL transport names, and arbitrary resource URLs remain intact.
+  // Source byte/resource limits govern this phase, before semantic preparation.
+  const xsdUri = (node: SyntaxElement, name: string): string | undefined => {
+    const value = syntaxAttribute(node, name);
+    return value === undefined || !semanticValues ? value : normalizeWhitespace(value, 'collapse');
+  };
   // Cached interpretations still consume resolution depth on a later, deeper route.
   const checkCachedDepth = (key: string, depth: number) => {
     if (depth + resolutionDepthBound(key, depthGraph, active) > loader.limits.resolutionDepth) {
@@ -104,7 +123,9 @@ export async function loadSchemaInput(source: string, options: {
   const interpret = async (node: SyntaxElement, context: SchemaContext, depth: number): Promise<string> => {
     checkDepth(depth, node);
     if (!is(node, XSD_NAMESPACE, "schema")) throw new SchemaLoadingError("invalid-schema", "Expected an XSD schema root", node.source);
-    const declaredNamespace = syntaxAttribute(node, "targetNamespace") ?? "";
+    const declaredValue = xsdUri(node, "targetNamespace");
+    if (semanticValues && declaredValue === '') throw new SchemaLoadingError("invalid-schema", "A present schema target namespace must not be empty", node.source);
+    const declaredNamespace = declaredValue ?? "";
     const targetNamespace = context.kind === "include" && !declaredNamespace ? context.namespace : declaredNamespace;
     if (context.kind === "include" && declaredNamespace && declaredNamespace !== context.namespace) {
       throw new SchemaLoadingError("invalid-schema", "Included schema target namespace differs from its including schema", node.source);
@@ -120,15 +141,24 @@ export async function loadSchemaInput(source: string, options: {
     for (const child of syntaxElements(node, XSD_NAMESPACE)) {
       if (child.name.local !== "include" && child.name.local !== "import") continue;
       const kind = child.name.local;
-      const location = syntaxAttribute(child, "schemaLocation");
-      if (!location && kind === "include") throw new SchemaLoadingError("invalid-schema", "Schema include requires schemaLocation", child.source);
-      if (!location) { recordEdge({kind, from: key, source: child.source, cycle: false}); continue; }
+      const location = xsdUri(child, "schemaLocation");
+      const importedNamespace = xsdUri(child, "namespace");
+      const missingLocation = semanticValues ? location === undefined : !location;
+      if (missingLocation && kind === "include") throw new SchemaLoadingError("invalid-schema", "Schema include requires schemaLocation", child.source);
+      if (missingLocation) { recordEdge({kind, from: key, source: child.source, cycle: false}); continue; }
       checkDepth(depth + 1, child);
-      const namespace = kind === "include" ? targetNamespace : syntaxAttribute(child, "namespace") ?? "";
+      const namespace = kind === "include" ? targetNamespace : importedNamespace ?? "";
       if (kind === "import" && namespace === targetNamespace) throw new SchemaLoadingError("invalid-schema", "Schema import must name a different namespace", child.source);
-      const {referenceUri, doc} = await referencedDocument(location, child);
+      const {referenceUri, doc} = await referencedDocument(location!, child);
+      const childDeclaredNamespace = xsdUri(doc.root, "targetNamespace");
+      // A successfully supplied import referent must match both presence and
+      // value. An explicit empty import namespace without a referent is not
+      // by itself forbidden by the anyURI datatype or src-import clause 3.
+      if (semanticValues && kind === 'import' && (importedNamespace === undefined) !== (childDeclaredNamespace === undefined)) {
+        throw new SchemaLoadingError("invalid-schema", "Imported schema target namespace presence differs from the declared import namespace", child.source);
+      }
       const childContext: SchemaContext = {kind, namespace};
-      const childNamespace = kind === "include" ? syntaxAttribute(doc.root, "targetNamespace") || namespace : syntaxAttribute(doc.root, "targetNamespace") ?? "";
+      const childNamespace = kind === "include" ? childDeclaredNamespace || namespace : childDeclaredNamespace ?? "";
       const childKey = schemaInterpretationKey(doc.root, childNamespace, childContext);
       const cycle = active.has(childKey);
       const to = await interpret(doc.root, childContext, depth + 1);

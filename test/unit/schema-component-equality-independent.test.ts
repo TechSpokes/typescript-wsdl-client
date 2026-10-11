@@ -43,6 +43,49 @@ async function setup() {
 }
 
 describe('independent sufficient recursive component-property equality', () => {
+
+  it('recognizes the same inherited implicit scalar definition without merging distinct restriction constructions', async () => {
+    // Oracle precedes the narrow fix: #270 comment 6112779337; no-identity's
+    // same-by-construction case establishes equality, not component validity.
+    const ns = 'urn:recovery:inherited-scalar-equality';
+    const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/inherited-scalar-equality-independent.xsd'), {policy: {fileRoots: [fixtures]}});
+    const prepared = prepareSemanticRequest(resolveCanonicalGraph(buildCanonicalGraph(input)), {budget: createSemanticBudget({maxWork: 100_000_000})});
+    if (prepared.kind !== 'prepared') throw new Error('Expected source request');
+    const request = prepared.request;
+    const owner = request.actual.lookup(globalId('type', {namespace: ns, local: 'Owner'}));
+    if (owner.kind !== 'found' || owner.node.kind !== 'complexType' || !owner.node.content) throw new Error('Expected fixture owner');
+    const sequence = request.actual.lookup(owner.node.content);
+    if (sequence.kind !== 'found' || sequence.node.kind !== 'particle' || sequence.node.term.kind !== 'sequence') throw new Error('Expected fixture sequence');
+    const types = new Map<string, ComplexTypeNode>();
+    for (const id of sequence.node.term.children) {
+      const particle = request.actual.lookup(id);
+      if (particle.kind !== 'found' || particle.node.kind !== 'particle' || particle.node.term.kind !== 'element') throw new Error('Expected fixture element particle');
+      const element = request.actual.resolve(particle.node.term.declaration);
+      if (element.kind !== 'found' || element.node.kind !== 'element') throw new Error('Expected fixture declaration');
+      const type = request.actual.resolve(element.node.type);
+      if (type.kind !== 'found' || type.node.kind !== 'complexType') throw new Error('Expected anonymous source type');
+      types.set(element.node.name.local, type.node);
+    }
+    const left = types.get('left')!, right = types.get('right')!;
+    expect(left.id).not.toBe(right.id);
+    const inherited = compareComponentProperties(request.actual, left, right);
+    expect(inherited).toMatchObject({kind: 'checked', value: true, obligations: ['component-validity']});
+    if (inherited.kind !== 'checked') throw new Error('Expected same inherited scalar identity');
+    expect(inherited.dependencies).toEqual(expect.arrayContaining([left.id, right.id, globalId('type', {namespace: ns, local: 'R'})]));
+    expect(compareComponentProperties(request.actual, left, types.get('changed')!)).toMatchObject({kind: 'checked', value: false});
+    expect(compareComponentProperties(request.actual, types.get('r1')!, types.get('r2')!)).toMatchObject({kind: 'unresolved', rule: 'component-simple-content-properties'});
+    // Unequal known scalar properties disprove full equality; equal known
+    // subsets above do not supply missing complete property authority.
+    expect(compareComponentProperties(request.actual, types.get('r1')!, types.get('r3')!)).toMatchObject({kind: 'checked', value: false});
+    expect(compareComponentProperties(request.actual, types.get('mixedLeft')!, types.get('mixedRight')!)).toMatchObject({
+      kind: 'checked', value: true, obligations: ['component-validity'],
+      scalarObligations: [{rule: 'simple-content-base-mixed-emptiable', component: globalId('type', {namespace: ns, local: 'Mixed'})}],
+    });
+    expect(() => compareComponentProperties(request.actual, {...left}, right)).toThrow(/Unauthenticated/);
+    request.budget.guard(() => request.budget.chargeWork(100_000_000));
+    expect(compareComponentProperties(request.actual, left, right)).toBe(request.budget.failure());
+  });
+
   it('ignores annotations and AU order while retaining named types, exact AU types and local scopes', async () => {
     const {request, anonymous, get} = await setup();
     expect(compareComponentProperties(request.actual, anonymous[0], anonymous[1])).toMatchObject({kind: 'checked', value: true,

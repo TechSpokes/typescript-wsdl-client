@@ -9,7 +9,12 @@
   "include": [
     "wildcard-algebra.test.ts",
     "semantic-context-independent.test.ts",
+    "semantic-notation-independent.test.ts",
     "schema-scalar-independent.test.ts",
+    "schema-raw-facet-independent.test.ts",
+    "schema-scalar-witness-independent.test.ts",
+    "schema-pattern-property-independent.test.ts",
+    "semantic-source-loading-independent.test.ts",
     "schema-type-relations.test.ts",
     "schema-attribute-uses.test.ts",
     "semantic-context.test.ts",

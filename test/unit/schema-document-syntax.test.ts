@@ -22,6 +22,25 @@ function prepare(source: SchemaInput, maxWork = limits.maxWork): SemanticRequest
   if (result.kind !== 'prepared') throw new Error(JSON.stringify(result));
   return result.request;
 }
+function expectDocumentBudgetBoundary(source: SchemaInput): void {
+  for (const shortage of [0, 1]) {
+    const request = prepare(source), before = request.budget.usage().work;
+    expect(checkSchemaDocumentSyntax(request.actual).kind).toBe('checked');
+    const checkWork = request.budget.usage().work - before;
+    // Measure and repeat on this exact context: fresh request ID widths can
+    // change the charged receipt size across unrelated test executions.
+    request.budget.chargeWork(limits.maxWork - request.budget.usage().work - checkWork + shortage);
+    const result = checkSchemaDocumentSyntax(request.actual);
+    if (shortage === 0) {
+      expect(result.kind).toBe('checked');
+      expect(request.budget.usage().work).toBe(limits.maxWork);
+      expect(checkSchemaDocumentSyntax(request.actual).kind).toBe('resource-limit');
+    } else {
+      expect(result.kind).toBe('resource-limit');
+      expect(checkSchemaDocumentSyntax(request.actual)).toBe(result);
+    }
+  }
+}
 const schema = (content = '', attributes = '') => `<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" ${attributes}>${content}</xs:schema>`;
 
 describe('authenticated schema document syntax', () => {
@@ -58,6 +77,8 @@ describe('authenticated schema document syntax', () => {
     ['unknown derivation', '', 'blockDefault="list"'],
     ['mixed all derivation', '', 'finalDefault="#all restriction"'],
     ['bad language', '', 'xml:lang="en_US"'],
+    ['whitespace-only language', '', 'xml:lang=" "'],
+    ['bad XML space', '', 'xml:space="compact"'],
     ['late import', '<xs:notation name="n" public=""/><xs:import namespace="urn:other"/>', ''],
     ['root child', '<xs:sequence/>', ''],
     ['notation missing identifier', '<xs:notation name="n"/>', ''],
@@ -77,6 +98,7 @@ describe('authenticated schema document syntax', () => {
   it.each([
     ['', ''],
     ['<xs:annotation><xs:documentation xml:lang=""/></xs:annotation>', 'xml:lang=""'],
+    ['', 'xml:lang=" en-US " xml:space=" preserve "'],
     ['<xs:import/>', 'targetNamespace="urn:local"'],
     ['<xs:notation name=" n " public=" a&#9;b "/>', ''],
     ['<xs:notation name="n" system=""/>', ''],
@@ -85,18 +107,67 @@ describe('authenticated schema document syntax', () => {
     expect(checkSchemaDocumentSyntax(prepare(await input(schema(content, attributes))).actual).kind).toBe('checked');
   });
 
-  it('keeps independent inline schema ID scopes and foreign attribute assessment explicit', async () => {
+  it('keeps independent inline schema ID scopes and discharges absent S4S foreign attributes', async () => {
     const content = '<xs:annotation id="same"/><xs:notation name="n" public="same"/>';
     const body = schema(content, 'targetNamespace="urn:a"') + schema(content, 'targetNamespace="urn:b"');
     const wsdl = `<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/"><w:types>${body}</w:types></w:definitions>`;
     expect(checkSchemaDocumentSyntax(prepare(await input(wsdl)).actual)).toMatchObject({kind: 'checked', sources: [{}, {}]});
     const sameNamespace = prepare(await input(wsdl.replace('urn:b', 'urn:a')));
     expect(checkSchemaDocumentSyntax(sameNamespace.actual)).toMatchObject({kind: 'checked',
-      remaining: ['child-component-syntax', 'semantic-construction', 'notation-component-identity']});
+      remaining: ['child-component-syntax', 'semantic-construction']});
     const foreign = prepare(await input(schema('', 'xmlns:f="urn:foreign" f:custom="value"')));
-    expect(checkSchemaDocumentSyntax(foreign.actual)).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction', 'foreign-attribute-assessment']});
+    expect(checkSchemaDocumentSyntax(foreign.actual)).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
     const componentForeign = prepare(await input(schema('<xs:complexType name="T"><xs:attribute name="a" f:flag="bad"/></xs:complexType>', 'xmlns:f="urn:foreign"')));
-    expect(checkSchemaDocumentSyntax(componentForeign.actual)).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction', 'foreign-attribute-assessment']});
+    expect(checkSchemaDocumentSyntax(componentForeign.actual)).toMatchObject({kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
+  });
+
+  it('recurses through lax payload and keeps exact known-declaration and schema-instance debts', async () => {
+    const body = '<xs:annotation><xs:appinfo><app:unknown><xs:element/><app:typed xsi:type="xs:int"/></app:unknown></xs:appinfo></xs:annotation>';
+    const request = prepare(await input(schema(body, 'xmlns:app="urn:app" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')));
+    expect(checkSchemaDocumentSyntax(request.actual)).toMatchObject({kind: 'checked',
+      remaining: ['child-component-syntax', 'semantic-construction', 'annotation-payload-assessment'],
+      wildcardObligations: [
+        {category: 'annotation-payload-assessment', rule: 'schema-for-schemas-element-assessment', name: {local: 'element'}},
+        {category: 'annotation-payload-assessment', rule: 'schema-instance-assessment', name: {local: 'type'}},
+      ]});
+    const absent = body.replace('<xs:element/><app:typed xsi:type="xs:int"/>', '<xs:assert/><xs:extension/>');
+    expect(checkSchemaDocumentSyntax(prepare(await input(schema(absent, 'xmlns:app="urn:app"'))).actual)).toMatchObject({
+      kind: 'checked', remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
+    const knownXml = body.replace('<xs:element/><app:typed xsi:type="xs:int"/>', '<app:child xml:space="compact"/>');
+    expect(checkSchemaDocumentSyntax(prepare(await input(schema(knownXml, 'xmlns:app="urn:app"'))).actual)).toMatchObject({
+      kind: 'invalid-schema', rule: 'schema-for-schemas'});
+  });
+
+  const payload = (body: string) => `<xs:annotation><xs:appinfo>${body}</xs:appinfo></xs:annotation>`;
+  it.each([
+    '<xs:pattern value="["/><xs:enumeration value=""/>',
+    '<xs:length value="-0"/><xs:fractionDigits value="+0001" fixed=" 1 "/>',
+    '<xs:totalDigits value="+0001"/><xs:whiteSpace value=" collapse "/>',
+    '<xs:minInclusive value="not a number" fixed="false"><xs:annotation><xs:documentation>text</xs:documentation></xs:annotation></xs:minInclusive>',
+    '<xs:annotation id="payload"><xs:appinfo>text</xs:appinfo><xs:documentation source="guide">mixed text<unknown/></xs:documentation></xs:annotation>',
+  ])('checks S4S payload representation without constructing facets', async body => {
+    expect(checkSchemaDocumentSyntax(prepare(await input(schema(payload(body)))).actual)).toMatchObject({kind: 'checked',
+      remaining: ['child-component-syntax', 'semantic-construction'], wildcardObligations: []});
+  });
+
+  it.each([
+    '<xs:pattern/>', '<xs:pattern value="" fixed="false"/>', '<xs:enumeration value="x" fixed="0"/>',
+    '<xs:length value="-1"/>', '<xs:length value="1.0"/>', '<xs:totalDigits value="0"/>',
+    '<xs:totalDigits value="-0"/>', '<xs:whiteSpace value="other"/>', '<xs:length value="0" fixed="yes"/>',
+    '<xs:pattern value="x"><xs:annotation/><xs:annotation/></xs:pattern>',
+    '<xs:pattern value="x">text</xs:pattern>', '<xs:annotation><wrong/></xs:annotation>',
+    '<xs:documentation id="not-allowed"/>', '<xs:appinfo source="%zz"/>',
+  ])('rejects invalid known S4S payload representations', async body => {
+    expect(checkSchemaDocumentSyntax(prepare(await input(schema(payload(body)))).actual)).toMatchObject({kind: 'invalid-schema', rule: 'schema-for-schemas'});
+  });
+
+  it('shares typed payload IDs with the original root and leaves unknown IDs untyped', async () => {
+    const typed = prepare(await input(schema(payload('<xs:pattern value="[" id=" same "/>'), 'id="same"')));
+    expect(checkSchemaDocumentSyntax(typed.actual)).toMatchObject({kind: 'invalid-schema', rule: 'schema-id'});
+    const twoPayload = prepare(await input(schema(payload('<xs:pattern value="[" id="same"/><xs:annotation id="same"/>'))));
+    expect(checkSchemaDocumentSyntax(twoPayload.actual)).toMatchObject({kind: 'invalid-schema', rule: 'schema-id'});
+    const untyped = prepare(await input(schema(payload('<unknown id="same"/><unknown id="same"/>'), 'id="same"')));
+    expect(checkSchemaDocumentSyntax(untyped.actual)).toMatchObject({kind: 'checked', wildcardObligations: []});
   });
 
   it('classifies unsupported features separately and preserves inherited source stage failures', async () => {
@@ -142,17 +213,17 @@ describe('authenticated schema document syntax', () => {
 
   it('uses the same cumulative inclusive budget, including source snapshot and repeated checks', async () => {
     const source = await input(schema('<xs:notation name="n" public=""/>'));
-    const measured = prepare(source);
-    expect(checkSchemaDocumentSyntax(measured.actual).kind).toBe('checked');
-    const exact = measured.budget.usage().work;
-    const boundary = prepare(source, exact);
-    expect(checkSchemaDocumentSyntax(boundary.actual).kind).toBe('checked');
-    expect(boundary.budget.usage().work).toBe(exact);
-    expect(checkSchemaDocumentSyntax(boundary.actual).kind).toBe('resource-limit');
-    const short = prepare(source, exact - 1);
-    const failure = checkSchemaDocumentSyntax(short.actual);
-    expect(failure.kind).toBe('resource-limit');
-    expect(checkSchemaDocumentSyntax(short.actual)).toBe(failure);
+    expectDocumentBudgetBoundary(source);
     expect(prepareSourceSchemaRequest(source, {budget: createSemanticBudget({maxWork: 79})}).kind).toBe('resource-limit');
+  });
+
+  it('charges cross-root notation reconciliation on the same inclusive sticky budget', async () => {
+    const first = schema('<xs:notation name="N" public=" a&#9;b " system=" relative.xml "/>', 'targetNamespace="urn:a"');
+    const second = schema('<xs:notation name=" N " public="a b" system="relative.xml"/>', 'targetNamespace="urn:a"');
+    const source = await input(`<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/"><w:types>${first}${second}</w:types></w:definitions>`);
+    const measured = prepare(source);
+    expect(checkSchemaDocumentSyntax(measured.actual)).toMatchObject({kind: 'checked', sources: [{}, {}],
+      remaining: ['child-component-syntax', 'semantic-construction']});
+    expectDocumentBudgetBoundary(source);
   });
 });

@@ -8,6 +8,7 @@ import {SchemaAssessmentError} from "./schemaScalarContext.js";
 import {builtinParents, builtinPrimitive, integerBounds, normalizeWhitespace, schemaDatatypeValues, whitespaceFor} from "./schemaDatatypeValues.js";
 import type {SchemaOperand} from "./schemaDatatypeValues.js";
 import {schemaPatterns} from "./schemaPattern.js";
+import {schemaScalarWitnesses} from "./schemaScalarWitnesses.js";
 import type {SchemaPattern} from "./schemaPattern.js";
 import {XSD_NAMESPACE} from "../loader/orderedSyntax.js";
 
@@ -156,6 +157,19 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   };
   const enumerations = new Map<Facet, SchemaOperand>();
   const facetObligations = new Map<Facet, readonly ScalarObligation[]>();
+  /** One complete enumeration component can conclusively exclude a value. */
+  const excludedByEnumeration = (description: Description, value: SchemaOperand, owner: GraphNode): boolean => {
+    for (const group of description.plan.layers) {
+      c.step(owner); let present = false, member = false;
+      for (const facet of group.facets) {
+        c.step(owner); if (facet.name !== "enumeration") continue;
+        present = true;
+        if (values.sameValue(enumerations.get(facet)!, value, owner)) member = true;
+      }
+      if (present && !member) return true;
+    }
+    return false;
+  };
   const facetOperand = (facet: Facet, base: Description, owner: GraphNode): SchemaOperand => {
     const supplied = facet.operand;
     let value: SchemaOperand;
@@ -195,6 +209,55 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       if (primitive === "decimal") allowed.push("totalDigits", "fractionDigits");
     }
     if (!allowed.includes(facet.name)) c.fail(owner, "facet-applicability", "Facet is not permitted on this datatype variety", facet.lexical.context.source);
+  };
+  const lengthProperty = (description: Description, name: string): string | undefined =>
+    description.facets.get(name)?.integer ?? (name === "minLength" && ["NMTOKENS", "IDREFS", "ENTITIES"].includes(description.plan.builtin ?? "") ? "1" : undefined);
+  type FacetProperty = {fixed: boolean; integer?: string; operand?: SchemaOperand; lexical?: string};
+  /** Known builtin component facts, never fabricated source/caller facets. */
+  const facetProperty = (description: Description, name: string, owner: GraphNode): FacetProperty | undefined => {
+    c.step(owner, 4); const explicit = description.facets.get(name);
+    if (explicit) return {fixed: explicit.facet.fixed, integer: explicit.integer, operand: explicit.operand, lexical: explicit.facet.lexical.value};
+    if (name === "minLength") {
+      const integer = lengthProperty(description, name);
+      if (integer !== undefined) return {fixed: false, integer};
+    }
+    const builtinName = description.plan.builtin;
+    if (!builtinName) return undefined;
+    if (name === "fractionDigits" && builtinName !== "decimal" && description.plan.primitive === "decimal") return {fixed: true, integer: "0"};
+    if (name === "minInclusive" || name === "maxInclusive") {
+      const bound = integerBounds[builtinName]?.[name === "minInclusive" ? 0 : 1];
+      if (bound !== undefined) {
+        c.step(owner, 4);
+        return {fixed: false, operand: {family: "decimal", canonical: bound, decimal: values.decimal(bound, owner)}};
+      }
+    }
+    return undefined;
+  };
+  const opaqueBuiltinFacets = (description: Description): string | undefined => {
+    const name = description.plan.builtin;
+    // Primitive types and normalizedString/token need no inferred pattern.
+    // Integer lexical restrictions and derived name/language patterns retain
+    // their private builtin origin until their exact components are mapped.
+    return name === "anySimpleType" || name !== undefined && builtinParents[name] !== undefined && name !== "normalizedString" && name !== "token" ? name : undefined;
+  };
+  const checkLengthProperties = (description: Description, owner: GraphNode, checkAncestry = true): void => {
+    c.step(owner, 4);
+    const length = lengthProperty(description, "length"), min = lengthProperty(description, "minLength"), max = lengthProperty(description, "maxLength");
+    if (min !== undefined && max !== undefined && c.algebra.compare(min, max) > 0
+      || length !== undefined && min !== undefined && c.algebra.compare(length, min) < 0
+      || length !== undefined && max !== undefined && c.algebra.compare(length, max) > 0) c.fail(owner, "length-minLength-maxLength", "Length facet constraints are inconsistent");
+    if (!checkAncestry || length === undefined) return;
+    for (const name of ["minLength", "maxLength"]) {
+      c.step(owner, 2); const bound = lengthProperty(description, name);
+      if (bound === undefined) continue;
+      let ancestor = description.parent, witnessed = false;
+      while (ancestor) {
+        c.step(owner, 3); const inherited = lengthProperty(ancestor, name);
+        if (lengthProperty(ancestor, "length") === undefined && inherited !== undefined && c.algebra.compare(inherited, bound) === 0) {witnessed = true; break;}
+        ancestor = ancestor.parent;
+      }
+      if (!witnessed) c.fail(owner, "length-minLength-maxLength", "Coexisting length and minimum/maximum require a proper restriction ancestor with the same bound and no length");
+    }
   };
   const layer = (base: Description, reference: Reference, owner: GraphNode, facets: readonly Facet[], sourceRules = true): Description => {
     if (base.plan.builtin === "anySimpleType") c.fail(owner, "cos-st-restricts", "The simple ur-type has absent variety and is not an atomic restriction base");
@@ -264,10 +327,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         }
       }
     }
-    const localLength = locals.get("length");
-    if (sourceRules && localLength && (locals.has("minLength") || locals.has("maxLength"))) c.fail(owner, "length-minLength-maxLength", "One restriction step cannot introduce length alongside minLength/maxLength", localLength.facet.lexical.context.source);
-    const length = result.facets.get("length")?.integer, minLength = result.facets.get("minLength")?.integer, maxLength = result.facets.get("maxLength")?.integer;
-    if (minLength && maxLength && c.algebra.compare(minLength, maxLength) > 0 || length && minLength && c.algebra.compare(length, minLength) < 0 || length && maxLength && c.algebra.compare(length, maxLength) > 0) c.fail(owner, "length-minLength-maxLength", "Length facet constraints are inconsistent");
+    // Raw groups are only conjuncts until their complete property view is
+    // assembled. Source restrictions already have their proper ancestry.
+    checkLengthProperties(result, owner, sourceRules);
     if (sourceRules && (locals.has("minInclusive") && locals.has("minExclusive") || locals.has("maxInclusive") && locals.has("maxExclusive"))) c.fail(owner, "facet-bound-pair", "Inclusive and exclusive bounds cannot coexist on one side");
     const lowers = boundNames.filter(n => lower(n) && result.facets.has(n)), uppers = boundNames.filter(n => !lower(n) && result.facets.has(n));
     for (const a of lowers) for (const b of uppers) {
@@ -285,13 +347,23 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   const rawFacetCorrespondence = (base: Description, result: Description, reference: Reference, owner: GraphNode): boolean => {
     type Constraint = Description['facets'] extends Map<string, infer T> ? T : never;
     const effective = new Map<string, Constraint>(); let complete = true, reductionDeterminate = true;
-    const equal = (a: Constraint, b: Constraint): boolean => a.integer !== undefined ? a.integer === b.integer
-      : a.operand && b.operand ? values.sameValue(a.operand, b.operand, owner)
-      : normalizeWhitespace(a.facet.lexical.value, "collapse") === normalizeWhitespace(b.facet.lexical.value, "collapse");
+    const equal = (a: Constraint, b: Constraint): boolean => {
+      if (a.integer !== undefined) {
+        c.text(a.integer, owner); if (b.integer !== undefined) c.text(b.integer, owner);
+        return a.integer === b.integer;
+      }
+      if (a.operand && b.operand) return values.sameValue(a.operand, b.operand, owner);
+      c.text(a.facet.lexical.value, owner); c.text(b.facet.lexical.value, owner);
+      return normalizeWhitespace(a.facet.lexical.value, "collapse") === normalizeWhitespace(b.facet.lexical.value, "collapse");
+    };
     for (const conjunct of result.conjuncts ?? []) for (const [name, constraint] of conjunct.facets) {
       c.step(owner, 8); const prior = effective.get(name);
       if (!prior) {effective.set(name, constraint); continue;}
-      if (equal(prior, constraint)) {if (constraint.facet.fixed) effective.set(name, constraint); continue;}
+      if (equal(prior, constraint)) {
+        if (prior.facet.fixed !== constraint.facet.fixed) complete = false;
+        if (constraint.facet.fixed) effective.set(name, constraint);
+        continue;
+      }
       // The abstract representation normalizes comparable nonfixed scalar
       // conjuncts. Conflicting fixed metadata is retained as an obligation.
       if (prior.facet.fixed || constraint.facet.fixed) complete = false;
@@ -312,6 +384,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     for (const side of ["min", "max"]) {
       const inclusive = effective.get(side + "Inclusive"), exclusiveValue = effective.get(side + "Exclusive");
       if (!inclusive || !exclusiveValue) continue;
+      if (inclusive.facet.fixed || exclusiveValue.facet.fixed) complete = false;
       const order = values.compare(inclusive.operand!, exclusiveValue.operand!, owner);
       if (order === undefined) {complete = false; reductionDeterminate = false; continue;}
       const keepInclusive = side === "min" ? order > 0 : order < 0;
@@ -322,18 +395,50 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     // This checks exact bounds, length, precision, whitespace and fixed values
     // against the base; it does not inject hidden constraints into assessment.
     if (reductionDeterminate) layer(base, reference, owner, facets, false);
-    result.facets = effective;
-    for (const [name] of base.facets) {
+    for (const [name, constraint] of effective) {
       c.step(owner);
-      const represented = effective.has(name) || name.startsWith("min") && boundNames.includes(name) && (effective.has("minInclusive") || effective.has("minExclusive"))
-        || name.startsWith("max") && boundNames.includes(name) && (effective.has("maxInclusive") || effective.has("maxExclusive"))
-        || (name === "minLength" || name === "maxLength") && effective.has("length");
+      if (!boundNames.includes(name) || !constraint.facet.operand || !constraint.operand) continue;
+      // A privately assessed typed value establishes its original datatype,
+      // not membership in this restriction's base value space. Exclusive
+      // bounds alone may repeat their same-kind inherited endpoint.
+      const inherited = base.facets.get(name)?.operand;
+      if (exclusive(name) && inherited && values.sameValue(constraint.operand, inherited, owner)) continue;
+      if (excludedByEnumeration(base, constraint.operand, owner)) c.fail(owner, `${name}-value`, "Bound value is outside the base enumeration", constraint.facet.lexical.context.source);
+      try {
+        const assessed = operand(base, constraint.facet.lexical, owner);
+        if (!values.sameValue(constraint.operand, assessed, owner)) complete = false;
+      } catch (error) {
+        if (!(error instanceof SchemaAssessmentError) || error.category !== "invalid-schema") throw error;
+        // Failed lexical witnessing is not a complete value-space negative.
+        complete = false;
+      }
+    }
+    result.facets = effective;
+    checkLengthProperties(result, owner);
+    // Retained builtin lexical enforcement is not a proof that a raw complete
+    // property set supplied its inherited derived-builtin components.
+    c.step(owner, 4);
+    if (opaqueBuiltinFacets(base) !== undefined) complete = false;
+    if ((base.plan.builtin === "normalizedString" || base.plan.builtin === "token") && !effective.has("whiteSpace")) complete = false;
+    // Builtin token-list minimum length is an effective component property
+    // even though it is not stored as a caller/source facet in the base map.
+    c.step(owner, 2);
+    if (lengthProperty(base, "minLength") !== undefined && !effective.has("minLength")) complete = false;
+    for (const [name, inherited] of base.facets) {
+      c.step(owner);
+      const represented = effective.has(name) || !inherited.facet.fixed && (
+        name.startsWith("min") && boundNames.includes(name) && (effective.has("minInclusive") || effective.has("minExclusive"))
+        || name.startsWith("max") && boundNames.includes(name) && (effective.has("maxInclusive") || effective.has("maxExclusive")));
       if (!represented) complete = false;
     }
-    const groupEqual = (a: readonly Facet[], b: readonly Facet[], name: string): boolean => {
-      c.step(owner, a.length + b.length + 1);
-      const left = a.filter(facet => facet.name === name), right = b.filter(facet => facet.name === name);
+    const groupEqual = (a: ScalarConstraintLayer, b: ScalarConstraintLayer, name: string): boolean => {
+      c.step(owner, a.facets.length + b.facets.length + 1);
+      const left = a.facets.filter(facet => facet.name === name), right = b.facets.filter(facet => facet.name === name);
       if (!left.length || !right.length) return false;
+      // A singleton maps directly to one expression string. Multi-pattern
+      // source mapping has no established exact expression spelling here;
+      // only the same privately issued component layer proves identity.
+      if (name === "pattern" && (left.length !== 1 || right.length !== 1)) return a === b;
       const same = (x: Facet, y: Facet): boolean => {
         c.step(owner);
         if (name === "pattern") {c.text(x.lexical.value, owner); c.text(y.lexical.value, owner); return x.lexical.value === y.lexical.value;}
@@ -342,30 +447,35 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       };
       return left.every(x => right.some(y => same(x, y))) && right.every(y => left.some(x => same(x, y)));
     };
+    const singletonPatterns = result.plan.layers.every(group => {
+      c.step(owner, group.facets.length + 1);
+      return group.facets.filter(facet => facet.name === "pattern").length <= 1;
+    });
     for (const prior of base.plan.layers) for (const name of ["pattern", "enumeration"]) {
       c.step(owner, prior.facets.length + 1);
-      if (prior.facets.some(facet => facet.name === name) && !result.plan.layers.some(group => groupEqual(prior.facets, group.facets, name))) complete = false;
+      if (prior.facets.some(facet => facet.name === name) && !result.plan.layers.some(group => groupEqual(prior, group, name))) {
+        if (name === "enumeration") c.fail(owner, "st-restrict-facets", "Complete raw facet properties omit an inherited enumeration component");
+        c.step(owner, prior.facets.length + 1);
+        if (singletonPatterns && prior.facets.filter(facet => facet.name === "pattern").length === 1) c.fail(owner, "st-restrict-facets", "Complete raw facet properties omit an inherited pattern expression");
+        complete = false;
+      }
     }
     for (const group of result.plan.layers) {
       c.step(owner, group.facets.length + 1);
-      if (base.plan.layers.some(prior => groupEqual(prior.facets, group.facets, "enumeration"))) continue;
+      if (base.plan.layers.some(prior => groupEqual(prior, group, "enumeration"))) continue;
       for (const facet of group.facets) if (facet.name === "enumeration") {
-        // New enumeration members must be values of the base. Failure here
-        // leaves correspondence unresolved when other effective groups narrow.
-        try {
-          const expected = enumerations.get(facet)!, assessed = operand(base, facet.lexical, owner);
-          c.text(expected.canonical, owner); c.text(assessed.canonical, owner);
-          if (!values.sameValue(expected, assessed, owner)) {
-            // These primitive canonical forms are themselves lexical witnesses;
-            // structured/list/union alternatives retain the unresolved premise.
-            if (!["string", "anyURI", "decimal", "boolean"].includes(expected.family)) complete = false;
-            else {
-              const canonical = operand(base, {...facet.lexical, value: expected.canonical}, owner);
-              if (!values.sameValue(canonical, expected, owner)) complete = false;
-            }
-          }
+        const expected = enumerations.get(facet)!;
+        if (excludedByEnumeration(base, expected, owner)) c.fail(owner, "enumeration-valid-restriction", "Enumeration component contains a value outside the base enumeration", facet.lexical.context.source);
+        // Every candidate is assessed by the exact base, retaining ordered
+        // union selection and namespace context. Failed finite search is not
+        // a complete negative membership answer.
+        let witnessed = false;
+        for (const lexical of schemaScalarWitnesses(expected, facet.lexical, owner, c)) {
+          try {
+            if (values.sameValue(expected, operand(base, lexical, owner), owner)) {witnessed = true; break;}
+          } catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== "invalid-schema") throw error;}
         }
-        catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== "invalid-schema") throw error; complete = false;}
+        if (!witnessed) complete = false;
       }
     }
     return complete;
@@ -597,40 +707,54 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   /** Concrete facet property comparison; datatype value equality remains owned here. */
   const facetPropertiesEquivalent = (a: Reference, b: Reference, owner: GraphNode): boolean => {
     const x = ensure(a, owner), y = ensure(b, owner);
-    c.step(owner, x.facets.size + y.facets.size + 4);
-    if (x.facets.size !== y.facets.size || x.plan.whitespace !== y.plan.whitespace) return false;
-    for (const [name, left] of x.facets) {
-      c.step(owner); const right = y.facets.get(name);
+    c.step(owner, 4 * (x.facets.size + y.facets.size + 4) + 8);
+    const xOpaque = opaqueBuiltinFacets(x), yOpaque = opaqueBuiltinFacets(y);
+    if (x.plan.whitespace !== y.plan.whitespace) return false;
+    const names = new Set([...x.facets.keys(), ...y.facets.keys(), "minLength", "fractionDigits", "minInclusive", "maxInclusive"]);
+    for (const name of names) {
+      c.step(owner); const left = facetProperty(x, name, owner), right = facetProperty(y, name, owner);
+      if (!left && !right) continue;
+      if (!left || !right) {
+        if (name === "whiteSpace") return c.unresolved(owner, "builtin-facet-properties", "Implicit whitespace facet metadata requires an exact component mapping");
+        return false;
+      }
       if (left.integer !== undefined) c.text(left.integer, owner);
-      if (right?.integer !== undefined) c.text(right.integer, owner);
-      if (!right || left.facet.fixed !== right.facet.fixed || left.integer !== right.integer) return false;
+      if (right.integer !== undefined) c.text(right.integer, owner);
+      if (left.fixed !== right.fixed || left.integer !== right.integer) return false;
+      if (left.integer !== undefined) continue;
       if (left.operand || right.operand) {
         if (!left.operand || !right.operand || !values.sameValue(left.operand, right.operand, owner)) return false;
       } else {
-        c.text(left.facet.lexical.value, owner); c.text(right.facet.lexical.value, owner);
-        if (normalizeWhitespace(left.facet.lexical.value, "collapse") !== normalizeWhitespace(right.facet.lexical.value, "collapse")) return false;
+        c.text(left.lexical!, owner); c.text(right.lexical!, owner);
+        if (normalizeWhitespace(left.lexical!, "collapse") !== normalizeWhitespace(right.lexical!, "collapse")) return false;
       }
     }
     for (const name of ["enumeration", "pattern"]) {
       c.step(owner, x.plan.layers.length + y.plan.layers.length + 2);
-      const groups = (value: Description): Facet[][] => value.plan.layers.map(group => {
-        c.step(owner, group.facets.length + 1); return group.facets.filter(facet => facet.name === name);
-      }).filter(group => group.length !== 0);
+      const groups = (value: Description): ScalarConstraintLayer[] => value.plan.layers.filter(group => {
+        c.step(owner, group.facets.length + 1); return group.facets.some(facet => facet.name === name);
+      });
       const left = groups(x), right = groups(y);
       const same = (p: Facet, q: Facet): boolean => {
         c.step(owner);
         if (name === "enumeration") return values.sameValue(enumerations.get(p)!, enumerations.get(q)!, owner);
         c.text(p.lexical.value, owner); c.text(q.lexical.value, owner); return p.lexical.value === q.lexical.value;
       };
-      const sameGroup = (p: readonly Facet[], q: readonly Facet[]): boolean => {
-        c.step(owner, p.length + q.length + 1);
-        return p.every(facet => q.some(other => same(facet, other))) && q.every(facet => p.some(other => same(facet, other)));
+      const members = (group: ScalarConstraintLayer): readonly Facet[] => {
+        c.step(owner, group.facets.length + 1); return group.facets.filter(facet => facet.name === name);
+      };
+      const sameGroup = (p: ScalarConstraintLayer, q: ScalarConstraintLayer): boolean => {
+        const pFacets = members(p), qFacets = members(q);
+        if (name === "pattern" && (pFacets.length !== 1 || qFacets.length !== 1)) return p === q;
+        return pFacets.every(facet => qFacets.some(other => same(facet, other))) && qFacets.every(facet => pFacets.some(other => same(facet, other)));
       };
       if (!left.every(group => right.some(other => sameGroup(group, other))) || !right.every(group => left.some(other => sameGroup(group, other)))) {
-        if (name === "pattern") return c.unresolved(owner, "pattern-property-equality", "Distinct pattern group representations require an exact regular-expression property correspondence");
+        if (name === "pattern" && (xOpaque !== undefined || yOpaque !== undefined)) return c.unresolved(owner, "builtin-facet-properties", "Explicit patterns require correspondence with opaque builtin facet components");
+        if (name === "pattern" && (!left.every(group => members(group).length === 1) || !right.every(group => members(group).length === 1))) return c.unresolved(owner, "pattern-property-equality", "Independent multi-pattern components require an exact expression mapping");
         return false;
       }
     }
+    if (xOpaque !== yOpaque) return c.unresolved(owner, "builtin-facet-properties", "Distinct opaque builtin facet components require an exact property mapping");
     return true;
   };
   return {ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, equivalent,
