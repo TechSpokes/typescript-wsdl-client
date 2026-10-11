@@ -105,9 +105,9 @@ function readRequest(file: string, budget: ResolverBudget): unknown {
 function serialize(report: ExperimentReport, budget: ResolverBudget): string {
     // Before the spread and nested allocation: two records, all twelve
     // possible root fields and their name units (eleven separating commas are
-    // code punctuation), nested nodes/work fields and eight name units, plus
+    // code punctuation), nested nodes/work fields and nine name units, plus
     // twelve borrowed root reads. Absent optional fields remain reserved.
-    budget.chargeWork(2 + 12 + CLI_FIELDS.length - 11 + 2 + 8 + 12);
+    budget.chargeWork(2 + 12 + CLI_FIELDS.length - 11 + 2 + 9 + 12);
     const serializable = {...report, usage: {nodes: 0, work: 0}};
     budget.chargeWork(); const stack: unknown[] = [serializable];
     let outputBound = 1; // Newline.
