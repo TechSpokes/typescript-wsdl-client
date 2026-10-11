@@ -1,0 +1,35 @@
+{
+  "contract": "RE01-independent-affiliation-v1",
+  "independentAuthor": "Codex /root/behavioral_spec; separate from implementing coordinator",
+  "authoredBeforeImplementation": true,
+  "baseline": "4f3603e250307a414f63a7ca51cc3b3652069e86",
+  "authority": {
+    "edition": "https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/",
+    "sourceRevision": "jacoelho/xsd@142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/structures.xml",
+    "sourceSha256": "e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba",
+    "clauses": ["cos-ct-extends.1.5 and its composition note", "cos-ct-derived-ok", "e-props-correct.4", "cos-particle-restrict.2.2 and dispatch table"]
+  },
+  "scope": "fixed clause premises and separately qualified live construction observations; no full-domain decision theorem",
+  "models": {
+    "derivation": "actual D ancestry remains D,B,A,anyType; separate E extends A with b,c and property-equivalent endpoint restricts E vacuously",
+    "schemaPreserving": "strict two-direct-edge replacement D restriction E extension A, preserving whole actual supplied schema; experimental policy only"
+  },
+  "cases": [
+    {"fixture":"affiliation-actual.xsd", "primary":"valid-pure-extension-composition", "primaryAffiliation":"pass", "livePrimary":"accepted", "instances":["accepted","accepted","rejected","accepted"]},
+    {"fixture":"affiliation-local-fresh.xsd", "primary":"valid-local-vacuous-construction", "livePrimary":"accepted", "instances":["accepted","rejected","rejected"], "remaining":"ownership/identity/raw-construction transfer for a general witness view; this local schema does not omit anything from actual qualification"},
+    {"fixture":"affiliation-overlay-fresh.xsd", "primary":"affiliation-fails-under-strict-replacement", "livePrimary":"rejected", "policyResult":"one-candidate-rejected"},
+    {"fixture":"affiliation-overlay-original-B.xsd", "primary":"particle-restriction-fails", "livePrimary":"accepted", "disagreement":"base singleton sequence normalizes to b; final sequence b,c cannot restrict that element; engine construction acceptance is not particle authority", "policyResult":"one-candidate-rejected-by-primary-rule"},
+    {"fixture":"affiliation-overlay-self.xsd", "primary":"forbidden-base-cycle", "livePrimary":"rejected", "policyResult":"one-candidate-rejected"},
+    {"fixture":"affiliation-actual-block-substitution.xsd", "primary":"valid-affiliation-runtime-substitution-blocked", "livePrimary":"accepted", "instances":["accepted","accepted","rejected","accepted"]},
+    {"fixture":"affiliation-actual-final-extension.xsd", "primary":"actual-affiliation-fails-head-final", "livePrimary":"rejected"},
+    {"fixture":"affiliation-overlay-fresh-block-substitution.xsd", "primary":"affiliation-fails-despite-runtime-substitution-block", "livePrimary":"rejected", "policyResult":"one-candidate-rejected"},
+    {"fixture":"affiliation-holder-unblocked.xsd", "primary":"valid-affiliation-and-runtime-member-substitution", "livePrimary":"accepted", "instances":["accepted","accepted"], "provenance":"independently predicted holder/H-slot contrast added in response to nonauthor review before its execution"},
+    {"fixture":"affiliation-holder-blocked.xsd", "primary":"valid-affiliation-and-runtime-member-excluded", "livePrimary":"accepted", "instances":["accepted","rejected"], "provenance":"independently predicted holder/H-slot contrast added in response to nonauthor review before its execution"}
+  ],
+  "remainingObligations": [
+    "Primary-supported general derivability judgment and independently reviewed identity/reference/ownership correspondence",
+    "Actual whole-schema qualification without assuming target or dependent RE01 legality",
+    "Dependency transfer argument before arbitrary outside components may be omitted",
+    "Full arbitrary-witness coverage, complete negative theorem and mathematical termination with discharged AU/PW/DT premises"
+  ]
+}

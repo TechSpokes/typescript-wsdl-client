@@ -4,6 +4,10 @@ Research implementation scope, verification and the future production seam. See 
 
 ## Implementation contract
 
+The [derivability continuation](content-model-s06-re-01.md#derivability-and-affiliation-continuation) adds a model-tagged research comparison boundary and an explicit reverse-affiliation dependency census.
+The maintainer addendum supersedes universal hypothetical whole-schema preservation while retaining complete actual-schema assessment.
+The historical resolver remains a supplied-candidate seam; its conditional owner ledger is not a complete semantic authority for the revised judgment.
+
 The [reviewed resolver specification](content-model-s06-re-01-resolver.md) defines R1–R7 and behavioral cases B01–B23.
 Its selected domain is one supplied abstract two-step construction over immutable actual component records.
 The research modules do not construct or search the complete RE01 witness family.

@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:independent-affiliation" targetNamespace="urn:re01:independent-affiliation" elementFormDefault="qualified">
+<xs:complexType name="A"/>
+<xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"><xs:sequence><xs:element name="b" type="xs:string"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+<xs:complexType name="E"><xs:complexContent><xs:extension base="t:A"><xs:sequence><xs:element name="b" type="xs:string"/><xs:element name="c" type="xs:string"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+<xs:complexType name="D"><xs:complexContent><xs:restriction base="t:E"><xs:sequence><xs:element name="b" type="xs:string"/><xs:element name="c" type="xs:string"/></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+<xs:element name="H" type="t:B" block="substitution"/>
+<xs:element name="M" type="t:D" substitutionGroup="t:H"/>
+</xs:schema>

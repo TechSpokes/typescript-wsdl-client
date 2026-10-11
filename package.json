@@ -113,7 +113,8 @@
     "typecheck:research": "tsc -p test/research/s06-au01/tsconfig.json && tsc -p test/research/re01/tsconfig.json && tsc -p test/research/s06-pw01/tsconfig.json && tsc -p test/research/dt01/tsconfig.json",
     "typecheck:reference": "tsc -p test/conformance/reference/tsconfig.json",
     "test:research:ports": "vitest run test/research/s06-au01 test/research/re01 test/research/s06-pw01 test/research/dt01",
-    "research:re01:measure": "tsx test/research/re01/measure.ts"
+    "research:re01:measure": "tsx test/research/re01/measure.ts",
+    "research:re01:compare": "tsx test/research/re01/cli.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

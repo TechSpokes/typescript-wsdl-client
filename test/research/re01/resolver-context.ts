@@ -112,6 +112,7 @@ type State = {
 };
 const handles = new WeakMap<Context, State>();
 const literalHandles = new WeakSet<Context>();
+const derivationHandles = new WeakSet<Context>();
 const builtinTargets = new Map(Array.from(BUILTINS, local => [local,
     Object.freeze({kind: 'builtin' as const, name: Object.freeze({namespace: XSD_NAMESPACE, local})})]));
 
@@ -1076,12 +1077,23 @@ export function prepareContexts(input: ActualInput, candidate: Candidate, limits
  * A shared request budget carries exhaustion across candidate preparations.
  */
 export function prepareLiteralContexts(input: ActualInput, candidate: Candidate, limits?: Limits,
-    sharedBudget?: ResolverBudget): Result<Prepared> {
-    return prepareContextEngine(input, candidate, limits, true, sharedBudget);
+    sharedBudget?: ResolverBudget, identityPrefix = ''): Result<Prepared> {
+    return prepareContextEngine(input, candidate, limits, true, sharedBudget, true, identityPrefix);
+}
+
+/**
+ * Supplied candidate-defined graph experiment, with literal endpoint anchoring
+ * and literal AU semantics. The complete actual universe remains available.
+ * Proposed omissions are boundary evidence, never a locality/transfer proof.
+ * Success is structural preparation, not accepted semantic derivability.
+ */
+export function prepareDerivationContexts(input: ActualInput, candidate: Candidate, limits?: Limits,
+    sharedBudget?: ResolverBudget, identityPrefix = ''): Result<Prepared> {
+    return prepareContextEngine(input, candidate, limits, true, sharedBudget, false, identityPrefix);
 }
 
 function prepareContextEngine(input: ActualInput, candidate: Candidate, limits: Limits | undefined,
-    literal: boolean, sharedBudget?: ResolverBudget): Result<Prepared> {
+    literal: boolean, sharedBudget?: ResolverBudget, preserveWhole = true, identityPrefix = ''): Result<Prepared> {
     let budget: ResolverBudget;
     try {
         if (sharedBudget && limits !== undefined) throw new ResolverInvalidLimitsError();
@@ -1131,11 +1143,37 @@ function prepareContextEngine(input: ActualInput, candidate: Candidate, limits: 
                         && budget.compareText(originalIdentity.path, replacementIdentity.path) === 0), 'endpoint-identity');
             if (literal) validateLiteralPreservation(originalEndpoint, snapshot.endpointDefinition, budget);
             const [additions, additionEdges] = indexed(snapshot.additions, budget, false);
+            // A fresh global must be disjoint from immutable actual identities,
+            // including originals omitted from this experimental proposed view.
+            // Build a charged identity-only union only for the new global seam;
+            // historical preparation and its exact ledger retain their path.
+            let globalAddition = false;
             budget.chargeWork();
             for (const addition of additions.values()) {
                 budget.chargeWork(7 + addition.id.length); assert(!actual.has(addition.id)
                     && budget.compareText(addition.id, snapshot.endpoint) !== 0, 'nonendpoint-override', addition);
-                assert(addition.identity.kind === 'fresh' && addition.provenance.kind === 'constructed', 'addition-identity', addition);
+                if (literal && !preserveWhole) {
+                    budget.chargeWork(4);
+                    globalAddition ||= addition.identity.kind === 'global';
+                }
+                assert((addition.identity.kind === 'fresh'
+                    || literal && !preserveWhole && addition.identity.kind === 'global')
+                    && addition.provenance.kind === 'constructed', 'addition-identity', addition);
+            }
+            if (globalAddition) {
+                budget.chargeWork(2); const identityUniverse: Index = new Map();
+                for (const component of actual.values()) {
+                    budget.chargeWork(3 + component.id.length);
+                    identityUniverse.set(component.id, component);
+                }
+                for (const component of additions.values()) {
+                    budget.chargeWork(2);
+                    if (component.identity.kind === 'global') {
+                        budget.chargeWork(2 + component.id.length);
+                        identityUniverse.set(component.id, component);
+                    }
+                }
+                validateIdentities(identityUniverse, budget);
             }
             budget.chargeWork(2); const proposed: Index = new Map(), proposedEdges: EdgeIndex = new Map();
             for (const id of snapshot.retained) { budget.chargeWork(2); assert(text(id) && id.length > 0, 'invalid-member'); }
@@ -1148,7 +1186,7 @@ function prepareContextEngine(input: ActualInput, candidate: Candidate, limits: 
                 proposed.set(id, endpoint ? snapshot.endpointDefinition : component);
                 proposedEdges.set(id, endpoint ? componentEdges(snapshot.endpointDefinition, budget) : actualEdges.get(id)!);
             }
-            if (literal) {
+            if (literal && preserveWhole) {
                 budget.chargeWork();
                 for (const id of actual.keys()) {
                     budget.chargeWork(1 + id.length);
@@ -1203,10 +1241,11 @@ function prepareContextEngine(input: ActualInput, candidate: Candidate, limits: 
             budget.chargeWork(1 + 3 * orderedProposed.length);
             const proposedMembers = budget.freeze(orderedProposed.map(c => c.id));
             const excludedIncoming = boundary(actual, actualEdges, proposed, budget);
+            if (identityPrefix.length) budget.chargeWork(2 + 2 * identityPrefix.length);
             budget.chargeWork(4 + input.key.length + 8 + snapshot.key.length);
-            const actualKey = `${input.key}/actual/${snapshot.key}`;
+            const actualKey = `${identityPrefix}${input.key}/actual/${snapshot.key}`;
             budget.chargeWork(4 + input.key.length + 10 + snapshot.key.length);
-            const proposedKey = `${input.key}/proposed/${snapshot.key}`;
+            const proposedKey = `${identityPrefix}${input.key}/proposed/${snapshot.key}`;
             chargeRecord(budget, CONTEXT_FIELDS, actualKey.length + 'actual'.length);
             budget.chargeWork(); const emptyBoundary = Object.freeze([]);
             chargeRecord(budget, CONTEXT_FIELDS);
@@ -1221,6 +1260,10 @@ function prepareContextEngine(input: ActualInput, candidate: Candidate, limits: 
             if (literal) {
                 budget.chargeWork(2);
                 literalHandles.add(actualContext); literalHandles.add(proposedContext);
+                if (!preserveWhole) {
+                    budget.chargeWork(2);
+                    derivationHandles.add(actualContext); derivationHandles.add(proposedContext);
+                }
             }
             chargeRecord(budget, PREPARED_FIELDS); chargeRecord(budget, PREPARED_FIELDS);
             const value = Object.freeze({actual: actualContext, proposed: proposedContext});
@@ -1241,6 +1284,17 @@ function prepareContextEngine(input: ActualInput, candidate: Candidate, limits: 
 export function isLiteralContext(context: Context, budget?: ResolverBudget): boolean {
     budget?.chargeWork();
     return literalHandles.has(context);
+}
+
+/** Authenticated construction policy of issued handles, not their semantic acceptance. */
+export function contextConstructionModel(context: Context, budget?: ResolverBudget):
+    'derivation' | 'schema-preserving' | 'historical-source' | undefined {
+    budget?.chargeWork();
+    if (derivationHandles.has(context)) return 'derivation';
+    budget?.chargeWork();
+    if (literalHandles.has(context)) return 'schema-preserving';
+    budget?.chargeWork();
+    return handles.has(context) ? 'historical-source' : undefined;
 }
 
 export function withContext<T>(context: Context, operation: (access: ContextAccess) => T): Result<T> {

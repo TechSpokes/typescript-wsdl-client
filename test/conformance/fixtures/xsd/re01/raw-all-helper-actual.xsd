@@ -1,0 +1,12 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:raw-all-helper" targetNamespace="urn:re01:raw-all-helper" elementFormDefault="qualified">
+  <xs:element name="H" type="xs:string"/>
+  <xs:complexType name="A">
+    <xs:all><xs:element ref="t:H" minOccurs="0"/><xs:element name="z" type="xs:string" minOccurs="0"/></xs:all>
+  </xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent><xs:extension base="t:B">
+      <xs:all><xs:element name="c" type="xs:token"/><xs:element name="z" type="xs:string" minOccurs="0"/></xs:all>
+    </xs:extension></xs:complexContent>
+  </xs:complexType>
+</xs:schema>

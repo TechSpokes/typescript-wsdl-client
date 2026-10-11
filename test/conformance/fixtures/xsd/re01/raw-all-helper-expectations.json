@@ -1,0 +1,25 @@
+{
+  "contract": "RE01-independent-raw-all-helper-v1",
+  "independentAuthor": "Codex /root/behavioral_spec; separate from implementation",
+  "authoredBeforeExecution": true,
+  "scope": "particular raw-all supplied-candidate mapping, not arbitrary-witness coverage",
+  "primaryClauses": ["cos-particle-restrict.2.1 substitution expansion", "rcase-Recurse All:All", "rcase-RecurseAsIfGroup Element:Choice", "rcase-RecurseLax Choice:Choice", "rcase-NameAndTypeOK.3.2.5"],
+  "primary": {
+    "raw-all-helper-actual.xsd": "actual-source-operands-only-full-RE01-judgment-separate",
+    "raw-all-helper-present.xsd": "valid-particle-mapping-with-fresh-global-affiliate",
+    "raw-all-helper-absent.xsd": "invalid-particle-mapping-local-c-vs-global-H"
+  },
+  "expectedBeforeExecution": {
+    "helperPresent": "c token restricts helper c string; optional H expands to choice(H,c); local z string maps to local z string",
+    "helperAbsent": "c and H have different expanded QNames; NameAndTypeOK fails despite unrelated engine observations",
+    "rawAll": "A and D retain two-member raw all with 1..1 wrapper bounds; vacuous E extension preserves A's raw all without nesting or sequence conversion",
+    "dependencies": "fresh global c changes original head H's effective substitution universe; no fixed-actual-substitution or terminal-helper projection theorem follows"
+  },
+  "liveEngine": "libxml2-wasm 0.7.2 / libxml2 2.15.1",
+  "observedLiveConstruction": {
+    "raw-all-helper-actual.xsd": "accepted",
+    "raw-all-helper-present.xsd": "accepted",
+    "raw-all-helper-absent.xsd": "accepted"
+  },
+  "observationQualification": "Live rows are recorded observations, separate from the independently predicted primary mapping. Absent-helper engine acceptance disagrees with primary mapping and cannot replace that authority."
+}
