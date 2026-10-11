@@ -15,7 +15,7 @@ FILE is JSON {"input": ActualInput, "candidate": Candidate}.
 Exit: 0 help; 1 input/candidate error; 2 unresolved; 3 resource-limit.
 `;
 const CLI_TERMINAL_WORK = 2_048;
-const CLI_FIELDS = 'model,contractVersion,selection,scope,kind,semanticVerdict,existentialVerdict,actualSchemaVerdict,diagnostic,limit,usage';
+const CLI_FIELDS = 'model,contractVersion,selection,scope,kind,semanticVerdict,existentialVerdict,actualSchemaVerdict,diagnostic,limit,receipt,usage';
 type Options = {model: ResearchModel; file: string; maxNodes?: number; maxWork?: number};
 type OptionError = {code: string};
 export type CliResult = Readonly<{exitCode: number; output: string}>;
@@ -103,7 +103,11 @@ function readRequest(file: string, budget: ResolverBudget): unknown {
  * so the final counters can include all output work without reserializing.
  */
 function serialize(report: ExperimentReport, budget: ResolverBudget): string {
-    budget.chargeWork(4 + CLI_FIELDS.length); // Envelope/usage records and root copy.
+    // Before the spread and nested allocation: two records, all twelve
+    // possible root fields and their name units (eleven separating commas are
+    // code punctuation), nested nodes/work fields and eight name units, plus
+    // twelve borrowed root reads. Absent optional fields remain reserved.
+    budget.chargeWork(2 + 12 + CLI_FIELDS.length - 11 + 2 + 8 + 12);
     const serializable = {...report, usage: {nodes: 0, work: 0}};
     budget.chargeWork(); const stack: unknown[] = [serializable];
     let outputBound = 1; // Newline.
