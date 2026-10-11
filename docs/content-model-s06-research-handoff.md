@@ -6,7 +6,8 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 The [executed #260 investigation](content-model-s06-re-01.md#executed-design-investigation-for-260) adds finite method comparisons and an independently reviewed construction-domain packet.
 Its joint identity/UPA obstruction prevents combining separate local repairs; original identity, blocking and membership must be checked together.
-The complete construction contract and final algorithm selection remain blocked, so #260/#234/#232 remain open and production owners retain their gates.
+The [#260 continuation](content-model-s06-re-01.md#construction-contract-and-engineering-recommendation-after-260-continuation) specifies a literal abstract graph, preserved assessment context and coherent endpoint, and recommends a shared qualified checker with proof-gated candidate search.
+It supersedes the interim construction-domain blocker; exact continuation review and delivery govern #260 closure, while #234's complete theorem and #232's joint acceptance remain open and production owners retain their gates.
 
 This delivery records executable research and the maintainer's selected AU01, PW01 and DT01 contracts.
 Each selected leaf requires complete independent semantic review and exact delivery gates; its issue handoff records final acceptance.
