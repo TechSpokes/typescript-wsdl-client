@@ -1,0 +1,260 @@
+/** Sufficient recursive component-property equality for cos-particle-extend.
+ * Paired recurrence closes equality only; component validity remains a premise.
+ */
+import type {GraphNode, NodeId, Reference, ElementNode, AttributeNode, ComplexTypeNode} from './canonicalGraph.js';
+import type {SemanticContext} from './semanticContext.js';
+import {assertSemanticContext} from './semanticContext.js';
+import {createSchemaScalarKernel} from './schemaScalarKernel.js';
+import type {ScalarFailure, ScalarResult} from './schemaScalarKernel.js';
+import type {ScalarObligation} from './scalarSchemaAssessment.js';
+import {declarationMethods, immediateTypeBase, RelationProblem} from './schemaTypeRelations.js';
+import type {RelationFailure} from './schemaTypeRelations.js';
+import {checkDeclaration} from './schemaDeclarationPrimitives.js';
+import {assessRawAttributeUses, assessSourceAttributeUses} from './schemaAttributeUses.js';
+import type {AttributeFailure, OriginalAttributeUse, AttributeWildcard} from './schemaAttributeUses.js';
+import {deriveActualComplexContent, deriveRawComplexContent, deriveModelGroupContent} from './complexTypeContent.js';
+import {prepareSemanticParticleView} from './particleSemanticView.js';
+import type {SemanticParticle} from './particleSemanticView.js';
+import {wildcardNamespaces} from './wildcardAlgebra.js';
+import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import type {ResourceLimitFailure} from './semanticBudget.js';
+
+type Failure = RelationFailure | ScalarFailure | AttributeFailure | ResourceLimitFailure;
+export type ComponentEqualityResult = Readonly<{kind: 'checked'; value: boolean; contextId: string;
+  authority: 'XSD10-component-properties-v1'; obligations: readonly string[];
+  scalarObligations: readonly ScalarObligation[];
+  /** Concrete component operands whose property facts this comparison consumed. */
+  dependencies: readonly NodeId[]}> | Failure;
+class Incomplete extends Error {constructor(readonly result: Failure) {super(result.kind);}}
+type NodeTask = {kind: 'node'; a: GraphNode; b: GraphNode};
+type Task = NodeTask | {kind: 'particle'; a: SemanticParticle; b: SemanticParticle}
+  | {kind: 'uses'; a: readonly OriginalAttributeUse[]; b: readonly OriginalAttributeUse[]}
+  | {kind: 'use'; a: OriginalAttributeUse; b: OriginalAttributeUse};
+type State = {tasks: Task[]; pairs: Map<NodeId, Set<NodeId>>};
+
+export function compareComponentProperties(context: SemanticContext, a: GraphNode, b: GraphNode): ComponentEqualityResult {
+  assertSemanticContext(context);
+  const budget = context.budget, charge = (n = 1) => budget.chargeWork(n);
+  return budget.guard(() => {
+    charge(3);
+    for (const node of [a, b]) {
+      charge(46);
+      const field = node && typeof node === 'object' ? Object.getOwnPropertyDescriptor(node, 'id') : undefined;
+      if (!field || !('value' in field) || typeof field.value !== 'string') throw new TypeError('Unauthenticated or foreign component equality operand');
+      const found = context.lookup(field.value);
+      if (found.kind !== 'found' || found.node !== node) throw new TypeError('Unauthenticated or foreign component equality operand');
+    }
+    const scalar = createSchemaScalarKernel(context);
+    charge(12); const dependencies = new Set<NodeId>(), obligations = new Set<string>(['component-validity']), scalarObligations: ScalarObligation[] = [];
+    const remember = (required: readonly ScalarObligation[]) => {
+      for (const item of required) {charge(4 + scalarObligations.length); if (!scalarObligations.some(prior => prior.rule === item.rule && prior.component === item.component && (prior.contextId ?? context.contextId) === (item.contextId ?? context.contextId))) scalarObligations.push(item);}
+    };
+    const read = (node: GraphNode): void => {charge(2 + node.id.length); dependencies.add(node.id);};
+    const unresolved = (node: NodeId, rule: string, message: string): never => {
+      charge(12 + node.length + rule.length + message.length); throw new Incomplete(Object.freeze({kind: 'unresolved', component: node, rule, message}));
+    };
+    const unwrap = <T>(result: ScalarResult<T>): T => {
+      if (result.kind !== 'checked') throw new Incomplete(result);
+      remember(result.obligations); return result.value;
+    };
+    const get = (id: NodeId): GraphNode => {
+      const selected = context.lookup(id);
+      if (selected.kind !== 'found') return unresolved(id, 'component-property-reference', 'Required component property is unavailable');
+      read(selected.node); return selected.node;
+    };
+    const textEqual = (x: string, y: string): boolean => budget.compareText(x, y) === 0;
+    const methods = (x: GraphNode, y: GraphNode, property: 'final' | 'block'): boolean => {
+      const left = declarationMethods(context, x, property), right = declarationMethods(context, y, property);
+      charge(2 + left.length * (right.length + 1) + right.length * (left.length + 1));
+      return left.every(value => right.includes(value)) && right.every(value => left.includes(value));
+    };
+    const enqueue = (state: State, task: Task): void => {charge(6); state.tasks.push(task);};
+    const reference = (state: State, x: Reference, y: Reference): boolean => {
+      const left = context.resolve(x), right = context.resolve(y);
+      if (left.kind !== 'found' && left.kind !== 'builtin' || right.kind !== 'found' && right.kind !== 'builtin') return unresolved(a.id, 'component-property-reference', 'Referenced type or declaration is unavailable');
+      if (left.kind === 'builtin' || right.kind === 'builtin') return left.kind === 'builtin' && right.kind === 'builtin'
+        && textEqual(left.name.namespace, right.name.namespace) && textEqual(left.name.local, right.name.local);
+      enqueue(state, {kind: 'node', a: left.node, b: right.node}); return true;
+    };
+    const scope = (node: ElementNode | AttributeNode): GraphNode | 'global' | undefined => {
+      if (node.identity.kind === 'global') return 'global';
+      charge(2); const seen = new Set<NodeId>(); let current: GraphNode = node;
+      while (current.identity.kind === 'scoped') {
+        charge(4); if (seen.has(current.id)) return unresolved(node.id, 'component-property-scope', 'Scope containment has a cycle');
+        seen.add(current.id); current = get(current.identity.owner);
+        if (current.kind === 'complexType') return current;
+        if (current.kind === 'group' || current.kind === 'attributeGroup') return undefined;
+      }
+      return undefined;
+    };
+    const namespace = (node: GraphNode): string => {
+      if (node.identity.kind === 'global') return node.identity.name.namespace;
+      const raw = context.rawTypeProperties(node.id) ?? context.rawSimpleTypeProperties(node.id);
+      if (raw?.targetNamespace !== undefined) return raw.targetNamespace;
+      const original = context.sourceNode(node.id);
+      if (original) return original.context.effectiveNamespace;
+      return unresolved(node.id, 'component-type-target-namespace', 'Anonymous helper requires an explicit target namespace property');
+    };
+    const wildcard = (x: AttributeWildcard | undefined, y: AttributeWildcard | undefined): boolean => {
+      if (!x || !y) return x === y;
+      if (x.processContents !== y.processContents || x.namespace.kind !== y.namespace.kind) return false;
+      const left = budget.sorted(x.namespace.namespaces, budget.compareText), right = budget.sorted(y.namespace.namespaces, budget.compareText);
+      charge(left.length + right.length + 1);
+      return left.length === right.length && left.every((value, index) => textEqual(value, right[index]));
+    };
+    const values = (x: ElementNode | AttributeNode, y: ElementNode | AttributeNode): boolean => {
+      if (x.value?.kind !== y.value?.kind) return false;
+      if (!x.value || !y.value) return true;
+      const left = checkDeclaration(context, x.id), right = checkDeclaration(context, y.id);
+      if (left.kind !== 'checked') throw new Incomplete(left); if (right.kind !== 'checked') throw new Incomplete(right);
+      remember(left.scalarObligations); remember(right.scalarObligations);
+      for (const receipt of [left, right]) for (const required of receipt.obligations) {charge(); if (required !== 'declared-type-component-validity') obligations.add(required);}
+      if (!left.constraint || !right.constraint) return unresolved(x.id, 'component-value-property', 'Typed declaration constraint is unavailable');
+      return unwrap(scalar.equivalent(left.constraint.type, left.constraint.lexical, right.constraint.type, right.constraint.lexical, x.id));
+    };
+    const pair = (state: State, x: NodeId, y: NodeId): 'new' | 'seen' => {
+      charge(6 + x.length + y.length);
+      let row = state.pairs.get(x);
+      if (row?.has(y)) return 'seen';
+      if (!row) {charge(2); row = new Set(); state.pairs.set(x, row);}
+      row.add(y); return 'new';
+    };
+    const content = (node: ComplexTypeNode) => {
+      const mapped = context.kind === 'actual' ? deriveActualComplexContent(context, node.id) : deriveRawComplexContent(context, node.id);
+      if (mapped.kind !== 'checked') throw new Incomplete(mapped); return mapped.view;
+    };
+    const particles = (state: State, x: ReturnType<typeof content>, y: ReturnType<typeof content>): boolean => {
+      if (x.content.kind !== y.content.kind) return false;
+      if (x.content.kind === 'empty') return true;
+      if (x.content.kind === 'simple' && y.content.kind === 'simple') {
+        // Source anonymous simple-content construction is separately modeled by
+        // the scalar owner; only an exposed exact type identity enters here.
+        const left = unwrap(scalar.contentIdentity({kind: 'local', target: x.type}, x.type));
+        const right = unwrap(scalar.contentIdentity({kind: 'local', target: y.type}, y.type));
+        if (!left.reference || !right.reference) return unresolved(x.type, 'component-simple-content-properties', 'Anonymous simple-content properties need a complete scalar component view');
+        return reference(state, left.reference, right.reference);
+      }
+      if (!('particle' in x.content) || !('particle' in y.content)) return unresolved(x.type, 'component-content-properties', 'Opaque builtin content has no complete component property view');
+      const left = prepareSemanticParticleView(context, x, 'declared'), right = prepareSemanticParticleView(context, y, 'declared');
+      if (left.kind !== 'checked') throw new Incomplete(left); if (right.kind !== 'checked') throw new Incomplete(right);
+      enqueue(state, {kind: 'particle', a: left.view.root, b: right.view.root}); return true;
+    };
+    const attributes = (node: ComplexTypeNode) => {
+      const result = context.kind === 'actual' ? assessSourceAttributeUses(context, node.id) : assessRawAttributeUses(context, node.id);
+      if (result.kind !== 'checked') throw new Incomplete(result);
+      remember(result.scalarObligations);
+      for (const item of result.value.schemaOperands) {read(item.source); read(item.declaration);}
+      return result.value;
+    };
+    const nodePair = (state: State, x: GraphNode, y: GraphNode): boolean => {
+      read(x); read(y);
+      if (pair(state, x.id, y.id) === 'seen' || x === y) return true;
+      if (x.kind !== y.kind) return false;
+      if (x.identity.kind === 'global' || y.identity.kind === 'global') {
+        if (x.identity.kind !== 'global' || y.identity.kind !== 'global') return false;
+        if (x.identity.role !== y.identity.role || !textEqual(x.identity.name.namespace, y.identity.name.namespace) || !textEqual(x.identity.name.local, y.identity.name.local)) return false;
+      }
+      if ((x.kind === 'element' || x.kind === 'attribute') && (y.kind === 'element' || y.kind === 'attribute')) {
+        if (!textEqual(x.name.namespace, y.name.namespace) || !textEqual(x.name.local, y.name.local)) return false;
+        const left = scope(x), right = scope(y);
+        if (typeof left === 'object' && typeof right === 'object') enqueue(state, {kind: 'node', a: left, b: right});
+        else if (left !== right) return false;
+        if (!reference(state, x.type, y.type) || !values(x, y)) return false;
+        if (x.kind === 'element' && y.kind === 'element') {
+          if (x.abstract !== y.abstract || x.nillable !== y.nillable || !methods(x, y, 'final') || !methods(x, y, 'block')) return false;
+          if (!!x.substitutionGroup !== !!y.substitutionGroup) return false;
+          if (x.substitutionGroup && y.substitutionGroup && !reference(state, x.substitutionGroup, y.substitutionGroup)) return false;
+          for (const node of [x, y]) for (const syntax of node.retained) {
+            charge(4 + syntax.name.namespace.length + syntax.name.local.length);
+            if (syntax.name.namespace === XSD_NAMESPACE && ['key', 'keyref', 'unique'].includes(syntax.name.local)) return unresolved(node.id, 'component-identity-constraint-properties', 'Identity constraint components have no complete property view');
+          }
+        }
+        return true;
+      }
+      if (x.kind === 'simpleType' && y.kind === 'simpleType') {
+        if (!textEqual(namespace(x), namespace(y)) || !methods(x, y, 'final')) return false;
+        const left = unwrap(scalar.describe({kind: 'local', target: x.id}, x.id)), right = unwrap(scalar.describe({kind: 'local', target: y.id}, y.id));
+        if (left.variety !== right.variety || left.primitive !== right.primitive || !unwrap(scalar.facetPropertiesEquivalent({kind: 'local', target: x.id}, {kind: 'local', target: y.id}, x.id))) return false;
+        const lb = immediateTypeBase(context, {kind: 'local', target: x.id}), rb = immediateTypeBase(context, {kind: 'local', target: y.id});
+        if (lb.kind !== 'checked') throw new Incomplete(lb); if (rb.kind !== 'checked') throw new Incomplete(rb);
+        if (!!lb.value !== !!rb.value || lb.value && rb.value && !reference(state, lb.value, rb.value)) return false;
+        if (left.item && right.item && !reference(state, left.item, right.item)) return false;
+        if (!!left.item !== !!right.item || (left.members?.length ?? 0) !== (right.members?.length ?? 0)) return false;
+        for (let index = 0; index < (left.members?.length ?? 0); index++) {charge(); if (!reference(state, left.members![index], right.members![index])) return false;}
+        return true;
+      }
+      if (x.kind === 'complexType' && y.kind === 'complexType') {
+        if (!textEqual(namespace(x), namespace(y)) || !methods(x, y, 'final') || !methods(x, y, 'block')) return false;
+        const left = context.rawTypeProperties(x.id), right = context.rawTypeProperties(y.id);
+        if (context.kind === 'candidate' && (!left || !right)) return unresolved(x.id, 'component-complex-properties', 'Candidate complex types require complete raw properties');
+        const xm = left?.derivation.method ?? x.derivation?.kind ?? 'restriction', ym = right?.derivation.method ?? y.derivation?.kind ?? 'restriction';
+        if (xm !== ym || (left?.abstract ?? x.abstract) !== (right?.abstract ?? y.abstract)) return false;
+        const ur: Reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anyType'}};
+        if (!reference(state, left?.derivation.base ?? x.derivation?.base ?? ur, right?.derivation.base ?? y.derivation?.base ?? ur)) return false;
+        const xa = attributes(x), ya = attributes(y);
+        if (!wildcard(xa.wildcard, ya.wildcard) || xa.uses.length !== ya.uses.length) return false;
+        enqueue(state, {kind: 'uses', a: xa.uses, b: ya.uses});
+        return particles(state, content(x), content(y));
+      }
+      if ((x.kind === 'particle' || x.kind === 'group') && (y.kind === 'particle' || y.kind === 'group')) {
+        const left = deriveModelGroupContent(context, x.id), right = deriveModelGroupContent(context, y.id);
+        if (left.kind !== 'checked') throw new Incomplete(left); if (right.kind !== 'checked') throw new Incomplete(right);
+        return particles(state, left.view, right.view);
+      }
+      return unresolved(x.id, 'component-properties', 'This component kind has no complete recursive property view');
+    };
+    const finish = (value: boolean): ComponentEqualityResult => {
+      charge(dependencies.size + obligations.size + scalarObligations.length + 12);
+      return budget.freeze(budget.snapshot({kind: 'checked' as const, value, contextId: context.contextId, authority: 'XSD10-component-properties-v1' as const,
+        obligations: [...obligations], scalarObligations, dependencies: [...dependencies]}));
+    };
+    charge(10); const states: State[] = [{tasks: [{kind: 'node', a, b}], pairs: new Map()}];
+    let unknown: Failure | undefined;
+    while (states.length) {
+      charge(3); const state = states.pop()!; let valid = true;
+      try {
+        while (valid && state.tasks.length) {
+          charge(4); const task = state.tasks.pop()!;
+          if (task.kind === 'node') valid = nodePair(state, task.a, task.b);
+          else if (task.kind === 'particle') {
+            const x = task.a, y = task.b;
+            if (x === y || x.originalParticle !== undefined && x.originalParticle === y.originalParticle) continue;
+            if (x.kind !== y.kind || !textEqual(x.occurs.min, y.occurs.min) || !textEqual(x.occurs.max, y.occurs.max) || x.children.length !== y.children.length) {valid = false; continue;}
+            if (x.originalParticle) {charge(2 + x.originalParticle.length); dependencies.add(x.originalParticle);}
+            if (y.originalParticle) {charge(2 + y.originalParticle.length); dependencies.add(y.originalParticle);}
+            if (x.element && y.element) enqueue(state, {kind: 'node', a: x.element, b: y.element});
+            else if (x.wildcard && y.wildcard) {
+              valid = wildcard({namespace: wildcardNamespaces(x.wildcard, charge), processContents: x.wildcard.processContents, sources: []}, {namespace: wildcardNamespaces(y.wildcard, charge), processContents: y.wildcard.processContents, sources: []});
+            }
+            for (let index = 0; index < x.children.length; index++) enqueue(state, {kind: 'particle', a: x.children[index], b: y.children[index]});
+          } else if (task.kind === 'use') {
+            const x = task.a, y = task.b; read(x.source); read(y.source);
+            if (pair(state, x.id, y.id) === 'seen') continue;
+            if (x.required !== y.required || x.own?.kind !== y.own?.kind) {valid = false; continue;}
+            enqueue(state, {kind: 'node', a: x.declaration, b: y.declaration});
+            if (x.own && y.own) valid = unwrap(scalar.equivalent(x.own.value.type, x.own.value.lexical, y.own.value.type, y.own.value.lexical, x.id));
+          } else {
+            if (!task.a.length) {valid = !task.b.length; continue;}
+            if (task.a.length !== task.b.length) {valid = false; continue;}
+            const first = task.a[0];
+            for (let index = 0; index < task.b.length; index++) {
+              charge(6); const other = task.b[index];
+              if (!textEqual(first.declaration.name.namespace, other.declaration.name.namespace) || !textEqual(first.declaration.name.local, other.declaration.name.local)) continue;
+              charge(state.tasks.length + state.pairs.size * 2 + task.a.length + task.b.length + 12);
+              const pairs = new Map<NodeId, Set<NodeId>>();
+              for (const [id, row] of state.pairs) {charge(row.size + 3); pairs.set(id, new Set(row));}
+              const fork: State = {tasks: [...state.tasks, {kind: 'uses', a: task.a.slice(1), b: task.b.filter((_, n) => n !== index)}, {kind: 'use', a: first, b: other}], pairs};
+              states.push(fork);
+            }
+            valid = false;
+          }
+        }
+        if (valid) return finish(true);
+      } catch (error) {
+        if (error instanceof Incomplete || error instanceof RelationProblem) {unknown ??= error.result; continue;}
+        throw error;
+      }
+    }
+    return unknown ?? finish(false);
+  });
+}

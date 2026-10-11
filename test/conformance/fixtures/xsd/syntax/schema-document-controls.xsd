@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:document-controls"
+  targetNamespace="urn:document-controls" id="schemaId" xml:lang="en-US"
+  elementFormDefault="qualified" finalDefault="restriction list" blockDefault="extension substitution">
+  <xs:annotation id="documentationId">
+    <xs:documentation xml:lang="en" source="guide.html">Mixed <xs:element id="schemaId" name="payload"/> payload.</xs:documentation>
+    <xs:appinfo source="metadata">Application <payload xmlns="urn:documentation">text</payload>.</xs:appinfo>
+  </xs:annotation>
+  <xs:import namespace="urn:unused"/>
+  <xs:annotation/>
+  <xs:notation name=" Image " public="" id="notationId"/>
+  <xs:complexType name="Empty" id="typeId"/>
+  <xs:annotation/>
+  <xs:element name="root" type="t:Empty" id="elementId"/>
+</xs:schema>

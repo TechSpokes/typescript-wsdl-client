@@ -14,7 +14,7 @@ The selected project contract is candidate A, including its skip-zero repair, se
 Its lexical-year leap calculation preserves the recorded BCE domain, but its rollover repair is an interpretation added to the written Appendix E algorithm.
 Candidate B changes which BCE leap dates are legal, while literal Appendix E does not remain closed over the XSD 1.0 value domain.
 
-[#179](https://github.com/TechSpokes/typescript-wsdl-client/issues/179) owns schema integration. [#184](https://github.com/TechSpokes/typescript-wsdl-client/issues/184) owns the later shared payload implementation; #188/#189/#198 consume it. This research imports no production scalar/assessment helper and supplies no payload validator, conversion policy, calendar feature switch or public encoding change.
+[#268](https://github.com/TechSpokes/typescript-wsdl-client/issues/268) now owns the shared pure schema scalar implementation staged under #179. [#184](https://github.com/TechSpokes/typescript-wsdl-client/issues/184) retains payload scalar enforcement, conversion policy and public encodings; #188/#189/#198 consume that later work. The original research algorithm now has one source owner, without activating guarded assessment or payload support.
 
 The accepted baseline is main `5876065b00d4eeb6d2324eaa63ff9b70e2279198`, tree `b647d9b0343d421426a539fc008c3cffa82c7875`. The inspected draft is `460f5b8379c68ffef79917284e445b5ab046429e`, tree `56830b28d1006b019918a364aa62f1ed9d7d8817`; it remains unaccepted and unchanged.
 
@@ -184,7 +184,7 @@ All approved families retain a distinct primitive family tag and timezone-presen
 
 Date equality compares interval starts on the same timeline. It does not truncate the UTC start to midnight: `0001-01-01+14:00` and `-0001-12-31-10:00` denote the same interval under A. For a canonical date spelling, derive the date portion from the interval's UTC midpoint and retain the recoverable offset in -11:59 through +12:00 as 3.2.9 specifies.
 
-The reduced Gregorian families use their type-specific reference fields and retain the exact timezone shift of their starting instant during comparison. Periodic-family ordering is the stated arbitrary reference-period ordering, not a circular order or an inferred BCE host-calendar recurrence. The research-only TS prototype now implements exact representatives, equality and ordering for all eight calendar families plus duration; #184's payload enforcement remains a later implementation.
+The reduced Gregorian families use their type-specific reference fields and retain the exact timezone shift of their starting instant during comparison. Periodic-family ordering is the stated arbitrary reference-period ordering, not a circular order or an inferred BCE host-calendar recurrence. The shared TypeScript schema kernel implements exact representatives, equality and ordering for all eight calendar families plus duration; #184's payload enforcement remains a later implementation.
 
 The `time` modulo step is a third explicit candidate interpretation. [3.2.8](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#time) prescribes dateTime ordering with an arbitrary date while its canonical representation removes the date and uses UTC. Comparing `01:00:00+14:00` with `02:00:00Z` after normalization on a common arbitrary date gives previous-day 11:00 versus same-day 02:00, hence less; comparing their normalized modulo-day clocks gives 11:00 versus 02:00, hence greater.
 
@@ -293,7 +293,7 @@ These finite checks preserve the accepted exact calendar domain without claiming
 
 ## Bounded research procedure and measurements
 
-The [exact TS probe](../test/research/dt01/exact-calendar.ts) implements selected A's schema comparison rules for all eight calendar families and duration. It uses BigInt year/month/day counts and exact decimal coefficient/scale arithmetic, with no JavaScript Date, floating approximation, production imports or pinned-draft runtime dependency. The procedure terminates for every valid finite operand given sufficient resources: fixed lexical scans, constant calendar cycle decomposition, at most twelve month steps and exactly four duration comparison anchors.
+The [shared exact calendar kernel](../src/compiler/schemaExactCalendar.ts) implements selected A's schema comparison rules for all eight calendar families and duration. The [research import path](../test/research/dt01/exact-calendar.ts) re-exports that source implementation, preserving independent expectations and historical measurements. It uses BigInt year/month/day counts and exact decimal coefficient/scale arithmetic, with no JavaScript Date, floating approximation or pinned-draft runtime dependency. The procedure terminates for every valid finite operand given sufficient resources: fixed lexical scans, constant calendar cycle decomposition, at most twelve month steps and exactly four duration comparison anchors.
 
 The independent S06 defaults remain 100,000 input graph nodes and 1,000,000 work steps, inclusive. The prototype's graph admission method is a synthetic budget boundary test; it does not reimplement graph indexing, replace S03/S04 limits or claim the matcher/payload/output stages are implemented. Existing conservative cyclic-depth handling remains with its owning stage.
 
@@ -324,6 +324,18 @@ Measurements from [the committed measurement entry point](../test/research/dt01/
 
 Times are observations and will vary; counters/outcomes are deterministic. The large year plus fraction round trips use an explicit increased work budget, not an assertion that they fit the default. Separate tests pay the full default 1,000,000 steps and reject the next step, and independently admit/reject the node boundary.
 
+## Shared source staging in architecture recovery
+
+The [schema scalar facade](../src/compiler/schemaScalarKernel.ts) assesses usable declared schema datatypes in an authenticated prepared context and charges the same request budget as preparation, relations and consumers. Its private primitive evaluator also forms facet operands; that narrower step can parse NOTATION enumeration values before the derived datatype is formed. Direct declared NOTATION use remains invalid, while its original declaration and QName context are checked for schema-only operands.
+
+Every checked facade result retains its outstanding construction obligations, including through equality, ordering and inherited simple-content descriptors. A mixed complex base can supply an explicit inline simple restriction whose scalar facts are checked immediately, but its original particle still requires the named mixed-and-emptiable obligation. The aggregate owner must discharge that obligation before accepting a complete construction.
+
+Hypothetical helper types use explicit component properties, including complete effective scalar facet groups and ordered union members. Their diagnostic source context does not supply final defaults or XML constructors. Comparable nonfixed scalar facets have an explicit effective normal form; inherited pattern and enumeration groups have a sufficient structural correspondence check. Typed facet operands can retain an original datatype, owner and context and are privately reassessed there, so inherited values are not reinterpreted by a helper's whitespace or union-member selection. Supplied complex simple content retains its exact scalar identity and a derivation-validity obligation; unresolved scalar facet-property correspondence retains a separate obligation. These local facts cannot certify a complete candidate while those obligations remain open.
+
+Original lexical operands, namespace bindings, selected union members and typed list items remain available alongside exact values. Primitive value spaces remain distinct, including identical octets assessed as hexBinary and base64Binary. The existing 139 DT01 controls now execute the shared algorithm; independent real-graph controls cover decimal exactness, QName aliases, ordered unions, inherited facets, calendar boundaries, source obligations and shared exhaustion.
+
+This staging reconciles the obsolete negative-year and second-60 exclusions in the preserved #231 draft without merging its actual-only assessment architecture. The approved profile, persisted formats, public defaults and activation gates remain unchanged. Full #268 local acceptance and #232/#234 research acceptance require their own complete evidence and independent review.
+
 ## Reproduction and handoff
 
 Use Node 24 as the supported floor and Node 26 for current-line qualification from a fresh delivery checkout.
@@ -347,7 +359,7 @@ Its archived environment used XMLSchema 4.2.0, lxml 6.1.0/libxml2 2.14.6 and ele
 
 IDE inspection tools were unavailable; repository TypeScript, fixture parsing and documentation checks supply the portable verification. The epic integration record owns final `npm run ci`, `npm run test:reference:full`, `npm run test:conformance`, documentation/support-matrix checks, installed-consumer coverage and the final reviewed delivery revision. These leaf results do not substitute for that combined final content gate.
 
-Inspecting the pinned `schemaDatatypeValues.ts` identified two DT01 guards: every negative year returns `S06-DT-01`, and duration ordering returns it when anchor month addition reaches year<=0 or second addition reaches a negative timeline count. After accepted local review, #179 can replace both with the selected exact repaired operations; it must also correct its ordinary astronomical ordinal formula, distinguish value addition from lexical tuples, and apply selected second-60 and reduced-family rules. No guard is removed here.
+Inspecting the pinned historical `schemaDatatypeValues.ts` identified two DT01 guards: every negative year returned `S06-DT-01`, and duration ordering returned it when anchor month addition reached year<=0 or second addition reached a negative timeline count. The recovered shared source replaces those guards with the selected exact repaired operations, skips year zero, distinguishes value addition from lexical tuples, and applies selected second-60 and reduced-family rules. The pinned draft remains preserved; public activation remains with #179.
 
 The pinned `scalarSchemaAssessment.ts` retains facet layers and typed contexts, `attributeSchemaAssessment.ts` uses scalar equivalence for use/declaration fixed values, and `ElementValuePlan`/`ScalarSupportPlan` assign runtime scalar enforcement to #184. Their future integration must preserve that single owner, invalid/unsupported/resource distinctions, QName contexts, default/fixed augmentation and lexical witnesses.
 

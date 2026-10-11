@@ -63,7 +63,7 @@ describe('independently specified derivation dependency census C1-C8', () => {
     it('C1 includes local content owners and actual ancestry while preserving unrelated actual globals', () => {
         const contexts = prepared();
         const actual = collectDerivationDependencies(contexts.actual, 'derivation', ['D','A','D']);
-        expect(actual).toMatchObject({kind: 'ok', value: {model: 'derivation', contract: 'RE01-dependency-census-v1',
+        expect(actual).toMatchObject({kind: 'ok', value: {model: 'derivation', contract: 'RE01-dependency-census-v2', domainContract: 'RE01-derivation-B-v1',
             context: contexts.actual.key, contextKind: 'actual', roots: ['A','D'], members: localMembers,
             scope: 'declared-references-ownership-and-reverse-affiliations', qualification: 'structural-census-only'}});
         expect(contexts.actual.members).toEqual(expect.arrayContaining(['H','M','N','K','X']));

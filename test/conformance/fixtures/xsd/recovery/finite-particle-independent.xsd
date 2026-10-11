@@ -1,0 +1,6 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:finite-particle" targetNamespace="urn:recovery:finite-particle">
+  <xs:attribute name="q" type="xs:int"/>
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"><xs:sequence><xs:element name="a" type="xs:string"/></xs:sequence><xs:attribute ref="t:q" fixed="+007"/><xs:anyAttribute namespace="urn:extras" processContents="lax"/></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:B"><xs:sequence><xs:element name="b" type="xs:string"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

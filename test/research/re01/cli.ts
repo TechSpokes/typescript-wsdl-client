@@ -8,9 +8,9 @@ import {MODEL_SELECTION_CONTRACT, runModelExperiment} from './model-selection.js
 import type {ExperimentReport, ResearchModel} from './model-selection.js';
 
 export const RESEARCH_CLI_HELP = `RE01 supplied-candidate structural experiment (semantic procedure unresolved)
-Usage: tsx test/research/re01/cli.ts --re01-model derivation|schema-preserving --candidate-file FILE
+Usage: tsx test/research/re01/cli.ts [--re01-model derivation|schema-preserving] --candidate-file FILE
        [--max-nodes N] [--max-work N]
-Selection is explicit until independent acceptance of the revised model.
+Default: accepted derivation B domain; schema-preserving is an explicit experiment.
 FILE is JSON {"input": ActualInput, "candidate": Candidate}.
 Exit: 0 help; 1 input/candidate error; 2 unresolved; 3 resource-limit.
 `;
@@ -20,7 +20,7 @@ const CLI_TERMINAL_WORK = 2_048;
 // numeric copies and kind inspection before either stat boundary allocates it.
 const NATIVE_STATS_WORK = 256;
 const CLI_FIELDS = 'model,contractVersion,selection,scope,kind,semanticVerdict,existentialVerdict,actualSchemaVerdict,diagnostic,limit,receipt,usage';
-type Options = {model: ResearchModel; file: string; maxNodes?: number; maxWork?: number};
+type Options = {model: ResearchModel; selection: 'explicit' | 'default'; file: string; maxNodes?: number; maxWork?: number};
 type OptionError = {code: string};
 export type CliResult = Readonly<{exitCode: number; output: string}>;
 class ResearchInputError extends TypeError {
@@ -59,9 +59,8 @@ function options(argv: readonly string[]): Options | OptionError {
             }
         } else return {code: 'unknown-option'};
     }
-    if (model === undefined) return {code: 'model-selection-required'};
     if (file === undefined) return {code: 'candidate-file-required'};
-    return {model, file, maxNodes, maxWork};
+    return {model: model ?? 'derivation', selection: model === undefined ? 'default' : 'explicit', file, maxNodes, maxWork};
 }
 
 /** A regular file is bounded from its open descriptor before read/allocation. */
@@ -150,12 +149,12 @@ function serialize(report: ExperimentReport, budget: ResolverBudget): string {
     return `${JSON.stringify(serializable)}\n`;
 }
 
-function terminal(model: ResearchModel, budget: ResolverBudget): CliResult {
+function terminal(model: ResearchModel, budget: ResolverBudget, selection: 'explicit' | 'default'): CliResult {
     // Fixed terminal serialization is covered by the CLI reservation. It must
     // neither return partial receipts nor inspect any remaining input graph.
     const failure = budget.failure()!;
     return {exitCode: 3, output: `${JSON.stringify({model, contractVersion: MODEL_SELECTION_CONTRACT,
-        selection: 'explicit', scope: 'supplied-candidate-structural-preparation', kind: 'resource-limit',
+        selection, scope: 'supplied-candidate-structural-preparation', kind: 'resource-limit',
         semanticVerdict: 'unresolved', existentialVerdict: 'unresolved', actualSchemaVerdict: 'unresolved',
         limit: failure.limit, usage: {nodes: failure.usage.nodes, work: failure.usage.work}})}\n`};
 }
@@ -177,7 +176,7 @@ export function runResearchCli(argv: readonly string[]): CliResult {
             if (budget.exhausted()) throw error;
             budget.chargeWork(250); // Fixed diagnostic/envelope allocation.
             const report: ExperimentReport = {model: selected.model, contractVersion: MODEL_SELECTION_CONTRACT,
-                selection: 'explicit', scope: 'supplied-candidate-structural-preparation', kind: 'input-error',
+                selection: selected.selection, scope: 'supplied-candidate-structural-preparation', kind: 'input-error',
                 semanticVerdict: 'unresolved', existentialVerdict: 'unresolved', actualSchemaVerdict: 'unresolved',
                 diagnostic: {code: error instanceof ResearchInputError ? error.code
                     : error instanceof SyntaxError ? 'invalid-json' : 'candidate-file-unreadable',
@@ -185,13 +184,13 @@ export function runResearchCli(argv: readonly string[]): CliResult {
             budget.chargeWork(16); // CliResult: record, two fields and thirteen key units.
             return {exitCode: 1, output: serialize(report, budget)};
         }
-        const report = runModelExperiment(request, selected.model, undefined, budget);
-        if (report.kind === 'resource-limit') return terminal(selected.model, budget);
+        const report = runModelExperiment(request, selected.model, undefined, budget, selected.selection);
+        if (report.kind === 'resource-limit') return terminal(selected.model, budget, selected.selection);
         budget.chargeWork(16); // CliResult, before serialization captures final usage.
         const output = serialize(report, budget);
         return {exitCode: report.kind === 'unresolved' ? 2 : 1, output};
     });
-    return 'kind' in result ? terminal(selected.model, budget) : result;
+    return 'kind' in result ? terminal(selected.model, budget, selected.selection) : result;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

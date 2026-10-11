@@ -25,11 +25,11 @@ const nameQueries: readonly DependencyDescriptor[] = ['actual', 'proposed', 'res
     kind: 'global-name', universe: universe as 'actual' | 'proposed' | 'reserved-originals', role: 'element', name: fixtureName('X'),
 }));
 
-describe('predicate dependency observations under the unaccepted domain boundary', () => {
+describe('structural predicate observations under the selected domain policy', () => {
     it('distinguishes complete represented collections from semantic absence of omitted originals', () => {
         const prepared = contexts(omitted());
         const receipt = value(captureDependencyObservations(prepared, 'derivation', nameQueries));
-        expect(receipt).toMatchObject({domainAcceptance: 'unaccepted', qualification: 'declared-structural-observations-only',
+        expect(receipt).toMatchObject({domainAcceptance: 'policy-accepted', qualification: 'declared-structural-observations-only',
             observations: [
                 {value: {collection: [{id: 'X'}], collectionCompleteness: 'selected-represented-universe', semanticLookup: 'unresolved'}},
                 {value: {collection: [], semanticLookup: 'unresolved'}},

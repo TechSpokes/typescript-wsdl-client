@@ -3,9 +3,10 @@ import {contextConstructionModel, samePreparedRequest, withContext} from './reso
 import type {ContextAccess} from './resolver-context.js';
 import type {Component, Context, Kind, Name, Prepared, Result} from './resolver-types.js';
 import type {DependencyModel} from './derivation-dependencies.js';
+import {RE01_DERIVATION_DOMAIN} from './derivation-domain.js';
 
-export const DOMAIN_BOUNDARY_CONTRACT = 'RE01-domain-boundary-v1';
-export const OBSERVATION_CONTRACT = 'RE01-predicate-observations-v1';
+export const DOMAIN_BOUNDARY_CONTRACT = RE01_DERIVATION_DOMAIN;
+export const OBSERVATION_CONTRACT = 'RE01-predicate-observations-v2';
 type ContextKind = Context['kind'];
 type Universe = ContextKind | 'reserved-originals';
 type Property = 'facts' | 'identity' | 'owns' | 'source' | 'sourceUses' | 'sourceGroups'
@@ -19,8 +20,8 @@ export type DependencyDescriptor = Readonly<
 >;
 export type DependencyObservationReceipt = Readonly<{
     contract: typeof OBSERVATION_CONTRACT;
-    domainContract: typeof DOMAIN_BOUNDARY_CONTRACT;
-    domainAcceptance: 'unaccepted'; model: DependencyModel;
+    domainContract: typeof DOMAIN_BOUNDARY_CONTRACT | 'schema-preserving-experimental-v1';
+    domainAcceptance: 'policy-accepted' | 'experimental'; model: DependencyModel;
     actualContext: string; proposedContext: string;
     qualification: 'declared-structural-observations-only';
     observations: readonly Readonly<{descriptor: DependencyDescriptor; value: unknown}>[];
@@ -171,7 +172,8 @@ export function captureDependencyObservations(prepared: Prepared, model: Depende
         }
         b.chargeWork(500 + model.length + prepared.actual.key.length + prepared.proposed.key.length);
         const receipt = b.freeze(b.snapshot<DependencyObservationReceipt>({contract: OBSERVATION_CONTRACT,
-            domainContract: DOMAIN_BOUNDARY_CONTRACT, domainAcceptance: 'unaccepted', model,
+            domainContract: model === 'derivation' ? DOMAIN_BOUNDARY_CONTRACT : 'schema-preserving-experimental-v1',
+            domainAcceptance: model === 'derivation' ? 'policy-accepted' : 'experimental', model,
             actualContext: prepared.actual.key, proposedContext: prepared.proposed.key,
             qualification: 'declared-structural-observations-only', observations}));
         b.chargeWork(7);

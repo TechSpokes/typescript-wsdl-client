@@ -1,0 +1,26 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:attributes"
+  targetNamespace="urn:recovery:attributes">
+  <xs:attribute name="Number" type="xs:int"/>
+  <xs:attribute name="QName" type="xs:QName"/>
+  <xs:attribute name="Broken" type="xs:int" fixed="not-an-integer"/>
+  <xs:attribute name="Defaulted" type="xs:int" default="+01"/>
+  <xs:attributeGroup name="Shared"><xs:attribute ref="t:Number" default="1"/></xs:attributeGroup>
+  <xs:attributeGroup name="Distinct"><xs:attribute ref="t:Number"/><xs:attribute ref="t:Number"/></xs:attributeGroup>
+  <xs:complexType name="SharedTwice"><xs:attributeGroup ref="t:Shared"/><xs:attributeGroup ref="t:Shared"/></xs:complexType>
+  <xs:complexType name="ConflictingLocal"><xs:attribute name="a" type="xs:int"/><xs:attribute name="a" type="xs:int"/></xs:complexType>
+  <xs:complexType name="DefaultBase"><xs:attribute ref="t:Number" default="1"/></xs:complexType>
+  <xs:complexType name="ConflictingDefaults"><xs:complexContent><xs:extension base="t:DefaultBase">
+    <xs:attribute ref="t:Number" default="2"/>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="QNameBase"><xs:attribute xmlns:a="urn:attribute:value" ref="t:QName" default="a:Name"/></xs:complexType>
+  <xs:complexType name="QNameAliases"><xs:complexContent><xs:extension base="t:QNameBase">
+    <xs:attribute xmlns:b="urn:attribute:value" ref="t:QName" default="b:Name"/>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="ProhibitedGlobal"><xs:attribute ref="t:Broken" use="prohibited"/></xs:complexType>
+  <xs:complexType name="ProhibitedLocal"><xs:attribute name="local" type="xs:int" use="prohibited" fixed="not-an-integer"/></xs:complexType>
+  <xs:complexType name="RequiredGlobalDefault"><xs:attribute ref="t:Defaulted" use="required"/></xs:complexType>
+  <xs:complexType name="RequiredOwnDefault"><xs:attribute ref="t:Number" use="required" default="1"/></xs:complexType>
+  <xs:complexType name="Removed"><xs:complexContent><xs:restriction base="t:DefaultBase">
+    <xs:attribute ref="t:Number" use="prohibited"/>
+  </xs:restriction></xs:complexContent></xs:complexType>
+</xs:schema>

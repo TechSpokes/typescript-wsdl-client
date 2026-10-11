@@ -1,0 +1,3 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:upa">
+  <xs:complexType name="HugeFixedGroup"><xs:sequence><xs:sequence minOccurs="9007199254740993" maxOccurs="9007199254740993"><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:string"/></xs:sequence><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+</xs:schema>

@@ -1,0 +1,23 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:raw-attributes" targetNamespace="urn:recovery:raw-attributes">
+  <xs:attribute name="Number" type="xs:int"/>
+  <xs:attribute name="FixedNumber" type="xs:int" fixed="7"/>
+  <xs:attributeGroup name="GoodGroup"><xs:attribute ref="t:FixedNumber" fixed="+007"/></xs:attributeGroup>
+  <xs:attributeGroup name="BadFixedGroup"><xs:attribute ref="t:FixedNumber" fixed="8"/></xs:attributeGroup>
+  <xs:attributeGroup name="ProhibitedGroup"><xs:attribute ref="t:Number" use="prohibited"/></xs:attributeGroup>
+  <xs:attributeGroup name="TwoIds"><xs:attribute name="first" type="xs:ID"/><xs:attribute name="second" type="xs:ID"/></xs:attributeGroup>
+  <xs:complexType name="Seven"><xs:attribute ref="t:Number" fixed="7"/></xs:complexType>
+  <xs:complexType name="RequiredSeven"><xs:attribute ref="t:Number" use="required" fixed="7"/></xs:complexType>
+  <xs:complexType name="Extension"><xs:complexContent><xs:extension base="t:Seven"><xs:attribute ref="t:Number" fixed="8"/></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="AliasRestriction"><xs:complexContent><xs:restriction base="t:Seven"><xs:attribute ref="t:Number" fixed="+007"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="BadRestriction"><xs:complexContent><xs:restriction base="t:Seven"><xs:attribute ref="t:Number" fixed="8"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="OmitOptional"><xs:complexContent><xs:restriction base="t:Seven"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="OmitRequired"><xs:complexContent><xs:restriction base="t:RequiredSeven"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="DoubleBase"><xs:attribute ref="t:Number" fixed="7"/><xs:attribute ref="t:Number" fixed="8"/></xs:complexType>
+  <xs:complexType name="VacuousDouble"><xs:complexContent><xs:restriction base="t:DoubleBase"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="BadDouble"><xs:complexContent><xs:restriction base="t:DoubleBase"><xs:attribute ref="t:Number" fixed="9"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="AliasBase"><xs:attribute ref="t:Number" fixed="7"/><xs:attribute ref="t:Number" fixed="+007"/></xs:complexType>
+  <xs:complexType name="AliasDouble"><xs:complexContent><xs:restriction base="t:AliasBase"><xs:attribute ref="t:Number" fixed="0007"/></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="AbstractRequiredDefault"><xs:attribute ref="t:Number" use="required" default="1"/></xs:complexType>
+  <xs:complexType name="AnonymousBase"><xs:attribute name="a"><xs:simpleType><xs:restriction base="xs:int"/></xs:simpleType></xs:attribute></xs:complexType>
+  <xs:complexType name="AnonymousExtension"><xs:complexContent><xs:extension base="t:AnonymousBase"><xs:attribute name="a"><xs:simpleType><xs:restriction base="xs:int"/></xs:simpleType></xs:attribute></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

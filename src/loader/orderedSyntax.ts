@@ -56,6 +56,12 @@ export function syntaxElements(node: SyntaxElement, namespace?: string, local?: 
 // XML 1.0 (fifth edition) NCName; QName values use default namespaces, attributes do not.
 const ncStart = "A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\u{10000}-\\u{EFFFF}";
 const ncName = new RegExp(`^[${ncStart}][${ncStart}\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$`, "u");
+/** Shared XML name grammar for loader QNames and schema-declared operands. */
+export const isXmlNCName = (value: string): boolean => ncName.test(value);
+const xmlName = new RegExp(`^[${ncStart}:][${ncStart}:\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$`, "u");
+const xmlNmtoken = new RegExp(`^[${ncStart}:\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]+$`, "u");
+export const isXmlName = (value: string): boolean => xmlName.test(value);
+export const isXmlNmtoken = (value: string): boolean => xmlNmtoken.test(value);
 export function resolveLexicalQName(lexical: string, node: SyntaxElement): ExpandedName {
   const parts = lexical.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, "").split(":");
   if (parts.length > 2 || parts.some(p => !ncName.test(p))) {

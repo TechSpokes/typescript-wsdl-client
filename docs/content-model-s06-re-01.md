@@ -4,6 +4,9 @@ Formal component witnesses, a finite particle construction and the remaining ful
 
 ## Delivery status and scope
 
+The [architecture recovery](https://github.com/TechSpokes/typescript-wsdl-client/issues/232) stages shared internal semantic owners before universal RE01 closure.
+The [domain and proof checkpoint](#architecture-recovery-domain-and-proof-checkpoint) below distinguishes executable local work from the remaining interpretation and completeness obligations.
+
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
 The [current derivability continuation](#derivability-and-affiliation-continuation) separates that assessment from hypothetical checking; neither the new comparison interface nor a dependency census supplies the missing complete theorem.
@@ -21,6 +24,121 @@ The research owner is the RE01 agent in epic #232; substantive review belongs to
 The baseline is accepted main `5876065b00d4eeb6d2324eaa63ff9b70e2279198`. The unaccepted assessment draft is inspected at `460f5b8379c68ffef79917284e445b5ab046429e`, without importing its assessment modules. [Composition](content-model-composition.md), [analysis](content-model-analysis.md) and [ADR-003](decisions/003-content-model-contracts.md) retain their existing owners and contracts.
 
 The maintainer [accepted NT-CONT-01 for #239](https://github.com/TechSpokes/typescript-wsdl-client/issues/239#issuecomment-6098237195), allowing Node tooling to combine one live libxml2 engine, independent scoped TypeScript checks and historical xmlschema observations. The [reference-validation contract](reference-validation.md) states the remaining unqualified capabilities; that tooling decision does not supply the missing RE01 witness-equivalence or completeness proof.
+
+## Architecture recovery domain and proof checkpoint
+
+This checkpoint starts from main `7d652fea79fddce8fd407f5c18dc2645ad203cc5`, tree `77de8bccba79228208c405b8c43582c4f00154f4`.
+The [independently accepted domain](https://github.com/TechSpokes/typescript-wsdl-client/issues/266#issuecomment-6111899292) is `RE01-derivation-B-v1`.
+Shared local rules and a concrete finite-evidence checker implement this domain while retaining explicit incomplete local obligations and the universal #234 theorem.
+The original #231 branch and head `460f5b8379c68ffef79917284e445b5ab046429e` remain preserved; deliberate source ports do not accept that draft's assessment orchestration.
+
+### Selected finite-extension interpretation B
+
+Let Γ be the immutable actual graph, D its actual endpoint and A its actual clause-1.5 ancestor.
+Initial qualification is structural and records outstanding actual obligations without assuming D's or a dependent RE01 judgment.
+Every actual legality obligation retains Γ as its context.
+
+A concrete hypothetical witness supplies finite fresh components F, intermediate E and endpoint D′ in the available environment H = Γ ∪ F with one coherent D replacement.
+Original identities, owners, incidence, typed operands and source contexts remain anchored in Γ; D′ retains D's original effective non-derivation properties, with an immediate restriction edge to E, and E extends original A.
+Every hypothetical reference to D resolves coherently to D′; source contributions remain evidence rather than invented hypothetical XML syntax.
+Effective content includes inherited composition and every effective original AU identity; merely retaining canonical local contributions is insufficient.
+Raw type properties, raw particle construction and restriction-normalized comparison views have separate authenticated owners.
+
+The maintainer selected B: finite fresh internal types, declarations, particles, AUs and groups, and finite fresh global identities and affiliations are permitted.
+Fresh global role/QName identities must be disjoint from the entire original global symbol domain, including originals omitted from a represented candidate view.
+Original affiliation facts remain anchored, and every introduced affiliation still owes type/final/block, construction, attribution and declaration checks.
+
+Permission to introduce a helper is not a successful witness judgment.
+No finite helper-count bound, complete witness family or universal negative follows from finiteness of each supplied candidate.
+Raw extension construction remains separate from restriction-normalized comparison.
+
+Complete candidates retain every original record and every fresh addition, including inherited additions in a nested candidate.
+Global lookup, absence and enumeration use that complete role/QName domain; experimental structural subsets cannot receive a complete semantic receipt.
+Complete declared reverse-affiliation traversal includes abstract, blocked and invalid members before effective substitutability filtering.
+Required declaration, affiliation and type checks therefore cannot disappear through filtering.
+
+The hypothetical obligation roots are E, D′ and all F, followed by every concrete predicate/reference dependency they consume.
+Availability alone does not require unrelated original definitions to be revalidated in H.
+All actual obligations remain in Γ; an actual affiliation result cannot discharge a consumed hypothetical relation after D changes.
+Original source-level components such as notations remain explicit source-universe operands even when they have no canonical node ID.
+Unrepresented fresh categories and unqualified negative lookups return unresolved.
+
+### Alternative A and recorded project decision
+
+Alternative A fixes the original global symbol and affiliation universe while allowing fresh internal components.
+It treats layer1's established declarations as the hypothetical question's external environment; the scoped raw-all fresh-affiliate mapping differs from B because A cannot introduce that affiliate.
+Search simplicity is not a justification for selecting A, and abstract component representation alone does not justify B.
+
+The dated `cos-ct-extends.1.5` does not explicitly select either helper universe.
+Its construction note supplies a recipe, `concepts-conformance` permits abstract representations, `layer1` fixes definitions within an assessment, and `no-identity` leaves other identities incompletely specified; none settles the cross-assessment existential universe.
+The October 11 addendum authorizes reassessment and explicitly does not certify replacement semantics.
+
+Independent review recommended B as an explicit project interpretation, not as a claim that the normative text mandates arbitrary fresh globals.
+The maintainer selected B in response to the reviewed alternatives, expressly requiring explicit lookup domains and complete affected obligations.
+That selection and the subsequent independent contract review resolve the helper universe, lookup domains, component correspondence and required dependency policy.
+The research comparison defaults to the accepted derivation model; the historical schema-preserving selector remains an explicit stronger experiment.
+Structural/local kernels retain their stated scope and cannot self-certify complete semantic acceptance.
+No public profile, catalog format, legacy default or faithful activation gate changes.
+The primary source is the pinned 2004 Structures XML with SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+
+### Conditional finite-evidence soundness
+
+Let J(c,s) denote an exact obligation for authenticated context c and subject s in an independently accepted domain.
+Consider a finite acyclic evidence graph whose edges are all nested obligations demanded by concrete local checkers, rather than a caller-selected subset.
+Every node checks its complete local premises and exact child subject/context correspondence; missing children, duplicate storage IDs, malformed references and active backedges cannot establish success.
+
+If every invoked local inference rule is sound and its premise inventory complete, acceptance implies the root J.
+Finite acyclicity provides a topological order: primitive leaves hold by their established rules, and each later node follows from its checked local premises and earlier valid child judgments.
+Induction reaches the root; exact context binding prevents substituting a judgment about another model or candidate.
+
+Shared completed children are admissible only for the same exact obligation and context.
+Resource interruption produces no accepted root, and legal recursive component references are not proof-dependency backedges.
+The concrete [finite verifier](../src/compiler/finiteRe01Verification.ts) implements this induction over supplied evidence using privately authenticated context, correspondence and component receipts.
+It emits `checked-candidate` only after actual obligations and every generated hypothetical prerequisite are discharged; retained unresolved local cases cannot pass.
+The [independent controls](../test/unit/re01-candidate-independent.test.ts) include original typed AUs, a complete candidate, genuine nested helper evidence, missing child evidence, changed scalar properties, proof cycles and authentication boundaries.
+
+Finite-evidence soundness does not establish evidence-family adequacy.
+A successful arbitrary witness has not been proved to admit such finite acyclic evidence, and rejecting supplied cyclic evidence proves neither invalid XSD nor witness nonexistence.
+Termination of checking a finite DAG also says nothing about termination of searching an unbounded family.
+
+### Reviewed primitive no-change proof
+
+The [independently reviewed primitive branch](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6112070199) applies when X directly extends its designated ancestor A and A's base is qualified builtin `anyType`.
+The first step is that same extension; the second is an ε identity/no-change comparison of the same authenticated X and its effective properties.
+It creates no component, clone or derivation edge.
+Every other local component, extension, content, AU and declaration premise must pass first.
+A's final set must permit extension; X's restriction prohibition does not apply to a nonexistent restriction edge.
+
+Ancestor traversal starts at X's immediate base.
+The specified builtin `anyType` self-base permits A = `anyType` for a direct ur-type extension, without permitting user-component self-loops or selecting X itself.
+Equal property text on distinct components, arbitrary multistep extension collapse, changed properties and active proof cycles do not satisfy this identity rule.
+This follows the rule's “possibly vacuous” qualification and the identity-first derivation guard; it establishes a concrete leaf, not universal witness adequacy.
+
+### Conditional adaptive-read transfer
+
+For a deterministic terminating evaluator, consider its complete adaptive semantic read trace.
+The trace includes component properties, raw/normalized views, original scalar/type/namespace operands, caches, positive and negative QName lookup, full ordered collection enumeration and reverse affiliations.
+If the same qualified algorithm in a second context returns the same semantic value for each corresponding read, with context-sensitive identities and caches correctly rebound or recomputed, it follows the same path and result.
+
+The proof is induction over evaluator steps: equal prior state and the same next observation produce equal next state; the original finite trace bounds the induction.
+Unchanged component records or equal reachable ID sets do not establish these premises.
+The executable [dependency observations](../test/research/re01/predicate-dependencies.ts) check declared observation boundaries and authentic context binding; they do not discover a complete trace or issue transfer certificates.
+
+The [independent controls](../test/research/re01/predicate-dependencies.test.ts) cover property, collection, omitted-global, negative-lookup and model/context boundaries.
+Existing raw-all affiliation, helper-type/block, recursive endpoint, original-intermediate, fresh-AU and raw-composition counterexamples remain discriminants against weaker transfer or reduction claims.
+Neither these controls nor the conditional lemmas select the helper universe or prove arbitrary-witness extraction/reconstruction.
+
+### Remaining proof and implementation obligations
+
+#234 still owes witness/evidence coverage or an equivalent total criterion, sufficient dependency transfer where used, complete negative answers and mathematical termination.
+Local owner qualifications remain explicit prerequisites of any invoked rule.
+F1 remains unproved; bounded failures do not disprove it and do not prove nonexistence.
+#271 now supplies aggregate construction, generated evidence inventories and meaningful fully checked candidates within concretely discharged cases.
+Its complete local acceptance still requires disposition of every retained implementation or interpretation gap; a successful example does not close that inventory.
+
+The [independent checkpoint review](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6111899531) accepts the stated conditional lemmas under the selected domain.
+The [executable checkpoint handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6111745855) records the exact observations and known falsifiers.
+Recovery completion, #232 joint acceptance and #179/#153 activation remain separate and open.
 
 ## Primary rule and interpretation
 

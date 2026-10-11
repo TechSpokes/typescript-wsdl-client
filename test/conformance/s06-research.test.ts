@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import {readFileSync, readdirSync} from "node:fs";
-import {dirname, resolve} from "node:path";
+import {dirname, relative, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 import {describe, expect, it} from "vitest";
 import {s06ResearchManifestUrl} from "./registry.js";
@@ -8,7 +8,7 @@ import {s06ResearchManifestUrl} from "./registry.js";
 interface ResearchArtifact {
   path: string;
   sha256: string;
-  role: "decision" | "prototype" | "fixture" | "expectations" | "reference";
+  role: "decision" | "prototype" | "fixture" | "expectations" | "reference" | "semantic-source";
 }
 
 interface ResearchContract {
@@ -60,12 +60,39 @@ describe("S06 research provenance and delivery scope", () => {
         expect(artifact.path).not.toMatch(/^(?:\/|[A-Za-z]+:)|(?:^|\/)\.\.(?:\/|$)/);
         const bytes = readFileSync(resolve(repository, artifact.path));
         expect(createHash("sha256").update(bytes).digest("hex"), artifact.path).toBe(artifact.sha256);
+        if (artifact.role === "semantic-source") expect(artifact.path).toMatch(/^src\/.+\.ts$/);
         if (artifact.role === "prototype" && /\.(?:ts|mjs)$/.test(artifact.path)) {
-          expect(bytes.toString("utf8"), artifact.path).not.toMatch(/(?:from\s*|import\s*\()\s*["'][^"']*src\//);
+          // #232 permits shared internal source authorities. Research adapters
+          // may consume only source entries included in this evidence inventory.
+          for (const match of bytes.toString("utf8").matchAll(/(?:from\s*|import\s*\()\s*["']([^"']*src\/[^"']+)["']/g)) {
+            const sourcePath = relative(repository, resolve(repository, dirname(artifact.path), match[1]!)).replaceAll("\\", "/").replace(/\.js$/, ".ts");
+            expect(manifest.contracts.some(entry => entry.artifacts.some(source =>
+              source.role === "semantic-source" && source.path === sourcePath)), `${artifact.path} -> ${sourcePath}`).toBe(true);
+          }
         }
       }
     });
   }
+
+  it("keeps shared production authorities independent of research adapters", () => {
+    // The reverse edge would create a second semantic authority or make shipping
+    // source depend on research-only fixtures/experimental owner callbacks.
+    function inspect(path: string): void {
+      for (const item of readdirSync(resolve(repository, path), {withFileTypes: true})) {
+        const child = `${path}/${item.name}`;
+        if (item.isDirectory()) inspect(child);
+        else if (item.name.endsWith(".ts")) {
+          const source = readFileSync(resolve(repository, child), "utf8");
+          for (const match of source.matchAll(/(?:from\s*|import\s*\()\s*["']([^"']+)["']/g)) {
+            if (!match[1]!.startsWith(".")) continue;
+            const target = relative(repository, resolve(repository, dirname(child), match[1]!)).replaceAll("\\", "/");
+            expect(target, `${child} -> ${target}`).not.toMatch(/^(?:\.\.\/|test\/)/);
+          }
+        }
+      }
+    }
+    inspect("src");
+  });
 
   it("keeps every delivered S06 fixture in the hashed evidence inventory", () => {
     const inventory = new Set(manifest.contracts.flatMap(contract =>

@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:finite-proof">
+  <xs:include schemaLocation="finite-proof-independent.xsd"/>
+  <xs:attribute name="Unused" type="xs:int" fixed="not-an-integer"/>
+</xs:schema>

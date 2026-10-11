@@ -1,0 +1,6 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:upa">
+  <xs:complexType name="HugeFixed"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="9007199254740993" maxOccurs="9007199254740993"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="HugeOptional"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0" maxOccurs="9007199254740993"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="HugeNarrow"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="9007199254740993" maxOccurs="9007199254740994"/><xs:element name="a" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="HugeOuterRepeat"><xs:choice maxOccurs="9007199254740993"><xs:sequence><xs:element name="a" type="xs:string" minOccurs="0"/><xs:element name="b" type="xs:string"/><xs:element name="a" type="xs:string" minOccurs="0"/></xs:sequence></xs:choice></xs:complexType>
+</xs:schema>
