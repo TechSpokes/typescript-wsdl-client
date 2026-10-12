@@ -1,22 +1,22 @@
-/** Temporary, read-only audit of the four existing PR 283 qualification archives. */
+/** Temporary, read-only audit of the four original merged-main qualification archives. */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, statSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 
-const revision = 'bae966774a738118b93f79c853698c1da048d4b9';
+const revision = 'ffa4f3ea6d23fe628e70051c6bef5e6eb566ae62';
 const tree = 'c887431207d104f4c9f514d524dcb6d193a43c36';
-const runId = 38279558371;
+const runId = 38292960945;
 const lanes = [
-    { id: 11759714657, name: 'linux-node-24-reference', platform: 'linux', major: '24', bytes: 143451,
-        digest: '947e9cca72c79339407f54db9084e2c2d04bd4e4fd4bea04c048d13f63a5dd3d' },
-    { id: 11761160618, name: 'linux-node-26-reference', platform: 'linux', major: '26', bytes: 140532,
-        digest: 'd238c394c2813131dc0a0196e4ff61197defdd00a9918ce4fd66cb54fd3816e8' },
-    { id: 11761530269, name: 'windows-node-24-reference', platform: 'win32', major: '24', bytes: 222730,
-        digest: 'd4e23a271ca3bd868347eaaf17a4ea7187ba9badfbdde8f9b57f6333fb2097d5' },
-    { id: 11761790095, name: 'windows-node-26-reference', platform: 'win32', major: '26', bytes: 222717,
-        digest: '28a9d2be8b36c43eed5a57870894b5299d6924d334db0805ce9390f08baf16cc' },
+    { id: 11766728415, name: 'linux-node-24-reference', platform: 'linux', major: '24', bytes: 143391,
+        digest: 'fcfb89a350199ad1a5726716d08e265de08e669d719f40dfc5f9f042a3d0da0e' },
+    { id: 11766558779, name: 'linux-node-26-reference', platform: 'linux', major: '26', bytes: 140506,
+        digest: '57c40dc59c59f9a8396472a63f83420643739a0858efa2a61031ee9e8dfa690f' },
+    { id: 11766294858, name: 'windows-node-24-reference', platform: 'win32', major: '24', bytes: 222721,
+        digest: '740918a4b1ca735c4cfb4cec6f612681de7a305cda6ad4dd6d1c204179740191' },
+    { id: 11766874412, name: 'windows-node-26-reference', platform: 'win32', major: '26', bytes: 222730,
+        digest: '68fdad0de5f9fb4458bf06705efea1898c086a42fbcdaa585361a6468524a4fa' },
 ] as const;
 type Json = Record<string, unknown>;
 const record = (value: unknown): Json => {
@@ -40,7 +40,7 @@ const run = readJson(join(corpus, 'run.json'));
 assert.equal(run.id, runId);
 assert.equal(run.head_sha, revision);
 assert.equal(run.conclusion, 'success');
-assert.equal(run.event, 'pull_request');
+assert.equal(run.event, 'push');
 assert.equal(run.path, '.github/workflows/node-reference.yml');
 const artifactList = readJson(join(corpus, 'artifacts.json')).artifacts;
 assert.ok(Array.isArray(artifactList));

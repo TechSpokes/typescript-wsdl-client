@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@v7
         with:
-          ref: bae966774a738118b93f79c853698c1da048d4b9
+          ref: ffa4f3ea6d23fe628e70051c6bef5e6eb566ae62
           path: target
           persist-credentials: false
       - uses: actions/setup-node@v7
@@ -37,9 +37,9 @@ jobs:
           set -euo pipefail
           out=audit/tmp/conformance/artifact-audit-283
           mkdir -p "$out"
-          gh api repos/TechSpokes/typescript-wsdl-client/actions/runs/38279558371 > "$out/run.json"
-          gh api repos/TechSpokes/typescript-wsdl-client/actions/runs/38279558371/artifacts > "$out/artifacts.json"
-          for id in 11759714657 11761160618 11761530269 11761790095; do
+          gh api repos/TechSpokes/typescript-wsdl-client/actions/runs/38292960945 > "$out/run.json"
+          gh api repos/TechSpokes/typescript-wsdl-client/actions/runs/38292960945/artifacts > "$out/artifacts.json"
+          for id in 11766728415 11766558779 11766294858 11766874412; do
             gh api "repos/TechSpokes/typescript-wsdl-client/actions/artifacts/$id/zip" > "$out/$id.zip"
           done
       - name: Strict typecheck the audit program

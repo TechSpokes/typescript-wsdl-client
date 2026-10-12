@@ -346,6 +346,12 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         execute(evidence);
       }
       if (completed.size !== nodes.size) return fail('unused-proof-node', 'Every supplied proof node must match a required obligation');
+      // Dependency facts in checked component/slot/correspondence receipts are
+      // privately owned and frozen. Resolve each exact builtin tuple once per
+      // context; repeated uses still pay for the lookup and remain represented
+      // in their originating receipts.
+      charge(2);
+      const checkedBuiltins = new Map<SemanticContext, Map<string, Set<string>>>();
       for (const {from, dependency} of typedDependencies) {
         charge(4 + dependency.contextId.length);
         const closure = closures.get(dependency.contextId), type = dependency.type;
@@ -359,8 +365,19 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
           const receipt = closure.byScalarSlot.get(type.owner);
           if (!receipt) return fail('scalar-slot-validity', 'A type dependency lacks matching scalar-slot construction', 'unresolved', closure.context, type.owner);
           assertOriginalGeneratedScalarReceipt(closure.context, receipt);
-        } else if (resolveSemanticType(closure.context, type).kind !== 'builtin')
-          return fail('builtin-type-dependency', 'A builtin dependency lacks its exact builtin identity', 'unresolved', closure.context);
+        } else {
+          const namespace=type.name.namespace,local=type.name.local;
+          charge(4);let namespaces=checkedBuiltins.get(closure.context);
+          if (!namespaces) {charge(4);namespaces=new Map();checkedBuiltins.set(closure.context,namespaces);}
+          charge(4+namespace.length);let known=namespaces.get(namespace);
+          if (!known) {charge(4);known=new Set();namespaces.set(namespace,known);}
+          charge(4+local.length);
+          if (!known.has(local)) {
+            if (resolveSemanticType(closure.context, type).kind !== 'builtin')
+              return fail('builtin-type-dependency', 'A builtin dependency lacks its exact builtin identity', 'unresolved', closure.context);
+            charge(2+local.length);known.add(local);
+          }
+        }
       }
       // Correspondence computations retain exact scalar premises too. A local
       // type owner must have checked that same property in that same context.

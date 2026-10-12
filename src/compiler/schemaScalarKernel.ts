@@ -90,6 +90,9 @@ function makeKernel(context: SemanticContext) {
   // constraint data still take their own deep snapshot on every invocation.
   const ownReference = (reference: Reference): Reference => context.ownTypeReference(reference);
   const publishedPlans = new WeakMap<ScalarSupportPlan, ScalarSupportPlan>();
+  type IdentityEntry=ScalarResult<{definition:string;reference?:Reference}>;
+  type IdentityNode={children:Map<string,IdentityNode>;receipt?:IdentityEntry};
+  let publishedContentIdentities:IdentityNode|undefined;
   const issuedPlans = new WeakSet<object>();
   const publishPlan = (plan: ScalarSupportPlan): ScalarSupportPlan => {
     context.budget.chargeWork(3);
@@ -137,8 +140,47 @@ function makeKernel(context: SemanticContext) {
   });
   const assess = (reference: Reference, lexical: LexicalValue, owner: NodeId): ScalarResult<AssessedSchemaOperand> => run(() => {
     context.budget.chargeWork(4); const frozen = {reference: ownReference(reference), lexical: input(lexical)}, node = c.get(owner);
-    capture(frozen.reference, owner);
-    return {type: frozen.reference, lexical: frozen.lexical, owner, operand: core.assess(frozen.reference, frozen.lexical, node), obligations: capture(frozen.reference, owner).obligations};
+    const plan = capture(frozen.reference, owner);
+    return {type: frozen.reference, lexical: frozen.lexical, owner, operand: core.assess(frozen.reference, frozen.lexical, node), obligations: plan.obligations};
+  });
+  const assessValue = (reference: Reference, constraint: ValueConstraint, owner: NodeId): ScalarResult<AssessedSchemaOperand> => run(() => {
+    context.budget.chargeWork(4);
+    const safe = ownReference(reference), copied = input(constraint), node = c.get(owner);
+    const checked = core.assessConstraint(safe, copied, node), plan = capture(safe, owner);
+    return {type: safe, lexical: copied.lexical, owner, operand: checked.value, obligations: plan.obligations};
+  });
+  const contentIdentity = (reference: Reference, owner: NodeId): ScalarResult<{definition:string;reference?:Reference}> => context.budget.guard(() => {
+    const safe = ownReference(reference);
+    if (!publishedContentIdentities) {
+      context.budget.chargeWork(3);
+      publishedContentIdentities = {children:new Map()};
+    }
+    context.budget.chargeWork(12);
+    const parts:string[]=[owner];
+    if(safe.kind==='local')parts.push('local',safe.target);
+    else if(safe.kind==='original-generated')parts.push('original-generated',safe.owner);
+    else if(safe.kind==='builtin')parts.push('builtin',safe.name.namespace,safe.name.local);
+    else {
+      parts.push('symbol',safe.role,safe.name.namespace,safe.name.local,
+        safe.target===undefined?'without-target':'with-target');
+      if(safe.target!==undefined)parts.push(safe.target);
+    }
+    let node:IdentityNode|undefined=publishedContentIdentities;
+    for(const part of parts){context.budget.chargeWork(4+part.length);node=node?.children.get(part);if(!node)break;}
+    const prior=node?.receipt;
+    if (prior) {context.budget.chargeWork(4); return prior;}
+    const result = run(() => {capture(safe, owner); return core.contentIdentity(safe, c.get(owner));});
+    if (result.kind === 'checked') {
+      let location=publishedContentIdentities;
+      for(const part of parts){
+        context.budget.chargeWork(4+part.length);
+        let next=location.children.get(part);
+        if(!next){context.budget.chargeWork(3);next={children:new Map()};location.children.set(part,next);}
+        location=next;
+      }
+      context.budget.chargeWork(2);location.receipt=result;
+    }
+    return result;
   });
   // Facet formation can assess primitive NOTATION before a usable declared
   // restriction exists. This private path is not a declared-type certificate.
@@ -180,11 +222,11 @@ function makeKernel(context: SemanticContext) {
   });
   return {
     describe: (reference: Reference, owner: NodeId) => run(() => publishPlan(capture(ownReference(reference), owner))),
-    contentIdentity: (reference: Reference, owner: NodeId) => run(() => {const frozen = ownReference(reference); capture(frozen, owner); return core.contentIdentity(frozen, c.get(owner));}),
+    contentIdentity,
     contentProperties: (reference: Reference, owner: NodeId) => run(() => {const frozen = ownReference(reference); capture(frozen, owner); return core.contentProperties(frozen, c.get(owner));}),
     contentDerivation: (derived: Reference, base: Reference, owner: NodeId) => run(() => {context.budget.chargeWork(4); const frozen = {derived: ownReference(derived), base: ownReference(base)}; capture(frozen.derived, owner); capture(frozen.base, owner); return core.contentDerivation(frozen.derived, frozen.base, c.get(owner));}),
     facetPropertiesEquivalent: (a: Reference, b: Reference, owner: NodeId) => run(() => {context.budget.chargeWork(4); const frozen = {a: ownReference(a), b: ownReference(b)}; capture(frozen.a, owner); capture(frozen.b, owner); return core.facetPropertiesEquivalent(frozen.a, frozen.b, c.get(owner));}),
-    assess,
+    assess, assessValue,
     checkValue: (reference: Reference, constraint: ValueConstraint, owner: NodeId) => run(() => {context.budget.chargeWork(4); const frozen = {reference: ownReference(reference), constraint: input(constraint)}; const plan = core.checkValue(frozen.reference, frozen.constraint, c.get(owner)); capture(frozen.reference, owner); return plan;}),
     equivalent: (aType: Reference, a: LexicalValue, bType: Reference, b: LexicalValue, owner: NodeId): ScalarResult<boolean> =>
       run(() => {context.budget.chargeWork(8); const frozen = {aType: ownReference(aType), a: input(a), bType: ownReference(bType), b: input(b)}; capture(frozen.aType, owner); capture(frozen.bType, owner); return core.equivalent(frozen.aType, frozen.a, frozen.bType, frozen.b, c.get(owner));}),

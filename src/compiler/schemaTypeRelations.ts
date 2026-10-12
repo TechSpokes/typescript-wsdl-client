@@ -54,6 +54,13 @@ export function declarationMethods(context: SemanticContext, node: GraphNode, pr
 }
 function kernel(context: SemanticContext) {
   const budget = context.budget, infos = new Map<string, Info>(), infoDependencies = new Map<string, readonly string[]>();
+  // Only the immutable result of a completed direct query in this exact
+  // context is reusable. Caller references are re-owned and resolved before
+  // lookup; the cached dependencies are replayed into each new receipt.
+  type DirectEntry = Readonly<{value:unknown; dependencies:readonly string[];typeDependencies:readonly SemanticTypeDependency[]}>;
+  type CacheNode = {children:Map<string,CacheNode>; entry?:DirectEntry};
+  budget.chargeWork(3);
+  const directRelations:CacheNode = {children:new Map()};
   const dependencies = new Set<string>(), collectors: Set<string>[] = [];
   let typeReads = collectSemanticTypeDependencies(context);
   const typeCollectors: ReturnType<typeof collectSemanticTypeDependencies>[] = [];
@@ -206,6 +213,49 @@ function kernel(context: SemanticContext) {
     }
     return false;
   };
+  const directQuery = <T>(rule:string, references:readonly Reference[], options:readonly string[], compute:(owned:readonly Reference[])=>T):T => {
+    budget.chargeWork(2+references.length*2);
+    const owned=references.map(ownReference);
+    // These selectors have just passed context ownership and shape checks.
+    // Their exact fields select the same immutable component on every call
+    // in this context; a hit replays the original resolved dependencies.
+    budget.chargeWork(2+owned.length*12+options.length*2);
+    const parts:string[]=[rule,owned.length===1?'one':'two'];
+    for(const reference of owned){
+      budget.chargeWork(3);
+      if(reference.kind==='local')parts.push('local',reference.target);
+      else if(reference.kind==='original-generated')parts.push('original-generated',reference.owner);
+      else if(reference.kind==='builtin')parts.push('builtin',reference.name.namespace,reference.name.local);
+      else {
+        parts.push('symbol',reference.role,reference.name.namespace,reference.name.local,
+          reference.target===undefined?'without-target':'with-target');
+        if(reference.target!==undefined)parts.push(reference.target);
+      }
+    }
+    parts.push('options',...options);
+    let node:CacheNode|undefined=directRelations;
+    for(const part of parts){budget.chargeWork(4+part.length);node=node?.children.get(part);if(!node)break;}
+    const prior=node?.entry;
+    if(prior){
+      budget.chargeWork(6);
+      for(const dependency of prior.dependencies)depend(dependency);
+      typeDepend(prior.typeDependencies);
+      return prior.value as T;
+    }
+    for (const reference of owned) resolve(reference);
+    const value=compute(owned);
+    const typeDependencies=typeReads.snapshot();
+    budget.chargeWork(8+dependencies.size*3+typeDependencies.length*2);
+    let location=directRelations;
+    for(const part of parts){
+      budget.chargeWork(4+part.length);
+      let next=location.children.get(part);
+      if(!next){budget.chargeWork(3);next={children:new Map()};location.children.set(part,next);}
+      location=next;
+    }
+    location.entry=Object.freeze({value,dependencies:Object.freeze([...dependencies]),typeDependencies});
+    return value;
+  };
   const immediateFinal = (ref: Reference): boolean => {
     ref = ownReference(ref);
     const d = info(ref), resolved = resolve(ref), node = resolved.node;
@@ -303,7 +353,13 @@ function kernel(context: SemanticContext) {
     }
     return budget.sorted(result, budget.compareText);
   };
-  return {typeDerivation, immediateFinal, substitution, members, dependencies, publishValue, resetTypes: () => {typeReads = collectSemanticTypeDependencies(context);}, typeDependencies: () => typeReads.snapshot(), immediateBase: (reference: Reference) => info(reference).base};
+  return {typeDerivation:(derived:Reference,base:Reference,methods:readonly DerivationMethod[])=>{
+      const excluded=validateMethods(methods);
+      return directQuery('type-derivation',[derived,base],excluded,owned=>typeDerivation(owned[0]!,owned[1]!,excluded));
+    },
+    immediateFinal:(reference:Reference)=>directQuery('immediate-final',[reference],[],owned=>immediateFinal(owned[0]!)),
+    substitution, members, dependencies, publishValue, resetTypes: () => {typeReads = collectSemanticTypeDependencies(context);}, typeDependencies: () => typeReads.snapshot(),
+    immediateBase:(reference:Reference)=>directQuery('immediate-base',[reference],[],owned=>info(owned[0]!).base)};
 }
 function run<T>(context: SemanticContext, operation: (owner: ReturnType<typeof kernel>) => T, obligations: RelationReceipt['obligations'] = ['component-validity']): RelationResult<T> {
   assertSemanticContext(context);
