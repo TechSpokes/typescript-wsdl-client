@@ -101,6 +101,27 @@ describe('shared local XSD type and declaration relations', () => {
     expect(checkDeclaration(c, member.id)).toMatchObject({kind: 'checked', obligations: ['declared-type-component-validity']});
   });
 
+  it('does not transfer Type Derivation OK across contexts that retain IDs but change a base edge', async () => {
+    const request = await context(), seed = request.graph.nodes[0];
+    const base = type(seed, 'TransferBase');
+    const derived = type(seed, 'TransferDerived', local(base.id), 'extension');
+    const rebased = type(seed, 'TransferDerived', builtin('anyType'), 'restriction');
+    const active = [...request.actual.members, base.id, derived.id];
+    const first = request.candidate({key: 'transfer-first', active, additions: [base, derived], rawTypes: [base, derived].map(rawType)});
+    const second = request.candidate({key: 'transfer-rebased', active, additions: [base, rebased], rawTypes: [base, rebased].map(rawType)});
+    if (first.kind !== 'prepared' || second.kind !== 'prepared') throw new Error('Expected two authentic sibling contexts');
+    const original = checked(first.context, local(derived.id), local(base.id));
+    const changed = checked(second.context, local(derived.id), local(base.id));
+    expect(original).toMatchObject({kind: 'checked', value: true});
+    expect(changed).toMatchObject({kind: 'checked', value: false});
+    if (original.kind !== 'checked' || changed.kind !== 'checked') throw new Error('Expected local relation receipts');
+    expect(original.contextId).not.toBe(changed.contextId);
+    expect(original.dependencies).toContain(derived.id);
+    expect(original.dependencies).toContain(base.id);
+    expect(changed.dependencies).toContain(derived.id);
+    expect(changed.dependencies).toContain(base.id);
+  });
+
   it('checks list/union formation final separately from restriction-based ancestry', async () => {
     const request = await context(), seed = request.graph.nodes[0];
     const restricted = (name: string, base: Reference, final = ''): SimpleTypeNode => {
