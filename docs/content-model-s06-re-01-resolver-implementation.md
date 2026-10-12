@@ -452,3 +452,40 @@ node --import tsx test/research/re01/preparation-summary.ts tmp/conformance/prep
 The [summary generator](../test/research/re01/preparation-summary.ts) rejects changed input/output boundaries and nondeterministic stage or request work across repetitions.
 Committed corpus identities and the reviewed evidence record are durable; raw reports and generated synthetic files under `tmp/conformance/preparation/` are disposable task outputs.
 Full CI, independent review, protected merge and merged-main verification remain delivery requirements; these bounded observations do not close #232/#234 or activate #179/#153.
+
+### Current-main finite capacity qualification
+
+The [fixed-URI finite harness](../test/research/re01/finite-capacity-measure.ts) compares actual main `2a057d22a48bfe78a7af2deb368f86a4c762533f` (tree `845417705b22259f6ebf6ce93abb481d31dfedbc`) with the #278 change. Both checkouts use the same source bytes and `https://capacity.example/` offline URIs. Each workload uses a fresh request for each of three samples, with separate default and 100,000,000-work diagnostic profiles. The default remains 1,000,000 work and 100,000 nodes. The table reports one representative row; logical work and nodes were identical across all three repetitions.
+
+| Complete finite workload | Main diagnostic work | Main default | #278 default work | #278 nodes | Remaining default work |
+|---|---:|---|---:|---:|---:|
+| Particle, AU and wildcard | 1,204,704 | Resource limit | 917,562 | 61 | 82,438 |
+| Nested helper | 1,438,063 | Resource limit | 976,270 | 11 | 23,730 |
+| Typed attribute | 857,115 | Checked | 593,138 | 7 | 406,862 |
+
+The #278 diagnostic and default profiles produce the same complete checked receipts and totals. Their deterministic JSON receipt-projection SHA-256 values match current main's diagnostic receipts for all three workloads. Each retains checked actual obligations and the supplied candidate; universal coverage, complete negative answer and search termination remain false.
+
+Main's diagnostic receipts and the #278 receipts retain the same particle object and string census; the nested and typed #278 receipts retain fewer objects and strings. This census traverses reachable receipt values and is a retained allocation proxy, not a V8 allocation counter.
+
+| Checked receipt | Main objects | #278 objects | Main string values | #278 string values |
+|---|---:|---:|---:|---:|
+| Particle, AU and wildcard | 1,234 | 1,234 | 1,649 | 1,649 |
+| Nested helper | 1,157 | 1,127 | 1,513 | 1,478 |
+| Typed attribute | 690 | 684 | 908 | 901 |
+
+Source preparation, actual lookups and candidate preparation retain the same logical work on main and #278. The particle stages use 46,257, 171 and 129,222 work; the nested stages use 24,846, 108, 103,325 and another 75,936 for its nested candidate; the typed stages use 24,846, 108 and 86,100. Complete finite verification changes from 1,028,747 to 741,605 for particle, 1,233,553 to 771,760 for nested and 745,982 to 482,005 for typed. The main default runs stop during verification, so their truncated verification counts are not comparable completed costs.
+
+The retained source-owned structural controls remain 988,098 work and 140 nodes for Weather, and 214,043 work and 53 nodes for shared-recursive, under both main and #278. Weather's separate three-candidate structural reuse workload consumes 905,654 work and 55 nodes. These are source and context preparation controls, not complete finite proofs. The separate generic Weather actual-plus-candidate context path still exceeds the default; this qualification does not claim that path passes. Weather is the largest available redistributable complete real-service closure.
+
+The finite harness reports loading separately with `null` shared-budget work because loading uses inherited limits. It separates source ownership, actual lookup and each candidate construction, but groups original local assessment, candidate local assessment, dependency discharge and evidence publication in the complete finite-verification stage. Earlier structural harnesses expose canonical construction and reference resolution independently. An exact per-rule allocation or verifier substage claim would require additional instrumentation. Wall time and process RSS are observed per stage; OS cache, JIT and garbage collection are uncontrolled, and process peak RSS is a lifetime high-water mark. The deterministic work, node and receipt observations support this bounded capacity result.
+
+Run each proposed profile independently so request-ID length does not alter charged work across a combined run:
+
+```bash
+node --import tsx test/research/re01/finite-capacity-measure.ts --profile default
+node --import tsx test/research/re01/finite-capacity-measure.ts --profile diagnostic
+```
+
+For the archived current-main comparison, copy this same harness into that equal-length checkout's ignored `tmp/finite-capacity-measure.ts`, changing only the source import prefix from `../../../src/` to `../src/`. Run the two profiles from that checkout with `node --import tsx tmp/finite-capacity-measure.ts --profile default` and `--profile diagnostic`. The copied harness is a measurement adapter; current main's production sources remain unchanged.
+
+The optimization caches only positive direct relation and content-identity facts in their owning context. Every call re-owns references, charges cache lookup and publication, and replays the checked dependencies; finite builtin dependencies are checked once per exact context and identity. Typed attribute constraints use one scalar assessment. Candidate-specific and nested proof obligations still run for the supplied evidence. These controls qualify named workloads only; #234 proof, #232 full acceptance and P1/F1 maintainer selections remain open.
