@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "be01da113389938e568931d377455dcde13d1e8cdd617033f46d818b2e27c8c7"
+          "sha256": "15ba93b146fb71fe1a994fcee6bbf34abe3953690d498a92143765217ca576e6"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "6bf616241c2cd7b525612e7f3b1bdbd846ca386fa279a91787ba53d49b9d3a70"
+          "sha256": "8f3fec0e781d94517641e497952810f4182f855b50222e2d2fd9f88bcd24c680"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1191,7 +1191,7 @@
         {
           "path": "src/compiler/schemaPattern.ts",
           "role": "semantic-source",
-          "sha256": "73389b94da1231a166355b57456f3501100c2569de77121206a973f7c4f59827"
+          "sha256": "aa711d93402eb84f2cf442dbd9382990b1b2ca33f9f6aa5868814af1aaffeaac"
         },
         {
           "path": "src/compiler/schemaScalarContext.ts",
@@ -1821,7 +1821,7 @@
         {
           "path": "test/unit/schema-pattern-witness-independent.test.ts",
           "role": "expectations",
-          "sha256": "ce6fe20a5a96f2c801bec243fdac0fe2e9d1b345244b33fe4fc7beaa9466f7c7"
+          "sha256": "4014ad5e838faef9889a2f4f6f4470dfde123889058c2658fcde72757ad3179b"
         },
         {
           "path": "test/unit/schema-selected-au-independent.test.ts",

@@ -280,8 +280,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     for (const candidate of schemaScalarWitnesses(expected, lexical, owner, c)) if (accepts(candidate)) return true;
     for (const layer of base.plan.layers) for (const pattern of layer.patterns) {
       c.step(owner); const language = patternOwner(pattern).literalLanguage(pattern, owner);
-      if (language.kind !== 'finite-literal') continue;
-      for (const value of language.words) {
+      const proposed = language.kind === 'finite-literal' ? language.words
+        : patternOwner(pattern).positiveWords(pattern, owner, lexical.value);
+      for (const value of proposed) {
         c.step(owner, 3);
         if (accepts({...lexical, value})) return true;
       }
