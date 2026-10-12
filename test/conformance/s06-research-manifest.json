@@ -1351,7 +1351,7 @@
         {
           "path": "test/research/re01/preparation-candidates.ts",
           "role": "prototype",
-          "sha256": "6504a2c0f72895124f8d6777a0e821197a46e20d5760d1c9a7fc6d0e91d606d2"
+          "sha256": "7cd045b93c7c4986d9e663d1bd804606c340b103b7c3cd26b8d900141030324a"
         },
         {
           "path": "test/research/re01/preparation-corpus.ts",
@@ -1381,7 +1381,7 @@
         {
           "path": "test/research/re01/preparation-summary.ts",
           "role": "prototype",
-          "sha256": "c7ce29cde0bb4a7f8ff715ab8a52e467fed625102225736f1837fe71c6b78fff"
+          "sha256": "14337163ef012bec157a4c47363b7f0704b2d10b8793eb46784d21f4e95b9395"
         },
         {
           "path": "test/unit/complex-content-independent.test.ts",
