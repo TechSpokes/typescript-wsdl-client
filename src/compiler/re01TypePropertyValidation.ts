@@ -1,5 +1,7 @@
 /** Structural checks of explicit abstract properties, separate from source mapping. */
 import type {GraphNode, NodeId, Reference} from './canonicalGraph.js';
+import type {SemanticTypeReference} from './semanticTypeReference.js';
+import {resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import {assertSemanticContext, SemanticContextAccessError} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
@@ -36,19 +38,18 @@ export function validateRawComplexTypeProperties(context: SemanticContext, typeI
         if (kind !== undefined && result.node.kind !== kind) return fail('raw-type-reference-role');
         return result.node;
       };
-      const reference = (value: Reference, simple = false): string => {
+      const reference = (value: SemanticTypeReference, simple = false): string => {
         b.chargeWork(3);
-        const result = context.resolve(value);
+        const result = resolveSemanticType(context, value);
         if (result.kind === 'builtin') {
           if (simple && result.name.local === 'anyType') return fail('raw-type-content-role');
-          b.chargeWork(result.name.namespace.length + result.name.local.length + 2);
-          return `${result.name.namespace}#${result.name.local}`;
+          return semanticTypeKey(context, result.identity);
         }
-        if (result.kind !== 'found') return fail(`raw-type-${result.kind}`, true);
-        if (result.node.kind !== 'simpleType' && (!simple && result.node.kind !== 'complexType'))
-          return fail('raw-type-reference-role');
+        if (result.kind === 'original-generated') return semanticTypeKey(context, result.identity);
+        if (result.kind === 'wrong-role') return fail('raw-type-reference-role');
+        if (result.kind !== 'component') return fail(`raw-type-${result.kind}`, true);
         if (simple && result.node.kind !== 'simpleType') return fail('raw-type-content-role');
-        return result.node.id;
+        return semanticTypeKey(context, result.identity);
       };
       const methods = (value: readonly string[]): void => {
         b.chargeWork(2);
@@ -78,8 +79,14 @@ export function validateRawComplexTypeProperties(context: SemanticContext, typeI
       if (derivation.method !== (owner.derivation?.kind ?? 'restriction'))
         return fail('raw-type-derivation');
       const base = reference(derivation.base);
-      const canonicalBase = owner.derivation ? reference(owner.derivation.base) : `${XSD_NAMESPACE}#anyType`;
-      if (b.compareText(base, canonicalBase) !== 0) return fail('raw-type-derivation');
+      const ur: Reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anyType'}};
+      // Canonical Reference cannot encode the private scalar slot. That explicit
+      // semantic base replaces only the unrepresentable source placeholder;
+      // ordinary bases retain the existing representation-coherence check.
+      if (derivation.base.kind !== 'original-generated') {
+        const canonicalBase = owner.derivation ? reference(owner.derivation.base) : reference(ur);
+        if (b.compareText(base, canonicalBase) !== 0) return fail('raw-type-derivation');
+      }
       const content = raw.content;
       switch (content.kind) {
         case 'empty': break;
@@ -87,7 +94,7 @@ export function validateRawComplexTypeProperties(context: SemanticContext, typeI
         case 'mixed': case 'element-only':
           node(content.particle, 'particle'); break;
         case 'opaque-builtin':
-          if (reference(content.type) !== `${XSD_NAMESPACE}#anyType`) return fail('raw-type-content');
+          if (b.compareText(reference(content.type), reference(ur)) !== 0) return fail('raw-type-content');
           break;
       }
       b.chargeWork(); const uses = new Set<string>();

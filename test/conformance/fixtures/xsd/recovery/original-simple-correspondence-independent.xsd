@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:original-simple-properties"
+           xmlns:p="urn:recovery:facet-value" xmlns:q="urn:recovery:facet-value"
+           targetNamespace="urn:recovery:original-simple-properties">
+  <xs:simpleType name="Empty"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="PeerEmpty"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="MinOne"><xs:restriction base="xs:string"><xs:minLength value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="FinalSet" final="list union"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="DecimalOne"><xs:restriction base="xs:decimal"><xs:enumeration value="+01"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameOne"><xs:restriction base="xs:QName"><xs:enumeration value="p:Item"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="List"><xs:list itemType="t:Empty"/></xs:simpleType>
+  <xs:simpleType name="Union"><xs:union memberTypes="t:Empty t:MinOne"/></xs:simpleType>
+  <xs:simpleType name="Annotated"><xs:restriction base="xs:string"><xs:minLength value="1"><xs:annotation><xs:documentation>Retained original facet annotation.</xs:documentation></xs:annotation></xs:minLength></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ReplacedAnnotation"><xs:restriction base="t:Annotated"><xs:minLength value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="PatternAnnotation"><xs:restriction base="xs:string"><xs:pattern value="a"><xs:annotation><xs:documentation>Inherited pattern annotation.</xs:documentation></xs:annotation></xs:pattern></xs:restriction></xs:simpleType>
+  <xs:simpleType name="PatternAnnotationChild"><xs:restriction base="t:PatternAnnotation"><xs:pattern value="a|b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumAnnotation"><xs:restriction base="xs:string"><xs:enumeration value="a"><xs:annotation><xs:documentation>Inherited enumeration annotation.</xs:documentation></xs:annotation></xs:enumeration></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumAnnotationChild"><xs:restriction base="t:EnumAnnotation"><xs:enumeration value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Multi"><xs:restriction base="xs:string"><xs:pattern value="a"/><xs:pattern value="b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="AnnotatedMultiPattern"><xs:restriction base="xs:string"><xs:pattern value="a"><xs:annotation><xs:documentation>One branch annotation.</xs:documentation></xs:annotation></xs:pattern><xs:pattern value="b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="AnnotatedMultiEnum"><xs:restriction base="xs:string"><xs:enumeration value="a"><xs:annotation><xs:documentation>One value annotation.</xs:documentation></xs:annotation></xs:enumeration><xs:enumeration value="b"/></xs:restriction></xs:simpleType>
+  <xs:element name="Anonymous"><xs:simpleType><xs:restriction base="xs:string"/></xs:simpleType></xs:element>
+  <xs:complexType name="B"><xs:simpleContent><xs:extension base="xs:string"><xs:attribute name="a" type="t:Empty"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:complexType name="D"><xs:simpleContent><xs:extension base="t:B"/></xs:simpleContent></xs:complexType>
+</xs:schema>

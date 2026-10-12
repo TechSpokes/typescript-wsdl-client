@@ -104,6 +104,9 @@ The shared facet owner retains every applicable restriction check and facet anno
 Extension inherits the exact generated identity, while repeated references share the component belonging to their original restriction slot.
 The private property view preserves source-construction and scalar prerequisites; raw scalars still require their explicit complete abstract properties.
 No invented XML simpleType, namespace declaration, public graph role or persisted representation supplies these facts.
+Internal semantic references make the original slot available wherever a scalar reference is required, with separate context-qualified construction receipts and dependency closure.
+Slot membership is independent of the containing complex type's membership, but suppressed source syntax does not create a slot and fresh source labels cannot create one.
+An authentic original facet binding preserves original component properties without transferring their legality into a changed hypothetical context.
 
 These are selected project interpretations, not retroactive claims that the dated primary text uniquely determines the choices.
 Independent multi-pattern expression mapping and arbitrary repeated facet-component reduction retain their separately recorded interpretation boundaries.
@@ -124,6 +127,9 @@ Resource interruption produces no accepted root, and legal recursive component r
 The concrete [finite verifier](../src/compiler/finiteRe01Verification.ts) implements this induction over supplied evidence using privately authenticated context, correspondence and component receipts.
 It emits `checked-candidate` only after actual obligations and every generated hypothetical prerequisite are discharged; retained unresolved local cases cannot pass.
 The [independent controls](../test/unit/re01-candidate-independent.test.ts) include original typed AUs, a complete candidate, genuine nested helper evidence, missing child evidence, changed scalar properties, proof cycles and authentication boundaries.
+The [generated-scalar controls](../test/unit/schema-original-generated-binding-independent.test.ts) add an actual extension D of a restriction R whose anonymous scalar must survive the hypothetical rebase.
+The supplied E extends the designated `anySimpleType` ancestor, and D′ restricts E while retaining R's exact original scalar slot and AU properties.
+The verifier records that slot's own actual and hypothetical construction evidence; a separately generated equal scalar cannot replace its identity.
 
 Finite-evidence soundness does not establish evidence-family adequacy.
 A successful arbitrary witness has not been proved to admit such finite acyclic evidence, and rejecting supplied cyclic evidence proves neither invalid XSD nor witness nonexistence.

@@ -17,7 +17,9 @@ type LiteralProgram = Readonly<{atoms: readonly LiteralAtom[]; root: number}>;
 export function schemaPatterns<Owner>(c: SchemaPatternContext<Owner>) {return createSchemaPatterns(c, false);}
 /** Closed assessment-schema consumer; this does not widen the application profile. */
 export function fixedS4SPatterns<Owner>(c: SchemaPatternContext<Owner>) {return createSchemaPatterns(c, true);}
-function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchemaNames: boolean) {
+/** Private original builtin facet-component consumer; caller patterns keep their profile. */
+export function intrinsicBuiltinPatterns<Owner>(c: SchemaPatternContext<Owner>) {return createSchemaPatterns(c, true, true);}
+function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchemaNames: boolean, intrinsicNames = false) {
   // Separate privately captured records: mutating an exposed plan cannot
   // manufacture literal-language authority or alter these compiled facts.
   const literalPrograms = new WeakMap<SchemaPattern, LiteralProgram>();
@@ -63,6 +65,14 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
       return invalid();
     };
     const characterClass = (): string => {
+      if(intrinsicNames){
+        c.step(owner,20);
+        const start=source.startsWith("[\\i-[:]]",i), character=source.startsWith("[\\c-[:]]",i);
+        if(start||character){
+          const range=start?XML_NAME_RANGES.start:XML_NAME_RANGES.character;
+          c.step(owner,range.length+12);i+=8;return `(?!:)[${range}]`;
+        }
+      }
       i++; let body = "", negative = false;
       if (source[i] === "^") {negative = true; i++;}
       let count = 0, canEndRange = false, rangeEnd = false;

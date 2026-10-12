@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:original-generated-binding" targetNamespace="urn:recovery:original-generated-binding">
+  <xs:complexType name="Base"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Host"><xs:sequence><xs:element name="hidden" minOccurs="0" maxOccurs="0"><xs:complexType><xs:simpleContent><xs:restriction base="t:Base"><xs:minLength value="-1"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element></xs:sequence></xs:complexType>
+</xs:schema>

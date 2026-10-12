@@ -1,5 +1,5 @@
 /** Schema operand values only: facets/defaults/fixed, never application payloads. */
-import type {Reference} from "./canonicalGraph.js";
+import type {SemanticTypeReference as Reference} from "./semanticTypeReference.js";
 import type {SchemaLexicalOperand, SchemaValueContext} from "./schemaValueContext.js";
 import type {SyntaxSource} from '../loader/orderedSyntax.js';
 import {isXmlNCName, isXmlName, isXmlNmtoken} from "../loader/orderedSyntax.js";

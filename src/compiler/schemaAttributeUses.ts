@@ -17,6 +17,9 @@ import {checkDeclaration} from './schemaDeclarationPrimitives.js';
 import type {DeclarationReceipt} from './schemaDeclarationPrimitives.js';
 import {namespaceAllows, namespaceExpressible, namespaceIntersection, namespaceSubset, namespaceUnion, processContentsRestricts, wildcardNamespaces} from './wildcardAlgebra.js';
 import type {NamespaceConstraint, WildcardProcess} from './wildcardAlgebra.js';
+import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
+import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 
 export type TypedAttributeConstraint = Readonly<{kind: 'fixed' | 'default'; origin: 'use' | 'declaration'; value: AssessedSchemaOperand}>;
 export type OriginalAttributeUse = Readonly<{
@@ -35,21 +38,24 @@ export type SourceAttributePlan = Readonly<{
   schemaOperands: readonly OriginalAttributeUse[];
   declarations: readonly DeclarationReceipt[];
 }>;
-export type AttributeFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'unsupported-capability' | 'unresolved'; rule: string; component: NodeId; source?: SyntaxSource; message: string}>;
+export type AttributeFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'unsupported-capability' | 'unresolved'; rule: string; component: NodeId; source?: SyntaxSource; contextId?: string; message: string}>;
 export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2'; value: SourceAttributePlan;
-  obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]}> | AttributeFailure | ResourceLimitFailure;
+  obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}> | AttributeFailure | ResourceLimitFailure;
 type Container = ComplexTypeNode | Extract<GraphNode, {kind: 'attributeGroup'}>;
 type AttributeRole = 'source' | 'raw';
 type DeclarationFact = Readonly<{
   receipt: DeclarationReceipt; value: TypedAttributeConstraint | undefined;
   scalarObligations: readonly ScalarObligation[];
+  typeDependencies: readonly SemanticTypeDependency[];
 }>;
 type AttributeUseFact = Readonly<{
   kind: 'present'; value: OriginalAttributeUse; declaration: DeclarationFact;
   scalarObligations: readonly ScalarObligation[];
+  typeDependencies: readonly SemanticTypeDependency[];
 } | {
   kind: 'absent'; declaration?: DeclarationFact;
   scalarObligations: readonly ScalarObligation[];
+  typeDependencies: readonly SemanticTypeDependency[];
 }>;
 type AttributeFactCache = Readonly<{
   declarations: Map<NodeId, DeclarationFact>; uses: Map<NodeId, AttributeUseFact>;
@@ -71,6 +77,7 @@ export function assessAttributeUse(context: SemanticContext, useId: NodeId): Att
   assertSemanticContext(context);
   const result = assessAttributeUses(context, useId, context.kind === 'actual' ? 'source' : 'raw', true);
   return context.kind === 'candidate' && result.kind === 'invalid-schema' ? context.budget.guard(() => {
+    if (result.contextId !== undefined && result.contextId === context.originalContext().contextId) return result;
     context.budget.chargeWork(8); return Object.freeze({...result, kind: 'candidate-rejected' as const});
   }) : result;
 }
@@ -79,6 +86,7 @@ export function assessAttributeUse(context: SemanticContext, useId: NodeId): Att
 export function assessRawAttributeUses(context: SemanticContext, ownerId: NodeId): AttributeResult {
   const result = assessAttributeUses(context, ownerId, 'raw');
   return result.kind === 'invalid-schema' ? context.budget.guard(() => {
+    if (result.contextId !== undefined && result.contextId === context.originalContext().contextId) return result;
     context.budget.chargeWork(8); return Object.freeze({...result, kind: 'candidate-rejected' as const});
   }) : result;
 }
@@ -105,28 +113,38 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
       return found.node;
     };
     const scalar = createSchemaScalarKernel(context);
+    const typeDependencies = collectSemanticTypeDependencies(context);
     charge(); const scalarObligations: ScalarObligation[] = [];
-    const unwrap = <T>(result: ScalarResult<T> | RelationResult<T>, node: GraphNode, obligations = scalarObligations): T => {
+    const unwrap = <T>(result: ScalarResult<T> | RelationResult<T>, node: GraphNode, obligations = scalarObligations, dependencies = typeDependencies): T => {
       if (result.kind === 'checked') {
+        dependencies.add(result.typeDependencies);
         if (result.authority === 'XSD10-schema-scalars-DT01-A-v1') {
           for (const obligation of result.obligations) {charge(); obligations.push(obligation);}
         }
         return result.value;
       }
       if (result.kind === 'resource-limit') throw new AttributeAbort(result);
-      return problem(node, result.rule, result.message, result.kind === 'invalid-input' ? 'invalid-schema' : result.kind);
+      // Preserve the shared owner's diagnostic origin. An original datatype's
+      // formation failure is distinct from a candidate operand failing that
+      // valid datatype; only the scalar owner can identify that distinction.
+      charge(9);
+      throw new AttributeAbort(Object.freeze({kind: result.kind === 'invalid-input' ? 'invalid-schema' : result.kind,
+        rule: result.rule, message: result.message, component: result.component ?? node.id,
+        source: 'source' in result ? result.source : node.context.source,
+        ...('contextId' in result && result.contextId !== undefined ? {contextId: result.contextId} : {})}));
     };
     const nameKey = (name: ExpandedName): string => {
       charge(8 + 2 * (name.namespace.length + name.local.length)); return JSON.stringify([name.namespace, name.local]);
     };
-    const typed = (declaration: AttributeNode, constraint: ValueConstraint | undefined, owner: GraphNode, origin: 'use' | 'declaration', obligations = scalarObligations): TypedAttributeConstraint | undefined => {
+    const typed = (declaration: AttributeNode, constraint: ValueConstraint | undefined, owner: GraphNode, origin: 'use' | 'declaration', obligations = scalarObligations, dependencies = typeDependencies): TypedAttributeConstraint | undefined => {
       if (!constraint) return undefined;
-      unwrap(scalar.checkValue(declaration.type, constraint, owner.id), owner, obligations);
-      const value = unwrap(scalar.assess(declaration.type, constraint.lexical, owner.id), owner, obligations);
+      const type = declaredType(context, declaration);
+      unwrap(scalar.checkValue(type, constraint, owner.id), owner, obligations, dependencies);
+      const value = unwrap(scalar.assess(type, constraint.lexical, owner.id), owner, obligations, dependencies);
       charge(5); return Object.freeze({kind: constraint.kind, origin, value});
     };
-    const equal = (a: TypedAttributeConstraint, b: TypedAttributeConstraint, owner: GraphNode, obligations = scalarObligations): boolean => unwrap(
-      scalar.equivalent(a.value.type, a.value.lexical, b.value.type, b.value.lexical, owner.id), owner, obligations);
+    const equal = (a: TypedAttributeConstraint, b: TypedAttributeConstraint, owner: GraphNode, obligations = scalarObligations, dependencies = typeDependencies): boolean => unwrap(
+      scalar.equivalent(a.value.type, a.value.lexical, b.value.type, b.value.lexical, owner.id), owner, obligations, dependencies);
     const asContainer = (node: GraphNode): Container => {
       if (node.kind !== 'complexType' && node.kind !== 'attributeGroup') return problem(node, 'src-attribute-group', 'Expected a type or attribute group');
       return node;
@@ -154,10 +172,11 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         const checked = checkDeclaration(context, node.id);
         if (checked.kind !== 'checked') throw new AttributeAbort(checked);
         charge(); const obligations: ScalarObligation[] = [];
-        unwrap(scalar.describe(node.type, node.id), node, obligations);
-        const value = typed(node, node.value, node, 'declaration', obligations);
+        const dependencies = collectSemanticTypeDependencies(context); dependencies.add(checked.typeDependencies);
+        unwrap(scalar.describe(declaredType(context, node), node.id), node, obligations, dependencies);
+        const value = typed(node, node.value, node, 'declaration', obligations, dependencies);
         charge(10 + obligations.length + node.id.length);
-        const fact = Object.freeze({receipt: checked, value, scalarObligations: Object.freeze(obligations)});
+        const fact = Object.freeze({receipt: checked, value, scalarObligations: Object.freeze(obligations), typeDependencies: dependencies.snapshot()});
         cached.declarations.set(node.id, fact); return fact;
       };
       const replay = (fact: AttributeUseFact): OriginalAttributeUse | undefined => {
@@ -168,9 +187,11 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           if (!declarationEvidence.has(id)) {
             charge(2 + id.length); declarationEvidence.set(id, dependency.receipt);
             for (const obligation of dependency.scalarObligations) {charge(2); scalarObligations.push(obligation);}
+            typeDependencies.add(dependency.typeDependencies);
           }
         }
         for (const obligation of fact.scalarObligations) {charge(2); scalarObligations.push(obligation);}
+        typeDependencies.add(fact.typeDependencies);
         return fact.kind === 'present' ? fact.value : undefined;
       };
       const use = (node: AttributeUseNode): OriginalAttributeUse | undefined => {
@@ -188,7 +209,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         let fact: AttributeUseFact;
         if (node.use === 'prohibited') {
           const dependency = attribute.identity.kind === 'global' ? declaration(attribute) : undefined;
-          charge(9); fact = Object.freeze({kind: 'absent', declaration: dependency, scalarObligations: Object.freeze([])});
+          charge(10); fact = Object.freeze({kind: 'absent', declaration: dependency, scalarObligations: Object.freeze([]), typeDependencies: Object.freeze([])});
         } else {
           // Retain the complete dependency even when another AU has already
           // replayed it in this invocation. Ambient inventory deltas are not a
@@ -196,12 +217,13 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           const dependency = declaration(attribute), declared = dependency.value;
           if (role === 'source' && node.value?.kind === 'default' && node.use !== 'optional') return problem(node, 'src-attribute.2', 'An explicit source default requires an optional use');
           charge(); const obligations: ScalarObligation[] = [];
-          const own = typed(attribute, node.value, node, 'use', obligations);
-          if (own && declared?.kind === 'fixed' && (own.kind !== 'fixed' || !equal(own, declared, node, obligations))) return problem(node, 'au-props-correct.2', 'Use constraint disagrees with declaration fixed value');
+          const dependencies = collectSemanticTypeDependencies(context);
+          const own = typed(attribute, node.value, node, 'use', obligations, dependencies);
+          if (own && declared?.kind === 'fixed' && (own.kind !== 'fixed' || !equal(own, declared, node, obligations, dependencies))) return problem(node, 'au-props-correct.2', 'Use constraint disagrees with declaration fixed value');
           charge(9);
           const value = Object.freeze({id: node.id, declaration: attribute, source: node, required: node.use === 'required', own, declared, effective: own ?? declared});
           charge(11 + obligations.length);
-          fact = Object.freeze({kind: 'present', value, declaration: dependency, scalarObligations: Object.freeze(obligations)});
+          fact = Object.freeze({kind: 'present', value, declaration: dependency, scalarObligations: Object.freeze(obligations), typeDependencies: dependencies.snapshot()});
         }
         const result = replay(fact);
         // Publish only after the entire local evaluation and evidence replay
@@ -225,7 +247,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           const k = nameKey(item.declaration.name), previous = names.get(k);
           if (previous && (owner.kind === 'attributeGroup' || previous.declaration.id !== item.declaration.id)) return problem(owner,
             owner.kind === 'attributeGroup' ? 'ag-props-correct.2' : 'ct-props-correct.4', 'Distinct members violate declaration uniqueness');
-          if (unwrap(checkTypeDerivation(context, item.declaration.type, idType, []), owner)) {
+          if (unwrap(checkTypeDerivation(context, declaredType(context, item.declaration), idType, []), owner)) {
             charge(); ids.add(owner.kind === 'attributeGroup' ? item.id : item.declaration.id);
             if (ids.size > 1) return problem(owner, owner.kind === 'attributeGroup' ? 'ag-props-correct.3' : 'ct-props-correct.5', 'Multiple ID-derived members');
           }
@@ -267,14 +289,14 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         return Object.freeze({kind: 'checked' as const, contextId: context.contextId,
           authority: role === 'source' ? 'AU01-C1-source-v1' as const : 'AU01-C1-raw-v2' as const,
           value, obligations: Object.freeze(['owning-type-or-group-validity', ...(role === 'source' ? ['source-representation-syntax'] : [])]),
-          scalarObligations: Object.freeze(scalarObligations)});
+          scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
       }
       const root = asContainer(requested);
-      const replacementFailure = (item: OriginalAttributeUse, original: OriginalAttributeUse, obligations = scalarObligations): Readonly<{rule: string; message: string}> | undefined => {
+      const replacementFailure = (item: OriginalAttributeUse, original: OriginalAttributeUse, obligations = scalarObligations, dependencies = typeDependencies): Readonly<{rule: string; message: string}> | undefined => {
         charge();
         if (original.required && !item.required) {charge(4); return {rule: 'derivation-ok-restriction.2.1.1', message: 'Replacement weakens required base use'};}
-        if (!unwrap(checkTypeDerivation(context, item.declaration.type, original.declaration.type, []), item.source, obligations)) {charge(4); return {rule: 'derivation-ok-restriction.2.1.2', message: 'Replacement type does not derive from original type'};}
-        if (original.effective?.kind === 'fixed' && (item.effective?.kind !== 'fixed' || !equal(original.effective, item.effective, item.source, obligations))) {charge(4); return {rule: 'derivation-ok-restriction.2.1.3', message: 'Replacement fails an original fixed constraint'};}
+        if (!unwrap(checkTypeDerivation(context, declaredType(context, item.declaration), declaredType(context, original.declaration), []), item.source, obligations, dependencies)) {charge(4); return {rule: 'derivation-ok-restriction.2.1.2', message: 'Replacement type does not derive from original type'};}
+        if (original.effective?.kind === 'fixed' && (item.effective?.kind !== 'fixed' || !equal(original.effective, item.effective, item.source, obligations, dependencies))) {charge(4); return {rule: 'derivation-ok-restriction.2.1.3', message: 'Replacement fails an original fixed constraint'};}
         return undefined;
       };
       const checkReplacement = (item: OriginalAttributeUse, original: OriginalAttributeUse): void => {
@@ -298,22 +320,25 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           const value = Object.freeze({owner: root.id, uses, attributes: presence(uses, root), wildcard,
             schemaOperands: uses, declarations: Object.freeze([...declarationEvidence.values()])});
           return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-raw-v2' as const,
-            value, obligations: Object.freeze(['aggregate-group-validity', 'raw-group-property-correspondence']), scalarObligations: Object.freeze(scalarObligations)});
+            value, obligations: Object.freeze(['aggregate-group-validity', 'raw-group-property-correspondence']), scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
         }
-        const sameType = (a: Reference, b: Reference, owner: GraphNode): boolean => {
-          const x = context.resolve(a), y = context.resolve(b);
-          if (x.kind !== 'found' && x.kind !== 'builtin' || y.kind !== 'found' && y.kind !== 'builtin') return problem(owner, 'src-resolve', 'Attribute type identity is unavailable', 'unresolved');
-          charge(4);
-          return x.kind === 'builtin' ? y.kind === 'builtin' && x.name.namespace === y.name.namespace && x.name.local === y.name.local : y.kind === 'found' && x.node.id === y.node.id;
+        const sameType = (a: SemanticTypeReference, b: SemanticTypeReference, owner: GraphNode): boolean => {
+          const x = resolveSemanticType(context, a), y = resolveSemanticType(context, b);
+          if (!('identity' in x) || !('identity' in y)) return problem(owner, 'src-resolve', 'Attribute type identity is unavailable', 'unresolved');
+          charge(7);
+          typeDependencies.add([{contextId: context.contextId, type: x.identity}, {contextId: context.contextId, type: y.identity}]);
+          return budget.compareText(semanticTypeKey(context, x.identity), semanticTypeKey(context, y.identity)) === 0;
         };
         charge(3); const stack: ComplexTypeNode[] = [root], active = new Set<NodeId>();
         while (stack.length) {
           charge(); const node = stack[stack.length - 1]!;
           const raw = context.rawTypeProperties(node.id);
           if (!raw) return problem(node, 'raw-type-properties', 'Complete literal attribute properties are required', 'unresolved');
-          const baseResolution = context.resolve(raw.derivation.base);
-          if (baseResolution.kind !== 'found' && baseResolution.kind !== 'builtin') return problem(node, 'src-resolve', 'Literal base is unavailable', 'unresolved');
-          const baseNode = baseResolution.kind === 'found' ? baseResolution.node : undefined;
+          const baseResolution = resolveSemanticType(context, raw.derivation.base);
+          if (!('identity' in baseResolution)) return problem(node, 'src-resolve', 'Literal base is unavailable', 'unresolved');
+          charge(4);
+          typeDependencies.add([{contextId: context.contextId, type: baseResolution.identity}]);
+          const baseNode = baseResolution.kind === 'component' ? baseResolution.node : undefined;
           if (baseNode && baseNode.kind !== 'complexType' && baseNode.kind !== 'simpleType') return problem(node, 'raw-type-properties', 'Base must be a type');
           if (baseNode?.kind === 'complexType' && !plans.has(baseNode.id)) {
             charge(2);
@@ -336,7 +361,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
             for (const original of base?.uses ?? []) {
               let matched = false;
               for (const item of uses) {
-                if (nameKey(item.declaration.name) === nameKey(original.declaration.name) && sameType(item.declaration.type, original.declaration.type, node)) matched = true;
+                if (nameKey(item.declaration.name) === nameKey(original.declaration.name) && sameType(declaredType(context, item.declaration), declaredType(context, original.declaration), node)) matched = true;
               }
               if (!matched) return problem(node, 'cos-ct-extends.1.2', 'Literal extension omits a base attribute name/type match');
             }
@@ -347,16 +372,17 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
             for (const item of uses) {
               let matched = false, compatible = false;
               let failure: ReturnType<typeof replacementFailure>;
-              let pending: AttributeFailure | undefined, qualified: readonly ScalarObligation[] | undefined;
+              let pending: AttributeFailure | undefined, qualified: Readonly<{obligations: readonly ScalarObligation[]; dependencies: readonly SemanticTypeDependency[]}> | undefined;
               const k = nameKey(item.declaration.name);
               for (const original of base?.uses ?? []) if (k === nameKey(original.declaration.name)) {
                 matched = true;
                 charge(); const pairObligations: ScalarObligation[] = [];
+                const pairDependencies = collectSemanticTypeDependencies(context);
                 try {
-                  const next = replacementFailure(item, original, pairObligations);
+                  const next = replacementFailure(item, original, pairObligations, pairDependencies);
                   if (next) failure ??= next;
-                  else if (pairObligations.length === 0) {compatible = true; break;}
-                  else qualified ??= pairObligations;
+                  else if (pairObligations.length === 0) {typeDependencies.add(pairDependencies.snapshot()); compatible = true; break;}
+                  else if (!qualified) {charge(3); qualified = {obligations: pairObligations, dependencies: pairDependencies.snapshot()};}
                 } catch (error) {
                   if (!(error instanceof AttributeAbort) || error.result.kind !== 'unresolved' && error.result.kind !== 'unsupported-capability') throw error;
                   pending ??= error.result;
@@ -368,7 +394,8 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
               // complete obligations for the aggregate checker to discharge.
               // Mapped declaration/AU debts remain independently in the receipt.
               if (!compatible && qualified) {
-                for (const obligation of qualified) {charge(2); scalarObligations.push(obligation);}
+                for (const obligation of qualified.obligations) {charge(2); scalarObligations.push(obligation);}
+                typeDependencies.add(qualified.dependencies);
                 compatible = true;
               }
               if (!compatible) {
@@ -387,7 +414,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           plans.set(node.id, plan); active.delete(node.id); stack.pop();
         }
         charge(10 + scalarObligations.length); return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-raw-v2' as const,
-          value: plans.get(root.id)!, obligations: Object.freeze(['aggregate-type-validity', 'raw-type-property-correspondence']), scalarObligations: Object.freeze(scalarObligations)});
+          value: plans.get(root.id)!, obligations: Object.freeze(['aggregate-type-validity', 'raw-type-property-correspondence']), scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
       }
       const dependencies = (node: Container): Container[] => {
         charge(); const result: Container[] = [];
@@ -465,7 +492,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         plans.set(node.id, plan); stack.pop();
       }
       charge(10 + scalarObligations.length); return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-source-v1' as const,
-        value: plans.get(root.id)!, obligations: Object.freeze(['aggregate-type-validity', 'source-representation-syntax'] as const), scalarObligations: Object.freeze(scalarObligations)});
+        value: plans.get(root.id)!, obligations: Object.freeze(['aggregate-type-validity', 'source-representation-syntax'] as const), scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
     } catch (error) {
       if (error instanceof AttributeAbort) return error.result;
       throw error;

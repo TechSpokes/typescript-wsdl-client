@@ -2,11 +2,13 @@
 import type {NodeId, Reference} from './canonicalGraph.js';
 import type {NamespaceConstraint, WildcardProcess} from './wildcardAlgebra.js';
 import type {SemanticBudget} from './semanticBudget.js';
+import {assertSemanticTypeReferenceShape} from './semanticTypeReference.js';
+import type {SemanticTypeReference} from './semanticTypeReference.js';
 
 export const RE01_DERIVATION_DOMAIN = 'RE01-derivation-B-v1' as const;
 export type ComplexDerivationMethod = 'extension' | 'restriction';
 export type RawComplexContent = Readonly<
-  {kind: 'empty'} | {kind: 'simple'; type: Reference} |
+  {kind: 'empty'} | {kind: 'simple'; type: SemanticTypeReference} |
   {kind: 'mixed' | 'element-only'; particle: NodeId} |
   {kind: 'opaque-builtin'; type: Reference}
 >;
@@ -20,7 +22,7 @@ export type RawComplexTypeProperties = Readonly<{
   /** Explicit semantic namespace for anonymous helpers; empty means absent.
    * Omission supplies no namespace fact for a fresh scoped helper. */
   targetNamespace?: string;
-  derivation: Readonly<{base: Reference; method: ComplexDerivationMethod}>;
+  derivation: Readonly<{base: SemanticTypeReference; method: ComplexDerivationMethod}>;
   abstract: boolean;
   final: readonly ComplexDerivationMethod[];
   block: readonly ComplexDerivationMethod[];
@@ -64,6 +66,9 @@ export function assertRawComplexTypeShape(value: unknown, budget: SemanticBudget
   };
   const method = (v: unknown): void => {budget.chargeWork(); if (v !== 'restriction' && v !== 'extension') fail();};
   const reference = (v: unknown): void => {
+    assertSemanticTypeReferenceShape(v, budget);
+    const kind = object(v, ['kind', 'owner', 'target', 'name', 'role', 'lexical']);
+    if (kind['kind'] === 'original-generated') {id(kind['owner']); return;}
     const r = object(v, ['kind', 'target', 'name', 'role', 'lexical']);
     if (r['kind'] === 'local') {id(r['target']); return;}
     if (r['kind'] !== 'symbol' && r['kind'] !== 'builtin') return fail();

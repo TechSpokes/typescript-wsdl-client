@@ -7,11 +7,14 @@ import type {RelationFailure} from './schemaTypeRelations.js';
 import {checkElementDeclarationsConsistent} from './particleDeclarationConsistency.js';
 import {checkParticleAttribution} from './particleAttribution.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import type {SemanticTypeDependency} from './semanticTypeReference.js';
 
 export type ParticleLocalResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'particle-local-legality'; contextId: string;
   failedRule?: 'cos-all-limited' | 'cos-element-consistent' | 'cos-nonambig'; component?: string;
   obligations: readonly ['component-validity'];
+  typeDependencies: readonly SemanticTypeDependency[];
 }> | RelationFailure | ResourceLimitFailure;
 class Incomplete extends Error {constructor(readonly result: RelationFailure | ResourceLimitFailure) {super(result.kind);}}
 
@@ -19,9 +22,11 @@ export function checkDeclaredParticleLegality(context: SemanticContext, view: Se
   assertSemanticParticleView(context, view);
   const budget = context.budget, charge = (n = 1) => budget.chargeWork(n);
   return budget.guard(() => {
+    const typeDependencies = collectSemanticTypeDependencies(context);
+    typeDependencies.add(view.typeDependencies);
     const result = (value: boolean, failedRule?: Extract<ParticleLocalResult, {kind: 'checked'}>['failedRule'], component?: string): ParticleLocalResult => {
       charge(14); return Object.freeze({kind: 'checked', value, rule: 'particle-local-legality', contextId: context.contextId,
-        failedRule, component, obligations: Object.freeze(['component-validity'] as const)});
+        failedRule, component, obligations: Object.freeze(['component-validity'] as const), typeDependencies: typeDependencies.snapshot()});
     };
     const unresolved = (component: string, message: string): never => {
       charge(10 + component.length + message.length);
@@ -55,9 +60,11 @@ export function checkDeclaredParticleLegality(context: SemanticContext, view: Se
       }
       const edc = checkElementDeclarationsConsistent(context, edcRoots);
       if (edc.kind !== 'checked') return edc;
+      typeDependencies.add(edc.typeDependencies);
       if (!edc.value) return result(false, 'cos-element-consistent', edc.conflict?.[1]);
       const attribution = checkParticleAttribution(context, view);
       if (attribution.kind !== 'checked') return attribution;
+      typeDependencies.add(attribution.typeDependencies);
       if (!attribution.value) return result(false, 'cos-nonambig', attribution.component);
       return result(true);
     } catch (error: unknown) {if (error instanceof Incomplete) return error.result; throw error;}

@@ -12,19 +12,23 @@ import {wildcardNamespaces} from './wildcardAlgebra.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import type {SemanticTypeDependency} from './semanticTypeReference.js';
 
 export type ParticleExtensionResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-particle-extend'; contextId: string;
   obligations: readonly ['component-validity'];
+  typeDependencies: readonly SemanticTypeDependency[];
 }> | RelationFailure | ScalarFailure | AttributeFailure | ResourceLimitFailure;
 
 export function checkRawParticleExtension(context: SemanticContext, derived: ParticleContentView, base: ParticleContentView): ParticleExtensionResult {
   assertParticleContentView(context, derived); assertParticleContentView(context, base);
   const budget = context.budget, charge = (n = 1) => budget.chargeWork(n);
   return budget.guard(() => {
+    const typeDependencies = collectSemanticTypeDependencies(context);
     const done = (value: boolean): ParticleExtensionResult => {
       charge(10); return Object.freeze({kind: 'checked', value, rule: 'cos-particle-extend', contextId: context.contextId,
-        obligations: Object.freeze(['component-validity'] as const)});
+        obligations: Object.freeze(['component-validity'] as const), typeDependencies: typeDependencies.snapshot()});
     };
     const unresolved = (rule: string, component: string, message: string): ParticleExtensionResult => {
       charge(10 + rule.length + component.length + message.length);
@@ -33,10 +37,13 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
     try {
       const extension = prepareSemanticParticleView(context, derived, 'declared');
       if (extension.kind !== 'checked') return extension;
+      typeDependencies.add(extension.view.typeDependencies);
       const original = prepareSemanticParticleView(context, base, 'declared');
       if (original.kind !== 'checked') return original;
+      typeDependencies.add(original.view.typeDependencies);
       const legal = checkDeclaredParticleLegality(context, extension.view);
       if (legal.kind !== 'checked') return legal;
+      typeDependencies.add(legal.typeDependencies);
       if (!legal.value) return done(false);
       const e = extension.view.root, b = original.view.root;
       charge(6);
@@ -59,6 +66,7 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
           if (x.element.id !== y.element.id) {
             const same = compareComponentProperties(context, x.element, y.element);
             if (same.kind !== 'checked') return same;
+            typeDependencies.add(same.typeDependencies);
             if (!same.value) return done(false);
             charge(2 + same.obligations.length + same.scalarObligations.length);
             if (same.scalarObligations.length || same.obligations.some(rule => rule !== 'component-validity')) distinctDeclaration ??= x.element.id;

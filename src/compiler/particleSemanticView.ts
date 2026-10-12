@@ -10,6 +10,8 @@ import type {RelationFailure} from './schemaTypeRelations.js';
 import {effectiveSubstitutionMembers} from './schemaTypeRelations.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import type {SemanticTypeDependency} from './semanticTypeReference.js';
 
 type GroupKind = 'sequence' | 'choice' | 'all';
 /** Explicit positions survive flattening; only each implicit block is a set. */
@@ -26,6 +28,7 @@ export type SemanticParticle = Readonly<{
 }>;
 export type SemanticParticleView = Readonly<{
   contextId: string; content: ParticleContentView; purpose: 'declared' | 'restriction'; root: SemanticParticle;
+  typeDependencies: readonly SemanticTypeDependency[];
 }>;
 export type ParticleViewResult = Readonly<{kind: 'checked'; view: SemanticParticleView}> | RelationFailure | ResourceLimitFailure;
 const authority = new WeakMap<object, SemanticContext>();
@@ -58,6 +61,7 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
       const prior = entries.get(purpose);
       if (prior) {charge(3); return Object.freeze({kind: 'checked', view: prior});}
       if (content.content.kind === 'simple' || content.content.kind === 'opaque-builtin') return fail(content.type, 'Particle view requires empty or particle content');
+      const typeDependencies = collectSemanticTypeDependencies(context);
       const memo = new Map<NodeId, Shape | undefined>(), active = new Set<NodeId>();
       const algebra = occurrenceAlgebra(charge);
       let serial = 0;
@@ -107,6 +111,7 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
             if (context.membership !== 'complete-actual-plus-additions') return fail(node.id, 'Complete substitution universe required');
             const members = effectiveSubstitutionMembers(context, declaration.id);
             if (members.kind !== 'checked') throw new Incomplete(members);
+            typeDependencies.add(members.typeDependencies);
             charge(1 + members.value.length);
             if (members.value.some(id => id !== declaration.id)) {
               charge(2); const virtual: Shape[] = [];
@@ -192,7 +197,7 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
         completed.set(p.id, Object.freeze({...p, origins: Object.freeze([...p.origins]), children: Object.freeze(p.children.map(child => completed.get(child.id)!)),
           orderBlocks: Object.freeze(orderBlocks), summary: summaries.get(p.id)!}));
       }
-      charge(8); const view = Object.freeze({contextId: context.contextId, content, purpose, root: completed.get(root.id)!});
+      charge(8); const view = Object.freeze({contextId: context.contextId, content, purpose, root: completed.get(root.id)!, typeDependencies: typeDependencies.snapshot()});
       authority.set(view, context); entries.set(purpose, view);
       return Object.freeze({kind: 'checked', view});
     } catch (error: unknown) {if (error instanceof Incomplete) return error.result; if (error instanceof SemanticError) {budget.chargeWork(10 + error.message.length); return Object.freeze({kind: 'invalid-input', rule: 'particle-view', component: error.component, message: error.message});} throw error;}

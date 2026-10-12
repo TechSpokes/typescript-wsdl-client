@@ -8,6 +8,9 @@ The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-r
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
 The maintainer subsequently selected [existential raw-AU matching, satisfying implicit-set order and GSC1 generated scalar properties](content-model-s06-re-01.md#selected-raw-matching-implicit-order-and-generated-scalar-properties); their implementation and exact delivery remain subject to local independent acceptance.
 The concrete finite checker verifies supplied nested evidence under that domain; complete local-owner acceptance and the universal theorem retain their separate review gates.
+Original scalar selectors and facet bindings now preserve source identities across hypothetical contexts through the same shared type, scalar, AU and particle owners.
+Generated scalar slots carry separate context-qualified construction evidence; the actual schema checks all original slots, while hypothetical closure checks consumed slots and their dependencies.
+Independent complete-property comparisons and genuine generated-scalar witnesses extend the finite checkpoint without selecting the remaining multi-pattern or repeated-facet interpretations.
 Source-owned local functions and conditional proof lemmas do not close #232/#234 or activate #179/#153.
 
 The [October 11 addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical global hypothetical-overlay characterization.
