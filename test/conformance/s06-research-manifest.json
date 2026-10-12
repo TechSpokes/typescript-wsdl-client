@@ -1891,7 +1891,7 @@
         {
           "path": "test/conformance/fixtures/xsd/recovery/original-generated-binding-independent.xsd",
           "role": "fixture",
-          "sha256": "7f59f07d365f84c9bbd0e74afe461bcf48d492d3812d638743416fe57b53877c"
+          "sha256": "60236a91a6ba4bd4e793a2f054a28baa819c0e95e2c9945a1c127730cf27ca96"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/original-generated-chameleon-independent.xsd",
@@ -1926,7 +1926,7 @@
         {
           "path": "test/unit/schema-original-generated-binding-independent.test.ts",
           "role": "expectations",
-          "sha256": "fa86242f6ab680a0fcd088d0716062d9c59dcd972f860ab6bc0cc1bcafd15f1d"
+          "sha256": "69312668e736f6d44cf1f9b32fc688fc434d6a85b08ae832a26c7ee9b04a09fe"
         },
         {
           "path": "test/unit/schema-simple-correspondence-independent.test.ts",

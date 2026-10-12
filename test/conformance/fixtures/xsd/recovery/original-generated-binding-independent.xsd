@@ -1,5 +1,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:original-generated-binding" targetNamespace="urn:recovery:original-generated-binding">
   <xs:simpleType name="Empty"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="OutsideClass"><xs:restriction base="xs:decimal"><xs:pattern value="[0]{4}1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OutsideInfinite"><xs:restriction base="xs:decimal"><xs:pattern value="0{4,}1"/></xs:restriction></xs:simpleType>
   <xs:attribute name="q" type="xs:integer"/>
   <xs:element name="value" type="xs:string"/>
   <xs:group name="PairA"><xs:sequence><xs:element name="shared" type="xs:string"/></xs:sequence></xs:group>

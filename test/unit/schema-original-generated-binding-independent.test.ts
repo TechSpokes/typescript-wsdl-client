@@ -124,6 +124,25 @@ describe('independent original generated scalar identity and closure', () => {
     }
   });
 
+  it.each(['OutsideClass', 'OutsideInfinite'] as const)('checks a supplied finite candidate whose fresh scalar needs a positive %s witness', async base => {
+    const s = await setup();
+    const fresh: SimpleTypeNode = {...s.simple('Empty'), id: id('FreshPatternConsumer'),
+      identity: {kind: 'global', role: 'type', name: {namespace, local: 'FreshPatternConsumer'}}};
+    const pattern = base === 'OutsideClass' ? '[0]{4}1' : '0{4,}1';
+    const raw: RawSimpleTypeProperties = {type: fresh.id, targetNamespace: namespace, base: named(base), final: [], variety: {kind: 'atomic'},
+      facetLayers: [{facets: [
+        {name: 'pattern', lexical: s.lexical(pattern), fixed: false},
+        {name: 'enumeration', lexical: s.lexical('1'), fixed: false,
+          operand: {type: builtin('decimal'), owner: id('D'), context: 'original'}},
+      ]}], provenance: {kind: 'hypothetical-abstract', originals: []}};
+    const context = s.candidate(slot('R'), s.request.actual.scalarSlots, [raw], [fresh]);
+    const result = verifyFiniteRe01Evidence(s.request.actual, id('D'), {root: 'root', nodes: [{id: 'root', parent: s.request.actual,
+      context, target: id('D'), intermediate: id('E'), ancestor: builtin('anySimpleType'), premises: []}]});
+    expect(result).toMatchObject({kind: 'checked-candidate', claims: {actualObligations: 'checked', suppliedCandidate: 'checked', universalCoverage: false}});
+    if (result.kind !== 'checked-candidate') throw new Error(`Expected integrated positive witness: ${JSON.stringify(result)}`);
+    expect(result.proof[0]?.components).toEqual(expect.arrayContaining([expect.objectContaining({component: fresh.id, obligations: []})]));
+  });
+
   it('rejects replacing the endpoint with another property-equal original slot', async () => {
     const s = await setup(), context = s.candidate(slot('R2'));
     const result = checkCandidateCorrespondence(s.request.actual, s.request.actual, context, id('D'), id('E'),
