@@ -64,7 +64,7 @@ export async function measureSourceOwnedPreparation(corpus: PreparationCorpus, r
   const budget = createSemanticBudget(limits), stages: StageRecord[] = [];
   const metadata = {mode: 'source-owned-actual-preparation', contract: SEMANTIC_CONTEXT_CONTRACT, acceptance: 'structural-only', limits,
     historicalComparison: 'Baseline main has no matching authenticated source-owned request API.',
-    accountingScope: 'Loader runs before the shared request with its own limits. Authenticated source binding and resolver index preparation share one cumulative SemanticBudget. Canonical build/reference resolution retain sourceLimits; their work is not fabricated as shared charges. No schema-validity, actual-obligation or candidate check is performed.'};
+    accountingScope: 'Loader runs before the shared request with its own limits. Authenticated source binding and semantic context index preparation share one cumulative SemanticBudget. Canonical build/reference resolution retain sourceLimits; their work is not fabricated as shared charges. No schema-validity, actual-obligation or candidate check is performed.'};
   try {
     const loaded = await timed('source-owned-loading', stages, () => loadSchemaInput(path.resolve(root, corpus.source), {policy: {fileRoots: [root]}}));
     const input = {originalBytes: loaded.metrics.totalBytes, resources: loaded.resources.length, interpretations: loaded.schemas.length,
