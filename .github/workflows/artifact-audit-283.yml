@@ -1,0 +1,51 @@
+name: Temporary PR 283 qualification artifact audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/artifact-audit-283.yml
+      - test/tooling/artifact-audit-283.ts
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  audit:
+    name: Inspect PR 283 qualification archives
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: audit
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          ref: bae966774a738118b93f79c853698c1da048d4b9
+          path: target
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Fetch the existing run metadata and four original ZIPs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          out=audit/tmp/conformance/artifact-audit-283
+          mkdir -p "$out"
+          gh api repos/TechSpokes/typescript-wsdl-client/actions/runs/38279558371 > "$out/run.json"
+          gh api repos/TechSpokes/typescript-wsdl-client/actions/runs/38279558371/artifacts > "$out/artifacts.json"
+          for id in 11759714657 11761160618 11761530269 11761790095; do
+            gh api "repos/TechSpokes/typescript-wsdl-client/actions/artifacts/$id/zip" > "$out/$id.zip"
+          done
+      - name: Strict typecheck the audit program
+        working-directory: audit
+        run: |
+          npm ci --ignore-scripts
+          npm run typecheck:tooling
+      - name: Audit exact uploaded bytes and archived qualification reports
+        run: node audit/test/tooling/artifact-audit-283.ts audit/tmp/conformance/artifact-audit-283 target audit
