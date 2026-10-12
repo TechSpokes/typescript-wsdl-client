@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- perf(compiler): reuse context-local type and scalar receipts while preserving finite evidence and budget checks.
+
 - fix(compiler): keep shared facet operands in their owning scalar domain and inherited constraint layer.
 
 - feat(compiler): preserve exact facet component sets and supplied annotation evidence across scalar contexts.

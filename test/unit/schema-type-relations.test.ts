@@ -75,6 +75,25 @@ describe('shared local XSD type and declaration relations', () => {
     if (repeated.kind === 'checked') expect(repeated.dependencies).not.toContain('builtin:NOTATION');
   });
 
+  it('rechecks mutable selectors and options before same-context reuse, including cyclic unused data', async () => {
+    const request = await context(), actual = request.actual;
+    const reference = {kind: 'builtin' as const, name: {namespace: XSD_NAMESPACE, local: 'int'}};
+    const first = checked(actual, reference, builtin('decimal'));
+    expect(first).toMatchObject({kind: 'checked', value: true, obligations: ['component-validity']});
+    expect(checked(actual, reference, builtin('decimal'), ['restriction'])).toMatchObject({kind: 'checked', value: false});
+    reference.name.local = 'string';
+    expect(checked(actual, reference, builtin('decimal'))).toMatchObject({kind: 'checked', value: false});
+    const scalar = createSchemaScalarKernel(actual), owner = request.graph.nodes[0].id;
+    expect(scalar.contentIdentity(reference, owner)).toMatchObject({kind: 'checked', value: {definition: 'builtin:string'}});
+    reference.name.local = 'int';
+    (reference as typeof reference & {extra?: unknown}).extra = reference;
+    expect(checked(actual, reference, builtin('decimal'))).toMatchObject({kind: 'checked', value: true});
+    expect(scalar.contentIdentity(reference, owner)).toMatchObject({kind: 'checked', value: {definition: 'builtin:int'}});
+    request.budget.guard(() => request.budget.chargeWork(50_000_000));
+    expect(checked(actual, reference, builtin('decimal'))).toBe(request.budget.failure());
+    expect(scalar.contentIdentity(reference, owner)).toBe(request.budget.failure());
+  });
+
   it('separates type identity, immediate final, excluded methods and accumulated blocks', async () => {
     const request = await context(), seed = request.graph.nodes[0];
     const base = type(seed, 'Base', undefined, 'restriction', {final: 'extension'});

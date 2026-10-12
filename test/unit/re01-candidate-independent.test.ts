@@ -25,8 +25,8 @@ type Variation = 'valid' | 'wrong-scalar' | 'lost-attribute' | 'unproved-helper'
 async function defaultFixtureInput(file: string) {
   // Identical fixture bytes and a platform-independent source URI: URI length
   // is legitimately charged, but a CI checkout path is not this test's input.
-  const origin = 'https://recovery-proof.example';
-  const uri = origin + '/finite-proof-independent.xsd', bytes = readFileSync(file);
+  const origin = 'https://capacity.example';
+  const uri = origin + '/' + path.basename(file), bytes = readFileSync(file);
   return loadSchemaInput(uri, {policy: {allowedOrigins: [origin]}, offlineResources: new Map([[uri,
     {bytes, digest: createHash('sha256').update(bytes).digest('hex')} ]])});
 }
@@ -103,8 +103,11 @@ describe('independent concrete finite RE01 proof checkpoint', () => {
 
   it.each(['valid', 'reversed-content', 'lost-wildcard'] as const)
     ('checks integrated particle, typed attribute and wildcard evidence: %s', async variation => {
-      const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/finite-particle-independent.xsd'), {policy: {fileRoots: [fixtures]}});
-      const prepared = prepareSourceSchemaRequest(input, {budget: createSemanticBudget({maxWork: 100_000_000})});
+      const file = path.join(fixtures, 'xsd/recovery/finite-particle-independent.xsd');
+      const input = variation === 'valid' ? await defaultFixtureInput(file)
+        : await loadSchemaInput(file, {policy: {fileRoots: [fixtures]}});
+      const prepared = variation === 'valid' ? prepareSourceSchemaRequest(input)
+        : prepareSourceSchemaRequest(input, {budget: createSemanticBudget({maxWork: 100_000_000})});
       if (prepared.kind !== 'prepared') throw new Error('Expected source request');
       const request = prepared.request, ns = 'urn:recovery:finite-particle';
       const id = (name: string) => globalId('type', {namespace: ns, local: name});
@@ -153,10 +156,11 @@ describe('independent concrete finite RE01 proof checkpoint', () => {
       expect(result.proof[0].primitiveNoChange).toContain(eId);
       expect(result.proof[0].components.map(component => component.component)).toEqual(expect.arrayContaining([d.id, eId, rootId]));
       expect(result.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
+      expect(request.budget.usage().work).toBeLessThanOrEqual(950_000);
     });
 
   it('checks a genuine nested helper proof in its exact parent context and records dependency order', async () => {
-    const {request, candidate, target, root} = await setup('unproved-helper');
+    const {request, candidate, target, root} = await setup('unproved-helper', 'default');
     const f = candidate.lookup(named('F')), e = candidate.lookup(named('E'));
     if (f.kind !== 'found' || f.node.kind !== 'complexType' || e.kind !== 'found' || e.node.kind !== 'complexType') throw new Error('Expected parent helpers');
     const fRaw = candidate.rawTypeProperties(f.node.id), eRaw = candidate.rawTypeProperties(e.node.id);
@@ -181,6 +185,7 @@ describe('independent concrete finite RE01 proof checkpoint', () => {
     expect(result.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
     expect(candidate.rawTypeProperties(f.node.id)?.derivation.method).toBe('extension');
     expect(child.context.rawTypeProperties(f.node.id)?.derivation.method).toBe('restriction');
+    expect(request.budget.usage().work).toBeLessThanOrEqual(990_000);
   });
 
   it('checks one typed-attribute scalar construction while keeping all universal claims false', async () => {

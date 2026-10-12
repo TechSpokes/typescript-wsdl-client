@@ -139,8 +139,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
     const typed = (declaration: AttributeNode, constraint: ValueConstraint | undefined, owner: GraphNode, origin: 'use' | 'declaration', obligations = scalarObligations, dependencies = typeDependencies): TypedAttributeConstraint | undefined => {
       if (!constraint) return undefined;
       const type = declaredType(context, declaration);
-      unwrap(scalar.checkValue(type, constraint, owner.id), owner, obligations, dependencies);
-      const value = unwrap(scalar.assess(type, constraint.lexical, owner.id), owner, obligations, dependencies);
+      const value = unwrap(scalar.assessValue(type, constraint, owner.id), owner, obligations, dependencies);
       charge(5); return Object.freeze({kind: constraint.kind, origin, value});
     };
     const equal = (a: TypedAttributeConstraint, b: TypedAttributeConstraint, owner: GraphNode, obligations = scalarObligations, dependencies = typeDependencies): boolean => unwrap(

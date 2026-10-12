@@ -121,6 +121,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     annotation===undefined?'unresolved':annotation==='absent'?'absent':'present';
   const sequences = schemaValueSequences({step: c.step,
     isInvalidSchema: (error: unknown) => error instanceof SchemaAssessmentError && error.category === 'invalid-schema'});
+  let builtinReferenceKeys:WeakMap<Reference, string>|undefined;
   const referenceKey = (reference: Reference, owner: GraphNode): string => {
     reference=normalizeReference(reference,owner);
     if (reference.kind === 'original-generated') {
@@ -129,9 +130,22 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       c.text(reference.owner, owner); return 'slot:' + reference.owner;
     }
     if (reference.kind !== "builtin") return c.target(reference, owner)!;
-    c.text(reference.name.local, owner); c.text(reference.name.namespace, owner);
-    if (reference.name.namespace !== XSD_NAMESPACE || !isBuiltinType(reference.name.local)) return c.fail(owner, "src-resolve", "Unknown builtin scalar type");
-    return `builtin:${reference.name.local}`;
+    const safe = c.context.ownTypeReference(reference);
+    if (safe.kind !== 'builtin') return c.fail(owner, 'src-resolve', 'Builtin type requires the XSD namespace');
+    if (!builtinReferenceKeys) {
+      c.step(owner, 2);
+      builtinReferenceKeys = new WeakMap<Reference, string>();
+    }
+    c.step(owner, 3);
+    const known = builtinReferenceKeys.get(safe);
+    if (known) return known;
+    c.text(safe.name.local, owner); c.text(safe.name.namespace, owner);
+    if (safe.name.namespace !== XSD_NAMESPACE || !isBuiltinType(safe.name.local)) return c.fail(owner, "src-resolve", "Unknown builtin scalar type");
+    c.step(owner, 8 + safe.name.local.length);
+    const key = `builtin:${safe.name.local}`;
+    c.step(owner, 3);
+    builtinReferenceKeys.set(safe, key);
+    return key;
   };
   const checkFinal = (base: Reference, method: string, owner: GraphNode) => {
     if (base.kind === "builtin" || base.kind === "original-generated") return;
@@ -977,13 +991,14 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     return descriptions.get(rootKey)!;
   };
-  const checkValue = (reference: Reference, constraint: ValueConstraint, owner: GraphNode) => {
+  const assessConstraint = (reference: Reference, constraint: ValueConstraint, owner: GraphNode) => {
     const description = ensure(reference, owner);
     if (description.plan.primitive === "NOTATION" && !description.plan.layers.some(l => l.facets.some(f => f.name === "enumeration"))) c.fail(owner, "enumeration-required-notation", "NOTATION cannot be used directly as a declared datatype");
     if (description.plan.builtin === "ID") c.fail(owner, owner.kind === "attribute" || owner.kind === "attributeUse" ? "a-props-correct" : "e-props-correct", "An ID-derived type/content cannot have a value constraint");
-    operand(description, constraint.lexical, owner);
-    return {...description.plan, enforcement: [...new Set([...description.plan.enforcement, "default-fixed" as const])]};
+    const value = operand(description, constraint.lexical, owner);
+    return {value, plan: {...description.plan, enforcement: [...new Set([...description.plan.enforcement, "default-fixed" as const])]}};
   };
+  const checkValue = (reference: Reference, constraint: ValueConstraint, owner: GraphNode) => assessConstraint(reference, constraint, owner).plan;
   const equivalent = (referenceA: Reference, a: LexicalValue, referenceB: Reference, b: LexicalValue, owner: GraphNode) => {
     const x = operand(ensure(referenceA, owner), a, owner), y = operand(ensure(referenceB, owner), b, owner);
     return values.sameValue(x, y, owner);
@@ -1248,7 +1263,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     originalRecipes.set(token,{context:c.context,layers,identity:value,obligations:(value.plan.obligations ?? []).map(obligation=>({...obligation,contextId:obligation.contextId??c.context.contextId})),typeDependencies:value.typeDependencies??[]});
     originalRecipeTokens.set(value,token);return token;
   };
-  return {typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, equivalent,
+  return {typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
     contentIdentity, contentProperties, readOriginalRecipe, contentDerivation, facetPropertiesEquivalent, readFacetProperties, compareFacetProperties,compareFacetAnnotations,
     selectOperand: (reference: Reference, owner: GraphNode): void => {scalarOperandNode(reference, owner, true);},
     assess: (reference: Reference, lexical: LexicalValue, owner: GraphNode) => operand(ensure(reference, owner), lexical, owner),
