@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): preserve exact facet component sets and supplied annotation evidence across scalar contexts.
+
 - perf(compiler): reuse authenticated immutable source and graph handles during request preparation.
 
 - fix(compiler): preserve finite lexical witnesses before heuristic character-class search.
