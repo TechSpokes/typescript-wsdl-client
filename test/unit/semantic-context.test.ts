@@ -1,7 +1,7 @@
 import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 import {globalId} from '../../src/compiler/canonicalGraph.js';
-import type {ComplexTypeNode, GraphNode} from '../../src/compiler/canonicalGraph.js';
+import type {ComplexTypeNode, GraphNode, Reference} from '../../src/compiler/canonicalGraph.js';
 import {canonicalJson} from '../../src/compiler/catalogErrors.js';
 import {semanticGraphFingerprint} from '../../src/compiler/catalogProvenance.js';
 import {prepareResolvedCompilationInput, serializeSemanticCatalog} from '../../src/compiler/semanticCatalog.js';
@@ -82,9 +82,11 @@ describe('canonical semantic context adapter', () => {
   it('accounts candidate additions in the same sticky request after earlier successful preparation', async () => {
     const input = await prepare('shared-recursive.xsd');
     if (input.kind !== 'semantic') throw new Error('semantic source required');
-    const budget = createSemanticBudget({maxNodes: input.resolved.graph.nodes.length, maxWork: 50_000_000});
+    // Restricted contributes one GSC1 scalar component beyond its source node.
+    const budget = createSemanticBudget({maxNodes: input.resolved.graph.nodes.length + 1, maxWork: 50_000_000});
     const prepared = prepareSemanticRequest(input.resolved, {budget});
     if (prepared.kind !== 'prepared') throw new Error(`context ${prepared.kind}`);
+    expect(prepared.request.actual.scalarSlots).toHaveLength(1);
     const prior = prepared.request.candidate({key: 'prior', active: prepared.request.actual.members});
     expect(prior.kind).toBe('prepared');
     const sample = prepared.request.graph.nodes.find(node => node.identity.kind === 'global')!;
@@ -97,5 +99,39 @@ describe('canonical semantic context adapter', () => {
     expect(prepared.request.candidate({key: 'after', active: prepared.request.actual.members})).toBe(failed);
     expect(budget.usage()).toEqual(usage);
     expect(budget.guard(() => prepared.request.actual.lookup(sample.id))).toBe(failed);
+  });
+
+  it('owns copied type reference data while resolving selected membership on every call', async () => {
+    const input = await prepare('shared-recursive.xsd');
+    if (input.kind !== 'semantic') throw new Error('semantic source required');
+    const prepared = prepareSemanticRequest(input.resolved, {budget: diagnosticBudget()});
+    if (prepared.kind !== 'prepared') throw new Error(`context ${prepared.kind}`);
+    const {actual} = prepared.request;
+    const caller = {kind: 'builtin' as const, name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'string'}};
+    const owned = actual.ownTypeReference(caller);
+    expect(owned).not.toBe(caller);
+    expect(actual.ownTypeReference(owned)).toBe(owned);
+    caller.name.local = 'int';
+    expect(actual.resolve(owned as Reference)).toMatchObject({kind: 'builtin', name: {local: 'string'}});
+    expect(actual.ownTypeReference(caller)).toMatchObject({kind: 'builtin', name: {local: 'int'}});
+    const frozen = Object.freeze({kind: 'local' as const, target: 'not-a-component'});
+    expect(actual.ownTypeReference(frozen)).not.toBe(frozen);
+
+    const slot = actual.scalarSlots[0]!;
+    const omitted = prepared.request.candidate({key: 'omit-owned-slot', active: actual.members, scalarSlots: []});
+    if (omitted.kind !== 'prepared') throw new Error(`candidate ${omitted.kind}`);
+    expect(actual.lookupScalarSlot(slot).kind).toBe('found');
+    expect(omitted.context.ownTypeReference(slot)).toBe(slot);
+    expect(omitted.context.lookupScalarSlot(slot).kind).toBe('outside-context');
+    expect(actual.lookupScalarSlot(slot).kind).toBe('found');
+
+    let reads = 0;
+    const accessor = {get kind() {reads++; return 'builtin';}, name: caller.name};
+    expect(() => actual.ownTypeReference(accessor as Reference)).toThrow();
+    expect(reads).toBe(0);
+    const nonType = actual.members.flatMap(id => actual.references(id)).map(entry => entry.reference)
+      .find(reference => reference.kind === 'symbol' && reference.role !== 'type');
+    expect(nonType).toBeDefined();
+    expect(() => actual.ownTypeReference(nonType!)).toThrow();
   });
 });

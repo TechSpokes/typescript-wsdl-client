@@ -157,19 +157,12 @@ export function deriveActualComplexContent(context: SemanticContext, type: NodeI
           } else {
             const base = node.derivation.inlineType ?? scalar;
             if (!base) return fail(node.id, 'Simple-content restriction requires a mapped simple base or explicit inline type');
-            // Preserve the legacy diagnostic source projection only. This node
-            // is not the GSC1 component and cannot supply its name, namespace,
-            // final, base or facet-property authority. The scalar owner issues
-            // that complete view at the stable original restriction slot.
-            budget.reserveNodes(1);
-            const path = '$semantic-simple-content/' + context.contextId + '/' + additions.length;
-            budget.chargeWork(110 + 6 * (node.id.length + path.length));
-            const id = scopedId(node.id, path, 'simpleType');
-            if (context.lookup(id).kind === 'found') return fail(id, 'Synthetic semantic identity collision');
-            additions.push(Object.freeze({id, identity: Object.freeze({kind: 'scoped', owner: node.id, path, role: 'simpleType'}),
-              kind: 'simpleType', context: node.context, declaredAttributes: NONE, annotations: NONE, retained: NONE, syntaxDetails: NONE,
-              variety: Object.freeze({kind: 'restriction', base, facets: node.derivation.facets})}));
-            content = Object.freeze({kind: 'simple', type: Object.freeze({kind: 'local', target: id})});
+            // This is only the authentic source slot selector. The scalar
+            // owner separately maps its properties and assesses local legality.
+            budget.chargeWork(4);
+            const slot = context.lookupScalarSlot({kind: 'original-generated', owner: node.id});
+            if (slot.kind !== 'found') return fail(node.id, 'Original generated scalar slot is unavailable');
+            budget.chargeWork(3); content = Object.freeze({kind: 'simple', type: slot.slot});
           }
         } else {
           const declared = local(node);

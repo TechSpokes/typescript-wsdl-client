@@ -1,0 +1,6 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:original-generated-binding" targetNamespace="urn:recovery:original-generated-binding">
+  <xs:include schemaLocation="original-generated-binding-independent.xsd"/>
+  <xs:complexType name="HiddenHost"><xs:sequence><xs:element name="hiddenScalar" minOccurs="0" maxOccurs="0"><xs:simpleType><xs:restriction base="xs:string"><xs:minLength value="2"/><xs:maxLength value="1"/></xs:restriction></xs:simpleType></xs:element></xs:sequence></xs:complexType>
+  <xs:complexType name="VisibleHost"><xs:sequence><xs:element name="visibleScalar"><xs:simpleType><xs:restriction base="xs:string"><xs:minLength value="2"/><xs:maxLength value="1"/></xs:restriction></xs:simpleType></xs:element></xs:sequence></xs:complexType>
+  <xs:simpleType name="InvalidGlobal"><xs:restriction base="xs:string"><xs:minLength value="2"/><xs:maxLength value="1"/></xs:restriction></xs:simpleType>
+</xs:schema>

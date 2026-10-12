@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(compiler): preserve original scalar identities and facet properties across hypothetical contexts and finite evidence.
+
 - fix(compiler): apply selected raw attribute, implicit particle order and generated scalar rules with exact facet preservation.
 
 - feat(compiler): share source datatype assessment, check exact builtin facets and reuse attribute facts with complete evidence.

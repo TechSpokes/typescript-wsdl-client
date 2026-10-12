@@ -10,9 +10,11 @@ import type {NamespaceConstraint} from './wildcardAlgebra.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
 import {occurrenceAlgebra} from './occurrenceAnalysis.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import type {SemanticTypeDependency} from './semanticTypeReference.js';
 
 export type AttributionResult = Readonly<{kind: 'checked'; value: boolean; rule: 'cos-nonambig'; contextId: string;
-  component?: string; obligations: readonly ['component-validity']}> | RelationFailure | ResourceLimitFailure;
+  component?: string; obligations: readonly ['component-validity']; typeDependencies: readonly SemanticTypeDependency[]}> | RelationFailure | ResourceLimitFailure;
 class Incomplete extends Error {constructor(readonly result: RelationFailure | ResourceLimitFailure) {super(result.kind);}}
 
 /** Counted iteration preserves each leaf incidence tag; shared child edges remain distinct. */
@@ -20,13 +22,15 @@ export function checkParticleAttribution(context: SemanticContext, view: Semanti
   assertSemanticParticleView(context, view);
   const budget = context.budget, charge = (n = 1) => budget.chargeWork(n);
   return budget.guard(() => {
+    const typeDependencies = collectSemanticTypeDependencies(context);
+    typeDependencies.add(view.typeDependencies);
     const unresolved = (component: string, message: string): never => {
       charge(10 + component.length + message.length);
       throw new Incomplete(Object.freeze({kind: 'unresolved', rule: 'cos-nonambig', component, message}));
     };
     const done = (value: boolean, component?: string): AttributionResult => {
       charge(12); return Object.freeze({kind: 'checked', value, rule: 'cos-nonambig', contextId: context.contextId,
-        component, obligations: Object.freeze(['component-validity'] as const)});
+        component, obligations: Object.freeze(['component-validity'] as const), typeDependencies: typeDependencies.snapshot()});
     };
     try {
       charge(24);
@@ -69,6 +73,7 @@ export function checkParticleAttribution(context: SemanticContext, view: Semanti
             if (context.membership !== 'complete-actual-plus-additions') return unresolved(p.source, 'Complete substitution universe required');
             const members = effectiveSubstitutionMembers(context, element.id);
             if (members.kind !== 'checked') throw new Incomplete(members);
+            typeDependencies.add(members.typeDependencies);
             for (const id of members.value) {
               const found = context.lookup(id);
               if (found.kind !== 'found' || found.node.kind !== 'element') return unresolved(id, 'Substitution member unavailable');

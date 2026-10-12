@@ -1,5 +1,5 @@
 /** Complete verification of supplied finite evidence, never universal witness search. */
-import type {NodeId, Reference} from './canonicalGraph.js';
+import type {NodeId} from './canonicalGraph.js';
 import {assertSemanticContext, contextsShareRequest, isSemanticCandidateOf, SemanticContextAccessError} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
@@ -13,10 +13,16 @@ import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import {RE01_DERIVATION_DOMAIN} from './re01TypeProperties.js';
 import {checkNotationProperties} from './schemaNotationProperties.js';
 import type {SchemaNotationProperties} from './schemaNotationProperties.js';
+import {checkOriginalGeneratedScalar, assertOriginalGeneratedScalarReceipt} from './schemaScalarKernel.js';
+import type {GeneratedScalarResult} from './schemaScalarKernel.js';
+import {resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
+import type {OriginalGeneratedScalarReference, SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
+
+export type FiniteScalarSlotReceipt = Extract<GeneratedScalarResult, {kind: 'checked'}>;
 
 export type FiniteRe01EvidenceNode = Readonly<{
   id: string; parent: SemanticContext; context: SemanticContext;
-  target: NodeId; intermediate: NodeId; ancestor: Reference;
+  target: NodeId; intermediate: NodeId; ancestor: SemanticTypeReference;
   /** References to concrete evidence for generated hypothetical RE01 premises. */
   premises: readonly string[];
 }>;
@@ -26,12 +32,14 @@ export type FiniteNotationReceipt = Readonly<{contextId: string; properties: Sch
   origin: 'original' | 'addition'}>;
 export type FiniteProofStep = Readonly<{evidence: string; parentContext: string; contextId: string; target: NodeId;
   correspondence: CorrespondenceReceipt; components: readonly ComponentConstructionReceipt[];
+  scalarSlots: readonly FiniteScalarSlotReceipt[];
   notations: readonly FiniteNotationReceipt[];
   premises: readonly string[]; primitiveNoChange: readonly NodeId[]}>;
 export type FiniteCandidateReceipt = Readonly<{
   kind: 'checked-candidate'; authority: 'RE01-finite-evidence-v1'; domain: typeof RE01_DERIVATION_DOMAIN;
   scope: 'supplied-construction-and-finite-evidence'; actualContextId: string; target: NodeId; root: string;
   actualComponents: readonly ComponentConstructionReceipt[]; actualPrimitiveNoChange: readonly NodeId[];
+  actualScalarSlots: readonly FiniteScalarSlotReceipt[];
   actualNotations: readonly FiniteNotationReceipt[];
   proof: readonly FiniteProofStep[];
   claims: Readonly<{actualObligations: 'checked'; suppliedCandidate: 'checked'; universalCoverage: false; completeNegativeAnswer: false; searchTermination: false}>;
@@ -41,7 +49,8 @@ const issued = new WeakMap<object, SemanticContext>();
 class VerificationAbort extends Error {constructor(readonly result: FiniteVerificationFailure | ResourceLimitFailure) {super(result.kind);}}
 type Requirement = NonNullable<ComponentConstructionReceipt['re01']>;
 type Closure = Readonly<{components: readonly ComponentConstructionReceipt[]; requirements: readonly Requirement[];
-  byComponent: ReadonlyMap<NodeId, ComponentConstructionReceipt>}>;
+  byComponent: ReadonlyMap<NodeId, ComponentConstructionReceipt>; context: SemanticContext;
+  scalarSlots: readonly FiniteScalarSlotReceipt[]; byScalarSlot: ReadonlyMap<NodeId, FiniteScalarSlotReceipt>}>;
 
 export function assertFiniteCandidateReceipt(actual: SemanticContext, receipt: FiniteCandidateReceipt): void {
   assertSemanticContext(actual);
@@ -63,10 +72,10 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
       if (!property || !('value' in property)) return fail('evidence-syntax', 'Evidence fields must be own data properties');
       return property.value;
     };
-    const refKey = (context: SemanticContext, reference: Reference): string => {
-      const found = context.resolve(reference);
-      if (found.kind === 'found') return found.node.id;
-      if (found.kind === 'builtin') {charge(8 + found.name.local.length); return `builtin:${found.name.local}`;}
+    const refKey = (context: SemanticContext, reference: SemanticTypeReference): string => {
+      const found = resolveSemanticType(context, reference);
+      if (found.kind === 'component' || found.kind === 'builtin' || found.kind === 'original-generated')
+        return semanticTypeKey(context, found.identity);
       return fail('evidence-reference', 'Proof reference is unavailable', 'unresolved', context);
     };
     charge(2); const deferred: {context: SemanticContext; obligation: ConstructionObligation}[] = [];
@@ -106,9 +115,10 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         const data = readData();
         if (typeof data.id !== 'string' || !data.id || typeof data.target !== 'string' || typeof data.intermediate !== 'string'
           || !data.ancestor || typeof data.ancestor !== 'object' || !Array.isArray(data.premises)) return fail('evidence-syntax', 'Malformed proof subject or premises');
-        try {parent.resolve(data.ancestor as Reference);}
+        try {resolveSemanticType(parent, data.ancestor as SemanticTypeReference);}
         catch (error) {
-          if (error instanceof SemanticContextAccessError) return fail('evidence-syntax', 'Malformed evidence ancestor reference');
+          if (error instanceof SemanticContextAccessError || error instanceof TypeError)
+            return fail('evidence-syntax', 'Malformed evidence ancestor reference');
           throw error;
         }
         for (const premise of data.premises) {charge(); if (typeof premise !== 'string') return fail('evidence-syntax', 'Proof references must be evidence IDs');}
@@ -186,10 +196,50 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
       };
       const actualNotations = checkNotations(actual);
       charge(4); const closures = new Map<string, Closure>();
+      charge(); const typedDependencies: {from: SemanticContext; dependency: SemanticTypeDependency}[] = [];
       const close = (context: SemanticContext, roots: readonly NodeId[], correspondence?: CorrespondenceReceipt): Closure => {
-        charge(8 + roots.length); const queue = [...roots], byComponent = new Map<NodeId, ComponentConstructionReceipt>();
+        if (context.scalarSlotMembership !== 'complete-original') return fail('scalar-slot-active-membership',
+          'Finite evidence requires every original generated scalar slot', 'unresolved', context);
+        charge(12 + roots.length + (context.kind === 'actual' ? context.scalarSlots.length : 0));
+        const queue = [...roots], byComponent = new Map<NodeId, ComponentConstructionReceipt>();
+        // Availability is complete in H, but its legality roots are E, D′,
+        // fresh components and consumed dependencies. Only Γ checks every
+        // original scalar merely because it is part of the actual schema.
+        const slotQueue: OriginalGeneratedScalarReference[] = context.kind === 'actual' ? [...context.scalarSlots] : [];
+        const byScalarSlot = new Map<NodeId, FiniteScalarSlotReceipt>(), scalarSlots: FiniteScalarSlotReceipt[] = [];
         const components: ComponentConstructionReceipt[] = [], requirements: Requirement[] = [];
-        while (queue.length) {
+        const requireTypes = (required: readonly SemanticTypeDependency[]): void => {
+          for (const dependency of required) {
+            charge(4); typedDependencies.push({from: context, dependency});
+            if (dependency.contextId !== context.contextId) continue;
+            const type = dependency.type;
+            if (type.kind === 'component') {charge(2); if (!byComponent.has(type.id)) queue.push(type.id);}
+            else if (type.kind === 'original-generated') {charge(2); if (!byScalarSlot.has(type.owner)) slotQueue.push(type);}
+          }
+        };
+        if (correspondence) requireTypes(correspondence.typeDependencies);
+        while (queue.length || slotQueue.length) {
+          if (!queue.length) {
+            charge(3); const slot = slotQueue.pop()!;
+            if (byScalarSlot.has(slot.owner)) continue;
+            const result = checkOriginalGeneratedScalar(context, slot);
+            if (result.kind !== 'checked') throw new VerificationAbort(result.kind === 'resource-limit' ? result : {
+              ...result, contextId: result.contextId ?? context.contextId,
+              kind: result.kind === 'invalid-schema' && context.kind === 'candidate'
+                && (!result.contextId || result.contextId === context.contextId) ? 'candidate-rejected' : result.kind});
+            assertOriginalGeneratedScalarReceipt(context, result);
+            if (semanticTypeKey(context, result.slot) !== semanticTypeKey(context, slot))
+              return fail('scalar-slot-receipt', 'Scalar construction receipt identifies another slot', 'invalid-evidence', context);
+            // Dedicated slot checking must finish its own scalar rules. Only
+            // genuine GraphNode-owned source premises can remain as debts;
+            // the complex provenance owner cannot certify the scalar slot.
+            for (const pending of result.obligations) {
+              charge(4); rejectPending(context, {...pending, contextId: pending.contextId ?? context.contextId});
+            }
+            charge(4 + slot.owner.length); byScalarSlot.set(slot.owner, result); scalarSlots.push(result);
+            requireTypes(result.typeDependencies);
+            continue;
+          }
           charge(3); const id = queue.pop()!;
           if (byComponent.has(id)) continue;
           const found = context.lookup(id);
@@ -201,15 +251,18 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
             return fail('hypothetical-component-domain', 'A hypothetical obligation is not an XSD component', 'invalid-evidence', context, id);
           }
           const result = checkComponentConstruction(context, id, {correspondence});
-          if (result.kind !== 'checked') throw new VerificationAbort(result.kind === 'resource-limit' ? result : {...result, contextId: context.contextId});
+          if (result.kind !== 'checked') throw new VerificationAbort(result.kind === 'resource-limit' ? result
+            : {...result, contextId: result.contextId ?? context.contextId});
           assertComponentConstruction(context, result);
           for (const pending of result.obligations) rejectPending(context, pending);
           charge(4 + id.length); byComponent.set(id, result); components.push(result);
+          requireTypes(result.typeDependencies);
           if (result.re01) {charge(); requirements.push(result.re01);}
           for (const dependency of result.dependencies) {charge(2); if (!byComponent.has(dependency)) queue.push(dependency);}
         }
-        charge(6 + components.length + requirements.length);
-        const closure = Object.freeze({components: Object.freeze(components), requirements: Object.freeze(requirements), byComponent});
+        charge(10 + components.length + requirements.length + scalarSlots.length);
+        const closure = Object.freeze({context, components: Object.freeze(components), requirements: Object.freeze(requirements), byComponent,
+          scalarSlots: Object.freeze(scalarSlots), byScalarSlot});
         charge(context.contextId.length + 1); closures.set(context.contextId, closure); return closure;
       };
       const actualClosure = close(actual, actual.members);
@@ -223,12 +276,16 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         if (first.kind === 'resource-limit') throw new VerificationAbort(first);
         if (designated.kind === 'resource-limit') throw new VerificationAbort(designated);
         if (first.kind !== 'checked' || !first.value || designated.kind !== 'checked') return fail('primitive-no-change', 'Primitive ancestry premises are missing', 'unresolved', context, requirement.target);
+        for (const dependency of first.typeDependencies) {charge(4); typedDependencies.push({from: context, dependency});}
+        for (const dependency of designated.typeDependencies) {charge(4); typedDependencies.push({from: context, dependency});}
         if (refKey(context, first.value) !== refKey(context, designated.ancestor) || refKey(context, requirement.ancestor) !== refKey(context, designated.ancestor)) return fail('primitive-no-change', 'Primitive proof is not a direct extension of the designated ancestor');
-        const base = context.resolve(designated.ancestor);
+        const base = resolveSemanticType(context, designated.ancestor);
         if (!(base.kind === 'builtin' && base.name.namespace === XSD_NAMESPACE && base.name.local === 'anyType')) {
           const next = immediateTypeBase(context, designated.ancestor);
           if (next.kind === 'resource-limit') throw new VerificationAbort(next);
-          if (next.kind !== 'checked' || !next.value || refKey(context, next.value) !== 'builtin:anyType') return fail('primitive-no-change', 'Primitive ancestor lacks the ur-type base');
+          if (next.kind !== 'checked' || !next.value || refKey(context, next.value) !== refKey(context, {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anyType'}}))
+            return fail('primitive-no-change', 'Primitive ancestor lacks the ur-type base');
+          for (const dependency of next.typeDependencies) {charge(4); typedDependencies.push({from: context, dependency});}
         }
         // All independently generated local/component premises were checked
         // by close(). This epsilon comparison creates no type or base edge.
@@ -273,6 +330,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
           charge(12 + frame.used.length + frame.primitive.length);
           proof.push(Object.freeze({evidence: item.id, parentContext: item.parent.contextId, contextId: item.context.contextId, target: item.target,
             correspondence: frame.correspondence!, components: frame.closure.components,
+            scalarSlots: frame.closure.scalarSlots,
             notations: notationReceipts.get(item.context)!,
             premises: Object.freeze(frame.used), primitiveNoChange: Object.freeze(frame.primitive)}));
           completed.add(item.id); active.delete(item.id); stack.pop();
@@ -288,6 +346,22 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         execute(evidence);
       }
       if (completed.size !== nodes.size) return fail('unused-proof-node', 'Every supplied proof node must match a required obligation');
+      for (const {from, dependency} of typedDependencies) {
+        charge(4 + dependency.contextId.length);
+        const closure = closures.get(dependency.contextId), type = dependency.type;
+        if (!closure) return fail('type-dependency-context', 'A semantic type dependency has no checked context closure', 'unresolved', from);
+        if (type.kind === 'component') {
+          const receipt = closure.byComponent.get(type.id), node = closure.context.lookup(type.id);
+          if (!receipt || receipt.scope !== 'local-component-premises' || node.kind !== 'found'
+            || node.node.kind !== 'simpleType' && node.node.kind !== 'complexType')
+            return fail('type-component-validity', 'A type dependency lacks matching semantic component construction', 'unresolved', closure.context, type.id);
+        } else if (type.kind === 'original-generated') {
+          const receipt = closure.byScalarSlot.get(type.owner);
+          if (!receipt) return fail('scalar-slot-validity', 'A type dependency lacks matching scalar-slot construction', 'unresolved', closure.context, type.owner);
+          assertOriginalGeneratedScalarReceipt(closure.context, receipt);
+        } else if (resolveSemanticType(closure.context, type).kind !== 'builtin')
+          return fail('builtin-type-dependency', 'A builtin dependency lacks its exact builtin identity', 'unresolved', closure.context);
+      }
       // Correspondence computations retain exact scalar premises too. A local
       // type owner must have checked that same property in that same context.
       const discharged = (contextId: string, rule: string, component: NodeId): boolean => {
@@ -312,6 +386,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
       const result: FiniteCandidateReceipt = Object.freeze({kind: 'checked-candidate', authority: 'RE01-finite-evidence-v1', domain: RE01_DERIVATION_DOMAIN,
         scope: 'supplied-construction-and-finite-evidence', actualContextId: actual.contextId, target, root: root.id,
         actualComponents: actualClosure.components, actualPrimitiveNoChange: Object.freeze(actualPrimitiveNoChange), proof: Object.freeze(proof),
+        actualScalarSlots: actualClosure.scalarSlots,
         actualNotations,
         claims: Object.freeze({actualObligations: 'checked', suppliedCandidate: 'checked', universalCoverage: false, completeNegativeAnswer: false, searchTermination: false})});
       issued.set(result, actual); return result;

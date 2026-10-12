@@ -26,21 +26,24 @@ import {checkParticleRestriction} from './particleRestriction.js';
 import {checkRawParticleExtension} from './particleExtension.js';
 import {assertCandidateCorrespondence} from './re01CandidateCorrespondence.js';
 import type {CorrespondenceReceipt} from './re01CandidateCorrespondence.js';
+import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
+import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 
 export type ConstructionObligation = Readonly<{rule: string; component: NodeId; contextId: string}>;
 export type ComponentConstructionReceipt = Readonly<{
   kind: 'checked'; authority: 'XSD10-component-construction-v1'; contextId: string; component: NodeId;
   scope: 'local-component-premises' | 'original-source-syntax-only'; receipts: readonly object[];
   dependencies: readonly NodeId[]; builtinDependencies: readonly string[];
-  re01?: Readonly<{target: NodeId; ancestor: Reference; primitive: boolean}>;
+  typeDependencies: readonly SemanticTypeDependency[];
+  re01?: Readonly<{target: NodeId; ancestor: SemanticTypeReference; primitive: boolean}>;
   obligations: readonly ConstructionObligation[];
   discharged: readonly ConstructionObligation[];
 }>;
 export type ConstructionFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'unsupported-capability' | 'unresolved';
-  rule: string; component: NodeId; message: string}>;
+  rule: string; component: NodeId; message: string; contextId?: string}>;
 export type ComponentConstructionResult = ComponentConstructionReceipt | ConstructionFailure | ResourceLimitFailure;
 const issued = new WeakMap<ComponentConstructionReceipt, SemanticContext>();
-const absentSource = new WeakMap<SemanticContext, ReadonlySet<NodeId>>();
 class ConstructionAbort extends Error {constructor(readonly result: ConstructionFailure | ResourceLimitFailure) {super(result.kind);}}
 const ANY: Reference = Object.freeze({kind: 'builtin', name: Object.freeze({namespace: XSD_NAMESPACE, local: 'anyType'})});
 const local = (target: NodeId): Reference => ({kind: 'local', target});
@@ -49,29 +52,7 @@ const local = (target: NodeId): Reference => ({kind: 'local', target});
 export function isAbsentOriginalSourceComponent(context: SemanticContext, id: NodeId): boolean {
   assertSemanticContext(context);
   if (context.kind !== 'actual') return false;
-  const b = context.budget;
-  let omitted = absentSource.get(context);
-  if (!omitted) {
-    b.chargeWork(3);
-    const roots: GraphNode[] = [], nodes: GraphNode[] = [], result = new Set<NodeId>();
-    for (const member of context.members) {
-      b.chargeWork(); const original = context.sourceNode(member);
-      if (!original || original.identity.kind === 'global') continue;
-      b.chargeWork(); nodes.push(original);
-      if (original.kind === 'attributeUse' && original.use === 'prohibited' ||
-          original.kind === 'particle' && original.occurs.min === '0' && original.occurs.max === '0') {b.chargeWork(); roots.push(original);}
-    }
-    for (const node of nodes) for (const root of roots) {
-      const a = node.context, z = root.context, p = a.source.path, q = z.source.path;
-      b.chargeWork(10 + p.length + q.length + a.source.uri.length + z.source.uri.length + a.source.digest.length + z.source.digest.length
-        + a.effectiveNamespace.length + z.effectiveNamespace.length + a.baseUri.length + z.baseUri.length);
-      if (a.source.uri === z.source.uri && a.source.digest === z.source.digest && a.effectiveNamespace === z.effectiveNamespace &&
-          a.baseUri === z.baseUri && a.chameleon === z.chameleon &&
-          (p === q || p.startsWith(q + '/'))) {b.chargeWork(); result.add(node.id); break;}
-    }
-    b.chargeWork(); omitted = result; absentSource.set(context, omitted);
-  }
-  b.chargeWork(1 + id.length); return omitted.has(id);
+  return context.originalSourceComponentAbsent(id);
 }
 
 export function assertComponentConstruction(context: SemanticContext, receipt: ComponentConstructionReceipt): void {
@@ -90,16 +71,19 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
     if (field && !('value' in field)) throw new TypeError('Construction options require data');
     const correspondence = field?.value as CorrespondenceReceipt | undefined;
     if (correspondence) assertCandidateCorrespondence(context, correspondence);
-    const fail = (rule: string, message: string, kind: ConstructionFailure['kind'] = 'invalid-schema'): never => {
-      b.chargeWork(12 + rule.length + message.length + id.length);
-      throw new ConstructionAbort(Object.freeze({kind: kind === 'invalid-schema' && context.kind === 'candidate' ? 'candidate-rejected' : kind,
-        rule, component: id, message}));
+    const fail = (rule: string, message: string, kind: ConstructionFailure['kind'] = 'invalid-schema',
+      originContextId?: string, component = id): never => {
+      b.chargeWork(12 + rule.length + message.length + component.length + (originContextId?.length ?? 0));
+      throw new ConstructionAbort(Object.freeze({kind: kind === 'invalid-schema' && context.kind === 'candidate'
+        && (originContextId === undefined || originContextId === context.contextId) ? 'candidate-rejected' : kind,
+        rule, component, message, ...(originContextId === undefined ? {} : {contextId: originContextId})}));
     };
     try {
       b.chargeWork(12);
       const found = context.lookup(id);
       if (found.kind !== 'found') return fail('component-membership', 'Component is unavailable in the selected context', 'unresolved');
       const node = found.node, receipts: object[] = [], dependencies = new Set<NodeId>(), builtins = new Set<string>();
+      const typeDependencies = collectSemanticTypeDependencies(context);
       const obligations: ConstructionObligation[] = [];
       const requireNode = (target: NodeId): GraphNode => {
         b.chargeWork(2 + target.length);
@@ -107,7 +91,14 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         if (lookup.kind !== 'found') return fail('component-dependency', 'A required component is unavailable', 'unresolved');
         dependencies.add(target); return lookup.node;
       };
-      const reference = (ref: Reference): GraphNode | undefined => {
+      const reference = (ref: SemanticTypeReference): GraphNode | undefined => {
+        if (ref.kind === 'original-generated') {
+          const resolved = resolveSemanticType(context, ref);
+          if (resolved.kind !== 'original-generated') return fail('scalar-slot-membership', 'A required scalar slot is unavailable', 'unresolved');
+          b.chargeWork(4);
+          typeDependencies.add([{contextId: context.contextId, type: resolved.identity}]);
+          return undefined;
+        }
         const lookup = context.resolve(ref);
         b.chargeWork(3);
         if (lookup.kind === 'builtin') {b.chargeWork(lookup.name.local.length); builtins.add(lookup.name.local); return undefined;}
@@ -149,10 +140,20 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       const checked = <T extends {kind: string}>(result: T): Extract<T, {kind: 'checked'}> => {
         if (result.kind === 'resource-limit') throw new ConstructionAbort(result as T & ResourceLimitFailure);
         if (result.kind !== 'checked') {
-          const failed = result as T & {rule: string; message?: string; kind: string};
+          const failed = result as T & {rule: string; message?: string; kind: string; contextId?: string; component?: NodeId};
+          // Scalar owners distinguish an intrinsically invalid original type
+          // from a candidate operand merely evaluated in that original type.
+          // Preserve the former's owning context and component; do not infer
+          // actual invalidity from the datatype lookup context alone.
+          if (failed.contextId !== undefined && failed.contextId !== context.contextId
+            && failed.contextId !== context.originalContext().contextId)
+            return fail('construction-failure-context', 'Local failure has no authenticated originating context', 'unresolved');
           return fail(failed.rule, failed.message ?? 'Required local owner did not check its premise',
-            failed.kind === 'unsupported-capability' ? 'unsupported-capability' : failed.kind === 'unresolved' ? 'unresolved' : 'invalid-schema');
+            failed.kind === 'unsupported-capability' ? 'unsupported-capability' : failed.kind === 'unresolved' ? 'unresolved'
+              : failed.kind === 'candidate-rejected' ? 'candidate-rejected' : 'invalid-schema',
+            failed.contextId, failed.contextId === undefined ? id : failed.component ?? id);
         }
+        if ('typeDependencies' in result) typeDependencies.add((result as T & {typeDependencies: readonly SemanticTypeDependency[]}).typeDependencies);
         b.chargeWork(); receipts.push(result); return result as Extract<T, {kind: 'checked'}>;
       };
       const scalar = createSchemaScalarKernel(context);
@@ -172,7 +173,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         const value = checked(result);
         scalarObligations(value.scalarObligations);
         for (const use of value.value.schemaOperands) {
-          b.chargeWork(2); requireNode(use.declaration.id); reference(use.declaration.type);
+          b.chargeWork(2); requireNode(use.declaration.id); reference(declaredType(context, use.declaration));
         }
         for (const declaration of value.value.declarations) {
           b.chargeWork(); requireNode(declaration.component);
@@ -189,13 +190,16 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         // Referenced globals remain semantic components even when their source
         // use maps to nothing. Other hidden local syntax is checked separately.
         for (const slot of context.references(id)) {
+          if (slot.reference.kind === 'original-generated') return fail('source-only-scalar-slot',
+            'Suppressed original source cannot supply a semantic scalar slot', 'unresolved');
           b.chargeWork(); const target = context.resolve(slot.reference);
           if (target.kind === 'found' && target.node.identity.kind === 'global') requireNode(target.node.id);
         }
         b.chargeWork(20 + receipts.length + dependencies.size);
         const receipt: ComponentConstructionReceipt = Object.freeze({kind: 'checked', authority: 'XSD10-component-construction-v1',
           scope: 'original-source-syntax-only', contextId: context.contextId, component: id, receipts: Object.freeze(receipts),
-          dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([]), obligations: Object.freeze([]), discharged: Object.freeze([])});
+          dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([]), typeDependencies: typeDependencies.snapshot(),
+          obligations: Object.freeze([]), discharged: Object.freeze([])});
         b.chargeWork(); issued.set(receipt, context); return receipt;
       }
       if (node.identity.kind === 'global') {
@@ -233,6 +237,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       };
       switch (node.kind) {
         case 'element': case 'attribute': {
+          reference(declaredType(context, node));
           const result = checked(checkDeclaration(context, id));
           scalarObligations(result.scalarObligations);
           for (const pending of result.obligations) {
@@ -258,7 +263,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           attributes(context.kind === 'actual' ? assessSourceAttributeUses(context, id) : assessRawAttributeUses(context, id));
           const ownContent = content(id), own = ownContent.content;
           const ownScalar = own.kind === 'simple' ? context.kind === 'actual' ? local(id) : own.type : undefined;
-          const baseSimple = base.kind === 'builtin' ? base.name.local !== 'anyType' : baseNode?.kind === 'simpleType';
+          const baseSimple = base.kind === 'original-generated' || (base.kind === 'builtin' ? base.name.local !== 'anyType' : baseNode?.kind === 'simpleType');
           if (baseNode && baseNode.kind !== 'complexType' && baseNode.kind !== 'simpleType') return fail('ct-props-correct.1', 'Complex base reference must identify a type');
           if (baseSimple) {
             if (method !== 'extension' || own.kind !== 'simple') return fail('cos-ct-extends.2', 'A simple base requires extension with that same simple content');
@@ -313,20 +318,22 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           else return fail('complex-content-relation', 'Content varieties do not satisfy a permitted extension or restriction branch');
           if (method === 'extension') {
             b.chargeWork(4); const seen = new Set<string>();
-            let ancestor = base, primitive = false;
+            let ancestor: SemanticTypeReference = base;
+            let primitive = false;
             while (true) {
               const n = reference(ancestor);
               if (ancestor.kind === 'builtin' && ancestor.name.local === 'anyType') {
                 primitive = base.kind === 'builtin' && base.name.local === 'anyType';
                 re01 = Object.freeze({target: id, ancestor, primitive}); break;
               }
-              const next = relation(immediateTypeBase(context, ancestor));
+              const next: SemanticTypeReference | undefined = relation(immediateTypeBase(context, ancestor));
               if (!next) return fail('re01-ancestor', 'No ancestor with immediate anyType base is available', 'unresolved');
               if (next.kind === 'builtin' && next.name.local === 'anyType') {
                 primitive = baseNode !== undefined && n?.id === baseNode.id;
                 re01 = Object.freeze({target: id, ancestor, primitive}); break;
               }
-              const key = n?.id ?? (ancestor.kind === 'builtin' ? `builtin:${ancestor.name.local}` : '');
+              const key = n?.id ?? (ancestor.kind === 'builtin' ? `builtin:${ancestor.name.local}`
+                : ancestor.kind === 'original-generated' ? semanticTypeKey(context, ancestor) : '');
               b.chargeWork(3 + key.length);
               if (seen.has(key)) return fail('ct-props-correct.3', 'Type ancestry is cyclic');
               seen.add(key); ancestor = next;
@@ -397,6 +404,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       const receipt: ComponentConstructionReceipt = Object.freeze({kind: 'checked', authority: 'XSD10-component-construction-v1',
         scope: 'local-component-premises', contextId: context.contextId, component: id, receipts: Object.freeze(receipts),
         dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([...builtins]), re01,
+        typeDependencies: typeDependencies.snapshot(),
         obligations: b.freeze(b.snapshot(pending)),
         discharged: ownRawSimpleContentChecked
           ? b.freeze(b.snapshot([{rule: 'raw-simple-content-derivation-validity', component: id, contextId: context.contextId}])) : Object.freeze([])});

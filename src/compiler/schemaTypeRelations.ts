@@ -1,6 +1,9 @@
+import type {SemanticTypeReference as Reference, SemanticTypeDependency, OriginalGeneratedScalarReference} from './semanticTypeReference.js';
 /** XSD 1.0 dated local relations. Success never certifies component/schema validity. */
-import type {ElementNode, GraphNode, NodeId, Reference} from './canonicalGraph.js';
-import {isBuiltinType} from './canonicalGraph.js';
+import type {ElementNode, GraphNode, NodeId} from './canonicalGraph.js';
+import {resolveSemanticType, declaredType} from './schemaTypeIdentity.js';
+import {originalGeneratedShape} from './schemaGeneratedScalarShape.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import {builtinParents, normalizeWhitespace} from './schemaDatatypeValues.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {SemanticContext} from './semanticContext.js';
@@ -9,7 +12,7 @@ import type {ResourceLimitFailure} from './semanticBudget.js';
 
 export type DerivationMethod = 'extension' | 'restriction' | 'list' | 'union';
 export type RelationReceipt<T = boolean> = Readonly<{kind: 'checked'; value: T; contextId: string;
-  authority: 'XSD10-local-relations-v1'; obligations: readonly ('component-validity' | 'complete-substitution-universe')[]; dependencies: readonly string[]}>;
+  authority: 'XSD10-local-relations-v1'; obligations: readonly ('component-validity' | 'complete-substitution-universe')[]; dependencies: readonly string[]; typeDependencies: readonly SemanticTypeDependency[]}>;
 export type RelationFailure = Readonly<{kind: 'unresolved' | 'invalid-input'; rule: string; component?: string; message: string}>;
 export type RelationResult<T = boolean> = RelationReceipt<T> | RelationFailure | ResourceLimitFailure;
 export type SubstitutionOptions = Readonly<{mode: 'affiliation' | 'substitutability'; blocking?: readonly ('extension' | 'restriction' | 'substitution')[]}>;
@@ -52,26 +55,47 @@ export function declarationMethods(context: SemanticContext, node: GraphNode, pr
 function kernel(context: SemanticContext) {
   const budget = context.budget, infos = new Map<string, Info>(), infoDependencies = new Map<string, readonly string[]>();
   const dependencies = new Set<string>(), collectors: Set<string>[] = [];
+  let typeReads = collectSemanticTypeDependencies(context);
+  const typeCollectors: ReturnType<typeof collectSemanticTypeDependencies>[] = [];
+  const infoTypeDependencies = new Map<string, readonly SemanticTypeDependency[]>();
+  const publishedReferences = new WeakSet<object>();
+  const ownReference = (reference: Reference): Reference => {
+    const owned = context.ownTypeReference(reference); budget.chargeWork(); publishedReferences.add(owned); return owned;
+  };
+  const publishValue = <T>(value: T): T => {
+    budget.chargeWork();
+    if (value === undefined || typeof value === 'boolean' || typeof value === 'object' && value !== null && publishedReferences.has(value)) return value;
+    return budget.freeze(budget.snapshot(value));
+  };
+  const typeDepend = (required: readonly SemanticTypeDependency[]): void => {typeReads.add(required); for (const collector of typeCollectors) collector.add(required);};
   const depend = (key: string): void => {budget.chargeWork(collectors.length + 1); dependencies.add(key); for (const collector of collectors) collector.add(key);};
   const problem = (rule: string, message: string, component?: string): never => {
     throw new RelationProblem({kind: 'unresolved', rule, message, component});
   };
-  const resolve = (ref: Reference): {key: string; node?: GraphNode; local?: string} => {
-    const value = context.resolve(ref);
+  const resolve = (ref: Reference): {key: string; node?: GraphNode; local?: string; slot?: OriginalGeneratedScalarReference} => {
+    const value = resolveSemanticType(context, ref);
+    if (value.kind === 'missing' || value.kind === 'outside-context' || value.kind === 'wrong-role') return problem('src-resolve', value.kind);
+    budget.chargeWork(4); typeDepend([{contextId: context.contextId, type: value.identity}]);
     if (value.kind === 'builtin') {
-      if (value.name.namespace !== XSD_NAMESPACE || !isBuiltinType(value.name.local)) return problem('src-resolve', 'Unknown builtin');
       budget.chargeWork(value.name.local.length * 2 + 16);
       const key = 'builtin:' + value.name.local; depend(key); return {key, local: value.name.local};
     }
-    if (value.kind !== 'found') return problem('src-resolve', value.kind);
+    if (value.kind === 'original-generated') {
+      budget.chargeWork(value.slot.owner.length + 4); return {key: 'slot:' + value.slot.owner, slot: value.slot};
+    }
     budget.chargeWork(value.node.id.length + 2); depend(value.node.id); return {key: value.node.id, node: value.node};
   };
   const info = (ref: Reference): Info => {
     const selected = resolve(ref), cached = infos.get(selected.key);
-    if (cached) {for (const dependency of infoDependencies.get(selected.key)!) depend(dependency); return cached;}
+    if (cached) {for (const dependency of infoDependencies.get(selected.key)!) depend(dependency); typeDepend(infoTypeDependencies.get(selected.key)!); return cached;}
     budget.chargeWork(32);
-    const reads = new Set([selected.key]); collectors.push(reads);
-    const publish = (row: Info): Info => {budget.chargeWork(reads.size + 2); infoDependencies.set(selected.key, [...reads]); infos.set(selected.key, row); return row;};
+    const reads = new Set<string>(); collectors.push(reads); const typed = collectSemanticTypeDependencies(context); typeCollectors.push(typed);
+    const publish = (row: Info): Info => {
+      budget.chargeWork(reads.size + row.items.length + 12);
+      const owned: Info = {...row, ref: ownReference(row.ref), base: row.base ? ownReference(row.base) : undefined,
+        items: Object.freeze(row.items.map(ownReference))};
+      infoDependencies.set(selected.key, [...reads]); infoTypeDependencies.set(selected.key, typed.snapshot()); infos.set(selected.key, owned); return owned;
+    };
     try {
     if (selected.local) {
       const name = selected.local, list = ['NMTOKENS', 'IDREFS', 'ENTITIES'].includes(name);
@@ -79,6 +103,13 @@ function kernel(context: SemanticContext) {
         base: name === 'anyType' ? undefined : name === 'anySimpleType' ? ur : builtin(builtinParents[name] ?? 'anySimpleType'),
         method: 'restriction', final: [], block: [], items: []};
       return publish(row);
+    }
+    if (selected.slot) {
+      const shape = originalGeneratedShape(context, selected.slot);
+      if (shape.kind === 'resource-limit') {budget.chargeWork(); throw new Error('Unreachable exhausted budget');}
+      if (shape.kind !== 'checked') return problem(shape.rule, shape.message, shape.component);
+      return publish({key: selected.key, ref: selected.slot, variety: shape.value.variety, base: shape.value.base,
+        method: 'restriction', final: [], block: [], items: shape.value.members ?? []});
     }
     const node = selected.node!;
     if (node.kind !== 'simpleType' && node.kind !== 'complexType') return problem('type-operand', 'Expected a type definition', node.id);
@@ -103,7 +134,7 @@ function kernel(context: SemanticContext) {
         const abstract = context.rawSimpleTypeProperties(current.id);
         if (abstract) {variety = abstract.variety.kind; if (abstract.variety.kind === 'union') items = abstract.variety.members; break;}
         const base = resolve(current.variety.base);
-        if (base.local) {variety = info(current.variety.base).variety; break;}
+        if (base.local || base.slot) {variety = info(current.variety.base).variety; break;}
         current = base.node!;
       }
       if (current.kind === 'simpleType' && current.variety.kind !== 'restriction') {
@@ -116,7 +147,7 @@ function kernel(context: SemanticContext) {
       final: declarationMethods(context, node, 'final') as readonly DerivationMethod[],
       block: node.kind === 'complexType' ? declarationMethods(context, node, 'block') as readonly DerivationMethod[] : []};
     return publish(row);
-    } finally {collectors.pop();}
+    } finally {collectors.pop(); typeCollectors.pop();}
   };
   const validateMethods = (values: readonly DerivationMethod[]): readonly DerivationMethod[] => {
     budget.chargeWork(values.length + 1);
@@ -148,6 +179,7 @@ function kernel(context: SemanticContext) {
     return false;
   }
   const typeDerivation = (derived: Reference, base: Reference, methods: readonly DerivationMethod[]): boolean => {
+    derived = ownReference(derived); base = ownReference(base);
     // Per-query pair memo prevents unrelated earlier reads from entering this
     // receipt; reusable descriptors replay their own exact dependency reads.
     const relations = new Map<string, boolean>();
@@ -175,6 +207,7 @@ function kernel(context: SemanticContext) {
     return false;
   };
   const immediateFinal = (ref: Reference): boolean => {
+    ref = ownReference(ref);
     const d = info(ref), resolved = resolve(ref), node = resolved.node;
     const raw = node ? context.rawSimpleTypeProperties(node.id) : undefined;
     if (raw) {
@@ -203,9 +236,10 @@ function kernel(context: SemanticContext) {
       if (seen.has(current.id)) return problem('cos-equiv-derived-ok-rec', 'Affiliation cycle', current.id);
       seen.add(current.id);
       if (!current.substitutionGroup) return false;
-      const target = resolve(current.substitutionGroup);
+      const found = context.resolve(current.substitutionGroup);
+      const target = {node: found.kind === 'found' ? found.node : undefined};
       if (!target.node || target.node.kind !== 'element') return problem('e-props-correct.4', 'Affiliation does not name an element', current.id);
-      current = target.node;
+      depend(target.node.id); current = target.node;
     }
     return true;
   };
@@ -244,15 +278,16 @@ function kernel(context: SemanticContext) {
   const substitution = (memberId: string, headId: string, options: SubstitutionOptions): boolean => {
     const member = element(memberId), head = element(headId);
     if (options.mode === 'affiliation') {
-      return !!member.substitutionGroup && resolve(member.substitutionGroup).key === head.id
-        && typeDerivation(member.type, head.type, declarationMethods(context, head, 'final') as readonly DerivationMethod[]);
+      const direct=member.substitutionGroup?context.resolve(member.substitutionGroup):undefined;
+      return direct?.kind==='found' && direct.node.id === head.id
+        && typeDerivation(declaredType(context, member), declaredType(context, head), declarationMethods(context, head, 'final') as readonly DerivationMethod[]);
     }
     if (options.mode !== 'substitutability') throw new RelationProblem({kind: 'invalid-input', rule: 'substitution-mode', message: 'Unknown substitution mode'});
     const blocks = options.blocking ?? declarationMethods(context, head, 'block');
     budget.chargeWork(blocks.length * 8 + 1);
     if (blocks.some(method => !['extension', 'restriction', 'substitution'].includes(method))) throw new RelationProblem({kind: 'invalid-input', rule: 'substitution-blocking', message: 'Unknown blocking method'});
     if (member.id === head.id) return true;
-    return !blocks.includes('substitution') && affiliation(member, head) && substitutionTypes(member.type, head.type, blocks);
+    return !blocks.includes('substitution') && affiliation(member, head) && substitutionTypes(declaredType(context, member), declaredType(context, head), blocks);
   };
   const members = (headId: string): readonly string[] => {
     const head = element(headId);
@@ -268,7 +303,7 @@ function kernel(context: SemanticContext) {
     }
     return budget.sorted(result, budget.compareText);
   };
-  return {typeDerivation, immediateFinal, substitution, members, dependencies, immediateBase: (reference: Reference) => info(reference).base};
+  return {typeDerivation, immediateFinal, substitution, members, dependencies, publishValue, resetTypes: () => {typeReads = collectSemanticTypeDependencies(context);}, typeDependencies: () => typeReads.snapshot(), immediateBase: (reference: Reference) => info(reference).base};
 }
 function run<T>(context: SemanticContext, operation: (owner: ReturnType<typeof kernel>) => T, obligations: RelationReceipt['obligations'] = ['component-validity']): RelationResult<T> {
   assertSemanticContext(context);
@@ -276,12 +311,14 @@ function run<T>(context: SemanticContext, operation: (owner: ReturnType<typeof k
     try {
       context.budget.chargeWork(); let owner = state.get(context);
       if (!owner) {owner = kernel(context); state.set(context, owner);}
-      owner.dependencies.clear();
+      owner.dependencies.clear(); owner.resetTypes();
       const value = operation(owner);
-      context.budget.chargeWork(owner.dependencies.size + 32 + context.contextId.length);
-      const result: RelationReceipt<T> = {kind: 'checked', value, contextId: context.contextId, authority: 'XSD10-local-relations-v1',
-        obligations, dependencies: [...owner.dependencies]};
-      return context.budget.freeze(context.budget.snapshot(result));
+      const ownedValue = owner.publishValue(value), typeDependencies = owner.typeDependencies();
+      // These strings are private dependency keys and fixed obligation tokens;
+      // their immutable values need only a reserved shallow array publication.
+      context.budget.chargeWork(owner.dependencies.size + obligations.length + 32 + context.contextId.length);
+      return Object.freeze({kind: 'checked' as const, value: ownedValue, contextId: context.contextId, authority: 'XSD10-local-relations-v1' as const,
+        obligations: Object.freeze([...obligations]), dependencies: Object.freeze([...owner.dependencies]), typeDependencies});
     } catch (error) {if (error instanceof RelationProblem) return context.budget.freeze(context.budget.snapshot(error.result)); throw error;}
   });
 }

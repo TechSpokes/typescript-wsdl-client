@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:original-generated-binding" xmlns:p="urn:recovery:bound-qname" xmlns:q="urn:recovery:bound-qname" targetNamespace="urn:recovery:original-generated-binding">
+  <xs:include schemaLocation="original-generated-binding-independent.xsd"/>
+  <xs:include schemaLocation="original-generated-chameleon-independent.xsd"/>
+  <xs:simpleType name="Annotated"><xs:restriction base="xs:string"><xs:minLength value="1"><xs:annotation><xs:documentation>original facet adjunct</xs:documentation></xs:annotation></xs:minLength></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Multi"><xs:restriction base="xs:string"><xs:pattern value="a"><xs:annotation><xs:documentation>original group adjunct</xs:documentation></xs:annotation></xs:pattern><xs:pattern value="b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameValue"><xs:restriction base="xs:QName"><xs:enumeration value="p:Item"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="NamedBase"><xs:restriction base="xs:string"><xs:minLength value="1"/></xs:restriction></xs:simpleType>
+  <xs:complexType name="NamedContainer"><xs:simpleContent><xs:extension base="t:NamedBase"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="DependentR"><xs:simpleContent><xs:restriction base="t:NamedContainer"><xs:maxLength value="3"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ZeroDependentR"><xs:simpleContent><xs:restriction base="t:NamedContainer"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="AnnotatedR"><xs:simpleContent><xs:restriction base="t:B"><xs:minLength value="1"><xs:annotation><xs:documentation>retained original facet</xs:documentation></xs:annotation></xs:minLength></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="AnnotatedD"><xs:simpleContent><xs:extension base="t:AnnotatedR"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="AnnotatedR2"><xs:simpleContent><xs:restriction base="t:B"><xs:minLength value="1"><xs:annotation><xs:documentation>independent facet</xs:documentation></xs:annotation></xs:minLength></xs:restriction></xs:simpleContent></xs:complexType>
+</xs:schema>

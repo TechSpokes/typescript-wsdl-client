@@ -1,5 +1,6 @@
+import type {SemanticTypeReference as Reference, SemanticTypeDependency, OriginalGeneratedScalarReference} from './semanticTypeReference.js';
 /** Declaration-local properties only. EDC and containing type validity are separate. */
-import type {GraphNode, NodeId, Reference} from './canonicalGraph.js';
+import type {GraphNode, NodeId} from './canonicalGraph.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import {isXmlNCName, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -7,11 +8,13 @@ import {createSchemaScalarKernel} from './schemaScalarKernel.js';
 import type {AssessedSchemaOperand, ScalarFailure} from './schemaScalarKernel.js';
 import {checkSubstitution, declarationMethods, RelationProblem} from './schemaTypeRelations.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
+import {resolveSemanticType, declaredType} from './schemaTypeIdentity.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 
 export type DeclarationReceipt = Readonly<{kind: 'checked'; component: NodeId; contextId: string;
   authority: 'XSD10-declaration-properties-v1'; constraint?: AssessedSchemaOperand;
-  obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]}>;
+  obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies:readonly SemanticTypeDependency[]}>;
 export type DeclarationResult = DeclarationReceipt | ScalarFailure | ResourceLimitFailure;
 const nameAttribute = (node: GraphNode, name: string): string | undefined =>
   node.declaredAttributes.find(a => a.name.namespace === '' && a.name.local === name)?.value;
@@ -42,10 +45,12 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
       if (nameAttribute(node, 'substitutionGroup') !== undefined || nameAttribute(node, 'abstract') !== undefined || nameAttribute(node, 'final') !== undefined) return fail('src-element', 'Local declaration has a global-only property');
     }
     }
-    const selected = context.resolve(node.type);
-    if (selected.kind !== 'found' && selected.kind !== 'builtin') return fail('src-resolve', 'Declared type is unavailable', 'unresolved');
-    if (selected.kind === 'found' && selected.node.kind !== 'simpleType' && selected.node.kind !== 'complexType') return fail('declared-type', 'Reference does not name a type');
-    if (node.kind === 'attribute' && (selected.kind === 'builtin' && selected.name.local === 'anyType' || selected.kind === 'found' && selected.node.kind === 'complexType')) return fail('a-props-correct.2', 'Attribute declarations require a simple type');
+    const type=declaredType(context,node), selected = resolveSemanticType(context,type);
+    const typed=collectSemanticTypeDependencies(context);
+    if(selected.kind==='component'||selected.kind==='builtin'||selected.kind==='original-generated')typed.add([{contextId:context.contextId,type:selected.identity}]);
+    if (selected.kind !== 'component' && selected.kind !== 'builtin' && selected.kind !== 'original-generated') return fail('src-resolve', 'Declared type is unavailable', 'unresolved');
+    if (selected.kind === 'component' && selected.node.kind !== 'simpleType' && selected.node.kind !== 'complexType') return fail('declared-type', 'Reference does not name a type');
+    if (node.kind === 'attribute' && (selected.kind === 'builtin' && selected.name.local === 'anyType' || selected.kind === 'component' && selected.node.kind === 'complexType')) return fail('a-props-correct.2', 'Attribute declarations require a simple type');
     if (node.kind === 'element') {
       try {declarationMethods(context, node, 'final'); declarationMethods(context, node, 'block');}
       catch (error) {if (error instanceof RelationProblem) return fail(error.result.rule, error.message, error.result.kind === 'unresolved' ? 'unresolved' : 'invalid-schema'); throw error;}
@@ -56,6 +61,7 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
         const relation = checkSubstitution(context, node.id, head.node.id, {mode: 'affiliation'});
         if (relation.kind === 'resource-limit') return relation;
         if (relation.kind !== 'checked') return fail(relation.rule, relation.message, 'unresolved');
+        typed.add(relation.typeDependencies);
         if (!relation.value) return fail('e-props-correct.4', 'Immediate affiliation type relation is not satisfied');
       }
     }
@@ -67,17 +73,17 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
         if (!scalarObligations.some(prior => prior.rule === obligation.rule && prior.component === obligation.component && (prior.contextId ?? context.contextId) === (obligation.contextId ?? context.contextId))) scalarObligations.push(obligation);
       }
     };
-    if (selected.kind === 'builtin' && selected.name.local !== 'anyType' || selected.kind === 'found' && selected.node.kind === 'simpleType') {
-      const description = scalar.describe(node.type, node.id);
+    if (selected.kind === 'original-generated' || selected.kind === 'builtin' && selected.name.local !== 'anyType' || selected.kind === 'component' && selected.node.kind === 'simpleType') {
+      const description = scalar.describe(type, node.id);
       if (description.kind !== 'checked') return description;
       if (description.value.primitive === 'NOTATION' && !description.value.layers.some(layer => layer.facets.some(facet => facet.name === 'enumeration'))) return fail('enumeration-required-notation', 'NOTATION cannot be used directly as a declared datatype');
-      remember(description.obligations);
+      remember(description.obligations);typed.add(description.typeDependencies);
     }
     let constraint: AssessedSchemaOperand | undefined;
     if (node.value) {
-      let reference: Reference = node.type;
+      let reference: Reference = type;
       if (selected.kind === 'builtin' && selected.name.local === 'anyType') reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anySimpleType'}};
-      else if (selected.kind === 'found' && selected.node.kind === 'complexType') {
+      else if (selected.kind === 'component' && selected.node.kind === 'complexType') {
         const raw = context.rawTypeProperties(selected.node.id);
         if (!raw && !context.sourceNode(selected.node.id)) return fail('missing-type-component-properties', 'Abstract helper type requires explicit component properties', 'unresolved');
         const simple = raw ? raw.content.kind === 'simple' : selected.node.derivation?.contentKind === 'simple';
@@ -92,9 +98,10 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
       const assessed = scalar.assess(reference, node.value.lexical, node.id);
       if (assessed.kind !== 'checked') return assessed;
       constraint = assessed.value;
-      remember(valueCheck.obligations); remember(assessed.obligations);
+      remember(valueCheck.obligations); remember(assessed.obligations);typed.add(valueCheck.typeDependencies);typed.add(assessed.typeDependencies);
     }
-    return context.budget.freeze(context.budget.snapshot({kind: 'checked' as const, component: id, contextId: context.contextId,
-      authority: 'XSD10-declaration-properties-v1' as const, constraint, obligations, scalarObligations}));
+    const owned=context.budget.freeze(context.budget.snapshot({kind:'checked' as const,component:id,contextId:context.contextId,
+      authority:'XSD10-declaration-properties-v1' as const,constraint,obligations,scalarObligations}));
+    const typeDependencies=typed.snapshot();context.budget.chargeWork(24);return Object.freeze({...owned,typeDependencies});
   });
 }

@@ -9,26 +9,30 @@ import {RE01_DERIVATION_DOMAIN} from './re01TypeProperties.js';
 import {deriveActualComplexContent, particleContentNode} from './complexTypeContent.js';
 import type {ParticleContentView} from './complexTypeContent.js';
 import {assessSourceAttributeUses} from './schemaAttributeUses.js';
-import {createSchemaScalarKernel} from './schemaScalarKernel.js';
+import {compareSchemaFacetProperties, createSchemaScalarKernel} from './schemaScalarKernel.js';
 import type {ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import type {RawAttributeGroupProperties} from './schemaAttributeGroupProperties.js';
 import {declarationMethods, immediateTypeBase, RelationProblem} from './schemaTypeRelations.js';
 import {namespaceSetSubset, wildcardNamespaces} from './wildcardAlgebra.js';
+import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
+import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 
 export type CorrespondenceFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'invalid-evidence' | 'unresolved' | 'unsupported-capability';
-  rule: string; component?: NodeId; message: string}>;
+  rule: string; component?: NodeId; contextId?: string; message: string}>;
 export type CorrespondenceReceipt = Readonly<{kind: 'checked'; authority: typeof RE01_DERIVATION_DOMAIN;
-  parentContext: string; contextId: string; target: NodeId; intermediate: NodeId; ancestor: Reference;
+  parentContext: string; contextId: string; target: NodeId; intermediate: NodeId; ancestor: SemanticTypeReference;
   originalProperties: readonly NodeId[]; fresh: readonly NodeId[];
-  scalarObligations: readonly Readonly<{contextId: string; obligation: ScalarObligation}>[]}>;
+  scalarObligations: readonly Readonly<{contextId: string; obligation: ScalarObligation}>[];
+  typeDependencies: readonly SemanticTypeDependency[]}>;
 export type CorrespondenceResult = CorrespondenceReceipt | CorrespondenceFailure | ResourceLimitFailure;
 const issued = new WeakMap<object, SemanticContext>();
 type Mapped = Readonly<{properties: RawComplexTypeProperties; context: SemanticContext; view?: ParticleContentView;
-  synthetic: readonly NodeId[]; scalarObligations: readonly ScalarObligation[]}>;
+  synthetic: readonly NodeId[]; scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}>;
 const actualMappings = new WeakMap<SemanticContext, Map<NodeId, Mapped>>();
 const actualGroupMappings = new WeakMap<SemanticContext, Map<NodeId, Readonly<{
-  properties: RawAttributeGroupProperties; scalarObligations: readonly ScalarObligation[];
+  properties: RawAttributeGroupProperties; scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[];
 }>>>();
 const ANY_TYPE: Reference = Object.freeze({kind: 'builtin', name: Object.freeze({namespace: XSD_NAMESPACE, local: 'anyType'})});
 class CorrespondenceAbort extends Error {
@@ -40,30 +44,33 @@ export function assertCandidateCorrespondence(context: SemanticContext, receipt:
 }
 
 /** The selected ancestor is computed from the complete context, never selected by a caller label. */
-export function re01Ancestor(context: SemanticContext, target: NodeId): Readonly<{kind: 'checked'; ancestor: Reference}> | CorrespondenceFailure | ResourceLimitFailure {
+export function re01Ancestor(context: SemanticContext, target: NodeId): Readonly<{kind: 'checked'; ancestor: SemanticTypeReference; typeDependencies: readonly SemanticTypeDependency[]}> | CorrespondenceFailure | ResourceLimitFailure {
   assertSemanticContext(context);
-  const result = context.budget.guard<Readonly<{kind: 'checked'; ancestor: Reference}> | CorrespondenceFailure | ResourceLimitFailure>(() => {
+  const result = context.budget.guard<Readonly<{kind: 'checked'; ancestor: SemanticTypeReference; typeDependencies: readonly SemanticTypeDependency[]}> | CorrespondenceFailure | ResourceLimitFailure>(() => {
     const b = context.budget; b.chargeWork(4);
+    const dependencies = collectSemanticTypeDependencies(context);
     const first = immediateTypeBase(context, {kind: 'local', target});
     if (first.kind === 'resource-limit') return first;
     if (first.kind !== 'checked' || !first.value) return {kind: 'unresolved', rule: 'ancestor-domain', component: target, message: 'Original immediate base is unavailable'};
-    const seen = new Set<string>(); let current: Reference = first.value;
+    dependencies.add(first.typeDependencies);
+    const seen = new Set<string>(); let current: SemanticTypeReference = first.value;
     for (;;) {
-      const resolved = context.resolve(current);
-      if (resolved.kind !== 'builtin' && resolved.kind !== 'found') return {kind: 'unresolved', rule: 'ancestor-domain', component: target, message: 'Ancestor is unavailable'};
+      const resolved = resolveSemanticType(context, current);
+      if (!('identity' in resolved)) return {kind: 'unresolved', rule: 'ancestor-domain', component: target, message: 'Ancestor is unavailable'};
       // The ur-type's actual base property is itself; the general ancestry
       // accessor stops there to avoid treating ordinary cycles as legal.
-      if (resolved.kind === 'builtin' && resolved.name.local === 'anyType') return {kind: 'checked', ancestor: current};
-      const key = resolved.kind === 'builtin' ? `builtin:${resolved.name.local}` : resolved.node.id;
+      if (resolved.kind === 'builtin' && resolved.name.local === 'anyType') return {kind: 'checked', ancestor: current, typeDependencies: dependencies.snapshot()};
+      const key = semanticTypeKey(context, resolved.identity);
       b.chargeWork(4 + key.length);
       if (seen.has(key)) return {kind: 'invalid-evidence', rule: 'ancestor-cycle', component: target, message: 'Ancestor chain is cyclic'};
       seen.add(key);
       const parent = immediateTypeBase(context, current);
       if (parent.kind !== 'checked') return parent.kind === 'resource-limit' ? parent : {kind: 'unresolved', rule: parent.rule, component: target, message: parent.message};
+      dependencies.add(parent.typeDependencies);
       if (!parent.value) return {kind: 'unresolved', rule: 'ancestor-domain', component: target, message: 'No proper ancestor with ur-type base'};
-      const next = context.resolve(parent.value);
+      const next = resolveSemanticType(context, parent.value);
       if (next.kind === 'builtin' && next.name.namespace === XSD_NAMESPACE && next.name.local === 'anyType') {
-        b.chargeWork(3); return Object.freeze({kind: 'checked', ancestor: current});
+        b.chargeWork(4); return Object.freeze({kind: 'checked', ancestor: current, typeDependencies: dependencies.snapshot()});
       }
       current = parent.value;
     }
@@ -72,10 +79,11 @@ export function re01Ancestor(context: SemanticContext, target: NodeId): Readonly
 }
 
 export function checkCandidateCorrespondence(actual: SemanticContext, parent: SemanticContext, candidate: SemanticContext,
-  target: NodeId, intermediate: NodeId, ancestor: Reference): CorrespondenceResult {
+  target: NodeId, intermediate: NodeId, ancestor: SemanticTypeReference): CorrespondenceResult {
   assertSemanticContext(actual); assertSemanticContext(parent); assertSemanticContext(candidate);
   const b = candidate.budget, charge = b.chargeWork;
   return b.guard(() => {
+    const typeDependencies = collectSemanticTypeDependencies(candidate);
     if (!contextsShareRequest(actual, parent) || !isSemanticCandidateOf(parent, candidate)) throw new TypeError('Candidate is not an authenticated direct child of this request');
     const suppliedAncestor = b.freeze(b.snapshot(ancestor));
     const fail = (rule: string, component: NodeId | undefined, message: string, kind: CorrespondenceFailure['kind'] = 'candidate-rejected'): never => {
@@ -86,10 +94,12 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
       const found = context.lookup(id);
       return found.kind === 'found' ? found.node : fail('complete-domain-membership', id, 'Required component is unavailable', 'unresolved');
     };
-    const refKey = (context: SemanticContext, reference: Reference): string => {
-      const found = context.resolve(reference);
-      if (found.kind === 'found') return found.node.id;
-      if (found.kind === 'builtin') {charge(8 + found.name.local.length); return `builtin:${found.name.local}`;}
+    const refKey = (context: SemanticContext, reference: SemanticTypeReference): string => {
+      const found = resolveSemanticType(context, reference);
+      if ('identity' in found) {
+        charge(4); typeDependencies.add([{contextId: context.contextId, type: found.identity}]);
+        return semanticTypeKey(context, found.identity);
+      }
       return fail('reference-correspondence', undefined, 'Correspondence reference is unavailable', 'unresolved');
     };
     const sameSet = (a: readonly string[], c: readonly string[]): boolean => {
@@ -102,17 +112,71 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
     };
     charge(4); const scalarObligations: {contextId: string; obligation: ScalarObligation}[] = [];
     const scalarValue = <T>(context: SemanticContext, result: ScalarResult<T>): T => {
-      if (result.kind !== 'checked') throw new CorrespondenceAbort(result.kind === 'invalid-schema' && context.kind === 'candidate' ? {...result, kind: 'candidate-rejected'} : result);
+      if (result.kind !== 'checked') {
+        if (result.kind === 'resource-limit') throw new CorrespondenceAbort(result);
+        const origin = result.contextId ?? context.contextId;
+        charge(5);
+        throw new CorrespondenceAbort(Object.freeze({...result, contextId: origin,
+          kind: result.kind === 'invalid-schema' && origin !== actual.contextId ? 'candidate-rejected' : result.kind}));
+      }
+      typeDependencies.add(result.typeDependencies);
       for (const obligation of result.obligations) {charge(3); scalarObligations.push({contextId: obligation.contextId ?? context.contextId, obligation});}
       return result.value;
     };
+    const compareSimple = (id: NodeId): void => {
+      charge(4); const reference: Reference = {kind: 'local', target: id};
+      const left = scalarValue(parent, createSchemaScalarKernel(parent).contentProperties(reference, id));
+      const right = scalarValue(candidate, createSchemaScalarKernel(candidate).contentProperties(reference, id));
+      const text = (a: string | undefined, c: string | undefined): boolean => a === undefined || c === undefined
+        ? a === c : b.compareText(a, c) === 0;
+      // Equal definition IDs across two contexts do not prove equal properties.
+      // These references retain component identity; structural substitution is
+      // the separate cos-particle-extend equality owner's task.
+      if (!text(left.definition, right.definition) || !text(left.name?.namespace, right.name?.namespace)
+        || !text(left.name?.local, right.name?.local) || !text(left.targetNamespace, right.targetNamespace)
+        || !sameSet(left.final, right.final) || left.variety !== right.variety || !text(left.primitive, right.primitive)
+        || Boolean(left.base) !== Boolean(right.base) || Boolean(left.item) !== Boolean(right.item)
+        || (left.members?.length ?? 0) !== (right.members?.length ?? 0))
+        return fail('original-simple-property-correspondence', id, 'Original simple type metadata changed');
+      if (left.base && right.base && refKey(parent, left.base) !== refKey(candidate, right.base)
+        || left.item && right.item && refKey(parent, left.item) !== refKey(candidate, right.item))
+        return fail('original-simple-property-correspondence', id, 'Original scalar base or item identity changed');
+      for (let index = 0; index < (left.members?.length ?? 0); index++) {
+        charge();
+        if (refKey(parent, left.members![index]!) !== refKey(candidate, right.members![index]!))
+          return fail('original-simple-property-correspondence', id, 'Original ordered scalar member identity changed');
+      }
+      const facets = compareSchemaFacetProperties(parent, reference, id, candidate, reference, id);
+      if (facets.kind === 'resource-limit') throw new CorrespondenceAbort(facets);
+      if (facets.kind !== 'checked') {
+        if (facets.side === 'comparison') return fail(facets.rule, id, facets.message, 'unresolved');
+        charge(8);
+        throw new CorrespondenceAbort(Object.freeze({kind: facets.kind === 'invalid-schema' && facets.contextId !== actual.contextId
+          ? 'candidate-rejected' : facets.kind, rule: facets.rule, component: facets.component, contextId: facets.contextId, message: facets.message}));
+      }
+      typeDependencies.add(facets.typeDependencies);
+      for (const obligation of facets.obligations) {
+        charge(3);
+        if (!obligation.contextId) return fail('scalar-obligation-context', id, 'Cross-context scalar obligation lacks its originating context', 'unresolved');
+        scalarObligations.push({contextId: obligation.contextId, obligation});
+      }
+      if (!facets.value) return fail('original-simple-property-correspondence', id, 'Original simple type facet properties changed');
+      // Only the shared private facet owner can compare complete annotation
+      // data or the identity of an originally bound facet component. Aggregate
+      // presence alone cannot establish full annotation correspondence.
+      if (facets.annotationCorrespondence === 'different')
+        return fail('original-facet-annotation-correspondence', id, 'Original facet annotation properties changed');
+      if (facets.annotationCorrespondence !== 'equal') return fail('original-facet-annotation-correspondence', id,
+        'Original facet annotations require exact supplied data or original component binding', 'unresolved');
+    };
     const mapped = (id: NodeId): Mapped => {
       const prior = parent.rawTypeProperties(id);
-      if (prior) {charge(7); return {properties: prior, context: parent, synthetic: [], scalarObligations: []};}
+      if (prior) {charge(8); return {properties: prior, context: parent, synthetic: [], scalarObligations: [], typeDependencies: []};}
       let cache = actualMappings.get(actual);
       if (!cache) {charge(2); cache = new Map(); actualMappings.set(actual, cache);}
       const cached = cache.get(id);
       if (cached) {
+        typeDependencies.add(cached.typeDependencies);
         for (const obligation of cached.scalarObligations) {charge(3); scalarObligations.push({contextId: obligation.contextId ?? actual.contextId, obligation});}
         return cached;
       }
@@ -122,6 +186,7 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
       if (content.kind !== 'checked') throw new CorrespondenceAbort(content.kind === 'resource-limit' ? content
         : {...content, kind: content.kind === 'invalid-input' ? 'invalid-evidence' : 'unresolved'});
       if (attrs.kind !== 'checked') throw new CorrespondenceAbort(attrs);
+      typeDependencies.add(attrs.typeDependencies);
       for (const obligation of attrs.scalarObligations) {charge(3); scalarObligations.push({contextId: obligation.contextId ?? actual.contextId, obligation});}
       charge(20 + attrs.value.uses.length);
       const properties: RawComplexTypeProperties = {
@@ -132,7 +197,7 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
         attributeUses: attrs.value.uses.map(use => use.id), wildcard: attrs.value.wildcard, provenance: {kind: 'actual-mapped', original: id},
       };
       charge(9); const result = Object.freeze({properties: b.freeze(b.snapshot(properties)), context: actual,
-        view: content.view, synthetic: content.view.synthetic, scalarObligations: attrs.scalarObligations});
+        view: content.view, synthetic: content.view.synthetic, scalarObligations: attrs.scalarObligations, typeDependencies: attrs.typeDependencies});
       cache.set(id, result); return result;
     };
     const typeNamespace = (context: SemanticContext, id: NodeId, properties: RawComplexTypeProperties): string => {
@@ -150,15 +215,17 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
       if (!cache) {charge(2); cache = new Map(); actualGroupMappings.set(actual, cache);}
       const cached = cache.get(id);
       if (cached) {
+        typeDependencies.add(cached.typeDependencies);
         for (const obligation of cached.scalarObligations) {charge(3); scalarObligations.push({contextId: obligation.contextId ?? actual.contextId, obligation});}
         return cached.properties;
       }
       const attrs = assessSourceAttributeUses(actual, id);
       if (attrs.kind !== 'checked') throw new CorrespondenceAbort(attrs);
+      typeDependencies.add(attrs.typeDependencies);
       for (const obligation of attrs.scalarObligations) {charge(3); scalarObligations.push({contextId: obligation.contextId ?? actual.contextId, obligation});}
       charge(6 + attrs.value.uses.length);
       const properties = b.freeze(b.snapshot({group: id, attributeUses: attrs.value.uses.map(use => use.id), wildcard: attrs.value.wildcard}));
-      cache.set(id, {properties, scalarObligations: attrs.scalarObligations}); return properties;
+      cache.set(id, {properties, scalarObligations: attrs.scalarObligations, typeDependencies: attrs.typeDependencies}); return properties;
     };
     const compareContent = (left: Mapped, right: RawComplexTypeProperties): void => {
       const a = left.properties.content, c = right.content;
@@ -167,12 +234,12 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
       if (a.kind === 'simple' && c.kind === 'simple') {
         // Source complex facade describes the exact content definition, even
         // when a mapped anonymous simple type is not in the canonical graph.
-        const sourceRef: Reference = left.context.kind === 'actual' ? {kind: 'local', target: right.type} : a.type;
+        const sourceRef: SemanticTypeReference = left.context.kind === 'actual' ? {kind: 'local', target: right.type} : a.type;
         const x = scalarValue(left.context, createSchemaScalarKernel(left.context).contentIdentity(sourceRef, right.type));
         const y = scalarValue(candidate, createSchemaScalarKernel(candidate).contentIdentity(c.type, right.type));
         charge(x.definition.length + y.definition.length + 2);
         if (x.definition !== y.definition) return fail('endpoint-scalar-identity', right.type,
-          'Original effective simple type identity was not retained', x.reference === undefined ? 'unresolved' : 'candidate-rejected');
+          'Original effective simple type identity was not retained');
         return;
       }
       if (a.kind === 'opaque-builtin' && c.kind === 'opaque-builtin') {
@@ -203,20 +270,29 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
     try {
       if (actual.kind !== 'actual') return fail('actual-context', target, 'Original source context is required', 'invalid-evidence');
       if (parent.membership !== 'complete-actual-plus-additions' || candidate.membership !== 'complete-actual-plus-additions') return fail('complete-domain-membership', target, 'Semantic candidate must retain the complete available environment', 'unresolved');
+      if (parent.scalarSlotMembership !== 'complete-original' || candidate.scalarSlotMembership !== 'complete-original')
+        return fail('complete-scalar-slot-membership', target, 'Semantic candidate must retain every original scalar component', 'unresolved');
       const before = node(parent, target), endpoint = node(candidate, target), e = node(candidate, intermediate);
       if (before.kind !== 'complexType' || endpoint.kind !== 'complexType' || e.kind !== 'complexType') return fail('two-step-types', target, 'Endpoint and intermediate must be complex types', 'invalid-evidence');
       const computed = re01Ancestor(parent, target);
       if (computed.kind !== 'checked') throw new CorrespondenceAbort(computed);
+      typeDependencies.add(computed.typeDependencies);
       if (refKey(parent, computed.ancestor) !== refKey(parent, suppliedAncestor)) return fail('ancestor-correspondence', target, 'Supplied ancestor differs from the original chain', 'invalid-evidence');
       const endProps = candidate.rawTypeProperties(target), middleProps = candidate.rawTypeProperties(intermediate);
       if (!endProps || !middleProps) return fail('raw-type-properties', target, 'Endpoint and intermediate need complete raw properties', 'unresolved');
-      if (endProps.derivation.method !== 'restriction' || refKey(candidate, endProps.derivation.base) !== intermediate
+      if (endProps.derivation.method !== 'restriction' || refKey(candidate, endProps.derivation.base) !== refKey(candidate, {kind: 'local', target: intermediate})
         || middleProps.derivation.method !== 'extension' || refKey(candidate, middleProps.derivation.base) !== refKey(candidate, suppliedAncestor)) return fail('two-step-construction', target, 'Expected extension from the designated ancestor then endpoint restriction');
       charge(4); const originalProperties: NodeId[] = [], fresh: NodeId[] = [];
       for (const id of candidate.members) {
         const original = parent.lookup(id);
         if (original.kind !== 'found') {charge(); fresh.push(id); continue;}
         const group = candidate.rawAttributeGroupProperties(id);
+        const rawSimple = candidate.rawSimpleTypeProperties(id);
+        const element = candidate.rawElementProperties(id);
+        const attribute = candidate.rawAttributeProperties(id);
+        const properties = candidate.rawTypeProperties(id);
+        if ((group || rawSimple || element || attribute || properties) && candidate.originalSourceComponentAbsent(id))
+          return fail('source-only-property-overlay', id, 'A source-only diagnostic node cannot receive component properties');
         if (group) {
           const prior = mappedGroup(id);
           if (!sameSet(group.attributeUses, prior.attributeUses) || Boolean(group.wildcard) !== Boolean(prior.wildcard))
@@ -226,13 +302,18 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
             return fail('original-group-property-correspondence', id, 'Original effective group wildcard changed');
           charge(); originalProperties.push(id);
         }
-        const rawSimple = candidate.rawSimpleTypeProperties(id);
-        if (rawSimple && rawSimple !== parent.rawSimpleTypeProperties(id)) return fail('original-simple-property-correspondence', id, 'A supplied original simple-property override requires a concrete mapping proof', 'unresolved');
-        const element = candidate.rawElementProperties(id);
+        if (rawSimple) {compareSimple(id); charge(); originalProperties.push(id);}
         if (element) {
           if (!sameSet(element.final, declarationMethods(parent, original.node, 'final')) || !sameSet(element.block, declarationMethods(parent, original.node, 'block'))) return fail('original-element-property-correspondence', id, 'Original declaration flags changed');
         }
-        const properties = candidate.rawTypeProperties(id);
+        if (element?.type !== undefined || attribute) {
+          const current = node(candidate, id);
+          if (original.node.kind !== 'element' && original.node.kind !== 'attribute' || current.kind !== 'element' && current.kind !== 'attribute')
+            return fail('original-declaration-type-correspondence', id, 'Explicit type requires a declaration');
+          if (refKey(parent, declaredType(parent, original.node)) !== refKey(candidate, declaredType(candidate, current)))
+            return fail('original-declaration-type-correspondence', id, 'Original declaration type identity changed');
+          charge(); originalProperties.push(id);
+        }
         if (!properties) continue;
         const left = mapped(id), prior = left.properties;
         if (typeNamespace(candidate, id, properties) !== typeNamespace(left.context, id, prior)
@@ -247,7 +328,7 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
       charge(16 + originalProperties.length + fresh.length + scalarObligations.length);
       const receipt: CorrespondenceReceipt = b.freeze(b.snapshot({kind: 'checked', authority: RE01_DERIVATION_DOMAIN,
         parentContext: parent.contextId, contextId: candidate.contextId, target, intermediate, ancestor: computed.ancestor,
-        originalProperties: Object.freeze(originalProperties), fresh: Object.freeze(fresh), scalarObligations: Object.freeze(scalarObligations)}));
+        originalProperties: Object.freeze(originalProperties), fresh: Object.freeze(fresh), scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()}));
       issued.set(receipt, candidate); return receipt;
     } catch (error) {
       if (error instanceof CorrespondenceAbort) return error.result;

@@ -15,10 +15,14 @@ import {wildcardNamespaces} from './wildcardAlgebra.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import {declaredType} from './schemaTypeIdentity.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import type {SemanticTypeDependency} from './semanticTypeReference.js';
 
 export type ParticleRestrictionResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-particle-restrict'; contextId: string;
   obligations: readonly ['component-validity', 'particle-local-legality'];
+  typeDependencies: readonly SemanticTypeDependency[];
 }> | RelationFailure | ScalarFailure | ResourceLimitFailure;
 class Incomplete extends Error {constructor(readonly result: RelationFailure | ScalarFailure | ResourceLimitFailure) {super(result.kind);}}
 type Debt = RelationFailure | ScalarFailure | ResourceLimitFailure;
@@ -38,6 +42,8 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
     try {
       charge(24);
       if (derived.purpose !== 'restriction' || base.purpose !== 'restriction') return unresolved(derived.root, 'Restriction-normalized views required');
+      const typeDependencies = collectSemanticTypeDependencies(context);
+      typeDependencies.add(derived.typeDependencies); typeDependencies.add(base.typeDependencies);
       const algebra = occurrenceAlgebra(charge), scalar = createSchemaScalarKernel(context);
       const within = (r: Occurs, b: Occurs) => algebra.compare(r.min, b.min) >= 0 && algebra.compare(r.max, b.max) <= 0;
       const group = (p: SemanticParticle) => p.kind === 'sequence' || p.kind === 'choice' || p.kind === 'all';
@@ -98,8 +104,9 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
       const fixedEqual = (a: ElementNode, b: ElementNode): boolean => {
         if (b.value?.kind !== 'fixed') return true;
         if (a.value?.kind !== 'fixed') return false;
-        const result = scalar.equivalent(a.type, a.value.lexical, b.type, b.value.lexical, a.id);
+        const result = scalar.equivalent(declaredType(context, a), a.value.lexical, declaredType(context, b), b.value.lexical, a.id);
         if (result.kind !== 'checked') throw new Incomplete(result);
+        typeDependencies.add(result.typeDependencies);
         if (result.obligations.length) return unresolved(derived.root, 'Fixed value comparison has undischarged scalar prerequisites');
         return result.value;
       };
@@ -137,8 +144,9 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
           const required = declarationMethods(context, y, 'block'), actual = declarationMethods(context, x, 'block');
           charge(1 + required.length * (actual.length + 1));
           if (!required.every(method => actual.includes(method))) return false;
-          const result = checkTypeDerivation(context, x.type, y.type, ['extension', 'list', 'union']);
+          const result = checkTypeDerivation(context, declaredType(context, x), declaredType(context, y), ['extension', 'list', 'union']);
           if (result.kind !== 'checked') throw new Incomplete(result);
+          typeDependencies.add(result.typeDependencies);
           return result.value;
         }
         if (b.kind === 'any') return evaluatePreparedGroupWildcard(decision(r), decision(b), charge, b.urTypeWildcard);
@@ -259,7 +267,7 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
       }
       if (!value && pending) return pending;
       charge(10); return Object.freeze({kind: 'checked', value, rule: 'cos-particle-restrict', contextId: context.contextId,
-        obligations: Object.freeze(['component-validity', 'particle-local-legality'] as const)});
+        obligations: Object.freeze(['component-validity', 'particle-local-legality'] as const), typeDependencies: typeDependencies.snapshot()});
     } catch (error: unknown) {if (error instanceof Incomplete || error instanceof RelationProblem) return error.result; if (error instanceof SemanticError) {budget.chargeWork(10 + error.message.length); return Object.freeze({kind: 'invalid-input', rule: 'cos-particle-restrict', component: error.component, message: error.message});} throw error;}
   });
 }

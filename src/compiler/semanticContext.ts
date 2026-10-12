@@ -20,10 +20,18 @@ import {equalNotationProperties, notationNameKey, readSourceNotationProperties, 
 import type {SchemaNotationProperties} from './schemaNotationProperties.js';
 import {sourceSchemasForResolvedGraph} from './sourceSchemaBinding.js';
 import type {SyntaxElement} from '../loader/orderedSyntax.js';
+import {assertSemanticTypeReferenceShape} from './semanticTypeReference.js';
+import type {OriginalGeneratedScalarReference, SemanticTypeReference} from './semanticTypeReference.js';
+import {validateRawAttributeShape} from './schemaAttributeProperties.js';
+import type {RawAttributeProperties} from './schemaAttributeProperties.js';
+import {computeOriginalSourceAbsence} from './originalSourceMembership.js';
 
 export const SEMANTIC_CONTEXT_CONTRACT = 'RE01-domain-boundary-v1' as const;
 export type ContextLookup = Readonly<{kind: 'found'; node: GraphNode} | {kind: 'missing' | 'outside-context'; id: NodeId}>;
 export type ContextResolution = ContextLookup | Readonly<{kind: 'builtin'; name: ExpandedName}>;
+export type SemanticReferenceSlot = Readonly<{path: string; reference: SemanticTypeReference}>;
+export type ContextScalarSlotLookup = Readonly<{kind: 'found'; slot: OriginalGeneratedScalarReference} |
+  {kind: 'missing' | 'outside-context'; slot: OriginalGeneratedScalarReference}>;
 export type ContextNotationLookup = Readonly<
   {kind: 'found'; properties: SchemaNotationProperties; origin: 'original' | 'addition'} |
   {kind: 'missing' | 'outside-context'; name: ExpandedName} |
@@ -38,14 +46,20 @@ export type SemanticContext = Readonly<{
   membership: 'complete-actual-plus-additions' | 'structural-subset';
   budget: SemanticBudget;
   members: readonly NodeId[];
+  scalarSlots: readonly OriginalGeneratedScalarReference[];
+  scalarSlotMembership: 'complete-original' | 'structural-subset';
+  lookupScalarSlot(reference: OriginalGeneratedScalarReference): ContextScalarSlotLookup;
   /** Separate NOTATION symbol space; no persisted GraphNode role is introduced. */
   notationMembers: readonly ExpandedName[];
   notationMembership: 'complete-original-plus-additions' | 'structural-subset';
   notationUniverse: 'source-bound' | 'retained-only';
   lookupNotation(name: ExpandedName): ContextNotationLookup;
   lookup(id: NodeId): ContextLookup;
+  /** Owns immutable selector data only; every resolution still checks current membership. */
+  ownTypeReference(reference: SemanticTypeReference): SemanticTypeReference;
   resolve(reference: Reference): ContextResolution;
   sourceNode(id: NodeId): GraphNode | undefined;
+  originalSourceComponentAbsent(id: NodeId): boolean;
   /** Original source operand interpretation, with the same request budget. */
   originalContext(): SemanticContext;
   /** Original schema syntax evidence, not implicit hypothetical symbol membership. */
@@ -54,9 +68,10 @@ export type SemanticContext = Readonly<{
   rawTypeProperties(id: NodeId): RawComplexTypeProperties | undefined;
   rawSimpleTypeProperties(id: NodeId): RawSimpleTypeProperties | undefined;
   rawElementProperties(id: NodeId): RawElementProperties | undefined;
+  rawAttributeProperties(id: NodeId): RawAttributeProperties | undefined;
   rawAttributeGroupProperties(id: NodeId): RawAttributeGroupProperties | undefined;
   /** Checked accessors throw SemanticContextAccessError for an inactive/missing owner. */
-  references(id: NodeId): readonly ReferenceSlot[];
+  references(id: NodeId): readonly SemanticReferenceSlot[];
   owner(id: NodeId): NodeId | undefined;
   incomingAffiliates(id: NodeId): readonly NodeId[];
 }>;
@@ -69,6 +84,9 @@ export type SemanticCandidateDelta = Readonly<{
   rawTypes?: readonly RawComplexTypeProperties[];
   rawSimpleTypes?: readonly RawSimpleTypeProperties[];
   rawElements?: readonly RawElementProperties[];
+  rawAttributes?: readonly RawAttributeProperties[];
+  /** Independent scalar component membership; omission inherits the parent. */
+  scalarSlots?: readonly OriginalGeneratedScalarReference[];
   rawAttributeGroups?: readonly RawAttributeGroupProperties[];
   /** Omission inherits the parent; an explicit selection must include every new addition. */
   notations?: Readonly<{active: readonly ExpandedName[]; additions?: readonly SchemaNotationProperties[]}>;
@@ -169,24 +187,34 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       }
       budget.reserveNodes(dataField(inputNodes, 'length') as number);
       const graph = budget.freeze(budget.snapshot(inputGraph as CanonicalGraph));
-      budget.chargeWork(5);
+      budget.chargeWork(6);
       const originals = new Map<NodeId, GraphNode>();
       const originalNames = new Map<string, NodeId>();
       const originalSlots = new Map<NodeId, readonly ReferenceSlot[]>();
       const originalEdges = new Map<NodeId, readonly NodeId[]>();
       const knownReferences = new WeakSet<object>();
+      const ownedTypeReferences = new WeakSet<object>();
       const requestAuthority = Object.freeze({});
       const requestId = `semantic-request:${++nextRequest}`;
       let serial = 0;
       type OriginalNotation = {properties: SchemaNotationProperties; conflicting: boolean};
       type NotationState = {additions: ReadonlyMap<string, SchemaNotationProperties>; active: ReadonlySet<string>; members: readonly ExpandedName[]};
+      type ScalarSlotState = {active: ReadonlySet<NodeId>; members: readonly OriginalGeneratedScalarReference[]};
+      const originalScalarSlots = new Map<NodeId, OriginalGeneratedScalarReference>();
+      const absentOriginals = computeOriginalSourceAbsence(graph.nodes, budget);
       const originalNotations = new Map<string, OriginalNotation>();
       type ContextState = {changes: ReadonlyMap<NodeId, GraphNode>; slots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>;
         edges: ReadonlyMap<NodeId, readonly NodeId[]>; raw: ReadonlyMap<NodeId, RawComplexTypeProperties>;
-        simple: ReadonlyMap<NodeId, RawSimpleTypeProperties>; elements: ReadonlyMap<NodeId, RawElementProperties>; groups: ReadonlyMap<NodeId, RawAttributeGroupProperties>; notations: NotationState};
+        simple: ReadonlyMap<NodeId, RawSimpleTypeProperties>; elements: ReadonlyMap<NodeId, RawElementProperties>;
+        attributes: ReadonlyMap<NodeId, RawAttributeProperties>; groups: ReadonlyMap<NodeId, RawAttributeGroupProperties>;
+        notations: NotationState; scalarSlots: ScalarSlotState};
       const states = new WeakMap<SemanticContext, ContextState>();
 
-      const key = (id: string): void => budget.chargeWork(1 + id.length);
+      const key = (id: string): void => {
+        budget.chargeWork();
+        if (typeof id !== 'string') throw new TypeError('Semantic component IDs must be strings');
+        budget.chargeWork(id.length);
+      };
       const notationField = (value: unknown, field: string): unknown => {
         budget.chargeWork(44 + field.length);
         if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Notation properties require data records');
@@ -269,24 +297,34 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         originals.set(node.id, node);
         if (node.identity.kind === 'global') originalNames.set(node.id, node.id);
         indexNode(node, originalSlots, originalEdges);
+        if (node.kind === 'complexType' && node.derivation?.contentKind === 'simple' && node.derivation.kind === 'restriction' && !absentOriginals.has(node.id)) {
+          budget.reserveNodes(1); budget.chargeWork(5 + node.id.length);
+          const slot = Object.freeze({kind: 'original-generated', owner: node.id} as const);
+          assertSemanticTypeReferenceShape(slot, budget);
+          budget.chargeWork(); ownedTypeReferences.add(slot);
+          originalScalarSlots.set(node.id, slot);
+        }
       }
+      budget.chargeWork(4 + originalScalarSlots.size * 2);
+      const actualScalarSlots: ScalarSlotState = {active: new Set(originalScalarSlots.keys()), members: Object.freeze([...originalScalarSlots.values()])};
 
       budget.chargeWork(12);
       const sharedMetadata: SemanticGraphMetadata = Object.freeze({model: graph.model, origins: graph.origins,
         schemaAnnotations: graph.schemaAnnotations, schemaRetained: graph.schemaRetained, loading: graph.loading});
-      const buildContext = (kind: SemanticContext['kind'], members: readonly NodeId[], changes: ReadonlyMap<NodeId, GraphNode>, changedSlots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>, changedEdges: ReadonlyMap<NodeId, readonly NodeId[]>, rawTypes: readonly RawComplexTypeProperties[] = [], rawSimpleTypes: readonly RawSimpleTypeProperties[] = [], rawElements: readonly RawElementProperties[] = [], rawGroups: readonly RawAttributeGroupProperties[] = [], notations: NotationState = actualNotations): SemanticContext => {
+      const buildContext = (kind: SemanticContext['kind'], members: readonly NodeId[], changes: ReadonlyMap<NodeId, GraphNode>, changedSlots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>, changedEdges: ReadonlyMap<NodeId, readonly NodeId[]>, rawTypes: readonly RawComplexTypeProperties[] = [], rawSimpleTypes: readonly RawSimpleTypeProperties[] = [], rawElements: readonly RawElementProperties[] = [], rawGroups: readonly RawAttributeGroupProperties[] = [], notations: NotationState = actualNotations, scalarSlots: ScalarSlotState = actualScalarSlots, rawAttributes: readonly RawAttributeProperties[] = []): SemanticContext => {
         budget.chargeWork(5);
         const membership = new Set<NodeId>();
         const rawProperties = new Map<NodeId, RawComplexTypeProperties>();
         const rawSimpleProperties = new Map<NodeId, RawSimpleTypeProperties>();
-        const rawSimpleSlots = new Map<NodeId, readonly ReferenceSlot[]>();
-        const rawComplexSlots = new Map<NodeId, readonly ReferenceSlot[]>(), rawComplexEdges = new Map<NodeId, readonly NodeId[]>();
+        const rawSimpleSlots = new Map<NodeId, readonly SemanticReferenceSlot[]>();
+        const rawComplexSlots = new Map<NodeId, readonly SemanticReferenceSlot[]>(), rawComplexEdges = new Map<NodeId, readonly NodeId[]>();
         const rawElementProperties = new Map<NodeId, RawElementProperties>();
+        const rawAttributeProperties = new Map<NodeId, RawAttributeProperties>();
         const rawGroupProperties = new Map<NodeId, RawAttributeGroupProperties>();
         let expectedMembers = originals.size;
         for (const id of changes.keys()) {key(id); if (!originals.has(id)) expectedMembers++;}
         const reverse = new Map<NodeId, NodeId[]>();
-        const slotsFor = (id: NodeId): readonly ReferenceSlot[] => rawComplexSlots.get(id) ?? rawSimpleSlots.get(id) ?? changedSlots.get(id) ?? originalSlots.get(id) ?? [];
+        const slotsFor = (id: NodeId): readonly SemanticReferenceSlot[] => rawComplexSlots.get(id) ?? rawSimpleSlots.get(id) ?? changedSlots.get(id) ?? originalSlots.get(id) ?? [];
         const edgesFor = (id: NodeId): readonly NodeId[] => rawComplexEdges.get(id) ?? changedEdges.get(id) ?? originalEdges.get(id) ?? [];
         const record = (id: NodeId): GraphNode | undefined => changes.get(id) ?? originals.get(id);
         for (const id of members) {
@@ -308,7 +346,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           key(properties.type);
           if (requireMember(properties.type).kind !== 'complexType' || rawProperties.has(properties.type)) throw new InvalidContext('representation', properties.type);
           budget.chargeWork(8 + properties.attributeUses.length); rawProperties.set(properties.type, properties);
-          const references: ReferenceSlot[] = [Object.freeze({path: '$raw/derivation/base', reference: properties.derivation.base})];
+          const references: SemanticReferenceSlot[] = [Object.freeze({path: '$raw/derivation/base', reference: properties.derivation.base})];
           if (properties.content.kind === 'simple' || properties.content.kind === 'opaque-builtin') {
             budget.chargeWork(3); references.push(Object.freeze({path: '$raw/content/type', reference: properties.content.type}));
           }
@@ -322,7 +360,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           key(properties.type);
           if (requireMember(properties.type).kind !== 'simpleType' || rawSimpleProperties.has(properties.type)) throw new InvalidContext('representation', properties.type);
           budget.chargeWork(5); rawSimpleProperties.set(properties.type, properties);
-          const rawSlots: ReferenceSlot[] = [Object.freeze({path: '$raw/base', reference: properties.base})];
+          const rawSlots: SemanticReferenceSlot[] = [Object.freeze({path: '$raw/base', reference: properties.base})];
           if (properties.variety.kind === 'list') {budget.chargeWork(3); rawSlots.push(Object.freeze({path: '$raw/item', reference: properties.variety.item}));}
           if (properties.variety.kind === 'union') for (let i = 0; i < properties.variety.members.length; i++) {
             budget.chargeWork(12); rawSlots.push(Object.freeze({path: '$raw/members/' + i, reference: properties.variety.members[i]}));
@@ -334,6 +372,18 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           key(properties.element);
           if (requireMember(properties.element).kind !== 'element' || rawElementProperties.has(properties.element)) throw new InvalidContext('representation', properties.element);
           budget.chargeWork(); rawElementProperties.set(properties.element, properties);
+          if (properties.type) {
+            const original = changedSlots.get(properties.element) ?? originalSlots.get(properties.element) ?? [];
+            budget.chargeWork(5 + original.length * 2);
+            rawComplexSlots.set(properties.element, Object.freeze([...original.filter(slot => slot.path !== 'type'), Object.freeze({path: '$raw/type', reference: properties.type})]));
+          }
+        }
+        for (const properties of rawAttributes) {
+          if (!validateRawAttributeShape(properties, budget)) throw new InvalidContext('representation');
+          key(properties.attribute);
+          if (requireMember(properties.attribute).kind !== 'attribute' || rawAttributeProperties.has(properties.attribute)) throw new InvalidContext('representation', properties.attribute);
+          budget.chargeWork(5); rawAttributeProperties.set(properties.attribute, properties);
+          rawComplexSlots.set(properties.attribute, Object.freeze([Object.freeze({path: '$raw/type', reference: properties.type})]));
         }
         for (const properties of rawGroups) {
           validateRawAttributeGroupShape(properties, budget); key(properties.group);
@@ -367,32 +417,42 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           return id;
         };
         const rawEdges = new Map<NodeId, NodeId[]>();
-        const rawReference = (owner: NodeId, reference: Reference, edges: NodeId[]): void => {
+        const requireScalarSlot = (reference: OriginalGeneratedScalarReference, original = false): void => {
+          key(reference.owner);
+          if (!originalScalarSlots.has(reference.owner)) throw new InvalidContext('missing', reference.owner);
+          if (!original && !scalarSlots.active.has(reference.owner)) throw new InvalidContext('outside-context', reference.owner);
+        };
+        const rawReference = (owner: NodeId, reference: SemanticTypeReference, edges: NodeId[], original = false): void => {
+          assertSemanticTypeReferenceShape(reference, budget);
+          // These records came from the frozen graph/delta snapshot, never the
+          // mutable caller. Ownership is not selected-context resolution.
+          budget.chargeWork(); ownedTypeReferences.add(reference);
+          if (reference.kind === 'original-generated') {requireScalarSlot(reference, original); return;}
           const id = target(reference);
           if (id === undefined) return;
-          const node = requireMember(id);
+          const node = original ? originals.get(id) : requireMember(id);
+          if (!node) throw new InvalidContext('reference', owner);
           if ((node.kind !== 'simpleType' && node.kind !== 'complexType') || reference.kind === 'symbol' && reference.role !== 'type') throw new InvalidContext('reference', owner);
-          budget.chargeWork(); edges.push(id);
+          if (!original) {budget.chargeWork(); edges.push(id);}
         };
         for (const properties of rawSimpleTypes) {
           budget.chargeWork(3); const edges: NodeId[] = [];
           rawReference(properties.type, properties.base, edges);
           if (properties.variety.kind === 'list') rawReference(properties.type, properties.variety.item, edges);
           if (properties.variety.kind === 'union') for (const member of properties.variety.members) rawReference(properties.type, member, edges);
-          for (const layer of properties.facetLayers) for (const facet of layer.facets) {
+          if (properties.facetBinding) rawReference(properties.type, properties.facetBinding.type, [], true);
+          for (const layer of properties.facetLayers ?? []) for (const facet of layer.facets) {
             budget.chargeWork(2); const operand = facet.operand; if (!operand) continue;
             if (operand.context === 'active') {requireMember(operand.owner); rawReference(properties.type, operand.type, edges);}
             else {
               key(operand.owner); if (!originals.has(operand.owner)) throw new InvalidContext('reference', properties.type);
-              const id = target(operand.type);
-              if (id !== undefined) {
-                key(id); const node = originals.get(id);
-                if (!node || node.kind !== 'simpleType' && node.kind !== 'complexType' || operand.type.kind === 'symbol' && operand.type.role !== 'type') throw new InvalidContext('reference', properties.type);
-              }
+              rawReference(properties.type, operand.type, [], true);
             }
           }
           rawEdges.set(properties.type, edges);
         }
+        for (const properties of rawElements) if (properties.type) rawReference(properties.element, properties.type, []);
+        for (const properties of rawAttributes) rawReference(properties.attribute, properties.type, []);
         for (const properties of rawTypes) {
           budget.chargeWork(3); const edges: NodeId[] = [];
           rawReference(properties.type, properties.derivation.base, edges);
@@ -408,6 +468,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           if (node.identity.kind === 'scoped') requireMember(node.identity.owner);
           for (const child of edgesFor(id)) requireMember(child);
           for (const slot of slotsFor(id)) {
+            if (slot.reference.kind === 'original-generated') {requireScalarSlot(slot.reference); continue;}
             const refId = target(slot.reference);
             if (refId !== undefined) {
               const referred = requireMember(refId);
@@ -428,6 +489,9 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           for (const raw of rawEdges.get(id) ?? []) {budget.chargeWork(); result.push(raw);}
           for (const slot of slotsFor(id)) {
             budget.chargeWork();
+            // A scalar slot is a distinct component. Its lazy property owner
+            // checks scalar dependency cycles; the provenance owner is no edge.
+            if (slot.reference.kind === 'original-generated') continue;
             const expands = node.kind === 'simpleType' || node.kind === 'complexType' || node.kind === 'attributeGroupUse'
               || (node.kind === 'particle' && node.term.kind === 'group') || (node.kind === 'element' && slot.path === 'substitutionGroup');
             if (expands) {const refId = target(slot.reference); if (refId !== undefined) {budget.chargeWork(); result.push(refId);}}
@@ -473,9 +537,29 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           return result.node;
         };
         const empty: readonly never[] = Object.freeze([]);
+        const ownTypeReference = (input: SemanticTypeReference): SemanticTypeReference => {
+          authenticate(); budget.chargeWork(3);
+          if (ownedTypeReferences.has(input)) return input;
+          // Canonical known references also include non-type symbols. Reuse
+          // their immutable storage only after the semantic shape/role gate.
+          const safe = knownReferences.has(input) ? input : budget.freeze(budget.snapshot(input));
+          assertSemanticTypeReferenceShape(safe, budget);
+          budget.chargeWork(); ownedTypeReferences.add(safe);
+          return safe;
+        };
         context = Object.freeze({
           contextId, profileVersion: GRAPH_MODEL, contractVersion: SEMANTIC_CONTEXT_CONTRACT,
           kind, acceptance: 'structural-only', membership: membership.size === expectedMembers ? 'complete-actual-plus-additions' : 'structural-subset', budget, members: frozenMembers,
+          scalarSlots: scalarSlots.members,
+          scalarSlotMembership: scalarSlots.active.size === originalScalarSlots.size ? 'complete-original' : 'structural-subset',
+          lookupScalarSlot(input: OriginalGeneratedScalarReference): ContextScalarSlotLookup {
+            const selected = ownTypeReference(input);
+            if (selected.kind !== 'original-generated') throw new SemanticContextAccessError('reference');
+            key(selected.owner); budget.chargeWork(5);
+            const slot = originalScalarSlots.get(selected.owner);
+            return Object.freeze(!slot ? {kind: 'missing', slot: selected}
+              : !scalarSlots.active.has(selected.owner) ? {kind: 'outside-context', slot} : {kind: 'found', slot});
+          },
           notationMembers: notations.members,
           notationMembership: notations.active.size === originalNotations.size + notations.additions.size ? 'complete-original-plus-additions' : 'structural-subset',
           notationUniverse: sourceSchemas !== undefined ? 'source-bound' : 'retained-only',
@@ -493,11 +577,12 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             return Object.freeze({kind: 'missing', name});
           },
           lookup,
+          ownTypeReference,
           resolve(reference: Reference): ContextResolution {
             authenticate();
             try {
-              budget.chargeWork();
-              const safe = knownReferences.has(reference) ? reference : budget.freeze(budget.snapshot(reference));
+              budget.chargeWork(2);
+              const safe = knownReferences.has(reference) || ownedTypeReferences.has(reference) ? reference : budget.freeze(budget.snapshot(reference));
               const id = target(safe);
               if (id !== undefined) {
                 const result = lookup(id);
@@ -516,19 +601,22 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             }
           },
           sourceNode(id: NodeId): GraphNode | undefined {authenticate(); key(id); return originals.get(id);},
+          originalSourceComponentAbsent(id: NodeId): boolean {authenticate(); key(id); return absentOriginals.has(id);},
           originalContext(): SemanticContext {authenticate(); return actual;},
           sourceSchemaRetained(): CanonicalGraph['schemaRetained'] {authenticate(); return graph.schemaRetained;},
           rawTypeProperties(id: NodeId): RawComplexTypeProperties | undefined {checked(id); return rawProperties.get(id);},
           rawSimpleTypeProperties(id: NodeId): RawSimpleTypeProperties | undefined {checked(id); return rawSimpleProperties.get(id);},
           rawElementProperties(id: NodeId): RawElementProperties | undefined {checked(id); return rawElementProperties.get(id);},
+          rawAttributeProperties(id: NodeId): RawAttributeProperties | undefined {checked(id); return rawAttributeProperties.get(id);},
           rawAttributeGroupProperties(id: NodeId): RawAttributeGroupProperties | undefined {checked(id); return rawGroupProperties.get(id);},
-          references(id: NodeId): readonly ReferenceSlot[] {checked(id); return slotsFor(id);},
+          references(id: NodeId): readonly SemanticReferenceSlot[] {checked(id); return slotsFor(id);},
           owner(id: NodeId): NodeId | undefined {const node = checked(id); return node.identity.kind === 'scoped' ? node.identity.owner : undefined;},
           incomingAffiliates(id: NodeId): readonly NodeId[] {checked(id); return reverse.get(id) ?? empty;},
         });
         contexts.add(context); metadata.set(context, sharedMetadata);
         requests.set(context, requestAuthority);
-        states.set(context, {changes, slots: changedSlots, edges: changedEdges, raw: rawProperties, simple: rawSimpleProperties, elements: rawElementProperties, groups: rawGroupProperties, notations});
+        states.set(context, {changes, slots: changedSlots, edges: changedEdges, raw: rawProperties, simple: rawSimpleProperties,
+          elements: rawElementProperties, attributes: rawAttributeProperties, groups: rawGroupProperties, notations, scalarSlots});
         forks.set(context, input => candidate(input, context));
         let projection: CanonicalGraph | undefined;
         projections.set(context, () => {
@@ -556,21 +644,36 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           const candidateKey = dataField(input, 'key'), candidateActive = dataField(input, 'active');
           const additions = dataField(input, 'additions'), endpoint = dataField(input, 'endpoint'), rawTypes = dataField(input, 'rawTypes');
           const rawSimpleTypes = dataField(input, 'rawSimpleTypes'), rawElements = dataField(input, 'rawElements'), rawGroups = dataField(input, 'rawAttributeGroups');
+          const rawAttributes = dataField(input, 'rawAttributes'), inputScalarSlots = dataField(input, 'scalarSlots');
           const notationDelta = dataField(input, 'notations');
           const notationActive = notationDelta === undefined ? undefined : dataField(notationDelta, 'active');
           const notationAdditions = notationDelta === undefined ? undefined : dataField(notationDelta, 'additions');
           if (typeof candidateKey !== 'string' || !Array.isArray(candidateActive)
             || (additions !== undefined && !Array.isArray(additions)) || (rawTypes !== undefined && !Array.isArray(rawTypes))
-            || (rawGroups !== undefined && !Array.isArray(rawGroups)) || (rawSimpleTypes !== undefined && !Array.isArray(rawSimpleTypes)) || (rawElements !== undefined && !Array.isArray(rawElements))) throw new InvalidContext('representation');
+            || (rawGroups !== undefined && !Array.isArray(rawGroups)) || (rawSimpleTypes !== undefined && !Array.isArray(rawSimpleTypes)) || (rawElements !== undefined && !Array.isArray(rawElements))
+            || (rawAttributes !== undefined && !Array.isArray(rawAttributes)) || (inputScalarSlots !== undefined && !Array.isArray(inputScalarSlots))) throw new InvalidContext('representation');
           if (notationDelta !== undefined && (!Array.isArray(notationActive) || (notationAdditions !== undefined && !Array.isArray(notationAdditions)))) throw new InvalidContext('representation');
           budget.reserveNodes((additions ? dataField(additions, 'length') as number : 0) + (endpoint ? 1 : 0)
             + (notationAdditions ? dataField(notationAdditions, 'length') as number : 0));
           const delta = budget.freeze(budget.snapshot(input));
           budget.chargeWork(12 + delta.active.length + parent.changes.size * 2 + parent.slots.size * 2 + parent.edges.size * 2
-            + parent.raw.size * 2 + parent.simple.size * 2 + parent.elements.size * 2 + parent.groups.size * 2);
+            + parent.raw.size * 2 + parent.simple.size * 2 + parent.elements.size * 2 + parent.attributes.size * 2 + parent.groups.size * 2);
           const changes = new Map(parent.changes), slots = new Map(parent.slots), edges = new Map(parent.edges);
-          const raw = new Map(parent.raw), simple = new Map(parent.simple), elements = new Map(parent.elements), groups = new Map(parent.groups);
+          const raw = new Map(parent.raw), simple = new Map(parent.simple), elements = new Map(parent.elements), attributes = new Map(parent.attributes), groups = new Map(parent.groups);
           const active = new Set(delta.active);
+          let scalarSlots = parent.scalarSlots;
+          if (delta.scalarSlots !== undefined) {
+            budget.chargeWork(4); const selected = new Set<NodeId>(), members: OriginalGeneratedScalarReference[] = [];
+            for (const reference of delta.scalarSlots) {
+              assertSemanticTypeReferenceShape(reference, budget);
+              if (reference.kind !== 'original-generated') throw new InvalidContext('representation');
+              key(reference.owner); const slot = originalScalarSlots.get(reference.owner);
+              if (!slot) throw new InvalidContext('missing', reference.owner);
+              if (selected.has(reference.owner)) throw new InvalidContext('identity', reference.owner);
+              budget.chargeWork(2); selected.add(reference.owner); members.push(slot);
+            }
+            budget.chargeWork(2 + members.length); scalarSlots = {active: selected, members: Object.freeze(members)};
+          }
           let notations = parent.notations;
           if (delta.notations !== undefined) {
             budget.chargeWork(4 + parent.notations.additions.size * 2);
@@ -606,14 +709,15 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             key(id);
             if (from.kind === 'candidate' && id !== delta.endpoint?.id && (originals.has(id) || parent.changes.has(id))) throw new InvalidContext('endpoint', id);
           };
-          budget.chargeWork(3); const seenRaw = new Set<NodeId>(), seenSimple = new Set<NodeId>(), seenElements = new Set<NodeId>(), seenGroups = new Set<NodeId>();
+          budget.chargeWork(4); const seenRaw = new Set<NodeId>(), seenSimple = new Set<NodeId>(), seenElements = new Set<NodeId>(), seenAttributes = new Set<NodeId>(), seenGroups = new Set<NodeId>();
           const unique = (id: NodeId, seen: Set<NodeId>): void => {key(id); if (seen.has(id)) throw new InvalidContext('identity', id); budget.chargeWork(); seen.add(id);};
           for (const row of delta.rawTypes ?? []) {assertRawComplexTypeShape(row, budget); permittedProperty(row.type); unique(row.type, seenRaw); budget.chargeWork(); raw.set(row.type, row);}
           for (const row of delta.rawSimpleTypes ?? []) {if (!validateRawSimpleTypeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.type); unique(row.type, seenSimple); budget.chargeWork(); simple.set(row.type, row);}
           for (const row of delta.rawElements ?? []) {if (!validateRawElementShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.element); unique(row.element, seenElements); budget.chargeWork(); elements.set(row.element, row);}
+          for (const row of delta.rawAttributes ?? []) {if (!validateRawAttributeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.attribute); unique(row.attribute, seenAttributes); budget.chargeWork(); attributes.set(row.attribute, row);}
           for (const row of delta.rawAttributeGroups ?? []) {validateRawAttributeGroupShape(row, budget); permittedProperty(row.group); unique(row.group, seenGroups); budget.chargeWork(); groups.set(row.group, row);}
-          budget.chargeWork(4 + raw.size + simple.size + elements.size + groups.size);
-          const context = buildContext('candidate', delta.active, changes, slots, edges, [...raw.values()], [...simple.values()], [...elements.values()], [...groups.values()], notations);
+          budget.chargeWork(5 + raw.size + simple.size + elements.size + attributes.size + groups.size);
+          const context = buildContext('candidate', delta.active, changes, slots, edges, [...raw.values()], [...simple.values()], [...elements.values()], [...groups.values()], notations, scalarSlots, [...attributes.values()]);
           budget.chargeWork(); parents.set(context, from);
           budget.chargeWork(3); return Object.freeze({kind: 'prepared', context});
         } catch (error: unknown) {

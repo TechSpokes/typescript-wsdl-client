@@ -117,8 +117,11 @@ The leaf issues retain exact reviewed revisions and unresolved findings; a mappe
 | Complete builtin/simple/complex derivation, exclusions and final | `schemaTypeRelations.ts`: `checkTypeDerivation`, `checkImmediateTypeFinal`, `immediateTypeBase` | `schema-type-relations.test.ts`; component validity remains a separate premise |
 | Declaration type/value legality, affiliation versus effective substitution | `schemaDeclarationPrimitives.ts`: `checkDeclaration`; shared type-relation owner | Declaration controls and `particle-edc-independent.test.ts`; complete declared affiliation dependencies survive effective filtering |
 | Lexical/value/facet/list/union semantics and exact DT01 A | `schemaScalarKernel.ts`, `scalarSchemaAssessment.ts`, `schemaDatatypeValues.ts`, `schemaExactCalendar.ts` | `schema-scalar-independent.test.ts`, shared DT01 suite; original datatype, lexical namespace, owner, selected union member and prerequisite context retained |
+| Original generated scalar references and independent slot closure | `semanticTypeReference.ts`, `schemaTypeIdentity.ts`, `schemaGeneratedScalarShape.ts`, `checkOriginalGeneratedScalar` | `schema-original-generated-binding-independent.test.ts`; identity, all reference positions, suppressed source, exact context and private receipts |
+| Original simple property and facet correspondence | `checkCandidateCorrespondence`, shared scalar cross-context comparison | `schema-simple-correspondence-independent.test.ts`, `schema-cross-context-facets-independent.test.ts`; original typed values, fixed and annotation properties |
 | Source AU C1 identity union, replacement, requiredness, fixed/default and augmentation | `schemaAttributeUses.ts`: `assessSourceAttributeUses`, `assessAttributeUse` | `schema-attribute-independent.test.ts`; omitted original identity versus explicit replacement, typed equality and absent-value conflicts |
 | Context-local AU reuse with complete evidence replay | `schemaAttributeUses.ts` | `schema-attribute-reuse-independent.test.ts`; complete declaration/scalar closure, source/raw role separation, aggregate checks and inclusive warm-hit exhaustion |
+| Scalar failure ownership through AU and aggregate consumers | `schemaAttributeUses.ts`, `schemaConstructionAssessment.ts` | `schema-attribute-origin-independent.test.ts`; original datatype invalidity versus a candidate bad value |
 | Literal raw AU construction and namespace/process algebra | `assessRawAttributeUses`; `wildcardAlgebra.ts` | Raw and selected-AU independent controls; existential compatible matching, complete requiredness/wildcard checks and unchanged source C1 |
 | Actual effective content versus explicit raw content | `complexTypeContent.ts`: `deriveActualComplexContent`, `deriveRawComplexContent` | `complex-content-independent.test.ts`; generated sequence identity, scalar identity, ordered source contribution and immutable source operands |
 | Restriction normalization and exact formal ranges | `particleSemanticView.ts`; the single `occurrenceAnalysis.ts` | `particle-restriction-independent.test.ts`, existing occurrence suite; declared and normalized views remain separate |
@@ -158,7 +161,37 @@ Search and alternative mapping preserve unresolved premises, try fully checked a
 GSC1 assigns each source simple-content restriction slot its own anonymous scalar identity, including a restriction without facets; extension inherits that exact identity.
 The shared scalar property owner supplies the containing type's mapped namespace, empty own final, absent own type annotation and complete inherited/base/facet properties.
 Property equality traverses those properties with the same scalar equality owner and retains legality prerequisites; it does not equate anonymous identities or use synthetic graph nodes as scalar authority.
-The legacy synthetic simple node in the content projection remains diagnostic only.
+The content projection carries the authentic original scalar selector directly; it no longer fabricates a simple-type graph node.
+
+`SemanticTypeReference` adds this private selector without changing canonical or persisted `Reference`.
+The same selector is available in raw scalar bases, list items, ordered union members, complex simple bases and content, declaration types and typed facet operands.
+One declared-type accessor honors the explicit raw declaration type; a canonical placeholder cannot override it.
+One original shape mapper supplies immutable original identities and properties, while the scalar checker reassesses their legality in the selected active context.
+
+Original generated slots have their own context membership, separate from the containing complex type's membership.
+Syntax suppressed by a zero particle or prohibited attribute use creates no scalar slot; an otherwise real original slot cannot be invented or silently restored after omission.
+Structural subsets may retain a real slot independently of its containing type, but full finite verification requires complete original slot availability.
+Actual-schema checking covers every original slot; hypothetical checking covers slots consumed by E, D′, fresh components and their concrete dependencies.
+Availability alone does not turn an unrelated original slot into a hypothetical legality root.
+
+Finite receipts keep generated scalar construction evidence separate from graph-component evidence.
+Type dependencies identify both their context and their component, builtin or generated-slot identity; each must have matching semantic construction evidence in that context.
+Source-syntax-only evidence cannot discharge type validity, and a containing complex-type receipt cannot discharge its generated scalar's own rules.
+Ordinary inline types suppressed by source mapping also remain diagnostic syntax rather than selectable semantic types.
+Raw properties cannot turn such syntax into an original component or make its selection an actual-schema invalidity.
+
+Complete raw properties for an original simple type are compared with its immutable source properties through the shared scalar owner.
+The comparison preserves base, item and ordered member identities, typed facet values, fixed metadata and annotation properties or an exact original facet-component binding; an equal component ID alone does not prove correspondence.
+An authenticated original facet binding preserves the exact original component set and its source operands, while active type and value legality remain separate obligations.
+Missing annotation metadata is unresolved; explicit absence is data, and independently constructed multi-operand groups retain any unsettled mapping prerequisite.
+
+Failure ownership is also context-qualified.
+An intrinsically invalid original datatype remains an actual-schema failure through scalar, AU and aggregate consumers.
+A bad candidate lexical value assessed against a valid original datatype remains a candidate failure; the lookup context alone does not establish original invalidity.
+
+The context privately owns sanitized immutable references and dependency records; ordinary caller objects are inspected and copied before reuse.
+Private completed scalar property plans may share their frozen publication, while each use repeats active selection, legality prerequisites and dependency collection.
+These copies and positively charged reuse paths preserve the unchanged shared request limits and never transfer validity between contexts.
 
 ### Remaining local qualifications
 
@@ -168,7 +201,7 @@ The following named cases retain their precise prerequisites; a successful resul
 | Case | Current result and owning continuation |
 | --- | --- |
 | Effective raw facet groups outside proved correspondence | Finite typed enumeration membership and explicit lexical witnesses are checked; unresolved facet-component mapping retains `raw-simple-facet-restriction-validity` |
-| New complete raw properties for an original simple type | `original-simple-property-correspondence` retains an ordinary missing cross-context comparison authority; exact unambiguous comparisons remain implementation work, independent of the unsettled repeated-facet interpretation |
+| Incomplete original facet or annotation correspondence | Exact cross-context properties and authentic original bindings are compared; missing metadata or unsettled independently constructed groups retain their precise prerequisite |
 | Independently supplied multi-pattern component values | Singleton expression strings and privately inherited multi-component identity are checked; unspecified construction mapping retains `pattern-property-equality` or `raw-simple-facet-restriction-validity` |
 | Incomplete notation source availability or active membership | Context-qualified lookup retains its named prerequisite; complete source-bound original/fresh tables support concrete property checking |
 | Legacy namespace normalization | The internal semantic loader supplies normalized XSD values; legacy-loaded spellings that disagree retain the source receipt's qualification |
@@ -318,8 +351,8 @@ No larger redistributable real-service snapshot with complete closure was availa
 
 The baseline is archived main `7d652fea79fddce8fd407f5c18dc2645ad203cc5`.
 Reports hash all measured source files, the harness and lockfile, record Node/platform/CPU details, and reject source changes during a run.
-The current source snapshot starts at main `0ef869cbd655683ae0cc24ac9692b70146083818`; its 106-entry source/harness/lock map is `c8829d2886cbdbbae8a7d40f2041ef133eebfe2a67bdb877a407601ea2e3c91e`.
-The recorded comparison's SHA-256 is `eb3b4371c5455b0b09e5ac3f7067e33e28a0119c2e1f2aeaddfb8903bed2c6aa`; [PR275 measurements](https://github.com/TechSpokes/typescript-wsdl-client/issues/272#issuecomment-6113999345) remain historical evidence for their exact source and URI.
+The current source snapshot starts at main `9eb027cd144cdb2ac7e48e1d87990fea7b92342a`; its 112-entry source/harness/lock map is `9c4a9db5175739d9656ed4a2dbc58d63e2550a2ef9bdaa77d45929d99362b8c0`.
+The recorded comparison's SHA-256 is `437b0074f22f78e4fc62d82752ff97e51cf933b77a458a41029aae42f88e8016`; [PR276 measurements](https://github.com/TechSpokes/typescript-wsdl-client/issues/272#issuecomment-6114655396) remain historical evidence for their exact source and URI.
 The [PR274 measurement handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/272#issuecomment-6113569258) remains a separate historical delivery record.
 
 | Complete input | Portable objects before | After | Persisted boundary |
@@ -349,8 +382,8 @@ The [candidate workload](../test/research/re01/preparation-candidates.ts) compar
 Baseline main has no equivalent real-graph request API, so this is not a historical semantic-API comparison.
 Its three distinct deltas retain full membership, select the endpoint's closure with changed `mixed`, and restore full membership in a sibling with changed `abstract`.
 
-Weather diagnostic actual-plus-delta work is 3,418,436 with reuse versus 9,598,786 with rebuilding, at active sizes 140, 28 and 140.
-The three delta costs are 140,559, 36,232 and 151,391 work units, with original source evidence still available separately from active membership.
+Weather diagnostic actual-plus-delta work is 3,419,023 with reuse versus 9,599,863 with rebuilding, at active sizes 140, 28 and 140.
+The three delta costs are 140,673, 36,346 and 151,505 work units, with original source evidence still available separately from active membership.
 [Request controls](../test/research/re01/preparation-candidates.test.ts) verify actual/sibling isolation, exact inclusive allowance and sticky exhaustion after earlier successful deltas.
 
 The separately named `source-owned-actual-preparation` workload measures the authenticated [source request factory](../src/compiler/schemaDocumentSyntax.ts) used by the finite checker.
@@ -361,34 +394,36 @@ Baseline main has no matching source-owned API, so these current preparation cos
 
 | Complete input | Source-owned diagnostic work | Source-owned default outcome |
 |---|---:|---|
-| Weather WSDL | 5,470,978 | Resource limit at 999,987 work, before context nodes |
-| Relative import closure | 689,849 | Prepared |
-| Chameleon closure | 211,123 | Prepared |
-| Shared-recursive XSD | 1,083,289 | Resource limit at 999,978 work, with 52 admitted nodes |
+| Weather WSDL | 5,473,160 | Resource limit at 1,000,000 work, before context nodes |
+| Relative import closure | 690,163 | Prepared |
+| Chameleon closure | 211,276 | Prepared |
+| Shared-recursive XSD | 1,106,574 | Resource limit at 999,974 work, with 52 admitted nodes |
 
-Synthetic source-owned diagnostic work is 417,335, 1,311,065, 4,887,628 and 9,662,826 at sizes 4, 16, 64 and 128 respectively.
+Synthetic source-owned diagnostic work is 417,561, 1,311,759, 4,890,194 and 9,667,888 at sizes 4, 16, 64 and 128 respectively.
 Charged source work includes original source URI string lengths; the task paths are recorded in the issue handoff, and moving a checkout can change these counts.
-The current source-owned samples use `/workspace/recovery-232-scalar-finite`; earlier PR275 samples used `/workspace/recovery-232-finite` and PR274 used `/workspace/recovery-232-followup`.
+The current source-owned samples use `/workspace/recovery-232-correspondence`; earlier PR276 samples used `/workspace/recovery-232-scalar-finite`, PR275 used `/workspace/recovery-232-finite` and PR274 used `/workspace/recovery-232-followup`.
 Differences therefore include source URI lengths and source changes, without attributing them to one isolated optimization.
 
 Default and diagnostic rows remain separate; diagnostic work uses an explicitly named 50,000,000 allowance while defaults remain unchanged.
 Weather source/catalog preparation succeeds at defaults, but its new actual context exhausts the 1,000,000-work allowance before any candidate.
 Default import and shared-recursive contexts finish with reuse while the rebuilding controls exhaust; synthetic16 exhausts its third delta after two successes, and synthetic128 exhausts source gathering at the legacy reported step 1,000,001.
 
-The separate [cold finite candidate accounting](https://github.com/TechSpokes/typescript-wsdl-client/issues/271#issuecomment-6114628446) runs three unchanged constructions with fresh source requests and no prior cache warming.
-Its before/after baseline imports exact frozen `fbf8b7a30af743dc1ea14d3fd11414f4488f870e` source while using the same fixture bytes and `/workspace/recovery-232-scalar-finite` input URIs as the current source, so source-path length is matched for this comparison.
+The separate cold finite candidate accounting runs three unchanged constructions with fresh source requests and no prior cache warming; [PR276 accounting](https://github.com/TechSpokes/typescript-wsdl-client/issues/271#issuecomment-6114656155) remains historical evidence.
+Its before/after baseline imports exact frozen `b443034e2aa93f92dc6ad70da7b75c5b98220249` source while using the same fixture bytes and `/workspace/recovery-232-correspondence` input URIs as the current source, so source-path length is matched for this comparison.
+The current report's SHA-256 is `9a67d7d9f3c4de465e0bd77f7b0c3fe6a90c8e3a67f7e8b3d88ab40594a1d0ae`.
 
 | Fixed construction | Baseline diagnostic work | Current diagnostic work | Current default outcome |
 |---|---:|---:|---|
-| Particle, AU and wildcard | 1,454,575 | 1,454,918 | Resource limit at 999,989 work |
-| Nested helper | 1,437,501 | 1,437,503 | Resource limit at 999,992 work |
-| Typed-attribute scalar | 953,001 | 953,002 | Checked candidate at 953,002 work |
+| Particle, AU and wildcard | 1,455,248 | 1,426,117 | Resource limit at 999,962 work |
+| Nested helper | 1,437,731 | 1,556,788 | Resource limit at 999,959 work |
+| Typed-attribute scalar | 953,192 | 974,151 | Checked candidate at 974,151 work |
 
 Diagnostic allowance is 100,000,000 for these finite checks; the baseline scalar also passed the unchanged 1,000,000 default allowance while its two larger constructions exhausted it.
 The current typed-attribute success preserves the full actual and candidate receipts and is an executed result, not subtraction of estimated cache savings.
-These small work increases include the selected semantic checks and are not claimed as an optimization; the earlier PR275 AU reuse improvement remains scoped to its own matched baseline.
+The changes include new semantic dependency checks and safe owned-data reuse; this is not a general speedup claim, and the earlier PR275 AU reuse improvement remains scoped to its own matched baseline.
 Candidate accounting is separate from structural preparation costs and does not establish universal witness coverage.
 The [independent permanent regression](../test/unit/re01-candidate-independent.test.ts) uses the same fixture bytes at a fixed offline URI so its default-budget assertion does not depend on checkout-path length.
+At that fixed URI, the matched scalar baseline uses 942,932 work and this source uses 966,375; both complete under defaults.
 
 ### Reproduce and retain measurements
 

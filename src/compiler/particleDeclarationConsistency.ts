@@ -5,10 +5,14 @@ import type {SemanticContext} from './semanticContext.js';
 import {effectiveSubstitutionMembers} from './schemaTypeRelations.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
+import {declaredType, resolveSemanticType} from './schemaTypeIdentity.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import type {SemanticTypeDependency} from './semanticTypeReference.js';
 
 export type ElementConsistencyResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-element-consistent'; contextId: string;
   scope: 'declared-particle-roots'; obligations: readonly ['component-validity'];
+  typeDependencies: readonly SemanticTypeDependency[];
   conflict?: readonly [NodeId, NodeId];
 }> | RelationFailure | ResourceLimitFailure;
 type Entry = {declaration: NodeId; count: 1 | 2; namedType?: string};
@@ -30,6 +34,7 @@ export function checkElementDeclarationsConsistent(context: SemanticContext, roo
   assertSemanticContext(context);
   const budget = context.budget;
   return budget.guard(() => {
+    const typeDependencies = collectSemanticTypeDependencies(context);
     try {
       const requested = budget.freeze(budget.snapshot(roots));
       budget.chargeWork(5);
@@ -47,13 +52,17 @@ export function checkElementDeclarationsConsistent(context: SemanticContext, roo
         return result.kind === 'found' ? result.node : unresolved(owner, 'Declaration or group target is not an active component');
       };
       const namedType = (declaration: ElementNode): string | undefined => {
-        const result = context.resolve(declaration.type);
+        const result = resolveSemanticType(context, declaredType(context, declaration));
+        if (result.kind !== 'component' && result.kind !== 'builtin' && result.kind !== 'original-generated')
+          return unresolved(declaration.id, 'Declared type is unavailable or not a type in the selected context');
+        budget.chargeWork(3);
+        typeDependencies.add([{contextId: context.contextId, type: result.identity}]);
+        // A generated scalar has no name; its source container is provenance.
+        if (result.kind === 'original-generated') return undefined;
         if (result.kind === 'builtin') {
           budget.chargeWork(32 + 6 * (result.name.namespace.length + result.name.local.length));
           return JSON.stringify(['type', result.name.namespace, result.name.local]);
         }
-        if (result.kind !== 'found') return unresolved(declaration.id, 'Declared type is unavailable in the selected context');
-        if (result.node.kind !== 'simpleType' && result.node.kind !== 'complexType') return unresolved(declaration.id, 'Element declared type is not a type definition');
         if (result.node.identity.kind !== 'global') return undefined;
         const name = result.node.identity.name;
         budget.chargeWork(32 + 6 * (name.namespace.length + name.local.length));
@@ -81,6 +90,7 @@ export function checkElementDeclarationsConsistent(context: SemanticContext, roo
           if (context.membership === 'structural-subset') return unresolved(declaration.id, 'Complete original-plus-fresh substitution universe is required');
           const implicit = effectiveSubstitutionMembers(context, declaration.id);
           if (implicit.kind !== 'checked') throw new Incomplete(implicit);
+          typeDependencies.add(implicit.typeDependencies);
           for (const id of implicit.value) {budget.chargeWork(1 + id.length); declarations.add(id);}
         }
         budget.chargeWork(); const result = new Map<string, Entry>();
@@ -138,13 +148,13 @@ export function checkElementDeclarationsConsistent(context: SemanticContext, roo
       }
       budget.chargeWork(20 + context.contextId.length);
       return Object.freeze({kind: 'checked', value: true, rule: 'cos-element-consistent', contextId: context.contextId,
-        scope: 'declared-particle-roots', obligations: Object.freeze(['component-validity'] as const)});
+        scope: 'declared-particle-roots', obligations: Object.freeze(['component-validity'] as const), typeDependencies: typeDependencies.snapshot()});
     } catch (error: unknown) {
       if (error instanceof Incomplete) return error.result;
       if (!(error instanceof Conflict)) throw error;
       budget.chargeWork(24 + context.contextId.length);
       return Object.freeze({kind: 'checked', value: false, rule: 'cos-element-consistent', contextId: context.contextId,
-        scope: 'declared-particle-roots', obligations: Object.freeze(['component-validity'] as const), conflict: error.pair});
+        scope: 'declared-particle-roots', obligations: Object.freeze(['component-validity'] as const), conflict: error.pair, typeDependencies: typeDependencies.snapshot()});
     }
   });
 }

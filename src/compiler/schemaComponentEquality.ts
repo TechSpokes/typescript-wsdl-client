@@ -18,17 +18,21 @@ import type {SemanticParticle} from './particleSemanticView.js';
 import {wildcardNamespaces} from './wildcardAlgebra.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
+import {declaredType, resolveSemanticType} from './schemaTypeIdentity.js';
+import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
 
 type Failure = RelationFailure | ScalarFailure | AttributeFailure | ResourceLimitFailure;
 export type ComponentEqualityResult = Readonly<{kind: 'checked'; value: boolean; contextId: string;
   authority: 'XSD10-component-properties-v1'; obligations: readonly string[];
   scalarObligations: readonly ScalarObligation[];
+  typeDependencies: readonly SemanticTypeDependency[];
   /** Concrete component operands whose property facts this comparison consumed. */
   dependencies: readonly NodeId[]}> | Failure;
 class Incomplete extends Error {constructor(readonly result: Failure) {super(result.kind);}}
 type NodeTask = {kind: 'node'; a: GraphNode; b: GraphNode};
 type Task = NodeTask | {kind: 'particle'; a: SemanticParticle; b: SemanticParticle}
-  | {kind: 'scalar'; a: Reference; b: Reference; owner: NodeId}
+  | {kind: 'scalar'; a: SemanticTypeReference; b: SemanticTypeReference; owner: NodeId}
   | {kind: 'uses'; a: readonly OriginalAttributeUse[]; b: readonly OriginalAttributeUse[]}
   | {kind: 'use'; a: OriginalAttributeUse; b: OriginalAttributeUse};
 type State = {tasks: Task[]; pairs: Map<NodeId, Set<NodeId>>; scalarPairs: Map<string, Set<string>>};
@@ -47,6 +51,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
     }
     const scalar = createSchemaScalarKernel(context);
     charge(12); const dependencies = new Set<NodeId>(), obligations = new Set<string>(['component-validity']), scalarObligations: ScalarObligation[] = [];
+    const typeDependencies = collectSemanticTypeDependencies(context);
     const remember = (required: readonly ScalarObligation[]) => {
       for (const item of required) {charge(4 + scalarObligations.length); if (!scalarObligations.some(prior => prior.rule === item.rule && prior.component === item.component && (prior.contextId ?? context.contextId) === (item.contextId ?? context.contextId))) scalarObligations.push(item);}
     };
@@ -56,6 +61,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
     };
     const unwrap = <T>(result: ScalarResult<T>): T => {
       if (result.kind !== 'checked') throw new Incomplete(result);
+      typeDependencies.add(result.typeDependencies);
       remember(result.obligations); return result.value;
     };
     const get = (id: NodeId): GraphNode => {
@@ -76,6 +82,25 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (left.kind === 'builtin' || right.kind === 'builtin') return left.kind === 'builtin' && right.kind === 'builtin'
         && textEqual(left.name.namespace, right.name.namespace) && textEqual(left.name.local, right.name.local);
       enqueue(state, {kind: 'node', a: left.node, b: right.node}); return true;
+    };
+    const typeOperand = (selector: SemanticTypeReference) => {
+      const selected = resolveSemanticType(context, selector);
+      if (selected.kind !== 'component' && selected.kind !== 'builtin' && selected.kind !== 'original-generated')
+        return unresolved(a.id, 'component-property-reference', 'Referenced semantic type is unavailable');
+      charge(3); typeDependencies.add([{contextId: context.contextId, type: selected.identity}]);
+      if (selected.kind === 'component') read(selected.node);
+      return selected;
+    };
+    const typeReference = (state: State, x: SemanticTypeReference, y: SemanticTypeReference, owner: NodeId): boolean => {
+      const left = typeOperand(x), right = typeOperand(y);
+      if (left.kind === 'builtin' && right.kind === 'builtin')
+        return textEqual(left.name.namespace, right.name.namespace) && textEqual(left.name.local, right.name.local);
+      if (left.kind === 'builtin' && left.name.local === 'anyType' || right.kind === 'builtin' && right.name.local === 'anyType') return false;
+      if (left.kind === 'component' && left.node.kind === 'complexType' || right.kind === 'component' && right.node.kind === 'complexType') {
+        if (left.kind !== 'component' || right.kind !== 'component' || left.node.kind !== 'complexType' || right.node.kind !== 'complexType') return false;
+        enqueue(state, {kind: 'node', a: left.node, b: right.node}); return true;
+      }
+      enqueue(state, {kind: 'scalar', a: x, b: y, owner}); return true;
     };
     const scope = (node: ElementNode | AttributeNode): GraphNode | 'global' | undefined => {
       if (node.identity.kind === 'global') return 'global';
@@ -108,6 +133,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (!x.value || !y.value) return true;
       const left = checkDeclaration(context, x.id), right = checkDeclaration(context, y.id);
       if (left.kind !== 'checked') throw new Incomplete(left); if (right.kind !== 'checked') throw new Incomplete(right);
+      typeDependencies.add(left.typeDependencies); typeDependencies.add(right.typeDependencies);
       remember(left.scalarObligations); remember(right.scalarObligations);
       for (const receipt of [left, right]) for (const required of receipt.obligations) {charge(); if (required !== 'declared-type-component-validity') obligations.add(required);}
       if (!left.constraint || !right.constraint) return unresolved(x.id, 'component-value-property', 'Typed declaration constraint is unavailable');
@@ -120,12 +146,9 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (!row) {charge(2); row = new Set(); pairs.set(x, row);}
       row.add(y); return 'new';
     };
-    const scalarPair = (state: State, x: Reference, y: Reference, owner: NodeId): boolean => {
+    const scalarPair = (state: State, x: SemanticTypeReference, y: SemanticTypeReference, owner: NodeId): boolean => {
       charge(3);
-      for (const selector of [x, y]) {
-        const resolved = context.resolve(selector);
-        if (resolved.kind === 'found') read(resolved.node);
-      }
+      typeOperand(x); typeOperand(y);
       const left = unwrap(scalar.contentProperties(x, owner)), right = unwrap(scalar.contentProperties(y, owner));
       // GSC1 identities and ordinary scalar identities share one property owner.
       // Closing this separate pair recurrence proves property equality only.
@@ -162,11 +185,13 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (!('particle' in x.content) || !('particle' in y.content)) return unresolved(x.type, 'component-content-properties', 'Opaque builtin content has no complete component property view');
       const left = prepareSemanticParticleView(context, x, 'declared'), right = prepareSemanticParticleView(context, y, 'declared');
       if (left.kind !== 'checked') throw new Incomplete(left); if (right.kind !== 'checked') throw new Incomplete(right);
+      typeDependencies.add(left.view.typeDependencies); typeDependencies.add(right.view.typeDependencies);
       enqueue(state, {kind: 'particle', a: left.view.root, b: right.view.root}); return true;
     };
     const attributes = (node: ComplexTypeNode) => {
       const result = context.kind === 'actual' ? assessSourceAttributeUses(context, node.id) : assessRawAttributeUses(context, node.id);
       if (result.kind !== 'checked') throw new Incomplete(result);
+      typeDependencies.add(result.typeDependencies);
       remember(result.scalarObligations);
       for (const item of result.value.schemaOperands) {read(item.source); read(item.declaration);}
       return result.value;
@@ -184,7 +209,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
         const left = scope(x), right = scope(y);
         if (typeof left === 'object' && typeof right === 'object') enqueue(state, {kind: 'node', a: left, b: right});
         else if (left !== right) return false;
-        if (!reference(state, x.type, y.type) || !values(x, y)) return false;
+        if (!typeReference(state, declaredType(context, x), declaredType(context, y), x.id) || !values(x, y)) return false;
         if (x.kind === 'element' && y.kind === 'element') {
           if (x.abstract !== y.abstract || x.nillable !== y.nillable || !methods(x, y, 'final') || !methods(x, y, 'block')) return false;
           if (!!x.substitutionGroup !== !!y.substitutionGroup) return false;
@@ -207,7 +232,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
         const xm = left?.derivation.method ?? x.derivation?.kind ?? 'restriction', ym = right?.derivation.method ?? y.derivation?.kind ?? 'restriction';
         if (xm !== ym || (left?.abstract ?? x.abstract) !== (right?.abstract ?? y.abstract)) return false;
         const ur: Reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anyType'}};
-        if (!reference(state, left?.derivation.base ?? x.derivation?.base ?? ur, right?.derivation.base ?? y.derivation?.base ?? ur)) return false;
+        if (!typeReference(state, left?.derivation.base ?? x.derivation?.base ?? ur, right?.derivation.base ?? y.derivation?.base ?? ur, x.id)) return false;
         const xa = attributes(x), ya = attributes(y);
         if (!wildcard(xa.wildcard, ya.wildcard) || xa.uses.length !== ya.uses.length) return false;
         enqueue(state, {kind: 'uses', a: xa.uses, b: ya.uses});
@@ -223,7 +248,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
     const finish = (value: boolean): ComponentEqualityResult => {
       charge(dependencies.size + obligations.size + scalarObligations.length + 12);
       return budget.freeze(budget.snapshot({kind: 'checked' as const, value, contextId: context.contextId, authority: 'XSD10-component-properties-v1' as const,
-        obligations: [...obligations], scalarObligations, dependencies: [...dependencies]}));
+        obligations: [...obligations], scalarObligations, dependencies: [...dependencies], typeDependencies: typeDependencies.snapshot()}));
     };
     charge(12); const states: State[] = [{tasks: [{kind: 'node', a, b}], pairs: new Map(), scalarPairs: new Map()}];
     let unknown: Failure | undefined;
