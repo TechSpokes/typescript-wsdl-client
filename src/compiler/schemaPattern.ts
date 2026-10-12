@@ -225,14 +225,18 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
     if (!program) throw new TypeError('Positive words require a pattern issued by this factory');
     type Task = {kind: 'node'; node: number} | {kind: 'repeat'; child: number; min: bigint; max: bigint; digits: number};
     type State = {pending: Task[]; word: string};
-    c.step(owner, 10); const states: (State | undefined)[] = [{pending: [{kind: 'node', node: program.root}], word: ''}];
+    c.step(owner, 12); let states: (State | undefined)[] = [{pending: [{kind: 'node', node: program.root}], word: ''}];
+    const deferred: State[] = [];
     const classChoices = new Map<number, readonly string[]>();
-    let cursor = 0;
+    let cursor = 0, exploringClasses = false;
     const enqueue = (state: State, tasks: readonly Task[] = [], suffix = ''): void => {
       c.step(owner, state.pending.length + tasks.length + state.word.length + suffix.length + 8);
       states.push({pending: [...state.pending, ...tasks], word: state.word + suffix});
     };
-    while (cursor < states.length) {
+    while (cursor < states.length || !exploringClasses && deferred.length) {
+      if (cursor === states.length) {
+        c.step(owner); states = deferred; cursor = 0; exploringClasses = true;
+      }
       c.step(owner); const state = states[cursor]!; states[cursor++] = undefined;
       const task = state.pending.pop();
       if (!task) {c.text(state.word, owner); yield state.word; continue;}
@@ -249,6 +253,13 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
       const atom = program.atoms[task.node];
       if (atom.kind === 'literal') {enqueue(state, [], atom.value); continue;}
       if (atom.kind === 'class') {
+        // Finish paths needing no class search before a fallback Unicode scan.
+        // The deferred state owns its existing pending tasks and is charged
+        // before either queue may grow.
+        if (!exploringClasses) {
+          c.step(owner, state.pending.length + state.word.length + 8);
+          state.pending.push(task); deferred.push(state); continue;
+        }
         let choices = classChoices.get(task.node);
         if (!choices) {
           c.text(atom.expression, owner); c.step(owner, atom.expression.length + 8);

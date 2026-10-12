@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "15ba93b146fb71fe1a994fcee6bbf34abe3953690d498a92143765217ca576e6"
+          "sha256": "6180c8526b97e32e496231ff28d3b360b5434732dd191ddabd133fce428a7a30"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "8f3fec0e781d94517641e497952810f4182f855b50222e2d2fd9f88bcd24c680"
+          "sha256": "a68e795fec5043dfd7a1f4a763818d8b210cf6808291f3d92e7276eebc3b7381"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1191,7 +1191,7 @@
         {
           "path": "src/compiler/schemaPattern.ts",
           "role": "semantic-source",
-          "sha256": "aa711d93402eb84f2cf442dbd9382990b1b2ca33f9f6aa5868814af1aaffeaac"
+          "sha256": "ef4a3c541f218a7b127249ab0eb872915043fe58b48f0b1ee0d09d4844e639f1"
         },
         {
           "path": "src/compiler/schemaScalarContext.ts",
@@ -1779,6 +1779,11 @@
           "sha256": "b505c5622b1306aec770b7bae2303703a77ae20388d9bdd0f9ef3f80fb6615dc"
         },
         {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-starvation-independent.xsd",
+          "role": "fixture",
+          "sha256": "bd80bef64c6913340b7951bdd43c062f03a6b3d0418abd27fab21c333c66cf1d"
+        },
+        {
           "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-witness-independent.xsd",
           "role": "fixture",
           "sha256": "a0f2d8a059dcba72b9e8514ab3e582376e4d65e565c1b6fd74aea157f7495bf2"
@@ -1817,6 +1822,11 @@
           "path": "test/unit/particle-selected-order-independent.test.ts",
           "role": "expectations",
           "sha256": "c2007b471bc1c0c7a0bed51d2371f6d30fc73a6d6fb4e9eae8233d4b97c2d504"
+        },
+        {
+          "path": "test/unit/schema-pattern-starvation-independent.test.ts",
+          "role": "expectations",
+          "sha256": "846c293cf1f937484948f77c2e35017c55cbf059123cd452fd2fff9570c9f89e"
         },
         {
           "path": "test/unit/schema-pattern-witness-independent.test.ts",

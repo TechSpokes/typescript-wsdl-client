@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(compiler): preserve finite lexical witnesses before heuristic character-class search.
+
 - fix(compiler): produce checked lexical witnesses for explicit pattern classes and unbounded repetitions.
 
 - fix(compiler): preserve original scalar identities and facet properties across hypothetical contexts and finite evidence.
