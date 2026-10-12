@@ -1191,7 +1191,7 @@
         {
           "path": "src/compiler/schemaPattern.ts",
           "role": "semantic-source",
-          "sha256": "eaa0f7fffe4f34615c8acbc5f6c18207d7fb95fbf2cf37b4f8490b870ab590ae"
+          "sha256": "e9bd2c84d92d3b800715318ee14ecf330bc97debd9de93467848710a027a1b71"
         },
         {
           "path": "src/compiler/schemaScalarContext.ts",

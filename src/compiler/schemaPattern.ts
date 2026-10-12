@@ -228,6 +228,7 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
     c.step(owner, 12); let states: (State | undefined)[] = [{pending: [{kind: 'node', node: program.root}], word: ''}];
     const deferred: State[] = [];
     const classChoices = new Map<number, readonly string[]>();
+    const classRegexes = new Map<number, RegExp>();
     const scannedClasses = new Set<number>();
     let cursor = 0, exploringClasses = false;
     const enqueue = (state: State, tasks: readonly Task[] = [], suffix = ''): void => {
@@ -258,6 +259,7 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
         if (!choices) {
           c.text(atom.expression, owner); c.step(owner, atom.expression.length + 8);
           const regex = new RegExp(`^(?:${atom.expression})(?![\\s\\S])`, 'u');
+          classRegexes.set(task.node, regex);
           c.step(owner, 4);
           const found: string[] = [], seen = new Set<string>();
           for (let index = 0; index < hints.length;) {
@@ -280,7 +282,7 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
           state.pending.push(task); deferred.push(state); continue;
         }
         if (!choices.length && !scannedClasses.has(task.node)) {
-          const regex = new RegExp(`^(?:${atom.expression})(?![\\s\\S])`, 'u');
+          const regex = classRegexes.get(task.node)!;
           for (let point = 0x7f; point <= 0x10ffff; point++) {
             c.step(owner, 3); const char = String.fromCodePoint(point);
             if (regex.test(char)) {c.step(owner, 2); choices = [char]; break;}
