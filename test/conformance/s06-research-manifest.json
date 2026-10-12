@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "cddd82a748f5a7fd876aec411ae085cc0be6f9ea3c3e3909dd3edf9552c74328"
+          "sha256": "36e89c5c08fe98b9f8176cd29a05f15ec90824072c3600f2d2df17b7e24978e9"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "6bf616241c2cd7b525612e7f3b1bdbd846ca386fa279a91787ba53d49b9d3a70"
+          "sha256": "a68e795fec5043dfd7a1f4a763818d8b210cf6808291f3d92e7276eebc3b7381"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1191,7 +1191,7 @@
         {
           "path": "src/compiler/schemaPattern.ts",
           "role": "semantic-source",
-          "sha256": "73389b94da1231a166355b57456f3501100c2569de77121206a973f7c4f59827"
+          "sha256": "e9bd2c84d92d3b800715318ee14ecf330bc97debd9de93467848710a027a1b71"
         },
         {
           "path": "src/compiler/schemaScalarContext.ts",
@@ -1779,6 +1779,16 @@
           "sha256": "b505c5622b1306aec770b7bae2303703a77ae20388d9bdd0f9ef3f80fb6615dc"
         },
         {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-class-starvation-independent.xsd",
+          "role": "fixture",
+          "sha256": "7f58f97629b51c54badaa875c7013676cb34e3007bddee699768d0eb584e771d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-starvation-independent.xsd",
+          "role": "fixture",
+          "sha256": "bd80bef64c6913340b7951bdd43c062f03a6b3d0418abd27fab21c333c66cf1d"
+        },
+        {
           "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-witness-independent.xsd",
           "role": "fixture",
           "sha256": "a0f2d8a059dcba72b9e8514ab3e582376e4d65e565c1b6fd74aea157f7495bf2"
@@ -1819,9 +1829,14 @@
           "sha256": "c2007b471bc1c0c7a0bed51d2371f6d30fc73a6d6fb4e9eae8233d4b97c2d504"
         },
         {
+          "path": "test/unit/schema-pattern-starvation-independent.test.ts",
+          "role": "expectations",
+          "sha256": "6e2861e0e977cee72889add0484413787721a9babe22e02911b247511f6008b8"
+        },
+        {
           "path": "test/unit/schema-pattern-witness-independent.test.ts",
           "role": "expectations",
-          "sha256": "ce6fe20a5a96f2c801bec243fdac0fe2e9d1b345244b33fe4fc7beaa9466f7c7"
+          "sha256": "4014ad5e838faef9889a2f4f6f4470dfde123889058c2658fcde72757ad3179b"
         },
         {
           "path": "test/unit/schema-selected-au-independent.test.ts",
@@ -1891,7 +1906,7 @@
         {
           "path": "test/conformance/fixtures/xsd/recovery/original-generated-binding-independent.xsd",
           "role": "fixture",
-          "sha256": "7f59f07d365f84c9bbd0e74afe461bcf48d492d3812d638743416fe57b53877c"
+          "sha256": "60236a91a6ba4bd4e793a2f054a28baa819c0e95e2c9945a1c127730cf27ca96"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/original-generated-chameleon-independent.xsd",
@@ -1926,7 +1941,7 @@
         {
           "path": "test/unit/schema-original-generated-binding-independent.test.ts",
           "role": "expectations",
-          "sha256": "fa86242f6ab680a0fcd088d0716062d9c59dcd972f860ab6bc0cc1bcafd15f1d"
+          "sha256": "69312668e736f6d44cf1f9b32fc688fc434d6a85b08ae832a26c7ee9b04a09fe"
         },
         {
           "path": "test/unit/schema-simple-correspondence-independent.test.ts",

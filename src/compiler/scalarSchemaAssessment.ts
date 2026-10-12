@@ -278,10 +278,20 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       return false;
     };
     for (const candidate of schemaScalarWitnesses(expected, lexical, owner, c)) if (accepts(candidate)) return true;
+    c.step(owner); const outside: SchemaPattern[] = [];
     for (const layer of base.plan.layers) for (const pattern of layer.patterns) {
       c.step(owner); const language = patternOwner(pattern).literalLanguage(pattern, owner);
-      if (language.kind !== 'finite-literal') continue;
+      if (language.kind === 'outside-fragment') {c.step(owner, 2); outside.push(pattern); continue;}
       for (const value of language.words) {
+        c.step(owner, 3);
+        if (accepts({...lexical, value})) return true;
+      }
+    }
+    // An exact finite word may already establish membership. Only then spend
+    // the shared allowance on incomplete proposals for outside fragments.
+    for (const pattern of outside) {
+      c.step(owner);
+      for (const value of patternOwner(pattern).positiveWords(pattern, owner, lexical.value)) {
         c.step(owner, 3);
         if (accepts({...lexical, value})) return true;
       }

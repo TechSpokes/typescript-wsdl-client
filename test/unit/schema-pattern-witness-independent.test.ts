@@ -112,14 +112,22 @@ describe('independent finite literal-pattern membership witnesses', () => {
   });
 
   it.each([['OutsideClass', '[0]{4}1'], ['OutsideInfinite', '0{4,}1']] as const)
-    ('retains debt when %s is outside the finite literal fragment', async (base, pattern) => {
+    ('checks a positive proposal for %s outside the finite literal fragment', async (base, pattern) => {
       const {raw, facet, actual, lexical} = await setup();
       expect(actual.assess(named(base), lexical('00001'), owner)).toMatchObject({kind: 'checked'});
       const candidate = raw(named(base), [facet('pattern', pattern), facet('enumeration', '1', builtin('decimal'))]);
-      expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-        expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}),
-      ])});
+      expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject({kind: 'checked', obligations: []});
+      expect(candidate.kernel.assess(candidate.reference, lexical('00001'), owner)).toMatchObject({kind: 'checked',
+        value: {operand: {family: 'decimal', canonical: '1'}}});
     });
+
+  it('keeps a finite unbounded-repeat proposal miss unresolved', async () => {
+    const {raw, facet} = await setup();
+    const candidate = raw(named('OutsideInfinite'), [facet('pattern', '0{4,}1'), facet('enumeration', '2', builtin('decimal'))]);
+    expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
+      expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}),
+    ])});
+  });
 
   it('does not widen the application regular-expression profile', async () => {
     const {actual, lexical} = await setup();
@@ -251,6 +259,25 @@ describe('independent privately compiled finite literal language', () => {
   it.each(['[a]', '[a-z]', String.raw`\d`, '.', '0{4,}1'])('does not guess a literal language for outside-fragment %s', expression => {
     const {patterns, lexical} = engine();
     expect(patterns.literalLanguage(patterns.compile(lexical(expression), 'pattern'), 'pattern')).toEqual({kind: 'outside-fragment'});
+  });
+
+  it.each(['[0]{4}1', '0{4,}1'] as const)('proposes a checked spelling without treating %s as finite language', expression => {
+    const {budget, patterns, lexical} = engine();
+    const compiled = patterns.compile(lexical(expression), 'pattern');
+    expect(patterns.literalLanguage(compiled, 'pattern')).toEqual({kind: 'outside-fragment'});
+    expect(budget.guard(() => patterns.positiveWords(compiled, 'pattern', '1').next().value)).toBe('00001');
+    expect(patterns.acceptsOperand(compiled, '00001', 'pattern')).toBe(true);
+    expect(budget.exhausted()).toBe(false);
+  });
+
+  it('rejects copied positive-program authority and keeps exhaustion sticky', () => {
+    const {budget, patterns, lexical} = engine();
+    const compiled = patterns.compile(lexical('[0]{999999999999999999999999999999}1'), 'pattern');
+    expect(() => patterns.positiveWords({...compiled}, 'pattern', '1').next()).toThrow(TypeError);
+    const words = patterns.positiveWords(compiled, 'pattern', '1');
+    const exhausted = budget.guard(() => words.next());
+    expect(exhausted).toMatchObject({kind: 'resource-limit', limit: 'work'});
+    expect(budget.guard(() => words.next())).toBe(exhausted);
   });
 
   it('requires original same-factory compiled identity before reading caller pattern fields', () => {
