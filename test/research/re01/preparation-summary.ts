@@ -83,7 +83,7 @@ export async function summarizePreparation(beforeFile: string, afterFile: string
       'Portable artifact bytes, fingerprints and input closure are identical before/after. Source paths differ when the baseline is measured from its archived source tree.',
       'Only retained object sharing is attributed to catalogProvenance memoization. Main-to-candidate composition also consumes the concrete charged wildcard owner; changed wildcard work is not a provenance speedup.',
       'Context workloads compare the same new API reused versus deliberately rebuilt actual stores. Baseline main has no equivalent real-graph request adapter.',
-      'The separately named source-owned request workload uses the authentic finite-checker source preparation route without running schema validity. Baseline main has no matching API. Its source snapshot/context work is shared; loader, canonical build and resolution retain explicitly separate limits.',
+      'The separately named source-owned request workload uses the authentic finite-checker source preparation route without running schema validity. Baseline main has no matching API. Authenticated source binding and semantic context indexes share a request budget; loader, canonical build and resolution retain explicitly separate limits.',
       'Default and diagnostic limits are distinct rows. Default exhaustion is a resource result, not invalid XSD or a universal negative.',
       'Process peak RSS is a lifetime high-water observation; no exclusive stage-memory or portable throughput guarantee follows.',
       'Logical source-stage counters retain their historical independent budgets. Each new actual-plus-candidate workload has one cumulative request budget.',

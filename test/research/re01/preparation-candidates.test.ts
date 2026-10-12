@@ -16,7 +16,7 @@ async function resolved() {
 }
 
 describe('real-source candidate workload', () => {
-  it('reports authentic source-owned preparation separately with real default exhaustion', async () => {
+  it('reports authentic source-owned preparation separately under the default budget', async () => {
     const small = await measureSourceOwnedPreparation(COMMITTED_PREPARATION_CORPUS[2], path.resolve('.'), 'diagnostic');
     expect(small).toMatchObject({mode: 'source-owned-actual-preparation', acceptance: 'structural-only', classification: 'structurally-prepared'});
     expect(small.stages.map(stage => stage.stage)).toEqual(['source-owned-loading', 'source-owned-actual-preparation']);
@@ -24,8 +24,9 @@ describe('real-source candidate workload', () => {
     expect(small.stages[1].logicalWork).toBe(small.finalUsage.work);
     expect(small.finalUsage.work).toBeGreaterThan(79);
     const weather = await measureSourceOwnedPreparation(COMMITTED_PREPARATION_CORPUS[0], path.resolve('.'), 'default');
-    expect(weather).toMatchObject({classification: 'resource-limit', acceptance: 'structural-only'});
-    expect(weather.stages[1].classification).toBe('resource-limit');
+    expect(weather).toMatchObject({classification: 'structurally-prepared', acceptance: 'structural-only', graphComponents: 140});
+    expect(weather.stages[1].classification).toBe('structurally-prepared');
+    expect(weather.finalUsage.work).toBeLessThanOrEqual(1_000_000);
   });
 
   it('changes actual membership and endpoint definitions while preserving source/sibling contexts', async () => {
