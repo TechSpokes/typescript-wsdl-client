@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "be01da113389938e568931d377455dcde13d1e8cdd617033f46d818b2e27c8c7"
+          "sha256": "cddd82a748f5a7fd876aec411ae085cc0be6f9ea3c3e3909dd3edf9552c74328"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1231,7 +1231,7 @@
         {
           "path": "src/compiler/semanticContext.ts",
           "role": "semantic-source",
-          "sha256": "26b966c5e61421f2e5642fd49db5b5edfa5694123a73d7ac4f90e294ede5db27"
+          "sha256": "98f56515cc9e07a928a8d7c73803fdc95604093024ac2b79f7511085ac05536c"
         },
         {
           "path": "src/compiler/wildcardAlgebra.ts",
@@ -1346,7 +1346,7 @@
         {
           "path": "test/research/re01/preparation-candidates.test.ts",
           "role": "prototype",
-          "sha256": "2966171237552349f7892e1109dda4437dfe9f4994befccb608132a103bef0a1"
+          "sha256": "46e61fcfa1af106490eee02b72c496d3fe536dcd61d631ce32b92ed181fa91ac"
         },
         {
           "path": "test/research/re01/preparation-candidates.ts",
@@ -1461,7 +1461,7 @@
         {
           "path": "test/unit/schema-document-independent.test.ts",
           "role": "expectations",
-          "sha256": "80b1ce93698ecf7adf45c3f5c7ff0b2df97754bdaa7da08f3d2e43496ff50bea"
+          "sha256": "b5b8b1391243570a9001f87cec51648f3c0f907f95aa750fc0469af3f73e1dca"
         },
         {
           "path": "test/unit/schema-document-syntax.test.ts",
@@ -1636,7 +1636,7 @@
         {
           "path": "src/compiler/sourceSchemaBinding.ts",
           "role": "semantic-source",
-          "sha256": "96c4a2ed1497272117cfa961ed1be57024cbc65071bb5f5c03ef05fdb550cde7"
+          "sha256": "16d9bdc1fa2ebca93fe43e465b98b72645e338b5cd23c66daf8aa24dceeac49e"
         },
         {
           "path": "src/util/xmlWhitespace.ts",

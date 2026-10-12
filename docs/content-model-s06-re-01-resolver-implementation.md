@@ -59,7 +59,8 @@ It preserves original syntax, bytes, digests and namespace bindings; `loadSchema
 Import referents must match both namespace presence and value, while an explicitly empty import namespace without a supplied referent is not itself forbidden.
 
 Notation declarations use a private component table without adding a persisted canonical node kind.
-`sourceSchemaBinding.ts` binds complete source interpretations to the exact resolved handle produced from one authenticated input snapshot; copied handles cannot supply that authority.
+`sourceSchemaBinding.ts` binds complete source interpretations to the exact resolved handle produced from one authenticated immutable input; copied handles cannot supply that authority.
+The source-owned preparation path now freezes the authenticated loader handle under its shared budget and keeps its exact private binding. The resolved graph was already deeply frozen by canonical construction, so the same authenticated source path reuses it when constructing the semantic request. Generic catalog callers still receive an owned graph snapshot. The source handle becomes immutable before canonical construction, and no source or graph data escape as writable request state.
 `schemaNotationProperties.ts` maps original XML values and checks complete abstract property tuples through one shared implementation.
 Source representations with the same notation QName coalesce only when their complete public/system identifier properties agree, including absence versus an empty value.
 Every original representation still receives its own source grammar, duplicate-root-key and annotation checks.
@@ -405,7 +406,8 @@ The current source-owned samples use `/workspace/recovery-232-correspondence`; e
 Differences therefore include source URI lengths and source changes, without attributing them to one isolated optimization.
 
 Default and diagnostic rows remain separate; diagnostic work uses an explicitly named 50,000,000 allowance while defaults remain unchanged.
-Weather source/catalog preparation succeeds at defaults, but its new actual context exhausts the 1,000,000-work allowance before any candidate.
+At the post-277 baseline, Weather source/catalog preparation succeeds at defaults, but its new actual context exhausts the 1,000,000-work allowance before any candidate.
+In the separate #278 matched-path continuation from post-277 main, Weather source-owned work falls from 5,461,538 to 988,098 and shared-recursive work from 1,103,022 to 214,199. Both now prepare under the unchanged 1,000,000-work default, with identical catalog fingerprints and request-graph census. The two checkouts have equal-length paths (`/workspace/recovery-278-baseline` and `/workspace/recovery-278-proposed`) and use identical fixture bytes. This measures structural source entry only: Weather's separate actual-plus-candidate context workload still exhausts the default allowance. Warm wall-time samples improved, but OS cache and GC are uncontrolled; logical work and identical graph facts are the primary comparison.
 Default import and shared-recursive contexts finish with reuse while the rebuilding controls exhaust; synthetic16 exhausts its third delta after two successes, and synthetic128 exhausts source gathering at the legacy reported step 1,000,001.
 
 The separate cold finite candidate accounting runs three unchanged constructions with fresh source requests and no prior cache warming; [PR276 accounting](https://github.com/TechSpokes/typescript-wsdl-client/issues/271#issuecomment-6114656155) remains historical evidence.

@@ -37,8 +37,13 @@ describe('independent schema-document source boundaries', () => {
     if (bound.kind !== 'prepared') throw new Error('Expected privately source-bound graph');
     const schemas = sourceSchemasForResolvedGraph(bound.resolved);
     expect(schemas).toHaveLength(1);
+    expect(schemas).toBe(input.schemas);
     expect(Object.isFrozen(bound.resolved)).toBe(true);
+    expect(Object.isFrozen(input.root.root)).toBe(true);
     for (const value of [schemas, schemas![0], schemas![0].syntax, schemas![0].syntax.attributes, schemas![0].syntax.children]) expect(Object.isFrozen(value)).toBe(true);
+    const request = prepareSemanticRequest(bound.resolved, {budget});
+    if (request.kind !== 'prepared') throw new Error('Expected exact source context');
+    expect(request.request.graph).toBe(bound.resolved.graph);
     expect(sourceSchemasForResolvedGraph({...bound.resolved})).toBeUndefined();
     let invoked = false;
     const forged = {...bound.resolved, get graph() {invoked = true; return bound.resolved.graph;}};
@@ -47,6 +52,19 @@ describe('independent schema-document source boundaries', () => {
     expect(() => prepareBoundSourceGraph({...input}, {budget})).toThrow(/Unauthenticated/);
     budget.guard(() => budget.chargeWork(100_000_000));
     expect(prepareBoundSourceGraph(input, {budget})).toBe(budget.failure());
+  });
+
+  it('prepares the complete Weather source at the unchanged default request budget', async () => {
+    const bytes = readFileSync(path.resolve('examples/minimal/weather.wsdl'));
+    const weatherUri = 'https://recovery-source.example/weather.wsdl';
+    const input = await loadSchemaInput(weatherUri, {policy: {allowedOrigins: [origin]}, offlineResources: new Map([[weatherUri,
+      {bytes, digest: createHash('sha256').update(bytes).digest('hex')} ]])});
+    const budget = createSemanticBudget();
+    const result = prepareSourceSchemaRequest(input, {budget});
+    expect(result).toMatchObject({kind: 'prepared'});
+    if (result.kind !== 'prepared') throw new Error('Weather source must fit the default budget');
+    expect(result.request.graph.nodes).toHaveLength(140);
+    expect(budget.usage().work).toBeLessThanOrEqual(1_000_000);
   });
 
 

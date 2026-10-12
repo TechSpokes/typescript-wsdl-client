@@ -186,7 +186,10 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         throw new InvalidContext('representation');
       }
       budget.reserveNodes(dataField(inputNodes, 'length') as number);
-      const graph = budget.freeze(budget.snapshot(inputGraph as CanonicalGraph));
+      // An exact source-bound resolved handle owns a deeply frozen graph from
+      // the resolver. The generic catalog entry still snapshots caller data.
+      const graph = sourceSchemas !== undefined ? inputGraph as CanonicalGraph
+        : budget.freeze(budget.snapshot(inputGraph as CanonicalGraph));
       budget.chargeWork(6);
       const originals = new Map<NodeId, GraphNode>();
       const originalNames = new Map<string, NodeId>();

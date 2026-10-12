@@ -26,7 +26,10 @@ export function prepareBoundSourceGraph(input: SchemaInput, options: Readonly<{
   assertLoadedSchemaInput(input);
   const budget = options.budget;
   return budget.guard(() => {
-    const owned = budget.freeze(budget.snapshot(input));
+    // The loader authenticates this exact input handle. Claim its complete
+    // immutable source tree before any build or caller access can intervene.
+    // The shared budget charges the freeze traversal before each field read.
+    const owned = budget.freeze(input);
     let stage: SourcePreparationFailure['stage'] = 'canonical-build';
     try {
       const graph = buildCanonicalGraph(owned, {maxNodes: options.sourceLimits?.maxNodes});
