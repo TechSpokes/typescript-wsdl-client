@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "36e89c5c08fe98b9f8176cd29a05f15ec90824072c3600f2d2df17b7e24978e9"
+          "sha256": "cd3fd34037ffb09913d5abf0fd556f8490e164cd5e08c4741271813e0cf8b6f6"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "01dc42bfc7bc3d26e7db652c94404205f8bd0144743c74e59f6937f7a75b5a7c"
+          "sha256": "9ee6999c5e6509a89b24334f9e21ecb4a52a6815cf7bd407d9e29cf3fb77a454"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1946,7 +1946,7 @@
         {
           "path": "test/unit/schema-exact-facet-components-independent.test.ts",
           "role": "expectations",
-          "sha256": "e07f3ab2619761bf713253c45b82524f7abb396395b6111bcd0d68e1df7d7216"
+          "sha256": "efdf126a4e4c5ba7b3f181a59b31803c6414db3090e7a6e51c5f2c4b4c7b098e"
         },
         {
           "path": "test/unit/schema-original-generated-binding-independent.test.ts",

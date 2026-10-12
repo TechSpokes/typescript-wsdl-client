@@ -120,6 +120,7 @@ The leaf issues retain exact reviewed revisions and unresolved findings; a mappe
 | Lexical/value/facet/list/union semantics and exact DT01 A | `schemaScalarKernel.ts`, `scalarSchemaAssessment.ts`, `schemaDatatypeValues.ts`, `schemaExactCalendar.ts` | `schema-scalar-independent.test.ts`, shared DT01 suite; original datatype, lexical namespace, owner, selected union member and prerequisite context retained |
 | Original generated scalar references and independent slot closure | `semanticTypeReference.ts`, `schemaTypeIdentity.ts`, `schemaGeneratedScalarShape.ts`, `checkOriginalGeneratedScalar` | `schema-original-generated-binding-independent.test.ts`; identity, all reference positions, suppressed source, exact context and private receipts |
 | Original simple property and facet correspondence | `checkCandidateCorrespondence`, shared scalar cross-context comparison | `schema-simple-correspondence-independent.test.ts`, `schema-cross-context-facets-independent.test.ts`; original typed values, fixed and annotation properties |
+| Exact supplied facet components and evaluation ownership | `scalarSchemaAssessment.ts`: `layer`, `readFacetProperties` | `schema-exact-facet-components-independent.test.ts`; fixed tuples, annotations, shared versus copied operands, evaluation order and inherited enumeration |
 | Source AU C1 identity union, replacement, requiredness, fixed/default and augmentation | `schemaAttributeUses.ts`: `assessSourceAttributeUses`, `assessAttributeUse` | `schema-attribute-independent.test.ts`; omitted original identity versus explicit replacement, typed equality and absent-value conflicts |
 | Context-local AU reuse with complete evidence replay | `schemaAttributeUses.ts` | `schema-attribute-reuse-independent.test.ts`; complete declaration/scalar closure, source/raw role separation, aggregate checks and inclusive warm-hit exhaustion |
 | Scalar failure ownership through AU and aggregate consumers | `schemaAttributeUses.ts`, `schemaConstructionAssessment.ts` | `schema-attribute-origin-independent.test.ts`; original datatype invalidity versus a candidate bad value |
@@ -190,6 +191,10 @@ Complete raw properties for an original simple type are compared with its immuta
 The comparison preserves base, item and ordered member identities, typed facet values, fixed metadata and annotation properties or an exact original facet-component binding; an equal component ID alone does not prove correspondence.
 An authenticated original facet binding preserves the exact original component set and its source operands, while active type and value legality remain separate obligations.
 Missing annotation metadata is unresolved; explicit absence is data, and independently constructed multi-operand groups retain any unsettled mapping prerequisite.
+
+Exact supplied facet components retain their typed values in the owning scalar description before effective constraint reduction.
+Enumeration operands belong to their installed constraint layer, including when a descendant inherits that layer.
+Reusing the same supplied facet object in another datatype cannot change earlier equality or membership results; independent controls cover both evaluation orders and copied-object contrasts at the unchanged request limits.
 
 Failure ownership is also context-qualified.
 An intrinsically invalid original datatype remains an actual-schema failure through scalar, AU and aggregate consumers.

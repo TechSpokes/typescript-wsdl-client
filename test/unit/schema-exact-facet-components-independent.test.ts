@@ -1,8 +1,8 @@
 import {describe, expect, it} from 'vitest';
-import {compareSchemaFacetProperties} from '../../src/compiler/schemaScalarKernel.js';
+import {compareSchemaFacetProperties, createSchemaScalarKernel} from '../../src/compiler/schemaScalarKernel.js';
 import {compareFacetAnnotation, validateFacetAnnotation} from '../../src/compiler/schemaFacetAnnotation.js';
 import type {FacetAnnotation} from '../../src/compiler/schemaFacetAnnotation.js';
-import {createSemanticBudget} from '../../src/compiler/semanticBudget.js';
+import {createSemanticBudget, DEFAULT_MAX_WORK} from '../../src/compiler/semanticBudget.js';
 import type {RawScalarFacetComponent, RawSimpleTypeProperties, ScalarFacet} from '../../src/compiler/schemaSimpleTypeProperties.js';
 import {originalSimpleSetup, builtin, id, named} from './helpers/original-simple-correspondence.js';
 
@@ -32,6 +32,53 @@ const component=(facet:ScalarFacet,evidence:FacetAnnotation|undefined=facet.anno
 };
 
 describe('exact supplied facet component and annotation evidence',()=>{
+  // Independently reproduced in the PR #282 source review: JavaScript object
+  // sharing and unrelated scalar evaluation must not change typed equality.
+  it.each(['minInclusive','enumeration'] as const)('keeps shared %s values in their own scalar domains in either evaluation order',async name=>{
+    for (const share of [true,false]) for (const decimalFirst of [true,false]) {
+      const s=await originalSimpleSetup(undefined,createSemanticBudget(),'https://facet-recovery.example/shared-facet.xsd');
+      const {annotation:_annotation,...shared}=s.facet(name,'2024');
+      const raw=(type:string,primitive:string,facet:ScalarFacet)=>exact(s.raw(type,[],{base:builtin(primitive)}),
+        [{facets:[facet],annotation:'absent'}]);
+      const context=s.overlay([
+        raw('Empty','gYear',shared), raw('PeerEmpty','gYear',{...shared}),
+        raw('DecimalOne','decimal',share?shared:{...shared}),
+      ],`shared-${name}-${share}-${decimalFirst}`);
+      const compare=(left:string,right:string)=>compareSchemaFacetProperties(context,named(left),id(left),context,named(right),id(right));
+      const equal={kind:'checked',value:true,annotationCorrespondence:'equal',obligations:[]};
+      const different={kind:'checked',value:false,annotationCorrespondence:'different',obligations:[]};
+      if (decimalFirst) expect(compare('DecimalOne','DecimalOne')).toMatchObject(equal);
+      expect(compare('Empty','PeerEmpty')).toMatchObject(equal);
+      expect(compare('DecimalOne','DecimalOne')).toMatchObject(equal);
+      expect(compare('Empty','PeerEmpty')).toMatchObject(equal);
+      expect(compare('Empty','DecimalOne')).toMatchObject(different);
+      expect(compare('DecimalOne','Empty')).toMatchObject(different);
+      expect(compare('PeerEmpty','Empty')).toMatchObject(equal);
+      expect(compare('DecimalOne','DecimalOne')).toMatchObject(equal);
+      s.request.budget.guard(()=>s.request.budget.chargeWork(DEFAULT_MAX_WORK));
+      expect(compare('Empty','PeerEmpty')).toBe(s.request.budget.failure());
+      expect(s.request.budget.usage().work).toBeLessThanOrEqual(DEFAULT_MAX_WORK);
+    }
+  });
+
+  it.each(['facetLayers','facetComponentSet'] as const)('preserves inherited %s enumeration membership after another domain uses the same facet',async representation=>{
+    const s=await originalSimpleSetup(undefined,createSemanticBudget(),'https://facet-recovery.example/inherited-shared-enumeration.xsd');
+    const {annotation:_annotation,...shared}=s.facet('enumeration','2024');
+    const raw=(type:string,primitive:string)=>representation==='facetLayers'
+      ? s.raw(type,[shared],{base:builtin(primitive)})
+      : exact(s.raw(type,[],{base:builtin(primitive)}),[{facets:[shared],annotation:'absent'}]);
+    const context=s.overlay([raw('AnnotatedMultiEnum','gYear'),raw('DecimalOne','decimal')],`inherited-${representation}`);
+    const kernel=createSchemaScalarKernel(context);
+    const assess=(type:string,value:string)=>kernel.assess(named(type),{value,context:s.seed.context},id(type));
+    // The source child has no new enumeration: its original installed parent
+    // layer must keep its gYear values, including for newly supplied lexicals.
+    expect(assess('InheritedAnnotatedMultiEnum','2024')).toMatchObject({kind:'checked',value:{operand:{family:'gYear'}},obligations:[]});
+    expect(assess('DecimalOne','2024')).toMatchObject({kind:'checked',value:{operand:{family:'decimal'}},obligations:[]});
+    expect(assess('InheritedAnnotatedMultiEnum','2024')).toMatchObject({kind:'checked',value:{operand:{family:'gYear'}},obligations:[]});
+    expect(assess('InheritedAnnotatedMultiEnum','2025')).toMatchObject({kind:'invalid-schema',rule:'cvc-enumeration-valid'});
+    expect(assess('DecimalOne','2024')).toMatchObject({kind:'checked',value:{operand:{family:'decimal'}},obligations:[]});
+  });
+
   it('uses complete independent annotation content through candidate and finite consumers',async()=>{
     const s=await originalSimpleSetup(undefined,undefined,'https://facet-recovery.example/original.xsd');
     const source=s.facet('minLength','1'),candidateUri='https://facet-candidate.example/raw.xsd';
