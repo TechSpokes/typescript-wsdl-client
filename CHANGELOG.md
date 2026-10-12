@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- perf(compiler): reuse authenticated immutable source and graph handles during request preparation.
+
 - fix(compiler): preserve finite lexical witnesses before heuristic character-class search.
 
 - fix(compiler): produce checked lexical witnesses for explicit pattern classes and unbounded repetitions.
