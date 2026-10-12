@@ -15,11 +15,15 @@ import {loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
 // expensive class search consumes the shared default work allowance.
 describe('independent finite witness scheduling', () => {
   it.each([
-    ['Specific', true],
-    ['Base', false],
-  ] as const)('retains the checked decimal witness for %s after a high Unicode class alternative', async (base, laterFinite) => {
+    {caseName: 'later finite pattern', base: 'Specific', fixture: 'scalar-pattern-starvation-independent.xsd',
+      pattern: `[${String.fromCodePoint(0x10ffff)}]|00001`, laterFinite: true, spelling: '00001', canonical: '1'},
+    {caseName: 'same-pattern finite alternative', base: 'Base', fixture: 'scalar-pattern-starvation-independent.xsd',
+      pattern: `[${String.fromCodePoint(0x10ffff)}]|00001`, laterFinite: false, spelling: '00001', canonical: '1'},
+    {caseName: 'cheap class before combinatorial literals', base: 'Base', fixture: 'scalar-pattern-class-starvation-independent.xsd',
+      pattern: '(0|1){16}|[0]002', laterFinite: false, spelling: '0002', canonical: '2'},
+  ] as const)('retains the checked decimal witness for $caseName', async ({base, fixture, pattern, laterFinite, spelling, canonical}) => {
     const fixtures = path.resolve('test/conformance/fixtures');
-    const bytes = await readFile(path.join(fixtures, 'xsd/recovery/scalar-pattern-starvation-independent.xsd'));
+    const bytes = await readFile(path.join(fixtures, 'xsd/recovery', fixture));
     const uri = 'https://pr279-review.example/starvation.xsd';
     const input = await loadSemanticSchemaInput(uri, {policy: {allowedOrigins: [new URL(uri).origin]},
       offlineResources: new Map([[uri, {bytes, digest: createHash('sha256').update(bytes).digest('hex')}]]),
@@ -36,8 +40,8 @@ describe('independent finite witness scheduling', () => {
     if (found.kind !== 'found' || found.node.kind !== 'simpleType') throw new Error('Expected template');
     const lexical = (value: string): LexicalValue => ({value, context: found.node.context});
     const actual = createSchemaScalarKernel(prepared.request.actual);
-    expect(actual.assess(named(base), lexical('00001'), owner)).toMatchObject({kind: 'checked',
-      value: {operand: {family: 'decimal', canonical: '1'}}});
+    expect(actual.assess(named(base), lexical(spelling), owner)).toMatchObject({kind: 'checked',
+      value: {operand: {family: 'decimal', canonical}}});
 
     const fresh: SimpleTypeNode = {...found.node, id: id('Fresh'),
       identity: {kind: 'global', role: 'type', name: {namespace, local: 'Fresh'}},
@@ -45,10 +49,9 @@ describe('independent finite witness scheduling', () => {
     const facet = (name: string, value: string, typed = false): ScalarFacet => ({name, lexical: lexical(value), fixed: false,
       ...(typed ? {operand: {type: {kind: 'builtin' as const,
         name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'decimal'}}, owner, context: 'original' as const}} : {})});
-    const pattern = `[${String.fromCodePoint(0x10ffff)}]|00001`;
     const raw: RawSimpleTypeProperties = {type: fresh.id, base: named(base), final: [], variety: {kind: 'atomic'},
-      facetLayers: [facet('pattern', pattern), ...(laterFinite ? [facet('pattern', '00001')] : []),
-        facet('enumeration', '1', true)].map(item => ({facets: [item]})),
+      facetLayers: [facet('pattern', pattern), ...(laterFinite ? [facet('pattern', spelling)] : []),
+        facet('enumeration', canonical, true)].map(item => ({facets: [item]})),
       provenance: {kind: 'hypothetical-abstract', originals: []}};
     const candidate = prepared.request.candidate({key: 'starvation', active: [...prepared.request.actual.members, fresh.id],
       additions: [fresh], rawSimpleTypes: [raw]});
@@ -56,8 +59,8 @@ describe('independent finite witness scheduling', () => {
     if (candidate.kind !== 'prepared') throw new Error('Expected structural candidate');
     const kernel = createSchemaScalarKernel(candidate.context);
     expect(kernel.describe(named('Fresh'), owner)).toMatchObject({kind: 'checked', obligations: []});
-    expect(kernel.assess(named('Fresh'), lexical('00001'), owner)).toMatchObject({kind: 'checked',
-      value: {operand: {family: 'decimal', canonical: '1'}}});
+    expect(kernel.assess(named('Fresh'), lexical(spelling), owner)).toMatchObject({kind: 'checked',
+      value: {operand: {family: 'decimal', canonical}}});
     expect(budget.usage().work).toBeLessThanOrEqual(1_000_000);
   });
 });

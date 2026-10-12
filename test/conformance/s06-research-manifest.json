@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "6180c8526b97e32e496231ff28d3b360b5434732dd191ddabd133fce428a7a30"
+          "sha256": "590489812e0202b61ca37e187f987104e53654a6d5b6300c5a26dbc4aa1bfa67"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1191,7 +1191,7 @@
         {
           "path": "src/compiler/schemaPattern.ts",
           "role": "semantic-source",
-          "sha256": "ef4a3c541f218a7b127249ab0eb872915043fe58b48f0b1ee0d09d4844e639f1"
+          "sha256": "eaa0f7fffe4f34615c8acbc5f6c18207d7fb95fbf2cf37b4f8490b870ab590ae"
         },
         {
           "path": "src/compiler/schemaScalarContext.ts",
@@ -1779,6 +1779,11 @@
           "sha256": "b505c5622b1306aec770b7bae2303703a77ae20388d9bdd0f9ef3f80fb6615dc"
         },
         {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-class-starvation-independent.xsd",
+          "role": "fixture",
+          "sha256": "7f58f97629b51c54badaa875c7013676cb34e3007bddee699768d0eb584e771d"
+        },
+        {
           "path": "test/conformance/fixtures/xsd/recovery/scalar-pattern-starvation-independent.xsd",
           "role": "fixture",
           "sha256": "bd80bef64c6913340b7951bdd43c062f03a6b3d0418abd27fab21c333c66cf1d"
@@ -1826,7 +1831,7 @@
         {
           "path": "test/unit/schema-pattern-starvation-independent.test.ts",
           "role": "expectations",
-          "sha256": "846c293cf1f937484948f77c2e35017c55cbf059123cd452fd2fff9570c9f89e"
+          "sha256": "6e2861e0e977cee72889add0484413787721a9babe22e02911b247511f6008b8"
         },
         {
           "path": "test/unit/schema-pattern-witness-independent.test.ts",

@@ -141,9 +141,9 @@ Additional finite lexical aliases are reassessed against the exact base and comp
 The shared pattern owner can also enumerate its privately compiled finite literal fragment: literal code points and escapes, choices, sequences and bounded repetitions.
 It proposes spellings without changing the application pattern subset or assigning pattern-component equality; every spelling still requires exact base assessment and typed equality.
 Enumeration is iterative and charged before copying or repetition; resource exhaustion remains sticky, and fragments outside this producer retain their membership prerequisite.
-For admitted explicit character classes, the positive producer tries operand spelling characters that match the class, then scans code points from U+0020 for one match when needed.
+For admitted explicit character classes, the positive producer tries operand spelling characters and printable ASCII that match the class, then scans remaining code points from U+007F for one match when needed.
 Exact finite pattern words across all layers are checked before incomplete heuristic proposals, so a costly earlier pattern cannot starve a later finite witness.
-Within a heuristic pattern, paths needing no class search are tried before the fallback Unicode scan; the [independent starvation control](../test/unit/schema-pattern-starvation-independent.test.ts) exercises both orderings at the unchanged default budget.
+Within a heuristic pattern, cheap class witnesses remain ahead of large literal branches, while paths needing no class search are tried before the fallback Unicode scan; the [independent starvation control](../test/unit/schema-pattern-starvation-independent.test.ts) exercises both orderings at the unchanged default budget.
 For admitted unbounded repetitions, it explores a finite prefix from the declared minimum through that minimum plus the expression and operand spelling lengths, using the same request budget.
 These proposals are checked in the exact base context against the original typed operand; missing proposals retain an unresolved membership obligation, since the prefix and class choices do not exhaust either language.
 The same value-facet evaluator can establish exact length, precision or bound exclusion without promoting one union member's failure to a union-wide negative.

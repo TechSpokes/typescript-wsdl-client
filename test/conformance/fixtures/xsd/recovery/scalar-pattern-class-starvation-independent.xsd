@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review:pr279" targetNamespace="urn:review:pr279">
+  <xs:simpleType name="Base"><xs:restriction base="xs:decimal"><xs:pattern value="(0|1){16}|[0]002"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Template"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:element name="Owner" type="t:Base"/>
+</xs:schema>
