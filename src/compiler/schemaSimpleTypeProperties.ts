@@ -3,8 +3,10 @@ import type {LexicalValue, NodeId} from './canonicalGraph.js';
 import type {SemanticBudget} from './semanticBudget.js';
 import {assertSemanticTypeReferenceShape} from './semanticTypeReference.js';
 import type {SemanticTypeReference} from './semanticTypeReference.js';
+import {validateFacetAnnotation} from './schemaFacetAnnotation.js';
+import type {FacetAnnotation} from './schemaFacetAnnotation.js';
 export type ScalarFacet = Readonly<{name: string; lexical: LexicalValue; fixed: boolean;
-  /** Explicit abstract annotation absence. Omission supplies no annotation fact. */
+  /** Explicit abstract absence for legacy layers. Exact payloads belong to a component. */
   annotation?: 'absent';
   /** Absent means a newly supplied operand of the intrinsic helper family. */
   operand?: Readonly<{type: SemanticTypeReference; owner: NodeId; context: 'original' | 'active'}>}>;
@@ -21,9 +23,17 @@ export type ScalarFacet = Readonly<{name: string; lexical: LexicalValue; fixed: 
  * are never discarded by that normalization.
  */
 export type RawScalarFacetLayer = Readonly<{facets: readonly ScalarFacet[]}>;
+/** Exact supplied component inventory. Each entry is one scalar component,
+ * one enumeration value-set component, or one pattern expression component.
+ * Unlike facetLayers, scalar entries are never reduced to a normal form.
+ */
+export type RawScalarFacetComponent = Readonly<{facets: readonly ScalarFacet[];
+  /** Annotation of the abstract component, including grouped pattern/enum. */
+  annotation?: FacetAnnotation}>;
 export type RawSimpleFacetInput = Readonly<
-  {facetLayers: readonly RawScalarFacetLayer[]; facetBinding?: never} |
-  {facetBinding: Readonly<{kind: 'original'; type: SemanticTypeReference}>; facetLayers?: never}
+  {facetLayers: readonly RawScalarFacetLayer[]; facetBinding?: never; facetComponentSet?: never} |
+  {facetComponentSet: readonly RawScalarFacetComponent[]; facetLayers?: never; facetBinding?: never} |
+  {facetBinding: Readonly<{kind: 'original'; type: SemanticTypeReference}>; facetLayers?: never; facetComponentSet?: never}
 >;
 export type RawSimpleTypeProperties = Readonly<{
   type: NodeId;
@@ -41,11 +51,12 @@ export function validateRawSimpleTypeShape(value: unknown, budget: SemanticBudge
   if (!object(value) || typeof value.type !== 'string' || !object(value.base) || !Array.isArray(value.final) || !object(value.variety)) return false;
   assertSemanticTypeReferenceShape(value.base, budget);
   const binding = value.facetBinding;
+  const exact = value.facetComponentSet;
   if (binding !== undefined) {
-    if (value.facetLayers !== undefined || !object(binding) || binding.kind !== 'original') return false;
+    if (value.facetLayers !== undefined || exact !== undefined || !object(binding) || binding.kind !== 'original') return false;
     assertSemanticTypeReferenceShape(binding.type, budget);
-  } else if (!Array.isArray(value.facetLayers)) return false;
-  const layers = binding !== undefined ? [] : value.facetLayers as unknown[];
+  } else if (exact !== undefined ? value.facetLayers !== undefined || !Array.isArray(exact) : !Array.isArray(value.facetLayers)) return false;
+  const layers = binding !== undefined ? [] : (exact ?? value.facetLayers) as unknown[];
   if (value.targetNamespace !== undefined && typeof value.targetNamespace !== 'string') return false;
   budget.chargeWork(value.type.length + value.final.length * 4 + layers.length * 4);
   if (value.final.some(method => !['restriction', 'list', 'union'].includes(method))) return false;
@@ -55,14 +66,24 @@ export function validateRawSimpleTypeShape(value: unknown, budget: SemanticBudge
   if (value.variety.kind === 'union') for (const member of value.variety.members as unknown[]) assertSemanticTypeReferenceShape(member, budget);
   for (const layer of layers) {
     budget.chargeWork(4);
-    if (!object(layer) || !Array.isArray(layer.facets)) return false;
+    if (!object(layer) || !Array.isArray(layer.facets) || exact !== undefined && !layer.facets.length) return false;
     budget.chargeWork(layer.facets.length * 4);
+    if (exact !== undefined) {
+      const first=layer.facets[0];
+      if (!object(first) || typeof first.name !== 'string'
+        || layer.facets.some((facet:unknown)=>!object(facet)||facet.name!==first.name)
+        || layer.facets.length > 1 && !['pattern', 'enumeration'].includes(first.name)) return false;
+      const annotation = Object.getOwnPropertyDescriptor(layer,'annotation');
+      if (annotation && (!('value' in annotation) || annotation.value !== undefined
+        && !validateFacetAnnotation(annotation.value,budget))) return false;
+    }
     for (const facet of layer.facets) {
       budget.chargeWork(8);
       if (!object(facet) || !facetNames.includes(facet.name as string) || typeof facet.fixed !== 'boolean' || !object(facet.lexical) || typeof facet.lexical.value !== 'string' || !object(facet.lexical.context) || !object(facet.lexical.context.namespaces) || !object(facet.lexical.context.source)) return false;
       budget.chargeWork(56);
       const annotation = Object.getOwnPropertyDescriptor(facet, 'annotation');
-      if (annotation && (!('value' in annotation) || annotation.value !== undefined && annotation.value !== 'absent')) return false;
+      if (annotation && (!('value' in annotation) || annotation.value !== undefined &&
+        (exact !== undefined || annotation.value !== 'absent'))) return false;
       if (facet.operand !== undefined && (!object(facet.operand) || !object(facet.operand.type) || typeof facet.operand.owner !== 'string' || !['original', 'active'].includes(facet.operand.context as string))) return false;
       if (facet.operand !== undefined && !['enumeration', 'minInclusive', 'minExclusive', 'maxInclusive', 'maxExclusive'].includes(facet.name as string)) return false;
       if (facet.operand !== undefined) assertSemanticTypeReferenceShape(facet.operand.type, budget);

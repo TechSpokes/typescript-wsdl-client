@@ -444,7 +444,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           if (properties.variety.kind === 'list') rawReference(properties.type, properties.variety.item, edges);
           if (properties.variety.kind === 'union') for (const member of properties.variety.members) rawReference(properties.type, member, edges);
           if (properties.facetBinding) rawReference(properties.type, properties.facetBinding.type, [], true);
-          for (const layer of properties.facetLayers ?? []) for (const facet of layer.facets) {
+          for (const layer of properties.facetLayers ?? properties.facetComponentSet ?? []) for (const facet of layer.facets) {
             budget.chargeWork(2); const operand = facet.operand; if (!operand) continue;
             if (operand.context === 'active') {requireMember(operand.owner); rawReference(properties.type, operand.type, edges);}
             else {

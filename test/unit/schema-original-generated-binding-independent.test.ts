@@ -550,7 +550,7 @@ describe('independent original generated scalar identity and closure', () => {
   });
 
   it.each([['restriction', named('AnnotatedR'), 'equal'], ['extension-alias', named('AnnotatedD'), 'equal'],
-    ['explicit-slot', slot('AnnotatedR'), 'equal'], ['independent-restriction', named('AnnotatedR2'), 'unresolved']] as const)
+    ['explicit-slot', slot('AnnotatedR'), 'equal'], ['independent-restriction', named('AnnotatedR2'), 'different']] as const)
     ('binds annotations by the original scalar identity selected through %s', async (_role, reference, annotationCorrespondence) => {
       const s = await setup('original-generated-facets-independent.xsd'), seed = s.simple('Empty');
       const fresh: SimpleTypeNode = {...seed, id: id('BoundAlias'), identity: {kind: 'global', role: 'type', name: {namespace, local: 'BoundAlias'}}};
@@ -562,6 +562,24 @@ describe('independent original generated scalar identity and closure', () => {
       expect(result).toMatchObject({kind: 'checked', value: true, annotationCorrespondence,
         sourceFacetAnnotations: {left: 'present', right: 'present'}});
     });
+
+  it('compares complete supplied annotation content with an original-generated scalar', async () => {
+    const s=await setup('original-generated-facets-independent.xsd'),seed=s.simple('Empty');
+    const fresh:SimpleTypeNode={...seed,id:id('ExactAlias'),identity:{kind:'global',role:'type',name:{namespace,local:'ExactAlias'}}};
+    const namespaces={xml:'http://www.w3.org/XML/1998/namespace','':'',xs:'http://www.w3.org/2001/XMLSchema',
+      t:namespace,p:'urn:recovery:bound-qname',q:'urn:recovery:bound-qname'};
+    const payload={kind:'present' as const,content:{kind:'element' as const,
+      name:{namespace:'http://www.w3.org/2001/XMLSchema',local:'annotation'},attributes:[],namespaces,
+      children:[{kind:'element' as const,name:{namespace:'http://www.w3.org/2001/XMLSchema',local:'documentation'},
+        attributes:[],namespaces,children:[{kind:'text' as const,value:'retained original facet'}]}]}};
+    const prepared=s.request.candidate({key:'independent-generated-exact-annotation',active:[...s.request.actual.members,fresh.id],
+      additions:[fresh],rawSimpleTypes:[{type:fresh.id,base:builtin('string'),final:[],variety:{kind:'atomic'},
+        facetComponentSet:[{facets:[{name:'minLength',fixed:false,lexical:s.lexical('1')}],annotation:payload}],
+        provenance:{kind:'hypothetical-abstract',originals:[]}}]});
+    expect(prepared).toMatchObject({kind:'prepared'});if(prepared.kind!=='prepared')throw new Error('Expected exact alias');
+    expect(compareSchemaFacetProperties(s.request.actual,slot('AnnotatedR'),id('D'),prepared.context,named('ExactAlias'),fresh.id))
+      .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'equal'});
+  });
 
   it('retains original QName operands and namespace bindings through a facet-data binding', async () => {
     const s = await setup('original-generated-facets-independent.xsd');

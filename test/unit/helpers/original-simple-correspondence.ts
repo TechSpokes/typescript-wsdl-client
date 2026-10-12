@@ -1,4 +1,6 @@
 import path from 'node:path';
+import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {loadSemanticSchemaInput} from '../../../src/loader/schemaInput.js';
 import {globalId} from '../../../src/compiler/canonicalGraph.js';
 import type {ComplexTypeNode, GraphNode, Reference, SimpleTypeNode} from '../../../src/compiler/canonicalGraph.js';
@@ -17,9 +19,14 @@ export const named = (local: string): Reference => ({kind: 'local', target: id(l
 export const builtin = (local: string): Reference => ({kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local}});
 export const local = (target: string): Reference => ({kind: 'local', target});
 
-export async function originalSimpleSetup(file = 'original-simple-correspondence-independent.xsd', budget = createSemanticBudget({maxWork: diagnosticWork})) {
+export async function originalSimpleSetup(file = 'original-simple-correspondence-independent.xsd', budget = createSemanticBudget({maxWork: diagnosticWork}), offlineUri?: string) {
   const fixtures = path.resolve('test/conformance/fixtures');
-  const input = await loadSemanticSchemaInput(path.join(fixtures, 'xsd/recovery', file), {policy: {fileRoots: [fixtures]}});
+  const fixture = path.join(fixtures, 'xsd/recovery', file);
+  const input = offlineUri ? await (async()=>{
+    const bytes=await readFile(fixture),digest=createHash('sha256').update(bytes).digest('hex');
+    return loadSemanticSchemaInput(offlineUri,{policy:{allowedOrigins:[new URL(offlineUri).origin]},
+      offlineResources:new Map([[offlineUri,{bytes,digest}]])});
+  })() : await loadSemanticSchemaInput(fixture, {policy: {fileRoots: [fixtures]}});
   const prepared = prepareSourceSchemaRequest(input, {budget});
   if (prepared.kind !== 'prepared') throw new Error(`Expected authentic source preparation: ${prepared.kind}`);
   const request = prepared.request;

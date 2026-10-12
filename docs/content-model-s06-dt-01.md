@@ -332,6 +332,22 @@ Every checked facade result retains its outstanding construction obligations, in
 
 Hypothetical helper types use explicit component properties, including complete effective scalar facet groups and ordered union members. Their diagnostic source context does not supply final defaults or XML constructors. Comparable nonfixed scalar facets have an explicit effective normal form; inherited pattern and enumeration groups have a sufficient structural correspondence check. Typed facet operands can retain an original datatype, owner and context and are privately reassessed there, so inherited values are not reinterpreted by a helper's whitespace or union-member selection. Supplied complex simple content retains its exact scalar identity and a derivation-validity obligation; unresolved scalar facet-property correspondence retains a separate obligation. These local facts cannot certify a complete candidate while those obligations remain open.
 
+### Exact facet component evidence map
+
+The `facetComponentSet` input is an additive exact set of abstract facet components. It leaves the existing `facetLayers` normal form intact. Each component carries its fixed value, typed operand and one complete annotation infoset payload or explicit absence. An omitted annotation is unresolved. Repeated distinct scalar tuples remain in the exact set; their restriction-validity obligation remains open until the #266 F policy is selected. Identical complete tuples have set semantics. Enumeration operands use typed value-set equality. Independently constructed multi-pattern expressions still require the #266 P policy.
+
+Identical complete annotation payloads establish equality, and differences in aligned documentation or application-information content establish a difference. Wrapper metadata, namespace-map or child-order differences remain unresolved when the abstract annotation mapping has not been established. In particular, no XML child order is silently chosen as the order of XSD application-information and user-information properties.
+
+| Rule or evidence | Function | Regression control |
+|---|---|---|
+| Input shape, source ownership and shared budget | `validateRawSimpleTypeShape`, `projectFacetAnnotation` | `schema-exact-facet-components-independent.test.ts` |
+| Exact scalar, fixed and incomparable bound tuples | `readFacetProperties`, `compareFacetProperties` | `schema-exact-facet-components-independent.test.ts` |
+| Typed enumeration sets and pattern uncertainty | `compareFacetProperties` | `schema-exact-facet-components-independent.test.ts` |
+| Component annotation content and missing evidence | `compareFacetAnnotations`, `compareFacetAnnotation` | `schema-exact-facet-components-independent.test.ts` |
+| Candidate and finite evidence integration | `compareSchemaFacetProperties`, `checkCandidateCorrespondence` | `schema-exact-facet-components-independent.test.ts` |
+
+The named `raw-simple-facet-restriction-validity` obligation remains for distinct repeated scalar tuples. #234 still owns semantic transfer, universal coverage, complete negative answers and termination. #184 still owns runtime payload enforcement. The [S06 research handoff](content-model-s06-research-handoff.md) and [reference policy](reference-validation.md) retain their broader acceptance gates.
+
 Original lexical operands, namespace bindings, selected union members and typed list items remain available alongside exact values. Primitive value spaces remain distinct, including identical octets assessed as hexBinary and base64Binary. The existing 139 DT01 controls now execute the shared algorithm; independent real-graph controls cover decimal exactness, QName aliases, ordered unions, inherited facets, calendar boundaries, source obligations and shared exhaustion.
 
 This staging reconciles the obsolete negative-year and second-60 exclusions in the preserved #231 draft without merging its actual-only assessment architecture. The approved profile, persisted formats, public defaults and activation gates remain unchanged. Full #268 local acceptance and #232/#234 research acceptance require their own complete evidence and independent review.

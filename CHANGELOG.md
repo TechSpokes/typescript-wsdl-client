@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(compiler): keep shared facet operands in their owning scalar domain and inherited constraint layer.
+
+- feat(compiler): preserve exact facet component sets and supplied annotation evidence across scalar contexts.
+
 - perf(compiler): reuse authenticated immutable source and graph handles during request preparation.
 
 - fix(compiler): preserve finite lexical witnesses before heuristic character-class search.

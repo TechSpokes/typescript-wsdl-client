@@ -37,7 +37,7 @@ const facetAssessors = new WeakMap<SemanticContext, (type: Reference, lexical: L
 const facetReaders = new WeakMap<SemanticContext, {
   read(reference: Reference, owner: NodeId): {evidence: ScalarFacetEvidence; obligations: readonly ScalarObligation[]; annotations: ScalarFacetAnnotationPresence;typeDependencies:readonly SemanticTypeDependency[]};
   compare(left: ScalarFacetEvidence, right: ScalarFacetEvidence, owner: NodeId): boolean;
-  annotations(left:ScalarFacetEvidence,right:ScalarFacetEvidence):'equal'|'different'|'unresolved';
+  annotations(left:ScalarFacetEvidence,right:ScalarFacetEvidence,owner:NodeId):'equal'|'different'|'unresolved';
 }>();
 const recipeReaders = new WeakMap<SemanticContext,{select(reference:Reference,owner:GraphNode):void;read(reference:Reference,owner:GraphNode):OriginalScalarFacetRecipe}>();
 export type GeneratedScalarReceipt = Readonly<{kind:'checked';slot:OriginalGeneratedScalarReference;contextId:string;authority:'XSD10-original-generated-scalar-v1';properties:ScalarContentProperties;typeDependencies:readonly SemanticTypeDependency[];obligations:readonly ScalarObligation[]}>;
@@ -83,7 +83,7 @@ function makeKernel(context: SemanticContext) {
   facetReaders.set(context, {
     read: (reference, owner) => {declaredPlan(reference, owner); return core.readFacetProperties(reference, c.get(owner));},
     compare: (left, right, owner) => core.compareFacetProperties(left, right, c.get(owner)),
-    annotations:core.compareFacetAnnotations,
+    annotations:(left,right,owner)=>core.compareFacetAnnotations(left,right,c.get(owner)),
   });
   const input = <T>(value: T): T => context.budget.freeze(context.budget.snapshot(value));
   // Reference ownership is issued by the prepared context; caller lexical and
@@ -250,7 +250,7 @@ export function compareSchemaFacetProperties(
       const value = leftReader.compare(left.evidence, right.evidence, operands.left.owner);
       return publish({kind: 'checked' as const, value,
         authority: 'XSD10-schema-scalar-facet-properties-v1' as const, operands, obligations,
-        annotationCorrespondence:leftReader.annotations(left.evidence,right.evidence),sourceFacetAnnotations: {left: left.annotations, right: right.annotations}});
+        annotationCorrespondence:leftReader.annotations(left.evidence,right.evidence,operands.left.owner),sourceFacetAnnotations: {left: left.annotations, right: right.annotations}});
     } catch (error) {
       if (!(error instanceof SchemaAssessmentError) && !(error instanceof SchemaOperandContextError)) throw error;
       if (side === 'comparison') return publish({kind: 'unresolved' as const, side,
