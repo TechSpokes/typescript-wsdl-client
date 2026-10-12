@@ -74,44 +74,32 @@ for (const lane of lanes) {
         assert.equal(matches.length, 1, 'Expected one archived ' + suffix);
         return { path: matches[0]![0], bytes: matches[0]![1] };
     };
-    const requiredTests = one('reference/required-tests.json');
-    const discovery = parseJson(requiredTests.bytes);
-    assert.equal(discovery.success, true);
-    assert.equal(discovery.numTotalTests, 158);
-    assert.equal(discovery.numPassedTests, lane.platform === 'linux' ? 158 : 155);
-    assert.equal(discovery.numPendingTests, lane.platform === 'linux' ? 0 : 3);
-    assert.equal(discovery.numFailedTests, 0);
-    assert.ok(Array.isArray(discovery.testResults));
-    assert.equal(discovery.testResults.length, 27);
-    const requiredReport = one('reference/required-report.json');
-    const reference = parseJson(requiredReport.bytes);
-    assert.equal(reference.testedRevision, revision);
-    assert.equal(reference.testedTree, tree);
-    assert.equal(reference.workingTreeDirty, false);
-    assert.ok(Array.isArray(reference.testFiles));
-    assert.equal(reference.testFiles.length, 27);
-    assert.ok(Array.isArray(reference.executedMethods));
-    assert.equal(reference.executedMethods.length, 53);
-    assert.deepEqual(reference.failures, []);
-    assert.ok(Array.isArray(reference.cases));
-    assert.equal(reference.cases.length, 6);
-    const provenance = record(reference.provenance);
-    assert.equal(provenance.testedRevision, revision);
-    assert.equal(provenance.testedTree, tree);
-    assert.equal(provenance.workingTreeDirty, false);
-    const provenanceSources = record(provenance.sourceHashes);
-    const provenanceInputs = record(provenance.inputHashes);
-    const provenanceArtifacts = record(provenance.artifactHashes);
-    assert.equal(Object.keys(provenanceSources).length, 116);
-    assert.equal(Object.keys(provenanceInputs).length, 337);
-    assert.equal(Object.keys(provenanceArtifacts).length, 4);
-    for (const entries of [provenanceSources, provenanceInputs])
-        for (const [path, digest] of Object.entries(entries))
-            assert.equal(digest, sourceHashes[path], 'Provenance source/input mismatch: ' + path);
-    for (const [path, digest] of Object.entries(provenanceArtifacts)) {
-        assert.ok(path === 'package-lock.json' || path.startsWith('node_modules/libxml2-wasm/'));
-        const installedPath = path === 'package-lock.json' ? join(source, path) : join(auditCheckout, path);
-        assert.equal(digest, hash(installedPath), 'Installed artifact mismatch: ' + path);
+    const requiredTests = lane.platform === 'linux' ? one('reference/required-tests.json') : undefined;
+    const requiredReport = lane.platform === 'linux' ? one('reference/required-report.json') : undefined;
+    if (lane.platform === 'win32') {
+        assert.ok(![...files.keys()].some(path => path.endsWith('reference/required-tests.json')
+            || path.endsWith('reference/required-report.json')));
+    }
+    if (requiredTests && requiredReport) {
+        const discovery = parseJson(requiredTests.bytes);
+        assert.equal(discovery.success, true);
+        assert.equal(discovery.numTotalTests, 158);
+        assert.equal(discovery.numPassedTests, 158);
+        assert.equal(discovery.numPendingTests, 0);
+        assert.equal(discovery.numFailedTests, 0);
+        assert.ok(Array.isArray(discovery.testResults));
+        assert.equal(discovery.testResults.length, 27);
+        const reference = parseJson(requiredReport.bytes);
+        assert.equal(reference.testedRevision, revision);
+        assert.equal(reference.testedTree, tree);
+        assert.equal(reference.workingTreeDirty, false);
+        assert.ok(Array.isArray(reference.testFiles));
+        assert.equal(reference.testFiles.length, 27);
+        assert.ok(Array.isArray(reference.executedMethods));
+        assert.equal(reference.executedMethods.length, 53);
+        assert.deepEqual(reference.failures, []);
+        assert.ok(Array.isArray(reference.cases));
+        assert.equal(reference.cases.length, 6);
     }
     const fullTests = one('reference/full-tests.json');
     const fullDiscovery = parseJson(fullTests.bytes);
@@ -139,8 +127,25 @@ for (const lane of lanes) {
     assert.equal(fullProvenance.testedRevision, revision);
     assert.equal(fullProvenance.testedTree, tree);
     assert.equal(fullProvenance.workingTreeDirty, false);
-    for (const key of ['sourceHashes', 'inputHashes', 'artifactHashes'] as const)
-        assert.deepEqual(fullProvenance[key], provenance[key]);
+    const provenanceSources = record(fullProvenance.sourceHashes);
+    const provenanceInputs = record(fullProvenance.inputHashes);
+    const provenanceArtifacts = record(fullProvenance.artifactHashes);
+    assert.equal(Object.keys(provenanceSources).length, 116);
+    assert.equal(Object.keys(provenanceInputs).length, 337);
+    assert.equal(Object.keys(provenanceArtifacts).length, 4);
+    for (const entries of [provenanceSources, provenanceInputs])
+        for (const [path, digest] of Object.entries(entries))
+            assert.equal(digest, sourceHashes[path], 'Provenance source/input mismatch: ' + path);
+    for (const [path, digest] of Object.entries(provenanceArtifacts)) {
+        assert.ok(path === 'package-lock.json' || path.startsWith('node_modules/libxml2-wasm/'));
+        const installedPath = path === 'package-lock.json' ? join(source, path) : join(auditCheckout, path);
+        assert.equal(digest, hash(installedPath), 'Installed artifact mismatch: ' + path);
+    }
+    if (requiredReport) {
+        const requiredProvenance = record(parseJson(requiredReport.bytes).provenance);
+        for (const key of ['sourceHashes', 'inputHashes', 'artifactHashes'] as const)
+            assert.deepEqual(requiredProvenance[key], fullProvenance[key]);
+    }
     const research = one('s06-pw01/measurements.json');
     const researchRows = JSON.parse(research.bytes.toString('utf8')) as unknown;
     assert.ok(Array.isArray(researchRows));
@@ -206,10 +211,10 @@ for (const lane of lanes) {
         testedRevision: report.testedRevision, testedTree: report.testedTree, sourceHashes: tracked.length,
         commands: commandTexts.length, platform: report.platform, node: report.node, npm: report.npm,
         status: report.status, cleanup: cleaned.phase, reference: {
-            discoveredFiles: discovery.testResults.length, passed: discovery.numPassedTests,
-            skipped: discovery.numPendingTests, methods: reference.executedMethods.length,
-            testsSha256: createHash('sha256').update(requiredTests.bytes).digest('hex'),
-            reportSha256: createHash('sha256').update(requiredReport.bytes).digest('hex'),
+            discoveredFiles: fullDiscovery.testResults.length, passed: fullDiscovery.numPassedTests,
+            skipped: fullDiscovery.numPendingTests, methods: full.executedMethods.length,
+            requiredTestsSha256: requiredTests ? createHash('sha256').update(requiredTests.bytes).digest('hex') : null,
+            requiredReportSha256: requiredReport ? createHash('sha256').update(requiredReport.bytes).digest('hex') : null,
             fullTestsSha256: createHash('sha256').update(fullTests.bytes).digest('hex'),
             fullReportSha256: createHash('sha256').update(fullReport.bytes).digest('hex'),
             fullCases: full.cases.length, fullInstances: 40,
