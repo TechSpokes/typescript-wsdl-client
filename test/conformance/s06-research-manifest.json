@@ -1481,7 +1481,7 @@
         {
           "path": "test/unit/schema-type-relations.test.ts",
           "role": "expectations",
-          "sha256": "fb466f986fae2b63808ac0c415568aba2760cd2b487e822416969aa451b7cdda"
+          "sha256": "37340f6863e8687c2c160e44ded6bbea24e1787ea69b498826c4627e913601cb"
         },
         {
           "path": "test/unit/semantic-context-independent.test.ts",
