@@ -192,10 +192,10 @@ describe('independent same-request cross-context facet authority', () => {
       .toMatchObject({kind: 'checked', value: true, sourceFacetAnnotations: {left: status, right: status}});
   });
 
-  it('keeps independent multi-pattern equality unresolved without choosing an expression mapping', async () => {
+  it('uses P1 expression construction for independent multi-pattern equality across contexts', async () => {
     const s = await originalSimpleSetup(), right = s.overlay([s.raw('Multi', [s.facet('pattern', 'a'), s.facet('pattern', 'b')])]);
     expect(compareSchemaFacetProperties(s.request.actual, named('Multi'), id('Multi'), right, named('Multi'), id('Multi')))
-      .toMatchObject({kind: 'unresolved', side: 'comparison', rule: 'pattern-property-equality'});
+      .toMatchObject({kind: 'checked', value: true, obligations: []});
   });
 
   it('rejects unrelated authentic requests and copied or forged handles before getters run', async () => {

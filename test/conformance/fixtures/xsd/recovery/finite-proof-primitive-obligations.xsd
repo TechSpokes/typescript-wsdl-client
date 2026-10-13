@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:primitive-affiliation" targetNamespace="urn:recovery:primitive-affiliation">
+  <xs:include schemaLocation="finite-proof-primitive-affiliation.xsd"/>
+  <xs:complexType name="U"><xs:complexContent><xs:extension base="t:D"/></xs:complexContent></xs:complexType>
+</xs:schema>

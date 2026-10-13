@@ -9,6 +9,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(compiler): compare exact pattern and scalar properties with preserved inheritance, fixed-value duties and evidence-qualified containment.
+
+- fix(re01): recheck inherited fresh helpers and verify primitive identity roots with complete actual obligations.
+
+- perf(compiler): calibrate the shared work default from measured workloads while retaining explicit regression limits.
+
 - perf(compiler): reuse context-local type and scalar receipts while preserving finite evidence and budget checks.
 
 - fix(compiler): keep shared facet operands in their owning scalar domain and inherited constraint layer.

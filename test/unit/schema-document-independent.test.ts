@@ -54,15 +54,15 @@ describe('independent schema-document source boundaries', () => {
     expect(prepareBoundSourceGraph(input, {budget})).toBe(budget.failure());
   });
 
-  it('prepares the complete Weather source at the unchanged default request budget', async () => {
+  it('preserves Weather source preparation within the explicit former 1m request budget', async () => {
     const bytes = readFileSync(path.resolve('examples/minimal/weather.wsdl'));
     const weatherUri = 'https://recovery-source.example/weather.wsdl';
     const input = await loadSchemaInput(weatherUri, {policy: {allowedOrigins: [origin]}, offlineResources: new Map([[weatherUri,
       {bytes, digest: createHash('sha256').update(bytes).digest('hex')} ]])});
-    const budget = createSemanticBudget();
+    const budget = createSemanticBudget({maxWork: 1_000_000});
     const result = prepareSourceSchemaRequest(input, {budget});
     expect(result).toMatchObject({kind: 'prepared'});
-    if (result.kind !== 'prepared') throw new Error('Weather source must fit the default budget');
+    if (result.kind !== 'prepared') throw new Error('Weather source must fit the former 1m budget');
     expect(result.request.graph.nodes).toHaveLength(140);
     expect(budget.usage().work).toBeLessThanOrEqual(1_000_000);
   });

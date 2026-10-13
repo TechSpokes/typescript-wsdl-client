@@ -3,7 +3,7 @@ import {pathToFileURL} from 'node:url';
 import {freshHelperCase} from './fresh-helper-case.js';
 import {prepareLiteralContexts} from './resolver-context.js';
 import {synthesizeLiteralAu} from './literal-au-synthesis.js';
-import {createResolverBudget} from './resolver-budget.js';
+import {createResolverBudget, DEFAULT_MAX_NODES, DEFAULT_MAX_WORK} from './resolver-budget.js';
 import type {ResolverLimits} from './resolver-budget.js';
 
 // Independently supplied fixture construction precedes the request. All subject
@@ -29,7 +29,7 @@ export function literalMeasurements() {
     const success = runLiteralRequest();
     if (success.kind !== 'prepared-literal-au-projection') throw new Error('Literal measurement did not reach its declared projection');
     const {nodes, work} = success.usage;
-    return {scope: success.scope, defaultLimits: {maxNodes: 100_000, maxWork: 1_000_000},
+    return {scope: success.scope, defaultLimits: {maxNodes: DEFAULT_MAX_NODES, maxWork: DEFAULT_MAX_WORK},
         success, inclusive: runLiteralRequest({maxNodes: nodes, maxWork: work}),
         belowWork: runLiteralRequest({maxWork: work - 1}), belowNodes: runLiteralRequest({maxNodes: nodes - 1})};
 }

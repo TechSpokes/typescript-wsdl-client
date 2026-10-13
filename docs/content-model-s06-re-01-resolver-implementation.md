@@ -19,7 +19,7 @@ Reference, owner and incoming-affiliation access to an unavailable subject raise
 Candidate collisions are checked against the entire original identity domain, including omitted original records.
 
 `src/compiler/semanticBudget.ts` is the single implementation of the previously accepted request accounting; `resolver-budget.ts` is a compatibility re-export.
-Default inclusive limits remain 100,000 nodes and 1,000,000 work units, with sticky exhaustion and pre-work/pre-allocation charging.
+Default inclusive limits are 100,000 nodes and 25,000,000 work units, with sticky exhaustion and pre-work/pre-allocation charging; the [capacity calibration](#successor-budget-calibration) records the measured scope and headroom.
 The new request covers actual context preparation, candidate indexes and consuming kernels; inherited loading/catalog/resolution stage counters remain separate and are not relabeled one whole-pipeline budget.
 
 Semantic consumers reuse the request's original indexes and access generated content through `particleContentNode`.
@@ -46,7 +46,7 @@ Alternative raw matches can discharge a pending pair only with a fully checked c
 The canonical adapter retains source contributions.
 Those contributions do not by themselves represent unrestricted abstract hypothetical AU sets or raw particle construction; source mapping must not be applied to every hypothetical candidate by assumption.
 The concrete finite checker described below consumes qualified effective-property correspondence and all generated local obligations.
-Remaining local interpretation cases and #234 witness/evidence adequacy stay open under the [domain checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint).
+Remaining local algorithm/evidence qualifications and #234 witness/evidence adequacy stay open under the [domain checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint).
 
 ### Concrete source verification APIs
 
@@ -121,6 +121,7 @@ The leaf issues retain exact reviewed revisions and unresolved findings; a mappe
 | Original generated scalar references and independent slot closure | `semanticTypeReference.ts`, `schemaTypeIdentity.ts`, `schemaGeneratedScalarShape.ts`, `checkOriginalGeneratedScalar` | `schema-original-generated-binding-independent.test.ts`; identity, all reference positions, suppressed source, exact context and private receipts |
 | Original simple property and facet correspondence | `checkCandidateCorrespondence`, shared scalar cross-context comparison | `schema-simple-correspondence-independent.test.ts`, `schema-cross-context-facets-independent.test.ts`; original typed values, fixed and annotation properties |
 | Exact supplied facet components and evaluation ownership | `scalarSchemaAssessment.ts`: `layer`, `readFacetProperties` | `schema-exact-facet-components-independent.test.ts`; fixed tuples, annotations, shared versus copied operands, evaluation order and inherited enumeration |
+| Selected P1 expression correspondence and F2 scalar restriction | `scalarSchemaAssessment.ts`: `samePatternProperty`, `exactScalarRestriction`, `rawFacetCorrespondence` | `schema-scalar-policy-independent.test.ts`, `schema-scalar-inheritance-review.test.ts`; exact inventories, compatible matching, complete value containment, universal fixed duties, source inheritance and partial calendar order |
 | Source AU C1 identity union, replacement, requiredness, fixed/default and augmentation | `schemaAttributeUses.ts`: `assessSourceAttributeUses`, `assessAttributeUse` | `schema-attribute-independent.test.ts`; omitted original identity versus explicit replacement, typed equality and absent-value conflicts |
 | Context-local AU reuse with complete evidence replay | `schemaAttributeUses.ts` | `schema-attribute-reuse-independent.test.ts`; complete declaration/scalar closure, source/raw role separation, aggregate checks and inclusive warm-hit exhaustion |
 | Scalar failure ownership through AU and aggregate consumers | `schemaAttributeUses.ts`, `schemaConstructionAssessment.ts` | `schema-attribute-origin-independent.test.ts`; original datatype invalidity versus a candidate bad value |
@@ -145,7 +146,7 @@ It proposes spellings without changing the application pattern subset or assigni
 Enumeration is iterative and charged before copying or repetition; resource exhaustion remains sticky, and fragments outside this producer retain their membership prerequisite.
 For admitted explicit character classes, the positive producer tries operand spelling characters and printable ASCII that match the class, then scans remaining code points from U+007F for one match when needed.
 Exact finite pattern words across all layers are checked before incomplete heuristic proposals, so a costly earlier pattern cannot starve a later finite witness.
-Within a heuristic pattern, cheap class witnesses remain ahead of large literal branches, while paths needing no class search are tried before the fallback Unicode scan; the [independent starvation control](../test/unit/schema-pattern-starvation-independent.test.ts) exercises both orderings at the unchanged default budget.
+Within a heuristic pattern, cheap class witnesses remain ahead of large literal branches, while paths needing no class search are tried before the fallback Unicode scan; the [independent starvation control](../test/unit/schema-pattern-starvation-independent.test.ts) exercises both orderings with an explicit 1,000,000-work allowance.
 For admitted unbounded repetitions, it explores a finite prefix from the declared minimum through that minimum plus the expression and operand spelling lengths, using the same request budget.
 These proposals are checked in the exact base context against the original typed operand; missing proposals retain an unresolved membership obligation, since the prefix and class choices do not exhaust either language.
 The same value-facet evaluator can establish exact length, precision or bound exclusion without promoting one union member's failure to a union-wide negative.
@@ -154,10 +155,10 @@ Raw conjunct reduction retains a correspondence prerequisite when it cannot pres
 `schemaBuiltinFacets.ts` supplies the dated derived-builtin component tuples, including exact singleton pattern strings, fixed markers, token-list minimum length and integer bounds and precision.
 Primitive facet sets remain empty; mandatory primitive whitespace behavior is distinct from a facet component, while list construction has its separately required whitespace component.
 Raw helpers must supply their complete effective properties; local raw atomic values use the primitive plus those supplied properties, and derivation/correspondence legality is checked separately.
-A complete raw facet inventory must retain every kind in a known, unqualified inherited inventory, subject to the reviewed nonfixed same-side inclusive/exclusive bound normalization; a missing kind proves invalidity without selecting repeated-component cardinality or pattern expression equality.
+A complete exact raw facet inventory must retain every kind in a known, unqualified inherited inventory. The reviewed nonfixed same-side inclusive/exclusive normalization belongs only to the legacy `facetLayers` representation.
 Supplied properties lost during reduction retain their prerequisite rather than being mistaken for absent input.
 Verifier-matched exact inherited raw facet tuples remain inherited properties, with their fixed metadata and typed values checked through shared equality.
-Only unmatched local tuples require replay as newly declared facets; explicit source redeclarations still undergo their original legality and base-membership checks.
+For exact scalar sets, changing any tuple of a kind replaces that whole kind in the reconstructed local set S. Every newly supplied bound must satisfy its local base-membership rule. Explicit source redeclarations undergo those same local rules, and source grammar still permits only one scalar facet of each kind per step.
 Unused original model groups receive their own all/UPA/EDC checks, and every fresh component is a hypothetical root.
 The approved pattern subset and schema-only NOTATION/identity/ENTITY obligations retain the distinctions required by ADR-003; runtime payload enforcement remains #184.
 
@@ -202,7 +203,23 @@ A bad candidate lexical value assessed against a valid original datatype remains
 
 The context privately owns sanitized immutable references and dependency records; ordinary caller objects are inspected and copied before reuse.
 Private completed scalar property plans may share their frozen publication, while each use repeats active selection, legality prerequisites and dependency collection.
-These copies and positively charged reuse paths preserve the unchanged shared request limits and never transfer validity between contexts.
+These copies and positively charged reuse paths preserve the shared request accounting and never transfer validity between contexts.
+
+### Selected scalar comparison policies
+
+The [authorized continuation](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918) selects P1 for pattern properties and directs evidence-qualified F2 scalar restriction. The comparison asks which component property was constructed; accepted-language equality and legal derivation are separate judgments.
+
+P1 preserves a singleton expression and joins complete expressions in supplied order with `|`. It adds no grouping, sorting or deduplication. Thus `['a', 'b']` constructs `a|b`, while `['b', 'a']` constructs a different property. A later language-equivalence operation can have its own authority without changing component correspondence. Pattern membership continues to use the compiled XSD expression semantics.
+
+F2 requires each effective scalar facet to have a compatible same-kind base facet when that kind exists. It additionally checks every applicable fixed base value, inherited cross-kind restrictions, complete local S construction, typed bound membership and whole-value containment. Retaining exact `minLength` components 3 and 5 succeeds; retaining only 5 succeeds; retaining only 3 fails when the result admits a value of length 3. A retained enumeration containing only `abcdef` can prove containment even with minimum 3.
+
+The dated primary rules are [Structures st-restrict-facets](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#st-restrict-facets) and [Datatypes constraining facets](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-facets). The bound restriction clauses prohibit specified mathematical relations; an indeterminate calendar comparison alone is not such a relation. Value assessment separately requires the value to satisfy each bound, and a sufficient implication proof needs a determinate order.
+
+The checker proves scalar containment from complete retained scalar implications, complete finite enumeration, or a complete finite literal pattern language. An assessed result value outside the base proves widening. Cases whose general pattern implication remains unproved retain `raw-simple-facet-restriction-validity`; for example, a retained `[a-z]{5,}` pattern with a weaker scalar minimum is mathematically sufficient but remains qualified in the current checker.
+
+Exact component inventories preserve repeated tuples and fixed metadata. Source descendants preserve all inherited components except scalar kinds explicitly replaced. The legacy `facetLayers` view denotes its proved normal form; comparing it with an exact inventory uses that normal form, preserving equality transitivity. An unproved normal form or missing annotation evidence retains its qualification.
+
+The 43 independently specified policy controls and 14 additional reviewer controls cover these distinctions. Reviewer regressions include dropped inherited calendar constraints, fixed duties on an empty source restriction, hidden old constraints after replacement, whole-kind local reconstruction, erased inherited bound kinds, repeated exclusive endpoints and mixed-representation equality. Retained bound kinds compare annotation properties as well as value and fixed metadata; unknown metadata keeps a qualification when no valid local construction is proved. The lower inclusive/exclusive prohibition applies to the complete datatype, while the upper-pair prohibition applies to the local derivation step, following their distinct dated clauses.
 
 ### Remaining local qualifications
 
@@ -213,12 +230,16 @@ The following named cases retain their precise prerequisites; a successful resul
 | --- | --- |
 | Effective raw facet groups outside proved correspondence | Finite typed enumeration membership and explicit lexical witnesses are checked; unresolved facet-component mapping retains `raw-simple-facet-restriction-validity` |
 | Incomplete original facet or annotation correspondence | Exact cross-context properties and authentic original bindings are compared; missing metadata or unsettled independently constructed groups retain their precise prerequisite |
-| Independently supplied multi-pattern component values | Singleton expression strings and privately inherited multi-component identity are checked; unspecified construction mapping retains `pattern-property-equality` or `raw-simple-facet-restriction-validity` |
+| General scalar value containment involving patterns | Selected P1 determines component expressions; cases beyond complete scalar, enumeration or finite-literal containment evidence retain `raw-simple-facet-restriction-validity` |
 | Incomplete notation source availability or active membership | Context-qualified lookup retains its named prerequisite; complete source-bound original/fresh tables support concrete property checking |
 | Legacy namespace normalization | The internal semantic loader supplies normalized XSD values; legacy-loaded spellings that disagree retain the source receipt's qualification |
 
 Application identity constraints remain outside the approved profile; checking the fixed assessment schema's own keys does not add application key/keyref/unique support.
 These qualifications are separate from #234's universal witness/evidence adequacy, complete negative answers and termination obligations.
+The [inherited-root continuation](content-model-s06-re-01.md#inherited-fresh-roots-and-the-october-13-proof-continuation) repairs a nested finite-certificate false positive: every candidate rechecks all fresh additions relative to immutable actual Gamma, including additions inherited from its parent.
+The permanent affiliation controls distinguish complete availability from complete legality roots and retain exact context-local assessment.
+The same entry point accepts a discriminated primitive root and issues a separately authenticated `checked-primitive` receipt after checking every actual obligation, including supplied evidence for unrelated nonprimitive types.
+This represents the existing no-change rule without inventing a restriction edge, which can itself invalidate a consumed affiliation; existing construction-root callers retain their input and receipt contracts.
 
 ### Historical research seam
 
@@ -453,9 +474,9 @@ The [summary generator](../test/research/re01/preparation-summary.ts) rejects ch
 Committed corpus identities and the reviewed evidence record are durable; raw reports and generated synthetic files under `tmp/conformance/preparation/` are disposable task outputs.
 Full CI, independent review, protected merge and merged-main verification remain delivery requirements; these bounded observations do not close #232/#234 or activate #179/#153.
 
-### Current-main finite capacity qualification
+### Accepted #278 finite capacity qualification
 
-The [fixed-URI finite harness](../test/research/re01/finite-capacity-measure.ts) compares actual main `2a057d22a48bfe78a7af2deb368f86a4c762533f` (tree `845417705b22259f6ebf6ce93abb481d31dfedbc`) with the #278 change. Both checkouts use the same source bytes and `https://capacity.example/` offline URIs. Each workload uses a fresh request for each of three samples, with separate default and 100,000,000-work diagnostic profiles. The default remains 1,000,000 work and 100,000 nodes. The table reports one representative row; logical work and nodes were identical across all three repetitions.
+The original [fixed-URI finite harness](../test/research/re01/finite-capacity-measure.ts) compared actual main `2a057d22a48bfe78a7af2deb368f86a4c762533f` (tree `845417705b22259f6ebf6ce93abb481d31dfedbc`) with the #278 change. Both checkouts used the same source bytes and `https://capacity.example/` offline URIs. Each workload used a fresh request for each of three samples, with separate then-default 1,000,000-work and diagnostic 100,000,000-work profiles; both allowed 100,000 nodes. The table preserves that accepted historical experiment; logical work and nodes were identical across its three repetitions.
 
 | Complete finite workload | Main diagnostic work | Main default | #278 default work | #278 nodes | Remaining default work |
 |---|---:|---|---:|---:|---:|
@@ -479,13 +500,62 @@ The retained source-owned structural controls remain 988,098 work and 140 nodes 
 
 The finite harness reports loading separately with `null` shared-budget work because loading uses inherited limits. It separates source ownership, actual lookup and each candidate construction, but groups original local assessment, candidate local assessment, dependency discharge and evidence publication in the complete finite-verification stage. Earlier structural harnesses expose canonical construction and reference resolution independently. An exact per-rule allocation or verifier substage claim would require additional instrumentation. Wall time and process RSS are observed per stage; OS cache, JIT and garbage collection are uncontrolled, and process peak RSS is a lifetime high-water mark. The deterministic work, node and receipt observations support this bounded capacity result.
 
-Run each proposed profile independently so request-ID length does not alter charged work across a combined run:
+The archived comparison used the original #278 harness in equal-length checkouts. The expanded harness below measures the current default separately from the explicit former limit; its new imports and workloads must not be substituted into that archived experiment without a new matched measurement.
+
+The optimization caches only positive direct relation and content-identity facts in their owning context. Every call re-owns references, charges cache lookup and publication, and replays the checked dependencies; finite builtin dependencies are checked once per exact context and identity. Typed attribute constraints use one scalar assessment. Candidate-specific and nested proof obligations still run for the supplied evidence. These historical controls qualify named workloads only. The later authorized continuation selects P1 and evidence-qualified F2; #234 proof and #232 full acceptance remain open.
+
+### Successor budget calibration
+
+The [authorized #232 continuation](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918) treats request defaults as engineering choices. The shared request now defaults to 25,000,000 work units and retains 100,000 nodes. Callers can override either positive safe-integer limit, and both remain inclusive.
+
+The [expanded harness](../test/research/re01/finite-capacity-measure.ts) and [recorded evidence](../test/research/re01/finite-capacity-evidence.json) measure complete named workloads on Node `v24.19.0`, Linux x64, Intel Xeon Platinum 8573C. The integrated evidence was freshly measured at source revision `024460832f975b57d2f8b57a35cf56a8f175e7a1` and records exact source/dependency hashes and the production diff hash. Earlier baseline measurements remain in the budget commits and linked issue record. Each workload/profile runs in a fresh child with one cold and two warm requests; fixed offline URIs remove checkout-path differences, and request identifiers keep equal lengths.
+
+The three finite cases execute `verifyFiniteRe01Evidence` fully, including original and candidate obligations, dependency discharge and receipt publication. Weather and the shared-recursive cases execute one complete actual preparation and all three candidate deltas, including changed membership and endpoints. These structural cases do not perform complete semantic validation or search for a finite witness; their `structural-only` result is retained in every record.
+
+| Workload | Generic actual plus three candidates | Source-owned actual plus three candidates | Request nodes |
+|---|---:|---:|---:|
+| Weather WSDL | 3,370,424 | 1,316,746 | 142 |
+| Shared-recursive fixture | 885,542 | 408,819 | 55 |
+| Synthetic 4 recursive types | 355,831 | 162,966 | 29 |
+| Synthetic 16 recursive types | 1,076,816 | 451,882 | 89 |
+| Synthetic 64 recursive types | 3,964,383 | 1,610,775 | 329 |
+| Synthetic 128 recursive types | 7,820,612 | 3,158,811 | 649 |
+| Synthetic 256 recursive types | 15,540,094 | 6,262,935 | 1,289 |
+
+The synthetic inputs use the existing graded generator: every type shares one two-element group and independently recurses across an element boundary. Weather remains the largest available redistributable real-service closure; these synthetic sizes do not add evidence about larger real services. The generic path calls the structural adapter on a built and resolved graph, while the source-owned path retains #278's authenticated immutable sharing.
+
+The replacement work limit targets at least 50 percent headroom above the largest measured completed request, rounded up to the next 5,000,000 units. The resulting 25,000,000 limit leaves 9,459,906 units, or 60.9 percent of the observed 15,540,094 cost, for input and workload variation. The largest measured request uses only 1,289 nodes, so this evidence gives no reason to raise the existing node guard.
+
+| Default-profile workload | Cold wall ms | Two warm wall ms | Peak process RSS MiB | Maximum observed post-stage heap MiB |
+|---|---:|---|---:|---:|
+| Generic Weather sequence | 51.660 | 30.272, 26.300 | 76.9 | 27.2 |
+| Generic synthetic 64 sequence | 48.786 | 34.264, 25.572 | 81.6 | 32.6 |
+| Generic synthetic 128 sequence | 106.208 | 81.164, 55.500 | 98.2 | 32.5 |
+| Generic synthetic 256 sequence | 147.151 | 108.520, 98.680 | 133.3 | 64.3 |
+| Source-owned synthetic 256 sequence | 111.096 | 76.480, 52.233 | 108.3 | 39.1 |
+
+Wall totals include loading and measured preparation stages but exclude process/module startup. RSS is a process-lifetime high-water observation including the loader and preceding requests; heap is observed at stage boundaries, not its allocation total or guaranteed peak. OS cache, JIT, GC and concurrent environment activity are uncontrolled, so these samples support practical calibration without promising throughput or a memory ceiling.
+
+For generic Weather, actual preparation costs 3,041,697 units and the three deltas cost 140,673, 36,408 and 151,567; the initial terminal reservation adds 79. The 256-type generic case costs 12,971,156 for actual preparation and 1,269,596, 20,235 and 1,279,028 for its deltas, plus the same reservation.
+
+The compact committed summary stores shared inputs and claims once, each profile's result and deterministic stage costs, and three total-wall, peak-RSS and maximum post-stage-heap samples. Full raw reports under `tmp/conformance/budget-calibration/` retain each stage's timing and before/after RSS and heap; the summary records their hashes and reproduction commands. The integrated summary comes from fresh execution of all three profiles; the compact representation retains the measured numerical evidence.
+
+After the integrated scalar and proof repairs, the three complete finite cases cost 918,564 for particle/AU/wildcard, 977,067 for the nested helper and 593,453 for typed attributes. These are new measurements; the historical #278 totals remain in its preceding section. They complete under the explicit former 1,000,000 limit as well as the new default and diagnostic limits. Default and diagnostic runs have identical completed totals, graph hashes and checked receipt projections for corresponding samples; the [reducer](../test/research/re01/finite-capacity-summary.ts) checks these facts before emitting evidence.
+
+The accounting schedule remains unchanged. Its text, descriptor, traversal and allocation precharges account for variable work at finer granularity than graph nodes or transitions; the large numerical totals coexist with modest observed time and memory in this corpus. Rescaling those units would obscure existing independent ledgers without demonstrating an operational benefit, and the provisional inherited stage budgets in ADR-003 concern separate stages and units.
+
+The [capacity controls](../test/research/re01/finite-capacity.test.ts) pin the former allowance where it is the regression oracle. Generic Weather still returns `resource-limit` at 1,000,000, while an exact measured complete sequence succeeds and one unit less fails without a partial candidate. Starvation, source-ownership and symbolic-particle controls also use explicit former limits so a default increase cannot mask those defects.
+
+Oversized text is rejected by its precharge before scanning or copying, repeated cyclic references retain sharing, and reserving 100,001 nodes fails at the inclusive 100,000 boundary. Failure stays terminal with the same envelope and unchanged counters, including subsequent attempted operations. Exhaustion provides no negative semantic answer; neither this numerical calibration nor a successful supplied finite check proves universal coverage or search termination.
+
+Reproduce all profiles and reduce them only after completing a stable source tree:
 
 ```bash
-node --import tsx test/research/re01/finite-capacity-measure.ts --profile default
-node --import tsx test/research/re01/finite-capacity-measure.ts --profile diagnostic
+mkdir -p tmp/conformance/budget-calibration
+node --import tsx test/research/re01/finite-capacity-measure.ts --profile legacy > tmp/conformance/budget-calibration/legacy.json
+node --import tsx test/research/re01/finite-capacity-measure.ts --profile default > tmp/conformance/budget-calibration/default.json
+node --import tsx test/research/re01/finite-capacity-measure.ts --profile diagnostic > tmp/conformance/budget-calibration/diagnostic.json
+node --import tsx test/research/re01/finite-capacity-summary.ts tmp/conformance/budget-calibration/legacy.json tmp/conformance/budget-calibration/default.json tmp/conformance/budget-calibration/diagnostic.json tmp/conformance/budget-calibration/summary.json
 ```
 
-For the archived current-main comparison, copy this same harness into that equal-length checkout's ignored `tmp/finite-capacity-measure.ts`, changing only the source import prefix from `../../../src/` to `../src/`. Run the two profiles from that checkout with `node --import tsx tmp/finite-capacity-measure.ts --profile default` and `--profile diagnostic`. The copied harness is a measurement adapter; current main's production sources remain unchanged.
-
-The optimization caches only positive direct relation and content-identity facts in their owning context. Every call re-owns references, charges cache lookup and publication, and replays the checked dependencies; finite builtin dependencies are checked once per exact context and identity. Typed attribute constraints use one scalar assessment. Candidate-specific and nested proof obligations still run for the supplied evidence. These controls qualify named workloads only; #234 proof, #232 full acceptance and P1/F1 maintainer selections remain open.
+Loading, canonical construction and reference resolution retain their independent limits; their `null` shared-work counters are not zero-cost claims. The earlier preparation harness still measures inherited gathering/merge/resolution/composition stages separately, and its request-context profile now reads the actual semantic defaults instead of reusing inherited stage-step limits. A request that fits this work guard can still encounter a separate loader, graph or source-stage limit.

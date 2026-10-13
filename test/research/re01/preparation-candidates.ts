@@ -7,12 +7,16 @@ import {prepareResolvedCompilationInput} from '../../../src/compiler/semanticCat
 import type {ResolvedGraph} from '../../../src/compiler/resolveCanonicalGraph.js';
 import {prepareSemanticRequest, SEMANTIC_CONTEXT_CONTRACT} from '../../../src/compiler/semanticContext.js';
 import type {SemanticCandidateDelta, SemanticRequest} from '../../../src/compiler/semanticContext.js';
-import {createSemanticBudget} from '../../../src/compiler/semanticBudget.js';
+import {createSemanticBudget, DEFAULT_MAX_NODES, DEFAULT_MAX_WORK} from '../../../src/compiler/semanticBudget.js';
 import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {loadSchemaInput} from '../../../src/loader/schemaInput.js';
 import type {PreparationCorpus} from './preparation-corpus.js';
 import {PREPARATION_LIMITS, dataCensus, errorClassification, timed} from './preparation-probe.js';
 import type {LimitProfile, StageRecord} from './preparation-probe.js';
+
+// Request work has different units/scope from inherited source stage steps.
+const requestLimits = (profile: LimitProfile) => ({maxNodes: DEFAULT_MAX_NODES,
+  maxWork: profile === 'default' ? DEFAULT_MAX_WORK : 50_000_000});
 
 /** Closure selects a proper subset when the fixture has unrelated globals; source availability remains complete. */
 export function candidateSequence(nodes: readonly GraphNode[]): readonly SemanticCandidateDelta[] {
@@ -37,7 +41,7 @@ export function candidateSequence(nodes: readonly GraphNode[]): readonly Semanti
 }
 
 export async function measureContextSequence(resolved: ResolvedGraph, profile: LimitProfile, mode: 'reuse-actual' | 'rebuild-actual-control') {
-  const limits = {maxNodes: PREPARATION_LIMITS[profile].maxNodes, maxWork: PREPARATION_LIMITS[profile].maxSteps};
+  const limits = requestLimits(profile);
   const budget = createSemanticBudget(limits), stages: StageRecord[] = [], candidates = [];
   let request: SemanticRequest | undefined, classification = 'structurally-prepared';
   for (const delta of candidateSequence(resolved.graph.nodes)) {
@@ -60,7 +64,7 @@ export async function measureContextSequence(resolved: ResolvedGraph, profile: L
 
 /** Separate authentic source route used by the finite checker; no validity assessment is run here. */
 export async function measureSourceOwnedPreparation(corpus: PreparationCorpus, root: string, profile: LimitProfile) {
-  const limits = {maxNodes: PREPARATION_LIMITS[profile].maxNodes, maxWork: PREPARATION_LIMITS[profile].maxSteps};
+  const limits = requestLimits(profile);
   const budget = createSemanticBudget(limits), stages: StageRecord[] = [];
   const metadata = {mode: 'source-owned-actual-preparation', contract: SEMANTIC_CONTEXT_CONTRACT, acceptance: 'structural-only', limits,
     historicalComparison: 'Baseline main has no matching authenticated source-owned request API.',

@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:primitive-affiliation" targetNamespace="urn:recovery:primitive-affiliation">
+  <xs:complexType name="A"/>
+  <xs:complexType name="D">
+    <xs:complexContent><xs:extension base="t:A">
+      <xs:sequence><xs:element ref="t:M" minOccurs="0"/></xs:sequence>
+    </xs:extension></xs:complexContent>
+  </xs:complexType>
+  <xs:element name="H" type="t:A" final="restriction"/>
+  <xs:element name="M" type="t:D" substitutionGroup="t:H"/>
+</xs:schema>

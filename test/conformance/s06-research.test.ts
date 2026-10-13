@@ -25,6 +25,7 @@ interface ResearchManifest {
   baseline: {revision: string; tree: string};
   historicalDraft: {revision: string; tree: string};
   semanticDefaults: {maxNodes: number; maxWork: number};
+  baselineSemanticDefaults: {maxNodes: number; maxWork: number};
   contracts: ResearchContract[];
 }
 
@@ -39,7 +40,8 @@ describe("S06 research provenance and delivery scope", () => {
       tree: "b647d9b0343d421426a539fc008c3cffa82c7875"});
     expect(manifest.historicalDraft).toEqual({revision: "460f5b8379c68ffef79917284e445b5ab046429e",
       tree: "56830b28d1006b019918a364aa62f1ed9d7d8817"});
-    expect(manifest.semanticDefaults).toEqual({maxNodes: 100_000, maxWork: 1_000_000});
+    expect(manifest.baselineSemanticDefaults).toEqual({maxNodes: 100_000, maxWork: 1_000_000});
+    expect(manifest.semanticDefaults).toEqual({maxNodes: 100_000, maxWork: 25_000_000});
     expect(manifest.contracts.map(contract => [contract.qualification, contract.issue,
       contract.disposition, contract.productionOwner])).toEqual([
       ["S06-AU-01", 233, "selected", 179], ["S06-RE-01", 234, "open", 179],

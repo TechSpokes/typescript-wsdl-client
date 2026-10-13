@@ -1,0 +1,1977 @@
+{
+  "format": "semantic-capacity-evidence-v2",
+  "revision": "024460832f975b57d2f8b57a35cf56a8f175e7a1",
+  "trackedDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sourceDigests": {
+    "package-lock.json": "3a089e52fad9349183ad9118fcb2562dbe741017be2099de045877c204dc4f94",
+    "src/app/generateApp.ts": "b306c45ebfc93589da2416ced8aa9f6abf8ccfb86934dba0c8cdf0063879d447",
+    "src/cli.ts": "fd687f667422ac49cf7b7317a200e2a1694e644e1f4aac2d27d35ba8a63d2f2d",
+    "src/client/generateClient.ts": "390f6115bda939f7d80f913dd8d4e7c573344a0db53fd04087124c8286de22b2",
+    "src/client/generateOperations.ts": "098489f42aa353d0abe2583dce36adbfc4ff91283021a5918aeaf5143b2e153c",
+    "src/client/generateTypes.ts": "24331376a9ebfb4460ad4988bffc3d225b5da123a51f999e69fb98136b6009ec",
+    "src/client/generateUtils.ts": "43f8442c3c25b098909061e8314b08a958425fa168af37a7ab8195a80941ec2c",
+    "src/compiler/buildCanonicalGraph.ts": "1fd0ff3aa136fbe0ce464792ec4d09dfd4569a397ad5277008a8d11bfb1194e8",
+    "src/compiler/canonicalGraph.ts": "7cbdbd499e3f116b573362f478af54af1eb74cae7a01e4a69d3c3ec942c1e31b",
+    "src/compiler/catalogErrors.ts": "adf4ee2eb8d2d69aecbc18f55d4d90d0ea8a01c9ea798a8e309cdc5b4ca40338",
+    "src/compiler/catalogProvenance.ts": "c16a6e839bead9d91042d005015d27d43f0833da11c32c05e20090c0e161aad9",
+    "src/compiler/complexTypeContent.ts": "e6fd14c0ecb84c85b0044712e6a04adaff5518157b70f8d93cd8fb5fbe7ab34a",
+    "src/compiler/composeCanonicalGraph.ts": "a670639a8598cf8693c769722f4fadb68bb9e778d3938146752917a9d801efc5",
+    "src/compiler/finiteRe01Verification.ts": "6cd1dc9446d51f852f3c66d7696ac0883781cfc1d0288ca954d013d7771e2f0c",
+    "src/compiler/generateCatalog.ts": "0c1f4d134b92a78c410715f8b395c5759c4bbc1b5675b30d0245b6ae138a4fe4",
+    "src/compiler/graphTraversal.ts": "470900a618e50034d9497a101ea9deb9b3cf070b880e4cf16d5e99200633077e",
+    "src/compiler/occurrenceAnalysis.ts": "35d3521648757350d2b159caa36539f885e0f7efbe0960157fc3d6bf3581861a",
+    "src/compiler/originalSourceMembership.ts": "4f09fffef973f179b30f5c64cb369fce0bdf1c21922ea13215088089f2495cf0",
+    "src/compiler/particleAttribution.ts": "1294dc4306e8e5933c8984fb4d69267ab1fe7a23fc2223e4d5b1609c43e5ced9",
+    "src/compiler/particleDeclarationConsistency.ts": "890cb06ae4e2b163f2106ba51313d011f967a324ecf22f31a85fb51642bb673e",
+    "src/compiler/particleExtension.ts": "2a4c463b36101d6bf1451a9a732282aeb247dad27bb615950bfd9d5cd457e168",
+    "src/compiler/particleLocalAssessment.ts": "23fb7c1d0ec38ac81bb246cde5ab2f2957ac45f91f308ef0d3a3553edd4b5403",
+    "src/compiler/particleRestriction.ts": "3aac677c8ebebb8864735368fb7375c32e885d8493e5aa31250077d3bb8bf7cf",
+    "src/compiler/particleSemanticView.ts": "c220b4fbab31f2133df7a2fcf768fc35732e2c8843fb3723d50ea8c97b811a06",
+    "src/compiler/particleWildcardRelation.ts": "7d5dc6cdb512b2b70205a712cdaa165ca4f7ca8a6d7d59c91eba04af10129d65",
+    "src/compiler/re01CandidateCorrespondence.ts": "28634a50d35c245ba91d020cf928785dcbad6bdc79e9c7ec8861f05952d8fe20",
+    "src/compiler/re01TypeProperties.ts": "1e6f0a4fbae68323bc8178c47f284987c9fc8eb82f4cc9cecf7bf7bcc0ca560a",
+    "src/compiler/re01TypePropertyValidation.ts": "40c07376dba2dfaada62af210a4956e71128439b0c3ab451954d4572526f485b",
+    "src/compiler/resolveCanonicalGraph.ts": "d851e4b8f5598ee99b288d9c75e39435d46ca95d0799da8e8cbabfd85a39215a",
+    "src/compiler/scalarSchemaAssessment.ts": "616f662cc6a4fdd4670fb959e5b8415f80bf014f4984977d8e80c190c78dafe5",
+    "src/compiler/schemaAttributeGroupProperties.ts": "fb79ec86714c0c8a1ceb8daed507359e1412bc397f2705e3f9ab9246f1d8b933",
+    "src/compiler/schemaAttributeProperties.ts": "dcccd1fae0a67c167a8346561dcdb7da902b729980518f391e01f246799b84fe",
+    "src/compiler/schemaAttributeUses.ts": "46c776d4f056764bcbc4f6666f30a0d542b993637375dc28279a01109bdd75f6",
+    "src/compiler/schemaBuiltinFacets.ts": "0b8a06b23b3841308970009bd4b91b8fcfb3d6b0c6aac76fa5bc65c08eae2de7",
+    "src/compiler/schemaCompiler.ts": "b6e5b62b8aca3d8ccac80f6525884d9f1ef02032f693f0edac0aaae1b734716a",
+    "src/compiler/schemaComponentEquality.ts": "8961c3ec64ecc90080cea4ef4b5ec87494e247b03436b65f47db006ad233227c",
+    "src/compiler/schemaConstructionAssessment.ts": "849b18433f1c63a5765903ed8da55e0b431a70446eb82e5f64ec64550156bf91",
+    "src/compiler/schemaDatatypeValues.ts": "56dfed8de50b949c97bcdab54fe2e4c729088a4310ac7e47144727acf328d96c",
+    "src/compiler/schemaDeclarationPrimitives.ts": "199de6f2cb32ef3d17ac59e33d6ba246aca8ed5d46deb1b661968273e2b296d6",
+    "src/compiler/schemaDocumentSyntax.ts": "547ae4d9275d387a93d20e540a0a06d2e735f5f1cd46194fa4cd8b45821e16b2",
+    "src/compiler/schemaElementProperties.ts": "595c5259cc5aefc8bcbde21665a44dc5171a3985f629d331c82637523c1ed6ce",
+    "src/compiler/schemaExactCalendar.ts": "d2097c19b682f5c156482d70f307ca589bc421bbaa7282231faba60fb19d6175",
+    "src/compiler/schemaFacetAnnotation.ts": "4f22ca2dafc8d3f45185e434bd0e13ecf8403d2e5f0d029509a4d6e4dd3f6397",
+    "src/compiler/schemaGeneratedScalarShape.ts": "649356566ba0a22984c357e58add3f6a08df098ee34d31c9ededa911dcf1a330",
+    "src/compiler/schemaNotationProperties.ts": "ce1ee1450fcdeadf63ffecf03e8e4ce705f8bb2823d057f8c2ff134fb7f66b94",
+    "src/compiler/schemaPattern.ts": "e9bd2c84d92d3b800715318ee14ecf330bc97debd9de93467848710a027a1b71",
+    "src/compiler/schemaScalarContext.ts": "a28348d12ccc8fe60396289326ba0a2ba38c3bc74d039feebf2d0145dc588fcf",
+    "src/compiler/schemaScalarKernel.ts": "f4c3fe51c4c08f4f35d96ca9d171f2837422d7c1e3d269ab5f07005bda7a8563",
+    "src/compiler/schemaScalarWitnesses.ts": "dc165ae70d9f22fce10023ba5eb243081c81e2f266a0f12b6faef503e9176816",
+    "src/compiler/schemaSimpleTypeProperties.ts": "8d727bcee0f4b16a43cc143730851401233e3958972fecc717f8200d07ba3cae",
+    "src/compiler/schemaSourceGrammar.ts": "173d211830c16fa462171fc5c966d003151bde39e0aaab825bf5e413a32363cc",
+    "src/compiler/schemaSourceLexical.ts": "6835b55ec7d63d9d87f38f43ed9842453b5274c6056f9f9aa6504b2f37ef8815",
+    "src/compiler/schemaSourceValues.ts": "21d6feccdd10fc42d66dd423bfd1b6b9527fccfd49a5f5008b65380239a6e486",
+    "src/compiler/schemaSourceWildcards.ts": "bac7152ee7aee72b6a3ea7c491b4dafcc1a981c60d87ab85f593d6487cb7122c",
+    "src/compiler/schemaSyntaxAssessment.ts": "0781e8802185d2b97d5970cce78ecfb778bdb3aa6ab2ffa1a73400ce561b87b5",
+    "src/compiler/schemaTypeIdentity.ts": "0478a5806a1a059c92fc3f2d729640b716b93abb868af5ae379d3aefa796cec8",
+    "src/compiler/schemaTypeRelations.ts": "fb330db516fc834ec14ad82b023710d4620c7ded1cc8b69b908eb69bdb5c3986",
+    "src/compiler/schemaUri.ts": "d38dbb99a9395142a1fecbfc6c97fd0199f94e94daf1d5c420ba801466810a1e",
+    "src/compiler/schemaValueContext.ts": "8bd3fdfea3554f6dfdf786dbdaaed150aa990559bfaa3c91069cf3e7e8b28f15",
+    "src/compiler/schemaValueSequences.ts": "cfc874035a069638383762a90050397abbab605c93fbbb9024db0891cc092a1b",
+    "src/compiler/semanticBudget.ts": "f91aa0cc208b1a64766f83659e03e57a344eb87affbff74274c70c84f0983358",
+    "src/compiler/semanticCatalog.ts": "7776422bdb7bb76116f62f8dfe34892a13e516c6559b0eb2b63f57bf8559e593",
+    "src/compiler/semanticContext.ts": "c8d609e678e645f3ff2947efa119f237c6795cf1483e6b335868936bf166ff5b",
+    "src/compiler/semanticTypeDependencies.ts": "9c65032ebcd11839efd666fd4ad662a962cbc6d13d784c3a1bca0c8303493a26",
+    "src/compiler/semanticTypeReference.ts": "dd1c3208f35cec727c6efbe903557f395d1d6b5095c1019de12d58898b55e5f0",
+    "src/compiler/shapeResolver.ts": "63b47e58a76f0a8a61606d6b431f0714e71ac623ba313b2540c137c1c931e797",
+    "src/compiler/sourceSchemaBinding.ts": "16d9bdc1fa2ebca93fe43e465b98b72645e338b5cd23c66daf8aa24dceeac49e",
+    "src/compiler/structuralCompanions.ts": "0e24309953491f9469b50eed5418ab2645bfb939efd5ca278147b7bc69ef2354",
+    "src/compiler/validateSemanticGraph.ts": "9ef37e796b63ed55b5024b5e0ee98f003563f3571e7395ea3d2e7f5e1bae17d0",
+    "src/compiler/wildcardAlgebra.ts": "0e2caeba982107a17ddf1101b2a727aa6033869c29ab9755f65326e68385f1e2",
+    "src/config.ts": "a5482ec9ad07c6d61fbe327469d5599941e74b13c9b8ad3b7f15228fe88d672c",
+    "src/gateway/generateGateway.ts": "95601a775c633f6558d352d390860af689ea2bc7f6667ea4948268ce6cc28a75",
+    "src/gateway/generators.ts": "5705e699ca90fd3a74dc41c97eab68454651985a8e0cf7bd82edd83cd5a6a244",
+    "src/gateway/helpers.ts": "0eaf60ec92c257febe68e14a6da4096add0dbfbdf940f7d0d43d32a90cad4e8d",
+    "src/generation/preamble.ts": "c60b2a63a04d9d1d3bd9018f1721a216c8293c4e8641c854c4371d9bd37a7cc1",
+    "src/generation/writeGeneratedSource.ts": "f245b2d195e4a63474d4bfc532007e72ad35fa0394840b3e2739d30b3612e6fd",
+    "src/index.ts": "24e774e6da5fffa6ac59f0d2c08e5087fc1ad712d11c6366e18293ccff269560",
+    "src/loader/fetch.ts": "d6c2e8c73374da5ae534ed6a78f5fe64028670c03ce9f3be5423617eeba69370",
+    "src/loader/orderedSyntax.ts": "ce8c3d03754f84ec2cac61d4a168c370927cc4f22cc1bd29cc50a1d02ef62038",
+    "src/loader/resolutionDepth.ts": "0fa8fdc35604db2e8336f1394d6e59c723d3cf85761d6a0854aa1af82430c78d",
+    "src/loader/schemaInput.ts": "2b3ce859e4d5ca313c3d0da67f9a0380cf54d8afcdbe5241556cb6240649192f",
+    "src/loader/schemaResources.ts": "8e9ff11d10f7ee2152f76dc516249ab28f8fbccb725353d7b0299fe8f11b9381",
+    "src/loader/wsdlLoader.ts": "7f152bb88efbb078e7f6af15569898523422d6490521a8c6564cd1ce6dd1df9a",
+    "src/openapi/casing.ts": "b93b7677c75b500ea86980d4aba158dd51ae910135dbcb8768f43301fbe012f2",
+    "src/openapi/generateOpenAPI.ts": "5ca6f918349f3c0a428e6136e4274e0d88d9e5338515e24760fa9877d370ea47",
+    "src/openapi/generatePaths.ts": "269aeb42926353ca02035576bd32b5c764b03587a761d6cc635718fb18521fbb",
+    "src/openapi/generateSchemas.ts": "de8163a08534e379771bfe9b6a640a61cabac250a5e5e8e7620a4873ed4c5f7c",
+    "src/openapi/security.ts": "67050a2a09d192e3c8fe44c88003270372b46b877469df5a1af9031267aad36f",
+    "src/pipeline.ts": "29c5bbe043a31fd0da15bd485f217c6b60c4f217f2a1336a140c5935ecec89dd",
+    "src/runtime/jsonArray.ts": "542147c84d87ad642b66055ee4ce53488340dfd4182bf9b2e0934de5b3210d07",
+    "src/runtime/ndjson.ts": "e4fa3856f0f8b2d02d3dc98cb671bde7cdecbe01b60c2bac032da44e9361c9a3",
+    "src/runtime/streamXml.ts": "34edf3301e816bf4264df271372041fa5f0b2bdc511a84049618588e5f0aa005",
+    "src/test/generateTests.ts": "0ba44698313b8bcb9bd8ed6a520b2fd93895139cec07a5e21eded85230424bd5",
+    "src/test/generators.ts": "2f37e3b47dff1118195117fd2f459361d0b1de1a62023fad7aae8a737a160096",
+    "src/test/mockData.ts": "71f2c4957a773b4a5440a3113f788196c102bf78f2d91fd75009e4b559389024",
+    "src/types/soap.d.ts": "266b86ecb0eb31aea3351fc81893dcc82cc6d5b7b56b14258b64524a4031ee4e",
+    "src/types/yargs-helpers.d.ts": "5a3b33219b4031d48dc4eef50d8e0fc69e03c5d692aeda908c9263f33fd25dc1",
+    "src/util/attributeWildcards.ts": "2075a767d6acd2881bb2ee96827d85cf217bccdb7fdc69650805903aba09ea2e",
+    "src/util/builder.ts": "388f6c5b999171bb4ba5b9ed219dc62a4c80f2bbf9b893575789ad17899e84e7",
+    "src/util/catalogMeta.ts": "dea0be55254206d141c4eefe756ece66f4dbec53768a9740a84b7869eb06f3a9",
+    "src/util/cli.ts": "e523ab6da005823a1d8fb9aa2e122a4143ff797a70a8024b48dc03667d93348e",
+    "src/util/errors.ts": "05f56093a5b25966a02e94f969b8fe40bea8d53119198cbcbe37b933122da772",
+    "src/util/imports.ts": "c0a56083ba2d06a8534f3e65991af08608ead4f6ede46c0c2650257f481c6dc0",
+    "src/util/runtimeSource.ts": "ed2042ca38b8bd30568edeede633b153a0a4b352691cff5ba9e32fabcfd5ddac",
+    "src/util/securityConfig.ts": "27ef5ba401945924418cb887d07eacc51fbbbb53e1eb68fd45af5b66c913553f",
+    "src/util/streamConfig.ts": "90a9f83812359635dde5fc7e5613d6075d81df42f8dbac338c57116b6935d1eb",
+    "src/util/tools.ts": "a48488199ef76ef89ad710e8833db68a67aa3ea9155227c8d5f903170b2f00c5",
+    "src/util/xmlWhitespace.ts": "b8fc36f39d85893b788cab2b62a52cf2effbc52840d481b6cfa2d1fbe4dc1e65",
+    "src/xsd/primitives.ts": "d801d7bb332ba3e99ac57de54b9f6a662fe4706a2eaf3e241b3b70307f60d5aa",
+    "test/research/re01/cli.test.ts": "7dd583fa8d4cc291d3ee6e5868708d42860274deea536d6a8f62d42eb8fdea1c",
+    "test/research/re01/cli.ts": "11378083ac5befd051e90c1aaabc11e1c53401996c67845ad560747b37966182",
+    "test/research/re01/decision-experiment.test.ts": "273ca61bf7e7ed5cdf828ad7ac2bad0b96bf85b1388e8b93bab1fc17592b8ac3",
+    "test/research/re01/decision-experiment.ts": "c46ffcff6e348a2c6534d21c7b88e2b449e15e70810864c60193250d493b5463",
+    "test/research/re01/decision-measure.ts": "71857b1429b921fb63d7ec0fccedaaa1cb1acfd2700fe74f4a25b862277c6eba",
+    "test/research/re01/derivation-dependencies.behavior.test.ts": "45e2206d06ed88a671895d1b639cc19ea32c779747be634e81f636274bad0541",
+    "test/research/re01/derivation-dependencies.ts": "e9811a94ed4aa539d4ec3ecc9ca6aa9a741633a5b396625343a7ab300624a351",
+    "test/research/re01/derivation-domain.behavior.test.ts": "694b6915c6ea0fb2cb1a16e81cc94572cec0348921400451084fd947422bcea8",
+    "test/research/re01/derivation-domain.ts": "a0ece7be019c92e490c11f42151f923c940acbf08cc7e30a5b381cd1c97b57b1",
+    "test/research/re01/derivation-helper.behavior.test.ts": "3ccd27b1680adae883effbac11ae26369c6d06abc9d9f6a974a68fbb645d4b07",
+    "test/research/re01/finite-capacity-measure.ts": "001ff4283d87af8fcc8fce99af7f01b95359022b28da194eefb44b71f7fc563b",
+    "test/research/re01/finite-capacity-summary.ts": "d4f56b437bfd26830ecc4fe9c442b7b3cc7e9db03b7191161f7669af6faa332e",
+    "test/research/re01/finite-capacity.test.ts": "999b123c03e38d7aea37c4a94012829e4606c76b5589610f2b04c95d5eb64459",
+    "test/research/re01/fresh-helper-case.ts": "e8011b03f6705dd149bbb7a8a7b1a78346a80101ef12a7973796d617c1a72add",
+    "test/research/re01/fresh-helper.test.ts": "c3c8a4e8ffa86ced2343ecfb3755ee2ee283913878720cf589dfe7c497feb5a1",
+    "test/research/re01/helper-affiliation-case.test.ts": "05a8210a72c68ce5db6211f3f47346ccb8777b4e6b4e7a42408867e677aed4c5",
+    "test/research/re01/helper-affiliation-case.ts": "45baea9e27fd86651070734911f83d32122d570e2cb828d1426dc5e521014db3",
+    "test/research/re01/incidence-case.ts": "c6bdb17ee7599ef6bf3c572a999abc00022b6df7fd449e4332b44d4fb958adb1",
+    "test/research/re01/incidence-probe.test.ts": "583a4e220e3b0f119cf4feb4f19986e72b52bddf1e1c51a8d8af1306832af91f",
+    "test/research/re01/incidence-probe.ts": "578d24ba9acd5a1b83e1bef1675a5e411d7fc88993bf705ecdc2c888c5a900cb",
+    "test/research/re01/inherited-helper-obligation.test.ts": "28b1d9368d2562456684cc0967a4b927c151e3f9c0b5f31ee8cc9367f93d8862",
+    "test/research/re01/literal-attribute-extension.test.ts": "be3f6474f9de98ae69f7aa76368a003cd301491001076920c0a2ecbe2a8a8557",
+    "test/research/re01/literal-attribute-extension.ts": "4c9665991fcbb80e7271e15e6ce89f4b99cde6ada35b1d57ed9a19c02128fbf3",
+    "test/research/re01/literal-au-synthesis.test.ts": "77a10656d6dbd09f00e1a1d99c55d18cff249b77bc8d400cdcbb3907125c26e5",
+    "test/research/re01/literal-au-synthesis.ts": "902d505b1656e23cf9f71a5fa6e7134a3a65756f383b9804670d1107d229ff81",
+    "test/research/re01/literal-context.test.ts": "986da2c0664dfcf0c735f2a0aaf18fe6f9d1c591a61ec8e686e41b9b6844f651",
+    "test/research/re01/literal-measure.ts": "9348ebc29a1c55b9a27fd7975ba863f2b3a610a554a9fdfc2050930e1a740f0d",
+    "test/research/re01/measure.ts": "5c1a9d7dd8fe15c6faf11c693d54ad90cc5d4c5cf8172ac8bc1e4930d74674a3",
+    "test/research/re01/model-selection.test.ts": "26f770f0ae700bf3a4b8a958ce5a53b63616bf437bc7d27022d335ba269492a1",
+    "test/research/re01/model-selection.ts": "c880e7b557b0ccc8810c11e01f7fc2aea0fac18702b09754408fadf5ee03077c",
+    "test/research/re01/predicate-dependencies.behavior.test.ts": "245e875e35a59802084c2680e07bb7dd782854127da22d23c38af29c204053b0",
+    "test/research/re01/predicate-dependencies.test.ts": "102fc5056b3d10dc773ef2f36b7324a5305a518c63ba2fbe932c0e4e1045783a",
+    "test/research/re01/predicate-dependencies.ts": "75271d03164e2c5f629597f50ec174802b72b1c0be3419d62ed817418c16d232",
+    "test/research/re01/preparation-baseline.ts": "8b992ca97d38fbbb8c41ac95981f048f09a160ef6592efa49afecea837241ecb",
+    "test/research/re01/preparation-candidates.test.ts": "46e61fcfa1af106490eee02b72c496d3fe536dcd61d631ce32b92ed181fa91ac",
+    "test/research/re01/preparation-candidates.ts": "ad60b5aae9e99cf038f061ec8720fd65e23009d1f1cdcdc6f0d822f13ecd7c14",
+    "test/research/re01/preparation-corpus.ts": "a0c6e5599cdcf24224255c441afb32693fb5bd927a14968cd344078ce784cbc5",
+    "test/research/re01/preparation-measure.ts": "519d1c9da90d2fb553001915b45bba65bf376d0d236312021e69917e41ec9035",
+    "test/research/re01/preparation-probe.ts": "0393ca062d8d0cb4e5bf7b702584059d714e2f7dba059c0faec0b1580272984c",
+    "test/research/re01/preparation-provenance.test.ts": "007ea65b3453e00c2143d6305e69c09dcf46a6ca151fb5e88079916aff76c58f",
+    "test/research/re01/preparation-summary.ts": "7ab834e9c4acf76a393df0a7dea9547c9ce252d84e2a12f4898367612a2f8070",
+    "test/research/re01/primitive-root-evidence.test.ts": "b34cafb62a4c98bd4f224bcaef3da93b1f1987fd19db8a23e01a76b2fd6f5c2f",
+    "test/research/re01/resolver-budget.test.ts": "c66496b9ea6748050caffb9808899c2aec96e87b62c7419913983745334fd903",
+    "test/research/re01/resolver-budget.ts": "2a57ebb3909a8c82b0c7b36089d16390fd46536f30c0b25d72c6bc3d35bf0810",
+    "test/research/re01/resolver-cache.test.ts": "5c1db7c634fa98feef36c5bf8c3a7c7257d3b949e3c87b5019b6ede364e94d47",
+    "test/research/re01/resolver-comparison.test.ts": "7c27fb3b00efdb3b50cc94798fcaf3dc5b86809bf881432b5b7329fff8bc78fd",
+    "test/research/re01/resolver-comparison.ts": "7f2a1bd1d761265a657c5330e088d6a14450d84a513d4254e86f78ffa41cd671",
+    "test/research/re01/resolver-context.test.ts": "86fc99adcaffaf5177a39bdb555c2f43d9d2436b89ea1f09aeed8adca6170243",
+    "test/research/re01/resolver-context.ts": "effcd7170d374a6380f95676cc62747249904d641f596b46a434bc326c07560f",
+    "test/research/re01/resolver-fixtures.ts": "894b34e0d3ea64f33b8a60b8dce5632b7b1f58da73546ad495cc1a60af6d8934",
+    "test/research/re01/resolver-integration.test.ts": "f156af147e659d58b143c68a409c90762f5f9fa74c1aa3aa1a4da0bf602d6b42",
+    "test/research/re01/resolver-relations.test.ts": "14a4e5a7a599e773fd683c92d5226c94c6155471210b943c3af4565490fbc4ba",
+    "test/research/re01/resolver-relations.ts": "13ca1845794b13ca37f55b5be24c1f1858534c97e1f9d7c20b3eaf07c912adc3",
+    "test/research/re01/resolver-resolution-records.ts": "cb85ac2b55d4827e32352ff7d2b2a3bd28f1b1219be6dbc95c1251e401c3cf44",
+    "test/research/re01/resolver-resolution.test.ts": "55019416ecb9ac038e76692de679a235014a588bd50ecff101bfb7e814a72e11",
+    "test/research/re01/resolver-resolution.ts": "ae1ddcd322cef4aeb079afbf7538f281363edbf16d633b37b3326e6f8326853d",
+    "test/research/re01/resolver-types.ts": "1b84dbef641894cdacbe12c2d2037f6bd37d88e1bbb28c292c2d6f8bdc6f238d",
+    "test/research/re01/resolver-validation.test.ts": "4b6d9473c75c3681d239a85c93c2f598502c906a44e9f3a7cb239d3c24e5c699",
+    "test/research/re01/resolver-validation.ts": "5dbc8028712595430456fff6545d8bee18feccafeae0e8695be1d7e46bb2bf45",
+    "test/research/re01/resolver-work-ledger.test.ts": "de7308bdaab5d40a1fc786cc6a1a44f56742534334b750bb74d6af12a1298ceb",
+    "test/research/re01/selector-work-ledger.test.ts": "742cd744d0b62319b3c66969e8e3627c2ba19260dfd4037b49994d6dbdc15b3b",
+    "test/research/re01/witness-probe.test.ts": "2f70fb441817e88e446d9f24792022826d17b9ba34b37a67562ff9cf51873439",
+    "test/research/re01/witness-probe.ts": "de3d616880c0b8a124bb6975b726104ab0c7e680dfe3fb0dd6571295bfdfec46"
+  },
+  "summaryReducerSha256": "d4f56b437bfd26830ecc4fe9c442b7b3cc7e9db03b7191161f7669af6faa332e",
+  "rawReports": [
+    {
+      "profile": "legacy",
+      "limits": {
+        "maxNodes": 100000,
+        "maxWork": 1000000
+      },
+      "path": "tmp/conformance/budget-calibration/legacy.json",
+      "sha256": "2f2d0ab8b4f167395f7d484ff79d8c0687ef397240aa682b2235ca3dcbd27faf",
+      "reproduce": "node --import tsx test/research/re01/finite-capacity-measure.ts --profile legacy > tmp/conformance/budget-calibration/legacy.json"
+    },
+    {
+      "profile": "default",
+      "limits": {
+        "maxNodes": 100000,
+        "maxWork": 25000000
+      },
+      "path": "tmp/conformance/budget-calibration/default.json",
+      "sha256": "df9609041913ed25dbe21f071706c4ee9dbfe9485530316f142d496720c613dd",
+      "reproduce": "node --import tsx test/research/re01/finite-capacity-measure.ts --profile default > tmp/conformance/budget-calibration/default.json"
+    },
+    {
+      "profile": "diagnostic",
+      "limits": {
+        "maxNodes": 100000,
+        "maxWork": 100000000
+      },
+      "path": "tmp/conformance/budget-calibration/diagnostic.json",
+      "sha256": "0a910e69f364b20f239b9f50e2fba9624b1ea437cb76ff2c4e1ed828e1f31f75",
+      "reproduce": "node --import tsx test/research/re01/finite-capacity-measure.ts --profile diagnostic > tmp/conformance/budget-calibration/diagnostic.json"
+    }
+  ],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "cpu": "INTEL(R) XEON(R) PLATINUM 8573C"
+  },
+  "fixedOrigin": "https://capacity.example",
+  "terminalReservationWork": 79,
+  "collection": "Each workload/profile has a fresh child, three requests and stable request-ID lengths. Loading/build/resolution use inherited limits; null shared work is not zero cost. Stages are marginal request work; terminal reservation is separate. RSS peak is process lifetime high-water, heap/RSS snapshots are observed and not allocations; retained census is a proxy. Wall time includes OS/JIT/GC noise. Structural candidates certify no schema validity; finite checks certify only supplied evidence.",
+  "summary": "Samples are summarized from the hashed raw reports. Full stage wall and before/after RSS/heap telemetry remains in those reports. Stage costs are [marginal work, marginal nodes]. Samples are ordered cold, warm, warm. Heap maxima preserve the post-stage observation series; they are not allocation totals or guaranteed peaks.",
+  "largerRealTier": {
+    "available": false,
+    "reason": "No larger redistributable service snapshot with complete closure is present in this repository at the baseline. Weather (21,204 source bytes) is its largest WSDL. Synthetic scale is not larger-real-service evidence."
+  },
+  "cases": [
+    {
+      "workload": "particle-au-wildcard",
+      "fixture": {
+        "name": "finite-particle-independent.xsd",
+        "uri": "https://capacity.example/finite-particle-independent.xsd",
+        "bytes": 706,
+        "digest": "b5241798109a69a0760fdd0db2da41a2629f23169941fc659dc438b424312213"
+      },
+      "acceptance": "supplied-construction-and-finite-evidence",
+      "claims": {
+        "actualObligations": "checked",
+        "suppliedCandidate": "checked",
+        "universalCoverage": false,
+        "completeNegativeAnswer": false,
+        "searchTermination": false
+      },
+      "retained": {
+        "retainedObjects": 1234,
+        "retainedArrays": 524,
+        "retainedFields": 3646,
+        "stringValues": 1649,
+        "stringCodeUnits": 47622
+      },
+      "receiptSha256": [
+        "6258c63a6eb4e05b68664d84dbb3b0c86d6133a8ceee0dbf164305e0bf482a8c",
+        "a260d25f9d50db821b2e6ded8f794e92a890ad2431894c61906d5677e4d139fb",
+        "34b65fafaf929d7937cbe55858e4590013f259ee13e53cf6e428c69ba3c22d33"
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 61,
+            "work": 918564
+          },
+          "resultSha256": "d1d3df817d80fb217b5afca031fe376b39d5b2e6852c9927385430826f4d0797",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [46257,12],
+            "actual-lookups": [171,0],
+            "candidate-preparation": [129222,3],
+            "finite-verification": [742607,46]
+          },
+          "totalWallMs": [74.242,27.354,24.866],
+          "processPeakRssKiB": [85264,87652,94480],
+          "maxObservedHeapAfterBytes": [23758136,25912664,24301152]
+        },
+        "default": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 61,
+            "work": 918564
+          },
+          "resultSha256": "d1d3df817d80fb217b5afca031fe376b39d5b2e6852c9927385430826f4d0797",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [46257,12],
+            "actual-lookups": [171,0],
+            "candidate-preparation": [129222,3],
+            "finite-verification": [742607,46]
+          },
+          "totalWallMs": [83.547,27.465,23.36],
+          "processPeakRssKiB": [65748,68340,74996],
+          "maxObservedHeapAfterBytes": [21715328,23610376,25857296]
+        },
+        "diagnostic": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 61,
+            "work": 918564
+          },
+          "resultSha256": "d1d3df817d80fb217b5afca031fe376b39d5b2e6852c9927385430826f4d0797",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [46257,12],
+            "actual-lookups": [171,0],
+            "candidate-preparation": [129222,3],
+            "finite-verification": [742607,46]
+          },
+          "totalWallMs": [94.352,27.692,21.97],
+          "processPeakRssKiB": [64600,67344,74972],
+          "maxObservedHeapAfterBytes": [21774608,23641032,25909544]
+        }
+      }
+    },
+    {
+      "workload": "nested-helper",
+      "fixture": {
+        "name": "finite-proof-independent.xsd",
+        "uri": "https://capacity.example/finite-proof-independent.xsd",
+        "bytes": 464,
+        "digest": "35babfd123f05254b3997a5096de125c2dd81fbee3e4919e3ae2ae788c1e8535"
+      },
+      "acceptance": "supplied-construction-and-finite-evidence",
+      "claims": {
+        "actualObligations": "checked",
+        "suppliedCandidate": "checked",
+        "universalCoverage": false,
+        "completeNegativeAnswer": false,
+        "searchTermination": false
+      },
+      "retained": {
+        "retainedObjects": 1127,
+        "retainedArrays": 445,
+        "retainedFields": 3258,
+        "stringValues": 1478,
+        "stringCodeUnits": 35487
+      },
+      "receiptSha256": [
+        "d0c8883e9fadb499234abd6a3f4db0b37ba7f6d6706b1ec0a5bfde7535f767c8",
+        "049bdae530f717c29115c5c20455fa6c1aa4f08935ac759db19fbb000e8e5c77",
+        "05022607cdea1b33e7954c954ba8ee923979f53676b429960444afb65344e2c2"
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 11,
+            "work": 977067
+          },
+          "resultSha256": "cac0e37cbf547efa8b97d536ff5911ddba1f97dd76bb028c07174116ade4789a",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [24846,4],
+            "actual-lookups": [108,0],
+            "candidate-preparation": [103325,3],
+            "nested-candidate-preparation": [75936,2],
+            "finite-verification": [772557,2]
+          },
+          "totalWallMs": [62.393,17.681,13.364],
+          "processPeakRssKiB": [64824,67272,70900],
+          "maxObservedHeapAfterBytes": [21762464,25573368,21868984]
+        },
+        "default": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 11,
+            "work": 977067
+          },
+          "resultSha256": "cac0e37cbf547efa8b97d536ff5911ddba1f97dd76bb028c07174116ade4789a",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [24846,4],
+            "actual-lookups": [108,0],
+            "candidate-preparation": [103325,3],
+            "nested-candidate-preparation": [75936,2],
+            "finite-verification": [772557,2]
+          },
+          "totalWallMs": [66.491,14.356,11.953],
+          "processPeakRssKiB": [65284,67876,70548],
+          "maxObservedHeapAfterBytes": [21728728,25301664,27144712]
+        },
+        "diagnostic": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 11,
+            "work": 977067
+          },
+          "resultSha256": "cac0e37cbf547efa8b97d536ff5911ddba1f97dd76bb028c07174116ade4789a",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [24846,4],
+            "actual-lookups": [108,0],
+            "candidate-preparation": [103325,3],
+            "nested-candidate-preparation": [75936,2],
+            "finite-verification": [772557,2]
+          },
+          "totalWallMs": [67.199,13.422,13.878],
+          "processPeakRssKiB": [64280,66836,69952],
+          "maxObservedHeapAfterBytes": [21728296,25597624,21892464]
+        }
+      }
+    },
+    {
+      "workload": "typed-attribute",
+      "fixture": {
+        "name": "finite-proof-independent.xsd",
+        "uri": "https://capacity.example/finite-proof-independent.xsd",
+        "bytes": 464,
+        "digest": "35babfd123f05254b3997a5096de125c2dd81fbee3e4919e3ae2ae788c1e8535"
+      },
+      "acceptance": "supplied-construction-and-finite-evidence",
+      "claims": {
+        "actualObligations": "checked",
+        "suppliedCandidate": "checked",
+        "universalCoverage": false,
+        "completeNegativeAnswer": false,
+        "searchTermination": false
+      },
+      "retained": {
+        "retainedObjects": 684,
+        "retainedArrays": 255,
+        "retainedFields": 1956,
+        "stringValues": 901,
+        "stringCodeUnits": 21451
+      },
+      "receiptSha256": [
+        "dc71a53b7b75246486f21d7d8dfa0b7b3e7f0de9fbca285e7880270d2b640087",
+        "ac8091cf0e47e62686ef1e9290840d9562956093d2583038b8823ba62f73e8cd",
+        "9bebc04709a51e5998007c398b9d24faccd3dd44d73e77d718a0cd7547d25d7f"
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 7,
+            "work": 593453
+          },
+          "resultSha256": "a7e4fd9b7281bab22877c674ff1ab514ef97b0dde0cd98e0bd9812247ceec784",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [24846,4],
+            "actual-lookups": [108,0],
+            "candidate-preparation": [86100,2],
+            "finite-verification": [482320,1]
+          },
+          "totalWallMs": [58.015,11.769,9.11],
+          "processPeakRssKiB": [65128,65984,66496],
+          "maxObservedHeapAfterBytes": [17877488,21298280,24591024]
+        },
+        "default": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 7,
+            "work": 593453
+          },
+          "resultSha256": "a7e4fd9b7281bab22877c674ff1ab514ef97b0dde0cd98e0bd9812247ceec784",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [24846,4],
+            "actual-lookups": [108,0],
+            "candidate-preparation": [86100,2],
+            "finite-verification": [482320,1]
+          },
+          "totalWallMs": [52.451,10.175,11.742],
+          "processPeakRssKiB": [63652,64420,65152],
+          "maxObservedHeapAfterBytes": [21769288,21941712,25244040]
+        },
+        "diagnostic": {
+          "kind": "checked-candidate",
+          "final": {
+            "nodes": 7,
+            "work": 593453
+          },
+          "resultSha256": "a7e4fd9b7281bab22877c674ff1ab514ef97b0dde0cd98e0bd9812247ceec784",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-preparation": [24846,4],
+            "actual-lookups": [108,0],
+            "candidate-preparation": [86100,2],
+            "finite-verification": [482320,1]
+          },
+          "totalWallMs": [52.217,10.409,9.041],
+          "processPeakRssKiB": [64172,65072,65968],
+          "maxObservedHeapAfterBytes": [21689640,21743848,25036008]
+        }
+      }
+    },
+    {
+      "workload": "generic:weather",
+      "fixture": {
+        "name": "weather.wsdl",
+        "uri": "https://capacity.example/weather.wsdl",
+        "bytes": 21204,
+        "digest": "ec2ee4d9c2dbf82b44012c4e726fbf21e4c56ec4da881cd783846ac466ac599c"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "committed-service",
+      "basis": "Complete repository-owned WeatherService definition; repository MIT license; baseline revision above.",
+      "graphComponents": 140,
+      "graphSha256": "f3973fdb56c4929a804bbce21d733d6ad66e47e1bd3c9386a37eccde1f6f61c5",
+      "retained": {
+        "retainedObjects": 5021,
+        "retainedArrays": 1019,
+        "retainedFields": 17948,
+        "stringValues": 8980,
+        "stringCodeUnits": 249404
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 140,
+          "endpointChanged": false,
+          "membersSha256": "96dc6b50b13fb482463f70ef9e89f2fe716195f7f9006b5979d80d563ecf09f5"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 28,
+          "endpointChanged": true,
+          "membersSha256": "14cc38046dd3a56c1848f418ccc5b75afa286727c4d1682513706fa5d0e6fb7b"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 140,
+          "endpointChanged": true,
+          "membersSha256": "96dc6b50b13fb482463f70ef9e89f2fe716195f7f9006b5979d80d563ecf09f5"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 140,
+            "work": 999964
+          },
+          "resultSha256": "434789940f1ab50b5f9712be2d14e738f59834f982e579ef76b87748e2b3bfbc",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [999885,140]
+          },
+          "totalWallMs": [28.351,17.835,19.673],
+          "processPeakRssKiB": [64876,65644,69684],
+          "maxObservedHeapAfterBytes": [20245592,23489024,23431304]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 142,
+            "work": 3370424
+          },
+          "resultSha256": "51b0c1f1a32cb69cfe2503496242e63f25dd7cb69fee17992a1ad6c3114c1b5b",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [3041697,140],
+            "candidate:full-original": [140673,0],
+            "candidate:endpoint-closure-changed": [36408,1],
+            "candidate:full-changed-sibling": [151567,1]
+          },
+          "totalWallMs": [51.66,30.272,26.3],
+          "processPeakRssKiB": [65352,73392,78744],
+          "maxObservedHeapAfterBytes": [18664912,23523408,28501552]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 142,
+            "work": 3370424
+          },
+          "resultSha256": "51b0c1f1a32cb69cfe2503496242e63f25dd7cb69fee17992a1ad6c3114c1b5b",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [3041697,140],
+            "candidate:full-original": [140673,0],
+            "candidate:endpoint-closure-changed": [36408,1],
+            "candidate:full-changed-sibling": [151567,1]
+          },
+          "totalWallMs": [61.834,34.516,28.176],
+          "processPeakRssKiB": [74368,77628,85436],
+          "maxObservedHeapAfterBytes": [20047936,24602440,35501776]
+        }
+      }
+    },
+    {
+      "workload": "source-owned:weather",
+      "fixture": {
+        "name": "weather.wsdl",
+        "uri": "https://capacity.example/weather.wsdl",
+        "bytes": 21204,
+        "digest": "ec2ee4d9c2dbf82b44012c4e726fbf21e4c56ec4da881cd783846ac466ac599c"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "committed-service",
+      "basis": "Complete repository-owned WeatherService definition; repository MIT license; baseline revision above.",
+      "graphComponents": 140,
+      "graphSha256": "f3973fdb56c4929a804bbce21d733d6ad66e47e1bd3c9386a37eccde1f6f61c5",
+      "retained": {
+        "retainedObjects": 5021,
+        "retainedArrays": 1019,
+        "retainedFields": 17948,
+        "stringValues": 8980,
+        "stringCodeUnits": 249404
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 140,
+          "endpointChanged": false,
+          "membersSha256": "96dc6b50b13fb482463f70ef9e89f2fe716195f7f9006b5979d80d563ecf09f5"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 28,
+          "endpointChanged": true,
+          "membersSha256": "14cc38046dd3a56c1848f418ccc5b75afa286727c4d1682513706fa5d0e6fb7b"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 140,
+          "endpointChanged": true,
+          "membersSha256": "96dc6b50b13fb482463f70ef9e89f2fe716195f7f9006b5979d80d563ecf09f5"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 140,
+            "work": 999940
+          },
+          "resultSha256": "7102108c03d8dbcd05fc4611392713a4770353b11cef075e72f1080709c7348c",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [988019,140],
+            "candidate:full-original": [11842,0]
+          },
+          "totalWallMs": [35.719,27.619,18.794],
+          "processPeakRssKiB": [64816,66604,70308],
+          "maxObservedHeapAfterBytes": [20664040,22091328,20564312]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 142,
+            "work": 1316746
+          },
+          "resultSha256": "5013e4a89ce8d3c18bf252c2bd5cc87e4c4944315c28e4df65755fc80c36cc94",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [988019,140],
+            "candidate:full-original": [140673,0],
+            "candidate:endpoint-closure-changed": [36408,1],
+            "candidate:full-changed-sibling": [151567,1]
+          },
+          "totalWallMs": [48.258,31.205,20.385],
+          "processPeakRssKiB": [64280,69984,73676],
+          "maxObservedHeapAfterBytes": [21591928,22372824,23150304]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 142,
+            "work": 1316746
+          },
+          "resultSha256": "5013e4a89ce8d3c18bf252c2bd5cc87e4c4944315c28e4df65755fc80c36cc94",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [988019,140],
+            "candidate:full-original": [140673,0],
+            "candidate:endpoint-closure-changed": [36408,1],
+            "candidate:full-changed-sibling": [151567,1]
+          },
+          "totalWallMs": [31.759,18.787,13.649],
+          "processPeakRssKiB": [64760,70944,74576],
+          "maxObservedHeapAfterBytes": [21427024,22533880,23112024]
+        }
+      }
+    },
+    {
+      "workload": "generic:shared-recursive",
+      "fixture": {
+        "name": "shared-recursive.xsd",
+        "uri": "https://capacity.example/shared-recursive.xsd",
+        "bytes": 3017,
+        "digest": "bca6b87cdcb0456db6ec9ebde2b5196a81898aee7307fb7c183355d6a8fdcb65"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "committed-control",
+      "basis": "Existing exact large occurrence, recursive element/type, shared group, lexical QName/base and facet controls; repository MIT license.",
+      "graphComponents": 52,
+      "graphSha256": "5cae11cb66c96c23734a9b968b976eb33710969bbdaa014fe462c9b1145d7d43",
+      "retained": {
+        "retainedObjects": 1230,
+        "retainedArrays": 322,
+        "retainedFields": 3874,
+        "stringValues": 1831,
+        "stringCodeUnits": 43482
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 52,
+          "endpointChanged": false,
+          "membersSha256": "a35cc6244619affa8070efad5b706f852b8022e2b83c66aebcd71a7d55e6497f"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 38,
+          "endpointChanged": true,
+          "membersSha256": "f89ce4077b27dc2a2733a289484a3804b95ee257578f9c89be6065d08bc7b158"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 52,
+          "endpointChanged": true,
+          "membersSha256": "a35cc6244619affa8070efad5b706f852b8022e2b83c66aebcd71a7d55e6497f"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 55,
+            "work": 885542
+          },
+          "resultSha256": "e3801867bd90058fbdaf23aa36b63aed8bc5d01df100dcc3659d697712645e25",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [682887,53],
+            "candidate:full-original": [44911,0],
+            "candidate:endpoint-closure-changed": [73177,1],
+            "candidate:full-changed-sibling": [84488,1]
+          },
+          "totalWallMs": [32.269,15.963,10.464],
+          "processPeakRssKiB": [65356,68772,69484],
+          "maxObservedHeapAfterBytes": [20420152,19972480,23452656]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 55,
+            "work": 885542
+          },
+          "resultSha256": "e3801867bd90058fbdaf23aa36b63aed8bc5d01df100dcc3659d697712645e25",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [682887,53],
+            "candidate:full-original": [44911,0],
+            "candidate:endpoint-closure-changed": [73177,1],
+            "candidate:full-changed-sibling": [84488,1]
+          },
+          "totalWallMs": [54.429,16.266,14.166],
+          "processPeakRssKiB": [64820,66484,66484],
+          "maxObservedHeapAfterBytes": [18357248,21953416,23445288]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 55,
+            "work": 885542
+          },
+          "resultSha256": "e3801867bd90058fbdaf23aa36b63aed8bc5d01df100dcc3659d697712645e25",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [682887,53],
+            "candidate:full-original": [44911,0],
+            "candidate:endpoint-closure-changed": [73177,1],
+            "candidate:full-changed-sibling": [84488,1]
+          },
+          "totalWallMs": [29.229,12.73,12.418],
+          "processPeakRssKiB": [64744,66152,67304],
+          "maxObservedHeapAfterBytes": [18318504,22103696,23438064]
+        }
+      }
+    },
+    {
+      "workload": "source-owned:shared-recursive",
+      "fixture": {
+        "name": "shared-recursive.xsd",
+        "uri": "https://capacity.example/shared-recursive.xsd",
+        "bytes": 3017,
+        "digest": "bca6b87cdcb0456db6ec9ebde2b5196a81898aee7307fb7c183355d6a8fdcb65"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "committed-control",
+      "basis": "Existing exact large occurrence, recursive element/type, shared group, lexical QName/base and facet controls; repository MIT license.",
+      "graphComponents": 52,
+      "graphSha256": "5cae11cb66c96c23734a9b968b976eb33710969bbdaa014fe462c9b1145d7d43",
+      "retained": {
+        "retainedObjects": 1230,
+        "retainedArrays": 322,
+        "retainedFields": 3874,
+        "stringValues": 1831,
+        "stringCodeUnits": 43482
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 52,
+          "endpointChanged": false,
+          "membersSha256": "a35cc6244619affa8070efad5b706f852b8022e2b83c66aebcd71a7d55e6497f"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 38,
+          "endpointChanged": true,
+          "membersSha256": "f89ce4077b27dc2a2733a289484a3804b95ee257578f9c89be6065d08bc7b158"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 52,
+          "endpointChanged": true,
+          "membersSha256": "a35cc6244619affa8070efad5b706f852b8022e2b83c66aebcd71a7d55e6497f"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 55,
+            "work": 408819
+          },
+          "resultSha256": "14f42c412006245fa96b85e6ba85ed3ddc32f99d3fd5edcef8ce47625559717c",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [206164,53],
+            "candidate:full-original": [44911,0],
+            "candidate:endpoint-closure-changed": [73177,1],
+            "candidate:full-changed-sibling": [84488,1]
+          },
+          "totalWallMs": [48.5,20.084,7.674],
+          "processPeakRssKiB": [65212,66748,66876],
+          "maxObservedHeapAfterBytes": [19139488,18738088,21262832]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 55,
+            "work": 408819
+          },
+          "resultSha256": "14f42c412006245fa96b85e6ba85ed3ddc32f99d3fd5edcef8ce47625559717c",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [206164,53],
+            "candidate:full-original": [44911,0],
+            "candidate:endpoint-closure-changed": [73177,1],
+            "candidate:full-changed-sibling": [84488,1]
+          },
+          "totalWallMs": [24.623,9.876,6.49],
+          "processPeakRssKiB": [64184,64952,65428],
+          "maxObservedHeapAfterBytes": [17354480,19846528,22383528]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 55,
+            "work": 408819
+          },
+          "resultSha256": "14f42c412006245fa96b85e6ba85ed3ddc32f99d3fd5edcef8ce47625559717c",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [206164,53],
+            "candidate:full-original": [44911,0],
+            "candidate:endpoint-closure-changed": [73177,1],
+            "candidate:full-changed-sibling": [84488,1]
+          },
+          "totalWallMs": [25.803,8.292,4.845],
+          "processPeakRssKiB": [64072,64368,64980],
+          "maxObservedHeapAfterBytes": [17246608,19868952,22392680]
+        }
+      }
+    },
+    {
+      "workload": "generic:synthetic-4",
+      "fixture": {
+        "name": "synthetic-4.xsd",
+        "uri": "https://capacity.example/synthetic-4.xsd",
+        "bytes": 950,
+        "digest": "13a78dece3c5ea608ab84fcc1f3600ba74a3898ece54528137d8d88a057e4f06"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 27,
+      "graphSha256": "e69e13051eba380aede849cddc1a5bc566a25e552db10d001c1e383e0dd5eb99",
+      "retained": {
+        "retainedObjects": 491,
+        "retainedArrays": 144,
+        "retainedFields": 1489,
+        "stringValues": 683,
+        "stringCodeUnits": 19308
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 27,
+          "endpointChanged": false,
+          "membersSha256": "0bc53c758a2a3e9bb6fc35287bf823cfeaf38ee8910f1286b58ba7b7cf2dfe75"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 27,
+          "endpointChanged": true,
+          "membersSha256": "0bc53c758a2a3e9bb6fc35287bf823cfeaf38ee8910f1286b58ba7b7cf2dfe75"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 29,
+            "work": 355831
+          },
+          "resultSha256": "454b03ba66396565570ed41a7c1797b54c6e27b00685a4efe02cf565fbee3016",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [273533,27],
+            "candidate:full-original": [26280,0],
+            "candidate:endpoint-closure-changed": [20231,1],
+            "candidate:full-changed-sibling": [35708,1]
+          },
+          "totalWallMs": [45.422,10.151,4.965],
+          "processPeakRssKiB": [63316,64084,64084],
+          "maxObservedHeapAfterBytes": [16744920,17749520,19194200]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 29,
+            "work": 355831
+          },
+          "resultSha256": "454b03ba66396565570ed41a7c1797b54c6e27b00685a4efe02cf565fbee3016",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [273533,27],
+            "candidate:full-original": [26280,0],
+            "candidate:endpoint-closure-changed": [20231,1],
+            "candidate:full-changed-sibling": [35708,1]
+          },
+          "totalWallMs": [31.955,5.729,5.684],
+          "processPeakRssKiB": [64164,64292,64548],
+          "maxObservedHeapAfterBytes": [21801888,17490288,18942264]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 29,
+            "work": 355831
+          },
+          "resultSha256": "454b03ba66396565570ed41a7c1797b54c6e27b00685a4efe02cf565fbee3016",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [273533,27],
+            "candidate:full-original": [26280,0],
+            "candidate:endpoint-closure-changed": [20231,1],
+            "candidate:full-changed-sibling": [35708,1]
+          },
+          "totalWallMs": [27.06,8.37,4.855],
+          "processPeakRssKiB": [64744,65000,65000],
+          "maxObservedHeapAfterBytes": [21788536,17569176,19417424]
+        }
+      }
+    },
+    {
+      "workload": "source-owned:synthetic-4",
+      "fixture": {
+        "name": "synthetic-4.xsd",
+        "uri": "https://capacity.example/synthetic-4.xsd",
+        "bytes": 950,
+        "digest": "13a78dece3c5ea608ab84fcc1f3600ba74a3898ece54528137d8d88a057e4f06"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 27,
+      "graphSha256": "e69e13051eba380aede849cddc1a5bc566a25e552db10d001c1e383e0dd5eb99",
+      "retained": {
+        "retainedObjects": 491,
+        "retainedArrays": 144,
+        "retainedFields": 1489,
+        "stringValues": 683,
+        "stringCodeUnits": 19308
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 27,
+          "endpointChanged": false,
+          "membersSha256": "0bc53c758a2a3e9bb6fc35287bf823cfeaf38ee8910f1286b58ba7b7cf2dfe75"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 27,
+          "endpointChanged": true,
+          "membersSha256": "0bc53c758a2a3e9bb6fc35287bf823cfeaf38ee8910f1286b58ba7b7cf2dfe75"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 29,
+            "work": 162966
+          },
+          "resultSha256": "5ea71613b67be9e897308cc2d8024fdd8b513012e76d23a7c3acec7dc832f5e7",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [80668,27],
+            "candidate:full-original": [26280,0],
+            "candidate:endpoint-closure-changed": [20231,1],
+            "candidate:full-changed-sibling": [35708,1]
+          },
+          "totalWallMs": [23.297,4.06,3.235],
+          "processPeakRssKiB": [64984,64984,65068],
+          "maxObservedHeapAfterBytes": [21812200,16848000,18189432]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 29,
+            "work": 162966
+          },
+          "resultSha256": "5ea71613b67be9e897308cc2d8024fdd8b513012e76d23a7c3acec7dc832f5e7",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [80668,27],
+            "candidate:full-original": [26280,0],
+            "candidate:endpoint-closure-changed": [20231,1],
+            "candidate:full-changed-sibling": [35708,1]
+          },
+          "totalWallMs": [25.689,4.3,4.489],
+          "processPeakRssKiB": [63204,63204,63588],
+          "maxObservedHeapAfterBytes": [21788800,16670376,17835576]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 29,
+            "work": 162966
+          },
+          "resultSha256": "5ea71613b67be9e897308cc2d8024fdd8b513012e76d23a7c3acec7dc832f5e7",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [80668,27],
+            "candidate:full-original": [26280,0],
+            "candidate:endpoint-closure-changed": [20231,1],
+            "candidate:full-changed-sibling": [35708,1]
+          },
+          "totalWallMs": [26.765,4.642,3.932],
+          "processPeakRssKiB": [63740,63868,63868],
+          "maxObservedHeapAfterBytes": [21801136,16613488,17790672]
+        }
+      }
+    },
+    {
+      "workload": "generic:synthetic-16",
+      "fixture": {
+        "name": "synthetic-16.xsd",
+        "uri": "https://capacity.example/synthetic-16.xsd",
+        "bytes": 2738,
+        "digest": "db35a2b19d12e8558b65ad32cc426e5c7b9c6cf07b5f221c430799f8ebc05df7"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 87,
+      "graphSha256": "eff38867ba31b9c2a076965b95079d0408cc7572d2fa09b9f10ba6b288c9e599",
+      "retained": {
+        "retainedObjects": 1559,
+        "retainedArrays": 456,
+        "retainedFields": 4753,
+        "stringValues": 2195,
+        "stringCodeUnits": 62813
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 87,
+          "endpointChanged": false,
+          "membersSha256": "74cf4777a3e6db0f2bce0011f9c1670eaea7f82a6cafde27e13d0f3b4f8b8693"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 87,
+          "endpointChanged": true,
+          "membersSha256": "74cf4777a3e6db0f2bce0011f9c1670eaea7f82a6cafde27e13d0f3b4f8b8693"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 89,
+            "work": 999958
+          },
+          "resultSha256": "23ae633b70ddfe96870a06a8e5503ac863f5adc97b79d9369aeefac3256cc42e",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [876962,87],
+            "candidate:full-original": [85056,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [17628,1]
+          },
+          "totalWallMs": [178.638,11.803,11.876],
+          "processPeakRssKiB": [63824,64480,64864],
+          "maxObservedHeapAfterBytes": [21846696,22347040,23271568]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 89,
+            "work": 1076816
+          },
+          "resultSha256": "d9a849cf2ed04311b019259fec1d6a25322f56ab600e87df49b00c1547c73411",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [876962,87],
+            "candidate:full-original": [85056,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [94486,1]
+          },
+          "totalWallMs": [35.452,14.598,10.775],
+          "processPeakRssKiB": [65144,66116,67012],
+          "maxObservedHeapAfterBytes": [18085528,22485976,24368088]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 89,
+            "work": 1076816
+          },
+          "resultSha256": "d9a849cf2ed04311b019259fec1d6a25322f56ab600e87df49b00c1547c73411",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [876962,87],
+            "candidate:full-original": [85056,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [94486,1]
+          },
+          "totalWallMs": [45.747,15.544,11.267],
+          "processPeakRssKiB": [64696,65344,66752],
+          "maxObservedHeapAfterBytes": [18625800,23108320,23882848]
+        }
+      }
+    },
+    {
+      "workload": "source-owned:synthetic-16",
+      "fixture": {
+        "name": "synthetic-16.xsd",
+        "uri": "https://capacity.example/synthetic-16.xsd",
+        "bytes": 2738,
+        "digest": "db35a2b19d12e8558b65ad32cc426e5c7b9c6cf07b5f221c430799f8ebc05df7"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 87,
+      "graphSha256": "eff38867ba31b9c2a076965b95079d0408cc7572d2fa09b9f10ba6b288c9e599",
+      "retained": {
+        "retainedObjects": 1559,
+        "retainedArrays": 456,
+        "retainedFields": 4753,
+        "stringValues": 2195,
+        "stringCodeUnits": 62813
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 87,
+          "endpointChanged": false,
+          "membersSha256": "74cf4777a3e6db0f2bce0011f9c1670eaea7f82a6cafde27e13d0f3b4f8b8693"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 87,
+          "endpointChanged": true,
+          "membersSha256": "74cf4777a3e6db0f2bce0011f9c1670eaea7f82a6cafde27e13d0f3b4f8b8693"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 89,
+            "work": 451882
+          },
+          "resultSha256": "2f18af9b925c9a03112408ea4d0e3d69d5f406920e9f0b28b0b003ae22e2232a",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [252028,87],
+            "candidate:full-original": [85056,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [94486,1]
+          },
+          "totalWallMs": [28.139,10.429,5.79],
+          "processPeakRssKiB": [63428,65264,65776],
+          "maxObservedHeapAfterBytes": [16955096,20478608,23650952]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 89,
+            "work": 451882
+          },
+          "resultSha256": "2f18af9b925c9a03112408ea4d0e3d69d5f406920e9f0b28b0b003ae22e2232a",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [252028,87],
+            "candidate:full-original": [85056,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [94486,1]
+          },
+          "totalWallMs": [26.577,19.343,5.222],
+          "processPeakRssKiB": [63920,65032,65672],
+          "maxObservedHeapAfterBytes": [16453048,19511440,22739712]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 89,
+            "work": 451882
+          },
+          "resultSha256": "2f18af9b925c9a03112408ea4d0e3d69d5f406920e9f0b28b0b003ae22e2232a",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [252028,87],
+            "candidate:full-original": [85056,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [94486,1]
+          },
+          "totalWallMs": [31.033,11.403,11.271],
+          "processPeakRssKiB": [63592,64872,66152],
+          "maxObservedHeapAfterBytes": [16509616,19372832,22483272]
+        }
+      }
+    },
+    {
+      "workload": "generic:synthetic-64",
+      "fixture": {
+        "name": "synthetic-64.xsd",
+        "uri": "https://capacity.example/synthetic-64.xsd",
+        "bytes": 9938,
+        "digest": "636641d26371c9b5729185852b2f544ba23b51460386662955e095deccd19946"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 327,
+      "graphSha256": "b3587913203f9c1d1af759b2622a314f0fec920410363580175bd49a8786a72b",
+      "retained": {
+        "retainedObjects": 5831,
+        "retainedArrays": 1704,
+        "retainedFields": 17809,
+        "stringValues": 8243,
+        "stringCodeUnits": 236730
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 327,
+          "endpointChanged": false,
+          "membersSha256": "284b68cb18a33b8a8bf80cf11f4213fb80c6b748c403fe06b635dc5d8cf62334"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 327,
+          "endpointChanged": true,
+          "membersSha256": "284b68cb18a33b8a8bf80cf11f4213fb80c6b748c403fe06b635dc5d8cf62334"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 327,
+            "work": 999925
+          },
+          "resultSha256": "cba7b70e22645acaddb9982c14693c71b434b1073d2d82c002fc8ad514045e98",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [999846,327]
+          },
+          "totalWallMs": [97.781,45.88,29.594],
+          "processPeakRssKiB": [65044,67028,71368],
+          "maxObservedHeapAfterBytes": [21399520,22762816,23899216]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 329,
+            "work": 3964383
+          },
+          "resultSha256": "199f0e4e27bb62e2ebb75979dd58f15cc2a2ce52a9dfc0247ff0ba9853b545da",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [3292357,327],
+            "candidate:full-original": [321142,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [330572,1]
+          },
+          "totalWallMs": [48.786,34.264,25.572],
+          "processPeakRssKiB": [65676,74780,83588],
+          "maxObservedHeapAfterBytes": [19487608,25658720,34144952]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 329,
+            "work": 3964383
+          },
+          "resultSha256": "199f0e4e27bb62e2ebb75979dd58f15cc2a2ce52a9dfc0247ff0ba9853b545da",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [3292357,327],
+            "candidate:full-original": [321142,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [330572,1]
+          },
+          "totalWallMs": [48.601,32.239,35.779],
+          "processPeakRssKiB": [66100,74684,83532],
+          "maxObservedHeapAfterBytes": [19420928,26167392,33479160]
+        }
+      }
+    },
+    {
+      "workload": "source-owned:synthetic-64",
+      "fixture": {
+        "name": "synthetic-64.xsd",
+        "uri": "https://capacity.example/synthetic-64.xsd",
+        "bytes": 9938,
+        "digest": "636641d26371c9b5729185852b2f544ba23b51460386662955e095deccd19946"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 327,
+      "graphSha256": "b3587913203f9c1d1af759b2622a314f0fec920410363580175bd49a8786a72b",
+      "retained": {
+        "retainedObjects": 5831,
+        "retainedArrays": 1704,
+        "retainedFields": 17809,
+        "stringValues": 8243,
+        "stringCodeUnits": 236730
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 327,
+          "endpointChanged": false,
+          "membersSha256": "284b68cb18a33b8a8bf80cf11f4213fb80c6b748c403fe06b635dc5d8cf62334"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 327,
+          "endpointChanged": true,
+          "membersSha256": "284b68cb18a33b8a8bf80cf11f4213fb80c6b748c403fe06b635dc5d8cf62334"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 327,
+            "work": 999993
+          },
+          "resultSha256": "c4d224136a734b6b71af814758e2a32ea0cb9bf0118392dd7321967a1ddcfae2",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [938749,327],
+            "candidate:full-original": [61165,0]
+          },
+          "totalWallMs": [54.703,38.687,20.619],
+          "processPeakRssKiB": [64688,67972,71556],
+          "maxObservedHeapAfterBytes": [21843752,23096736,22410664]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 329,
+            "work": 1610775
+          },
+          "resultSha256": "a5dac7190da576682cddfce2c70bfbc3d5d4845e21a02deb6da27d25eb7cc199",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [938749,327],
+            "candidate:full-original": [321142,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [330572,1]
+          },
+          "totalWallMs": [44.624,25.748,16.214],
+          "processPeakRssKiB": [64496,71164,74876],
+          "maxObservedHeapAfterBytes": [22288440,23723040,26397480]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 329,
+            "work": 1610775
+          },
+          "resultSha256": "a5dac7190da576682cddfce2c70bfbc3d5d4845e21a02deb6da27d25eb7cc199",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [938749,327],
+            "candidate:full-original": [321142,0],
+            "candidate:endpoint-closure-changed": [20233,1],
+            "candidate:full-changed-sibling": [330572,1]
+          },
+          "totalWallMs": [45.922,28.233,15.699],
+          "processPeakRssKiB": [65900,69728,73952],
+          "maxObservedHeapAfterBytes": [21071536,24427192,24676944]
+        }
+      }
+    },
+    {
+      "workload": "generic:synthetic-128",
+      "fixture": {
+        "name": "synthetic-128.xsd",
+        "uri": "https://capacity.example/synthetic-128.xsd",
+        "bytes": 19594,
+        "digest": "d4a2b9f3384d1581d1c38aa60009bf2957b24d8d19d8e4bd5b806305ff6e685e"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 647,
+      "graphSha256": "2693a87833cbbf7925026ac26065793a335d0c03a781f4ba99790eb8e81b8b14",
+      "retained": {
+        "retainedObjects": 11527,
+        "retainedArrays": 3368,
+        "retainedFields": 35217,
+        "stringValues": 16307,
+        "stringCodeUnits": 471847
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 647,
+          "endpointChanged": false,
+          "membersSha256": "3a38172781c289f7eab672445798d7635541deb905d8a75b7398767e7030f180"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 647,
+          "endpointChanged": true,
+          "membersSha256": "3a38172781c289f7eab672445798d7635541deb905d8a75b7398767e7030f180"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 647,
+            "work": 999993
+          },
+          "resultSha256": "4172be285f656be228653347cb87c3a026caa30434de79e194f782e374a2bcd2",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [999914,647]
+          },
+          "totalWallMs": [102.539,38.165,46.978],
+          "processPeakRssKiB": [65100,71068,79240],
+          "maxObservedHeapAfterBytes": [23818456,23836552,34098896]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 649,
+            "work": 7820612
+          },
+          "resultSha256": "86214b87f0e4c6e03b32911e53954751b0e992644a3e2b4dc01dbcd192853587",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [6517718,647],
+            "candidate:full-original": [636574,0],
+            "candidate:endpoint-closure-changed": [20235,1],
+            "candidate:full-changed-sibling": [646006,1]
+          },
+          "totalWallMs": [106.208,81.164,55.5],
+          "processPeakRssKiB": [72224,89976,100600],
+          "maxObservedHeapAfterBytes": [25713864,34091416,30288784]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 649,
+            "work": 7820612
+          },
+          "resultSha256": "86214b87f0e4c6e03b32911e53954751b0e992644a3e2b4dc01dbcd192853587",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [6517718,647],
+            "candidate:full-original": [636574,0],
+            "candidate:endpoint-closure-changed": [20235,1],
+            "candidate:full-changed-sibling": [646006,1]
+          },
+          "totalWallMs": [157.505,103.077,72.356],
+          "processPeakRssKiB": [73260,95468,101832],
+          "maxObservedHeapAfterBytes": [25937032,37583176,35640824]
+        }
+      }
+    },
+    {
+      "workload": "source-owned:synthetic-128",
+      "fixture": {
+        "name": "synthetic-128.xsd",
+        "uri": "https://capacity.example/synthetic-128.xsd",
+        "bytes": 19594,
+        "digest": "d4a2b9f3384d1581d1c38aa60009bf2957b24d8d19d8e4bd5b806305ff6e685e"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 647,
+      "graphSha256": "2693a87833cbbf7925026ac26065793a335d0c03a781f4ba99790eb8e81b8b14",
+      "retained": {
+        "retainedObjects": 11527,
+        "retainedArrays": 3368,
+        "retainedFields": 35217,
+        "stringValues": 16307,
+        "stringCodeUnits": 471847
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 647,
+          "endpointChanged": false,
+          "membersSha256": "3a38172781c289f7eab672445798d7635541deb905d8a75b7398767e7030f180"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 647,
+          "endpointChanged": true,
+          "membersSha256": "3a38172781c289f7eab672445798d7635541deb905d8a75b7398767e7030f180"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 647,
+            "work": 999970
+          },
+          "resultSha256": "125d1ba8dd86da556297f41a949d5ed5adbfc8d006f7137f527f800abf43dcf5",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [999891,647]
+          },
+          "totalWallMs": [60.664,32.882,20.483],
+          "processPeakRssKiB": [65152,71956,72960],
+          "maxObservedHeapAfterBytes": [18282144,21951088,25721008]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 649,
+            "work": 3158811
+          },
+          "resultSha256": "762c493fd878bebef3054bf465f4ba1c019827acf2308d50197318bbbcf17bb2",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [1855917,647],
+            "candidate:full-original": [636574,0],
+            "candidate:endpoint-closure-changed": [20235,1],
+            "candidate:full-changed-sibling": [646006,1]
+          },
+          "totalWallMs": [119.206,40.244,42.767],
+          "processPeakRssKiB": [70364,75872,88956],
+          "maxObservedHeapAfterBytes": [23575000,28844312,35007000]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 649,
+            "work": 3158811
+          },
+          "resultSha256": "762c493fd878bebef3054bf465f4ba1c019827acf2308d50197318bbbcf17bb2",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [1855917,647],
+            "candidate:full-original": [636574,0],
+            "candidate:endpoint-closure-changed": [20235,1],
+            "candidate:full-changed-sibling": [646006,1]
+          },
+          "totalWallMs": [58.517,39.225,29.333],
+          "processPeakRssKiB": [68420,73616,88976],
+          "maxObservedHeapAfterBytes": [22972040,27186240,33291408]
+        }
+      }
+    },
+    {
+      "workload": "generic:synthetic-256",
+      "fixture": {
+        "name": "synthetic-256.xsd",
+        "uri": "https://capacity.example/synthetic-256.xsd",
+        "bytes": 39050,
+        "digest": "b64c11c308750e65aac01ed98610eb53590fa94a8adeb25c47c18edc607233de"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 1287,
+      "graphSha256": "714cf5ea520ab69e845e1bfe1133ae68beeed3357e75dfeb07353d1629770bd4",
+      "retained": {
+        "retainedObjects": 22919,
+        "retainedArrays": 6696,
+        "retainedFields": 70033,
+        "stringValues": 32435,
+        "stringCodeUnits": 940199
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 1287,
+          "endpointChanged": false,
+          "membersSha256": "baf3b5be263b945f75a72edfee14eba30154cce253c03d7b4d7f2910cf7f6c4b"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 1287,
+          "endpointChanged": true,
+          "membersSha256": "baf3b5be263b945f75a72edfee14eba30154cce253c03d7b4d7f2910cf7f6c4b"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 1287,
+            "work": 999980
+          },
+          "resultSha256": "6c68dd1ffe6a7ede7b23c49f47cb0814394ad608e4b56070b91ecbb630c0f518",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [999901,1287]
+          },
+          "totalWallMs": [161.605,266.568,49.991],
+          "processPeakRssKiB": [71352,83232,90460],
+          "maxObservedHeapAfterBytes": [23441920,29607000,35615232]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 1289,
+            "work": 15540094
+          },
+          "resultSha256": "de687c3f7b6d57aa2c1130b2887636b680b1551b3a7fcecf08755dcc42eb80ca",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [12971156,1287],
+            "candidate:full-original": [1269596,0],
+            "candidate:endpoint-closure-changed": [20235,1],
+            "candidate:full-changed-sibling": [1279028,1]
+          },
+          "totalWallMs": [147.151,108.52,98.68],
+          "processPeakRssKiB": [90184,106448,136460],
+          "maxObservedHeapAfterBytes": [37003760,46301688,67442944]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 1289,
+            "work": 15540094
+          },
+          "resultSha256": "de687c3f7b6d57aa2c1130b2887636b680b1551b3a7fcecf08755dcc42eb80ca",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "canonical-build": [null,null],
+            "reference-resolution": [null,null],
+            "generic-actual-preparation": [12971156,1287],
+            "candidate:full-original": [1269596,0],
+            "candidate:endpoint-closure-changed": [20235,1],
+            "candidate:full-changed-sibling": [1279028,1]
+          },
+          "totalWallMs": [152.493,113.006,117.267],
+          "processPeakRssKiB": [90320,105064,135436],
+          "maxObservedHeapAfterBytes": [36956720,45978920,67088832]
+        }
+      }
+    },
+    {
+      "workload": "source-owned:synthetic-256",
+      "fixture": {
+        "name": "synthetic-256.xsd",
+        "uri": "https://capacity.example/synthetic-256.xsd",
+        "bytes": 39050,
+        "digest": "b64c11c308750e65aac01ed98610eb53590fa94a8adeb25c47c18edc607233de"
+      },
+      "acceptance": "structural-only",
+      "corpusTier": "synthetic",
+      "basis": "Graded shared-group and independently recursive types; no real-service claim.",
+      "graphComponents": 1287,
+      "graphSha256": "714cf5ea520ab69e845e1bfe1133ae68beeed3357e75dfeb07353d1629770bd4",
+      "retained": {
+        "retainedObjects": 22919,
+        "retainedArrays": 6696,
+        "retainedFields": 70033,
+        "stringValues": 32435,
+        "stringCodeUnits": 940199
+      },
+      "completedCandidates": [
+        {
+          "key": "full-original",
+          "kind": "prepared",
+          "activeMembers": 1287,
+          "endpointChanged": false,
+          "membersSha256": "baf3b5be263b945f75a72edfee14eba30154cce253c03d7b4d7f2910cf7f6c4b"
+        },
+        {
+          "key": "endpoint-closure-changed",
+          "kind": "prepared",
+          "activeMembers": 11,
+          "endpointChanged": true,
+          "membersSha256": "31ad79756b3741c62a24110e05f981bb43909f8d9c038c5ff05b66aaf43dea52"
+        },
+        {
+          "key": "full-changed-sibling",
+          "kind": "prepared",
+          "activeMembers": 1287,
+          "endpointChanged": true,
+          "membersSha256": "baf3b5be263b945f75a72edfee14eba30154cce253c03d7b4d7f2910cf7f6c4b"
+        }
+      ],
+      "profiles": {
+        "legacy": {
+          "kind": "resource-limit",
+          "final": {
+            "nodes": 0,
+            "work": 999959
+          },
+          "resultSha256": "21f0ed2ba7c7e8f08d44ab7f65115d76471293e3ca3287430bebeb4e58074daa",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [999880,0]
+          },
+          "totalWallMs": [38.11,16.871,22.372],
+          "processPeakRssKiB": [64536,65592,69748],
+          "maxObservedHeapAfterBytes": [19740808,24245584,24142456]
+        },
+        "default": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 1289,
+            "work": 6262935
+          },
+          "resultSha256": "b23e7e25c2c39cc0a5f8ef6b0bca6bff96d7dc073ea6ac15a1ab917bcb9e640e",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [3693997,1287],
+            "candidate:full-original": [1269596,0],
+            "candidate:endpoint-closure-changed": [20235,1],
+            "candidate:full-changed-sibling": [1279028,1]
+          },
+          "totalWallMs": [111.096,76.48,52.233],
+          "processPeakRssKiB": [77368,97368,110936],
+          "maxObservedHeapAfterBytes": [32856184,37336792,40974040]
+        },
+        "diagnostic": {
+          "kind": "prepared",
+          "final": {
+            "nodes": 1289,
+            "work": 6262935
+          },
+          "resultSha256": "b23e7e25c2c39cc0a5f8ef6b0bca6bff96d7dc073ea6ac15a1ab917bcb9e640e",
+          "stageCosts": {
+            "source-loading": [null,null],
+            "source-owned-actual-preparation": [3693997,1287],
+            "candidate:full-original": [1269596,0],
+            "candidate:endpoint-closure-changed": [20235,1],
+            "candidate:full-changed-sibling": [1279028,1]
+          },
+          "totalWallMs": [350.073,65.61,53.691],
+          "processPeakRssKiB": [77908,96716,110156],
+          "maxObservedHeapAfterBytes": [32061184,35347232,40941424]
+        }
+      }
+    },
+    {
+      "workload": "adversarial",
+      "controls": {
+        "oversized": {
+          "result": {
+            "kind": "resource-limit",
+            "limit": "work",
+            "usage": {
+              "nodes": 0,
+              "work": 183
+            }
+          },
+          "stickyFailure": true,
+          "unchangedUsage": true,
+          "invoked": false
+        },
+        "sharedCycle": {
+          "preserved": true,
+          "usage": {
+            "nodes": 0,
+            "work": 594
+          }
+        },
+        "nodes": {
+          "kind": "resource-limit",
+          "limit": "nodes",
+          "usage": {
+            "nodes": 100000,
+            "work": 79
+          }
+        }
+      },
+      "profiles": {
+        "legacy": {
+          "kind": "controls",
+          "resultSha256": "e639f30e382366e8cd71b7d3fd1ae6770f937984691605657ddfb962e4c24a99",
+          "stageCosts": {
+            "oversized-text-snapshot": [104,0],
+            "cyclic-shared-snapshot": [515,0],
+            "inclusive-node-reservation": [0,100000]
+          },
+          "totalWallMs": [0.641,0.089,0.199],
+          "processPeakRssKiB": [61976,62104,62232],
+          "maxObservedHeapAfterBytes": [21576848,21930784,21664424]
+        },
+        "default": {
+          "kind": "controls",
+          "resultSha256": "e639f30e382366e8cd71b7d3fd1ae6770f937984691605657ddfb962e4c24a99",
+          "stageCosts": {
+            "oversized-text-snapshot": [104,0],
+            "cyclic-shared-snapshot": [515,0],
+            "inclusive-node-reservation": [0,100000]
+          },
+          "totalWallMs": [0.536,0.119,0.19],
+          "processPeakRssKiB": [60928,61056,61056],
+          "maxObservedHeapAfterBytes": [21612776,21752376,21632344]
+        },
+        "diagnostic": {
+          "kind": "controls",
+          "resultSha256": "e639f30e382366e8cd71b7d3fd1ae6770f937984691605657ddfb962e4c24a99",
+          "stageCosts": {
+            "oversized-text-snapshot": [104,0],
+            "cyclic-shared-snapshot": [515,0],
+            "inclusive-node-reservation": [0,100000]
+          },
+          "totalWallMs": [0.769,0.104,0.152],
+          "processPeakRssKiB": [61388,61388,61388],
+          "maxObservedHeapAfterBytes": [21592824,21689888,21757080]
+        }
+      }
+    }
+  ]
+}

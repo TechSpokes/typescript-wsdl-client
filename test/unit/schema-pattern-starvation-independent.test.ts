@@ -12,7 +12,7 @@ import {loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
 
 // Independent #279 review: https://github.com/TechSpokes/typescript-wsdl-client/pull/279#pullrequestreview-5489589890
 // A later exact finite pattern must remain reachable before an earlier
-// expensive class search consumes the shared default work allowance.
+// expensive class search consumes the explicit former 1m work allowance.
 describe('independent finite witness scheduling', () => {
   it.each([
     {caseName: 'later finite pattern', base: 'Specific', fixture: 'scalar-pattern-starvation-independent.xsd',
@@ -28,7 +28,7 @@ describe('independent finite witness scheduling', () => {
     const input = await loadSemanticSchemaInput(uri, {policy: {allowedOrigins: [new URL(uri).origin]},
       offlineResources: new Map([[uri, {bytes, digest: createHash('sha256').update(bytes).digest('hex')}]]),
     });
-    const budget = createSemanticBudget();
+    const budget = createSemanticBudget({maxWork: 1_000_000});
     const prepared = prepareSourceSchemaRequest(input, {budget});
     expect(prepared.kind).toBe('prepared');
     if (prepared.kind !== 'prepared') throw new Error('Expected authentic source context');

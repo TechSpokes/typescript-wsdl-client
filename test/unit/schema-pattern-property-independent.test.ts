@@ -51,14 +51,14 @@ describe('independent singleton regular-expression component properties', () => 
     }
   });
 
-  it('leaves reordered multi-child expression mapping unresolved rather than using set equality', async () => {
+  it('compares reordered multi-child expressions using selected P1 construction', async () => {
     const {kernel} = await setup();
-    expect(kernel.facetPropertiesEquivalent(named('MultiAB'), named('MultiBA'), owner)).toMatchObject({kind: 'unresolved', rule: 'pattern-property-equality'});
+    expect(kernel.facetPropertiesEquivalent(named('MultiAB'), named('MultiBA'), owner)).toMatchObject({kind: 'checked', value: false});
   });
 
-  it('does not infer independently supplied multi-expression property identity from an identical operand sequence', async () => {
+  it('compares identical independent operand sequences by their P1 expression', async () => {
     const {kernel} = await setup();
-    expect(kernel.facetPropertiesEquivalent(named('MultiAB'), named('MultiABCopy'), owner)).toMatchObject({kind: 'unresolved', rule: 'pattern-property-equality'});
+    expect(kernel.facetPropertiesEquivalent(named('MultiAB'), named('MultiABCopy'), owner)).toMatchObject({kind: 'checked', value: true});
   });
 
   it('preserves a privately issued inherited multi-pattern component without reconstructing its expression', async () => {

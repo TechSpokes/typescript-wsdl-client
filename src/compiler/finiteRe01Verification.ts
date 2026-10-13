@@ -27,6 +27,12 @@ export type FiniteRe01EvidenceNode = Readonly<{
   premises: readonly string[];
 }>;
 export type FiniteRe01Evidence = Readonly<{root: string; nodes: readonly FiniteRe01EvidenceNode[]}>;
+/** The existing primitive identity rule needs no hypothetical endpoint. */
+export type FiniteRe01PrimitiveEvidence = Readonly<{
+  root: Readonly<{kind: 'primitive-no-change'}>;
+  /** Supplied constructions for any other nonprimitive actual obligations. */
+  nodes: readonly FiniteRe01EvidenceNode[];
+}>;
 export type FiniteVerificationFailure = CorrespondenceFailure & Readonly<{contextId?: string}>;
 export type FiniteNotationReceipt = Readonly<{contextId: string; properties: SchemaNotationProperties;
   origin: 'original' | 'addition'}>;
@@ -45,7 +51,14 @@ export type FiniteCandidateReceipt = Readonly<{
   claims: Readonly<{actualObligations: 'checked'; suppliedCandidate: 'checked'; universalCoverage: false; completeNegativeAnswer: false; searchTermination: false}>;
 }>;
 export type FiniteVerificationResult = FiniteCandidateReceipt | FiniteVerificationFailure | ResourceLimitFailure;
+export type FinitePrimitiveReceipt = Omit<FiniteCandidateReceipt, 'kind' | 'scope' | 'root' | 'claims'> & Readonly<{
+  kind: 'checked-primitive'; scope: 'primitive-no-change-and-finite-evidence'; root: 'primitive-no-change';
+  claims: Readonly<{actualObligations: 'checked'; primitiveTarget: 'checked'; universalCoverage: false;
+    completeNegativeAnswer: false; searchTermination: false}>;
+}>;
+export type FinitePrimitiveVerificationResult = FinitePrimitiveReceipt | FiniteVerificationFailure | ResourceLimitFailure;
 const issued = new WeakMap<object, SemanticContext>();
+const issuedPrimitive = new WeakMap<object, SemanticContext>();
 class VerificationAbort extends Error {constructor(readonly result: FiniteVerificationFailure | ResourceLimitFailure) {super(result.kind);}}
 type Requirement = NonNullable<ComponentConstructionReceipt['re01']>;
 type Closure = Readonly<{components: readonly ComponentConstructionReceipt[]; requirements: readonly Requirement[];
@@ -57,7 +70,17 @@ export function assertFiniteCandidateReceipt(actual: SemanticContext, receipt: F
   if (issued.get(receipt) !== actual) throw new TypeError('Unauthenticated finite candidate receipt');
 }
 
-export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId, supplied: FiniteRe01Evidence): FiniteVerificationResult {
+export function assertFinitePrimitiveReceipt(actual: SemanticContext, receipt: FinitePrimitiveReceipt): void {
+  assertSemanticContext(actual);
+  if (issuedPrimitive.get(receipt) !== actual) throw new TypeError('Unauthenticated finite primitive receipt');
+}
+
+export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId, supplied: FiniteRe01Evidence): FiniteVerificationResult;
+export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId, supplied: FiniteRe01PrimitiveEvidence): FinitePrimitiveVerificationResult;
+export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId,
+  supplied: FiniteRe01Evidence | FiniteRe01PrimitiveEvidence): FiniteVerificationResult | FinitePrimitiveVerificationResult;
+export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId,
+  supplied: FiniteRe01Evidence | FiniteRe01PrimitiveEvidence): FiniteVerificationResult | FinitePrimitiveVerificationResult {
   assertSemanticContext(actual);
   const b = actual.budget, charge = b.chargeWork;
   return b.guard(() => {
@@ -89,8 +112,10 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
     try {
       if (actual.kind !== 'actual' || actual.membership !== 'complete-actual-plus-additions') return fail('actual-environment', 'A complete immutable original context is required');
       const rootId = record(supplied, 'root'), sourceNodes = record(supplied, 'nodes');
-      if (typeof rootId !== 'string' || !rootId || !Array.isArray(sourceNodes)) return fail('evidence-syntax', 'Evidence requires a root ID and finite node array');
-      b.reserveNodes(sourceNodes.length); charge(6 + rootId.length);
+      const primitiveRoot = rootId !== null && typeof rootId === 'object' && record(rootId, 'kind') === 'primitive-no-change';
+      if ((!primitiveRoot && (typeof rootId !== 'string' || !rootId)) || !Array.isArray(sourceNodes))
+        return fail('evidence-syntax', 'Evidence requires a root ID or primitive marker and finite node array');
+      b.reserveNodes(sourceNodes.length); charge(6 + (typeof rootId === 'string' ? rootId.length : 19));
       const nodes = new Map<string, FiniteRe01EvidenceNode>();
       const subjects = new Map<SemanticContext, Set<NodeId>>();
       for (let index = 0; index < sourceNodes.length; index++) {
@@ -130,8 +155,9 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         const item = Object.freeze({...data, parent, context}) as FiniteRe01EvidenceNode;
         nodes.set(item.id, item);
       }
-      const root = nodes.get(rootId);
-      if (!root || root.parent !== actual || root.target !== target) return fail('evidence-root', 'Root must prove the requested original target');
+      const root = typeof rootId === 'string' ? nodes.get(rootId) : undefined;
+      if (!primitiveRoot && (!root || root.parent !== actual || root.target !== target))
+        return fail('evidence-root', 'Root must prove the requested original target');
       for (const item of nodes.values()) {
         charge();
         if (!isSemanticCandidateOf(item.parent, item.context)) return fail('evidence-context', 'Candidate must be an authenticated direct child of its declared parent');
@@ -266,9 +292,9 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         charge(context.contextId.length + 1); closures.set(context.contextId, closure); return closure;
       };
       const actualClosure = close(actual, actual.members);
-      let targetRequired = false;
-      for (const requirement of actualClosure.requirements) {charge(2 + requirement.target.length + target.length); if (requirement.target === target) targetRequired = true;}
-      if (!targetRequired) return fail('target-rule', 'The selected original target has no RE01 extension obligation');
+      let targetRequirement: Requirement | undefined;
+      for (const requirement of actualClosure.requirements) {charge(2 + requirement.target.length + target.length); if (requirement.target === target) targetRequirement = requirement;}
+      if (!targetRequirement) return fail('target-rule', 'The selected original target has no RE01 extension obligation');
       const primitive = (context: SemanticContext, requirement: Requirement): boolean => {
         if (!requirement.primitive) return false;
         const first = immediateTypeBase(context, {kind: 'local', target: requirement.target});
@@ -307,8 +333,16 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
             if (correspondence.kind !== 'checked') throw new VerificationAbort(correspondence);
             assertCandidateCorrespondence(item.context, correspondence);
             frame.correspondence = correspondence;
-            charge(3 + correspondence.fresh.length);
-            frame.closure = close(item.context, [item.target, item.intermediate, ...correspondence.fresh], correspondence);
+            // Every addition to immutable Gamma remains a legality root in
+            // nested H. correspondence.fresh contains only this fork's delta;
+            // an inherited affiliate can become invalid after its type is
+            // rebased even when the child does not otherwise consume it.
+            charge(3); const roots = [item.target, item.intermediate];
+            for (const id of item.context.members) {
+              charge();
+              if (actual.lookup(id).kind !== 'found') {charge(2); roots.push(id);}
+            }
+            frame.closure = close(item.context, roots, correspondence);
           }
           if (frame.index < frame.closure.requirements.length) {
             const requirement = frame.closure.requirements[frame.index++]!;
@@ -336,7 +370,9 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
           completed.add(item.id); active.delete(item.id); stack.pop();
         }
       };
-      execute(root);
+      if (primitiveRoot && !primitive(actual, targetRequirement))
+        return fail('primitive-no-change', 'The requested target is not a qualified primitive extension');
+      if (root) execute(root);
       charge(); const actualPrimitiveNoChange: NodeId[] = [];
       for (const requirement of actualClosure.requirements) {
         if (primitive(actual, requirement)) {charge(); actualPrimitiveNoChange.push(requirement.target); continue;}
@@ -400,11 +436,22 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
           return fail(pending.obligation.rule, 'A correspondence scalar premise lacks concrete aggregate discharge', 'unresolved', actual, pending.obligation.component);
       }
       charge(20 + proof.length + actualPrimitiveNoChange.length);
-      const result: FiniteCandidateReceipt = Object.freeze({kind: 'checked-candidate', authority: 'RE01-finite-evidence-v1', domain: RE01_DERIVATION_DOMAIN,
-        scope: 'supplied-construction-and-finite-evidence', actualContextId: actual.contextId, target, root: root.id,
+      charge(12);
+      const common = {authority: 'RE01-finite-evidence-v1' as const, domain: RE01_DERIVATION_DOMAIN,
+        actualContextId: actual.contextId, target,
         actualComponents: actualClosure.components, actualPrimitiveNoChange: Object.freeze(actualPrimitiveNoChange), proof: Object.freeze(proof),
         actualScalarSlots: actualClosure.scalarSlots,
-        actualNotations,
+        actualNotations};
+      if (primitiveRoot) {
+        charge(12);
+        const result: FinitePrimitiveReceipt = Object.freeze({...common, kind: 'checked-primitive',
+          scope: 'primitive-no-change-and-finite-evidence', root: 'primitive-no-change',
+          claims: Object.freeze({actualObligations: 'checked', primitiveTarget: 'checked', universalCoverage: false,
+            completeNegativeAnswer: false, searchTermination: false})});
+        issuedPrimitive.set(result, actual); return result;
+      }
+      const result: FiniteCandidateReceipt = Object.freeze({...common, kind: 'checked-candidate',
+        scope: 'supplied-construction-and-finite-evidence', root: root!.id,
         claims: Object.freeze({actualObligations: 'checked', suppliedCandidate: 'checked', universalCoverage: false, completeNegativeAnswer: false, searchTermination: false})});
       issued.set(result, actual); return result;
     } catch (error) {

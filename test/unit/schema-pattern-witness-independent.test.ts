@@ -175,12 +175,10 @@ describe('independent unambiguous empty raw facet-set omission', () => {
     expect(omitted.kernel.describe(omitted.reference, owner)).toMatchObject({kind: 'invalid-schema'});
   });
 
-  it('leaves independently supplied nonempty multi-pattern equality qualified', async () => {
+  it('checks independently supplied nonempty multi-pattern equality using P1', async () => {
     const {raw, facet} = await setup();
     const independent = raw(named('MultiPattern'), [facet('pattern', 'a'), facet('pattern', 'b')], {kind: 'atomic'}, true);
-    expect(independent.kernel.describe(independent.reference, owner)).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-      expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}),
-    ])});
+    expect(independent.kernel.describe(independent.reference, owner)).toMatchObject({kind: 'checked', obligations: []});
   });
 
   it('preserves empty-enumeration omission rejection and exact retained typed-set success', async () => {
