@@ -13,6 +13,7 @@
     "semantic-notation-independent.test.ts",
     "schema-scalar-independent.test.ts",
     "schema-scalar-policy-independent.test.ts",
+    "schema-scalar-completeness-review.test.ts",
     "schema-scalar-inheritance-review.test.ts",
     "schema-raw-facet-independent.test.ts",
     "schema-scalar-witness-independent.test.ts",

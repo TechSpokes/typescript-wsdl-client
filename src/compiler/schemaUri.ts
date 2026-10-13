@@ -1,6 +1,46 @@
 /** Generic RFC2396/2732 syntax for schema anyURI operands, after XLink escaping. */
 import {isIP} from "node:net";
 
+/** Regular preimage of the RFC2396/2732 assessor below, before XLink escaping.
+ * Every escaped source character contributes one or more percent octets;
+ * these are legal in precisely the generic URI-token positions. Raw percent
+ * signs still require their two hexadecimal digits. IPv6 has eight 16-bit
+ * units, with an embedded IPv4 tail consuming two and :: omitting at least one.
+ */
+export function schemaUriExpression<Owner>(owner: Owner, c: {step(node: Owner, count?: number): void}): string {
+  c.step(owner, 8192);
+  const escaped = "[^A-Za-z0-9\\-_.!~*'();/?:@&=+$,#\\[\\]%]";
+  const octet = '(%[0-9A-Fa-f]{2}|' + escaped + ')';
+  const token = (characters: string) => '([' + characters + ']|' + octet + ')';
+  const mark = "A-Za-z0-9\\-_.!~*'()";
+  const uric = token(mark + ';/?:@&=+$,\\[\\]');
+  const nonSlash = token(mark + ';?:@&=+$,\\[\\]');
+  const pchar = token(mark + ':@&=+$,;');
+  const first = token(mark + ';@&=+$,');
+  const registry = token(mark + '$,:;@&=+');
+  const userinfo = token(mark + ';:&=+$,');
+  const hex = '[0-9A-Fa-f]{1,4}';
+  const ipv4octet = '([0-9]{1,2}|[01][0-9]{2}|2[0-4][0-9]|25[0-5])';
+  const ipv4 = ipv4octet + '([.]' + ipv4octet + '){3}';
+  const addresses: string[] = [hex + '(:' + hex + '){7}', hex + '(:' + hex + '){5}:' + ipv4];
+  for (const tail of [false, true]) for (let left = 0; left <= (tail ? 5 : 7); left++) for (let right = 0; right + left < (tail ? 6 : 8); right++) {
+    c.step(owner, 512);
+    const before = left ? hex + (left > 1 ? '(:' + hex + '){' + (left - 1) + '}' : '') : '';
+    const after = right ? hex + (right > 1 ? '(:' + hex + '){' + (right - 1) + '}' : '') : '';
+    addresses.push(before + '::' + after + (tail ? (right ? ':' : '') + ipv4 : ''));
+  }
+  c.step(owner, addresses.reduce((total, value) => total + value.length, 0) * 4 + 4096);
+  const server = '(' + userinfo + '*@)?\\[(' + addresses.join('|') + ')\\](:[0-9]*)?';
+  const authority = '(' + registry + '*|' + server + ')';
+  const path = pchar + '*(/' + pchar + '*)*';
+  const hierarchical = '(//' + authority + '(/' + path + ')?|/' + path + ')';
+  const query = '([?]' + uric + '*)?';
+  const relative = '(//' + authority + '(/' + path + ')?|/' + path + '|' + first + '+(/' + path + ')?)?';
+  const scheme = '[A-Za-z][A-Za-z0-9+.\\-]*:';
+  const result = '(' + scheme + '(' + nonSlash + uric + '*|' + hierarchical + query + ')|' + relative + query + ')(#' + uric + '*)?';
+  c.step(owner, result.length * 2 + 2); return result;
+}
+
 export function schemaUri<Owner>(value: string, owner: Owner, c: {step(node: Owner, count?: number): void}): boolean {
   c.step(owner, value.length * 12 + 1);
   let escaped = "";

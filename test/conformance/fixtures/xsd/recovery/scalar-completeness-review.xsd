@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:recovery:scalar-completeness-review"
+  xmlns:p="urn:review:qname" xmlns:q="urn:review:qname" xmlns:r="urn:review:other"
+  targetNamespace="urn:recovery:scalar-completeness-review">
+  <xs:simpleType name="Template"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="DecimalList"><xs:list itemType="xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="AboveFive"><xs:restriction base="xs:decimal"><xs:minExclusive value="5"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="AboveFiveList"><xs:list itemType="t:AboveFive"/></xs:simpleType>
+  <xs:simpleType name="DoubleList"><xs:list itemType="xs:double"/></xs:simpleType>
+  <xs:simpleType name="HexList"><xs:list itemType="xs:hexBinary"/></xs:simpleType>
+  <xs:simpleType name="StringList"><xs:list itemType="xs:string"/></xs:simpleType>
+  <xs:simpleType name="DateTimeList"><xs:list itemType="xs:dateTime"/></xs:simpleType>
+  <xs:simpleType name="DurationList"><xs:list itemType="xs:duration"/></xs:simpleType>
+  <xs:simpleType name="TextThenDecimal"><xs:union memberTypes="xs:string xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="DecimalThenText"><xs:union memberTypes="xs:decimal xs:string"/></xs:simpleType>
+  <xs:simpleType name="UnionList"><xs:list itemType="t:TextThenDecimal"/></xs:simpleType>
+  <xs:simpleType name="NumericThenTextList"><xs:list itemType="t:DecimalThenText"/></xs:simpleType>
+  <xs:element name="Owner" type="t:Template"/>
+</xs:schema>

@@ -78,16 +78,19 @@ describe('independent finite lexical membership witnesses', () => {
           operand: {type: builtin('QName'), owner, context: 'original'}}]},
       ]);
       const description = raw.kernel.describe(raw.reference, owner);
+      if (variant !== 'same-namespace') {
+        // The complete inverse QName language uses this original operand's
+        // actual bindings. Its intersection with q:Name is empty when q is
+        // absent or denotes another namespace; no fresh prefix is invented.
+        expect(description).toMatchObject({kind: 'invalid-schema'});
+        return;
+      }
       expect(description.kind).toBe('checked');
       if (description.kind !== 'checked') throw new Error('Expected represented raw plan');
-      if (variant === 'same-namespace') {
-        expect(description.obligations).toEqual([]);
-        expect(raw.kernel.assess(raw.reference, lexical('q:Name'), owner)).toMatchObject({kind: 'checked', value: {operand: {
-          family: 'QName', canonical: '["urn:shared-name","Name"]',
-        }}});
-      } else {
-        expect(description.obligations).toEqual(expect.arrayContaining([expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'})]));
-      }
+      expect(description.obligations).toEqual([]);
+      expect(raw.kernel.assess(raw.reference, lexical('q:Name'), owner)).toMatchObject({kind: 'checked', value: {operand: {
+        family: 'QName', canonical: '["urn:shared-name","Name"]',
+      }}});
     });
 
   it('never discharges primitive-disjoint membership because a boolean and integer share lexical spelling', async () => {

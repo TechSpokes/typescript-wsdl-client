@@ -11,7 +11,7 @@
   },
   "semanticDefaults": {
     "maxNodes": 100000,
-    "maxWork": 25000000
+    "maxWork": 125000000
   },
   "contracts": [
     {
@@ -676,7 +676,7 @@
         {
           "path": "test/research/re01/resolver-budget.test.ts",
           "role": "reference",
-          "sha256": "c66496b9ea6748050caffb9808899c2aec96e87b62c7419913983745334fd903"
+          "sha256": "a83a87914d033497bafa4c0dcc3acdec2d950b2f362a208e8dbe0dc714a7a6d0"
         },
         {
           "path": "test/research/re01/resolver-budget.ts",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "7fee384b1c2fd9df6c0800e554da4f4e93f5b3810fa5c48fa7ffeb2da8d0ef4a"
+          "sha256": "00e0e793245099dcb698f8b58d0e19a9240d4309a82423ee000d561c5ac5429a"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "616f662cc6a4fdd4670fb959e5b8415f80bf014f4984977d8e80c190c78dafe5"
+          "sha256": "22d7f829684ea46e86ec08593802b10f1b4408e05230e5c891464d38bcfe4229"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1196,7 +1196,7 @@
         {
           "path": "src/compiler/schemaPattern.ts",
           "role": "semantic-source",
-          "sha256": "e9bd2c84d92d3b800715318ee14ecf330bc97debd9de93467848710a027a1b71"
+          "sha256": "cc40b1744f90dd282446dc767551ec1a5b679817a1685dc6b22c8f9f46c955bb"
         },
         {
           "path": "src/compiler/schemaScalarContext.ts",
@@ -1226,12 +1226,12 @@
         {
           "path": "src/compiler/schemaUri.ts",
           "role": "semantic-source",
-          "sha256": "d38dbb99a9395142a1fecbfc6c97fd0199f94e94daf1d5c420ba801466810a1e"
+          "sha256": "dd7510a4d462ab4b139836c1d8a39560a299830636d5f0c0fa1aaeae47a91699"
         },
         {
           "path": "src/compiler/semanticBudget.ts",
           "role": "semantic-source",
-          "sha256": "f91aa0cc208b1a64766f83659e03e57a344eb87affbff74274c70c84f0983358"
+          "sha256": "f1059e52d16ec42379186c0f7bd8e6bec3ba6a95dbea6ada13232e9b33065af3"
         },
         {
           "path": "src/compiler/semanticContext.ts",
@@ -1711,7 +1711,7 @@
         {
           "path": "test/unit/schema-scalar-witness-independent.test.ts",
           "role": "expectations",
-          "sha256": "2d4069d5404cf32fe74268802be2272649b7fa3b5612c38adf73049dca62a043"
+          "sha256": "7cb566fbf8489aac9993ed57ead8b58a94b0d26b9ef9fe500ab403070c567ba4"
         },
         {
           "path": "test/unit/semantic-notation-independent.test.ts",
@@ -1846,7 +1846,7 @@
         {
           "path": "test/unit/schema-pattern-witness-independent.test.ts",
           "role": "expectations",
-          "sha256": "bb178168d4916cff074dca91d08caff45859bce1850b3eb40e653a552a94675b"
+          "sha256": "c791aad7e9907aafadbe58c036505756dd6f6351e57bfdaf215a1a7de9b54951"
         },
         {
           "path": "test/unit/schema-selected-au-independent.test.ts",
@@ -2027,6 +2027,121 @@
           "path": "test/research/re01/finite-capacity.test.ts",
           "role": "prototype",
           "sha256": "999b123c03e38d7aea37c4a94012829e4606c76b5589610f2b04c95d5eb64459"
+        },
+        {
+          "path": "src/compiler/schemaRegularLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "89722da26c2d105def4404a8a02b3d414bc571f0a8a448036a84f079a4e64876"
+        },
+        {
+          "path": "src/compiler/schemaDecimalLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "2df7523e9fac004cf903a92ea8ec88c4bbf534336910aa5c0408019bfc9afe5f"
+        },
+        {
+          "path": "src/compiler/schemaIeeeLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "1c72c7284a023168e99239d929e1a92781e3df5b0580e3982775d02211d7f25f"
+        },
+        {
+          "path": "src/compiler/schemaTemporalAliases.ts",
+          "role": "semantic-source",
+          "sha256": "197825bdced599ef17c1bc222b5610f37479005d0df68d97ffd1eaa800f32bd6"
+        },
+        {
+          "path": "src/compiler/schemaCalendarLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "632a5251fbfb52115e21975fd42cd72a77fba83472fae107a34b57e8fac0af99"
+        },
+        {
+          "path": "src/compiler/schemaDurationLanguage.ts",
+          "role": "semantic-source",
+          "sha256": "7bf4e74b25fa326083db1c7e6b94c4bc4b7944ae01f7228295844a0f29ecefea"
+        },
+        {
+          "path": "src/compiler/schemaValueImages.ts",
+          "role": "semantic-source",
+          "sha256": "1dbb4a4d38010918a6a0bbcade1a770ceb387d86593e32eed4821cdff0891009"
+        },
+        {
+          "path": "src/compiler/schemaIntegerImages.ts",
+          "role": "semantic-source",
+          "sha256": "1f756af1a4d61e1d56c24a759503bf5d8e80f1a2f9006dc9fdb8b9629942ade1"
+        },
+        {
+          "path": "src/compiler/schemaCalendarImages.ts",
+          "role": "semantic-source",
+          "sha256": "96b263b7be9a9ca2fcd35135efa8b4ee79cc53521f1b43ae79414323c1c68658"
+        },
+        {
+          "path": "src/compiler/schemaNumericImageConditions.ts",
+          "role": "semantic-source",
+          "sha256": "44f46b0a06c3dda5340147fabb7c51ae77a0c054f9950b5cff572bf0f95a9694"
+        },
+        {
+          "path": "src/compiler/schemaLexicalPredicates.ts",
+          "role": "semantic-source",
+          "sha256": "7ee24ce2e220750f35647b0d50a9c96d67e5f9575bc5068964bdd72d906281ca"
+        },
+        {
+          "path": "src/compiler/schemaSymbolicSequences.ts",
+          "role": "semantic-source",
+          "sha256": "54081801d76a6da3774b1ec6ed3e39aeedaf114d0483842dc6792c43f3558df5"
+        },
+        {
+          "path": "src/compiler/schemaSymbolicValueSets.ts",
+          "role": "semantic-source",
+          "sha256": "a0364709f21c0a1dac4441e1929adef79c13f802ba3c05c680015186e7b28b15"
+        },
+        {
+          "path": "src/compiler/schemaTokenImages.ts",
+          "role": "semantic-source",
+          "sha256": "a4cd4dfffa8d88e03f115a549d61219e21ca3cc15f3b0de674fc0e48bcec15ec"
+        },
+        {
+          "path": "test/unit/schema-scalar-completeness-review.test.ts",
+          "role": "expectations",
+          "sha256": "3f96be4174b2fe7d42f4c49291e378bfdfbb65b52755e3da9cf36b1ae0dc2a8c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-completeness-review.xsd",
+          "role": "fixture",
+          "sha256": "a901e9f52689ef59ec5ff20f9994e3d59b0e2fba4320725ae9888da0d35226cd"
+        },
+        {
+          "path": "test/research/re01/scalar-capacity-measure.ts",
+          "role": "prototype",
+          "sha256": "1c749ce3b78a121f7087a8366a05af4ef9495fef54b93d7a52da490ff311dcd1"
+        },
+        {
+          "path": "test/research/re01/scalar-capacity-summary.ts",
+          "role": "prototype",
+          "sha256": "ead9d57737c243705eb5b80bdeb6065218bd4c3f6ea06398fced0437b637c594"
+        },
+        {
+          "path": "test/research/re01/scalar-capacity-evidence.json",
+          "role": "expectations",
+          "sha256": "180fddc48f5a93322c1b789b0a1c694aab83640d0eb9ddeb6ff6b94b60ecfcb9"
+        },
+        {
+          "path": "test/research/re01/scalar-capacity-results/default.json",
+          "role": "expectations",
+          "sha256": "324cbfe07fa1198a83b36cf4714487aab3b35e0fb65490d8fd206b2632436301"
+        },
+        {
+          "path": "test/research/re01/scalar-capacity-results/legacy.json",
+          "role": "expectations",
+          "sha256": "4bd92787ef2d5ec96f6210fdb9bb5c6d8a32f730dcd243d84d743acc3a1e2cef"
+        },
+        {
+          "path": "test/research/re01/scalar-capacity-results/previous.json",
+          "role": "expectations",
+          "sha256": "ea0daa1c9d923531f8dd097ea14ee580012211b0a483944c5810a2e489f01c09"
+        },
+        {
+          "path": "test/research/re01/scalar-capacity-results/diagnostic.json",
+          "role": "expectations",
+          "sha256": "d513b2472c61243731e43e5e33f20fe4c4f0e823d661400644cfd214c16f49ac"
         }
       ]
     },

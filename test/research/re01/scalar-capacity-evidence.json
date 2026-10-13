@@ -1,0 +1,3329 @@
+{
+  "format": "scalar-capacity-evidence-v1",
+  "revision": "a103ca96a3609bd0b525f2331daa7173879ad187",
+  "sourceDigests": {
+    "test/research/re01/scalar-capacity-measure.ts": "1c749ce3b78a121f7087a8366a05af4ef9495fef54b93d7a52da490ff311dcd1",
+    "package-lock.json": "3a089e52fad9349183ad9118fcb2562dbe741017be2099de045877c204dc4f94",
+    "src/compiler/buildCanonicalGraph.ts": "1fd0ff3aa136fbe0ce464792ec4d09dfd4569a397ad5277008a8d11bfb1194e8",
+    "src/compiler/canonicalGraph.ts": "7cbdbd499e3f116b573362f478af54af1eb74cae7a01e4a69d3c3ec942c1e31b",
+    "src/compiler/catalogErrors.ts": "adf4ee2eb8d2d69aecbc18f55d4d90d0ea8a01c9ea798a8e309cdc5b4ca40338",
+    "src/compiler/catalogProvenance.ts": "c16a6e839bead9d91042d005015d27d43f0833da11c32c05e20090c0e161aad9",
+    "src/compiler/complexTypeContent.ts": "e6fd14c0ecb84c85b0044712e6a04adaff5518157b70f8d93cd8fb5fbe7ab34a",
+    "src/compiler/composeCanonicalGraph.ts": "a670639a8598cf8693c769722f4fadb68bb9e778d3938146752917a9d801efc5",
+    "src/compiler/finiteRe01Verification.ts": "6cd1dc9446d51f852f3c66d7696ac0883781cfc1d0288ca954d013d7771e2f0c",
+    "src/compiler/generateCatalog.ts": "0c1f4d134b92a78c410715f8b395c5759c4bbc1b5675b30d0245b6ae138a4fe4",
+    "src/compiler/graphTraversal.ts": "470900a618e50034d9497a101ea9deb9b3cf070b880e4cf16d5e99200633077e",
+    "src/compiler/occurrenceAnalysis.ts": "35d3521648757350d2b159caa36539f885e0f7efbe0960157fc3d6bf3581861a",
+    "src/compiler/originalSourceMembership.ts": "4f09fffef973f179b30f5c64cb369fce0bdf1c21922ea13215088089f2495cf0",
+    "src/compiler/particleAttribution.ts": "1294dc4306e8e5933c8984fb4d69267ab1fe7a23fc2223e4d5b1609c43e5ced9",
+    "src/compiler/particleDeclarationConsistency.ts": "890cb06ae4e2b163f2106ba51313d011f967a324ecf22f31a85fb51642bb673e",
+    "src/compiler/particleExtension.ts": "2a4c463b36101d6bf1451a9a732282aeb247dad27bb615950bfd9d5cd457e168",
+    "src/compiler/particleLocalAssessment.ts": "23fb7c1d0ec38ac81bb246cde5ab2f2957ac45f91f308ef0d3a3553edd4b5403",
+    "src/compiler/particleRestriction.ts": "3aac677c8ebebb8864735368fb7375c32e885d8493e5aa31250077d3bb8bf7cf",
+    "src/compiler/particleSemanticView.ts": "c220b4fbab31f2133df7a2fcf768fc35732e2c8843fb3723d50ea8c97b811a06",
+    "src/compiler/particleWildcardRelation.ts": "7d5dc6cdb512b2b70205a712cdaa165ca4f7ca8a6d7d59c91eba04af10129d65",
+    "src/compiler/re01CandidateCorrespondence.ts": "28634a50d35c245ba91d020cf928785dcbad6bdc79e9c7ec8861f05952d8fe20",
+    "src/compiler/re01TypeProperties.ts": "1e6f0a4fbae68323bc8178c47f284987c9fc8eb82f4cc9cecf7bf7bcc0ca560a",
+    "src/compiler/re01TypePropertyValidation.ts": "40c07376dba2dfaada62af210a4956e71128439b0c3ab451954d4572526f485b",
+    "src/compiler/resolveCanonicalGraph.ts": "d851e4b8f5598ee99b288d9c75e39435d46ca95d0799da8e8cbabfd85a39215a",
+    "src/compiler/scalarSchemaAssessment.ts": "22d7f829684ea46e86ec08593802b10f1b4408e05230e5c891464d38bcfe4229",
+    "src/compiler/schemaAttributeGroupProperties.ts": "fb79ec86714c0c8a1ceb8daed507359e1412bc397f2705e3f9ab9246f1d8b933",
+    "src/compiler/schemaAttributeProperties.ts": "dcccd1fae0a67c167a8346561dcdb7da902b729980518f391e01f246799b84fe",
+    "src/compiler/schemaAttributeUses.ts": "46c776d4f056764bcbc4f6666f30a0d542b993637375dc28279a01109bdd75f6",
+    "src/compiler/schemaBuiltinFacets.ts": "0b8a06b23b3841308970009bd4b91b8fcfb3d6b0c6aac76fa5bc65c08eae2de7",
+    "src/compiler/schemaCalendarImages.ts": "96b263b7be9a9ca2fcd35135efa8b4ee79cc53521f1b43ae79414323c1c68658",
+    "src/compiler/schemaCalendarLanguage.ts": "632a5251fbfb52115e21975fd42cd72a77fba83472fae107a34b57e8fac0af99",
+    "src/compiler/schemaCompiler.ts": "b6e5b62b8aca3d8ccac80f6525884d9f1ef02032f693f0edac0aaae1b734716a",
+    "src/compiler/schemaComponentEquality.ts": "8961c3ec64ecc90080cea4ef4b5ec87494e247b03436b65f47db006ad233227c",
+    "src/compiler/schemaConstructionAssessment.ts": "849b18433f1c63a5765903ed8da55e0b431a70446eb82e5f64ec64550156bf91",
+    "src/compiler/schemaDatatypeValues.ts": "56dfed8de50b949c97bcdab54fe2e4c729088a4310ac7e47144727acf328d96c",
+    "src/compiler/schemaDecimalLanguage.ts": "2df7523e9fac004cf903a92ea8ec88c4bbf534336910aa5c0408019bfc9afe5f",
+    "src/compiler/schemaDeclarationPrimitives.ts": "199de6f2cb32ef3d17ac59e33d6ba246aca8ed5d46deb1b661968273e2b296d6",
+    "src/compiler/schemaDocumentSyntax.ts": "547ae4d9275d387a93d20e540a0a06d2e735f5f1cd46194fa4cd8b45821e16b2",
+    "src/compiler/schemaDurationLanguage.ts": "7bf4e74b25fa326083db1c7e6b94c4bc4b7944ae01f7228295844a0f29ecefea",
+    "src/compiler/schemaElementProperties.ts": "595c5259cc5aefc8bcbde21665a44dc5171a3985f629d331c82637523c1ed6ce",
+    "src/compiler/schemaExactCalendar.ts": "d2097c19b682f5c156482d70f307ca589bc421bbaa7282231faba60fb19d6175",
+    "src/compiler/schemaFacetAnnotation.ts": "4f22ca2dafc8d3f45185e434bd0e13ecf8403d2e5f0d029509a4d6e4dd3f6397",
+    "src/compiler/schemaGeneratedScalarShape.ts": "649356566ba0a22984c357e58add3f6a08df098ee34d31c9ededa911dcf1a330",
+    "src/compiler/schemaIeeeLanguage.ts": "1c72c7284a023168e99239d929e1a92781e3df5b0580e3982775d02211d7f25f",
+    "src/compiler/schemaIntegerImages.ts": "1f756af1a4d61e1d56c24a759503bf5d8e80f1a2f9006dc9fdb8b9629942ade1",
+    "src/compiler/schemaLexicalPredicates.ts": "7ee24ce2e220750f35647b0d50a9c96d67e5f9575bc5068964bdd72d906281ca",
+    "src/compiler/schemaNotationProperties.ts": "ce1ee1450fcdeadf63ffecf03e8e4ce705f8bb2823d057f8c2ff134fb7f66b94",
+    "src/compiler/schemaNumericImageConditions.ts": "44f46b0a06c3dda5340147fabb7c51ae77a0c054f9950b5cff572bf0f95a9694",
+    "src/compiler/schemaPattern.ts": "cc40b1744f90dd282446dc767551ec1a5b679817a1685dc6b22c8f9f46c955bb",
+    "src/compiler/schemaRegularLanguage.ts": "89722da26c2d105def4404a8a02b3d414bc571f0a8a448036a84f079a4e64876",
+    "src/compiler/schemaScalarContext.ts": "a28348d12ccc8fe60396289326ba0a2ba38c3bc74d039feebf2d0145dc588fcf",
+    "src/compiler/schemaScalarKernel.ts": "f4c3fe51c4c08f4f35d96ca9d171f2837422d7c1e3d269ab5f07005bda7a8563",
+    "src/compiler/schemaScalarWitnesses.ts": "dc165ae70d9f22fce10023ba5eb243081c81e2f266a0f12b6faef503e9176816",
+    "src/compiler/schemaSimpleTypeProperties.ts": "8d727bcee0f4b16a43cc143730851401233e3958972fecc717f8200d07ba3cae",
+    "src/compiler/schemaSourceGrammar.ts": "173d211830c16fa462171fc5c966d003151bde39e0aaab825bf5e413a32363cc",
+    "src/compiler/schemaSourceLexical.ts": "6835b55ec7d63d9d87f38f43ed9842453b5274c6056f9f9aa6504b2f37ef8815",
+    "src/compiler/schemaSourceValues.ts": "21d6feccdd10fc42d66dd423bfd1b6b9527fccfd49a5f5008b65380239a6e486",
+    "src/compiler/schemaSourceWildcards.ts": "bac7152ee7aee72b6a3ea7c491b4dafcc1a981c60d87ab85f593d6487cb7122c",
+    "src/compiler/schemaSymbolicSequences.ts": "54081801d76a6da3774b1ec6ed3e39aeedaf114d0483842dc6792c43f3558df5",
+    "src/compiler/schemaSymbolicValueSets.ts": "a0364709f21c0a1dac4441e1929adef79c13f802ba3c05c680015186e7b28b15",
+    "src/compiler/schemaSyntaxAssessment.ts": "0781e8802185d2b97d5970cce78ecfb778bdb3aa6ab2ffa1a73400ce561b87b5",
+    "src/compiler/schemaTemporalAliases.ts": "197825bdced599ef17c1bc222b5610f37479005d0df68d97ffd1eaa800f32bd6",
+    "src/compiler/schemaTokenImages.ts": "a4cd4dfffa8d88e03f115a549d61219e21ca3cc15f3b0de674fc0e48bcec15ec",
+    "src/compiler/schemaTypeIdentity.ts": "0478a5806a1a059c92fc3f2d729640b716b93abb868af5ae379d3aefa796cec8",
+    "src/compiler/schemaTypeRelations.ts": "fb330db516fc834ec14ad82b023710d4620c7ded1cc8b69b908eb69bdb5c3986",
+    "src/compiler/schemaUri.ts": "dd7510a4d462ab4b139836c1d8a39560a299830636d5f0c0fa1aaeae47a91699",
+    "src/compiler/schemaValueContext.ts": "8bd3fdfea3554f6dfdf786dbdaaed150aa990559bfaa3c91069cf3e7e8b28f15",
+    "src/compiler/schemaValueImages.ts": "1dbb4a4d38010918a6a0bbcade1a770ceb387d86593e32eed4821cdff0891009",
+    "src/compiler/schemaValueSequences.ts": "cfc874035a069638383762a90050397abbab605c93fbbb9024db0891cc092a1b",
+    "src/compiler/semanticBudget.ts": "f1059e52d16ec42379186c0f7bd8e6bec3ba6a95dbea6ada13232e9b33065af3",
+    "src/compiler/semanticCatalog.ts": "7776422bdb7bb76116f62f8dfe34892a13e516c6559b0eb2b63f57bf8559e593",
+    "src/compiler/semanticContext.ts": "c8d609e678e645f3ff2947efa119f237c6795cf1483e6b335868936bf166ff5b",
+    "src/compiler/semanticTypeDependencies.ts": "9c65032ebcd11839efd666fd4ad662a962cbc6d13d784c3a1bca0c8303493a26",
+    "src/compiler/semanticTypeReference.ts": "dd1c3208f35cec727c6efbe903557f395d1d6b5095c1019de12d58898b55e5f0",
+    "src/compiler/shapeResolver.ts": "63b47e58a76f0a8a61606d6b431f0714e71ac623ba313b2540c137c1c931e797",
+    "src/compiler/sourceSchemaBinding.ts": "16d9bdc1fa2ebca93fe43e465b98b72645e338b5cd23c66daf8aa24dceeac49e",
+    "src/compiler/structuralCompanions.ts": "0e24309953491f9469b50eed5418ab2645bfb939efd5ca278147b7bc69ef2354",
+    "src/compiler/validateSemanticGraph.ts": "9ef37e796b63ed55b5024b5e0ee98f003563f3571e7395ea3d2e7f5e1bae17d0",
+    "src/compiler/wildcardAlgebra.ts": "0e2caeba982107a17ddf1101b2a727aa6033869c29ab9755f65326e68385f1e2",
+    "src/loader/fetch.ts": "d6c2e8c73374da5ae534ed6a78f5fe64028670c03ce9f3be5423617eeba69370",
+    "src/loader/orderedSyntax.ts": "ce8c3d03754f84ec2cac61d4a168c370927cc4f22cc1bd29cc50a1d02ef62038",
+    "src/loader/resolutionDepth.ts": "0fa8fdc35604db2e8336f1394d6e59c723d3cf85761d6a0854aa1af82430c78d",
+    "src/loader/schemaInput.ts": "2b3ce859e4d5ca313c3d0da67f9a0380cf54d8afcdbe5241556cb6240649192f",
+    "src/loader/schemaResources.ts": "8e9ff11d10f7ee2152f76dc516249ab28f8fbccb725353d7b0299fe8f11b9381",
+    "src/loader/wsdlLoader.ts": "7f152bb88efbb078e7f6af15569898523422d6490521a8c6564cd1ce6dd1df9a",
+    "test/conformance/fixtures/xsd/recovery/scalar-completeness-review.xsd": "a901e9f52689ef59ec5ff20f9994e3d59b0e2fba4320725ae9888da0d35226cd"
+  },
+  "summaryReducerSha256": "ead9d57737c243705eb5b80bdeb6065218bd4c3f6ea06398fced0437b637c594",
+  "rawReports": [
+    {
+      "profile": "default",
+      "limits": {
+        "maxNodes": 100000,
+        "maxWork": 125000000
+      },
+      "path": "test/research/re01/scalar-capacity-results/default.json",
+      "sha256": "324cbfe07fa1198a83b36cf4714487aab3b35e0fb65490d8fd206b2632436301",
+      "reproduce": "node --import tsx test/research/re01/scalar-capacity-measure.ts --profile default > tmp/conformance/scalar-capacity/default.json"
+    },
+    {
+      "profile": "legacy",
+      "limits": {
+        "maxNodes": 100000,
+        "maxWork": 1000000
+      },
+      "path": "test/research/re01/scalar-capacity-results/legacy.json",
+      "sha256": "4bd92787ef2d5ec96f6210fdb9bb5c6d8a32f730dcd243d84d743acc3a1e2cef",
+      "reproduce": "node --import tsx test/research/re01/scalar-capacity-measure.ts --profile legacy > tmp/conformance/scalar-capacity/legacy.json"
+    },
+    {
+      "profile": "previous",
+      "limits": {
+        "maxNodes": 100000,
+        "maxWork": 25000000
+      },
+      "path": "test/research/re01/scalar-capacity-results/previous.json",
+      "sha256": "ea0daa1c9d923531f8dd097ea14ee580012211b0a483944c5810a2e489f01c09",
+      "reproduce": "node --import tsx test/research/re01/scalar-capacity-measure.ts --profile previous > tmp/conformance/scalar-capacity/previous.json"
+    },
+    {
+      "profile": "diagnostic",
+      "limits": {
+        "maxNodes": 100000,
+        "maxWork": 250000000
+      },
+      "path": "test/research/re01/scalar-capacity-results/diagnostic.json",
+      "sha256": "d513b2472c61243731e43e5e33f20fe4c4f0e823d661400644cfd214c16f49ac",
+      "reproduce": "node --import tsx test/research/re01/scalar-capacity-measure.ts --profile diagnostic > tmp/conformance/scalar-capacity/diagnostic.json"
+    }
+  ],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "collection": "Each workload/profile has a fresh child and three fresh authenticated requests. First-call and warm process samples retain independent request budgets. Query work excludes source/candidate preparation; usage includes it. RSS/heap snapshots are observations, not allocation totals; RSS high-water is process lifetime. Time includes JIT/GC/OS noise. Only local scalar completeness is measured; no universal RE01 or production activation claim.",
+  "scope": "Complete local scalar decisions and resource controls. Baseline HEAD plus exact source digests identifies the uncommitted measured implementation; no universal RE01 or production-activation claim.",
+  "summary": {
+    "workloads": 25,
+    "samplesPerProfile": 75,
+    "maximumCompletedWork": 79018339,
+    "remainingWorkAllowance": 45981661,
+    "headroomFraction": 0.5819112573348321,
+    "maximumCompletedNodes": 21,
+    "maximumQueryWallMs": 715.64,
+    "maximumProcessPeakRssKiB": 217892,
+    "maximumObservedHeapAfterBytes": 75785736
+  },
+  "cases": [
+    {
+      "workload": "length-positive",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "length-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 172447
+          },
+          "queryWork": 40484,
+          "queryWallMs": [
+            12.12,
+            3.82,
+            1.952
+          ],
+          "totalWallMs": [
+            50.957,
+            10.081,
+            7.527
+          ],
+          "peakRssKiB": [
+            76248,
+            76248,
+            77500
+          ],
+          "observedHeapAfterBytes": [
+            15488832,
+            18180888,
+            19779200
+          ]
+        },
+        "legacy": {
+          "workload": "length-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 172447
+          },
+          "queryWork": 40484,
+          "queryWallMs": [
+            8.721,
+            2.269,
+            1.9
+          ],
+          "totalWallMs": [
+            40.757,
+            7.349,
+            6.582
+          ],
+          "peakRssKiB": [
+            60564,
+            61204,
+            62996
+          ],
+          "observedHeapAfterBytes": [
+            15345368,
+            17347784,
+            19350656
+          ]
+        },
+        "previous": {
+          "workload": "length-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 172447
+          },
+          "queryWork": 40484,
+          "queryWallMs": [
+            9.921,
+            2.568,
+            1.595
+          ],
+          "totalWallMs": [
+            44.552,
+            7.469,
+            7.11
+          ],
+          "peakRssKiB": [
+            60324,
+            60644,
+            62180
+          ],
+          "observedHeapAfterBytes": [
+            15096408,
+            17376232,
+            19351360
+          ]
+        },
+        "diagnostic": {
+          "workload": "length-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 172447
+          },
+          "queryWork": 40484,
+          "queryWallMs": [
+            9.867,
+            2.165,
+            3.375
+          ],
+          "totalWallMs": [
+            47.048,
+            7.766,
+            7.544
+          ],
+          "peakRssKiB": [
+            61900,
+            62412,
+            64076
+          ],
+          "observedHeapAfterBytes": [
+            15347968,
+            17344112,
+            19361904
+          ]
+        }
+      }
+    },
+    {
+      "workload": "length-widening",
+      "expected": "invalid-schema",
+      "profiles": {
+        "default": {
+          "workload": "length-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 16,
+            "work": 151506
+          },
+          "queryWork": 19578,
+          "queryWallMs": [
+            18.699,
+            2.058,
+            1.688
+          ],
+          "totalWallMs": [
+            61.327,
+            19.311,
+            7.604
+          ],
+          "peakRssKiB": [
+            60908,
+            61548,
+            61932
+          ],
+          "observedHeapAfterBytes": [
+            14704400,
+            16864264,
+            18379336
+          ]
+        },
+        "legacy": {
+          "workload": "length-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 16,
+            "work": 151506
+          },
+          "queryWork": 19578,
+          "queryWallMs": [
+            8.462,
+            1.788,
+            1.218
+          ],
+          "totalWallMs": [
+            39.53,
+            6.84,
+            5.432
+          ],
+          "peakRssKiB": [
+            59392,
+            59392,
+            59884
+          ],
+          "observedHeapAfterBytes": [
+            14701168,
+            16907624,
+            18377768
+          ]
+        },
+        "previous": {
+          "workload": "length-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 16,
+            "work": 151506
+          },
+          "queryWork": 19578,
+          "queryWallMs": [
+            9.237,
+            1.488,
+            1.226
+          ],
+          "totalWallMs": [
+            43.653,
+            6.047,
+            5.126
+          ],
+          "peakRssKiB": [
+            59516,
+            59900,
+            60668
+          ],
+          "observedHeapAfterBytes": [
+            14711888,
+            16961936,
+            18382216
+          ]
+        },
+        "diagnostic": {
+          "workload": "length-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 16,
+            "work": 151506
+          },
+          "queryWork": 19578,
+          "queryWallMs": [
+            14.148,
+            1.759,
+            1.536
+          ],
+          "totalWallMs": [
+            51.692,
+            7.204,
+            6.486
+          ],
+          "peakRssKiB": [
+            60300,
+            60300,
+            60616
+          ],
+          "observedHeapAfterBytes": [
+            14718336,
+            16687272,
+            18390888
+          ]
+        }
+      }
+    },
+    {
+      "workload": "decimal-bound",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "decimal-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 197052
+          },
+          "queryWork": 66212,
+          "queryWallMs": [
+            18.464,
+            6.247,
+            3.932
+          ],
+          "totalWallMs": [
+            79.606,
+            13.228,
+            12.186
+          ],
+          "peakRssKiB": [
+            59936,
+            61600,
+            67616
+          ],
+          "observedHeapAfterBytes": [
+            16293864,
+            19030184,
+            21710432
+          ]
+        },
+        "legacy": {
+          "workload": "decimal-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 197052
+          },
+          "queryWork": 66212,
+          "queryWallMs": [
+            12.087,
+            3.771,
+            3.092
+          ],
+          "totalWallMs": [
+            43.866,
+            9.067,
+            9.628
+          ],
+          "peakRssKiB": [
+            57980,
+            59540,
+            64408
+          ],
+          "observedHeapAfterBytes": [
+            15926792,
+            18897480,
+            21573536
+          ]
+        },
+        "previous": {
+          "workload": "decimal-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 197052
+          },
+          "queryWork": 66212,
+          "queryWallMs": [
+            14.524,
+            4.182,
+            3.612
+          ],
+          "totalWallMs": [
+            51.799,
+            9.284,
+            9.848
+          ],
+          "peakRssKiB": [
+            60528,
+            61640,
+            65784
+          ],
+          "observedHeapAfterBytes": [
+            16315152,
+            18904632,
+            21577376
+          ]
+        },
+        "diagnostic": {
+          "workload": "decimal-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 197052
+          },
+          "queryWork": 66212,
+          "queryWallMs": [
+            12.471,
+            4.003,
+            3.384
+          ],
+          "totalWallMs": [
+            42.519,
+            9.4,
+            8.13
+          ],
+          "peakRssKiB": [
+            61340,
+            62876,
+            66844
+          ],
+          "observedHeapAfterBytes": [
+            15943688,
+            18915616,
+            21588760
+          ]
+        }
+      }
+    },
+    {
+      "workload": "uri-length",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "uri-length",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 909930
+          },
+          "queryWork": 777967,
+          "queryWallMs": [
+            31.436,
+            14.707,
+            14.343
+          ],
+          "totalWallMs": [
+            72.211,
+            22.166,
+            22.887
+          ],
+          "peakRssKiB": [
+            73364,
+            73820,
+            79292
+          ],
+          "observedHeapAfterBytes": [
+            21935184,
+            24872896,
+            32459088
+          ]
+        },
+        "legacy": {
+          "workload": "uri-length",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 909930
+          },
+          "queryWork": 777967,
+          "queryWallMs": [
+            35.425,
+            18.054,
+            17.438
+          ],
+          "totalWallMs": [
+            68.589,
+            24.058,
+            30.769
+          ],
+          "peakRssKiB": [
+            74928,
+            78724,
+            83996
+          ],
+          "observedHeapAfterBytes": [
+            21635896,
+            24217480,
+            32705048
+          ]
+        },
+        "previous": {
+          "workload": "uri-length",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 909930
+          },
+          "queryWork": 777967,
+          "queryWallMs": [
+            36.726,
+            21.947,
+            19.427
+          ],
+          "totalWallMs": [
+            75.317,
+            28.121,
+            24.874
+          ],
+          "peakRssKiB": [
+            74116,
+            76536,
+            87260
+          ],
+          "observedHeapAfterBytes": [
+            16830840,
+            26334384,
+            28042720
+          ]
+        },
+        "diagnostic": {
+          "workload": "uri-length",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 909930
+          },
+          "queryWork": 777967,
+          "queryWallMs": [
+            33.08,
+            19.765,
+            17.928
+          ],
+          "totalWallMs": [
+            66.891,
+            30.097,
+            23.039
+          ],
+          "peakRssKiB": [
+            74932,
+            80808,
+            91064
+          ],
+          "observedHeapAfterBytes": [
+            21640616,
+            24289416,
+            25288384
+          ]
+        }
+      }
+    },
+    {
+      "workload": "ieee-bound",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "ieee-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 235379
+          },
+          "queryWork": 104547,
+          "queryWallMs": [
+            13.567,
+            2.94,
+            2.992
+          ],
+          "totalWallMs": [
+            46.632,
+            7.908,
+            8.124
+          ],
+          "peakRssKiB": [
+            60524,
+            60524,
+            63456
+          ],
+          "observedHeapAfterBytes": [
+            15945392,
+            18360856,
+            20631576
+          ]
+        },
+        "legacy": {
+          "workload": "ieee-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 235379
+          },
+          "queryWork": 104547,
+          "queryWallMs": [
+            14.491,
+            3.869,
+            2.507
+          ],
+          "totalWallMs": [
+            46.175,
+            9.816,
+            6.587
+          ],
+          "peakRssKiB": [
+            61300,
+            62324,
+            64628
+          ],
+          "observedHeapAfterBytes": [
+            15642032,
+            18646320,
+            20624192
+          ]
+        },
+        "previous": {
+          "workload": "ieee-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 235379
+          },
+          "queryWork": 104547,
+          "queryWallMs": [
+            13.104,
+            3.46,
+            2.77
+          ],
+          "totalWallMs": [
+            43.343,
+            8.51,
+            7.158
+          ],
+          "peakRssKiB": [
+            59168,
+            59776,
+            62080
+          ],
+          "observedHeapAfterBytes": [
+            15640152,
+            18404744,
+            20627504
+          ]
+        },
+        "diagnostic": {
+          "workload": "ieee-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 235379
+          },
+          "queryWork": 104547,
+          "queryWallMs": [
+            12.405,
+            3.65,
+            2.639
+          ],
+          "totalWallMs": [
+            44.74,
+            8.487,
+            7.248
+          ],
+          "peakRssKiB": [
+            60460,
+            61484,
+            63788
+          ],
+          "observedHeapAfterBytes": [
+            15641072,
+            18383320,
+            20624920
+          ]
+        }
+      }
+    },
+    {
+      "workload": "ieee-alias",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "ieee-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 498299
+          },
+          "queryWork": 367209,
+          "queryWallMs": [
+            19.017,
+            6.331,
+            4.48
+          ],
+          "totalWallMs": [
+            66.065,
+            13.568,
+            11.522
+          ],
+          "peakRssKiB": [
+            66980,
+            68900,
+            72004
+          ],
+          "observedHeapAfterBytes": [
+            17550344,
+            21278432,
+            19131216
+          ]
+        },
+        "legacy": {
+          "workload": "ieee-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 498299
+          },
+          "queryWork": 367209,
+          "queryWallMs": [
+            18.028,
+            7.316,
+            4.447
+          ],
+          "totalWallMs": [
+            51.72,
+            15.58,
+            10.833
+          ],
+          "peakRssKiB": [
+            66072,
+            75192,
+            79544
+          ],
+          "observedHeapAfterBytes": [
+            17563552,
+            21278504,
+            19116376
+          ]
+        },
+        "previous": {
+          "workload": "ieee-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 498299
+          },
+          "queryWork": 367209,
+          "queryWallMs": [
+            18.605,
+            5.283,
+            5.493
+          ],
+          "totalWallMs": [
+            52.98,
+            14.4,
+            10.364
+          ],
+          "peakRssKiB": [
+            65392,
+            67696,
+            69636
+          ],
+          "observedHeapAfterBytes": [
+            17511880,
+            21257968,
+            19094840
+          ]
+        },
+        "diagnostic": {
+          "workload": "ieee-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 498299
+          },
+          "queryWork": 367209,
+          "queryWallMs": [
+            17.983,
+            6.475,
+            4.997
+          ],
+          "totalWallMs": [
+            49.353,
+            14.604,
+            13.247
+          ],
+          "peakRssKiB": [
+            66836,
+            70036,
+            74180
+          ],
+          "observedHeapAfterBytes": [
+            18173240,
+            21497752,
+            19072336
+          ]
+        }
+      }
+    },
+    {
+      "workload": "calendar-bound",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "calendar-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 7125081
+          },
+          "queryWork": 6994000,
+          "queryWallMs": [
+            116.099,
+            86.009,
+            77.092
+          ],
+          "totalWallMs": [
+            153.134,
+            90.667,
+            82.34
+          ],
+          "peakRssKiB": [
+            86184,
+            98472,
+            109936
+          ],
+          "observedHeapAfterBytes": [
+            18670200,
+            29408640,
+            33033152
+          ]
+        },
+        "legacy": {
+          "workload": "calendar-bound",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 16,
+            "work": 999952
+          },
+          "queryWork": 868871,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            38.498,
+            26.248,
+            24.837
+          ],
+          "totalWallMs": [
+            74.304,
+            32.959,
+            30.117
+          ],
+          "peakRssKiB": [
+            73572,
+            76928,
+            77284
+          ],
+          "observedHeapAfterBytes": [
+            17357096,
+            21401816,
+            24368376
+          ]
+        },
+        "previous": {
+          "workload": "calendar-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 7125081
+          },
+          "queryWork": 6994000,
+          "queryWallMs": [
+            99.632,
+            114.51,
+            73.21
+          ],
+          "totalWallMs": [
+            132.887,
+            122.332,
+            77.811
+          ],
+          "peakRssKiB": [
+            99504,
+            109452,
+            115352
+          ],
+          "observedHeapAfterBytes": [
+            19621936,
+            22901392,
+            25171296
+          ]
+        },
+        "diagnostic": {
+          "workload": "calendar-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 7125081
+          },
+          "queryWork": 6994000,
+          "queryWallMs": [
+            121.162,
+            112.076,
+            74.982
+          ],
+          "totalWallMs": [
+            151.994,
+            121.302,
+            80.549
+          ],
+          "peakRssKiB": [
+            90652,
+            107524,
+            115624
+          ],
+          "observedHeapAfterBytes": [
+            19047520,
+            29467560,
+            32569448
+          ]
+        }
+      }
+    },
+    {
+      "workload": "calendar-alias",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "calendar-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 343985
+          },
+          "queryWork": 212752,
+          "queryWallMs": [
+            21.987,
+            14.663,
+            7.187
+          ],
+          "totalWallMs": [
+            59.543,
+            25.603,
+            17.598
+          ],
+          "peakRssKiB": [
+            66816,
+            74844,
+            79452
+          ],
+          "observedHeapAfterBytes": [
+            22433104,
+            15786600,
+            17151152
+          ]
+        },
+        "legacy": {
+          "workload": "calendar-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 343985
+          },
+          "queryWork": 212752,
+          "queryWallMs": [
+            37.033,
+            14.501,
+            6.832
+          ],
+          "totalWallMs": [
+            71.415,
+            23.595,
+            12.407
+          ],
+          "peakRssKiB": [
+            70876,
+            78184,
+            79080
+          ],
+          "observedHeapAfterBytes": [
+            22246928,
+            15904904,
+            17167056
+          ]
+        },
+        "previous": {
+          "workload": "calendar-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 343985
+          },
+          "queryWork": 212752,
+          "queryWallMs": [
+            32.597,
+            13.778,
+            6.073
+          ],
+          "totalWallMs": [
+            68.172,
+            19.88,
+            11.335
+          ],
+          "peakRssKiB": [
+            70188,
+            76428,
+            77580
+          ],
+          "observedHeapAfterBytes": [
+            14252824,
+            15973336,
+            17385312
+          ]
+        },
+        "diagnostic": {
+          "workload": "calendar-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 343985
+          },
+          "queryWork": 212752,
+          "queryWallMs": [
+            35.743,
+            19.453,
+            10.449
+          ],
+          "totalWallMs": [
+            103.975,
+            26.881,
+            16.518
+          ],
+          "peakRssKiB": [
+            70620,
+            77616,
+            78768
+          ],
+          "observedHeapAfterBytes": [
+            22850544,
+            15966072,
+            17578384
+          ]
+        }
+      }
+    },
+    {
+      "workload": "duration-bound",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "duration-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 2339392
+          },
+          "queryWork": 2208577,
+          "queryWallMs": [
+            54.381,
+            29.483,
+            21.087
+          ],
+          "totalWallMs": [
+            87.692,
+            37.532,
+            26.268
+          ],
+          "peakRssKiB": [
+            96108,
+            96108,
+            96108
+          ],
+          "observedHeapAfterBytes": [
+            19898680,
+            17968072,
+            21751096
+          ]
+        },
+        "legacy": {
+          "workload": "duration-bound",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 16,
+            "work": 999975
+          },
+          "queryWork": 869160,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            25.771,
+            16.828,
+            7.561
+          ],
+          "totalWallMs": [
+            62.369,
+            23.979,
+            16.541
+          ],
+          "peakRssKiB": [
+            72744,
+            78308,
+            84196
+          ],
+          "observedHeapAfterBytes": [
+            21376184,
+            22637088,
+            23340152
+          ]
+        },
+        "previous": {
+          "workload": "duration-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 2339392
+          },
+          "queryWork": 2208577,
+          "queryWallMs": [
+            46.093,
+            31.406,
+            18.058
+          ],
+          "totalWallMs": [
+            81.871,
+            37.104,
+            27.217
+          ],
+          "peakRssKiB": [
+            90096,
+            95728,
+            95728
+          ],
+          "observedHeapAfterBytes": [
+            19975456,
+            18171176,
+            21499912
+          ]
+        },
+        "diagnostic": {
+          "workload": "duration-bound",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 2339392
+          },
+          "queryWork": 2208577,
+          "queryWallMs": [
+            63.01,
+            34.24,
+            26.958
+          ],
+          "totalWallMs": [
+            111.171,
+            40.475,
+            34.059
+          ],
+          "peakRssKiB": [
+            96808,
+            98504,
+            98504
+          ],
+          "observedHeapAfterBytes": [
+            20235952,
+            18243008,
+            21727176
+          ]
+        }
+      }
+    },
+    {
+      "workload": "duration-alias",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "duration-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 254733
+          },
+          "queryWork": 123650,
+          "queryWallMs": [
+            22.149,
+            7.715,
+            6.199
+          ],
+          "totalWallMs": [
+            71.584,
+            18.774,
+            12.268
+          ],
+          "peakRssKiB": [
+            63272,
+            70056,
+            75048
+          ],
+          "observedHeapAfterBytes": [
+            17511000,
+            22105536,
+            20341136
+          ]
+        },
+        "legacy": {
+          "workload": "duration-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 254733
+          },
+          "queryWork": 123650,
+          "queryWallMs": [
+            24.246,
+            8.182,
+            4.08
+          ],
+          "totalWallMs": [
+            65.076,
+            17.915,
+            8.781
+          ],
+          "peakRssKiB": [
+            61936,
+            67312,
+            70600
+          ],
+          "observedHeapAfterBytes": [
+            18201248,
+            22114984,
+            19480520
+          ]
+        },
+        "previous": {
+          "workload": "duration-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 254733
+          },
+          "queryWork": 123650,
+          "queryWallMs": [
+            15.855,
+            6.68,
+            4.268
+          ],
+          "totalWallMs": [
+            46.808,
+            12.675,
+            9.874
+          ],
+          "peakRssKiB": [
+            59476,
+            67540,
+            70472
+          ],
+          "observedHeapAfterBytes": [
+            17863368,
+            22096728,
+            19517480
+          ]
+        },
+        "diagnostic": {
+          "workload": "duration-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 254733
+          },
+          "queryWork": 123650,
+          "queryWallMs": [
+            23.152,
+            7.613,
+            3.972
+          ],
+          "totalWallMs": [
+            77.204,
+            14.18,
+            10.031
+          ],
+          "peakRssKiB": [
+            61096,
+            68776,
+            69764
+          ],
+          "observedHeapAfterBytes": [
+            17731608,
+            22096704,
+            19610496
+          ]
+        }
+      }
+    },
+    {
+      "workload": "qname-alias",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "qname-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 173090
+          },
+          "queryWork": 42031,
+          "queryWallMs": [
+            9.681,
+            1.925,
+            2.306
+          ],
+          "totalWallMs": [
+            60.887,
+            8.082,
+            6.852
+          ],
+          "peakRssKiB": [
+            59708,
+            60220,
+            60604
+          ],
+          "observedHeapAfterBytes": [
+            14659928,
+            16523680,
+            18160656
+          ]
+        },
+        "legacy": {
+          "workload": "qname-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 173090
+          },
+          "queryWork": 42031,
+          "queryWallMs": [
+            11.61,
+            3.233,
+            1.916
+          ],
+          "totalWallMs": [
+            52.501,
+            9.657,
+            5.904
+          ],
+          "peakRssKiB": [
+            59680,
+            60320,
+            60704
+          ],
+          "observedHeapAfterBytes": [
+            14687792,
+            16555600,
+            18188216
+          ]
+        },
+        "previous": {
+          "workload": "qname-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 173090
+          },
+          "queryWork": 42031,
+          "queryWallMs": [
+            7.976,
+            1.569,
+            1.554
+          ],
+          "totalWallMs": [
+            40.792,
+            6.049,
+            6.076
+          ],
+          "peakRssKiB": [
+            58316,
+            58316,
+            58316
+          ],
+          "observedHeapAfterBytes": [
+            14670792,
+            16531920,
+            18168872
+          ]
+        },
+        "diagnostic": {
+          "workload": "qname-alias",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 16,
+            "work": 173090
+          },
+          "queryWork": 42031,
+          "queryWallMs": [
+            9.076,
+            3.209,
+            4.008
+          ],
+          "totalWallMs": [
+            88.27,
+            13.337,
+            11.873
+          ],
+          "peakRssKiB": [
+            59684,
+            60196,
+            60708
+          ],
+          "observedHeapAfterBytes": [
+            14658840,
+            16520960,
+            18170288
+          ]
+        }
+      }
+    },
+    {
+      "workload": "base64-shadow",
+      "expected": "invalid-schema",
+      "profiles": {
+        "default": {
+          "workload": "base64-shadow",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 21,
+            "work": 4286416
+          },
+          "queryWork": 4107452,
+          "queryWallMs": [
+            119.861,
+            94.346,
+            59.196
+          ],
+          "totalWallMs": [
+            167.99,
+            106.002,
+            64.177
+          ],
+          "peakRssKiB": [
+            99624,
+            114424,
+            117100
+          ],
+          "observedHeapAfterBytes": [
+            25764680,
+            27300544,
+            30190976
+          ]
+        },
+        "legacy": {
+          "workload": "base64-shadow",
+          "expected": "invalid-schema",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 21,
+            "work": 987438
+          },
+          "queryWork": 808474,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            50.16,
+            21.01,
+            21.126
+          ],
+          "totalWallMs": [
+            92.845,
+            29.43,
+            25.317
+          ],
+          "peakRssKiB": [
+            78968,
+            83496,
+            83496
+          ],
+          "observedHeapAfterBytes": [
+            19710664,
+            17713592,
+            22816480
+          ]
+        },
+        "previous": {
+          "workload": "base64-shadow",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 21,
+            "work": 4286416
+          },
+          "queryWork": 4107452,
+          "queryWallMs": [
+            112.714,
+            80.933,
+            47.143
+          ],
+          "totalWallMs": [
+            146.035,
+            89.253,
+            51.486
+          ],
+          "peakRssKiB": [
+            98300,
+            119472,
+            127168
+          ],
+          "observedHeapAfterBytes": [
+            18037440,
+            25077208,
+            27773848
+          ]
+        },
+        "diagnostic": {
+          "workload": "base64-shadow",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 21,
+            "work": 4286416
+          },
+          "queryWork": 4107452,
+          "queryWallMs": [
+            141.211,
+            93.157,
+            83.567
+          ],
+          "totalWallMs": [
+            193.524,
+            103.876,
+            89.248
+          ],
+          "peakRssKiB": [
+            93576,
+            103380,
+            109360
+          ],
+          "observedHeapAfterBytes": [
+            25615608,
+            24961072,
+            27830080
+          ]
+        }
+      }
+    },
+    {
+      "workload": "base64-exponent-embedding",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "base64-exponent-embedding",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 21,
+            "work": 6787644
+          },
+          "queryWork": 6608665,
+          "queryWallMs": [
+            154.282,
+            112.076,
+            68.453
+          ],
+          "totalWallMs": [
+            185.569,
+            117.845,
+            73.209
+          ],
+          "peakRssKiB": [
+            89292,
+            113268,
+            118376
+          ],
+          "observedHeapAfterBytes": [
+            23700968,
+            39959920,
+            35472848
+          ]
+        },
+        "legacy": {
+          "workload": "base64-exponent-embedding",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 21,
+            "work": 999993
+          },
+          "queryWork": 821014,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            50.136,
+            27.437,
+            24.296
+          ],
+          "totalWallMs": [
+            90.232,
+            34.793,
+            32.774
+          ],
+          "peakRssKiB": [
+            77892,
+            87748,
+            87748
+          ],
+          "observedHeapAfterBytes": [
+            21404528,
+            21335584,
+            17738104
+          ]
+        },
+        "previous": {
+          "workload": "base64-exponent-embedding",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 21,
+            "work": 6787644
+          },
+          "queryWork": 6608665,
+          "queryWallMs": [
+            152.297,
+            107.798,
+            84.875
+          ],
+          "totalWallMs": [
+            185.547,
+            116.171,
+            92.788
+          ],
+          "peakRssKiB": [
+            85424,
+            107908,
+            110516
+          ],
+          "observedHeapAfterBytes": [
+            23515896,
+            35516096,
+            41769960
+          ]
+        },
+        "diagnostic": {
+          "workload": "base64-exponent-embedding",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 21,
+            "work": 6787644
+          },
+          "queryWork": 6608665,
+          "queryWallMs": [
+            180.748,
+            162.051,
+            90.772
+          ],
+          "totalWallMs": [
+            244.142,
+            172.737,
+            94.836
+          ],
+          "peakRssKiB": [
+            89368,
+            113596,
+            115092
+          ],
+          "observedHeapAfterBytes": [
+            23777656,
+            26550896,
+            44397016
+          ]
+        }
+      }
+    },
+    {
+      "workload": "list-decimal-string",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "list-decimal-string",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 18,
+            "work": 1150647
+          },
+          "queryWork": 1001056,
+          "queryWallMs": [
+            62.986,
+            43.912,
+            26.798
+          ],
+          "totalWallMs": [
+            98.317,
+            51.3,
+            35.865
+          ],
+          "peakRssKiB": [
+            98528,
+            98528,
+            98528
+          ],
+          "observedHeapAfterBytes": [
+            19565392,
+            24351856,
+            19198496
+          ]
+        },
+        "legacy": {
+          "workload": "list-decimal-string",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 18,
+            "work": 1000000
+          },
+          "queryWork": 850409,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            56.9,
+            37.243,
+            17.916
+          ],
+          "totalWallMs": [
+            96.718,
+            44.271,
+            26.108
+          ],
+          "peakRssKiB": [
+            97388,
+            97388,
+            97388
+          ],
+          "observedHeapAfterBytes": [
+            20925056,
+            19587384,
+            23431480
+          ]
+        },
+        "previous": {
+          "workload": "list-decimal-string",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 18,
+            "work": 1150647
+          },
+          "queryWork": 1001056,
+          "queryWallMs": [
+            58.226,
+            34.145,
+            20.764
+          ],
+          "totalWallMs": [
+            92.02,
+            39.273,
+            26.116
+          ],
+          "peakRssKiB": [
+            87652,
+            87776,
+            88856
+          ],
+          "observedHeapAfterBytes": [
+            19434168,
+            24243208,
+            19190536
+          ]
+        },
+        "diagnostic": {
+          "workload": "list-decimal-string",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 18,
+            "work": 1150647
+          },
+          "queryWork": 1001056,
+          "queryWallMs": [
+            56.233,
+            36.101,
+            20.538
+          ],
+          "totalWallMs": [
+            89.089,
+            41.437,
+            26.021
+          ],
+          "peakRssKiB": [
+            97944,
+            97944,
+            97944
+          ],
+          "observedHeapAfterBytes": [
+            19355648,
+            24022112,
+            19150528
+          ]
+        }
+      }
+    },
+    {
+      "workload": "list-decimal-ieee",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "list-decimal-ieee",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 20,
+            "work": 1537894
+          },
+          "queryWork": 1368318,
+          "queryWallMs": [
+            71.667,
+            43.3,
+            34.235
+          ],
+          "totalWallMs": [
+            106.283,
+            54.996,
+            38.276
+          ],
+          "peakRssKiB": [
+            89792,
+            92008,
+            92008
+          ],
+          "observedHeapAfterBytes": [
+            17391568,
+            19541768,
+            20407936
+          ]
+        },
+        "legacy": {
+          "workload": "list-decimal-ieee",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 20,
+            "work": 1000000
+          },
+          "queryWork": 830424,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            61.252,
+            29.901,
+            21.759
+          ],
+          "totalWallMs": [
+            103.141,
+            37.794,
+            27.239
+          ],
+          "peakRssKiB": [
+            97388,
+            97388,
+            97388
+          ],
+          "observedHeapAfterBytes": [
+            16122288,
+            18024008,
+            25573208
+          ]
+        },
+        "previous": {
+          "workload": "list-decimal-ieee",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 20,
+            "work": 1537894
+          },
+          "queryWork": 1368318,
+          "queryWallMs": [
+            71.612,
+            61.19,
+            31.885
+          ],
+          "totalWallMs": [
+            106.478,
+            73.158,
+            40.075
+          ],
+          "peakRssKiB": [
+            79476,
+            88680,
+            88680
+          ],
+          "observedHeapAfterBytes": [
+            17132176,
+            19549608,
+            20651120
+          ]
+        },
+        "diagnostic": {
+          "workload": "list-decimal-ieee",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 20,
+            "work": 1537894
+          },
+          "queryWork": 1368318,
+          "queryWallMs": [
+            68.173,
+            50.536,
+            30.11
+          ],
+          "totalWallMs": [
+            106.205,
+            60.764,
+            35.065
+          ],
+          "peakRssKiB": [
+            99440,
+            102960,
+            102960
+          ],
+          "observedHeapAfterBytes": [
+            17319040,
+            19312120,
+            20309056
+          ]
+        }
+      }
+    },
+    {
+      "workload": "list-double-widening",
+      "expected": "invalid-schema",
+      "profiles": {
+        "default": {
+          "workload": "list-double-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 20,
+            "work": 4818079
+          },
+          "queryWork": 4648536,
+          "queryWallMs": [
+            56.396,
+            32.95,
+            26.25
+          ],
+          "totalWallMs": [
+            88.216,
+            41.075,
+            30.876
+          ],
+          "peakRssKiB": [
+            89292,
+            93680,
+            94368
+          ],
+          "observedHeapAfterBytes": [
+            17644752,
+            20699480,
+            19363224
+          ]
+        },
+        "legacy": {
+          "workload": "list-double-widening",
+          "expected": "invalid-schema",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 20,
+            "work": 954944
+          },
+          "queryWork": 785401,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            53.739,
+            32.812,
+            20.705
+          ],
+          "totalWallMs": [
+            93.055,
+            48.525,
+            26.739
+          ],
+          "peakRssKiB": [
+            97268,
+            105552,
+            105676
+          ],
+          "observedHeapAfterBytes": [
+            21827544,
+            22963264,
+            20626456
+          ]
+        },
+        "previous": {
+          "workload": "list-double-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 20,
+            "work": 4818079
+          },
+          "queryWork": 4648536,
+          "queryWallMs": [
+            62.161,
+            46.033,
+            31.859
+          ],
+          "totalWallMs": [
+            98.034,
+            53.946,
+            43.68
+          ],
+          "peakRssKiB": [
+            87568,
+            87568,
+            98012
+          ],
+          "observedHeapAfterBytes": [
+            17511680,
+            20469432,
+            19180344
+          ]
+        },
+        "diagnostic": {
+          "workload": "list-double-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 20,
+            "work": 4818079
+          },
+          "queryWork": 4648536,
+          "queryWallMs": [
+            50.815,
+            30.943,
+            22.371
+          ],
+          "totalWallMs": [
+            86.049,
+            37.731,
+            26.501
+          ],
+          "peakRssKiB": [
+            81568,
+            91240,
+            94584
+          ],
+          "observedHeapAfterBytes": [
+            17587520,
+            20470432,
+            19063768
+          ]
+        }
+      }
+    },
+    {
+      "workload": "string-negative-exponent-positive",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "string-negative-exponent-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 21,
+            "work": 3690866
+          },
+          "queryWork": 3511872,
+          "queryWallMs": [
+            136.916,
+            95.126,
+            55.678
+          ],
+          "totalWallMs": [
+            174.845,
+            101.4,
+            62.479
+          ],
+          "peakRssKiB": [
+            85136,
+            96324,
+            106580
+          ],
+          "observedHeapAfterBytes": [
+            18487552,
+            32430848,
+            26367824
+          ]
+        },
+        "legacy": {
+          "workload": "string-negative-exponent-positive",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 21,
+            "work": 1000000
+          },
+          "queryWork": 821006,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            51.277,
+            24.868,
+            19.159
+          ],
+          "totalWallMs": [
+            89.837,
+            30.263,
+            25.041
+          ],
+          "peakRssKiB": [
+            80008,
+            80528,
+            80528
+          ],
+          "observedHeapAfterBytes": [
+            21576216,
+            20739992,
+            18222536
+          ]
+        },
+        "previous": {
+          "workload": "string-negative-exponent-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 21,
+            "work": 3690866
+          },
+          "queryWork": 3511872,
+          "queryWallMs": [
+            150.709,
+            86.898,
+            62.102
+          ],
+          "totalWallMs": [
+            184.37,
+            93.47,
+            67.66
+          ],
+          "peakRssKiB": [
+            88808,
+            101948,
+            108476
+          ],
+          "observedHeapAfterBytes": [
+            23172712,
+            30389040,
+            38390168
+          ]
+        },
+        "diagnostic": {
+          "workload": "string-negative-exponent-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 21,
+            "work": 3690866
+          },
+          "queryWork": 3511872,
+          "queryWallMs": [
+            120.085,
+            77.501,
+            58.165
+          ],
+          "totalWallMs": [
+            150.788,
+            83.525,
+            63.656
+          ],
+          "peakRssKiB": [
+            93036,
+            107696,
+            116788
+          ],
+          "observedHeapAfterBytes": [
+            22993200,
+            32008520,
+            24956912
+          ]
+        }
+      }
+    },
+    {
+      "workload": "float-double-positive",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "float-double-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 19,
+            "work": 5184789
+          },
+          "queryWork": 5025307,
+          "queryWallMs": [
+            121.947,
+            97.295,
+            50.362
+          ],
+          "totalWallMs": [
+            159.519,
+            103.501,
+            54.509
+          ],
+          "peakRssKiB": [
+            89636,
+            104800,
+            106436
+          ],
+          "observedHeapAfterBytes": [
+            23509112,
+            24899592,
+            38202488
+          ]
+        },
+        "legacy": {
+          "workload": "float-double-positive",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 19,
+            "work": 994952
+          },
+          "queryWork": 835470,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            41.95,
+            17.935,
+            16.294
+          ],
+          "totalWallMs": [
+            81.487,
+            27.713,
+            20.705
+          ],
+          "peakRssKiB": [
+            89288,
+            94152,
+            94152
+          ],
+          "observedHeapAfterBytes": [
+            17867496,
+            21665936,
+            25075296
+          ]
+        },
+        "previous": {
+          "workload": "float-double-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 19,
+            "work": 5184789
+          },
+          "queryWork": 5025307,
+          "queryWallMs": [
+            125.915,
+            104.258,
+            79.583
+          ],
+          "totalWallMs": [
+            165.037,
+            110.817,
+            84.916
+          ],
+          "peakRssKiB": [
+            97412,
+            112812,
+            118376
+          ],
+          "observedHeapAfterBytes": [
+            23402392,
+            36744832,
+            25735760
+          ]
+        },
+        "diagnostic": {
+          "workload": "float-double-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 19,
+            "work": 5184789
+          },
+          "queryWork": 5025307,
+          "queryWallMs": [
+            124.639,
+            91.914,
+            48.701
+          ],
+          "totalWallMs": [
+            155.051,
+            98.432,
+            53.388
+          ],
+          "peakRssKiB": [
+            90612,
+            117620,
+            117620
+          ],
+          "observedHeapAfterBytes": [
+            23202104,
+            35527976,
+            33856856
+          ]
+        }
+      }
+    },
+    {
+      "workload": "float-double-widening",
+      "expected": "invalid-schema",
+      "profiles": {
+        "default": {
+          "workload": "float-double-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 19,
+            "work": 8342591
+          },
+          "queryWork": 8184781,
+          "queryWallMs": [
+            103.31,
+            91.267,
+            49.488
+          ],
+          "totalWallMs": [
+            140.385,
+            101.271,
+            56.334
+          ],
+          "peakRssKiB": [
+            98392,
+            123616,
+            129896
+          ],
+          "observedHeapAfterBytes": [
+            25627040,
+            37070208,
+            37172440
+          ]
+        },
+        "legacy": {
+          "workload": "float-double-widening",
+          "expected": "invalid-schema",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 19,
+            "work": 879408
+          },
+          "queryWork": 721598,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            30.702,
+            12.486,
+            7.334
+          ],
+          "totalWallMs": [
+            61.924,
+            19.279,
+            15.316
+          ],
+          "peakRssKiB": [
+            76452,
+            76452,
+            78108
+          ],
+          "observedHeapAfterBytes": [
+            21591920,
+            22702504,
+            23463392
+          ]
+        },
+        "previous": {
+          "workload": "float-double-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 19,
+            "work": 8342591
+          },
+          "queryWork": 8184781,
+          "queryWallMs": [
+            96.988,
+            70.882,
+            54.385
+          ],
+          "totalWallMs": [
+            128.664,
+            78.387,
+            59.965
+          ],
+          "peakRssKiB": [
+            96560,
+            114136,
+            123536
+          ],
+          "observedHeapAfterBytes": [
+            25927800,
+            40345120,
+            41258568
+          ]
+        },
+        "diagnostic": {
+          "workload": "float-double-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 19,
+            "work": 8342591
+          },
+          "queryWork": 8184781,
+          "queryWallMs": [
+            96.924,
+            62.882,
+            48.364
+          ],
+          "totalWallMs": [
+            130.858,
+            69.699,
+            52.315
+          ],
+          "peakRssKiB": [
+            84752,
+            106120,
+            118240
+          ],
+          "observedHeapAfterBytes": [
+            23849632,
+            34779624,
+            36804712
+          ]
+        }
+      }
+    },
+    {
+      "workload": "double-float-positive",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "double-float-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 19,
+            "work": 63778263
+          },
+          "queryWork": 63618788,
+          "queryWallMs": [
+            115.196,
+            118.347,
+            70.999
+          ],
+          "totalWallMs": [
+            151.148,
+            125.547,
+            80.078
+          ],
+          "peakRssKiB": [
+            96296,
+            105956,
+            105956
+          ],
+          "observedHeapAfterBytes": [
+            22666432,
+            27553808,
+            25694656
+          ]
+        },
+        "legacy": {
+          "workload": "double-float-positive",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 19,
+            "work": 656147
+          },
+          "queryWork": 496672,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            18.638,
+            5.193,
+            3.737
+          ],
+          "totalWallMs": [
+            54.195,
+            11.078,
+            8.467
+          ],
+          "peakRssKiB": [
+            59328,
+            60580,
+            64164
+          ],
+          "observedHeapAfterBytes": [
+            16167376,
+            19083464,
+            21709496
+          ]
+        },
+        "previous": {
+          "workload": "double-float-positive",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 19,
+            "work": 24999999
+          },
+          "queryWork": 24840524,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            55.999,
+            38.364,
+            19.504
+          ],
+          "totalWallMs": [
+            119.048,
+            46.779,
+            27.366
+          ],
+          "peakRssKiB": [
+            91972,
+            91972,
+            91972
+          ],
+          "observedHeapAfterBytes": [
+            18175512,
+            22623880,
+            25840552
+          ]
+        },
+        "diagnostic": {
+          "workload": "double-float-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 19,
+            "work": 63778263
+          },
+          "queryWork": 63618788,
+          "queryWallMs": [
+            121.349,
+            118.302,
+            46.71
+          ],
+          "totalWallMs": [
+            153.262,
+            128.524,
+            50.598
+          ],
+          "peakRssKiB": [
+            88992,
+            100428,
+            100428
+          ],
+          "observedHeapAfterBytes": [
+            17762280,
+            22202840,
+            35528656
+          ]
+        }
+      }
+    },
+    {
+      "workload": "double-float-widening",
+      "expected": "invalid-schema",
+      "profiles": {
+        "default": {
+          "workload": "double-float-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 19,
+            "work": 54652769
+          },
+          "queryWork": 54494966,
+          "queryWallMs": [
+            140.322,
+            107.368,
+            56.368
+          ],
+          "totalWallMs": [
+            190.083,
+            116.321,
+            60.406
+          ],
+          "peakRssKiB": [
+            89424,
+            110276,
+            110276
+          ],
+          "observedHeapAfterBytes": [
+            22703288,
+            29127144,
+            42648840
+          ]
+        },
+        "legacy": {
+          "workload": "double-float-widening",
+          "expected": "invalid-schema",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 19,
+            "work": 636452
+          },
+          "queryWork": 478649,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            15.849,
+            3.269,
+            4.02
+          ],
+          "totalWallMs": [
+            49.057,
+            8.922,
+            8.436
+          ],
+          "peakRssKiB": [
+            59828,
+            60468,
+            62644
+          ],
+          "observedHeapAfterBytes": [
+            15690888,
+            18050760,
+            20347880
+          ]
+        },
+        "previous": {
+          "workload": "double-float-widening",
+          "expected": "invalid-schema",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 19,
+            "work": 24620886
+          },
+          "queryWork": 24463083,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            76.951,
+            61.425,
+            31.782
+          ],
+          "totalWallMs": [
+            113.219,
+            68.528,
+            36.368
+          ],
+          "peakRssKiB": [
+            82160,
+            88228,
+            88228
+          ],
+          "observedHeapAfterBytes": [
+            17681528,
+            19117128,
+            27701416
+          ]
+        },
+        "diagnostic": {
+          "workload": "double-float-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 19,
+            "work": 54652769
+          },
+          "queryWork": 54494966,
+          "queryWallMs": [
+            131.601,
+            93.457,
+            51.694
+          ],
+          "totalWallMs": [
+            162.833,
+            100.003,
+            153.335
+          ],
+          "peakRssKiB": [
+            95056,
+            111340,
+            114412
+          ],
+          "observedHeapAfterBytes": [
+            21647360,
+            33093304,
+            31895224
+          ]
+        }
+      }
+    },
+    {
+      "workload": "string-negative-exponent-widening",
+      "expected": "invalid-schema",
+      "profiles": {
+        "default": {
+          "workload": "string-negative-exponent-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 21,
+            "work": 5236136
+          },
+          "queryWork": 5057188,
+          "queryWallMs": [
+            115.677,
+            98.366,
+            68.543
+          ],
+          "totalWallMs": [
+            151.467,
+            108.223,
+            73.122
+          ],
+          "peakRssKiB": [
+            84044,
+            107660,
+            110736
+          ],
+          "observedHeapAfterBytes": [
+            22433696,
+            27619480,
+            39994160
+          ]
+        },
+        "legacy": {
+          "workload": "string-negative-exponent-widening",
+          "expected": "invalid-schema",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 21,
+            "work": 999991
+          },
+          "queryWork": 821043,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            52.856,
+            23.912,
+            15.54
+          ],
+          "totalWallMs": [
+            92.976,
+            29.358,
+            19.829
+          ],
+          "peakRssKiB": [
+            82848,
+            83928,
+            83928
+          ],
+          "observedHeapAfterBytes": [
+            19943872,
+            18102312,
+            22700080
+          ]
+        },
+        "previous": {
+          "workload": "string-negative-exponent-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 21,
+            "work": 5236136
+          },
+          "queryWork": 5057188,
+          "queryWallMs": [
+            115.578,
+            91.493,
+            72.013
+          ],
+          "totalWallMs": [
+            146.96,
+            98.144,
+            78.958
+          ],
+          "peakRssKiB": [
+            83544,
+            117976,
+            120908
+          ],
+          "observedHeapAfterBytes": [
+            22345344,
+            34825704,
+            35039536
+          ]
+        },
+        "diagnostic": {
+          "workload": "string-negative-exponent-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 21,
+            "work": 5236136
+          },
+          "queryWork": 5057188,
+          "queryWallMs": [
+            109.782,
+            80.533,
+            59.152
+          ],
+          "totalWallMs": [
+            150.617,
+            87.112,
+            65.87
+          ],
+          "peakRssKiB": [
+            83416,
+            109140,
+            114196
+          ],
+          "observedHeapAfterBytes": [
+            22732744,
+            28255888,
+            41270408
+          ]
+        }
+      }
+    },
+    {
+      "workload": "uri-negative-exponent-positive",
+      "expected": "checked",
+      "profiles": {
+        "default": {
+          "workload": "uri-negative-exponent-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 21,
+            "work": 73419705
+          },
+          "queryWork": 73240711,
+          "queryWallMs": [
+            423.369,
+            406.575,
+            365.415
+          ],
+          "totalWallMs": [
+            456.253,
+            412.784,
+            375.878
+          ],
+          "peakRssKiB": [
+            116132,
+            161308,
+            163868
+          ],
+          "observedHeapAfterBytes": [
+            39959232,
+            48999416,
+            42090648
+          ]
+        },
+        "legacy": {
+          "workload": "uri-negative-exponent-positive",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 21,
+            "work": 1000000
+          },
+          "queryWork": 821006,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            45.912,
+            28.217,
+            16.315
+          ],
+          "totalWallMs": [
+            78.789,
+            33.983,
+            21.988
+          ],
+          "peakRssKiB": [
+            82880,
+            92948,
+            99220
+          ],
+          "observedHeapAfterBytes": [
+            16518304,
+            19127568,
+            20519728
+          ]
+        },
+        "previous": {
+          "workload": "uri-negative-exponent-positive",
+          "expected": "checked",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 21,
+            "work": 24999150
+          },
+          "queryWork": 24820156,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            276.57,
+            259.962,
+            326.032
+          ],
+          "totalWallMs": [
+            310.719,
+            266.693,
+            336.215
+          ],
+          "peakRssKiB": [
+            102588,
+            146896,
+            154128
+          ],
+          "observedHeapAfterBytes": [
+            38748480,
+            61035688,
+            42412392
+          ]
+        },
+        "diagnostic": {
+          "workload": "uri-negative-exponent-positive",
+          "expected": "checked",
+          "kind": "checked",
+          "usage": {
+            "nodes": 21,
+            "work": 73419705
+          },
+          "queryWork": 73240711,
+          "queryWallMs": [
+            413.226,
+            427.668,
+            421.091
+          ],
+          "totalWallMs": [
+            445.104,
+            433.743,
+            465.456
+          ],
+          "peakRssKiB": [
+            122328,
+            156624,
+            160948
+          ],
+          "observedHeapAfterBytes": [
+            30611456,
+            53255424,
+            27807320
+          ]
+        }
+      }
+    },
+    {
+      "workload": "uri-negative-exponent-widening",
+      "expected": "invalid-schema",
+      "profiles": {
+        "default": {
+          "workload": "uri-negative-exponent-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 21,
+            "work": 79018339
+          },
+          "queryWork": 78839391,
+          "queryWallMs": [
+            578.656,
+            539.975,
+            715.64
+          ],
+          "totalWallMs": [
+            611.349,
+            548.622,
+            726.967
+          ],
+          "peakRssKiB": [
+            118836,
+            167380,
+            217892
+          ],
+          "observedHeapAfterBytes": [
+            31724064,
+            75785736,
+            39264192
+          ]
+        },
+        "legacy": {
+          "workload": "uri-negative-exponent-widening",
+          "expected": "invalid-schema",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 21,
+            "work": 999963
+          },
+          "queryWork": 821015,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            44.308,
+            22.111,
+            14.573
+          ],
+          "totalWallMs": [
+            74.923,
+            32.846,
+            18.576
+          ],
+          "peakRssKiB": [
+            80024,
+            80024,
+            81780
+          ],
+          "observedHeapAfterBytes": [
+            22740552,
+            18203216,
+            19376840
+          ]
+        },
+        "previous": {
+          "workload": "uri-negative-exponent-widening",
+          "expected": "invalid-schema",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 21,
+            "work": 24999527
+          },
+          "queryWork": 24820579,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            317.691,
+            343.821,
+            272.147
+          ],
+          "totalWallMs": [
+            346.618,
+            353.525,
+            279.445
+          ],
+          "peakRssKiB": [
+            116724,
+            163040,
+            184488
+          ],
+          "observedHeapAfterBytes": [
+            35847200,
+            51828464,
+            45409056
+          ]
+        },
+        "diagnostic": {
+          "workload": "uri-negative-exponent-widening",
+          "expected": "invalid-schema",
+          "kind": "invalid-schema",
+          "usage": {
+            "nodes": 21,
+            "work": 79018339
+          },
+          "queryWork": 78839391,
+          "queryWallMs": [
+            520.587,
+            551.173,
+            490.435
+          ],
+          "totalWallMs": [
+            551.01,
+            562.068,
+            498.973
+          ],
+          "peakRssKiB": [
+            121004,
+            171876,
+            221028
+          ],
+          "observedHeapAfterBytes": [
+            38907328,
+            71752576,
+            82821240
+          ]
+        }
+      }
+    },
+    {
+      "workload": "adversarial-pattern",
+      "expected": "resource-limit",
+      "profiles": {
+        "default": {
+          "workload": "adversarial-pattern",
+          "expected": "resource-limit",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 16,
+            "work": 141951
+          },
+          "queryWork": 9953,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            6.761,
+            1.406,
+            0.962
+          ],
+          "totalWallMs": [
+            43.745,
+            7.831,
+            6.244
+          ],
+          "peakRssKiB": [
+            58148,
+            58148,
+            58164
+          ],
+          "observedHeapAfterBytes": [
+            14153416,
+            15850472,
+            17270352
+          ]
+        },
+        "legacy": {
+          "workload": "adversarial-pattern",
+          "expected": "resource-limit",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 16,
+            "work": 141951
+          },
+          "queryWork": 9953,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            5.554,
+            1.222,
+            1.087
+          ],
+          "totalWallMs": [
+            39.554,
+            6.639,
+            5.908
+          ],
+          "peakRssKiB": [
+            60324,
+            60836,
+            61220
+          ],
+          "observedHeapAfterBytes": [
+            14140424,
+            16017024,
+            17001344
+          ]
+        },
+        "previous": {
+          "workload": "adversarial-pattern",
+          "expected": "resource-limit",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 16,
+            "work": 141951
+          },
+          "queryWork": 9953,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            5.926,
+            0.783,
+            0.618
+          ],
+          "totalWallMs": [
+            40.22,
+            5.22,
+            3.905
+          ],
+          "peakRssKiB": [
+            60736,
+            61248,
+            61504
+          ],
+          "observedHeapAfterBytes": [
+            14149000,
+            16008512,
+            17407272
+          ]
+        },
+        "diagnostic": {
+          "workload": "adversarial-pattern",
+          "expected": "resource-limit",
+          "kind": "resource-limit",
+          "usage": {
+            "nodes": 16,
+            "work": 141951
+          },
+          "queryWork": 9953,
+          "stickyExhaustion": true,
+          "queryWallMs": [
+            7.033,
+            1.166,
+            0.666
+          ],
+          "totalWallMs": [
+            40.141,
+            11.345,
+            4.531
+          ],
+          "peakRssKiB": [
+            59396,
+            59396,
+            59508
+          ],
+          "observedHeapAfterBytes": [
+            14147928,
+            15974320,
+            16920496
+          ]
+        }
+      }
+    }
+  ]
+}
