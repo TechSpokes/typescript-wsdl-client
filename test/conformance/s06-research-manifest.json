@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "d08978ed2628fd40646cc07b5163cb6b20f33eff319dec59c6eec038f23e04fe",
+          "sha256": "19d595bbb7b5222276b2d7e9c044ed49ed031979d1034182c5bd0418616aa6c8",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2157,6 +2157,36 @@
           "path": "test/conformance/fixtures/xsd/recovery/finite-proof-parent-observation.xsd",
           "role": "fixture",
           "sha256": "010fe90c2823b0d1671bacc96a2723b69d49345a82e75b39c9d0eaae503a3b31"
+        },
+        {
+          "path": "test/research/re01/fresh-complex-name-type.test.ts",
+          "role": "prototype",
+          "sha256": "aaf1f33a9eeb46d39d1e60ea6be7cda3b50822d73cba9e747a06f033f6f238b4"
+        },
+        {
+          "path": "test/research/re01/helper-membership-vector.test.ts",
+          "role": "prototype",
+          "sha256": "186f9164cad9fd0d05f4dbaaba788da3dfb1a2d71e6379300d9fbc26d010c99f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/fresh-complex-name-type.xsd",
+          "role": "fixture",
+          "sha256": "9c1942e73c28a5707723c18a50cdb457475809bfea76dfecf90c1b22c727b90f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-membership-vector.xsd",
+          "role": "fixture",
+          "sha256": "18de124e4f575685e9553d588cc3cd350a54371e856b3ff8d006a12534551ef4"
+        },
+        {
+          "path": "test/research/re01/anchored-helper-support.test.ts",
+          "role": "prototype",
+          "sha256": "3125fba6c1402fe1cbef31acef438c1aa5a444f2a6d932fb90b76a66dd2f3d4c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/anchored-helper-support.xsd",
+          "role": "fixture",
+          "sha256": "a252d8e8cf294c39eeff00e690387a6cbe0abf3c2adf2450c97c8832bcd89b1d"
         }
       ]
     },

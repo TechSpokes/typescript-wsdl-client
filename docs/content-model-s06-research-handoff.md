@@ -7,6 +7,11 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 The seven recovery packages are accepted at PR #286 main `ad936e02b5a41029a8be8590845dd61c99fec401`, tree `3f0cc238cf42095af3e4ede751b983e916fdacb0`.
 Current AU C1, PW R-240, DT A, GSC1 and P1/F2 semantics and the complete local inventory govern new consumers; earlier implementation statuses below are historical.
 The [standalone RE01 investigation](content-model-s06-re-01.md#independent-helper-reduction-investigation) adds a scoped ancestry contradiction and an affiliation/UPA falsifier of arbitrary child installation, with full witness/evidence adequacy, general negatives and search termination still open.
+The [focused resumption](content-model-s06-re-01.md#fresh-complex-types-at-the-named-particle-comparison) establishes the fresh-complex NameAndTypeOK necessary condition and a complete helper witness that distinguishes two-head membership.
+Pointwise type compression preserving that vector fails, while changed-vector alternative witnesses pass for the empty endpoint.
+An anchored raw-particle construction then makes the vector necessary and refutes no-new-nonprimitive witness selection; its complete two-node certificate still passes in each required context.
+Alternative helper/signature extraction, general evidence adequacy, complete negatives and mathematical termination remain open.
+Each obligation stays in its required context, including inherited fresh roots; preservation across contexts is required only for facts a method transfers or installs.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.

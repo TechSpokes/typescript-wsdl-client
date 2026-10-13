@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:helper-membership" targetNamespace="urn:recovery:helper-membership">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="P"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="X"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:element name="Q" type="t:A" block="extension"/>
+  <xs:element name="H" type="t:B" substitutionGroup="t:Q" block="restriction"/>
+  <xs:element name="QP" type="t:P" block="extension"/>
+  <xs:element name="HP" type="t:P" substitutionGroup="t:QP" block="restriction"/>
+</xs:schema>
