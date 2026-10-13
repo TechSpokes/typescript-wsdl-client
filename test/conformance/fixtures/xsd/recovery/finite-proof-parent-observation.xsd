@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:parent-observation" targetNamespace="urn:recovery:parent-observation">
+  <xs:complexType name="A"/>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:element name="H" type="xs:string"/>
+  <xs:complexType name="S"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:simpleType name="U"><xs:union memberTypes="xs:string xs:int"/></xs:simpleType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"><xs:sequence>
+    <xs:element ref="t:H" minOccurs="0"/>
+    <xs:element name="c" type="xs:string" form="qualified" minOccurs="0"/>
+  </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="AnchorHead" type="t:R"/>
+  <xs:element name="AnchorMember" type="t:D" substitutionGroup="t:AnchorHead"/>
+</xs:schema>

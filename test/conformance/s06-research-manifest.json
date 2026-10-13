@@ -23,7 +23,7 @@
         {
           "path": "docs/content-model-s06-au-01.md",
           "role": "decision",
-          "sha256": "8342bf2c49b37cb5784dbca84e0b55d0233eed654b2da3b32e2ecb65d56d50bc",
+          "sha256": "32c520d84be44952cc93ed4ca8a8b5fc99a1b7885b404984d5e54d68625e9599",
           "historical": {
             "path": "docs/content-model-s06-au-01.md",
             "sha256": "025f81da984fa1efdd0dfa98c0e117a47b5c4b0b6f86e8f58dc46d4bb1c65170",
@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "afa9a05b21c9f7902a9aa0c3702671a36c866349588f2040b268396346b06301",
+          "sha256": "d08978ed2628fd40646cc07b5163cb6b20f33eff319dec59c6eec038f23e04fe",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "00e0e793245099dcb698f8b58d0e19a9240d4309a82423ee000d561c5ac5429a"
+          "sha256": "5743f6a3640e5e81dd3476559ddfb704b5d2ed353f228aef4ba1328e57ee2d9c"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1126,7 +1126,7 @@
         {
           "path": "src/compiler/re01CandidateCorrespondence.ts",
           "role": "semantic-source",
-          "sha256": "28634a50d35c245ba91d020cf928785dcbad6bdc79e9c7ec8861f05952d8fe20"
+          "sha256": "8230834311e502cd145258c6aab311f0611cfdc1c5b6fcd391ec9347814b28cd"
         },
         {
           "path": "src/compiler/re01TypeProperties.ts",
@@ -1971,7 +1971,7 @@
         {
           "path": "test/research/re01/inherited-helper-obligation.test.ts",
           "role": "prototype",
-          "sha256": "28b1d9368d2562456684cc0967a4b927c151e3f9c0b5f31ee8cc9367f93d8862"
+          "sha256": "7bdb06ae3e9e023645302ec11b3e9b985821a643ad29e026d91601956ca1f628"
         },
         {
           "path": "test/research/re01/primitive-root-evidence.test.ts",
@@ -2142,6 +2142,21 @@
           "path": "test/research/re01/scalar-capacity-results/diagnostic.json",
           "role": "expectations",
           "sha256": "d513b2472c61243731e43e5e33f20fe4c4f0e823d661400644cfd214c16f49ac"
+        },
+        {
+          "path": "test/research/re01/parent-observation.test.ts",
+          "role": "prototype",
+          "sha256": "645d5c88e4431014167aaed9c737b28b9fd4fef26d40d63a53e616eea1a2f1c8"
+        },
+        {
+          "path": "test/research/re01/ancestry-obstruction.test.ts",
+          "role": "prototype",
+          "sha256": "bae3c88668d5bbeb00110ccff1038e5e6789dbf80e4c91625271c00e21ffdf3c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-parent-observation.xsd",
+          "role": "fixture",
+          "sha256": "010fe90c2823b0d1671bacc96a2723b69d49345a82e75b39c9d0eaae503a3b31"
         }
       ]
     },
@@ -2154,7 +2169,7 @@
         {
           "path": "docs/content-model-s06-pw-01.md",
           "role": "decision",
-          "sha256": "e751ec8d2b8ce2227e0116b522f69eb0254314712cf05210c72ac2c7a58542dd",
+          "sha256": "e322bfe156038a82cfffabf594c67eebfd1fa1093ab22b3329b8e9db090a4c98",
           "historical": {
             "path": "docs/content-model-s06-pw-01.md",
             "sha256": "d812fbb23336074d2b09c09ee0461be631800e1495f81e7cec9ae08b40dd081f",

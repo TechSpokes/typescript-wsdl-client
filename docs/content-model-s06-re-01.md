@@ -283,6 +283,80 @@ npx vitest run test/research/re01/inherited-helper-obligation.test.ts test/resea
 npx tsc -p test/research/re01/tsconfig.json
 ```
 
+### Independent helper-reduction investigation
+
+The October 13 standalone continuation starts from main `ad936e02b5a41029a8be8590845dd61c99fec401`, tree `3f0cc238cf42095af3e4ede751b983e916fdacb0`.
+All seven recovery packages are accepted, including #268's complete local authorities from PR #286.
+Accepted AU C1, PW R-240, DT A, GSC1 and P1/F2 remain premises; source/property qualifications remain explicit, and no local implementation gap supplies the missing universal theorem.
+
+The quantified goal is a total existential decision over `RE01-derivation-B-v1`, including every permitted finite helper construction and its context-specific obligations.
+Finite positive evidence, hereditary witness selection, witness-size coverage, complete negatives and mathematical search termination are separate claims.
+This continuation establishes the following scoped contradiction and transformation counterexample, while leaving the universal claims open.
+
+#### Installing a helper witness does not preserve parent predicates
+
+The [source control](../test/conformance/fixtures/xsd/recovery/finite-proof-parent-observation.xsd) has empty A and its empty restriction R, original H:string, and D extending R with `sequence(H?, local c:string?)`.
+The parent construction uses E extending A with `##any/skip` at `0..unbounded`, and D′ restricting E with its exact original particle.
+The independently specified PW R-240 comparison accepts the complete formal `0..2` range, and the two original particle positions initially have different QNames.
+
+An unrelated fresh F extends original S, whose base is builtin string.
+A successful child rebases F to a restriction of E2 extending anySimpleType and adds fresh global c:string affiliated with H:string.
+F retains the same string content; the affiliation passes by type identity, and all fresh child roots are checked in that child context.
+
+Both finite proof steps succeed in their declared contexts, but D fails `cos-nonambig` when independently checked in the child: H's expansion now includes c and overlaps D's other optional c position.
+The contrast without that fresh affiliate keeps D valid in both contexts.
+The [executable pair](../test/research/re01/parent-observation.test.ts) therefore refutes installing arbitrary child witnesses into a parent without preserving its predicates; it does not refute the existence of different hereditary witnesses or expose a finite-verifier defect.
+
+The child proof is a judgment about F in its exact parent environment, not a replacement legality judgment for the earlier D construction.
+Inherited fresh-root checking cannot transfer an original endpoint's predicates into every descendant context.
+A proposed simultaneous normalization must preserve or recheck those predicates and justify the resulting coherent witness.
+
+#### A terminating contextual ancestry contradiction
+
+Let X be a nonprimitive complex extension in a complete parent environment C with designated ancestor A.
+Suppose an inherited fresh global M has type exactly X and immediately affiliates with H whose type is a distinct complex B.
+M's freshness is relative to immutable actual Γ, so domain B makes it a mandatory legality root in every proposed child, including when M is unused, abstract or blocked from effective substitution.
+
+Assume B is absent from A's unchanged ancestry and B's unchanged immediate edge is not extension to exact A.
+Every permitted nontrivial construction forces `X restriction E extension A` followed by A's fixed ancestry.
+The dated `cos-ct-derived-ok` identity, immediate-base and recursive-chain cases can reach complex B only if B is X, E, or on that ancestry.
+
+B differs from X and is not on the fixed ancestry by premise.
+An existing B cannot be E because its immediate edge is incompatible; a fresh E cannot acquire B's reserved component identity.
+Simple-union alternatives cannot reach the required complex B, so `e-props-correct.4` fails in every such construction regardless of added helpers.
+
+This proves nonexistence only for X's contextual two-step obligation in C.
+It does not establish actual-schema legality, parent-candidate validity, or nonexistence for an original root that may choose another parent witness.
+Primitive no-change, B identical to X, B on A's ancestry, and B itself eligible as E remain explicit exceptions.
+
+[`proveRe01FreshAffiliationObstruction`](../src/compiler/re01CandidateCorrespondence.ts) implements this sufficient criterion through authenticated contexts and the existing ancestor, identity, declared-type and type-relation owners.
+It returns `proved-no-construction` with exact context/target, criterion and offending affiliate/head, or `not-established` when the criterion does not apply; the latter is neither a positive nor a negative answer.
+Missing properties or incomplete universes return named qualifications, and shared exhaustion remains `resource-limit`.
+
+The procedure scans a finite parent universe and uses terminating local relations on its finite acyclic base graph.
+It does not enumerate arbitrary helper extensions, so its negative proof has no helper cap or experimental cutoff premise.
+All accesses and publication use the existing inclusive, precharged, sticky request budget; this finite criterion supplies no general search-termination claim.
+
+#### Proof-to-code map and unresolved full gate
+
+| Claim | Owner/control | Disposition |
+| --- | --- | --- |
+| Parent predicates can change in a successful child | `parent-observation.test.ts` | Independent UPA/PW contrast |
+| Mandatory fresh-affiliate ancestry contradiction | `proveRe01FreshAffiliationObstruction` | Scoped total negative criterion |
+| Existing E, identity, ancestor and primitive exceptions | `ancestry-obstruction.test.ts` | Negatives withheld |
+| Original versus fresh legality roots; simple/union heads | Same ancestry controls | Domain qualifications retained |
+| Inherited helper and valid head contrast | `inherited-helper-obligation.test.ts` | Existing evidence semantics retained |
+| Inclusive publication and sticky exhaustion | Ancestry boundary controls | No partial negative |
+| Arbitrary hereditary witness selection and size | No established theorem | Open #234/#232 blocker |
+
+Blanket helper deletion still fails the raw-all affiliation control; replacing helper types with endpoint types fails restriction blocking; arbitrary child installation fails the new UPA contrast; unconditional rank descent fails successful padding.
+A finite fixed point would need a complete observation quotient with extraction and reconstruction, not component-ID deduplication or accepting an active SCC.
+Fair enumeration remains only a positive semidecision, and the conditional evidence branching bound still leaves witness sizes and general negative termination unbounded.
+
+The full gate therefore remains unmet after independent scrutiny.
+The next proof action is coherent hereditary witness selection that preserves all parent observations, together with an input-derived witness bound, or an equivalent total criterion over the same accepted B domain.
+#179/#153 activation and #184 payload ownership retain their existing boundaries; no profile restriction, policy change or production activation follows from this scoped result.
+
 ### Reviewed primitive no-change proof
 
 The [independently reviewed primitive branch](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6112070199) applies when X directly extends its designated ancestor A and A's base is qualified builtin `anyType`.

@@ -9,7 +9,7 @@ import type {SemanticContext} from '../../../src/compiler/semanticContext.js';
 import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
 import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
-import {re01Ancestor} from '../../../src/compiler/re01CandidateCorrespondence.js';
+import {proveRe01FreshAffiliationObstruction, re01Ancestor} from '../../../src/compiler/re01CandidateCorrespondence.js';
 import type {FiniteRe01Evidence, FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verification.js';
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
 
@@ -112,6 +112,9 @@ describe('inherited fresh component obligations in nested RE01 evidence', () => 
     expect(re01Ancestor(parent, helper)).toMatchObject({kind: 'checked', ancestor: builtin('anySimpleType')});
     expect(parent.rawTypeProperties(named('B'))?.derivation).toEqual({method: 'extension', base: builtin('string')});
     expect(child.rawTypeProperties(named('B'))?.derivation).toEqual(parent.rawTypeProperties(named('B'))?.derivation);
+    expect(proveRe01FreshAffiliationObstruction(request.actual, parent, helper)).toMatchObject({
+      kind: 'proved-no-construction', scope: 'contextual-nonprimitive-two-step', target: helper, affiliate: member,
+    });
     const result = verifyFiniteRe01Evidence(request.actual, target, evidence);
     expect(result).toMatchObject({kind: 'candidate-rejected', rule: 'e-props-correct.4'});
   });
@@ -122,6 +125,7 @@ describe('inherited fresh component obligations in nested RE01 evidence', () => 
     // reach H's immutable builtin type; no circular RE01 premise is needed.
     expect(checkComponentConstruction(parent, member)).toMatchObject({kind: 'checked'});
     expect(checkComponentConstruction(child, member)).toMatchObject({kind: 'checked'});
+    expect(proveRe01FreshAffiliationObstruction(request.actual, parent, named('F'))).toMatchObject({kind: 'not-established'});
     const result = verifyFiniteRe01Evidence(request.actual, target, evidence);
     expect(result).toMatchObject({kind: 'checked-candidate'});
     if (result.kind !== 'checked-candidate') throw new Error(result.kind);

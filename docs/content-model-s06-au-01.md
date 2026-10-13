@@ -17,9 +17,9 @@ Literal extension implements `cos-ct-extends` 1.2's declaration QName/type-ident
 Literal restriction may omit an optional AU and must cover every required base name with a required use.
 An explicit source default on a required use is source-invalid; that XML mapping condition is not invented for a source-independent abstract AU.
 
-The selected source replacement quantifier does not settle duplicate matches in every literal abstract set.
-Where every matching base operand passes, the local raw relation is checked; where none passes it is rejected; mixed outcomes remain `unresolved/raw-au-match-quantifier` until a matching interpretation or authenticated inherited/replacement rule is accepted.
-This preserves the source omission controls below and does not silently select the rejected all-final/all-base alternative.
+The [accepted raw matching interpretation](content-model-s06-re-01.md#selected-raw-matching-implicit-order-and-generated-scalar-properties) selects one compatible base use for a same-name raw restriction match.
+Required-base coverage, requiredness and wildcard obligations remain independent; source replacement retains universal C1 matching.
+The former `raw-au-match-quantifier` qualification is resolved by that selected policy and its accepted local implementation, without selecting the rejected all-final/all-base alternative.
 Raw violations return `candidate-rejected`, with their local rule and original component/source, and cannot become actual-schema invalidity or a universal negative.
 Raw receipts retain aggregate and property-correspondence prerequisites, so their existence is not a complete candidate certificate.
 
