@@ -1,0 +1,22 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:scalar-policy" targetNamespace="urn:recovery:scalar-policy">
+  <xs:simpleType name="Template"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="AB"><xs:restriction base="xs:string"><xs:pattern value="a"/><xs:pattern value="b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ABCopy"><xs:restriction base="xs:string"><xs:pattern value="a"/><xs:pattern value="b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BA"><xs:restriction base="xs:string"><xs:pattern value="b"/><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="AC"><xs:restriction base="xs:string"><xs:pattern value="a"/><xs:pattern value="c"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Duplicate"><xs:restriction base="xs:string"><xs:pattern value="a"/><xs:pattern value="b"/><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Alternating"><xs:restriction base="xs:string"><xs:pattern value="a|b"/><xs:pattern value="(c|d)e"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Nested"><xs:restriction base="xs:string"><xs:pattern value="(a|(b|c)d)"/><xs:pattern value="((e|f)g)"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SingletonAB"><xs:restriction base="xs:string"><xs:pattern value="a|b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SingletonDuplicate"><xs:restriction base="xs:string"><xs:pattern value="a|b|a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SingletonAlternating"><xs:restriction base="xs:string"><xs:pattern value="a|b|(c|d)e"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SingletonNested"><xs:restriction base="xs:string"><xs:pattern value="(a|(b|c)d)|((e|f)g)"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ClassAB"><xs:restriction base="xs:string"><xs:pattern value="[ab]"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OnlyA"><xs:restriction base="xs:string"><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="InheritedAB"><xs:restriction base="t:AB"/></xs:simpleType>
+  <xs:simpleType name="IntersectionA"><xs:restriction base="t:AB"><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OriginalNumber"><xs:restriction base="xs:decimal"><xs:minInclusive value="1"/><xs:maxInclusive value="1"/></xs:restriction></xs:simpleType>
+  <!-- Negative source representation control: exact abstract tuples do not relax XML's single-facet rule. -->
+  <xs:simpleType name="DuplicateScalarSource"><xs:restriction base="xs:string"><xs:minLength value="3"/><xs:minLength value="5"/></xs:restriction></xs:simpleType>
+  <xs:element name="Owner" type="xs:string"/>
+</xs:schema>

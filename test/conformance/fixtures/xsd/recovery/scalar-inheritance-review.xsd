@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:scalar-inheritance-review" targetNamespace="urn:recovery:scalar-inheritance-review">
+  <xs:simpleType name="Template"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="SourceBase"><xs:restriction base="xs:dateTime"/></xs:simpleType>
+  <xs:simpleType name="SourceChild"><xs:restriction base="t:SourceBase"/></xs:simpleType>
+  <xs:simpleType name="FixedBase"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="FixedChild"><xs:restriction base="t:FixedBase"/></xs:simpleType>
+  <xs:simpleType name="FixedReplacement"><xs:restriction base="t:FixedBase"><xs:minLength value="3" fixed="false"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ConflictBase"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="ConflictChild"><xs:restriction base="t:ConflictBase"/></xs:simpleType>
+  <xs:simpleType name="StringBase"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="StringWeaker"><xs:restriction base="t:StringBase"><xs:minLength value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="WeakenBase"><xs:restriction base="xs:string"/></xs:simpleType>
+  <xs:simpleType name="WeakenChild"><xs:restriction base="t:WeakenBase"><xs:minLength value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SourcePartialPair"><xs:restriction base="xs:dateTime"><xs:minInclusive value="2001-01-01T00:00:00"/><xs:maxInclusive value="2001-01-01T00:00:00Z"/></xs:restriction></xs:simpleType>
+  <xs:element name="Owner" type="xs:string"/>
+</xs:schema>

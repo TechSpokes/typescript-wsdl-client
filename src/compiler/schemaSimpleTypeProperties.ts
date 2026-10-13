@@ -13,8 +13,8 @@ export type ScalarFacet = Readonly<{name: string; lexical: LexicalValue; fixed: 
 /** Each layer is a conjunction; its pattern and enumeration entries are alternatives.
  * A nonempty enumeration group denotes one set-valued facet component;
  * a nonempty pattern group denotes one regular-expression branch union.
- * Multiple pattern operands have no inferred canonical expression spelling;
- * independent groups retain an exact mapping prerequisite for comparison.
+ * P1 maps pattern operands to one expression by joining complete operands in
+ * supplied order with |, preserving singleton spelling and duplicate branches.
  * Distinct inherited enumeration components remain present and are matched
  * by typed set equality, without requiring caller construction history.
  * Comparable nonfixed scalar facets normalize to their strongest effective

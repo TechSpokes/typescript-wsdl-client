@@ -96,7 +96,7 @@ describe('exact supplied facet component and annotation evidence',()=>{
     expect(s.correspondence(absent)).toMatchObject({kind:'candidate-rejected',rule:'original-facet-annotation-correspondence'});
   });
 
-  it('retains distinct fixed tuples and source scalar replacement without selecting F1/F2',async()=>{
+  it('retains distinct fixed tuples and source scalar replacement under F2',async()=>{
     const s=await originalSimpleSetup();
     const a=exact(s.raw('MinOne'),[component(s.facet('minLength','3')),component(s.facet('minLength','3',true))]);
     const b=exact(s.raw('MinOne'),[component(s.facet('minLength','3')),component(s.facet('minLength','3'))]);
@@ -113,9 +113,8 @@ describe('exact supplied facet component and annotation evidence',()=>{
       .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'equal'});
     const duplicateFact=compareSchemaFacetProperties(duplicate,named('MinOne'),id('MinOne'),singleton,named('MinOne'),id('MinOne'));
     expect(duplicateFact).toMatchObject({kind:'checked',obligations:[]});
-    const pending=compareSchemaFacetProperties(left,named('MinOne'),id('MinOne'),right,named('MinOne'),id('MinOne'));
-    expect(pending).toMatchObject({kind:'checked',obligations:expect.arrayContaining([
-      expect.objectContaining({rule:'raw-simple-facet-restriction-validity',component:id('MinOne')})])});
+    const compared=compareSchemaFacetProperties(left,named('MinOne'),id('MinOne'),right,named('MinOne'),id('MinOne'));
+    expect(compared).toMatchObject({kind:'checked',obligations:[]});
     expect(compareSchemaFacetProperties(s.request.actual,named('Annotated'),id('Annotated'),
       s.request.actual,named('ReplacedAnnotation'),id('ReplacedAnnotation')))
       .toMatchObject({kind:'checked',value:false,annotationCorrespondence:'different'});
@@ -148,7 +147,7 @@ describe('exact supplied facet component and annotation evidence',()=>{
     expect(compareFacetAnnotation(twoDocuments,swappedDocuments,createSemanticBudget({maxWork:100_000}))).toBe('unresolved');
   });
 
-  it('compares enumeration operands by typed value-set and keeps independent multi-pattern policy open',async()=>{
+  it('compares enumeration operands by typed value-set and patterns by selected P1',async()=>{
     const s=await originalSimpleSetup();
     const qname=(values:readonly string[])=>exact(s.raw('QNameOne',[],{base:builtin('QName')}),
       [{facets:values.map(value=>component(s.facet('enumeration',value)).facets[0]),annotation:'absent'}]);
@@ -160,7 +159,7 @@ describe('exact supplied facet component and annotation evidence',()=>{
       component(s.facet('pattern','b')).facets[0]],annotation:'absent'}]);
     expect(compareSchemaFacetProperties(s.request.actual,named('Multi'),id('Multi'),
       s.overlay([multi],'exact-multi-pattern'),named('Multi'),id('Multi')))
-      .toMatchObject({kind:'unresolved',rule:'pattern-property-equality'});
+      .toMatchObject({kind:'checked',value:true,obligations:[]});
     const strict=(expression:string)=>exact(s.raw('Multi'),[component(s.facet('pattern',expression))]);
     expect(compareSchemaFacetProperties(s.overlay([strict('a  b')],'pattern-spaces-two'),named('Multi'),id('Multi'),
       s.overlay([strict('a b')],'pattern-spaces-one'),named('Multi'),id('Multi')))

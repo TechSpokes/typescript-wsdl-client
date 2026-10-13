@@ -79,9 +79,9 @@ describe('independent original simple property correspondence', () => {
     expect(s.correspondence(s.candidate([raw]))).toMatchObject({kind: changed ? 'candidate-rejected' : 'checked'});
   });
 
-  it('does not discard independently mapped multi-pattern prerequisites', async () => {
+  it('compares independently mapped multi-pattern properties under selected P1', async () => {
     const s = await originalSimpleSetup(), raw = s.raw('Multi', [s.facet('pattern', 'a'), s.facet('pattern', 'b')]);
-    expect(s.correspondence(s.candidate([raw]))).toMatchObject({kind: 'unresolved'});
+    expect(s.correspondence(s.candidate([raw]))).toMatchObject({kind: 'checked'});
   });
 
   it('does not use the particle-extension annotation exemption for original facet preservation', async () => {
