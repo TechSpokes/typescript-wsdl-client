@@ -17,7 +17,8 @@ The complete universal witness theorem remains #234.
 `particleSemanticView.ts` distinguishes authenticated declared views from restriction-normalized comparison views.
 It uses the existing #178 occurrence implementation with the caller's shared budget; it does not replace formal ranges with accepted-count intervals.
 `particleRestriction.ts` implements the specified dispatch and ordered/unmatched mappings, using the shared scalar/type and wildcard owners.
-An implicit substitution set has no established virtual-choice order; comparisons whose ordered mapping depends on that missing order remain unresolved.
+The [accepted implicit-order interpretation](content-model-s06-re-01.md#selected-raw-matching-implicit-order-and-generated-scalar-properties) asks whether some coherent enumeration satisfies the ordered mapping.
+Explicit lists keep their original order, and one implicit head uses one enumeration throughout a root comparison under the shared budget.
 
 `particleExtension.ts` checks the original raw extension relation.
 The same particle identity is a primitive case; a unit sequence with the required recursively equal first member is checked through concrete component properties.

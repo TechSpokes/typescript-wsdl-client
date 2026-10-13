@@ -4,6 +4,10 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The seven recovery packages are accepted at PR #286 main `ad936e02b5a41029a8be8590845dd61c99fec401`, tree `3f0cc238cf42095af3e4ede751b983e916fdacb0`.
+Current AU C1, PW R-240, DT A, GSC1 and P1/F2 semantics and the complete local inventory govern new consumers; earlier implementation statuses below are historical.
+The [standalone RE01 investigation](content-model-s06-re-01.md#independent-helper-reduction-investigation) adds a scoped ancestry contradiction and an affiliation/UPA falsifier of arbitrary child installation, with full witness/evidence adequacy, general negatives and search termination still open.
+
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
 The maintainer subsequently selected [existential raw-AU matching, satisfying implicit-set order and GSC1 generated scalar properties](content-model-s06-re-01.md#selected-raw-matching-implicit-order-and-generated-scalar-properties); their implementation and exact delivery remain subject to local independent acceptance.
@@ -183,7 +187,8 @@ An unresolved research result does not become a new permanent production error c
 
 ## Exactness and budgets
 
-The independently applied semantic defaults remain 100,000 input nodes and 1,000,000 work steps, inclusive.
+Current measured configurable semantic defaults are 100,000 nodes and 125,000,000 work units, inclusive.
+Earlier 1,000,000-work examples retain their historical or explicit regression scope; they do not define the current default.
 Exact finite operands retain arbitrary integers, `unbounded` remains distinct, and zero semantics are preserved.
 Prototype preflight, indexing, fixed points, operand processing and copies must charge before their allocation or execution.
 

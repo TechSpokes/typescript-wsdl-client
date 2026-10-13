@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(re01): prove a scoped fresh-affiliate ancestry obstruction and preserve parent-context predicate countercontrols.
+
 - fix(compiler): complete scalar containment and typed membership across atomic, list and ordered union values with measured budgets.
 
 - fix(compiler): compare exact pattern and scalar properties with preserved inheritance, fixed-value duties and evidence-qualified containment.

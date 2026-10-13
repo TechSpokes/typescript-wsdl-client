@@ -13,7 +13,7 @@ import {compareSchemaFacetProperties, createSchemaScalarKernel} from './schemaSc
 import type {ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import type {RawAttributeGroupProperties} from './schemaAttributeGroupProperties.js';
-import {declarationMethods, immediateTypeBase, RelationProblem} from './schemaTypeRelations.js';
+import {checkTypeDerivation, declarationMethods, immediateTypeBase, RelationProblem} from './schemaTypeRelations.js';
 import {namespaceSetSubset, wildcardNamespaces} from './wildcardAlgebra.js';
 import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
 import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
@@ -27,6 +27,15 @@ export type CorrespondenceReceipt = Readonly<{kind: 'checked'; authority: typeof
   scalarObligations: readonly Readonly<{contextId: string; obligation: ScalarObligation}>[];
   typeDependencies: readonly SemanticTypeDependency[]}>;
 export type CorrespondenceResult = CorrespondenceReceipt | CorrespondenceFailure | ResourceLimitFailure;
+export type Re01FreshAffiliationObstruction = Readonly<{
+  kind: 'proved-no-construction'; domain: typeof RE01_DERIVATION_DOMAIN;
+  scope: 'contextual-nonprimitive-two-step'; criterion: 'mandatory-fresh-affiliate-fixed-complex-ancestry';
+  actualContextId: string; contextId: string; target: NodeId; ancestor: SemanticTypeReference;
+  affiliate: NodeId; head: NodeId; headType: NodeId;
+}>;
+export type Re01FreshAffiliationResult = Re01FreshAffiliationObstruction | Readonly<{
+  kind: 'not-established'; contextId: string; target: NodeId; message: string;
+}> | CorrespondenceFailure | ResourceLimitFailure;
 const issued = new WeakMap<object, SemanticContext>();
 type Mapped = Readonly<{properties: RawComplexTypeProperties; context: SemanticContext; view?: ParticleContentView;
   synthetic: readonly NodeId[]; scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}>;
@@ -76,6 +85,102 @@ export function re01Ancestor(context: SemanticContext, target: NodeId): Readonly
     }
   });
   return result.kind === 'resource-limit' ? result : context.budget.guard(() => context.budget.freeze(context.budget.snapshot(result)));
+}
+
+/** A sufficient contextual contradiction, not a complete RE01 decision.
+ * Every fresh affiliate remains a child legality root in domain B. A complex
+ * head outside X -> E -> A's fixed chain cannot satisfy e-props-correct.4.
+ */
+export function proveRe01FreshAffiliationObstruction(actual: SemanticContext, parent: SemanticContext,
+  target: NodeId): Re01FreshAffiliationResult {
+  assertSemanticContext(actual); assertSemanticContext(parent);
+  const b = parent.budget;
+  return b.guard(() => {
+    if (!contextsShareRequest(parent, actual)) throw new TypeError('Contexts belong to different requests');
+    b.chargeWork(8);
+    const publish = <T>(result: T): T => b.freeze(b.snapshot(result));
+    const unresolved = (rule: string, message: string): CorrespondenceFailure => {
+      b.chargeWork(8);
+      return publish({kind: 'unresolved', rule, message, contextId: parent.contextId, component: target});
+    };
+    const unknown = (message: string): Re01FreshAffiliationResult => {
+      b.chargeWork(6);
+      return publish({kind: 'not-established', contextId: parent.contextId, target, message});
+    };
+    const key = (reference: SemanticTypeReference): string | undefined => {
+      const found = resolveSemanticType(parent, reference);
+      return 'identity' in found ? semanticTypeKey(parent, found.identity) : undefined;
+    };
+    try {
+      if (actual.kind !== 'actual' || actual.membership !== 'complete-actual-plus-additions'
+        || parent.membership !== 'complete-actual-plus-additions')
+        return unresolved('complete-domain-membership', 'The contradiction requires the complete immutable actual and parent environments');
+      if (typeof target !== 'string' || !target) throw new TypeError('Expected a target component ID');
+      const selected = parent.lookup(target);
+      if (selected.kind !== 'found' || selected.node.kind !== 'complexType')
+        return unknown('The target is not an available complex extension');
+      const raw = parent.rawTypeProperties(target);
+      if (!raw && !parent.sourceNode(target) || parent.rawSimpleTypeProperties(target))
+        return unresolved('missing-type-component-properties', 'The complex target requires its exact derivation properties');
+      if ((raw?.derivation.method ?? selected.node.derivation?.kind ?? 'restriction') !== 'extension')
+        return unknown('Only nonprimitive complex extensions require this two-step construction');
+      const first = immediateTypeBase(parent, {kind: 'local', target});
+      if (first.kind === 'resource-limit') return first;
+      if (first.kind !== 'checked' || !first.value) return unresolved('ancestor-domain', 'The target immediate base is unavailable');
+      const base = resolveSemanticType(parent, first.value);
+      if (base.kind !== 'component' || base.node.kind !== 'complexType')
+        return unknown('Simple-base and ur-type extensions are outside this obstruction');
+      const designated = re01Ancestor(parent, target);
+      if (designated.kind !== 'checked') return designated;
+      const ancestorKey = key(designated.ancestor), firstKey = key(first.value);
+      if (!ancestorKey || !firstKey) return unresolved('ancestor-domain', 'Exact ancestor identity is unavailable');
+      if (b.compareText(firstKey, ancestorKey) === 0)
+        return unknown('Primitive no-change does not introduce a restriction edge');
+
+      for (const id of parent.members) {
+        b.chargeWork();
+        // Original declarations available in H are not necessarily legality
+        // roots. Fresh declarations, including inherited ones, always are.
+        if (actual.lookup(id).kind === 'found') continue;
+        const found = parent.lookup(id);
+        if (found.kind !== 'found' || found.node.kind !== 'element' || found.node.identity.kind !== 'global'
+          || !found.node.substitutionGroup) continue;
+        const memberType = resolveSemanticType(parent, declaredType(parent, found.node));
+        if (memberType.kind !== 'component' || b.compareText(memberType.node.id, target) !== 0) continue;
+        const head = parent.resolve(found.node.substitutionGroup);
+        if (head.kind !== 'found' || head.node.kind !== 'element' || head.node.identity.kind !== 'global')
+          return unresolved('e-props-correct.4', 'The mandatory affiliate lacks its exact global head');
+        const headReference = declaredType(parent, head.node), headType = resolveSemanticType(parent, headReference);
+        if (headType.kind !== 'component' || headType.node.kind !== 'complexType') continue;
+        if (b.compareText(headType.node.id, target) === 0) continue; // Identity precedes derivation exclusions.
+        if (parent.rawSimpleTypeProperties(headType.node.id))
+          return unresolved('missing-type-component-properties', 'The head requires unambiguous complex type properties');
+        const path = checkTypeDerivation(parent, designated.ancestor, headReference, []);
+        if (path.kind === 'resource-limit') return path;
+        if (path.kind !== 'checked') return unresolved(path.rule, path.message);
+        if (path.value) continue; // B can already be on the fixed A ancestry.
+        const headBase = immediateTypeBase(parent, headReference);
+        if (headBase.kind === 'resource-limit') return headBase;
+        if (headBase.kind !== 'checked' || !headBase.value) return unresolved('ancestor-domain', 'The head type immediate base is unavailable');
+        const headRaw = parent.rawTypeProperties(headType.node.id);
+        if (!headRaw && !parent.sourceNode(headType.node.id))
+          return unresolved('missing-type-component-properties', 'The head type requires its exact immediate derivation');
+        const headBaseKey = key(headBase.value);
+        if (!headBaseKey) return unresolved('ancestor-domain', 'The head type base identity is unavailable');
+        if ((headRaw?.derivation.method ?? headType.node.derivation?.kind ?? 'restriction') === 'extension'
+          && b.compareText(headBaseKey, ancestorKey) === 0) continue; // Existing B may itself be E.
+        b.chargeWork(14);
+        return publish({kind: 'proved-no-construction', domain: RE01_DERIVATION_DOMAIN,
+          scope: 'contextual-nonprimitive-two-step', criterion: 'mandatory-fresh-affiliate-fixed-complex-ancestry',
+          actualContextId: actual.contextId, contextId: parent.contextId, target, ancestor: designated.ancestor,
+          affiliate: id, head: head.node.id, headType: headType.node.id} as const);
+      }
+      return unknown('No mandatory fresh affiliate satisfies the fixed complex ancestry contradiction');
+    } catch (error) {
+      if (error instanceof RelationProblem) return unresolved(error.result.rule, error.message);
+      throw error;
+    }
+  });
 }
 
 export function checkCandidateCorrespondence(actual: SemanticContext, parent: SemanticContext, candidate: SemanticContext,

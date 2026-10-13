@@ -102,6 +102,10 @@ Their `universalCoverage`, `completeNegativeAnswer` and `searchTermination` fiel
 Candidate rejection, malformed evidence, unresolved local rules and sticky resource limits remain separate from a universal negative answer.
 No public API, persisted format or activation guard consumes these internal receipts automatically.
 
+`proveRe01FreshAffiliationObstruction(actual, parent, target)` in the existing correspondence owner supplies a separate sufficient contextual contradiction.
+Its `proved-no-construction` result identifies a mandatory fresh affiliate whose fixed complex head is unreachable in every permitted two-step rebase; `not-established` supplies no verdict.
+The [proof and exceptions](content-model-s06-re-01.md#a-terminating-contextual-ancestry-contradiction) retain primitive no-change, original-intermediate identities and complete context-local obligations; this API does not assess actual legality or implement general witness search.
+
 ### Local rule and evidence map
 
 This map identifies the shared implementation and independent controls.
