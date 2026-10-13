@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:fresh-name-type" targetNamespace="urn:recovery:fresh-name-type" elementFormDefault="qualified">
+  <xs:complexType name="A"/>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="X"><xs:complexContent><xs:extension base="t:R"><xs:sequence>
+    <xs:element name="p" type="t:X" minOccurs="0"/>
+  </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="RestrictedX"><xs:complexContent><xs:restriction base="t:X"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="ExtendedX"><xs:complexContent><xs:extension base="t:X"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="ExistingE"><xs:complexContent><xs:extension base="t:A"><xs:sequence>
+    <xs:element name="p" type="t:X" minOccurs="0"/>
+  </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="S"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="SX"><xs:simpleContent><xs:extension base="t:S"/></xs:simpleContent></xs:complexType>
+</xs:schema>

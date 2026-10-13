@@ -250,7 +250,8 @@ For one obligation at rank `n >= 1`, a proof tree needs at most `P(n)` nodes wit
 Proving all at most `n` obligations in the initial context separately therefore needs fewer than `3 * n!` evidence nodes; no sharing between different contexts is assumed.
 This bounds evidence branching under the stated hereditary premise, not the size of each finite witness or the work required to find one.
 
-The general helper premise is still unproved.
+The general helper premise is now falsified by the [anchored support counterexample](#an-anchored-construction-requires-a-new-nonprimitive-extension).
+The conditional extraction argument and branching bound remain valid under their assumption, but cannot discharge the complete B-domain claim.
 The existing [fresh-affiliation and helper-type controls](#fresh-affiliation-controls-and-failed-reductions) rule out eliminating all new globals or replacing every helper type by an endpoint type.
 Deleting a helper also changes complete substitution enumeration and can change restriction dispatch, ordering and attribution, so source identity alone cannot justify that deletion.
 
@@ -272,7 +273,8 @@ Fair enumeration, helper caps and exhausted accounting remain insufficient for u
 
 The continuation repairs a concrete sound-positive defect and a primitive-root representation gap, proves a contextual negative independent of finite search, and supplies a semantically successful countercontrol to an unconditional rank.
 No semantically successful nonprimitive construction without finite nested evidence has been established, and no full-domain adequacy theorem has been established either.
-The explicit remaining extraction premise is hereditary elimination of new nonprimitive extensions, or an independently justified complete criterion that makes such extraction unnecessary.
+This checkpoint proposed hereditary elimination of new nonprimitive extensions; the subsequent anchored support counterexample falsifies that premise.
+A complete extraction or equivalent criterion must permit required new nonprimitive helpers and justify its recursive evidence discipline.
 
 Even discharging that premise would leave witness-size or equivalent total-search reasoning for general negatives and mathematical termination.
 Local authority and representation qualifications also remain premises; these controls use builtin types and original integer operands. The separately implemented P1/F2 scalar policies retain their documented general-containment and metadata qualifications.
@@ -354,8 +356,193 @@ A finite fixed point would need a complete observation quotient with extraction 
 Fair enumeration remains only a positive semidecision, and the conditional evidence branching bound still leaves witness sizes and general negative termination unbounded.
 
 The full gate therefore remains unmet after independent scrutiny.
-The next proof action is coherent hereditary witness selection that preserves all parent observations, together with an input-derived witness bound, or an equivalent total criterion over the same accepted B domain.
+The next proof action is hereditary witness selection with every obligation checked in its required context, together with an input-derived witness bound, or an equivalent total criterion over the same accepted B domain.
+Preservation of earlier parent observations is required only when a chosen transformation installs or transfers facts across contexts; it is not a further requirement of every evidence-adequacy strategy.
 #179/#153 activation and #184 payload ownership retain their existing boundaries; no profile restriction, policy change or production activation follows from this scoped result.
+
+### Fresh complex types at the named-particle comparison
+
+The [reviewed resumption packet](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6153288351) starts from main `f5451a55590b4a79da87ff6f176c0c160acc460e`, tree `71a7f9afd359d826adcc14db0a2a6b7df3377d0b`.
+This continuation establishes a necessary type condition and investigates remaining helper roles without assuming child installation or narrowing the accepted domain.
+All seven recovery contracts and selected P1/F2 remain premises.
+
+#### Exact necessary condition and proof
+
+Let C be a closed, resolved parent context and H its authenticated direct candidate with checked endpoint correspondence.
+Only X's existing immediate base changes, to `X restriction E extension A`, where A belongs to C; every other existing semantic type base remains the same component identity in H.
+Require qualified finite acyclic ancestry, including valid simple bases and union-member roles; authentication and correspondence alone do not establish component validity.
+
+Let T be a complex definition already in C and U a complex definition newly added in H.
+If the actual [NameAndTypeOK](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-NameAndTypeOK) type call succeeds for T derived from U with extension/list/union excluded, then U is E and E is new.
+Moreover, T's path reaches X through restriction edges only; if E already belongs to C, no new complex U can satisfy this call.
+
+Before visiting X, T's base path contains only C identities.
+After visiting X, it contains E, A and A's unchanged ancestors; a path missing X contains no new complex identity.
+The complex relation's identity, immediate-base and recursive cases therefore reach a new complex U only at E, and each preceding nonidentity edge must be restriction.
+
+The comparison stops on reaching E, so E's extension to A is not traversed by this restriction-only call.
+When the path instead reaches a simple type, valid simple ancestry and simple-union alternatives cannot lead to the required complex U.
+Complex simple-content definitions remain complex: the comparison reads their complex base identities, rather than substituting their scalar content identity.
+
+This proves necessity, not success of every comparison to E or legality of a candidate.
+An extension-descendant of X still fails this call; all other NameAndTypeOK conjuncts, construction premises and nested obligations remain required.
+The result applies to an invoked type call, not every successful particle comparison.
+
+#### Exceptions and shared-owner controls
+
+Exact type identity and an existing intermediate fall outside the new-U premise.
+A simple union target can admit a type through union membership without lying on its base path, so the complex-target premise cannot be dropped.
+Both-global NameAndTypeOK and particle/original-particle identity shortcuts can succeed without invoking this type comparison.
+
+The [source fixture](../test/conformance/fixtures/xsd/recovery/fresh-complex-name-type.xsd) and [strict controls](../test/research/re01/fresh-complex-name-type.test.ts) use authenticated correspondence and the existing [particle](../src/compiler/particleRestriction.ts) and [type](../src/compiler/schemaTypeRelations.ts) owners.
+Distinct local declarations have the same p QName, 0..1 bounds, empty flags and no values or identity constraints, isolating the type conjunct.
+The controls cover X and a restriction-descendant reaching fresh E, a distinct fresh U, a path missing X, a forbidden extension prefix, existing E, exact identity, complex simple content, a simple-union exception, and particle identity.
+
+Missing helper properties remain `unresolved`, and an explicit test budget produces sticky `resource-limit`; neither supplies a false type relation or existential negative.
+These local relation receipts retain their component-validity debts and do not certify the fixture's arbitrary helper additions as a complete witness.
+Closed membership, literal correspondence and qualified ancestry exclude unresolved references first binding to a new helper, rewrites of other existing bases, and invalid simple-to-complex base or member constructions.
+
+#### Remaining observable helper roles
+
+| Role | Observation and owner | Coverage of the named-type lemma |
+| --- | --- | --- |
+| Intermediate construction | Raw prefix/suffix, all placement, original identity; `particleExtension.ts` | Does not choose raw particles |
+| Named restriction mapping | QName, bounds, flags, fixed values and exact type; `particleRestriction.ts` | Only existing-complex to fresh-complex calls |
+| Affiliation and fresh heads | Immediate type/final and complete head chains; `schemaTypeRelations.ts` | Different excluded methods |
+| Effective membership | Methods, blocks, abstract flags, names, absence, set size and implicit order | Fresh-member self mappings remain uncovered |
+| UPA and EDC | Full expansion alphabet and named-type identity; particle owners | Changed expansion must be checked where consumed |
+| Simple content and AU | Typed fixed/default operands, scalar identity and inherited raw uses | Complex simple-content ancestry only |
+| Recursive ownership | Sharing, containment, raw content dependencies and exact context | No evidence-adequacy result |
+| Fresh legality roots | Every addition relative to immutable actual Gamma, including inherited roots | All checks retained by the finite verifier |
+
+Attribute declaration types must be simple, so a complex helper cannot directly replace an AU scalar type.
+Complex helpers can still carry simple content, particles, AU sets and recursively consumed dependencies that require their own validity.
+Simple, union, affiliation, global, particle and primitive helpers remain permitted; no blanket deletion follows from this inventory.
+
+Wildcard restriction mappings and fresh-to-fresh comparisons are not existing-complex T comparisons.
+In particular, a fresh global added to a retained head's expansion can occur on both sides of a restriction comparison, with global or identity shortcuts.
+The lemma therefore does not eliminate the helper types of those globals.
+
+#### A complete helper witness distinguishes two-head membership
+
+The [membership source](../test/conformance/fixtures/xsd/recovery/helper-membership-vector.xsd) has empty A, primitive P extending A, and HP and QP both typed P.
+HP affiliates with QP; HP blocks restriction, QP blocks extension, and their final sets are empty.
+A fresh U extending P and fresh M:U affiliated with HP make M effective under HP and excluded under QP.
+
+The [shared-owner controls](../test/research/re01/helper-membership-vector.test.ts) verify a complete two-node construction for empty X extending R, where R restricts A.
+Its root uses E extending A and X restricting E, with fresh U and M; U's child uses unchanged existing P as intermediate and U restricting P.
+All inherited fresh roots are checked in the child, and both proof steps succeed in their own contexts.
+
+In the child, M's immediate affiliation remains valid, but its membership reverses: HP excludes the new restriction, while QP permits it.
+This is a successful context-local proof, not a transfer of the parent's expansion facts or a candidate-verifier defect.
+The existing ancestry obstruction correctly returns `not-established` because P itself is an eligible intermediate.
+
+Replacing M's type with existing P admits M under both heads.
+A fresh primitive extension of A cannot reach exact P, while a restriction of P loses membership under HP.
+Those contrasts are derived from the dated substitution rule and exercised through the existing relation owner.
+
+More generally, retaining M's positive HP membership forces a type path to P without restriction.
+No other existing type in this source has that path; a new proper extension-only descendant of P introduces a nonprimitive extension because P's base is A, not anyType.
+Fresh affiliation bridges cannot avoid QP's ultimate type predicate because the retained HP-to-QP affiliation remains fixed.
+
+Thus pointwise replacement by existing or primitive types while preserving this exact two-head membership vector fails, even for a complete finite witness.
+This is a stronger requirement than hereditary witness selection: complete alternative X witnesses using existing P or a fresh restriction of P also pass with changed vectors.
+The source's empty X does not require this vector, so the control does not establish that every successful X witness needs a new nonprimitive extension.
+
+#### An apparent discriminator with an impossible child
+
+The same source separately has B restricting A, H:B affiliated with Q:A, H blocking restriction and Q blocking extension.
+A fresh U extending B again gives M effective under H and excluded under Q, but B is not an eligible intermediate for U.
+The mandatory inherited fresh M forces the existing ancestry criterion to prove no construction for U in that exact parent context.
+
+Local affiliation success in this second family therefore cannot be promoted to a successful complete-witness counterexample.
+The finite checker reports missing nested evidence, while existing-B and restriction-B alternatives produce checked complete X witnesses with different vectors.
+This control separates local discrimination, contextual nonexistence and actual root nonexistence.
+
+#### An anchored construction requires a new nonprimitive extension
+
+The [anchored source](../test/conformance/fixtures/xsd/recovery/anchored-helper-support.xsd) makes the two-head vector necessary to the required endpoint mapping.
+A has an optional sequence of global H repeated exactly four times, local z:string and a local Q:B/H:B choice.
+B extends A vacuously, R restricts A to empty, and X extends R with an optional sequence of a twice-repeated H:B/H:B group, local z:string and global Q.
+
+Global H:B affiliates with global Q:B; H blocks restriction, Q blocks extension, and final sets are empty.
+Both globals are nonabstract, and the endpoint's local H declarations carry the required restriction block.
+The required z delimiter separates prefix H positions from the final H/Q alternatives, establishing UPA in the actual and hypothetical contexts; all repeated names have exact named type B for EDC.
+
+The [complete shared-owner control](../test/research/re01/anchored-helper-support.test.ts) chooses existing B as the intermediate and adds U extending B and M:U affiliated with H.
+M is effective under H and excluded under Q: the first endpoint sequence maps to H's virtual choice by [MapAndSum](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-MapAndSum), with two members repeated twice giving exact range 4..4.
+Q's expansion retains only the original Q/H names, which map to the last fixed local choice.
+
+U's child restricts unchanged existing B, preserving U's exact A content and checking every inherited fresh component, including M, in that child.
+Both finite proof nodes pass; checking the earlier original X again in the child fails particle restriction because H/Q membership changes.
+That X is outside the child's required closure, so no cross-context predicate transfer or child installation is used.
+
+To exclude every witness without new nonprimitive extensions, first exhaust the permitted intermediate shapes.
+Existing B is the only existing direct extension of designated ancestor A; every fresh intermediate extends A and must preserve its nonempty element-only raw content.
+[Particle Valid (Extension)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-extend) permits only the same particle or a 1..1 sequence with a recursively property-identical A particle first.
+
+A's optional 0..1 three-member prefix cannot flatten or disappear: H remains nonabstract, z is required, and the last local choice remains nonempty.
+Any surviving normalized suffix leaves the fresh intermediate's outer sequence at 1..1, incompatible with X's fixed 0..1 outer range.
+Erased suffixes and singleton unit wrappers reduce to A's normalized comparison shape; required empty choices that survive normalization retain the same range barrier.
+
+Property-equal prefix copies retain global H's scope, QName, type, flags and affiliation, and the last local alternatives retain exact Q/H QNames and types.
+Reserved original global identities prohibit a fresh global from adopting H or Q's QName.
+Thus neither prefix copies, annotations, new wildcard suffixes nor an alternative anonymous intermediate avoid these two shape cases.
+
+In the remaining A-shaped comparison, the first endpoint sequence cannot map to H as an element: Group-to-Element dispatch is not permitted.
+Ordered [Recurse](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-Recurse) cannot skip H[4..4], which is formally nonemptiable, so the sequence cannot align with a later base position.
+Consequently some new nonabstract member M must be effective under H, turning that particle into a virtual choice.
+
+Any such M also effective under Q has a new QName outside the final fixed local Q/H alternatives, and the final choice mapping fails.
+This argument uses the missing QName match, not an injectivity or cardinality assumption about [RecurseLax](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-RecurseLax).
+Every successful witness therefore needs an additional H-effective member that is not Q-effective.
+
+H membership requires an affiliation path through unchanged H-to-Q and a type derivation to exact B without restriction.
+Type B itself is Q-effective by identity, regardless of fresh affiliation bridges or the member's own flags; none of A, R or X supplies another eligible existing type path.
+Rebasing X through existing B introduces a restriction edge, which H blocks; rebasing through a fresh extension of A cannot reach B at all.
+
+Qualified simple or union types cannot derive complex B.
+Any new proper extension-only descendant of B contains a new nonprimitive complex extension because B's immediate base is A, rather than anyType; anonymous helpers obey the same argument.
+Restrictions are excluded by H's block, while an abstract member is not effective under H.
+
+Hence every successful construction for this X introduces a new nonprimitive extension.
+This refutes the precise no-new-nonprimitive witness-selection premise already at its root, including its hereditary form.
+The complete two-node certificate proves finite evidence for this example, not failure of evidence adequacy or general impossibility of a complete decision method.
+
+The controls contrast absent membership, existing B and restriction B, primitive ancestry failure, and raw live versus zero-normalized suffixes.
+The universal conclusion follows from the exhaustive shape/type argument and independent nonauthor scrutiny; the finite controls alone would not establish it.
+
+#### Alternative extraction and precise remaining gate
+
+The proposed path-preserving type compression covers the named-type seam but cannot preserve every effective-membership vector.
+A quotient identifying helper types solely by scalar content, endpoint reachability or primitive status also loses the successful two-head observation.
+Those vector-only failures leave alternative root witnesses, whereas the anchored counterexample refutes the complete no-new-nonprimitive selection premise.
+
+Support-oriented deletion or retyping repairs the empty-endpoint example, but cannot remove all nonprimitive additions from the anchored example.
+A viable extraction must retain required helpers, including extension-method membership signatures, and re-evaluate each consumed restriction, UPA, EDC, scalar/AU and fresh-root predicate in its required context.
+It still needs a well-founded evidence discipline or a complete contextual fixed-point argument beyond unconditional extension-count descent.
+
+Deletion still has the earlier anchored raw-all falsifier, and endpoint replacement still has restriction blocking as a falsifier.
+An observation quotient is an alternative only if it proves extraction and reconstruction for the predicates its decision method actually uses; preserving every parent's observations is not a prerequisite of a method that transfers no facts.
+The exact failed proposition is no-new-nonprimitive witness selection, not a requirement to preserve all parent observations.
+An input-derived finite helper/signature family with simultaneous extraction and reconstruction, or an equivalent total criterion over the same domain, remains unproved.
+The counterexample does not rule out those alternatives or require a new semantic-policy decision.
+
+Full witness/evidence adequacy, an input-derived witness-size bound or equivalent total criterion, complete negative answers and mathematical search termination remain open.
+The conditional evidence-tree bound does not bound witness size, and configurable accounting or a rejected candidate cannot establish nonexistence.
+No executable general search or general-negative branch is justified by the necessary lemma and these controls.
+
+The next concrete action is a support/signature abstraction that admits the forced U-to-B extension and proves extraction, reconstruction and a terminating evidence or fixed-point discipline for the predicates it actually uses.
+Preserve all inherited fresh-root obligations; require transfer preservation only for facts that the resulting method actually reuses or installs.
+
+| Established claim | Executable owner/control | Remaining gate |
+| --- | --- | --- |
+| Fresh-complex necessary condition | Type and particle owners; `fresh-complex-name-type.test.ts` | Arbitrary helper/signature extraction |
+| Exact vector defeats pointwise type compression | `helper-membership-vector.test.ts` | Empty X admits changed-vector alternatives |
+| Eligible existing intermediate supports complete helper proof | Same complete two-node control | General finite-evidence adequacy |
+| Ineligible head forbids the helper's contextual child | Existing fresh-affiliation criterion | Other root witnesses remain possible |
+| Changed-vector alternatives pass | Same finite verifier | Simultaneous arbitrary reconstruction |
+| Anchored construction forces a new nonprimitive extension | `anchored-helper-support.test.ts`; exhaustive shape/type proof | No-new selection falsified; alternative theorem open |
 
 ### Reviewed primitive no-change proof
 
