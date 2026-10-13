@@ -36,6 +36,11 @@ const builtin = (local: string): Reference => ({kind: 'builtin', name: {namespac
 const owner = globalId('element', {namespace, local: 'Owner'});
 type Definition = RawSimpleTypeProperties & Readonly<{base: Reference}>;
 
+// Quote complete XSD pattern literals, including existing backslashes.
+// Dollar signs are ordinary literal characters in the admitted XSD grammar.
+const patternLiteral = (value: string) => value.replace(/[\\.\-^?*+{}()\[\]|]/g, '\\$&')
+  .replace(/\t/g, '\\t').replace(/\r/g, '\\r').replace(/\n/g, '\\n');
+
 async function setup(options: {defaultLimits?: boolean; maxWork?: number} = {}) {
   const input = await loadSemanticSchemaInput(path.join(fixtures, 'xsd/recovery/scalar-completeness-review.xsd'), {policy: {fileRoots: [fixtures]}});
   // Explicit diagnostic allowance; old-limit controls remain separately owned.
@@ -380,6 +385,23 @@ describe('nonauthor regular-language authority and request limits', () => {
     return {budget, context, lexical, patterns, regular, language};
   }
 
+  it.each([
+    {literal: '\\', rejected: ''},
+    {literal: '\\d', rejected: '7'},
+    {literal: '\\.', rejected: 'x'},
+    {literal: 'a\\b', rejected: 'ab'},
+    {literal: '\\|.-^?*+{}()[]', rejected: '|.-^?*+{}()[]'},
+    {literal: '\\$[.]+', rejected: '$[.]+'},
+    {literal: '\t\\n\r\n', rejected: '\t\n\r\n'},
+  ])('quotes the backslash-containing literal $literal without interpreting its syntax', ({literal, rejected}) => {
+    const {regular, language} = engine();
+    const quoted = language(patternLiteral(literal));
+    const finite = regular.finiteWords(quoted, 'pattern');
+    if (finite.kind !== 'finite') throw new Error('A quoted literal must have a finite one-word language');
+    expect([...finite.words]).toEqual([literal]);
+    expect(regular.witness(regular.intersect([quoted, language(patternLiteral(rejected))], 'pattern'), 'pattern')).toBeUndefined();
+  });
+
   it('preserves correlations, overlapping labels and empty words in finite symbolic sequence differences', () => {
     const {context} = engine();
     type Label = readonly number[];
@@ -587,12 +609,11 @@ describe('nonauthor regular-language authority and request limits', () => {
     {mode: 'collapse', target: '', raw: 'x', valid: false},
   ] as const)('inverts normalized XML whitespace in $mode for $target ($valid)', ({mode, target, raw, valid}) => {
     const {regular, language} = engine();
-    const exact = (value: string) => value.replace(/[\\.\-^?*+{}()\[\]|]/g, '\\$&').replace(/\t/g, '\\t').replace(/\r/g, '\\r').replace(/\n/g, '\\n');
-    const image = regular.whitespacePreimage(language(exact(target)), mode, 'pattern');
-    expect(regular.witness(regular.intersect([image, language(exact(raw))], 'pattern'), 'pattern'))
+    const image = regular.whitespacePreimage(language(patternLiteral(target)), mode, 'pattern');
+    expect(regular.witness(regular.intersect([image, language(patternLiteral(raw))], 'pattern'), 'pattern'))
       .toBe(valid ? raw : undefined);
-    const forward = regular.whitespaceImage(language(exact(raw)), mode, 'pattern');
-    expect(regular.witness(regular.intersect([forward, language(exact(target))], 'pattern'), 'pattern'))
+    const forward = regular.whitespaceImage(language(patternLiteral(raw)), mode, 'pattern');
+    expect(regular.witness(regular.intersect([forward, language(patternLiteral(target))], 'pattern'), 'pattern'))
       .toBe(valid ? target : undefined);
   });
 
@@ -615,10 +636,9 @@ describe('nonauthor regular-language authority and request limits', () => {
       {value: 'a/b:c', valid: true}, {value: 'é:', valid: false},
       {value: 'a\\b', valid: true}, {value: 'é/雪?x y#z', valid: true},
     ] as const;
-    const exact = (value: string) => value.replace(/[\\.\-^?*+{}()\[\]|]/g, '\\$&');
     for (const {value, valid} of cases) {
       expect(schemaUri(value, 'pattern', context), value).toBe(valid);
-      expect(regular.witness(regular.intersect([grammar, language(exact(value))], 'pattern'), 'pattern'), value)
+      expect(regular.witness(regular.intersect([grammar, language(patternLiteral(value))], 'pattern'), 'pattern'), value)
         .toBe(valid ? value : undefined);
     }
   });
@@ -650,7 +670,7 @@ describe('nonauthor regular-language authority and request limits', () => {
         for (const value of row.cases) {
           const included = value.order !== undefined && (name.startsWith('min') ? value.order > 0 : value.order < 0)
             || value.order === 0 && name.endsWith('Inclusive');
-          const exact = value.word.replace(/\./g, '[.]').replace(/-/g, '\\-');
+          const exact = patternLiteral(value.word);
           expect(regular.witness(regular.intersect([predicate, language(exact)], 'pattern'), 'pattern'), row.endpoint + ' / ' + value.word)
             .toBe(included ? value.word : undefined);
         }
@@ -716,7 +736,7 @@ describe('nonauthor regular-language authority and request limits', () => {
       {word: '1e0', valid: false}, {word: 'INF', valid: false}, {word: 'NaN', valid: false},
     ];
     for (const {word, valid} of rows) {
-      const exact = word.replace(/\./g, '[.]').replace(/[+]/g, '[+]').replace(/-/g, '\\-');
+      const exact = patternLiteral(word);
       expect(regular.witness(regular.intersect([inverse, language(exact)], 'pattern'), 'pattern'), word).toBe(valid ? word : undefined);
     }
   });
@@ -837,9 +857,8 @@ describe('nonauthor regular-language authority and request limits', () => {
     const images = schemaCalendarImages(context, regular, expression => language(expression));
     const image = budget.guard(() => images.image(language(source), family, 'pattern'));
     if ('kind' in image && image.kind === 'resource-limit') throw new Error('The independently bounded extended-year product must fit its diagnostic allowance');
-    const exact = (word: string) => word.replace(/-/g, '\\-');
-    for (const word of accepted) expect(regular.witness(regular.intersect([image, language(exact(word))], 'pattern'), 'pattern')).toBe(word);
-    for (const word of rejected) expect(regular.witness(regular.intersect([image, language(exact(word))], 'pattern'), 'pattern')).toBeUndefined();
+    for (const word of accepted) expect(regular.witness(regular.intersect([image, language(patternLiteral(word))], 'pattern'), 'pattern')).toBe(word);
+    for (const word of rejected) expect(regular.witness(regular.intersect([image, language(patternLiteral(word))], 'pattern'), 'pattern')).toBeUndefined();
   });
 
   it('uses privately compiled facts and rejects copied language authority', () => {
@@ -1291,7 +1310,7 @@ describe('nonauthor complete original typed membership', () => {
     {name: 'minInclusive', witness: '1.000000059604644775390625', valid: false},
   ])('subtracts first-float rounding interval endpoints for $name at $witness ($valid)', async ({name, witness, valid}) => {
     const {facet, component, raw, candidate, lexical, actual} = await setup();
-    const pattern = component(facet('pattern', witness.replace(/\./g, '[.]') + '0*'));
+    const pattern = component(facet('pattern', patternLiteral(witness) + '0*'));
     const members = [named('First'), named('Later')], variety = {kind: 'union' as const, members};
     const kernel = candidate([
       raw('First', builtin('float'), [component(facet(name, '1'))]),
@@ -1891,7 +1910,7 @@ describe('nonauthor complete original typed membership', () => {
   const zeroTie = binaryFraction(5n ** 150n, 150);
   const aboveZeroTie = binaryFraction(5n ** 150n + 1n, 150);
   const overflow = ((2n ** 25n - 1n) * 2n ** 103n).toString();
-  const exactPattern = (value: string) => value.replace(/\./g, '[.]') + '0*';
+  const exactPattern = (value: string) => patternLiteral(value) + '0*';
   it.each([
     {primitive: 'double', pattern: '0*.0*e0+', value: '1', witness: '1e0', valid: true},
     {primitive: 'double', pattern: '0*.0*e0+', value: '-1', witness: '1e0', valid: false},

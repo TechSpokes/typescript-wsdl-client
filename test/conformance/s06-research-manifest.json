@@ -2101,7 +2101,7 @@
         {
           "path": "test/unit/schema-scalar-completeness-review.test.ts",
           "role": "expectations",
-          "sha256": "02056ad7d7863c713025856be1096a783cc78b2734b9f8af2a100e51b583562c"
+          "sha256": "3f96be4174b2fe7d42f4c49291e378bfdfbb65b52755e3da9cf36b1ae0dc2a8c"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/scalar-completeness-review.xsd",
