@@ -11,6 +11,12 @@ The [focused resumption](content-model-s06-re-01.md#fresh-complex-types-at-the-n
 Pointwise type compression preserving that vector fails, while changed-vector alternative witnesses pass for the empty endpoint.
 An anchored raw-particle construction then makes the vector necessary and refutes no-new-nonprimitive witness selection; its complete two-node certificate still passes in each required context.
 Alternative helper/signature extraction, general evidence adequacy, complete negatives and mathematical termination remain open.
+The [helper-permitting investigation](content-model-s06-re-01.md#helper-permitting-construction-investigation) refutes flat one-edge member representatives with an anchored three-head case requiring both derivation methods.
+Restriction wrappers repair that case, and both mixed-method orientations have complete context-local finite evidence with inherited roots preserved.
+B eligibility and method signatures alone cannot certify the helper's restriction child; the live-content contrast preserves that reconstruction debt.
+The recursive consumed-root contrast has a scoped full-helper nonexistence proof: the required nearest-extension child destroys a membership fact needed by X, which is consumed in that child.
+This rejects neither legal component-reference recursion nor general finite-evidence adequacy, and adds no general-negative API.
+The repaired family's arbitrary-success extraction, general evidence adequacy and terminating negative criterion remain open after alternative investigation and independent scrutiny.
 Each obligation stays in its required context, including inherited fresh roots; preservation across contexts is required only for facts a method transfers or installs.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.

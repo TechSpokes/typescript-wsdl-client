@@ -544,6 +544,182 @@ Preserve all inherited fresh-root obligations; require transfer preservation onl
 | Changed-vector alternatives pass | Same finite verifier | Simultaneous arbitrary reconstruction |
 | Anchored construction forces a new nonprimitive extension | `anchored-helper-support.test.ts`; exhaustive shape/type proof | No-new selection falsified; alternative theorem open |
 
+### Helper-permitting construction investigation
+
+This continuation starts from fetched main `b00b3eca2dbd65ae1bc3d2392afbf4eec155d481`, tree `71489468d92a5f480f61a7a5a79ccc66f06e6e3f`.
+It consumes the seven accepted recovery packages and the [PR #288 disposition](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6154967973).
+The accepted domain remains `RE01-derivation-B-v1`, with AU C1, PW R-240, DT A, GSC1 and selected P1/F2 unchanged.
+
+#### Quantified claim and candidate families
+
+For every qualified finite immutable actual Γ and contextual obligation `(C, X, A)`, semantic success quantifies over every permitted finite fresh extension of C satisfying the two derivation steps and all required component predicates.
+The endpoint retains its anchored effective properties, actual obligations stay in Γ, and hypothetical obligations start from the intermediate, endpoint and every fresh addition relative to Γ, then follow consumed dependencies.
+Qualification never assumes a pending RE01 judgment; contexts identify obligations, rather than component IDs alone.
+
+The complete theorem would extract a successful representative in a chosen family from every permitted successful construction, reconstruct a valid construction from every accepted representative, and justify adequate contextual recursive evidence.
+An input-derived finite bound, well-founded decision method or equivalent terminating criterion must then justify general negative answers.
+Positive soundness, family coverage, evidence adequacy, complete negatives and mathematical termination are distinct gates.
+
+The flat helper family adds fresh U extending an eligible retained primitive B and a fresh member typed U, with explicit child evidence rebasing U to a restriction of unchanged B.
+For this hypothesis, eligible means B is a locally legal direct extension of X's designated ancestor and can be the exact retained intermediate; it does not mean every extension of B restricts B.
+Its flat member representatives use existing types, one extension edge or restriction-only paths, without a path containing both extension and restriction to B.
+This is an investigated representative family, not a restriction of the accepted helper domain.
+
+The repaired helper hypothesis additionally retains restriction wrappers of U, so V restricting U can supply a member typed V.
+It also retains the earlier required fresh global, abstract affiliation-bridge, simple/primitive helper and intermediate roles; those roles cannot be silently deleted by calling this a complex-helper family.
+The extension helpers may use an eligible primitive intermediate retained in C or constructed for the root, but that choice still owes complete local and child evidence.
+There is no established arbitrary-success extraction into the repaired family and no helper-count or witness-size bound for it.
+
+#### Four local method signatures
+
+Suppose nonabstract M has affiliation paths to three heads H, Q1 and Q2 with the same exact complex type B.
+H blocks neither derivation method, Q1 blocks extension, Q2 blocks restriction, and none blocks substitution.
+Assume the invoked type and affiliation premises are qualified and M is effective under H.
+
+The dated [Substitution Group OK (Transitive)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec) compares M's type path to the common exact B.
+The complex-type blocks on that path are common to all three queries; H-effectiveness already shows that they exclude no method used by the path.
+Consequently Q1 excludes M exactly when that path uses extension, and Q2 excludes M exactly when it uses restriction.
+Arbitrary fresh affiliation bridges, member flags and helper type blocks cannot change this conclusion while retaining H-effectiveness.
+
+| Path methods to exact B | H effective | Q1 effective | Q2 effective |
+| --- | --- | --- | --- |
+| None; exact B identity | Yes | Yes | Yes |
+| Extension only | Yes | No | Yes |
+| Restriction only | Yes | Yes | No |
+| Extension and restriction | Yes | No | No |
+
+With B's final set empty and empty fresh type blocks, the four vectors have local representatives B, a vacuous extension U of B, a vacuous restriction of B, and V restricting a vacuous extension U of B.
+This covers the method observation under the stated common-type premises, independently of ancestry path length.
+It does not establish equality of raw content, original identities, component legality or contextual proof obligations for arbitrary constructions.
+
+#### The anchored three-head counterexample and repair
+
+The [source fixture](../test/conformance/fixtures/xsd/recovery/helper-method-support.xsd) extends the existing anchored example with H:B affiliated with Q1:B, itself affiliated with Q2:B.
+A's optional sequence contains H repeated exactly four times, required local z, a fixed local H/Q1 choice, and a fixed local H/Q1/Q2 choice.
+B extends A vacuously, R restricts A to empty, and X extends R with an optional sequence of a twice-repeated local H/H group, z, global Q1 and global Q2.
+The three heads have the blocks in the preceding lemma, empty final sets and nonabstract declarations.
+
+The previous exhaustive raw-prefix argument applies unchanged to the additional final choice.
+Existing B is the only retained eligible intermediate; every fresh intermediate preserves A's nonempty optional raw prefix, and a surviving suffix leaves a 1..1 outer sequence incompatible with X's 0..1 range.
+An erased suffix leaves A's comparison shape, while fresh QName reservations preserve its global H and fixed local alternatives.
+
+The nonemptiable first H[4..4] position cannot be skipped, and the derived sequence cannot map to an element without H's additional effective member.
+Some fresh nonabstract M must therefore be H-effective.
+If M is also Q1-effective or Q2-effective, its disjoint fresh QName has no match in the respective fixed local choice after z; the final restriction fails.
+This uses complete QName mapping, without an additional injectivity assumption about RecurseLax.
+
+The common-type lemma now forces both derivation methods on M's path to exact B.
+None of the retained types A/B/R/X supplies that path after X's rebase; simple types cannot derive complex B.
+Flat representatives cannot meet the root observation, irrespective of fresh names, bridges or type flags.
+Thus universal flat-family coverage is false; a family already permitting restriction wrappers is not refuted.
+
+One repair uses U extending B, V restricting U and M:V affiliated with H, with U and V retaining B's exact content and empty AU set.
+The parent maps X's H/H group to H's virtual choice by MapAndSum at exact range 4..4; Q1/Q2 retain only their original names.
+U's explicit child restricts unchanged B, and the child checks inherited U, V and M in that exact context.
+The complete two-node evidence succeeds through the existing semantic owners and finite verifier.
+
+The opposite orientation, U restricting B then V extending U, also has complete two-node evidence here, with V's child restricting B.
+Both representatives realize the required parent vector; their child makes M Q1-effective and X's earlier mapping fails there.
+X is an original endpoint outside the child's required closure, so that observation is not a failed child construction.
+No parent observation is transferred or child witness installed in the parent by either proof.
+
+These are constructive reconstructions for this example, not a theorem interchanging the two orientations in arbitrary contexts.
+The [twelve shared-owner controls](../test/research/re01/helper-method-support.test.ts) cover all four vectors, both complete reconstructions, missing nested evidence, renamed helpers and the content/consumption contrasts below.
+The [independent reference controls](../test/conformance/reference/re01-helper-method-support.test.ts) establish the source premises without compiler imports and exercise the live engine's declared local scope.
+The engine does not implement the complete RE01 existential rule.
+
+#### Eligible B does not certify U's child
+
+A further supplied U extends the same B with a live disjoint optional wildcard suffix after A's optional prefix.
+Raw extension and M:U's immediate affiliation both pass, but rebasing U to restriction of B preserves a 1..1 sequence incompatible with B's 0..1 particle range.
+The local restriction owner rejects that child with `derivation-ok-restriction.5.4`.
+
+This refutes a reconstruction rule that checks only B eligibility and method signatures, then assumes the U-to-B child.
+It does not refute the repaired family's alternative-witness coverage: this supplied live-content helper is not shown necessary for a successful root, and its failed child proves no root nonexistence.
+Content/AU/final obligations must be checked through their existing owners, with explicit matching child evidence.
+
+#### A consumed-root contrast and scoped nonexistence theorem
+
+The [recursive fixture](../test/conformance/fixtures/xsd/recovery/helper-method-consumed-root.xsd) changes only both z declarations' types from builtin string to exact original X.
+Element/type recursion is legal component-reference recursion, and both mixed parent constructions still pass the local X check.
+The same two-node certificates now reject X's restriction in the exact helper child, because mandatory inherited M consumes H/B/A and A's z consumes X.
+Here X belongs to the child's required closure; the positive fixture's outside-closure exception no longer applies.
+
+For this recursive source, a permitted successful root construction does not exist, even with arbitrary finite helpers.
+The exhaustive anchored argument again forces some fresh M effective under H and excluded under Q1/Q2, so its qualified complex type path to exact B contains both methods.
+Choose T, the nearest extension on that path before reaching B; the prefix from M's type to T contains only restriction edges.
+
+T is fresh and nonprimitive in this source.
+None of retained A/R or the rebased X supplies an extension path to B, while reaching B's own identity ends the relation before traversing B's extension to A.
+Every type before B has designated ancestor exact A; T's mandatory fresh-root legality therefore demands its own contextual construction.
+
+In any child for T, inherited M's affiliation must still reach exact B.
+T's forced path is `T restriction E extension A`; since B is not on A's fixed ancestry, the only possible E is unchanged existing B, the sole retained direct extension of A.
+A fresh E cannot acquire B's identity, and other new helpers cannot alter the unchanged prefix from M's type to T.
+If a fresh bridge loses its immediate affiliation legality in this child, that already rejects the child.
+
+With E equal to B, M's path to B now uses restriction only.
+The parent's H-effectiveness forbids every restriction block on the unchanged common type path.
+If T is M's type, T's own type block is outside the intermediate-type block set in both queries; otherwise its block is already common to both paths.
+Thus any child retaining valid affiliations makes M Q1-effective, because Q1 blocks only extension.
+
+Inherited M and its affiliation consume exact H/B/A, whose unchanged z:X dependency makes the earlier X a required child check.
+That X still restricts its parent-selected intermediate and has the same anchored effective particle.
+If a previously erased suffix becomes live, its 1..1 outer range fails; otherwise the added Q1-effective M has no QName match in the fixed local H/Q1 choice.
+X's local restriction fails in every child for T, contradicting the supposed successful root construction.
+
+This is a full-helper negative theorem for the stated recursive fixture, independent of evidence-storage syntax, bounded enumeration or helper-count assumptions.
+It is not a general-negative API, a failure of general finite-evidence adequacy, or an impossibility theorem for a complete decision method.
+The permanent controls assert the two supplied candidate failures; independent scrutiny of the exhaustive shape, ancestry and consumed-dependency argument supplies the universal scope.
+
+#### Alternatives and the remaining proof obstacle
+
+Restriction wrappers repair the flat family's decisive method failure while preserving the original anchored U-to-B path.
+The four-signature local quotient is finite, but it omits the live-content reconstruction obligation, immediate affiliation-final/bridge duties, complete expansion names and multiplicities, implicit order, raw particle incidence and scalar/AU identities.
+A signature match cannot publish aggregate legality or merge exact contextual obligations.
+
+Support deletion and choosing the opposite method orientation may provide different successful witnesses, as both reconstructions demonstrate.
+Neither supplies a simultaneous extraction for all required helpers and consumed predicates; raw-all, blocking, inherited-affiliate and rank controls still constrain that proof.
+An exact identity-preserving copy of an arbitrary supplied U is stronger than alternative-witness coverage and is not required.
+
+The consumed-root negative shows why a copied-B helper's child cannot be assumed independent of the root.
+Support-only helpers and the named/intermediate roles may have different observations, as the fresh-complex NameAndTypeOK lemma suggests, but consumed references can reconnect those roles.
+A future extraction may exploit that distinction only after preserving complete required closures and justifying both positive and negative contextual cases.
+
+For a supplied no-addition child discipline, replacing a nonprimitive extension by restriction removes one extension and adds none.
+That finite count can justify finite evidence when every required child actually admits such a locally checked continuation.
+The general repaired-family hypothesis permits new support extensions in those children, so it does not establish this hereditary descent or a stabilization bound.
+The old conditional `3 * n!` bound still has a false selection premise and supplies no general witness-size bound.
+
+An observation fixed point remains a possible alternative only after extraction and reconstruction preserve every predicate the method consumes and justify the chosen fixed-point interpretation.
+Complete source contexts grow along exact parent forks; a component-ID SCC or fair enumeration alone cannot decide general negatives.
+No impossibility theorem for a complete decision method or counterexample to general finite-evidence adequacy follows from these failures.
+
+The exact open proposition is that every successful B-domain obligation has a repaired-family representative with adequate well-founded contextual evidence, together with an input-derived finite representative bound or equivalent terminating negative criterion.
+Independent scrutiny accepts the scoped method necessity and concrete reconstructions while withholding that general theorem.
+The resumption condition is a simultaneous extraction/reconstruction theorem for the repaired family, including bridges, fresh-to-fresh comparisons, raw content/AUs and all inherited roots, or a justified complete alternative.
+No new policy decision, helper cap or engineering-budget change resolves this proof obligation.
+
+#### Proof-to-code and acceptance disposition
+
+| Gate or claim | Artifact/owner | Disposition |
+| --- | --- | --- |
+| Flat one-edge family coverage | Anchored three-head proof and fixture | Refuted |
+| Common-B method observation | `schemaTypeRelations.ts`; independent source controls | Four local signatures established |
+| Mixed helper reconstruction | `helper-method-support.test.ts`; finite verifier | Two complete contextual constructions |
+| Signature-only child reconstruction | Live-content contrast; restriction owner | Refuted |
+| Consumed recursive anchor nonexistence | Nearest-extension proof; recursive fixture | Scoped full-helper negative established |
+| Every accepted supplied certificate is sound | Existing finite-DAG induction and local owners | Retained with exact premises |
+| Repaired-family arbitrary-success coverage | No complete extraction theorem | Open |
+| General recursive evidence adequacy | No hereditary discipline theorem | Open |
+| Complete general negatives | No complete finite bound or total criterion | Open |
+| Mathematical search termination | No general decreasing measure | Open |
+
+Steps 1 and 2 state the quantified claim and investigate the first family against independent controls; step 3 establishes these scoped results and records the remaining extraction/termination obstacle after alternative investigation and review.
+Step 4 adds only the discriminating controls using existing owners, with no general search or new semantic negative branch.
+Steps 5 and 6 qualify the final artifacts, obtain final scoped/joint review and record exact revisions, checks and issue dispositions in #234/#232.
+Full RE01 and joint acceptance remain open; #179 activation, #153 combined qualification and #184 payload work keep their later ownership.
+
 ### Reviewed primitive no-change proof
 
 The [independently reviewed primitive branch](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6112070199) applies when X directly extends its designated ancestor A and A's base is qualified builtin `anyType`.

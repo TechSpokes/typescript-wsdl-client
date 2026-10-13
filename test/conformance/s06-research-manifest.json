@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "19d595bbb7b5222276b2d7e9c044ed49ed031979d1034182c5bd0418616aa6c8",
+          "sha256": "eb50fc273949e5ca0990a7170116c5cea7fdfdda12d4925694558c370127037b",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2187,6 +2187,26 @@
           "path": "test/conformance/fixtures/xsd/recovery/anchored-helper-support.xsd",
           "role": "fixture",
           "sha256": "a252d8e8cf294c39eeff00e690387a6cbe0abf3c2adf2450c97c8832bcd89b1d"
+        },
+        {
+          "path": "test/research/re01/helper-method-support.test.ts",
+          "role": "prototype",
+          "sha256": "50ae9136e5344cd319441a20c684bfaa1fd09f73ef78fa6b2b8fe0e0efe694a8"
+        },
+        {
+          "path": "test/conformance/reference/re01-helper-method-support.test.ts",
+          "role": "reference",
+          "sha256": "5a4f4f34666323d46175325130177460b5412f2c066f41fd08609bee768d0ae9"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-method-support.xsd",
+          "role": "fixture",
+          "sha256": "483b415e1b76224c07bd86abdd13cf43b584a9d197bd201f02e00b08f378a5ea"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-method-consumed-root.xsd",
+          "role": "fixture",
+          "sha256": "d177e8df9ca9db7726521e7f8b0018314ff77d393b3a4a329178d2042300ca75"
         }
       ]
     },
