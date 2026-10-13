@@ -27,9 +27,9 @@ import {
  *   (41); scalar pop (1) = 54.
  */
 describe('RE01 budget foundation', () => {
-  it('pins positive safe-integer inclusive defaults and terminal reservation', () => {
+  it('checks calibrated configurable defaults and inclusive terminal reservation', () => {
     expect(DEFAULT_MAX_NODES).toBe(100_000);
-    expect(DEFAULT_MAX_WORK).toBe(25_000_000);
+    expect(DEFAULT_MAX_WORK).toBe(125_000_000);
     expect(TERMINAL_RESERVATION_WORK).toBe(79);
     expect(createResolverBudget().usage()).toEqual({ nodes: 0, work: 79 });
     for (const invalid of [0, -1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {

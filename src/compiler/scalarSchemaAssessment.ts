@@ -24,6 +24,27 @@ import type {RawSimpleTypeProperties} from './schemaSimpleTypeProperties.js';
 import {projectFacetAnnotation, compareFacetAnnotation} from './schemaFacetAnnotation.js';
 import type {FacetAnnotation} from './schemaFacetAnnotation.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import {schemaRegularLanguages} from './schemaRegularLanguage.js';
+import type {RegularLanguage} from './schemaRegularLanguage.js';
+import {schemaDecimalLanguages} from './schemaDecimalLanguage.js';
+import {calendarAliasExpressions, durationAliasExpressions} from './schemaTemporalAliases.js';
+import {schemaIeeeLanguages} from './schemaIeeeLanguage.js';
+import type {IeeeBound, IeeeInputInterval} from './schemaIeeeLanguage.js';
+import {schemaCalendarLanguages} from './schemaCalendarLanguage.js';
+import {schemaUriExpression} from './schemaUri.js';
+import {schemaDurationLanguages} from './schemaDurationLanguage.js';
+import {schemaValueImages} from './schemaValueImages.js';
+import {schemaCalendarImages} from './schemaCalendarImages.js';
+import {schemaNumericImageConditions} from './schemaNumericImageConditions.js';
+import type {NumericImageCondition} from './schemaNumericImageConditions.js';
+import {schemaLexicalPredicates} from './schemaLexicalPredicates.js';
+import type {LexicalPredicate} from './schemaLexicalPredicates.js';
+import {schemaSymbolicValueSets} from './schemaSymbolicValueSets.js';
+import type {ScalarValueSet} from './schemaSymbolicValueSets.js';
+import {schemaSymbolicSequences} from './schemaSymbolicSequences.js';
+import type {SymbolicSequence} from './schemaSymbolicSequences.js';
+import {schemaTokenImages} from './schemaTokenImages.js';
+import {showInstant} from './schemaExactCalendar.js';
 
 export type ScalarEnforcement = "lexical-space" | "enumeration" | "pattern" | "whitespace" | "numeric-bounds" | "numeric-precision" | "length" | "QName-context" | "default-fixed" | "list" | "union";
 export type ScalarConstraintLayer = Readonly<{owner: NodeId; facets: readonly Facet[]; patterns: readonly SchemaPattern[]}>;
@@ -49,6 +70,8 @@ export type ScalarContentProperties = Readonly<{
   generatedPolicy?: 'GSC1'; annotation: 'absent' | 'source';
 }>;
 type Description = {
+  /** Private position predicates factored from a qualified whole-list enum. */
+  membershipItems?: readonly Description[];
   typeDependencies?: readonly SemanticTypeDependency[];
   plan: ScalarSupportPlan; item?: Description; members?: Description[];
   /** Private exact properties, never inferred from a raw evaluator's builtin marker. */
@@ -99,6 +122,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   originalFacet?: (type: Reference, lexical: LexicalValue, owner: NodeId) => {operand: SchemaOperand; obligations: readonly ScalarObligation[];typeDependencies:readonly SemanticTypeDependency[]}} = {}) {
   const originalRecipeTokens=new WeakMap<Description,OriginalScalarFacetRecipe>();
   const descriptions = new Map<string, Description>(), values = schemaDatatypeValues(c), patterns = schemaPatterns(c), intrinsicPatterns=intrinsicBuiltinPatterns(c);
+  const regular = schemaRegularLanguages(c);
+  const decimalLanguages = schemaDecimalLanguages(c);
   const intrinsicFacets=new WeakSet<Facet>(), intrinsicCompiled=new WeakSet<SchemaPattern>();
   const patternOwner=(pattern:SchemaPattern)=>intrinsicCompiled.has(pattern)?intrinsicPatterns:patterns;
   let readingOriginalRecipe=false;
@@ -301,7 +326,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     return false;
   };
-  const membershipWitness = (base: Description, expected: SchemaOperand, lexical: LexicalValue, owner: GraphNode): boolean => {
+  const membershipWitness = (base: Description, expected: SchemaOperand, lexical: LexicalValue, owner: GraphNode): boolean | undefined => {
     c.step(owner);
     const accepts = (candidate: LexicalValue): boolean => {
       try {return values.sameValue(expected, operand(base, candidate, owner), owner);}
@@ -309,6 +334,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       return false;
     };
     for (const candidate of schemaScalarWitnesses(expected, lexical, owner, c)) if (accepts(candidate)) return true;
+    const decision = regularMembership(base, expected, lexical, owner);
+    if (decision === true) return true;
+    if (decision === false) return false;
     c.step(owner); const outside: SchemaPattern[] = [];
     for (const layer of base.plan.layers) for (const pattern of layer.patterns) {
       c.step(owner); const language = patternOwner(pattern).literalLanguage(pattern, owner);
@@ -327,7 +355,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         if (accepts({...lexical, value})) return true;
       }
     }
-    return false;
+    return undefined;
   };
   /** One complete enumeration component can conclusively exclude a value. */
   const excludedByEnumeration = (description: Description, value: SchemaOperand, owner: GraphNode): boolean => {
@@ -641,6 +669,1336 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     const order = values.compare(derived.property.operand!, base.property.operand!, owner);
     return order === undefined || (lower(derived.name) ? order >= 0 : order <= 0);
   };
+  const regularPatterns = new WeakMap<SchemaPattern, RegularLanguage>();
+  const patternLanguage = (pattern: SchemaPattern, owner: GraphNode): RegularLanguage => {
+    c.step(owner); const known = regularPatterns.get(pattern); if (known) return known;
+    const language = patternOwner(pattern).language(pattern, owner, regular);
+    c.step(owner, 2); regularPatterns.set(pattern, language); return language;
+  };
+  const expressionLanguages = new Map<string, RegularLanguage>();
+  const expressionLanguage = (expression: string, owner: GraphNode): RegularLanguage => {
+    c.text(expression, owner); c.step(owner); const known = expressionLanguages.get(expression); if (known) return known;
+    const language = patternLanguage(patterns.compile({value: expression, context: owner.context}, owner), owner);
+    c.step(owner, 2); expressionLanguages.set(expression, language); return language;
+  };
+  const ieeeLanguages = schemaIeeeLanguages<GraphNode>(c, regular, expressionLanguage);
+  const calendarLanguages = schemaCalendarLanguages<GraphNode>(c, regular, expressionLanguage);
+  const durationLanguages = schemaDurationLanguages<GraphNode>(c, regular, expressionLanguage);
+  const valueImages = schemaValueImages<GraphNode>(c, regular, expressionLanguage);
+  const calendarImages = schemaCalendarImages<GraphNode>(c, regular, expressionLanguage);
+  const numericImages = schemaNumericImageConditions<GraphNode>(c, regular, ieeeLanguages, expressionLanguage);
+  const lexicalPredicates = schemaLexicalPredicates<GraphNode>(c, regular, numericImages);
+  const quoteExpression = (value: string, owner: GraphNode): string => {
+    c.text(value, owner); c.step(owner, value.length * 2 + 1);
+    return value.replace(/[\\.\-^?*+{}()\[\]|]/g, '\\$&').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+  };
+  const inverseExpression = (value: SchemaOperand, lexical: LexicalValue, owner: GraphNode): string | undefined => {
+    c.text(value.canonical, owner);
+    if (value.family === 'string' || value.family === 'anyURI') return quoteExpression(value.canonical, owner);
+    if (value.family === 'boolean') return value.canonical === 'true' ? '(true|1)' : '(false|0)';
+    if (value.family === 'decimal') {
+      if (value.canonical === '0') return '[+\\-]?(0+([.]0*)?|[.]0+)';
+      const negative = value.canonical.startsWith('-'), unsigned = negative ? value.canonical.slice(1) : value.canonical;
+      const [integer, fraction] = unsigned.split('.'), sign = negative ? '\\-' : '[+]?';
+      c.step(owner, value.canonical.length * 4 + 8);
+      return fraction === undefined ? `${sign}0*${integer}([.]0*)?`
+        : integer === '0' ? `${sign}0*[.]${fraction}0*` : `${sign}0*${integer}[.]${fraction}0*`;
+    }
+    if (value.family === 'hexBinary') {
+      c.step(owner, value.canonical.length * 5 + 1); const pieces: string[] = [];
+      for (const char of value.canonical) {c.step(owner, 5); pieces.push(/[a-f]/.test(char) ? `[${char}${char.toUpperCase()}]` : char);}
+      c.step(owner, value.canonical.length * 4 + 1); return pieces.join('');
+    }
+    if (value.family === 'base64Binary') {
+      c.step(owner, value.canonical.length * 8 + 4);
+      const text = Buffer.from(value.canonical, 'hex').toString('base64');
+      c.step(owner, text.length * 8 + 4);
+      return [...text].map(char => quoteExpression(char, owner)).join(' *');
+    }
+    if (value.family === 'QName' || value.family === 'NOTATION') {
+      c.step(owner, value.canonical.length * 3 + 4);
+      const [namespace, local] = JSON.parse(value.canonical) as [string, string], expressions: string[] = [];
+      for (const prefix in lexical.context.namespaces) {
+        c.text(prefix, owner); c.text(lexical.context.namespaces[prefix], owner);
+        if (lexical.context.namespaces[prefix] === namespace) {c.step(owner, prefix.length + local.length + 4); expressions.push(quoteExpression(prefix ? prefix + ':' + local : local, owner));}
+      }
+      if (namespace === '' && lexical.context.namespaces[''] === undefined) expressions.push(quoteExpression(local, owner));
+      c.step(owner, expressions.length * 2 + 2); return expressions.length ? '(' + expressions.join('|') + ')' : undefined;
+    }
+    if (value.family === 'list' && value.items) {
+      c.step(owner, value.items.length * 2 + 2); const expressions: string[] = [];
+      for (const item of value.items) {
+        const expression = inverseExpression(item, lexical, owner);
+        if (expression === undefined) return undefined;
+        c.step(owner, expression.length + 4); expressions.push('(' + expression + ')');
+      }
+      c.step(owner, expressions.length * 2 + 1); return expressions.join(' ');
+    }
+    return undefined;
+  };
+  /** Lexical overapproximation; only proved-exact domains certify negatives. */
+  const primitiveLexicalExpression = (description: Description): string | undefined => {
+    const primitive = description.plan.primitive;
+    if (primitive === 'decimal') return !description.rawProperties && description.plan.builtin !== 'decimal'
+      ? '[+\\-]?[0-9]+' : '[+\\-]?([0-9]+([.][0-9]*)?|[.][0-9]+)';
+    if (primitive === 'boolean') return 'true|false|1|0';
+    if (primitive === 'float' || primitive === 'double') return 'INF|\\-INF|NaN|[+\\-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+\\-]?[0-9]+)?';
+    if (primitive === 'hexBinary') return '([0-9a-fA-F]{2})*';
+    if (primitive === 'base64Binary') return '([A-Za-z0-9+/] *[A-Za-z0-9+/] *[A-Za-z0-9+/] *[A-Za-z0-9+/] *)*([A-Za-z0-9+/] *[AQgw] *= *=|[A-Za-z0-9+/] *[A-Za-z0-9+/] *[AEIMQUYcgkosw048] *=)?';
+    if (primitive === 'dateTime') return '\\-?[0-9]{4,}\\-[0-9]{2}\\-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?(Z|[+\\-][0-9]{2}:[0-9]{2})?';
+    if (primitive === 'date') return '\\-?[0-9]{4,}\\-[0-9]{2}\\-[0-9]{2}(Z|[+\\-][0-9]{2}:[0-9]{2})?';
+    if (primitive === 'duration') return '\\-?P([0-9]+Y)?([0-9]+M)?([0-9]+D)?(T([0-9]+H)?([0-9]+M)?([0-9]+([.][0-9]+)?S)?)?';
+    if (primitive === 'time') return '[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?(Z|[+\\-][0-9]{2}:[0-9]{2})?';
+    if (primitive === 'gYearMonth') return '\\-?[0-9]{4,}\\-[0-9]{2}(Z|[+\\-][0-9]{2}:[0-9]{2})?';
+    if (primitive === 'gYear') return '\\-?[0-9]{4,}(Z|[+\\-][0-9]{2}:[0-9]{2})?';
+    if (primitive === 'gMonthDay') return '\\-\\-[0-9]{2}\\-[0-9]{2}(Z|[+\\-][0-9]{2}:[0-9]{2})?';
+    if (primitive === 'gDay') return '\\-\\-\\-[0-9]{2}(Z|[+\\-][0-9]{2}:[0-9]{2})?';
+    if (primitive === 'gMonth') return '\\-\\-[0-9]{2}(Z|[+\\-][0-9]{2}:[0-9]{2})?';
+    return undefined;
+  };
+  const spellingConstraints = (description: Description, owner: GraphNode): RegularLanguage[] => {
+    c.step(owner, 2); const constraints: RegularLanguage[] = [];
+    if (description.plan.whitespace !== 'member') constraints.push(normalizedStringLanguage(description, owner));
+    const grammar = primitiveLexicalExpression(description);
+    if (grammar !== undefined) constraints.push(expressionLanguage(grammar, owner));
+    if (description.plan.primitive === 'anyURI') constraints.push(expressionLanguage(schemaUriExpression(owner, c), owner));
+    for (const layer of description.plan.layers) {
+      c.step(owner, layer.patterns.length + 1);
+      if (layer.patterns.length) constraints.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+    }
+    return constraints;
+  };
+  const decimalFacetLanguage = (tuple: ScalarTuple, owner: GraphNode): RegularLanguage | undefined => {
+    if (tuple.name === 'totalDigits' || tuple.name === 'fractionDigits')
+      return expressionLanguage(decimalLanguages.precision(tuple.name, tuple.property.integer!, owner), owner);
+    if (!boundNames.includes(tuple.name)) return undefined;
+    const operand = tuple.property.operand!;
+    if (operand.family !== 'decimal') return undefined;
+    const greater = tuple.name === 'maxInclusive' || tuple.name === 'minExclusive';
+    const expression = decimalLanguages.relation(operand.canonical, greater, owner);
+    const language = expression === undefined ? regular.union([], owner) : expressionLanguage(expression, owner);
+    return exclusive(tuple.name) ? language : regular.negate(language, owner);
+  };
+  const decimalContainment = (base: Description, result: Description, inherited: readonly ScalarTuple[], supplied: readonly ScalarTuple[], owner: GraphNode): boolean => {
+    if (result.plan.primitive !== 'decimal') return false;
+    const missing = inherited.filter(prior => !supplied.some(derived => restrictsScalar(derived, prior, owner)));
+    c.step(owner, 3); const constraints = spellingConstraints(result, owner);
+    for (const tuple of supplied) {
+      const language = decimalFacetLanguage(tuple, owner); if (language) {c.step(owner); constraints.push(language);}
+    }
+    for (const layer of result.plan.layers) {
+      const members = enumerations.get(layer);
+      if (members?.size) {
+        c.step(owner, 2); const choices: RegularLanguage[] = [];
+        for (const [facet, value] of members) {
+          c.step(owner); const expression = inverseExpression(value, facet.lexical, owner);
+          if (expression !== undefined) choices.push(expressionLanguage(expression, owner));
+        }
+        constraints.push(regular.union(choices, owner));
+      }
+    }
+    for (const prior of missing) {
+      const language = decimalFacetLanguage(prior, owner); if (!language) return false;
+      c.step(owner, constraints.length + 2);
+      const word = regular.witness(regular.intersect([...constraints, regular.negate(language, owner)], owner), owner);
+      if (word !== undefined) {
+        const assessed = operand(result, {value: word, context: owner.context}, owner);
+        if (!excludedByValueFacets(base, assessed, owner)) throw new TypeError('Decimal language counterexample must violate a base value facet');
+        c.fail(owner, 'scalar-value-space-restriction', 'A derived decimal value is excluded by a base bound or precision facet');
+      }
+    }
+    return true;
+  };
+  const ieeeContainment = (base: Description, result: Description, inherited: readonly ScalarTuple[], supplied: readonly ScalarTuple[], owner: GraphNode): boolean => {
+    const family = result.plan.primitive; if (family !== 'float' && family !== 'double') return false;
+    const bounds: IeeeBound[] = [];
+    for (const tuple of supplied) {
+      c.step(owner); if (boundNames.includes(tuple.name)) bounds.push({name: tuple.name as IeeeBound['name'], value: tuple.property.operand!});
+    }
+    const language = regular.intersect(spellingConstraints(result, owner), owner);
+    for (const prior of inherited) {
+      if (supplied.some(derived => restrictsScalar(derived, prior, owner))) continue;
+      if (!boundNames.includes(prior.name)) return false;
+      const word = ieeeLanguages.wideningWitness(language, family, bounds, {name: prior.name as IeeeBound['name'], value: prior.property.operand!}, owner);
+      if (word !== undefined) {
+        let assessed: SchemaOperand;
+        try {assessed = operand(result, {value: word, context: owner.context}, owner);}
+        catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error; return false;}
+        if (!excludedByValueFacets(base, assessed, owner)) throw new TypeError('IEEE interval product must issue a base-facet counterexample');
+        c.fail(owner, 'scalar-value-space-restriction', 'A derived IEEE value is excluded by a base bound');
+      }
+    }
+    return true;
+  };
+  const calendarContainment = (base: Description, result: Description, inherited: readonly ScalarTuple[], supplied: readonly ScalarTuple[], owner: GraphNode): boolean => {
+    if (!['dateTime', 'date', 'time', 'gYear', 'gYearMonth', 'gMonthDay', 'gDay', 'gMonth'].includes(result.plan.primitive!)) return false;
+    const source = regular.intersect(spellingConstraints(result, owner), owner), predicates: RegularLanguage[] = [source];
+    for (const tuple of supplied) if (boundNames.includes(tuple.name)) {
+      predicates.push(calendarLanguages.bound(source, tuple.property.operand!.calendar!, tuple.name as IeeeBound['name'], owner));
+    }
+    for (const prior of inherited) {
+      if (supplied.some(derived => restrictsScalar(derived, prior, owner))) continue;
+      if (!boundNames.includes(prior.name)) return false;
+      const predicate = calendarLanguages.bound(source, prior.property.operand!.calendar!, prior.name as IeeeBound['name'], owner);
+      c.step(owner, predicates.length + 4);
+      const word = regular.witness(regular.intersect([...predicates, regular.negate(predicate, owner)], owner), owner);
+      if (word !== undefined) {
+        let value: SchemaOperand;
+        try {value = operand(result, {value: word, context: owner.context}, owner);}
+        catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error; return false;}
+        if (!excludedByValueFacets(base, value, owner)) throw new TypeError('Calendar preimage must issue a base-facet counterexample');
+        c.fail(owner, 'scalar-value-space-restriction', 'A derived calendar value is excluded by a base bound');
+      }
+    }
+    return true;
+  };
+  const durationContainment = (base: Description, result: Description, inherited: readonly ScalarTuple[], supplied: readonly ScalarTuple[], owner: GraphNode): boolean => {
+    if (result.plan.primitive !== 'duration') return false;
+    const source = regular.intersect(spellingConstraints(result, owner), owner), predicates: RegularLanguage[] = [source];
+    for (const tuple of supplied) if (boundNames.includes(tuple.name))
+      predicates.push(durationLanguages.bound(source, tuple.property.operand!.duration!, tuple.name as IeeeBound['name'], owner));
+    for (const prior of inherited) {
+      if (supplied.some(derived => restrictsScalar(derived, prior, owner))) continue;
+      if (!boundNames.includes(prior.name)) return false;
+      const predicate = durationLanguages.bound(source, prior.property.operand!.duration!, prior.name as IeeeBound['name'], owner);
+      const word = regular.witness(regular.intersect([...predicates, regular.negate(predicate, owner)], owner), owner);
+      if (word !== undefined) {
+        const value = operand(result, {value: word, context: owner.context}, owner);
+        if (!excludedByValueFacets(base, value, owner)) throw new TypeError('Duration preimage must issue a base-facet counterexample');
+        c.fail(owner, 'scalar-value-space-restriction', 'A derived duration value is excluded by a base bound');
+      }
+    }
+    return true;
+  };
+  /** Exact normalized lexical admission where the predicates are regular. */
+  const admissionLanguage = (description: Description, lexical: LexicalValue, owner: GraphNode): RegularLanguage | undefined => {
+    if (description.plan.variety === 'union') return undefined;
+    const constraints = spellingConstraints(description, owner), tuples = scalarTuples(description, owner);
+    if (!description.rawProperties) for (const value of description.intrinsic?.patterns ?? []) {
+      const pattern = intrinsicPatterns.compile({value, context: lexical.context}, owner); intrinsicCompiled.add(pattern);
+      constraints.push(patternLanguage(pattern, owner));
+    }
+    if (description.plan.variety === 'list') {
+      const admittedItem = admissionLanguage(description.item!, lexical, owner); if (!admittedItem) return undefined;
+      const item = regular.intersect([admittedItem, expressionLanguage('[^ \\t\\r\\n]+', owner)], owner);
+      const nonempty = regular.concatenate([item, regular.repeat(regular.concatenate([expressionLanguage(' ', owner), item], owner), 0, 'unbounded', owner)], owner);
+      constraints.push(regular.union([expressionLanguage('', owner), nonempty], owner));
+    }
+    if (description.plan.primitive === 'QName' || description.plan.primitive === 'NOTATION') {
+      const name = intrinsicPatterns.compile({value: '[\\i-[:]][\\c-[:]]*', context: lexical.context}, owner); intrinsicCompiled.add(name);
+      const local = patternLanguage(name, owner), choices: RegularLanguage[] = [local];
+      for (const prefix in lexical.context.namespaces) if (prefix) {
+        c.text(prefix, owner); choices.push(regular.concatenate([expressionLanguage(quoteExpression(prefix + ':', owner), owner), local], owner));
+      }
+      constraints.push(regular.union(choices, owner));
+    }
+    if (['dateTime', 'date', 'time', 'gYear', 'gYearMonth', 'gMonthDay', 'gDay', 'gMonth'].includes(description.plan.primitive!))
+      constraints.push(calendarLanguages.valid(description.plan.primitive as NonNullable<SchemaOperand['calendar']>['family'], owner));
+    if (description.plan.primitive === 'duration') constraints.push(durationLanguages.valid(owner));
+    let source = regular.intersect(constraints, owner);
+    for (const tuple of tuples) {
+      let language: RegularLanguage | undefined;
+      if (lengthNames.includes(tuple.name)) {
+        if (description.plan.primitive === 'QName' || description.plan.primitive === 'NOTATION') continue;
+        language = valueLengthLanguage(description, tuple.name, tuple.property.integer!, owner);
+      } else if (description.plan.primitive === 'decimal') language = decimalFacetLanguage(tuple, owner);
+      else if (boundNames.includes(tuple.name)) {
+        if (tuple.property.operand?.calendar) language = calendarLanguages.bound(source, tuple.property.operand.calendar, tuple.name as IeeeBound['name'], owner);
+        else if (tuple.property.operand?.duration) language = durationLanguages.bound(source, tuple.property.operand.duration, tuple.name as IeeeBound['name'], owner);
+        else if (description.plan.primitive === 'float' || description.plan.primitive === 'double') return undefined;
+      }
+      if (language) constraints.push(language);
+    }
+    source = regular.intersect(constraints, owner);
+    for (const layer of description.plan.layers) {
+      const members = enumerations.get(layer); if (!members?.size) continue;
+      const choices: RegularLanguage[] = [];
+      for (const value of members.values()) {
+        if (description.plan.variety === 'atomic' && value.family !== description.plan.primitive) continue;
+        if (description.plan.variety === 'list' && (value.family !== 'list' || !value.items
+          || description.item!.plan.variety !== 'atomic' || value.items.some(item => item.family !== description.item!.plan.primitive))) continue;
+        const inverse = inverseExpression(value, lexical, owner);
+        if (inverse !== undefined) choices.push(expressionLanguage(inverse, owner));
+        else if (value.calendar) for (const alias of calendarAliasExpressions(value.calendar, owner, c)) choices.push(expressionLanguage(alias, owner));
+        else if (value.duration) for (const alias of durationAliasExpressions(value.duration, owner, c,
+          alias => regular.witness(regular.intersect([source, expressionLanguage(alias, owner)], owner), owner) !== undefined)) choices.push(expressionLanguage(alias, owner));
+        else return undefined;
+      }
+      constraints.push(regular.union(choices, owner));
+    }
+    for (const conjunct of description.conjuncts ?? []) {const language = admissionLanguage(conjunct, lexical, owner); if (!language) return undefined; constraints.push(language);}
+    return regular.intersect(constraints, owner);
+  };
+  const ieeeAdmission = (description: Description, owner: GraphNode) => {
+    const family = description.plan.primitive as 'float' | 'double', tuples = scalarTuples(description, owner);
+    const bounds: IeeeBound[] = tuples.filter(tuple => boundNames.includes(tuple.name)).map(tuple => ({name: tuple.name as IeeeBound['name'], value: tuple.property.operand!}));
+    let {intervals, literals} = ieeeLanguages.boundIntervals(family, bounds, owner);
+    for (const layer of description.plan.layers) {
+      const members = enumerations.get(layer); if (!members?.size) continue;
+      const selected: IeeeInputInterval[] = [], selectedLiterals: string[] = [];
+      for (const value of members.values()) {
+        c.step(owner); if (value.family !== family || excludedByValueFacets(description, value, owner)) continue;
+        selected.push(...ieeeLanguages.inverseIntervals(value, owner));
+        if (value.canonical === 'NaN') selectedLiterals.push('NaN');
+        if (value.canonical === 'Infinity' || value.canonical === '-Infinity') selectedLiterals.push(value.canonical === 'Infinity' ? 'INF' : '-INF');
+      }
+      const outside = ieeeLanguages.subtractIntervals([{negative: false}, {negative: true}], selected, owner);
+      intervals = [...ieeeLanguages.subtractIntervals(intervals, outside, owner)]; literals = literals.filter(value => selectedLiterals.includes(value));
+    }
+    return {intervals, literals};
+  };
+  const atomicAdmissionPredicate = (description: Description, lexical: LexicalValue, owner: GraphNode): LexicalPredicate | undefined => {
+    if (description.plan.variety !== 'atomic') return undefined;
+    const mode = description.plan.whitespace as 'preserve' | 'replace' | 'collapse';
+    if (description.plan.primitive !== 'float' && description.plan.primitive !== 'double') {
+      const language = admissionLanguage(description, lexical, owner); return language && {kind: 'regular', language: regular.whitespacePreimage(language, mode, owner)};
+    }
+    c.step(owner, 5); const accepted = ieeeAdmission(description, owner), children: LexicalPredicate[] = [
+      {kind: 'regular', language: regular.whitespacePreimage(regular.intersect(spellingConstraints(description, owner), owner), mode, owner)},
+      {kind: 'numeric', condition: {...accepted, nonNumeric: false}},
+    ];
+    for (const conjunct of description.conjuncts ?? []) {
+      const predicate = scalarAdmissionPredicate(conjunct, lexical, owner); if (!predicate) return undefined; children.push(predicate);
+    }
+    return {kind: 'and', children};
+  };
+  const inversePredicate = (expected: SchemaOperand, lexical: LexicalValue, source: RegularLanguage, mode: 'preserve' | 'replace' | 'collapse', owner: GraphNode): LexicalPredicate | undefined => {
+    if (expected.family === 'float' || expected.family === 'double') {
+      const literals = expected.canonical === 'NaN' ? ['NaN'] : expected.canonical === 'Infinity' ? ['INF'] : expected.canonical === '-Infinity' ? ['-INF'] : [];
+      return {kind: 'numeric', condition: {intervals: ieeeLanguages.inverseIntervals(expected, owner), literals, nonNumeric: false}};
+    }
+    const inverse = inverseExpression(expected, lexical, owner); let language: RegularLanguage;
+    if (inverse !== undefined) language = expressionLanguage(inverse, owner);
+    else if (expected.family === 'QName' || expected.family === 'NOTATION') language = regular.union([], owner);
+    else if (expected.calendar) {
+      c.step(owner, 2); const choices: RegularLanguage[] = [];
+      for (const alias of calendarAliasExpressions(expected.calendar, owner, c)) choices.push(expressionLanguage(alias, owner));
+      language = regular.union(choices, owner);
+    } else if (expected.duration) {
+      c.step(owner, 2); const choices: RegularLanguage[] = [];
+      for (const alias of durationAliasExpressions(expected.duration, owner, c,
+        alias => regular.witness(regular.intersect([source, expressionLanguage(alias, owner)], owner), owner) !== undefined)) choices.push(expressionLanguage(alias, owner));
+      language = regular.union(choices, owner);
+    } else return undefined;
+    return {kind: 'regular', language: regular.whitespacePreimage(regular.intersect([language, source], owner), mode, owner)};
+  };
+  const fixedAtomicPredicate = (description: Description, expected: SchemaOperand, lexical: LexicalValue, owner: GraphNode): LexicalPredicate | undefined => {
+    if (description.plan.variety !== 'atomic') return undefined;
+    if (description.plan.primitive !== expected.family || excludedByValueFacets(description, expected, owner) || excludedByEnumeration(description, expected, owner))
+      return {kind: 'regular', language: regular.union([], owner)};
+    const admitted = atomicAdmissionPredicate(description, lexical, owner); if (!admitted) return undefined;
+    const inverse = inversePredicate(expected, lexical, regular.intersect(spellingConstraints(description, owner), owner),
+      description.plan.whitespace as 'preserve' | 'replace' | 'collapse', owner);
+    return inverse && {kind: 'and', children: [admitted, inverse]};
+  };
+  const fixedScalarScope = (description: Description, expected: SchemaOperand, lexical: LexicalValue, owner: GraphNode): RegularLanguage | undefined => {
+    if (expected.family === 'list') return undefined;
+    if (expected.family !== 'string' && expected.family !== 'anyURI' && expected.family !== 'base64Binary')
+      return regular.whitespacePreimage(expressionLanguage('([^ \\t\\r\\n]+)?', owner), 'collapse', owner);
+    const inverse = inverseExpression(expected, lexical, owner); if (inverse === undefined) return undefined;
+    const candidates = description.plan.variety === 'union' ? description.members! : [description], languages: RegularLanguage[] = [];
+    for (const member of candidates) if (member.plan.primitive === expected.family) {
+      const mode = member.plan.whitespace as 'preserve' | 'replace' | 'collapse';
+      languages.push(regular.whitespacePreimage(regular.intersect([expressionLanguage(inverse, owner), normalizedStringLanguage(member, owner)], owner), mode, owner));
+    }
+    return regular.union(languages, owner);
+  };
+  /** Compile a numeric guard only after proving its scoped spellings have no
+   * exponent. Decimal rounding cells then have exact regular preimages. */
+  const regularPredicateInScope = (predicate: LexicalPredicate, scope: RegularLanguage, owner: GraphNode): RegularLanguage | undefined => {
+    const choices: RegularLanguage[] = [], grammar = expressionLanguage('INF|\\-INF|NaN|[+\\-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+\\-]?[0-9]+)?', owner);
+    const exponential = regular.whitespacePreimage(expressionLanguage('[+\\-]?([0-9]+([.][0-9]*)?|[.][0-9]+)[eE][+\\-]?[0-9]+', owner), 'collapse', owner);
+    for (const branch of lexicalPredicates.branches(predicate, scope, owner)) {
+      const missing = numericImages.difference(numericImages.all(), branch.numeric, owner);
+      if (!missing.nonNumeric && !missing.intervals.length && !missing.literals.length) {choices.push(branch.language); continue;}
+      if (!numericImages.exists(branch.language, branch.numeric, owner)) continue;
+      if (!numericImages.exists(branch.language, missing, owner)) {choices.push(branch.language); continue;}
+      const accepted = [regular.whitespacePreimage(ieeeLanguages.decimalInputLanguage(branch.numeric.intervals, branch.numeric.literals, owner), 'collapse', owner)];
+      const exponentialSource = regular.intersect([branch.language, exponential], owner);
+      if (regular.witness(exponentialSource, owner) !== undefined) {
+        const unsigned = regular.whitespacePreimage(expressionLanguage('[+]?[0-9]+[eE][+]?[0-9]+', owner), 'collapse', owner);
+        if (regular.witness(regular.intersect([exponentialSource, regular.negate(unsigned, owner)], owner), owner) !== undefined) return undefined;
+        accepted.push(regular.whitespacePreimage(ieeeLanguages.unsignedExponentialLanguage(regular.whitespaceImage(exponentialSource, 'collapse', owner), branch.numeric.intervals, owner), 'collapse', owner));
+      }
+      if (branch.numeric.nonNumeric) accepted.push(regular.negate(regular.whitespacePreimage(grammar, 'collapse', owner), owner));
+      c.step(owner, 3); choices.push(regular.intersect([branch.language, regular.union(accepted, owner)], owner));
+    }
+    return regular.union(choices, owner);
+  };
+  /** Exact list admission restricted to all token paths of a whole-word DFA.
+   * The quotient preserves every permitted token boundary, including binary
+   * aliases whose spaces disappear only in the subsequent value projection. */
+  const listAdmissionInScope = (description: Description, lexical: LexicalValue, scope: RegularLanguage, owner: GraphNode): RegularLanguage | undefined => {
+    const token = expressionLanguage('[^ \\t\\r\\n]+', owner), space = expressionLanguage(' ', owner);
+    const normal = regular.whitespaceImage(scope, 'collapse', owner);
+    const tokenScope = regular.intersect([token, regular.quotient(normal,
+      regular.repeat(regular.concatenate([token, space], owner), 0, 'unbounded', owner),
+      regular.repeat(regular.concatenate([space, token], owner), 0, 'unbounded', owner), owner)], owner);
+    const predicate = scalarAdmissionPredicate(description.item!, lexical, owner); if (!predicate) return undefined;
+    const item = regularPredicateInScope(predicate, tokenScope, owner); if (!item) return undefined;
+    const constraints = [...spellingConstraints(description, owner), regular.union([expressionLanguage('', owner),
+      regular.concatenate([item, regular.repeat(regular.concatenate([space, item], owner), 0, 'unbounded', owner)], owner)], owner)];
+    for (const tuple of scalarTuples(description, owner)) if (lengthNames.includes(tuple.name)) constraints.push(valueLengthLanguage(description, tuple.name, tuple.property.integer!, owner)!);
+    for (const layer of description.plan.layers) {
+      const members = enumerations.get(layer); if (!members?.size) continue;
+      const alternatives: RegularLanguage[] = [];
+      for (const value of members.values()) if (value.family === 'list' && value.items) {
+        const sequence: RegularLanguage[] = []; let complete = true;
+        for (let index = 0; index < value.items.length; index++) {
+          const fixed = scalarAdmissionPredicate(description.item!, lexical, owner, value.items[index]);
+          const admitted = fixed && regularPredicateInScope(fixed, tokenScope, owner);
+          if (!admitted) {complete = false; break;}
+          if (index) sequence.push(space); sequence.push(admitted);
+        }
+        if (!complete) return undefined;
+        alternatives.push(regular.concatenate(sequence, owner));
+      }
+      constraints.push(regular.union(alternatives, owner));
+    }
+    for (const conjunct of description.conjuncts ?? []) {
+      const admitted = listAdmissionInScope(conjunct, lexical, scope, owner); if (!admitted) return undefined;
+      constraints.push(regular.whitespaceImage(admitted, 'collapse', owner));
+    }
+    return regular.whitespacePreimage(regular.intersect(constraints, owner), 'collapse', owner);
+  };
+  const scopedListAdmissionPredicate = (description: Description, lexical: LexicalValue, scope: RegularLanguage, owner: GraphNode): LexicalPredicate | undefined => {
+    const normalized = regular.whitespaceImage(scope, 'collapse', owner);
+    const multiple = expressionLanguage('[^ \\t\\r\\n]+( [^ \\t\\r\\n]+)+', owner);
+    if (regular.witness(regular.intersect([normalized, multiple], owner), owner) !== undefined) {
+      const finite = regular.finiteWords(normalized, owner); if (finite.kind !== 'finite') return undefined;
+      c.step(owner, 2); const admitted: RegularLanguage[] = [];
+      for (const word of finite.words) {
+        try {operand(description, {...lexical, value: word}, owner); admitted.push(expressionLanguage(quoteExpression(word, owner), owner));}
+        catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+      }
+      return {kind: 'regular', language: regular.whitespacePreimage(regular.union(admitted, owner), 'collapse', owner)};
+    }
+    c.step(owner, 3); const alternatives: LexicalPredicate[] = [];
+    const onToken = (predicate: LexicalPredicate): LexicalPredicate => {
+      c.step(owner, 3); const mapped = new Map<LexicalPredicate, LexicalPredicate>(), pending = [{node: predicate, ready: false}], token = expressionLanguage('[^ \\t\\r\\n]+', owner);
+      while (pending.length) {
+        c.step(owner); const frame = pending.pop()!, node = frame.node;
+        if (mapped.has(node)) continue;
+        if (node.kind === 'regular') mapped.set(node, {kind: 'regular', language: regular.whitespacePreimage(regular.intersect([node.language, token], owner), 'collapse', owner)});
+        else if (node.kind === 'numeric') mapped.set(node, node);
+        else if (!frame.ready) {
+          c.step(owner, 3); pending.push({node, ready: true});
+          for (const child of node.kind === 'not' ? [node.child] : node.children) {c.step(owner, 3); pending.push({node: child, ready: false});}
+        } else if (node.kind === 'not') mapped.set(node, {kind: 'not', child: mapped.get(node.child)!});
+        else {c.step(owner, node.children.length + 3); mapped.set(node, {kind: node.kind, children: node.children.map(child => mapped.get(child)!)});}
+      }
+      return mapped.get(predicate)!;
+    };
+    try {operand(description, {...lexical, value: ''}, owner); alternatives.push({kind: 'regular', language: expressionLanguage('[ \\t\\r\\n]*', owner)});}
+    catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+    if (!valueFacetFailure(description, {family: 'list', canonical: '[]', length: '1'}, owner)) {
+      const children: LexicalPredicate[] = [{kind: 'regular', language: regular.whitespacePreimage(regular.intersect([
+        ...spellingConstraints(description, owner), expressionLanguage('[^ \\t\\r\\n]+', owner)], owner), 'collapse', owner)}];
+      const item = scalarAdmissionPredicate(description.item!, lexical, owner); if (!item) return undefined; children.push(onToken(item));
+      for (const layer of description.plan.layers) {
+        const members = enumerations.get(layer); if (!members?.size) continue;
+        c.step(owner, 2); const choices: LexicalPredicate[] = [];
+        for (const value of members.values()) if (value.family === 'list' && value.items?.length === 1) {
+          const predicate = scalarAdmissionPredicate(description.item!, lexical, owner, value.items[0]); if (!predicate) return undefined; choices.push(onToken(predicate));
+        }
+        children.push({kind: 'or', children: choices});
+      }
+      for (const conjunct of description.conjuncts ?? []) {const predicate = scopedListAdmissionPredicate(conjunct, lexical, scope, owner); if (!predicate) return undefined; children.push(predicate);}
+      alternatives.push({kind: 'and', children});
+    }
+    return {kind: 'or', children: alternatives};
+  };
+  const scalarAdmissionPredicate = (description: Description, lexical: LexicalValue, owner: GraphNode, expected?: SchemaOperand, scope?: RegularLanguage): LexicalPredicate | undefined => {
+    if (description.plan.variety === 'atomic') return expected ? fixedAtomicPredicate(description, expected, lexical, owner) : atomicAdmissionPredicate(description, lexical, owner);
+    if (description.plan.variety === 'list') return scope ? scopedListAdmissionPredicate(description, lexical, scope, owner) : undefined;
+    c.step(owner, 4); const alternatives: LexicalPredicate[] = [], previous: LexicalPredicate[] = [];
+    for (const member of description.members!) {
+      const admitted = scalarAdmissionPredicate(member, lexical, owner, undefined, scope); if (!admitted) return undefined;
+      const selected = expected && member.plan.variety === 'list' && expected.family !== 'list'
+        ? {kind: 'regular' as const, language: regular.union([], owner)}
+        : expected ? scalarAdmissionPredicate(member, lexical, owner, expected, scope) : admitted;
+      if (!selected) return undefined;
+      c.step(owner, previous.length * 2 + 4); const children: LexicalPredicate[] = [selected, ...previous.map(child => ({kind: 'not' as const, child}))];
+      const mode = member.plan.whitespace as 'preserve' | 'replace' | 'collapse';
+      for (const layer of description.plan.layers) {
+        if (layer.patterns.length) children.push({kind: 'regular', language: regular.whitespacePreimage(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner), mode, owner)});
+        const members = enumerations.get(layer); if (!members?.size) continue;
+        c.step(owner, 2); const choices: LexicalPredicate[] = [];
+        for (const value of members.values()) {
+          if (value.family !== member.plan.primitive) continue;
+          const inverse = inversePredicate(value, lexical, regular.intersect(spellingConstraints(member, owner), owner), mode, owner); if (!inverse) return undefined;
+          choices.push(inverse);
+        }
+        children.push({kind: 'or', children: choices});
+      }
+      alternatives.push({kind: 'and', children}); previous.push(admitted);
+    }
+    for (const conjunct of description.conjuncts ?? []) {
+      const predicate = scalarAdmissionPredicate(conjunct, lexical, owner, undefined, scope); if (!predicate) return undefined;
+      // A conjunct tests admission independently, retaining this union's
+      // selected typed result rather than substituting its selection.
+      for (let index = 0; index < alternatives.length; index++) alternatives[index] = {kind: 'and', children: [alternatives[index], predicate]};
+    }
+    return {kind: 'or', children: alternatives};
+  };
+  const admissionWitness = (description: Description, lexical: LexicalValue, owner: GraphNode, extra: RegularLanguage): string | undefined => {
+    if (description.plan.variety === 'union') {
+      const predicate = scalarAdmissionPredicate(description, lexical, owner);
+      if (predicate) {
+        const word = lexicalPredicates.witness(predicate, extra, owner); if (word === undefined) return undefined;
+        operand(description, {...lexical, value: word}, owner); return word;
+      }
+      const finite = description.plan.layers.find(layer => (enumerations.get(layer)?.size ?? 0) > 0);
+      if (finite) {
+        for (const expected of enumerations.get(finite)!.values()) {
+          if (excludedByEnumeration(description, expected, owner)) continue;
+          const decision = regularMembership(description, expected, lexical, owner, [extra]);
+          if (decision === undefined) throw new TypeError('Complete admitted token membership must be determinate');
+          if (!decision) continue;
+          for (const candidate of schemaScalarWitnesses(expected, lexical, owner, c)) {
+            if (regular.witness(regular.intersect([extra, expressionLanguage(quoteExpression(candidate.value, owner), owner)], owner), owner) === undefined) continue;
+            try {const value = operand(description, candidate, owner); if (values.sameValue(value, expected, owner)) return candidate.value;}
+            catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+          }
+          // Existence was proved by the complete inverse product above. A
+          // fair positive traversal reconstructs a lexical witness; it never
+          // supplies a negative result after a failed finite search.
+          for (const word of regular.words(extra, owner)) {
+            try {const value = operand(description, {...lexical, value: word}, owner); if (values.sameValue(value, expected, owner)) return word;}
+            catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+          }
+          throw new TypeError('A proved token witness must be reconstructible');
+        }
+        return undefined;
+      }
+      for (const member of description.members!) {
+        const constraints: RegularLanguage[] = [extra];
+        for (const layer of description.plan.layers) if (layer.patterns.length)
+          constraints.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+        const word = admissionWitness(member, lexical, owner, regular.intersect(constraints, owner));
+        if (word === undefined) continue;
+        try {operand(description, {...lexical, value: word}, owner); return word;}
+        catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+      }
+      return undefined;
+    }
+    const domain = admissionLanguage(description, lexical, owner);
+    if (domain) return regular.witness(regular.intersect([domain, extra], owner), owner);
+    if (description.plan.primitive === 'float' || description.plan.primitive === 'double') {
+      const language = regular.intersect([...spellingConstraints(description, owner), extra], owner), admission = ieeeAdmission(description, owner);
+      for (const literal of admission.literals) {
+        const word = regular.witness(regular.intersect([language, expressionLanguage(quoteExpression(literal, owner), owner)], owner), owner);
+        if (word !== undefined) return word;
+      }
+      for (const interval of admission.intervals) {const word = ieeeLanguages.intervalWitness(language, interval, owner); if (word !== undefined) return word;}
+      return undefined;
+    }
+    throw new TypeError('An admitted atomic item requires its complete lexical authority');
+  };
+  const listLanguageWitness = (description: Description, language: RegularLanguage, lexical: LexicalValue, owner: GraphNode): string | undefined => {
+    const program = regular.automaton(language, owner), token = expressionLanguage('[^ \\t\\r\\n]+', owner);
+    if (program.states[program.start].accepting) return '';
+    c.step(owner, 5); const frontier = [{state: program.start, prefix: ''}], seen = new Set([program.start]);
+    for (let index = 0; index < frontier.length; index++) {
+      const from = frontier[index];
+      for (let to = 0; to < program.states.length; to++) {
+        c.step(owner); const state = program.states[to];
+        if (!state.accepting && !state.transitions.some(edge => edge.lo <= 32 && edge.hi >= 32)) continue;
+        const paths = regular.intersect([regular.paths(program, [from.state], new Set([to]), owner), token], owner);
+        if (regular.witness(paths, owner) === undefined) continue;
+        const word = admissionWitness(description.item!, lexical, owner, paths); if (word === undefined) continue;
+        c.step(owner, from.prefix.length + word.length + 3); const value = from.prefix + word;
+        if (state.accepting) return value;
+        for (const edge of state.transitions) {
+          c.step(owner); if (edge.lo > 32 || edge.hi < 32 || seen.has(edge.to)) continue;
+          c.step(owner, value.length + 4); seen.add(edge.to); frontier.push({state: edge.to, prefix: value + ' '});
+        }
+      }
+    }
+    return undefined;
+  };
+  const scalarValueImage = (source: RegularLanguage, family: string, lexical: LexicalValue, owner: GraphNode): RegularLanguage | undefined => {
+    if (['dateTime', 'date', 'time', 'gYear', 'gYearMonth', 'gMonthDay', 'gDay', 'gMonth'].includes(family))
+      return calendarImages.image(source, family as NonNullable<SchemaOperand['calendar']>['family'], owner);
+    if (family !== 'QName' && family !== 'NOTATION') return valueImages.simple(source, family, owner);
+    const name = intrinsicPatterns.compile({value: '[\\i-[:]][\\c-[:]]*', context: lexical.context}, owner); intrinsicCompiled.add(name);
+    const local = patternLanguage(name, owner), choices: RegularLanguage[] = [], epsilon = expressionLanguage('', owner);
+    c.step(owner, 3); const bindings = new Map<string, string>();
+    for (const prefix in lexical.context.namespaces) {
+      c.text(prefix, owner); c.step(owner, 3); bindings.set(prefix, lexical.context.namespaces[prefix]);
+    }
+    if (!bindings.has('')) {c.step(owner, 2); bindings.set('', '');}
+    for (const [prefix, namespace] of bindings) {
+      c.text(prefix, owner); c.text(namespace, owner); c.step(owner, prefix.length + namespace.length * 3 + 12);
+      const value = regular.intersect([regular.quotient(source, expressionLanguage(quoteExpression(prefix ? prefix + ':' : '', owner), owner), epsilon, owner), local], owner);
+      const before = '[' + JSON.stringify(namespace) + ',"';
+      choices.push(regular.concatenate([expressionLanguage(quoteExpression(before, owner), owner), value,
+        expressionLanguage(quoteExpression('"]', owner), owner)], owner));
+    }
+    return regular.union(choices, owner);
+  };
+  const encodeImageValue = (value: SchemaOperand, owner: GraphNode): string => {
+    c.text(value.canonical, owner); c.step(owner, value.canonical.length * 4 + 32);
+    if (value.family === 'base64Binary') return Buffer.from(value.canonical, 'hex').toString('base64');
+    if (value.family === 'hexBinary') return value.canonical;
+    if (value.calendar) {
+      const budget = {charge: (work: number) => c.step(owner, work), text: (text: string) => {c.text(text, owner);}, arithmetic: (digits: number) => c.step(owner, (digits + 2) ** 2)};
+      const instant = showInstant(value.calendar.seconds, budget); return value.calendar.zoned ? instant : instant.slice(0, -1);
+    }
+    return value.canonical;
+  };
+  const valueSets = schemaSymbolicValueSets<GraphNode>(c, regular, numericImages, ieeeLanguages, expressionLanguage,
+    (family, spelling, owner) => values.atomic(family, {value: spelling, context: owner.context}, owner, 'preserve'), encodeImageValue);
+  const symbolicSequences = schemaSymbolicSequences<GraphNode, ScalarValueSet>(c, valueSets.satisfiable, label => label.family);
+  const atomicImageLabels = (description: Description, lexical: LexicalValue, source: RegularLanguage, additions: readonly LexicalPredicate[], owner: GraphNode): readonly ScalarValueSet[] => {
+    const candidates = description.plan.variety === 'union' ? description.members! : [description], result: ScalarValueSet[] = [], previous: LexicalPredicate[] = [];
+    for (const member of candidates) {
+      const admitted = atomicAdmissionPredicate(member, lexical, owner); if (!admitted) throw new TypeError('A list item must have an atomic selected member');
+      c.step(owner, additions.length + previous.length * 2 + 4); const children: LexicalPredicate[] = [admitted, ...additions, ...previous.map(child => ({kind: 'not' as const, child}))];
+      previous.push(admitted);
+      if (description.plan.variety === 'union') {
+        for (const layer of description.plan.layers) {
+          if (layer.patterns.length) children.push({kind: 'regular', language: regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner)});
+          const members = enumerations.get(layer); if (!members?.size) continue;
+          const choices: LexicalPredicate[] = [];
+          for (const value of members.values()) if (value.family === member.plan.primitive) {
+            const predicate = inversePredicate(value, lexical, source, member.plan.whitespace as 'preserve' | 'replace' | 'collapse', owner);
+            if (!predicate) throw new TypeError('An admitted atomic value requires a complete inverse'); choices.push(predicate);
+          }
+          children.push({kind: 'or', children: choices});
+        }
+        for (const conjunct of description.conjuncts ?? []) {
+          const predicate = scalarAdmissionPredicate(conjunct, lexical, owner); if (!predicate) throw new TypeError('A list item conjunct requires atomic admission'); children.push(predicate);
+        }
+      }
+      const predicate: LexicalPredicate = {kind: 'and', children};
+      const branches = lexicalPredicates.branches(predicate, source, owner);
+      if (member.plan.primitive === 'float' || member.plan.primitive === 'double') {
+        if (branches.some(branch => numericImages.exists(branch.language, branch.numeric, owner))) result.push({family: member.plan.primitive, kind: 'ieee', inputs: branches});
+        continue;
+      }
+      for (const branch of branches) {
+        if (!numericImages.exists(branch.language, branch.numeric, owner)) continue;
+        const compiled = regularPredicateInScope({kind: 'numeric', condition: branch.numeric}, branch.language, owner);
+        const raw = compiled ?? branch.language, condition = compiled ? numericImages.all() : branch.numeric;
+        if (!compiled && !['string', 'anyURI', 'hexBinary', 'base64Binary'].includes(member.plan.primitive!)) throw new TypeError('An atomic item guard needs its datatype preimage');
+        const image = scalarValueImage(raw, member.plan.primitive!, lexical, owner);
+        if (!image) throw new TypeError('An admitted atomic item needs its value image');
+        c.step(owner, 4); result.push({kind: 'regular', family: member.plan.primitive!, language: image, numeric: condition});
+      }
+    }
+    return result;
+  };
+  const joinSymbolic = (inputs: readonly SymbolicSequence<ScalarValueSet>[], owner: GraphNode): SymbolicSequence<ScalarValueSet> => {
+    c.step(owner, 4); const states: {accepting: boolean; edges: {to: number; label: ScalarValueSet}[]}[] = [{accepting: false, edges: []}];
+    for (const input of inputs) {
+      c.step(owner, input.states.length * 3 + 4); const offset = states.length;
+      for (const state of input.states) {c.step(owner, state.edges.length * 3 + 3); states.push({accepting: state.accepting, edges: state.edges.map(edge => ({to: edge.to + offset, label: edge.label}))});}
+      states[0].accepting ||= input.states[input.start].accepting;
+      for (const edge of input.states[input.start].edges) {c.step(owner, 3); states[0].edges.push({to: edge.to + offset, label: edge.label});}
+    }
+    return {start: 0, states};
+  };
+  type SelectedTokenBranch = {raw: RegularLanguage; numeric: NumericImageCondition; lists: readonly Description[]};
+  const listGlobalDomain = (description: Description, owner: GraphNode): RegularLanguage => {
+    const constraints = spellingConstraints(description, owner);
+    for (const tuple of scalarTuples(description, owner)) if (lengthNames.includes(tuple.name)) constraints.push(valueLengthLanguage(description, tuple.name, tuple.property.integer!, owner)!);
+    for (const conjunct of description.conjuncts ?? []) constraints.push(listGlobalDomain(conjunct, owner));
+    return regular.whitespacePreimage(regular.intersect(constraints, owner), 'collapse', owner);
+  };
+  const selectedTokenBranches = (description: Description, member: Description, lexical: LexicalValue, owner: GraphNode): readonly SelectedTokenBranch[] | undefined => {
+    const mode = member.plan.whitespace as 'preserve' | 'replace' | 'collapse';
+    const domain = member.plan.variety === 'list' ? listGlobalDomain(member, owner) : admissionLanguage(member, lexical, owner);
+    if (!domain) return undefined;
+    const parent: RegularLanguage[] = [];
+    for (const layer of description.plan.layers) {
+      if (layer.patterns.length) parent.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+      if ((enumerations.get(layer)?.size ?? 0) > 0) return undefined;
+    }
+    let branches: SelectedTokenBranch[] = [{raw: regular.intersect([member.plan.variety === 'list' ? domain : regular.whitespacePreimage(domain, mode, owner),
+      regular.whitespacePreimage(regular.intersect(parent, owner), mode, owner)], owner), numeric: numericImages.all(), lists: []}];
+    c.step(owner, description.members!.length * 2 + 2);
+    for (const prior of description.members!.slice(0, description.members!.indexOf(member))) {
+      const next: SelectedTokenBranch[] = [];
+      for (const branch of branches) {
+        if (prior.plan.variety !== 'list') {
+          const predicate = scalarAdmissionPredicate(prior, lexical, owner); if (!predicate) return undefined;
+          for (const rejected of lexicalPredicates.branches({kind: 'not', child: predicate}, branch.raw, owner)) {
+            c.step(owner, 4); next.push({...branch, raw: rejected.language, numeric: numericImages.intersection(branch.numeric, rejected.numeric, owner)});
+          }
+          continue;
+        }
+        const regularAdmission = listAdmissionInScope(prior, lexical, branch.raw, owner);
+        if (regularAdmission) {next.push({...branch, raw: regular.intersect([branch.raw, regular.negate(regularAdmission, owner)], owner)}); continue;}
+        const global = listGlobalDomain(prior, owner), outside = regular.intersect([branch.raw, regular.negate(global, owner)], owner);
+        if (regular.witness(outside, owner) !== undefined) next.push({...branch, raw: outside});
+        const inside = regular.intersect([branch.raw, global], owner); if (regular.witness(inside, owner) === undefined) continue;
+        const finite = prior.plan.layers.find(layer => (enumerations.get(layer)?.size ?? 0) > 0);
+        if (!finite) {
+          c.step(owner, 4); const conjunctItems = (prior.conjuncts ?? []).map(conjunct => conjunct.item!);
+          const combined = conjunctItems.length ? {...prior, item: {...prior.item!, conjuncts: [...prior.item!.conjuncts ?? [], ...conjunctItems]}} : prior;
+          next.push({...branch, raw: inside, lists: [...branch.lists, combined]}); continue;
+        }
+        let variants: SelectedTokenBranch[] = [{...branch, raw: inside}];
+        for (const [facet, value] of enumerations.get(finite)!) {
+          if (value.family !== 'list' || !value.items || excludedByEnumeration(prior, value, owner) || excludedByValueFacets(prior, value, owner)) continue;
+          c.step(owner, value.items.length * 6 + 5); const items = value.items.map(item => {
+            const layer: ScalarConstraintLayer = {owner: prior.plan.id, facets: [facet], patterns: []}; enumerations.set(layer, new Map([[facet, item]]));
+            return {...prior.item!, plan: {...prior.item!.plan, layers: [...prior.item!.plan.layers, layer]}};
+          });
+          const arity = regular.whitespacePreimage(valueLengthLanguage(prior, 'length', String(value.items.length), owner)!, 'collapse', owner), split: SelectedTokenBranch[] = [];
+          for (const variant of variants) {
+            split.push({...variant, raw: regular.intersect([variant.raw, regular.negate(arity, owner)], owner)});
+            split.push({...variant, raw: regular.intersect([variant.raw, arity], owner), lists: [...variant.lists, {...prior, membershipItems: items}]});
+          }
+          variants = split;
+        }
+        next.push(...variants);
+      }
+      branches = next;
+    }
+    return branches;
+  };
+  const tokenUnionImages = (description: Description, lexical: LexicalValue, owner: GraphNode, includeLists = true): Map<string, SymbolicSequence<ScalarValueSet>> | undefined => {
+    const images = new Map<string, SymbolicSequence<ScalarValueSet>[]>();
+    for (const member of description.members!) {
+      if (member.plan.variety !== 'list' && !['string', 'anyURI'].includes(member.plan.primitive!)) continue;
+      if (!includeLists && member.plan.variety === 'list') continue;
+      const family = member.plan.variety === 'list' ? 'list' : member.plan.primitive!, mode = member.plan.whitespace as 'preserve' | 'replace' | 'collapse';
+      const finite = member.plan.layers.find(layer => (enumerations.get(layer)?.size ?? 0) > 0);
+      if (member.plan.variety === 'list' && finite) {
+        for (const [facet, value] of enumerations.get(finite)!) {
+          if (value.family !== 'list' || !value.items) continue;
+          const included = regularMembership(description, value, facet.lexical, owner); if (included === undefined) return undefined; if (!included) continue;
+          c.step(owner, value.items.length * 6 + 4); const states = value.items.map((item, index) => ({accepting: false, edges: [{to: index + 1,
+            label: {kind: 'singleton' as const, family: item.family, value: item, encoded: encodeImageValue(item, owner)}}]})); states.push({accepting: true, edges: []});
+          const current = images.get(family) ?? []; current.push({start: 0, states}); images.set(family, current);
+        }
+        continue;
+      }
+      const branches = selectedTokenBranches(description, member, lexical, owner); if (!branches) return undefined;
+      for (const branch of branches) {
+        if (!numericImages.exists(branch.raw, branch.numeric, owner)) continue;
+        const normalized = regular.whitespaceImage(branch.raw, mode, owner), variants: {source: RegularLanguage; numeric: NumericImageCondition}[] = [];
+        const one = regular.whitespacePreimage(expressionLanguage('[^ \\t\\r\\n]+', owner), 'collapse', owner);
+        variants.push({source: regular.intersect([normalized, one], owner), numeric: branch.numeric});
+        if (branch.numeric.nonNumeric) variants.push({source: regular.intersect([normalized, regular.negate(one, owner)], owner), numeric: numericImages.all()});
+        for (const variant of variants) {
+          if (regular.witness(variant.source, owner) === undefined) continue;
+          const maximum = Math.max(0, ...branch.lists.map(list => list.membershipItems ? list.membershipItems.length + 1 : 0));
+          const factory = schemaTokenImages<GraphNode, ScalarValueSet>(c, regular, owner => expressionLanguage('[^ \\t\\r\\n]+', owner),
+            (paths, position, rejected, owner): readonly ScalarValueSet[] => {
+              const predicates: LexicalPredicate[] = [{kind: 'numeric', condition: variant.numeric}];
+              for (const index of rejected) {
+                const prior = branch.lists[index], item = prior.membershipItems?.[position] ?? prior.item!;
+                const predicate = scalarAdmissionPredicate(item, lexical, owner); if (!predicate) throw new TypeError('A prior list token requires atomic admission');
+                predicates.push({kind: 'not', child: predicate});
+              }
+              if (member.plan.variety === 'list') {
+                for (const conjunct of member.conjuncts ?? []) {
+                  const predicate = scalarAdmissionPredicate(conjunct.item!, lexical, owner); if (!predicate) throw new TypeError('A list conjunct requires atomic admission'); predicates.push(predicate);
+                }
+                return atomicImageLabels(member.item!, lexical, paths, predicates, owner);
+              }
+              return lexicalPredicates.branches({kind: 'and', children: predicates}, paths, owner)
+                .filter(branch => numericImages.exists(branch.language, branch.numeric, owner))
+                .map(branch => ({kind: 'regular', family: 'string-fragment', language: branch.language, numeric: branch.numeric}));
+            }, (cp, owner): ScalarValueSet => ({kind: 'regular', family: 'string-fragment', language: expressionLanguage(quoteExpression(String.fromCodePoint(cp), owner), owner), numeric: numericImages.all()}));
+          const image = factory.image(variant.source, branch.lists.length, maximum, member.plan.variety === 'list' ? 'list' : 'string', owner);
+          const current = images.get(family) ?? []; current.push(image); images.set(family, current);
+        }
+      }
+    }
+    return new Map([...images].map(([family, inputs]) => [family, joinSymbolic(inputs, owner)]));
+  };
+  type GuardedImage = {language: RegularLanguage; numeric: NumericImageCondition};
+  const guardedUnionImages = (description: Description, lexical: LexicalValue, owner: GraphNode, tokenFamilies = false): Map<string, readonly GuardedImage[]> | undefined => {
+    c.step(owner, 3); const images = new Map<string, GuardedImage[]>();
+    for (const member of description.members!) {
+      if (member.plan.variety === 'list') continue;
+      if (tokenFamilies && ['string', 'anyURI'].includes(member.plan.primitive!)) continue;
+      if (member.plan.primitive === 'float' || member.plan.primitive === 'double') continue;
+      const admitted = admissionLanguage(member, lexical, owner); if (!admitted) return undefined;
+      const mode = member.plan.whitespace === 'member' ? 'collapse' : member.plan.whitespace, constraints = [admitted];
+      for (const layer of description.plan.layers) {
+        if (layer.patterns.length) constraints.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+        const members = enumerations.get(layer); if (!members?.size) continue;
+        const choices: RegularLanguage[] = [];
+        for (const value of members.values()) {
+          if (value.family !== member.plan.primitive) continue;
+          const inverse = inverseExpression(value, lexical, owner); if (inverse === undefined) return undefined;
+          choices.push(expressionLanguage(inverse, owner));
+        }
+        constraints.push(regular.union(choices, owner));
+      }
+      c.step(owner, 4); let branches: {raw: RegularLanguage; numeric: NumericImageCondition}[] = [{
+        raw: regular.whitespacePreimage(regular.intersect(constraints, owner), mode, owner), numeric: numericImages.all()}];
+      c.step(owner, description.members!.length * 2 + 2);
+      for (const prior of description.members!.slice(0, description.members!.indexOf(member))) {
+        const priorMode = prior.plan.whitespace === 'member' ? 'collapse' : prior.plan.whitespace;
+        const ieee = prior.plan.primitive === 'float' || prior.plan.primitive === 'double';
+        const priorDomain = ieee ? regular.intersect(spellingConstraints(prior, owner), owner) : admissionLanguage(prior, lexical, owner);
+        const next: typeof branches = [];
+        for (const branch of branches) {
+          const raw = priorDomain ? regular.whitespacePreimage(priorDomain, priorMode, owner)
+            : prior.plan.variety === 'list' ? listAdmissionInScope(prior, lexical, branch.raw, owner) : undefined;
+          if (!raw) return undefined;
+          const outside = regular.intersect([branch.raw, regular.negate(raw, owner)], owner);
+          if (regular.witness(outside, owner) !== undefined) next.push({...branch, raw: outside});
+          if (!ieee) continue;
+          const inside = regular.intersect([branch.raw, raw], owner); if (regular.witness(inside, owner) === undefined) continue;
+          const accepted = ieeeAdmission(prior, owner);
+          next.push({raw: inside, numeric: numericImages.intersection(branch.numeric,
+            numericImages.difference({...numericImages.all(), nonNumeric: false}, {...accepted, nonNumeric: false}, owner), owner)});
+        }
+        branches = next;
+      }
+      for (const branch of branches) {
+        let raw = branch.raw, condition = branch.numeric;
+        if (!condition.nonNumeric) {
+          const exponential = regular.whitespacePreimage(expressionLanguage('[+\\-]?([0-9]+([.][0-9]*)?|[.][0-9]+)[eE][+\\-]?[0-9]+', owner), 'collapse', owner);
+          if (regular.witness(regular.intersect([raw, exponential], owner), owner) === undefined) {
+            raw = regular.intersect([raw, regular.whitespacePreimage(ieeeLanguages.decimalInputLanguage(condition.intervals, condition.literals, owner), 'collapse', owner)], owner);
+            condition = numericImages.all();
+          } else if (!['string', 'anyURI', 'hexBinary', 'base64Binary'].includes(member.plan.primitive!)) return undefined;
+        }
+        if (regular.witness(raw, owner) === undefined) continue;
+        const image = scalarValueImage(regular.whitespaceImage(raw, mode, owner), member.plan.primitive!, lexical, owner); if (!image) return undefined;
+        c.step(owner, 3); const current = images.get(member.plan.primitive!) ?? []; current.push({language: image, numeric: condition}); images.set(member.plan.primitive!, current);
+      }
+    }
+    return images;
+  };
+  const selectedIeeeLabels = (description: Description, lexical: LexicalValue, owner: GraphNode): readonly ScalarValueSet[] => {
+    c.step(owner, 3); const labels: ScalarValueSet[] = [], members = description.members!;
+    const scope = regular.whitespacePreimage(expressionLanguage('[^ \\t\\r\\n]+', owner), 'collapse', owner);
+    for (let index = 0; index < members.length; index++) {
+      const member = members[index]; if (member.plan.primitive !== 'float' && member.plan.primitive !== 'double') continue;
+      const admitted = atomicAdmissionPredicate(member, lexical, owner)!; c.step(owner, index * 2 + 4);
+      const children: LexicalPredicate[] = [admitted];
+      for (let before = 0; before < index; before++) {
+        const predicate = scalarAdmissionPredicate(members[before], lexical, owner, undefined, scope);
+        if (!predicate) throw new TypeError('An earlier member on an IEEE spelling requires complete singleton-token admission');
+        c.step(owner, 3); children.push({kind: 'not', child: predicate});
+      }
+      const mode = member.plan.whitespace as 'preserve' | 'replace' | 'collapse';
+      for (const layer of description.plan.layers) {
+        if (layer.patterns.length) children.push({kind: 'regular', language: regular.whitespacePreimage(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner), mode, owner)});
+        const members = enumerations.get(layer); if (!members?.size) continue;
+        c.step(owner, 2); const alternatives: LexicalPredicate[] = [];
+        for (const value of members.values()) if (value.family === member.plan.primitive) {
+          const predicate = inversePredicate(value, lexical, scope, mode, owner); if (!predicate) throw new TypeError('An IEEE enum requires a complete numeric inverse'); alternatives.push(predicate);
+        }
+        children.push({kind: 'or', children: alternatives});
+      }
+      for (const conjunct of description.conjuncts ?? []) {
+        const predicate = scalarAdmissionPredicate(conjunct, lexical, owner, undefined, scope);
+        if (!predicate) throw new TypeError('An IEEE union conjunct requires singleton-token admission'); children.push(predicate);
+      }
+      const inputs = lexicalPredicates.branches({kind: 'and', children}, scope, owner);
+      if (inputs.some(branch => numericImages.exists(branch.language, branch.numeric, owner))) {c.step(owner, 4); labels.push({kind: 'ieee', family: member.plan.primitive, inputs});}
+    }
+    return labels;
+  };
+  const selectedUnionContainment = (base: Description, result: Description, owner: GraphNode): boolean => {
+    const lexical: LexicalValue = {value: '', context: owner.context};
+    const finite = result.plan.layers.find(layer => (enumerations.get(layer)?.size ?? 0) > 0);
+    if (finite) {
+      let complete = true;
+      for (const [facet, value] of enumerations.get(finite)!) {
+        const present = regularMembership(result, value, facet.lexical, owner); if (present === false) continue;
+        const contained = regularMembership(base, value, facet.lexical, owner);
+        if (present === true && contained === false) c.fail(owner, 'scalar-value-space-restriction', 'A selected derived enumeration value is excluded by the base selected image');
+        if (present === undefined || contained === undefined) complete = false;
+      }
+      return complete;
+    }
+    if (!base.plan.layers.length && [...base.members!, ...result.members!].every(member => member.plan.variety === 'atomic')) {
+      const primitive = base.members![0].plan.primitive, mode = base.members![0].plan.whitespace;
+      if ([...base.members!, ...result.members!].every(member => member.plan.primitive === primitive && member.plan.whitespace === mode)
+        && base.members!.some(member => member.plan.builtin === primitive && scalarTuples(member, owner).every(tuple => tuple.name === 'whiteSpace')
+          && !member.intrinsic?.patterns.length && member.plan.layers.every(layer => !layer.patterns.length && layer.facets.every(facet => facet.name === 'whiteSpace'))))
+        return true;
+    }
+    // These are positive counterexample probes. Every value is reselected by
+    // the actual union and checked by complete typed membership in the base;
+    // a missed probe contributes no containment or nonexistence conclusion.
+    for (const member of result.members!) {
+      const constraints = spellingConstraints(member, owner);
+      for (const layer of result.plan.layers) if (layer.patterns.length) constraints.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+      if (member.plan.variety === 'list') constraints.push(valueLengthLanguage(member, 'minLength', '1', owner)!);
+      const source = regular.intersect(constraints, owner);
+      const word = member.plan.variety === 'list' ? listLanguageWitness(member, source, lexical, owner) : admissionWitness(member, lexical, owner, source);
+      if (word === undefined) continue;
+      let value: SchemaOperand;
+      try {value = operand(result, {...lexical, value: word}, owner);}
+      catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error; continue;}
+      if (regularMembership(base, value, {...lexical, value: word}, owner) === false)
+        c.fail(owner, 'scalar-value-space-restriction', 'An assessed selected derived union value has no base lexical representative');
+    }
+    const lists = base.members!.every(member => member.plan.variety === 'list') && result.members!.every(member => member.plan.variety === 'list');
+    if (lists && !base.plan.layers.length) {
+      const primitive = base.members![0].item!.plan.primitive;
+      if (primitive && [...base.members!, ...result.members!].every(member => member.item!.plan.variety === 'atomic' && member.item!.plan.primitive === primitive)) {
+        const full = base.members!.some(member => scalarTuples(member, owner).every(tuple => tuple.name === 'whiteSpace')
+          && member.plan.layers.every(layer => !layer.patterns.length && layer.facets.every(facet => facet.name === 'whiteSpace'))
+          && member.item!.plan.builtin === primitive && !member.item!.rawProperties
+          && scalarTuples(member.item!, owner).every(tuple => tuple.name === 'whiteSpace')
+          && !member.item!.plan.layers.length && !member.item!.intrinsic?.patterns.length);
+        // Every successful item parser has the same primitive value on a
+        // whitespace-free token. An unrestricted list member admits every
+        // sequence of those values; earlier same-primitive lists cannot alter
+        // that typed image when they select the lexical representative.
+        if (full) return true;
+      }
+      const first = base.members![0];
+      if (first.item!.plan.builtin === 'string' && !first.item!.plan.layers.length
+        && scalarTuples(first, owner).every(tuple => tuple.name === 'whiteSpace')
+        && first.plan.layers.every(layer => !layer.patterns.length && layer.facets.every(facet => facet.name === 'whiteSpace'))) {
+        for (const member of result.members!) {
+          if (member.item!.plan.primitive === 'string') continue;
+          const source = regular.intersect([...spellingConstraints(member, owner), valueLengthLanguage(member, 'minLength', '1', owner)!], owner);
+          const word = listLanguageWitness(member, source, lexical, owner); if (word === undefined) continue;
+          let value: SchemaOperand;
+          try {value = operand(result, {...lexical, value: word}, owner);}
+          catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error; continue;}
+          if (value.items?.some(item => item.family !== 'string') && regularMembership(base, value, {...lexical, value: word}, owner) === false)
+            c.fail(owner, 'scalar-value-space-restriction', 'A derived typed list is outside the universally selected base string-item list image');
+        }
+      }
+    }
+    // A universal raw padding certificate can embed an entire collapse
+    // member image in an unchanged later base member. The proof checks all
+    // earlier raw admissions, rather than sampling individual value aliases.
+    if (!base.plan.layers.length) {
+      const firstDomain = admissionLanguage(base.members![0], lexical, owner);
+      const firstImage = firstDomain && valueImages.simple(firstDomain, base.members![0].plan.primitive!, owner);
+      let covered = true;
+      for (const member of result.members!) {
+        let certified = false;
+        if (firstImage && member.plan.primitive === base.members![0].plan.primitive) {
+          const domain = admissionLanguage(member, lexical, owner), image = domain && valueImages.simple(domain, member.plan.primitive!, owner);
+          if (image && regular.witness(regular.intersect([image, regular.negate(firstImage, owner)], owner), owner) === undefined) certified = true;
+        }
+        if (!certified && member.plan.whitespace === 'collapse') {
+          const index = base.members!.findIndex(prior => prior.definition === member.definition);
+          if (index >= 0) for (const padding of ['\n', '\r', '\t', ' ']) {
+            let universal = true;
+            for (const prior of base.members!.slice(0, index)) {
+              const domain = admissionLanguage(prior, lexical, owner); if (!domain || prior.plan.whitespace === 'member') {universal = false; break;}
+              const raw = regular.whitespacePreimage(domain, prior.plan.whitespace, owner), affix = expressionLanguage(quoteExpression(padding, owner), owner);
+              if (regular.witness(regular.quotient(raw, affix, affix, owner), owner) !== undefined) {universal = false; break;}
+            }
+            if (universal) {certified = true; break;}
+          }
+        }
+        if (!certified) {covered = false; break;}
+      }
+      if (covered) return true;
+    }
+    const first = base.members![0];
+    if (first.plan.primitive === 'string' && !first.plan.layers.length && !first.facets.size
+      && !first.intrinsic?.patterns.length && !first.intrinsic?.scalars.length) {
+      for (const member of result.members!) {
+        if (member.plan.primitive === 'string') continue;
+        const language = regular.intersect(spellingConstraints(member, owner), owner);
+        const word = member.plan.variety === 'list' ? listLanguageWitness(member, language, lexical, owner)
+          : admissionWitness(member, lexical, owner, language);
+        if (word === undefined) continue;
+        let value: SchemaOperand;
+        try {value = operand(result, {...lexical, value: word}, owner);}
+        catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error; continue;}
+        if (value.family !== 'string' && membershipWitness(base, value, {...lexical, value: word}, owner) === false)
+          c.fail(owner, 'scalar-value-space-restriction', 'A selected derived union value is outside the universally selected base string image');
+      }
+    }
+    const tokenFamilies = [...base.members!, ...result.members!].some(member => member.plan.variety === 'list');
+    const tokenParserEmbeds = (before: Description, target: Description): boolean => {
+      if (before.definition === target.definition) return true;
+      if (before.plan.variety !== 'atomic') return false;
+      const first = target.plan.variety === 'union' ? target.members![0] : target;
+      if (first.plan.variety !== 'atomic' || first.plan.primitive !== before.plan.primitive) return false;
+      const admitted = scalarAdmissionPredicate(before, lexical, owner), selected = atomicAdmissionPredicate(first, lexical, owner);
+      return !!admitted && !!selected && !lexicalPredicates.exists({kind: 'and', children: [admitted, {kind: 'not', child: selected}]}, expressionLanguage('[^ \\t\\r\\n]+', owner), owner);
+    };
+    let embeddedLists = true;
+    for (const member of result.members!) if (member.plan.variety === 'list') {
+      c.step(owner, base.members!.length * 2 + 3);
+      const identical = base.members!.findIndex(prior => prior.definition === member.definition);
+      if (identical >= 0 && base.members!.slice(0, identical).every(prior => prior.plan.variety === 'list' && tokenParserEmbeds(prior.item!, member.item!))
+        && !base.plan.layers.some(layer => (enumerations.get(layer)?.size ?? 0) > 0)) {
+        const constraints: RegularLanguage[] = [];
+        for (const layer of result.plan.layers) if (layer.patterns.length) constraints.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+        const inherited: RegularLanguage[] = [];
+        for (const layer of base.plan.layers) if (layer.patterns.length) inherited.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+        if (regular.witness(regular.intersect([...constraints, regular.negate(regular.intersect(inherited, owner), owner)], owner), owner) === undefined) continue;
+      }
+      const prior = base.members![0];
+      const sameParser = member.item!.definition === prior.item?.definition || member.item!.plan.variety === 'atomic' && prior.item?.plan.variety === 'atomic'
+        && member.item!.plan.primitive === prior.item.plan.primitive;
+      if (prior.plan.variety !== 'list' || !sameParser) {embeddedLists = false; break;}
+      const normal = spellingConstraints(member, owner);
+      for (const layer of result.plan.layers) if (layer.patterns.length) normal.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+      const source = regular.whitespacePreimage(regular.intersect(normal, owner), 'collapse', owner);
+      const supplied = listGlobalDomain(member, owner), inherited = listGlobalDomain(prior, owner);
+      const suppliedItem = scalarAdmissionPredicate(member.item!, lexical, owner), inheritedItem = scalarAdmissionPredicate(prior.item!, lexical, owner);
+      if (!suppliedItem || !inheritedItem || prior.plan.layers.some(layer => (enumerations.get(layer)?.size ?? 0) > 0)
+        || lexicalPredicates.exists({kind: 'and', children: [suppliedItem, {kind: 'not', child: inheritedItem}]}, expressionLanguage('[^ \\t\\r\\n]+', owner), owner)) {embeddedLists = false; break;}
+      const baseConstraints: RegularLanguage[] = [];
+      for (const layer of base.plan.layers) {
+        if (layer.patterns.length) baseConstraints.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+        if ((enumerations.get(layer)?.size ?? 0) > 0) {embeddedLists = false; break;}
+      }
+      const target = regular.intersect([inherited, regular.whitespacePreimage(regular.intersect(baseConstraints, owner), 'collapse', owner)], owner);
+      // Shared primitive parsing maps every admitted token to the same typed
+      // item on this lexical embedding; the first base member always selects.
+      if (regular.witness(regular.intersect([source, supplied, regular.negate(target, owner)], owner), owner) !== undefined) {embeddedLists = false; break;}
+    }
+    if (tokenFamilies) {
+      const supplied = tokenUnionImages(result, lexical, owner, !embeddedLists), inherited = tokenUnionImages(base, lexical, owner, !embeddedLists);
+      if (!supplied || !inherited) return false;
+      const empty = joinSymbolic([], owner);
+      for (const [family, image] of supplied) {
+        if (family === 'list' && embeddedLists) continue;
+        if (symbolicSequences.differenceExists(image, inherited.get(family) ?? empty, owner))
+          c.fail(owner, 'scalar-value-space-restriction', 'A selected derived token sequence is outside the base selected typed value image');
+      }
+    }
+    const inherited = guardedUnionImages(base, lexical, owner, tokenFamilies), supplied = guardedUnionImages(result, lexical, owner, tokenFamilies);
+    if (!inherited || !supplied) return false;
+    for (const [family, images] of supplied) for (const image of images) {
+      let residual: GuardedImage[] = [image];
+      for (const prior of inherited.get(family) ?? []) {
+        c.step(owner, residual.length * 2 + 3); const next: GuardedImage[] = [];
+        for (const branch of residual) {
+          next.push({language: regular.intersect([branch.language, regular.negate(prior.language, owner)], owner), numeric: branch.numeric});
+          next.push({language: regular.intersect([branch.language, prior.language], owner), numeric: numericImages.difference(branch.numeric, prior.numeric, owner)});
+        }
+        residual = next;
+      }
+      for (const branch of residual) if (numericImages.exists(branch.language, branch.numeric, owner))
+        c.fail(owner, 'scalar-value-space-restriction', 'A selected derived union value has no spelling in the base selected value space');
+    }
+    const suppliedIeee = selectedIeeeLabels(result, lexical, owner), inheritedIeee = selectedIeeeLabels(base, lexical, owner);
+    for (const image of suppliedIeee) if (valueSets.satisfiable([image], inheritedIeee, owner))
+      c.fail(owner, 'scalar-value-space-restriction', 'A selected derived IEEE value has no representative in the base selected image');
+    return true;
+  };
+  const regularMembership = (base: Description, expected: SchemaOperand, lexical: LexicalValue, owner: GraphNode,
+    extra: readonly RegularLanguage[] = [], rejections: readonly Description[] = [], rejectedLists: readonly Description[] = []): boolean | undefined => {
+    const accepts = (value: string): boolean => {
+      try {return values.sameValue(expected, operand(base, {...lexical, value}, owner), owner);}
+      catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error; return false;}
+    };
+    if (base.plan.variety === 'list') {
+      if (expected.family !== 'list' || !expected.items) return false;
+      const allowed = base.item!.plan.variety === 'union' ? base.item!.members!.map(member => member.plan.primitive) : [base.item!.plan.primitive];
+      c.step(owner, allowed.length + expected.items.length + 3);
+      if (expected.items.some(item => !allowed.includes(item.family))) return false;
+      if (excludedByEnumeration(base, expected, owner) || excludedByValueFacets(base, expected, owner)) return false;
+      const language = regular.intersect([...spellingConstraints(base, owner), ...extra], owner);
+      const program = regular.automaton(language, owner), token = expressionLanguage('[^ \\t\\r\\n]+', owner);
+      c.step(owner, program.states.length * 3 + 4); const useful = new Set<number>(), pending: number[] = [], incoming: number[][] = program.states.map(() => []);
+      for (let from = 0; from < program.states.length; from++) {
+        if (program.states[from].accepting) {c.step(owner, 2); useful.add(from); pending.push(from);}
+        for (const edge of program.states[from].transitions) {c.step(owner); incoming[edge.to].push(from);}
+      }
+      while (pending.length) {c.step(owner); const state = pending.pop()!; for (const before of incoming[state]) {
+        c.step(owner); if (!useful.has(before)) {c.step(owner, 2); useful.add(before); pending.push(before);}
+      }}
+      c.step(owner, program.states.length * 2 + 4); let current = new Map([[program.start + ':0', {state: program.start, failed: 0n}]]), complete = true;
+      const maskCost = Math.min(Number.MAX_SAFE_INTEGER, (rejectedLists.length + 4) ** 2);
+      const masks = (operations = 1) => c.step(owner, Math.min(Number.MAX_SAFE_INTEGER, maskCost * operations));
+      c.step(owner, rejectedLists.length + 4); masks(2); const allFailed = (1n << BigInt(rejectedLists.length)) - 1n;
+      for (let index = 0; index < expected.items.length; index++) {
+        c.step(owner, program.states.length + 3); const next = new Map<string, {state: number; failed: bigint}>();
+        for (const from of current.values()) for (let to = 0; to < program.states.length; to++) {
+          c.step(owner); if (index + 1 === expected.items.length ? !program.states[to].accepting
+            : !program.states[to].transitions.some(edge => edge.lo <= 32 && edge.hi >= 32 && useful.has(edge.to))) continue;
+          c.step(owner, program.states.length * 3 + 4);
+          const paths = regular.intersect([regular.paths(program, [from.state], new Set([to]), owner), token], owner);
+          if (regular.witness(paths, owner) === undefined) continue;
+          c.step(owner, rejectedLists.length * 3 + 2); const missing = rejectedLists.flatMap((list, bit) => {masks(2); return from.failed & (1n << BigInt(bit)) ? [] : [{item: list.membershipItems?.[index] ?? list.item!, bit}];});
+          const count = 2 ** missing.length; c.step(owner, Number.isSafeInteger(count) ? count : Number.MAX_SAFE_INTEGER);
+          for (let subset = 0; subset < count; subset++) {
+            c.step(owner, missing.length * 2 + 4); const rejected: Description[] = []; let failed = from.failed;
+            for (let position = 0; position < missing.length; position++) {masks(3); if (BigInt(subset) & (1n << BigInt(position))) {
+              rejected.push(missing[position].item); masks(2); failed |= 1n << BigInt(missing[position].bit);
+            }}
+            const accepted = regularMembership(base.item!, expected.items[index], lexical, owner, [paths], rejected);
+            if (accepted === undefined) complete = false;
+            if (accepted !== true) continue;
+            const add = (state: number) => {c.step(owner, 40); masks(); next.set(state + ':' + failed, {state, failed});};
+            if (index + 1 === expected.items.length) add(to);
+            else for (const edge of program.states[to].transitions) {c.step(owner); if (edge.lo <= 32 && edge.hi >= 32) add(edge.to);}
+          }
+        }
+        current = next; if (!current.size) return complete ? false : undefined;
+      }
+      for (const {state, failed} of current.values()) {masks(); if (program.states[state].accepting && failed === allFailed) return true;}
+      return complete ? false : undefined;
+    }
+    const expression = inverseExpression(expected, lexical, owner);
+    if (expression === undefined && (expected.family === 'QName' || expected.family === 'NOTATION')) return false;
+    if (expected.family !== 'list' && (base.plan.variety === 'union' || rejections.length)) {
+      const scope = fixedScalarScope(base, expected, lexical, owner);
+      const selected = scalarAdmissionPredicate(base, lexical, owner, expected, scope);
+      const rejected = rejections.map(description => scalarAdmissionPredicate(description, lexical, owner, undefined, scope));
+      if (selected && rejected.every(predicate => predicate !== undefined)) {
+        const predicate: LexicalPredicate = {kind: 'and', children: [selected, ...rejected.map(child => ({kind: 'not' as const, child: child!}))]};
+        return lexicalPredicates.exists(predicate, regular.intersect(extra, owner), owner);
+      }
+    }
+    if (base.plan.variety === 'union' || rejections.length) {
+      if (excludedByEnumeration(base, expected, owner)) return false;
+      let complete = true;
+      const candidates = base.plan.variety === 'union' ? base.members! : [base];
+      for (const member of candidates) {
+        c.step(owner);
+        if (member.plan.variety === 'atomic' ? expected.family !== member.plan.primitive : expected.family !== 'list') continue;
+        if (excludedByEnumeration(member, expected, owner) || excludedByValueFacets(member, expected, owner)) continue;
+        const mode = member.plan.whitespace === 'member' ? 'collapse' : member.plan.whitespace;
+        const normalized = spellingConstraints(member, owner);
+        for (const layer of base.plan.layers) if (layer.patterns.length) normalized.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+        const raw = regular.intersect([regular.whitespacePreimage(regular.intersect(normalized, owner), mode, owner), ...extra], owner);
+        const ieee = expected.family === 'float' || expected.family === 'double';
+        type Branch = {raw: RegularLanguage; intervals: readonly IeeeInputInterval[]; literals: readonly string[]; lists: readonly Description[]};
+        const literal = expected.canonical === 'NaN' ? 'NaN' : expected.canonical === 'Infinity' ? 'INF' : expected.canonical === '-Infinity' ? '-INF' : undefined;
+        c.step(owner, 5); let branches: Branch[] = [{raw, intervals: ieee ? ieeeLanguages.inverseIntervals(expected, owner) : [], literals: literal ? [literal] : [], lists: []}];
+        let memberComplete = true;
+        c.step(owner, candidates.length + rejections.length + 2);
+        const preceding = [...rejections, ...candidates.slice(0, candidates.indexOf(member))];
+        for (const prior of preceding) {
+          const priorMode = prior.plan.whitespace === 'member' ? 'collapse' : prior.plan.whitespace;
+          const priorIeee = prior.plan.primitive === 'float' || prior.plan.primitive === 'double';
+          let priorLanguage = priorIeee ? regular.intersect(spellingConstraints(prior, owner), owner) : admissionLanguage(prior, lexical, owner);
+          const priorList = !priorLanguage && prior.plan.variety === 'list' && member.plan.variety === 'list';
+          if (priorList) {
+            if (valueFacetFailure(prior, expected, owner)) continue;
+            priorLanguage = regular.intersect(spellingConstraints(prior, owner), owner);
+          }
+          if (!priorLanguage) {memberComplete = false; break;}
+          const priorRaw = regular.whitespacePreimage(priorLanguage, priorMode, owner), next: Branch[] = [];
+          for (const branch of branches) {
+            const inactive = regular.intersect([branch.raw, regular.negate(priorRaw, owner)], owner);
+            if (regular.witness(inactive, owner) !== undefined) next.push({...branch, raw: inactive});
+            const active = regular.intersect([branch.raw, priorRaw], owner); if (regular.witness(active, owner) === undefined) continue;
+            if (priorList) {
+              const finite = prior.plan.layers.find(layer => (enumerations.get(layer)?.size ?? 0) > 0);
+              if (!finite) next.push({...branch, raw: active, lists: [...branch.lists, prior]});
+              else {
+                c.step(owner, 2); const excluded: Description[] = [];
+                for (const [facet, value] of enumerations.get(finite)!) {
+                  if (value.family !== 'list' || value.items?.length !== expected.items!.length || excludedByEnumeration(prior, value, owner)) continue;
+                  c.step(owner, value.items.length * 4 + 4); const items: Description[] = [];
+                  for (const item of value.items) {
+                    c.step(owner, prior.item!.plan.layers.length + 10);
+                    const layer: ScalarConstraintLayer = {owner: prior.plan.id, facets: [facet], patterns: []};
+                    enumerations.set(layer, new Map([[facet, item]]));
+                    items.push({...prior.item!, plan: {...prior.item!.plan, layers: [...prior.item!.plan.layers, layer]}});
+                  }
+                  c.step(owner, 5); excluded.push({...prior, membershipItems: items});
+                }
+                next.push({...branch, raw: active, lists: [...branch.lists, ...excluded]});
+              }
+              continue;
+            }
+            if (!priorIeee) continue;
+            if (member.plan.variety === 'list') {
+              // An IEEE lexical word has no internal whitespace, so a list
+              // on this branch has exactly one token. Its earlier whole-word
+              // numeric predicate is that token's rejection predicate.
+              c.step(owner, 12); const singleton: Description = {...prior, item: prior,
+                plan: {...prior.plan, variety: 'list', primitive: undefined}};
+              next.push({...branch, raw: active, lists: [...branch.lists, singleton]}); continue;
+            }
+            if (ieee) {
+              const rejected = ieeeAdmission(prior, owner);
+              next.push({raw: active, lists: branch.lists, intervals: ieeeLanguages.subtractIntervals(branch.intervals, rejected.intervals, owner),
+                literals: branch.literals.filter(value => !rejected.literals.includes(value))});
+            } else if (expression !== undefined) {
+              // Every numeric spelling in a fixed non-IEEE inverse has the
+              // same rational value (or one fixed INF/NaN literal).
+              const candidates = regular.intersect([active, regular.whitespacePreimage(expressionLanguage(expression, owner), mode, owner)], owner);
+              const word = regular.witness(candidates, owner);
+              if (word !== undefined) {
+                let admitted = true;
+                try {operand(prior, {...lexical, value: word}, owner);}
+                catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error; admitted = false;}
+                if (!admitted) next.push({...branch, raw: active});
+              }
+            } else {memberComplete = false; break;}
+          }
+          branches = next;
+        }
+        if (!memberComplete) {complete = false; continue;}
+        for (const branch of branches) {
+          const filtered = regular.whitespaceImage(branch.raw, mode, owner);
+          if (ieee) {
+            for (const literal of branch.literals) if (regular.witness(regular.intersect([filtered, expressionLanguage(quoteExpression(literal, owner), owner)], owner), owner) !== undefined) return true;
+            for (const interval of branch.intervals) if (ieeeLanguages.intervalWitness(filtered, interval, owner) !== undefined) return true;
+          } else {
+            const decision = regularMembership(member, expected, lexical, owner, [filtered], [], branch.lists);
+            if (decision === true) return true; if (decision === undefined) complete = false;
+          }
+        }
+      }
+      return complete ? false : undefined;
+    }
+    const constraints = [...spellingConstraints(base, owner), ...extra];
+    if ((expected.family === 'float' || expected.family === 'double') && base.plan.variety === 'atomic') {
+      if (excludedByEnumeration(base, expected, owner) || excludedByValueFacets(base, expected, owner)) return false;
+      const word = ieeeLanguages.witness(regular.intersect(constraints, owner), expected, owner);
+      if (word === undefined) return false;
+      if (!accepts(word)) throw new TypeError('Exact IEEE inverse product must issue an assessed equal-value witness');
+      return true;
+    }
+    if (expected.duration && base.plan.variety === 'atomic') {
+      if (excludedByEnumeration(base, expected, owner) || excludedByValueFacets(base, expected, owner)) return false;
+      c.step(owner, extra.length + 2); const durationPatterns: RegularLanguage[] = [...extra];
+      for (const layer of base.plan.layers) {
+        c.step(owner, layer.patterns.length + 1);
+        if (layer.patterns.length) durationPatterns.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+      }
+      const canMatch = (expression: string): boolean => regular.witness(regular.intersect([...durationPatterns, expressionLanguage(expression, owner)], owner), owner) !== undefined;
+      for (const expression of durationAliasExpressions(expected.duration, owner, c, canMatch)) {
+        const word = regular.witness(regular.intersect([...durationPatterns, expressionLanguage(expression, owner)], owner), owner);
+        if (word !== undefined && accepts(word)) return true;
+      }
+      return false;
+    }
+    if (expected.calendar && base.plan.variety === 'atomic') {
+      if (excludedByEnumeration(base, expected, owner) || excludedByValueFacets(base, expected, owner)) return false;
+      // Integral-minute zones preserve both seconds modulo sixty and the
+      // exact fractional part. Zone presence is also a value invariant.
+      const calendar = expected.calendar, decimal = calendar.seconds;
+      c.step(owner, (decimal.digits + decimal.scale + 8) ** 2);
+      const power = 10n ** BigInt(decimal.scale), remainder = (decimal.coefficient % power + power) % power;
+      const whole = (decimal.coefficient - remainder) / power, second = Number((whole % 60n + 60n) % 60n);
+      c.step(owner, decimal.scale + 16);
+      const fraction = remainder === 0n ? '([.]0+)?' : '[.]' + remainder.toString().padStart(decimal.scale, '0').replace(/0+$/, '') + '0*';
+      const zone = '(Z|[+\\-][0-9]{2}:[0-9]{2})';
+      let invariant = primitiveLexicalExpression(base)!;
+      c.step(owner, invariant.length * 3 + fraction.length + 24);
+      invariant = invariant.slice(0, -(zone.length + 1)) + (calendar.zoned ? zone : '');
+      if (calendar.family === 'dateTime' || calendar.family === 'time') {
+        c.step(owner, invariant.length * 2 + fraction.length + 16);
+        const seconds = second === 0 ? '(00|60)' : second.toString().padStart(2, '0');
+        invariant = invariant.replace('[0-9]{2}([.][0-9]+)?', seconds + fraction);
+      }
+      if (regular.witness(regular.intersect([...constraints, expressionLanguage(invariant, owner)], owner), owner) === undefined) return false;
+      // Each generated branch already proves lexical validity and exact
+      // value equality, so only the inherited pattern languages remain.
+      c.step(owner, extra.length + 2); const calendarPatterns: RegularLanguage[] = [...extra];
+      for (const layer of base.plan.layers) {
+        c.step(owner, layer.patterns.length + 1);
+        if (layer.patterns.length) calendarPatterns.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+      }
+      for (const expression of calendarAliasExpressions(expected.calendar, owner, c)) {
+        const language = regular.intersect([...calendarPatterns, expressionLanguage(expression, owner)], owner);
+        const word = regular.witness(language, owner);
+        if (word !== undefined && accepts(word)) return true;
+      }
+      return false;
+    }
+    if (expression !== undefined) {
+      const language = regular.intersect([...constraints, expressionLanguage(expression, owner)], owner);
+      const word = regular.witness(language, owner);
+      if (word === undefined) return false;
+      if (accepts(word)) return true;
+      // For atomic inverse languages all words have this value, and member
+      // grammar/value predicates depend only on it. Lists still need their
+      // ordered item-member assessment and are exhausted separately below.
+      if (base.plan.variety === 'atomic') return false;
+      const finite = regular.finiteWords(language, owner);
+      if (finite.kind === 'infinite') return undefined;
+      for (const word of finite.words) if (accepts(word)) return true;
+      return false;
+    }
+    // Complete finite admitted lexical spaces support every datatype family,
+    // using its actual value parser rather than a lexical-family surrogate.
+    const finite = regular.finiteWords(regular.intersect(constraints, owner), owner);
+    if (finite.kind === 'infinite') return undefined;
+    for (const word of finite.words) if (accepts(word)) return true;
+    return false;
+  };
+  const wordLengthLanguage = (name: string, length: string, owner: GraphNode): RegularLanguage => {
+    c.text(length, owner);
+    const min = name === 'maxLength' ? '0' : length, max = name === 'minLength' ? 'unbounded' : length;
+    return regular.fromPattern([{kind: 'character', expression: '[^]'}, {kind: 'repeat', child: 0, min, max}], 1, owner);
+  };
+  const valueLengthLanguage = (description: Description, name: string, length: string, owner: GraphNode): RegularLanguage | undefined => {
+    if (description.plan.variety === 'atomic' && (description.plan.primitive === 'string' || description.plan.primitive === 'anyURI')) return wordLengthLanguage(name, length, owner);
+    c.text(length, owner);
+    const minimum = name === 'maxLength' ? '0' : length, maximum = name === 'minLength' ? undefined : length;
+    if (description.plan.primitive === 'hexBinary') return expressionLanguage(`([0-9a-fA-F]{2}){${minimum},${maximum ?? ''}}`, owner);
+    if (description.plan.primitive === 'base64Binary') {
+      c.step(owner, minimum.length ** 2 + (maximum?.length ?? 0) ** 2 + 8);
+      const min = BigInt(minimum), max = maximum === undefined ? undefined : BigInt(maximum), branches: RegularLanguage[] = [];
+      const quartet = '([A-Za-z0-9+/] *[A-Za-z0-9+/] *[A-Za-z0-9+/] *[A-Za-z0-9+/] *)';
+      for (let residue = 0n; residue < 3n; residue++) {
+        c.step(owner, (minimum.length + (maximum?.length ?? 0)) * 8 + 20);
+        if (max !== undefined && max < residue) continue;
+        const first = min > residue ? (min - residue + 2n) / 3n : 0n;
+        const maximumQuotient = max === undefined ? undefined : (max - residue) / 3n;
+        if (maximumQuotient !== undefined && maximumQuotient < first) continue;
+        const last = maximumQuotient === undefined ? '' : String(maximumQuotient);
+        const ending = residue === 0n ? '' : residue === 1n ? '[A-Za-z0-9+/] *[AQgw] *= *=' : '[A-Za-z0-9+/] *[A-Za-z0-9+/] *[AEIMQUYcgkosw048] *=';
+        c.step(owner, quartet.length + ending.length + minimum.length + (maximum?.length ?? 0) + 16);
+        branches.push(expressionLanguage(`${quartet}{${first},${last}}${ending}`, owner));
+      }
+      return regular.union(branches, owner);
+    }
+    if (description.plan.variety === 'list') {
+      c.step(owner, length.length ** 2 + 4);
+      const min = BigInt(minimum), max = maximum === undefined ? undefined : BigInt(maximum);
+      const token = '[^ \\t\\r\\n]+';
+      if (max === 0n) return expressionLanguage('', owner);
+      const lower = min > 0n ? min - 1n : 0n, upper = max === undefined ? '' : String(max - 1n);
+      c.step(owner, minimum.length + (maximum?.length ?? 0) + 24);
+      const nonempty = `${token}( ${token}){${lower},${upper}}`;
+      return expressionLanguage(min === 0n ? `(${nonempty})?` : nonempty, owner);
+    }
+    return undefined;
+  };
+  /** Normalized spelling domain for string values; every word is its own value. */
+  const normalizedStringLanguage = (description: Description, owner: GraphNode): RegularLanguage => {
+    if (description.plan.whitespace === 'preserve') return wordLengthLanguage('minLength', '0', owner);
+    if (description.plan.whitespace === 'replace') return expressionLanguage('[^\\t\\r\\n]*', owner);
+    return expressionLanguage('([^ \\t\\r\\n]+( [^ \\t\\r\\n]+)*)?', owner);
+  };
+  /** Complete regular proof for string value lengths, with all retained layers. */
+  const regularLengthContainment = (base: Description, result: Description, inherited: readonly ScalarTuple[], supplied: readonly ScalarTuple[], owner: GraphNode): boolean => {
+    if (result.plan.primitive === 'QName' || result.plan.primitive === 'NOTATION')
+      return inherited.every(prior => lengthNames.includes(prior.name) || supplied.some(derived => restrictsScalar(derived, prior, owner)));
+    if (!['string', 'anyURI', 'hexBinary', 'base64Binary'].includes(result.plan.primitive!) && result.plan.variety !== 'list') return false;
+    const missing = inherited.filter(prior => !supplied.some(derived => restrictsScalar(derived, prior, owner)));
+    if (missing.some(prior => !lengthNames.includes(prior.name))) return false;
+    c.step(owner, 4); const constraints: RegularLanguage[] = spellingConstraints(result, owner);
+    for (const tuple of supplied) if (lengthNames.includes(tuple.name)) {
+      c.step(owner); constraints.push(valueLengthLanguage(result, tuple.name, tuple.property.integer!, owner)!);
+    }
+    // Source builtin subtypes retain their lexical grammar; complete raw
+    // atomic properties instead assess over the primitive value space.
+    if (!result.rawProperties && result.plan.builtin) for (const expression of result.intrinsic?.patterns ?? []) {
+      c.step(owner);
+      const pattern = intrinsicPatterns.compile({value: expression, context: owner.context}, owner);
+      intrinsicCompiled.add(pattern); constraints.push(patternLanguage(pattern, owner));
+    }
+    for (const prior of missing) {
+      const language = regular.intersect([...constraints, regular.negate(valueLengthLanguage(result, prior.name, prior.property.integer!, owner)!, owner)], owner);
+      const witness = result.plan.variety === 'list'
+        ? listLanguageWitness(result, language, {value: '', context: owner.context}, owner) : regular.witness(language, owner);
+      if (witness !== undefined) {
+        let assessed: SchemaOperand;
+        try {assessed = operand(result, {value: witness, context: owner.context}, owner);}
+        catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error; return false;}
+        if (!excludedByValueFacets(base, assessed, owner)) throw new TypeError('Regular length counterexample must violate a base value facet');
+        c.fail(owner, 'scalar-value-space-restriction', 'A value admitted by the derived type is excluded by the base length facets');
+      }
+    }
+    return true;
+  };
   /** F2 scalar duties and a sound finite value-containment certificate.
    * A missing implication proof remains unresolved; only an assessed value
    * outside the base establishes widening. Pattern/enum inventories are
@@ -703,7 +2061,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         if (possiblyRetained.has(derived.name)) {complete = false; continue;}
         c.fail(owner, `${derived.name}-value`, 'New bound operand is outside the base value space', derived.facet.lexical.context.source);
       }
-      if (!membershipWitness(base, endpoint, derived.facet.lexical, owner)) complete = false;
+      const membership = membershipWitness(base, endpoint, derived.facet.lexical, owner);
+      if (membership === false && !possiblyRetained.has(derived.name)) c.fail(owner, `${derived.name}-value`, 'No base lexical spelling denotes the new typed bound', derived.facet.lexical.context.source);
+      if (membership !== true) complete = false;
     }
     for (const a of supplied) for (const b of supplied) {
       c.step(owner);
@@ -738,6 +2098,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       return supplied.some(derived => restrictsScalar(derived, prior, owner));
     });
     if (covered) return complete;
+    if (regularLengthContainment(base, result, inherited, supplied, owner)) return complete;
+    if (decimalContainment(base, result, inherited, supplied, owner)) return complete;
     // A complete enumeration bounds the result's entire value space, even
     // when an independently retained scalar bound is weaker than a base one.
     c.step(owner, inherited.length * 2 + 1);
@@ -751,12 +2113,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         c.step(owner);
         if (!excludedByValueFacets(base, value, owner)
           || excludedByValueFacets(result, value, owner) || excludedByEnumeration(result, value, owner)) continue;
-        if (membershipWitness(result, value, facet.lexical, owner))
+        const membership = membershipWitness(result, value, facet.lexical, owner);
+        if (membership === true)
           c.fail(owner, 'scalar-value-space-restriction', 'A derived enumeration value is excluded by the base');
-        includesAll = false;
+        if (membership === undefined) includesAll = false;
       }
       if (includesAll) return complete;
     }
+    if (ieeeContainment(base, result, inherited, supplied, owner)) return complete;
+    if (calendarContainment(base, result, inherited, supplied, owner)) return complete;
+    if (durationContainment(base, result, inherited, supplied, owner)) return complete;
     const counterexample = (lexical: LexicalValue): void => {
       let value: SchemaOperand;
       try {value = operand(result, lexical, owner);}
@@ -814,6 +2180,13 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   const rawFacetCorrespondence = (base: Description, result: Description, reference: Reference, owner: GraphNode): boolean => {
     type Constraint = Description['facets'] extends Map<string, infer T> ? T : never;
     const effective = new Map<string, Constraint>(); let complete = true, reductionDeterminate = true;
+    if (base.plan.variety === 'union' && result.plan.variety === 'union') {
+      // Member ancestry alone does not preserve the first-selected image.
+      c.step(owner, base.members!.length * 2 + 1);
+      if (base.members!.some((member, index) => index < base.members!.length - 1
+        && member.definition !== result.members![index]?.definition)
+        && !selectedUnionContainment(base, result, owner)) complete = false;
+    }
     const exact = result.exactComponentSet !== undefined || base.exactComponentSet !== undefined;
     const equal = (a: Constraint, b: Constraint): boolean => {
       if (a.integer !== undefined) {
@@ -882,7 +2255,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       const inherited = facetProperty(base, name, owner)?.operand;
       if (exclusive(name) && inherited && values.sameValue(constraint.operand, inherited, owner)) continue;
       if (excludedByEnumeration(base, constraint.operand, owner) || excludedByValueFacets(base, constraint.operand, owner)) c.fail(owner, `${name}-value`, "Bound value is outside the base value space", constraint.facet.lexical.context.source);
-      if (!membershipWitness(base, constraint.operand, constraint.facet.lexical, owner)) complete = false;
+      const membership = membershipWitness(base, constraint.operand, constraint.facet.lexical, owner);
+      if (membership === false) c.fail(owner, `${name}-value`, 'No base lexical spelling denotes the typed bound', constraint.facet.lexical.context.source);
+      if (membership !== true) complete = false;
     }
     result.facets = effective;
     if (exact) {if (!exactScalarRestriction(base, result, owner)) complete = false;}
@@ -963,7 +2338,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         // Every candidate is assessed by the exact base, retaining ordered
         // union selection and namespace context. Failed finite search is not
         // a complete negative membership answer.
-        if (!membershipWitness(base, expected, facet.lexical, owner)) complete = false;
+        const membership = membershipWitness(base, expected, facet.lexical, owner);
+        if (membership === false) c.fail(owner, 'enumeration-valid-restriction', 'No base lexical spelling denotes the typed enumeration value', facet.lexical.context.source);
+        if (membership !== true) complete = false;
       }
     }
     return complete;

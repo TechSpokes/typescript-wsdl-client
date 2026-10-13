@@ -71,17 +71,15 @@ describe('independent finite literal-pattern membership witnesses', () => {
     const candidate = raw(named('LayerTwo'), [facet('pattern', '(0001|0002)'), facet('pattern', '0002'), facet('enumeration', value, builtin('decimal'))]);
     const result = candidate.kernel.describe(candidate.reference, owner);
     if (value === '2') expect(result).toMatchObject({kind: 'checked', obligations: []});
-    else expect(result).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-      expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}),
-    ])});
+    // The complete layer intersection is the singleton spelling 0002,
+    // whose exact decimal value is 2; no spelling in it denotes 1.
+    else expect(result).toMatchObject({kind: 'invalid-schema'});
   });
 
-  it('does not infer positive membership or a complete negative from a different generated value', async () => {
+  it('rejects an original typed value excluded by a complete singleton language', async () => {
     const {raw, facet} = await setup();
     const candidate = raw(named('OtherValue'), [facet('pattern', '0000000002'), facet('enumeration', '1', builtin('decimal'))]);
-    expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-      expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}),
-    ])});
+    expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject({kind: 'invalid-schema'});
   });
 
   it('does not conflate a typed boolean with decimal despite matching numeric spellings', async () => {
@@ -95,9 +93,11 @@ describe('independent finite literal-pattern membership witnesses', () => {
       const {raw, facet} = await setup();
       const candidate = raw(named(base), [facet('pattern', pattern), facet('enumeration', '1', builtin('decimal'))],
         {kind: 'union', members: [builtin('boolean'), builtin('decimal')]});
-      expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject({kind: 'checked', obligations: valid ? [] : expect.arrayContaining([
-        expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}),
-      ])});
+      // Every normalized UnionTrap word is "1", and all of its raw
+      // whitespace aliases select boolean first. Its typed decimal inverse
+      // is completely empty; UnionDecimal's "0001" selects decimal.
+      expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject(valid
+        ? {kind: 'checked', obligations: []} : {kind: 'invalid-schema'});
     });
 
   it('preserves supplementary literal characters and typed list items in a generated word', async () => {
@@ -121,12 +121,13 @@ describe('independent finite literal-pattern membership witnesses', () => {
         value: {operand: {family: 'decimal', canonical: '1'}}});
     });
 
-  it('keeps a finite unbounded-repeat proposal miss unresolved', async () => {
+  it('proves a typed value absent from the complete unbounded decimal language', async () => {
     const {raw, facet} = await setup();
     const candidate = raw(named('OutsideInfinite'), [facet('pattern', '0{4,}1'), facet('enumeration', '2', builtin('decimal'))]);
-    expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject({kind: 'checked', obligations: expect.arrayContaining([
-      expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}),
-    ])});
+    // Every 0{4,}1 spelling denotes decimal 1. Its intersection with the
+    // complete inverse language of decimal 2 is empty, irrespective of how
+    // many finite proposals are searched.
+    expect(candidate.kernel.describe(candidate.reference, owner)).toMatchObject({kind: 'invalid-schema'});
   });
 
   it('does not widen the application regular-expression profile', async () => {

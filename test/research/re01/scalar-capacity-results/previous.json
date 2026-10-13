@@ -1,0 +1,3494 @@
+{
+  "format": "scalar-capacity-v1",
+  "revision": "a103ca96a3609bd0b525f2331daa7173879ad187",
+  "sourceDigests": {
+    "test/research/re01/scalar-capacity-measure.ts": "1c749ce3b78a121f7087a8366a05af4ef9495fef54b93d7a52da490ff311dcd1",
+    "package-lock.json": "3a089e52fad9349183ad9118fcb2562dbe741017be2099de045877c204dc4f94",
+    "src/compiler/buildCanonicalGraph.ts": "1fd0ff3aa136fbe0ce464792ec4d09dfd4569a397ad5277008a8d11bfb1194e8",
+    "src/compiler/canonicalGraph.ts": "7cbdbd499e3f116b573362f478af54af1eb74cae7a01e4a69d3c3ec942c1e31b",
+    "src/compiler/catalogErrors.ts": "adf4ee2eb8d2d69aecbc18f55d4d90d0ea8a01c9ea798a8e309cdc5b4ca40338",
+    "src/compiler/catalogProvenance.ts": "c16a6e839bead9d91042d005015d27d43f0833da11c32c05e20090c0e161aad9",
+    "src/compiler/complexTypeContent.ts": "e6fd14c0ecb84c85b0044712e6a04adaff5518157b70f8d93cd8fb5fbe7ab34a",
+    "src/compiler/composeCanonicalGraph.ts": "a670639a8598cf8693c769722f4fadb68bb9e778d3938146752917a9d801efc5",
+    "src/compiler/finiteRe01Verification.ts": "6cd1dc9446d51f852f3c66d7696ac0883781cfc1d0288ca954d013d7771e2f0c",
+    "src/compiler/generateCatalog.ts": "0c1f4d134b92a78c410715f8b395c5759c4bbc1b5675b30d0245b6ae138a4fe4",
+    "src/compiler/graphTraversal.ts": "470900a618e50034d9497a101ea9deb9b3cf070b880e4cf16d5e99200633077e",
+    "src/compiler/occurrenceAnalysis.ts": "35d3521648757350d2b159caa36539f885e0f7efbe0960157fc3d6bf3581861a",
+    "src/compiler/originalSourceMembership.ts": "4f09fffef973f179b30f5c64cb369fce0bdf1c21922ea13215088089f2495cf0",
+    "src/compiler/particleAttribution.ts": "1294dc4306e8e5933c8984fb4d69267ab1fe7a23fc2223e4d5b1609c43e5ced9",
+    "src/compiler/particleDeclarationConsistency.ts": "890cb06ae4e2b163f2106ba51313d011f967a324ecf22f31a85fb51642bb673e",
+    "src/compiler/particleExtension.ts": "2a4c463b36101d6bf1451a9a732282aeb247dad27bb615950bfd9d5cd457e168",
+    "src/compiler/particleLocalAssessment.ts": "23fb7c1d0ec38ac81bb246cde5ab2f2957ac45f91f308ef0d3a3553edd4b5403",
+    "src/compiler/particleRestriction.ts": "3aac677c8ebebb8864735368fb7375c32e885d8493e5aa31250077d3bb8bf7cf",
+    "src/compiler/particleSemanticView.ts": "c220b4fbab31f2133df7a2fcf768fc35732e2c8843fb3723d50ea8c97b811a06",
+    "src/compiler/particleWildcardRelation.ts": "7d5dc6cdb512b2b70205a712cdaa165ca4f7ca8a6d7d59c91eba04af10129d65",
+    "src/compiler/re01CandidateCorrespondence.ts": "28634a50d35c245ba91d020cf928785dcbad6bdc79e9c7ec8861f05952d8fe20",
+    "src/compiler/re01TypeProperties.ts": "1e6f0a4fbae68323bc8178c47f284987c9fc8eb82f4cc9cecf7bf7bcc0ca560a",
+    "src/compiler/re01TypePropertyValidation.ts": "40c07376dba2dfaada62af210a4956e71128439b0c3ab451954d4572526f485b",
+    "src/compiler/resolveCanonicalGraph.ts": "d851e4b8f5598ee99b288d9c75e39435d46ca95d0799da8e8cbabfd85a39215a",
+    "src/compiler/scalarSchemaAssessment.ts": "22d7f829684ea46e86ec08593802b10f1b4408e05230e5c891464d38bcfe4229",
+    "src/compiler/schemaAttributeGroupProperties.ts": "fb79ec86714c0c8a1ceb8daed507359e1412bc397f2705e3f9ab9246f1d8b933",
+    "src/compiler/schemaAttributeProperties.ts": "dcccd1fae0a67c167a8346561dcdb7da902b729980518f391e01f246799b84fe",
+    "src/compiler/schemaAttributeUses.ts": "46c776d4f056764bcbc4f6666f30a0d542b993637375dc28279a01109bdd75f6",
+    "src/compiler/schemaBuiltinFacets.ts": "0b8a06b23b3841308970009bd4b91b8fcfb3d6b0c6aac76fa5bc65c08eae2de7",
+    "src/compiler/schemaCalendarImages.ts": "96b263b7be9a9ca2fcd35135efa8b4ee79cc53521f1b43ae79414323c1c68658",
+    "src/compiler/schemaCalendarLanguage.ts": "632a5251fbfb52115e21975fd42cd72a77fba83472fae107a34b57e8fac0af99",
+    "src/compiler/schemaCompiler.ts": "b6e5b62b8aca3d8ccac80f6525884d9f1ef02032f693f0edac0aaae1b734716a",
+    "src/compiler/schemaComponentEquality.ts": "8961c3ec64ecc90080cea4ef4b5ec87494e247b03436b65f47db006ad233227c",
+    "src/compiler/schemaConstructionAssessment.ts": "849b18433f1c63a5765903ed8da55e0b431a70446eb82e5f64ec64550156bf91",
+    "src/compiler/schemaDatatypeValues.ts": "56dfed8de50b949c97bcdab54fe2e4c729088a4310ac7e47144727acf328d96c",
+    "src/compiler/schemaDecimalLanguage.ts": "2df7523e9fac004cf903a92ea8ec88c4bbf534336910aa5c0408019bfc9afe5f",
+    "src/compiler/schemaDeclarationPrimitives.ts": "199de6f2cb32ef3d17ac59e33d6ba246aca8ed5d46deb1b661968273e2b296d6",
+    "src/compiler/schemaDocumentSyntax.ts": "547ae4d9275d387a93d20e540a0a06d2e735f5f1cd46194fa4cd8b45821e16b2",
+    "src/compiler/schemaDurationLanguage.ts": "7bf4e74b25fa326083db1c7e6b94c4bc4b7944ae01f7228295844a0f29ecefea",
+    "src/compiler/schemaElementProperties.ts": "595c5259cc5aefc8bcbde21665a44dc5171a3985f629d331c82637523c1ed6ce",
+    "src/compiler/schemaExactCalendar.ts": "d2097c19b682f5c156482d70f307ca589bc421bbaa7282231faba60fb19d6175",
+    "src/compiler/schemaFacetAnnotation.ts": "4f22ca2dafc8d3f45185e434bd0e13ecf8403d2e5f0d029509a4d6e4dd3f6397",
+    "src/compiler/schemaGeneratedScalarShape.ts": "649356566ba0a22984c357e58add3f6a08df098ee34d31c9ededa911dcf1a330",
+    "src/compiler/schemaIeeeLanguage.ts": "1c72c7284a023168e99239d929e1a92781e3df5b0580e3982775d02211d7f25f",
+    "src/compiler/schemaIntegerImages.ts": "1f756af1a4d61e1d56c24a759503bf5d8e80f1a2f9006dc9fdb8b9629942ade1",
+    "src/compiler/schemaLexicalPredicates.ts": "7ee24ce2e220750f35647b0d50a9c96d67e5f9575bc5068964bdd72d906281ca",
+    "src/compiler/schemaNotationProperties.ts": "ce1ee1450fcdeadf63ffecf03e8e4ce705f8bb2823d057f8c2ff134fb7f66b94",
+    "src/compiler/schemaNumericImageConditions.ts": "44f46b0a06c3dda5340147fabb7c51ae77a0c054f9950b5cff572bf0f95a9694",
+    "src/compiler/schemaPattern.ts": "cc40b1744f90dd282446dc767551ec1a5b679817a1685dc6b22c8f9f46c955bb",
+    "src/compiler/schemaRegularLanguage.ts": "89722da26c2d105def4404a8a02b3d414bc571f0a8a448036a84f079a4e64876",
+    "src/compiler/schemaScalarContext.ts": "a28348d12ccc8fe60396289326ba0a2ba38c3bc74d039feebf2d0145dc588fcf",
+    "src/compiler/schemaScalarKernel.ts": "f4c3fe51c4c08f4f35d96ca9d171f2837422d7c1e3d269ab5f07005bda7a8563",
+    "src/compiler/schemaScalarWitnesses.ts": "dc165ae70d9f22fce10023ba5eb243081c81e2f266a0f12b6faef503e9176816",
+    "src/compiler/schemaSimpleTypeProperties.ts": "8d727bcee0f4b16a43cc143730851401233e3958972fecc717f8200d07ba3cae",
+    "src/compiler/schemaSourceGrammar.ts": "173d211830c16fa462171fc5c966d003151bde39e0aaab825bf5e413a32363cc",
+    "src/compiler/schemaSourceLexical.ts": "6835b55ec7d63d9d87f38f43ed9842453b5274c6056f9f9aa6504b2f37ef8815",
+    "src/compiler/schemaSourceValues.ts": "21d6feccdd10fc42d66dd423bfd1b6b9527fccfd49a5f5008b65380239a6e486",
+    "src/compiler/schemaSourceWildcards.ts": "bac7152ee7aee72b6a3ea7c491b4dafcc1a981c60d87ab85f593d6487cb7122c",
+    "src/compiler/schemaSymbolicSequences.ts": "54081801d76a6da3774b1ec6ed3e39aeedaf114d0483842dc6792c43f3558df5",
+    "src/compiler/schemaSymbolicValueSets.ts": "a0364709f21c0a1dac4441e1929adef79c13f802ba3c05c680015186e7b28b15",
+    "src/compiler/schemaSyntaxAssessment.ts": "0781e8802185d2b97d5970cce78ecfb778bdb3aa6ab2ffa1a73400ce561b87b5",
+    "src/compiler/schemaTemporalAliases.ts": "197825bdced599ef17c1bc222b5610f37479005d0df68d97ffd1eaa800f32bd6",
+    "src/compiler/schemaTokenImages.ts": "a4cd4dfffa8d88e03f115a549d61219e21ca3cc15f3b0de674fc0e48bcec15ec",
+    "src/compiler/schemaTypeIdentity.ts": "0478a5806a1a059c92fc3f2d729640b716b93abb868af5ae379d3aefa796cec8",
+    "src/compiler/schemaTypeRelations.ts": "fb330db516fc834ec14ad82b023710d4620c7ded1cc8b69b908eb69bdb5c3986",
+    "src/compiler/schemaUri.ts": "dd7510a4d462ab4b139836c1d8a39560a299830636d5f0c0fa1aaeae47a91699",
+    "src/compiler/schemaValueContext.ts": "8bd3fdfea3554f6dfdf786dbdaaed150aa990559bfaa3c91069cf3e7e8b28f15",
+    "src/compiler/schemaValueImages.ts": "1dbb4a4d38010918a6a0bbcade1a770ceb387d86593e32eed4821cdff0891009",
+    "src/compiler/schemaValueSequences.ts": "cfc874035a069638383762a90050397abbab605c93fbbb9024db0891cc092a1b",
+    "src/compiler/semanticBudget.ts": "f1059e52d16ec42379186c0f7bd8e6bec3ba6a95dbea6ada13232e9b33065af3",
+    "src/compiler/semanticCatalog.ts": "7776422bdb7bb76116f62f8dfe34892a13e516c6559b0eb2b63f57bf8559e593",
+    "src/compiler/semanticContext.ts": "c8d609e678e645f3ff2947efa119f237c6795cf1483e6b335868936bf166ff5b",
+    "src/compiler/semanticTypeDependencies.ts": "9c65032ebcd11839efd666fd4ad662a962cbc6d13d784c3a1bca0c8303493a26",
+    "src/compiler/semanticTypeReference.ts": "dd1c3208f35cec727c6efbe903557f395d1d6b5095c1019de12d58898b55e5f0",
+    "src/compiler/shapeResolver.ts": "63b47e58a76f0a8a61606d6b431f0714e71ac623ba313b2540c137c1c931e797",
+    "src/compiler/sourceSchemaBinding.ts": "16d9bdc1fa2ebca93fe43e465b98b72645e338b5cd23c66daf8aa24dceeac49e",
+    "src/compiler/structuralCompanions.ts": "0e24309953491f9469b50eed5418ab2645bfb939efd5ca278147b7bc69ef2354",
+    "src/compiler/validateSemanticGraph.ts": "9ef37e796b63ed55b5024b5e0ee98f003563f3571e7395ea3d2e7f5e1bae17d0",
+    "src/compiler/wildcardAlgebra.ts": "0e2caeba982107a17ddf1101b2a727aa6033869c29ab9755f65326e68385f1e2",
+    "src/loader/fetch.ts": "d6c2e8c73374da5ae534ed6a78f5fe64028670c03ce9f3be5423617eeba69370",
+    "src/loader/orderedSyntax.ts": "ce8c3d03754f84ec2cac61d4a168c370927cc4f22cc1bd29cc50a1d02ef62038",
+    "src/loader/resolutionDepth.ts": "0fa8fdc35604db2e8336f1394d6e59c723d3cf85761d6a0854aa1af82430c78d",
+    "src/loader/schemaInput.ts": "2b3ce859e4d5ca313c3d0da67f9a0380cf54d8afcdbe5241556cb6240649192f",
+    "src/loader/schemaResources.ts": "8e9ff11d10f7ee2152f76dc516249ab28f8fbccb725353d7b0299fe8f11b9381",
+    "src/loader/wsdlLoader.ts": "7f152bb88efbb078e7f6af15569898523422d6490521a8c6564cd1ce6dd1df9a",
+    "test/conformance/fixtures/xsd/recovery/scalar-completeness-review.xsd": "a901e9f52689ef59ec5ff20f9994e3d59b0e2fba4320725ae9888da0d35226cd"
+  },
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "profile": "previous",
+  "limits": {
+    "maxNodes": 100000,
+    "maxWork": 25000000
+  },
+  "collection": "Each workload/profile has a fresh child and three fresh authenticated requests. First-call and warm process samples retain independent request budgets. Query work excludes source/candidate preparation; usage includes it. RSS/heap snapshots are observations, not allocation totals; RSS high-water is process lifetime. Time includes JIT/GC/OS noise. Only local scalar completeness is measured; no universal RE01 or production activation claim.",
+  "results": [
+    {
+      "iteration": 0,
+      "workload": "length-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 172447
+      },
+      "query": {
+        "work": 40484,
+        "wallMs": 9.920895000000002,
+        "memoryBefore": {
+          "rss": 60788736,
+          "heapTotal": 31612928,
+          "heapUsed": 13852600,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 61313024,
+          "heapTotal": 31612928,
+          "heapUsed": 15092616,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        }
+      },
+      "totalWallMs": 44.55180800000002,
+      "memoryBefore": {
+        "rss": 58449920,
+        "heapTotal": 21872640,
+        "heapUsed": 14558416,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 61313024,
+        "heapTotal": 31612928,
+        "heapUsed": 15096408,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "peakRssKiB": 60324
+    },
+    {
+      "iteration": 1,
+      "workload": "length-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 172447
+      },
+      "query": {
+        "work": 40484,
+        "wallMs": 2.5677260000000217,
+        "memoryBefore": {
+          "rss": 61706240,
+          "heapTotal": 32399360,
+          "heapUsed": 16375488,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        },
+        "memoryAfter": {
+          "rss": 62099456,
+          "heapTotal": 32399360,
+          "heapUsed": 17589552,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        }
+      },
+      "totalWallMs": 7.4687040000000025,
+      "memoryBefore": {
+        "rss": 61313024,
+        "heapTotal": 31612928,
+        "heapUsed": 15130232,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "memoryAfter": {
+        "rss": 62099456,
+        "heapTotal": 32399360,
+        "heapUsed": 17376232,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "peakRssKiB": 60644
+    },
+    {
+      "iteration": 2,
+      "workload": "length-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 172447
+      },
+      "query": {
+        "work": 40484,
+        "wallMs": 1.5954279999999983,
+        "memoryBefore": {
+          "rss": 62623744,
+          "heapTotal": 32399360,
+          "heapUsed": 18454440,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        },
+        "memoryAfter": {
+          "rss": 63541248,
+          "heapTotal": 32399360,
+          "heapUsed": 19350680,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        }
+      },
+      "totalWallMs": 7.109822000000008,
+      "memoryBefore": {
+        "rss": 62230528,
+        "heapTotal": 32399360,
+        "heapUsed": 17401336,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "memoryAfter": {
+        "rss": 63541248,
+        "heapTotal": 32399360,
+        "heapUsed": 19351360,
+        "external": 5208952,
+        "arrayBuffers": 2647751
+      },
+      "peakRssKiB": 62180
+    },
+    {
+      "iteration": 0,
+      "workload": "length-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 16,
+        "work": 151506
+      },
+      "query": {
+        "work": 19578,
+        "wallMs": 9.237212999999997,
+        "memoryBefore": {
+          "rss": 60551168,
+          "heapTotal": 30826496,
+          "heapUsed": 13850360,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 60944384,
+          "heapTotal": 31612928,
+          "heapUsed": 14708096,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        }
+      },
+      "totalWallMs": 43.65346200000002,
+      "memoryBefore": {
+        "rss": 56905728,
+        "heapTotal": 22134784,
+        "heapUsed": 14556256,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 60944384,
+        "heapTotal": 31612928,
+        "heapUsed": 14711888,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "peakRssKiB": 59516
+    },
+    {
+      "iteration": 1,
+      "workload": "length-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 16,
+        "work": 151506
+      },
+      "query": {
+        "work": 19578,
+        "wallMs": 1.488457000000011,
+        "memoryBefore": {
+          "rss": 61206528,
+          "heapTotal": 31875072,
+          "heapUsed": 15974304,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        },
+        "memoryAfter": {
+          "rss": 61337600,
+          "heapTotal": 31875072,
+          "heapUsed": 16961464,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        }
+      },
+      "totalWallMs": 6.047337999999996,
+      "memoryBefore": {
+        "rss": 60944384,
+        "heapTotal": 31612928,
+        "heapUsed": 14745712,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "memoryAfter": {
+        "rss": 61337600,
+        "heapTotal": 31875072,
+        "heapUsed": 16961936,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "peakRssKiB": 59900
+    },
+    {
+      "iteration": 2,
+      "workload": "length-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 16,
+        "work": 151506
+      },
+      "query": {
+        "work": 19578,
+        "wallMs": 1.2260499999999865,
+        "memoryBefore": {
+          "rss": 61730816,
+          "heapTotal": 32137216,
+          "heapUsed": 17738056,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        },
+        "memoryAfter": {
+          "rss": 62124032,
+          "heapTotal": 32137216,
+          "heapUsed": 18381536,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        }
+      },
+      "totalWallMs": 5.125586999999996,
+      "memoryBefore": {
+        "rss": 61337600,
+        "heapTotal": 31875072,
+        "heapUsed": 16969808,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "memoryAfter": {
+        "rss": 62124032,
+        "heapTotal": 32137216,
+        "heapUsed": 18382216,
+        "external": 5208952,
+        "arrayBuffers": 2647751
+      },
+      "peakRssKiB": 60668
+    },
+    {
+      "iteration": 0,
+      "workload": "decimal-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 197052
+      },
+      "query": {
+        "work": 66212,
+        "wallMs": 14.523541999999992,
+        "memoryBefore": {
+          "rss": 61022208,
+          "heapTotal": 31088640,
+          "heapUsed": 13852712,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 61546496,
+          "heapTotal": 31875072,
+          "heapUsed": 16311360,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        }
+      },
+      "totalWallMs": 51.799341999999996,
+      "memoryBefore": {
+        "rss": 57917440,
+        "heapTotal": 21872640,
+        "heapUsed": 14539272,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 61546496,
+        "heapTotal": 31875072,
+        "heapUsed": 16315152,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "peakRssKiB": 60528
+    },
+    {
+      "iteration": 1,
+      "workload": "decimal-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 197052
+      },
+      "query": {
+        "work": 66212,
+        "wallMs": 4.182091999999983,
+        "memoryBefore": {
+          "rss": 62332928,
+          "heapTotal": 32137216,
+          "heapUsed": 17187264,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        },
+        "memoryAfter": {
+          "rss": 63119360,
+          "heapTotal": 32137216,
+          "heapUsed": 18904160,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        }
+      },
+      "totalWallMs": 9.283973000000003,
+      "memoryBefore": {
+        "rss": 61546496,
+        "heapTotal": 31875072,
+        "heapUsed": 15969288,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "memoryAfter": {
+        "rss": 63119360,
+        "heapTotal": 32137216,
+        "heapUsed": 18904632,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "peakRssKiB": 61640
+    },
+    {
+      "iteration": 2,
+      "workload": "decimal-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 197052
+      },
+      "query": {
+        "work": 66212,
+        "wallMs": 3.612267000000003,
+        "memoryBefore": {
+          "rss": 64610304,
+          "heapTotal": 32137216,
+          "heapUsed": 20034928,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        },
+        "memoryAfter": {
+          "rss": 67231744,
+          "heapTotal": 32137216,
+          "heapUsed": 21576696,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        }
+      },
+      "totalWallMs": 9.847514000000018,
+      "memoryBefore": {
+        "rss": 63119360,
+        "heapTotal": 32137216,
+        "heapUsed": 18912504,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "memoryAfter": {
+        "rss": 67362816,
+        "heapTotal": 32137216,
+        "heapUsed": 21577376,
+        "external": 5208952,
+        "arrayBuffers": 2647751
+      },
+      "peakRssKiB": 65784
+    },
+    {
+      "iteration": 0,
+      "workload": "uri-length",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 909930
+      },
+      "query": {
+        "work": 777967,
+        "wallMs": 36.726260999999965,
+        "memoryBefore": {
+          "rss": 60325888,
+          "heapTotal": 31088640,
+          "heapUsed": 13845568,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 73744384,
+          "heapTotal": 34664448,
+          "heapUsed": 17306384,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 75.31744599999999,
+      "memoryBefore": {
+        "rss": 58028032,
+        "heapTotal": 21610496,
+        "heapUsed": 14448456,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 73744384,
+        "heapTotal": 34664448,
+        "heapUsed": 16830840,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 74116
+    },
+    {
+      "iteration": 1,
+      "workload": "uri-length",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 909930
+      },
+      "query": {
+        "work": 777967,
+        "wallMs": 21.94701699999996,
+        "memoryBefore": {
+          "rss": 74006528,
+          "heapTotal": 34664448,
+          "heapUsed": 18091920,
+          "external": 4940476,
+          "arrayBuffers": 2379275
+        },
+        "memoryAfter": {
+          "rss": 77217792,
+          "heapTotal": 52133888,
+          "heapUsed": 26929888,
+          "external": 4940476,
+          "arrayBuffers": 2243843
+        }
+      },
+      "totalWallMs": 28.120767,
+      "memoryBefore": {
+        "rss": 73744384,
+        "heapTotal": 34664448,
+        "heapUsed": 16864664,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "memoryAfter": {
+        "rss": 77217792,
+        "heapTotal": 52133888,
+        "heapUsed": 26334384,
+        "external": 4940476,
+        "arrayBuffers": 2243843
+      },
+      "peakRssKiB": 76536
+    },
+    {
+      "iteration": 2,
+      "workload": "uri-length",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 909930
+      },
+      "query": {
+        "work": 777967,
+        "wallMs": 19.42691400000001,
+        "memoryBefore": {
+          "rss": 74936320,
+          "heapTotal": 52133888,
+          "heapUsed": 27260112,
+          "external": 4940684,
+          "arrayBuffers": 2379483
+        },
+        "memoryAfter": {
+          "rss": 86568960,
+          "heapTotal": 54136832,
+          "heapUsed": 28042040,
+          "external": 4940684,
+          "arrayBuffers": 2243843
+        }
+      },
+      "totalWallMs": 24.87400500000001,
+      "memoryBefore": {
+        "rss": 77217792,
+        "heapTotal": 52133888,
+        "heapUsed": 26342256,
+        "external": 4940476,
+        "arrayBuffers": 2243843
+      },
+      "memoryAfter": {
+        "rss": 86568960,
+        "heapTotal": 54136832,
+        "heapUsed": 28042720,
+        "external": 4940684,
+        "arrayBuffers": 2243843
+      },
+      "peakRssKiB": 87260
+    },
+    {
+      "iteration": 0,
+      "workload": "ieee-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 235379
+      },
+      "query": {
+        "work": 104547,
+        "wallMs": 13.103629000000012,
+        "memoryBefore": {
+          "rss": 59375616,
+          "heapTotal": 31088640,
+          "heapUsed": 13841320,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 60030976,
+          "heapTotal": 31612928,
+          "heapUsed": 16044048,
+          "external": 4937720,
+          "arrayBuffers": 2376519
+        }
+      },
+      "totalWallMs": 43.343469,
+      "memoryBefore": {
+        "rss": 58413056,
+        "heapTotal": 30298112,
+        "heapUsed": 14966960,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 60030976,
+        "heapTotal": 31612928,
+        "heapUsed": 15640152,
+        "external": 4937720,
+        "arrayBuffers": 2376519
+      },
+      "peakRssKiB": 59168
+    },
+    {
+      "iteration": 1,
+      "workload": "ieee-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 235379
+      },
+      "query": {
+        "work": 104547,
+        "wallMs": 3.460111999999981,
+        "memoryBefore": {
+          "rss": 60686336,
+          "heapTotal": 32137216,
+          "heapUsed": 17176920,
+          "external": 5073360,
+          "arrayBuffers": 2512159
+        },
+        "memoryAfter": {
+          "rss": 61210624,
+          "heapTotal": 32137216,
+          "heapUsed": 18404272,
+          "external": 5073408,
+          "arrayBuffers": 2512207
+        }
+      },
+      "totalWallMs": 8.509825000000006,
+      "memoryBefore": {
+        "rss": 60162048,
+        "heapTotal": 31612928,
+        "heapUsed": 15673976,
+        "external": 4937720,
+        "arrayBuffers": 2376519
+      },
+      "memoryAfter": {
+        "rss": 61210624,
+        "heapTotal": 32137216,
+        "heapUsed": 18404744,
+        "external": 5073408,
+        "arrayBuffers": 2512207
+      },
+      "peakRssKiB": 59776
+    },
+    {
+      "iteration": 2,
+      "workload": "ieee-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 235379
+      },
+      "query": {
+        "work": 104547,
+        "wallMs": 2.7696510000000103,
+        "memoryBefore": {
+          "rss": 62390272,
+          "heapTotal": 32137216,
+          "heapUsed": 19437944,
+          "external": 5209048,
+          "arrayBuffers": 2647847
+        },
+        "memoryAfter": {
+          "rss": 63569920,
+          "heapTotal": 32137216,
+          "heapUsed": 20626824,
+          "external": 5209096,
+          "arrayBuffers": 2647895
+        }
+      },
+      "totalWallMs": 7.1579539999999895,
+      "memoryBefore": {
+        "rss": 61210624,
+        "heapTotal": 32137216,
+        "heapUsed": 18545800,
+        "external": 5073408,
+        "arrayBuffers": 2512207
+      },
+      "memoryAfter": {
+        "rss": 63569920,
+        "heapTotal": 32137216,
+        "heapUsed": 20627504,
+        "external": 5209096,
+        "arrayBuffers": 2647895
+      },
+      "peakRssKiB": 62080
+    },
+    {
+      "iteration": 0,
+      "workload": "ieee-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 498299
+      },
+      "query": {
+        "work": 367209,
+        "wallMs": 18.60521300000002,
+        "memoryBefore": {
+          "rss": 60276736,
+          "heapTotal": 31350784,
+          "heapUsed": 13844080,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 66830336,
+          "heapTotal": 32137216,
+          "heapUsed": 17504528,
+          "external": 4937680,
+          "arrayBuffers": 2376479
+        }
+      },
+      "totalWallMs": 52.980425,
+      "memoryBefore": {
+        "rss": 57933824,
+        "heapTotal": 22396928,
+        "heapUsed": 14537728,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 66830336,
+        "heapTotal": 32137216,
+        "heapUsed": 17511880,
+        "external": 4937680,
+        "arrayBuffers": 2376479
+      },
+      "peakRssKiB": 65392
+    },
+    {
+      "iteration": 1,
+      "workload": "ieee-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 498299
+      },
+      "query": {
+        "work": 367209,
+        "wallMs": 5.283145000000019,
+        "memoryBefore": {
+          "rss": 63180800,
+          "heapTotal": 32137216,
+          "heapUsed": 18569296,
+          "external": 5073320,
+          "arrayBuffers": 2512119
+        },
+        "memoryAfter": {
+          "rss": 67506176,
+          "heapTotal": 32137216,
+          "heapUsed": 21257496,
+          "external": 5073328,
+          "arrayBuffers": 2512127
+        }
+      },
+      "totalWallMs": 14.400435999999985,
+      "memoryBefore": {
+        "rss": 67354624,
+        "heapTotal": 32137216,
+        "heapUsed": 17545704,
+        "external": 4937680,
+        "arrayBuffers": 2376479
+      },
+      "memoryAfter": {
+        "rss": 67506176,
+        "heapTotal": 32137216,
+        "heapUsed": 21257968,
+        "external": 5073328,
+        "arrayBuffers": 2512127
+      },
+      "peakRssKiB": 67696
+    },
+    {
+      "iteration": 2,
+      "workload": "ieee-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 498299
+      },
+      "query": {
+        "work": 367209,
+        "wallMs": 5.49317099999999,
+        "memoryBefore": {
+          "rss": 69857280,
+          "heapTotal": 32137216,
+          "heapUsed": 16300384,
+          "external": 4939852,
+          "arrayBuffers": 2378651
+        },
+        "memoryAfter": {
+          "rss": 67575808,
+          "heapTotal": 32399360,
+          "heapUsed": 19094160,
+          "external": 4939860,
+          "arrayBuffers": 2378659
+        }
+      },
+      "totalWallMs": 10.364304000000004,
+      "memoryBefore": {
+        "rss": 68030464,
+        "heapTotal": 32137216,
+        "heapUsed": 21265840,
+        "external": 5073328,
+        "arrayBuffers": 2512127
+      },
+      "memoryAfter": {
+        "rss": 67575808,
+        "heapTotal": 32399360,
+        "heapUsed": 19094840,
+        "external": 4939860,
+        "arrayBuffers": 2378659
+      },
+      "peakRssKiB": 69636
+    },
+    {
+      "iteration": 0,
+      "workload": "calendar-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 7125081
+      },
+      "query": {
+        "work": 6994000,
+        "wallMs": 99.63208799999998,
+        "memoryBefore": {
+          "rss": 60420096,
+          "heapTotal": 31088640,
+          "heapUsed": 13851984,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 90669056,
+          "heapTotal": 34758656,
+          "heapUsed": 19618144,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 132.88684400000002,
+      "memoryBefore": {
+        "rss": 58380288,
+        "heapTotal": 21872640,
+        "heapUsed": 14418408,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 90669056,
+        "heapTotal": 34758656,
+        "heapUsed": 19621936,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 99504
+    },
+    {
+      "iteration": 1,
+      "workload": "calendar-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 7125081
+      },
+      "query": {
+        "work": 6994000,
+        "wallMs": 114.509995,
+        "memoryBefore": {
+          "rss": 91848704,
+          "heapTotal": 34758656,
+          "heapUsed": 21048296,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 112078848,
+          "heapTotal": 54681600,
+          "heapUsed": 23079120,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 122.33153200000004,
+      "memoryBefore": {
+        "rss": 90669056,
+        "heapTotal": 34758656,
+        "heapUsed": 19655760,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 112078848,
+        "heapTotal": 54681600,
+        "heapUsed": 22901392,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 109452
+    },
+    {
+      "iteration": 2,
+      "workload": "calendar-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 7125081
+      },
+      "query": {
+        "work": 6994000,
+        "wallMs": 73.20994999999999,
+        "memoryBefore": {
+          "rss": 112562176,
+          "heapTotal": 54681600,
+          "heapUsed": 24232816,
+          "external": 4940476,
+          "arrayBuffers": 2379275
+        },
+        "memoryAfter": {
+          "rss": 112713728,
+          "heapTotal": 58089472,
+          "heapUsed": 25163000,
+          "external": 4805044,
+          "arrayBuffers": 2243843
+        }
+      },
+      "totalWallMs": 77.81136199999997,
+      "memoryBefore": {
+        "rss": 112078848,
+        "heapTotal": 54681600,
+        "heapUsed": 22909264,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "memoryAfter": {
+        "rss": 112713728,
+        "heapTotal": 58089472,
+        "heapUsed": 25171296,
+        "external": 4805044,
+        "arrayBuffers": 2243843
+      },
+      "peakRssKiB": 115352
+    },
+    {
+      "iteration": 0,
+      "workload": "calendar-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 343985
+      },
+      "query": {
+        "work": 212752,
+        "wallMs": 32.596542,
+        "memoryBefore": {
+          "rss": 60469248,
+          "heapTotal": 30826496,
+          "heapUsed": 13853160,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 65941504,
+          "heapTotal": 31875072,
+          "heapUsed": 14249032,
+          "external": 4937672,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 68.172382,
+      "memoryBefore": {
+        "rss": 59269120,
+        "heapTotal": 30298112,
+        "heapUsed": 14950568,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 65941504,
+        "heapTotal": 31875072,
+        "heapUsed": 14252824,
+        "external": 4937672,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 70188
+    },
+    {
+      "iteration": 1,
+      "workload": "calendar-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 343985
+      },
+      "query": {
+        "work": 212752,
+        "wallMs": 13.777976999999993,
+        "memoryBefore": {
+          "rss": 66203648,
+          "heapTotal": 31875072,
+          "heapUsed": 15553272,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 78262272,
+          "heapTotal": 32661504,
+          "heapUsed": 15972864,
+          "external": 4940060,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 19.879797999999994,
+      "memoryBefore": {
+        "rss": 65941504,
+        "heapTotal": 31875072,
+        "heapUsed": 14286648,
+        "external": 4937672,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 78262272,
+        "heapTotal": 32661504,
+        "heapUsed": 15973336,
+        "external": 4940060,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 76428
+    },
+    {
+      "iteration": 2,
+      "workload": "calendar-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 343985
+      },
+      "query": {
+        "work": 212752,
+        "wallMs": 6.072696000000008,
+        "memoryBefore": {
+          "rss": 76013568,
+          "heapTotal": 32661504,
+          "heapUsed": 17063432,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 76537856,
+          "heapTotal": 33447936,
+          "heapUsed": 17186496,
+          "external": 4940060,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 11.335269000000011,
+      "memoryBefore": {
+        "rss": 78393344,
+        "heapTotal": 32661504,
+        "heapUsed": 15981208,
+        "external": 4940060,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 76537856,
+        "heapTotal": 33447936,
+        "heapUsed": 17385312,
+        "external": 4940060,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 77580
+    },
+    {
+      "iteration": 0,
+      "workload": "duration-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 2339392
+      },
+      "query": {
+        "work": 2208577,
+        "wallMs": 46.09294400000002,
+        "memoryBefore": {
+          "rss": 59174912,
+          "heapTotal": 30826496,
+          "heapUsed": 13843016,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 92127232,
+          "heapTotal": 32399360,
+          "heapUsed": 19971664,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 81.87114400000002,
+      "memoryBefore": {
+        "rss": 57397248,
+        "heapTotal": 21872640,
+        "heapUsed": 14553392,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 92258304,
+        "heapTotal": 32399360,
+        "heapUsed": 19975456,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 90096
+    },
+    {
+      "iteration": 1,
+      "workload": "duration-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 2339392
+      },
+      "query": {
+        "work": 2208577,
+        "wallMs": 31.405804999999987,
+        "memoryBefore": {
+          "rss": 96583680,
+          "heapTotal": 33185792,
+          "heapUsed": 21606784,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 82870272,
+          "heapTotal": 34496512,
+          "heapUsed": 18170704,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 37.10440699999998,
+      "memoryBefore": {
+        "rss": 92520448,
+        "heapTotal": 32399360,
+        "heapUsed": 19918400,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 82870272,
+        "heapTotal": 34496512,
+        "heapUsed": 18171176,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 95728
+    },
+    {
+      "iteration": 2,
+      "workload": "duration-bound",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 2339392
+      },
+      "query": {
+        "work": 2208577,
+        "wallMs": 18.05775699999998,
+        "memoryBefore": {
+          "rss": 84312064,
+          "heapTotal": 34496512,
+          "heapUsed": 19223176,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 86597632,
+          "heapTotal": 35807232,
+          "heapUsed": 21499232,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 27.21749299999999,
+      "memoryBefore": {
+        "rss": 82870272,
+        "heapTotal": 34496512,
+        "heapUsed": 18179048,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 86597632,
+        "heapTotal": 35807232,
+        "heapUsed": 21499912,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 95728
+    },
+    {
+      "iteration": 0,
+      "workload": "duration-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 254733
+      },
+      "query": {
+        "work": 123650,
+        "wallMs": 15.85490200000001,
+        "memoryBefore": {
+          "rss": 59199488,
+          "heapTotal": 30826496,
+          "heapUsed": 13843552,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 60903424,
+          "heapTotal": 31875072,
+          "heapUsed": 17859576,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        }
+      },
+      "totalWallMs": 46.807704,
+      "memoryBefore": {
+        "rss": 56930304,
+        "heapTotal": 21872640,
+        "heapUsed": 14556376,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 60903424,
+        "heapTotal": 31875072,
+        "heapUsed": 17863368,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "peakRssKiB": 59476
+    },
+    {
+      "iteration": 1,
+      "workload": "duration-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 254733
+      },
+      "query": {
+        "work": 123650,
+        "wallMs": 6.679923000000002,
+        "memoryBefore": {
+          "rss": 68505600,
+          "heapTotal": 31875072,
+          "heapUsed": 18769608,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        },
+        "memoryAfter": {
+          "rss": 66789376,
+          "heapTotal": 32137216,
+          "heapUsed": 22090776,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        }
+      },
+      "totalWallMs": 12.675272000000007,
+      "memoryBefore": {
+        "rss": 61034496,
+        "heapTotal": 31875072,
+        "heapUsed": 17897192,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "memoryAfter": {
+        "rss": 66789376,
+        "heapTotal": 32137216,
+        "heapUsed": 22096728,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "peakRssKiB": 67540
+    },
+    {
+      "iteration": 2,
+      "workload": "duration-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 254733
+      },
+      "query": {
+        "work": 123650,
+        "wallMs": 4.268323000000009,
+        "memoryBefore": {
+          "rss": 66920448,
+          "heapTotal": 32137216,
+          "heapUsed": 16381904,
+          "external": 4939852,
+          "arrayBuffers": 2378651
+        },
+        "memoryAfter": {
+          "rss": 72163328,
+          "heapTotal": 32399360,
+          "heapUsed": 19516800,
+          "external": 4939852,
+          "arrayBuffers": 2378651
+        }
+      },
+      "totalWallMs": 9.874255000000005,
+      "memoryBefore": {
+        "rss": 66789376,
+        "heapTotal": 32137216,
+        "heapUsed": 22104600,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "memoryAfter": {
+        "rss": 72163328,
+        "heapTotal": 32399360,
+        "heapUsed": 19517480,
+        "external": 4939852,
+        "arrayBuffers": 2378651
+      },
+      "peakRssKiB": 70472
+    },
+    {
+      "iteration": 0,
+      "workload": "qname-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 173090
+      },
+      "query": {
+        "work": 42031,
+        "wallMs": 7.975849000000011,
+        "memoryBefore": {
+          "rss": 58515456,
+          "heapTotal": 31088640,
+          "heapUsed": 13849240,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 58777600,
+          "heapTotal": 31350784,
+          "heapUsed": 14667000,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        }
+      },
+      "totalWallMs": 40.792114,
+      "memoryBefore": {
+        "rss": 55914496,
+        "heapTotal": 21348352,
+        "heapUsed": 14457216,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 58777600,
+        "heapTotal": 31350784,
+        "heapUsed": 14670792,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "peakRssKiB": 58316
+    },
+    {
+      "iteration": 1,
+      "workload": "qname-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 173090
+      },
+      "query": {
+        "work": 42031,
+        "wallMs": 1.5690380000000062,
+        "memoryBefore": {
+          "rss": 59039744,
+          "heapTotal": 32137216,
+          "heapUsed": 15952672,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        },
+        "memoryAfter": {
+          "rss": 59170816,
+          "heapTotal": 32137216,
+          "heapUsed": 16531448,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        }
+      },
+      "totalWallMs": 6.049261000000001,
+      "memoryBefore": {
+        "rss": 58777600,
+        "heapTotal": 31350784,
+        "heapUsed": 14704616,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "memoryAfter": {
+        "rss": 59170816,
+        "heapTotal": 32137216,
+        "heapUsed": 16531920,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "peakRssKiB": 58316
+    },
+    {
+      "iteration": 2,
+      "workload": "qname-alias",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 16,
+        "work": 173090
+      },
+      "query": {
+        "work": 42031,
+        "wallMs": 1.554034999999999,
+        "memoryBefore": {
+          "rss": 59170816,
+          "heapTotal": 32137216,
+          "heapUsed": 17578120,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        },
+        "memoryAfter": {
+          "rss": 59564032,
+          "heapTotal": 32137216,
+          "heapUsed": 18168192,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        }
+      },
+      "totalWallMs": 6.076351000000017,
+      "memoryBefore": {
+        "rss": 59170816,
+        "heapTotal": 32137216,
+        "heapUsed": 16539792,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "memoryAfter": {
+        "rss": 59564032,
+        "heapTotal": 32137216,
+        "heapUsed": 18168872,
+        "external": 5208952,
+        "arrayBuffers": 2647751
+      },
+      "peakRssKiB": 58316
+    },
+    {
+      "iteration": 0,
+      "workload": "base64-shadow",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 21,
+        "work": 4286416
+      },
+      "query": {
+        "work": 4107452,
+        "wallMs": 112.71359399999997,
+        "memoryBefore": {
+          "rss": 61612032,
+          "heapTotal": 31875072,
+          "heapUsed": 14067440,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 98803712,
+          "heapTotal": 35545088,
+          "heapUsed": 18033648,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 146.03497000000002,
+      "memoryBefore": {
+        "rss": 59047936,
+        "heapTotal": 30298112,
+        "heapUsed": 15064656,
+        "external": 4965221,
+        "arrayBuffers": 2535132
+      },
+      "memoryAfter": {
+        "rss": 98803712,
+        "heapTotal": 35545088,
+        "heapUsed": 18037440,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 98300
+    },
+    {
+      "iteration": 1,
+      "workload": "base64-shadow",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 21,
+        "work": 4286416
+      },
+      "query": {
+        "work": 4107452,
+        "wallMs": 80.93299399999995,
+        "memoryBefore": {
+          "rss": 99328000,
+          "heapTotal": 35807232,
+          "heapUsed": 19386168,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 122339328,
+          "heapTotal": 55992320,
+          "heapUsed": 25076736,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 89.25343300000003,
+      "memoryBefore": {
+        "rss": 98803712,
+        "heapTotal": 35545088,
+        "heapUsed": 18071264,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 122339328,
+        "heapTotal": 55992320,
+        "heapUsed": 25077208,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 119472
+    },
+    {
+      "iteration": 2,
+      "workload": "base64-shadow",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 21,
+        "work": 4286416
+      },
+      "query": {
+        "work": 4107452,
+        "wallMs": 47.142829000000006,
+        "memoryBefore": {
+          "rss": 123912192,
+          "heapTotal": 55992320,
+          "heapUsed": 26265976,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 124792832,
+          "heapTotal": 59138048,
+          "heapUsed": 27773168,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 51.48641599999996,
+      "memoryBefore": {
+        "rss": 122339328,
+        "heapTotal": 55992320,
+        "heapUsed": 25085080,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 124792832,
+        "heapTotal": 59138048,
+        "heapUsed": 27773848,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 127168
+    },
+    {
+      "iteration": 0,
+      "workload": "base64-exponent-embedding",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 21,
+        "work": 6787644
+      },
+      "query": {
+        "work": 6608665,
+        "wallMs": 152.296643,
+        "memoryBefore": {
+          "rss": 58105856,
+          "heapTotal": 31612928,
+          "heapUsed": 14073048,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 86405120,
+          "heapTotal": 37380096,
+          "heapUsed": 23512104,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 185.54744200000002,
+      "memoryBefore": {
+        "rss": 55644160,
+        "heapTotal": 30298112,
+        "heapUsed": 14867392,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 86405120,
+        "heapTotal": 37380096,
+        "heapUsed": 23515896,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 85424
+    },
+    {
+      "iteration": 1,
+      "workload": "base64-exponent-embedding",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 21,
+        "work": 6787644
+      },
+      "query": {
+        "work": 6608665,
+        "wallMs": 107.79817400000002,
+        "memoryBefore": {
+          "rss": 82042880,
+          "heapTotal": 37380096,
+          "heapUsed": 24973424,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 109457408,
+          "heapTotal": 58089472,
+          "heapUsed": 35515624,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 116.17111299999999,
+      "memoryBefore": {
+        "rss": 86536192,
+        "heapTotal": 37380096,
+        "heapUsed": 23549720,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 109457408,
+        "heapTotal": 58089472,
+        "heapUsed": 35516096,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 107908
+    },
+    {
+      "iteration": 2,
+      "workload": "base64-exponent-embedding",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 21,
+        "work": 6787644
+      },
+      "query": {
+        "work": 6608665,
+        "wallMs": 84.87543399999998,
+        "memoryBefore": {
+          "rss": 104640512,
+          "heapTotal": 58351616,
+          "heapUsed": 36812280,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 107188224,
+          "heapTotal": 61497344,
+          "heapUsed": 41769280,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 92.78796299999999,
+      "memoryBefore": {
+        "rss": 109457408,
+        "heapTotal": 58089472,
+        "heapUsed": 35523968,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 107188224,
+        "heapTotal": 61497344,
+        "heapUsed": 41769960,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 110516
+    },
+    {
+      "iteration": 0,
+      "workload": "list-decimal-string",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 18,
+        "work": 1150647
+      },
+      "query": {
+        "work": 1001056,
+        "wallMs": 58.22641899999999,
+        "memoryBefore": {
+          "rss": 59822080,
+          "heapTotal": 30826496,
+          "heapUsed": 13977432,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 78086144,
+          "heapTotal": 33710080,
+          "heapUsed": 19430240,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 92.01955799999999,
+      "memoryBefore": {
+        "rss": 58368000,
+        "heapTotal": 22134784,
+        "heapUsed": 14540872,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 78086144,
+        "heapTotal": 33710080,
+        "heapUsed": 19434168,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 87652
+    },
+    {
+      "iteration": 1,
+      "workload": "list-decimal-string",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 18,
+        "work": 1150647
+      },
+      "query": {
+        "work": 1001056,
+        "wallMs": 34.14508000000001,
+        "memoryBefore": {
+          "rss": 78217216,
+          "heapTotal": 33710080,
+          "heapUsed": 20699952,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 87187456,
+          "heapTotal": 35282944,
+          "heapUsed": 24242736,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 39.273301000000004,
+      "memoryBefore": {
+        "rss": 78086144,
+        "heapTotal": 33710080,
+        "heapUsed": 19467992,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 87187456,
+        "heapTotal": 35282944,
+        "heapUsed": 24243208,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 87776
+    },
+    {
+      "iteration": 2,
+      "workload": "list-decimal-string",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 18,
+        "work": 1150647
+      },
+      "query": {
+        "work": 1001056,
+        "wallMs": 20.764031999999986,
+        "memoryBefore": {
+          "rss": 87318528,
+          "heapTotal": 35807232,
+          "heapUsed": 18770992,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 90988544,
+          "heapTotal": 36593664,
+          "heapUsed": 19189856,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 26.11596000000003,
+      "memoryBefore": {
+        "rss": 87187456,
+        "heapTotal": 35282944,
+        "heapUsed": 24251080,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 90988544,
+        "heapTotal": 36593664,
+        "heapUsed": 19190536,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 88856
+    },
+    {
+      "iteration": 0,
+      "workload": "list-decimal-ieee",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 20,
+        "work": 1537894
+      },
+      "query": {
+        "work": 1368318,
+        "wallMs": 71.61160299999997,
+        "memoryBefore": {
+          "rss": 61222912,
+          "heapTotal": 31350784,
+          "heapUsed": 14034256,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 78168064,
+          "heapTotal": 33972224,
+          "heapUsed": 17128384,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 106.47754999999998,
+      "memoryBefore": {
+        "rss": 57421824,
+        "heapTotal": 22134784,
+        "heapUsed": 14635608,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 78168064,
+        "heapTotal": 33972224,
+        "heapUsed": 17132176,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 79476
+    },
+    {
+      "iteration": 1,
+      "workload": "list-decimal-ieee",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 20,
+        "work": 1537894
+      },
+      "query": {
+        "work": 1368318,
+        "wallMs": 61.189723000000015,
+        "memoryBefore": {
+          "rss": 79929344,
+          "heapTotal": 33972224,
+          "heapUsed": 18473592,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 85151744,
+          "heapTotal": 35807232,
+          "heapUsed": 19549136,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 73.15844299999998,
+      "memoryBefore": {
+        "rss": 78168064,
+        "heapTotal": 33972224,
+        "heapUsed": 17166000,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 85151744,
+        "heapTotal": 35807232,
+        "heapUsed": 19549608,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 88680
+    },
+    {
+      "iteration": 2,
+      "workload": "list-decimal-ieee",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 20,
+        "work": 1537894
+      },
+      "query": {
+        "work": 1368318,
+        "wallMs": 31.88473700000003,
+        "memoryBefore": {
+          "rss": 87773184,
+          "heapTotal": 35807232,
+          "heapUsed": 20770456,
+          "external": 4940476,
+          "arrayBuffers": 2379275
+        },
+        "memoryAfter": {
+          "rss": 85422080,
+          "heapTotal": 37380096,
+          "heapUsed": 20650440,
+          "external": 4805044,
+          "arrayBuffers": 2243843
+        }
+      },
+      "totalWallMs": 40.074539000000016,
+      "memoryBefore": {
+        "rss": 85151744,
+        "heapTotal": 35807232,
+        "heapUsed": 19557480,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "memoryAfter": {
+        "rss": 85422080,
+        "heapTotal": 37380096,
+        "heapUsed": 20651120,
+        "external": 4805044,
+        "arrayBuffers": 2243843
+      },
+      "peakRssKiB": 88680
+    },
+    {
+      "iteration": 0,
+      "workload": "list-double-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 20,
+        "work": 4818079
+      },
+      "query": {
+        "work": 4648536,
+        "wallMs": 62.16074800000001,
+        "memoryBefore": {
+          "rss": 61095936,
+          "heapTotal": 31350784,
+          "heapUsed": 14038672,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 83668992,
+          "heapTotal": 33185792,
+          "heapUsed": 17507888,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 98.03402600000001,
+      "memoryBefore": {
+        "rss": 58589184,
+        "heapTotal": 21610496,
+        "heapUsed": 14523744,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 83668992,
+        "heapTotal": 33185792,
+        "heapUsed": 17511680,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 87568
+    },
+    {
+      "iteration": 1,
+      "workload": "list-double-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 20,
+        "work": 4818079
+      },
+      "query": {
+        "work": 4648536,
+        "wallMs": 46.032602999999995,
+        "memoryBefore": {
+          "rss": 84193280,
+          "heapTotal": 33185792,
+          "heapUsed": 18858784,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 88829952,
+          "heapTotal": 35020800,
+          "heapUsed": 20468960,
+          "external": 4804644,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 53.94635900000003,
+      "memoryBefore": {
+        "rss": 83668992,
+        "heapTotal": 33185792,
+        "heapUsed": 17911696,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 88829952,
+        "heapTotal": 35020800,
+        "heapUsed": 20469432,
+        "external": 4804644,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 87568
+    },
+    {
+      "iteration": 2,
+      "workload": "list-double-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 20,
+        "work": 4818079
+      },
+      "query": {
+        "work": 4648536,
+        "wallMs": 31.859203999999977,
+        "memoryBefore": {
+          "rss": 89915392,
+          "heapTotal": 35545088,
+          "heapUsed": 21756544,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 100364288,
+          "heapTotal": 36331520,
+          "heapUsed": 19179664,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 43.68000799999999,
+      "memoryBefore": {
+        "rss": 88961024,
+        "heapTotal": 35020800,
+        "heapUsed": 20477304,
+        "external": 4804644,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 100364288,
+        "heapTotal": 36331520,
+        "heapUsed": 19180344,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 98012
+    },
+    {
+      "iteration": 0,
+      "workload": "string-negative-exponent-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 21,
+        "work": 3690866
+      },
+      "query": {
+        "work": 3511872,
+        "wallMs": 150.709262,
+        "memoryBefore": {
+          "rss": 61517824,
+          "heapTotal": 31612928,
+          "heapUsed": 14066808,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 81653760,
+          "heapTotal": 35807232,
+          "heapUsed": 23168920,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 184.36979099999996,
+      "memoryBefore": {
+        "rss": 57716736,
+        "heapTotal": 22134784,
+        "heapUsed": 14693072,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 81653760,
+        "heapTotal": 35807232,
+        "heapUsed": 23172712,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 88808
+    },
+    {
+      "iteration": 1,
+      "workload": "string-negative-exponent-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 21,
+        "work": 3690866
+      },
+      "query": {
+        "work": 3511872,
+        "wallMs": 86.89786199999998,
+        "memoryBefore": {
+          "rss": 81915904,
+          "heapTotal": 35807232,
+          "heapUsed": 24522816,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 104132608,
+          "heapTotal": 55992320,
+          "heapUsed": 30388568,
+          "external": 4804676,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 93.469941,
+      "memoryBefore": {
+        "rss": 81653760,
+        "heapTotal": 35807232,
+        "heapUsed": 23206680,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 104394752,
+        "heapTotal": 55992320,
+        "heapUsed": 30389040,
+        "external": 4804676,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 101948
+    },
+    {
+      "iteration": 2,
+      "workload": "string-negative-exponent-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 21,
+        "work": 3690866
+      },
+      "query": {
+        "work": 3511872,
+        "wallMs": 62.102243999999985,
+        "memoryBefore": {
+          "rss": 99213312,
+          "heapTotal": 56254464,
+          "heapUsed": 30822016,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 105975808,
+          "heapTotal": 59400192,
+          "heapUsed": 38389488,
+          "external": 4804932,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 67.65980200000001,
+      "memoryBefore": {
+        "rss": 104525824,
+        "heapTotal": 55992320,
+        "heapUsed": 30396912,
+        "external": 4804676,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 105975808,
+        "heapTotal": 59400192,
+        "heapUsed": 38390168,
+        "external": 4804932,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 108476
+    },
+    {
+      "iteration": 0,
+      "workload": "float-double-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 19,
+        "work": 5184789
+      },
+      "query": {
+        "work": 5025307,
+        "wallMs": 125.91476,
+        "memoryBefore": {
+          "rss": 59609088,
+          "heapTotal": 30826496,
+          "heapUsed": 14004144,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 87343104,
+          "heapTotal": 35545088,
+          "heapUsed": 23398600,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 165.036648,
+      "memoryBefore": {
+        "rss": 57290752,
+        "heapTotal": 30298112,
+        "heapUsed": 14982344,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 87343104,
+        "heapTotal": 35545088,
+        "heapUsed": 23402392,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 97412
+    },
+    {
+      "iteration": 1,
+      "workload": "float-double-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 19,
+        "work": 5184789
+      },
+      "query": {
+        "work": 5025307,
+        "wallMs": 104.258061,
+        "memoryBefore": {
+          "rss": 87867392,
+          "heapTotal": 35545088,
+          "heapUsed": 24706536,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 115007488,
+          "heapTotal": 56254464,
+          "heapUsed": 36744360,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 110.81713099999996,
+      "memoryBefore": {
+        "rss": 87343104,
+        "heapTotal": 35545088,
+        "heapUsed": 23436064,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 115007488,
+        "heapTotal": 56254464,
+        "heapUsed": 36744832,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 112812
+    },
+    {
+      "iteration": 2,
+      "workload": "float-double-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "checked",
+      "usage": {
+        "nodes": 19,
+        "work": 5184789
+      },
+      "query": {
+        "work": 5025307,
+        "wallMs": 79.58314000000001,
+        "memoryBefore": {
+          "rss": 115056640,
+          "heapTotal": 56254464,
+          "heapUsed": 22664784,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 118927360,
+          "heapTotal": 58613760,
+          "heapUsed": 25735080,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 84.91611,
+      "memoryBefore": {
+        "rss": 115007488,
+        "heapTotal": 56254464,
+        "heapUsed": 36752704,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 118927360,
+        "heapTotal": 58613760,
+        "heapUsed": 25735760,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 118376
+    },
+    {
+      "iteration": 0,
+      "workload": "float-double-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 19,
+        "work": 8342591
+      },
+      "query": {
+        "work": 8184781,
+        "wallMs": 96.987967,
+        "memoryBefore": {
+          "rss": 60600320,
+          "heapTotal": 31088640,
+          "heapUsed": 14017536,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 90824704,
+          "heapTotal": 52060160,
+          "heapUsed": 25924008,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 128.66389900000001,
+      "memoryBefore": {
+        "rss": 58191872,
+        "heapTotal": 21872640,
+        "heapUsed": 14674504,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 90824704,
+        "heapTotal": 52060160,
+        "heapUsed": 25927800,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 96560
+    },
+    {
+      "iteration": 1,
+      "workload": "float-double-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 19,
+        "work": 8342591
+      },
+      "query": {
+        "work": 8184781,
+        "wallMs": 70.88156599999996,
+        "memoryBefore": {
+          "rss": 87064576,
+          "heapTotal": 52322304,
+          "heapUsed": 27011720,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 116084736,
+          "heapTotal": 62283776,
+          "heapUsed": 40344648,
+          "external": 4804636,
+          "arrayBuffers": 2243435
+        }
+      },
+      "totalWallMs": 78.38730599999997,
+      "memoryBefore": {
+        "rss": 90824704,
+        "heapTotal": 52322304,
+        "heapUsed": 25968184,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 116084736,
+        "heapTotal": 62283776,
+        "heapUsed": 40345120,
+        "external": 4804636,
+        "arrayBuffers": 2243435
+      },
+      "peakRssKiB": 114136
+    },
+    {
+      "iteration": 2,
+      "workload": "float-double-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 19,
+        "work": 8342591
+      },
+      "query": {
+        "work": 8184781,
+        "wallMs": 54.385446,
+        "memoryBefore": {
+          "rss": 117133312,
+          "heapTotal": 62283776,
+          "heapUsed": 41471560,
+          "external": 4940276,
+          "arrayBuffers": 2379075
+        },
+        "memoryAfter": {
+          "rss": 126210048,
+          "heapTotal": 68575232,
+          "heapUsed": 41257888,
+          "external": 4804844,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 59.96479799999997,
+      "memoryBefore": {
+        "rss": 116084736,
+        "heapTotal": 62283776,
+        "heapUsed": 40352992,
+        "external": 4804636,
+        "arrayBuffers": 2243435
+      },
+      "memoryAfter": {
+        "rss": 126210048,
+        "heapTotal": 68575232,
+        "heapUsed": 41258568,
+        "external": 4804844,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 123536
+    },
+    {
+      "iteration": 0,
+      "workload": "double-float-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 19,
+        "work": 24999999
+      },
+      "query": {
+        "work": 24840524,
+        "wallMs": 55.999065,
+        "memoryBefore": {
+          "rss": 60833792,
+          "heapTotal": 31350784,
+          "heapUsed": 14001656,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 74743808,
+          "heapTotal": 33447936,
+          "heapUsed": 18171664,
+          "external": 4804788,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 119.04845700000001,
+      "memoryBefore": {
+        "rss": 57815040,
+        "heapTotal": 21872640,
+        "heapUsed": 14540376,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 74874880,
+        "heapTotal": 33447936,
+        "heapUsed": 18175512,
+        "external": 4804788,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 91972,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 1,
+      "workload": "double-float-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 19,
+        "work": 24999999
+      },
+      "query": {
+        "work": 24840524,
+        "wallMs": 38.36397099999999,
+        "memoryBefore": {
+          "rss": 76840960,
+          "heapTotal": 33447936,
+          "heapUsed": 19491104,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 86368256,
+          "heapTotal": 34496512,
+          "heapUsed": 22623352,
+          "external": 4804876,
+          "arrayBuffers": 2243675
+        }
+      },
+      "totalWallMs": 46.779314,
+      "memoryBefore": {
+        "rss": 75137024,
+        "heapTotal": 33447936,
+        "heapUsed": 18209648,
+        "external": 4804788,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 86368256,
+        "heapTotal": 34496512,
+        "heapUsed": 22623880,
+        "external": 4804876,
+        "arrayBuffers": 2243675
+      },
+      "peakRssKiB": 91972,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 2,
+      "workload": "double-float-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 19,
+        "work": 24999999
+      },
+      "query": {
+        "work": 24840524,
+        "wallMs": 19.504456000000005,
+        "memoryBefore": {
+          "rss": 83476480,
+          "heapTotal": 34496512,
+          "heapUsed": 23868520,
+          "external": 4940516,
+          "arrayBuffers": 2379315
+        },
+        "memoryAfter": {
+          "rss": 81739776,
+          "heapTotal": 35545088,
+          "heapUsed": 25839816,
+          "external": 4805228,
+          "arrayBuffers": 2244027
+        }
+      },
+      "totalWallMs": 27.366160999999977,
+      "memoryBefore": {
+        "rss": 86630400,
+        "heapTotal": 34496512,
+        "heapUsed": 22631824,
+        "external": 4804876,
+        "arrayBuffers": 2243675
+      },
+      "memoryAfter": {
+        "rss": 81739776,
+        "heapTotal": 35545088,
+        "heapUsed": 25840552,
+        "external": 4805228,
+        "arrayBuffers": 2244027
+      },
+      "peakRssKiB": 91972,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 0,
+      "workload": "double-float-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 19,
+        "work": 24620886
+      },
+      "query": {
+        "work": 24463083,
+        "wallMs": 76.95145600000001,
+        "memoryBefore": {
+          "rss": 61317120,
+          "heapTotal": 31350784,
+          "heapUsed": 13998496,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 76070912,
+          "heapTotal": 33710080,
+          "heapUsed": 17677680,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 113.21897900000002,
+      "memoryBefore": {
+        "rss": 58462208,
+        "heapTotal": 22134784,
+        "heapUsed": 14679264,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 76070912,
+        "heapTotal": 33710080,
+        "heapUsed": 17681528,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 82160,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 1,
+      "workload": "double-float-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 19,
+        "work": 24620886
+      },
+      "query": {
+        "work": 24463083,
+        "wallMs": 61.425295000000006,
+        "memoryBefore": {
+          "rss": 75358208,
+          "heapTotal": 33710080,
+          "heapUsed": 19032352,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 85131264,
+          "heapTotal": 35282944,
+          "heapUsed": 19116600,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 68.52806699999996,
+      "memoryBefore": {
+        "rss": 76070912,
+        "heapTotal": 33710080,
+        "heapUsed": 17715512,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 85131264,
+        "heapTotal": 35282944,
+        "heapUsed": 19117128,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 88228,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 2,
+      "workload": "double-float-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 19,
+        "work": 24620886
+      },
+      "query": {
+        "work": 24463083,
+        "wallMs": 31.781533000000024,
+        "memoryBefore": {
+          "rss": 79822848,
+          "heapTotal": 35545088,
+          "heapUsed": 20353576,
+          "external": 4940476,
+          "arrayBuffers": 2379275
+        },
+        "memoryAfter": {
+          "rss": 83279872,
+          "heapTotal": 37642240,
+          "heapUsed": 27700680,
+          "external": 4805044,
+          "arrayBuffers": 2243843
+        }
+      },
+      "totalWallMs": 36.368314,
+      "memoryBefore": {
+        "rss": 85131264,
+        "heapTotal": 35282944,
+        "heapUsed": 19125072,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "memoryAfter": {
+        "rss": 83279872,
+        "heapTotal": 37642240,
+        "heapUsed": 27701416,
+        "external": 4805044,
+        "arrayBuffers": 2243843
+      },
+      "peakRssKiB": 88228,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 0,
+      "workload": "string-negative-exponent-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 21,
+        "work": 5236136
+      },
+      "query": {
+        "work": 5057188,
+        "wallMs": 115.57798199999999,
+        "memoryBefore": {
+          "rss": 60907520,
+          "heapTotal": 31350784,
+          "heapUsed": 14075112,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 81485824,
+          "heapTotal": 35020800,
+          "heapUsed": 22341552,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 146.96023399999999,
+      "memoryBefore": {
+        "rss": 57176064,
+        "heapTotal": 30298112,
+        "heapUsed": 14804320,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 81485824,
+        "heapTotal": 35020800,
+        "heapUsed": 22345344,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 83544
+    },
+    {
+      "iteration": 1,
+      "workload": "string-negative-exponent-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 21,
+        "work": 5236136
+      },
+      "query": {
+        "work": 5057188,
+        "wallMs": 91.49296599999997,
+        "memoryBefore": {
+          "rss": 75767808,
+          "heapTotal": 35282944,
+          "heapUsed": 23717880,
+          "external": 4940060,
+          "arrayBuffers": 2378859
+        },
+        "memoryAfter": {
+          "rss": 120807424,
+          "heapTotal": 55992320,
+          "heapUsed": 34825232,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 98.14448800000002,
+      "memoryBefore": {
+        "rss": 81747968,
+        "heapTotal": 35020800,
+        "heapUsed": 22379248,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "memoryAfter": {
+        "rss": 120807424,
+        "heapTotal": 55992320,
+        "heapUsed": 34825704,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 117976
+    },
+    {
+      "iteration": 2,
+      "workload": "string-negative-exponent-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "invalid-schema",
+      "usage": {
+        "nodes": 21,
+        "work": 5236136
+      },
+      "query": {
+        "work": 5057188,
+        "wallMs": 72.01317699999998,
+        "memoryBefore": {
+          "rss": 120782848,
+          "heapTotal": 56254464,
+          "heapUsed": 23212648,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 123052032,
+          "heapTotal": 58875904,
+          "heapUsed": 35038856,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 78.95821000000001,
+      "memoryBefore": {
+        "rss": 120807424,
+        "heapTotal": 55992320,
+        "heapUsed": 34833576,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 123052032,
+        "heapTotal": 58875904,
+        "heapUsed": 35039536,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 120908
+    },
+    {
+      "iteration": 0,
+      "workload": "uri-negative-exponent-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 21,
+        "work": 24999150
+      },
+      "query": {
+        "work": 24820156,
+        "wallMs": 276.570044,
+        "memoryBefore": {
+          "rss": 58793984,
+          "heapTotal": 31088640,
+          "heapUsed": 14067384,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 105050112,
+          "heapTotal": 58920960,
+          "heapUsed": 38744632,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 310.719243,
+      "memoryBefore": {
+        "rss": 57212928,
+        "heapTotal": 22134784,
+        "heapUsed": 14541488,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 105050112,
+        "heapTotal": 58920960,
+        "heapUsed": 38748480,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 102588,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 1,
+      "workload": "uri-negative-exponent-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 21,
+        "work": 24999150
+      },
+      "query": {
+        "work": 24820156,
+        "wallMs": 259.96246900000006,
+        "memoryBefore": {
+          "rss": 105443328,
+          "heapTotal": 59707392,
+          "heapUsed": 25837352,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 150421504,
+          "heapTotal": 102313984,
+          "heapUsed": 61035160,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 266.69276799999994,
+      "memoryBefore": {
+        "rss": 105050112,
+        "heapTotal": 58920960,
+        "heapUsed": 38782616,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 150421504,
+        "heapTotal": 102313984,
+        "heapUsed": 61035688,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 146896,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 2,
+      "workload": "uri-negative-exponent-positive",
+      "profile": "previous",
+      "expected": "checked",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 21,
+        "work": 24999150
+      },
+      "query": {
+        "work": 24820156,
+        "wallMs": 326.0316560000001,
+        "memoryBefore": {
+          "rss": 150110208,
+          "heapTotal": 90595328,
+          "heapUsed": 15868984,
+          "external": 4937880,
+          "arrayBuffers": 2376679
+        },
+        "memoryAfter": {
+          "rss": 151085056,
+          "heapTotal": 92831744,
+          "heapUsed": 42411656,
+          "external": 4804420,
+          "arrayBuffers": 2243219
+        }
+      },
+      "totalWallMs": 336.21538699999996,
+      "memoryBefore": {
+        "rss": 150421504,
+        "heapTotal": 102313984,
+        "heapUsed": 61043632,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "memoryAfter": {
+        "rss": 151085056,
+        "heapTotal": 92831744,
+        "heapUsed": 42412392,
+        "external": 4804420,
+        "arrayBuffers": 2243219
+      },
+      "peakRssKiB": 154128,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 0,
+      "workload": "uri-negative-exponent-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 21,
+        "work": 24999527
+      },
+      "query": {
+        "work": 24820579,
+        "wallMs": 317.691457,
+        "memoryBefore": {
+          "rss": 61046784,
+          "heapTotal": 31612928,
+          "heapUsed": 14066408,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 119525376,
+          "heapTotal": 58753024,
+          "heapUsed": 35843352,
+          "external": 4804628,
+          "arrayBuffers": 2243427
+        }
+      },
+      "totalWallMs": 346.61827000000005,
+      "memoryBefore": {
+        "rss": 58408960,
+        "heapTotal": 30298112,
+        "heapUsed": 14843336,
+        "external": 4899685,
+        "arrayBuffers": 2469596
+      },
+      "memoryAfter": {
+        "rss": 119525376,
+        "heapTotal": 58753024,
+        "heapUsed": 35847200,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "peakRssKiB": 116724,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 1,
+      "workload": "uri-negative-exponent-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 21,
+        "work": 24999527
+      },
+      "query": {
+        "work": 24820579,
+        "wallMs": 343.82102900000007,
+        "memoryBefore": {
+          "rss": 119525376,
+          "heapTotal": 59277312,
+          "heapUsed": 37240600,
+          "external": 4940268,
+          "arrayBuffers": 2379067
+        },
+        "memoryAfter": {
+          "rss": 166952960,
+          "heapTotal": 102576128,
+          "heapUsed": 51827936,
+          "external": 4804836,
+          "arrayBuffers": 2243635
+        }
+      },
+      "totalWallMs": 353.52524600000004,
+      "memoryBefore": {
+        "rss": 119525376,
+        "heapTotal": 58753024,
+        "heapUsed": 35883168,
+        "external": 4804628,
+        "arrayBuffers": 2243427
+      },
+      "memoryAfter": {
+        "rss": 166952960,
+        "heapTotal": 102576128,
+        "heapUsed": 51828464,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "peakRssKiB": 163040,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 2,
+      "workload": "uri-negative-exponent-widening",
+      "profile": "previous",
+      "expected": "invalid-schema",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 21,
+        "work": 24999527
+      },
+      "query": {
+        "work": 24820579,
+        "wallMs": 272.14672600000006,
+        "memoryBefore": {
+          "rss": 166952960,
+          "heapTotal": 102576128,
+          "heapUsed": 53029544,
+          "external": 4940476,
+          "arrayBuffers": 2379275
+        },
+        "memoryAfter": {
+          "rss": 186679296,
+          "heapTotal": 174526464,
+          "heapUsed": 45408320,
+          "external": 4938136,
+          "arrayBuffers": 2376935
+        }
+      },
+      "totalWallMs": 279.4453319999999,
+      "memoryBefore": {
+        "rss": 166952960,
+        "heapTotal": 102576128,
+        "heapUsed": 51836408,
+        "external": 4804836,
+        "arrayBuffers": 2243635
+      },
+      "memoryAfter": {
+        "rss": 186679296,
+        "heapTotal": 174526464,
+        "heapUsed": 45409056,
+        "external": 4938136,
+        "arrayBuffers": 2376935
+      },
+      "peakRssKiB": 184488,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 0,
+      "workload": "adversarial-pattern",
+      "profile": "previous",
+      "expected": "resource-limit",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 16,
+        "work": 141951
+      },
+      "query": {
+        "work": 9953,
+        "wallMs": 5.925984999999997,
+        "memoryBefore": {
+          "rss": 61931520,
+          "heapTotal": 31088640,
+          "heapUsed": 13848840,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        },
+        "memoryAfter": {
+          "rss": 62193664,
+          "heapTotal": 31088640,
+          "heapUsed": 14145152,
+          "external": 4937672,
+          "arrayBuffers": 2376471
+        }
+      },
+      "totalWallMs": 40.21975899999998,
+      "memoryBefore": {
+        "rss": 58048512,
+        "heapTotal": 21610496,
+        "heapUsed": 14620608,
+        "external": 4965221,
+        "arrayBuffers": 2535132
+      },
+      "memoryAfter": {
+        "rss": 62193664,
+        "heapTotal": 31088640,
+        "heapUsed": 14149000,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "peakRssKiB": 60736,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 1,
+      "workload": "adversarial-pattern",
+      "profile": "previous",
+      "expected": "resource-limit",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 16,
+        "work": 141951
+      },
+      "query": {
+        "work": 9953,
+        "wallMs": 0.783221999999995,
+        "memoryBefore": {
+          "rss": 62586880,
+          "heapTotal": 31612928,
+          "heapUsed": 15427616,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        },
+        "memoryAfter": {
+          "rss": 62717952,
+          "heapTotal": 31612928,
+          "heapUsed": 16007984,
+          "external": 5073312,
+          "arrayBuffers": 2512111
+        }
+      },
+      "totalWallMs": 5.2198080000000004,
+      "memoryBefore": {
+        "rss": 62193664,
+        "heapTotal": 31088640,
+        "heapUsed": 14183152,
+        "external": 4937672,
+        "arrayBuffers": 2376471
+      },
+      "memoryAfter": {
+        "rss": 62717952,
+        "heapTotal": 31612928,
+        "heapUsed": 16008512,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "peakRssKiB": 61248,
+      "stickyExhaustion": true
+    },
+    {
+      "iteration": 2,
+      "workload": "adversarial-pattern",
+      "profile": "previous",
+      "expected": "resource-limit",
+      "kind": "resource-limit",
+      "usage": {
+        "nodes": 16,
+        "work": 141951
+      },
+      "query": {
+        "work": 9953,
+        "wallMs": 0.6180230000000222,
+        "memoryBefore": {
+          "rss": 62849024,
+          "heapTotal": 31612928,
+          "heapUsed": 16766192,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        },
+        "memoryAfter": {
+          "rss": 62980096,
+          "heapTotal": 31875072,
+          "heapUsed": 17406536,
+          "external": 5208952,
+          "arrayBuffers": 2647751
+        }
+      },
+      "totalWallMs": 3.904663999999997,
+      "memoryBefore": {
+        "rss": 62717952,
+        "heapTotal": 31612928,
+        "heapUsed": 15728080,
+        "external": 5073312,
+        "arrayBuffers": 2512111
+      },
+      "memoryAfter": {
+        "rss": 62980096,
+        "heapTotal": 31875072,
+        "heapUsed": 17407272,
+        "external": 5208952,
+        "arrayBuffers": 2647751
+      },
+      "peakRssKiB": 61504,
+      "stickyExhaustion": true
+    }
+  ]
+}

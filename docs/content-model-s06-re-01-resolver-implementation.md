@@ -19,7 +19,7 @@ Reference, owner and incoming-affiliation access to an unavailable subject raise
 Candidate collisions are checked against the entire original identity domain, including omitted original records.
 
 `src/compiler/semanticBudget.ts` is the single implementation of the previously accepted request accounting; `resolver-budget.ts` is a compatibility re-export.
-Default inclusive limits are 100,000 nodes and 25,000,000 work units, with sticky exhaustion and pre-work/pre-allocation charging; the [capacity calibration](#successor-budget-calibration) records the measured scope and headroom.
+Default inclusive limits are 100,000 nodes and 125,000,000 work units, with sticky exhaustion and pre-work/pre-allocation charging; the [scalar calibration](#scalar-completeness-capacity-calibration) records the measured scope and headroom.
 The new request covers actual context preparation, candidate indexes and consuming kernels; inherited loading/catalog/resolution stage counters remain separate and are not relabeled one whole-pipeline budget.
 
 Semantic consumers reuse the request's original indexes and access generated content through `particleContentNode`.
@@ -46,7 +46,7 @@ Alternative raw matches can discharge a pending pair only with a fully checked c
 The canonical adapter retains source contributions.
 Those contributions do not by themselves represent unrestricted abstract hypothetical AU sets or raw particle construction; source mapping must not be applied to every hypothetical candidate by assumption.
 The concrete finite checker described below consumes qualified effective-property correspondence and all generated local obligations.
-Remaining local algorithm/evidence qualifications and #234 witness/evidence adequacy stay open under the [domain checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint).
+Missing-input and separately owned aggregate qualifications remain explicit under the [domain checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint); universal witness/evidence adequacy remains #234.
 
 ### Concrete source verification APIs
 
@@ -142,13 +142,13 @@ Privately typed facet operands also require membership in the restriction's base
 Finite inherited enumeration components provide concrete positive or negative membership evidence.
 Additional finite lexical aliases are reassessed against the exact base and compared through shared typed equality; a failed lexical witness alone does not prove a value-space negative.
 The shared pattern owner can also enumerate its privately compiled finite literal fragment: literal code points and escapes, choices, sequences and bounded repetitions.
-It proposes spellings without changing the application pattern subset or assigning pattern-component equality; every spelling still requires exact base assessment and typed equality.
+This historical positive producer proposes spellings without changing the application pattern subset or assigning pattern-component equality; every spelling still requires exact base assessment and typed equality.
 Enumeration is iterative and charged before copying or repetition; resource exhaustion remains sticky, and fragments outside this producer retain their membership prerequisite.
 For admitted explicit character classes, the positive producer tries operand spelling characters and printable ASCII that match the class, then scans remaining code points from U+007F for one match when needed.
 Exact finite pattern words across all layers are checked before incomplete heuristic proposals, so a costly earlier pattern cannot starve a later finite witness.
 Within a heuristic pattern, cheap class witnesses remain ahead of large literal branches, while paths needing no class search are tried before the fallback Unicode scan; the [independent starvation control](../test/unit/schema-pattern-starvation-independent.test.ts) exercises both orderings with an explicit 1,000,000-work allowance.
 For admitted unbounded repetitions, it explores a finite prefix from the declared minimum through that minimum plus the expression and operand spelling lengths, using the same request budget.
-These proposals are checked in the exact base context against the original typed operand; missing proposals retain an unresolved membership obligation, since the prefix and class choices do not exhaust either language.
+These proposals are checked in the exact base context against the original typed operand; their prefix and class choices do not exhaust either language. The complete local membership owner now continues with the typed inverse/image procedures below when those positive proposals miss.
 The same value-facet evaluator can establish exact length, precision or bound exclusion without promoting one union member's failure to a union-wide negative.
 Coexisting length and minimum/maximum-length facets require the specified proper restriction ancestor, including intrinsic builtin list bounds, in addition to numeric consistency.
 Raw conjunct reduction retains a correspondence prerequisite when it cannot preserve fixed metadata or an inherited distinct facet property; it does not silently discard that property.
@@ -205,6 +205,115 @@ The context privately owns sanitized immutable references and dependency records
 Private completed scalar property plans may share their frozen publication, while each use repeats active selection, legality prerequisites and dependency collection.
 These copies and positively charged reuse paths preserve the shared request accounting and never transfer validity between contexts.
 
+### Complete #268 rule inventory
+
+This inventory covers every local type, declaration and scalar obligation of [#268](https://github.com/TechSpokes/typescript-wsdl-client/issues/268). It uses the October 28, 2004 second editions of [Structures](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/) and [Datatypes](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html). Clause identifiers below refer to those dated texts, not a later XSD edition or an engine's behavior.
+
+The accepted interpretations are AU C1, PW R-240, DT A, GSC1, P1 expression construction and F2 scalar restriction. [ADR-003](decisions/003-content-model-contracts.md#xsd-10-profile-and-enforcement-s02-d04) defines the existing application profile; schema-only operands retain their applicable local rules even where payload capability is excluded. The source owners in this section are all under `src/compiler/`; controls are under `test/unit/` unless another location is given.
+
+#### Preconditions and finite execution arguments
+
+`C` means an authenticated immutable semantic context, original identities and caller-owned shared budget. Availability or a successful local relation never establishes aggregate component validity. `S` additionally means retained source syntax, namespace mappings and source-local declarations; abstract helpers instead supply complete explicit properties. `V` means a formed scalar descriptor and operands assessed in their original type, lexical namespace, whitespace and owner context. `F` means complete effective facet properties, including fixed flags and annotations, rather than a partial inventory.
+
+`T1` traverses a finite component/pair graph with an explicit stack and active-cycle detection; a repeated active pair is unresolved or invalid, never successful validity. `T2` scans finite declaration, affiliation or namespace tables; effective substitution uses a visited finite universe and retains completeness obligations for structural subsets. `T3` parses finite operand text and evaluates finite pattern relations over its code points; decimal/calendar arithmetic charges digit-dependent work before construction. `T4` traverses the finite scalar dependency DAG and exact inventories, preserving inherited context-qualified obligations.
+
+`T5` decides membership by intersecting complete typed inverse predicates with admitted spellings, and containment by checking complete selected value images. Its datatype-specific execution arguments are T6 through T9 below. Finite producer misses contribute no negative answer; a positive probe is assessed through the original datatype before it can establish membership or widening.
+
+Every argument uses inclusive 100,000-node/125,000,000-work engineering defaults, configurable independently. The [scalar capacity evidence](#scalar-completeness-capacity-calibration) records their measurement basis. Traversal, parsing, copying, arithmetic and publication consume the same sticky budget; exhaustion returns `resource-limit`. `semanticBudget.ts`, `semantic-context-independent.test.ts`, `schema-pattern-starvation-independent.test.ts` and explicit former 1,000,000/25,000,000 controls retain the accounting contract.
+
+`T6` constructs finite Thompson machines and explores their finite subset product over XML code-point intervals. It detects productive cycles before enumerating a finite language and proves absence only after complete reachability. Infinite productive languages are never treated as exhausted finite witnesses.
+
+`T7` compares exact IEEE rounding-cell endpoints and reduces mantissa length and exponent constraints to finite weighted-path and ultimately periodic count products. A selected-image comparison first proves lexical embedding where possible; otherwise it removes one complete rounding cell after each exact failed value test. Each format has finitely many typed values, including zero and nonfinite values, so that loop terminates independently of the engineering budget; budget exhaustion remains a resource result.
+
+`T8` constructs exact decimal and temporal languages and images using finite field choices, the Gregorian 400-year residue partition, finitely many timezone offsets and bounded carry transducers. Duration order uses the four dated anchors and exact month/second arithmetic. Fixed-value temporal inverse images enumerate all legal field decompositions and zones within bounds derived from that value, including unbounded zero-padding as regular languages.
+
+`T9` constructs finite symbolic token automata whose states retain whole-word DFA position, earlier-list failure masks and capped enumeration position. Symbolic subset products decide sequence differences using complete atomic label predicates; fixed-value list membership uses a finite position/automaton/mask product. Every label decision terminates by T6 through T8, and no prefix or finite sample substitutes for complete list or union selection.
+
+#### Type relations and substitution
+
+| Obligation and primary clause | Accepted interpretation and source function | Preconditions / execution | Independent controls |
+| --- | --- | --- | --- |
+| Type identity; `cos-ct-derived-ok`, `cos-st-derived-ok` 1 | Immutable named/anonymous/builtin identity; `schemaTypeRelations.ts:relationStep` | C / T1 | `schema-type-relations.test.ts`: identity versus copies |
+| Complex immediate and recursive bases; `cos-ct-derived-ok` 2 | Explicit excluded extension/restriction sets; `relationStep`, `typeDerivation` | C; component validity retained / T1 | Complex ancestry and excluded-method controls |
+| Simple immediate/recursive bases; `cos-st-derived-ok` 2.1–2.3 | Restriction exclusion and immediate base final; `relationStep` | C; simple role checked / T1 | Atomic/list/union ancestry controls |
+| Simple ur-type and union alternatives; `cos-st-derived-ok` 2.4–2.5 | List/union ur ancestry and ordered member alternatives; `relationStep` | C; member availability / T1 | Union alternatives and restricted list controls |
+| All builtin ancestry; Datatypes 3, Structures ur-type definitions | Complete `builtinParents`, builtin ur and list entries; `info`, `immediateTypeBase` | C / T1 | Builtin hierarchy controls |
+| Immediate final; `cos-st-restricts`, `cos-st-derived-ok`, `cos-ct-extends` | Constructor item/member final differs from base restriction final; `immediateFinal` | C; local properties present / T1 | List/union constructor and complex final controls |
+| Final/block token grammar; element/type XML representations | `#all`, category-specific defaults and methods; `declarationMethods` | C,S or explicit raw flags / T2 | Invalid-token and schema-default controls |
+| Immediate affiliation; `e-props-correct` 4 | Head final affects affiliation; head block does not erase it; `checkSubstitution` affiliation mode | C; global declaration/type roles / T1,T2 | Final versus block controls |
+| Transitive affiliation and substitution; `cos-equiv-derived-ok-rec` | Preserve incoming properties; collect type-path methods/blocks; `affiliation`, `substitutionTypes` | C; local type relations / T1,T2 | Blocked runtime and retained affiliation controls |
+| Effective substitution group; `cos-equiv-class` | Abstract filtering and complete incoming census; `members`, `effectiveSubstitutionMembers` | C; complete universe or explicit obligation / T2 | Effective members and recursive affiliations |
+| Relation qualification and reuse; #266/#267 contract | Context/options-qualified immutable direct facts and dependency replay; `directQuery`, `run` | C / T1,T2 | Context isolation, warm-cache and exhaustion controls |
+
+#### Declaration properties and source-local rules
+
+| Obligation and primary clause | Accepted interpretation and source function | Preconditions / execution | Independent controls |
+| --- | --- | --- | --- |
+| Element/attribute name and namespace; `e-props-correct`, `a-props-correct` | XML NCName, forbidden attribute namespaces/names; `schemaDeclarationPrimitives.ts:checkDeclaration` | C / T2,T3 | Declaration name/namespace controls in `schema-type-relations.test.ts` |
+| Element abstract/nillable and value-property kinds; `e-props-correct` | Boolean properties and default/fixed discriminant; `checkDeclaration` | C / T2 | Declaration-property controls |
+| Source name/ref, type/anonymous, default/fixed and local/global rules; `src-element`, `src-attribute` | Check local mutually exclusive properties without inventing raw XML; `checkDeclaration` | C,S / T2 | Source declaration contrasts; `schema-syntax-assessment.test.ts` |
+| Declared-type resolution and roles; `e-props-correct` 2, `a-props-correct` 2 | Attribute type simple; element simple or complex; `declaredType`, `resolveSemanticType`, `checkDeclaration` | C / T2 | Wrong-role, anonymous and generated-slot controls |
+| Declared scalar legality; `st-props-correct` | Describe authentic scalar; carry local scalar obligations; `checkDeclaration`, `declaredPlan` | C,V / T4 | `schema-scalar-independent.test.ts`, generated-binding controls |
+| Default/fixed membership; `e-props-correct` 2, `a-props-correct` 2 | Assess original typed value; mixed content emptiability stays #271; `checkDeclaration`, `assessConstraint` | C,V; mixed-content premise retained / T3,T4 | Declaration values and `component-construction-independent.test.ts` |
+| ID-derived value constraints; `e-props-correct`, `a-props-correct` | Schema-only prohibition still applies; `assessConstraint` | C,V / T4 | Schema-only scalar/declaration controls |
+| QName/source lexical legality; XML representation rules | Source grammar/values owns QName resolution, original lexical data retained; `schemaSourceValues.ts`, `checkActualSchemaSyntax` | C,S / T2,T3 | `schema-source-assessment-independent.test.ts`, XML inventory controls |
+| Immediate substitution affiliation; `e-props-correct` 4 | Local declaration primitive consumes qualified type relation; `checkDeclaration` | C; global head available / T1,T2 | Affiliation validity versus substitutability |
+
+Particle-position EDC, UPA, complete type formation and mixed-content emptiability remain #270/#271. Declaration receipts name those obligations; type relations have no reverse dependency on particle or aggregate checking or RE01 search.
+
+#### Scalar descriptors, lexical spaces and values
+
+| Obligation and primary clause | Accepted interpretation and source function | Preconditions / execution | Independent controls |
+| --- | --- | --- | --- |
+| Atomic/list/union construction; `st-props-correct`, `cos-st-restricts` | Finite DAG, roles, final and corresponding item/member ancestry; `scalarSchemaAssessment.ts:ensure`, `dependencies` | C,S or complete raw properties / T1,T4 | `schema-scalar-independent.test.ts`, policy and properties controls |
+| Source simple-content and generated identities; `src-ct`, simple-content mapping | GSC1 own identity/final/namespace, mixed-base obligation; `normalizeReference`, `originalGeneratedShape`, `ensure` | C,S; exact original slot availability / T4 | `schema-selected-gsc-independent.test.ts`, generated-binding controls |
+| Primitive/derived builtin facets; Datatypes 3, 4 | Empty primitive component sets versus mandatory normalization; `schemaBuiltinFacets.ts`, `builtin` | C / T4 | `schema-scalar-properties-independent.test.ts` |
+| XML characters and string/name/language families; Datatypes 3.2.1, 3.3.1–3.3.7 | XML code points, type grammar and exact Unicode length; `schemaDatatypeValues.ts:atomic` | V / T3 | XML character, whitespace and name controls |
+| Whitespace; `rf-whiteSpace`, `cvc-whiteSpace-valid` | Preserve/replace/collapse; union members normalize independently; `whitespaceFor`, `operandStep` | V / T3,T4 | Original token/string and ordered-union contrasts |
+| Decimal and integer families; Datatypes 3.2.3, 3.3.13–3.3.25 | Exact coefficient/scale and subtype bounds; `atomic`, `decimal`, `compareDecimal` | V / T3 | Adjacent large integers and decimal aliases |
+| Boolean; Datatypes 3.2.2 | Four lexical forms, two values; `atomic` | V / T3 | Alias versus primitive-disjoint controls |
+| Float/double; Datatypes 3.2.4–3.2.5 | Exact rational IEEE rounding and nonfinite values; `ieee`, `atomic`, `compare` | V / T3 | Floating-point rounding and bound controls |
+| Date/time and reduced families; Datatypes 3.2.7–3.2.14 | Selected DT A signed-year leap/skip-zero/second-60 and exact zones; `schemaExactCalendar.ts:parseCalendar`, `parseReduced` | V / T3 | Shared DT suite; `schema-scalar-independent.test.ts` |
+| Duration; Datatypes 3.2.6 and Appendix E | Exact months/seconds equality, four-anchor partial ordering; `parseDuration`, `compareDuration` | V / T3 | DT duration aliases and indeterminacy controls |
+| Calendar equality/order; Datatypes 3.2 temporal clauses | Zone presence retained; indeterminacy explicit; `sameCalendar`, `compareCalendar`, value `compare` | V / T3 | BCE, exact fractions, zone/boundary controls |
+| Hex/base64 binary; Datatypes 3.2.15–3.2.16 | Canonical decoded octets, distinct primitive families, byte length; `atomic` | V / T3 | Binary aliases, padding and byte-length controls |
+| anyURI; Datatypes 3.2.17 | Escaped URI reference, no dereference; `schemaUri`, `atomic` | V / T3 | URI scalar controls |
+| QName; Datatypes 3.2.18 | Resolve original lexical namespace, expanded-name equality; `atomic`, `sameValue` | V; original namespaces / T2,T3 | QName alias/rebinding controls |
+| NOTATION; Datatypes 3.2.19 and `enumeration-required-notation` | Schema-only enumeration and active source notation table; `atomic`, `declaredPlan` | C,V; notation source universe / T2,T3 | `semantic-notation-independent.test.ts`, NOTATION controls |
+| ID/IDREF/ENTITY families; Datatypes 3.3.8–3.3.12 | Schema operands retain local grammar; ENTITY needs unavailable DTD context; `atomic`, `builtinListItem` | V; DTD prerequisite explicit / T3 | Schema-only identity and ENTITY qualification controls |
+| Lists; Datatypes 2.5.1.2 | Collapse, atomic or union-of-atomic items, item count; `operandStep`, `listTokens`, `listOperand` | V / T3,T4 | List aliases, exact values and item-count controls |
+| Ordered unions; Datatypes 2.5.1.3, AU original-context contract | First successful declared member, exact selected identities; `operandStep`, `schemaValueSequences.ts:chooseUnionMember` | V / T3,T4 | Boolean/decimal order and whitespace contrasts |
+| Cross-context equality/order and immutable publication; #267, DT/AU contract | No coercion or validity transfer; `schemaScalarKernel.ts:equivalent`, `compare`, `compareSchemaFacetProperties` | C,V; same authentic budget / T3,T4 | Cross-context, origin and forged-context controls |
+
+#### Facet components, construction and containment
+
+| Obligation and primary clause | Accepted interpretation and source function | Preconditions / execution | Independent controls |
+| --- | --- | --- | --- |
+| Facet applicability; Datatypes 4.3 | Primitive/variety-specific facet kinds; `allowFacet` | C,V,F / T4 | Scalar properties and illegal-facet controls |
+| Exact component inventory; `st-restrict-facets`, c-fr | Retain every value/fixed/annotation tuple; legacy normal form separate; `scalarTuples`, `readFacetProperties`, `rawFacetCorrespondence` | C,V,F / T4 | `schema-exact-facet-components-independent.test.ts`, inheritance review |
+| Pattern construction/correspondence; `st-restrict-facets`, `rf-pattern` | P1 singleton or supplied-order `|`; equality distinct from language inclusion; `patternExpression`, `samePatternProperty` | C,V,F / T4 | `schema-pattern-property-independent.test.ts`, policy controls |
+| Pattern membership; `cvc-pattern-valid`, Appendix F | Evidenced whole-string XSD subset, disjunction within layer and conjunction across layers; `schemaPattern.ts:compile`, `acceptsOperand` | V; admitted regex constructs / T3,T4 | Pattern witness/starvation controls |
+| Enumeration; `rf-enumeration`, `cvc-enumeration-valid` | Typed base membership and exact value equality; `facetOperand`, `operandStep`, `excludedByEnumeration` | C,V,F / T3,T4,T5 | Membership, witness and inherited-layer controls |
+| Universal fixed duties; each facet valid-restriction clause | Every fixed base value applies, even with another compatible match; `exactScalarRestriction`, `layer` | C,V,F / T4 | Fixed empty restriction and repeated-fixed controls |
+| F2 same-kind matching; each facet valid-restriction clause | Existential compatible match plus whole-value containment; `compatibleScalar`, `exactScalarRestriction` | C,V,F / T4,T5 | Retained minima 3/5 and weakening controls |
+| Length/minimum/maximum; `rf-length`, `rf-minLength`, `rf-maxLength` | Exact type units, ancestor coexistence duty; QName/NOTATION value vacuity; `checkLengthProperties`, `valueFacetFailure` | C,V,F / T4 | Length ancestry, Unicode/binary/list contrasts |
+| Precision; `rf-totalDigits`, `rf-fractionDigits` | Exact value digits/scale and cross-kind consistency; `layer`, `valueFacetFailure`, `exactScalarRestriction` | C,V,F / T3,T4 | Exact decimal precision and repeated scalar controls |
+| Numeric/calendar bounds; `rf-minInclusive`, `rf-minExclusive`, `rf-maxInclusive`, `rf-maxExclusive` | Clause-specific prohibited orders, endpoint membership, exclusive repetition exception; `layer`, `exactScalarRestriction` | C,V,F / T3,T4,T5 | Indeterminate order, excluded endpoint and inherited-kind controls |
+| Local S reconstruction and annotations; `st-restrict-facets` | Replace complete scalar kinds; retain unknown annotation prerequisite; `annotationRelation`, `rawFacetCorrespondence`, `exactScalarRestriction` | C,V,F; annotation data or authentic identity / T4 | Whole-kind reconstruction and annotation review controls |
+| Complete value containment; Datatypes restriction definition and F2 | Complete derived value space is a subset, including pattern/facet interaction; `exactScalarRestriction`, `selectedUnionContainment` | C,V,F / T5–T9 | Retained minima, interacting bounds, arithmetic images and selected-union contrasts |
+| Complete typed membership; facet-value clauses | Some legal lexical alias selects the original typed value; `membershipWitness`, `regularMembership` | C,V,F; original namespaces / T5–T9 | Infinite aliases, typed lists, original QName bindings and exact exclusions |
+| Value constraint formation; declaration clauses and AU C1 | Typed default/fixed membership without payload augmentation; `assessConstraint`, `checkValue` | C,V / T3,T4 | Declaration/AU scalar origin and equality controls |
+
+#### Gap and qualification census at the fetched baseline
+
+The starting main is `a103ca96a3609bd0b525f2331daa7173879ad187`, tree `5ddb85e204e29e4561ebdd1a937434b2c8d1a6fa`. `exactScalarRestriction` lacks general pattern/scalar implication: exact base minima `{3,5}`, retained `[a-z]{5,}`, and derived minimum `{3}` is contained but qualified. Retained `a+` supplies the widening contrast `aaa`; a finite literal-only certificate does not cover the infinite positive.
+
+`membershipWitness`, `schemaScalarWitnesses`, `literalLanguage` and `positiveWords` are finite positive producers. They do not exhaust decimal zero aliases, calendar/timezone/duration aliases, contextual QName forms, binary forms, list products or ordered-union selection. General inverse-value language and datatype-aware containment are implementation obligations on complete admitted input, not permitted missing-input qualifications.
+
+Permitted input qualifications are absent authentic contexts/properties, absent facet/annotation metadata, an incomplete active source notation universe, legacy namespace normalization and the documented DTD prerequisite for ENTITY. Source multioperand annotation aggregation remains the existing explicit construction prerequisite; known annotation data must be compared. Mixed-base emptiability, complete declared-type validity, complete substitution universe and aggregate root obligations remain with their named consumers.
+
+Existing pattern exclusions are Unicode block escapes, application XML-name escapes, `w/W`, character-class subtraction and unsupported nested class escapes. Fixed S4S and intrinsic builtin consumers have their separately evidenced name support. Application document identity, DTDs, identity constraints, redefine, XSD 1.1 and dynamic payload polymorphism keep their ADR exclusions; those exclusions do not remove schema-only type/declaration/scalar duties. General RE01 witness adequacy and search termination stay #234, while production activation stays #179/#153.
+
 ### Selected scalar comparison policies
 
 The [authorized continuation](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918) selects P1 for pattern properties and directs evidence-qualified F2 scalar restriction. The comparison asks which component property was constructed; accepted-language equality and legal derivation are separate judgments.
@@ -215,27 +324,53 @@ F2 requires each effective scalar facet to have a compatible same-kind base face
 
 The dated primary rules are [Structures st-restrict-facets](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#st-restrict-facets) and [Datatypes constraining facets](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/datatypes.html#rf-facets). The bound restriction clauses prohibit specified mathematical relations; an indeterminate calendar comparison alone is not such a relation. Value assessment separately requires the value to satisfy each bound, and a sufficient implication proof needs a determinate order.
 
-The checker proves scalar containment from complete retained scalar implications, complete finite enumeration, or a complete finite literal pattern language. An assessed result value outside the base proves widening. Cases whose general pattern implication remains unproved retain `raw-simple-facet-restriction-validity`; for example, a retained `[a-z]{5,}` pattern with a weaker scalar minimum is mathematically sufficient but remains qualified in the current checker.
+The checker proves scalar containment from retained scalar implications, complete finite enumeration and the exact language/image authorities below. An assessed result value outside the base proves widening. The retained `[a-z]{5,}` pattern with weaker scalar minimum has a complete regular certificate; IEEE, temporal and selected list/union images have their own complete datatype-aware procedures.
 
 Exact component inventories preserve repeated tuples and fixed metadata. Source descendants preserve all inherited components except scalar kinds explicitly replaced. The legacy `facetLayers` view denotes its proved normal form; comparing it with an exact inventory uses that normal form, preserving equality transitivity. An unproved normal form or missing annotation evidence retains its qualification.
 
 The 43 independently specified policy controls and 14 additional reviewer controls cover these distinctions. Reviewer regressions include dropped inherited calendar constraints, fixed duties on an empty source restriction, hidden old constraints after replacement, whole-kind local reconstruction, erased inherited bound kinds, repeated exclusive endpoints and mixed-representation equality. Retained bound kinds compare annotation properties as well as value and fixed metadata; unknown metadata keeps a qualification when no valid local construction is proved. The lower inclusive/exclusive prohibition applies to the complete datatype, while the upper-pair prohibition applies to the local derivation step, following their distinct dated clauses.
 
-### Remaining local qualifications
+### Complete scalar membership and containment authorities
 
-The integrated checker has meaningful fully checked particle/AU/wildcard/scalar and nested-evidence controls, but the complete recovery gate remains open.
-The following named cases retain their precise prerequisites; a successful result on other inputs does not discharge them.
+`schemaRegularLanguage.ts` owns authenticated private language programs, Boolean operations, complete reachability, quotients, concatenation, reversal, whitespace preimages/images and finite-language classification. `schemaPattern.ts:language` reads a private copy of compiled atoms and root, so mutating a published plan cannot manufacture a certificate. Character partitions use the existing admitted Unicode authority, include only XML code points, and preserve intrinsic XML-name ranges and their colon exclusion.
+
+Private Boolean reductions, productive-state pruning, deterministic Moore minimization and completed witness caches reduce repeated products without changing P1 component properties. Cached programs and published automata do not share mutable arrays; every reuse charges work before copying or reading, and incomplete exploration is never cached as an empty language.
+
+`regularLengthContainment` intersects every retained pattern layer with normalized spellings and supplied value-length constraints. String lengths use code points, hex/base64 lengths use decoded octets, list lengths count tokens, and QName/NOTATION length predicates are vacuous under the dated value clauses. Sufficient overapproximations may prove a positive; a failed sufficient proof proceeds to the complete admitted-domain authority rather than creating an algorithm qualification.
+
+`schemaDecimalLanguage.ts:relation` and `precision`, consumed by `decimalContainment`, supply exact regular preimages for signed decimal bounds and total/fraction digits. Decimal zero, signs, leading zeros, omitted integer digits and trailing fractional zeros retain their value meaning. Every selected counterexample is reassessed through the shared exact decimal owner.
+
+`inverseExpression`, `inversePredicate`, `fixedAtomicPredicate` and `regularMembership` cover complete atomic inverse images. Whitespace normalization belongs to the selected primitive; QName/NOTATION aliases retain the original namespace context, and URI grammar is shared with the actual URI parser. Hex case, base64 padding and whitespace, boolean spellings and decimal leading/trailing zero aliases map to their actual typed values.
+
+`schemaIeeeLanguage.ts` derives exact ties-to-even rounding cells, subnormal and overflow endpoints, signed zero, NaN and infinity. `intervalWitness` combines regular mantissa paths with exact exponent/count relations; an empty complete weighted product proves exclusion. Decimal-only and nonnegative integer-exponent images have complete regular specializations; other exponent images retain the exact numeric guard. Cached completed rounding cells retain private endpoint copies.
+
+`schemaCalendarLanguage.ts`, `schemaDurationLanguage.ts` and `schemaTemporalAliases.ts` connect admitted spellings to DT A exact order/equality. They cover BCE and skipped year zero, leap residues, reference dates, 24-hour and leap-second aliases, all legal zones, unknown-zone indeterminacy, arbitrary fractional precision and duration field decomposition. `schemaCalendarImages.ts`, `schemaIntegerImages.ts` and `schemaValueImages.ts` produce canonical temporal/decimal/binary images through finite field and carry products, preserving zoned versus unzoned values.
+
+`schemaLexicalPredicates.ts` and `schemaNumericImageConditions.ts` decide Boolean combinations of regular admission and exact IEEE input guards. `atomicImageLabels` retains first-success item selection, primitive value identity and global constraints; `schemaSymbolicValueSets.ts` decides label intersections/differences using canonical images or complete IEEE cell elimination. A failed exact value test removes its full inverse cell, including both zero signs and nonfinite literals, never just the attempted spelling.
+
+`schemaTokenImages.ts` and `schemaSymbolicSequences.ts` retain whole-word pattern state while factoring typed tokens and earlier-list failures. Lists keep ordered typed items; preserving string and URI images keep maximal non-whitespace fragments and each intervening whitespace code point. This encoding is injective for the normalized string, and numeric conditions are applied before erasing a selected predecessor's raw whitespace or token separators.
+
+`selectedUnionContainment` checks the union of first-selected typed images, not the unordered union of member languages. Narrowing an earlier member can introduce a later member's different typed value even with identical spelling; mixed float/double, list/string/URI and binary/list contrasts exercise that distinction. Lexical-embedding and universal-padding certificates prove entire images; optional finite probes provide positive evidence only, and complete image products decide the remaining cases.
+
+The [nonauthor controls](../test/unit/schema-scalar-completeness-review.test.ts) specify positive/widening contrasts, arbitrary-length aliases, original contexts, fixed duties, temporal/numeric exactness, ordered selection, private mutation, allocation accounting and explicit old limits. Historical finite-producer controls now distinguish a complete inverse-language exclusion from failure of an old producer. Profile exclusions, fixed duties, annotation construction, original contexts and payload activation remain as accepted.
+
+### Remaining legitimate qualifications and consumer obligations
+
+The local scalar procedures decide complete admitted inputs, subject to configurable resource exhaustion. The following qualifications require missing input, existing external prerequisites or separately owned aggregate obligations; they do not represent renamed scalar algorithm gaps.
 
 | Case | Current result and owning continuation |
 | --- | --- |
-| Effective raw facet groups outside proved correspondence | Finite typed enumeration membership and explicit lexical witnesses are checked; unresolved facet-component mapping retains `raw-simple-facet-restriction-validity` |
+| Unsettled independent source facet aggregation | Independently constructed multioperand annotation/component groups retain the existing external construction prerequisite |
 | Incomplete original facet or annotation correspondence | Exact cross-context properties and authentic original bindings are compared; missing metadata or unsettled independently constructed groups retain their precise prerequisite |
-| General scalar value containment involving patterns | Selected P1 determines component expressions; cases beyond complete scalar, enumeration or finite-literal containment evidence retain `raw-simple-facet-restriction-validity` |
+| Missing authentic context or complete effective properties | Retain the precise context, facet inventory or original operand prerequisite |
+| ENTITY source environment | Retain the documented DTD prerequisite; ID/IDREF application identity constraints retain ADR exclusions |
 | Incomplete notation source availability or active membership | Context-qualified lookup retains its named prerequisite; complete source-bound original/fresh tables support concrete property checking |
 | Legacy namespace normalization | The internal semantic loader supplies normalized XSD values; legacy-loaded spellings that disagree retain the source receipt's qualification |
 
 Application identity constraints remain outside the approved profile; checking the fixed assessment schema's own keys does not add application key/keyref/unique support.
-These qualifications are separate from #234's universal witness/evidence adequacy, complete negative answers and termination obligations.
+Complete declared-type validity, substitution-universe completeness, mixed-base emptiability and aggregate roots remain explicit duties of their named consumers. Local type-relation success does not certify the schema or remove these duties.
+
+These local duties are separate from #234's universal RE01 witness/evidence adequacy, complete negative answers and search termination obligations. Production activation remains #179/#153; the complete local #268 procedures do not enable payload augmentation or publish a release.
 The [inherited-root continuation](content-model-s06-re-01.md#inherited-fresh-roots-and-the-october-13-proof-continuation) repairs a nested finite-certificate false positive: every candidate rechecks all fresh additions relative to immutable actual Gamma, including additions inherited from its parent.
 The permanent affiliation controls distinguish complete availability from complete legality roots and retain exact context-local assessment.
 The same entry point accepts a discriminated primitive root and issues a separately authenticated `checked-primitive` receipt after checking every actual obligation, including supplied evidence for unrelated nonprimitive types.
@@ -506,7 +641,7 @@ The optimization caches only positive direct relation and content-identity facts
 
 ### Successor budget calibration
 
-The [authorized #232 continuation](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918) treats request defaults as engineering choices. The shared request now defaults to 25,000,000 work units and retains 100,000 nodes. Callers can override either positive safe-integer limit, and both remain inclusive.
+The [authorized #232 continuation](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918) treats request defaults as engineering choices. This historical calibration selected 25,000,000 work units and retained 100,000 nodes. The scalar-completeness calibration below supersedes that work default; callers can override either positive safe-integer limit, and both remain inclusive.
 
 The [expanded harness](../test/research/re01/finite-capacity-measure.ts) and [recorded evidence](../test/research/re01/finite-capacity-evidence.json) measure complete named workloads on Node `v24.19.0`, Linux x64, Intel Xeon Platinum 8573C. The integrated evidence was freshly measured at source revision `024460832f975b57d2f8b57a35cf56a8f175e7a1` and records exact source/dependency hashes and the production diff hash. Earlier baseline measurements remain in the budget commits and linked issue record. Each workload/profile runs in a fresh child with one cold and two warm requests; fixed offline URIs remove checkout-path differences, and request identifiers keep equal lengths.
 
@@ -559,3 +694,35 @@ node --import tsx test/research/re01/finite-capacity-summary.ts tmp/conformance/
 ```
 
 Loading, canonical construction and reference resolution retain their independent limits; their `null` shared-work counters are not zero-cost claims. The earlier preparation harness still measures inherited gathering/merge/resolution/composition stages separately, and its request-context profile now reads the actual semantic defaults instead of reusing inherited stage-step limits. A request that fits this work guard can still encounter a separate loader, graph or source-stage limit.
+
+### Scalar completeness capacity calibration
+
+The [scalar harness](../test/research/re01/scalar-capacity-measure.ts), [validated summary](../test/research/re01/scalar-capacity-evidence.json) and its four committed raw reports measure 25 independently motivated workload classes with three fresh authenticated requests per profile. Profiles retain 100,000 nodes and use explicit 1,000,000, 25,000,000, default 125,000,000 and diagnostic 250,000,000 work allowances. Each workload/profile starts a fresh child; cold and two warm-process samples have independent request budgets.
+
+Every report hashes the compiler and loader source, fixture, harness and lockfile. The reported HEAD is the starting main a103ca96a3609bd0b525f2331daa7173879ad187; the recorded source digests identify the measured uncommitted implementation, rather than claiming that baseline commit already contains it. The [strict reducer](../test/research/re01/scalar-capacity-summary.ts) checks shared provenance, all three deterministic work/node/result observations, profile equivalence on completed requests and sticky exhaustion before emitting the summary.
+
+| Profile | Complete checked samples | Complete widening samples | Resource-limit samples |
+| --- | ---: | ---: | ---: |
+| Explicit original 1,000,000 | 24 | 3 | 48 |
+| Explicit previous 25,000,000 | 45 | 15 | 15 |
+| Default 125,000,000 | 51 | 21 | 3 |
+| Diagnostic 250,000,000 | 51 | 21 | 3 |
+
+Default and diagnostic decisions, work and node totals are identical for all 25 workloads. All 24 semantic workloads complete; the adversarial expansion deliberately returns resource-limit under every profile. The mixed double/float selected-image contrasts cost 63,778,263 for the positive and 54,652,769 for widening; the previous 25,000,000 allowance exhausts both, while the revised procedures complete them without a membership qualification.
+
+| Default workload | Total request work | Query wall ms, cold then warm | Process peak RSS MiB, all three samples |
+| --- | ---: | --- | --- |
+| Mixed double/float positive | 63,778,263 | 115.196, 118.347, 70.999 | 94.0, 103.5, 103.5 |
+| Mixed double/float widening | 54,652,769 | 140.322, 107.368, 56.368 | 87.3, 107.7, 107.7 |
+| URI/list negative-exponent positive | 73,419,705 | 423.369, 406.575, 365.415 | 113.4, 157.5, 160.0 |
+| URI/list negative-exponent widening | 79,018,339 | 578.656, 539.975, 715.640 | 116.1, 163.5, 212.8 |
+
+The final 125,000,000 default leaves 45,981,661 work units, 58.2 percent above the largest completed observed cost, for workload variation. Measured query latency remains practical across these cases, and the largest process-lifetime RSS observation is 212.8 MiB with maximum observed post-request heap 72.3 MiB. These observations support this engineering allowance; no example throughput figure or fixed timing threshold determines acceptance, and defaults remain revisable with further workload, latency, memory and adversarial evidence.
+
+The scalar cases allocate at most 21 semantic nodes; the earlier structural calibration reached 1,289, so neither measurement supports raising the 100,000 node guard. Independent controls exercise the inclusive node boundary, one beyond it and sticky exhaustion, as well as exact measured work and one unit less. Variable state arrays, masks, namespace copying, endpoint arithmetic and cached-result copies are charged before work or allocation; conservative digit-dependent work units are not milliseconds or byte counts.
+
+The adversarial pattern requests fifty million repeated atoms and is rejected by its expansion precharge before constructing that machine. Every profile stops with 141,951 consumed work and 16 nodes, preserves the identical terminal receipt and invokes no work on retry. An exhausted allowance never supplies containment, exclusion or a partially published cache fact.
+
+Query timing excludes source/candidate preparation; total request work includes it. RSS includes module loading and earlier requests in the same child; heap snapshots are observations rather than guaranteed peaks or allocation totals. JIT, GC and OS activity remain in the samples, which measure local scalar decisions rather than universal RE01 witness adequacy or production activation.
+
+Raw reports are [default](../test/research/re01/scalar-capacity-results/default.json), [original limit](../test/research/re01/scalar-capacity-results/legacy.json), [previous limit](../test/research/re01/scalar-capacity-results/previous.json) and [diagnostic](../test/research/re01/scalar-capacity-results/diagnostic.json). Reproduction commands are stored with each report hash in the summary; run the reducer over those four reports to validate the committed evidence.

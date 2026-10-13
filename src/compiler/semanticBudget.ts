@@ -29,11 +29,12 @@ export interface ResolverBudget {
 }
 
 export const DEFAULT_MAX_NODES = 100_000;
-// Calibrated from complete finite checks and actual-plus-candidate workloads:
-// 15,540,094 work for 256 shared-recursive synthetic types, with at least 50%
-// headroom rounded up to 5 million. See the resolver implementation capacity
-// section. These are revisable engineering limits, not semantic/proof bounds.
-export const DEFAULT_MAX_WORK = 25_000_000;
+// Scalar containment calibration includes a 79-million-work complete URI /
+// IEEE-list query. The 125-million default allows substantial workload
+// variation; earlier 25-million and one-million regression profiles remain.
+// See the resolver implementation's scalar capacity evidence. These remain
+// revisable engineering limits, not semantic or mathematical proof bounds.
+export const DEFAULT_MAX_WORK = 125_000_000;
 
 /**
  * The terminal result is reserved once, including its borrowed counter view.

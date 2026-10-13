@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(compiler): complete scalar containment and typed membership across atomic, list and ordered union values with measured budgets.
+
 - fix(compiler): compare exact pattern and scalar properties with preserved inheritance, fixed-value duties and evidence-qualified containment.
 
 - fix(re01): recheck inherited fresh helpers and verify primitive identity roots with complete actual obligations.

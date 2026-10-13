@@ -1,6 +1,7 @@
 /** Evidenced XSD regex subset for schema operands and #184's enforcement plan. */
 import type {SchemaLexicalOperand, SchemaPatternContext} from "./schemaValueContext.js";
 import {XML_NAME_RANGES} from '../loader/orderedSyntax.js';
+import {schemaRegularLanguages} from './schemaRegularLanguage.js';
 
 export type PatternAtom = Readonly<{kind: "character"; expression: string} |
   {kind: "sequence"; children: readonly number[]} | {kind: "choice"; children: readonly number[]} |
@@ -23,6 +24,7 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
   // Separate privately captured records: mutating an exposed plan cannot
   // manufacture literal-language authority or alter these compiled facts.
   const literalPrograms = new WeakMap<SchemaPattern, LiteralProgram>();
+  const regular = schemaRegularLanguages(c), regularPrograms = new WeakMap<SchemaPattern, {atoms: readonly PatternAtom[]; root: number}>();
   const compile = (lexical: SchemaLexicalOperand, owner: Owner): SchemaPattern => {
     c.text(lexical.value, owner); const source = lexical.value, atoms: PatternAtom[] = [], literals: LiteralAtom[] = [];
     const add = (atom: PatternAtom, literal?: string, explicitClass = false) => {
@@ -37,13 +39,13 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
     const invalid = (): never => c.fail(owner, "pattern-valid-restriction", "Malformed XSD regular expression", lexical.context.source);
     const unsupported = (): never => c.unsupported(owner, "pattern-subset", "XSD regex construct requires a separately evidenced equivalent implementation", lexical.context.source);
     let i = 0, escapedLiteral: string | undefined;
-    const escaped = (): string => {
+    const escaped = (inClass = false): string => {
       escapedLiteral = undefined;
       i++; const char = source[i++]; if (char === undefined) return invalid();
       if (char === "n") {escapedLiteral = '\n'; return "\\n";}
       if (char === "r") {escapedLiteral = '\r'; return "\\r";}
       if (char === "t") {escapedLiteral = '\t'; return "\\t";}
-      if ("\\|.-^?*+{}()[]".includes(char)) {escapedLiteral = char; return `\\${char}`;}
+      if ("\\|.-^?*+{}()[]".includes(char)) {escapedLiteral = char; return char === '-' && !inClass ? '-' : `\\${char}`;}
       if (char === "s") return "[ \\t\\n\\r]";
       if (char === "S") return "[^ \\t\\n\\r]";
       if (char === "d") return "\\p{Nd}";
@@ -87,7 +89,7 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
           body += "-"; i++; canEndRange = false; rangeEnd = true; continue;
         }
         if (char === "\\") {
-          const escape = escaped();
+          const escape = escaped(true);
           // Nested character-class escapes need set algebra. Do not copy a
           // non-equivalent ECMAScript class into a verified plan.
           if (escape.startsWith("[")) return unsupported();
@@ -151,6 +153,14 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
     c.step(owner, 3);
     const pattern: SchemaPattern = {language: "xsd10-whole-string", atoms, root, unicode: "code-points", runtimeOwner: "#184"};
     literalPrograms.set(pattern, {atoms: literals, root, sourceLength: source.length});
+    c.step(owner, atoms.length * 4 + 2);
+    const privateAtoms = atoms.map(atom => {
+      if (atom.kind === 'choice' || atom.kind === 'sequence') {
+        c.step(owner, atom.children.length + 3); return {...atom, children: [...atom.children]};
+      }
+      return {...atom};
+    });
+    regularPrograms.set(pattern, {atoms: privateAtoms, root});
     return pattern;
   };
   /** Exact finite literal fragment, used only to propose concretely checked operands. */
@@ -364,5 +374,10 @@ function createSchemaPatterns<Owner>(c: SchemaPatternContext<Owner>, fixedSchema
     }
     return relations[pattern.root][0].has(chars.length);
   };
-  return {compile, acceptsOperand, literalLanguage, positiveWords};
+  const language = (pattern: SchemaPattern, owner: Owner, authority = regular) => {
+    c.step(owner); const program = regularPrograms.get(pattern);
+    if (!program) throw new TypeError('Regular language requires a pattern issued by this factory');
+    return authority.fromPattern(program.atoms, program.root, owner);
+  };
+  return {compile, acceptsOperand, literalLanguage, positiveWords, language, regular};
 }
