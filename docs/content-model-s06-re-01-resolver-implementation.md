@@ -505,7 +505,7 @@ The synthetic inputs use the existing graded generator: every type shares one tw
 
 The replacement work limit targets at least 50 percent headroom above the largest measured completed request, rounded up to the next 5,000,000 units. The resulting 25,000,000 limit leaves 9,459,906 units, or 60.9 percent of the observed 15,540,094 cost, for input and workload variation. The largest measured request uses only 1,289 nodes, so this evidence gives no reason to raise the existing node guard.
 
-| Default-profile workload | Cold wall ms | Two warm wall ms | Peak process RSS MiB | Maximum observed heap MiB |
+| Default-profile workload | Cold wall ms | Two warm wall ms | Peak process RSS MiB | Maximum observed post-stage heap MiB |
 |---|---:|---|---:|---:|
 | Generic Weather sequence | 43.598 | 27.717, 19.780 | 74.9 | 25.9 |
 | Generic synthetic 64 sequence | 77.993 | 43.412, 28.741 | 80.8 | 32.7 |
@@ -515,7 +515,9 @@ The replacement work limit targets at least 50 percent headroom above the larges
 
 Wall totals include loading and measured preparation stages but exclude process/module startup. RSS is a process-lifetime high-water observation including the loader and preceding requests; heap is observed at stage boundaries, not its allocation total or guaranteed peak. OS cache, JIT, GC and concurrent environment activity are uncontrolled, so these samples support practical calibration without promising throughput or a memory ceiling.
 
-For generic Weather, actual preparation costs 3,041,697 units and the three deltas cost 140,673, 36,408 and 151,567; the initial terminal reservation adds 79. The 256-type generic case costs 12,971,156 for actual preparation and 1,269,596, 20,235 and 1,279,028 for its deltas, plus the same reservation. The evidence records every stage's marginal work, nodes, timing and before/after RSS and heap.
+For generic Weather, actual preparation costs 3,041,697 units and the three deltas cost 140,673, 36,408 and 151,567; the initial terminal reservation adds 79. The 256-type generic case costs 12,971,156 for actual preparation and 1,269,596, 20,235 and 1,279,028 for its deltas, plus the same reservation.
+
+The compact committed summary stores shared inputs and claims once, each profile's result and deterministic stage costs, and three total-wall, peak-RSS and maximum post-stage-heap samples. Full raw reports under `tmp/conformance/budget-calibration/` retain each stage's timing and before/after RSS and heap; the summary records their hashes and reproduction commands. Compacting the original reports preserves the measured numerical evidence without rerunning the workloads.
 
 All three accepted finite cases retain their #278 work totals: 917,562 for particle/AU/wildcard, 976,270 for the nested helper and 593,138 for typed attributes. They complete under the explicit former 1,000,000 limit as well as the new default and diagnostic limits. Default and diagnostic runs have identical completed totals, graph hashes and checked receipt projections for corresponding samples; the [reducer](../test/research/re01/finite-capacity-summary.ts) checks these facts before emitting evidence.
 

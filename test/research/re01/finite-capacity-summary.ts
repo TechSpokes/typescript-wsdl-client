@@ -13,7 +13,7 @@ interface Stage {
 }
 interface Sample {
   workload: string; iteration: number; kind: string; final?: Usage; stages: Stage[];
-  fixture?: unknown; acceptance?: string; corpusTier?: string; claims?: unknown; retained?: unknown;
+  fixture?: unknown; acceptance?: string; corpusTier?: string; basis?: string; claims?: unknown; retained?: unknown;
   candidates?: unknown; graphComponents?: number; graphSha256?: string; receiptSha256?: string;
   oversized?: {result: unknown; stickyFailure: boolean; unchangedUsage: boolean; invoked: boolean};
   sharedCycle?: {preserved: boolean; usage: Usage}; nodes?: unknown;
@@ -27,8 +27,17 @@ interface Report {
 const hash = (value: string): string => createHash('sha256').update(value).digest('hex');
 const equal = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const rounded = (value: number): number => Math.round(value * 1000) / 1000;
+// Keep short numerical cost/sample vectors readable without expanding each
+// number onto a separate line. This is formatting only; JSON types are retained.
+function compactJson(value: unknown): string {
+  return JSON.stringify(value, null, 2).replace(/\[\n\s+(?:-?\d+(?:\.\d+)?|null)(?:,\n\s+(?:-?\d+(?:\.\d+)?|null))*\n\s*\]/g,
+    array => JSON.stringify(JSON.parse(array))) + '\n';
+}
+function input(sample: Sample) {
+  return {fixture: sample.fixture, acceptance: sample.acceptance, corpusTier: sample.corpusTier, basis: sample.basis};
+}
 function deterministic(sample: Sample) {
-  return {kind: sample.kind, final: sample.final, fixture: sample.fixture, claims: sample.claims,
+  return {kind: sample.kind, final: sample.final, ...input(sample), claims: sample.claims,
     retained: sample.retained, candidates: sample.candidates, graphComponents: sample.graphComponents,
     graphSha256: sample.graphSha256, oversized: sample.oversized, sharedCycle: sample.sharedCycle, nodes: sample.nodes,
     stages: sample.stages.map(stage => ({name: stage.name, work: stage.marginalWork, nodes: stage.marginalNodes, kind: stage.kind}))};
@@ -40,48 +49,62 @@ export function summarizeCapacity(files: readonly string[], output: string): voi
     throw new Error('Require exactly the legacy, default and diagnostic reports');
   }
   for (const report of reports) {
-    for (const key of ['format', 'revision', 'trackedDiffSha256', 'sourceDigests', 'node', 'platform', 'architecture', 'cpu', 'fixedOrigin'] as const) {
+    for (const key of ['format', 'revision', 'trackedDiffSha256', 'sourceDigests', 'node', 'platform', 'architecture', 'cpu', 'fixedOrigin', 'collection', 'largerRealTier'] as const) {
       if (!equal(report[key], first[key])) throw new Error(`Measurement provenance differs: ${key}`);
     }
+    if (!equal(report.results.map(sample => [sample.workload, sample.iteration]),
+      first.results.map(sample => [sample.workload, sample.iteration]))) throw new Error('Workload coverage/order differs');
   }
   const workloads = [...new Set(first.results.map(sample => sample.workload))];
   const cases = workloads.map(workload => {
-    const profiles = reports.map(report => {
+    const rows = reports.map(report => {
       const samples = report.results.filter(sample => sample.workload === workload), sample = samples[0]!;
       if (samples.length !== 3 || !equal(samples.map(item => item.iteration), [0, 1, 2])) throw new Error('Missing three ordered samples');
       if (samples.some(item => !equal(deterministic(item), deterministic(sample)))) throw new Error(`Nondeterministic work: ${workload}`);
       if (sample.kind === 'controls' && (!sample.oversized?.stickyFailure || !sample.oversized.unchangedUsage ||
           sample.oversized.invoked || !sample.sharedCycle?.preserved)) throw new Error('Adversarial control failed');
-      return {profile: report.profile, limits: report.limits, ...deterministic(sample),
-        acceptance: sample.acceptance ?? (sample.kind === 'checked-candidate' ? 'supplied-construction-and-finite-evidence' : undefined),
-        corpusTier: sample.corpusTier, receiptSha256: samples.map(item => item.receiptSha256 ?? null),
-        totalWallMs: samples.map(item => rounded(item.stages.reduce((total, stage) => total + stage.wallMs, 0))),
-        stages: sample.stages.map((stage, index) => ({name: stage.name, work: stage.marginalWork, nodes: stage.marginalNodes,
-          wallMs: samples.map(item => rounded(item.stages[index]!.wallMs)),
-          processPeakRssKiB: samples.map(item => item.stages[index]!.processPeakRssKiB),
-          rssBeforeBytes: samples.map(item => item.stages[index]!.rssBeforeBytes),
-          rssAfterBytes: samples.map(item => item.stages[index]!.rssAfterBytes),
-          heapBeforeBytes: samples.map(item => item.stages[index]!.heapBeforeBytes),
-          heapAfterBytes: samples.map(item => item.stages[index]!.heapAfterBytes)}))};
+      return {profile: report.profile, sample, samples};
     });
-    const normal = profiles.find(profile => profile.profile === 'default')!;
-    const diagnostic = profiles.find(profile => profile.profile === 'diagnostic')!;
+    const normal = rows.find(row => row.profile === 'default')!.sample;
+    for (const row of rows) if (!equal(input(row.sample), input(normal))) throw new Error(`Workload input differs: ${workload}`);
     if (normal.kind !== 'controls') {
       if (!['prepared', 'checked-candidate'].includes(normal.kind)) throw new Error(`Default does not complete: ${workload}`);
-      for (const key of ['kind', 'final', 'fixture', 'claims', 'retained', 'candidates', 'graphSha256', 'receiptSha256'] as const) {
-        if (!equal(normal[key], diagnostic[key])) throw new Error(`Default/diagnostic result differs: ${workload} ${key}`);
+      for (const row of rows.filter(item => item.profile !== 'legacy' || item.sample.kind === normal.kind)) {
+        for (const key of ['kind', 'final', 'fixture', 'claims', 'retained', 'candidates', 'graphSha256'] as const) {
+          if (!equal(normal[key], row.sample[key])) throw new Error(`Completed result differs: ${workload} ${row.profile} ${key}`);
+        }
+        if (!equal(row.samples.map(sample => sample.receiptSha256),
+          rows.find(item => item.profile === 'default')!.samples.map(sample => sample.receiptSha256))) {
+          throw new Error(`Completed receipt differs: ${workload} ${row.profile}`);
+        }
       }
     }
-    return {workload, profiles};
+    return {workload, ...input(normal),
+      acceptance: normal.acceptance ?? (normal.kind === 'checked-candidate' ? 'supplied-construction-and-finite-evidence' : undefined),
+      claims: normal.claims, graphComponents: normal.graphComponents, graphSha256: normal.graphSha256,
+      retained: normal.retained, completedCandidates: normal.candidates,
+      receiptSha256: normal.receiptSha256 ? rows.find(row => row.profile === 'default')!.samples.map(sample => sample.receiptSha256) : undefined,
+      controls: normal.kind === 'controls' ? {oversized: normal.oversized, sharedCycle: normal.sharedCycle, nodes: normal.nodes} : undefined,
+      profiles: Object.fromEntries(rows.map(({profile, sample, samples}) => [profile, {
+        kind: sample.kind, final: sample.final, resultSha256: hash(JSON.stringify(deterministic(sample))),
+        stageCosts: Object.fromEntries(sample.stages.map(stage => [stage.name, [stage.marginalWork, stage.marginalNodes]])),
+        totalWallMs: samples.map(item => rounded(item.stages.reduce((total, stage) => total + stage.wallMs, 0))),
+        processPeakRssKiB: samples.map(item => Math.max(...item.stages.map(stage => stage.processPeakRssKiB))),
+        maxObservedHeapAfterBytes: samples.map(item => Math.max(...item.stages.map(stage => stage.heapAfterBytes))),
+      }]))};
   });
-  const report = {format: 'semantic-capacity-evidence-v1', revision: first.revision,
+  const report = {format: 'semantic-capacity-evidence-v2', revision: first.revision,
     trackedDiffSha256: first.trackedDiffSha256, sourceDigests: first.sourceDigests,
-    rawReports: reports.map((item, index) => ({profile: item.profile, sha256: hash(texts[index]!)})),
+    summaryReducerSha256: hash(readFileSync(fileURLToPath(import.meta.url), 'utf8')),
+    rawReports: reports.map((item, index) => ({profile: item.profile, limits: item.limits,
+      path: path.relative(process.cwd(), files[index]!).split(path.sep).join('/'), sha256: hash(texts[index]!),
+      reproduce: `node --import tsx test/research/re01/finite-capacity-measure.ts --profile ${item.profile} > tmp/conformance/budget-calibration/${item.profile}.json`})),
     environment: {node: first.node, platform: first.platform, architecture: first.architecture, cpu: first.cpu},
     fixedOrigin: first.fixedOrigin, terminalReservationWork: TERMINAL_RESERVATION_WORK,
-    collection: first.collection, largerRealTier: first.largerRealTier, cases};
+    collection: first.collection, summary: 'Original measurements retained; no remeasurement. Full stage wall and before/after RSS/heap telemetry remains in the hashed raw reports. Stage costs are [marginal work, marginal nodes]. Samples are ordered cold, warm, warm. Heap maxima preserve the original post-stage observation series; they are not allocation totals or guaranteed peaks.',
+    largerRealTier: first.largerRealTier, cases};
   mkdirSync(path.dirname(output), {recursive: true});
-  writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
+  writeFileSync(output, compactJson(report));
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [legacy, normal, diagnostic, output] = process.argv.slice(2);
