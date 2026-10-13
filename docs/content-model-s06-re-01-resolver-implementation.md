@@ -19,7 +19,7 @@ Reference, owner and incoming-affiliation access to an unavailable subject raise
 Candidate collisions are checked against the entire original identity domain, including omitted original records.
 
 `src/compiler/semanticBudget.ts` is the single implementation of the previously accepted request accounting; `resolver-budget.ts` is a compatibility re-export.
-Default inclusive limits remain 100,000 nodes and 1,000,000 work units, with sticky exhaustion and pre-work/pre-allocation charging.
+Default inclusive limits are 100,000 nodes and 25,000,000 work units, with sticky exhaustion and pre-work/pre-allocation charging; the [capacity calibration](#successor-budget-calibration) records the measured scope and headroom.
 The new request covers actual context preparation, candidate indexes and consuming kernels; inherited loading/catalog/resolution stage counters remain separate and are not relabeled one whole-pipeline budget.
 
 Semantic consumers reuse the request's original indexes and access generated content through `particleContentNode`.
@@ -145,7 +145,7 @@ It proposes spellings without changing the application pattern subset or assigni
 Enumeration is iterative and charged before copying or repetition; resource exhaustion remains sticky, and fragments outside this producer retain their membership prerequisite.
 For admitted explicit character classes, the positive producer tries operand spelling characters and printable ASCII that match the class, then scans remaining code points from U+007F for one match when needed.
 Exact finite pattern words across all layers are checked before incomplete heuristic proposals, so a costly earlier pattern cannot starve a later finite witness.
-Within a heuristic pattern, cheap class witnesses remain ahead of large literal branches, while paths needing no class search are tried before the fallback Unicode scan; the [independent starvation control](../test/unit/schema-pattern-starvation-independent.test.ts) exercises both orderings at the unchanged default budget.
+Within a heuristic pattern, cheap class witnesses remain ahead of large literal branches, while paths needing no class search are tried before the fallback Unicode scan; the [independent starvation control](../test/unit/schema-pattern-starvation-independent.test.ts) exercises both orderings with an explicit 1,000,000-work allowance.
 For admitted unbounded repetitions, it explores a finite prefix from the declared minimum through that minimum plus the expression and operand spelling lengths, using the same request budget.
 These proposals are checked in the exact base context against the original typed operand; missing proposals retain an unresolved membership obligation, since the prefix and class choices do not exhaust either language.
 The same value-facet evaluator can establish exact length, precision or bound exclusion without promoting one union member's failure to a union-wide negative.
@@ -453,9 +453,9 @@ The [summary generator](../test/research/re01/preparation-summary.ts) rejects ch
 Committed corpus identities and the reviewed evidence record are durable; raw reports and generated synthetic files under `tmp/conformance/preparation/` are disposable task outputs.
 Full CI, independent review, protected merge and merged-main verification remain delivery requirements; these bounded observations do not close #232/#234 or activate #179/#153.
 
-### Current-main finite capacity qualification
+### Accepted #278 finite capacity qualification
 
-The [fixed-URI finite harness](../test/research/re01/finite-capacity-measure.ts) compares actual main `2a057d22a48bfe78a7af2deb368f86a4c762533f` (tree `845417705b22259f6ebf6ce93abb481d31dfedbc`) with the #278 change. Both checkouts use the same source bytes and `https://capacity.example/` offline URIs. Each workload uses a fresh request for each of three samples, with separate default and 100,000,000-work diagnostic profiles. The default remains 1,000,000 work and 100,000 nodes. The table reports one representative row; logical work and nodes were identical across all three repetitions.
+The original [fixed-URI finite harness](../test/research/re01/finite-capacity-measure.ts) compared actual main `2a057d22a48bfe78a7af2deb368f86a4c762533f` (tree `845417705b22259f6ebf6ce93abb481d31dfedbc`) with the #278 change. Both checkouts used the same source bytes and `https://capacity.example/` offline URIs. Each workload used a fresh request for each of three samples, with separate then-default 1,000,000-work and diagnostic 100,000,000-work profiles; both allowed 100,000 nodes. The table preserves that accepted historical experiment; logical work and nodes were identical across its three repetitions.
 
 | Complete finite workload | Main diagnostic work | Main default | #278 default work | #278 nodes | Remaining default work |
 |---|---:|---|---:|---:|---:|
@@ -479,13 +479,60 @@ The retained source-owned structural controls remain 988,098 work and 140 nodes 
 
 The finite harness reports loading separately with `null` shared-budget work because loading uses inherited limits. It separates source ownership, actual lookup and each candidate construction, but groups original local assessment, candidate local assessment, dependency discharge and evidence publication in the complete finite-verification stage. Earlier structural harnesses expose canonical construction and reference resolution independently. An exact per-rule allocation or verifier substage claim would require additional instrumentation. Wall time and process RSS are observed per stage; OS cache, JIT and garbage collection are uncontrolled, and process peak RSS is a lifetime high-water mark. The deterministic work, node and receipt observations support this bounded capacity result.
 
-Run each proposed profile independently so request-ID length does not alter charged work across a combined run:
-
-```bash
-node --import tsx test/research/re01/finite-capacity-measure.ts --profile default
-node --import tsx test/research/re01/finite-capacity-measure.ts --profile diagnostic
-```
-
-For the archived current-main comparison, copy this same harness into that equal-length checkout's ignored `tmp/finite-capacity-measure.ts`, changing only the source import prefix from `../../../src/` to `../src/`. Run the two profiles from that checkout with `node --import tsx tmp/finite-capacity-measure.ts --profile default` and `--profile diagnostic`. The copied harness is a measurement adapter; current main's production sources remain unchanged.
+The archived comparison used the original #278 harness in equal-length checkouts. The expanded harness below measures the current default separately from the explicit former limit; its new imports and workloads must not be substituted into that archived experiment without a new matched measurement.
 
 The optimization caches only positive direct relation and content-identity facts in their owning context. Every call re-owns references, charges cache lookup and publication, and replays the checked dependencies; finite builtin dependencies are checked once per exact context and identity. Typed attribute constraints use one scalar assessment. Candidate-specific and nested proof obligations still run for the supplied evidence. These controls qualify named workloads only; #234 proof, #232 full acceptance and P1/F1 maintainer selections remain open.
+
+### Successor budget calibration
+
+The [authorized #232 continuation](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918) treats request defaults as engineering choices. The shared request now defaults to 25,000,000 work units and retains 100,000 nodes. Callers can override either positive safe-integer limit, and both remain inclusive.
+
+The [expanded harness](../test/research/re01/finite-capacity-measure.ts) and [recorded evidence](../test/research/re01/finite-capacity-evidence.json) measure complete named workloads on Node `v24.19.0`, Linux x64, Intel Xeon Platinum 8573C. The evidence starts from `ffa4f3ea6d23fe628e70051c6bef5e6eb566ae62` and records the exact measured source/dependency hashes and production diff hash. Each workload/profile runs in a fresh child with one cold and two warm requests; fixed offline URIs remove checkout-path differences, and request identifiers keep equal lengths.
+
+The three finite cases execute `verifyFiniteRe01Evidence` fully, including original and candidate obligations, dependency discharge and receipt publication. Weather and the shared-recursive cases execute one complete actual preparation and all three candidate deltas, including changed membership and endpoints. These structural cases do not perform complete semantic validation or search for a finite witness; their `structural-only` result is retained in every record.
+
+| Workload | Generic actual plus three candidates | Source-owned actual plus three candidates | Request nodes |
+|---|---:|---:|---:|
+| Weather WSDL | 3,370,424 | 1,316,746 | 142 |
+| Shared-recursive fixture | 885,542 | 408,819 | 55 |
+| Synthetic 4 recursive types | 355,831 | 162,966 | 29 |
+| Synthetic 16 recursive types | 1,076,816 | 451,882 | 89 |
+| Synthetic 64 recursive types | 3,964,383 | 1,610,775 | 329 |
+| Synthetic 128 recursive types | 7,820,612 | 3,158,811 | 649 |
+| Synthetic 256 recursive types | 15,540,094 | 6,262,935 | 1,289 |
+
+The synthetic inputs use the existing graded generator: every type shares one two-element group and independently recurses across an element boundary. Weather remains the largest available redistributable real-service closure; these synthetic sizes do not add evidence about larger real services. The generic path calls the structural adapter on a built and resolved graph, while the source-owned path retains #278's authenticated immutable sharing.
+
+The replacement work limit targets at least 50 percent headroom above the largest measured completed request, rounded up to the next 5,000,000 units. The resulting 25,000,000 limit leaves 9,459,906 units, or 60.9 percent of the observed 15,540,094 cost, for input and workload variation. The largest measured request uses only 1,289 nodes, so this evidence gives no reason to raise the existing node guard.
+
+| Default-profile workload | Cold wall ms | Two warm wall ms | Peak process RSS MiB | Maximum observed heap MiB |
+|---|---:|---|---:|---:|
+| Generic Weather sequence | 43.598 | 27.717, 19.780 | 74.9 | 25.9 |
+| Generic synthetic 64 sequence | 77.993 | 43.412, 28.741 | 80.8 | 32.7 |
+| Generic synthetic 128 sequence | 86.943 | 66.532, 49.377 | 98.0 | 35.8 |
+| Generic synthetic 256 sequence | 161.051 | 96.887, 98.008 | 129.8 | 46.1 |
+| Source-owned synthetic 256 sequence | 101.961 | 96.645, 59.514 | 106.2 | 37.2 |
+
+Wall totals include loading and measured preparation stages but exclude process/module startup. RSS is a process-lifetime high-water observation including the loader and preceding requests; heap is observed at stage boundaries, not its allocation total or guaranteed peak. OS cache, JIT, GC and concurrent environment activity are uncontrolled, so these samples support practical calibration without promising throughput or a memory ceiling.
+
+For generic Weather, actual preparation costs 3,041,697 units and the three deltas cost 140,673, 36,408 and 151,567; the initial terminal reservation adds 79. The 256-type generic case costs 12,971,156 for actual preparation and 1,269,596, 20,235 and 1,279,028 for its deltas, plus the same reservation. The evidence records every stage's marginal work, nodes, timing and before/after RSS and heap.
+
+All three accepted finite cases retain their #278 work totals: 917,562 for particle/AU/wildcard, 976,270 for the nested helper and 593,138 for typed attributes. They complete under the explicit former 1,000,000 limit as well as the new default and diagnostic limits. Default and diagnostic runs have identical completed totals, graph hashes and checked receipt projections for corresponding samples; the [reducer](../test/research/re01/finite-capacity-summary.ts) checks these facts before emitting evidence.
+
+The accounting schedule remains unchanged. Its text, descriptor, traversal and allocation precharges account for variable work at finer granularity than graph nodes or transitions; the large numerical totals coexist with modest observed time and memory in this corpus. Rescaling those units would obscure existing independent ledgers without demonstrating an operational benefit, and the provisional inherited stage budgets in ADR-003 concern separate stages and units.
+
+The [capacity controls](../test/research/re01/finite-capacity.test.ts) pin the former allowance where it is the regression oracle. Generic Weather still returns `resource-limit` at 1,000,000, while an exact measured complete sequence succeeds and one unit less fails without a partial candidate. Starvation, source-ownership and symbolic-particle controls also use explicit former limits so a default increase cannot mask those defects.
+
+Oversized text is rejected by its precharge before scanning or copying, repeated cyclic references retain sharing, and reserving 100,001 nodes fails at the inclusive 100,000 boundary. Failure stays terminal with the same envelope and unchanged counters, including subsequent attempted operations. Exhaustion provides no negative semantic answer; neither this numerical calibration nor a successful supplied finite check proves universal coverage or search termination.
+
+Reproduce all profiles and reduce them only after completing a stable source tree:
+
+```bash
+mkdir -p tmp/conformance/budget-calibration
+node --import tsx test/research/re01/finite-capacity-measure.ts --profile legacy > tmp/conformance/budget-calibration/legacy.json
+node --import tsx test/research/re01/finite-capacity-measure.ts --profile default > tmp/conformance/budget-calibration/default.json
+node --import tsx test/research/re01/finite-capacity-measure.ts --profile diagnostic > tmp/conformance/budget-calibration/diagnostic.json
+node --import tsx test/research/re01/finite-capacity-summary.ts tmp/conformance/budget-calibration/legacy.json tmp/conformance/budget-calibration/default.json tmp/conformance/budget-calibration/diagnostic.json tmp/conformance/budget-calibration/summary.json
+```
+
+Loading, canonical construction and reference resolution retain their independent limits; their `null` shared-work counters are not zero-cost claims. The earlier preparation harness still measures inherited gathering/merge/resolution/composition stages separately, and its request-context profile now reads the actual semantic defaults instead of reusing inherited stage-step limits. A request that fits this work guard can still encounter a separate loader, graph or source-stage limit.

@@ -29,13 +29,25 @@ import {
 describe('RE01 budget foundation', () => {
   it('pins positive safe-integer inclusive defaults and terminal reservation', () => {
     expect(DEFAULT_MAX_NODES).toBe(100_000);
-    expect(DEFAULT_MAX_WORK).toBe(1_000_000);
+    expect(DEFAULT_MAX_WORK).toBe(25_000_000);
     expect(TERMINAL_RESERVATION_WORK).toBe(79);
     expect(createResolverBudget().usage()).toEqual({ nodes: 0, work: 79 });
     for (const invalid of [0, -1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
       expect(() => createResolverBudget({ maxNodes: invalid })).toThrow(ResolverInvalidLimitsError);
       expect(() => createResolverBudget({ maxWork: invalid })).toThrow(ResolverInvalidLimitsError);
     }
+  });
+
+  it.each([1_000_000, DEFAULT_MAX_WORK])('retains an inclusive work boundary and sticky failure at %i', maximum => {
+    const budget = createResolverBudget({maxWork: maximum});
+    expect(budget.guard(() => budget.chargeWork(maximum - TERMINAL_RESERVATION_WORK))).toBeUndefined();
+    expect(budget.usage().work).toBe(maximum);
+    const failed = budget.guard(() => budget.chargeWork(1));
+    expect(failed).toMatchObject({kind: 'resource-limit', limit: 'work', usage: {work: maximum}});
+    let executed = false;
+    expect(budget.guard(() => {executed = true;})).toBe(failed);
+    expect(executed).toBe(false);
+    expect(budget.usage().work).toBe(maximum);
   });
 
   it('uses checked subtraction at exact safe-integer limits', () => {

@@ -25,13 +25,13 @@ async function setup(file = 'upa-independent.xsd', budget = createSemanticBudget
 }
 
 describe('independent declared particle legality and attribution', () => {
-  for (const maxWork of [undefined, 2_000_000]) {
+  for (const maxWork of [1_000_000, 2_000_000]) {
     it.each([['HugeFixed', true], ['HugeOptional', false], ['HugeNarrow', false], ['HugeOuterRepeat', false], ['HugeFixedGroup', true], ['HugeNarrowGroup', false]] as const)
-      (`keeps %s exact symbolic with ${maxWork === undefined ? 'default' : 'diagnostic'} shared request limits`, async (name, expected) => {
+      (`keeps %s exact symbolic with explicit ${maxWork} shared work units`, async (name, expected) => {
         // N=9007199254740993: fixed boundaries distinguish p^N,q;
         // variable N..N+1 has two possible next positions after prefix a^N.
         // Neither the fixture nor this oracle constructs that event prefix.
-        const budget = maxWork === undefined ? createSemanticBudget() : createSemanticBudget({maxWork});
+        const budget = createSemanticBudget({maxWork});
         const file = name === 'HugeFixedGroup' ? 'upa-symbolic-group-independent.xsd'
           : name === 'HugeNarrowGroup' ? 'upa-symbolic-narrow-group-independent.xsd' : 'upa-symbolic-independent.xsd';
         const request = await setup(file, budget);
@@ -51,7 +51,7 @@ describe('independent declared particle legality and attribution', () => {
           ...(expected ? {} : {failedRule: 'cos-nonambig'})});
         expect(budget.usage().work).toBeGreaterThan(preparedWork);
         expect(budget.exhausted()).toBe(false);
-        budget.guard(() => budget.chargeWork(maxWork ?? 1_000_000));
+        budget.guard(() => budget.chargeWork(maxWork));
         expect(checkComplexParticleContent(request.actual, content.view)).toBe(budget.failure());
       });
   }
