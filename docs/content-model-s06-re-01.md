@@ -135,6 +135,154 @@ Finite-evidence soundness does not establish evidence-family adequacy.
 A successful arbitrary witness has not been proved to admit such finite acyclic evidence, and rejecting supplied cyclic evidence proves neither invalid XSD nor witness nonexistence.
 Termination of checking a finite DAG also says nothing about termination of searching an unbounded family.
 
+### Inherited fresh roots and the October 13 proof continuation
+
+The [authorized continuation](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918) retains context-local rechecking and the complete selected B domain.
+The [new soundness countercontrol](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6141967632) starts from main `ffa4f3ea6d23fe628e70051c6bef5e6eb566ae62`, tree `c887431207d104f4c9f514d524dcb6d193a43c36`.
+Its repair and the following lemmas require separate substantive review; they do not close #234.
+
+#### Semantic success and the adequacy question
+
+Let an obligation identify its target, designated ancestor, immutable actual environment, exact parent environment and selected domain.
+Semantic success means that a permitted finite hypothetical environment supplies the two derivation steps, preserves the required effective properties and satisfies every applicable dated component predicate in its declared context.
+This definition uses the component predicates and their existential requirements, independently of `FiniteRe01Evidence`, storage IDs or a `checked-candidate` result.
+
+Actual-schema obligations remain separate judgments in the immutable actual environment, and a complete result must discharge them too.
+Neither the target's nor another pending RE01 result is an initial qualification premise.
+Legal component-reference recursion is distinct from the contextual recursion introduced when another existential construction is required.
+
+The question remains whether every semantically successful permitted construction admits finite well-founded evidence using justified primitive leaves.
+The primitive-root example below exposes a gap in the old root syntax; the other false positive concerns the checker's missing premise inventory, and the successful padding control concerns a proposed rank.
+Repairing these concrete gaps does not establish universal adequacy for arbitrary nonprimitive constructions.
+
+#### Primitive-root inadequacy and its repair
+
+The [independently stated primitive example](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6142292378) uses empty `A` with immediate base `anyType` and `D` directly extending `A`.
+`D`'s content contains an optional reference to global `M:D`, affiliated with original `H:A`, whose final set contains `restriction`.
+The [source fixture](../test/conformance/fixtures/xsd/recovery/finite-proof-primitive-affiliation.xsd) has legal recursive component references and no other nonprimitive extension obligation.
+
+The accepted primitive identity lemma proves semantic success without consulting evidence syntax: the first step is actual `D` extending `A`, and the second step is identity.
+No restriction edge is introduced, so actual `M`'s affiliation reaches `A` using extension alone and satisfies `H.final`.
+The [executable control](../test/research/re01/primitive-root-evidence.test.ts) checks all actual source and local component premises separately.
+
+Every nontrivial candidate instead introduces the first edge `D' restriction E`.
+Preserved endpoint content consumes original `M`, whose affiliation to `H` then forbids that edge under `e-props-correct.4`; additional helpers cannot remove the first edge or alter original `H.final`.
+Thus this semantically successful primitive judgment admits no root of the old `FiniteRe01Evidence` format, which required a candidate context and a nontrivial endpoint restriction.
+
+This is a counterexample to using that old root format for all RE01 judgments, not to the narrower contract of checking supplied nontrivial candidates.
+The existing internal primitive leaves were sound but unavailable as the entry point's root.
+It does not show that a successful nontrivial construction requires infinite nested evidence.
+
+The verifier now also accepts `root: {kind: 'primitive-no-change'}` with a finite `nodes` array for other actual obligations.
+It uses the same complete actual closure, exact primitive identity check, scalar and notation checks, typed-dependency discharge and evidence authentication as construction roots.
+The separate `checked-primitive` receipt certifies the primitive target and all actual obligations; it does not claim a supplied candidate exists.
+
+The contrasting extra-`U` fixture requires evidence for an unrelated nonprimitive original extension even when the requested root is primitive.
+Invalid original scalar operands and an ancestor prohibiting extension still fail, a nonprimitive target cannot use the primitive marker, and publication obeys an inclusive sticky request budget.
+Existing string-root input and `checked-candidate` receipts retain their contract; no public or persisted format changes.
+
+#### A missing inherited obligation and its complete contextual negative
+
+The [permanent control](../test/research/re01/inherited-helper-obligation.test.ts) uses original `B` extending builtin `string` and original `D` extending `B`, with the original typed attribute use retained.
+The root construction changes `D` to a restriction of fresh `E` extending `anySimpleType`, and adds fresh `F` extending `B`, fresh head `H:B` and fresh member `M:F` affiliated with `H`.
+The local affiliation succeeds in this parent environment because `F` derives from `B`.
+
+The supplied nested construction changes `F` to a restriction of fresh `E2` extending `anySimpleType`.
+The following identities and methods give a contradiction independent of candidate enumeration.
+
+| Premise | Consequence |
+|---|---|
+| `F`'s designated ancestor is `anySimpleType` | Every intermediate extends that exact builtin directly |
+| Original `B` extends `string` | `B` cannot be that intermediate |
+| Fresh identities cannot equal original `B` | Renaming or copying `B` cannot put its identity on the new path |
+| Proposed ancestry is `F -> intermediate -> anySimpleType -> anyType` | `F` cannot derive from original `B` |
+| Fresh `M:F` and `H:B` remain required roots | `e-props-correct.4` fails in every permitted nested construction |
+
+Extra particles, attributes, types, globals, affiliations or flags cannot change those fixed base identities.
+This proves nonexistence for the contextual obligation of `F` in that parent environment over the full permitted helper domain.
+It does not prove nonexistence for original `D`, which may have another root witness without these helpers.
+
+At the starting revision, direct `checkComponentConstruction(child, M)` rejected `e-props-correct.4`, while the aggregate finite verifier returned `checked-candidate` for the same supplied evidence.
+`CorrespondenceReceipt.fresh` correctly described only additions relative to the immediate parent, but the verifier incorrectly used it as the complete fresh-root inventory.
+Inherited fresh `M` was available but absent from the child's checked closure.
+
+The repaired verifier derives each hypothetical root inventory from all additions relative to immutable actual Gamma, plus its endpoint and intermediate.
+It checks every inherited fresh component again in the exact child context, including declarations not reached from the new endpoint.
+This restores the complete-premise condition required by the finite-evidence induction; it introduces no cross-context semantic transfer.
+
+#### A successful construction that increases the proposed rank
+
+Changing the fresh head's type from `B` to builtin `anySimpleType` removes the affiliation obstruction.
+Both the original helper ancestry and the rebased helper ancestry reach that exact head type; all final and block sets are empty.
+The contrasting complete two-node certificate succeeds and records `M` and inherited `E` in the child's own checked closure.
+
+A third control adds two fresh string-content types, `G1` and `G2`, extending original complex `B`, while rebasing `F`.
+The parent has one nonprimitive extension obligation, `F`; the child has two, `G1` and `G2`.
+Thus the number of nonprimitive extension types increases on a successful permitted step.
+
+Each `Gi` has an explicit witness: extend `anySimpleType` directly and restrict that intermediate to the same original builtin `string` content and attribute-use set.
+Simple-base extension supplies the first step without another clause-1.5 obligation, and builtin `string` restricts `anySimpleType` with no new scalar facet.
+The original integer attribute operand and use identity remain unchanged, and `M`'s head remains `anySimpleType` throughout.
+
+Proving `G1` first requires a separate child proof for `G2`; proving `G2` first requires a separate child proof for `G1`.
+Each branch eliminates one of those extensions and adds only a simple-base extension, so it reaches primitive leaves after two steps.
+The complete control has six distinct candidate contexts and succeeds through the shared semantic owners.
+
+This is a concrete failure of the unconditional extension-count rank, not a failure of finite-evidence adequacy.
+The added types are dispensable in this example, so it also does not refute a helper-elimination theorem.
+It shows why that theorem must justify selection of different witnesses rather than claim a decrease for every permitted successful step.
+
+#### Conditional constructive extraction under a hereditary helper premise
+
+Let `n(C)` count nonprimitive complex extensions in a finite context `C`, including inherited additions.
+Assume every semantically true obligation encountered has a successful witness adding no new nonprimitive extension type, and that this property holds again for its required child obligations.
+All new component categories remain permitted by this premise; its substantive restriction is on the existence of suitable witnesses, not on the admitted domain.
+
+Replacing a nonprimitive target by a restriction removes exactly one count contribution.
+Its intermediate directly extends the designated ancestor and is primitive, or has a simple base and no clause-1.5 obligation.
+The designated ancestor and all other existing immediate bases are unchanged, so each remaining existing type retains its designated ancestor and primitive status.
+
+Consequently each required child obligation occurs at a context with rank `n(C) - 1`.
+Induction on this rank extracts finite evidence, once all local predicates and primitive leaves are justified in their own contexts.
+The construction never identifies obligations solely by component ID and never assumes an active target valid.
+
+For one obligation at rank `n >= 1`, a proof tree needs at most `P(n)` nodes with `P(1) = 1` and `P(n) <= 1 + (n - 1)P(n - 1)`.
+Proving all at most `n` obligations in the initial context separately therefore needs fewer than `3 * n!` evidence nodes; no sharing between different contexts is assumed.
+This bounds evidence branching under the stated hereditary premise, not the size of each finite witness or the work required to find one.
+
+The general helper premise is still unproved.
+The existing [fresh-affiliation and helper-type controls](#fresh-affiliation-controls-and-failed-reductions) rule out eliminating all new globals or replacing every helper type by an endpoint type.
+Deleting a helper also changes complete substitution enumeration and can change restriction dispatch, ordering and attribution, so source identity alone cannot justify that deletion.
+
+#### Fixed-point and direct-criterion alternatives
+
+A finite fixed point over a supplied set of exact contextual obligations can decide that supplied system only after its local inference rules and fixed-point interpretation are justified.
+Exact nested candidates have strictly increasing parent-context depth; merging repeated component IDs would discard their different environments.
+The inherited-`M` countercontrol shows that the same component and dependency names can have different semantic answers across that merge.
+
+A finite quotient would need to preserve component identities, complete lookup and affiliation observations, raw construction, scalar contexts, restriction mapping and all local failure conditions, together with witness extraction and reconstruction.
+No finite quotient or stabilization bound over every permitted helper extension has been established here.
+Selecting a greatest fixed point or accepting an SCC by itself therefore supplies neither adequacy nor mathematical search termination.
+
+The fixed-ancestry contradiction above is an equivalent direct negative criterion for one contextual class and terminates without bounding helper count.
+It does not cover the other combinations of AU, particle, scalar, identity and attribution constraints.
+Fair enumeration, helper caps and exhausted accounting remain insufficient for unrestricted negative answers.
+
+#### Revised remaining obligation and execution map
+
+The continuation repairs a concrete sound-positive defect and a primitive-root representation gap, proves a contextual negative independent of finite search, and supplies a semantically successful countercontrol to an unconditional rank.
+No semantically successful nonprimitive construction without finite nested evidence has been established, and no full-domain adequacy theorem has been established either.
+The explicit remaining extraction premise is hereditary elimination of new nonprimitive extensions, or an independently justified complete criterion that makes such extraction unnecessary.
+
+Even discharging that premise would leave witness-size or equivalent total-search reasoning for general negatives and mathematical termination.
+Local authority and representation qualifications also remain premises; these controls use builtin types and original integer operands and do not decide the separate repeated-facet questions.
+#234 owns those proof obligations, with #232 joint acceptance and #179/#153 activation retaining their existing gates.
+
+```bash
+npx vitest run test/research/re01/inherited-helper-obligation.test.ts test/research/re01/primitive-root-evidence.test.ts test/unit/re01-candidate-independent.test.ts
+npx tsc -p test/research/re01/tsconfig.json
+```
+
 ### Reviewed primitive no-change proof
 
 The [independently reviewed primitive branch](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6112070199) applies when X directly extends its designated ancestor A and A's base is qualified builtin `anyType`.

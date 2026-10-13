@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "a3815af46bc74c760c8c224ac6729e80f2e8504ff8af2f046a62b430f4691eae",
+          "sha256": "dcdc1617afcd6206f7678d45e0176240f5c9d06f092696ca2448db7ce8b65bd3",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "28550b4e077dcc60e56fe1b32c2f74bca013689a6ed53efe60a36663316c64db"
+          "sha256": "b14031e7e2ebea16be64a9b5e02ba154a87a61a20a3391ead60ee325f8b7f4d6"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1086,7 +1086,7 @@
         {
           "path": "src/compiler/finiteRe01Verification.ts",
           "role": "semantic-source",
-          "sha256": "bef224f270db1185cca12b8b98dbce45d47e9e43ce8aba5a480366ca8c5cb468"
+          "sha256": "6cd1dc9446d51f852f3c66d7696ac0883781cfc1d0288ca954d013d7771e2f0c"
         },
         {
           "path": "src/compiler/particleAttribution.ts",
@@ -1967,6 +1967,31 @@
           "path": "test/unit/semantic-type-dependencies.test.ts",
           "role": "expectations",
           "sha256": "add106df3bae2485e754a6cf70d875cdb83790e89f04322a1096cfbb6cadc1ab"
+        },
+        {
+          "path": "test/research/re01/inherited-helper-obligation.test.ts",
+          "role": "prototype",
+          "sha256": "28b1d9368d2562456684cc0967a4b927c151e3f9c0b5f31ee8cc9367f93d8862"
+        },
+        {
+          "path": "test/research/re01/primitive-root-evidence.test.ts",
+          "role": "prototype",
+          "sha256": "b34cafb62a4c98bd4f224bcaef3da93b1f1987fd19db8a23e01a76b2fd6f5c2f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-primitive-affiliation.xsd",
+          "role": "fixture",
+          "sha256": "6432332a10fb9930a8b32f8343b0e31f74795696ef3226da583319d1c5f9a9d6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-primitive-invalid-original.xsd",
+          "role": "fixture",
+          "sha256": "ad105a3f3516e1ce8f5b84dd515d2c5417a52bdf1c6f1f2d2aa38d1d4106245c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-proof-primitive-obligations.xsd",
+          "role": "fixture",
+          "sha256": "9027c3ec229a2f6f60141fe3f49e7dc0d082d2dbe3f7eb6e41596c628399b12a"
         }
       ]
     },

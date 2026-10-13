@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:primitive-affiliation">
+  <xs:include schemaLocation="finite-proof-primitive-affiliation.xsd"/>
+  <xs:attribute name="Unused" type="xs:int" fixed="not-an-integer"/>
+</xs:schema>

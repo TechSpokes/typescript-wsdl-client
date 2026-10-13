@@ -219,6 +219,10 @@ The following named cases retain their precise prerequisites; a successful resul
 
 Application identity constraints remain outside the approved profile; checking the fixed assessment schema's own keys does not add application key/keyref/unique support.
 These qualifications are separate from #234's universal witness/evidence adequacy, complete negative answers and termination obligations.
+The [inherited-root continuation](content-model-s06-re-01.md#inherited-fresh-roots-and-the-october-13-proof-continuation) repairs a nested finite-certificate false positive: every candidate rechecks all fresh additions relative to immutable actual Gamma, including additions inherited from its parent.
+The permanent affiliation controls distinguish complete availability from complete legality roots and retain exact context-local assessment.
+The same entry point accepts a discriminated primitive root and issues a separately authenticated `checked-primitive` receipt after checking every actual obligation, including supplied evidence for unrelated nonprimitive types.
+This represents the existing no-change rule without inventing a restriction edge, which can itself invalidate a consumed affiliation; existing construction-root callers retain their input and receipt contracts.
 
 ### Historical research seam
 
