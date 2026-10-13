@@ -1,7 +1,7 @@
 {
   "format": "semantic-capacity-evidence-v2",
-  "revision": "ffa4f3ea6d23fe628e70051c6bef5e6eb566ae62",
-  "trackedDiffSha256": "eac19230cfb1f3eae48e42beecd46235dd2afb7d6c70ed5005532c98524c61b8",
+  "revision": "024460832f975b57d2f8b57a35cf56a8f175e7a1",
+  "trackedDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "sourceDigests": {
     "package-lock.json": "3a089e52fad9349183ad9118fcb2562dbe741017be2099de045877c204dc4f94",
     "src/app/generateApp.ts": "b306c45ebfc93589da2416ced8aa9f6abf8ccfb86934dba0c8cdf0063879d447",
@@ -16,7 +16,7 @@
     "src/compiler/catalogProvenance.ts": "c16a6e839bead9d91042d005015d27d43f0833da11c32c05e20090c0e161aad9",
     "src/compiler/complexTypeContent.ts": "e6fd14c0ecb84c85b0044712e6a04adaff5518157b70f8d93cd8fb5fbe7ab34a",
     "src/compiler/composeCanonicalGraph.ts": "a670639a8598cf8693c769722f4fadb68bb9e778d3938146752917a9d801efc5",
-    "src/compiler/finiteRe01Verification.ts": "bef224f270db1185cca12b8b98dbce45d47e9e43ce8aba5a480366ca8c5cb468",
+    "src/compiler/finiteRe01Verification.ts": "6cd1dc9446d51f852f3c66d7696ac0883781cfc1d0288ca954d013d7771e2f0c",
     "src/compiler/generateCatalog.ts": "0c1f4d134b92a78c410715f8b395c5759c4bbc1b5675b30d0245b6ae138a4fe4",
     "src/compiler/graphTraversal.ts": "470900a618e50034d9497a101ea9deb9b3cf070b880e4cf16d5e99200633077e",
     "src/compiler/occurrenceAnalysis.ts": "35d3521648757350d2b159caa36539f885e0f7efbe0960157fc3d6bf3581861a",
@@ -32,7 +32,7 @@
     "src/compiler/re01TypeProperties.ts": "1e6f0a4fbae68323bc8178c47f284987c9fc8eb82f4cc9cecf7bf7bcc0ca560a",
     "src/compiler/re01TypePropertyValidation.ts": "40c07376dba2dfaada62af210a4956e71128439b0c3ab451954d4572526f485b",
     "src/compiler/resolveCanonicalGraph.ts": "d851e4b8f5598ee99b288d9c75e39435d46ca95d0799da8e8cbabfd85a39215a",
-    "src/compiler/scalarSchemaAssessment.ts": "3b3b3a2d92e82687071176c6725a47bea6496aba103c8f0a9ad3e383862938ce",
+    "src/compiler/scalarSchemaAssessment.ts": "616f662cc6a4fdd4670fb959e5b8415f80bf014f4984977d8e80c190c78dafe5",
     "src/compiler/schemaAttributeGroupProperties.ts": "fb79ec86714c0c8a1ceb8daed507359e1412bc397f2705e3f9ab9246f1d8b933",
     "src/compiler/schemaAttributeProperties.ts": "dcccd1fae0a67c167a8346561dcdb7da902b729980518f391e01f246799b84fe",
     "src/compiler/schemaAttributeUses.ts": "46c776d4f056764bcbc4f6666f30a0d542b993637375dc28279a01109bdd75f6",
@@ -52,7 +52,7 @@
     "src/compiler/schemaScalarContext.ts": "a28348d12ccc8fe60396289326ba0a2ba38c3bc74d039feebf2d0145dc588fcf",
     "src/compiler/schemaScalarKernel.ts": "f4c3fe51c4c08f4f35d96ca9d171f2837422d7c1e3d269ab5f07005bda7a8563",
     "src/compiler/schemaScalarWitnesses.ts": "dc165ae70d9f22fce10023ba5eb243081c81e2f266a0f12b6faef503e9176816",
-    "src/compiler/schemaSimpleTypeProperties.ts": "1535ce751549c795991fe346253381f8e81f88bd601a0d71b600790b15f07951",
+    "src/compiler/schemaSimpleTypeProperties.ts": "8d727bcee0f4b16a43cc143730851401233e3958972fecc717f8200d07ba3cae",
     "src/compiler/schemaSourceGrammar.ts": "173d211830c16fa462171fc5c966d003151bde39e0aaab825bf5e413a32363cc",
     "src/compiler/schemaSourceLexical.ts": "6835b55ec7d63d9d87f38f43ed9842453b5274c6056f9f9aa6504b2f37ef8815",
     "src/compiler/schemaSourceValues.ts": "21d6feccdd10fc42d66dd423bfd1b6b9527fccfd49a5f5008b65380239a6e486",
@@ -123,7 +123,7 @@
     "test/research/re01/derivation-domain.ts": "a0ece7be019c92e490c11f42151f923c940acbf08cc7e30a5b381cd1c97b57b1",
     "test/research/re01/derivation-helper.behavior.test.ts": "3ccd27b1680adae883effbac11ae26369c6d06abc9d9f6a974a68fbb645d4b07",
     "test/research/re01/finite-capacity-measure.ts": "001ff4283d87af8fcc8fce99af7f01b95359022b28da194eefb44b71f7fc563b",
-    "test/research/re01/finite-capacity-summary.ts": "8ce4b5fe5a8463a8ed109fe7b98566eb843a20b49f4bde84fa156f942f141861",
+    "test/research/re01/finite-capacity-summary.ts": "d4f56b437bfd26830ecc4fe9c442b7b3cc7e9db03b7191161f7669af6faa332e",
     "test/research/re01/finite-capacity.test.ts": "999b123c03e38d7aea37c4a94012829e4606c76b5589610f2b04c95d5eb64459",
     "test/research/re01/fresh-helper-case.ts": "e8011b03f6705dd149bbb7a8a7b1a78346a80101ef12a7973796d617c1a72add",
     "test/research/re01/fresh-helper.test.ts": "c3c8a4e8ffa86ced2343ecfb3755ee2ee283913878720cf589dfe7c497feb5a1",
@@ -132,6 +132,7 @@
     "test/research/re01/incidence-case.ts": "c6bdb17ee7599ef6bf3c572a999abc00022b6df7fd449e4332b44d4fb958adb1",
     "test/research/re01/incidence-probe.test.ts": "583a4e220e3b0f119cf4feb4f19986e72b52bddf1e1c51a8d8af1306832af91f",
     "test/research/re01/incidence-probe.ts": "578d24ba9acd5a1b83e1bef1675a5e411d7fc88993bf705ecdc2c888c5a900cb",
+    "test/research/re01/inherited-helper-obligation.test.ts": "28b1d9368d2562456684cc0967a4b927c151e3f9c0b5f31ee8cc9367f93d8862",
     "test/research/re01/literal-attribute-extension.test.ts": "be3f6474f9de98ae69f7aa76368a003cd301491001076920c0a2ecbe2a8a8557",
     "test/research/re01/literal-attribute-extension.ts": "4c9665991fcbb80e7271e15e6ce89f4b99cde6ada35b1d57ed9a19c02128fbf3",
     "test/research/re01/literal-au-synthesis.test.ts": "77a10656d6dbd09f00e1a1d99c55d18cff249b77bc8d400cdcbb3907125c26e5",
@@ -152,6 +153,7 @@
     "test/research/re01/preparation-probe.ts": "0393ca062d8d0cb4e5bf7b702584059d714e2f7dba059c0faec0b1580272984c",
     "test/research/re01/preparation-provenance.test.ts": "007ea65b3453e00c2143d6305e69c09dcf46a6ca151fb5e88079916aff76c58f",
     "test/research/re01/preparation-summary.ts": "7ab834e9c4acf76a393df0a7dea9547c9ce252d84e2a12f4898367612a2f8070",
+    "test/research/re01/primitive-root-evidence.test.ts": "b34cafb62a4c98bd4f224bcaef3da93b1f1987fd19db8a23e01a76b2fd6f5c2f",
     "test/research/re01/resolver-budget.test.ts": "c66496b9ea6748050caffb9808899c2aec96e87b62c7419913983745334fd903",
     "test/research/re01/resolver-budget.ts": "2a57ebb3909a8c82b0c7b36089d16390fd46536f30c0b25d72c6bc3d35bf0810",
     "test/research/re01/resolver-cache.test.ts": "5c1db7c634fa98feef36c5bf8c3a7c7257d3b949e3c87b5019b6ede364e94d47",
@@ -174,7 +176,7 @@
     "test/research/re01/witness-probe.test.ts": "2f70fb441817e88e446d9f24792022826d17b9ba34b37a67562ff9cf51873439",
     "test/research/re01/witness-probe.ts": "de3d616880c0b8a124bb6975b726104ab0c7e680dfe3fb0dd6571295bfdfec46"
   },
-  "summaryReducerSha256": "33b4c3c843864eb08a4989b8466b09bc3dc7e1e259bd0b1d86e16912a1ff130c",
+  "summaryReducerSha256": "d4f56b437bfd26830ecc4fe9c442b7b3cc7e9db03b7191161f7669af6faa332e",
   "rawReports": [
     {
       "profile": "legacy",
@@ -183,7 +185,7 @@
         "maxWork": 1000000
       },
       "path": "tmp/conformance/budget-calibration/legacy.json",
-      "sha256": "6078f6e457dab9c4b8c5ef651de103063f6bbd8b89897baaacebf3c84ce0aa92",
+      "sha256": "2f2d0ab8b4f167395f7d484ff79d8c0687ef397240aa682b2235ca3dcbd27faf",
       "reproduce": "node --import tsx test/research/re01/finite-capacity-measure.ts --profile legacy > tmp/conformance/budget-calibration/legacy.json"
     },
     {
@@ -193,7 +195,7 @@
         "maxWork": 25000000
       },
       "path": "tmp/conformance/budget-calibration/default.json",
-      "sha256": "79c3d9e0f0826caa2dc5c58a65d0d7cd71d6a8595155fac03bfd7d583c0638d6",
+      "sha256": "df9609041913ed25dbe21f071706c4ee9dbfe9485530316f142d496720c613dd",
       "reproduce": "node --import tsx test/research/re01/finite-capacity-measure.ts --profile default > tmp/conformance/budget-calibration/default.json"
     },
     {
@@ -203,7 +205,7 @@
         "maxWork": 100000000
       },
       "path": "tmp/conformance/budget-calibration/diagnostic.json",
-      "sha256": "bda30b77eebc7706bf427262fe979b96b61d2a5f564103452adf4285fc5f35f2",
+      "sha256": "0a910e69f364b20f239b9f50e2fba9624b1ea437cb76ff2c4e1ed828e1f31f75",
       "reproduce": "node --import tsx test/research/re01/finite-capacity-measure.ts --profile diagnostic > tmp/conformance/budget-calibration/diagnostic.json"
     }
   ],
@@ -216,7 +218,7 @@
   "fixedOrigin": "https://capacity.example",
   "terminalReservationWork": 79,
   "collection": "Each workload/profile has a fresh child, three requests and stable request-ID lengths. Loading/build/resolution use inherited limits; null shared work is not zero cost. Stages are marginal request work; terminal reservation is separate. RSS peak is process lifetime high-water, heap/RSS snapshots are observed and not allocations; retained census is a proxy. Wall time includes OS/JIT/GC noise. Structural candidates certify no schema validity; finite checks certify only supplied evidence.",
-  "summary": "Original measurements retained; no remeasurement. Full stage wall and before/after RSS/heap telemetry remains in the hashed raw reports. Stage costs are [marginal work, marginal nodes]. Samples are ordered cold, warm, warm. Heap maxima preserve the original post-stage observation series; they are not allocation totals or guaranteed peaks.",
+  "summary": "Samples are summarized from the hashed raw reports. Full stage wall and before/after RSS/heap telemetry remains in those reports. Stage costs are [marginal work, marginal nodes]. Samples are ordered cold, warm, warm. Heap maxima preserve the post-stage observation series; they are not allocation totals or guaranteed peaks.",
   "largerRealTier": {
     "available": false,
     "reason": "No larger redistributable service snapshot with complete closure is present in this repository at the baseline. Weather (21,204 source bytes) is its largest WSDL. Synthetic scale is not larger-real-service evidence."
@@ -246,64 +248,64 @@
         "stringCodeUnits": 47622
       },
       "receiptSha256": [
-        "8b3c6bcf14354fb9059ce95f57fb3afeead14bab096675d5a385583af5d74cb7",
-        "a00d2f0d8bb3d18eef538cb05b4e3e63d3eadbe2781185b9eeb7957b7677d113",
-        "fe5d39fd3be4540b9dda3a9c37271d9ad7b3509447a281e9f1075e3fca870445"
+        "6258c63a6eb4e05b68664d84dbb3b0c86d6133a8ceee0dbf164305e0bf482a8c",
+        "a260d25f9d50db821b2e6ded8f794e92a890ad2431894c61906d5677e4d139fb",
+        "34b65fafaf929d7937cbe55858e4590013f259ee13e53cf6e428c69ba3c22d33"
       ],
       "profiles": {
         "legacy": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 61,
-            "work": 917562
+            "work": 918564
           },
-          "resultSha256": "33f2161fef505ab8e36c84b848c42f137314c3cac2c08907d3b794b82d8d9ac1",
+          "resultSha256": "d1d3df817d80fb217b5afca031fe376b39d5b2e6852c9927385430826f4d0797",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [46257,12],
             "actual-lookups": [171,0],
             "candidate-preparation": [129222,3],
-            "finite-verification": [741605,46]
+            "finite-verification": [742607,46]
           },
-          "totalWallMs": [96.344,27.342,23.315],
-          "processPeakRssKiB": [82120,84408,91996],
-          "maxObservedHeapAfterBytes": [21570608,23716064,25975680]
+          "totalWallMs": [74.242,27.354,24.866],
+          "processPeakRssKiB": [85264,87652,94480],
+          "maxObservedHeapAfterBytes": [23758136,25912664,24301152]
         },
         "default": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 61,
-            "work": 917562
+            "work": 918564
           },
-          "resultSha256": "33f2161fef505ab8e36c84b848c42f137314c3cac2c08907d3b794b82d8d9ac1",
+          "resultSha256": "d1d3df817d80fb217b5afca031fe376b39d5b2e6852c9927385430826f4d0797",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [46257,12],
             "actual-lookups": [171,0],
             "candidate-preparation": [129222,3],
-            "finite-verification": [741605,46]
+            "finite-verification": [742607,46]
           },
-          "totalWallMs": [80.119,19.344,18.925],
-          "processPeakRssKiB": [65840,68244,74336],
-          "maxObservedHeapAfterBytes": [21670648,23486312,25752064]
+          "totalWallMs": [83.547,27.465,23.36],
+          "processPeakRssKiB": [65748,68340,74996],
+          "maxObservedHeapAfterBytes": [21715328,23610376,25857296]
         },
         "diagnostic": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 61,
-            "work": 917562
+            "work": 918564
           },
-          "resultSha256": "33f2161fef505ab8e36c84b848c42f137314c3cac2c08907d3b794b82d8d9ac1",
+          "resultSha256": "d1d3df817d80fb217b5afca031fe376b39d5b2e6852c9927385430826f4d0797",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [46257,12],
             "actual-lookups": [171,0],
             "candidate-preparation": [129222,3],
-            "finite-verification": [741605,46]
+            "finite-verification": [742607,46]
           },
-          "totalWallMs": [81.198,22.045,17.561],
-          "processPeakRssKiB": [65328,68164,75152],
-          "maxObservedHeapAfterBytes": [21705088,23420672,25649168]
+          "totalWallMs": [94.352,27.692,21.97],
+          "processPeakRssKiB": [64600,67344,74972],
+          "maxObservedHeapAfterBytes": [21774608,23641032,25909544]
         }
       }
     },
@@ -331,67 +333,67 @@
         "stringCodeUnits": 35487
       },
       "receiptSha256": [
-        "fbd3e97ea8a83491cb6486875bd5fc8c901016f0f1da9b8a97d679634644241a",
-        "751de6d5f1974eb741a91e55c111780bb9027c3229a5199b64fad54487b1f509",
-        "6f09206f8b5ef7475662f3c9616d4dcf4ba9b3b4909d588044391854245b9916"
+        "d0c8883e9fadb499234abd6a3f4db0b37ba7f6d6706b1ec0a5bfde7535f767c8",
+        "049bdae530f717c29115c5c20455fa6c1aa4f08935ac759db19fbb000e8e5c77",
+        "05022607cdea1b33e7954c954ba8ee923979f53676b429960444afb65344e2c2"
       ],
       "profiles": {
         "legacy": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 11,
-            "work": 976270
+            "work": 977067
           },
-          "resultSha256": "2f446663ec8fa7e3cebfc07b4fbe5ef4110907a5c61c84128c800800f9ac8447",
+          "resultSha256": "cac0e37cbf547efa8b97d536ff5911ddba1f97dd76bb028c07174116ade4789a",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [24846,4],
             "actual-lookups": [108,0],
             "candidate-preparation": [103325,3],
             "nested-candidate-preparation": [75936,2],
-            "finite-verification": [771760,2]
+            "finite-verification": [772557,2]
           },
-          "totalWallMs": [57.632,13.562,12.811],
-          "processPeakRssKiB": [64260,67112,70052],
-          "maxObservedHeapAfterBytes": [21635832,25402872,26507424]
+          "totalWallMs": [62.393,17.681,13.364],
+          "processPeakRssKiB": [64824,67272,70900],
+          "maxObservedHeapAfterBytes": [21762464,25573368,21868984]
         },
         "default": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 11,
-            "work": 976270
+            "work": 977067
           },
-          "resultSha256": "2f446663ec8fa7e3cebfc07b4fbe5ef4110907a5c61c84128c800800f9ac8447",
+          "resultSha256": "cac0e37cbf547efa8b97d536ff5911ddba1f97dd76bb028c07174116ade4789a",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [24846,4],
             "actual-lookups": [108,0],
             "candidate-preparation": [103325,3],
             "nested-candidate-preparation": [75936,2],
-            "finite-verification": [771760,2]
+            "finite-verification": [772557,2]
           },
-          "totalWallMs": [60.18,18.315,14.551],
-          "processPeakRssKiB": [63580,66092,69416],
-          "maxObservedHeapAfterBytes": [21629968,25309912,26422848]
+          "totalWallMs": [66.491,14.356,11.953],
+          "processPeakRssKiB": [65284,67876,70548],
+          "maxObservedHeapAfterBytes": [21728728,25301664,27144712]
         },
         "diagnostic": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 11,
-            "work": 976270
+            "work": 977067
           },
-          "resultSha256": "2f446663ec8fa7e3cebfc07b4fbe5ef4110907a5c61c84128c800800f9ac8447",
+          "resultSha256": "cac0e37cbf547efa8b97d536ff5911ddba1f97dd76bb028c07174116ade4789a",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [24846,4],
             "actual-lookups": [108,0],
             "candidate-preparation": [103325,3],
             "nested-candidate-preparation": [75936,2],
-            "finite-verification": [771760,2]
+            "finite-verification": [772557,2]
           },
-          "totalWallMs": [56.251,15.97,19.537],
-          "processPeakRssKiB": [65084,66876,69656],
-          "maxObservedHeapAfterBytes": [21674328,25115992,26733760]
+          "totalWallMs": [67.199,13.422,13.878],
+          "processPeakRssKiB": [64280,66836,69952],
+          "maxObservedHeapAfterBytes": [21728296,25597624,21892464]
         }
       }
     },
@@ -419,64 +421,64 @@
         "stringCodeUnits": 21451
       },
       "receiptSha256": [
-        "8eb5d1e661f1a08a18ac3c91347d08a9b1f17b8f1f64fa4ce458c2fe95178cca",
-        "8a82e58521ff9f26d84c6d5f582bbc9327eb1135b4f9bb120f7e5e451f3556d8",
-        "0421674b743f49432c3f524a484423169ce585707aa684ac436f73a0fadbb7ad"
+        "dc71a53b7b75246486f21d7d8dfa0b7b3e7f0de9fbca285e7880270d2b640087",
+        "ac8091cf0e47e62686ef1e9290840d9562956093d2583038b8823ba62f73e8cd",
+        "9bebc04709a51e5998007c398b9d24faccd3dd44d73e77d718a0cd7547d25d7f"
       ],
       "profiles": {
         "legacy": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 7,
-            "work": 593138
+            "work": 593453
           },
-          "resultSha256": "459a1ba0e0375c0cf51e186a414bd8f81fa26ac68e3e79c8c1251cc8d8f2d95f",
+          "resultSha256": "a7e4fd9b7281bab22877c674ff1ab514ef97b0dde0cd98e0bd9812247ceec784",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [24846,4],
             "actual-lookups": [108,0],
             "candidate-preparation": [86100,2],
-            "finite-verification": [482005,1]
+            "finite-verification": [482320,1]
           },
-          "totalWallMs": [47.103,12.667,8.022],
-          "processPeakRssKiB": [63396,64344,64856],
-          "maxObservedHeapAfterBytes": [21648720,21552896,24859856]
+          "totalWallMs": [58.015,11.769,9.11],
+          "processPeakRssKiB": [65128,65984,66496],
+          "maxObservedHeapAfterBytes": [17877488,21298280,24591024]
         },
         "default": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 7,
-            "work": 593138
+            "work": 593453
           },
-          "resultSha256": "459a1ba0e0375c0cf51e186a414bd8f81fa26ac68e3e79c8c1251cc8d8f2d95f",
+          "resultSha256": "a7e4fd9b7281bab22877c674ff1ab514ef97b0dde0cd98e0bd9812247ceec784",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [24846,4],
             "actual-lookups": [108,0],
             "candidate-preparation": [86100,2],
-            "finite-verification": [482005,1]
+            "finite-verification": [482320,1]
           },
-          "totalWallMs": [54.487,11.607,10.1],
-          "processPeakRssKiB": [64828,65752,66392],
-          "maxObservedHeapAfterBytes": [21696512,21775952,25080504]
+          "totalWallMs": [52.451,10.175,11.742],
+          "processPeakRssKiB": [63652,64420,65152],
+          "maxObservedHeapAfterBytes": [21769288,21941712,25244040]
         },
         "diagnostic": {
           "kind": "checked-candidate",
           "final": {
             "nodes": 7,
-            "work": 593138
+            "work": 593453
           },
-          "resultSha256": "459a1ba0e0375c0cf51e186a414bd8f81fa26ac68e3e79c8c1251cc8d8f2d95f",
+          "resultSha256": "a7e4fd9b7281bab22877c674ff1ab514ef97b0dde0cd98e0bd9812247ceec784",
           "stageCosts": {
             "source-loading": [null,null],
             "source-preparation": [24846,4],
             "actual-lookups": [108,0],
             "candidate-preparation": [86100,2],
-            "finite-verification": [482005,1]
+            "finite-verification": [482320,1]
           },
-          "totalWallMs": [60.128,11.571,10.658],
-          "processPeakRssKiB": [63220,64488,65256],
-          "maxObservedHeapAfterBytes": [21882584,21583712,24888424]
+          "totalWallMs": [52.217,10.409,9.041],
+          "processPeakRssKiB": [64172,65072,65968],
+          "maxObservedHeapAfterBytes": [21689640,21743848,25036008]
         }
       }
     },
@@ -537,9 +539,9 @@
             "reference-resolution": [null,null],
             "generic-actual-preparation": [999885,140]
           },
-          "totalWallMs": [26.4,16.892,12.246],
-          "processPeakRssKiB": [64616,67036,73052],
-          "maxObservedHeapAfterBytes": [20156944,23371264,24145448]
+          "totalWallMs": [28.351,17.835,19.673],
+          "processPeakRssKiB": [64876,65644,69684],
+          "maxObservedHeapAfterBytes": [20245592,23489024,23431304]
         },
         "default": {
           "kind": "prepared",
@@ -557,9 +559,9 @@
             "candidate:endpoint-closure-changed": [36408,1],
             "candidate:full-changed-sibling": [151567,1]
           },
-          "totalWallMs": [43.598,27.717,19.78],
-          "processPeakRssKiB": [66064,73396,76724],
-          "maxObservedHeapAfterBytes": [18519880,23431992,27109896]
+          "totalWallMs": [51.66,30.272,26.3],
+          "processPeakRssKiB": [65352,73392,78744],
+          "maxObservedHeapAfterBytes": [18664912,23523408,28501552]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -577,9 +579,9 @@
             "candidate:endpoint-closure-changed": [36408,1],
             "candidate:full-changed-sibling": [151567,1]
           },
-          "totalWallMs": [57.774,28.595,26.395],
-          "processPeakRssKiB": [73956,76816,86204],
-          "maxObservedHeapAfterBytes": [19816256,24326336,34926912]
+          "totalWallMs": [61.834,34.516,28.176],
+          "processPeakRssKiB": [74368,77628,85436],
+          "maxObservedHeapAfterBytes": [20047936,24602440,35501776]
         }
       }
     },
@@ -639,9 +641,9 @@
             "source-owned-actual-preparation": [988019,140],
             "candidate:full-original": [11842,0]
           },
-          "totalWallMs": [27.703,15.914,15.759],
-          "processPeakRssKiB": [64744,66164,72124],
-          "maxObservedHeapAfterBytes": [20759000,21980216,20365752]
+          "totalWallMs": [35.719,27.619,18.794],
+          "processPeakRssKiB": [64816,66604,70308],
+          "maxObservedHeapAfterBytes": [20664040,22091328,20564312]
         },
         "default": {
           "kind": "prepared",
@@ -657,9 +659,9 @@
             "candidate:endpoint-closure-changed": [36408,1],
             "candidate:full-changed-sibling": [151567,1]
           },
-          "totalWallMs": [49.757,18.867,13.029],
-          "processPeakRssKiB": [64176,70376,73320],
-          "maxObservedHeapAfterBytes": [21339448,22322096,23135928]
+          "totalWallMs": [48.258,31.205,20.385],
+          "processPeakRssKiB": [64280,69984,73676],
+          "maxObservedHeapAfterBytes": [21591928,22372824,23150304]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -675,9 +677,9 @@
             "candidate:endpoint-closure-changed": [36408,1],
             "candidate:full-changed-sibling": [151567,1]
           },
-          "totalWallMs": [31.944,20.624,17.725],
-          "processPeakRssKiB": [64216,70584,73908],
-          "maxObservedHeapAfterBytes": [21402648,22298744,23056128]
+          "totalWallMs": [31.759,18.787,13.649],
+          "processPeakRssKiB": [64760,70944,74576],
+          "maxObservedHeapAfterBytes": [21427024,22533880,23112024]
         }
       }
     },
@@ -741,9 +743,9 @@
             "candidate:endpoint-closure-changed": [73177,1],
             "candidate:full-changed-sibling": [84488,1]
           },
-          "totalWallMs": [25.878,8.819,6.664],
-          "processPeakRssKiB": [64440,65464,66900],
-          "maxObservedHeapAfterBytes": [18316176,21939056,19109968]
+          "totalWallMs": [32.269,15.963,10.464],
+          "processPeakRssKiB": [65356,68772,69484],
+          "maxObservedHeapAfterBytes": [20420152,19972480,23452656]
         },
         "default": {
           "kind": "prepared",
@@ -761,9 +763,9 @@
             "candidate:endpoint-closure-changed": [73177,1],
             "candidate:full-changed-sibling": [84488,1]
           },
-          "totalWallMs": [30.053,12.164,16.077],
-          "processPeakRssKiB": [65292,67116,68396],
-          "maxObservedHeapAfterBytes": [20330304,19873960,23332560]
+          "totalWallMs": [54.429,16.266,14.166],
+          "processPeakRssKiB": [64820,66484,66484],
+          "maxObservedHeapAfterBytes": [18357248,21953416,23445288]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -781,9 +783,9 @@
             "candidate:endpoint-closure-changed": [73177,1],
             "candidate:full-changed-sibling": [84488,1]
           },
-          "totalWallMs": [26.363,12.225,9.851],
-          "processPeakRssKiB": [64956,65828,66852],
-          "maxObservedHeapAfterBytes": [18334912,22147520,23461592]
+          "totalWallMs": [29.229,12.73,12.418],
+          "processPeakRssKiB": [64744,66152,67304],
+          "maxObservedHeapAfterBytes": [18318504,22103696,23438064]
         }
       }
     },
@@ -845,9 +847,9 @@
             "candidate:endpoint-closure-changed": [73177,1],
             "candidate:full-changed-sibling": [84488,1]
           },
-          "totalWallMs": [27.264,6.186,5.063],
-          "processPeakRssKiB": [64456,65992,66632],
-          "maxObservedHeapAfterBytes": [18913424,18600152,21510576]
+          "totalWallMs": [48.5,20.084,7.674],
+          "processPeakRssKiB": [65212,66748,66876],
+          "maxObservedHeapAfterBytes": [19139488,18738088,21262832]
         },
         "default": {
           "kind": "prepared",
@@ -863,9 +865,9 @@
             "candidate:endpoint-closure-changed": [73177,1],
             "candidate:full-changed-sibling": [84488,1]
           },
-          "totalWallMs": [58.943,27.93,18.227],
-          "processPeakRssKiB": [63688,64520,64776],
-          "maxObservedHeapAfterBytes": [17276712,19765576,22294624]
+          "totalWallMs": [24.623,9.876,6.49],
+          "processPeakRssKiB": [64184,64952,65428],
+          "maxObservedHeapAfterBytes": [17354480,19846528,22383528]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -881,9 +883,9 @@
             "candidate:endpoint-closure-changed": [73177,1],
             "candidate:full-changed-sibling": [84488,1]
           },
-          "totalWallMs": [25.788,8.292,6.216],
-          "processPeakRssKiB": [64104,65832,66344],
-          "maxObservedHeapAfterBytes": [19451440,18533064,21079488]
+          "totalWallMs": [25.803,8.292,4.845],
+          "processPeakRssKiB": [64072,64368,64980],
+          "maxObservedHeapAfterBytes": [17246608,19868952,22392680]
         }
       }
     },
@@ -947,9 +949,9 @@
             "candidate:endpoint-closure-changed": [20231,1],
             "candidate:full-changed-sibling": [35708,1]
           },
-          "totalWallMs": [39.002,7.562,5.528],
-          "processPeakRssKiB": [64048,64176,64304],
-          "maxObservedHeapAfterBytes": [21677240,16811576,18376832]
+          "totalWallMs": [45.422,10.151,4.965],
+          "processPeakRssKiB": [63316,64084,64084],
+          "maxObservedHeapAfterBytes": [16744920,17749520,19194200]
         },
         "default": {
           "kind": "prepared",
@@ -967,9 +969,9 @@
             "candidate:endpoint-closure-changed": [20231,1],
             "candidate:full-changed-sibling": [35708,1]
           },
-          "totalWallMs": [27.38,6.983,6.95],
-          "processPeakRssKiB": [64608,65376,65376],
-          "maxObservedHeapAfterBytes": [21689608,16883344,18554680]
+          "totalWallMs": [31.955,5.729,5.684],
+          "processPeakRssKiB": [64164,64292,64548],
+          "maxObservedHeapAfterBytes": [21801888,17490288,18942264]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -987,9 +989,9 @@
             "candidate:endpoint-closure-changed": [20231,1],
             "candidate:full-changed-sibling": [35708,1]
           },
-          "totalWallMs": [25.34,5.808,3.944],
-          "processPeakRssKiB": [62900,63796,63796],
-          "maxObservedHeapAfterBytes": [21658544,17458088,19031848]
+          "totalWallMs": [27.06,8.37,4.855],
+          "processPeakRssKiB": [64744,65000,65000],
+          "maxObservedHeapAfterBytes": [21788536,17569176,19417424]
         }
       }
     },
@@ -1051,9 +1053,9 @@
             "candidate:endpoint-closure-changed": [20231,1],
             "candidate:full-changed-sibling": [35708,1]
           },
-          "totalWallMs": [22.053,4.539,4.708],
-          "processPeakRssKiB": [63244,63756,63756],
-          "maxObservedHeapAfterBytes": [21799472,16460512,17545112]
+          "totalWallMs": [23.297,4.06,3.235],
+          "processPeakRssKiB": [64984,64984,65068],
+          "maxObservedHeapAfterBytes": [21812200,16848000,18189432]
         },
         "default": {
           "kind": "prepared",
@@ -1069,9 +1071,9 @@
             "candidate:endpoint-closure-changed": [20231,1],
             "candidate:full-changed-sibling": [35708,1]
           },
-          "totalWallMs": [23.711,4.055,3.663],
-          "processPeakRssKiB": [63552,63552,63552],
-          "maxObservedHeapAfterBytes": [21683880,16560264,17730456]
+          "totalWallMs": [25.689,4.3,4.489],
+          "processPeakRssKiB": [63204,63204,63588],
+          "maxObservedHeapAfterBytes": [21788800,16670376,17835576]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1087,9 +1089,9 @@
             "candidate:endpoint-closure-changed": [20231,1],
             "candidate:full-changed-sibling": [35708,1]
           },
-          "totalWallMs": [23.788,5.185,3.54],
-          "processPeakRssKiB": [63428,63428,63428],
-          "maxObservedHeapAfterBytes": [21664016,16599328,17764840]
+          "totalWallMs": [26.765,4.642,3.932],
+          "processPeakRssKiB": [63740,63868,63868],
+          "maxObservedHeapAfterBytes": [21801136,16613488,17790672]
         }
       }
     },
@@ -1153,9 +1155,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [17628,1]
           },
-          "totalWallMs": [45.596,12.145,8.716],
-          "processPeakRssKiB": [63776,64032,65764],
-          "maxObservedHeapAfterBytes": [22241744,22275504,23418392]
+          "totalWallMs": [178.638,11.803,11.876],
+          "processPeakRssKiB": [63824,64480,64864],
+          "maxObservedHeapAfterBytes": [21846696,22347040,23271568]
         },
         "default": {
           "kind": "prepared",
@@ -1173,9 +1175,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [94486,1]
           },
-          "totalWallMs": [35.531,14.018,9.057],
-          "processPeakRssKiB": [65004,66604,67628],
-          "maxObservedHeapAfterBytes": [18592648,22838448,23631968]
+          "totalWallMs": [35.452,14.598,10.775],
+          "processPeakRssKiB": [65144,66116,67012],
+          "maxObservedHeapAfterBytes": [18085528,22485976,24368088]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1193,9 +1195,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [94486,1]
           },
-          "totalWallMs": [31.416,12.321,13.244],
-          "processPeakRssKiB": [64544,66728,67896],
-          "maxObservedHeapAfterBytes": [18497200,23176984,23778736]
+          "totalWallMs": [45.747,15.544,11.267],
+          "processPeakRssKiB": [64696,65344,66752],
+          "maxObservedHeapAfterBytes": [18625800,23108320,23882848]
         }
       }
     },
@@ -1257,9 +1259,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [94486,1]
           },
-          "totalWallMs": [29.816,9.338,7.663],
-          "processPeakRssKiB": [63628,65192,66472],
-          "maxObservedHeapAfterBytes": [16384832,19525392,22527752]
+          "totalWallMs": [28.139,10.429,5.79],
+          "processPeakRssKiB": [63428,65264,65776],
+          "maxObservedHeapAfterBytes": [16955096,20478608,23650952]
         },
         "default": {
           "kind": "prepared",
@@ -1275,9 +1277,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [94486,1]
           },
-          "totalWallMs": [31.211,8.653,6.067],
-          "processPeakRssKiB": [63116,64884,65396],
-          "maxObservedHeapAfterBytes": [16824224,20082008,23347576]
+          "totalWallMs": [26.577,19.343,5.222],
+          "processPeakRssKiB": [63920,65032,65672],
+          "maxObservedHeapAfterBytes": [16453048,19511440,22739712]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1293,9 +1295,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [94486,1]
           },
-          "totalWallMs": [27.505,11.208,6.997],
-          "processPeakRssKiB": [62756,63580,64348],
-          "maxObservedHeapAfterBytes": [16699616,19795016,22789824]
+          "totalWallMs": [31.033,11.403,11.271],
+          "processPeakRssKiB": [63592,64872,66152],
+          "maxObservedHeapAfterBytes": [16509616,19372832,22483272]
         }
       }
     },
@@ -1356,9 +1358,9 @@
             "reference-resolution": [null,null],
             "generic-actual-preparation": [999846,327]
           },
-          "totalWallMs": [55.358,22.715,18.334],
-          "processPeakRssKiB": [68472,73720,74024],
-          "maxObservedHeapAfterBytes": [22647600,22568800,23813136]
+          "totalWallMs": [97.781,45.88,29.594],
+          "processPeakRssKiB": [65044,67028,71368],
+          "maxObservedHeapAfterBytes": [21399520,22762816,23899216]
         },
         "default": {
           "kind": "prepared",
@@ -1376,9 +1378,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [330572,1]
           },
-          "totalWallMs": [77.993,43.412,28.741],
-          "processPeakRssKiB": [66164,73396,82724],
-          "maxObservedHeapAfterBytes": [19952056,23056536,34334952]
+          "totalWallMs": [48.786,34.264,25.572],
+          "processPeakRssKiB": [65676,74780,83588],
+          "maxObservedHeapAfterBytes": [19487608,25658720,34144952]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1396,9 +1398,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [330572,1]
           },
-          "totalWallMs": [53.269,38.309,29.254],
-          "processPeakRssKiB": [66804,74888,84104],
-          "maxObservedHeapAfterBytes": [20571448,23404712,34681952]
+          "totalWallMs": [48.601,32.239,35.779],
+          "processPeakRssKiB": [66100,74684,83532],
+          "maxObservedHeapAfterBytes": [19420928,26167392,33479160]
         }
       }
     },
@@ -1458,9 +1460,9 @@
             "source-owned-actual-preparation": [938749,327],
             "candidate:full-original": [61165,0]
           },
-          "totalWallMs": [69.042,18.61,21.803],
-          "processPeakRssKiB": [64200,65004,71008],
-          "maxObservedHeapAfterBytes": [20150632,21409192,21038648]
+          "totalWallMs": [54.703,38.687,20.619],
+          "processPeakRssKiB": [64688,67972,71556],
+          "maxObservedHeapAfterBytes": [21843752,23096736,22410664]
         },
         "default": {
           "kind": "prepared",
@@ -1476,9 +1478,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [330572,1]
           },
-          "totalWallMs": [45.125,25.969,20.616],
-          "processPeakRssKiB": [66380,70844,73788],
-          "maxObservedHeapAfterBytes": [21409296,24638168,24855448]
+          "totalWallMs": [44.624,25.748,16.214],
+          "processPeakRssKiB": [64496,71164,74876],
+          "maxObservedHeapAfterBytes": [22288440,23723040,26397480]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1494,9 +1496,9 @@
             "candidate:endpoint-closure-changed": [20233,1],
             "candidate:full-changed-sibling": [330572,1]
           },
-          "totalWallMs": [48.019,30.122,17.848],
-          "processPeakRssKiB": [64048,70264,73464],
-          "maxObservedHeapAfterBytes": [22275528,23768056,25748032]
+          "totalWallMs": [45.922,28.233,15.699],
+          "processPeakRssKiB": [65900,69728,73952],
+          "maxObservedHeapAfterBytes": [21071536,24427192,24676944]
         }
       }
     },
@@ -1557,9 +1559,9 @@
             "reference-resolution": [null,null],
             "generic-actual-preparation": [999914,647]
           },
-          "totalWallMs": [62.453,32,34.38],
-          "processPeakRssKiB": [64244,70792,78756],
-          "maxObservedHeapAfterBytes": [22946240,24387176,32258136]
+          "totalWallMs": [102.539,38.165,46.978],
+          "processPeakRssKiB": [65100,71068,79240],
+          "maxObservedHeapAfterBytes": [23818456,23836552,34098896]
         },
         "default": {
           "kind": "prepared",
@@ -1577,9 +1579,9 @@
             "candidate:endpoint-closure-changed": [20235,1],
             "candidate:full-changed-sibling": [646006,1]
           },
-          "totalWallMs": [86.943,66.532,49.377],
-          "processPeakRssKiB": [72320,87396,100324],
-          "maxObservedHeapAfterBytes": [26336584,31645080,37498408]
+          "totalWallMs": [106.208,81.164,55.5],
+          "processPeakRssKiB": [72224,89976,100600],
+          "maxObservedHeapAfterBytes": [25713864,34091416,30288784]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1597,9 +1599,9 @@
             "candidate:endpoint-closure-changed": [20235,1],
             "candidate:full-changed-sibling": [646006,1]
           },
-          "totalWallMs": [95.473,96.508,53.812],
-          "processPeakRssKiB": [73872,94652,102012],
-          "maxObservedHeapAfterBytes": [26149416,37498904,35271752]
+          "totalWallMs": [157.505,103.077,72.356],
+          "processPeakRssKiB": [73260,95468,101832],
+          "maxObservedHeapAfterBytes": [25937032,37583176,35640824]
         }
       }
     },
@@ -1658,9 +1660,9 @@
             "source-loading": [null,null],
             "source-owned-actual-preparation": [999891,647]
           },
-          "totalWallMs": [50.849,31.254,36.118],
-          "processPeakRssKiB": [64260,70944,72836],
-          "maxObservedHeapAfterBytes": [19168520,21628016,25405360]
+          "totalWallMs": [60.664,32.882,20.483],
+          "processPeakRssKiB": [65152,71956,72960],
+          "maxObservedHeapAfterBytes": [18282144,21951088,25721008]
         },
         "default": {
           "kind": "prepared",
@@ -1676,9 +1678,9 @@
             "candidate:endpoint-closure-changed": [20235,1],
             "candidate:full-changed-sibling": [646006,1]
           },
-          "totalWallMs": [62.454,42.242,34.864],
-          "processPeakRssKiB": [73048,75528,90376],
-          "maxObservedHeapAfterBytes": [24539008,25667944,37498352]
+          "totalWallMs": [119.206,40.244,42.767],
+          "processPeakRssKiB": [70364,75872,88956],
+          "maxObservedHeapAfterBytes": [23575000,28844312,35007000]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1694,9 +1696,9 @@
             "candidate:endpoint-closure-changed": [20235,1],
             "candidate:full-changed-sibling": [646006,1]
           },
-          "totalWallMs": [64.395,45.836,30.493],
-          "processPeakRssKiB": [68424,74812,90428],
-          "maxObservedHeapAfterBytes": [23153104,27269560,33421528]
+          "totalWallMs": [58.517,39.225,29.333],
+          "processPeakRssKiB": [68420,73616,88976],
+          "maxObservedHeapAfterBytes": [22972040,27186240,33291408]
         }
       }
     },
@@ -1757,9 +1759,9 @@
             "reference-resolution": [null,null],
             "generic-actual-preparation": [999901,1287]
           },
-          "totalWallMs": [74.106,49.712,43.652],
-          "processPeakRssKiB": [71180,83556,91164],
-          "maxObservedHeapAfterBytes": [23786952,29454216,35493336]
+          "totalWallMs": [161.605,266.568,49.991],
+          "processPeakRssKiB": [71352,83232,90460],
+          "maxObservedHeapAfterBytes": [23441920,29607000,35615232]
         },
         "default": {
           "kind": "prepared",
@@ -1777,9 +1779,9 @@
             "candidate:endpoint-closure-changed": [20235,1],
             "candidate:full-changed-sibling": [1279028,1]
           },
-          "totalWallMs": [161.051,96.887,98.008],
-          "processPeakRssKiB": [91456,103336,132912],
-          "maxObservedHeapAfterBytes": [35240048,36769632,48291768]
+          "totalWallMs": [147.151,108.52,98.68],
+          "processPeakRssKiB": [90184,106448,136460],
+          "maxObservedHeapAfterBytes": [37003760,46301688,67442944]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1797,9 +1799,9 @@
             "candidate:endpoint-closure-changed": [20235,1],
             "candidate:full-changed-sibling": [1279028,1]
           },
-          "totalWallMs": [164.871,106.318,98.783],
-          "processPeakRssKiB": [92588,101132,131120],
-          "maxObservedHeapAfterBytes": [37189288,35671960,47033984]
+          "totalWallMs": [152.493,113.006,117.267],
+          "processPeakRssKiB": [90320,105064,135436],
+          "maxObservedHeapAfterBytes": [36956720,45978920,67088832]
         }
       }
     },
@@ -1858,9 +1860,9 @@
             "source-loading": [null,null],
             "source-owned-actual-preparation": [999880,0]
           },
-          "totalWallMs": [28.025,21.647,19.117],
-          "processPeakRssKiB": [63140,67972,70576],
-          "maxObservedHeapAfterBytes": [21205184,21171448,22402944]
+          "totalWallMs": [38.11,16.871,22.372],
+          "processPeakRssKiB": [64536,65592,69748],
+          "maxObservedHeapAfterBytes": [19740808,24245584,24142456]
         },
         "default": {
           "kind": "prepared",
@@ -1876,9 +1878,9 @@
             "candidate:endpoint-closure-changed": [20235,1],
             "candidate:full-changed-sibling": [1279028,1]
           },
-          "totalWallMs": [101.961,96.645,59.514],
-          "processPeakRssKiB": [71984,95132,108700],
-          "maxObservedHeapAfterBytes": [26823016,39045216,35380448]
+          "totalWallMs": [111.096,76.48,52.233],
+          "processPeakRssKiB": [77368,97368,110936],
+          "maxObservedHeapAfterBytes": [32856184,37336792,40974040]
         },
         "diagnostic": {
           "kind": "prepared",
@@ -1894,9 +1896,9 @@
             "candidate:endpoint-closure-changed": [20235,1],
             "candidate:full-changed-sibling": [1279028,1]
           },
-          "totalWallMs": [108.641,79.093,60.865],
-          "processPeakRssKiB": [76956,93756,107452],
-          "maxObservedHeapAfterBytes": [33017328,36224088,39924920]
+          "totalWallMs": [350.073,65.61,53.691],
+          "processPeakRssKiB": [77908,96716,110156],
+          "maxObservedHeapAfterBytes": [32061184,35347232,40941424]
         }
       }
     },
@@ -1941,9 +1943,9 @@
             "cyclic-shared-snapshot": [515,0],
             "inclusive-node-reservation": [0,100000]
           },
-          "totalWallMs": [0.617,0.096,0.147],
-          "processPeakRssKiB": [61732,61732,61732],
-          "maxObservedHeapAfterBytes": [21551248,21849920,21885928]
+          "totalWallMs": [0.641,0.089,0.199],
+          "processPeakRssKiB": [61976,62104,62232],
+          "maxObservedHeapAfterBytes": [21576848,21930784,21664424]
         },
         "default": {
           "kind": "controls",
@@ -1953,9 +1955,9 @@
             "cyclic-shared-snapshot": [515,0],
             "inclusive-node-reservation": [0,100000]
           },
-          "totalWallMs": [0.568,0.118,0.132],
-          "processPeakRssKiB": [60616,60616,60744],
-          "maxObservedHeapAfterBytes": [21544264,21856936,21563792]
+          "totalWallMs": [0.536,0.119,0.19],
+          "processPeakRssKiB": [60928,61056,61056],
+          "maxObservedHeapAfterBytes": [21612776,21752376,21632344]
         },
         "diagnostic": {
           "kind": "controls",
@@ -1965,9 +1967,9 @@
             "cyclic-shared-snapshot": [515,0],
             "inclusive-node-reservation": [0,100000]
           },
-          "totalWallMs": [0.595,0.085,0.105],
-          "processPeakRssKiB": [61640,61640,61640],
-          "maxObservedHeapAfterBytes": [21517728,21741440,21870856]
+          "totalWallMs": [0.769,0.104,0.152],
+          "processPeakRssKiB": [61388,61388,61388],
+          "maxObservedHeapAfterBytes": [21592824,21689888,21757080]
         }
       }
     }

@@ -101,7 +101,7 @@ export function summarizeCapacity(files: readonly string[], output: string): voi
       reproduce: `node --import tsx test/research/re01/finite-capacity-measure.ts --profile ${item.profile} > tmp/conformance/budget-calibration/${item.profile}.json`})),
     environment: {node: first.node, platform: first.platform, architecture: first.architecture, cpu: first.cpu},
     fixedOrigin: first.fixedOrigin, terminalReservationWork: TERMINAL_RESERVATION_WORK,
-    collection: first.collection, summary: 'Original measurements retained; no remeasurement. Full stage wall and before/after RSS/heap telemetry remains in the hashed raw reports. Stage costs are [marginal work, marginal nodes]. Samples are ordered cold, warm, warm. Heap maxima preserve the original post-stage observation series; they are not allocation totals or guaranteed peaks.',
+    collection: first.collection, summary: 'Samples are summarized from the hashed raw reports. Full stage wall and before/after RSS/heap telemetry remains in those reports. Stage costs are [marginal work, marginal nodes]. Samples are ordered cold, warm, warm. Heap maxima preserve the post-stage observation series; they are not allocation totals or guaranteed peaks.',
     largerRealTier: first.largerRealTier, cases};
   mkdirSync(path.dirname(output), {recursive: true});
   writeFileSync(output, compactJson(report));

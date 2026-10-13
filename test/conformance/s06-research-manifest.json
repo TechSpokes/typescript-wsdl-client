@@ -11,7 +11,7 @@
   },
   "semanticDefaults": {
     "maxNodes": 100000,
-    "maxWork": 1000000
+    "maxWork": 25000000
   },
   "contracts": [
     {
@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "dcdc1617afcd6206f7678d45e0176240f5c9d06f092696ca2448db7ce8b65bd3",
+          "sha256": "afa9a05b21c9f7902a9aa0c3702671a36c866349588f2040b268396346b06301",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -676,7 +676,7 @@
         {
           "path": "test/research/re01/resolver-budget.test.ts",
           "role": "reference",
-          "sha256": "1bd933d71eeb07385c144530262958544b6fe41f26a12916a419f2facfc05bb5"
+          "sha256": "c66496b9ea6748050caffb9808899c2aec96e87b62c7419913983745334fd903"
         },
         {
           "path": "test/research/re01/resolver-budget.ts",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "b14031e7e2ebea16be64a9b5e02ba154a87a61a20a3391ead60ee325f8b7f4d6"
+          "sha256": "7fee384b1c2fd9df6c0800e554da4f4e93f5b3810fa5c48fa7ffeb2da8d0ef4a"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -901,7 +901,7 @@
         {
           "path": "test/research/re01/literal-measure.ts",
           "role": "prototype",
-          "sha256": "2dcccd830382e5c50b081e652546b51bc4a1182c35406a56a68ec87dbf4bd960"
+          "sha256": "9348ebc29a1c55b9a27fd7975ba863f2b3a610a554a9fdfc2050930e1a740f0d"
         },
         {
           "path": "test/conformance/reference/re01-literal-continuation.test.ts",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "3b3b3a2d92e82687071176c6725a47bea6496aba103c8f0a9ad3e383862938ce"
+          "sha256": "616f662cc6a4fdd4670fb959e5b8415f80bf014f4984977d8e80c190c78dafe5"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1211,7 +1211,7 @@
         {
           "path": "src/compiler/schemaSimpleTypeProperties.ts",
           "role": "semantic-source",
-          "sha256": "1535ce751549c795991fe346253381f8e81f88bd601a0d71b600790b15f07951"
+          "sha256": "8d727bcee0f4b16a43cc143730851401233e3958972fecc717f8200d07ba3cae"
         },
         {
           "path": "src/compiler/schemaSyntaxAssessment.ts",
@@ -1231,7 +1231,7 @@
         {
           "path": "src/compiler/semanticBudget.ts",
           "role": "semantic-source",
-          "sha256": "9fe067d9b5cd6d59d9b0e0bfe60fc8094efa1c5afa2e4cb7e57a6d71bf101b35"
+          "sha256": "f91aa0cc208b1a64766f83659e03e57a344eb87affbff74274c70c84f0983358"
         },
         {
           "path": "src/compiler/semanticContext.ts",
@@ -1341,7 +1341,7 @@
         {
           "path": "test/research/re01/finite-capacity-measure.ts",
           "role": "prototype",
-          "sha256": "2c5483930cfa417485bcc9a4543062edf767011a9dcddf4d30a30fcd8f437430"
+          "sha256": "001ff4283d87af8fcc8fce99af7f01b95359022b28da194eefb44b71f7fc563b"
         },
         {
           "path": "test/research/re01/predicate-dependencies.behavior.test.ts",
@@ -1361,7 +1361,7 @@
         {
           "path": "test/research/re01/preparation-candidates.ts",
           "role": "prototype",
-          "sha256": "16a81cf4f4f532d178ea0043a7d45c333e50e7070d9c33e72998ffa98574ddb2"
+          "sha256": "ad60b5aae9e99cf038f061ec8720fd65e23009d1f1cdcdc6f0d822f13ecd7c14"
         },
         {
           "path": "test/research/re01/preparation-corpus.ts",
@@ -1426,7 +1426,7 @@
         {
           "path": "test/unit/particle-upa-independent.test.ts",
           "role": "expectations",
-          "sha256": "e97ebfe7f590e48dc96d35a8b956a8ce728b704baf01679cfaa289ca0d2a81c5"
+          "sha256": "bea6747e3c718eba63d90118a9a9f86414d544cdaed540a89c862846fcf0d507"
         },
         {
           "path": "test/unit/particle-wildcard-relation.test.ts",
@@ -1471,7 +1471,7 @@
         {
           "path": "test/unit/schema-document-independent.test.ts",
           "role": "expectations",
-          "sha256": "b5b8b1391243570a9001f87cec51648f3c0f907f95aa750fc0469af3f73e1dca"
+          "sha256": "894f88bfcc777da781fcfb02fc442feea6993762c7248cb3189ae360f307c0e9"
         },
         {
           "path": "test/unit/schema-document-syntax.test.ts",
@@ -1701,7 +1701,7 @@
         {
           "path": "test/unit/schema-pattern-property-independent.test.ts",
           "role": "expectations",
-          "sha256": "ac4a521f2a7577c07b0eb5b9fd07a5388570554aa5df3594a291498be2672716"
+          "sha256": "ef2347e4455ffb6bdc763bb0d99558a869afe3bc3559edcc33d5cb8e37212c34"
         },
         {
           "path": "test/unit/schema-raw-facet-independent.test.ts",
@@ -1841,12 +1841,12 @@
         {
           "path": "test/unit/schema-pattern-starvation-independent.test.ts",
           "role": "expectations",
-          "sha256": "6e2861e0e977cee72889add0484413787721a9babe22e02911b247511f6008b8"
+          "sha256": "f436a53581aaa09de6c2570a3aa85d85100d1f19c84a5e6e15503a1b66d94883"
         },
         {
           "path": "test/unit/schema-pattern-witness-independent.test.ts",
           "role": "expectations",
-          "sha256": "4014ad5e838faef9889a2f4f6f4470dfde123889058c2658fcde72757ad3179b"
+          "sha256": "bb178168d4916cff074dca91d08caff45859bce1850b3eb40e653a552a94675b"
         },
         {
           "path": "test/unit/schema-selected-au-independent.test.ts",
@@ -1946,12 +1946,12 @@
         {
           "path": "test/unit/schema-cross-context-facets-independent.test.ts",
           "role": "expectations",
-          "sha256": "6d200f046b8d05b40f177706ae54a2b605e3f4f778a0fee50830ea8dd92c3092"
+          "sha256": "28ab9cedba8b6d4a883a3aadede9b82d698adf93405d1f57149fea5faaafe9a9"
         },
         {
           "path": "test/unit/schema-exact-facet-components-independent.test.ts",
           "role": "expectations",
-          "sha256": "efdf126a4e4c5ba7b3f181a59b31803c6414db3090e7a6e51c5f2c4b4c7b098e"
+          "sha256": "39df3428a5a4ba11812deb2d9f4ce1acc577ee5823c616f5953b94f12fc3960a"
         },
         {
           "path": "test/unit/schema-original-generated-binding-independent.test.ts",
@@ -1961,7 +1961,7 @@
         {
           "path": "test/unit/schema-simple-correspondence-independent.test.ts",
           "role": "expectations",
-          "sha256": "32bd58bf7d03a0f3cbd240ab9e087eb15496ea4982d5726da607c765d127b10b"
+          "sha256": "f139d5fa1086b86b74d5102dd2b75c41e8b3717886eea639669db482ae4bfcb6"
         },
         {
           "path": "test/unit/semantic-type-dependencies.test.ts",
@@ -1992,6 +1992,41 @@
           "path": "test/conformance/fixtures/xsd/recovery/finite-proof-primitive-obligations.xsd",
           "role": "fixture",
           "sha256": "9027c3ec229a2f6f60141fe3f49e7dc0d082d2dbe3f7eb6e41596c628399b12a"
+        },
+        {
+          "path": "test/unit/schema-scalar-policy-independent.test.ts",
+          "role": "expectations",
+          "sha256": "8aa50e555ceb3e89ffd7ce4bc2cfa49fe4497d5f57a24c006df6c37ad7a8fb68"
+        },
+        {
+          "path": "test/unit/schema-scalar-inheritance-review.test.ts",
+          "role": "expectations",
+          "sha256": "859824a1ac871a86354ce684d5b846148ff3412f760cf23d9b5ba178143e6244"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-policy-independent.xsd",
+          "role": "fixture",
+          "sha256": "79cb661e38dc68b9726d4568e2062a0c5c53570901bd98107e36e8f5f4efe935"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-inheritance-review.xsd",
+          "role": "fixture",
+          "sha256": "9ed4bb4c7b23d7ce338c864cf19f6e14e47381f41c5c8508c7573cee2c5138e8"
+        },
+        {
+          "path": "test/research/re01/finite-capacity-summary.ts",
+          "role": "prototype",
+          "sha256": "d4f56b437bfd26830ecc4fe9c442b7b3cc7e9db03b7191161f7669af6faa332e"
+        },
+        {
+          "path": "test/research/re01/finite-capacity-evidence.json",
+          "role": "expectations",
+          "sha256": "54fa2d89bcf82da8d858f78612ab41ef16b96a3eb497bee7f15ca7a60357bf52"
+        },
+        {
+          "path": "test/research/re01/finite-capacity.test.ts",
+          "role": "prototype",
+          "sha256": "999b123c03e38d7aea37c4a94012829e4606c76b5589610f2b04c95d5eb64459"
         }
       ]
     },
@@ -2384,5 +2419,9 @@
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
     "currentArtifactCount": 238
+  },
+  "baselineSemanticDefaults": {
+    "maxNodes": 100000,
+    "maxWork": 1000000
   }
 }

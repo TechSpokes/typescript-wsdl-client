@@ -109,7 +109,7 @@ Slot membership is independent of the containing complex type's membership, but 
 An authentic original facet binding preserves original component properties without transferring their legality into a changed hypothetical context.
 
 These are selected project interpretations, not retroactive claims that the dated primary text uniquely determines the choices.
-Independent multi-pattern expression mapping and arbitrary repeated facet-component reduction retain their separately recorded interpretation boundaries.
+The [authorized scalar continuation](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918) selects P1 expression construction and evidence-qualified F2 restriction. General scalar containment and missing annotation evidence retain explicit implementation prerequisites; their selected meaning no longer requires a maintainer choice.
 The [complete dated XML import inventory](content-model-s06-re-01-resolver-implementation.md#concrete-source-verification-apis) is now recovered from primary evidence and reviewed separately from these project choices.
 
 ### Conditional finite-evidence soundness
@@ -275,7 +275,7 @@ No semantically successful nonprimitive construction without finite nested evide
 The explicit remaining extraction premise is hereditary elimination of new nonprimitive extensions, or an independently justified complete criterion that makes such extraction unnecessary.
 
 Even discharging that premise would leave witness-size or equivalent total-search reasoning for general negatives and mathematical termination.
-Local authority and representation qualifications also remain premises; these controls use builtin types and original integer operands and do not decide the separate repeated-facet questions.
+Local authority and representation qualifications also remain premises; these controls use builtin types and original integer operands. The separately implemented P1/F2 scalar policies retain their documented general-containment and metadata qualifications.
 #234 owns those proof obligations, with #232 joint acceptance and #179/#153 activation retaining their existing gates.
 
 ```bash
