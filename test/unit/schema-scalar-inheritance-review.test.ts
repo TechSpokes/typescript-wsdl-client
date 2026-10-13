@@ -184,4 +184,65 @@ describe('independent exact scalar integration review', () => {
     expect(kernel.describe(named('OneStep'), owner)).toMatchObject({kind: 'invalid-schema'});
     expect(kernel.describe(named('SeparateSteps'), owner)).toMatchObject({kind: 'checked', obligations: []});
   });
+
+  it('permits source redeclaration of an inherited exclusive endpoint with the same authority as raw properties', async () => {
+    const {lexical, facet, component, raw, candidate} = await setup();
+    const kernel = candidate([
+      raw('ExclusiveBase', builtin('decimal'), ['0', '10'].map(value => component(facet('minExclusive', value)))),
+      raw('RawExclusiveChild', named('ExclusiveBase'), [component(facet('minExclusive', '10'))]),
+    ]);
+    // rf-minExclusive expressly admits equality with an inherited exclusive
+    // endpoint. Primitive lexical assessment must remove every inherited
+    // execution conjunct before applying that exception and the F2 duties.
+    for (const type of ['SourceExclusiveChild', 'RawExclusiveChild']) {
+      expect(kernel.describe(named(type), owner)).toMatchObject({kind: 'checked', obligations: []});
+      expect(kernel.assess(named(type), lexical('10'), owner)).toMatchObject({kind: 'invalid-schema'});
+      expect(kernel.assess(named(type), lexical('11'), owner)).toMatchObject({kind: 'checked', obligations: []});
+    }
+    expect(kernel.facetPropertiesEquivalent(named('SourceExclusiveChild'), named('RawExclusiveChild'), owner))
+      .toMatchObject({kind: 'checked', value: true, obligations: []});
+    // Five belongs to neither inherited exclusive endpoint and is not in B.
+    expect(kernel.describe(named('SourceExclusiveInvalid'), owner)).toMatchObject({kind: 'invalid-schema'});
+  });
+
+  it('includes known annotation changes when deciding whether an entire scalar kind can be inherited', async () => {
+    const {facet, component, raw, candidate} = await setup();
+    const zero = component(facet('minInclusive', '0')), ten = component(facet('minInclusive', '10'));
+    const annotated: RawScalarFacetComponent = {...zero, annotation: {kind: 'present', content: {
+      kind: 'element', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'annotation'},
+      attributes: [], namespaces: {}, children: [],
+    }}};
+    const unknown: RawScalarFacetComponent = {facets: zero.facets};
+    const kernel = candidate([
+      raw('AnnotationBase', builtin('decimal'), [zero, ten]),
+      raw('AnnotationUnchanged', named('AnnotationBase'), [zero, ten]),
+      raw('AnnotationChanged', named('AnnotationBase'), [annotated, ten]),
+      raw('AnnotationUnknown', named('AnnotationBase'), [unknown, ten]),
+    ]);
+    // st-restrict-facets.3 acts on complete components, including their
+    // annotation property (§4.3.10.1). A new annotation requires local S_min,
+    // whose full replacement inventory includes the invalid local bound 0.
+    expect(kernel.describe(named('AnnotationUnchanged'), owner)).toMatchObject({kind: 'checked', obligations: []});
+    expect(kernel.describe(named('AnnotationChanged'), owner)).toMatchObject({kind: 'invalid-schema'});
+    // Unknown metadata might be identical and cannot justify a negative.
+    const uncertain = kernel.describe(named('AnnotationUnknown'), owner);
+    expect(['checked', 'unresolved']).toContain(uncertain.kind);
+    if (uncertain.kind === 'checked')
+      expect(uncertain.obligations).toContainEqual(expect.objectContaining({rule: 'raw-simple-facet-restriction-validity'}));
+  });
+
+  it('applies the lower-bound pair prohibition to the exact effective datatype, across derivation steps', async () => {
+    const {facet, component, raw, candidate} = await setup();
+    const inclusive = component(facet('minInclusive', '0'));
+    const kernel = candidate([
+      raw('LowerPairBase', builtin('decimal'), [inclusive]),
+      raw('RawLowerPair', named('LowerPairBase'), [inclusive, component(facet('minExclusive', '10'))]),
+    ]);
+    // Datatypes §4.3.9.4 says the lower kinds cannot be specified for the
+    // same datatype. Unlike the upper pair's explicit local-step wording,
+    // inherited exact minInclusive remains part of this effective inventory.
+    expect(kernel.describe(named('LowerPairBase'), owner)).toMatchObject({kind: 'checked', obligations: []});
+    for (const type of ['RawLowerPair', 'SourceLowerPair'])
+      expect(kernel.describe(named(type), owner)).toMatchObject({kind: 'invalid-schema', rule: 'facet-bound-pair'});
+  });
 });

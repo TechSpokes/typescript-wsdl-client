@@ -64,7 +64,8 @@ type Description = {
   definition: string; parent?: Description;
 };
 type FacetProperty = {fixed: boolean; integer?: string; operand?: SchemaOperand; lexical?: string};
-type ScalarTuple = {name: string; property: FacetProperty; facet?: Facet};
+type ScalarTuple = {name: string; property: FacetProperty; facet?: Facet;
+  annotation?: FacetAnnotation; identity?: object};
 type PatternProperty = {expressions: readonly string[]; identity?: object};
 type ExactFacetComponent = {name: string; values: readonly FacetProperty[];
   annotation?: FacetAnnotation; identity?: object; facet?: Facet};
@@ -512,11 +513,14 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         let value: SchemaOperand;
         try {value = facetOperand(facet, base, owner);}
         catch (error) {
-          const inherited = facetProperty(base, facet.name, owner)?.operand;
-          if (!(error instanceof SchemaAssessmentError) || error.category !== "invalid-schema" || !exclusive(facet.name) || !inherited) throw error;
-          const primitive = {...base, facets: new Map<string, {facet: Facet}>(), plan: {...base.plan, layers: []}};
+          if (!(error instanceof SchemaAssessmentError) || error.category !== "invalid-schema" || !exclusive(facet.name)) throw error;
+          const inherited = scalarTuples(base, owner);
+          c.step(owner, 16);
+          const primitive = {...base, conjuncts: undefined, facets: new Map<string, {facet: Facet}>(), plan: {...base.plan, layers: []}};
           value = facetOperand(facet, primitive, owner);
-          if (!values.sameValue(value, inherited, owner)) throw error;
+          if (!inherited.some(prior => {
+            c.step(owner); return prior.name === facet.name && values.sameValue(value, prior.property.operand!, owner);
+          })) throw error;
         }
         locals.set(facet.name, {facet, operand: value}); requirements.add("numeric-bounds");
       }
@@ -604,13 +608,15 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.step(owner); const tuples: ScalarTuple[] = [];
     if (description.exactComponentSet) {
       for (let index = 0; index < description.exactComponentSet.length; index++) {
-        c.step(owner, 6); const component = description.exactComponentSet[index];
+        c.step(owner, 8); const component = description.exactComponentSet[index];
         if (component.name === 'pattern' || component.name === 'enumeration') continue;
-        tuples.push({name: component.name, property: component.values[0], facet: component.facet});
+        tuples.push({name: component.name, property: component.values[0], facet: component.facet,
+          annotation: component.annotation, identity: component.identity ?? component});
       }
     } else for (const name of facetNames(description, owner)) {
-      c.step(owner, 4); tuples.push({name, property: facetProperty(description, name, owner)!,
-        facet: description.facets.get(name)?.facet});
+      c.step(owner, 6); const facet = description.facets.get(name)?.facet;
+      tuples.push({name, property: facetProperty(description, name, owner)!, facet,
+        annotation: facet ? boundAnnotationPayloads.get(facet) ?? sourceFacetPayloads.get(facet) ?? facet.annotation : 'absent'});
     }
     return tuples;
   };
@@ -642,22 +648,30 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
    */
   const exactScalarRestriction = (base: Description, result: Description, owner: GraphNode): boolean => {
     const inherited = scalarTuples(base, owner), supplied = scalarTuples(result, owner);
-    const localBounds = new Set<string>();
+    const localBounds = new Set<string>(), possiblyRetained = new Set<string>();
+    let complete = true;
     for (const name of boundNames) {
       c.step(owner, (inherited.length + supplied.length) * 2 + 3);
       const baseKind = inherited.filter(prior => prior.name === name);
       const resultKind = supplied.filter(value => value.name === name);
       // c-fr replaces a complete kind. Only a fully unchanged kind can be
       // inherited with no contribution of that kind to the local set S.
-      if (resultKind.length && !(baseKind.every(prior => resultKind.some(value => sameFacetProperty(prior.property, value.property, owner)))
-        && resultKind.every(value => baseKind.some(prior => sameFacetProperty(prior.property, value.property, owner))))) localBounds.add(name);
+      const annotation = (a: ScalarTuple, b: ScalarTuple) => a.identity && a.identity === b.identity
+        ? 'equal' : annotationRelation(a.annotation, b.annotation);
+      if (resultKind.length && !sameExactSet(baseKind, resultKind, (a, b) =>
+        sameFacetProperty(a.property, b.property, owner) && annotation(a, b) === 'equal', owner)) {
+        localBounds.add(name);
+        if (sameExactSet(baseKind, resultKind, (a, b) => sameFacetProperty(a.property, b.property, owner)
+          && annotation(a, b) !== 'different', owner)) possiblyRetained.add(name);
+      }
     }
-    for (const side of ['min', 'max']) {
-      c.step(owner, 3);
-      if (localBounds.has(side + 'Inclusive') && localBounds.has(side + 'Exclusive'))
-        c.fail(owner, 'facet-bound-pair', 'Inclusive and exclusive bounds cannot both be supplied in one restriction step');
+    c.step(owner, supplied.length * 2 + 3);
+    if (supplied.some(tuple => tuple.name === 'minInclusive') && supplied.some(tuple => tuple.name === 'minExclusive'))
+      c.fail(owner, 'facet-bound-pair', 'Inclusive and exclusive lower bounds cannot coexist on the same datatype');
+    if (localBounds.has('maxInclusive') && localBounds.has('maxExclusive')) {
+      if (possiblyRetained.has('maxInclusive') || possiblyRetained.has('maxExclusive')) complete = false;
+      else c.fail(owner, 'facet-bound-pair', 'Inclusive and exclusive upper bounds cannot both be supplied in one restriction step');
     }
-    let complete = true;
     for (const derived of supplied) {
       let hasKind = false, compatible = false;
       for (const prior of inherited) {
@@ -685,8 +699,10 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       if (exclusive(derived.name) && inherited.some(prior => {
         c.step(owner); return prior.name === derived.name && values.sameValue(endpoint, prior.property.operand!, owner);
       })) continue;
-      if (excludedByEnumeration(base, endpoint, owner) || excludedByValueFacets(base, endpoint, owner))
+      if (excludedByEnumeration(base, endpoint, owner) || excludedByValueFacets(base, endpoint, owner)) {
+        if (possiblyRetained.has(derived.name)) {complete = false; continue;}
         c.fail(owner, `${derived.name}-value`, 'New bound operand is outside the base value space', derived.facet.lexical.context.source);
+      }
       if (!membershipWitness(base, endpoint, derived.facet.lexical, owner)) complete = false;
     }
     for (const a of supplied) for (const b of supplied) {

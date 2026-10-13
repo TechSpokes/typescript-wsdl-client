@@ -11,6 +11,11 @@
   <xs:simpleType name="StringWeaker"><xs:restriction base="t:StringBase"><xs:minLength value="3"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="WeakenBase"><xs:restriction base="xs:string"/></xs:simpleType>
   <xs:simpleType name="WeakenChild"><xs:restriction base="t:WeakenBase"><xs:minLength value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ExclusiveBase"><xs:restriction base="xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="SourceExclusiveChild"><xs:restriction base="t:ExclusiveBase"><xs:minExclusive value="10"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SourceExclusiveInvalid"><xs:restriction base="t:ExclusiveBase"><xs:minExclusive value="5"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="LowerPairBase"><xs:restriction base="xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="SourceLowerPair"><xs:restriction base="t:LowerPairBase"><xs:minExclusive value="10"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="SourcePartialPair"><xs:restriction base="xs:dateTime"><xs:minInclusive value="2001-01-01T00:00:00"/><xs:maxInclusive value="2001-01-01T00:00:00Z"/></xs:restriction></xs:simpleType>
   <xs:element name="Owner" type="xs:string"/>
 </xs:schema>
