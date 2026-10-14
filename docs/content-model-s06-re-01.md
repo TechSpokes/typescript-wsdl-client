@@ -864,6 +864,48 @@ The opposite mixed orientation also reconstructs in this template, but its inter
 The theorem therefore permits a chosen orientation only under its explicit absence-of-interior-role premise.
 It supplies no rule interchanging orientations in an arbitrary context.
 
+#### Empty-or-copied-B replacement lemma
+
+This slice starts from fetched main `f371c3a892a130c2498f4787fca9246c1dc2de9f`, tree `47758a6206d0beee4969845a4a6985993077748a`.
+Investigation and implementation began at `2026-10-14T16:37:24Z`, with a 90-minute freeze at `2026-10-14T18:07:24Z`; review and delivery are separate.
+Relax only the copied-B forest theorem's content premise: every fresh complex helper has either B's exact element-only content or actual empty content with no particle.
+All other premises remain, including string delimiters, unchanged B as X's intermediate, empty AUs/wildcards/final/block sets, declaration flags, direct H affiliations, disjoint member names, finite ancestry terminating at exact B and absence of additional helper roles.
+
+Proposition: every locally successful root in this expanded template has an alternative copied-B root with the same helper identities, ancestry, methods and member declarations, preserving X's required mapping and complete relevant effective member names/cardinalities.
+The alternative admits complete finite contextual evidence by the preceding copied-B theorem, including every inherited fresh root.
+Local success here includes the actual content rules of every original extension/restriction edge, not just its method label or X's isolated mapping.
+The original need not supply finite evidence as a premise; complete original evidence is verified in the concrete controls as requested.
+
+Construct the alternative relative to immutable Γ with exactly the supplied additions and X endpoint, replacing all empty helper contents simultaneously with B's exact original content.
+Do not fork an existing child to rewrite a non-target inherited helper, delete any supplied helper, split sharing or merge members.
+This construction retains unused fresh types as well as all members.
+
+First, type derivation paths, entered blocks, affiliation census, declaration flags and queried endpoints are unchanged, so every H/Q1/Q2 expansion has exactly the same declarations and cardinality.
+X's original raw particle, unchanged intermediate B, original matching declarations and their type comparisons also remain unchanged.
+No helper has an additional named/intermediate role; fresh names occur only in the first H expansion and cannot match the later fixed local choices.
+Consequently the same restriction mapping and coherent implicit enumeration choices for X still work, including its occurrence arithmetic.
+
+Second, re-establish legality rather than transferring helper raw-content observations.
+Every fresh edge now compares exact copied B content against either exact B itself or another copied helper: restriction passes by original particle identity, and extension passes the raw particle identity branch of `cos-particle-extend`.
+Content variety, empty AU/wildcard duties, empty immediate finals and unchanged ancestry/declaration premises pass as in the copied-B theorem.
+The replacement can introduce particle dependencies absent from an empty helper; the complete copied-content closure above discharges them, including UPA, EDC, declarations and correspondence, without consuming X because the delimiters are string.
+
+Thus every premise of the copied-B forest theorem holds, with the entire supplied forest retained.
+Its no-addition induction rechecks all inherited fresh roots and complete consumed dependencies in each required context, decreasing fresh extension count in that reconstructed forest.
+This proves the proposition and finite evidence with sufficient resources; it neither requires nor proves that all original helper observations or evidence contexts equal their replacements.
+The evidence bound remains in the supplied forest, not Γ, and no general witness-size bound, evidence-adequacy theorem or terminating general-negative criterion follows.
+
+The first concrete control succeeds: S restricts B to actual empty content because B's outer sequence is formally emptiable; U extends empty S vacuously; M has type U and affiliates directly with H.
+The mixed path excludes M under both Q1 and Q2, so X restricts unchanged B successfully.
+U's required child restricts U to B with empty content, retains S and M and passes complete finite verification; the copied-B alternative and its copied-content child pass independently.
+An additional successful control retains copied U over empty S, exercising extension from empty to copied content before simultaneous replacement.
+
+The [existing helper controls](../test/research/re01/helper-method-support.test.ts) verify both original controls and the replacement, all S/U/M roots and consumed dependencies in root/child contexts, unchanged full expansions/ancestry/declarations and actual absence of particles for empty helpers.
+They also reject empty extension of copied content and copied restriction of empty content under their actual local rules; these are candidate failures, not counterexamples to the proposition.
+The [independent source controls](../test/conformance/reference/re01-helper-method-support.test.ts) pin formal emptiability, source empty content and string delimiters.
+Existing inherited-root, unused-root, sharing, missing-evidence and consumed-X controls are reused unchanged for the copied theorem's contextual obligations.
+All seven recovery inputs, accepted B-v1, P1/F2, budgets and downstream ownership remain intact; full #234/#232 acceptance stays open.
+
 #### General alternatives and unresolved proposition
 
 The anchor-segment lemma supplies an adequate relation observation map; the copied-B theorem supplies one coherent content/AU/closure reconstruction and an actual well-founded evidence discipline.

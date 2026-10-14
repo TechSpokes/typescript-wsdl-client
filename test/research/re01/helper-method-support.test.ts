@@ -25,7 +25,7 @@ type Method = 'extension' | 'restriction';
 type CompanionPath = Readonly<{methods: readonly Method[]; shared?: boolean; unused?: boolean}>;
 
 async function subject(shape: Shape, names: readonly [string, string, string] = ['U', 'V', 'M'], consumedRoot = false,
-  companionPaths: readonly CompanionPath[] = [], blockedType?: 'member' | 'interior') {
+  companionPaths: readonly CompanionPath[] = [], blockedType?: 'member' | 'interior', emptyHelpers: readonly string[] = []) {
   const fixtures = path.resolve('test/conformance/fixtures');
   const source = consumedRoot ? 'helper-method-consumed-root.xsd' : 'helper-method-support.xsd';
   const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery', source), {policy: {fileRoots: [fixtures]}});
@@ -76,7 +76,8 @@ async function subject(shape: Shape, names: readonly [string, string, string] = 
   }
   const raw = (node: ComplexTypeNode, particle = a.content!): RawComplexTypeProperties => ({type: node.id, targetNamespace: namespace,
     derivation: {method: node.derivation?.kind ?? 'restriction', base: node.derivation?.base ?? anyType},
-    content: node.id === r.id ? {kind: 'empty'} : {kind: 'element-only', particle: node.id === x.id ? x.content! : particle},
+    content: node.id === r.id || emptyHelpers.some(name => node.id === typeId(name)) ? {kind: 'empty'}
+      : {kind: 'element-only', particle: node.id === x.id ? x.content! : particle},
     abstract: false, final: [], block: blockedType && node.id === (blockedType === 'member' ? memberType.id : u.id) ? ['extension'] : [], attributeUses: [],
     provenance: {kind: 'hypothetical-abstract', originals: [a.id, b.id, r.id, x.id].includes(node.id) ? [node.id] : []}});
   const endpoint = {...x, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(b.id), facets: []}};
@@ -222,6 +223,63 @@ describe('helper method support with explicit contextual reconstruction', () => 
     expect(checkComponentConstruction(parent, u.id)).toMatchObject({kind: 'checked'});
     expect(checkSubstitution(parent, m.id, elementId('H'), {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
     expect(checkComponentConstruction(child, u.id)).toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4'});
+  });
+
+  it('replaces empty S/U simultaneously in a new root with complete contextual evidence', async () => {
+    const expansions: string[][][] = [];
+    const ancestry: [RawComplexTypeProperties['derivation'], RawComplexTypeProperties['derivation'], ElementNode][] = [];
+    for (const emptyHelpers of [['S', 'U'], ['S'], []]) {
+      // S restricts the formally emptiable B to actual empty content; U's
+      // empty/empty extension is legal. Its child restricts U to unchanged B.
+      // The copied alternative is built from immutable actual, never by
+      // rewriting inherited S inside U's required child.
+      const fixture = await subject('restriction-extension', ['S', 'U', 'M'], false, [], undefined, emptyHelpers);
+      const {request, parent, child, x, u: s, v: u, m, root, nested, raw} = fixture;
+      if (!child || !nested) throw new Error('Expected empty-helper child');
+      for (const context of [parent, child]) {
+        for (const [name, helper] of [['S', s], ['U', u]] as const) {
+          const expectedContent = emptyHelpers.includes(name) ? {kind: 'empty'} : {kind: 'element-only', particle: fixture.a.content};
+          const content = deriveRawComplexContent(context, helper.id);
+          expect(content).toMatchObject({kind: 'checked'});
+          if (content.kind !== 'checked') throw new Error(JSON.stringify(content));
+          expect(content.view.content).toEqual(expectedContent);
+          expect(checkComponentConstruction(context, helper.id)).toMatchObject({kind: 'checked'});
+        }
+        expect(checkComponentConstruction(context, m.id)).toMatchObject({kind: 'checked'});
+      }
+      expect(checkComponentConstruction(parent, x.id)).toMatchObject({kind: 'checked'});
+      const verified = verifyFiniteRe01Evidence(request.actual, x.id, {root: root.id, nodes: [root, nested]});
+      expect(verified, JSON.stringify(verified)).toMatchObject({kind: 'checked-candidate'});
+      if (verified.kind !== 'checked-candidate') throw new Error(verified.kind);
+      for (const step of verified.proof) {
+        expect(step.components).toEqual(expect.arrayContaining([s, u, m, fixture.a, fixture.b]
+          .map(node => expect.objectContaining({component: node.id, contextId: step.contextId}))));
+        if (step.target === u.id) expect(step.components.map(receipt => receipt.component)).not.toContain(x.id);
+      }
+      expansions.push(['H', 'Q1', 'Q2'].map(head => [...members(parent, head)]));
+      ancestry.push([raw(s).derivation, raw(u).derivation, m]);
+      expect(members(parent, 'H')).toEqual([elementId('H'), m.id]);
+      expect(members(parent, 'Q1')).not.toContain(m.id);
+      expect(members(parent, 'Q2')).not.toContain(m.id);
+      expect(verified.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
+    }
+    expect(expansions[0]).toEqual(expansions[1]);
+    expect(expansions[0]).toEqual(expansions[2]);
+    expect(ancestry[0]).toEqual(ancestry[1]);
+    expect(ancestry[0]).toEqual(ancestry[2]);
+  });
+
+  it.each([
+    ['extension-restriction', ['U'], 'U', 'cos-ct-extends.1.4'],
+    ['restriction-extension', ['V'], 'V', 'cos-ct-extends.1.4'],
+    ['extension-restriction', ['U'], 'V', 'derivation-ok-restriction.5.4'],
+  ] as const)('checks actual local content rules for %s with empty %j at %s', async (shape, empty, target, rule) => {
+    const {parent} = await subject(shape, ['U', 'V', 'M'], false, [], undefined, empty);
+    // These edge labels still give the mixed membership vector. A root X
+    // mapping alone does not qualify an illegal fresh helper for the lemma.
+    expect(members(parent, 'Q1')).not.toContain(elementId('M'));
+    expect(members(parent, 'Q2')).not.toContain(elementId('M'));
+    expect(checkComponentConstruction(parent, typeId(target))).toMatchObject({kind: 'candidate-rejected', rule});
   });
 
   it.each(['extension-restriction', 'restriction-extension'] as const)('keeps exact interior anchors observable for %s', async shape => {

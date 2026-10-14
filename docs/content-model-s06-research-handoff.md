@@ -22,6 +22,9 @@ The [role-sensitive continuation](content-model-s06-re-01.md#role-sensitive-extr
 Its all-complex relation replay lemma retains segment methods and entered blocks; the two mixed orientations differ at exact interior anchors despite equal common-B vectors.
 For arbitrary finite copied-B forests in the exact nonrecursive fixture template, per-member extraction preserves every expansion name, and simultaneous no-addition reconstruction yields complete evidence by decreasing fresh extension count with every inherited root checked.
 Sharing, unused roots, missing sibling evidence and the z:X contrast have independent controls.
+The [empty-or-copied-B replacement lemma](content-model-s06-re-01.md#empty-or-copied-b-replacement-lemma) relaxes only helper content to allow actual empty content with no particle.
+Simultaneously filling every empty helper in a new root relative to immutable Γ retains ancestry, identities, methods, members and X's complete relevant expansions/mapping; legality is re-established through the copied-B theorem, including inherited fresh roots.
+The empty S restriction and empty U extension, their required U-to-B child and the copied replacement pass complete finite verification; edge-label-only illegal candidates remain excluded.
 This is a scoped template theorem, not a B-v1 domain restriction, general witness bound or complete decision procedure; arbitrary raw/AU/scalar/bridge reconstruction and general contextual adequacy/termination remain open.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.

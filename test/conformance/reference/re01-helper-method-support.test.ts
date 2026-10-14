@@ -65,6 +65,27 @@ describe('independent primary premises for mixed helper support', () => {
     // evidence, never a complete RE01 judgment or arbitrary-family theorem.
   });
 
+  it('pins formal emptiability, actual empty content and the nonrecursive copied closure', () => {
+    const schema = source();
+    const a = children(body(schema, 'A'), 'sequence')[0]!;
+    // Restriction 5.3 permits actual empty content below this minOccurs=0
+    // particle; this is not a particle with zero children. Empty/empty
+    // extension uses 1.4.2. Copying B back uses its exact original particle.
+    expect(attribute(a, 'minOccurs')).toBe('0');
+    expect(body(schema, 'R').children).toEqual([]);
+    expect(body(schema, 'B').children).toEqual([]);
+    for (const name of ['A', 'X']) {
+      const sequence = children(body(schema, name), 'sequence')[0]!;
+      const delimiter = children(sequence, 'element').find(node => attribute(node, 'name') === 'z')!;
+      expect(attribute(delimiter, 'minOccurs') ?? '1').toBe('1');
+      expect(expandedQName(delimiter, attribute(delimiter, 'type')!))
+        .toEqual({uri: 'http://www.w3.org/2001/XMLSchema', local: 'string'});
+    }
+    expect(children(a, 'choice').flatMap(choice => children(choice, 'element'))
+      .map(node => expandedQName(node, attribute(node, 'type')!)))
+      .toEqual(Array.from({length: 5}, () => ({uri: namespace, local: 'B'})));
+  });
+
   it('retains the legal component recursion that makes the earlier endpoint consumed', async () => {
     const recursiveFile = 'xsd/recovery/helper-method-consumed-root.xsd';
     const schema = parseXml(readFileSync(localFixture(recursiveFile), 'utf8'), recursiveFile);
