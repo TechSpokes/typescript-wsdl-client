@@ -77,4 +77,19 @@ describe('independent primary premises for mixed helper support', () => {
     // Element/type references may recurse; the live engine's acceptance does
     // not discharge the contextual existential derivation obligations.
   });
+
+  it('distinguishes mixed orientations at exact interior types in the live reference', async () => {
+    const roleFile = 'xsd/recovery/helper-role-anchors.xsd';
+    const result = await validateFixture(roleFile, [
+      '<t:probeE xmlns:t="urn:recovery:helper-roles"><t:Mr/></t:probeE>',
+      '<t:probeR xmlns:t="urn:recovery:helper-roles"><t:Me/></t:probeR>',
+      '<t:probeB xmlns:t="urn:recovery:helper-roles"><t:Mr/></t:probeB>',
+      '<t:probeB xmlns:t="urn:recovery:helper-roles"><t:Me/></t:probeB>',
+    ]);
+    expect(result.outcome).toBe('accepted');
+    // Both leaves reach exact B by both methods. At the interior anchor Mr
+    // uses restriction only and Me extension only; the latter is blocked.
+    // Intermediate affiliation heads' block does not transfer to Common.
+    expect(result.instances?.map(instance => instance.outcome)).toEqual(['accepted', 'rejected', 'accepted', 'accepted']);
+  });
 });

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): preserve exact helper roles and reconstruct simultaneous copied-content forests with complete contextual evidence.
+
 - test(re01): retain mixed-method helper roles with complete contextual evidence and distinguish child reconstruction from membership signatures.
 
 - test(re01): establish fresh-complex named mapping conditions and refute nonprimitive-helper elimination with complete contextual evidence.

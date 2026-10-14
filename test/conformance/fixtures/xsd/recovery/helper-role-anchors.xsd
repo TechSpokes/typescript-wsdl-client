@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:helper-roles"
+  targetNamespace="urn:recovery:helper-roles" elementFormDefault="qualified">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Ue"><xs:complexContent><xs:extension base="t:B"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Vr"><xs:complexContent><xs:restriction base="t:Ue"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Ur"><xs:complexContent><xs:restriction base="t:B"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Ve"><xs:complexContent><xs:extension base="t:Ur"/></xs:complexContent></xs:complexType>
+  <xs:element name="Common" type="t:B"/>
+  <xs:element name="InteriorE" type="t:Ue" substitutionGroup="t:Common" block="extension"/>
+  <xs:element name="InteriorR" type="t:Ur" substitutionGroup="t:Common" block="extension"/>
+  <xs:element name="Mr" type="t:Vr" substitutionGroup="t:InteriorE"/>
+  <xs:element name="Me" type="t:Ve" substitutionGroup="t:InteriorR"/>
+  <xs:element name="probeE"><xs:complexType><xs:sequence><xs:element ref="t:InteriorE"/></xs:sequence></xs:complexType></xs:element>
+  <xs:element name="probeR"><xs:complexType><xs:sequence><xs:element ref="t:InteriorR"/></xs:sequence></xs:complexType></xs:element>
+  <xs:element name="probeB"><xs:complexType><xs:sequence><xs:element ref="t:Common"/></xs:sequence></xs:complexType></xs:element>
+</xs:schema>

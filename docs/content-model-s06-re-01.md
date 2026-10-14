@@ -720,6 +720,187 @@ Step 4 adds only the discriminating controls using existing owners, with no gene
 Steps 5 and 6 qualify the final artifacts, obtain final scoped/joint review and record exact revisions, checks and issue dispositions in #234/#232.
 Full RE01 and joint acceptance remain open; #179 activation, #153 combined qualification and #184 payload work keep their later ownership.
 
+### Role-sensitive extraction and simultaneous copied-content reconstruction
+
+This continuation starts from PR #289 on fetched main `024e20325cded24324c773ed486714d33a9858d3`, tree `c16b805524a40885beebc0a35881b6ae786b7f7e`.
+It establishes a fixed-context relation observation lemma and a simultaneous extraction/reconstruction theorem for the copied-B fixture template below.
+The template is a scoped proof example, not an accepted restriction of B-v1 or a complete general helper family.
+
+The full quantified claim remains: every successful permitted finite construction over a qualified immutable Γ must have a valid representative with adequate complete contextual evidence, followed by an input-derived bound or equivalent terminating general-negative criterion.
+Initial qualification does not assume any pending RE01 judgment.
+The [preceding falsifiers](#helper-permitting-construction-investigation) and all seven accepted recovery packages remain binding.
+
+#### Roles and predicate observations
+
+Support-only describes how a helper is consumed by a particular parent predicate.
+It does not exempt that helper from its own component legality, RE01 evidence or fresh-root checking in any required child.
+A single type can serve support, named comparison and intermediate roles in different queries; the required observations are the union of those actual roles.
+
+| Observation | Predicate owner | Role-specific preservation duty |
+| --- | --- | --- |
+| Exact type endpoints and segment methods | `schemaTypeRelations.ts` | Split at every queried identity |
+| Entered type blocks and head flags | `schemaTypeRelations.ts` | Preserve each queried segment and head |
+| Immediate base, ancestor and final | `schemaConstructionAssessment.ts` | Named/intermediate construction duties |
+| Complete affiliation paths and bridges | Relations and declaration owners | Preserve declared census before filtering |
+| Expansion names and multiplicities | `particleSemanticView.ts` | Retain every consumed member declaration |
+| Explicit order and coherent implicit choices | `particleRestriction.ts` | Preserve blocks and repeated-head choices |
+| Positive and negative role/QName lookup | `semanticContext.ts` | Preserve queried complete symbol domain |
+| Raw particle identity, order and incidence | Correspondence and raw extension owners | Preserve consumed construction, not only language |
+| AU identity, requiredness, value and wildcard | `schemaAttributeUses.ts` | Preserve original operands and selected matching |
+| Scalar identities, facets and namespaces | Scalar and generated-slot owners | Preserve exact owning contexts and sharing |
+| Declaration flags and identity constraints | `schemaDeclarationPrimitives.ts` | Recheck every consumed declaration |
+| Ownership and shared components | `re01CandidateCorrespondence.ts` | Preserve anchored incidence and actual identities |
+| Complete contextual closure and fresh roots | `finiteRe01Verification.ts` | Recheck all inherited F and consumed dependencies |
+
+For example, affiliation legality uses the immediate head's final set; transitive effective membership uses the queried head's blocking constraint and type-path blocks.
+An abstract bridge can be absent from effective expansion while remaining essential to immediate affiliation and required legality.
+Existing affiliation/abstract-bridge, raw-all, original-intermediate, scalar, inherited-root and primitive controls retain these duties; this continuation does not replace them with a type-path quotient.
+
+#### Fixed-anchor relation extraction and replay
+
+Fix one qualified finite acyclic all-complex base graph and a finite set of exact query endpoints, called anchors.
+No query in this lemma crosses into simple, list, union or generated-scalar derivation alternatives.
+Between consecutive anchors on a base path, record its reachability, the union M of edge methods and the union K of blocks on entered vertices: exclude the departure vertex and include the arrival vertex.
+
+For distinct anchors d and b, Type Derivation OK is true exactly when b is reached and the path's M is disjoint from the supplied excluded-method set.
+For equal identities, it succeeds before traversing any edge, regardless of excluded methods or outgoing blocks.
+These statements follow by induction over the complex branch of the dated [Type Derivation OK](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-derived-ok).
+
+For distinct element declarations, qualified complex substitution additionally requires affiliation reachability, absence of substitution blocking and disjointness of M from the union of queried head blocking and K.
+The [transitive substitution rule](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec) uses exactly that union; intermediate affiliation heads' element blocks do not replace the queried head's block.
+Immediate affiliation legality separately applies Type Derivation OK with the immediate head's final set, while complete effective expansion also filters abstract declarations.
+
+Consequently extracting segment labels and replaying these qualified relation queries preserves their Boolean results, provided exact anchor identity/order, full affiliation paths, declarations and flags are preserved.
+Concatenating segments unions M and K, with each interior anchor entered once.
+This is simultaneous observation preservation for the specified relation queries, not reconstruction of legal component definitions or discharge of their receipt obligations.
+
+The two mixed orientations have equal M to common B but different M to interior U.
+For U extending B and V restricting U, distinct local equal-QName particles typed V and U pass the restriction-only type conjunct of [NameAndTypeOK](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-NameAndTypeOK); for U restricting B and V extending U, they fail it.
+The global-declaration and original-particle identity shortcuts are excluded in these controls.
+
+Similarly, V's own block is not entered on V-to-B, while U's block is.
+Both paths can pass Type Derivation OK without exclusions while only one satisfies effective substitution under an entered block.
+The [new live reference fixture](../test/conformance/fixtures/xsd/recovery/helper-role-anchors.xsd) accepts both leaves under their common B head and distinguishes them under exact interior heads blocking extension.
+
+An anchor skeleton therefore repairs the loss of interior type observations in a common-B four-vector quotient.
+It supplies no immediate-edge final, raw construction, scalar/AU, global-lookup or complete contextual evidence theorem.
+Its anchor count and labels are derived from a supplied graph and query inventory, not from Γ alone.
+
+#### Copied-B forest theorem and its exact scope
+
+Fix Γ to [helper-method-support.xsd](../test/conformance/fixtures/xsd/recovery/helper-method-support.xsd), with both delimiter declarations typed builtin string.
+Keep unchanged B as X's root intermediate and make X restrict B with its anchored effective properties.
+Consider any finite fresh acyclic forest of complex types whose base paths terminate at exact B; each fresh type has B's exact original element-only particle, empty AU set, absent attribute wildcard and empty final/block sets, and is nonabstract.
+
+Each edge is extension or restriction.
+The only other additions are distinct fresh global nonabstract element declarations with empty flags, absent value/identity constraints and direct affiliation to original H; each is typed by B or a forest vertex.
+Shared paths and unused fresh types are allowed, and every fresh type remains a legality root even if no member uses it.
+
+No affiliation bridges, additional raw particles, AUs, scalar helpers or other additions occur in this template.
+They remain permitted and potentially necessary in the general B-v1 problem.
+No interior helper identity is consumed by a named restriction comparison, immediate-head final constraint or other additional role in this template.
+
+For every locally successful parent in this template, per-member extraction into the repaired copied-B representatives preserves the parent's consumed observations and reconstructs complete finite contextual evidence.
+The theorem quantifies arbitrary finite forest size and path length, rather than a tested helper cap.
+It neither extracts arbitrary B-v1 witnesses into this template nor proves general finite-evidence adequacy.
+
+#### Complete consumed closure for copied content
+
+In every template context, a helper's copied particle consumes A's first global H position, the required string delimiter and the later fixed local H/Q1 and H/Q1/Q2 alternatives.
+H consumes B and its fixed Q1-to-Q2 affiliation chain; complete incoming traversal can consume every fresh member, including members subsequently blocked under Q1 or Q2.
+Those members consume their forest type paths, which all terminate at B, then A and builtin `anyType`.
+
+The later local declarations are typed B, and no edge in this consumed universe refers to original X.
+Copied-content correspondence introduces the same exact original particle/declaration/type operands; it adds no X dependency or generated scalar slot.
+Complete fresh-root inventory and all receipt dependencies thus close inside this universe, including unused fresh types, while Γ still checks every original component separately.
+
+Fresh member QNames are disjoint from all original names and from one another.
+Only the first H[4..4] position expands them in the copied B particle; the required z delimiter separates it from later fixed local choices.
+They create no new same-QName EDC pair, and the exact repetition/delimiter structure preserves UPA for any subset effective under a head.
+
+No child transfers its earlier parent's X mapping.
+Changing the delimiter to z:X breaks precisely this closure lemma, as the [recursive contrast](#a-consumed-root-contrast-and-scoped-nonexistence-theorem) proves.
+The finite verifier controls explicitly check every inherited fresh root and the absence of X in the positive children's checked component closures.
+
+#### Simultaneous no-addition reconstruction and evidence
+
+All fresh local derivation steps pass: identical raw particle identity supplies vacuous extension or restriction; AU/wildcard and immediate-final premises are empty.
+Each member's affiliation passes because its type reaches exact B and H's final set is empty.
+The closure lemma supplies the remaining content, declaration and identity premises in every required context.
+
+Let n be the number of fresh extension edges in the current template context.
+For any required nonprimitive extension T, choose unchanged B as its intermediate and construct the child by changing only T's method/base to restriction of B, preserving its exact copied effective properties and every inherited addition.
+B remains the primitive direct extension of designated A, and T's final restriction passes by particle identity and the empty other premises.
+
+Every other inherited ext/rest step still compares identical copied content and has an empty immediate final.
+All fresh members still reach B, and changed effective membership is checked afresh in that child's complete consumed universe.
+The child introduces no type or declaration and removes exactly one fresh extension, so its remaining required nonprimitive extensions have rank n minus one.
+
+At n equal to zero, the helper universe requires no further nonprimitive RE01 evidence; unchanged B has its accepted primitive no-change discharge.
+Induction on n constructs complete acyclic evidence for every helper obligation in its exact context, retaining every inherited root.
+For multiple obligations, supply each child's own descendant evidence; a proof from a sibling context cannot discharge it.
+
+An unfolded certificate has at most the sum, for i from zero through n, of `n! / (n-i)!` nodes including its root.
+This finite bound is in the supplied forest's n, with complete closure work at every node.
+It is not a Γ-derived witness-size bound, and the old general `3 * n!` argument still has its falsified selection premise.
+The induction establishes mathematical finite evidence with sufficient resources; arbitrarily large supplied forests may exhaust the unchanged configurable engineering limits.
+Exhaustion remains a resource-limit result and cannot reject the theorem or establish nonexistence.
+
+#### Per-member extraction without merging names
+
+For each member, extract its edge-method union to B and reconstruct B itself, a vacuous restriction, a vacuous extension, or a restriction of a vacuous extension according to the four signatures.
+Retain that member's exact QName, declaration flags and H affiliation; use disjoint fresh type identities for its selected support path.
+Unobserved sharing between support paths may be split because no predicate in this template tests an interior support identity or distinct members' type identity against one another.
+
+All H/Q1/Q2 expansions retain their complete declaration names and cardinalities, rather than one member per signature.
+The anchored X particle compares original matching declarations; a fresh name has no local match in either later fixed choice.
+Thus any locally successful parent requires fresh effective members to have both methods, and the repaired representatives preserve its restriction mappings and coherent implicit enumeration choices.
+
+The reconstructed helpers satisfy the preceding local and no-addition evidence proof simultaneously.
+Unused old supports can be omitted from the alternative witness; every support actually reconstructed is checked as a fresh root.
+This extraction builds a new root candidate relative to immutable Γ, not an in-place fork that rewrites inherited non-target types or deletes inherited additions.
+
+The opposite mixed orientation also reconstructs in this template, but its interior comparison differs as shown above.
+The theorem therefore permits a chosen orientation only under its explicit absence-of-interior-role premise.
+It supplies no rule interchanging orientations in an arbitrary context.
+
+#### General alternatives and unresolved proposition
+
+The anchor-segment lemma supplies an adequate relation observation map; the copied-B theorem supplies one coherent content/AU/closure reconstruction and an actual well-founded evidence discipline.
+Extending it to arbitrary successful witnesses still requires constructing raw content, scalar/AU properties, flags, bridges and named/intermediate roles simultaneously, with all consumed contexts and inherited fresh roots preserved.
+The live-content child failure and recursive consumed-root negative expose the two concrete premises missing from that extension.
+
+Exact copying retains arbitrary supplied helper complexity and offers no Γ-derived bound.
+Per-segment signatures alone lose immediate-edge finals, named identities and raw incidence; merging members loses expansion cardinality and order constraints.
+Support deletion cannot omit necessary global declarations or abstract bridges, and an arbitrary no-addition child need not pass restriction to B.
+
+A fixed-point alternative must define its inductive or other justified interpretation, prove that contextual observations stabilize in an input-derived finite domain, and reconstruct valid complete witnesses from accepted states.
+Growing parent forks with inherited additions are not component-ID SCCs; legal reference recursion alone supplies neither cyclic proof acceptance nor a complete negative interpretation.
+Fair enumeration, a bounded constraint encoding and configurable exhaustion still supply no terminating general negative.
+
+The precise remaining proposition is arbitrary-success simultaneous repaired-family extraction/reconstruction and general contextual evidence adequacy, followed by an input-derived finite bound or equivalent terminating complete criterion.
+These scoped results do not refute that proposition or the existence of a complete method.
+One concrete next action is to extend the anchor inventory to immediate-head final and raw/AU/scalar roles, then construct a non-copied-content helper together with its complete required child rather than assuming the copied-B closure lemma.
+
+#### Proof-to-control and five-gate disposition
+
+| Claim or gate | Evidence | Disposition |
+| --- | --- | --- |
+| Fixed-anchor relation observation replay | Dated clauses, type and particle owners | Established for qualified all-complex queries |
+| Mixed orientation at interior anchor | Distinct local particles and live reference | Distinguishable; no general interchange |
+| Complete copied-B closure | Exact fixture graph and finite verifier receipts | Established within template |
+| Arbitrary finite copied-B forest reconstruction | No-addition rank induction | Established within template |
+| Simultaneous extraction | Per-member signatures with retained names | Established within template |
+| Positive soundness | Existing finite verifier and complete controls | Retained |
+| Coverage of every permitted construction | No arbitrary-content extraction theorem | Open |
+| General witness/evidence adequacy | Template theorem only | Open |
+| Complete general negatives | No input-derived exhaustive criterion | Open |
+| Mathematical general search termination | Supplied-template rank only | Open |
+
+The [shared-owner controls](../test/research/re01/helper-method-support.test.ts) retain both mixed positives, live-content failure and recursive negative, and add interior anchors, entered blocks, simultaneous opposite paths, padding extraction, sharing, unused fresh roots and missing sibling-context evidence.
+The [independent reference controls](../test/conformance/reference/re01-helper-method-support.test.ts) cover the source premises and interior-head engine contrast without compiler imports.
+No semantic owner, source API, failure category, resource default or general-negative branch changes; `verifyFiniteRe01Evidence` still sets universalCoverage, completeNegativeAnswer and searchTermination to false.
+
 ### Reviewed primitive no-change proof
 
 The [independently reviewed primitive branch](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6112070199) applies when X directly extends its designated ancestor A and A's base is qualified builtin `anyType`.
