@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "475ec25bd87a78d1faa8fc1b544508a085e30c47b3093c7fd5135234e3fe6e93",
+          "sha256": "f79e2aaccdb38b520cf7e8f8d14a8bc2370b0d493a31153a5453e94d6b94ee3b",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2191,12 +2191,12 @@
         {
           "path": "test/research/re01/helper-method-support.test.ts",
           "role": "prototype",
-          "sha256": "a66eefc50f99534b1f24ba883727d2bbdb8f18b163a83a7beb0d0405631c13ad"
+          "sha256": "a3e3c83ef87d1bfdec87cdb218f7ff2f94a5a1b53fca626529c53468f8a646ab"
         },
         {
           "path": "test/conformance/reference/re01-helper-method-support.test.ts",
           "role": "reference",
-          "sha256": "9efc6e7ebcd492777b12be6b28f41214948f8573be8594869b53df21ad4bb26b"
+          "sha256": "d19bf2c4b379e15529087d00bd51c9b13f40744f9caf9dd9d2b7704e1c1b7b7a"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/helper-method-support.xsd",
