@@ -906,6 +906,95 @@ The [independent source controls](../test/conformance/reference/re01-helper-meth
 Existing inherited-root, unused-root, sharing, missing-evidence and consumed-X controls are reused unchanged for the copied theorem's contextual obligations.
 All seven recovery inputs, accepted B-v1, P1/F2, budgets and downstream ownership remain intact; full #234/#232 acceptance stays open.
 
+#### Private helper-particle replacement lemma
+
+This slice starts from PR #291's final ledgers and fetched actual main `46e0551b3532f11081a7dd195909d7a264581af3`, tree `e32a93a2e61ad8e70c27863b0e16c4340054f6e0`.
+Investigation and implementation began at `2026-10-14T20:18:24Z`, with a 90-minute cutoff at `2026-10-14T21:48:24Z`; review and delivery follow separately.
+Inherit every preceding nonrecursive support-helper template premise except helper content.
+
+Permit finite acyclic helper particle graphs built from element, sequence and choice particles, reusing original declarations and particles from the established copied-B closure.
+Fresh particles may reference other fresh particles and be shared between helpers; no other declarations, scalar helpers, affiliation bridges, wildcards or semantic categories are added.
+Retain the stipulated helper/member identities, ancestry, methods, empty flags, AUs and attribute wildcards, including unused helpers and the absence of additional named/intermediate roles.
+
+##### Privacy and the complete reference inventory
+
+Let O be the complete set of fresh particle nodes proposed for omission, never an original Γ particle.
+Replace every helper's effective raw content and any canonical content contribution with B's exact content before testing privacy.
+O is private precisely when no retained component has a semantic, ownership or correspondence reference requiring a node of O; edges between omitted nodes are harmless, whereas a retained node owned by an omitted particle fails privacy.
+
+The copied-B theorem requires all additional particles to be in O.
+Leaving a nonprivate fresh particle behind violates its no-additional-particle premise; this lemma makes no claim for such a root.
+The quantified class is therefore the expanded template with a wholly private fresh-particle inventory, not arbitrary particle additions classified by one content pointer.
+
+| Reference inventory | Required privacy check |
+| --- | --- |
+| Canonical containment | Complex/group content, compositor children and attribute incidence |
+| Canonical typed slots | Declaration types/affiliations, bases/inline types and particle terms |
+| Effective raw properties | Content particle/type, base, AU and wildcard source identities |
+| Scoped identity ownership | Every retained owner exists outside O |
+| Correspondence operands | Original anchors, provenance and generated-particle identity/sharing |
+| Scalar, facet and notation selectors | Unchanged Γ selectors; none added in this class |
+| Membership and consumed dependencies | Rebuild complete inventories and receipts in every new context |
+
+[Graph traversal](../src/compiler/graphTraversal.ts) supplies the canonical inventory; [semantic context](../src/compiler/semanticContext.ts) separately indexes effective raw fields and validates ownership and closure.
+Raw overlays can hide canonical edges in effective traversal, so inspect both inventories.
+Lexical syntax and source locations are immutable provenance, not additional semantic particle selectors; any retained correspondence requirement still belongs in the audit.
+
+After replacing content, retained helper references lead only to helpers or B, and member type/affiliation references lead only to those types and H.
+Original Γ, X's exact endpoint properties and B are fixed and cannot acquire fresh particle dependencies.
+Ownership and provenance must nevertheless be checked explicitly rather than deduced from type-reference reachability.
+
+##### Alternative construction and proof
+
+Proposition: every locally successful root in this private expanded class admits the copied-B alternative and complete finite contextual evidence below.
+Local success requires actual legality of every original helper edge, member and fresh particle, not merely derivation labels or X's isolated mapping.
+Complete original evidence is verified in the concrete controls; it is not an extra assumption of the universal replacement statement.
+
+Construct a new root relative to immutable Γ, retaining all supplied helper types and member declarations with the same identities, ancestry, methods and sharing, including unused helpers.
+Simultaneously replace every helper content field with B's exact original element-only particle and omit exactly O, retaining all original components and X's endpoint.
+This constructs an alternative root; it does not edit or delete inherited additions inside an existing child fork.
+
+Privacy establishes complete retained reference closure with legitimate unchanged identities and owners; original correspondence anchors remain unchanged and no original particle or declaration is omitted.
+Omitted structure has no retained predicate role after replacement.
+Build and check new correspondence and complete consumed closure independently through existing owners; do not transfer old helper receipts.
+
+Type paths, entered blocks, complete direct H affiliation census, flags and exact member names are unchanged, so each relevant H/Q1/Q2 expansion retains exactly its declarations and cardinality.
+X still compares the same original particle to unchanged B with the same original local declaration/type operands, required string delimiter, occurrence arithmetic, ordered mappings and coherent implicit choices.
+No helper interior has an additional named/intermediate comparison role.
+
+Every helper edge now compares exact B content with B or another copied helper: restriction succeeds by original particle identity, and extension succeeds by the raw identity branch of `cos-particle-extend`.
+Empty AU/wildcard duties, empty immediate finals, nonabstractness, retained namespaces and finite ancestry discharge the other local premises; member affiliation still reaches B under H's empty final.
+This re-establishes legality rather than preserving original helper raw-content observations.
+
+Every copied-B theorem premise now holds: the same Γ/X/B, a finite acyclic copied-content helper forest with the same methods and flags, stipulated direct-H members with disjoint names, and no additional particles or other roles/categories.
+Its established closure rechecks declarations, UPA, EDC, correspondence and all consumed dependencies, including newly consumed content dependencies, without consuming X because both delimiters remain string.
+Its no-addition induction on fresh extension count supplies complete finite evidence with every retained helper/member a fresh root relative to Γ in every required child, including shared and unused types.
+
+Each child rechecks its own complete closure and supplies all remaining extension evidence in that context.
+The supplied-forest bound and sufficient-resource qualification remain unchanged; there is no Γ-derived witness bound or general negative/termination consequence.
+
+##### Concrete original and reconstructed controls
+
+Before execution, the rules predict success for P+: give B's outer sequence a fresh S-owned identity, tighten only `0..1` to `1..1`, and retain every original child.
+S restricts B by `Recurse` with contained occurrence range and identity-preserved child comparisons; U extends S using exactly the same P+, and M:U affiliates directly with H.
+Both path methods exclude M under Q1/Q2, permitting X's required restriction of unchanged B.
+
+U's required child changes only U's derivation to restriction of B and preserves P+, S and M.
+Its restriction again passes; every original fresh type, member and P+ remains a required root with all consumed dependencies checked.
+The [focused controls](../test/research/re01/helper-method-support.test.ts) verify both complete original nodes and independently check the copied alternative and its child over the same immutable request, omitting P+ only after the retained-reference audit.
+
+A second original control replaces the first element and both choices with fresh particles; its choices share fresh H/Q1 element particles referencing exact original declarations.
+That finite acyclic DAG and its required child pass, as does the alternative omitting all six private particles.
+The [independent source-premise control](../test/conformance/reference/re01-helper-method-support.test.ts) derives P+'s range containment and pins the retained ordered children and string delimiter without importing production particle owners.
+
+Both controls check complete expansion equality, unchanged X properties, helper ancestry and member identities, context-qualified component receipts and absence of X in required-child closure.
+Existing copied-forest sharing/unused-root, missing sibling/unused evidence, inherited-root and consumed-X coverage is reused unchanged; no generic transformation framework or production API is added.
+A rejected supplied candidate would identify its failed premise, not refute the universal restricted replacement lemma.
+
+This extends only the private support-particle class; arbitrary-success extraction outside it, general contextual adequacy, input-derived witness bounds, complete negatives and mathematical search termination remain open.
+Accepted B-v1, recovery packages, P1/F2, budgets and downstream ownership are unchanged.
+One next action is to investigate a retained particle dependency outside helper content that fails privacy and determine whether its actual role admits alternative reconstruction.
+
 #### General alternatives and unresolved proposition
 
 The anchor-segment lemma supplies an adequate relation observation map; the copied-B theorem supplies one coherent content/AU/closure reconstruction and an actual well-founded evidence discipline.

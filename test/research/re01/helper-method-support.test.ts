@@ -4,6 +4,7 @@ import {loadSchemaInput} from '../../../src/loader/schemaInput.js';
 import {globalId, scopedId} from '../../../src/compiler/canonicalGraph.js';
 import type {ComplexTypeNode, ElementNode, GraphNode, ParticleNode, Reference} from '../../../src/compiler/canonicalGraph.js';
 import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
+import {containedNodes, referenceSlots} from '../../../src/compiler/graphTraversal.js';
 import {forkSemanticCandidate} from '../../../src/compiler/semanticContext.js';
 import type {SemanticContext} from '../../../src/compiler/semanticContext.js';
 import {checkSubstitution, checkTypeDerivation, effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
@@ -98,7 +99,71 @@ async function subject(shape: Shape, names: readonly [string, string, string] = 
     target: target.id, intermediate: b.id, ancestor: local(a.id), premises: []}
     : undefined;
   return {request, parent: parent.context, child: child?.kind === 'prepared' ? child.context : undefined,
-    a, x, b, u, v, m, target, root, nested, companions, companionMembers, raw};
+    a, r, x, b, u, v, m, target, root, nested, companions, companionMembers, raw};
+}
+
+// Two concrete alternative roots over the same immutable request. No inherited
+// child is edited and no general particle transformation is implemented here.
+async function privateParticleControl(dag: boolean) {
+  const copied = await subject('restriction-extension', ['S', 'U', 'M']);
+  const {request, a, b, r, x, m, raw} = copied;
+  const particle = (id: string): ParticleNode => {
+    const found = request.actual.lookup(id);
+    if (found.kind !== 'found' || found.node.kind !== 'particle') throw new Error(id);
+    return found.node;
+  };
+  const outer = particle(a.content!);
+  if (outer.term.kind !== 'sequence') throw new Error('Expected B outer sequence');
+  const particles: ParticleNode[] = [];
+  const fresh = (source: ParticleNode, name: string, term = source.term): ParticleNode => {
+    const node: ParticleNode = {...source, id: scopedId(copied.u.id, '/' + name, 'particle'),
+      identity: {kind: 'scoped', owner: copied.u.id, path: '/' + name, role: 'particle'},
+      declaredAttributes: [], annotations: [], retained: [], syntaxDetails: [], term};
+    particles.push(node); return node;
+  };
+  let children = outer.term.children;
+  if (dag) {
+    const first = fresh(particle(children[0]!), 'first');
+    const choice1 = particle(children[2]!), choice2 = particle(children[3]!);
+    if (choice1.term.kind !== 'choice' || choice2.term.kind !== 'choice') throw new Error('Expected choices');
+    // Reuse original declarations, with shared fresh H/Q1 particles in the
+    // two choices. The original string delimiter and Q2 particle stay exact.
+    const h = fresh(particle(choice1.term.children[0]!), 'localH');
+    const q1 = fresh(particle(choice1.term.children[1]!), 'localQ1');
+    const c1 = fresh(choice1, 'choice1', {kind: 'choice', children: [h.id, q1.id]});
+    const c2 = fresh(choice2, 'choice2', {kind: 'choice', children: [h.id, q1.id, choice2.term.children[2]!]});
+    children = [first.id, children[1]!, c1.id, c2.id];
+  }
+  const pPlus = fresh({...outer, occurs: {min: '1', max: '1'}}, 'P+', {kind: 'sequence', children});
+  const s = {...copied.u, content: pPlus.id}, u = {...copied.v, content: pPlus.id};
+  const endpoint = {...x, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(b.id), facets: []}};
+  const additions = [m, s, u, ...particles];
+  const original = request.candidate({key: dag ? 'private-dag' : 'private-P+',
+    active: [...request.actual.members, ...additions.map(node => node.id)], additions, endpoint,
+    rawTypes: [raw(a), raw(b), raw(r), raw(endpoint), raw(s, pPlus.id), raw(u, pPlus.id)],
+    rawElements: [{element: m.id, final: [], block: []}]});
+  if (original.kind !== 'prepared') throw new Error(JSON.stringify(original));
+  const childEndpoint = {...u, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(b.id), facets: []}};
+  const child = forkSemanticCandidate(original.context, {key: 'private-child', active: original.context.members,
+    endpoint: childEndpoint, rawTypes: [raw(childEndpoint, pPlus.id)]});
+  if (child.kind !== 'prepared') throw new Error(JSON.stringify(child));
+  const root = {...copied.root, context: original.context};
+  const nested = {id: 'helper', parent: original.context, context: child.context,
+    target: u.id, intermediate: b.id, ancestor: local(a.id), premises: []};
+  const copiedS = {...s, content: a.content}, copiedU = {...u, content: a.content};
+  const replacement = request.candidate({key: 'private-copied-alternative',
+    active: [...request.actual.members, m.id, s.id, u.id], additions: [m, copiedS, copiedU], endpoint,
+    rawTypes: [raw(a), raw(b), raw(r), raw(endpoint), raw(copiedS), raw(copiedU)],
+    rawElements: [{element: m.id, final: [], block: []}]});
+  if (replacement.kind !== 'prepared') throw new Error(JSON.stringify(replacement));
+  const copiedEndpoint = {...copiedU, derivation: childEndpoint.derivation};
+  const copiedChild = forkSemanticCandidate(replacement.context, {key: 'private-copied-child', active: replacement.context.members,
+    endpoint: copiedEndpoint, rawTypes: [raw(copiedEndpoint)]});
+  if (copiedChild.kind !== 'prepared') throw new Error(JSON.stringify(copiedChild));
+  return {copied: {...copied, parent: replacement.context, child: copiedChild.context,
+    root: {...copied.root, context: replacement.context},
+    nested: {...nested, parent: replacement.context, context: copiedChild.context}},
+    s, u, m, particles, pPlus, parent: original.context, child: child.context, root, nested};
 }
 
 function members(context: SemanticContext, head: string) {
@@ -280,6 +345,122 @@ describe('helper method support with explicit contextual reconstruction', () => 
     expect(members(parent, 'Q1')).not.toContain(elementId('M'));
     expect(members(parent, 'Q2')).not.toContain(elementId('M'));
     expect(checkComponentConstruction(parent, typeId(target))).toMatchObject({kind: 'candidate-rejected', rule});
+  });
+
+  it.each([false, true])('erases private helper particles in a new copied-B root (shared DAG: %s)', async dag => {
+    // Expected before execution: P+ 1..1 restricts B 0..1 by Recurse;
+    // U's extension is raw identity. Its child preserves P+ and restricts B.
+    // Both methods still exclude M under Q1/Q2 in the original root.
+    const control = await privateParticleControl(dag);
+    const {copied, parent, child, s, u, m, particles, pPlus, root, nested} = control;
+    expect(pPlus.occurs).toEqual({min: '1', max: '1'});
+    expect(parent.owner(pPlus.id)).toBe(s.id);
+    if (!dag) {
+      const outer = copied.request.actual.lookup(copied.a.content!);
+      if (outer.kind !== 'found' || outer.node.kind !== 'particle') throw new Error('Expected B particle');
+      expect(pPlus.term).toEqual(outer.node.term);
+      expect(outer.node.occurs).toEqual({min: '0', max: '1'});
+    }
+    const omitted = new Set(particles.map(node => node.id));
+    for (const context of [parent, child]) {
+      for (const node of [s, u, m, ...particles])
+        expect(checkComponentConstruction(context, node.id), node.id).toMatchObject({kind: 'checked'});
+      for (const helper of [s, u]) {
+        const content = deriveRawComplexContent(context, helper.id);
+        expect(content).toMatchObject({kind: 'checked', view: {content: {kind: 'element-only', particle: pPlus.id}}});
+      }
+      expect(context.members).toEqual(parent.members);
+    }
+    expect(checkComponentConstruction(parent, copied.x.id)).toMatchObject({kind: 'checked'});
+    const original = verifyFiniteRe01Evidence(copied.request.actual, copied.x.id, {root: root.id, nodes: [root, nested]});
+    expect(original, JSON.stringify(original)).toMatchObject({kind: 'checked-candidate'});
+    if (original.kind !== 'checked-candidate') throw new Error(original.kind);
+    for (const step of original.proof) {
+      const ids = new Set(step.components.map(receipt => receipt.component));
+      for (const node of [s, u, m, copied.a, copied.b, ...particles]) expect(ids.has(node.id)).toBe(true);
+      for (const receipt of step.components) {
+        expect(receipt.contextId).toBe(step.contextId);
+        for (const dependency of receipt.dependencies) expect(ids.has(dependency)).toBe(true);
+      }
+      if (step.target === u.id) expect(ids.has(copied.x.id)).toBe(false);
+    }
+
+    // Privacy audit: inspect every retained node, both canonical and effective
+    // raw inventories, owners and provenance. Only S/U content edges to the
+    // private set may disappear; checking just one content pointer is unsound.
+    const contentUsers = new Set<string>();
+    for (const id of parent.members.filter(id => !omitted.has(id))) {
+      const found = parent.lookup(id);
+      if (found.kind !== 'found') throw new Error(id);
+      const node = found.node, properties = parent.rawTypeProperties(id);
+      const canonical = containedNodes(node).filter(target => omitted.has(target));
+      const effective = properties && 'particle' in properties.content && omitted.has(properties.content.particle);
+      if (canonical.length || effective) {
+        expect([s.id, u.id]).toContain(id);
+        expect(canonical).toEqual([pPlus.id]);
+        expect(properties?.content).toEqual({kind: 'element-only', particle: pPlus.id});
+        contentUsers.add(id);
+      }
+      expect(omitted.has(parent.owner(id) ?? '')).toBe(false);
+      for (const slot of [...referenceSlots(node), ...parent.references(id)]) {
+        if (slot.reference.kind === 'original-generated') throw new Error('No scalar slots in template');
+        const resolved = parent.resolve(slot.reference);
+        if (resolved.kind === 'found') expect(omitted.has(resolved.node.id)).toBe(false);
+      }
+      if (properties) {
+        expect(properties.attributeUses.some(id => omitted.has(id))).toBe(false);
+        expect(properties.wildcard).toBeUndefined();
+        const origins = properties.provenance.kind === 'actual-mapped'
+          ? [properties.provenance.original] : properties.provenance.originals;
+        expect(origins.some(id => omitted.has(id))).toBe(false);
+      }
+    }
+    expect([...contentUsers].sort()).toEqual([s.id, u.id].sort());
+
+    // The copied root was independently constructed from the same immutable
+    // actual request, retaining exactly S/U/M and omitting all private nodes.
+    if (!copied.child || !copied.nested) throw new Error('Expected copied child');
+    expect(copied.parent.members).toEqual(parent.members.filter(id => !omitted.has(id)));
+    expect(copied.request.actual.members.some(id => omitted.has(id))).toBe(false);
+    for (const context of [copied.parent, copied.child]) {
+      for (const helper of [s, u]) {
+        expect(context.rawTypeProperties(helper.id)?.content).toEqual({kind: 'element-only', particle: copied.a.content});
+        expect(checkComponentConstruction(context, helper.id)).toMatchObject({kind: 'checked'});
+      }
+      for (const id of context.members) {
+        const found = context.lookup(id);
+        if (found.kind !== 'found') throw new Error(id);
+        expect(containedNodes(found.node).some(id => omitted.has(id))).toBe(false);
+        expect(omitted.has(context.owner(id) ?? '')).toBe(false);
+        for (const slot of [...referenceSlots(found.node), ...context.references(id)]) {
+          if (slot.reference.kind === 'original-generated') throw new Error('Unexpected scalar slot');
+          const resolved = context.resolve(slot.reference);
+          if (resolved.kind === 'found') expect(omitted.has(resolved.node.id)).toBe(false);
+        }
+      }
+    }
+    const replacement = verifyFiniteRe01Evidence(copied.request.actual, copied.x.id,
+      {root: copied.root.id, nodes: [copied.root, copied.nested]});
+    expect(replacement, JSON.stringify(replacement)).toMatchObject({kind: 'checked-candidate'});
+    if (replacement.kind !== 'checked-candidate') throw new Error(replacement.kind);
+    for (const step of replacement.proof) {
+      const ids = new Set(step.components.map(receipt => receipt.component));
+      for (const node of [s, u, m, copied.a, copied.b]) expect(ids.has(node.id)).toBe(true);
+      expect([...ids].some(id => omitted.has(id))).toBe(false);
+      expect(step.correspondence.fresh.some(id => omitted.has(id))).toBe(false);
+      if (step.target === u.id) expect(ids.has(copied.x.id)).toBe(false);
+    }
+    for (const head of ['H', 'Q1', 'Q2']) {
+      expect(members(parent, head)).toEqual(members(copied.parent, head));
+      expect(members(child, head)).toEqual(members(copied.child, head));
+    }
+    expect(members(parent, 'H')).toEqual([elementId('H'), m.id]);
+    for (const head of ['Q1', 'Q2']) expect(members(parent, head)).not.toContain(m.id);
+    for (const helper of [s, u])
+      expect(parent.rawTypeProperties(helper.id)?.derivation).toEqual(copied.parent.rawTypeProperties(helper.id)?.derivation);
+    expect(parent.lookup(m.id)).toEqual(copied.parent.lookup(m.id));
+    expect(parent.rawTypeProperties(copied.x.id)).toEqual(copied.parent.rawTypeProperties(copied.x.id));
+    expect(replacement.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
   });
 
   it.each(['extension-restriction', 'restriction-extension'] as const)('keeps exact interior anchors observable for %s', async shape => {
