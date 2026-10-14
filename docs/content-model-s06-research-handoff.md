@@ -26,6 +26,10 @@ The [empty-or-copied-B replacement lemma](content-model-s06-re-01.md#empty-or-co
 Simultaneously filling every empty helper in a new root relative to immutable Γ retains ancestry, identities, methods, members and X's complete relevant expansions/mapping; legality is re-established through the copied-B theorem, including inherited fresh roots.
 The empty S restriction and empty U extension, their required U-to-B child and the copied replacement pass complete finite verification; edge-label-only illegal candidates remain excluded.
 This is a scoped template theorem, not a B-v1 domain restriction, general witness bound or complete decision procedure; arbitrary raw/AU/scalar/bridge reconstruction and general contextual adequacy/termination remain open.
+The [private helper-particle replacement lemma](content-model-s06-re-01.md#private-helper-particle-replacement-lemma) additionally permits finite acyclic element/sequence/choice helper structure with shared private particles and reused original declarations.
+Simultaneous exact-B replacement in a new root omits only the wholly private fresh-particle inventory, audited across canonical/raw containment, typed references, ownership and correspondence; every retained helper/member remains a required root in each child.
+The fresh S-owned P+ tightens B's outer range to `1..1`; S restricts B, U extends S with the same P+, and the required U-to-B child preserves it with complete original evidence.
+That control, a shared particle DAG and their independently checked copied alternatives pass; every copied-B theorem premise is re-established, while nonprivate particle roles and all general acceptance gates remain outside this result.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.

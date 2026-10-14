@@ -86,6 +86,27 @@ describe('independent primary premises for mixed helper support', () => {
       .toEqual(Array.from({length: 5}, () => ({uri: namespace, local: 'B'})));
   });
 
+  it('derives the required-outer P+ control from the original particle premises', () => {
+    const outer = children(body(source(), 'A'), 'sequence')[0]!;
+    const baseRange = [BigInt(attribute(outer, 'minOccurs')!), BigInt(attribute(outer, 'maxOccurs') ?? '1')];
+    const requiredRange = [1n, 1n];
+    expect(baseRange).toEqual([0n, 1n]);
+    // Recurse checks range containment and the ordered children. P+ keeps
+    // every original child; its different outer identity is not an identity
+    // shortcut. U extends S using that very same P+ identity instead.
+    expect(requiredRange[0]! >= baseRange[0]! && requiredRange[1]! <= baseRange[1]!).toBe(true);
+    expect(outer.children.map(node => node.local)).toEqual(['element', 'element', 'choice', 'choice']);
+    expect(attribute(outer.children[0]!, 'ref')).toBe('t:H');
+    expect(expandedQName(outer.children[1]!, attribute(outer.children[1]!, 'type')!))
+      .toEqual({uri: 'http://www.w3.org/2001/XMLSchema', local: 'string'});
+    expect(children(outer.children[2]!, 'element').map(node => attribute(node, 'name'))).toEqual(['H', 'Q1']);
+    expect(children(outer.children[3]!, 'element').map(node => attribute(node, 'name'))).toEqual(['H', 'Q1', 'Q2']);
+    // These independently read source/rule premises predict local success;
+    // complete abstract root/child legality is verified by the finite owner.
+    // XML copying would create local declarations, so it cannot certify this
+    // abstract control's exact declaration identities or shared particles.
+  });
+
   it('retains the legal component recursion that makes the earlier endpoint consumed', async () => {
     const recursiveFile = 'xsd/recovery/helper-method-consumed-root.xsd';
     const schema = parseXml(readFileSync(localFixture(recursiveFile), 'utf8'), recursiveFile);

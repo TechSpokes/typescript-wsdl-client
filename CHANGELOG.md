@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): prove private helper-particle replacement into copied-B with complete original and alternative controls.
+
 - test(re01): prove simultaneous empty-helper replacement within the copied-B template with complete contextual controls.
 
 - test(re01): preserve exact helper roles and reconstruct simultaneous copied-content forests with complete contextual evidence.
