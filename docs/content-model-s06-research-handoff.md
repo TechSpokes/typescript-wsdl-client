@@ -18,6 +18,11 @@ The recursive consumed-root contrast has a scoped full-helper nonexistence proof
 This rejects neither legal component-reference recursion nor general finite-evidence adequacy, and adds no general-negative API.
 The repaired family's arbitrary-success extraction, general evidence adequacy and terminating negative criterion remain open after alternative investigation and independent scrutiny.
 Each obligation stays in its required context, including inherited fresh roots; preservation across contexts is required only for facts a method transfers or installs.
+The [role-sensitive continuation](content-model-s06-re-01.md#role-sensitive-extraction-and-simultaneous-copied-content-reconstruction) separates exact named/intermediate anchors from support-path observations.
+Its all-complex relation replay lemma retains segment methods and entered blocks; the two mixed orientations differ at exact interior anchors despite equal common-B vectors.
+For arbitrary finite copied-B forests in the exact nonrecursive fixture template, per-member extraction preserves every expansion name, and simultaneous no-addition reconstruction yields complete evidence by decreasing fresh extension count with every inherited root checked.
+Sharing, unused roots, missing sibling evidence and the z:X contrast have independent controls.
+This is a scoped template theorem, not a B-v1 domain restriction, general witness bound or complete decision procedure; arbitrary raw/AU/scalar/bridge reconstruction and general contextual adequacy/termination remain open.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
