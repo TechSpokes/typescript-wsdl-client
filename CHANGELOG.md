@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): delimit simultaneous scoped-helper reconstruction with checked identities and complete contextual evidence.
+
 - test(re01): refute automatic particle privacy through a retained scoped helper owner after canonical/raw replacement.
 
 - test(re01): prove private helper-particle replacement into copied-B with complete original and alternative controls.

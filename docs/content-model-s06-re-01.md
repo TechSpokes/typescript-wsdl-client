@@ -1098,6 +1098,124 @@ Privacy therefore remains an independent hypothesis of #292, and the existing re
 The next assignment is to investigate alternative reconstruction for this precise particle-owned scoped-helper role while preserving or justifying any identity/ownership change; no such repair or reconstruction theory is begun here.
 Accepted B-v1, all recovery inputs, P1/F2, budgets and downstream gates remain intact; #234/#232 stay open, with no general witness bound, complete negatives or general termination claim.
 
+#### Allocation-certified simultaneous scoped reconstruction
+
+This continuation establishes a conditional reconstruction lemma for the particle-owned scoped-helper role left by #293.
+The unconditional proposition remains unresolved at fresh identity allocation; this is outcome B with independently valid positive progress, not a counterexample or a new B-v1 restriction.
+The earlier automatic-privacy counterexample and private-replacement theorem retain their exact claims.
+
+The starting fetched main is `dbe4f93dfb5987a8176abf32a9396380603d2ccc`, tree `e23ea83a3f9b9b4a106f336fe8a1d5e1f60d3314`.
+Investigation/implementation starts at `2026-10-15T10:02:18Z`, with cutoff `2026-10-15T11:32:18Z`; the #234 delivery ledger records the earlier finding freeze, independent review and final revisions.
+All other nonrecursive Γ/X/B template premises remain in force, including retained global helper S, original string delimiters, direct H members, empty AUs/wildcards/flags, finite helper ancestry to B and no additional named/intermediate roles.
+
+##### Exact statement and allocation obligation
+
+Let O be the complete fresh-particle inventory to omit after exact-B canonical and effective raw content replacement.
+Let D contain every retained scoped helper directly owned by O and every retained scoped helper whose owner chain reaches one of those helpers.
+Finiteness and the original acyclic owner relation give an ownership order on D, independently of type ancestry.
+
+A supplied allocation assigns each helper in D a scoped identity derived with the existing `scopedId` function.
+For a direct O-owned helper the new owner is exact retained global S; for any other helper in D it is the allocated identity of its former helper owner.
+Role and anonymity remain unchanged; plan-local paths may change, while explicit semantic target namespaces must remain exact.
+
+The allocation certificate requires every resulting ID to be distinct from Γ, unchanged retained additions, omitted particles, all former D identities and every other allocated ID.
+For helpers outside D, retain the exact identity and owner.
+These are finite comparisons of actual derived IDs, not an assumption that distinct paths have distinct hashes.
+
+Conditional lemma: for every locally successful original root satisfying all other template premises, a passing complete allocation certificate makes the simultaneous reconstruction below a valid copied-B root with complete finite contextual evidence with sufficient resources.
+It preserves all original identities, member identities/QNames, distinct helper identities, sharing, ancestry methods and relevant expansion cardinalities, interpreting fresh helper references through the certified bijection.
+It does not preserve literal identities of renamed fresh helpers or transfer their old receipts.
+
+The unproved unconditional obligation is existence of such a certificate for every otherwise admitted finite template family under the specified retained S and derived-ID representation.
+`scopedId` hashes `(owner, path, role)` to a SHA-256 string; its scoped output space is finite, and no accepted rule proves injectivity or that varying a path escapes any supplied finite forbidden set.
+Infinite path spellings therefore do not prove the required allocation exists, and retrying paths has no justified total-success bound.
+
+This observation neither exhibits a valid family with no allocation nor proves nonexistence of another reconstruction.
+Collision rejection, a finite retry cutoff or resource exhaustion cannot settle that existential question.
+The construction covers the precisely delimited certificate-bearing subfamily; generalizing it requires a fresh-allocation argument or a separately reviewed representation decision, rather than an implicit cryptographic premise or opportunistic identity change.
+
+##### Consumer inventory and semantic invariants
+
+| Consumer | Obligation after reconstruction |
+| --- | --- |
+| `semanticContext.ts` | Derived IDs, unique membership, active owners and acyclic owner chains |
+| `schemaTypeIdentity.ts` / `schemaTypeRelations.ts` | Coherent identity equality, exact base paths, methods and entered blocks |
+| `re01TypePropertyValidation.ts` | Raw owner keys, matching derivations, explicit scoped namespaces and original provenance |
+| `schemaTypeIdentity.ts:declaredType` | Canonical declaration types and optional effective raw type overlays |
+| `particleDeclarationConsistency.ts` | Preserve scoped anonymity and every same-QName EDC obligation |
+| Particle restriction/attribution owners | Preserve exact original positions, names, occurrences and effective member sets |
+| `re01CandidateCorrespondence.ts` | Rebuild original/endpoint correspondence against immutable Γ |
+| `finiteRe01Verification.ts` | New context-qualified receipts and every inherited fresh root in each required child |
+
+Abstract B-v1 ownership remains distinct from the persisted/source containing-declaration incidence described above.
+The current context validates owner membership and cycles; an owner edge is not automatically a local type-validity dependency in a component receipt.
+The proof checks those structural facts separately from consumed semantic closure and claims no XML or persisted-catalog representation.
+
+The identity bijection fixes Γ, S, unchanged helpers and every member declaration.
+It maps canonical helper base/inline-type and member type references, raw type row keys and derivation bases, raw element type overlays and active membership entries consistently.
+The template has no scalar selectors, AU/group records, generated identities or additional typed categories requiring another renaming rule.
+
+Original correspondence and raw provenance selectors still address exact Γ identities; arbitrary lexical/source strings are not rewritten as semantic IDs.
+Rebuild diagnostic/evidence target identities and context-local receipts rather than reusing identity-bearing evidence from the old root.
+Canonical and effective raw inventories are both audited: a correct raw overlay can hide a stale canonical reference during preparation, so successful effective lookup alone is insufficient.
+
+##### Reconstruction and copied-B proof
+
+Construct a new root over the same immutable Γ, retaining every original record and X's stipulated endpoint.
+Replace every helper's canonical and effective raw content with exact B, apply the certified identity/reference/key changes, and omit exactly O and the former D identity records.
+This is an alternative root, not deletion or renaming of inherited additions inside an existing child.
+
+Every altered ownership chain terminates at global S: direct O-owned helpers now point to S, and their dependent helpers point to earlier allocated owners.
+An unchanged retained helper cannot depend through ownership on a renamed helper, since that would put it in D.
+All other retained owner chains preserve their acyclic structure, so no missing owner or new cycle is introduced.
+
+After replacement, the previous exhaustive retained-reference classification has no surviving retained-to-O selector.
+Helper canonical/raw content points to original B content; scoped ownership now stays in retained helpers or unchanged original/member owners; type/member slots point to types and H.
+No original record, raw provenance anchor, endpoint correspondence requirement, generated sharing selector or other template category introduces a fresh particle target.
+Verify complete canonical/raw reference resolution and keyed membership before claiming privacy; a missing or outside-context reference fails this audit.
+
+Injectivity preserves type identity equality and sharing, while coherent rebinding preserves every finite ancestry path, method and entered block relative to fixed B/H/Q1/Q2.
+Scoped helpers remain anonymous and retain explicit semantic namespaces, independently of their new owner.
+Fresh member names remain pairwise disjoint and occur only at the first distinct H position; numeric repetition creates no second position, so no anonymous member acquires a repeated-QName EDC duty.
+
+Every relevant H/Q1/Q2 expansion has the same declaration identities and cardinality.
+X's original particle/declaration operands, string delimiter, occurrence arithmetic, ordered mappings and endpoint properties are unchanged.
+These are the consumed parent observations actually preserved; original helper-content legality and receipts are not transferred.
+
+Re-establish helper legality: every extension/restriction compares exact original B content, AU/wildcard and final/block duties remain empty, member affiliation still reaches B, and all original anchors remain available.
+The reconstructed root now satisfies every copied-B theorem premise, including complete retained-reference privacy, a finite acyclic helper forest and absence of other roles/categories.
+This applies the private-replacement and copied-B results with justified reconstructed identities rather than assuming an owner change is cosmetic.
+
+Rebuild each required child with exact B as intermediate and only its target changed to restriction of B.
+Preserve every reconstructed fresh identity, owner, member and unused helper in that child; build its own remaining evidence recursively.
+The existing no-addition induction decreases the number of remaining nonprimitive fresh extension edges, and the copied closure consumes B/A, original declarations and all required members/helpers without X.
+
+All correspondence, UPA/EDC, declaration, raw-property and consumed-dependency facts are recomputed in their required contexts.
+No earlier root mapping or sibling receipt is installed in a child.
+The supplied-forest certificate bound and configurable resource qualification remain those of the copied-B theorem; neither the finite allocation check nor this induction supplies a Γ-derived witness/search bound.
+
+##### Executable progress and stopping disposition
+
+The small typed construction in [helper-method-support.test.ts](../test/research/re01/helper-method-support.test.ts) has two particle-owned scoped helpers U/V, dependent scoped helper D owned by U, and retained scoped helper C owned by S.
+Two fresh global members share U, another uses D, and V/C remain unused legality roots; all helper contents initially share original-control P+.
+The reconstructed U/V are S-owned, D's derived identity and base both follow renamed U, C remains exact, and canonical/raw content becomes exact B before P+ omission.
+
+Complete original and reconstructed evidence each contains the root, both extension children and each child's own remaining sibling proof.
+Every step checks all inherited fresh roots, context-qualified receipt dependencies and the child closure without X; removing the unused V evidence from U's child remains unresolved.
+The controls preserve full root expansions/member names, original records and namespace/anonymity, and audit removed IDs across canonical/raw slots, owners, provenance and keys.
+
+Negative controls reject a collision with retained C, a stale dependent owner, raw row key, raw base or raw member reference.
+A canonical-only stale member reference with a correct raw overlay prepares but fails the separate canonical resolution audit, demonstrating why raw-only inspection is inadequate.
+These controls use the existing authorities and verifier; #293's automatic-privacy counterexample and omission failure remain unchanged.
+
+One fresh-context nonauthor reviewer scrutinizes the allocation gap and conditional semantic proof before reliance, then the final proof/code and scoped #232 joint disposition.
+The stopping finding is the allocation-certified lemma plus the precise unresolved unconditional fresh-allocation obligation.
+No generic renaming framework, production API, validator change, full negative answer or representation amendment is introduced.
+
+All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands, budgets and downstream ownership remain accepted and unchanged.
+General coverage, general witness/evidence adequacy, complete negative answers and mathematical search termination stay open; #234/#232 remain open and #179/#153 activation remains later.
+One next concrete action is to settle existence of a finite fresh derived-ID assignment under retained S, including dependent owner identities, without assuming hash injectivity; if that requires a representation decision, present it separately with review.
+
 #### General alternatives and unresolved proposition
 
 The anchor-segment lemma supplies an adequate relation observation map; the copied-B theorem supplies one coherent content/AU/closure reconstruction and an actual well-founded evidence discipline.
@@ -1125,6 +1243,7 @@ One concrete next action is to extend the anchor inventory to immediate-head fin
 | Complete copied-B closure | Exact fixture graph and finite verifier receipts | Established within template |
 | Arbitrary finite copied-B forest reconstruction | No-addition rank induction | Established within template |
 | Simultaneous extraction | Per-member signatures with retained names | Established within template |
+| Simultaneous scoped ownership reconstruction | Checked allocation, dependent identities and complete five-node controls | Conditional lemma; unconditional allocation open |
 | Positive soundness | Existing finite verifier and complete controls | Retained |
 | Coverage of every permitted construction | No arbitrary-content extraction theorem | Open |
 | General witness/evidence adequacy | Template theorem only | Open |

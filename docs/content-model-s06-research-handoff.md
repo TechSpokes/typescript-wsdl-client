@@ -33,7 +33,13 @@ That control, a shared particle DAG and their independently checked copied alter
 The [privacy-implication investigation](content-model-s06-re-01.md#complete-privacy-is-an-independent-template-premise) establishes that privacy is independent of the other template premises: a fresh scoped helper U can retain `identity.owner = P+` after simultaneous canonical/raw exact-B content replacement.
 The one-particle example preserves every other premise and passes complete original and dual-replaced root/child evidence while P+ remains; omission fails required owner membership.
 Fresh scoped ownership is governed by the current abstract B-v1 context, separately from persisted/source incidence rules; no XML representation is claimed.
-The private theorem keeps its hypothesis; alternative reconstruction for this exact ownership role is the next assignment, with general coverage/evidence/bounds/negatives/termination and downstream gates unchanged.
+The private theorem keeps its hypothesis; its historical next assignment is addressed by the conditional continuation below.
+The [simultaneous scoped reconstruction lemma](content-model-s06-re-01.md#allocation-certified-simultaneous-scoped-reconstruction) establishes positive reconstruction for a supplied, checked fresh injective allocation, including dependent scoped-owner identities, canonical/raw references and keyed records.
+Owner membership/acyclicity, anonymity, explicit namespaces, ancestry, sharing, expansions and original correspondence are justified separately before invoking the copied-B evidence theorem.
+Two particle-owned helpers, a dependent scoped helper, shared incoming members and unused roots have complete original/reconstructed five-node contextual evidence; collision, stale-reference/owner/key and missing-child controls preserve the limits.
+Unconditional allocation existence remains unresolved because `scopedId` hashes a finite output space; distinct fresh paths alone prove neither freshness nor a total successful allocator.
+This is outcome B with an allocation-certified positive subfamily, not nonexistence or a new B-v1 restriction; next settle that precise allocation obligation without assuming hash injectivity.
+General coverage/evidence/bounds/negatives/termination and downstream gates remain unchanged; #234/#232 stay open.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.

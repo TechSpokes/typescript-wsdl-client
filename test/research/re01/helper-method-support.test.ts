@@ -201,6 +201,82 @@ async function particleOwnedHelperControl(particleOwner: boolean) {
   return {request, a, b, x, s, u, m, pPlus, original: evidence(false), replaced: evidence(true), alternative, evidence};
 }
 
+// A supplied finite allocation, not an allocator or a graph-renaming API.
+// U/V are particle-owned; D is owned by U; C occupies a retained S-owned path.
+// Two declarations share U, another uses D, and V/C remain unused roots.
+async function simultaneousScopedControl() {
+  const seed = await privateParticleControl(false);
+  const {request, a, b, r, x, raw} = seed.copied;
+  const {s, pPlus} = seed;
+  const scoped = (owner: string, nodePath: string, base: string, method: Method): ComplexTypeNode => ({...seed.u,
+    id: scopedId(owner, nodePath, 'type'), identity: {kind: 'scoped', owner, path: nodePath, role: 'type'},
+    declaredAttributes: [], annotations: [], retained: [], syntaxDetails: [],
+    derivation: {kind: method, contentKind: 'complex', base: local(base), facets: []}});
+  const u = scoped(pPlus.id, '/U', s.id, 'extension');
+  const v = scoped(pPlus.id, '/V', s.id, 'extension');
+  const d = scoped(u.id, '/D', u.id, 'restriction');
+  const c = scoped(s.id, '/occupied', s.id, 'restriction');
+  const helpers = [s, u, v, d, c];
+  const declarations: ElementNode[] = [u, u, d].map((type, index) => {
+    const name = {namespace, local: `ScopedMember${index}`};
+    return {...seed.m, id: globalId('element', name), identity: {kind: 'global', role: 'element', name}, name,
+      type: local(type.id)};
+  });
+  const endpoint = {...x, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(b.id), facets: []}};
+  type Defect = 'collision' | 'dependent-owner' | 'canonical-reference' | 'raw-reference' | 'raw-key' | 'raw-base';
+  const build = (reconstruct: boolean, defect?: Defect) => {
+    // Every derived ID is computed from its final owner, then checked by the
+    // existing context factory. Distinct paths alone do not prove hash freshness.
+    const nextU = scoped(s.id, defect === 'collision' ? '/occupied' : '/reconstructed/U', s.id, 'extension');
+    const nextV = scoped(s.id, '/reconstructed/V', s.id, 'extension');
+    const nextD = scoped(defect === 'dependent-owner' ? u.id : nextU.id, '/D', nextU.id, 'restriction');
+    const identities = new Map([[u.id, nextU], [v.id, nextV], [d.id, nextD]]);
+    const rebind = (reference: Reference): Reference => reference.kind === 'local'
+      ? local(identities.get(reference.target)?.id ?? reference.target) : reference;
+    const types = reconstruct ? helpers.map(node => ({...(identities.get(node.id) ?? node), content: a.content})) : helpers;
+    const elements = reconstruct ? declarations.map((node, index) => ({...node,
+      type: defect === 'canonical-reference' && index === 1 ? node.type : rebind(node.type)})) : declarations;
+    const additions = [...types, ...elements, ...(reconstruct ? [] : [pPlus])];
+    const rawTypes = types.map(node => raw(node, reconstruct ? a.content : pPlus.id));
+    if (reconstruct) {
+      if (defect === 'raw-key') rawTypes[1] = {...rawTypes[1]!, type: u.id};
+      if (defect === 'raw-base') rawTypes[3] = {...rawTypes[3]!, derivation: {method: 'restriction', base: local(u.id)}};
+    }
+    const candidate = request.candidate({key: `simultaneous-${reconstruct}-${defect ?? 'valid'}`,
+      active: [...request.actual.members, ...additions.map(node => node.id)], additions, endpoint,
+      rawTypes: [raw(a), raw(b), raw(r), raw(endpoint), ...rawTypes],
+      rawElements: elements.map((node, index) => ({element: node.id, final: [], block: [],
+        type: reconstruct ? defect === 'raw-reference' && index === 1 ? declarations[index]!.type
+          : rebind(declarations[index]!.type) : node.type}))});
+    return {candidate, types, elements, identities};
+  };
+  const original = build(false), reconstructed = build(true);
+  if (original.candidate.kind !== 'prepared' || reconstructed.candidate.kind !== 'prepared')
+    throw new Error(JSON.stringify([original.candidate, reconstructed.candidate]));
+  const evidence = (context: SemanticContext, types: readonly ComplexTypeNode[]) => {
+    const nodes: FiniteRe01EvidenceNode[] = [];
+    const children = (parent: SemanticContext, remaining: readonly ComplexTypeNode[]): string[] => remaining.map(node => {
+      const id = `scoped-proof-${nodes.length}`;
+      const childEndpoint = {...node, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const,
+        base: local(b.id), facets: []}};
+      const child = forkSemanticCandidate(parent, {key: id, active: parent.members, endpoint: childEndpoint,
+        rawTypes: [raw(childEndpoint, node.content)]});
+      if (child.kind !== 'prepared') throw new Error(JSON.stringify(child));
+      const premises: string[] = [];
+      nodes.push({id, parent, context: child.context, target: node.id, intermediate: b.id, ancestor: local(a.id), premises});
+      premises.push(...children(child.context, remaining.filter(other => other.id !== node.id)));
+      return id;
+    });
+    const premises: string[] = [];
+    nodes.push({id: 'root', parent: request.actual, context, target: x.id, intermediate: b.id, ancestor: local(a.id), premises});
+    premises.push(...children(context, types.filter(node => node.derivation?.kind === 'extension')));
+    return {root: 'root', nodes};
+  };
+  return {request, a, b, x, s, u, v, d, c, pPlus, helpers, declarations, build, evidence,
+    original: {...original, context: original.candidate.context},
+    reconstructed: {...reconstructed, context: reconstructed.candidate.context}};
+}
+
 function members(context: SemanticContext, head: string) {
   const result = effectiveSubstitutionMembers(context, elementId(head));
   if (result.kind !== 'checked') throw new Error(JSON.stringify(result));
@@ -263,6 +339,114 @@ async function namedComparison(shape: 'extension-restriction' | 'restriction-ext
 }
 
 describe('helper method support with explicit contextual reconstruction', () => {
+  it('reconstructs simultaneous scoped ownership with shared references and dependent identities', async () => {
+    // Rule-derived expectation: a coherent injective rebinding preserves the
+    // type paths, sharing and declaration names. Exact B re-establishes content
+    // legality; every branch still owes both inherited extension roots.
+    const control = await simultaneousScopedControl();
+    const {request, a, b, x, s, u, v, d, c, pPlus, original, reconstructed} = control;
+    const changed = [u, v, d].map(node => reconstructed.identities.get(node.id)!);
+    expect(new Set(changed.map(node => node.id)).size).toBe(3);
+    const forbidden = new Set(original.context.members);
+    for (const node of changed) {
+      expect(forbidden.has(node.id)).toBe(false);
+      expect(node.identity.kind).toBe('scoped');
+      expect(reconstructed.context.rawTypeProperties(node.id)?.targetNamespace).toBe(namespace);
+    }
+    expect(reconstructed.context.owner(changed[0]!.id)).toBe(s.id);
+    expect(reconstructed.context.owner(changed[1]!.id)).toBe(s.id);
+    expect(reconstructed.context.owner(changed[2]!.id)).toBe(changed[0]!.id);
+    expect(reconstructed.context.owner(c.id)).toBe(s.id);
+    expect(reconstructed.elements.map(node => node.type)).toEqual([local(changed[0]!.id), local(changed[0]!.id), local(changed[2]!.id)]);
+    expect(reconstructed.types[3]!.derivation?.base).toEqual(local(changed[0]!.id));
+    expect(reconstructed.elements.map(node => [node.id, node.name])).toEqual(original.elements.map(node => [node.id, node.name]));
+    for (const head of ['H', 'Q1', 'Q2'])
+      expect(members(reconstructed.context, head)).toEqual(members(original.context, head));
+    for (const member of reconstructed.elements) {
+      expect(members(reconstructed.context, 'H')).toContain(member.id);
+      expect(members(reconstructed.context, 'Q1')).not.toContain(member.id);
+      expect(members(reconstructed.context, 'Q2')).not.toContain(member.id);
+    }
+    // Canonical slots and raw overlays both matter. A raw override cannot
+    // authenticate a stale canonical reference or a stale dependent owner.
+    const removed = new Set([pPlus.id, u.id, v.id, d.id]);
+    const context = reconstructed.context;
+    for (const id of context.members) {
+      expect(removed.has(id)).toBe(false);
+      const found = context.lookup(id);
+      if (found.kind !== 'found') throw new Error(id);
+      expect(removed.has(context.owner(id) ?? '')).toBe(false);
+      expect(containedNodes(found.node).some(target => removed.has(target))).toBe(false);
+      for (const slot of [...referenceSlots(found.node), ...context.references(id)]) {
+        if (slot.reference.kind === 'original-generated') throw new Error('No generated scalar role');
+        const target = context.resolve(slot.reference);
+        expect(['found', 'builtin']).toContain(target.kind);
+        if (target.kind === 'found') expect(removed.has(target.node.id)).toBe(false);
+      }
+      const properties = context.rawTypeProperties(id);
+      if (properties) {
+        expect(properties.type).toBe(id);
+        expect(properties.attributeUses).toEqual([]);
+        expect(properties.wildcard).toBeUndefined();
+        const origins = properties.provenance.kind === 'actual-mapped' ? [properties.provenance.original] : properties.provenance.originals;
+        expect(origins.some(target => removed.has(target))).toBe(false);
+      }
+    }
+    for (const id of request.actual.members) {
+      expect(reconstructed.context.sourceNode(id)).toBe(request.actual.sourceNode(id));
+      if (id !== x.id) expect(reconstructed.context.lookup(id)).toEqual(request.actual.lookup(id));
+    }
+    for (const record of [original, reconstructed]) {
+      const supplied = control.evidence(record.context, record.types);
+      const result = verifyFiniteRe01Evidence(request.actual, x.id, supplied);
+      expect(result, JSON.stringify(result)).toMatchObject({kind: 'checked-candidate'});
+      if (result.kind !== 'checked-candidate') throw new Error(result.kind);
+      expect(result.proof).toHaveLength(5); // Root, two children, and each child's required sibling.
+      for (const step of result.proof) {
+        const ids = new Set(step.components.map(receipt => receipt.component));
+        const context = supplied.nodes.find(node => node.context.contextId === step.contextId)!.context;
+        expect(context.members).toEqual(record.context.members);
+        for (const node of [...record.types, ...record.elements, a, b]) expect(ids.has(node.id), node.id).toBe(true);
+        expect(ids.has(pPlus.id)).toBe(record === original);
+        if (step.target !== x.id) expect(ids.has(x.id)).toBe(false);
+        for (const receipt of step.components) {
+          expect(receipt.contextId).toBe(step.contextId);
+          for (const dependency of receipt.dependencies) expect(ids.has(dependency)).toBe(true);
+        }
+      }
+      expect(result.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
+    }
+    const supplied = control.evidence(reconstructed.context, reconstructed.types);
+    const child = supplied.nodes[1]!;
+    const incomplete = {...supplied, nodes: supplied.nodes.map(node => node === child ? {...node, premises: []} : node)};
+    expect(verifyFiniteRe01Evidence(request.actual, x.id, incomplete))
+      .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', contextId: child.context.contextId, component: changed[1]!.id});
+  });
+
+  it('rejects colliding allocations and incomplete simultaneous rebinding', async () => {
+    const control = await simultaneousScopedControl();
+    expect(control.build(true, 'collision').candidate).toMatchObject({kind: 'candidate-rejected', code: 'identity', component: control.c.id});
+    for (const defect of ['dependent-owner', 'raw-reference', 'raw-key', 'raw-base'] as const) {
+      const result = control.build(true, defect).candidate;
+      expect(result, defect).toMatchObject({kind: 'candidate-rejected', code: 'missing', component: control.u.id});
+    }
+    // Correct raw overlays can mask stale canonical references at preparation.
+    // The separate canonical inventory audit must require successful resolution.
+    const stale = control.build(true, 'canonical-reference').candidate;
+    expect(stale.kind).toBe('prepared');
+    if (stale.kind !== 'prepared') throw new Error(JSON.stringify(stale));
+    const found = stale.context.lookup(control.declarations[1]!.id);
+    if (found.kind !== 'found' || found.node.kind !== 'element') throw new Error('Expected shared member');
+    expect(stale.context.resolve(found.node.type)).toMatchObject({kind: 'missing'});
+    for (const slot of stale.context.references(found.node.id)) {
+      if (slot.reference.kind === 'original-generated') throw new Error('No generated scalar role');
+      expect(stale.context.resolve(slot.reference)).toMatchObject({kind: 'found'});
+    }
+    // A rejected supplied allocation proves neither universal allocation failure
+    // nor nonexistence of a reconstruction. No retry bound or hash injectivity
+    // premise is installed by these concrete successes and failures.
+  });
+
   it.each([true, false])('checks scoped ownership after canonical and raw content replacement (particle owner: %s)', async particleOwner => {
     // Predicted independently of checker success: U.identity.owner=P+ is
     // unchanged by either content replacement, and omission must fail closure.
