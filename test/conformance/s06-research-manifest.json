@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "594ef9600140626a5c2126989f7daff49784c09fca318cb9eafc21b09dd2de18",
+          "sha256": "9c9efc3be15650fe9f1f1d88a128d3add9464fbf5940ecb0e131e7f6deb85cde",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2191,7 +2191,7 @@
         {
           "path": "test/research/re01/helper-method-support.test.ts",
           "role": "prototype",
-          "sha256": "cbe7bc068da649c676a35072b592235c3b18bed095525228b42bc689e96a9798"
+          "sha256": "4bcd6cb5b02f1114d89d0d04476d761d3826d6b7014c5532674daf1a0b1e820b"
         },
         {
           "path": "test/conformance/reference/re01-helper-method-support.test.ts",

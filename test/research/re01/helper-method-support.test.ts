@@ -166,6 +166,41 @@ async function privateParticleControl(dag: boolean) {
     s, u, m, particles, pPlus, parent: original.context, child: child.context, root, nested};
 }
 
+// The abstract B-v1 identity contract permits fresh scoped helpers. P+ owns U;
+// S owns P+, so ownership is acyclic even though S/U share content P+.
+async function particleOwnedHelperControl(particleOwner: boolean) {
+  const original = await privateParticleControl(false);
+  const {copied, s, pPlus} = original;
+  const {request, a, b, r, x, raw} = copied;
+  const owner = particleOwner ? pPlus.id : s.id;
+  const u: ComplexTypeNode = {...original.u, id: scopedId(owner, '/U', 'type'),
+    identity: {kind: 'scoped', owner, path: '/U', role: 'type'},
+    declaredAttributes: [], annotations: [], retained: [], syntaxDetails: []};
+  const m: ElementNode = {...original.m, type: local(u.id)};
+  const endpoint = {...x, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(b.id), facets: []}};
+  const alternative = (replace: boolean, omit: boolean) => {
+    const helpers = [s, u].map(node => replace ? {...node, content: a.content} : node);
+    const additions = [m, ...helpers, ...(omit ? [] : [pPlus])];
+    return request.candidate({key: `scoped-${replace}-${omit}`,
+      active: [...request.actual.members, ...additions.map(node => node.id)], additions, endpoint,
+      rawTypes: [raw(a), raw(b), raw(r), raw(endpoint), ...helpers.map(node => raw(node, replace ? a.content : pPlus.id))],
+      rawElements: [{element: m.id, final: [], block: []}]});
+  };
+  const evidence = (replace: boolean, omit = false) => {
+    const parent = alternative(replace, omit);
+    if (parent.kind !== 'prepared') throw new Error(JSON.stringify(parent));
+    const childEndpoint = {...u, content: replace ? a.content : pPlus.id,
+      derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(b.id), facets: []}};
+    const child = forkSemanticCandidate(parent.context, {key: 'scoped-child', active: parent.context.members,
+      endpoint: childEndpoint, rawTypes: [raw(childEndpoint, replace ? a.content : pPlus.id)]});
+    if (child.kind !== 'prepared') throw new Error(JSON.stringify(child));
+    const root = {...copied.root, context: parent.context};
+    const nested = {...original.nested, parent: parent.context, context: child.context, target: u.id};
+    return {parent: parent.context, child: child.context, root, nested};
+  };
+  return {request, a, b, x, s, u, m, pPlus, original: evidence(false), replaced: evidence(true), alternative, evidence};
+}
+
 function members(context: SemanticContext, head: string) {
   const result = effectiveSubstitutionMembers(context, elementId(head));
   if (result.kind !== 'checked') throw new Error(JSON.stringify(result));
@@ -228,6 +263,72 @@ async function namedComparison(shape: 'extension-restriction' | 'restriction-ext
 }
 
 describe('helper method support with explicit contextual reconstruction', () => {
+  it.each([true, false])('checks scoped ownership after canonical and raw content replacement (particle owner: %s)', async particleOwner => {
+    // Predicted independently of checker success: U.identity.owner=P+ is
+    // unchanged by either content replacement, and omission must fail closure.
+    const control = await particleOwnedHelperControl(particleOwner);
+    const {request, a, b, x, s, u, m, pPlus, original, replaced} = control;
+    expect(request.actual.lookup(pPlus.id).kind).toBe('missing');
+    for (const record of [original, replaced]) {
+      for (const context of [record.parent, record.child]) {
+        expect(context.owner(u.id)).toBe(particleOwner ? pPlus.id : s.id);
+        expect(context.owner(pPlus.id)).toBe(s.id);
+        expect(context.owner(s.id)).toBeUndefined();
+        for (const node of [s, u, m, pPlus])
+          expect(checkComponentConstruction(context, node.id), node.id).toMatchObject({kind: 'checked'});
+        expect(checkSubstitution(context, m.id, elementId('H'), {mode: 'affiliation'}))
+          .toMatchObject({kind: 'checked', value: true});
+      }
+      const result = verifyFiniteRe01Evidence(request.actual, x.id, {root: 'root', nodes: [record.root, record.nested]});
+      expect(result, JSON.stringify(result)).toMatchObject({kind: 'checked-candidate'});
+      if (result.kind !== 'checked-candidate') throw new Error(result.kind);
+      for (const step of result.proof) {
+        const ids = new Set(step.components.map(receipt => receipt.component));
+        for (const node of [s, u, m, pPlus, a, b]) expect(ids.has(node.id)).toBe(true);
+        for (const receipt of step.components) {
+          expect(receipt.contextId).toBe(step.contextId);
+          for (const dependency of receipt.dependencies) expect(ids.has(dependency)).toBe(true);
+        }
+        if (step.target === u.id) expect(ids.has(x.id)).toBe(false);
+      }
+      expect(result.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
+    }
+    for (const context of [replaced.parent, replaced.child]) {
+      for (const helper of [s, u]) {
+        const found = context.lookup(helper.id);
+        if (found.kind !== 'found') throw new Error(helper.id);
+        expect(containedNodes(found.node)).toEqual([a.content]);
+        expect(context.rawTypeProperties(helper.id)?.content).toEqual({kind: 'element-only', particle: a.content});
+      }
+      // Complete canonical and effective typed/containment inventories contain
+      // no retained-to-P+ edge. In the particle-owner case, only identity.owner
+      // still selects P+.
+      for (const id of context.members.filter(id => id !== pPlus.id)) {
+        const found = context.lookup(id);
+        if (found.kind !== 'found') throw new Error(id);
+        expect(containedNodes(found.node)).not.toContain(pPlus.id);
+        for (const slot of [...referenceSlots(found.node), ...context.references(id)]) {
+          if (slot.reference.kind === 'original-generated') throw new Error('No generated scalar in template');
+          const resolved = context.resolve(slot.reference);
+          if (resolved.kind === 'found') expect(resolved.node.id).not.toBe(pPlus.id);
+        }
+      }
+    }
+    for (const head of ['H', 'Q1', 'Q2']) expect(members(replaced.parent, head)).toEqual(members(original.parent, head));
+    expect(members(original.parent, 'Q1')).not.toContain(m.id);
+    expect(members(original.parent, 'Q2')).not.toContain(m.id);
+    if (particleOwner) {
+      expect(control.alternative(true, true)).toMatchObject({kind: 'candidate-rejected', code: 'missing', component: pPlus.id});
+    } else {
+      // Scoped identity itself does not prevent omission. This exact contrast
+      // changes only U's owner (and its derived ID/type reference), retaining S.
+      const omitted = control.evidence(true, true);
+      expect(omitted.parent.lookup(pPlus.id).kind).toBe('missing');
+      expect(verifyFiniteRe01Evidence(request.actual, x.id, {root: 'root', nodes: [omitted.root, omitted.nested]}))
+        .toMatchObject({kind: 'checked-candidate'});
+    }
+  });
+
   // Stated in #234 before execution: exact common B and empty type blocks make
   // Q1 exclusion require extension, and Q2 exclusion require restriction.
   // The anchored final choices admit only original QNames under both heads.

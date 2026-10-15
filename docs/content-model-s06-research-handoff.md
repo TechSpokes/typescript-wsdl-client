@@ -30,6 +30,10 @@ The [private helper-particle replacement lemma](content-model-s06-re-01.md#priva
 Simultaneous exact-B replacement in a new root omits only the wholly private fresh-particle inventory, audited across canonical/raw containment, typed references, ownership and correspondence; every retained helper/member remains a required root in each child.
 The fresh S-owned P+ tightens B's outer range to `1..1`; S restricts B, U extends S with the same P+, and the required U-to-B child preserves it with complete original evidence.
 That control, a shared particle DAG and their independently checked copied alternatives pass; every copied-B theorem premise is re-established, while nonprivate particle roles and all general acceptance gates remain outside this result.
+The [privacy-implication investigation](content-model-s06-re-01.md#complete-privacy-is-an-independent-template-premise) establishes that privacy is independent of the other template premises: a fresh scoped helper U can retain `identity.owner = P+` after simultaneous canonical/raw exact-B content replacement.
+The one-particle example preserves every other premise and passes complete original and dual-replaced root/child evidence while P+ remains; omission fails required owner membership.
+Fresh scoped ownership is governed by the current abstract B-v1 context, separately from persisted/source incidence rules; no XML representation is claimed.
+The private theorem keeps its hypothesis; alternative reconstruction for this exact ownership role is the next assignment, with general coverage/evidence/bounds/negatives/termination and downstream gates unchanged.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
