@@ -11,9 +11,11 @@ import {checkSubstitution, checkTypeDerivation, effectiveSubstitutionMembers} fr
 import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import {verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
 import type {FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verification.js';
-import {deriveRawComplexContent} from '../../../src/compiler/complexTypeContent.js';
+import {deriveModelGroupContent, deriveRawComplexContent} from '../../../src/compiler/complexTypeContent.js';
 import {prepareSemanticParticleView} from '../../../src/compiler/particleSemanticView.js';
 import {checkParticleRestriction} from '../../../src/compiler/particleRestriction.js';
+import {checkElementDeclarationsConsistent} from '../../../src/compiler/particleDeclarationConsistency.js';
+import {checkParticleAttribution} from '../../../src/compiler/particleAttribution.js';
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
 
 const namespace = 'urn:recovery:helper-methods';
@@ -104,7 +106,7 @@ async function subject(shape: Shape, names: readonly [string, string, string] = 
 
 // Two concrete alternative roots over the same immutable request. No inherited
 // child is edited and no general particle transformation is implemented here.
-async function privateParticleControl(dag: boolean) {
+async function privateParticleControl(dag: boolean, repeatedHead = false) {
   const copied = await subject('restriction-extension', ['S', 'U', 'M']);
   const {request, a, b, r, x, m, raw} = copied;
   const particle = (id: string): ParticleNode => {
@@ -133,6 +135,16 @@ async function privateParticleControl(dag: boolean) {
     const c1 = fresh(choice1, 'choice1', {kind: 'choice', children: [h.id, q1.id]});
     const c2 = fresh(choice2, 'choice2', {kind: 'choice', children: [h.id, q1.id, choice2.term.children[2]!]});
     children = [first.id, children[1]!, c1.id, c2.id];
+  }
+  if (repeatedHead) {
+    const choice = particle(outer.term.children[2]!);
+    if (choice.term.kind !== 'choice') throw new Error('Expected local choice');
+    // Two distinct incidence paths to the same required Q1 particle. In the
+    // root, Q1 expands only named original declarations; a child can add an
+    // anonymous member to both positions without changing this particle DAG.
+    const q1 = fresh(particle(choice.term.children[1]!), 'shared-global-Q1',
+      {kind: 'element', declaration: local(elementId('Q1'))});
+    children = [children[0]!, children[1]!, q1.id, q1.id];
   }
   const pPlus = fresh({...outer, occurs: {min: '1', max: '1'}}, 'P+', {kind: 'sequence', children});
   const s = {...copied.u, content: pPlus.id}, u = {...copied.v, content: pPlus.id};
@@ -204,12 +216,14 @@ async function particleOwnedHelperControl(particleOwner: boolean) {
 // A supplied finite allocation, not an allocator or a graph-renaming API.
 // U/V are particle-owned; D is owned by U; C occupies a retained S-owned path.
 // Two declarations share U, another uses D, and V/C remain unused roots.
-async function simultaneousScopedControl() {
-  const seed = await privateParticleControl(false);
+async function simultaneousScopedControl(dag = false, repeatedHead = false, named = false) {
+  const seed = await privateParticleControl(dag, repeatedHead);
   const {request, a, b, r, x, raw} = seed.copied;
   const {s, pPlus} = seed;
   const scoped = (owner: string, nodePath: string, base: string, method: Method): ComplexTypeNode => ({...seed.u,
-    id: scopedId(owner, nodePath, 'type'), identity: {kind: 'scoped', owner, path: nodePath, role: 'type'},
+    id: named ? typeId(nodePath.replaceAll('/', '_')) : scopedId(owner, nodePath, 'type'),
+    identity: named ? {kind: 'global', role: 'type', name: {namespace, local: nodePath.replaceAll('/', '_')}}
+      : {kind: 'scoped', owner, path: nodePath, role: 'type'},
     declaredAttributes: [], annotations: [], retained: [], syntaxDetails: [],
     derivation: {kind: method, contentKind: 'complex', base: local(base), facets: []}});
   const u = scoped(pPlus.id, '/U', s.id, 'extension');
@@ -236,7 +250,7 @@ async function simultaneousScopedControl() {
     const types = reconstruct ? helpers.map(node => ({...(identities.get(node.id) ?? node), content: a.content})) : helpers;
     const elements = reconstruct ? declarations.map((node, index) => ({...node,
       type: defect === 'canonical-reference' && index === 1 ? node.type : rebind(node.type)})) : declarations;
-    const additions = [...types, ...elements, ...(reconstruct ? [] : [pPlus])];
+    const additions = [...types, ...elements, ...(reconstruct ? [] : seed.particles)];
     const rawTypes = types.map(node => raw(node, reconstruct ? a.content : pPlus.id));
     if (reconstruct) {
       if (defect === 'raw-key') rawTypes[1] = {...rawTypes[1]!, type: u.id};
@@ -253,6 +267,14 @@ async function simultaneousScopedControl() {
   const original = build(false), reconstructed = build(true);
   if (original.candidate.kind !== 'prepared' || reconstructed.candidate.kind !== 'prepared')
     throw new Error(JSON.stringify([original.candidate, reconstructed.candidate]));
+  // A separate new root over immutable Gamma: preserve all component IDs,
+  // owner chains, raw keys, member references and the complete particle DAG.
+  const retainedTypes = helpers.map(node => ({...node, content: a.content}));
+  const retained = request.candidate({key: 'identity-preserving-particles',
+    active: original.candidate.context.members, additions: [...retainedTypes, ...declarations, ...seed.particles], endpoint,
+    rawTypes: [raw(a), raw(b), raw(r), raw(endpoint), ...retainedTypes.map(node => raw(node))],
+    rawElements: declarations.map(node => ({element: node.id, final: [], block: [], type: node.type}))});
+  if (retained.kind !== 'prepared') throw new Error(JSON.stringify(retained));
   const evidence = (context: SemanticContext, types: readonly ComplexTypeNode[]) => {
     const nodes: FiniteRe01EvidenceNode[] = [];
     const children = (parent: SemanticContext, remaining: readonly ComplexTypeNode[]): string[] => remaining.map(node => {
@@ -272,7 +294,8 @@ async function simultaneousScopedControl() {
     premises.push(...children(context, types.filter(node => node.derivation?.kind === 'extension')));
     return {root: 'root', nodes};
   };
-  return {request, a, b, x, s, u, v, d, c, pPlus, helpers, declarations, build, evidence,
+  return {request, a, b, x, s, u, v, d, c, pPlus, particles: seed.particles, helpers, declarations, build, evidence,
+    retained: {context: retained.context, types: retainedTypes, elements: declarations},
     original: {...original, context: original.candidate.context},
     reconstructed: {...reconstructed, context: reconstructed.candidate.context}};
 }
@@ -339,6 +362,92 @@ async function namedComparison(shape: 'extension-restriction' | 'restriction-ext
 }
 
 describe('helper method support with explicit contextual reconstruction', () => {
+  it.each([false, true])('retains scoped identities and every particle with complete evidence (shared DAG: %s)', async dag => {
+    const control = await simultaneousScopedControl(dag);
+    const {request, x, a, b, helpers, declarations, particles, original, retained, evidence} = control;
+    expect(retained.context.members).toEqual(original.context.members);
+    for (const helper of helpers) {
+      const found = retained.context.lookup(helper.id);
+      expect(found).toMatchObject({kind: 'found', node: {...helper, content: a.content}});
+      expect(retained.context.owner(helper.id)).toBe(original.context.owner(helper.id));
+      expect(retained.context.rawTypeProperties(helper.id)?.content).toEqual({kind: 'element-only', particle: a.content});
+    }
+    for (const node of [...declarations, ...particles]) expect(retained.context.lookup(node.id)).toEqual(original.context.lookup(node.id));
+    for (const head of ['H', 'Q1', 'Q2']) expect(members(retained.context, head)).toEqual(members(original.context, head));
+    for (const record of [original, retained]) {
+      const supplied = evidence(record.context, record.types);
+      const verified = verifyFiniteRe01Evidence(request.actual, x.id, supplied);
+      expect(verified, JSON.stringify(verified)).toMatchObject({kind: 'checked-candidate'});
+      if (verified.kind !== 'checked-candidate') throw new Error(verified.kind);
+      expect(verified.proof).toHaveLength(5);
+      for (const step of verified.proof) {
+        const context = supplied.nodes.find(node => node.context.contextId === step.contextId)!.context;
+        const ids = new Set(step.components.map(receipt => receipt.component));
+        expect(context.members).toEqual(record.context.members);
+        for (const node of [...helpers, ...declarations, ...particles, a, b]) expect(ids.has(node.id), node.id).toBe(true);
+        if (step.target !== x.id) expect(ids.has(x.id)).toBe(false);
+        for (const receipt of step.components) {
+          expect(receipt.contextId).toBe(step.contextId);
+          for (const dependency of receipt.dependencies) expect(ids.has(dependency)).toBe(true);
+        }
+      }
+      const child = supplied.nodes[1]!;
+      expect(verifyFiniteRe01Evidence(request.actual, x.id,
+        {...supplied, nodes: supplied.nodes.map(node => node === child ? {...node, premises: []} : node)}))
+        .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', contextId: child.context.contextId});
+    }
+  });
+
+  it('rechecks a retained shared Q1 DAG when a required child exposes anonymous members twice', async () => {
+    // cos-element-consistent requires the same named type at distinct same-QName
+    // positions. Root mixed paths block all fresh members under Q1. U's B-child
+    // exposes its anonymous members under both edges to the shared Q1 particle.
+    const control = await simultaneousScopedControl(false, true);
+    const {request, x, helpers, declarations, particles, pPlus, original, retained, evidence, u} = control;
+    for (const record of [original, retained]) {
+      for (const node of [x, ...helpers, ...declarations, ...particles])
+        expect(checkComponentConstruction(record.context, node.id), node.id).toMatchObject({kind: 'checked'});
+      expect(checkElementDeclarationsConsistent(record.context, [pPlus.id])).toMatchObject({kind: 'checked', value: true});
+      for (const declaration of declarations) expect(members(record.context, 'Q1')).not.toContain(declaration.id);
+    }
+    const supplied = evidence(retained.context, retained.types);
+    const child = supplied.nodes.find(node => node.parent === retained.context && node.target === u.id)!;
+    expect(child).toBeDefined();
+    expect(child.context.lookup(pPlus.id)).toEqual(retained.context.lookup(pPlus.id));
+    expect(child.context.members).toEqual(retained.context.members);
+    expect(members(child.context, 'Q1')).toContain(declarations[0]!.id);
+    expect(members(child.context, 'Q1')).toContain(declarations[1]!.id);
+    expect(checkElementDeclarationsConsistent(child.context, [pPlus.id]))
+      .toMatchObject({kind: 'checked', value: false, rule: 'cos-element-consistent'});
+    const content = deriveModelGroupContent(child.context, pPlus.id);
+    if (content.kind !== 'checked') throw new Error(JSON.stringify(content));
+    const view = prepareSemanticParticleView(child.context, content.view, 'declared');
+    if (view.kind !== 'checked') throw new Error(JSON.stringify(view));
+    expect(checkParticleAttribution(child.context, view.view)).toMatchObject({kind: 'checked', value: true});
+    expect(checkComponentConstruction(child.context, pPlus.id))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent', component: pPlus.id});
+    const verified = verifyFiniteRe01Evidence(request.actual, x.id, supplied);
+    expect(verified).toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent', component: pPlus.id,
+      contextId: child.context.contextId});
+    // This refutes the unchanged-inventory construction, not arbitrary
+    // reconstruction or the existing allocation-certified omission theorem.
+    const allocated = control.reconstructed;
+    expect(verifyFiniteRe01Evidence(request.actual, x.id, evidence(allocated.context, allocated.types)))
+      .toMatchObject({kind: 'checked-candidate'});
+  });
+
+  it('retains the repeated-Q1 particle inventory when the expanded members have named types', async () => {
+    // The same particle incidence and child expansion do not fail EDC when
+    // each repeated declaration has a named type. UPA is unchanged in both.
+    const control = await simultaneousScopedControl(false, true, true);
+    const {request, x, retained, pPlus, evidence, u, declarations} = control;
+    const supplied = evidence(retained.context, retained.types);
+    const child = supplied.nodes.find(node => node.parent === retained.context && node.target === u.id)!;
+    expect(members(child.context, 'Q1')).toContain(declarations[0]!.id);
+    expect(checkElementDeclarationsConsistent(child.context, [pPlus.id])).toMatchObject({kind: 'checked', value: true});
+    expect(verifyFiniteRe01Evidence(request.actual, x.id, supplied)).toMatchObject({kind: 'checked-candidate'});
+  });
+
   it('reconstructs simultaneous scoped ownership with shared references and dependent identities', async () => {
     // Rule-derived expectation: a coherent injective rebinding preserves the
     // type paths, sharing and declaration names. Exact B re-establishes content
