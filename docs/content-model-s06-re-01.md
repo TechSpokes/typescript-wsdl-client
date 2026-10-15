@@ -1216,6 +1216,130 @@ All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original o
 General coverage, general witness/evidence adequacy, complete negative answers and mathematical search termination stay open; #234/#232 remain open and #179/#153 activation remains later.
 One next concrete action is to settle existence of a finite fresh derived-ID assignment under retained S, including dependent owner identities, without assuming hash injectivity; if that requires a representation decision, present it separately with review.
 
+#### Identity requirements and the unchanged-particle alternative
+
+This slice starts from fetched main `8d9feb61b82f6d5b636ccf9260047ed4db02b8ae`, tree `18807588ded3159e6e470e38f89338ff7f53f887`.
+Investigation/implementation starts at `2026-10-15T12:17:32Z`, with cutoff `2026-10-15T13:47:32Z`.
+The #234 ledger records the earlier finding freeze, decisive fresh-context nonauthor scrutiny and final delivery.
+
+The result is outcome B: preserving the complete particle inventory unchanged does not always give complete contextual evidence, even when the original root and its exact-B replacement both pass every local component check.
+The obstruction is a retained particle's `cos-element-consistent` duty after a required helper child changes substitution membership.
+This neither proves fresh allocation necessary for every reconstruction nor changes the preceding allocation-certified theorem.
+
+##### Audit of the five allocation exclusions
+
+Here Γ is the immutable original request, D is the set of helpers renamed in #294, and O is its omitted fresh-particle inventory.
+The new root's retained nonrenamed additions are R; its allocated helper records have IDs a(D).
+This audit concerns a new alternative root whose parent is Γ, not a child fork of the old candidate.
+
+| Exclusion in #294 | Actual consumer | Necessary for this new-root method? |
+| --- | --- | --- |
+| All original Γ identities | Context addition identity gate; original correspondence | Yes, including inactive original records |
+| Unchanged retained additions R | Context unique records/membership; coherent lookup | Yes, allocated records must not merge with R |
+| Other allocated identities | Context uniqueness; identity equality and shared references | Yes, a must be injective to preserve distinct helpers |
+| O identities whose records are omitted | No old-root record consumer in the new Γ-root | Sufficient exclusion; not independently necessary |
+| Former D identities whose records are replaced | No old-root record consumer in the new Γ-root | Sufficient exclusion; not independently necessary |
+
+[`semanticContext.ts`](../src/compiler/semanticContext.ts) validates each actual derived identity, rejects additions colliding with original records or current changes, rejects duplicate active membership and checks active owners and owner cycles.
+It does not reserve records from a separate alternative candidate.
+The two larger exclusions make #294's removed-ID audit straightforward; they are not additional universal historical-freshness rules.
+
+A weaker sufficient allocation condition is injective a with range disjoint from `IDs(Γ) ∪ IDs(R)`, together with valid derived identity records, complete current membership, coherent owner chains and simultaneous canonical/raw reference and key rebinding.
+An allocated ID may equal an omitted O ID or a former D ID only if no other final record occupies it and every selector denotes the intended final component.
+No hash collision, identity derivation or successful allocation is assumed or exhibited by this weakening.
+
+Canonical base/member references, content containment, effective raw bases/member types, raw row keys, namespace/anonymity and complete current selectors still require their existing audits.
+Original anchors and generated sharing remain fixed by [`re01CandidateCorrespondence.ts`](../src/compiler/re01CandidateCorrespondence.ts); hypothetical provenance still selects original source records through [`re01TypePropertyValidation.ts`](../src/compiler/re01TypePropertyValidation.ts).
+All receipts and evidence target/context records are rebuilt, so no fact or historical identity from the old alternative candidate is transferred.
+
+In an inherited child, parent changes remain present, complete membership is required and nonendpoint records/properties cannot be replaced freely.
+The context addition gate and correspondence therefore impose the inherited preservation duties actually used below.
+A smaller forbidden allocation set proves no universal allocation existence theorem; #294 retains its stronger certificate unchanged.
+
+##### Exact identity-preserving proposal and missing extension
+
+Construct a new root over Γ with the original X endpoint, all supplied helper/member identities, ownership, ancestry methods and sharing preserved.
+Replace every helper's canonical and effective raw content with exact B, but retain every O particle record, identity, owner, occurrence and child edge unchanged.
+No component identity is allocated and no retained particle is normalized.
+
+In the new root, relevant type paths, head expansions and X's original mapping are preserved; copied helper edges satisfy their local exact-content comparisons.
+Retaining O also resolves the particle-owned helper membership dependency without reowning a helper.
+However, the copied-B theorem explicitly excludes additional particles and cannot establish this proposal unchanged.
+
+Its required extension would prove that every retained particle and its complete consumed dependencies remain legal in every child generated by the helper evidence construction.
+[`finiteRe01Verification.ts`](../src/compiler/finiteRe01Verification.ts) checks every addition relative to immutable Γ as a legality root in each child, including unused O components.
+Replacing helper content does not remove those particle roots or preserve their context-sensitive receipts.
+
+All O terms in this template reuse declarations from the nonrecursive copied-B closure.
+Their dependency closure can therefore still avoid X, while consuming original H/Q1/Q2, string delimiters, all incoming members, their helper ancestry and B/A.
+That closure fact alone supplies neither UPA nor EDC after affiliation-dependent expansions change.
+
+##### Locally successful shared-DAG counterexample
+
+Use S restricting B, scoped U and V extending S, scoped D owned by and restricting U, and an unused scoped C restricting S.
+U/V are owned by fresh P+; D is owned by U; P+ and its fresh child are owned by global S, so all ownership chains are acyclic.
+Two distinct fresh global members share anonymous U; a third uses D; all affiliate directly with H and retain the established empty flags.
+
+P+ is a required sequence with B's first original `H[4..4]` position and required string z, followed by two edges to one fresh required element particle referring to exact original global Q1.
+The two edges are distinct incidence paths through a shared DAG node, not numeric repetition of one position.
+S and all other helpers initially share P+ as canonical and effective raw content.
+
+In the original root, every fresh member reaches B by both methods and is excluded under Q1 and Q2.
+Each Q1 expansion contains only original declarations with named type B; it fits both corresponding fixed local choices of B.
+Thus S's actual particle restriction, the helpers' raw identity extensions/restrictions, every particle/declaration and X's root mapping pass their local owners.
+
+The proposed replacement preserves all IDs and O records, with every helper content now exact B.
+Its complete root local checks also pass; the shared P+ remains legal there with unchanged head expansions.
+Neither root is asserted to have complete original U evidence merely because its local checks pass.
+
+Consider U's required child using B as intermediate, with U restricting B and all inherited additions retained.
+Members typed U now reach B by restriction only, so they become effective under Q1, whose block excludes extension.
+Each such member occurs implicitly at both shared Q1 incidences and also at the first H position, while its scoped type U is anonymous.
+
+The dated [Element Declarations Consistent](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-element-consistent) requires repeated same-QName declaration particles to have the same top-level named type.
+[`particleDeclarationConsistency.ts`](../src/compiler/particleDeclarationConsistency.ts) applies that named-type duty to distinct incidence edges, even when they reach the same declaration through a shared node.
+Consequently exact component P+, in U's child context, fails `cos-element-consistent`; unchanged particle records do not preserve this semantic predicate.
+
+UPA passes separately: the required fixed-count H prefix is separated by z, followed by exactly two required Q1 positions.
+Attribution need not look ahead to choose a position; changing the effective alphabet does not make that sequence ambiguous.
+The controls also confirm that named helper types pass complete evidence with the same retained particle incidence and enlarged Q1 expansions, isolating anonymity as the EDC discriminator.
+
+##### Why another intermediate cannot repair this retained root
+
+For this particular U obligation, every permitted child must have U restricting some E directly extending designated A.
+The inherited fresh member M remains typed U and directly affiliated to original H, whose exact type is B.
+Its required affiliation legality demands that U derive from B.
+
+The child's exact complex ancestry is `U -> E -> A -> anyType`.
+Original B is distinct from U/A and extends A; immutable A does not derive from B.
+Therefore affiliation legality forces E to be exact B, even if the child supplies other fresh helpers.
+
+This forced child admits M under Q1 by the restriction-only U-to-B path, producing the same anonymous repeated-QName EDC failure in retained P+.
+Preserved member type/affiliation/flags, U's empty block, original head properties and complete inherited O membership prevent filtering, retyping or omitting that duty inside the child.
+Thus this exact retained root admits no complete contextual evidence under the existing two-step contract, not merely a failure of the chosen B-child implementation.
+
+This refutes the proposed guarantee for every locally successful root in the stated template.
+It is not a fully successful arbitrary witness counterexample, a failure of every identity-preserving alternative, a general B-v1 nonexistence result or a negative API branch.
+In particular the established allocation-certified alternative omits O after coherent reowning and passes complete evidence for this same supplied family.
+
+##### Controls, review and stopping action
+
+The [existing typed helper controls](../test/research/re01/helper-method-support.test.ts) first retain #293/#294's simple particle, dependent scoped ownership, sharing and unused-root controls.
+Both the one-particle and larger shared-DAG forests pass complete original and identity-preserving five-node evidence, checking all inherited particles/helpers/members and context-qualified dependencies at every node.
+Missing sibling evidence remains unresolved; no receipt or earlier root mapping is transferred.
+
+The new repeated-Q1 DAG checks every original/replacement root local component, the exact child expansion, separate successful UPA and failing EDC, and the verifier's exact component/context failure.
+Named-type and allocation/omission contrasts pass complete finite evidence; the earlier privacy and failed-allocation controls remain intact.
+Primary Structures XML is re-read at the pinned source revision and matches the existing SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+
+One fresh-context nonauthor reviewer challenges the identity audit and forced-intermediate/EDC argument before reliance, then reviews the final proof/code and scoped joint acceptance.
+No production owner, validator, identity representation, dependency, workflow or generic rewriting layer changes.
+All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands and configurable budgets remain intact.
+
+The next concrete action is to audit which particle-structure and correspondence facts a later identity-preserving alternative must actually retain after helper content replacement, using this EDC trap as a required discriminator.
+No particle rewrite or normalization is investigated in this slice, and no representation decision follows from its findings.
+General coverage/evidence adequacy, witness bounds, complete negatives and mathematical search termination remain open; #234/#232 stay open and #179/#153/#184 retain their separate gates.
+
 #### General alternatives and unresolved proposition
 
 The anchor-segment lemma supplies an adequate relation observation map; the copied-B theorem supplies one coherent content/AU/closure reconstruction and an actual well-founded evidence discipline.
@@ -1244,6 +1368,7 @@ One concrete next action is to extend the anchor inventory to immediate-head fin
 | Arbitrary finite copied-B forest reconstruction | No-addition rank induction | Established within template |
 | Simultaneous extraction | Per-member signatures with retained names | Established within template |
 | Simultaneous scoped ownership reconstruction | Checked allocation, dependent identities and complete five-node controls | Conditional lemma; unconditional allocation open |
+| Unchanged-particle identity-preserving reconstruction | Retained shared-Q1 DAG; forced U child and anonymous EDC failure | Universal local-root proposal refuted |
 | Positive soundness | Existing finite verifier and complete controls | Retained |
 | Coverage of every permitted construction | No arbitrary-content extraction theorem | Open |
 | General witness/evidence adequacy | Template theorem only | Open |

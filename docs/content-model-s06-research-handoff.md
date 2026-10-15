@@ -38,7 +38,16 @@ The [simultaneous scoped reconstruction lemma](content-model-s06-re-01.md#alloca
 Owner membership/acyclicity, anonymity, explicit namespaces, ancestry, sharing, expansions and original correspondence are justified separately before invoking the copied-B evidence theorem.
 Two particle-owned helpers, a dependent scoped helper, shared incoming members and unused roots have complete original/reconstructed five-node contextual evidence; collision, stale-reference/owner/key and missing-child controls preserve the limits.
 Unconditional allocation existence remains unresolved because `scopedId` hashes a finite output space; distinct fresh paths alone prove neither freshness nor a total successful allocator.
-This is outcome B with an allocation-certified positive subfamily, not nonexistence or a new B-v1 restriction; next settle that precise allocation obligation without assuming hash injectivity.
+This is outcome B with an allocation-certified positive subfamily, not nonexistence or a new B-v1 restriction.
+The [identity-preserving investigation](content-model-s06-re-01.md#identity-requirements-and-the-unchanged-particle-alternative) audits the five allocation exclusions against actual new-root consumers.
+Original Γ/current retained/pairwise allocated uniqueness is required; excluding omitted particle and former replaced-helper IDs is sufficient for #294 but is not a historical-freshness rule of a new Γ-root.
+Relaxing those exclusions supplies no universal allocation theorem; #294's conditional certificate remains intact.
+Preserving all helper/member identities and the complete unchanged particle inventory passes complete evidence for the existing simple/shared-DAG forests, including dependent scoped owners and unused roots.
+It fails universally over locally successful template roots: a retained shared-Q1 DAG passes both root local checks, but U's mandatory restriction child exposes anonymous members at distinct positions and fails `cos-element-consistent` at P+ while UPA passes.
+Inherited M:U affiliation to H:B forces every permitted U intermediate to be exact B, so another intermediate cannot repair this retained root.
+The named-type contrast and allocation-certified omission alternative pass complete evidence; the failing original is asserted locally successful, not an arbitrary fully successful witness.
+This proves neither fresh allocation necessary for every reconstruction nor failure of all identity-preserving alternatives.
+Next audit actual particle-structure/correspondence preservation duties for a later identity-preserving alternative, retaining the EDC trap as a discriminator; no particle normalization is performed here.
 General coverage/evidence/bounds/negatives/termination and downstream gates remain unchanged; #234/#232 stay open.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
