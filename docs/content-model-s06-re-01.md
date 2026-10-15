@@ -995,6 +995,109 @@ This extends only the private support-particle class; arbitrary-success extracti
 Accepted B-v1, recovery packages, P1/F2, budgets and downstream ownership are unchanged.
 One next action is to investigate a retained particle dependency outside helper content that fails privacy and determine whether its actual role admits alternative reconstruction.
 
+#### Complete privacy is an independent template premise
+
+The complete privacy premise does not follow from the other #292 premises, even after simultaneous replacement of canonical helper content and effective raw helper content with exact B content.
+A retained scoped helper can still require an omitted particle through `identity.owner`.
+This refutes only the proposed implication; the preceding private replacement lemma retains its privacy hypothesis and remains unchanged.
+
+This slice starts at fetched main `05dd24bf1afb12e992fe34315ced2e260cc7f42b`, tree `9eb606624afddf041d6651dc4ba0529e82866c02`.
+The investigation/implementation start is `2026-10-15T08:50:33Z`, with cutoff `2026-10-15T10:20:33Z`; the final finding/freeze and exact delivery revisions are recorded in the #234 ledger.
+Every other #290/#291/#292 nonrecursive Γ/X/B premise remains in force, including the original declarations, string delimiters, empty AUs/wildcards/flags, direct H affiliations and absence of additional named/intermediate roles.
+
+##### Identity and ownership admissibility
+
+The copied-B forest statement quantifies fresh complex types, whereas only the added member declarations are required to be global.
+It does not restrict helper types to global identities.
+The accepted [B-v1 contract](#selected-finite-extension-interpretation-b) permits fresh internal types; [`Identity`](../src/compiler/canonicalGraph.ts) represents both global and scoped type identities.
+
+For a fresh scoped helper, the current [`semanticContext.ts`](../src/compiler/semanticContext.ts) contract checks the derived scoped ID, active owner membership and acyclic ownership.
+It does not restrict that fresh owner's node kind to a declaration.
+[`re01TypePropertyValidation.ts`](../src/compiler/re01TypePropertyValidation.ts) additionally requires an explicit semantic target namespace for a fresh scoped complex type; the construction below supplies it.
+
+The dated [complex type property tableau and constraints](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#Complex_Type_Definition_details) permit an absent name and contain no type-definition scope/owner property imposing another owner-kind constraint.
+The [identity caveat](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#no-identity) leaves this internal fresh identity choice to the selected project representation.
+Anonymity does not waive type, declaration, UPA or EDC legality.
+
+The persisted/source [`validateSemanticGraph.ts`](../src/compiler/validateSemanticGraph.ts) requires a containing declaration and same-declaration structural incidence; the historical [`resolver-context.ts`](../test/research/re01/resolver-context.ts) likewise rejects a particle as containing declaration.
+Those source-incidence rules are not a premise restricting fresh abstract B-v1 helper ownership in the current semantic context.
+Applying the entire source validator to abstract candidates would also exclude established exact-original copied content shared across owners and the abstract local references used by #290/#292.
+Actual Γ still meets its original source rules; this counterexample claims no XML serialization or persisted-catalog representation and changes no accepted contract.
+
+##### Minimal surviving dependency
+
+Use the existing one-particle P+ construction and the same S/U/M support path.
+S is a fresh global complex type restricting B; P+ is S-owned, copies B's outer sequence with its exact original children, and tightens only `0..1` to `1..1`.
+U extends S with the very same P+ content, but give U the fresh scoped identity `scopedId(P+, '/U', 'type')` with `identity.owner = P+` and explicit target namespace `urn:recovery:helper-methods`.
+
+M is the stipulated fresh global nonabstract declaration, has type U and affiliates directly with original H.
+Both helper contents are P+ in the canonical and effective raw inventories; all other helper properties remain those of the template.
+The ownership chain is `U -> P+ -> S`, terminating at global S, so it is acyclic; the separate base chain is `U -> S -> B`.
+
+S's restriction passes `Recurse` with contained occurrence range and original child identities; U's extension passes raw particle identity.
+M reaches B by extension and restriction, satisfies immediate H affiliation under empty final, and is excluded under both Q1 and Q2.
+Thus X's exact original particle still restricts unchanged B with the same full expansion sets, ordered choices, delimiter and occurrence arithmetic.
+
+The fresh M QName is disjoint from every original QName and occurs at only the first distinct H position, even though that position has numeric multiplicity four.
+It creates no repeated same-QName position requiring U to be named under EDC; the later fixed local declarations still have named type B.
+Existing declaration, particle, UPA, EDC, raw construction and correspondence owners check all these local conditions.
+
+Now replace S and U's canonical `content` and raw `content.particle` simultaneously with B's exact original particle.
+Keep U's identity, ancestry, methods and M as stipulated.
+The exact surviving dependency is retained component U, slot `identity.owner`, target fresh particle P+; active owner membership is required by context preparation and exposed by `context.owner(U)`.
+
+This requirement survives even though no retained canonical containment, typed reference or effective raw content slot points to P+.
+Omitting the singleton set `O = {P+}` from the new Γ-root candidate fails preparation with `candidate-rejected`, `code: 'missing'`, `component: P+`.
+There cannot be a smaller nonempty omitted-particle inventory; the example adds only the two mixed-method helpers and one member already required by this anchored support construction, with no additional role or component category.
+
+##### Exhaustive retained-reference classification
+
+After replacement, retained nodes are exactly original Γ with X's stipulated endpoint, fresh helper complex types, and the stipulated global member declarations.
+All other additions are the finite particle set O.
+Every graph or raw selector belongs to the following inventory; an ownership path crossing O has a first direct retained-to-O edge covered here.
+Edges starting at omitted nodes, including shared particle DAG edges and their outgoing ownership, are outside this retained-reference question.
+Missing owners and ownership cycles already fail the existing context validity rules.
+
+| Retained-to-particle dependency | Class | Reason or surviving obligation |
+| --- | --- | --- |
+| Helper canonical content contribution | 1: removed | Simultaneous exact-B replacement |
+| Helper effective raw content particle | 1: removed | Simultaneous exact-B replacement |
+| Original Γ/X containment or typed slots | 2: excluded | Immutable original identities and exact endpoint properties |
+| Retained compositor children/group content | 2: excluded | All fresh particles are in O; no fresh groups |
+| Helper base/type/inline-type slots | 2: excluded | Complex-only type operands, finite ancestry to B; particles are not types |
+| Member type/affiliation slots | 2: excluded | B/helper type and direct original H; global declarations remain |
+| AU incidence, wildcard sources and scalar selectors | 2: excluded | Empty AUs/wildcards; no fresh attributes, scalars, facets or notations |
+| Global identity ownership | 2: excluded | Global helper/member has no scoped owner |
+| Scoped helper owned by Γ/helper/member | 2: excluded | That immediate owner remains retained |
+| Scoped helper owned by O | 3: survives | U.`identity.owner = P+`; active owner membership |
+| Raw provenance original anchors | 2: excluded | Provenance validation requires `sourceNode`; O is fresh |
+| Lexical/source locations | 2: excluded | No consuming rule selects a fresh particle from immutable syntax |
+| Original generated correspondence/sharing | 2: excluded | Fixed Γ/X/B anchors; helper replacement is a new root over Γ |
+| Inherited helper identity in required children | 3: survives | Fork identity preservation and owner closure still require P+ |
+| Membership and consumed closure | 3: survives | Complete Γ plus all retained additions must include U's owner |
+
+Class 2 uses an existing premise or validity rule, not an extra privacy or global-helper hypothesis.
+`hypothetical-abstract.originals` is checked by [`validateRawComplexTypeProperties`](../src/compiler/re01TypePropertyValidation.ts) against original source nodes; labels cannot authenticate an extra fresh correspondence anchor.
+Original generated wrappers and sharing remain governed by [`checkCandidateCorrespondence`](../src/compiler/re01CandidateCorrespondence.ts), independently of raw overlays.
+No lexical provenance edge is counted without a consuming rule.
+
+##### Contextual evidence and scope of the result
+
+The [existing helper test file](../test/research/re01/helper-method-support.test.ts) constructs the counterexample with one new particle using the same authenticated source request and original fixture.
+The structural conclusion follows from the unchanged owner slot and its membership rule; it does not depend on a rejected candidate or an isolated X mapping being promoted to semantic success.
+
+Separately, complete two-node finite evidence succeeds for the original root and its required U-to-B restriction child, preserving P+, S, U and M in both contexts.
+It also succeeds for the dual-replaced root and its child while retaining P+.
+The controls check every fresh component, context-qualified receipt dependencies and the complete H/Q1/Q2 root expansions; the child's consumed universe excludes X because both delimiters are string.
+
+That stronger success claim is limited to these supplied abstract B-v1 contexts under the accepted local authorities.
+It establishes neither semantic success after invalid omission nor XML/source representability, and supplies no general evidence adequacy result.
+The independently checked control changes only U's scope owner to retained S, with the corresponding derived ID and M type reference; exact-B replacement then permits P+ omission and complete finite evidence succeeds.
+
+Privacy therefore remains an independent hypothesis of #292, and the existing restricted theorem is not strengthened.
+The next assignment is to investigate alternative reconstruction for this precise particle-owned scoped-helper role while preserving or justifying any identity/ownership change; no such repair or reconstruction theory is begun here.
+Accepted B-v1, all recovery inputs, P1/F2, budgets and downstream gates remain intact; #234/#232 stay open, with no general witness bound, complete negatives or general termination claim.
+
 #### General alternatives and unresolved proposition
 
 The anchor-segment lemma supplies an adequate relation observation map; the copied-B theorem supplies one coherent content/AU/closure reconstruction and an actual well-founded evidence discipline.
