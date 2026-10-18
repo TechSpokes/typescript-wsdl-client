@@ -1470,6 +1470,112 @@ All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original o
 General witness coverage, evidence adequacy, input-derived bounds, complete negatives and mathematical search termination remain open; #234/#232 stay open and downstream assignments remain separate.
 Next action: identify one additional consumed helper role outside this nonrecursive template and audit its preservation/closure duty before proposing any broader reconstruction; this result supplies no general search bound.
 
+#### One abstract affiliation bridge under immediate head final
+
+This bounded continuation starts from #296 at fetched main `4e611ead65a6116d5fff6d2cd2903991e65caf0e`, tree `a46aa568cc3154a049f92beb02cef31c968d1586`.
+Investigation/implementation began at `2026-10-18T12:14:50Z`, with cutoff `2026-10-18T13:44:50Z`; the #234 ledger records the finding freeze and separate review/delivery.
+It extends the preceding identity-preserving theorem to exactly the supplied one-bridge family below, rather than merely reporting a checked example.
+
+##### Exact family and theorem
+
+Use the independently prepared actual source [helper-method-final.xsd](../test/conformance/fixtures/xsd/recovery/helper-method-final.xsd), which differs from the preceding fixture only by original H's element `final={restriction}`.
+This is a separate source request with its own immutable Γ; no candidate overwrites an original declaration or its properties.
+Keep the positive H/Q1/Q2 blocks, all original type identities and string delimiters, the stipulated X restriction endpoint and every other premise of the preceding lemma.
+
+Add one fresh global abstract declaration F, typed by exact original B and directly affiliated with H, with empty element final/block, no value or identity constraints and an otherwise admitted declaration record.
+Every stipulated fresh nonabstract member affiliates directly with F and retains its B-or-forest type, distinct fresh QName and other existing properties.
+F's QName is distinct from original and member names; no bridge chains, fresh bridge types, additional AU/scalar/wildcard roles, generated scalar slots or recursive-content extension are admitted here.
+
+For any finite supplied acyclic helper forest and particle inventory in this family whose root is locally successful, the #296 reconstruction produces a new root over this Γ with complete finite contextual evidence.
+It preserves F's exact identity and all properties, every supplied identity/owner, helper/member ancestry and sharing, X's endpoint, original records and member names/cardinalities at the reconstructed root.
+Every helper receives exact B canonical/effective raw content and every detached fresh particle receives the preceding `1..1` reference to exact original local z:string, without allocating identities.
+
+Semantic success remains the coverage premise when this is stated as a reduction of successful witnesses.
+The stronger local-root conclusion follows because the following proof constructs its own children without assuming the original pending RE01 judgments.
+Neither a locally successful original trap nor a successful reconstructed example is promoted to an arbitrary fully successful witness theorem outside this explicitly quantified family.
+
+##### Immediate legality, effective membership and exact identities
+
+The dated [Element Declaration Properties Correct clause 4](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#e-props-correct) requires derivation from the immediate affiliation head's declared type, given that immediate head's element final set.
+At F→H the operands are exact B and exact B, and the excluded set is H.final `{restriction}`.
+The identity case of [Type Derivation OK (Complex)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-derived-ok) succeeds without traversing an edge; F→H is an affiliation edge, not an extra type derivation step.
+
+At M→F the operands are M's exact B-or-helper type and exact B, with F.final empty.
+Every forest path terminates at B and uses only extension/restriction, so immediate affiliation passes both before reconstruction and after any child rebase below.
+Original H→Q1 and Q1→Q2 still compare B with itself under their unchanged immediate final sets.
+
+The dated [Substitution Group](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-class) first closes the potential census over affiliations, then filters abstract declarations and checks substitutability.
+F is traversed, including all incoming members, but its abstract property removes F itself from every effective expansion.
+F remains a mandatory fresh legality root; abstraction waives no declaration, type, correspondence or consumed-dependency duty.
+
+For an effective M under H, Q1 or Q2, [Substitution Group OK (Transitive)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec) uses the queried head's element block and blocks on entered type definitions along M.type→B.
+It does not reuse H.final as a transitive exclusion, nor replace queried-head blocking with intervening affiliation declarations' element blocks.
+The existing type blocks remain empty, so the positive effective-membership vectors depend on the same type-method unions as before: H accepts, Q1 excludes extension, Q2 excludes restriction.
+
+These duties are implemented by `checkSubstitution`, `declarationMethods` and `effectiveSubstitutionMembers` in [schemaTypeRelations.ts](../src/compiler/schemaTypeRelations.ts), with immediate legality consumed by [checkDeclaration](../src/compiler/schemaDeclarationPrimitives.ts).
+The historical [helper-affiliation controls](../test/research/re01/helper-affiliation-case.test.ts) remain qualified local evidence from the older resolver; they supply no current complete certificate.
+The pinned dated Structures XML was re-read, excluding deleted editorial text, and matches SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+
+##### Complete reconstruction and child induction
+
+Reconstruct directly over the new immutable Γ, using the #296 recipe once and retaining F verbatim in canonical and explicit raw declaration properties.
+At the root, helper ancestry, methods, declared types, flags and complete member census are unchanged; F contributes no effective name or position.
+Thus every root expansion has the same members and multiplicities as its supplied bridge-bearing root, preserving X's anchored restriction mappings and coherent implicit choices without preserving obsolete helper particle observations.
+
+The prior identity/ownership, original/endpoint correspondence and exact-B local derivation proof is unchanged by the additional declaration.
+F is global, so it introduces no scoped-owner chain; retaining it changes no existing owner or derived ID.
+Its local declaration duties have legal booleans, no value/identity constraints, exact original B as declared type and the independently proved F→H relation.
+
+Extend the prior complete consumed closure by F and its edges to B and H, and include every incoming member behind F even when a queried expansion blocks it.
+These dependencies already close through B/A, original H/Q1/Q2, fixed local declarations, builtin string/anyType and the full finite helper forest; F adds no X or additional scalar dependency.
+Every inherited particle, helper, member, unused root and F is checked in each evidence context by [finiteRe01Verification.ts](../src/compiler/finiteRe01Verification.ts), which roots all additions relative to immutable Γ rather than only the current fork's delta.
+
+Copied B still has the same first global H position, required string delimiter and later fixed local choices.
+Distinct fresh member names can appear only in that first expanded position; abstract F adds no name, so the existing UPA/EDC argument applies to every effective subset after rebase.
+Each detached z leaf remains a separate mandatory particle root with one position, fixed named string type and trivial EDC/UPA, independently of global expansion changes.
+
+For a required nonprimitive fresh extension T, choose exact unchanged B and change only T to restriction of B in its direct child, retaining all additions and reconstructed properties.
+F stays typed by B and affiliated with H; every member still reaches B and affiliates legally with F, even if T formerly had restrictions or extensions below it.
+Other helper local derivations still compare identical copied content with empty type final/AU/wildcard duties, and correspondence, declaration legality, complete closure, UPA and EDC are rebuilt in that child.
+
+Child expansion names need not equal the parent's: removing an extension can admit a member under Q1, while the inserted restriction excludes any affected path under Q2.
+Unaffected paths keep their previous membership; descendants are checked from their actual resulting ancestry, not from a parent vector.
+X is available but unconsumed in these helper children, so this proof transfers neither its earlier mapping nor parent/sibling receipts and imposes no extra preservation condition on them.
+
+Let n be the current number of fresh extension edges.
+Each child introduces no addition, removes exactly one such edge and retains the one-bridge structural invariant and closure, without requiring the root X mapping there; n=0 leaves the accepted primitive B obligation and no fresh nonprimitive extension.
+The preceding induction therefore constructs complete acyclic evidence with every inherited root, with unfolded node bound `sum(n! / (n-i)!, i = 0..n)` and finite extra F checks per node.
+
+The bound is in the supplied forest, with sufficient resources, not in Γ.
+Configurable exhaustion remains resource-limit; no witness-size bound, complete general negative or mathematical search-termination claim follows.
+No general bridge framework, validator weakening, identity change or production activation is introduced.
+
+##### Independently derived controls and disposition
+
+The [current typed controls](../test/research/re01/helper-method-support.test.ts) retain the repeated-Q1 particle trap, particle-owned U/V, dependent D, member sharing and unused V/C, adding this exact F and the independently prepared actual source.
+The reconstructed root and all four required descendant contexts pass complete finite verification; every node checks F and the entire inherited inventory, its own-context receipt dependencies and absence of consumed X in helper children.
+The U child admits all three affected members under Q1 and excludes them under Q2; removing its unused V evidence remains unresolved.
+
+A separate new Γ-root changes only the selected mixed-method member's immediate affiliation to H.
+Its type path contains restriction, so `checkSubstitution` returns false and complete verification rejects `e-props-correct.4` at that member under original H.final.
+This isolates the immediate-final duty without mutating H or turning candidate failure into nonexistence of other witnesses.
+
+The independently prepared [helper-method-blocked.xsd](../test/conformance/fixtures/xsd/recovery/helper-method-blocked.xsd) adds H.block `{restriction}` to the final source variant.
+Both immediate bridge affiliations remain legal, but the mixed member fails effective substitutability under H and is absent from H's expansion.
+Complete finite verification rejects this selected construction at X's `derivation-ok-restriction.5.4`: H alone supplies no implicit choice for the first grouped MapAndSum comparison.
+This is a qualified block contrast, not a claimed complete successful RE01 construction for the changed source.
+
+The [independent reference controls](../test/conformance/reference/re01-helper-method-support.test.ts) pin exact source differences, original anchors/flags and live local source acceptance; their reference runner discovers both variants through these tests.
+The live engine does not establish cos-ct-extends.1.5 or the family theorem; the proof and complete current-verifier controls supply those separate duties.
+Existing ownership, unchanged-particle EDC, inherited-rewrite and missing-evidence countercontrols remain unchanged, as do #294's conditional allocation result and #295's exact limitations.
+
+One fresh-context nonauthor reviewer examined the decisive rule/closure/induction before reliance and reviews final proof/code plus scoped #232 consistency.
+All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands, failure distinctions and configurable inclusive/sticky budgets remain intact.
+Outcome A is limited to this exact one-bridge supplied-family theorem; general coverage/evidence adequacy/bounds/negatives/termination and #234/#232 remain open, with #179/#153/#184 separate.
+
+Next concrete action: audit the existing live-content helper's raw particle identity role and failed required restriction-to-B child, then state one bounded candidate repair before combining any broader content with this bridge.
+No such repair or additional role is investigated here, and this slice supplies no general search bound.
+
 #### Exact optional wildcard suffix with identity-preserving reconstruction
 
 This bounded continuation starts from fetched actual main `969b0d826ca4d7e4f1af0c261fd74c0bc062e0ac`, tree `6a8583cb3b812113a7245be3eabdcff8aa5e5048`.
@@ -1484,7 +1590,7 @@ Let pB denote A's exact original optional sequence particle, which is B's effect
 Canonical B and canonical fresh U both have absent `content`; U clones B and extends B without changing that field.
 
 The supplied raw rows instead select `B.content = element-only(pB)` and `U.content = element-only(w)`.
-Fresh w is `sequence[1..1](pB, q)`, and fresh q is `any[0..1]` with namespace `urn:recovery:separate-suffix` and `processContents=skip`.
+Fresh w is a `1..1` sequence of pB followed by q, and fresh q is `any[0..1]` with namespace `urn:recovery:separate-suffix` and `processContents=skip`.
 The selectors are exact `a.content`, `scopedId(u.id, '/root', 'particle')` and `scopedId(u.id, '/suffix', 'particle')`; pB is an original particle identity, not a structural copy or normalized language.
 
 | Stage | Original single-extension control |
@@ -1597,112 +1703,6 @@ The re-read pinned Structures XML matches `e496af408b14853e6169ac7c1fca09d55a81b
 All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands, failure distinctions and configurable budgets remain intact.
 General coverage, evidence adequacy, input-derived bounds, complete negatives and mathematical search termination stay open in #234/#232; #179/#153 and #184 ownership remain separate.
 Next action: audit one additional content consumer outside this exact direct-H family before proposing broader reconstruction; no wildcard necessity or general nonexistence follows here.
-
-#### One abstract affiliation bridge under immediate head final
-
-This bounded continuation starts from #296 at fetched main `4e611ead65a6116d5fff6d2cd2903991e65caf0e`, tree `a46aa568cc3154a049f92beb02cef31c968d1586`.
-Investigation/implementation began at `2026-10-18T12:14:50Z`, with cutoff `2026-10-18T13:44:50Z`; the #234 ledger records the finding freeze and separate review/delivery.
-It extends the preceding identity-preserving theorem to exactly the supplied one-bridge family below, rather than merely reporting a checked example.
-
-##### Exact family and theorem
-
-Use the independently prepared actual source [helper-method-final.xsd](../test/conformance/fixtures/xsd/recovery/helper-method-final.xsd), which differs from the preceding fixture only by original H's element `final={restriction}`.
-This is a separate source request with its own immutable Γ; no candidate overwrites an original declaration or its properties.
-Keep the positive H/Q1/Q2 blocks, all original type identities and string delimiters, the stipulated X restriction endpoint and every other premise of the preceding lemma.
-
-Add one fresh global abstract declaration F, typed by exact original B and directly affiliated with H, with empty element final/block, no value or identity constraints and an otherwise admitted declaration record.
-Every stipulated fresh nonabstract member affiliates directly with F and retains its B-or-forest type, distinct fresh QName and other existing properties.
-F's QName is distinct from original and member names; no bridge chains, fresh bridge types, additional AU/scalar/wildcard roles, generated scalar slots or recursive-content extension are admitted here.
-
-For any finite supplied acyclic helper forest and particle inventory in this family whose root is locally successful, the #296 reconstruction produces a new root over this Γ with complete finite contextual evidence.
-It preserves F's exact identity and all properties, every supplied identity/owner, helper/member ancestry and sharing, X's endpoint, original records and member names/cardinalities at the reconstructed root.
-Every helper receives exact B canonical/effective raw content and every detached fresh particle receives the preceding `1..1` reference to exact original local z:string, without allocating identities.
-
-Semantic success remains the coverage premise when this is stated as a reduction of successful witnesses.
-The stronger local-root conclusion follows because the following proof constructs its own children without assuming the original pending RE01 judgments.
-Neither a locally successful original trap nor a successful reconstructed example is promoted to an arbitrary fully successful witness theorem outside this explicitly quantified family.
-
-##### Immediate legality, effective membership and exact identities
-
-The dated [Element Declaration Properties Correct clause 4](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#e-props-correct) requires derivation from the immediate affiliation head's declared type, given that immediate head's element final set.
-At F→H the operands are exact B and exact B, and the excluded set is H.final `{restriction}`.
-The identity case of [Type Derivation OK (Complex)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-derived-ok) succeeds without traversing an edge; F→H is an affiliation edge, not an extra type derivation step.
-
-At M→F the operands are M's exact B-or-helper type and exact B, with F.final empty.
-Every forest path terminates at B and uses only extension/restriction, so immediate affiliation passes both before reconstruction and after any child rebase below.
-Original H→Q1 and Q1→Q2 still compare B with itself under their unchanged immediate final sets.
-
-The dated [Substitution Group](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-class) first closes the potential census over affiliations, then filters abstract declarations and checks substitutability.
-F is traversed, including all incoming members, but its abstract property removes F itself from every effective expansion.
-F remains a mandatory fresh legality root; abstraction waives no declaration, type, correspondence or consumed-dependency duty.
-
-For an effective M under H, Q1 or Q2, [Substitution Group OK (Transitive)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec) uses the queried head's element block and blocks on entered type definitions along M.type→B.
-It does not reuse H.final as a transitive exclusion, nor replace queried-head blocking with intervening affiliation declarations' element blocks.
-The existing type blocks remain empty, so the positive effective-membership vectors depend on the same type-method unions as before: H accepts, Q1 excludes extension, Q2 excludes restriction.
-
-These duties are implemented by `checkSubstitution`, `declarationMethods` and `effectiveSubstitutionMembers` in [schemaTypeRelations.ts](../src/compiler/schemaTypeRelations.ts), with immediate legality consumed by [checkDeclaration](../src/compiler/schemaDeclarationPrimitives.ts).
-The historical [helper-affiliation controls](../test/research/re01/helper-affiliation-case.test.ts) remain qualified local evidence from the older resolver; they supply no current complete certificate.
-The pinned dated Structures XML was re-read, excluding deleted editorial text, and matches SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
-
-##### Complete reconstruction and child induction
-
-Reconstruct directly over the new immutable Γ, using the #296 recipe once and retaining F verbatim in canonical and explicit raw declaration properties.
-At the root, helper ancestry, methods, declared types, flags and complete member census are unchanged; F contributes no effective name or position.
-Thus every root expansion has the same members and multiplicities as its supplied bridge-bearing root, preserving X's anchored restriction mappings and coherent implicit choices without preserving obsolete helper particle observations.
-
-The prior identity/ownership, original/endpoint correspondence and exact-B local derivation proof is unchanged by the additional declaration.
-F is global, so it introduces no scoped-owner chain; retaining it changes no existing owner or derived ID.
-Its local declaration duties have legal booleans, no value/identity constraints, exact original B as declared type and the independently proved F→H relation.
-
-Extend the prior complete consumed closure by F and its edges to B and H, and include every incoming member behind F even when a queried expansion blocks it.
-These dependencies already close through B/A, original H/Q1/Q2, fixed local declarations, builtin string/anyType and the full finite helper forest; F adds no X or additional scalar dependency.
-Every inherited particle, helper, member, unused root and F is checked in each evidence context by [finiteRe01Verification.ts](../src/compiler/finiteRe01Verification.ts), which roots all additions relative to immutable Γ rather than only the current fork's delta.
-
-Copied B still has the same first global H position, required string delimiter and later fixed local choices.
-Distinct fresh member names can appear only in that first expanded position; abstract F adds no name, so the existing UPA/EDC argument applies to every effective subset after rebase.
-Each detached z leaf remains a separate mandatory particle root with one position, fixed named string type and trivial EDC/UPA, independently of global expansion changes.
-
-For a required nonprimitive fresh extension T, choose exact unchanged B and change only T to restriction of B in its direct child, retaining all additions and reconstructed properties.
-F stays typed by B and affiliated with H; every member still reaches B and affiliates legally with F, even if T formerly had restrictions or extensions below it.
-Other helper local derivations still compare identical copied content with empty type final/AU/wildcard duties, and correspondence, declaration legality, complete closure, UPA and EDC are rebuilt in that child.
-
-Child expansion names need not equal the parent's: removing an extension can admit a member under Q1, while the inserted restriction excludes any affected path under Q2.
-Unaffected paths keep their previous membership; descendants are checked from their actual resulting ancestry, not from a parent vector.
-X is available but unconsumed in these helper children, so this proof transfers neither its earlier mapping nor parent/sibling receipts and imposes no extra preservation condition on them.
-
-Let n be the current number of fresh extension edges.
-Each child introduces no addition, removes exactly one such edge and retains the one-bridge structural invariant and closure, without requiring the root X mapping there; n=0 leaves the accepted primitive B obligation and no fresh nonprimitive extension.
-The preceding induction therefore constructs complete acyclic evidence with every inherited root, with unfolded node bound `sum(n! / (n-i)!, i = 0..n)` and finite extra F checks per node.
-
-The bound is in the supplied forest, with sufficient resources, not in Γ.
-Configurable exhaustion remains resource-limit; no witness-size bound, complete general negative or mathematical search-termination claim follows.
-No general bridge framework, validator weakening, identity change or production activation is introduced.
-
-##### Independently derived controls and disposition
-
-The [current typed controls](../test/research/re01/helper-method-support.test.ts) retain the repeated-Q1 particle trap, particle-owned U/V, dependent D, member sharing and unused V/C, adding this exact F and the independently prepared actual source.
-The reconstructed root and all four required descendant contexts pass complete finite verification; every node checks F and the entire inherited inventory, its own-context receipt dependencies and absence of consumed X in helper children.
-The U child admits all three affected members under Q1 and excludes them under Q2; removing its unused V evidence remains unresolved.
-
-A separate new Γ-root changes only the selected mixed-method member's immediate affiliation to H.
-Its type path contains restriction, so `checkSubstitution` returns false and complete verification rejects `e-props-correct.4` at that member under original H.final.
-This isolates the immediate-final duty without mutating H or turning candidate failure into nonexistence of other witnesses.
-
-The independently prepared [helper-method-blocked.xsd](../test/conformance/fixtures/xsd/recovery/helper-method-blocked.xsd) adds H.block `{restriction}` to the final source variant.
-Both immediate bridge affiliations remain legal, but the mixed member fails effective substitutability under H and is absent from H's expansion.
-Complete finite verification rejects this selected construction at X's `derivation-ok-restriction.5.4`: H alone supplies no implicit choice for the first grouped MapAndSum comparison.
-This is a qualified block contrast, not a claimed complete successful RE01 construction for the changed source.
-
-The [independent reference controls](../test/conformance/reference/re01-helper-method-support.test.ts) pin exact source differences, original anchors/flags and live local source acceptance; their reference runner discovers both variants through these tests.
-The live engine does not establish cos-ct-extends.1.5 or the family theorem; the proof and complete current-verifier controls supply those separate duties.
-Existing ownership, unchanged-particle EDC, inherited-rewrite and missing-evidence countercontrols remain unchanged, as do #294's conditional allocation result and #295's exact limitations.
-
-One fresh-context nonauthor reviewer examined the decisive rule/closure/induction before reliance and reviews final proof/code plus scoped #232 consistency.
-All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands, failure distinctions and configurable inclusive/sticky budgets remain intact.
-Outcome A is limited to this exact one-bridge supplied-family theorem; general coverage/evidence adequacy/bounds/negatives/termination and #234/#232 remain open, with #179/#153/#184 separate.
-
-Next concrete action: audit the existing live-content helper's raw particle identity role and failed required restriction-to-B child, then state one bounded candidate repair before combining any broader content with this bridge.
-No such repair or additional role is investigated here, and this slice supplies no general search bound.
 
 #### General alternatives and unresolved proposition
 
