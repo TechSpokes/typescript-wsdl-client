@@ -275,6 +275,25 @@ async function simultaneousScopedControl(dag = false, repeatedHead = false, name
     rawTypes: [raw(a), raw(b), raw(r), raw(endpoint), ...retainedTypes.map(node => raw(node))],
     rawElements: declarations.map(node => ({element: node.id, final: [], block: [], type: node.type}))});
   if (retained.kind !== 'prepared') throw new Error(JSON.stringify(retained));
+  // One alternative root recipe, not a normalizer: each detached fresh
+  // particle keeps its identity/owner and becomes the same original z leaf.
+  const outer = request.actual.lookup(a.content!);
+  if (outer.kind !== 'found' || outer.node.kind !== 'particle' || outer.node.term.kind !== 'sequence')
+    throw new Error('Expected original B content');
+  const delimiter = request.actual.lookup(outer.node.term.children[1]!);
+  if (delimiter.kind !== 'found' || delimiter.node.kind !== 'particle' || delimiter.node.term.kind !== 'element')
+    throw new Error('Expected original delimiter particle');
+  const delimiterDeclaration = request.actual.resolve(delimiter.node.term.declaration);
+  if (delimiterDeclaration.kind !== 'found' || delimiterDeclaration.node.kind !== 'element')
+    throw new Error('Expected original delimiter declaration');
+  const delimiterReference = delimiter.node.term.declaration;
+  const repairedParticles: ParticleNode[] = seed.particles.map(node => ({...node,
+    occurs: {min: '1', max: '1'}, term: {kind: 'element', declaration: delimiterReference}}));
+  const repaired = request.candidate({key: 'identity-preserving-delimiter-payloads',
+    active: original.candidate.context.members, additions: [...retainedTypes, ...declarations, ...repairedParticles], endpoint,
+    rawTypes: [raw(a), raw(b), raw(r), raw(endpoint), ...retainedTypes.map(node => raw(node))],
+    rawElements: declarations.map(node => ({element: node.id, final: [], block: [], type: node.type}))});
+  if (repaired.kind !== 'prepared') throw new Error(JSON.stringify(repaired));
   const evidence = (context: SemanticContext, types: readonly ComplexTypeNode[]) => {
     const nodes: FiniteRe01EvidenceNode[] = [];
     const children = (parent: SemanticContext, remaining: readonly ComplexTypeNode[]): string[] => remaining.map(node => {
@@ -295,6 +314,8 @@ async function simultaneousScopedControl(dag = false, repeatedHead = false, name
     return {root: 'root', nodes};
   };
   return {request, a, b, x, s, u, v, d, c, pPlus, particles: seed.particles, helpers, declarations, build, evidence,
+    repaired: {context: repaired.context, types: retainedTypes, elements: declarations, particles: repairedParticles},
+    delimiter: delimiterDeclaration.node,
     retained: {context: retained.context, types: retainedTypes, elements: declarations},
     original: {...original, context: original.candidate.context},
     reconstructed: {...reconstructed, context: reconstructed.candidate.context}};
@@ -362,6 +383,83 @@ async function namedComparison(shape: 'extension-restriction' | 'restriction-ext
 }
 
 describe('helper method support with explicit contextual reconstruction', () => {
+  it.each([false, true])('reconstructs detached particle payloads without allocating identities (shared DAG: %s)', async dag => {
+    // The non-DAG variant is exactly #295's repeated-global-Q1 EDC trap.
+    // Both variants retain particle-owned U/V, dependent D, shared members,
+    // unused V/C and every particle as a required root in all five contexts.
+    const control = await simultaneousScopedControl(dag, !dag);
+    const {request, a, b, x, u, v, d, c, helpers, declarations, particles, original, retained, repaired, delimiter, evidence} = control;
+    expect(delimiter).toMatchObject({kind: 'element', identity: {kind: 'scoped'}, name: {local: 'z'},
+      abstract: false, type: {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'string'}}});
+    expect(delimiter.substitutionGroup).toBeUndefined();
+    expect(repaired.context.members).toEqual(original.context.members);
+    for (const id of request.actual.members) {
+      expect(repaired.context.sourceNode(id)).toBe(request.actual.sourceNode(id));
+      expect(repaired.context.lookup(id)).toEqual(retained.context.lookup(id));
+      if (id !== x.id) expect(repaired.context.lookup(id)).toEqual(request.actual.lookup(id));
+    }
+    for (const node of [...helpers, ...declarations]) {
+      expect(repaired.context.lookup(node.id)).toEqual(retained.context.lookup(node.id));
+      expect(repaired.context.owner(node.id)).toBe(original.context.owner(node.id));
+    }
+    expect(repaired.context.owner(d.id)).toBe(u.id);
+    expect(repaired.context.owner(u.id)).toBe(control.pPlus.id);
+    expect(repaired.elements.map(node => node.type)).toEqual(original.elements.map(node => node.type));
+    for (const [index, node] of particles.entries()) {
+      const replacement = repaired.particles[index]!;
+      expect(replacement).toEqual({...node, occurs: {min: '1', max: '1'},
+        term: {kind: 'element', declaration: local(delimiter.id)}});
+      expect(repaired.context.owner(node.id)).toBe(original.context.owner(node.id));
+      expect(containedNodes(replacement)).toEqual([]);
+      expect(replacement.identity.kind).toBe('scoped');
+      if (replacement.identity.kind !== 'scoped') throw new Error('Expected scoped particle');
+      expect(replacement.id).toBe(scopedId(replacement.identity.owner, replacement.identity.path, replacement.identity.role));
+    }
+    for (const head of ['H', 'Q1', 'Q2']) expect(members(repaired.context, head)).toEqual(members(original.context, head));
+    const supplied = evidence(repaired.context, repaired.types);
+    const verified = verifyFiniteRe01Evidence(request.actual, x.id, supplied);
+    expect(verified, JSON.stringify(verified)).toMatchObject({kind: 'checked-candidate',
+      claims: {universalCoverage: false, completeNegativeAnswer: false, searchTermination: false}});
+    if (verified.kind !== 'checked-candidate') throw new Error(verified.kind);
+    expect(verified.proof).toHaveLength(5);
+    for (const step of verified.proof) {
+      const context = supplied.nodes.find(node => node.context.contextId === step.contextId)!.context;
+      const ids = new Set(step.components.map(receipt => receipt.component));
+      expect(context.members).toEqual(original.context.members);
+      for (const node of [...helpers, ...declarations, ...particles, a, b, delimiter])
+        expect(ids.has(node.id), node.id).toBe(true);
+      for (const node of repaired.particles) {
+        expect(context.lookup(node.id)).toEqual(repaired.context.lookup(node.id));
+        expect(checkComponentConstruction(context, node.id)).toMatchObject({kind: 'checked'});
+        expect(checkElementDeclarationsConsistent(context, [node.id])).toMatchObject({kind: 'checked', value: true});
+        const content = deriveModelGroupContent(context, node.id);
+        if (content.kind !== 'checked') throw new Error(JSON.stringify(content));
+        const view = prepareSemanticParticleView(context, content.view, 'declared');
+        if (view.kind !== 'checked') throw new Error(JSON.stringify(view));
+        expect(checkParticleAttribution(context, view.view)).toMatchObject({kind: 'checked', value: true});
+      }
+      if (step.target !== x.id) expect(ids.has(x.id)).toBe(false);
+      for (const receipt of step.components) {
+        expect(receipt.contextId).toBe(step.contextId);
+        for (const dependency of receipt.dependencies) expect(ids.has(dependency)).toBe(true);
+      }
+    }
+    const child = supplied.nodes.find(node => node.parent === repaired.context && node.target === u.id)!;
+    expect(members(child.context, 'Q1')).toContain(declarations[0]!.id);
+    expect(members(child.context, 'Q1')).toContain(declarations[1]!.id);
+    expect(members(child.context, 'Q2')).not.toContain(declarations[0]!.id);
+    expect(verified.proof.every(step => step.components.some(receipt => receipt.component === c.id))).toBe(true);
+    expect(verifyFiniteRe01Evidence(request.actual, x.id,
+      {...supplied, nodes: supplied.nodes.map(node => node === child ? {...node, premises: []} : node)}))
+      .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', contextId: child.context.contextId, component: v.id});
+    // The new-root freedom does not authorize rewriting an inherited particle.
+    const endpoint = child.context.lookup(u.id);
+    if (endpoint.kind !== 'found' || endpoint.node.kind !== 'complexType') throw new Error(u.id);
+    expect(forkSemanticCandidate(repaired.context, {key: 'forbidden-inherited-rewrite', active: repaired.context.members,
+      endpoint: endpoint.node, additions: [particles[0]!]}))
+      .toMatchObject({kind: 'candidate-rejected', code: 'identity', component: particles[0]!.id});
+  });
+
   it.each([false, true])('retains scoped identities and every particle with complete evidence (shared DAG: %s)', async dag => {
     const control = await simultaneousScopedControl(dag);
     const {request, x, a, b, helpers, declarations, particles, original, retained, evidence} = control;

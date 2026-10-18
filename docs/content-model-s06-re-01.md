@@ -1340,6 +1340,135 @@ The next concrete action is to audit which particle-structure and correspondence
 No particle rewrite or normalization is investigated in this slice, and no representation decision follows from its findings.
 General coverage/evidence adequacy, witness bounds, complete negatives and mathematical search termination remain open; #234/#232 stay open and #179/#153/#184 retain their separate gates.
 
+#### Identity-preserving detached-particle reconstruction lemma
+
+This continuation starts from fetched actual main `d6c0e8c4885f95f227f65e216f29e78e1fad4756`, tree `373a25012f1cac2e24b15f053569ade0e601ff6a`.
+Investigation/implementation began at `2026-10-18T10:54:26Z`, with cutoff `2026-10-18T12:24:26Z`; the #234 ledger records the earlier finding freeze and subsequent review/delivery.
+The result is outcome A for the following supplied family, with no fresh-component-allocation premise.
+
+##### Family and success premise
+
+Inherit the nonrecursive Γ/X/B template of the private-particle and scoped-helper continuations, without their privacy or allocation hypotheses.
+Γ is the unchanged string-delimiter fixture; X restricts unchanged B with its stipulated effective properties.
+There is a finite acyclic helper base forest ending at exact B, with extension/restriction methods, nonabstract helpers, explicit namespaces and empty AUs, attribute wildcards, final and block sets.
+
+Members have the stipulated distinct fresh global names, empty flags/constraints and direct H affiliations, and are typed by B or a helper.
+Fresh helper content may use the admitted finite acyclic element/sequence/choice particle graphs over the established original closure, with sharing and unused additions allowed.
+O is the entire fresh particle inventory; helpers may have acyclic scoped ownership through O or other retained helpers, including dependent owner identities.
+
+There are no additional declaration categories, bridges, scalar/AU/group helpers, generated scalar slots or extra named/intermediate comparison roles.
+Every original identity, endpoint incidence and generated-particle correspondence operand remains anchored; no original record or endpoint-generated particle belongs to O.
+These are the existing template restrictions, not a restriction of B-v1.
+
+The coverage premise is a semantically successful permitted construction: its actual obligations hold in immutable Γ and its hypothetical component predicates and required existential children hold in their declared contexts.
+It does not mean preparation alone or a passing isolated X mapping.
+For this family the stronger conclusion also holds for a locally successful root, without assuming complete original evidence: the proof below uses its complete local legality and X mapping, then constructs new child evidence independently.
+
+Proposition: every such successful construction admits an alternative root retaining all supplied component identities and owners, helper/member ancestry, names and sharing, X's endpoint and all original Γ, while giving every helper exact B content and every O particle the single payload below.
+The alternative has complete finite contextual evidence, including every inherited fresh root, with no new component identity.
+
+##### Audit of the remaining O consumers
+
+First replace every helper's canonical content contribution and effective raw content with exact B, then classify references to O.
+Both inventories matter: an effective raw overlay cannot excuse a stale canonical content edge.
+The [graph traversal](../src/compiler/graphTraversal.ts), [semantic context](../src/compiler/semanticContext.ts), [correspondence](../src/compiler/re01CandidateCorrespondence.ts) and [raw property](../src/compiler/re01TypePropertyValidation.ts) owners establish the following duties.
+
+| Consumer | Required invariant or permitted replacement |
+| --- | --- |
+| Scoped identity derivation | Keep exact owner, path, role and ID; term/occurrence are not inputs |
+| Component kind | Keep `GraphNode.kind = particle`; an element term is still a particle |
+| Owner membership and cycles | Keep every O record and the complete unchanged acyclic owner graph |
+| Helper canonical/raw content | Both become exact original B content; no content selector still targets O |
+| O compositor/element terms | Replace the full term, removing its old child/declaration edges |
+| Type/member/base references | Keep all identities, reference targets, keyed rows and sharing |
+| Original correspondence | Keep Γ, X's effective original operands and generated sharing exactly |
+| Provenance and source | Keep source metadata and original selectors; invent no hypothetical XML mapping |
+| Complete evidence | Recheck every inherited O/helper/member root and all consumed dependencies |
+
+No remaining template category gives O an original-property correspondence role.
+After helper replacement, incoming O references are ownership edges and edges within O; replacing all O terms removes the latter without changing the former.
+Owner edges require membership and acyclicity, not the owner's old compositor or element term.
+An anonymous helper's explicit namespace, type identity and derivation properties likewise do not depend on its particle owner's payload.
+
+The actual rule is stricter for an inherited child than for this alternative root.
+`request.candidate` starts from immutable Γ; O has no record in that parent, so its old payload is not an inherited property.
+Within a child, additions cannot replace existing IDs and nonendpoint raw properties cannot change; the reconstruction therefore happens once in the new root and every required child inherits it unchanged.
+
+The dated [Particle property tableau](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#Particle_details) defines term and occurrence as particle properties, and [Particle Correct](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#p-props-correct) supplies their legality conditions.
+Neither term kind nor occurrence is part of this accepted scoped identity derivation.
+[Conformance](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#concepts-conformance) admits abstract programmatic components; this does not assert XML-source representability or amend persisted/source incidence rules.
+
+##### One replacement recipe and its admissibility
+
+Let z be the exact original local delimiter declaration in B's first sequence, with fixed builtin `string` type, no affiliation, nonabstractness and unchanged source properties.
+For every o in O, retain its complete node record except set `occurs = {min: '1', max: '1'}` and `term = {kind: 'element', declaration: local(z.id)}`.
+Keep every helper/member record except the stipulated simultaneous exact-B helper content changes, retain X, and build the alternative root directly over Γ with precisely the original supplied membership.
+
+This is one explicit recipe, not particle normalization or a generic transformation framework.
+No new declaration, particle, helper or other component ID is derived; existing distinct IDs remain distinct, so no hash-injectivity or fresh-allocation existence premise arises.
+All ID/owner/path/role derivations, owner availability and acyclic owner chains remain exactly the admitted ones.
+
+An element-term particle is legal at each retained particle role; its `1..1` range is integral, ordered and has positive maximum.
+z is an available original element declaration; sharing it as a semantic term reference does not reparent its local identity.
+No all-placement, group-root, wildcard, original raw-particle or generated-sharing constraint applies to these detached O terms in this template.
+All canonical references now resolve to exact z and all raw helper content references resolve to exact B, while unchanged provenance selectors still name their original Γ records.
+
+Preparation alone does not establish these claims.
+The existing [component construction owner](../src/compiler/schemaConstructionAssessment.ts) validates particle bounds, term kind and declaration dependencies; the correspondence owner checks the exact original/endpoint properties separately.
+Every resulting receipt is newly issued in its required context.
+
+##### Extension of the copied-B proof
+
+The old copied-B theorem excludes additional particles, so it cannot be applied unchanged.
+Extend its family by arbitrary finite O of the preceding retained delimiter particles and by acyclic helper/particle ownership chains within the same retained inventory.
+All other copied-B premises and all complete fresh-root duties remain binding.
+
+First establish the new local obligation for each O root in every context of the no-addition induction.
+It has one element position, exact z, and z is local with fixed builtin string type, so it has no global substitution expansion and introduces no helper or X dependency.
+Its EDC condition has no distinct repeated position and UPA has exactly one possible position; occurrence and declaration legality remain valid when H/Q1/Q2 expansions change.
+
+Each such particle is checked as its own root; distinct detached O roots are not concatenated into a new model group.
+Even their shared z has an unchanged named builtin type, and no old O compositor edge survives to introduce the #295 repeated-Q1 incidence.
+The complete added dependency closure is O to original z to builtin string and its existing builtin prerequisites; ownership remains a separately checked unchanged structural graph.
+
+Next re-establish the copied helpers and X.
+Every helper edge compares exact original B content, so raw extension or restriction passes by the original particle-identity branch, with empty AU/wildcard/final duties.
+Retained helper paths, entered blocks, member declarations and H affiliations preserve root H/Q1/Q2 names and cardinalities, so X's original mapping and coherent implicit choices still hold.
+
+The established copied-B closure rechecks B/A, original H/Q1/Q2, fixed local declarations and all required incoming members/helpers in each context, without consuming X.
+Its UPA/EDC argument allows each child's changed effective membership; the extra O leaf proof above adds no new incidence to that content.
+Unused helpers, unused particles and all members remain mandatory roots, including O that is still essential as a scoped owner.
+
+For each required nonprimitive helper extension T, form a child changing only T to restriction of exact B, with all reconstructed content and inherited components unchanged.
+The copied-content correspondence and local edges pass, the original owner graph is unchanged, and the new O proof holds in that child independently of its parent's receipts.
+Recompute correspondence, closure, declaration checks and UPA/EDC there; no sibling or parent evidence is transferred.
+
+The number n of remaining fresh extension edges decreases by one per branch, and n equals zero leaves only the established primitive B obligation.
+Induction supplies complete finite evidence, with the same unfolded node bound `sum(n! / (n-i)!, i = 0..n)` and additional finite O-root checking at every node.
+This bound depends on the supplied forest, not Γ; sufficient resources are a mathematical qualification, and the unchanged configurable limits may still return resource-limit.
+
+##### Controls and scoped acceptance
+
+The [typed helper controls](../test/research/re01/helper-method-support.test.ts) instantiate this one recipe for the exact #295 repeated-global-Q1 trap and the shared particle DAG.
+Both retain particle-owned U/V, dependent D owned by U, two members sharing U, and unused V/C and particles.
+They assert exact component membership, identities/owners, original records/source anchors, endpoint, member sharing, canonical/raw exact-B helpers and root expansions.
+
+Both alternatives pass complete five-node evidence: the root, two required children and each child's remaining sibling proof.
+Every proof node checks every inherited helper/member/particle, complete receipt dependencies and its own context; the children admit the U-typed members under Q1 while Q2 continues to exclude them, and the delimiter payloads remain exact and pass separate legality, EDC and UPA checks.
+Removing unused V's required evidence from U's child remains unresolved, and attempting to replace an inherited particle is rejected by the existing identity gate.
+
+The unchanged #295 trap still fails its exact child EDC duty while UPA passes; it remains a locally successful root, not a fully successful arbitrary witness.
+The #294 allocation-certified theorem and all earlier controls remain intact.
+The successful examples support the explicit proof; a passing repaired example alone would not establish its universal supplied-family statement.
+
+One fresh-context nonauthor reviewer challenged this audit and the decisive closure/induction extension before reliance, then reviews final proof/code and scoped #232 consistency.
+The pinned Structures XML was re-read and matches SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+No production API, semantic owner, validator, identity representation, dependency, workflow or activation changes.
+
+All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands and configurable inclusive/sticky budgets remain unchanged.
+General witness coverage, evidence adequacy, input-derived bounds, complete negatives and mathematical search termination remain open; #234/#232 stay open and downstream assignments remain separate.
+Next action: identify one additional consumed helper role outside this nonrecursive template and audit its preservation/closure duty before proposing any broader reconstruction; this result supplies no general search bound.
+
 #### General alternatives and unresolved proposition
 
 The anchor-segment lemma supplies an adequate relation observation map; the copied-B theorem supplies one coherent content/AU/closure reconstruction and an actual well-founded evidence discipline.

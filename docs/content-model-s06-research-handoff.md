@@ -47,8 +47,21 @@ It fails universally over locally successful template roots: a retained shared-Q
 Inherited M:U affiliation to H:B forces every permitted U intermediate to be exact B, so another intermediate cannot repair this retained root.
 The named-type contrast and allocation-certified omission alternative pass complete evidence; the failing original is asserted locally successful, not an arbitrary fully successful witness.
 This proves neither fresh allocation necessary for every reconstruction nor failure of all identity-preserving alternatives.
-Next audit actual particle-structure/correspondence preservation duties for a later identity-preserving alternative, retaining the EDC trap as a discriminator; no particle normalization is performed here.
+That slice left actual particle-structure/correspondence preservation duties for a later identity-preserving alternative.
 General coverage/evidence/bounds/negatives/termination and downstream gates remain unchanged; #234/#232 stay open.
+
+The [detached-particle reconstruction lemma](content-model-s06-re-01.md#identity-preserving-detached-particle-reconstruction-lemma) resolves that bounded continuation for the unchanged nonrecursive template, with no fresh-allocation premise.
+In a new root over immutable Γ, it keeps every supplied identity/owner and all helper/member ancestry, names and sharing, copies helper canonical/effective raw content to exact B, and replaces only each detached fresh particle's term/occurrence with a `1..1` reference to exact original local string delimiter z.
+Scoped identity derivation uses owner/path/role rather than those payloads; original/endpoint correspondence and provenance remain fixed, while every required child inherits the reconstructed payloads unchanged.
+
+The proof explicitly extends copied-B to these additional mandatory particle roots and particle-owned helper chains: each new leaf consumes only z/string, has trivial EDC/UPA and remains legal independently of H/Q1/Q2 expansion changes.
+The same no-addition descent rechecks complete closure and correspondence in each context, including unused helpers/members/particles, without transferring receipts.
+The theorem states semantic success as its coverage premise and also establishes the stronger locally successful-root statement within this supplied family; it supplies no extraction of arbitrary B-v1 witnesses or Γ-derived search bound.
+
+Typed controls repair the exact #295 EDC trap and shared DAG with complete five-node evidence, dependent owners and shared incoming members.
+The unchanged trap still fails, missing unused-helper child evidence remains unresolved, and inherited particle replacement is rejected.
+The sole fresh-context nonauthor reviewer challenges the audit and proof extension before reliance and reviews final proof/code and scoped joint consistency; #294's conditional theorem, all seven recovery inputs, P1/F2, budgets and all full/downstream gates remain intact.
+Next action: audit one additional consumed helper role outside this template before extending reconstruction; general coverage/evidence/bounds/negatives/termination remain open.
 
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
