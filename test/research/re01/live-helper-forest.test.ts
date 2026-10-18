@@ -2,7 +2,7 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 import {loadSchemaInput} from '../../../src/loader/schemaInput.js';
 import {globalId, scopedId} from '../../../src/compiler/canonicalGraph.js';
-import type {ComplexTypeNode, ParticleNode, Reference} from '../../../src/compiler/canonicalGraph.js';
+import type {ComplexTypeNode, ElementNode, ParticleNode, Reference} from '../../../src/compiler/canonicalGraph.js';
 import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {forkSemanticCandidate} from '../../../src/compiler/semanticContext.js';
 import type {SemanticContext} from '../../../src/compiler/semanticContext.js';
@@ -16,6 +16,14 @@ import {assertFiniteCandidateReceipt, verifyFiniteRe01Evidence} from '../../../s
 import type {FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verification.js';
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
 import {measureMeaningfulPrefixBounds} from './meaningful-prefix-bound.js';
+import {checkSubstitution, effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
+
+type ForestType = 'E' | 'F' | 'U' | 'R' | 'V';
+type Affiliation = Readonly<{head: ForestType; member: ForestType;
+  final?: readonly ('extension' | 'restriction')[];
+  block?: readonly ('extension' | 'restriction' | 'substitution')[];
+  memberBlock?: readonly ('extension' | 'restriction' | 'substitution')[];
+  headAbstract?: boolean; memberAbstract?: boolean; extensionOnly?: boolean; detachedHeadUse?: boolean}>;
 
 const local = (target: string): Reference => ({kind: 'local', target});
 const anyType: Reference = {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'anyType'}};
@@ -48,7 +56,7 @@ function restricted(context: SemanticContext, id: string) {
   return result.view;
 }
 
-async function forest() {
+async function forest(affiliation?: Affiliation) {
   const fixtures = path.resolve('test/conformance/fixtures');
   const input = await loadSchemaInput(path.join(fixtures, 'xsd/re01/reordered-particle-int.xsd'), {policy: {fileRoots: [fixtures]}});
   const prepared = prepareSourceSchemaRequest(input);
@@ -78,13 +86,27 @@ async function forest() {
     ...e, id: owner ? scopedId(owner, '/' + name, 'type') : named(name),
     identity: owner ? {kind: 'scoped', owner, path: '/' + name, role: 'type'}
       : {kind: 'global', role: 'type', name: {namespace, local: name}},
-    content: old.id, derivation: {kind: method, contentKind: 'complex', base: local(base), facets: []},
+    content: affiliation?.extensionOnly ? wrapper.id : old.id,
+    derivation: {kind: method, contentKind: 'complex', base: local(base), facets: []},
   });
-  const f = helper('F', e.id, 'restriction');
+  const f = helper('F', e.id, affiliation?.extensionOnly ? 'extension' : 'restriction');
   const u = helper('U', f.id, 'extension', old.id);
   const r = helper('R', u.id, 'restriction', u.id);
   const v = helper('V', r.id, 'extension', unused.id); // No declaration/content consumes V.
   const helpers = [f, u, r, v], particles = [wrapper, separator, tail, extra, old, unused];
+  const types = {E: e, F: f, U: u, R: r, V: v};
+  const element = (name: string, type: ForestType, abstract: boolean, head?: Reference): ElementNode => ({
+    kind: 'element', id: globalId('element', {namespace, local: name}),
+    identity: {kind: 'global', role: 'element', name: {namespace, local: name}}, name: {namespace, local: name},
+    context: a.context, declaredAttributes: [], annotations: [], retained: [], syntaxDetails: [],
+    type: local(types[type].id), nillable: false, abstract, substitutionGroup: head,
+  });
+  const h = affiliation ? element('H', affiliation.head, affiliation.headAbstract ?? false) : undefined;
+  const m = affiliation && h ? element('M', affiliation.member, affiliation.memberAbstract ?? false, local(h.id)) : undefined;
+  const declarations = h && m ? [h, m] : [];
+  const rawElements = declarations.map(node => ({element: node.id, type: node.type,
+    final: node === h ? affiliation?.final ?? [] : [],
+    block: node === h ? affiliation?.block ?? [] : affiliation?.memberBlock ?? []}));
   const endpoint = {...d, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(e.id), facets: []}};
   const build = (mode: 'original' | 'trim-only' | 'repair', damage?: 'live' | 'unused') => {
     const copied = helpers.map(node => mode === 'repair' ? {...node, content: wrapper.id} : node);
@@ -93,13 +115,16 @@ async function forest() {
         term: {kind: 'sequence' as const, children: [a.content!, separator.id, tail.id]}};
       if (mode === 'repair' && [extra.id, old.id, unused.id].includes(node.id))
         return {...node, occurs: {min: '1', max: '1'}, term: leaf.term};
+      if (node.id === unused.id && affiliation?.detachedHeadUse && h)
+        return {...node, term: {kind: 'element' as const, declaration: local(h.id)}};
       return node;
     }).map(node => damage === 'live' && node.id === separator.id ? {...node, term: leaf.term}
       : damage === 'unused' && node.id === unused.id ? {...node, occurs: {min: '2', max: '1'}} : node);
-    const additions = [e, ...copied, ...replacements];
+    const additions = [e, ...copied, ...replacements, ...declarations];
     const result = request.candidate({key: mode + (damage ?? ''),
       active: [...request.actual.members, ...additions.map(node => node.id)], additions, endpoint,
       rawTypes: [{...raw(a), derivation: {method: 'restriction', base: anyType}}, raw(e), raw(endpoint), ...copied.map(raw)],
+      rawElements,
     });
     if (result.kind !== 'prepared') throw new Error(JSON.stringify(result));
     return result.context;
@@ -120,10 +145,11 @@ async function forest() {
     });
     const premises: string[] = [];
     nodes.push({id: 'root', parent: request.actual, context, target: d.id, intermediate: e.id, ancestor: local(a.id), premises});
-    premises.push(...descend(context, [u.id, v.id]));
+    premises.push(...descend(context, helpers.filter(node => node.derivation?.kind === 'extension').map(node => node.id)));
     return {root: 'root', nodes};
   };
-  return {request, a, d, e, f, u, r, v, helpers, particles, wrapper, separator, tail, extra, old, unused, leaf, build, evidence};
+  return {request, a, d, e, f, u, r, v, helpers, particles, declarations, h, m,
+    wrapper, separator, tail, extra, old, unused, leaf, build, evidence};
 }
 
 describe('simultaneous live-E and finite helper forest reconstruction', () => {
@@ -206,5 +232,122 @@ describe('simultaneous live-E and finite helper forest reconstruction', () => {
     const seed = await forest(), context = seed.build('repair', 'live');
     expect(checkComponentConstruction(context, seed.e.id)).toMatchObject({kind: 'candidate-rejected'});
     expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, seed.evidence(context))).toMatchObject({kind: 'candidate-rejected'});
+  });
+});
+
+describe('one declared-type affiliation in the live-E forest', () => {
+  // e-props-correct.4 uses the exact immediate head type and H.final.
+  // Equal types stop before an edge; a restriction-only segment to an
+  // interior head survives rebasing that head or any ancestor above it.
+  it.each<Affiliation>([
+    {head: 'U', member: 'U', final: ['extension', 'restriction'], block: ['substitution']},
+    {head: 'U', member: 'R', final: ['extension'], headAbstract: true},
+    {head: 'E', member: 'V', memberBlock: ['extension', 'restriction', 'substitution']},
+  ])('reconstructs complete original and repaired evidence for %j', async options => {
+    const seed = await forest(options), {request, d, h, m, build, evidence} = seed;
+    if (!h || !m) throw new Error('Expected declarations');
+    const original = build('original'), repaired = build('repair');
+    for (const context of [original, repaired]) {
+      const proof = evidence(context), result = verifyFiniteRe01Evidence(request.actual, d.id, proof);
+      expect(result).toMatchObject({kind: 'checked-candidate'});
+      if (result.kind !== 'checked-candidate') throw new Error(JSON.stringify(result));
+      assertFiniteCandidateReceipt(request.actual, result);
+      expect(result.proof).toHaveLength(5);
+      const fresh = [...seed.helpers, ...seed.particles, seed.e, h, m].map(node => node.id);
+      for (const step of result.proof) {
+        const item = proof.nodes.find(node => node.id === step.evidence)!;
+        expect(step.components.map(receipt => receipt.component)).toEqual(expect.arrayContaining(fresh));
+        expect(step.components.every(receipt => receipt.contextId === item.context.contextId)).toBe(true);
+        for (const declaration of [h, m]) {
+          expect(item.context.lookup(declaration.id)).toEqual(original.lookup(declaration.id));
+          expect(item.context.rawElementProperties(declaration.id)).toEqual(original.rawElementProperties(declaration.id));
+          expect(checkComponentConstruction(item.context, declaration.id)).toMatchObject({kind: 'checked', obligations: []});
+        }
+        expect(checkSubstitution(item.context, m.id, h.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+        for (const id of item.parent.kind === 'candidate' ? item.parent.members : []) if (id !== item.target) {
+          expect(item.context.lookup(id)).toEqual(item.parent.lookup(id));
+          expect(item.context.rawTypeProperties(id)).toEqual(item.parent.rawTypeProperties(id));
+        }
+      }
+      expect(result.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
+    }
+    expect(repaired.members).toEqual(original.members);
+    for (const node of [...seed.helpers, ...seed.particles, seed.e, h, m]) {
+      const found = repaired.lookup(node.id);
+      if (found.kind !== 'found') throw new Error(node.id);
+      expect(found.node.identity).toEqual(node.identity);
+    }
+  });
+
+  it.each(['restriction', 'extension'] as const)('rechecks changed effective membership under block=%s without transferring it', async block => {
+    const seed = await forest({head: 'E', member: 'F', extensionOnly: true, block: [block],
+      memberBlock: ['substitution'], detachedHeadUse: true});
+    const {request, d, f, h, m, build, evidence} = seed;
+    if (!h || !m) throw new Error('Expected declarations');
+    const original = build('original'), repaired = build('repair');
+    expect(particle(original, seed.unused.id).term).toEqual({kind: 'element', declaration: local(h.id)});
+    expect(particle(repaired, seed.unused.id).term).toEqual(seed.leaf.term);
+    for (const context of [original, repaired]) {
+      const proof = evidence(context), child = proof.nodes.find(node => node.parent === context && node.target === f.id)!;
+      const before = block === 'restriction';
+      expect(checkSubstitution(context, m.id, h.id, {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: before});
+      expect(checkSubstitution(child.context, m.id, h.id, {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: !before});
+      for (const current of [context, child.context]) {
+        expect(checkSubstitution(current, m.id, h.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+        const members = effectiveSubstitutionMembers(current, h.id);
+        expect(members.kind).toBe('checked');
+        if (members.kind === 'checked') expect(members.value.includes(m.id)).toBe(current === context ? before : !before);
+      }
+      const result = verifyFiniteRe01Evidence(request.actual, d.id, proof);
+      expect(result).toMatchObject({kind: 'checked-candidate'});
+      if (result.kind !== 'checked-candidate') throw new Error(JSON.stringify(result));
+      expect(result.proof).toHaveLength(16);
+      for (const step of result.proof) {
+        const item = proof.nodes.find(node => node.id === step.evidence)!;
+        expect(step.components.map(receipt => receipt.component))
+          .toEqual(expect.arrayContaining([...seed.helpers, ...seed.particles, seed.e, h, m].map(node => node.id)));
+        expect(step.components.every(receipt => receipt.contextId === item.context.contextId)).toBe(true);
+        for (const declaration of [h, m]) {
+          expect(item.context.lookup(declaration.id)).toEqual(original.lookup(declaration.id));
+          expect(item.context.rawElementProperties(declaration.id)).toEqual(original.rawElementProperties(declaration.id));
+        }
+      }
+    }
+  });
+
+  it('rejects the prescribed child when rebasing the member type cuts out the exact interior head', async () => {
+    const seed = await forest({head: 'R', member: 'V'}), context = seed.build('repair');
+    const {h, m, v} = seed;
+    if (!h || !m) throw new Error('Expected declarations');
+    expect(checkComponentConstruction(context, m.id)).toMatchObject({kind: 'checked'});
+    const proof = seed.evidence(context), child = proof.nodes.find(node => node.parent === context && node.target === v.id)!;
+    expect(child.context.lookup(h.id)).toEqual(context.lookup(h.id));
+    expect(child.context.lookup(m.id)).toEqual(context.lookup(m.id));
+    expect(checkComponentConstruction(child.context, m.id)).toMatchObject({kind: 'candidate-rejected', rule: 'e-props-correct.4'});
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, proof))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'e-props-correct.4'});
+    // This parent is locally legal, not a successful original witness.
+    // The result obstructs this E-rebase recipe, not all possible witnesses.
+  });
+
+  it('separates head final from block when a rebase adds restriction to an E path', async () => {
+    const seed = await forest({head: 'E', member: 'F', extensionOnly: true, final: ['restriction']}), context = seed.build('repair');
+    const {h, m, f} = seed;
+    if (!h || !m) throw new Error('Expected declarations');
+    expect(checkComponentConstruction(context, m.id)).toMatchObject({kind: 'checked'});
+    const proof = seed.evidence(context), child = proof.nodes.find(node => node.parent === context && node.target === f.id)!;
+    expect(checkSubstitution(child.context, m.id, h.id, {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: true});
+    expect(checkSubstitution(child.context, m.id, h.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: false});
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, proof))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'e-props-correct.4'});
+    // Again only the attempted recipe is refuted; no general negative follows.
+  });
+
+  it('does not replace exact head ancestry by equal repaired particle content', async () => {
+    const seed = await forest({head: 'V', member: 'R'}), context = seed.build('repair');
+    const {h, m, r, v} = seed;
+    if (!h || !m) throw new Error('Expected declarations');
+    expect(complex(context, r.id).content).toBe(complex(context, v.id).content);
+    expect(checkComponentConstruction(context, m.id)).toMatchObject({kind: 'candidate-rejected', rule: 'e-props-correct.4'});
   });
 });

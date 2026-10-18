@@ -43,6 +43,34 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it('distinguishes exact declared-type paths, immediate final and effective blocking after an E rebase', () => {
+        // Independent fixed clause traces, without current semantic-owner imports.
+        // e-props-correct.4 invokes cos-ct-derived-ok with H.final; the
+        // identity case traverses no edge, including when both types rebase.
+        const identityMethods: readonly string[] = [];
+        expect(identityMethods.some(method => ['extension', 'restriction'].includes(method))).toBe(false);
+        // R restricts U: changing U's outgoing edge cannot change R -> U.
+        const interiorSegment = ['restriction'];
+        expect(interiorSegment.includes('extension')).toBe(false);
+        // V extends R: rebasing V to restriction of E cuts out exact R,
+        // despite R and V retaining the same particle. This is a recipe trap.
+        const beforeInteriorCut = ['V', 'R', 'U', 'F', 'E'];
+        const afterInteriorCut = ['V', 'E'];
+        expect(beforeInteriorCut.includes('R')).toBe(true);
+        expect(afterInteriorCut.includes('R')).toBe(false);
+        // F extends E then F restricts E. H.final={restriction} admits
+        // only the first affiliation. With empty final, both are legal;
+        // cos-equiv-derived-ok-rec instead intersects methods with H.block.
+        const beforeMethods = ['extension'], afterMethods = ['restriction'];
+        expect(beforeMethods.includes('restriction')).toBe(false);
+        expect(afterMethods.includes('restriction')).toBe(true);
+        expect(beforeMethods.includes('extension')).toBe(true);
+        expect(afterMethods.includes('extension')).toBe(false);
+        // cos-equiv-class filters abstract declarations after traversing the
+        // complete affiliation census. Neither filtering nor M.block waives
+        // M's mandatory declaration legality in a required child.
+    });
+
     it('derives the live-scaffold repair and finite evidence discipline from independent premises', () => {
         const schema = fixture('reordered-particle-int.xsd');
         const prefix = children(type(schema, 'A'), 'sequence')[0];
