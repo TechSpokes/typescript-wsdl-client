@@ -43,6 +43,30 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it('derives the live-scaffold repair and finite evidence discipline from independent premises', () => {
+        const schema = fixture('reordered-particle-int.xsd');
+        const prefix = children(type(schema, 'A'), 'sequence')[0];
+        const endpoint = children(branch(schema, 'D', 'extension'), 'sequence')[0];
+        const originalInt = children(endpoint, 'element')[0];
+        expect(attribute(children(prefix, 'element')[0], 'minOccurs')).toBe('0');
+        expect(expandedQName(originalInt, attribute(originalInt, 'type')!)).toEqual({uri: XSD, local: 'int'});
+        expect(attribute(originalInt, 'substitutionGroup')).toBeUndefined();
+        // cos-particle-extend admits the exact base particle; restriction's
+        // identity case admits that same particle. Copying one retained E
+        // scaffold to every helper makes both edge methods use this case.
+        // The required empty choice stays live: replacing it by a:int would
+        // add a conflicting named declaration after optional A/a:string.
+        // Detached particles instead become separate one-position a:int
+        // roots; they are never appended to the live E model group.
+        // Every nonprimitive helper is rebased only in its own direct child.
+        // All remaining extensions are still obligations in that context.
+        const evidenceNodes = (extensions: number): number => extensions === 0
+            ? 1 : 1 + extensions * evidenceNodes(extensions - 1);
+        expect([0, 1, 2, 3].map(evidenceNodes)).toEqual([1, 2, 5, 16]);
+        // This finite supplied-forest recurrence is not an input-derived
+        // helper/evidence bound or a general RE01 termination theorem.
+    });
+
     it('distinguishes one endpoint tail position from a retained two-position restriction of the intermediate', () => {
         // Independent clause calculation, with no semantic-owner imports:
         // Recurse is a strictly ordered mapping; NameAndTypeOK excludes int

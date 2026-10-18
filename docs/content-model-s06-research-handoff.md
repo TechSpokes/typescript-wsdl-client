@@ -4,6 +4,16 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [live-intermediate forest theorem](content-model-s06-re-01.md#simultaneous-live-intermediate-and-finite-helper-forest-reconstruction) reconstructs the exact #304 integer-restoration family with arbitrary finite acyclic content-only helper forests ending at E.
+It retains every supplied identity/owner, helper ancestry method and shared helper identity, trims E's existing tail to W(D)=1, copies repaired E content into every helper's canonical/effective raw properties, and replaces only detached fresh particle payloads by the exact original local a:int leaf.
+E's exact-A prefix, required empty choice and retained wildcard stay live; #304's trim-only F failure remains valid.
+The theorem proves hereditary local legality before induction: each nonprimitive extension helper's direct child restricts it to retained E and rechecks every inherited helper, live particle, detached particle and unused root with fresh correspondence/receipts.
+Remaining helper extension count decreases by one, giving finite supplied-forest evidence, separately from any Γ-derived helper/evidence bound or general RE01 termination claim.
+Complete original/repaired five-node controls include dependent/scoped helpers, sharing, unused roots, a missing sibling child and inherited/live-particle failures.
+One fresh-context nonauthor review covers decisive reasoning and final proof/code plus scoped joint consistency; normal delivery pins exact final revisions and checks in #234/#232.
+All accepted recovery and AU/PW/DT/#178/GSC1/P1/F2 contracts, original operands, failure categories and budgets remain intact; full #234/#232 and downstream activation gates remain open.
+Next action: audit one helper used as a declaration's type, whose child rebase can affect consumed type/substitution facts; no bridge, scalar/AU, allocation or general-search work is combined here.
+
 The seven recovery packages are accepted at PR #286 main `ad936e02b5a41029a8be8590845dd61c99fec401`, tree `3f0cc238cf42095af3e4ede751b983e916fdacb0`.
 Current AU C1, PW R-240, DT A, GSC1 and P1/F2 semantics and the complete local inventory govern new consumers; earlier implementation statuses below are historical.
 The [standalone RE01 investigation](content-model-s06-re-01.md#independent-helper-reduction-investigation) adds a scoped ancestry contradiction and an affiliation/UPA falsifier of arbitrary child installation, with full witness/evidence adequacy, general negatives and search termination still open.
