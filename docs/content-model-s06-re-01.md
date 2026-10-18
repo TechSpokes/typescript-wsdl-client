@@ -2030,6 +2030,137 @@ The seven recovery inputs, B-v1, P1/F2, original operands, failure distinctions,
 The next action is to extract the content consumers and contextual facts that must survive a simultaneous helper reconstruction, beginning with F's restriction role, before trying to promote the particle capacity into an arbitrary-success theorem.
 Full #234/#232 acceptance and #179/#153 activation remain open; #184 retains its separate ownership.
 
+### Simultaneous live-intermediate and finite-helper-forest reconstruction
+
+This bounded continuation starts from #304 at fetched actual main `d3701d822911e8f246ec5fdeed802a0067fba4fe`, tree `ffaa04df274a80712d54b39b6c23750f475efce1`.
+Investigation/implementation began at `2026-10-18T18:38:06Z`, with cutoff `2026-10-18T20:08:06Z`; the #234 ledger records the earlier finding freeze and subsequent review/checks/delivery.
+The result is a simultaneous reconstruction theorem for the following supplied family, with complete contextual evidence and no new component identities.
+
+#### Exact family and quantified claim
+
+Use immutable Γ from [the integer-restoration source](../test/conformance/fixtures/xsd/re01/reordered-particle-int.xsd).
+Original A has optional local a:string, B restricts A to empty, and original D extends B with required local a:int.
+All original records, original effective properties, typed operands and source incidences remain exact; D′ changes only its derivation to restriction of fresh E.
+
+E extends exact original A with element-only content S, an existing `1..1` sequence whose children are exact A's particle, a required `1..1` empty choice, and a nonempty finite list of universal `0..unbounded`, `##any`, `skip` wildcard positions.
+The prefix is the exact original particle, not a property-equal copy; E has empty AUs, attribute wildcard, final and block sets and the stipulated admitted type properties.
+The input-derived endpoint capacity is W(D)=1, and at least one admitted tail particle already exists for reuse.
+
+The supplied finite acyclic helper base forest ends at E and uses extension/restriction edges only.
+Helpers have element-only content, empty AUs, attribute wildcards, final and block sets, admitted type identities/namespaces and original-only provenance anchors; their other admitted properties are retained.
+Their fresh particle graphs are finite and nonrecursive, with arbitrary sharing and unused roots; all admitted acyclic scoped ownership through retained helpers/particles is allowed.
+
+No fresh element/attribute declarations, affiliations, scalar/AU/model-group helpers, generated scalar slots, recursive content or additional named/intermediate comparison roles occur.
+Fresh particles have no original-property or endpoint-generated correspondence role, and every incoming nonownership particle reference belongs to the stated E/helper/particle content inventory.
+These explicit premises describe this family; they do not narrow accepted B-v1 inputs or claim that arbitrary witnesses can be extracted into it.
+
+For every semantically successful supplied construction in this family, there is a new root over the same immutable Γ retaining every supplied helper/particle identity and owner, all helper ancestry edges/methods, type sharing and original/endpoint correspondence, with E's tail trimmed to one position and complete finite evidence.
+In fact the construction below needs only an admitted inventory and the stated locally legal source/scaffold properties: it constructs the new helper judgments independently, without assuming the old helpers' pending RE01 obligations.
+The stronger conclusion does not call a locally successful root a fully successful arbitrary witness.
+
+#### Consumer audit and one simultaneous recipe
+
+F in #304 consumes two successive E tail positions through its restriction of `sequence(D.content,D.content)`.
+A dependent extension U with the exact F particle consumes F's effective raw particle identity and local type properties; its designated ancestor is A, so local extension success alone leaves U's nonprimitive RE01 obligation open.
+Original D′ instead consumes one E wildcard, with A's optional prefix and the formally emptiable separator skipped; none of its original content/type/occurrence operands may change.
+
+Let L contain S's wrapper, its required empty choice and one retained universal wildcard, together with the exact original prefix closure.
+Keep these records unchanged except remove all other tail incidences from S's wrapper children.
+Let O be every other supplied fresh particle record, including unused tails that no longer belong to L; a wildcard shared with the retained tail remains in L.
+
+Give every helper S's wrapper ID in both canonical `content` and effective raw `content.particle`, preserving its derivation, flags, namespace, provenance and every other property.
+For every o in O retain the complete record except set `occurs={min:'1',max:'1'}` and `term` to an element reference to the exact original local D/a:int declaration.
+Retain E and D′ as stipulated and prepare this alternative directly over Γ with precisely the supplied membership.
+
+| Consumer after simultaneous replacement | Required invariant |
+| --- | --- |
+| Original and endpoint properties | Exact original particles, declarations, sharing and effective correspondence |
+| Live E content | Exact prefix, required empty choice, retained wildcard and wrapper order |
+| Helper canonical and raw selectors | Both select the same repaired S; no old particle content edge survives |
+| Scoped identities | Exact ID, owner, role and path; membership and acyclic owner chains remain |
+| Detached particle terms | Replace every old payload and its outgoing child/declaration edges |
+| Complete contextual verification | All inherited helpers, live particles, O and unused roots remain duties |
+
+After the helper selectors and wrapper are repaired, no original, endpoint or live-content reference targets O.
+The remaining incoming references are ownership and old edges within O; replacing all O terms removes those content edges together.
+Scoped ownership requires available owners and acyclic owner chains, not an owner's former compositor payload; helpers owned by an o therefore remain admitted after o becomes a leaf.
+
+All component identities and references to shared helper identities are retained, and all helpers now intentionally share S.
+Old O payload child-edge sharing is replaced, not preserved as an additional requirement; original/endpoint sharing remains exact.
+No ID is allocated, rebound or omitted, and no hash injectivity or allocator premise is used.
+
+This is a new root over immutable Γ, not a mutation of inherited fresh components.
+Once installed, its O and live scaffold are immutable in every required child; the existing context owner rejects attempts to replace inherited particle IDs.
+Preparation is only the structural gate: the local authorities and complete verifier still establish legality and issue fresh receipts.
+
+#### Local legality and complete closure in every context
+
+The dated [Particle Valid (Extension)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-extend) accepts S as an extension of A because its first member is exact A's particle.
+E remains a direct extension of A with A's immediate anyType base, so its primitive no-change obligation remains valid.
+Trimming unreachable tail positions preserves E's raw scaffold, formal mapping and local legality; it does not erase E to A.
+
+D′ restricts repaired E by the same #304 mapping: its single a:int uses the retained wildcard, while the optional A particle and required empty choice are formally emptiable unmapped base members.
+The required empty choice has no realization, so no added wildcard is a competing reachable attribution position.
+S contains only A's named a:string declaration and a wildcard, giving E and every copied helper the same valid UPA/EDC content; unreachable content is not used to waive EDC.
+
+For any forest edge, both effective content operands are the exact same S particle.
+The identity alternatives of [Particle Valid (Restriction)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-restrict) and raw extension establish the respective local content relations, without assuming transitivity of restriction or comparing a:int to a:string.
+Empty AUs/wildcards/final/block sets discharge the other local edge duties; retained acyclic ancestry ends at E and then exact A.
+
+Each o in O is a separate `1..1` leaf whose available original local declaration has exact named builtin int type and no affiliation.
+It has one attribution position, no repeated-name pair and no substitution expansion; it introduces no reference to a helper's type or pending RE01 judgment.
+Distinct O roots are never concatenated into S, so their separate a:int declarations do not conflict with S's a:string.
+
+All required added closure is therefore the helpers to S/A and original types, live particles to original A/a:string, and O to original D/a:int and its builtin prerequisites, plus the independently checked owner graph.
+Original D's declaration owner is a structural identity fact, not a recursive typed-content role.
+The original source is checked completely once in Γ; each hypothetical context rechecks its actual consumed dependencies and every fresh root, including unused helpers/O and live scaffold particles.
+
+These facts hold in every descendant context obtained by changing any subset of helper extension edges to restrictions of retained E, while preserving all content and nonendpoint inherited properties.
+No declaration is typed by a helper and no affiliation or scalar role changes, so those ancestry changes cannot alter a consumed substitution census or named-type comparison.
+This hereditary legality argument precedes the evidence induction; it does not assume that finite evidence already exists.
+
+#### Required children, correspondence and finite discipline
+
+Let n count helper extension edges, excluding primitive E.
+For each required extension helper U in a context C, its ancestry still reaches A through retained E; U's immediate base is not A, so it is nonprimitive.
+Create a direct child of C with the same membership, no additions, retained E as intermediate, and only U's canonical/raw derivation changed to restriction of E.
+
+U's canonical and effective content stays exact S, so endpoint correspondence preserves its original content, flags, namespace, AUs and provenance.
+Every nonendpoint inherited record and raw property stays exact; E still extends designated A.
+Recompute correspondence, component closure, UPA/EDC, local derivation and all required obligations in that exact child, using no parent/sibling receipts or transferred pending judgments.
+
+The child has n−1 remaining helper extension edges; all others remain mandatory obligations there, even if unused.
+Hereditary legality supplies the same premises for each remaining helper, so induction on n gives complete finite evidence in each context.
+At n=0 only primitive E remains among the fresh extension obligations; original D is the root's already supplied construction, not an unproved helper premise.
+
+The unfolded evidence-node bound is `P(0)=1`, `P(n)=1+n*P(n−1)`, hence `P(n)=sum(n!/(n−i)!, i=0..n)` including the current root.
+Every node checks the finite retained inventory and finite consumed original closure; identities and content are never added down a branch.
+This proves termination of this supplied-forest evidence construction with sufficient resources, not an input-derived helper/evidence bound, arbitrary-success coverage, complete negatives or mathematical termination of general RE01 search.
+The existing configurable inclusive/sticky request limits remain allowed to return resource-limit.
+
+#### Decisive controls and scoped acceptance
+
+The [small typed live-forest controls](../test/research/re01/live-helper-forest.test.ts) retain F restricting E, U extending F, R restricting U and unused V extending R.
+U is owned by the old shared F compositor, R is owned by U, V is owned by an unused shared particle DAG, and the original F/U/R/V particle is shared.
+Original two-tail and repaired one-tail roots both pass complete five-node current-verifier evidence, with rebuilt correspondence and receipts in every context.
+
+Every proof step checks all inherited helpers/live particles/O, preserves each nonendpoint parent's canonical/raw records, keeps E primitive and retains exact original D′ content.
+Removing V's required evidence from U's child reports `missing-nested-evidence` in that child; corrupting an unused O's occurrence fails its own mandatory construction.
+The inherited-particle rewrite is rejected by identity, and replacing the live required empty choice by the detached integer leaf fails E legality.
+#304's original trim-only failure remains intact: D′ mapping passes with one tail while unchanged F fails its restriction.
+
+The [independent clause control](../test/conformance/reference/re01-particle-continuation.test.ts) reads original source operands without semantic-owner imports and checks the supplied-forest evidence recurrence separately.
+The pinned Structures XML was re-read at the particle identity, occurrence, extension, restriction, UPA and EDC clauses and matches SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+One fresh-context nonauthor reviewer scrutinizes the decisive consumer/closure/induction argument before reliance and separately assesses final proof/code plus scoped #232 joint consistency.
+
+This theorem extends beyond the F-only example but does not apply #296 unchanged: its copied-B intermediate did not retain this live exact-A/empty-choice/wildcard scaffold.
+It establishes this proposed identity-preserving method for the exact family, without claiming that preserving every helper is necessary for every witness.
+All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original typed operands, failure distinctions and budgets keep their scopes.
+
+General extraction/coverage, copied-prefix comparison transport, arbitrary contextual evidence adequacy, input-derived helper/identity/evidence bounds, complete negatives and mathematical general search termination remain open.
+#234/#232 remain open; #179 production activation, #153 combined acceptance and #184 runtime ownership remain separate.
+One next action is to audit a helper used as a declaration's type, where rebasing can change consumed type comparisons or effective substitutions, before extending this content-only forest theorem.
+
 ## Pure input and output contract
 
 The proposed production input is immutable accepted analysis plus a specific extension type and its original ancestor chain. It retains original particles/group uses, local and group-use bounds, original attribute uses/declarations, wildcard namespace/process contexts, scalar and element fixed/default operands, `final`/`block`, content mode and all source/QName/chameleon context. An effective interval or flattened attribute object is insufficient.
