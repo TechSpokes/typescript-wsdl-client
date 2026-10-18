@@ -1889,6 +1889,10 @@ Reaching the end of the prefix yields a witness with one wildcard for each remai
 
 The direct restriction predicate terminates according to its owning contract. Given that contract, the finite mapping search terminates with a witness, a failed family or an unresolved predicate. The probe's failed family result is `unresolved`, never `invalid-schema`.
 
+Here `r` is `restricted.length` and `b` is `prefix.length` in the [historical probe](../test/research/re01/witness-probe.ts).
+Both arrays come from caller-supplied `Prepared` views, not directly from immutable Γ.
+The input-derived envelope and the remaining reconstruction premise are audited below.
+
 ### Conditional completeness argument
 
 For a meaningful prefix, `cos-particle-extend` fixes every nonvacuous intermediate's outer sequence and original first member. Pointless normalization preserves the remaining meaningful original prefix; any valid final sequence mapping first consumes a prefix of final direct members in that original prefix. Each remaining final member mapped into an arbitrary suffix can instead map to its own universal wildcard.
@@ -1898,6 +1902,133 @@ The required empty choice makes every added wildcard unreachable without adding 
 For a certified disappearing comparison prefix, no original meaningful particle remains before the suffix after restriction normalization. A single universal wildcard suffices after normalization and admits all finite or unbounded original repetitions in the group-to-wildcard rule. Source-mapped absence is one case; a real mixed-content empty sequence is another, provided its raw extension is independently legal as established in the audit below.
 
 This argument is a useful finite particle construction, not a published or accepted full-domain theorem. Before using failed family search as a negative proof, independent review must establish that every source-valid normalization path, all placement and component identity case falls into these branches and that the full type's AU/scalar constraints can be synthesized consistently. The prototype intentionally refuses to infer that theorem from its positive tests.
+
+### Input-derived meaningful-prefix capacity audit
+
+This October 18 continuation establishes a structural capacity and conditional particle-mapping reconstruction, with outcome B for complete contextual reconstruction.
+It starts from actual main `0194853a6fc683a9f3d980259f0e16d3c2ce83d8`, tree `fc3ba816262bf1a1f2154778d4e432ea0c261987`.
+The preceding supplied-family theorems remain separate results with their original scopes.
+
+#### Quantifiers and immutable source of the bound
+
+Fix finite structurally prepared immutable Γ, its selected ancestor A and endpoint D, with element-only effective raw particles P and R mapped from their original source operands.
+For each permitted successful hypothetical context H with those exact corresponding operands, consider only the meaningful-prefix branch in which H's restriction-normalized R is an element or a sequence with root bounds `1..1`.
+This is a condition on H: fresh affiliations can change an actual element into a virtual choice, so an actual element does not put every hypothetical witness in this branch.
+
+Compute W on Γ's effective declared particle DAG, expanding model-group uses through the existing view owner, before substitution expansion or restriction pointlessness.
+A terminal or empty compositor has W = 1; a nonempty compositor has W equal to the sum of its children's W.
+Sum each child incidence, including repeated references to the same shared child; memoizing its W does not remove repeated contributions.
+
+Effective source composition wrappers are included.
+Occurrence values and element/type references are atomic operands: neither a finite repetition nor component-reference recursion is unfolded.
+Set BΓ = W(P) and RΓ = W(R); these finite integers are computed entirely from Γ, though they can exceed the number of distinct graph records.
+
+In H, let r be the final direct-member count, using a singleton for an element, and b the meaningful prefix count, splitting only a normalized sequence at `1..1`.
+Then r ≤ RΓ and b ≤ BΓ, hence the historical coordinate grid has at most `(RΓ + 1)(BΓ + 1)` states for one fixed qualified set of pair/order answers.
+A successful prefix path consumes i final members, so its replacement tail has k = r − i ≤ RΓ wildcards.
+
+The proof is structural induction over the immutable raw particle DAG with edge multiplicity.
+Zero elimination and ordinary flattening remove or expose original structure already counted in W; singleton removal can expose an original sequence but introduces no new sequence members.
+A virtual substitution expansion introduces a choice, never a sequence: multiple virtual alternatives remain inside one direct sequence position, while a singleton choice can expose only the original child's structure.
+
+Thus arbitrary fresh affiliations cannot increase this direct sequence frontier beyond W, even though they can change child kinds, pair outcomes, formal summaries, branch membership and implicit order assignments.
+The coarse capacity also counts retained required empty choices as one structural incidence; an empty language is not particle absence.
+This argument bounds direct element/sequence frontiers only, not all normalized nodes or the alternatives inside virtual choices.
+
+The small typed [capacity function](../test/research/re01/meaningful-prefix-bound.ts) reads authenticated actual effective declared views through the existing owners and returns exact decimal capacities.
+It does not select the RE01 ancestor, certify actual legality, classify every H, enumerate orders or supply a candidate.
+Its `outside-slice` marker for other content kinds describes this measurement's scope, not unsupported B-v1 input.
+
+#### Extraction and particle reconstruction
+
+For a successful nonidentity raw extension in H, `cos-particle-extend.2` fixes the outer `1..1` sequence and requires recursively equal first-particle properties, except annotations.
+It does not require the first particle to have original P's identity: the current owner also checks distinct property-equal copies.
+The extraction below covers the exact-original-prefix subfamily; transport of comparisons from a distinct property-equal prefix to original P is an additional unresolved premise for arbitrary successful witnesses.
+With a meaningful normalized prefix, normalization retains a nonempty leading segment consisting of P's normalized direct members, or P itself when it is not a unit sequence.
+An ordered successful final-to-intermediate mapping therefore consumes an initial segment of final direct members in that prefix, skipping only prefix members whose formal emptiability has been established in H.
+
+Retain those exact successful prefix comparisons and their coherent implicit-choice assignments.
+Replace the remaining mapping by the particle expression `sequence1..1[P, choice1..1[], any0..unbounded/skip × k]`, sharing original raw P rather than flattening or copying it.
+Each unmatched final direct member maps to a distinct successive wildcard; all skipped prefix members and the required empty choice are formally emptiable.
+
+Every element or wildcard satisfies the universal namespace constraint, and `skip` is the weakest processing mode.
+For a group member, accepted PW R-240 and #178's exact total ranges discharge the group-to-wildcard cardinality comparison against `0..unbounded`.
+The original group bounds and members remain unchanged, including exact large finite values; no repetition expansion or conversion to a JavaScript number is used.
+
+The required empty choice has no realization and shields the added wildcards from reachable attribution, while its formal schema emptiability permits the restriction mapping to skip it.
+No named declarations are added by the tail, so EDC adds no declaration comparison; legal placement and UPA of the retained raw prefix remain necessary.
+In this element-only non-all placement branch, the outer sequence preserves exact raw extension structure and the existing declared-view authorities check the resulting local construction.
+
+The expression uses k + 2 new particle records: the outer sequence, the required empty-choice particle and k wildcard particles, with compositor terms represented inline by the canonical graph.
+It shares every original prefix component and needs no fresh element declaration; a fresh intermediate type is one additional record.
+This conditional allocation count is distinct from the grid size and from the number of records needed by other helpers or evidence.
+
+The particle mapping implication assumes admitted identities for these records and qualified prefix comparisons in the reconstructed context.
+It proves neither that a total fresh allocator exists nor that every old comparison survives changing H.
+No hash-injectivity assumption or identity-representation amendment is used.
+
+#### Audit of historical probe premises
+
+The [probe controls](../test/research/re01/witness-probe.test.ts) test the supplied-view grid, original occurrence operands and explicit resource results.
+They do not authenticate an actual/candidate context or construct the intermediate.
+In particular, omitted `normalizationCertified` and `nonvacuousExtensionAllowed` flags are treated as allowed, `schemaEmptiable` is caller data, and `Restriction` can be an arbitrary answer table.
+
+| Historical premise | Current semantic owner and remaining duty |
+| --- | --- |
+| Raw prefix and nonvacuous extension | `checkRawParticleExtension`; base-first property equality, not automatically original identity |
+| Original effective source operands | `deriveActualComplexContent`; source composition retained separately from hypothetical raw properties |
+| Hypothetical raw content | `deriveRawComplexContent`; explicit candidate properties, without source remapping |
+| Restriction normalization | `prepareSemanticParticleView`; authenticated H, complete substitution census and original origins |
+| Formal emptiability and exact ranges | Single #178 occurrence analysis attached to those semantic views |
+| Original pair restriction | `checkParticleRestriction`; type/scalar prerequisites, exact operands and coherent implicit orders |
+| Universal wildcard comparison | Accepted PW R-240 and wildcard algebra, with normalized and local-legality prerequisites |
+| Raw all placement, EDC and UPA | `checkDeclaredParticleLegality`; declared view, complete contextual declarations and attribution |
+| Endpoint/raw correspondence | `checkCandidateCorrespondence`; original properties, owners, sharing and typed contexts |
+| Identity admission and references | Actual/candidate context and type-property validation; no freshness from unequal path strings |
+| Full dependencies and helper children | `verifyFiniteRe01Evidence`; every fresh and inherited root in each required context |
+
+These owners are the accepted [complete local authorities](content-model-s06-re-01-resolver-implementation.md#complete-268-rule-inventory), not a witness-existence oracle.
+Their local receipts still carry separate component and contextual prerequisites.
+The bound does not discharge any pending RE01 child by assuming the theorem under investigation.
+
+#### Complete live intermediate and changed obligation after erasure
+
+The [typed controls](../test/research/re01/meaningful-prefix-bound.test.ts) reuse the original [integer-restoration fixture](../test/conformance/fixtures/xsd/re01/reordered-particle-int.xsd).
+Original A contains optional local `a:string`, B restricts A to empty content, and D extends B with required local `a:int`.
+Fresh E extends exact A with the original raw prefix, required empty choice and one universal wildcard; D′ restricts E with exact original D content.
+
+The current finite verifier issues a complete one-node receipt: immutable actual obligations pass, endpoint correspondence is exact, and all fresh particle roots and E itself are checked.
+E is a primitive extension of the selected A, whose base is `anyType`; its own no-change obligation is discharged in this candidate context, and this fixture needs no nested child.
+Original Γ and its local declarations/owners remain immutable.
+
+With E's content erased back to exact A's particle, raw extension and endpoint correspondence still pass, but D′'s particle restriction fails.
+The restored `a:int` cannot restrict A's `a:string`; in the successful construction it consumes E's added wildcard instead.
+The contrast concerns nonvacuous particle construction and mapping, separately from the dead separator's empty instance language.
+
+#### Why complete contextual reconstruction is still unresolved
+
+A second complete control supplies E with two optional universal wildcards and retains fresh F restricting E with two required positions containing the same exact original `a:int` declaration.
+Both F positions map to distinct wildcards; F passes EDC/UPA and complete construction, E remains primitive, and D′ has complete finite evidence with every fresh root checked.
+The [independent reference calculation](../test/conformance/reference/re01-particle-continuation.test.ts) derives the one-versus-two ordered-position distinction from the original source and restriction clauses.
+
+Two sibling candidates are built directly from the same immutable Γ with identical fresh identity sets and raw type records.
+The replacement changes only E's wrapper children from two wildcards to D's one-wildcard tail, retaining the unused second wildcard and F unchanged.
+D′ still restricts E and correspondence still passes, but F's two positions cannot map to one wildcard; complete verification rejects F.
+
+This falsifies pointwise replacement that preserves the supplied F, not the existence of a bounded-tail witness.
+F is otherwise unused in this fixture, so a new existential witness can omit or repair it; the control does not prove a necessary second wildcard or general nonexistence.
+Two tail positions and one retained two-position restriction are the minimal chosen ordered-mapping obstruction.
+
+The unresolved quantified premise is: for every successful B-v1 H in this branch, construct some H* with tail at most RΓ, exact originals/correspondence, admitted identities, qualified prefix facts and complete contextual obligations, possibly reconstructing other helpers.
+Neither the finite grid nor local UPA/EDC supplies comparison transport from property-equal prefix copies, simultaneous helper reconstruction, preservation of the needed substitution/type/order facts, identity allocation or well-founded complete child evidence.
+The new function and successful fixture establish independent progress without assuming that premise.
+
+No bound is established here on helper identities, affiliation counts, internal virtual alternatives/order enumeration, retained helper content, complete evidence size/depth or total request work.
+Disappearing-prefix, all-group, mixed/simple-content and AU/scalar cases remain accepted domain cases requiring later coverage.
+The seven recovery inputs, B-v1, P1/F2, original operands, failure distinctions, configurable inclusive/sticky budgets and the verifier's false general-completeness/negative/termination flags are unchanged.
+
+The next action is to extract the content consumers and contextual facts that must survive a simultaneous helper reconstruction, beginning with F's restriction role, before trying to promote the particle capacity into an arbitrary-success theorem.
+Full #234/#232 acceptance and #179/#153 activation remain open; #184 retains its separate ownership.
 
 ## Pure input and output contract
 

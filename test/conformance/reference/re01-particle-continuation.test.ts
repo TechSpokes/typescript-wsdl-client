@@ -43,6 +43,26 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it('distinguishes one endpoint tail position from a retained two-position restriction of the intermediate', () => {
+        // Independent clause calculation, with no semantic-owner imports:
+        // Recurse is a strictly ordered mapping; NameAndTypeOK excludes int
+        // restricting string when extension/list/union are excluded.
+        const schema = fixture('reordered-particle-int.xsd');
+        const prefix = children(type(schema, 'A'), 'sequence')[0];
+        const final = children(branch(schema, 'D', 'extension'), 'sequence')[0];
+        expect(declarations(prefix)).toEqual([{name: 'a', type: {uri: XSD, local: 'string'}, bounds: {minimum: 0n, maximum: 1n}}]);
+        expect(declarations(final)).toEqual([{name: 'a', type: {uri: XSD, local: 'int'}, bounds: {minimum: 1n, maximum: 1n}}]);
+        expect(children(branch(schema, 'B', 'restriction'), 'sequence')).toHaveLength(0);
+        const endpointPositions = children(final, 'element').length;
+        const retainedRestrictionPositions = endpointPositions * 2;
+        expect(endpointPositions).toBe(1);
+        expect(retainedRestrictionPositions <= 2).toBe(true);
+        expect(retainedRestrictionPositions <= endpointPositions).toBe(false);
+        // Optional prefix and formal-empty separator are skipped. One wildcard
+        // accepts D's one position; retained F's two positions require two.
+        // This refutes preserving F pointwise, not repairing or deleting F.
+    });
+
     it('does not assume transitivity of the component particle restriction relation', () => {
         const schema = fixture('particle-map-and-sum-chain.xsd');
         const a = children(type(schema, 'A'), 'choice')[0];
