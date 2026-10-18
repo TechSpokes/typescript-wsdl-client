@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): prove exact optional-wildcard-suffix reconstruction with preserved identities and complete contextual evidence.
+
 - test(re01): extend identity-preserving reconstruction to one abstract affiliation bridge with complete contextual evidence.
 
 - test(re01): prove identity-preserving detached-particle reconstruction with complete contextual evidence in the nonrecursive helper template.

@@ -127,6 +127,27 @@ describe('independent primary premises for mixed helper support', () => {
     // abstract control's exact declaration identities or shared particles.
   });
 
+  it('derives the exact live-suffix child failure at the required first H position', () => {
+    const outer = children(body(source(), 'A'), 'sequence')[0]!;
+    const first = outer.children[0]!;
+    // The abstract control supplies sequence1..1[exact B, any0..1]. B is
+    // sequence0..1 with four direct children, so it is not a pointless
+    // 1..1 nested sequence. Recurse cannot skip required H[4..4]. Its first
+    // MapAndSum comparison has range (0..1)*4 = 0..4 and fails minimum4.
+    const wrapper = {min: 1n, max: 1n};
+    const prefix = {min: BigInt(attribute(outer, 'minOccurs')!), max: BigInt(attribute(outer, 'maxOccurs') ?? '1')};
+    const required = {min: BigInt(attribute(first, 'minOccurs')!), max: BigInt(attribute(first, 'maxOccurs')!)};
+    expect(wrapper.min >= prefix.min && wrapper.max <= prefix.max).toBe(true);
+    expect(outer.children).toHaveLength(4);
+    const mapRange = {min: prefix.min * BigInt(outer.children.length), max: prefix.max * BigInt(outer.children.length)};
+    expect(mapRange).toEqual({min: 0n, max: 4n});
+    expect(mapRange.min >= required.min && mapRange.max <= required.max).toBe(false);
+    // The separate namespace admits live content beyond B; it is not an
+    // empty branch. After reconstruction both retained particles become
+    // independent z:string roots, not positions concatenated into B.
+    expect('urn:recovery:separate-suffix').not.toBe(namespace);
+  });
+
   it('retains the legal component recursion that makes the earlier endpoint consumed', async () => {
     const recursiveFile = 'xsd/recovery/helper-method-consumed-root.xsd';
     const schema = parseXml(readFileSync(localFixture(recursiveFile), 'utf8'), recursiveFile);

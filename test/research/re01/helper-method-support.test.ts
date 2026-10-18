@@ -14,6 +14,7 @@ import type {FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verif
 import {deriveModelGroupContent, deriveRawComplexContent} from '../../../src/compiler/complexTypeContent.js';
 import {prepareSemanticParticleView} from '../../../src/compiler/particleSemanticView.js';
 import {checkParticleRestriction} from '../../../src/compiler/particleRestriction.js';
+import {checkRawParticleExtension} from '../../../src/compiler/particleExtension.js';
 import {checkElementDeclarationsConsistent} from '../../../src/compiler/particleDeclarationConsistency.js';
 import {checkParticleAttribution} from '../../../src/compiler/particleAttribution.js';
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
@@ -331,6 +332,47 @@ function members(context: SemanticContext, head: string) {
   const result = effectiveSubstitutionMembers(context, elementId(head));
   if (result.kind !== 'checked') throw new Error(JSON.stringify(result));
   return result.value;
+}
+
+// Separate mixed direct-H construction for the exact old live-content shape.
+// S/C keep B; U/V extend S by [exact B, optional disjoint skip wildcard];
+// D restricts U with that same raw particle. Canonical content is exact B.
+// S owns wrapper/suffix, wrapper owns U/V, and U owns D.
+async function wildcardSuffixControl() {
+  const seed = await simultaneousScopedControl();
+  const {request, a, b, x, s, u, v, d, c, declarations, pPlus, delimiter} = seed;
+  const suffix: ParticleNode = {...pPlus, id: scopedId(s.id, '/suffix', 'particle'),
+    identity: {kind: 'scoped', owner: s.id, path: '/suffix', role: 'particle'}, occurs: {min: '0', max: '1'},
+    term: {kind: 'any', wildcard: {namespace: {value: 'urn:recovery:separate-suffix', context: a.context}, processContents: 'skip'}}};
+  const wrapper: ParticleNode = {...pPlus, occurs: {min: '1', max: '1'},
+    term: {kind: 'sequence', children: [a.content!, suffix.id]}};
+  const helpers = [s, u, v, d, c].map(node => ({...node, content: a.content}));
+  const raw = (node: ComplexTypeNode, particle: string): RawComplexTypeProperties => ({
+    ...seed.repaired.context.rawTypeProperties(node.id)!, content: {kind: 'element-only', particle}});
+  const endpoint = seed.repaired.context.lookup(x.id);
+  if (endpoint.kind !== 'found' || endpoint.node.kind !== 'complexType') throw new Error(x.id);
+  const endpointNode = endpoint.node;
+  const particles = [wrapper, suffix];
+  const replacement = particles.map(node => ({...node, occurs: {min: '1', max: '1'},
+    term: {kind: 'element' as const, declaration: local(delimiter.id)}}));
+  const build = (repair: boolean) => {
+    const live = new Set([u.id, v.id, d.id]);
+    const candidate = request.candidate({key: repair ? 'suffix-repaired' : 'suffix-mixed-original',
+      active: [...request.actual.members, ...helpers.map(node => node.id), ...declarations.map(node => node.id), ...particles.map(node => node.id)],
+      endpoint: endpointNode, additions: [...helpers, ...declarations, ...(repair ? replacement : particles)],
+      rawTypes: [...request.actual.members.flatMap(id => {
+        const value = seed.repaired.context.rawTypeProperties(id); return value ? [value] : [];
+      }), ...helpers.map(node => raw(node, !repair && live.has(node.id) ? wrapper.id : a.content!))],
+      rawElements: declarations.map(node => ({element: node.id, type: node.type, final: [], block: []}))});
+    if (candidate.kind !== 'prepared') throw new Error(JSON.stringify(candidate));
+    return candidate.context;
+  };
+  const original = build(false), repaired = build(true);
+  const child = forkSemanticCandidate(original, {key: 'suffix-original-child', active: original.members,
+    endpoint: {...helpers[1]!, derivation: {kind: 'restriction', contentKind: 'complex', base: local(b.id), facets: []}},
+    rawTypes: [{...original.rawTypeProperties(u.id)!, derivation: {method: 'restriction', base: local(b.id)}}]});
+  if (child.kind !== 'prepared') throw new Error(JSON.stringify(child));
+  return {...seed, helpers, particles, replacement, original, repaired, child: child.context};
 }
 
 // Only the proved copied-B fixture template. Each branch installs one exact
@@ -882,13 +924,119 @@ describe('helper method support with explicit contextual reconstruction', () => 
   });
 
   it('does not infer the restriction-to-B child from B eligibility and method signatures', async () => {
-    const {parent, child, u, m} = await subject('live-content');
-    if (!child) throw new Error('Expected helper context');
+    const {request, parent, child, a, b, x, u, m, root, nested} = await subject('live-content');
+    if (!child || !nested) throw new Error('Expected helper context');
     // Raw extension adds a live disjoint wildcard after the optional A prefix.
-    // Its preserved 1..1 sequence cannot restrict B's 0..1 anchored sequence.
+    // The wrapper's optional B child cannot cover B's required first H.
     expect(checkComponentConstruction(parent, u.id)).toMatchObject({kind: 'checked'});
     expect(checkSubstitution(parent, m.id, elementId('H'), {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+    expect(members(parent, 'H')).toContain(m.id);
+    expect(members(parent, 'Q1')).not.toContain(m.id);
+    expect(members(parent, 'Q2')).toContain(m.id);
+    // U clones B's absent canonical contribution. The raw overlay is the
+    // effective content selector; it is not canonical containment in U.
+    expect(parent.lookup(u.id)).toMatchObject({kind: 'found', node: {content: undefined}});
+    expect(b.content).toBeUndefined();
+    expect(parent.rawTypeProperties(b.id)?.content).toEqual({kind: 'element-only', particle: a.content});
+    const content = deriveRawComplexContent(parent, u.id), base = deriveRawComplexContent(parent, b.id);
+    if (content.kind !== 'checked' || base.kind !== 'checked') throw new Error('Expected raw views');
+    const wrapper = scopedId(u.id, '/root', 'particle'), suffix = scopedId(u.id, '/suffix', 'particle');
+    expect(content.view.content).toEqual({kind: 'element-only', particle: wrapper});
+    expect(parent.lookup(wrapper)).toMatchObject({kind: 'found', node: {occurs: {min: '1', max: '1'},
+      term: {kind: 'sequence', children: [a.content, suffix]}}});
+    expect(parent.lookup(suffix)).toMatchObject({kind: 'found', node: {occurs: {min: '0', max: '1'},
+      term: {kind: 'any', wildcard: {namespace: {value: 'urn:recovery:separate-suffix'}, processContents: 'skip'}}}});
+    expect(checkRawParticleExtension(parent, content.view, base.view)).toMatchObject({kind: 'checked', value: true});
+    expect(checkComponentConstruction(parent, x.id)).toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4', component: x.id});
+    expect(checkComponentConstruction(child, u.id)).toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4', component: u.id});
+    expect(child.rawTypeProperties(u.id)?.content).toEqual(content.view.content);
+    const childContent = deriveRawComplexContent(child, u.id), childBase = deriveRawComplexContent(child, b.id);
+    if (childContent.kind !== 'checked' || childBase.kind !== 'checked') throw new Error('Expected child views');
+    const derived = prepareSemanticParticleView(child, childContent.view, 'restriction');
+    const original = prepareSemanticParticleView(child, childBase.view, 'restriction');
+    if (derived.kind !== 'checked' || original.kind !== 'checked') throw new Error('Expected restriction views');
+    expect(derived.view.root).toMatchObject({kind: 'sequence', occurs: {min: '1', max: '1'}});
+    expect(original.view.root).toMatchObject({kind: 'sequence', occurs: {min: '0', max: '1'}});
+    expect(derived.view.root.children[0]).toMatchObject({kind: 'sequence', occurs: {min: '0', max: '1'}});
+    expect(derived.view.root.children[0]!.children).toHaveLength(4);
+    expect(original.view.root.children[0]).toMatchObject({kind: 'choice', occurs: {min: '4', max: '4'}});
+    // Outer 1..1 fits 0..1. The first ordered MapAndSum instead compares
+    // (0..1)*4 = 0..4 with required H[4..4], whose minimum cannot be met.
+    expect(checkParticleRestriction(child, derived.view, original.view)).toMatchObject({kind: 'checked', value: false});
+    expect(verifyFiniteRe01Evidence(request.actual, x.id, {root: root.id, nodes: [root, nested]}))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4', component: x.id, contextId: parent.contextId});
+  });
+
+  it('repairs the separately identified mixed wildcard-suffix forest with complete contextual evidence', async () => {
+    const {request, a, b, x, u, v, d, c, helpers, declarations, particles, replacement, original, repaired, child, delimiter, evidence} = await wildcardSuffixControl();
+    // Original mixed member paths use both methods, unlike the old single
+    // extension control. All local obligations pass; U's exact child fails.
+    for (const node of [...helpers, ...declarations, ...particles, x])
+      expect(checkComponentConstruction(original, node.id), node.id).toMatchObject({kind: 'checked'});
+    for (const node of helpers) expect(original.rawTypeProperties(node.id)?.content).toEqual({kind: 'element-only',
+      particle: [u.id, v.id, d.id].includes(node.id) ? particles[0]!.id : a.content});
     expect(checkComponentConstruction(child, u.id)).toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4'});
+    for (const head of ['H', 'Q1', 'Q2']) expect(members(repaired, head)).toEqual(members(original, head));
+    expect(repaired.members).toEqual(original.members);
+    for (const node of helpers) {
+      expect(repaired.lookup(node.id)).toEqual(original.lookup(node.id));
+      expect(repaired.rawTypeProperties(node.id)).toEqual({...original.rawTypeProperties(node.id), content: {kind: 'element-only', particle: a.content}});
+    }
+    for (const node of declarations) expect(repaired.lookup(node.id)).toEqual(original.lookup(node.id));
+    expect(repaired.owner(u.id)).toBe(particles[0]!.id);
+    expect(repaired.owner(d.id)).toBe(u.id);
+    expect(declarations.slice(0, 2).map(node => node.type)).toEqual([local(u.id), local(u.id)]);
+    for (const id of original.members) {
+      expect(repaired.owner(id)).toBe(original.owner(id));
+      expect(repaired.sourceNode(id)).toBe(original.sourceNode(id));
+      if (request.actual.members.includes(id)) expect(repaired.lookup(id)).toEqual(original.lookup(id));
+    }
+    for (const [index, node] of particles.entries()) expect(replacement[index]).toEqual({...node,
+      occurs: {min: '1', max: '1'}, term: {kind: 'element', declaration: local(delimiter.id)}});
+    const supplied = evidence(repaired, helpers);
+    const verified = verifyFiniteRe01Evidence(request.actual, x.id, supplied);
+    expect(verified, JSON.stringify(verified)).toMatchObject({kind: 'checked-candidate',
+      claims: {universalCoverage: false, completeNegativeAnswer: false, searchTermination: false}});
+    if (verified.kind !== 'checked-candidate') throw new Error(verified.kind);
+    expect(verified.proof).toHaveLength(5);
+    for (const step of verified.proof) {
+      const context = supplied.nodes.find(node => node.context.contextId === step.contextId)!.context;
+      const checked = new Set(step.components.map(receipt => receipt.component));
+      const proofNode = supplied.nodes.find(node => node.id === step.evidence)!;
+      expect(step.correspondence).toMatchObject({kind: 'checked', parentContext: proofNode.parent.contextId,
+        contextId: context.contextId, target: step.target});
+      expect(context.members).toEqual(repaired.members);
+      if (step.target !== x.id) for (const id of context.members) if (id !== step.target) {
+        expect(context.lookup(id)).toEqual(proofNode.parent.lookup(id));
+        expect(context.rawTypeProperties(id)).toEqual(proofNode.parent.rawTypeProperties(id));
+      }
+      for (const node of [...helpers, ...declarations, ...particles, a, b, delimiter]) expect(checked.has(node.id), node.id).toBe(true);
+      if (step.target !== x.id) expect(checked.has(x.id)).toBe(false);
+      for (const node of replacement) {
+        expect(context.lookup(node.id)).toEqual(repaired.lookup(node.id));
+        expect(checkComponentConstruction(context, node.id)).toMatchObject({kind: 'checked'});
+        expect(checkElementDeclarationsConsistent(context, [node.id])).toMatchObject({kind: 'checked', value: true});
+        const content = deriveModelGroupContent(context, node.id);
+        if (content.kind !== 'checked') throw new Error(JSON.stringify(content));
+        const view = prepareSemanticParticleView(context, content.view, 'declared');
+        if (view.kind !== 'checked') throw new Error(JSON.stringify(view));
+        expect(checkParticleAttribution(context, view.view)).toMatchObject({kind: 'checked', value: true});
+      }
+      for (const receipt of step.components) {
+        expect(receipt.contextId).toBe(step.contextId);
+        for (const dependency of receipt.dependencies) expect(checked.has(dependency)).toBe(true);
+      }
+    }
+    const uChild = supplied.nodes.find(node => node.parent === repaired && node.target === u.id)!;
+    expect(members(uChild.context, 'Q1')).toContain(declarations[0]!.id);
+    expect(members(uChild.context, 'Q2')).not.toContain(declarations[0]!.id);
+    expect(verified.proof.every(step => step.components.some(receipt => receipt.component === c.id))).toBe(true);
+    expect(verifyFiniteRe01Evidence(request.actual, x.id, {...supplied,
+      nodes: supplied.nodes.map(node => node === uChild ? {...node, premises: []} : node)}))
+      .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', component: v.id, contextId: uChild.context.contextId});
+    expect(forkSemanticCandidate(repaired, {key: 'suffix-inherited-payload', active: repaired.members,
+      endpoint: helpers[1]!, additions: [particles[1]!]}))
+      .toMatchObject({kind: 'candidate-rejected', code: 'identity', component: particles[1]!.id});
   });
 
   it('replaces empty S/U simultaneously in a new root with complete contextual evidence', async () => {
