@@ -43,6 +43,50 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it('derives the optional retained-head mapping and its extra particle from original source operands', () => {
+        const schema = fixture('reordered-particle-int.xsd');
+        const prefix = children(type(schema, 'A'), 'sequence')[0];
+        const endpoint = children(branch(schema, 'D', 'extension'), 'sequence')[0];
+        expect(declarations(prefix)).toEqual([{name: 'a', type: {uri: XSD, local: 'string'}, bounds: {minimum: 0n, maximum: 1n}}]);
+        expect(declarations(endpoint)).toEqual([{name: 'a', type: {uri: XSD, local: 'int'}, bounds: {minimum: 1n, maximum: 1n}}]);
+        // Fixed Recurse mapping: skip optional A, H[0..1] and the formally
+        // emptiable required empty choice; a:int maps to the universal tail.
+        // Substitution virtualizes H as a choice with the same 0..1 bounds.
+        const headRanges = [{minimum: 0n, maximum: 1n}, {minimum: 1n, maximum: 1n}];
+        expect(headRanges.map(range => range.minimum === 0n)).toEqual([true, false]);
+        const tailPositions = children(endpoint, 'element').length;
+        const liveRecords = ['wrapper', 'retained H use', 'required empty choice', ...Array<string>(tailPositions).fill('wildcard')];
+        expect(liveRecords).toHaveLength(tailPositions + 3);
+        expect(liveRecords).toHaveLength(4);
+        // H.type -> shared S is a component-property edge, not a base edge
+        // or a request to copy/unfold S into its particle containment graph.
+    });
+
+    it('separates changed membership from the local UPA/EDC predicates which consume it', () => {
+        const schema = fixture('reordered-particle-int.xsd');
+        const original = children(children(type(schema, 'A'), 'sequence')[0], 'element')[0];
+        expect(attribute(schema, 'elementFormDefault')).toBeUndefined();
+        expect(attribute(original, 'form')).toBeUndefined();
+        const localName = JSON.stringify(['', attribute(original, 'name')]);
+        const headName = JSON.stringify(['urn:review', 'H']);
+        // One fixed F->E trace: extension in the parent, restriction in its
+        // prescribed child. Empty H.final admits both mandatory affiliations.
+        // H.block={extension} excludes M only before the rebase.
+        for (const memberNamespace of ['urn:review', '']) {
+            const memberName = JSON.stringify([memberNamespace, 'a']);
+            const alphabets = [[headName], [headName, memberName]];
+            // A and optional H precede the required empty choice. UPA cannot
+            // consult that later barrier to resolve a duplicate current a.
+            const conflicts = alphabets.map(names => names.includes(localName));
+            expect(conflicts).toEqual(memberNamespace === '' ? [false, true] : [false, false]);
+            // In the collision, M's named complex F differs from builtin
+            // string, so the same newly effective member also violates EDC.
+            // After the barrier it still violates EDC even when unreachable.
+        }
+        // Thus changed membership alone is harmless in the disjoint family;
+        // it becomes a failed predicate only in the colliding child context.
+    });
+
     it('distinguishes exact declared-type paths, immediate final and effective blocking after an E rebase', () => {
         // Independent fixed clause traces, without current semantic-owner imports.
         // e-props-correct.4 invokes cos-ct-derived-ok with H.final; the

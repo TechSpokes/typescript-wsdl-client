@@ -17,13 +17,18 @@ import type {FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verif
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
 import {measureMeaningfulPrefixBounds} from './meaningful-prefix-bound.js';
 import {checkSubstitution, effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
+import {checkComplexParticleContent} from '../../../src/compiler/particleLocalAssessment.js';
+import {checkElementDeclarationsConsistent} from '../../../src/compiler/particleDeclarationConsistency.js';
+import {checkParticleAttribution} from '../../../src/compiler/particleAttribution.js';
 
 type ForestType = 'E' | 'F' | 'U' | 'R' | 'V';
 type Affiliation = Readonly<{head: ForestType; member: ForestType;
   final?: readonly ('extension' | 'restriction')[];
   block?: readonly ('extension' | 'restriction' | 'substitution')[];
   memberBlock?: readonly ('extension' | 'restriction' | 'substitution')[];
-  headAbstract?: boolean; memberAbstract?: boolean; extensionOnly?: boolean; detachedHeadUse?: boolean}>;
+  headAbstract?: boolean; memberAbstract?: boolean; extensionOnly?: boolean; detachedHeadUse?: boolean;
+  liveHeadUse?: 'before-separator' | 'after-separator'; requiredLiveHead?: boolean;
+  memberName?: string; memberNamespace?: string}>;
 
 const local = (target: string): Reference => ({kind: 'local', target});
 const anyType: Reference = {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'anyType'}};
@@ -93,17 +98,21 @@ async function forest(affiliation?: Affiliation) {
   const u = helper('U', f.id, 'extension', old.id);
   const r = helper('R', u.id, 'restriction', u.id);
   const v = helper('V', r.id, 'extension', unused.id); // No declaration/content consumes V.
-  const helpers = [f, u, r, v], particles = [wrapper, separator, tail, extra, old, unused];
+  const helpers = [f, u, r, v];
   const types = {E: e, F: f, U: u, R: r, V: v};
-  const element = (name: string, type: ForestType, abstract: boolean, head?: Reference): ElementNode => ({
-    kind: 'element', id: globalId('element', {namespace, local: name}),
-    identity: {kind: 'global', role: 'element', name: {namespace, local: name}}, name: {namespace, local: name},
+  const element = (name: string, type: ForestType, abstract: boolean, head?: Reference, elementNamespace = namespace): ElementNode => ({
+    kind: 'element', id: globalId('element', {namespace: elementNamespace, local: name}),
+    identity: {kind: 'global', role: 'element', name: {namespace: elementNamespace, local: name}}, name: {namespace: elementNamespace, local: name},
     context: a.context, declaredAttributes: [], annotations: [], retained: [], syntaxDetails: [],
     type: local(types[type].id), nillable: false, abstract, substitutionGroup: head,
   });
   const h = affiliation ? element('H', affiliation.head, affiliation.headAbstract ?? false) : undefined;
-  const m = affiliation && h ? element('M', affiliation.member, affiliation.memberAbstract ?? false, local(h.id)) : undefined;
+  const m = affiliation && h ? element(affiliation.memberName ?? 'M', affiliation.member, affiliation.memberAbstract ?? false,
+    local(h.id), affiliation.memberNamespace) : undefined;
   const declarations = h && m ? [h, m] : [];
+  const headUse = h && affiliation?.liveHeadUse ? makeParticle('retained-head',
+    {kind: 'element', declaration: local(h.id)}, {min: affiliation.requiredLiveHead ? '1' : '0', max: '1'}) : undefined;
+  const particles = [wrapper, separator, tail, extra, old, unused, ...(headUse ? [headUse] : [])];
   const rawElements = declarations.map(node => ({element: node.id, type: node.type,
     final: node === h ? affiliation?.final ?? [] : [],
     block: node === h ? affiliation?.block ?? [] : affiliation?.memberBlock ?? []}));
@@ -111,8 +120,13 @@ async function forest(affiliation?: Affiliation) {
   const build = (mode: 'original' | 'trim-only' | 'repair', damage?: 'live' | 'unused') => {
     const copied = helpers.map(node => mode === 'repair' ? {...node, content: wrapper.id} : node);
     const replacements = particles.map(node => {
-      if (node.id === wrapper.id && mode !== 'original') return {...node,
-        term: {kind: 'sequence' as const, children: [a.content!, separator.id, tail.id]}};
+      if (node.id === wrapper.id && (mode !== 'original' || headUse)) {
+        const live = headUse ? [headUse.id] : [];
+        return {...node, term: {kind: 'sequence' as const, children: [a.content!,
+          ...(affiliation?.liveHeadUse === 'before-separator' ? live : []), separator.id,
+          ...(affiliation?.liveHeadUse === 'after-separator' ? live : []), tail.id,
+          ...(mode === 'original' ? [extra.id] : [])]}};
+      }
       if (mode === 'repair' && [extra.id, old.id, unused.id].includes(node.id))
         return {...node, occurs: {min: '1', max: '1'}, term: leaf.term};
       if (node.id === unused.id && affiliation?.detachedHeadUse && h)
@@ -149,7 +163,7 @@ async function forest(affiliation?: Affiliation) {
     return {root: 'root', nodes};
   };
   return {request, a, d, e, f, u, r, v, helpers, particles, declarations, h, m,
-    wrapper, separator, tail, extra, old, unused, leaf, build, evidence};
+    wrapper, separator, tail, extra, old, unused, headUse, leaf, build, evidence};
 }
 
 describe('simultaneous live-E and finite helper forest reconstruction', () => {
@@ -349,5 +363,140 @@ describe('one declared-type affiliation in the live-E forest', () => {
     if (!h || !m) throw new Error('Expected declarations');
     expect(complex(context, r.id).content).toBe(complex(context, v.id).content);
     expect(checkComponentConstruction(context, m.id)).toMatchObject({kind: 'candidate-rejected', rule: 'e-props-correct.4'});
+  });
+});
+
+describe('one retained optional head in shared live content', () => {
+  // The H use remains before the required empty choice in every repaired S.
+  // D maps to the wildcard, skipping optional A/H and the formally emptiable
+  // separator. Local particle checks stop at declaration identities, while
+  // complete closure must also check the S -> H -> H.type -> S content cycle.
+  it.each<Affiliation>([
+    {head: 'U', member: 'U', final: ['extension', 'restriction'], block: ['substitution']},
+    {head: 'U', member: 'R', final: ['extension'], headAbstract: true},
+    {head: 'E', member: 'V', headAbstract: true, memberAbstract: true},
+    {head: 'E', member: 'F', extensionOnly: true, block: ['restriction']},
+    {head: 'E', member: 'F', extensionOnly: true, block: ['extension']},
+  ])('closes the retained content cycle with complete contextual evidence for %j', async options => {
+    const seed = await forest({...options, liveHeadUse: 'before-separator'});
+    const {request, d, e, h, m, headUse, wrapper, separator, tail, helpers, particles} = seed;
+    if (!h || !m || !headUse) throw new Error('Expected retained head');
+    const original = seed.build('original'), repaired = seed.build('repair');
+    expect(particle(repaired, wrapper.id).term).toEqual({kind: 'sequence', children: [seed.a.content, headUse.id, separator.id, tail.id]});
+    expect(particle(repaired, headUse.id)).toEqual(headUse);
+    expect(headUse.occurs).toEqual({min: '0', max: '1'});
+    expect(repaired.members).toEqual(original.members);
+    expect(measureMeaningfulPrefixBounds(request.actual, seed.a.id, d.id))
+      .toMatchObject({maxFinalMembers: '1', maxNewParticleRecords: '3'});
+    // The old k+2 allocation expression excludes this extra retained use:
+    // repaired live fresh particles are wrapper, H use, separator, wildcard.
+    expect([wrapper, headUse, separator, tail]).toHaveLength(4);
+    for (const context of [original, repaired]) {
+      const proof = seed.evidence(context), result = verifyFiniteRe01Evidence(request.actual, d.id, proof);
+      expect(result).toMatchObject({kind: 'checked-candidate'});
+      if (result.kind !== 'checked-candidate') throw new Error(JSON.stringify(result));
+      assertFiniteCandidateReceipt(request.actual, result);
+      expect(result.proof).toHaveLength(options.extensionOnly ? 16 : 5);
+      const fresh = [...helpers, ...particles, e, h, m].map(node => node.id);
+      for (const step of result.proof) {
+        const item = proof.nodes.find(node => node.id === step.evidence)!;
+        expect(step.components.map(receipt => receipt.component)).toEqual(expect.arrayContaining(fresh));
+        expect(step.components.every(receipt => receipt.contextId === item.context.contextId)).toBe(true);
+        expect(particle(item.context, headUse.id)).toEqual(headUse);
+        expect(item.context.lookup(h.id)).toEqual(context.lookup(h.id));
+        expect(item.context.lookup(m.id)).toEqual(context.lookup(m.id));
+        for (const id of item.parent.kind === 'candidate' ? item.parent.members : []) if (id !== item.target) {
+          expect(item.context.lookup(id)).toEqual(item.parent.lookup(id));
+          expect(item.context.rawTypeProperties(id)).toEqual(item.parent.rawTypeProperties(id));
+        }
+        expect(checkSubstitution(item.context, m.id, h.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+        expect(checkComplexParticleContent(item.context, content(item.context, e.id))).toMatchObject({kind: 'checked', value: true});
+        expect(checkParticleRestriction(item.context, restricted(item.context, d.id), restricted(item.context, e.id)))
+          .toMatchObject({kind: 'checked', value: true});
+        const normalized = restricted(item.context, e.id).root.children.find(node => node.source === headUse.id);
+        expect(normalized).toMatchObject({occurs: {min: '0', max: '1'}, summary: {schemaEmptiable: true}});
+        if (!normalized) throw new Error('H was erased during reconstruction');
+        const members = effectiveSubstitutionMembers(item.context, h.id);
+        if (members.kind !== 'checked') throw new Error(JSON.stringify(members));
+        const expanded = members.value.some(id => id !== h.id);
+        expect(normalized.kind).toBe(expanded ? 'choice' : 'element');
+        if (expanded) expect(normalized.children.map(node => node.element?.id)).toEqual(members.value);
+        if (context === repaired) {
+          // Each edge of the actual content-dependency cycle has its own local
+          // receipt; this is not a claim that graph visitation proves validity.
+          const get = (id: string) => step.components.find(receipt => receipt.component === id)!;
+          expect(get(e.id).dependencies).toContain(wrapper.id);
+          expect(get(wrapper.id).dependencies).toContain(headUse.id);
+          expect(get(headUse.id).dependencies).toEqual(expect.arrayContaining([h.id, m.id]));
+          if (h.type?.kind !== 'local') throw new Error('Expected exact head type');
+          expect(get(h.id).dependencies).toContain(h.type.target);
+          expect(get(h.type.target).dependencies).toContain(wrapper.id);
+          for (const node of helpers) expect(complex(item.context, node.id).content).toBe(wrapper.id);
+        }
+      }
+      if (options.extensionOnly) {
+        const child = proof.nodes.find(node => node.parent === context && node.target === seed.f.id)!;
+        const before = options.block?.includes('restriction');
+        expect(checkSubstitution(context, m.id, h.id, {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: before});
+        expect(checkSubstitution(child.context, m.id, h.id, {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: !before});
+      }
+      expect(result.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
+    }
+  });
+
+  it('keeps the retained use and inherited unused extension obligation inside the recursive child', async () => {
+    const seed = await forest({head: 'U', member: 'R', liveHeadUse: 'before-separator'});
+    const context = seed.build('repair'), proof = seed.evidence(context);
+    const child = proof.nodes.find(node => node.parent === context && node.target === seed.u.id)!;
+    const omitted = new Set(child.premises);
+    const nodes = proof.nodes.filter(node => !omitted.has(node.id)).map(node => node === child ? {...node, premises: []} : node);
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, {root: 'root', nodes}))
+      .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', contextId: child.context.contextId, component: seed.v.id});
+  });
+
+  it('needs the optional range for the ordered D mapping; a required disjoint head cannot be skipped', async () => {
+    const seed = await forest({head: 'U', member: 'R', liveHeadUse: 'before-separator', requiredLiveHead: true});
+    const context = seed.build('repair');
+    expect(checkComplexParticleContent(context, content(context, seed.e.id))).toMatchObject({kind: 'checked', value: true});
+    expect(checkComponentConstruction(context, seed.d.id))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4'});
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, seed.evidence(context)))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4'});
+  });
+
+  it('checks EDC against a member even beyond the dead separator, rather than erasing its live head use', async () => {
+    const seed = await forest({head: 'E', member: 'F', extensionOnly: true,
+      liveHeadUse: 'after-separator', memberName: 'a', memberNamespace: ''});
+    const context = seed.build('repair');
+    expect(checkElementDeclarationsConsistent(context, [seed.wrapper.id])).toMatchObject({kind: 'checked', value: false});
+    expect(checkComponentConstruction(context, seed.e.id)).toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent'});
+    // The QName/type collision is outside the admitted disjoint-name family;
+    // it rejects this local construction, not every retained-head witness.
+  });
+
+  it('rejects an actual child EDC duty when rebasing exposes a member with the original local QName', async () => {
+    const seed = await forest({head: 'E', member: 'F', extensionOnly: true, block: ['extension'],
+      liveHeadUse: 'before-separator', memberName: 'a', memberNamespace: ''});
+    const context = seed.build('repair'), proof = seed.evidence(context);
+    const child = proof.nodes.find(node => node.parent === context && node.target === seed.f.id)!;
+    expect(checkComponentConstruction(context, seed.e.id)).toMatchObject({kind: 'checked'});
+    for (const current of [context, child.context]) {
+      expect(checkSubstitution(current, seed.m!.id, seed.h!.id, {mode: 'affiliation'}))
+        .toMatchObject({kind: 'checked', value: true});
+      expect(checkParticleRestriction(current, restricted(current, seed.d.id), restricted(current, seed.e.id)))
+        .toMatchObject({kind: 'checked', value: true});
+      const declared = prepareSemanticParticleView(current, content(current, seed.e.id), 'declared');
+      if (declared.kind !== 'checked') throw new Error(JSON.stringify(declared));
+      // A and H are before the empty choice: their conflicting a positions
+      // become reachable together when M enters H's effective group.
+      expect(checkParticleAttribution(current, declared.view)).toMatchObject({kind: 'checked', value: current === context});
+    }
+    expect(checkElementDeclarationsConsistent(context, [seed.wrapper.id])).toMatchObject({kind: 'checked', value: true});
+    expect(checkElementDeclarationsConsistent(child.context, [seed.wrapper.id])).toMatchObject({kind: 'checked', value: false});
+    expect(checkComponentConstruction(child.context, seed.e.id)).toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent'});
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, proof))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent', contextId: child.context.contextId});
+    // E and every fresh inherited root are actual child duties. The locally
+    // legal parent is not a complete witness; this does not prove nonexistence.
   });
 });
