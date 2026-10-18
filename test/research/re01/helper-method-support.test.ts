@@ -7,7 +7,7 @@ import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSy
 import {containedNodes, referenceSlots} from '../../../src/compiler/graphTraversal.js';
 import {forkSemanticCandidate} from '../../../src/compiler/semanticContext.js';
 import type {SemanticContext} from '../../../src/compiler/semanticContext.js';
-import {checkSubstitution, checkTypeDerivation, effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
+import {checkSubstitution, checkTypeDerivation, declarationMethods, effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
 import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import {verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
 import type {FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verification.js';
@@ -26,11 +26,13 @@ const anyType: Reference = {kind: 'builtin', name: {namespace: 'http://www.w3.or
 type Shape = 'identity' | 'extension' | 'restriction' | 'extension-restriction' | 'restriction-extension' | 'live-content';
 type Method = 'extension' | 'restriction';
 type CompanionPath = Readonly<{methods: readonly Method[]; shared?: boolean; unused?: boolean}>;
+type BridgeSource = 'final' | 'blocked';
 
 async function subject(shape: Shape, names: readonly [string, string, string] = ['U', 'V', 'M'], consumedRoot = false,
-  companionPaths: readonly CompanionPath[] = [], blockedType?: 'member' | 'interior', emptyHelpers: readonly string[] = []) {
+  companionPaths: readonly CompanionPath[] = [], blockedType?: 'member' | 'interior', emptyHelpers: readonly string[] = [], bridgeSource?: BridgeSource) {
   const fixtures = path.resolve('test/conformance/fixtures');
-  const source = consumedRoot ? 'helper-method-consumed-root.xsd' : 'helper-method-support.xsd';
+  const source = bridgeSource ? `helper-method-${bridgeSource}.xsd`
+    : consumedRoot ? 'helper-method-consumed-root.xsd' : 'helper-method-support.xsd';
   const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery', source), {policy: {fileRoots: [fixtures]}});
   const prepared = prepareSourceSchemaRequest(input);
   if (prepared.kind !== 'prepared') throw new Error(JSON.stringify(prepared));
@@ -106,8 +108,8 @@ async function subject(shape: Shape, names: readonly [string, string, string] = 
 
 // Two concrete alternative roots over the same immutable request. No inherited
 // child is edited and no general particle transformation is implemented here.
-async function privateParticleControl(dag: boolean, repeatedHead = false) {
-  const copied = await subject('restriction-extension', ['S', 'U', 'M']);
+async function privateParticleControl(dag: boolean, repeatedHead = false, bridgeSource?: BridgeSource) {
+  const copied = await subject('restriction-extension', ['S', 'U', 'M'], false, [], undefined, [], bridgeSource);
   const {request, a, b, r, x, m, raw} = copied;
   const particle = (id: string): ParticleNode => {
     const found = request.actual.lookup(id);
@@ -216,8 +218,8 @@ async function particleOwnedHelperControl(particleOwner: boolean) {
 // A supplied finite allocation, not an allocator or a graph-renaming API.
 // U/V are particle-owned; D is owned by U; C occupies a retained S-owned path.
 // Two declarations share U, another uses D, and V/C remain unused roots.
-async function simultaneousScopedControl(dag = false, repeatedHead = false, named = false) {
-  const seed = await privateParticleControl(dag, repeatedHead);
+async function simultaneousScopedControl(dag = false, repeatedHead = false, named = false, bridgeSource?: BridgeSource) {
+  const seed = await privateParticleControl(dag, repeatedHead, bridgeSource);
   const {request, a, b, r, x, raw} = seed.copied;
   const {s, pPlus} = seed;
   const scoped = (owner: string, nodePath: string, base: string, method: Method): ComplexTypeNode => ({...seed.u,
@@ -231,11 +233,15 @@ async function simultaneousScopedControl(dag = false, repeatedHead = false, name
   const d = scoped(u.id, '/D', u.id, 'restriction');
   const c = scoped(s.id, '/occupied', s.id, 'restriction');
   const helpers = [s, u, v, d, c];
+  const bridge: ElementNode | undefined = bridgeSource ? {...seed.m, id: elementId('F'),
+    identity: {kind: 'global', role: 'element', name: {namespace, local: 'F'}}, name: {namespace, local: 'F'},
+    type: local(b.id), abstract: true} : undefined;
   const declarations: ElementNode[] = [u, u, d].map((type, index) => {
     const name = {namespace, local: `ScopedMember${index}`};
     return {...seed.m, id: globalId('element', name), identity: {kind: 'global', role: 'element', name}, name,
-      type: local(type.id)};
+      type: local(type.id), substitutionGroup: local(bridge?.id ?? elementId('H'))};
   });
+  if (bridge) declarations.push(bridge);
   const endpoint = {...x, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(b.id), facets: []}};
   type Defect = 'collision' | 'dependent-owner' | 'canonical-reference' | 'raw-reference' | 'raw-key' | 'raw-base';
   const build = (reconstruct: boolean, defect?: Defect) => {
@@ -313,7 +319,7 @@ async function simultaneousScopedControl(dag = false, repeatedHead = false, name
     premises.push(...children(context, types.filter(node => node.derivation?.kind === 'extension')));
     return {root: 'root', nodes};
   };
-  return {request, a, b, x, s, u, v, d, c, pPlus, particles: seed.particles, helpers, declarations, build, evidence,
+  return {request, a, b, x, s, u, v, d, c, bridge, pPlus, particles: seed.particles, helpers, declarations, build, evidence,
     repaired: {context: repaired.context, types: retainedTypes, elements: declarations, particles: repairedParticles},
     delimiter: delimiterDeclaration.node,
     retained: {context: retained.context, types: retainedTypes, elements: declarations},
@@ -383,6 +389,109 @@ async function namedComparison(shape: 'extension-restriction' | 'restriction-ext
 }
 
 describe('helper method support with explicit contextual reconstruction', () => {
+  it('reconstructs one exact-B abstract bridge with complete own-context helper evidence', async () => {
+    const control = await simultaneousScopedControl(false, true, false, 'final');
+    const {request, a, b, x, u, v, c, helpers, declarations, particles, repaired, bridge, evidence, delimiter} = control;
+    if (!bridge) throw new Error('Expected bridge');
+    expect(bridge).toMatchObject({abstract: true, type: local(b.id), substitutionGroup: local(elementId('H'))});
+    const h = request.actual.lookup(elementId('H'));
+    if (h.kind !== 'found') throw new Error('Expected original H');
+    expect(declarationMethods(request.actual, h.node, 'final')).toEqual(['restriction']);
+    expect(repaired.context.lookup(elementId('H'))).toEqual(request.actual.lookup(elementId('H')));
+    expect(repaired.context.rawElementProperties(elementId('H'))).toEqual(request.actual.rawElementProperties(elementId('H')));
+    expect(repaired.context.members).toEqual(control.original.context.members);
+    for (const node of [...helpers, ...declarations]) {
+      expect(repaired.context.lookup(node.id)).toEqual(control.retained.context.lookup(node.id));
+      expect(repaired.context.owner(node.id)).toBe(control.original.context.owner(node.id));
+    }
+    for (const node of repaired.types) {
+      expect(node.content).toBe(a.content);
+      expect(repaired.context.rawTypeProperties(node.id)?.content).toEqual({kind: 'element-only', particle: a.content});
+    }
+    for (const head of ['H', 'Q1', 'Q2']) {
+      expect(members(repaired.context, head)).toEqual(members(control.original.context, head));
+      expect(members(repaired.context, head)).not.toContain(bridge.id);
+    }
+    expect(members(repaired.context, 'H')).toHaveLength(4);
+    expect(members(repaired.context, 'Q1')).toEqual([elementId('H'), elementId('Q1')].sort());
+    expect(members(repaired.context, 'Q2')).toEqual([elementId('H'), elementId('Q1'), elementId('Q2')].sort());
+    const supplied = evidence(repaired.context, repaired.types);
+    const verified = verifyFiniteRe01Evidence(request.actual, x.id, supplied);
+    expect(verified, JSON.stringify(verified)).toMatchObject({kind: 'checked-candidate',
+      claims: {universalCoverage: false, completeNegativeAnswer: false, searchTermination: false}});
+    if (verified.kind !== 'checked-candidate') throw new Error(verified.kind);
+    expect(verified.proof).toHaveLength(5);
+    for (const step of verified.proof) {
+      const context = supplied.nodes.find(node => node.context.contextId === step.contextId)!.context;
+      const ids = new Set(step.components.map(receipt => receipt.component));
+      for (const node of [...helpers, ...declarations, ...particles, a, b, delimiter]) expect(ids.has(node.id), node.id).toBe(true);
+      expect(context.members).toEqual(repaired.context.members);
+      expect(context.lookup(bridge.id)).toEqual(repaired.context.lookup(bridge.id));
+      expect(context.rawElementProperties(bridge.id)).toEqual({element: bridge.id, final: [], block: [], type: local(b.id)});
+      expect(checkSubstitution(context, bridge.id, elementId('H'), {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+      for (const member of declarations.filter(node => !node.abstract)) {
+        expect(checkSubstitution(context, member.id, bridge.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+        expect(members(context, 'H')).toContain(member.id);
+      }
+      for (const head of ['H', 'Q1', 'Q2']) expect(members(context, head)).not.toContain(bridge.id);
+      for (const particle of repaired.particles) expect(context.lookup(particle.id)).toEqual(repaired.context.lookup(particle.id));
+      if (step.target !== x.id) expect(ids.has(x.id)).toBe(false);
+      expect(ids.has(c.id)).toBe(true);
+      for (const receipt of step.components) {
+        expect(receipt.contextId).toBe(step.contextId);
+        for (const dependency of receipt.dependencies) expect(ids.has(dependency), dependency).toBe(true);
+      }
+    }
+    const child = supplied.nodes.find(node => node.parent === repaired.context && node.target === u.id)!;
+    for (const member of declarations.slice(0, 3)) {
+      expect(members(child.context, 'Q1')).toContain(member.id);
+      expect(members(child.context, 'Q2')).not.toContain(member.id);
+    }
+    expect(verifyFiniteRe01Evidence(request.actual, x.id,
+      {...supplied, nodes: supplied.nodes.map(node => node === child ? {...node, premises: []} : node)}))
+      .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', contextId: child.context.contextId, component: v.id});
+  });
+
+  it('rejects direct mixed-method affiliation under actual H.final restriction', async () => {
+    const control = await simultaneousScopedControl(false, false, false, 'final');
+    const {request, a, b, x, repaired, declarations, evidence} = control;
+    const target = repaired.context.lookup(x.id);
+    if (target.kind !== 'found' || target.node.kind !== 'complexType') throw new Error(x.id);
+    const direct = declarations.map((node, index) => index === 0 ? {...node, substitutionGroup: local(elementId('H'))} : node);
+    const candidate = request.candidate({key: 'direct-final-control', active: repaired.context.members,
+      additions: [...repaired.types, ...direct, ...repaired.particles], endpoint: target.node,
+      rawTypes: [a, b, ...repaired.types, target.node].map(node => repaired.context.rawTypeProperties(node.id)!),
+      rawElements: direct.map(node => ({element: node.id, final: [], block: [], type: node.type}))});
+    if (candidate.kind !== 'prepared') throw new Error(JSON.stringify(candidate));
+    expect(checkTypeDerivation(candidate.context, direct[0]!.type, local(b.id), ['restriction']))
+      .toMatchObject({kind: 'checked', value: false});
+    expect(checkSubstitution(candidate.context, direct[0]!.id, elementId('H'), {mode: 'affiliation'}))
+      .toMatchObject({kind: 'checked', value: false});
+    expect(verifyFiniteRe01Evidence(request.actual, x.id, evidence(candidate.context, repaired.types)))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'e-props-correct.4', component: direct[0]!.id});
+  });
+
+  it('keeps ultimate-head blocking effective through the same legal abstract bridge', async () => {
+    const {request, b, x, bridge, declarations, repaired, evidence} = await simultaneousScopedControl(false, false, false, 'blocked');
+    if (!bridge) throw new Error('Expected bridge');
+    const context = repaired.context, member = declarations[0]!;
+    const h = request.actual.lookup(elementId('H'));
+    if (h.kind !== 'found') throw new Error('Expected original H');
+    expect(declarationMethods(request.actual, h.node, 'final')).toEqual(['restriction']);
+    expect(declarationMethods(request.actual, h.node, 'block')).toEqual(['restriction']);
+    expect(checkSubstitution(context, bridge.id, elementId('H'), {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+    expect(checkSubstitution(context, member.id, bridge.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+    expect(checkTypeDerivation(context, member.type, local(b.id), [])).toMatchObject({kind: 'checked', value: true});
+    expect(checkSubstitution(context, member.id, elementId('H'), {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: false});
+    expect(members(context, 'H')).toEqual([elementId('H')]);
+    // Without another effective H member the first particle is no implicit
+    // choice, so X's grouped four H positions cannot use MapAndSum there.
+    expect(verifyFiniteRe01Evidence(request.actual, x.id, evidence(context, repaired.types)))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4', component: x.id});
+    // H.block is specific to the queried head; it does not become Q2.block.
+    expect(checkSubstitution(context, bridge.id, elementId('Q2'), {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: true});
+  });
+
   it.each([false, true])('reconstructs detached particle payloads without allocating identities (shared DAG: %s)', async dag => {
     // The non-DAG variant is exactly #295's repeated-global-Q1 EDC trap.
     // Both variants retain particle-owned U/V, dependent D, shared members,
