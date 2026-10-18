@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): extend live-forest reconstruction to one direct declared-type affiliation with exact path/final conditions.
+
 - test(re01): prove simultaneous live-intermediate and finite-helper-forest reconstruction with complete contextual evidence.
 
 - test(re01): derive meaningful-prefix particle capacities and delimit contextual tail replacement with complete restoration evidence.

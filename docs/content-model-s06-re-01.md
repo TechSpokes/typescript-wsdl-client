@@ -2161,6 +2161,154 @@ General extraction/coverage, copied-prefix comparison transport, arbitrary conte
 #234/#232 remain open; #179 production activation, #153 combined acceptance and #184 runtime ownership remain separate.
 One next action is to audit a helper used as a declaration's type, where rebasing can change consumed type comparisons or effective substitutions, before extending this content-only forest theorem.
 
+### One direct declared-type affiliation in the live-E forest
+
+This continuation starts from #305 at fetched main `ce1aea4ee5e216b958f3451008650dbb1f55911c`, tree `763f68b0ca13d63dd1e37c1bae370a92dee3319f`.
+Investigation/implementation began at `2026-10-18T19:29:00Z`, with cutoff `2026-10-18T20:59:00Z`; #234 records the finding freeze and subsequent delivery checks.
+The result extends the preceding reconstruction lemma to one direct affiliation under an explicit exact-path condition.
+
+#### Admission premises and owning predicates
+
+Retain the preceding exact integer-restoration Γ, live E scaffold, finite acyclic helper forest, particle inventory, identity/owner conditions and reconstruction recipe.
+Complex type final/block sets remain empty, and every helper base path ends at exact E.
+Replace the preceding prohibition of fresh declarations by exactly two admitted fresh global elements H and M, with distinct QNames disjoint from every original global name.
+
+H has no affiliation; M affiliates directly with exact H, with no other incoming or outgoing affiliation edges involving either declaration.
+Their canonical and explicit raw declared-type references agree and resolve to exact identities p=M.type and q=H.type in the retained E/helper inventory.
+Keep their global identities, names, type references, flags, annotations, provenance and every other declaration property verbatim during reconstruction and every child rebase.
+
+Both declarations have admitted abstract/nillable booleans and legal final/block token sets, absent value constraints and absent identity constraints.
+They introduce no scalar/AU, generated-slot, additional named-comparison or recursive-content role.
+Old replaceable O particles may refer to H or M when their finite content closure is nonrecursive; the live E scaffold, original content and endpoint cannot refer to these fresh declarations.
+
+The reconstruction replaces every such O payload by the original local a:int leaf and moves every helper's canonical/effective raw content selector to repaired S.
+Consequently no reconstructed particle references H or M, even when an old O particle did.
+This is a proved consequence of the incoming-reference audit, not a demand to preserve an obsolete content observation.
+
+| Obligation | Existing owner | Exact premise |
+| --- | --- | --- |
+| Global names, flags, type and affiliation | `schemaDeclarationPrimitives.ts:checkDeclaration` | Admitted properties; exact H/M and p/q |
+| Immediate M affiliation, `e-props-correct.4` | `schemaTypeRelations.ts:checkSubstitution` | Type Derivation OK(p,q,H.final) |
+| Identity and complex ancestry | `schemaTypeRelations.ts:relationStep` | Exact identity or qualified base path |
+| Effective substitutability | `schemaTypeRelations.ts:substitutionTypes` | H.block and entered type blocks |
+| Potential census and abstract filtering | `schemaTypeRelations.ts:effectiveSubstitutionMembers` | Complete incoming universe |
+| Declared-type and all inherited-root legality | Construction and finite verifier | Recheck H/M, all helpers and particles |
+| Identity, owners and endpoint properties | Context and correspondence owners | Same supplied IDs, paths and membership |
+
+These are the dated [element declaration](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#e-props-correct), [complex derivation](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-derived-ok), [transitive substitution](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec) and [effective group](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-class) obligations.
+The pinned Structures XML was re-read with deleted editorial text excluded and matches SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+Local relation success still owes aggregate declared-type validity; no owner, authority version or accepted contract changes.
+
+#### Exact path and final condition
+
+Let X be the set of initial helper extension vertices, excluding primitive E.
+For any subset J of X, let C_J retain every component and property except change each x in J to restriction of exact E in both canonical and raw derivation.
+Every child prescribed by the preceding induction has this form, and all subsets occur along its unfolded branches.
+
+For p=q, immediate affiliation succeeds in every C_J by exact type identity, regardless of H.final.
+The identity comparison stops before reading the type's outgoing edge, so rebasing the shared declared type does not disturb it.
+For p≠q, the following three conditions are necessary and sufficient for M's mandatory immediate affiliation to succeed in every C_J.
+
+1. Exact q occurs on the initial base path from p to E.
+2. If q≠E, no vertex of X occurs on the segment [p,q), including p and excluding q.
+3. H.final is disjoint from mu(P) union R(P), defined below for that exact segment P.
+
+Here mu(P) is the union of initial edge methods on p→q, excluding q's outgoing edge.
+R(P) is `{restriction}` when [p,q) contains an extension vertex, and is empty otherwise.
+The criterion concerns exact type identities and paths; equal content or a common E ancestor cannot replace condition 1.
+
+For reachability, rebasing an extension vertex strictly below an interior q changes its outgoing base to E and deletes q from p's path.
+If no such vertex exists, rebasing q itself or any ancestor above q cannot affect the segment ending at q.
+For q=E, every rebase still reaches E, including when p itself is rebased.
+
+For q=E, in a changed path take the first rebased vertex x encountered from p.
+Its new segment is the unchanged p→x prefix followed by one restriction edge to E; later rebases lie beyond the cut and do not affect that segment.
+Thus every new method belongs to mu(P) union R(P), the unchanged context realizes every method in mu(P), and rebasing any extension vertex realizes the added restriction.
+
+The union across all C_J is therefore exactly mu(P) union R(P), not merely a sufficient overapproximation.
+The complex relation excludes H.final on every traversed edge and succeeds on the identity case; this proves condition 3 and the stated necessity/sufficiency for this stipulated rebase discipline.
+It does not prove that every witness must use that discipline.
+
+| Declared types | Permitted H.final for this discipline |
+| --- | --- |
+| p=q | Any admitted set |
+| Strict p→q with q interior | Restriction-only segment; restriction absent from final |
+| Strict p→E with no extension vertex | Restriction absent from final |
+| Strict p→E with an extension vertex | Empty final |
+
+An interior head may itself be an extension helper with ancestors that are extensions.
+Those vertices lie outside [p,q); imposing restrictions on them would conflate a comparison's stopping identity with the type's own separate construction obligations.
+All those construction obligations remain required and are discharged below.
+
+#### Effective membership and observations across contexts
+
+Immediate head final is not effective-membership blocking.
+For the distinct declarations M/H, substitutability requires the direct affiliation path, absence of `substitution` in H.block and a method union disjoint from H.block and the blocks on entered types.
+The latter type blocks are empty under the retained #305 premises; M.block and M.final do not govern the M→H query.
+
+Effective groups additionally filter M when abstract; H.abstract filters H itself and does not block a nonabstract M.
+Neither abstract filtering nor a blocked member waives either declaration's mandatory legality or the complete incoming census.
+For identity and admitted interior-head segments, the queried method set is unchanged across C_J, so effective membership is unchanged.
+
+For nonabstract M on a strict E-head path containing extension, H.block={extension} changes M from ineffective to effective when the closest extension vertex is rebased.
+H.block={restriction} changes M from effective to ineffective when the initial path is purely extension; if that path already contains restriction, M stays ineffective.
+Empty derivation blocks admit both paths, both derivation blocks reject both, and substitution blocking excludes M throughout; abstract M is filtered throughout.
+
+These changed answers do not refute reconstruction.
+The reconstructed S and singleton O roots consume no H/M expansion, and no parent or sibling membership receipt is transferred into a child.
+If an original O particle references H, its complete census and any dependent local facts are recomputed in each original evidence context; this can change an observation while preserving that context's actual predicate outcomes.
+
+The [role-sensitive observation lemma](#fixed-anchor-relation-extraction-and-replay), [immediate-final bridge contrast](#one-abstract-affiliation-bridge-under-immediate-head-final), [consumed recursive-root counterexample](#a-consumed-root-contrast-and-scoped-nonexistence-theorem) and [inherited affiliate obstruction](#a-missing-inherited-obligation-and-its-complete-contextual-negative) retain their scopes.
+They do not justify imposing equality of every earlier observation or deleting a mandatory inherited root.
+
+#### Simultaneous reconstruction and complete children
+
+Under the admission premises and exact path/final condition, the preceding simultaneous recipe yields a valid reconstructed root with complete finite contextual evidence.
+It retains all original records/correspondence and every supplied helper, particle, H/M identity and owner, while trimming only E's existing tail to W(D)=1 and replacing audited O payloads.
+For a semantically successful supplied original witness this supplies the claimed alternative; its proof constructs the repaired helper judgments without assuming their old pending RE01 obligations.
+
+The preceding hereditary particle/AU/UPA/EDC proof remains applicable because reconstructed S and O contain only their exact original declarations and the retained wildcard scaffold.
+H/M add no expansion to an original head, since H has no outgoing affiliation and M's only head is H.
+Their declared-type/affiliation dependencies close inside E, the finite forest and original A/anyType; there is no content edge back to H/M and no new D or scalar dependency.
+
+H has ordinary admitted declaration properties and an available complex type.
+M has those same local duties plus immediate affiliation, which the path/final criterion proves in every C_J before any finite-evidence induction is invoked.
+Complete declared-type validity is supplied by the preceding context-local helper construction proof, including when q, p or a relevant ancestor has been rebased.
+
+For every required helper extension U, form the same no-addition direct child restricting U to retained E.
+Keep both declarations and their raw properties verbatim, obtain new correspondence and construction receipts, and check all additions relative to immutable Γ in that child, including unused helpers, detached particles, H and M.
+The exact path condition is hereditary because every descendant is some C_J with J a subset of the same original X, and the remaining extension count drops by one.
+
+The same `P(0)=1`, `P(n)=1+n*P(n−1)` finite supplied-forest induction therefore applies without allocating an identity or adding a declaration down a branch.
+All declaration/type obligations are discharged in their actual required context; no pending judgment or unchanged-record transfer is used to infer them.
+The construction remains subject to configurable inclusive/sticky resource limits, independently of mathematical finiteness with sufficient resources.
+
+#### Discriminating controls and exact limit
+
+The extended [typed forest controls](../test/research/re01/live-helper-forest.test.ts) check complete original and repaired five-node evidence for equal U types under both final flags, R restricting an interior U with H.final={extension}, and V's mixed path to E with empty final.
+Every proof step includes both declarations, every helper/live/detached/unused root, exact inherited canonical/raw records, new context-qualified receipts and unchanged false general-coverage claims.
+The interior-U case rebases the head itself; other branches rebase the unused descendant V and relevant ancestors without incorrectly extending the segment's flag duty.
+
+Two sixteen-node original/repaired controls use F extending E, U extending F, R restricting U and V extending R.
+Under H.block={restriction} or {extension}, rebasing member type F changes effective membership in opposite directions while immediate affiliation and complete verification pass.
+M.block={substitution} does not control M→H, and an original detached H particle is recomputed before its repaired payload becomes the singleton local integer leaf.
+
+A parent-local V→R affiliation loses exact R when V is restricted to E; the complete attempted certificate rejects inherited M with `e-props-correct.4`.
+A pure-extension F→E affiliation under H.final={restriction} passes locally but fails its attempted F child even though effective substitutability there passes with empty H.block.
+These traps are not successful original witnesses, and rejection refutes only this proposed extension without its path/final premises, not all possible reconstructions or general witness existence.
+
+The reversed R/V declared-type control rejects immediate affiliation despite identical repaired content.
+The [independent clause traces](../test/conformance/reference/re01-particle-continuation.test.ts) distinguish identity, the stopped interior segment, the exact ancestor cut and the separate final/block method tests without semantic-owner imports.
+All #305 trim-only F, live-barrier, unused-root, inherited-identity and missing-sibling-child controls remain intact.
+
+One fresh-context nonauthor reviewer scrutinized the decisive argument before reliance and reviews the final proof/code plus scoped #232 consistency.
+This establishes outcome A for this exact one-affiliation family, including arbitrary finite supplied forest size, sharing and admitted scoped ownership; it supplies no general-negative API or helper-count bound.
+All seven recovery packages, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original typed operands, failure distinctions, budgets and later #179/#153/#184 ownership remain unchanged.
+
+Arbitrary-success extraction, general contextual evidence adequacy, copied-prefix transport, input-derived helper/identity/evidence bounds, complete general negatives and mathematical general search termination remain unresolved.
+Full #234/#232 acceptance stays open.
+One next action is to analyze a retained head actually consumed by the live reconstructed content, where changed membership may affect a mapping or attribution predicate rather than only declaration legality.
+
 ## Pure input and output contract
 
 The proposed production input is immutable accepted analysis plus a specific extension type and its original ancestor chain. It retains original particles/group uses, local and group-use bounds, original attribute uses/declarations, wildcard namespace/process contexts, scalar and element fixed/default operands, `final`/`block`, content mode and all source/QName/chameleon context. An effective interval or flattened attribute object is insufficient.
