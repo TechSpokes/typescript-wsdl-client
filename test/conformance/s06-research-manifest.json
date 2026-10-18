@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "60e6e622cb98fbd44e78a5e19073b516b92df750a2eedf76eaefee9935744d7f",
+          "sha256": "6b0ca3e8218c178f99d7f9ba3c261a419ea0ae11aa06ded60926efa89fd05852",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -631,7 +631,7 @@
         {
           "path": "test/conformance/reference/re01-particle-continuation.test.ts",
           "role": "reference",
-          "sha256": "c760032adca712f66ef45433791138cfcb7d753f92e5311353f8716b28ba8701"
+          "sha256": "06c7bc6b69f1435477281bd3bae2820c54c639d26390ba6b61ea0edfb26049ed"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/endpoint-all-original.xsd",
@@ -2236,7 +2236,7 @@
         {
           "path": "test/research/re01/live-helper-forest.test.ts",
           "role": "reference",
-          "sha256": "a25518da0a8773c27f9e4e4e24a32f021751cd28cfc4094d97b12be18ea4cb2f"
+          "sha256": "1fe3f3ac12923e5e689accb4fec2159fcda0f75352f083beb2d05cc9b9443a4b"
         }
       ]
     },

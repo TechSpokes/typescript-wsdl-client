@@ -43,6 +43,65 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it('forces the retained mandatory M position through the effective H choice', () => {
+        const schema = fixture('reordered-particle-int.xsd');
+        const a = children(children(type(schema, 'A'), 'sequence')[0], 'element')[0];
+        expect(attribute(a, 'name')).toBe('a');
+        expect(bounds(a)).toEqual({minimum: 0n, maximum: 1n});
+        // The supplied consumer roots are distinct sequence1[A.content,H1,C]
+        // and sequence1[A.content,M1,C], with the same required empty C.
+        // A.content becomes its optional a:string; H/M names avoid this QName.
+        const prefixName = ['', attribute(a, 'name')];
+        const headName = ['urn:review', 'H'], memberName = ['urn:review', 'M'];
+        expect(memberName).not.toEqual(prefixName);
+        expect(memberName).not.toEqual(headName);
+        // Recurse cannot skip the required H position. It has no wildcard,
+        // and the empty choice cannot accept a required element, although
+        // cos-choice-range gives that separator formal minimum zero.
+        const baseDirectKinds = ['element', 'choice', 'choice'];
+        expect(baseDirectKinds).not.toContain('any');
+        const headMinimum = 1n, emptyChoiceAlternatives: readonly string[] = [];
+        expect(headMinimum > 0n).toBe(true);
+        expect(emptyChoiceAlternatives).not.toContain(memberName.join(':'));
+        // cos-particle-restrict.2.1 and RecurseAsIfGroup/RecurseLax use
+        // the M alternative, then NameAndTypeOK's same-global-declaration
+        // branch. There is no distinct M.type -> H.type restriction call.
+        const effectiveAlternatives = [headName, memberName];
+        expect(effectiveAlternatives.filter(name => JSON.stringify(name) === JSON.stringify(memberName))).toEqual([memberName]);
+        // Abstract H removes only H; the surviving singleton virtual M
+        // choice and a pointless-compositor M leaf give the same mapping.
+        expect(effectiveAlternatives.slice(1)).toEqual([memberName]);
+        // Existing S contributes four repaired particles. The two consumer
+        // roots and distinct required uses add four; A/C remain shared.
+        expect(['S', 'h0', 'C', 'wildcard', 'R_H/root', 'H1', 'R_M/root', 'M1']).toHaveLength(8);
+    });
+
+    it('derives the mandatory-consumer block and abstract discriminator independently', () => {
+        // #306's exact segment union: identity has no edge; R restricts
+        // interior U; an E path with F extending E acquires restriction
+        // when its nearest extension is rebased. All entered type blocks
+        // are empty in this family. Immediate H.final remains separate.
+        const identityUnion: readonly string[] = [];
+        const interiorUnion = ['restriction'];
+        const eRebaseUnion = ['extension', 'restriction'];
+        expect(identityUnion.some(method => ['extension', 'restriction'].includes(method))).toBe(false);
+        expect(interiorUnion.some(method => ['extension'].includes(method))).toBe(false);
+        expect(eRebaseUnion.some(method => ['restriction'].includes(method))).toBe(true);
+        const parentMethods = ['extension'], childMethods = ['restriction'];
+        const final: readonly string[] = [], block = ['restriction'];
+        expect([parentMethods, childMethods].map(methods => !methods.some(method => final.includes(method)))).toEqual([true, true]);
+        expect([parentMethods, childMethods].map(methods => !methods.some(method => block.includes(method)))).toEqual([true, false]);
+        // cos-equiv-class filters abstract M even with an otherwise legal
+        // path. Abstract H does not remove its nonabstract direct member.
+        const flags = [{headAbstract: false, memberAbstract: false}, {headAbstract: true, memberAbstract: false},
+            {headAbstract: false, memberAbstract: true}, {headAbstract: true, memberAbstract: true}];
+        expect(flags.map(flags => !flags.memberAbstract)).toEqual([true, true, false, false]);
+        // Hence empty final admits both affiliations in the contrast, but
+        // only the parent has M in H. The retained required R_M mapping
+        // fails in the child; this does not certify the parent completely
+        // or establish that every alternative construction is impossible.
+    });
+
     it('derives the optional retained-head mapping and its extra particle from original source operands', () => {
         const schema = fixture('reordered-particle-int.xsd');
         const prefix = children(type(schema, 'A'), 'sequence')[0];

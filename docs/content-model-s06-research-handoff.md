@@ -4,6 +4,16 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [mandatory restriction-consumer lemma](content-model-s06-re-01.md#one-mandatory-restriction-consumer-of-retained-hm-membership) retains #307's exact optional disjoint-name S and adds only supplied R_H restricting E and R_M restricting R_H.
+Their content is sequence1[A.content,H1,required-empty-choice] and sequence1[A.content,M1,required-empty-choice], with distinct retained wrappers/uses and exact shared original A.content/separator; admission needs no wrapping correction.
+The R_M/R_H mapping must consume effective M under required H, with no wildcard or whole-pair identity shortcut.
+Besides #306's separate H.final affiliation premises, preservation requires nonabstract M, no substitution in H.block and no H.block intersection with the exact realized segment-method union, including restriction introduced by an E rebase.
+Local constraints and the complete consumer/type/content recursive dependency conjunction are justified before decreasing-extension evidence; both consumers and all four particles remain inherited roots in every child with recomputed receipts.
+Complete stable-membership original/repaired five-/sixteen-node controls pass; the requested q=E,p=F-extension,H.final empty,H.block={restriction} parent is locally legal but its prescribed F child loses M and rejects retained R_M under derivation-ok-restriction.5.4 while affiliation and R_H remain legal.
+The two restriction types add no evidence nodes; four retained particles increase the repaired live count to eight, with the prefix/separator shared.
+This is a scoped positive and a failed fixed recipe, with no general nonexistence, production/API/budget or P1/F2 change; full #234/#232 acceptance stays open.
+One next action is to determine whether a different complete F child can preserve this same fixed consumer pair's required membership.
+
 The [retained optional-head lemma](content-model-s06-re-01.md#one-retained-optional-head-in-shared-live-content) extends #306 at exactly `S=sequence[A.content,H[0..1],required-empty-choice,wildcard]`, with H/M expanded names also disjoint from original local a.
 h0 survives reconstruction/normalization and is consumed by D′'s ordered skip and S's contextual attribution/EDC checks; all #306 path/final conditions remain.
 The content cycle S→H→H.type→S and the incoming M/type route close through a finite conjunction of independently established local constraints, followed separately by decreasing-extension required-child evidence; acyclic base ancestry does not discharge content recursion.
