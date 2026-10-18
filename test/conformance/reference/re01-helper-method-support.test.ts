@@ -18,6 +18,26 @@ function body(schema: XmlNode, name: string): XmlNode {
 }
 
 describe('independent primary premises for mixed helper support', () => {
+  it.each(['final', 'blocked'] as const)('validates the independently prepared %s source variant', async variant => {
+    const variantFile = `xsd/recovery/helper-method-${variant}.xsd`;
+    const text = readFileSync(localFixture(variantFile), 'utf8');
+    const original = readFileSync(localFixture(file), 'utf8');
+    const suffix = variant === 'blocked' ? ' final="restriction" block="restriction"' : ' final="restriction"';
+    expect(text).toBe(original.replace('substitutionGroup="t:Q1"/>', `substitutionGroup="t:Q1"${suffix}/>`));
+    const schema = parseXml(text, variantFile);
+    const heads = ['H', 'Q1', 'Q2'].map(name => named(schema, 'element', name));
+    expect(heads.map(node => attribute(node, 'final') ?? '')).toEqual(['restriction', '', '']);
+    expect(heads.map(node => attribute(node, 'block') ?? '')).toEqual([variant === 'blocked' ? 'restriction' : '', 'extension', 'restriction']);
+    expect(heads.map(node => expandedQName(node, attribute(node, 'type')!)))
+      .toEqual(Array.from({length: 3}, () => ({uri: namespace, local: 'B'})));
+    expect((await validateFixture(variantFile)).outcome).toBe('accepted');
+    // e-props-correct.4 compares B=B at F->H, so no excluded edge occurs.
+    // M->F has empty F.final. Direct mixed M->H contains restriction and
+    // fails H.final; transitive substitution instead uses queried H.block.
+    // Live source acceptance is local evidence; the engine does not supply
+    // complete RE01 or any arbitrary finite forest reconstruction theorem.
+  });
+
   it('pins the common type, affiliation chain and distinct exclusion methods', () => {
     const schema = source();
     const heads = ['H', 'Q1', 'Q2'].map(name => named(schema, 'element', name));

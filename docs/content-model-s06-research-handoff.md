@@ -63,6 +63,16 @@ The unchanged trap still fails, missing unused-helper child evidence remains unr
 The sole fresh-context nonauthor reviewer challenges the audit and proof extension before reliance and reviews final proof/code and scoped joint consistency; #294's conditional theorem, all seven recovery inputs, P1/F2, budgets and all full/downstream gates remain intact.
 Next action: audit one additional consumed helper role outside this template before extending reconstruction; general coverage/evidence/bounds/negatives/termination remain open.
 
+The [one abstract bridge theorem](content-model-s06-re-01.md#one-abstract-affiliation-bridge-under-immediate-head-final) extends #296 to a separate actual source with H.final `{restriction}`, one fresh abstract F typed by exact original B and affiliated to H, and members directly affiliated to F.
+F→H compares B identity with itself under H.final; M→F uses empty F.final, while effective transitive membership still uses the queried original head's block and entered type blocks.
+F is filtered from expansion but remains a mandatory legality root in the reconstructed root and every child.
+Exact-B helper content and detached z:string particles retain every identity/owner, sharing and unused root; the complete no-addition induction rebuilds each context's evidence as fresh extension count decreases.
+The arbitrary finite supplied-family theorem is established separately from its complete five-node control, which checks F and the entire inherited inventory and changed Q1/Q2 child memberships.
+The direct mixed member→H contrast fails immediate final, and an independently prepared H.block contrast retains legal bridge affiliations but loses effective membership; neither is a general impossibility claim.
+Historical local affiliation controls, #294/#295 limitations, all accepted inputs, original operands, failure distinctions, budgets and downstream gates remain intact.
+No bridge chain, fresh bridge type, other helper role, recursion, production activation or general search bound is added.
+Next action: audit the existing live-content helper's raw particle identity role and failed required restriction-to-B child, then state one bounded repair before combining broader content with this bridge.
+
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
 The maintainer subsequently selected [existential raw-AU matching, satisfying implicit-set order and GSC1 generated scalar properties](content-model-s06-re-01.md#selected-raw-matching-implicit-order-and-generated-scalar-properties); their implementation and exact delivery remain subject to local independent acceptance.
