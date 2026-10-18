@@ -2309,6 +2309,145 @@ Arbitrary-success extraction, general contextual evidence adequacy, copied-prefi
 Full #234/#232 acceptance stays open.
 One next action is to analyze a retained head actually consumed by the live reconstructed content, where changed membership may affect a mapping or attribution predicate rather than only declaration legality.
 
+### One retained optional head in shared live content
+
+This bounded continuation starts from #306 at fetched main `b9f91886ca5bb5271584f39cd57f51d2ab450782`, tree `3aa56db99fd9e3acb625a60a4008175d3f3d0e76`.
+Investigation/implementation began at `2026-10-18T20:23:30Z`, with cutoff `2026-10-18T21:53:30Z`; #234 records the finding freeze and subsequent review/checks/delivery.
+Outcome A below covers one precise retained head position, with an explicit recursive content closure rather than the preceding nonrecursive closure argument.
+
+#### Exact family, changed premises and reconstruction
+
+Keep #306's exact integer-restoration Γ, original A/B/D properties, endpoint correspondence, finite acyclic helper base forest ending at E, admitted identities/owners and one direct M→H affiliation.
+Keep its exact p=M.type, q=H.type identity/path/final criterion in every subset-rebase context C_J, empty type final/block sets and other declaration properties.
+Strengthen the name premise: both fresh expanded element QNames are also disjoint from original local `{}`a, not merely from original globals; they remain distinct from each other.
+
+The supplied E scaffold now has exactly one additional retained fresh particle h0 whose term is exact H and whose occurrence is `0..1`.
+Its wrapper is `sequence1..1[A.content, h0, choice1..1[], wildcard0..unbounded/skip × k]`, where k≥1 and every wildcard is universal `##any`.
+h0 is the second direct child, before the required empty choice; there is no second H incidence in S's particle containment graph.
+
+This replaces #306's exclusion of a live H use and recursive content by this one admitted role.
+All other incoming-reference, ownership, raw-property and no-additional-role premises remain; old replaceable O retains #306's nonrecursive-content condition before reconstruction.
+The helper base graph and particle containment graph stay acyclic; sharing S among helpers is not an additional particle occurrence within S.
+
+Retain h0 in L together with S's wrapper, exact A prefix, required empty choice and one existing wildcard.
+Apply #306's simultaneous new-root recipe: every helper selects S in both canonical and effective raw content, trim only the other wildcard incidences, and replace each detached O payload by the `1..1` exact original local D/a:int leaf.
+Preserve every supplied identity, owner, declaration, helper ancestry method, original/endpoint property and sharing, and shared helper identities; h0's entire record is unchanged.
+Old O payload child references and sharing are replaced together as in #305, rather than preserved as an additional invariant.
+
+For every successful supplied witness in this family this constructs a repaired root with complete finite evidence.
+As before, the repaired root can be constructed from the admitted inventory/scaffold without assuming the old helpers' pending RE01 judgments; a locally legal supplied parent is not thereby a complete original witness.
+No allocation, general witness extraction, recursive-family coverage or new semantic authority is assumed.
+
+#### Consumed predicates and contextual membership
+
+h0 is not erased by restriction normalization: maxOccurs is positive and its `0..1` bounds survive any virtual substitution choice.
+`prepareSemanticParticleView` recomputes H's effective group in the query context; it constructs a virtual choice only if an effective member other than H exists.
+If H and M are both abstract, the attribution alphabet can be empty while the normalized syntactic H particle remains; an empty alphabet is not an empty virtual choice.
+
+D′'s ordered restriction maps its exact original a:int particle to the retained universal wildcard.
+Its unmapped base members are A's optional a:string, optional h0 and the formally emptiable required empty choice.
+Thus `rcase-Recurse.2.2` actually consumes the expanded h0's formal emptiability; the occurrence stays zero-minimum whether its effective alternatives are H, M, both or neither.
+
+`particleAttribution.ts` also consumes H's effective expanded-name alphabet at h0 before the separator.
+Since A/a and H/M have disjoint expanded names, these positions cannot compete; the required empty choice prevents reaching the later wildcard.
+UPA is not waived because the complete S instance language is empty: attribution must be determined without looking at the remaining sequence, and the pre-separator positions still matter.
+
+`particleDeclarationConsistency.ts` includes the declared H and its effective implicit members, checking the entire containment graph even beyond an unrealizable separator.
+Its enumerated names are a subset of `{a,H,M}`, each present at only one position here, so no repeated-name type comparison is introduced.
+This does not describe the EDC owner as enumerating every potential blocked member; the separate construction closure follows all incoming affiliates, retaining mandatory M legality even when ineffective or abstract.
+
+| Contextual fact | Root and required C_J duty |
+| --- | --- |
+| Immediate affiliation | Recompute exact p→q under H.final; #306 criterion proves success |
+| Effective membership | Recompute under H.block and abstract filtering; equality across contexts is unnecessary |
+| D′ ordered mapping | Required at root; additionally checked in children, with h0 skipped and a:int using wildcard |
+| S UPA | Distinct a/H/M alphabets before separator; wildcard cannot compete |
+| S EDC | Declared H plus effective members have distinct names from local a |
+| Helper local edges | Canonical/raw operands share exact S; identity cases apply |
+| All inherited fresh roots | Recheck every helper, h0, H/M, live/detached particle and unused root |
+
+#306's membership classification applies unchanged to the type paths, rather than supplying transferred receipts.
+Identity and admitted interior-head segments have unchanged effective membership; on a strict E-head path, rebasing the nearest extension can admit nonabstract M under H.block={extension}, or exclude it under H.block={restriction} when the original segment is purely extension.
+Substitution blocking, both method blocks and abstract filtering retain their stated cases; every such answer still leaves both declarations mandatory.
+
+The root requires D′; a helper's child instead requires its own endpoint, E and every inherited fresh root plus consumed dependencies.
+There is no repaired typed-content edge to original D′: O's original local a:int declaration has builtin int type, and its owner D is an identity/ownership fact.
+The controls additionally recheck D′'s mapping successfully in every child, but the proof does not impose arbitrary original-endpoint revalidation outside the child's required closure.
+
+#### Local legality and the recursive content closure
+
+The mandatory content dependency is `S→h0→H→q→S` because q is retained E or a repaired helper.
+The complete reverse-affiliation census also reaches M and p, giving the route `h0→M→p→S`; an effective M alternative uses that same declared-type dependency, without creating another retained h0 occurrence.
+Ancestry remains the separate finite forest `helpers→E→A→anyType`, and affiliation remains the single acyclic M→H edge.
+
+The dated [Components and Properties](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#components) explicitly admits cyclic component-property graphs.
+[Complex type properties](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#ct-props-correct) prohibit cycles in the base-type relation, not these content references.
+[Schema construction validity](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#conformance-schemaValidity) still requires every reachable component constraint; neither unchanged records nor graph visitation discharges them.
+
+Establish a finite conjunction of local constraints in each C_J before invoking the existential evidence induction.
+E's raw extension has exact A as its first particle, D′ has the ordered mapping above when required, and each helper edge compares exact S with itself using raw extension or restriction identity.
+The empty AU/wildcard/type-flag properties and #306 exact affiliation criterion establish the other local type/declaration duties in that context.
+
+UPA/EDC traverse the finite acyclic particle containment graph and complete finite substitution census, not a declared element's type content.
+Type derivation and affiliation queries follow the acyclic bases and exact stopping identity, not S; no value/default/identity constraint introduces an instance-validation premise.
+Each detached O root independently checks the original local integer declaration/builtin; the exact original prefix closes through local a:string and its builtin.
+
+Consequently every local component receipt can be established without assuming another component's aggregate validity or its pending RE01 judgment.
+For every component reference/declaration/type dependency generated by those receipts, require the matching same-context local receipt in this finite closure, including q and p and every route back to S.
+Builtin dependencies use the existing exact builtin qualification rather than GraphNode construction receipts.
+This proves the closed conjunction of local constraints on the recursive component set; it is not a coinductive assumption that a pending existential proves itself.
+
+The existing `checkComponentConstruction` separates local receipts from dependency endpoints and RE01 requirements.
+`verifyFiniteRe01Evidence` checks the local closure, exact typed dependency receipts and all generated nonprimitive extension requirements separately.
+Its finite queue realizes the already justified closed set; checking a node once is an implementation detail, not the argument for recursive legality.
+
+#### Complete required children and construction size
+
+Only after the preceding hereditary local/closure argument, let n count the remaining helper extension vertices, excluding primitive E.
+For each required extension U, use the same no-addition direct child restricting only U to exact E, preserving S/h0/H/M and every nonendpoint canonical/raw record.
+Every descendant is another C_J, so the local conjunction and the complete content closure just proved apply there independently; correspondence and every needed predicate are checked afresh.
+
+The child has n−1 remaining helper extensions and introduces no new RE01 requirement through the content cycle.
+At n=0 the only fresh extension obligation is primitive E; all local constraints in the recursive component set have already been established.
+Induction therefore constructs the complete finite evidence tree with `P(0)=1`, `P(n)=1+n*P(n−1)`, including every inherited unused fresh extension in each required child.
+
+This recurrence still counts evidence nodes for a supplied finite forest, not helpers, particle records, request work or a Γ-derived general bound.
+The endpoint's structural W(D)=1 still justifies one wildcard tail because h0 is skipped; it does not bound the augmented live intermediate's total size.
+The earlier `k+2` particle-allocation expression excluded element declarations/uses: this recipe has at most `k+3` distinct live fresh particle records, namely wrapper, h0, separator and at most k wildcard records, plus E, H/M, retained forest and O records.
+Repeated tail incidences can share wildcard IDs; the repaired k=1 scaffold has exactly four distinct live fresh particle records.
+
+Here h0/H/M are supplied retained identities, so reconstruction allocates none; it does not reuse `k+2` as a bound on this larger construction.
+The content cycle is not unfolded into particle copies, and original sharing/edge multiplicity remains exact.
+Configurable inclusive/sticky limits retain resource-limit outcomes independently of this finite-evidence argument with sufficient resources.
+
+#### Controls, failed relaxed proposition and remaining scope
+
+The [typed controls](../test/research/re01/live-helper-forest.test.ts) verify complete original/repaired five-node certificates for identity/interior/E-head paths and both abstract-declaration cases, plus sixteen-node certificates for each opposite membership transition.
+Every proof step checks h0's unchanged record and surviving normalized `0..1` position, actual expanded alternatives, context-qualified closure receipts for every edge of the content cycle, all inherited roots and canonical/raw preservation.
+Removing an unused sibling's evidence inside the recursive child still returns `missing-nested-evidence` for that child's required V.
+
+Making disjoint nonabstract h0 required leaves S locally legal but fails D′'s `derivation-ok-restriction.5.4`: a:int cannot map to H/M, and a required h0 is not skippable.
+This rejects the changed range for this recipe, not all retained-head placements or reconstructions.
+The [independent clause traces](../test/conformance/reference/re01-particle-continuation.test.ts) derive mapping, membership, UPA/EDC and the extra-record accounting from the fixed source operands without semantic-owner imports.
+
+The relaxed proposition using only #306's original-global QName exclusion is false.
+Take q=E, p=F with F extending E and H.block={extension}; give M the original local expanded QName `{}`a, while H remains disjoint.
+The repaired parent has legal local E, mandatory affiliation and D′ mapping, but the prescribed F-to-E restriction child admits M, so required inherited S/E fails both UPA and EDC against A/a:string while affiliation and D′ mapping still pass.
+
+The exact rejected aggregate predicate is `cos-element-consistent` in that required child's live E/S closure; the direct attribution owner separately reports `cos-nonambig` false.
+This is a locally legal parent with a rejected attempted certificate, not a successful original witness or a general nonexistence theorem.
+A separate after-separator collision still fails EDC, demonstrating that unreachable content does not waive declaration consistency.
+
+The disjoint-name reconstruction above remains possible and completely checked; the collision control does not decide whether another reconstruction with those fixed colliding declarations exists.
+No unrestricted alternative search is started, and no new production API, authority, identity representation, dependency, workflow or budget changes.
+The pinned Structures source was re-read at the component graph, base-cycle, affiliation, substitution, extension/restriction, Recurse, UPA/EDC and schema-construction clauses, with deleted editorial text excluded; SHA-256 remains `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+
+One fresh-context nonauthor reviewer scrutinizes the decisive recursive-conjunction argument before reliance and reviews exact-final proof/code plus scoped #232 joint consistency.
+All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original typed operands, failure categories, budgets and #179/#153/#184 ownership retain their accepted scopes.
+Full #234/#232 remain open for arbitrary-success extraction, general contextual evidence adequacy, copied-prefix transport, input-derived helper/identity/evidence bounds, complete negatives and mathematical general search termination.
+
+One next concrete action is to analyze a retained head used by a non-skippable live mapping, with its complete required child, before extending beyond this optional disjoint-name position.
+
 ## Pure input and output contract
 
 The proposed production input is immutable accepted analysis plus a specific extension type and its original ancestor chain. It retains original particles/group uses, local and group-use bounds, original attribute uses/declarations, wildcard namespace/process contexts, scalar and element fixed/default operands, `final`/`block`, content mode and all source/QName/chameleon context. An effective interval or flattened attribute object is insufficient.
