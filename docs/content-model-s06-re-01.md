@@ -2448,6 +2448,149 @@ Full #234/#232 remain open for arbitrary-success extraction, general contextual 
 
 One next concrete action is to analyze a retained head used by a non-skippable live mapping, with its complete required child, before extending beyond this optional disjoint-name position.
 
+### One mandatory restriction consumer of retained H/M membership
+
+This bounded continuation starts from #307 at fetched main `3ec452fc5f1d9473ddb9e195c79ed7f9e3502b94`, tree `9f5e1cc43eb72ae6fd81504a008f851deab30d0b`.
+Investigation/implementation began at `2026-10-18T21:20:00Z`, with cutoff `2026-10-18T22:50:00Z`; #234 records the finding freeze and subsequent review/checks/delivery.
+The result is a scoped reconstruction lemma for one retained restriction-consumer pair, together with the exact obstruction when its required effective membership is lost.
+
+#### Supplied pair, admission and reference audit
+
+Keep #307's exact integer-restoration Γ, optional live h0=H[0..1], distinct a/H/M expanded names, original/endpoint correspondence and finite acyclic E/helper base forest.
+Keep #306's exact p=M.type, q=H.type path/final affiliation premises, empty type final/block sets and admitted declaration properties.
+The declared types p and q remain in that existing E/helper inventory; neither is one of the two new consumer types.
+
+Add exactly two supplied, retained complex restriction helpers R_H and R_M with distinct admitted fresh identities and explicit empty AU, absent attribute wildcard, empty type final/block sets and element-only content.
+R_H restricts exact E with `sequence1..1[A.content, h1=H[1..1], C]`.
+R_M restricts exact R_H with `sequence1..1[A.content, m1=M[1..1], C]`, where C is E's exact retained required empty-choice particle.
+
+Each consumer has its own distinct wrapper and required element-use particle; those four records are supplied with admitted ownership and retained verbatim.
+The exact original A.content and exact C are shared, not copied or replaced.
+Both raw and canonical consumer base/content selectors agree; the two consumer types, their particles and the existing identities are admitted by the same candidate-context and construction owners as #307.
+
+This pair is an explicit exception to copying every helper's content to S.
+Before replacing detached O payloads, enlarge the retained live set by both consumer wrappers and h1/m1, and retain C because all three wrappers reference it.
+The consumers' only content references are the exact A prefix, C and their own H/M uses; their only type bases are E and R_H, and H/M cannot point back to either consumer type.
+
+There are no further consumer incoming references or roles, and no consumer particle belongs to O.
+Thus O replacement and S tail trimming cannot rewrite a required consumer or its content, while #307's old helper reconstruction remains unchanged.
+The [typed controls](../test/research/re01/live-helper-forest.test.ts) check original/repaired admission and all four retained records; no local wrapping correction is necessary for this proposed pair.
+
+#### Meaningful mapping and actual dispatch
+
+`schemaConstructionAssessment.ts:checkComponentConstruction` owns both complex restriction judgments through `derivation-ok-restriction.5.4`.
+It derives explicit raw content, checks local particle legality, prepares authenticated restriction views and calls `particleRestriction.ts:checkParticleRestriction` on R_M.content versus R_H.content in the same candidate C_J.
+This is a required inherited helper judgment in every child, not an observation attached only to the original D′ endpoint.
+
+The restriction views flatten the unit A sequence to its optional a:string element but retain the consumer outer sequences, their required H/M positions and C.
+The two outer roots and the h1/m1 particles have different identities, so the whole comparison and decisive middle pair cannot take the same-particle shortcut.
+Sharing A and C permits identity comparisons for those operands only.
+
+The outer [Recurse](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-Recurse) mapping has three derived positions.
+M's distinct QName cannot match A/a; R_H has no wildcard anywhere, and the required empty choice has no alternative which can accept M.
+Its required H position is formally nonemptiable and cannot be skipped; C's separate formal emptiability supplies no bypass of H.
+
+If nonabstract M is effective under H, `prepareSemanticParticleView` virtualizes required H as a `1..1` implicit choice containing M, and retains R_M's M element because M has no incoming affiliates.
+The actual owner dispatch is element-to-choice [RecurseAsIfGroup](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-RecurseAsIfGroup), followed by [RecurseLax](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-RecurseLax) and M-to-the-same-global-M [NameAndTypeOK](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-NameAndTypeOK).
+The latter's global-declaration branch is justified after membership selects M; it is not an unrelated M.type-to-H.type restriction shortcut.
+
+H may be abstract: the owner retains its singleton virtual choice containing M, and ignoring that pointless unit choice under the primary rule yields the same result.
+If M is ineffective or abstract, no other incoming declaration can supply its QName; H is left as a required element and M-to-H fails.
+Even when both are abstract or the required C makes the whole instance language empty, component restriction still fails; there is no empty-language success rule.
+
+Consequently this retained R_M-to-R_H particle comparison succeeds exactly when M belongs to H's effective group, under these admitted premises.
+R_H-to-E also succeeds: exact A/C align, its required H expansion restricts the same contextual optional H expansion, and E's unused wildcard tail is formally emptiable.
+The same argument proves R_H-to-E even when membership disappears; the contrast below isolates R_M.
+
+#### Structural membership-preservation condition
+
+Use #306's initial extension set X and contexts C_J for J⊆X, rebasing only each selected x to restriction of exact E.
+For distinct declared types p and q let P be the exact initial p→q segment, excluding q's outgoing edge; let μ(P) be its initial method union and R(P) be `{restriction}` if the segment contains an extension vertex, otherwise empty.
+#306's admitted interior-head condition excludes extension vertices strictly below an interior q, and its affiliation theorem separately requires H.final to avoid μ(P)∪R(P).
+
+The additional necessary and sufficient condition for M's effective membership in every C_J is:
+
+1. M is nonabstract.
+2. H.block omits `substitution`.
+3. For p≠q, H.block is disjoint from μ(P)∪R(P); for p=q the method set is empty.
+
+This is a structural condition, not the statement that all children pass.
+Entered type blocks are empty by the retained premises, and M.block does not govern substitutability for H.
+H.abstract filters H itself, while M.abstract filters the mandatory alternative regardless of type-path success.
+
+For p=q, comparison stops at exact identity before any outgoing edge, even if that shared type is rebased.
+For an admitted interior q the restriction-only segment is unchanged; changing q or an ancestor above q does not extend the stopped comparison.
+For q=E, each changed path consists of an unchanged prefix to its first rebased extension, followed by one restriction edge to E.
+
+For p≠q the union of methods realized over all C_J is exactly μ(P)∪R(P): C_empty realizes every original method, and rebasing any segment extension realizes restriction.
+The dated [transitive substitutability](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec) block intersection and [effective-group abstract filter](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-class) give sufficiency and necessity.
+Immediate affiliation under H.final remains a separate mandatory local check; empty H.final can preserve affiliation while H.block destroys the required effective membership.
+
+#### Local conjunction, recursive closure and required children
+
+Establish local legality in every C_J before applying extension-count descent.
+#307 proves raw E/A extension, D′ mapping when required, reconstructed helper S/S extension or restriction, S UPA/EDC and detached O legality using exact original scalar endpoints.
+The structural condition above proves the two additional restriction mappings independently of any pending RE01 obligation.
+
+The consumers have empty AU/wildcards and empty type flags; their bases are available, their base chains R_M→R_H→E→A→anyType are acyclic and their own content is element-only.
+Their finite containment graphs contain only optional a:string, one required H/M position and C, with disjoint alphabets and no repeated-name type conflict.
+UPA/EDC therefore pass in their declared views even for abstract H, without consulting their empty instance languages or recursively validating declared-type content.
+
+The complete finite dependency closure includes R_M→R_H→E, both raw content roots, exact A.content, C, h1→H and the complete incoming M census, m1→M, and H/M→q/p.
+After reconstruction q/p select S, so these routes enter #307's content cycle S→h0→H→q→S and its M→p→S route.
+All inherited helpers, live/detached/unused particles, original local declarations and exact string/int/anyType builtin dependencies remain included.
+
+Each local type/declaration/particle rule follows finite containment, the finite affiliation census or acyclic base ancestry, without assuming another component's aggregate validity.
+Require a same-context local receipt for every component dependency and every context-qualified component-type dependency in this finite conjunction; builtin endpoints retain the existing exact qualification.
+The controls verify those closed receipt edges, rather than inferring legality from unchanged records, a visited graph node or acyclic bases alone.
+
+Neither consumer introduces an extension existential, since both are restrictions and p/q exclude them.
+Only after all those local constraints and dependencies are established, let n be the remaining helper extension count, excluding primitive E.
+For each required extension U, form #307's no-addition child restricting only U to exact E; preserve both consumers and all their particles as mandatory inherited roots, with fresh correspondence and context-local receipts.
+
+Every child is another C_J satisfying the structural condition; it has n−1 remaining extensions and the same proved local conjunction and closed dependency inventory.
+At n=0 only primitive E remains, so `P(0)=1`, `P(n)=1+n*P(n−1)` constructs complete finite evidence without assuming any pending existential.
+This supplies the reconstructed root for every successful supplied witness in this exact family, and also constructs it from the admitted local inventory without treating a merely locally legal parent as a complete original witness.
+
+The two retained restriction types add two component records and no new evidence nodes to the recurrence.
+Their distinct wrappers and uses add four fresh live particles to #307's at-most-k+3 scaffold: at most k+7, exactly eight at repaired k=1, with A.content and C shared.
+Retained O, H/M, E and old helpers are counted separately; reconstruction allocates no identities or recursive unfolding copies, and W(D)=1 still bounds only S's wildcard tail.
+Configurable inclusive/sticky budgets and resource-limit outcomes remain independent of mathematical finiteness with sufficient resources.
+
+#### Complete controls and exact failed contrast
+
+Four complete original/repaired controls cover identity under both method blocks, restriction to an abstract interior head, a mixed E-head path and a purely extending E-head path with empty H.block.
+They pass five-/sixteen-node certificates and authenticated finite-verifier receipts, including both consumers and all four particles in every context, all inherited roots, raw/canonical preservation and complete dependency edges.
+Blocked substitution, blocked path methods and abstract M reject R_M locally while affiliation and R_H remain checked; a missing inherited unused extension child remains unresolved and an inherited consumer rewrite is rejected.
+
+For the requested contrast take q=E, p=F initially extending E, H.final empty and H.block={restriction}, with nonabstract H/M and disjoint QNames.
+Both original and repaired parents pass local consumer construction, and M is effective under H via the extension path.
+In the prescribed no-addition F-to-E restriction child, affiliation still passes but effective(H) becomes `{H}`; unchanged R_M's required M cannot map to unchanged R_H's required H.
+
+`checkParticleRestriction` returns checked false for that same-context R_M/R_H comparison.
+`checkComponentConstruction` rejects required inherited R_M with `derivation-ok-restriction.5.4`; complete finite verification rejects with that component/rule in an authenticated descendant context where F has been rebased and M is no longer effective.
+R_H, E and immediate affiliation remain locally legal in the direct F child; it is specifically the retained consumer's restriction duty that fails.
+
+This is a locally legal parent and a failed attempted complete certificate, not a complete original witness.
+It obstructs this fixed pair under the prescribed rebase discipline; no alternative-witness search or general nonexistence inference is made.
+The [independent source/clause traces](../test/conformance/reference/re01-particle-continuation.test.ts) derive the mapping, block/abstract distinction and record accounting without importing semantic owners.
+
+| Proof obligation | Existing owner | Focused evidence |
+| --- | --- | --- |
+| Pair admission and preserved references | Candidate context/raw property validation | Original/repaired pair and inherited-record controls |
+| Forced H/M mapping and normalization | Particle view/restriction/construction owners | Required choice, abstract/blocked and failed-child contrasts |
+| Structural membership versus affiliation | Type relations/declaration owners | Identity/interior/E paths; independent clause traces |
+| Local recursive closure before descent | Construction receipts and finite verifier | Every component/type dependency and inherited root |
+| Complete evidence and unchanged failures | Existing finite-evidence authority | Five-/sixteen-node positives and missing-child rejection |
+
+One fresh-context nonauthor reviewer independently scrutinizes the decisive rule/dispatch/closure argument and reviews final proof/code plus separate scoped #232 consistency.
+The pinned dated Structures XML was re-read at these clauses, excluding deleted editorial text; SHA-256 remains `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+All #307 and earlier controls, seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original typed operands, semantic owners/verifier/APIs, failure distinctions and budgets retain their accepted scopes.
+
+Full #234/#232 acceptance, arbitrary-success coverage, general contextual evidence adequacy, copied-prefix transport, input-derived helper/identity/evidence bounds, complete general negatives and mathematical general search termination remain open.
+#179 activation, #153 combined acceptance and #184 runtime ownership remain separate; draft #231 stays unaccepted and untouched.
+One next action is to determine whether the same fixed consumer pair's membership-loss trap admits a different complete F child, without assuming E rebasing is mandatory or inferring nonexistence from this failed recipe.
+
 ## Pure input and output contract
 
 The proposed production input is immutable accepted analysis plus a specific extension type and its original ancestor chain. It retains original particles/group uses, local and group-use bounds, original attribute uses/declarations, wildcard namespace/process contexts, scalar and element fixed/default operands, `final`/`block`, content mode and all source/QName/chameleon context. An effective interval or flattened attribute object is insufficient.

@@ -28,6 +28,7 @@ type Affiliation = Readonly<{head: ForestType; member: ForestType;
   memberBlock?: readonly ('extension' | 'restriction' | 'substitution')[];
   headAbstract?: boolean; memberAbstract?: boolean; extensionOnly?: boolean; detachedHeadUse?: boolean;
   liveHeadUse?: 'before-separator' | 'after-separator'; requiredLiveHead?: boolean;
+  restrictionConsumers?: boolean;
   memberName?: string; memberNamespace?: string}>;
 
 const local = (target: string): Reference => ({kind: 'local', target});
@@ -112,6 +113,23 @@ async function forest(affiliation?: Affiliation) {
   const declarations = h && m ? [h, m] : [];
   const headUse = h && affiliation?.liveHeadUse ? makeParticle('retained-head',
     {kind: 'element', declaration: local(h.id)}, {min: affiliation.requiredLiveHead ? '1' : '0', max: '1'}) : undefined;
+  const consumerTypes: ComplexTypeNode[] = [], consumerParticles: ParticleNode[] = [];
+  if (affiliation?.restrictionConsumers) {
+    if (!h || !m || !headUse || affiliation.liveHeadUse !== 'before-separator' || affiliation.requiredLiveHead)
+      throw new Error('Consumers require the exact optional live H/M scaffold');
+    const consumer = (name: string, base: string, declaration: ElementNode) => {
+      const type = helper(name, base, 'restriction');
+      const use: ParticleNode = {...makeParticle(name + '-use', {kind: 'element', declaration: local(declaration.id)}),
+        id: scopedId(type.id, '/use', 'particle'), identity: {kind: 'scoped', owner: type.id, path: '/use', role: 'particle'}};
+      const root: ParticleNode = {...makeParticle(name + '-content', {kind: 'sequence', children: [a.content!, use.id, separator.id]}),
+        id: scopedId(type.id, '/content', 'particle'), identity: {kind: 'scoped', owner: type.id, path: '/content', role: 'particle'}};
+      const retained = {...type, content: root.id};
+      consumerTypes.push(retained); consumerParticles.push(root, use);
+      return retained;
+    };
+    const rh = consumer('R_H', e.id, h);
+    consumer('R_M', rh.id, m);
+  }
   const particles = [wrapper, separator, tail, extra, old, unused, ...(headUse ? [headUse] : [])];
   const rawElements = declarations.map(node => ({element: node.id, type: node.type,
     final: node === h ? affiliation?.final ?? [] : [],
@@ -134,10 +152,13 @@ async function forest(affiliation?: Affiliation) {
       return node;
     }).map(node => damage === 'live' && node.id === separator.id ? {...node, term: leaf.term}
       : damage === 'unused' && node.id === unused.id ? {...node, occurs: {min: '2', max: '1'}} : node);
-    const additions = [e, ...copied, ...replacements, ...declarations];
+    // Consumer content references the exact prefix/separator and its own uses.
+    // It is retained before the detached O replacement, never copied to S.
+    const additions = [e, ...copied, ...replacements, ...declarations, ...consumerTypes, ...consumerParticles];
     const result = request.candidate({key: mode + (damage ?? ''),
       active: [...request.actual.members, ...additions.map(node => node.id)], additions, endpoint,
-      rawTypes: [{...raw(a), derivation: {method: 'restriction', base: anyType}}, raw(e), raw(endpoint), ...copied.map(raw)],
+      rawTypes: [{...raw(a), derivation: {method: 'restriction', base: anyType}}, raw(e), raw(endpoint),
+        ...copied.map(raw), ...consumerTypes.map(raw)],
       rawElements,
     });
     if (result.kind !== 'prepared') throw new Error(JSON.stringify(result));
@@ -163,7 +184,7 @@ async function forest(affiliation?: Affiliation) {
     return {root: 'root', nodes};
   };
   return {request, a, d, e, f, u, r, v, helpers, particles, declarations, h, m,
-    wrapper, separator, tail, extra, old, unused, headUse, leaf, build, evidence};
+    wrapper, separator, tail, extra, old, unused, headUse, leaf, consumerTypes, consumerParticles, build, evidence};
 }
 
 describe('simultaneous live-E and finite helper forest reconstruction', () => {
@@ -498,5 +519,173 @@ describe('one retained optional head in shared live content', () => {
       .toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent', contextId: child.context.contextId});
     // E and every fresh inherited root are actual child duties. The locally
     // legal parent is not a complete witness; this does not prove nonexistence.
+  });
+});
+
+describe('one mandatory restriction consumer of retained H/M membership', () => {
+  // cos-particle-restrict / Recurse requires M to consume the H position.
+  // H's implicit choice is context-local; only its effective M alternative
+  // has the required QName, and NameAndTypeOK compares that same global M.
+  it.each<Affiliation>([
+    {head: 'U', member: 'U', final: ['extension', 'restriction'], block: ['extension', 'restriction']},
+    {head: 'U', member: 'R', final: ['extension'], block: ['extension'], headAbstract: true},
+    {head: 'E', member: 'V'},
+    {head: 'E', member: 'F', extensionOnly: true, memberBlock: ['substitution']},
+  ])('admits the pair with complete stable-membership evidence for %j', async options => {
+    const seed = await forest({...options, liveHeadUse: 'before-separator', restrictionConsumers: true});
+    const [rh, rm] = seed.consumerTypes;
+    const [rhRoot, h1, rmRoot, m1] = seed.consumerParticles;
+    if (!rh || !rm || !rhRoot || !h1 || !rmRoot || !m1 || !seed.h || !seed.m) throw new Error('Expected consumer pair');
+    const original = seed.build('original');
+    expect(seed.consumerTypes).toHaveLength(2);
+    expect(seed.consumerParticles).toHaveLength(4);
+    // Exact-original prefix and separator sharing is admitted without wrapping.
+    for (const [type, root, use] of [[rh, rhRoot, h1], [rm, rmRoot, m1]] as const) {
+      expect(type.content).toBe(root.id);
+      expect(root.term).toEqual({kind: 'sequence', children: [seed.a.content, use.id, seed.separator.id]});
+      expect(use.occurs).toEqual({min: '1', max: '1'});
+    }
+    for (const mode of ['original', 'repair'] as const) {
+      const context = seed.build(mode);
+      const proof = seed.evidence(context), result = verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, proof);
+      expect(result).toMatchObject({kind: 'checked-candidate'});
+      if (result.kind !== 'checked-candidate') throw new Error(JSON.stringify(result));
+      assertFiniteCandidateReceipt(seed.request.actual, result);
+      expect(result.proof).toHaveLength(options.extensionOnly ? 16 : 5);
+      expect(result.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
+      const fresh = [...seed.helpers, ...seed.particles, seed.e, seed.h, seed.m, ...seed.consumerTypes, ...seed.consumerParticles];
+      for (const step of result.proof) {
+        const item = proof.nodes.find(node => node.id === step.evidence)!;
+        const current = item.context, get = (id: string) => step.components.find(receipt => receipt.component === id)!;
+        expect(step.components.map(receipt => receipt.component)).toEqual(expect.arrayContaining(fresh.map(node => node.id)));
+        expect(step.components.every(receipt => receipt.contextId === current.contextId)).toBe(true);
+        expect(step.correspondence.contextId).toBe(current.contextId);
+        for (const receipt of step.components) {
+          for (const dependency of receipt.dependencies) expect(get(dependency)?.contextId).toBe(current.contextId);
+          for (const dependency of receipt.typeDependencies) if (dependency.contextId === current.contextId && dependency.type.kind === 'component')
+            expect(get(dependency.type.id)?.contextId).toBe(current.contextId);
+        }
+        for (const type of [rh, rm]) {
+          expect(current.lookup(type.id)).toEqual(original.lookup(type.id));
+          expect(current.rawTypeProperties(type.id)).toEqual(original.rawTypeProperties(type.id));
+          expect(current.rawTypeProperties(type.id)).toMatchObject({attributeUses: [], final: [], block: []});
+          expect(current.rawTypeProperties(type.id)?.wildcard).toBeUndefined();
+          expect(get(type.id).obligations).toEqual([]);
+          expect(get(type.id).re01).toBeUndefined();
+        }
+        for (const node of seed.consumerParticles) expect(particle(current, node.id)).toEqual(node);
+        for (const id of item.parent.kind === 'candidate' ? item.parent.members : []) if (id !== item.target) {
+          expect(current.lookup(id)).toEqual(item.parent.lookup(id));
+          expect(current.rawTypeProperties(id)).toEqual(item.parent.rawTypeProperties(id));
+        }
+        expect(current.members).toEqual(context.members);
+        expect(effectiveSubstitutionMembers(current, seed.h.id)).toMatchObject({kind: 'checked', value: expect.arrayContaining([seed.m.id])});
+        expect(checkSubstitution(current, seed.m.id, seed.h.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+        const r = restricted(current, rm.id), b = restricted(current, rh.id);
+        expect(r.root.kind).toBe('sequence'); expect(b.root.kind).toBe('sequence');
+        expect(r.root.originalParticle).not.toBe(b.root.originalParticle);
+        expect(r.root.children).toHaveLength(3); expect(b.root.children).toHaveLength(3);
+        const requiredHead = b.root.children[1]!, requiredMember = r.root.children[1]!;
+        expect(requiredHead).toMatchObject({kind: 'choice', source: h1.id, occurs: {min: '1', max: '1'}, summary: {schemaEmptiable: false}});
+        expect(requiredHead.children.map(node => node.element?.id)).toContain(seed.m.id);
+        expect(requiredMember).toMatchObject({kind: 'element', source: m1.id, element: {id: seed.m.id}});
+        expect(requiredHead.originalParticle).not.toBe(requiredMember.originalParticle);
+        expect([...r.root.children, ...b.root.children].some(node => node.kind === 'any')).toBe(false);
+        expect(checkParticleRestriction(current, r, b)).toMatchObject({kind: 'checked', value: true});
+        expect(get(rm.id).dependencies).toEqual(expect.arrayContaining([rh.id, rmRoot.id]));
+        expect(get(rh.id).dependencies).toEqual(expect.arrayContaining([seed.e.id, rhRoot.id]));
+        expect(get(rhRoot.id).dependencies).toEqual(expect.arrayContaining([seed.a.content, h1.id, seed.separator.id]));
+        expect(get(rmRoot.id).dependencies).toEqual(expect.arrayContaining([seed.a.content, m1.id, seed.separator.id]));
+        expect(get(h1.id).dependencies).toEqual(expect.arrayContaining([seed.h.id, seed.m.id]));
+        expect(get(m1.id).dependencies).toContain(seed.m.id);
+        if (mode === 'repair') {
+          expect(get(seed.e.id).dependencies).toContain(seed.wrapper.id);
+          expect(get(seed.wrapper.id).dependencies).toContain(seed.headUse!.id);
+          expect(get(seed.headUse!.id).dependencies).toEqual(expect.arrayContaining([seed.h.id, seed.m.id]));
+          for (const declaration of [seed.h, seed.m]) {
+            if (declaration.type?.kind !== 'local') throw new Error('Expected retained exact type');
+            expect(get(declaration.id).dependencies).toContain(declaration.type.target);
+            expect(get(declaration.type.target).dependencies).toContain(seed.wrapper.id);
+          }
+          // Four retained consumer particles are additional to S's four.
+          expect(new Set([seed.wrapper.id, seed.headUse!.id, seed.separator.id, seed.tail.id,
+            ...seed.consumerParticles.map(node => node.id)]).size).toBe(8);
+        }
+      }
+    }
+  });
+
+  it.each<Affiliation>([
+    {head: 'U', member: 'U', block: ['substitution']},
+    {head: 'U', member: 'R', block: ['restriction']},
+    {head: 'E', member: 'F', extensionOnly: true, block: ['extension']},
+    {head: 'U', member: 'U', memberAbstract: true},
+    {head: 'U', member: 'U', memberAbstract: true, headAbstract: true},
+  ])('requires an effective nonabstract M rather than empty language or a shortcut for %j', async options => {
+    const seed = await forest({...options, liveHeadUse: 'before-separator', restrictionConsumers: true});
+    const [rh, rm] = seed.consumerTypes;
+    if (!rh || !rm || !seed.h || !seed.m) throw new Error('Expected consumers');
+    const context = seed.build('repair');
+    expect(checkSubstitution(context, seed.m.id, seed.h.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+    const members = effectiveSubstitutionMembers(context, seed.h.id);
+    if (members.kind !== 'checked') throw new Error(JSON.stringify(members));
+    expect(members.value).not.toContain(seed.m.id);
+    expect(checkComponentConstruction(context, rh.id)).toMatchObject({kind: 'checked'});
+    expect(restricted(context, rh.id).root.children[1]).toMatchObject({kind: 'element', occurs: {min: '1', max: '1'}});
+    expect(checkParticleRestriction(context, restricted(context, rm.id), restricted(context, rh.id)))
+      .toMatchObject({kind: 'checked', value: false});
+    expect(checkComponentConstruction(context, rm.id))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4', component: rm.id});
+  });
+
+  it('retains consumer roots while requiring inherited unused-helper evidence', async () => {
+    const seed = await forest({head: 'U', member: 'R', liveHeadUse: 'before-separator', restrictionConsumers: true});
+    const context = seed.build('repair'), proof = seed.evidence(context);
+    const child = proof.nodes.find(node => node.parent === context && node.target === seed.u.id)!;
+    for (const node of [...seed.consumerTypes, ...seed.consumerParticles])
+      expect(child.context.lookup(node.id)).toEqual(context.lookup(node.id));
+    const omitted = new Set(child.premises);
+    const nodes = proof.nodes.filter(node => !omitted.has(node.id)).map(node => node === child ? {...node, premises: []} : node);
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, {root: 'root', nodes}))
+      .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', contextId: child.context.contextId, component: seed.v.id});
+    expect(forkSemanticCandidate(context, {key: 'consumer-rewrite', active: context.members,
+      endpoint: complex(context, seed.u.id), additions: [seed.consumerParticles[0]!]}))
+      .toMatchObject({kind: 'candidate-rejected', code: 'identity', component: seed.consumerParticles[0]!.id});
+  });
+
+  it('rejects retained R_M in the prescribed F child after effective membership is lost', async () => {
+    const seed = await forest({head: 'E', member: 'F', extensionOnly: true, block: ['restriction'],
+      liveHeadUse: 'before-separator', restrictionConsumers: true});
+    const [rh, rm] = seed.consumerTypes;
+    if (!rh || !rm || !seed.h || !seed.m) throw new Error('Expected consumers and declarations');
+    for (const mode of ['original', 'repair'] as const) {
+      const context = seed.build(mode), proof = seed.evidence(context);
+      const child = proof.nodes.find(node => node.parent === context && node.target === seed.f.id)!;
+      for (const current of [context, child.context]) {
+        for (const node of [seed.e, ...seed.helpers, ...seed.particles, ...seed.declarations,
+          rh, ...seed.consumerParticles]) expect(checkComponentConstruction(current, node.id)).toMatchObject({kind: 'checked', obligations: []});
+        expect(checkSubstitution(current, seed.m.id, seed.h.id, {mode: 'affiliation'}))
+          .toMatchObject({kind: 'checked', value: true});
+        expect(checkSubstitution(current, seed.m.id, seed.h.id, {mode: 'substitutability'}))
+          .toMatchObject({kind: 'checked', value: current === context});
+        expect(checkComponentConstruction(current, rh.id)).toMatchObject({kind: 'checked'});
+        expect(checkParticleRestriction(current, restricted(current, rm.id), restricted(current, rh.id)))
+          .toMatchObject({kind: 'checked', value: current === context});
+        expect(checkParticleRestriction(current, restricted(current, seed.d.id), restricted(current, seed.e.id)))
+          .toMatchObject({kind: 'checked', value: true});
+      }
+      expect(checkComponentConstruction(context, rm.id)).toMatchObject({kind: 'checked'});
+      expect(checkComponentConstruction(child.context, rm.id))
+        .toMatchObject({kind: 'candidate-rejected', component: rm.id, rule: 'derivation-ok-restriction.5.4'});
+      const rejected = verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, proof);
+      expect(rejected).toMatchObject({kind: 'candidate-rejected', component: rm.id, rule: 'derivation-ok-restriction.5.4'});
+      if (rejected.kind !== 'candidate-rejected') throw new Error(JSON.stringify(rejected));
+      const failed = proof.nodes.find(node => node.context.contextId === rejected.contextId)!;
+      expect(complex(failed.context, seed.f.id).derivation).toMatchObject({kind: 'restriction', base: local(seed.e.id)});
+      expect(effectiveSubstitutionMembers(failed.context, seed.h.id)).toMatchObject({kind: 'checked', value: [seed.h.id]});
+      expect(failed.context.lookup(rm.id)).toEqual(context.lookup(rm.id));
+    }
+    // The locally legal parent is not a complete original witness. Only this
+    // retained pair and prescribed rebase recipe are rejected, not all witnesses.
   });
 });
