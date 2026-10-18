@@ -87,6 +87,19 @@ The sole fresh-context nonauthor reviewer assesses decisive reasoning before rel
 General coverage/evidence adequacy/input-derived bounds/complete negatives/mathematical termination remain open, with no production API, validator, identity representation, release or activation change.
 Next action: audit one additional content consumer outside this exact direct-H family before broader reconstruction; no wildcard necessity or general nonexistence follows.
 
+The [meaningful-prefix capacity audit](content-model-s06-re-01.md#input-derived-meaningful-prefix-capacity-audit) establishes an immutable Γ frontier capacity W from effective declared source particles, counting shared/group-use incidences without expanding occurrences or type references.
+For each qualified hypothetical context whose final normalized root is an element or unit sequence, r ≤ W(D), b ≤ W(A), grid states ≤ `(W(D)+1)(W(A)+1)` and replacement tail ≤ W(D).
+Virtual substitution alternatives remain inside choice slots but still affect branch membership, comparisons, ordering and contextual evidence; this is no bound on their internal components or complete search work.
+
+A complete current-verifier integer-restoration witness consumes fresh E's added wildcard; erasing that content preserves raw extension/correspondence and fails final restriction.
+A second complete witness retains a fresh restriction F consuming two E wildcards: trimming E alone to D's one-wildcard tail preserves D's mapping and exact identities but fails F's required construction.
+This refutes pointwise context-preserving replacement, not a bounded-tail existential witness, since unused F can be omitted or repaired.
+
+Outcome B retains the Γ-derived particle capacity and conditional exact-original-prefix mapping reconstruction.
+Comparison transport from property-equal prefix copies, simultaneous helper reconstruction, identity admission and complete child evidence remain unresolved.
+No helper/evidence/general-negative/termination bound or broader branch coverage follows; all accepted inputs and downstream gates retain their scopes.
+Next action: extract content consumers and contextual facts for simultaneous reconstruction, starting with F's restriction role.
+
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
 The maintainer subsequently selected [existential raw-AU matching, satisfying implicit-set order and GSC1 generated scalar properties](content-model-s06-re-01.md#selected-raw-matching-implicit-order-and-generated-scalar-properties); their implementation and exact delivery remain subject to local independent acceptance.

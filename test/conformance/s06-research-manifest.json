@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "8ffcc69b8d6da3218de3660797a34d87d17b5866659b8853117526d6976436a8",
+          "sha256": "3631ccee796e1ebcb1a7d038b43e7403f45e3429e18bd742b6d0523cfbdff8f7",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -631,7 +631,7 @@
         {
           "path": "test/conformance/reference/re01-particle-continuation.test.ts",
           "role": "reference",
-          "sha256": "f3ae1b921e09d634c4e1d477f7a6118ec3ab89f0cd033a89d7507e3871edd24d"
+          "sha256": "86b7a038143cc2a05b2f0a0b240359de7ce17f49b45f5f1441258184d0315f90"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/endpoint-all-original.xsd",
@@ -2222,6 +2222,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/helper-method-blocked.xsd",
           "role": "fixture",
           "sha256": "2e4842b1549e7eec05b80dc0ea208bc1ebe9718af506e342525cbf9a1d05a226"
+        },
+        {
+          "path": "test/research/re01/meaningful-prefix-bound.ts",
+          "role": "prototype",
+          "sha256": "0146bb14192c0cd2c691697ea0d42eb187379affe8cfbb4146c971ac45e16fe1"
+        },
+        {
+          "path": "test/research/re01/meaningful-prefix-bound.test.ts",
+          "role": "reference",
+          "sha256": "34bc49c546b52e32e499a05aeb938a8d3f01943da9cc566079e3cb586f69f67f"
         }
       ]
     },
