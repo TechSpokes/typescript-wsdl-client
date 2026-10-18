@@ -631,7 +631,8 @@ The engine does not implement the complete RE01 existential rule.
 #### Eligible B does not certify U's child
 
 A further supplied U extends the same B with a live disjoint optional wildcard suffix after A's optional prefix.
-Raw extension and M:U's immediate affiliation both pass, but rebasing U to restriction of B preserves a 1..1 sequence incompatible with B's 0..1 particle range.
+Raw extension and M:U's immediate affiliation both pass, but rebasing U to restriction of B preserves a wrapper whose optional B prefix cannot cover B's required first H position.
+The wrapper's outer `1..1` range does fit B's `0..1`; the precise failed comparison is the nested optional sequence's MapAndSum `0..4` against H's required `4..4`, as audited below.
 The local restriction owner rejects that child with `derivation-ok-restriction.5.4`.
 
 This refutes a reconstruction rule that checks only B eligibility and method signatures, then assumes the U-to-B child.
@@ -1574,6 +1575,134 @@ Outcome A is limited to this exact one-bridge supplied-family theorem; general c
 
 Next concrete action: audit the existing live-content helper's raw particle identity role and failed required restriction-to-B child, then state one bounded candidate repair before combining any broader content with this bridge.
 No such repair or additional role is investigated here, and this slice supplies no general search bound.
+
+#### Exact optional wildcard suffix with identity-preserving reconstruction
+
+This bounded continuation starts from fetched actual main `969b0d826ca4d7e4f1af0c261fd74c0bc062e0ac`, tree `6a8583cb3b812113a7245be3eabdcff8aa5e5048`.
+Investigation/implementation starts at `2026-10-18T14:44:53Z`, with cutoff `2026-10-18T16:14:53Z`; the #234 handoff records the earlier freeze and subsequent review/checks/delivery.
+The finding and implementation freeze is `2026-10-18T14:57:03Z`; subsequent work is review, necessary corrections, qualification and normal delivery only.
+This extends #296's nonrecursive direct-H supplied family by one exact content shape, separately from #302's bridge theorem.
+
+##### Audit of the unchanged single-extension control
+
+The original `subject('live-content')` in the [typed controls](../test/research/re01/helper-method-support.test.ts) remains unchanged in its construction.
+Let pB denote A's exact original optional sequence particle, which is B's effective content because B extends A without a contribution.
+Canonical B and canonical fresh U both have absent `content`; U clones B and extends B without changing that field.
+
+The supplied raw rows instead select `B.content = element-only(pB)` and `U.content = element-only(w)`.
+Fresh w is a `1..1` sequence of pB followed by q, and fresh q is `any[0..1]` with namespace `urn:recovery:separate-suffix` and `processContents=skip`.
+The selectors are exact `a.content`, `scopedId(u.id, '/root', 'particle')` and `scopedId(u.id, '/suffix', 'particle')`; pB is an original particle identity, not a structural copy or normalized language.
+
+| Stage | Original single-extension control |
+| --- | --- |
+| Structural preparation | Parent and U child prepare; this certifies no complete legality |
+| Local U extension | Passes exact base-first raw particle extension and local content checks |
+| M:U immediate affiliation | Passes direct H:B affiliation with empty H.final |
+| Effective membership | M enters H and Q2, and is excluded from Q1 by extension |
+| X's root restriction mapping | Fails `derivation-ok-restriction.5.4` in the parent |
+| Required U restriction-to-B child | Fails `derivation-ok-restriction.5.4` in that child |
+| Supplied complete root evidence | Rejected at X; no complete positive was supplied |
+
+[Particle Valid (Extension)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-extend) permits a `1..1` sequence whose first member has recursively identical base properties.
+Here that member is exact original pB, so identity supplies those properties before any wildcard comparison; q remains a live optional suffix in a namespace disjoint from all original/member names.
+No normalization or empty-suffix erasure is used to justify extension.
+
+X fails for a separate reason: extension-only M is Q2-effective, so X's global Q2 position expands a fresh name with no corresponding fixed local declaration in B's last choice.
+This control is not a locally successful complete root and supplies no necessity argument for wildcard content.
+It cannot be used as the original positive premise of the reconstruction theorem.
+
+In U's child, canonical U remains unchanged apart from its endpoint derivation, and raw U still selects w.
+The [Recurse](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-Recurse) outer range comparison passes: `1..1` is contained in `0..1`.
+Restriction normalization retains w's nested optional B sequence, because its range is `0..1`, not a removable `1..1` same-compositor wrapper.
+
+The first required base position is H's virtual choice with range `4..4`; it cannot be skipped in the ordered mapping.
+Mapping the nested optional B sequence, with four direct members, to that choice uses [MapAndSum](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-MapAndSum): `(0..1) * 4 = 0..4`, whose minimum fails `4..4`.
+Thus the final restriction fails; merely citing the two outer ranges would give the wrong explanation.
+
+##### Exact family and preservation proposition
+
+Retain all #296 family premises, including immutable string-delimiter Γ, stipulated X endpoint restricting unchanged B, finite acyclic helper base forests ending at B, empty helper AUs/attribute wildcards/final/block, direct-H members with disjoint names, sharing, unused roots and the accepted acyclic scoped-owner chains.
+The sole extra old content shape is w above: a fresh `1..1` sequence containing exact original pB followed by a fresh `0..1` wildcard q with that exact disjoint namespace and skip processing.
+Canonical contributions may retain their admitted old form or absence, as in the original control; the effective raw helper selector may select this w.
+
+No arbitrary wildcard, attribute wildcard, bridge, scalar helper, recursive content, group-root role, original/endpoint-generated particle operand or additional named/intermediate helper comparison is added.
+O remains the entire retained fresh particle inventory, including w/q and any particles already admitted by #296; no O particle is an immutable Γ record or an original/generated correspondence operand.
+Every original helper edge must satisfy its actual local content/final/AU rules, and all supplied helpers, members and particles must satisfy their local obligations along with X's mapping; method labels and preparation alone do not supply this premise.
+
+Proposition: every semantically successful supplied construction in this exact family has an alternative over the same immutable Γ and stipulated X endpoint, retaining every supplied component identity/owner, ancestry method, member name/reference, sharing and unused root, with complete finite contextual evidence and no new component identities.
+The stronger locally successful-root conclusion also holds: original complete existential evidence need not be assumed, because reconstructed children are built and proved independently below.
+This is an extension of the supplied-family theorem, not extraction of arbitrary B-v1 witnesses.
+
+##### Wildcard-specific consumer audit before replacement
+
+The existing [raw extension](../src/compiler/particleExtension.ts), [construction](../src/compiler/schemaConstructionAssessment.ts), [correspondence](../src/compiler/re01CandidateCorrespondence.ts), [raw property](../src/compiler/re01TypePropertyValidation.ts), [traversal](../src/compiler/graphTraversal.ts) and [context](../src/compiler/semanticContext.ts) owners govern this audit.
+Perform replacement once at a new root over Γ: give every helper both canonical and effective raw exact pB content, then replace every O particle's whole term and occurrence with an element term referencing exact original local z:string at `1..1`, as in #296.
+The wildcard is an embedded term payload, not a separately allocated component identity.
+
+| Consumer of former wildcard payload | Discharged requirement |
+| --- | --- |
+| Raw helper content and raw extension | Both helper selectors now name pB; local edges compare identical pB |
+| Canonical helper containment | Every canonical content edge now names pB, so none retains w/q |
+| O compositor incidence | Full term replacement removes w→pB/q and every old O term edge |
+| Particle wildcard namespace/processing | Applies while term is any; no retained any term remains |
+| UPA, EDC and wildcard restriction | Rebuilt on exact z leaves and copied B content in each context |
+| Scoped identity and ownership | Exact ID/owner/path/role and particle component kind remain fixed |
+| Anonymous helper namespace | Explicit raw targetNamespace remains fixed; owner payload is not its source |
+| Original/endpoint correspondence | Γ/X operands and generated sharing remain exact; O has no such role |
+| Raw provenance and source selectors | Original selectors/source metadata retained; no O source mapping invented |
+| Complete fresh-root inventory | Every O remains active and checked, including unused owner particles |
+
+Thus no retained semantic requirement needs q's former namespace or processContents payload.
+Node context metadata remains fixed; it does not give a hypothetical q an original source-property correspondence role.
+This uses abstract programmatic component construction under the accepted model, not an XML-source representation or identity amendment.
+
+An inherited child has a stricter preservation duty: its existing particles cannot be replaced and nonendpoint raw properties cannot be rewritten.
+The new root is built from Γ, which contains no old w/q; all subsequent children inherit its reconstructed particle records unchanged.
+No legality check is weakened, and retaining an owner identity does not entail retaining that owner's former wildcard or sequence payload.
+
+##### Complete contextual evidence and induction
+
+Type/member paths, entered blocks, flags and direct affiliations are unchanged, so root H/Q1/Q2 expansion names and cardinalities remain exact.
+X's original effective particle, intermediate B and comparison operands remain exact; the original locally successful X mapping and coherent implicit choices therefore still hold.
+Every reconstructed helper edge now compares identical pB by the raw extension or restriction identity branch, with the existing empty AU/wildcard/final duties.
+
+The old copied-B closure re-establishes B/A, H/Q1/Q2, every incoming member, every helper and fixed local declaration without consuming X, since both delimiters have builtin string type.
+It proves UPA/EDC for every subset of effective fresh members under the heads, including changed memberships in children.
+Each O root separately consumes only exact original local z and builtin string: one element position has trivial UPA/EDC, valid `1..1` bounds and no global affiliation expansion; distinct roots are never concatenated into one content group.
+
+For each required fresh nonprimitive extension T, construct a child changing only T's method/base to restriction of exact B, adding no identities and retaining all inherited helpers/members/particles and unused roots.
+Correspondence, closure, local declarations, UPA/EDC and every receipt dependency are rebuilt in that exact child; no parent/sibling receipt or X mapping transfers.
+The unchanged owner graph passes, every local copied edge and O leaf passes, and X is outside these helper-child closures.
+
+Let n be the current number of fresh extension edges, excluding primitive B.
+Each branch removes exactly one such edge; at n=0 only primitive B's accepted no-change discharge remains.
+Induction supplies complete finite acyclic evidence with the existing unfolded bound `sum(n! / (n-i)!, i = 0..n)` and finite complete O/closure work at each node.
+
+This bound depends on the supplied forest, not Γ.
+Sufficient resources qualify mathematical finite evidence; unchanged configurable inclusive/sticky budgets may return resource-limit for larger forests without implying invalidity or nonexistence.
+A passing example is evidence for this proof, not its universal-family justification.
+
+##### Separate mixed construction and meaningful controls
+
+The separately identified `wildcardSuffixControl` uses S restricting B with exact pB; U/V extend S using raw w, D restricts U using the same w, and C restricts S with pB.
+All canonical helper content is pB; S owns w/q, w owns U/V, and U owns D.
+Two direct-H members share U, a third uses D, and V/C plus both particles remain mandatory unused roots where applicable.
+
+Every original local helper/member/particle and X check passes, because all member paths use both methods and the raw extension/restriction edges have the stipulated legal content.
+The original required U-to-B child still fails as audited above; it is not counted as complete original evidence.
+The alternative retains the identical inventory and owners, changes only helper content and the two particle payloads, and passes complete five-node finite evidence.
+
+Controls check exact original/raw selectors and prefix identity, every original edge, root expansions, all inherited roots, complete receipt dependencies/context IDs, delimiter legality/UPA/EDC and X's absence from required helper closures.
+Removing unused V's evidence inside U's child remains unresolved; attempting to restore the old inherited wildcard particle through additions is rejected by the unchanged identity gate.
+The [independent reference control](../test/conformance/reference/re01-helper-method-support.test.ts) derives the decisive occurrence comparison from source/rule premises without production imports; live-engine source acceptance does not certify RE01 or abstract identity sharing.
+
+One fresh-context nonauthor reviewer independently reproduces the staged original failure and separate mixed/repaired constructions, challenges the consumer/closure/induction argument before reliance, and assesses final proof/code plus scoped joint consistency.
+The re-read pinned Structures XML matches `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`; published errata and the accepted PW R-240 distinction remain unchanged.
+#294's conditional allocation, #295's unchanged-particle EDC trap, #296's original family and #302's separate bridge theorem retain their exact scopes and controls.
+
+All seven recovery inputs, B-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands, failure distinctions and configurable budgets remain intact.
+General coverage, evidence adequacy, input-derived bounds, complete negatives and mathematical search termination stay open in #234/#232; #179/#153 and #184 ownership remain separate.
+Next action: audit one additional content consumer outside this exact direct-H family before proposing broader reconstruction; no wildcard necessity or general nonexistence follows here.
 
 #### General alternatives and unresolved proposition
 

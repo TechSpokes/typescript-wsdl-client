@@ -73,6 +73,20 @@ Historical local affiliation controls, #294/#295 limitations, all accepted input
 No bridge chain, fresh bridge type, other helper role, recursion, production activation or general search bound is added.
 Next action: audit the existing live-content helper's raw particle identity role and failed required restriction-to-B child, then state one bounded repair before combining broader content with this bridge.
 
+The [exact optional-wildcard-suffix continuation](content-model-s06-re-01.md#exact-optional-wildcard-suffix-with-identity-preserving-reconstruction) extends #296's direct-H family separately from #302.
+The original single-extension control prepares and passes local U extension/affiliation, but M remains Q2-effective and X's root mapping fails; its complete supplied root is rejected.
+U's required child separately fails the ordered first-position MapAndSum `0..4` against required H `4..4`; its outer `1..1` does fit B's `0..1`, correcting the earlier shorthand.
+
+The only added old shape is a fresh `1..1` sequence of exact original B content followed by a fresh `0..1` wildcard in the existing disjoint namespace with skip processing.
+After auditing raw/canonical, correspondence, provenance, namespace and identity consumers, simultaneous helper exact-B and detached-particle z:string replacement retains every identity/owner, method, member name, sharing and unused root with no new identities.
+All original helper-edge legality remains an explicit premise; complete repaired contextual evidence follows from copied-B closure, independent z leaves and decreasing fresh extension count, with each child's inherited particles unchanged.
+
+A separately identified mixed direct-H construction passes all original local obligations while retaining the failed original U child, then passes complete five-node repaired evidence including unused V/C, particle-owned helpers, dependent owners and shared members.
+The controls rebuild correspondence and complete context-qualified receipts in every required child; missing unused-helper evidence remains unresolved and inherited wildcard-payload restoration is rejected.
+The sole fresh-context nonauthor reviewer assesses decisive reasoning before reliance and final proof/code plus scoped consistency; #294/#295/#296/#302 and all accepted inputs retain their precise scopes.
+General coverage/evidence adequacy/input-derived bounds/complete negatives/mathematical termination remain open, with no production API, validator, identity representation, release or activation change.
+Next action: audit one additional content consumer outside this exact direct-H family before broader reconstruction; no wildcard necessity or general nonexistence follows.
+
 The [architecture recovery checkpoint](content-model-s06-re-01.md#architecture-recovery-domain-and-proof-checkpoint) stages concrete shared source owners, original-AU plans, context isolation and real-input preparation measurements.
 It preserves #231's original branch/history. The maintainer selected finite fresh helpers and affiliations, and independent review accepted the complete B domain contract.
 The maintainer subsequently selected [existential raw-AU matching, satisfying implicit-set order and GSC1 generated scalar properties](content-model-s06-re-01.md#selected-raw-matching-implicit-order-and-generated-scalar-properties); their implementation and exact delivery remain subject to local independent acceptance.
