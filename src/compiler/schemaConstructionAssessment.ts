@@ -313,6 +313,9 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             if (!extension.value)
               return fail('cos-particle-extend', 'Raw extension does not preserve the original particle or its exact first member');
             scalarObligations(extension.scalarObligations);
+            for (const pending of extension.obligations) {
+              b.chargeWork(); if (pending !== 'component-validity') declarationObligation(pending, id);
+            }
           } else if (method === 'extension' && (own.kind === 'empty' && prior && 'particle' in prior || own.kind === 'simple' && prior?.kind === 'mixed'))
             return fail('cos-ct-extends.1.4', 'Extension cannot remove or change the base content variety');
           else if (own.kind === 'simple' && prior?.kind !== 'mixed') return fail('complex-content-relation', 'Simple content is incompatible with the base content');

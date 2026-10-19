@@ -20,7 +20,7 @@ It separates a failed eager-installation transformation from the still-open goal
 The [scope-property continuation](#scope-property-reads-and-validity-dependencies) repairs another concrete false negative by separating AU/identity property reads from full scope validity.
 The [scalar-property continuation](#scalar-selectors-and-simple-content-property-reads) lifts a scoped active-facet normalization and repairs candidate simple-content equality without changing actual-source normalization or genuine type validity.
 The [complex-reference continuation](#complex-property-references-and-full-construction) completes that property-role boundary for distinct complex references, retaining independently consumed type validity.
-The [scalar-premise continuation](#typed-scalar-premises-through-particle-extension) forwards conditional equality prerequisites to their existing construction owners without weakening facade formation.
+The [conditional-premise continuation](#conditional-prerequisites-through-particle-extension) forwards scalar and known mixed-content equality prerequisites to their existing construction owners without weakening formation or emptiability.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -3675,7 +3675,7 @@ This closes pure complex-reference publication in this property owner, not every
 For the present finite-verifier route, global semantic-frontier inclusion and SOME-forest representation still need their combined proof before complete search, negative bounds or mathematical termination can follow.
 The selected Q_f definition, dated-correspondence gate, B-v1 geometry, all seven accepted packages and P1/F2 remain unchanged.
 
-#### Typed scalar premises through particle extension
+#### Conditional prerequisites through particle extension
 
 The next composition audit follows equality's value-constraint path through `checkDeclaration` and the scalar kernel.
 A raw simple-content complex facade C yields a typed `raw-simple-content-derivation-validity(C)` premise even when its scalar value is known.
@@ -3687,9 +3687,9 @@ This is a local receipt-composition limitation, independently reproduced before 
 
 ##### Conservative forwarding theorem and owners
 
-Let a successful raw extension comparison have scalar premises P, each preserving its rule, component and optional originating context.
-The checked extension receipt is conditional on P and full component validity; it is not an aggregate certificate.
-Forwarding P unchanged to the existing construction dispatcher preserves those conditions without introducing a new scalar or declaration authority.
+Let a successful raw extension comparison have typed scalar premises P, each preserving its rule, component and optional originating context, and known mixed-declaration prerequisites M.
+The checked extension receipt is conditional on P, M and full component validity; it is not an aggregate certificate.
+Forwarding these unchanged to the existing construction dispatchers preserves the conditions without introducing a new scalar or declaration authority.
 
 The dispatcher authenticates each premise against the current H or immutable actual Γ.
 Same-H raw simple-content formation requires the exact complex owner C; its construction receipt discharges that rule only after the full local type checks succeed, and any nonprimitive own-Q remains owed.
@@ -3697,10 +3697,16 @@ Same-H raw simple-content formation requires the exact complex owner C; its cons
 
 This statement covers the existing typed `ScalarObligation` union, not just raw simple-content formation.
 Other typed premises remain pending unless their existing owner actually discharges the exact rule/component/context.
-Non-component string local-property requirements retain the previous unresolved gate; mixed-content emptiability, ID/default, NOTATION, lexical bindings and source syntax are not erased or reinterpreted.
+The only other current equality string producer is `checkDeclaration`'s `element-default-mixed-emptiable:C`, after filtering its declared-type marker.
+Scalar/facet/kernel requirements remain typed, and AU aggregate string requirements are not imported into this equality result.
+Unknown future string families retain the immediate unresolved gate.
+
+The known mixed prerequisite belongs to the current comparison context, H for a candidate or Γ for an actual call; it is not a string imported from an original facet callback.
+The existing `declarationObligation` dispatcher requires exact C, reads mixed content in that context and checks formal restriction-view emptiability.
+Full C validity alone does not establish that predicate, and no lexical field, ID/default, NOTATION or source-syntax condition is erased or reinterpreted.
 
 The repair changes only [particleExtension.ts](../src/compiler/particleExtension.ts) and its sole [construction consumer](../src/compiler/schemaConstructionAssessment.ts).
-The former charges, snapshots and freezes P from successful comparisons; the latter checks the extension result and invokes its existing scalar dispatcher.
+The former charges, snapshots and freezes typed P and the component marker plus known mixed strings from successful comparisons; the latter checks the extension result and invokes its existing scalar and declaration dispatchers.
 Declaration/kernel/AU owners, typed type dependencies, the complete finite verifier, all inherited fresh roots and the request-budget/sticky-failure contract are unchanged.
 
 ##### Complete simple-base control and nonprimitive contrast
@@ -3724,6 +3730,24 @@ A fresh declaration genuinely consuming C1 in H still requires and accepts its o
 For the copied nonprimitive construction, forwarding exposes the required H-C evidence instead of waiving it.
 Missing evidence remains unresolved; supplying the required rebased C branches causes retained FE's recursive comparison to reject the extension/restriction method mismatch.
 Thus the earlier copied equality=true observation was not a complete semantic positive, and this prescribed-construction failure is not a SOME-forest impossibility result.
+
+##### Known mixed-default prerequisites
+
+The [mixed source](../test/conformance/fixtures/xsd/recovery/scalar-premise-mixed-independent.xsd) has twenty-six actual records.
+Its two default-bearing inner declarations have distinct anonymous mixed C types, each containing optional `payload:string`; the exact particle is formally emptiable.
+The same real caller has thirty-nine members in the child, including both genuinely consumed C roots, and preserves every actual and inherited fresh duty.
+
+The controls complete identity and copied-prefix two-node proofs and keep the copied extension's known mixed strings frozen and visible.
+They independently check each exact default-bearing declaration through the existing construction dispatcher in that same child context, and retain its mixed restriction-view `schemaEmptiable=true` fact.
+Neither the fresh RequiredC declaration, which has no default, nor full C validity alone is used to infer the mixed-default condition.
+
+At the typed-scalar-only a7ab71c baseline, the identity construction completed while the copy stopped at the string gate despite those supported mixed facts.
+Forwarding the known strings to the existing declaration dispatcher closes that local composition gap without introducing a new predicate.
+The independent reference suite pins mixed variety, original default operands and optional payload, and checks source/value instances without deciding hypothetical RE01 truth.
+
+A valid-Γ negative adds a fresh legal mixed MC with required q:string and a default-bearing BadDefault declaration.
+MC itself checks, but its formal particle is nonemptiable; BadDefault and the aggregate reject `e-props-correct.2`.
+That mandatory declaration also has its own independent checker, so this negative protects owner behavior rather than alone proving the forwarding bridge; the visible conditional strings, exact-context owner checks and complete positives establish that bridge.
 
 The next theorem for the present finite-verifier route remains composition into some authentic executable forest for every completely qualified Q_f actual assessment.
 This repair supplies one exact pending-premise bridge; it does not prove universal scalar/value-frontier inclusion, complete search, input-derived negatives or termination.

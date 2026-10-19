@@ -4,7 +4,7 @@ import {describe, expect, it} from 'vitest';
 import {localFixture, validateFixture} from './adapter.js';
 import {attribute, children, descendants, expandedQName, parseXml} from './syntax.js';
 
-const variants = ['forwarding', 'nonprimitive'] as const;
+const variants = ['forwarding', 'nonprimitive', 'mixed'] as const;
 const file = (variant: typeof variants[number]) => 'xsd/recovery/scalar-premise-' + variant + '-independent.xsd';
 const namespace = (variant: typeof variants[number]) => 'urn:recovery:scalar-premise-' + variant;
 
@@ -14,7 +14,7 @@ describe('independent scalar premise-forwarding source controls', () => {
     expect(attribute(schema, 'targetNamespace')).toBe(namespace(variant));
     expect([attribute(schema, 'finalDefault'), attribute(schema, 'blockDefault'), attribute(schema, 'elementFormDefault')]).toEqual([undefined, undefined, undefined]);
     const types = children(schema, 'complexType'), elements = children(schema, 'element');
-    expect(types.map(node => attribute(node, 'name')).sort()).toEqual(variant === 'forwarding' ? ['A', 'B', 'R', 'X'] : ['A', 'B', 'R', 'RS', 'S', 'X']);
+    expect(types.map(node => attribute(node, 'name')).sort()).toEqual(variant === 'nonprimitive' ? ['A', 'B', 'R', 'RS', 'S', 'X'] : ['A', 'B', 'R', 'X']);
     expect(elements.map(node => attribute(node, 'name')).sort()).toEqual(['Left', 'Right']);
     const type = (name: string) => {const found = types.find(node => attribute(node, 'name') === name); if (!found) throw new Error(name); return found;};
     expect(type('A').children).toEqual([]);
@@ -32,9 +32,16 @@ describe('independent scalar premise-forwarding source controls', () => {
       const inner = children(sequence, 'element')[0], facade = children(inner, 'complexType')[0];
       expect([attribute(inner, 'name'), attribute(inner, 'default'), attribute(inner, 'fixed'), attribute(inner, 'type')]).toEqual(['inner', 'same', undefined, undefined]);
       expect([attribute(inner, 'minOccurs'), attribute(inner, 'maxOccurs'), attribute(facade, 'name')]).toEqual([undefined, undefined, undefined]);
-      const extension = children(facade, 'simpleContent')[0].children[0];
-      expect([extension.local, expandedQName(extension, attribute(extension, 'base')!), extension.children]).toEqual(['extension',
-        variant === 'forwarding' ? {uri: 'http://www.w3.org/2001/XMLSchema', local: 'string'} : {uri: namespace(variant), local: 'RS'}, []]);
+      if (variant === 'mixed') {
+        expect(attribute(facade, 'mixed')).toBe('true'); expect(children(facade, 'simpleContent')).toEqual([]);
+        const payload = children(children(facade, 'sequence')[0], 'element')[0];
+        expect([attribute(payload, 'name'), attribute(payload, 'minOccurs'), attribute(payload, 'maxOccurs'), expandedQName(payload, attribute(payload, 'type')!)])
+          .toEqual(['payload', '0', undefined, {uri: 'http://www.w3.org/2001/XMLSchema', local: 'string'}]);
+      } else {
+        const extension = children(facade, 'simpleContent')[0].children[0];
+        expect([extension.local, expandedQName(extension, attribute(extension, 'base')!), extension.children]).toEqual(['extension',
+          variant === 'forwarding' ? {uri: 'http://www.w3.org/2001/XMLSchema', local: 'string'} : {uri: namespace(variant), local: 'RS'}, []]);
+      }
       const use = children(scope, 'attribute')[0];
       expect([attribute(use, 'name'), expandedQName(use, attribute(use, 'type')!), attribute(use, 'default'), attribute(use, 'fixed')])
         .toEqual(['a', {uri: 'http://www.w3.org/2001/XMLSchema', local: 'string'}, undefined, undefined]);

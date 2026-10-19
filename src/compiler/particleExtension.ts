@@ -18,7 +18,7 @@ import type {SemanticTypeDependency} from './semanticTypeReference.js';
 
 export type ParticleExtensionResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-particle-extend'; contextId: string;
-  obligations: readonly ['component-validity'];
+  obligations: readonly string[];
   scalarObligations: readonly ScalarObligation[];
   typeDependencies: readonly SemanticTypeDependency[];
 }> | RelationFailure | ScalarFailure | AttributeFailure | ResourceLimitFailure;
@@ -28,10 +28,11 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
   const budget = context.budget, charge = (n = 1) => budget.chargeWork(n);
   return budget.guard(() => {
     const typeDependencies = collectSemanticTypeDependencies(context);
+    const obligations = ['component-validity'];
     const scalarObligations: ScalarObligation[] = [];
     const done = (value: boolean): ParticleExtensionResult => {
       charge(10); return Object.freeze({kind: 'checked', value, rule: 'cos-particle-extend', contextId: context.contextId,
-        obligations: Object.freeze(['component-validity'] as const),
+        obligations: budget.freeze(budget.snapshot(obligations)),
         scalarObligations: budget.freeze(budget.snapshot(scalarObligations)), typeDependencies: typeDependencies.snapshot()});
     };
     const unresolved = (rule: string, component: string, message: string): ParticleExtensionResult => {
@@ -74,7 +75,12 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
             if (!same.value) return done(false);
             charge(2 + same.obligations.length + same.scalarObligations.length);
             for (const item of same.scalarObligations) {charge(); scalarObligations.push(item);}
-            if (same.obligations.some(rule => rule !== 'component-validity')) distinctDeclaration ??= x.element.id;
+            for (const required of same.obligations) {
+              charge(1 + required.length);
+              if (required === 'component-validity') continue;
+              if (required.startsWith('element-default-mixed-emptiable:')) obligations.push(required);
+              else distinctDeclaration ??= x.element.id;
+            }
           }
         } else if (x.wildcard && y.wildcard) {
           if (x.wildcard.processContents !== y.wildcard.processContents) return done(false);
