@@ -15,6 +15,9 @@ This formal nonentailment does not select an independent normative verdict or su
 The [founded contextual continuation](#founded-contextual-research-completion-and-identity-read-repair) now selects the separately named research relation Q_f, proves conditional whole-assessment finite semantic forest adequacy and repairs a pure-identity dependency false negative.
 The selection is an additional project definition; dated-XSD correspondence, arbitrary executable representation and complete negative/termination proofs remain open.
 
+The [late-property continuation](#late-reification-of-untouched-original-complex-properties) repairs a concrete candidate-layout limitation while preserving authentic correspondence and every fresh root.
+It separates a failed eager-installation transformation from the still-open goal of finding some executable forest for every successful Q_f assessment.
+
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
 The [current derivability continuation](#derivability-and-affiliation-continuation) separates that assessment from hypothetical checking; neither the new comparison interface nor a dependency census supplies the missing complete theorem.
@@ -3429,6 +3432,74 @@ This also corrects an incidental earlier observation: the PR315 reanchored posit
 Both unrelated original R_H and R_M may now remain outside that child closure, while both remain checked in actual Γ′; direct hypothetical R_H checking passes and R_M still fails.
 The old trapped parent's fresh R_H/R_M remain mandatory and its universal contradiction is preserved.
 The [independent reference control](../test/conformance/reference/re01-exact-vacuous-ground.test.ts) pins the additional source chain and live instance acceptance without treating the engine as an RE01 oracle.
+
+#### Late reification of untouched original complex properties
+
+This continuation starts at main `1568cff40d723ad00c65c3c268ec3dfdda7dc3a5`, tree `6ad0691bffcf6d8e7d4f3a14e8c5bdb732fd9541`.
+The constructor and accepted local contracts do not alone establish arbitrary semantic-candidate materialization.
+An unused original complex type can retain its authentic source properties without a supplied raw row; candidate content owners require that row when it is later consumed.
+Previously, a nested fork rejected even the first unchanged row as a nonendpoint update.
+
+The [source](../test/conformance/fixtures/xsd/recovery/late-original-complex-properties.xsd) has unrelated empty A/B/R/X and another ancestry A2, R2, B2.
+A2 contains optional local p:string, R2 vacuously extends A2, and B2 extends A2 with optional local N:string followed by optional original global H:A2.
+Local names are qualified, and H blocks restriction.
+All fifteen represented actual records qualify locally.
+
+A first candidate replaces X by restriction B and adds T extending R2 with exact A2 content, plus fresh global N:T affiliated to H.
+Its required closure does not consume B2, and T is its sole nonprimitive duty.
+A complete two-node fresh-E2 proof discharges T, so this sparse parent is qualified rather than merely structurally prepared.
+The alternative child uses existing B2 as T's intermediate and retains T's exact A2 content while restricting B2.
+It first needs B2's unchanged effective-property row and one materialized outer sequence S joining the original A2 prefix to the original B2 tail.
+
+Installing those data early is not a harmless metadata transformation.
+In the parent, N is H-effective, and the original local N:string and fresh global N:T violate EDC.
+Early S is a fresh-relative-Γ mandatory root and therefore fails `cos-element-consistent`, even though B2 was otherwise unused.
+Any faithful source-derived outer preserves that same original prefix/tail and cannot remove the clash by renaming S.
+In the child, T's restriction edge filters N from restriction-blocking H; the same B2 content becomes locally valid, and T restricts it by skipping its optional tail.
+
+For empty contents, eager installation of an unchanged original row can avoid the earlier guard without adding a component.
+The synthetic control shows why that observation does not prove universal eager preservation of a selected forest.
+Neither failure refutes existential executable-forest adequacy: this parent already has the complete fresh-E2 alternative, and another general reconstruction need not preserve the chosen B2 recipe.
+
+The new nonendpoint exception in [semanticContext.ts](../src/compiler/semanticContext.ts) admits a first nested `rawTypes` row only when its owner is an original complex record with no inherited raw row, no canonical change anywhere in the parent lineage and no source-only diagnostic absence.
+`parent.changes` persists across forks, so retained source membership alone cannot satisfy the unchanged-owner premise after an earlier endpoint rewrite.
+The no-prior-change guard is a conservative boundary for this proof, not a claim that every possible safe representation method needs it.
+Existing rows, retained fresh owners and all other raw categories keep their prior update restrictions.
+
+Preparation remains structural-only.
+With these guards, the owner is exactly the immutable actual record and `checkCandidateCorrespondence.mapped` falls back to authentic actual effective-property mapping.
+Before acceptance, that owner compares namespace/flags, nonendpoint base and method, exact AU identities, wildcard, scalar identity and declared/synthetic particle identity and sharing.
+A supplied provenance label cannot replace those checks.
+Every newly installed synthetic component remains a mandatory fresh root in the child and all descendants; the finite verifier, primitive discipline and dependency closure are unchanged.
+
+The exact late-B2 positive in the [typed controls](../test/research/re01/late-original-properties.test.ts) failed at preparation before the repair and now completes the exact two-node proof.
+They also retain the eager-parent EDC failure, fresh-E2 positive, invalid unconsumed fresh-root rejection, stale canonical owner, inherited-row/fresh-owner/other-category guards and bad original base/content/flags rejection after structural preparation.
+The wrong-base discriminator uses a valid fresh E2 intermediate, so its rejection specifically authenticates unrelated late B2's original base rather than merely failing the two-step recipe.
+An existing suppressed-inline-type fixture tests only the source-only structural guard; its deliberate live scalar failures are not presented as a valid actual schema.
+The [independent source/reference controls](../test/conformance/reference/re01-late-original-properties.test.ts) pin exact source premises and live instance behavior without treating the engine as a hypothetical RE01 oracle.
+
+#### Encoded materialization scope and remaining theorem
+
+The approved finite encoded domain has constructor data for complex/simple types, declarations, particles, AUs, model/attribute groups, wildcards, original scalar slots and a separate notation table.
+For finite row-ready deltas with qualified identities/references, complete membership, unchanged inherited maps and sufficient resources, the constructor copies the exact records and incidence without quotienting identities.
+That structural statement is narrower than arbitrary native XSD representation or complete semantic checking.
+
+| Owner category | Current representation and qualification | Remaining materialization scope |
+| --- | --- | --- |
+| Complex effective content/AUs | Explicit raw properties, actual correspondence and the narrow new late-original admission | Safe on-demand original reification proved only under these guards |
+| Original simple types and element/attribute declarations | Source-aware fallback in `scalarSchemaAssessment` and `declaredType`; complete raw data for abstract helpers | No analogous missing-row need established here |
+| Named attribute groups | Candidate owner requires complete raw effective AUs/wildcard; source mapping authenticates originals | No general late/eager group theorem or admission change claimed |
+| Particles/model groups and AUs | Explicit records/references and complete local construction owners | New materializations remain fresh roots; property equality is not identity |
+| Generated scalars and notations | Original GSC1 slot membership, explicit fresh simple types and source-bound notation tables | Preserve scalar-slot versus complex-owner and original versus active operand contexts |
+
+Local choice plans need not be separate caller fields: the accepted kernels search coherent implicit-group enumerations, particle mappings and raw AU alternatives from fixed finite data.
+Ordered union selection and typed scalar/facet rules retain their accepted meanings and qualifications.
+Their complete local contracts do not by themselves prove that every scheduled implementation debt belongs to the exact semantic frontier; pure reads must still be distinguished from validity duties.
+
+The next adequacy target is existential: every completely qualified Q_f actual assessment should admit some authentically materialized finite forest whose scheduled generated duties lie within its complete semantic frontier, with justified primitive blocks and every actual Γ duty supplied.
+It may use on-demand reification or a separately proved whole-forest reconstruction; universal translation of every prescribed child or eager installation of every original is not an additional acceptance requirement.
+This repair does not establish that theorem, a complete candidate search, negative bounds or mathematical search termination.
+The selected research definition, dated-correspondence gate, seven accepted packages and P1/F2 remain unchanged.
 
 #### External methods and applicability
 

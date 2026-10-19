@@ -714,7 +714,16 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           };
           budget.chargeWork(4); const seenRaw = new Set<NodeId>(), seenSimple = new Set<NodeId>(), seenElements = new Set<NodeId>(), seenAttributes = new Set<NodeId>(), seenGroups = new Set<NodeId>();
           const unique = (id: NodeId, seen: Set<NodeId>): void => {key(id); if (seen.has(id)) throw new InvalidContext('identity', id); budget.chargeWork(); seen.add(id);};
-          for (const row of delta.rawTypes ?? []) {assertRawComplexTypeShape(row, budget); permittedProperty(row.type); unique(row.type, seenRaw); budget.chargeWork(); raw.set(row.type, row);}
+          for (const row of delta.rawTypes ?? []) {
+            assertRawComplexTypeShape(row, budget); budget.chargeWork(6);
+            // A first row may reify an untouched original's latent properties.
+            // Preparation stays structural; correspondence must authenticate
+            // those properties before aggregate acceptance in the child.
+            const lateOriginal = from.kind === 'candidate' && originals.get(row.type)?.kind === 'complexType'
+              && !parent.raw.has(row.type) && !parent.changes.has(row.type) && !absentOriginals.has(row.type);
+            if (!lateOriginal) permittedProperty(row.type);
+            unique(row.type, seenRaw); budget.chargeWork(); raw.set(row.type, row);
+          }
           for (const row of delta.rawSimpleTypes ?? []) {if (!validateRawSimpleTypeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.type); unique(row.type, seenSimple); budget.chargeWork(); simple.set(row.type, row);}
           for (const row of delta.rawElements ?? []) {if (!validateRawElementShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.element); unique(row.element, seenElements); budget.chargeWork(); elements.set(row.element, row);}
           for (const row of delta.rawAttributes ?? []) {if (!validateRawAttributeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.attribute); unique(row.attribute, seenAttributes); budget.chargeWork(); attributes.set(row.attribute, row);}

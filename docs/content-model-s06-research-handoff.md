@@ -40,7 +40,14 @@ The investigation also exposed and repaired a concrete false negative: comparing
 Identity preservation now checks membership/identity without manufacturing that debt; genuine scalar, ancestor and component-owner dependencies remain required.
 A complete one-node proof now passes, while a fresh mandatory declaration consuming T still reaches R_M and fails 5.4.
 
-Continue with exact semantic-to-executable candidate/frontier materialization and a complete finite-forest search argument for Q_f.
+The [late-original-property continuation](content-model-s06-re-01.md#late-reification-of-untouched-original-complex-properties) has now repaired one concrete materialization limitation.
+An unused original complex type's unchanged raw properties can first be supplied in a nested child when the canonical owner is untouched, its row is absent and authentic correspondence succeeds.
+Its synthetic content is installed only in that child and remains a mandatory fresh root.
+The complete direct-B2 positive and eager-parent EDC failure show why installing every original's generated content early is not a general preservation recipe.
+A complete fresh-E2 alternative still exists, so the failed eager recipe does not refute existential forest adequacy.
+
+Continue by proving that every completely qualified Q_f actual assessment has some executable finite forest with a justified semantic frontier, then establish complete search and negative/termination results.
+That goal does not require translating every prescribed candidate or retaining a failed eager-installation method.
 Normative correspondence, arbitrary runtime representation, input-derived negative bounds or equivalent complete negatives and mathematical termination remain separate open gates.
 There is no production selector/API/version change, release or downstream activation in this choice.
 
@@ -57,6 +64,7 @@ There is no production selector/API/version change, release or downstream activa
 | Executed semantic audit | Concrete positive/foundation inferences fail; paired anchor control qualifies | No authority-backed contextual truth rule or specific repair established |
 | Founded research completion | Q_f selected explicitly; conditional semantic forest adequacy proved | Runtime materialization and normative correspondence remain open |
 | Identity-read repair | Unrelated original type comparison no longer widens validity closure | Genuine consumed and fresh-root failures remain required |
+| Late original complex properties | Untouched original rows can first be reified in the consuming child with authentic correspondence | General executable-forest adequacy remains unproved; other row categories are unchanged |
 | Full RE01 procedure | Useful positives and scoped contradictions work | Coverage, adequacy, negatives and termination stay open |
 
 These failed reductions led to the semantic gate rather than another helper-length experiment.

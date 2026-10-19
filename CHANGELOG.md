@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): reify untouched original complex properties in nested candidates while preserving correspondence and fresh roots.
+
 - fix(re01): preserve identity without widening validity roots and define the founded contextual research route.
 
 - test(re01): execute the semantic bridge audit and distinguish immutable anchors with authenticated contextual proofs.
