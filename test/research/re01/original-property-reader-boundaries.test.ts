@@ -7,7 +7,7 @@ import {globalId} from '../../../src/compiler/canonicalGraph.js';
 import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {createSemanticBudget} from '../../../src/compiler/semanticBudget.js';
 import {deriveOriginalComplexPropertyContent} from '../../../src/compiler/complexTypeContent.js';
-import {readOriginalAttributeProperties} from '../../../src/compiler/schemaAttributeUses.js';
+import {assessCandidateAttributeUses, readOriginalAttributeProperties} from '../../../src/compiler/schemaAttributeUses.js';
 
 const fixtures = path.resolve('test/conformance/fixtures');
 const file = (name: string) => path.join(fixtures, 'xsd/recovery', name);
@@ -28,6 +28,9 @@ describe('original property reader qualification boundaries', () => {
     const bad = request.candidate({key: 'bad-active-attribute-type', active: actual.members,
       rawAttributes: attributes.map(attribute => ({attribute, type: builtin('boolean')}))}); assert.equal(bad.kind, 'prepared');
     expect(readOriginalAttributeProperties(bad.context, owner)).toMatchObject({kind: 'candidate-rejected'});
+    expect(assessCandidateAttributeUses(bad.context, owner)).toMatchObject({kind: 'candidate-rejected'});
+    expect(assessCandidateAttributeUses(good.context, id(namespace, 'ProhibitedGlobal')))
+      .toMatchObject({kind: 'invalid-schema', contextId: actual.contextId});
     expect(readOriginalAttributeProperties(good.context, owner).kind).toBe('checked');
   });
 

@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "e33864511e8759eb6fed51a6163910fa3b1cc4cba4e5dcabf594ae24e6e83c1a",
+          "sha256": "68047543561d5b1a7c536801fa129ec3bccff270a446facab9a8e6d87370c9ca",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1081,7 +1081,7 @@
         {
           "path": "src/compiler/complexTypeContent.ts",
           "role": "semantic-source",
-          "sha256": "6656722ad7e42727e8cec140a1dcad7802a10758472d6ad0c772828d7c6bcb36"
+          "sha256": "89713e3f31c36f44aba84dad85bd0c42c2bf6b75476a50a94d1cfa3022d06572"
         },
         {
           "path": "src/compiler/finiteRe01Verification.ts",
@@ -1116,7 +1116,7 @@
         {
           "path": "src/compiler/particleSemanticView.ts",
           "role": "semantic-source",
-          "sha256": "c220b4fbab31f2133df7a2fcf768fc35732e2c8843fb3723d50ea8c97b811a06"
+          "sha256": "da6758a36d1bec47647355e2e3dccfc026126e15d4385d4aeda8565bc77f2214"
         },
         {
           "path": "src/compiler/particleWildcardRelation.ts",
@@ -1151,7 +1151,7 @@
         {
           "path": "src/compiler/schemaAttributeUses.ts",
           "role": "semantic-source",
-          "sha256": "394ad71e2451acdf458cbf28b1123b098794f0b045066afbb9f1361a0a744f5c"
+          "sha256": "a62f2d42b5eb206394d0a4a5eacbbe986a7c06af52856c3c205b0d2395051861"
         },
         {
           "path": "src/compiler/schemaComponentEquality.ts",
@@ -1161,7 +1161,7 @@
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
           "role": "semantic-source",
-          "sha256": "5dd698f620f073a26570cabd41499f051761188e5439aebc019e16ffde989fea"
+          "sha256": "d0c86eb14c9356b8440777720d09eebf00d9d5039817beb45fa32e10d28e308f"
         },
         {
           "path": "src/compiler/schemaDatatypeValues.ts",
@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticContext.ts",
           "role": "semantic-source",
-          "sha256": "66ed34235c57ad472ea06790da0b956b91834bb693061de8c04725992b30c4a1"
+          "sha256": "d973f6592e54270650a2fe747a622c52b216b1d62f26b895a339f8d49dfe0185"
         },
         {
           "path": "src/compiler/wildcardAlgebra.ts",
@@ -2361,7 +2361,7 @@
         {
           "path": "test/research/re01/property-type-references.test.ts",
           "role": "reference",
-          "sha256": "986b0c62b2300a631cdc3066a5c98219d403bf655e49aa971ba4b29ff04e42c5"
+          "sha256": "f4697dbe5029a53d349fcdae58ec8c6c3f09336fc9c631e72d19bbb2dde9bcb9"
         },
         {
           "path": "test/conformance/reference/re01-property-type-references.test.ts",
@@ -2401,12 +2401,12 @@
         {
           "path": "test/research/re01/original-property-projection.test.ts",
           "role": "prototype",
-          "sha256": "bd0ff813580de8ad56a1d913c0444a7d7769c102b85deda395606bda35854b23"
+          "sha256": "f5c84207500662dae5b4ab512518368933733517e908619d7a4fda0c8226ce8b"
         },
         {
           "path": "test/research/re01/original-property-reader-boundaries.test.ts",
           "role": "prototype",
-          "sha256": "5d1452863c069848f9dbb026067d77c95a2a89fb556cea5d4b6776f565464e37"
+          "sha256": "ae9b8ff2a269dba18270e2062ecf7cc2b4d3a6f8f503b9080a68a1e320fd25aa"
         },
         {
           "path": "test/conformance/reference/re01-original-property-projection.test.ts",
@@ -2417,6 +2417,51 @@
           "path": "test/conformance/fixtures/xsd/recovery/original-property-projection-independent.xsd",
           "role": "fixture",
           "sha256": "54b004dfaab2d52536881939e154b137875ddd4cc38ed04bb080eaa90df372fd"
+        },
+        {
+          "path": "test/research/re01/original-construction-inputs.test.ts",
+          "role": "prototype",
+          "sha256": "2ecc99b4dc65b25aa84bf706a1c0d7db9ba371e2854044f64a006cb0fe6b4d64"
+        },
+        {
+          "path": "test/research/re01/original-construction-boundaries.test.ts",
+          "role": "prototype",
+          "sha256": "54cf73ea57ac2c96804728ede9bfdeb1b6c64b16b7f21e3c49677e65a2088c2e"
+        },
+        {
+          "path": "test/conformance/reference/re01-original-construction-inputs.test.ts",
+          "role": "reference",
+          "sha256": "d62ed5adb3dbf4fc7a8766120477a363fb6197a0100824b83dc7ed8a855e6090"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-construction-inputs-independent.xsd",
+          "role": "fixture",
+          "sha256": "fc1f778479839e87d0f523ab2f639aec5280453d0cf44d68a6f4a14945c3c12b"
+        },
+        {
+          "path": "test/research/re01/original-compositor-edges.test.ts",
+          "role": "prototype",
+          "sha256": "ee2215d591715c0488c20651a46d99e57a6651b5742b057ba1fb07b66e19f9bd"
+        },
+        {
+          "path": "test/research/re01/original-compositor-boundaries.test.ts",
+          "role": "prototype",
+          "sha256": "984f08d2667c2450f1f7d1af8ad38f517c5d553052bc177b279552abe6850ff3"
+        },
+        {
+          "path": "test/conformance/reference/re01-original-compositor-edges.test.ts",
+          "role": "reference",
+          "sha256": "c36483434ed9abb7abda67e8cdc5bb5e65994e12e330a74b15a3a2739eb778b4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-compositor-edge-independent.xsd",
+          "role": "fixture",
+          "sha256": "b7722ff79884265a83d33c01a2735960171c20b5392da157c3c6806aee12ab01"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-compositor-incidences-independent.xsd",
+          "role": "fixture",
+          "sha256": "52d9e888f1f33a8ed9d119882e6fece42b76e1f921bc45ff8930b0003bb65b57"
         }
       ]
     },

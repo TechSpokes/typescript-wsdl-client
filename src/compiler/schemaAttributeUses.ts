@@ -20,6 +20,8 @@ import type {NamespaceConstraint, WildcardProcess} from './wildcardAlgebra.js';
 import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
 import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import {deriveOriginalComplexPropertyContent} from './complexTypeContent.js';
+import type {RawComplexTypeProperties} from './re01TypeProperties.js';
 
 export type TypedAttributeConstraint = Readonly<{kind: 'fixed' | 'default'; origin: 'use' | 'declaration'; value: AssessedSchemaOperand}>;
 export type OriginalAttributeUse = Readonly<{
@@ -39,11 +41,11 @@ export type SourceAttributePlan = Readonly<{
   declarations: readonly DeclarationReceipt[];
 }>;
 export type AttributeFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'unsupported-capability' | 'unresolved'; rule: string; component: NodeId; source?: SyntaxSource; contextId?: string; message: string}>;
-export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2' | 'AU01-C1-raw-properties-v1' | 'AU01-C1-original-properties-v1'; value: SourceAttributePlan;
+export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2' | 'AU01-C1-original-construction-v1' | 'AU01-C1-raw-properties-v1' | 'AU01-C1-original-properties-v1'; value: SourceAttributePlan;
   obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}> | AttributeFailure | ResourceLimitFailure;
 type Container = ComplexTypeNode | Extract<GraphNode, {kind: 'attributeGroup'}>;
 type AttributeRole = 'source' | 'raw';
-type AttributeMode = 'container' | 'standalone' | 'properties' | 'original-properties';
+type AttributeMode = 'container' | 'original-container' | 'standalone' | 'properties' | 'original-properties';
 type DeclarationFact = Readonly<{
   receipt: DeclarationReceipt; value: TypedAttributeConstraint | undefined;
   scalarObligations: readonly ScalarObligation[];
@@ -86,6 +88,14 @@ export function assessAttributeUse(context: SemanticContext, useId: NodeId): Att
 /** Literal abstract AU properties: no source union or inherited omission. */
 export function assessRawAttributeUses(context: SemanticContext, ownerId: NodeId): AttributeResult {
   return rawResult(context, assessAttributeUses(context, ownerId, 'raw'));
+}
+
+/** Full current-context AU derivation, using guarded original data only when no raw row exists.
+ * Original inputs remain conditional on Γ mapping/source qualification from the
+ * whole actual assessment; this entry reruns all containing derivation checks in H.
+ */
+export function assessCandidateAttributeUses(context: SemanticContext, ownerId: NodeId): AttributeResult {
+  return rawResult(context, assessAttributeUses(context, ownerId, 'raw', 'original-container'));
 }
 
 /** Read complete effective AU properties without certifying the containing
@@ -354,7 +364,8 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           const value = Object.freeze({owner: root.id, uses, attributes: presence(uses, root), wildcard,
             schemaOperands: uses, declarations: Object.freeze([...declarationEvidence.values()])});
           return Object.freeze({kind: 'checked' as const, contextId: context.contextId,
-            authority: projected ? 'AU01-C1-original-properties-v1' as const : mode !== 'container' ? 'AU01-C1-raw-properties-v1' as const : 'AU01-C1-raw-v2' as const,
+            authority: projected ? 'AU01-C1-original-properties-v1' as const : mode === 'properties' || mode === 'original-properties'
+              ? 'AU01-C1-raw-properties-v1' as const : 'AU01-C1-raw-v2' as const,
             value, obligations: Object.freeze(group ? ['aggregate-group-validity', 'raw-group-property-correspondence']
               : projected ? ['aggregate-type-validity'] : ['aggregate-type-validity', 'raw-type-property-correspondence']),
             scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
@@ -366,10 +377,31 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           typeDependencies.add([{contextId: context.contextId, type: x.identity}, {contextId: context.contextId, type: y.identity}]);
           return budget.compareText(semanticTypeKey(context, x.identity), semanticTypeKey(context, y.identity)) === 0;
         };
+        let originalInput = false;
+        const input = (node: ComplexTypeNode): Pick<RawComplexTypeProperties, 'derivation' | 'attributeUses' | 'wildcard'> | undefined => {
+          const raw = context.rawTypeProperties(node.id);
+          if (raw || mode !== 'original-container' || !context.originalComplexPropertySource(node.id)) return raw;
+          const content = deriveOriginalComplexPropertyContent(context, node.id);
+          if (content.kind === 'resource-limit') throw new AttributeAbort(content);
+          if (content.kind !== 'checked') return problem(node, content.rule, content.message, 'unresolved');
+          const actual = context.originalContext(), source = assessSourceAttributeUses(actual, node.id);
+          if (source.kind !== 'checked') throw new AttributeAbort(source.kind === 'resource-limit' ? source
+            : Object.freeze({...source, contextId: source.contextId ?? actual.contextId}));
+          originalInput = true;
+          typeDependencies.add(source.typeDependencies);
+          for (const item of source.scalarObligations) {
+            charge(6 + item.rule.length + item.component.length + actual.contextId.length);
+            scalarObligations.push(Object.freeze({...item, contextId: item.contextId ?? actual.contextId}));
+          }
+          charge(5 + source.value.uses.length);
+          return {derivation: {method: node.derivation?.kind ?? 'restriction', base: node.derivation?.base
+            ?? {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anyType'}}},
+          attributeUses: source.value.uses.map(use => use.id), wildcard: source.value.wildcard};
+        };
         charge(3); const stack: ComplexTypeNode[] = [root], active = new Set<NodeId>();
         while (stack.length) {
           charge(); const node = stack[stack.length - 1]!;
-          const raw = context.rawTypeProperties(node.id);
+          const raw = input(node);
           if (!raw) return problem(node, 'raw-type-properties', 'Complete literal attribute properties are required', 'unresolved');
           const baseResolution = resolveSemanticType(context, raw.derivation.base);
           if (!('identity' in baseResolution)) return problem(node, 'src-resolve', 'Literal base is unavailable', 'unresolved');
@@ -392,6 +424,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
             const mapped = use(item)!; charge(); local.push(mapped);
           }
           const uses = checkUses(local, node), wildcard = raw.wildcard;
+          if (mode === 'original-container' && wildcard) for (const id of wildcard.sources) {charge(); get(id);}
           if (wildcard && (!['strict', 'lax', 'skip'].includes(wildcard.processContents) || !namespaceExpressible(wildcard.namespace, charge))) return problem(node, 'cos-aw-union/intersect', 'Literal wildcard has invalid component properties');
           if (!unwrap(checkImmediateTypeFinal(context, {kind: 'local', target: node.id}), node)) return problem(node, 'cos-ct-extends/derivation-ok-restriction', 'Base final excludes derivation');
           if (raw.derivation.method === 'extension') {
@@ -450,7 +483,8 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
             schemaOperands: Object.freeze([...(base?.schemaOperands ?? []), ...uses]), declarations: Object.freeze([...declarationEvidence.values()])});
           plans.set(node.id, plan); active.delete(node.id); stack.pop();
         }
-        charge(10 + scalarObligations.length); return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-raw-v2' as const,
+        charge(10 + scalarObligations.length); return Object.freeze({kind: 'checked' as const, contextId: context.contextId,
+          authority: originalInput ? 'AU01-C1-original-construction-v1' as const : 'AU01-C1-raw-v2' as const,
           value: plans.get(root.id)!, obligations: Object.freeze(['aggregate-type-validity', 'raw-type-property-correspondence']), scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
       }
       const dependencies = (node: Container): Container[] => {

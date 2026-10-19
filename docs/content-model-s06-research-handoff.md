@@ -72,6 +72,17 @@ The authentic copied and identity two-node forests complete with unchanged membe
 Raw rows remain authoritative, the factory authenticates lineage/source-absence eligibility, the content owner checks collisions through current-H lookup, and the AU property authority retains Γ source qualification plus current-H individual facts.
 This partial reader does not remove any real fresh root, transfer facts from a reified context, support simple/opaque fallback or establish universal allocation/forest coverage.
 
+The [full original-input continuation](content-model-s06-re-01.md#guarded-original-inputs-to-full-construction) now checks genuinely consumed particle/empty originals using authenticated retained data as inputs to every current-H construction owner.
+A complete RequiredD one-node proof preserves the native ur wildcard without installing representation-only particles; ordinary raw/fresh wildcard negatives, current-H nonprimitive evidence and genuine EDC conflicts remain binding.
+Full AU derivation is separate from the property-only receipt, every private particle is locally checked, and real descendant/root debts remain owed.
+Unsupported source-only diagnostic paths, simple/opaque content and collisions remain unresolved; no Γ validity transfer or general SOME-forest theorem is claimed.
+
+The [original-compositor continuation](content-model-s06-re-01.md#original-compositor-incidences-in-candidate-construction) separately repairs authentic original child incidence when a containing type already has raw properties.
+A source-only 0..0 item no longer becomes a component-validity debt through an eligible original compositor; a complete unchanged-membership one-node forest now checks all actual obligations and the genuine H frontier.
+The factory supplies a frozen ordered subsequence to the construction prelude/particle branch and the semantic view's resolved compositor before DFS.
+Direct original zero IDs, fresh explicit lists/zero particles, actual source syntax and all genuine roots remain binding; the primary engine's UPA disagreement is recorded separately from the dated no-component mapping.
+This does not extend the full-input diagnostic lookahead, alter equality's literal-child path, settle direct absent declarations or prove general source-only/frontier coverage.
+
 For the present finite-verifier route, continue by proving that every completely qualified Q_f actual assessment has some executable finite forest with a justified semantic frontier, then establish complete search and negative/termination results.
 That goal does not require translating every prescribed candidate or retaining a failed eager-installation method.
 The [reviewed C² follow-up](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6274763459) is a separate restricted logical positive, not a full-B encoding or a reason to require today's verifier layout of every method.

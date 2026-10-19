@@ -18,7 +18,7 @@ const namespace = 'urn:recovery:property-references';
 const id = (name: string) => globalId('type', {namespace, local: name});
 const local = (target: string): Reference => ({kind: 'local', target});
 const builtin = (name: string): Reference => ({kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: name}});
-async function seed() {
+async function seed(omitOriginalRow = false) {
   const fixtures = path.resolve('test/conformance/fixtures');
   const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/property-reference-nested-independent.xsd'), {policy: {fileRoots: [fixtures]}});
   const prepared = prepareSourceSchemaRequest(input); assert.equal(prepared.kind, 'prepared');
@@ -74,7 +74,7 @@ async function seed() {
   const additions: GraphNode[] = [{...fa, content: particles[1].id}, fr, ft, ...ds, ...elements, ...particles];
   const x: ComplexTypeNode = {...complex('X'), derivation: {kind: 'restriction', contentKind: 'complex', base: local(id('B')), facets: []}};
   const supplied = request.candidate({key: 'parent', active: [...actual.members, ...additions.map(node => node.id)], additions, endpoint: x,
-    rawTypes: [...rows.filter(row => row.type !== x.id), {...raw(x, {kind: 'empty'}), provenance: {kind: 'hypothetical-abstract', originals: [x.id]}},
+    rawTypes: [...rows.filter(row => row.type !== x.id && (!omitOriginalRow || row.type !== innerTypes[0].id)), {...raw(x, {kind: 'empty'}), provenance: {kind: 'hypothetical-abstract', originals: [x.id]}},
       raw(fa, originalPrefix), raw(fr, {kind: 'empty'}), raw(ft, {kind: 'empty'}), ...ds.map((node, index) => raw(node, {kind: 'empty'}, [scopes[index].use.id]))],
     rawElements: elements.map(node => ({element: node.id, type: node.type, final: [], block: []}))});
   assert.equal(supplied.kind, 'prepared'); const parent = supplied.context;
@@ -123,6 +123,17 @@ async function seed() {
 }
 
 describe('complex property references preserve genuine validity roles', () => {
+  it('publishes the current-H nonprimitive duty from an untouched original without a raw row', async () => {
+    const s = await seed(true), missing = s.build(true, false, true), supported = s.build(true, true, true);
+    expect(missing.context.rawTypeProperties(s.innerTypes[0].id)).toBeUndefined();
+    expect(missing.proof).toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', component: s.innerTypes[0].id});
+    assert.equal(supported.proof.kind, 'checked-candidate'); expect(supported.proof.proof).toHaveLength(5);
+    const child = supported.proof.proof.find(step => step.target === id('FT')); assert.ok(child);
+    expect(child.components.find(receipt => receipt.component === s.innerTypes[0].id)?.re01?.primitive).toBe(false);
+    expect(supported.proof.proof.filter(step => step.target === s.innerTypes[0].id).map(step => step.parentContext).sort())
+      .toEqual([s.actual.contextId, supported.context.contextId].sort());
+  });
+
   it.each([true, false])('checks a complete four-node forest with identity prefix %s', async identity => {
     const s = await seed(), c = s.build(identity, false, false);
     assert.equal(c.proof.kind, 'checked-candidate', JSON.stringify(c.proof)); assertFiniteCandidateReceipt(s.actual, c.proof);
