@@ -3,6 +3,7 @@ import type {SemanticContext} from './semanticContext.js';
 import {compareComponentProperties} from './schemaComponentEquality.js';
 import type {AttributeFailure} from './schemaAttributeUses.js';
 import type {ScalarFailure} from './schemaScalarKernel.js';
+import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import type {ParticleContentView} from './complexTypeContent.js';
 import {assertParticleContentView} from './complexTypeContent.js';
 import {prepareSemanticParticleView} from './particleSemanticView.js';
@@ -17,7 +18,8 @@ import type {SemanticTypeDependency} from './semanticTypeReference.js';
 
 export type ParticleExtensionResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-particle-extend'; contextId: string;
-  obligations: readonly ['component-validity'];
+  obligations: readonly string[];
+  scalarObligations: readonly ScalarObligation[];
   typeDependencies: readonly SemanticTypeDependency[];
 }> | RelationFailure | ScalarFailure | AttributeFailure | ResourceLimitFailure;
 
@@ -26,9 +28,12 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
   const budget = context.budget, charge = (n = 1) => budget.chargeWork(n);
   return budget.guard(() => {
     const typeDependencies = collectSemanticTypeDependencies(context);
+    const obligations = ['component-validity'];
+    const scalarObligations: ScalarObligation[] = [];
     const done = (value: boolean): ParticleExtensionResult => {
       charge(10); return Object.freeze({kind: 'checked', value, rule: 'cos-particle-extend', contextId: context.contextId,
-        obligations: Object.freeze(['component-validity'] as const), typeDependencies: typeDependencies.snapshot()});
+        obligations: budget.freeze(budget.snapshot(obligations)),
+        scalarObligations: budget.freeze(budget.snapshot(scalarObligations)), typeDependencies: typeDependencies.snapshot()});
     };
     const unresolved = (rule: string, component: string, message: string): ParticleExtensionResult => {
       charge(10 + rule.length + component.length + message.length);
@@ -69,7 +74,13 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
             typeDependencies.add(same.typeDependencies);
             if (!same.value) return done(false);
             charge(2 + same.obligations.length + same.scalarObligations.length);
-            if (same.scalarObligations.length || same.obligations.some(rule => rule !== 'component-validity')) distinctDeclaration ??= x.element.id;
+            for (const item of same.scalarObligations) {charge(); scalarObligations.push(item);}
+            for (const required of same.obligations) {
+              charge(1 + required.length);
+              if (required === 'component-validity') continue;
+              if (required.startsWith('element-default-mixed-emptiable:')) obligations.push(required);
+              else distinctDeclaration ??= x.element.id;
+            }
           }
         } else if (x.wildcard && y.wildcard) {
           if (x.wildcard.processContents !== y.wildcard.processContents) return done(false);
@@ -81,7 +92,7 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
         for (let i = 0; i < x.children.length; i++) stack.push([x.children[i], y.children[i]]);
       }
       return distinctDeclaration ? unresolved('raw-declaration-property-correspondence', distinctDeclaration,
-        'Recursive component equality retains unresolved scalar or local-property prerequisites') : done(true);
+        'Recursive component equality retains unresolved local-property prerequisites') : done(true);
     } catch (error: unknown) {
       if (error instanceof SemanticError) return unresolved('cos-particle-extend', error.component ?? derived.type, error.message);
       throw error;

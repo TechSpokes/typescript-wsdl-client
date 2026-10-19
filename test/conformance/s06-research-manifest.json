@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "82178056e78882591a65077b70f0ad02583046662f4a1d3665513e2ecc5ffdf7",
+          "sha256": "7dd3acfb1ce857f99594cb1a53a3ea7016e6f8c74c90206766c32c6cbdb4d78e",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1101,7 +1101,7 @@
         {
           "path": "src/compiler/particleExtension.ts",
           "role": "semantic-source",
-          "sha256": "2a4c463b36101d6bf1451a9a732282aeb247dad27bb615950bfd9d5cd457e168"
+          "sha256": "c97c084711223b79195d7abdb551d93483ecf390398265758d2d96b5269606f0"
         },
         {
           "path": "src/compiler/particleLocalAssessment.ts",
@@ -1161,7 +1161,7 @@
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
           "role": "semantic-source",
-          "sha256": "849b18433f1c63a5765903ed8da55e0b431a70446eb82e5f64ec64550156bf91"
+          "sha256": "5dd698f620f073a26570cabd41499f051761188e5439aebc019e16ffde989fea"
         },
         {
           "path": "src/compiler/schemaDatatypeValues.ts",
@@ -2372,6 +2372,31 @@
           "path": "test/conformance/fixtures/xsd/recovery/property-reference-nested-independent.xsd",
           "role": "fixture",
           "sha256": "d54fa75669d266e2937bb42d57e94d585d5e1e446faefc9efe27aa495ad1fe91"
+        },
+        {
+          "path": "test/research/re01/scalar-premise-forwarding.test.ts",
+          "role": "reference",
+          "sha256": "7f6c483e6423e56e81e414567d507b9aceae6cc572b586c75033f019afee8680"
+        },
+        {
+          "path": "test/conformance/reference/re01-scalar-premise-forwarding.test.ts",
+          "role": "reference",
+          "sha256": "c1ff0a109a8f8d3647ff4e721b10894927c51e94cf7f3ec1867a09eda57bf77c"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-premise-forwarding-independent.xsd",
+          "role": "fixture",
+          "sha256": "004930eae9155933b0d01e661b1c26baecac67c99a7d35ac95174ee305401fa2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-premise-nonprimitive-independent.xsd",
+          "role": "fixture",
+          "sha256": "033bdecf581233178aca31314f08ea5df880d5bcbb61495ff44eb5b2ec1f4767"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-premise-mixed-independent.xsd",
+          "role": "fixture",
+          "sha256": "61fbecb9fdc7353831b8c45fe19f2302c20e053a76f053dbdec725e580cba8dd"
         }
       ]
     },
