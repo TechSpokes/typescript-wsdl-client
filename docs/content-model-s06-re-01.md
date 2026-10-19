@@ -21,6 +21,7 @@ The [scope-property continuation](#scope-property-reads-and-validity-dependencie
 The [scalar-property continuation](#scalar-selectors-and-simple-content-property-reads) lifts a scoped active-facet normalization and repairs candidate simple-content equality without changing actual-source normalization or genuine type validity.
 The [complex-reference continuation](#complex-property-references-and-full-construction) completes that property-role boundary for distinct complex references, retaining independently consumed type validity.
 The [conditional-premise continuation](#conditional-prerequisites-through-particle-extension) forwards scalar and known mixed-content equality prerequisites to their existing construction owners without weakening formation or emptiability.
+The [original-property continuation](#guarded-original-property-views-in-the-current-context) reads a bounded class of untouched originals without installing source-generated wrappers as new validity roots.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -3752,6 +3753,80 @@ That mandatory declaration also has its own independent checker, so this negativ
 The next theorem for the present finite-verifier route remains composition into some authentic executable forest for every completely qualified Q_f actual assessment.
 This repair supplies one exact pending-premise bridge; it does not prove universal scalar/value-frontier inclusion, complete search, input-derived negatives or termination.
 Alternate logical or quotient methods may instead integrate faithful reconstruction within their own correctness proof.
+
+#### Guarded original-property views in the current context
+
+The next audit starts from actual main `ce42e9e58dccf2381a3ce28e157b6fa97827fe11`, tree `5cc4a2d3f42096a079c10f6f34e4b2f1484a7ae7`.
+A locally unconsumed original complex scope can have fixed effective properties whose source mapper uses a private synthetic sequence.
+Supplying those properties as a literal raw row installs a real sequence, which becomes a mandatory fresh validity root.
+That installation can fail even though reading the scope's properties does not consume its full hypothetical validity.
+The resulting prescribed-copy limitation is not a SOME-forest impossibility: the identity alternate already completes.
+
+##### Authentic combined discriminator
+
+The [independent source](../test/conformance/fixtures/xsd/recovery/original-property-projection-independent.xsd) has twenty-five represented actual records.
+A/B/R/X are empty, A2 contains optional qualified p:string, H:A2 blocks restriction, and Left/Right own distinct anonymous C1/C2 directly extending A2.
+Each scope adds optional qualified N:string followed by optional H, and a local a:string AU.
+Each effective source content has its own private outer sequence over the shared A2 prefix and that scope's original tail; these generated origins are not actual members.
+Γ has no global N, all actual source/local checks pass, and X is its sole nonprimitive duty.
+
+The parent adds eleven real records, including direct-extension T of A2, global N:T affiliated to H, and FA/FR/FT with two anonymous declarations borrowing the C-scope AUs.
+The complete construction inventory checks T's full conditional primitive block; FT is the only generated nonprimitive duty.
+The identity child adds only FE and its unit outer particle and completes a two-node whole-input forest, checking all original and inherited fresh roots.
+Neither C1 nor C2 is genuinely consumed in that hypothetical inventory.
+
+Before this repair, the copied child without C rows stopped at `component-complex-properties`.
+Faithfully supplying C rows and real outer sequences made recursive equality true and FE locally checked, but both mandatory outer sequences rejected EDC.
+Fresh N:T remains effective under H's restriction block; each outer therefore includes QName-equal local N:string and implicit N:T with incompatible exact types.
+A genuinely consumed C with those rows still rejects EDC.
+The repair must support the sparse property read without exempting any installed wrapper or transferring a validity receipt from a different context.
+
+The primary [pinned Structures source](#source-authority-and-corrections) supplies the independent facts: `e-props-correct.4` (lines 2838–2842) requires the affiliation's exact type ancestry; `cos-equiv-derived-ok-rec`/`cos-equiv-class` (2892–2958) retain the extension-only member; `cos-element-consistent` (5011–5037) applies to direct/implicit QName-equal declarations; `cos-nonambig` (5039–5058) distinguishes the original disjoint labels; `cos-particle-extend` (5293–5308) compares prefix properties rather than making an unconsumed scope a validity root.
+The [reference controls](../test/conformance/reference/re01-original-property-projection.test.ts) independently pin that source geometry and source-instance outcomes; an engine does not decide hypothetical RE01 truth.
+
+##### Factory guard and exact-context property authority
+
+The new factory query in [semanticContext.ts](../src/compiler/semanticContext.ts) authenticates an active source-bound original complex owner with no raw row, no canonical rewrite anywhere in its inherited changes map, and no source-absence marker.
+Retained source metadata, caller provenance or apparent equality alone cannot establish those conditions.
+An existing raw row always wins, including an invalid row or one referring to installed particles.
+Fresh owners and previously rewritten originals do not enter this fallback.
+
+[complexTypeContent.ts](../src/compiler/complexTypeContent.ts) reissues only fixed Γ particle/empty data under a private current-H `original-property-projection` authority.
+It preserves every field, occurrence, ordered incidence, shared original particle, distinct synthetic origin, source lexical context and ur-type wildcard marker.
+Every source-synthetic ID must have lookup result `missing` in H; both `found` and `outside-context` yield unresolved rather than shadowing, renaming or ignoring a real record.
+Simple and opaque content retain unresolved fallback behavior; full complex construction still requires its existing raw properties.
+
+The AU property reader in [schemaAttributeUses.ts](../src/compiler/schemaAttributeUses.ts) obtains fixed effective AU IDs/wildcard data through the authentic Γ mapper, retaining its exact Γ-owned typed prerequisites and failures.
+It then runs the existing individual use/declaration/scalar/presence checks in H, using H/raw-role fact caches rather than Γ fact-cache entries.
+Its distinct `AU01-C1-original-properties-v1` authority is conditional on authentic Γ mapping/source qualification, supplied by the whole actual assessment; it does not discharge Γ syntax or full Γ-C validity, nor certify full H-C validity.
+The original source mapper's aggregate/source-syntax markers remain those actual-assessment duties, not new H-C debts.
+Current-H scalar failures remain candidate failures, while intrinsic Γ failures remain Γ failures.
+No checked Γ aggregate is retagged as an H result.
+
+Only [component equality](../src/compiler/schemaComponentEquality.ts) selects this guarded fallback.
+Raw/full construction, genuine declared/base consumption, scalar/value formation, conditional premise forwarding, all installed/inherited fresh roots and the finite verifier remain unchanged.
+Property views and caches are owned by exact H and original source origin, with charged cache hits and the same sticky request-budget contract.
+
+##### Finite same-H preservation argument and limits
+
+Fix an eligible noncolliding H, leaving its membership, rows, scalar slots, notations and endpoints unchanged.
+Induct over the fixed finite Γ effective-property graph: each synthetic sequence retains its ordered children and occurrence fields, shared real children retain exact identity, and real references are resolved by H.
+The private view therefore represents that original property graph interpreted in this exact H, rather than a recomposition through H's possibly changed ancestor derivations.
+For the executed pair, the source p prefix is shared, the two original N:string declarations compare equal, and the exact shared H declaration compares by identity.
+The reused H AU owners qualify the a:string properties and preserve every remaining typed prerequisite.
+Consequently the recursive property comparison and real FE caller succeed without inserting C's outer sequences into H's validity-root set.
+
+This proof is direct in sparse H.
+The separate reified H′ receipts are experimental discriminators only: no fact is imported from H′, no installed component is deleted, and no cross-context comparison transfer is assumed.
+The [permanent research controls](../test/research/re01/original-property-projection.test.ts) now complete both identity/copied two-node forests with the same member count and no C rows or S roots.
+They preserve raw/reified EDC failure, genuine C consumption, lineage/fresh/source-absence guards, private-view authentication and active/outside collision nonshadowing.
+The [reader boundary controls](../test/research/re01/original-property-reader-boundaries.test.ts) retain Γ versus H scalar-failure ownership, empty/simple boundaries and inclusive exact/one-below sticky cached-read accounting.
+
+The collision identity forest itself is legal and complete: a real fresh H particle can have a source mapper's private generated ID while a different term.
+Its identity success is not an existing shadowing bug, because actual views remain foreign to H; the new reader conservatively declines that case.
+No universal private-name allocator, arbitrary selected-layout translation, consumed-wrapper coverage or general SOME-forest theorem follows.
+The next theorem for the present finite-verifier route is still composition into some authentic executable forest for every completely qualified Q_f actual assessment, or an independently justified alternative reconstruction.
+Dated correspondence, complete search/negative bounds, mathematical termination and full #234/#232 acceptance remain open; B-v1, the seven accepted packages and P1/F2 are preserved.
 
 #### External methods and applicability
 

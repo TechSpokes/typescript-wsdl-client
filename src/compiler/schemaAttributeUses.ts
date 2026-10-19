@@ -39,11 +39,11 @@ export type SourceAttributePlan = Readonly<{
   declarations: readonly DeclarationReceipt[];
 }>;
 export type AttributeFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'unsupported-capability' | 'unresolved'; rule: string; component: NodeId; source?: SyntaxSource; contextId?: string; message: string}>;
-export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2' | 'AU01-C1-raw-properties-v1'; value: SourceAttributePlan;
+export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2' | 'AU01-C1-raw-properties-v1' | 'AU01-C1-original-properties-v1'; value: SourceAttributePlan;
   obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}> | AttributeFailure | ResourceLimitFailure;
 type Container = ComplexTypeNode | Extract<GraphNode, {kind: 'attributeGroup'}>;
 type AttributeRole = 'source' | 'raw';
-type AttributeMode = 'container' | 'standalone' | 'properties';
+type AttributeMode = 'container' | 'standalone' | 'properties' | 'original-properties';
 type DeclarationFact = Readonly<{
   receipt: DeclarationReceipt; value: TypedAttributeConstraint | undefined;
   scalarObligations: readonly ScalarObligation[];
@@ -93,6 +93,14 @@ export function assessRawAttributeUses(context: SemanticContext, ownerId: NodeId
  */
 export function readRawAttributeProperties(context: SemanticContext, ownerId: NodeId): AttributeResult {
   return rawResult(context, assessAttributeUses(context, ownerId, 'raw', 'properties'));
+}
+
+/** Fixed original AU data, with individual facts checked in the current context.
+ * The original-properties authority is conditional on authentic Γ mapping/source
+ * qualification, supplied by the whole actual assessment, never an H aggregate receipt.
+ */
+export function readOriginalAttributeProperties(context: SemanticContext, ownerId: NodeId): AttributeResult {
+  return rawResult(context, assessAttributeUses(context, ownerId, 'raw', 'original-properties'));
 }
 
 function rawResult(context: SemanticContext, result: AttributeResult): AttributeResult {
@@ -314,9 +322,23 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         if (failure) problem(item.source, failure.rule, failure.message);
       };
       if (role === 'raw') {
-        if (root.kind === 'attributeGroup' || mode === 'properties') {
+        if (root.kind === 'attributeGroup' || mode === 'properties' || mode === 'original-properties') {
           const group = root.kind === 'attributeGroup';
-          const raw = group ? context.rawAttributeGroupProperties(root.id) : context.rawTypeProperties(root.id);
+          let raw: Readonly<{attributeUses: readonly NodeId[]; wildcard?: AttributeWildcard}> | undefined =
+            group ? context.rawAttributeGroupProperties(root.id) : context.rawTypeProperties(root.id);
+          let projected = false;
+          if (!raw && mode === 'original-properties' && context.originalComplexPropertySource(root.id)) {
+            const actual = context.originalContext(), source = assessSourceAttributeUses(actual, root.id);
+            if (source.kind !== 'checked') throw new AttributeAbort(source.kind === 'resource-limit' ? source
+              : Object.freeze({...source, contextId: source.contextId ?? actual.contextId}));
+            typeDependencies.add(source.typeDependencies);
+            for (const item of source.scalarObligations) {
+              charge(6 + item.rule.length + item.component.length + actual.contextId.length);
+              scalarObligations.push(Object.freeze({...item, contextId: item.contextId ?? actual.contextId}));
+            }
+            charge(3 + source.value.uses.length);
+            raw = {attributeUses: source.value.uses.map(item => item.id), wildcard: source.value.wildcard}; projected = true;
+          }
           if (!raw) return problem(root, group ? 'raw-attribute-group-properties' : 'raw-type-properties', 'Complete literal attribute properties are required', 'unresolved');
           charge(2); const local: OriginalAttributeUse[] = [];
           for (const id of raw.attributeUses) {
@@ -325,14 +347,16 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
             const mapped = use(item)!; charge(); local.push(mapped);
           }
           const uses = checkUses(local, root), wildcard = raw.wildcard;
+          if (projected && wildcard) for (const id of wildcard.sources) {charge(); get(id);}
           if (wildcard && (!['strict', 'lax', 'skip'].includes(wildcard.processContents) || !namespaceExpressible(wildcard.namespace, charge)))
             return problem(root, 'cos-aw-union/intersect', 'Literal group wildcard has invalid component properties');
           charge(15 + uses.length + declarationEvidence.size + scalarObligations.length);
           const value = Object.freeze({owner: root.id, uses, attributes: presence(uses, root), wildcard,
             schemaOperands: uses, declarations: Object.freeze([...declarationEvidence.values()])});
           return Object.freeze({kind: 'checked' as const, contextId: context.contextId,
-            authority: mode === 'properties' ? 'AU01-C1-raw-properties-v1' as const : 'AU01-C1-raw-v2' as const,
-            value, obligations: Object.freeze(group ? ['aggregate-group-validity', 'raw-group-property-correspondence'] : ['aggregate-type-validity', 'raw-type-property-correspondence']),
+            authority: projected ? 'AU01-C1-original-properties-v1' as const : mode !== 'container' ? 'AU01-C1-raw-properties-v1' as const : 'AU01-C1-raw-v2' as const,
+            value, obligations: Object.freeze(group ? ['aggregate-group-validity', 'raw-group-property-correspondence']
+              : projected ? ['aggregate-type-validity'] : ['aggregate-type-validity', 'raw-type-property-correspondence']),
             scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
         }
         const sameType = (a: SemanticTypeReference, b: SemanticTypeReference, owner: GraphNode): boolean => {

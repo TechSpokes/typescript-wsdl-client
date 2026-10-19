@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): read guarded original scope properties in the current context without installing synthetic validity roots.
+
 - fix(re01): forward scalar and mixed-content prerequisites from particle extension to their exact construction owners.
 
 - fix(re01): compare scalar and complex component properties without manufacturing full type-validity duties.
