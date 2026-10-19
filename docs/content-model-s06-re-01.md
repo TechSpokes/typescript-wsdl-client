@@ -3119,26 +3119,32 @@ The fixed-point existence argument is the classical [Knaster–Tarski theorem](h
 Let Jₙ be the nonprimitive subset of J and define an auxiliary optimistic projection:
 
 ```text
+F_gen(c,ℓ) = { d ∈ F(c,ℓ) ∩ Jₙ | P_d ≠ Γ_d }
 R(A) = { j ∈ Jₙ | ∃c ∈ Cand(j), ∃ℓ.
-                 L(c,ℓ) ∧ (F(c,ℓ) ∩ Jₙ) ⊆ A }
+                 L(c,ℓ) ∧ F_gen(c,ℓ) ⊆ A }
 D = Jₙ \ μR
 K = J \ D
 ```
 
-R ignores primitive truth only for this auxiliary construction; it is neither a semantic interpretation nor a positive test.
-Its finite frontiers make μR the union of finite iterations, equivalently finite well-founded derivability for the projected rules, without any implementation-coverage claim.
+Here P_d is d's exact owning context and Γ_d its immutable actual context.
+Only the auxiliary premise frontier drops primitive duties and duties owned by actual Γ; R's domain still contains every nonprimitive target, including actual Γ targets.
+No actual obligation becomes automatically true: each conclusion still needs its own candidate and all retained generated premises.
 
-Every locally qualified candidate for j in D has a nonprimitive frontier member in D.
-Otherwise all its finitely many nonprimitive premises would have finite R derivations; grafting those derivations beneath the candidate would derive j, contradicting j outside μR.
+This optimism is neither a semantic interpretation nor a positive test.
+Full N, V, the postfixed supports and actual assessment retain every original-context duty unchanged.
+R's finite frontiers make μR the union of finite iterations, equivalently finite well-founded derivability for the projected rules, without any implementation-coverage claim.
+
+Every locally qualified candidate for j in D has a retained generated nonprimitive frontier member in D.
+Otherwise all its finitely many F_gen premises would have finite R derivations; grafting those derivations beneath the candidate would derive j, contradicting j outside μR.
 Thus N maps subsets of K into subsets of K, and K contains every primitive judgment.
 
 Let S⁺ be the greatest fixed point of N on subsets of J, and S⁻ the greatest fixed point of its restriction to subsets of K.
 Because N preserves K, S⁻ is also a fixed point of the unrestricted N; both therefore reconstruct the full candidate equations.
 No claim about the least full-N model is required.
 
-The universal renewal no-sink proof survives the optimistic primitive projection: every forcing step uses Q-free raw ranges/mappings, QName identity, affiliation methods/block and mandatory ancestry through z:X.
-Every such candidate closure still contains a structurally nonprimitive proper extension before exact B, irrespective of primitive truth.
-A finite R derivation would have a terminal candidate with no nonprimitive child, contradicting that hereditary invariant over all candidates, not only the explicit recipe.
+The universal renewal no-sink proof survives both optimistic projections: every forcing step uses Q-free raw ranges/mappings, QName identity, affiliation methods/block and mandatory ancestry through z:X.
+Every such candidate closure still contains a structurally nonprimitive proper extension before exact B, fresh relative to immutable Γ and owed in the newly generated context.
+That duty is never removed from F_gen, so a finite R derivation would have a terminal candidate with no retained generated nonprimitive child, contradicting the hereditary invariant over all candidates, not only the explicit recipe.
 The original root is therefore in D and absent from S⁻.
 
 For S⁺, take the exact Cᵢ family and the separate actual-X root, augmented by every primitive own-Q judgment in each complete consumed closure, including actual Γ.
@@ -3158,7 +3164,9 @@ Every accepted complete finite certificate also has finite postfixed support P f
 Collect every own-Q in each checked actual/hypothetical closure: supplied nonprimitive children provide their candidate witnesses, while primitive members use exact same-context epsilon witnesses.
 All inherited fresh roots required by those epsilon candidates are already roots of that context's complete B-v1 closure; original typed dependencies retain their original contexts.
 
-After projecting primitive duties, the certificate's finite nonprimitive child DAG gives finite R derivations for every nonprimitive member of P.
+After projecting primitive and Γ-owned premise duties, every retained generated nonprimitive dependency follows the certificate's finite child DAG.
+Each nonprimitive member of P, including each actual Γ target, has its supplied candidate and hence a finite R derivation through those retained children.
+This argument does not assume that dependencies owned by Γ are acyclic; they remain in the full postfixed support while the auxiliary derivation ignores their back-support.
 Hence P is disjoint from D and lies in K; postfixedness places it in both S⁻ and S⁺.
 Legal primitive component cycles therefore retain their accepted finite positives without becoming construction-proof backedges or requiring a least-model interpretation.
 Necessary-local-contradiction negatives, including the trapped exact-vacuous consumer, hold in both models.

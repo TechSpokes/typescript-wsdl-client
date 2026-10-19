@@ -8,6 +8,7 @@ The [global formal-model continuation](content-model-s06-re-01.md#global-formal-
 It separates every own clause 1.5 from full component validity, retains exact mathematical context/operand identities and quantifies local choice plans with complete finite positive frontiers, including primitive duties.
 Uniform selected B-v1 applies to every consumed contextual clause, not only the root; no independent nested Q_raw is substituted.
 An auxiliary optimistic nonprimitive projection gives a hereditary exclusion set containing renewal; this projection is not a semantic truth rule.
+It drops primitive and actual-Γ-owned duties only from auxiliary premise frontiers; every nonprimitive target remains in its domain, and full validity and actual assessment retain all original-context duties.
 The unrestricted greatest candidate model and the greatest model outside that set both satisfy the full candidate equations, accepted conditional primitive rules and finite-certificate positives, yet disagree on renewal and complete actual assessment.
 Their construction preserves legal finite primitive component cycles without asserting that the least full-candidate model preserves every accepted positive; reconstruction does not make every candidate or original schema valid.
 Primitive approval excludes some other candidate-equation models; the result proves that it and the accepted finite-positive rules do not distinguish between these two models.
