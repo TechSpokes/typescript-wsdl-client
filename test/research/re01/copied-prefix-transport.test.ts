@@ -71,6 +71,7 @@ describe('copied-prefix transport and an optional-prefix reconstruction bypass',
       expect(compareComponentProperties(context, derived.element, original.element)).toMatchObject({kind: 'checked', value: true});
       expect(checkTypeDerivation(context, declaredType(context, derived.element), declaredType(context, original.element), ['extension', 'list', 'union']))
         .toMatchObject({kind: 'checked', value: false});
+      expect(checkParticleRestriction(context, view(d.id), view(a.id))).toMatchObject({kind: 'checked', value: false});
       expect(checkRawParticleExtension(context, content(eId), content(a.id))).toMatchObject({kind: 'checked', value: true});
       expect(checkParticleRestriction(context, view(d.id), view(eId))).toMatchObject({kind: 'checked', value: mode !== 'original'});
       expect(checkComponentConstruction(context, eId)).toMatchObject({kind: 'checked', obligations: [], re01: {primitive: true}});

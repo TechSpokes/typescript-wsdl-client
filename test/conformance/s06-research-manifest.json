@@ -2261,7 +2261,7 @@
         {
           "path": "test/research/re01/copied-prefix-transport.test.ts",
           "role": "reference",
-          "sha256": "2cf4985eb738c4a3604d66e1954577eb4e5174a2fb48e066b4d4a7163cddcf16"
+          "sha256": "5f5fbe2712868c4a42f68804ef923a1b97044124e41a1baa27d9a6054ccba61b"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/copied-prefix-anonymous-types.xsd",
