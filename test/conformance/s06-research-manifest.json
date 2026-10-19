@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "ad515eb4dacad0c5422886abcc3cd9dad1339ce9a671e500908110f0528c8790",
+          "sha256": "32c6f58d0d02f84db3834771b384207408a512637633bde8085854b0f35d70a7",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticContext.ts",
           "role": "semantic-source",
-          "sha256": "c8d609e678e645f3ff2947efa119f237c6795cf1483e6b335868936bf166ff5b"
+          "sha256": "51214885afeba17eeb829bbdc66fbb068714b421640909309a902452115f520b"
         },
         {
           "path": "src/compiler/wildcardAlgebra.ts",
@@ -2312,6 +2312,21 @@
           "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-identity-read.xsd",
           "role": "fixture",
           "sha256": "f791680a89d6f7fcc01933af4f1eaec70236ed0e8dd914d8626e4b18a3b2c479"
+        },
+        {
+          "path": "test/research/re01/late-original-properties.test.ts",
+          "role": "reference",
+          "sha256": "2a9a19adaad279654b96265e51bee9a6d3db89f4b39aa52735b433de71cb5558"
+        },
+        {
+          "path": "test/conformance/reference/re01-late-original-properties.test.ts",
+          "role": "reference",
+          "sha256": "a4bf243e113f4cdb5ef8b50765fd6ab58672b4898ce2cf309588d18f2bc60210"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/late-original-complex-properties.xsd",
+          "role": "fixture",
+          "sha256": "218a84a255db16b2fa2f31fc7860d596c06c6322864127fc6e00eddd6d2e2b23"
         }
       ]
     },
