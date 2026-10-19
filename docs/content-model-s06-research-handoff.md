@@ -4,6 +4,19 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [global formal-model continuation](content-model-s06-re-01.md#global-formal-models-and-renewal-nonentailment) translates the explicitly stated B-v1 candidate equations in both directions and constructs two models satisfying the additional accepted rules, using the accepted complete local inventory.
+It separates every own clause 1.5 from full component validity, retains exact mathematical context/operand identities and quantifies local choice plans with complete finite positive frontiers, including primitive duties.
+Uniform selected B-v1 applies to every consumed contextual clause, not only the root; no independent nested Q_raw is substituted.
+An auxiliary optimistic nonprimitive projection gives a hereditary exclusion set containing renewal; this projection is not a semantic truth rule.
+It drops primitive and actual-Γ-owned duties only from auxiliary premise frontiers; every nonprimitive target remains in its domain, and full validity and actual assessment retain all original-context duties.
+The unrestricted greatest candidate model and the greatest model outside that set both satisfy the full candidate equations, accepted conditional primitive rules and finite-certificate positives, yet disagree on renewal and complete actual assessment.
+Their construction preserves legal finite primitive component cycles without asserting that the least full-candidate model preserves every accepted positive; reconstruction does not make every candidate or original schema valid.
+Primitive approval excludes some other candidate-equation models; the result proves that it and the accepted finite-positive rules do not distinguish between these two models.
+
+Thus the formalized contract entails neither that root nor its negation; this strengthens the earlier displayed-chain countervaluation without selecting either model as independent normative truth.
+No full-XSD ambiguity, semantic positive/nonexistence, general undecidability or new policy is inferred.
+The next concrete gate is an independently justified dated-semantic principle distinguishing these models, with correspondence to the complete B-v1 predicates before implementing a general algorithm.
+
 The [exact-vacuous ground investigation](content-model-s06-re-01.md#exact-vacuous-extension-ground-fails-with-a-retained-consumer) refutes an unconditional success rule for a pure U→B→A extension chain, even when all three types share exact content/AUs and every parent local premise qualifies.
 A retained consumer requires exact M; every U rebase removes M from effective(H), and no finite additions can repair the missing QName.
 A complete original-X positive and a complete two-node contrast changing only M's original declared type to exact B distinguish this fixed-parent semantic obstruction from general witness nonexistence.
@@ -20,10 +33,10 @@ For the exact mathematical local-construction operator Φ with finite child fron
 Neither fixed point is identified with independent semantic success, and no productive finite trace, cyclic storage acceptance, semantic positive or no-witness conclusion follows.
 Configured resource limits remain separate engineering limits, never a premise of the mathematical separation.
 
-The next concrete proof obligation is a semantic soundness theorem for a finite symbolic guarded proof of this exact renewing system, including complete reconstruction of every finite context and inherited duty.
-The attempted uniform proof establishes qᵢ₊₁⇒qᵢ and q₀⇒q_X, but supplies no base q value or independently justified simultaneous-validity introduction; the all-false countervaluation concerns only that displayed inference, not full B semantics.
+The attempted uniform proof establishes qᵢ₊₁⇒qᵢ and q₀⇒q_X but supplies no independently justified simultaneous-validity introduction.
+The global formal-model result above now proves nonentailment for the entire stated predicate contract rather than only that displayed inference; an independently sound guarded proof would require the missing semantic principle and complete reconstruction of each finite context.
 An existential representative quotient or guarded proof alternative remains unrefuted but needs sound extraction/reconstruction and semantic inference, rather than deleting inherited roots inside exact children.
-The exact-vacuous counterexample refutes the unrestricted ground, while a narrower theorem for the renewal family's replaceable support remains open.
+The exact-vacuous counterexample refutes the unrestricted ground; a narrower renewal-specific positive cannot follow from the audited formalized constraints alone and would require the independent distinguishing semantic principle.
 This is an unresolved proof obligation under the selected domain, with no new policy or approval request.
 
 The [copied-prefix continuation](content-model-s06-re-01.md#copied-prefix-transport-and-optional-prefix-bypass) refutes unconditional comparison transport from property-equal prefix copies under accepted B-v1 identity, while preserving complete alternative witnesses for the displayed optional-prefix case.
