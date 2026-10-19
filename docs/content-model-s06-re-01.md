@@ -19,6 +19,7 @@ The [late-property continuation](#late-reification-of-untouched-original-complex
 It separates a failed eager-installation transformation from the still-open goal of finding some executable forest for every successful Q_f assessment.
 The [scope-property continuation](#scope-property-reads-and-validity-dependencies) repairs another concrete false negative by separating AU/identity property reads from full scope validity.
 The [scalar-property continuation](#scalar-selectors-and-simple-content-property-reads) lifts a scoped active-facet normalization and repairs candidate simple-content equality without changing actual-source normalization or genuine type validity.
+The [complex-reference continuation](#complex-property-references-and-full-construction) completes that property-role boundary for distinct complex references, retaining independently consumed type validity.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -3620,6 +3621,58 @@ The [independent source/reference controls](../test/conformance/reference/re01-s
 This is a property-role repair and a scoped recipe normalization theorem, not failure or proof of existential SOME-forest coverage.
 The next theorem for the present finite-verifier route is composition: some faithful finite encoding of every complete Q_f semantic assessment must publish only its genuine semantic frontier or duties supplied in the same Γ/parent forest inventory.
 Genuine declared/base/full-C roles, other publisher paths, complete search, input-derived negatives and mathematical termination remain separate obligations; no request-budget/sticky-failure contract, production selector or API version changes here.
+
+#### Complex property references and full construction
+
+The follow-up composition audit checks the [equality owner's](../src/compiler/schemaComponentEquality.ts) sole real caller, Particle Valid (Extension).
+The comparison establishes component properties and leaves component validity pending; recursively reading a complex reference does not itself require full validity of that referenced component.
+Genuine declared types and bases remain required independently by the full construction closure, and every actual-relative fresh component remains a mandatory root.
+
+| Equality entry | Property being read | Independent validity boundary |
+| --- | --- | --- |
+| Prefix declaration's complex type | Complete type properties | Actual particle/declaration closure retains the genuinely declared type |
+| Element or attribute scope | Owner properties | Owner membership/cycle checks do not promote full scope validity |
+| Compared complex scope's base/content | Recursive component properties | Could be outside genuine prefix construction closure |
+| Effective AU set | AU/declaration/scalar properties | Existing property owner qualifies all supplied uses |
+| Scalar content and typed values | Exact scalar properties and operands | Scalar, value and imported AU prerequisites remain required |
+| Fresh helper component | Supplied properties | Mandatory fresh-root validity remains required independently |
+
+Original complex bases are QName-named globals or builtins, so successful original-base comparisons cannot select two distinct globals with equal names: complete global identity uniqueness forces the same record.
+That useful fact does not cover anonymous types reached through the content of an otherwise property-read scope.
+The old owner published such distinct complex references as full hypothetical validity duties before recursively comparing their properties.
+
+The [authentic nested source](../test/conformance/fixtures/xsd/recovery/property-reference-nested-independent.xsd) has twenty source/local-qualified represented records.
+Original Left/Right elements own C1/C2, each containing an inner element with a distinct anonymous type U1/U2 extending R, plus a local a:string AU.
+Both actual U duties have separate existing-B proofs; X is the remaining actual nonprimitive duty.
+
+The X parent uses the optional-FA/empty-FR/empty-FT geometry above, with fresh D1/D2 borrowing the C1/C2 AUs.
+Its genuine construction closure excludes U1/U2; property equality alone traverses the borrowed AU scopes, their inner declarations and the anonymous U1/U2 properties.
+The identity-prefix forest already completed four nodes, retaining both actual Γ-U proofs and all inherited fresh roots.
+The copied prefix's FE local check, equality and correspondence passed, but the old aggregate required extra hypothetical U proofs.
+
+That old prescribed parent has a fixed obstruction: any U1 child changes U1's immediate method from extension to restriction, while exact U2 stays extension.
+Inherited fresh FE still forces the same copied declaration comparison, which then fails method-property equality.
+Arbitrary finite additions cannot change those retained identities, fields or mandatory root duties.
+This is a fixed-parent obstruction to the unnecessary published duty, not failure of the successful identity alternate or existential SOME-forest coverage.
+
+The coherent repair keeps authenticated complex lookup and complete paired property recursion but publishes no full validity solely from a complex `typeReference` comparison.
+The full construction driver still follows genuine particle/declaration/type and base references in their exact owning contexts.
+Scalar `typeOperand`, scalar/facet/value formation, imported AU prerequisites, actual source normalization and the aggregate verifier remain unchanged; no global dependency filter is introduced.
+
+The audit also checked AU backtracking rather than assuming discarded states had no effect.
+Its collectors are shared across states, but the AU owner requires every same-QName use in a qualified complex set to have the same exact declaration identity.
+Every possible matching for that QName therefore compares the same declaration pair; required/kind/value mismatches fail before its queued scope traversal, and a successful matching processes that pair or an already-seen recurrence.
+Rejected matching states consequently introduce no alternative complex-scope pair outside the successful recursive property graph under these premises.
+This limited complex-reference argument is not a general scalar-obligation discard theorem, and no AU collector change follows.
+
+The [committed caller controls](../test/research/re01/property-type-references.test.ts) now complete both identity and copied four-node forests.
+A fresh declaration genuinely typed U1 still fails without its H-specific proof and completes five nodes when that proof is supplied alongside both actual Γ proofs.
+The copied-prefix plus genuinely required U1 child still rejects retained FE after the method changes; it does not submit an unused proof branch merely to trigger the negative.
+The [independent source/reference controls](../test/conformance/reference/re01-property-type-references.test.ts) pin nested anonymous scopes, exact shared named ancestry and local-instance legality without deciding hypothetical RE01 truth.
+
+This closes pure complex-reference publication in this property owner, not every scalar/value owner or every local-plan composition rule.
+For the present finite-verifier route, global semantic-frontier inclusion and SOME-forest representation still need their combined proof before complete search, negative bounds or mathematical termination can follow.
+The selected Q_f definition, dated-correspondence gate, B-v1 geometry, all seven accepted packages and P1/F2 remain unchanged.
 
 #### External methods and applicability
 

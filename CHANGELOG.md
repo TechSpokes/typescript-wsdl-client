@@ -9,7 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-- fix(re01): compare candidate scalar content properties without importing complex facade formation.
+- fix(re01): compare scalar and complex component properties without manufacturing full type-validity duties.
 
 - fix(re01): compare complete scope properties without importing unrelated type-validity roots.
 

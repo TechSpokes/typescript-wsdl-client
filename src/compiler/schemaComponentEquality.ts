@@ -96,16 +96,16 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
     };
     const typeReference = (state: State, x: SemanticTypeReference, y: SemanticTypeReference, owner: NodeId): boolean => {
       const left = typeIdentity(x), right = typeIdentity(y);
-      // Exact complex identity is a property fact, not another full validity root.
+      // Complex references select properties; full validity belongs to construction.
       if (left.kind === 'component' && right.kind === 'component' && left.node === right.node && left.node.kind === 'complexType') return true;
-      charge(6); typeDependencies.add([{contextId: context.contextId, type: left.identity}, {contextId: context.contextId, type: right.identity}]);
-      if (left.kind === 'builtin' && right.kind === 'builtin')
-        return textEqual(left.name.namespace, right.name.namespace) && textEqual(left.name.local, right.name.local);
-      if (left.kind === 'builtin' && left.name.local === 'anyType' || right.kind === 'builtin' && right.name.local === 'anyType') return false;
       if (left.kind === 'component' && left.node.kind === 'complexType' || right.kind === 'component' && right.node.kind === 'complexType') {
         if (left.kind !== 'component' || right.kind !== 'component' || left.node.kind !== 'complexType' || right.node.kind !== 'complexType') return false;
         enqueue(state, {kind: 'node', a: left.node, b: right.node}); return true;
       }
+      charge(6); typeDependencies.add([{contextId: context.contextId, type: left.identity}, {contextId: context.contextId, type: right.identity}]);
+      if (left.kind === 'builtin' && right.kind === 'builtin')
+        return textEqual(left.name.namespace, right.name.namespace) && textEqual(left.name.local, right.name.local);
+      if (left.kind === 'builtin' && left.name.local === 'anyType' || right.kind === 'builtin' && right.name.local === 'anyType') return false;
       enqueue(state, {kind: 'scalar', a: x, b: y, owner}); return true;
     };
     const scope = (node: ElementNode | AttributeNode): GraphNode | 'global' | undefined => {

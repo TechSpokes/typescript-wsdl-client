@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "8e9278b99e05e313667a2e9b8e76b54edb5574a0a57c585548aeba5ee7df8741",
+          "sha256": "82178056e78882591a65077b70f0ad02583046662f4a1d3665513e2ecc5ffdf7",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1156,7 +1156,7 @@
         {
           "path": "src/compiler/schemaComponentEquality.ts",
           "role": "semantic-source",
-          "sha256": "68db58a9859934b35ec1c6892dd7b46f6648cf66d9becc4da5c159a14dc0fa39"
+          "sha256": "a59b47ed836dd3c50314f8aeb0ba200eda138ad036cbfd919cf51ec0d1629c16"
         },
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
@@ -2357,6 +2357,21 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-content-property-independent.xsd",
           "role": "fixture",
           "sha256": "7432dd37c7b70b8d1fd01b6c2b8ebe2c2356698ec920c47da7180f1400ba7b49"
+        },
+        {
+          "path": "test/research/re01/property-type-references.test.ts",
+          "role": "reference",
+          "sha256": "986b0c62b2300a631cdc3066a5c98219d403bf655e49aa971ba4b29ff04e42c5"
+        },
+        {
+          "path": "test/conformance/reference/re01-property-type-references.test.ts",
+          "role": "reference",
+          "sha256": "83498893a81f342040d375611d0cf3e953656bc6b797b4b7c0e36e39bf8b2d69"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-reference-nested-independent.xsd",
+          "role": "fixture",
+          "sha256": "d54fa75669d266e2937bb42d57e94d585d5e1e446faefc9efe27aa495ad1fe91"
         }
       ]
     },
