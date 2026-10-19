@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): prove global formal-model nonentailment and delimit algorithm applicability for renewing helpers.
+
 - test(re01): refute an unconditional exact-vacuous extension ground with a complete stable-membership contrast.
 
 - test(re01): expose renewing helper duties and separate finite evidence from local productivity.

@@ -9,6 +9,8 @@ The [domain and proof checkpoint](#architecture-recovery-domain-and-proof-checkp
 
 The [finite flat-prefix criterion](#any-nonempty-finite-flat-prefix-of-optional-local-elements) generalizes the sufficient inherited-consumer obstruction, and the [copied-prefix continuation](#copied-prefix-transport-and-optional-prefix-bypass) separates failed comparison transport from successful alternative witnesses.
 The [renewing-helper investigation](#renewing-helper-duties-and-the-finite-evidence-boundary) establishes a locally productive family with no finite certificate under the existing direct-only primitive rules, without identifying local productivity with independent semantic success.
+The [global formal-model continuation](#global-formal-models-and-renewal-nonentailment) gives a two-way translation of the explicit B-v1 predicate contract and proves that its models disagree on renewal.
+This formal nonentailment does not select an independent normative verdict or supply a complete decision algorithm.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -2881,7 +2883,7 @@ Such a quotient or a guarded proof mechanism still needs sound extraction/recons
 
 The accepted domain permits investigating additional sufficient grounds rather than treating the current direct-only rule as complete.
 The [following exact-vacuous counterexample](#exact-vacuous-extension-ground-fails-with-a-retained-consumer) refutes an unconditional ground based on U→B→A and exact content/AU equality, even when every parent local premise passes.
-A narrower renewal-specific theorem remains open and must account for replaceable support and every B-v1 ambient contextual duty.
+A narrower renewal-specific theorem must account for replaceable support and every B-v1 ambient contextual duty; the [global formal-model result](#global-formal-models-and-renewal-nonentailment) below shows that a positive ground cannot follow from the audited formalized constraints alone.
 
 #### Controls and next concrete proof obligation
 
@@ -2995,6 +2997,203 @@ A representative quotient needs sound extraction/reconstruction as well, and a q
 This investigation proves neither renewal-specific semantic success nor semantic nonexistence, general evidence inadequacy or impossibility of a complete procedure.
 General coverage, input-derived bounds or an equivalent terminating negative criterion, mathematical termination and full #234/#232 acceptance remain open.
 All seven recovery packages, B-v1, finite-evidence-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands, configurable sticky budgets and later #179/#153/#184 ownership remain unchanged.
+
+### Global formal models and renewal nonentailment
+
+This proof continuation starts at main `df0aa13e38eb7352344ce4f1e2f21a4fb3050761`, tree `26e95d332f86e8038e641e9cca59a0b9f3cc4f0b`.
+Its scope is the explicitly stated B-v1 finite-candidate/schema-construction predicate contract, under the accepted local authorities and input qualifications.
+It translates the full candidate equations in both directions and constructs two models satisfying the additional accepted primitive and finite-positive rules, rather than merely a postfixed trace for one recipe.
+
+#### Exact judgments and the two validity sorts
+
+Fix any admitted immutable actual Γ, without assuming its pending RE01 obligations.
+Let J contain every applicable contextual own clause-1.5 judgment `(Γ,P,T,A)`, including direct primitive judgments, over all permitted finite coherent parents P, with exact target T, designated ancestor A, component maps, ordered incidence, source/QName bindings, original typed operands and generated-slot bindings.
+The disjoint union over admitted Γ gives the full judgment universe; it is a set of finite encoded records, not an infinite candidate object or a set of runtime allocation events.
+
+The [selected contextual contract](#quantified-claim-and-candidate-families) applies B-v1 uniformly to every consumed clause-1.5 obligation, including fresh helpers and inherited children.
+The theorem assumes that uniform interpretation, rather than root-only B followed by an independent opaque Q_raw for nested checks.
+This scopes the formalization to the selected project contract; it does not assert that unmodified XSD prose mandates that selection.
+
+Opaque context IDs, caches, evidence storage labels and engineering budgets are absent from these semantic records.
+Duplicate handles with the same exact maps and bindings present one mathematical context; this neither renames component identities nor deletes or merges inherited helpers.
+All original/source domains, scalar contexts and negative lookups remain explicit data.
+
+Q(j) denotes the bare own clause-1.5 property; V(H,R) denotes full validity of roots R and their consumed component closure in exact H.
+The accepted direct epsilon ground establishes a primitive component's own clause only after its other required premises; it does not assign that clause unconditional truth when a consumed duty fails.
+Simple-base extension clause 2 has no clause-1.5 duty.
+
+Complete actual assessment is separate: original source/local qualification in Γ conjoined with every original Q obligation, including primitive ones.
+Original X(Γ) is not assumed initially or inserted into each candidate merely because it is available.
+A genuine original-operand dependency retains its exact owning context rather than borrowing validity into H.
+
+#### Complete predicate and polarity audit
+
+The proof uses the [accepted complete local inventory](content-model-s06-re-01-resolver-implementation.md#complete-268-rule-inventory) and aggregate particle/construction owners, including all selected AU/scalar/source rules.
+It does not infer local completeness from implementation receipts, finite-verifier coverage flags or code discovery alone.
+Missing authentic properties, metadata and accepted external prerequisites remain input qualifications, not false local predicates or negative Q facts.
+
+The pinned dated Structures XML SHA-256 remains `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+The following audit identifies all relevant ways the formalized schema-construction constraints can consume Q.
+
+| Accepted predicate family | Primary or accepted authority | Dependence on Q |
+| --- | --- | --- |
+| Complex extension 1.5 | `cos-ct-extends`, pinned lines 4070–4084 | Positive own clause |
+| Complex derivation relation | `cos-ct-derived-ok`, 4277 onward | Raw identity, bases, methods and exclusions only |
+| Affiliation and effective members | `e-props-correct.4`; `cos-equiv-derived-ok-rec`; `cos-equiv-class` | Raw relations/filtering; consumed validity remains positive |
+| Particle extension/restriction, UPA and EDC | Accepted particle/attribution authorities | Raw fields, ranges, names and identities |
+| AU, defaults, scalar/facet and source rules | Complete accepted local inventory | Q-free local conditions; full type duties remain positive |
+| Required component closure | Structures 5.1, 8816–8844; B-v1 root policy | Finite conjunction of consumed clauses |
+
+The `cd-ct-extension` term is defined at pinned line 4106 but has no downstream term-reference use importing clause 1.5 into another relation.
+In particular, “validly derived” in declaration and particle clauses explicitly invokes the raw complex/simple derivation relations, not full V or a recursive RE01 search.
+Negative membership/lookups and first-success scalar tests are Q-free; an invalid component cannot be skipped as a false Q alternative.
+
+Complete declared affiliation enumeration precedes effective filtering, so blocked or abstract members retain their positive legality duties.
+Structures 5.1 requires recursive property-value component constraints plus source/schema-representation conditions and identifies these as the defined schema-construction error kinds.
+Legal property-reference cycles close one finite component conjunction; a generated successor context is not such a property edge.
+
+#### Local choices and exact finite frontiers
+
+For a finite geometric candidate c, let ℓ record its semantic local choices, including coherent implicit-group enumerations, particle mappings and permitted AU alternatives.
+Candidate geometry and branch guards depend on exact records rather than Q truth; ℓ is not a finite RE01 proof.
+Q-free scalar conditions retain their complete mathematical value/alias quantifiers without enumerating them as Q obligations.
+
+L(c,ℓ) asserts every Q-free correspondence, source and local premise.
+F(c,ℓ) is exactly the finite set of all own clause-1.5 obligations in the complete required closure, including primitive ones, with each subject and context retained.
+The roots are E, the coherent endpoint and every fresh component relative to immutable Γ, including inherited additions; unrelated original availability does not create hypothetical validity duties.
+
+The local plan parameter avoids replacing existentially valid alternatives by an unjustified larger dependency inventory.
+Failed exploratory branches do not add semantic duties unless those components are already mandatory roots or property/predicate dependencies.
+All mandatory incoming declarations and original typed operands remain in the appropriate closure regardless of the chosen mapping.
+
+For any interpretation S of all own-Q variables, full validity factors exactly as follows:
+
+```text
+V_S(c) ⇔ ∃ℓ. L(c,ℓ) ∧ F(c,ℓ) ⊆ S
+```
+
+Necessity extracts the choices and every required clause of a valid candidate.
+Sufficiency checks every Q-free condition by L and every own clause by S membership, thereby satisfying the entire finite required closure.
+No full V or pending Q is assumed to justify a local branch, and no primitive obligation is erased from F.
+
+#### Global operator and two-way model reconstruction
+
+Let Cand(j) contain every permitted finite B-v1 geometric candidate for j before full validity is assumed.
+It imposes no helper cap, source-only restriction or chosen renewal recipe.
+The accepted primitive family also permits the exact same-component epsilon candidate: its full closure retains its own Q and every other required duty.
+It changes no context, component or derivation edge, and every inherited fresh root remains required.
+Define N on subsets of J:
+
+```text
+N(S) = { j ∈ J | ∃c ∈ Cand(j), ∃ℓ. L(c,ℓ) ∧ F(c,ℓ) ⊆ S }
+```
+
+The stated semantic-success definition means a permitted finite candidate supplies the two derivation steps, correspondence and every applicable required predicate.
+Applying that definition and both directions of the full-validity factorization gives the global candidate equation Q=N(Q).
+This is an operator on exact judgments, distinct from the earlier operator on supplied construction nodes.
+
+N is monotone because eligibility, branch conditions, L and F are Q-independent and all Q occurrences are positive.
+It is finitary because each chosen finite candidate and plan has a finite frontier, even though the complete candidate universe can be infinite.
+Exact record-preserving presentation changes leave candidates, L and F invariant; if duplicate presentation labels are retained, their permutation commutes with N.
+
+For any fixed point S, interpret every own Q by membership in S and V by the finite-closure factorization.
+This faithfully reconstructs the defining equations and truth values of every translated component/source predicate and the actual-assessment conjunction, including all inherited roots and exact Γ contexts.
+It does not make every candidate or original schema valid: a candidate may have V false, and the original assessment result is not an initial premise.
+
+For j outside S there is no candidate with the required V under that interpretation, since S=N(S); conversely every model of these candidate equations restricts to a fixed point of N.
+This correspondence alone does not show that every fixed point obeys the additional accepted conditional primitive rules or finite-positive results.
+For example, mutually referring direct primitive components can have finite valid component closure even though neither can be introduced first by a rule demanding the other's prior own-Q truth.
+
+The two models constructed next satisfy those additional accepted rules as well, without adding a simultaneous primitive ground or claiming that the least fixed point of N preserves all accepted positives.
+This proof does not claim to formalize every runtime/conformance behavior or every possible independent reading of the normative phrase “possible to derive”.
+A proposed omitted condition must identify a concrete accepted predicate or independently justified derivability principle; unspecified additional meaning is not a failed occurrence or inventory proof.
+
+The [primitive approval](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6112070199) is a sufficient truth rule that excludes some candidate-equation fixed points; it establishes its own clause after its other premises, rather than full validity without those duties.
+The [accepted construction/evidence checkpoint](https://github.com/TechSpokes/typescript-wsdl-client/issues/266#issuecomment-6143144936) preserves finite-evidence-v1 while leaving semantic evidence adequacy to #234.
+Rejecting cyclic storage evidence therefore does not assert that every semantic success has a finite proof; the [semantic-success definition](#semantic-success-and-the-adequacy-question) distinguishes a finite environment from such proof.
+Selected F2 is a Q-free scalar predicate; the proof below shows that both specific models satisfy the primitive and finite-positive rules, and these accepted choices do not distinguish between them.
+
+#### A hereditary exclusion set and two greatest models
+
+The fixed-point existence argument is the classical [Knaster–Tarski theorem](https://msp.org/pjm/1955/5-2/pjm-v5-n2-p11-s.pdf).
+Let Jₙ be the nonprimitive subset of J and define an auxiliary optimistic projection:
+
+```text
+R(A) = { j ∈ Jₙ | ∃c ∈ Cand(j), ∃ℓ.
+                 L(c,ℓ) ∧ (F(c,ℓ) ∩ Jₙ) ⊆ A }
+D = Jₙ \ μR
+K = J \ D
+```
+
+R ignores primitive truth only for this auxiliary construction; it is neither a semantic interpretation nor a positive test.
+Its finite frontiers make μR the union of finite iterations, equivalently finite well-founded derivability for the projected rules, without any implementation-coverage claim.
+
+Every locally qualified candidate for j in D has a nonprimitive frontier member in D.
+Otherwise all its finitely many nonprimitive premises would have finite R derivations; grafting those derivations beneath the candidate would derive j, contradicting j outside μR.
+Thus N maps subsets of K into subsets of K, and K contains every primitive judgment.
+
+Let S⁺ be the greatest fixed point of N on subsets of J, and S⁻ the greatest fixed point of its restriction to subsets of K.
+Because N preserves K, S⁻ is also a fixed point of the unrestricted N; both therefore reconstruct the full candidate equations.
+No claim about the least full-N model is required.
+
+The universal renewal no-sink proof survives the optimistic primitive projection: every forcing step uses Q-free raw ranges/mappings, QName identity, affiliation methods/block and mandatory ancestry through z:X.
+Every such candidate closure still contains a structurally nonprimitive proper extension before exact B, irrespective of primitive truth.
+A finite R derivation would have a terminal candidate with no nonprimitive child, contradicting that hereditary invariant over all candidates, not only the explicit recipe.
+The original root is therefore in D and absent from S⁻.
+
+For S⁺, take the exact Cᵢ family and the separate actual-X root, augmented by every primitive own-Q judgment in each complete consumed closure, including actual Γ.
+Nonprimitive members have the proved successor candidates; primitive members use their exact same-context epsilon candidates, retaining all inherited fresh roots and their already included duties.
+This set is postfixed for N, placing the original root in S⁺.
+Each candidate remains finite; the infinite support set witnesses membership in S⁺ rather than supplying an admitted infinite schema.
+
+#### Primitive conditions, finite positives and formal nonentailment
+
+Both constructed greatest models obey the accepted conditional primitive ground.
+If its complete same-context no-change closure has all other duties true in S, adjoining the primitive judgment j gives a postfixed set S ∪ {j}: its exact identity candidate now has every required own clause.
+Since every primitive belongs to K, greatestness forces j into either S⁻ or S⁺.
+The same argument handles a finite same-context primitive block whose external debts already hold: adjoining the block supplies each exact identity candidate's full frontier.
+This proves a property of the two constructed models, rather than inferring a new block ground from mutually conditional rules or assigning own-Q truth when a consumed duty fails.
+
+Every accepted complete finite certificate also has finite postfixed support P for N.
+Collect every own-Q in each checked actual/hypothetical closure: supplied nonprimitive children provide their candidate witnesses, while primitive members use exact same-context epsilon witnesses.
+All inherited fresh roots required by those epsilon candidates are already roots of that context's complete B-v1 closure; original typed dependencies retain their original contexts.
+
+After projecting primitive duties, the certificate's finite nonprimitive child DAG gives finite R derivations for every nonprimitive member of P.
+Hence P is disjoint from D and lies in K; postfixedness places it in both S⁻ and S⁺.
+Legal primitive component cycles therefore retain their accepted finite positives without becoming construction-proof backedges or requiring a least-model interpretation.
+Necessary-local-contradiction negatives, including the trapped exact-vacuous consumer, hold in both models.
+
+Original Γ's complete assessment includes primitive B and nonprimitive X, as well as its independent source/local premises.
+All these duties hold in S⁺; X fails in S⁻, so the complete actual-assessment conjunction differs without assuming any original Q during qualification.
+
+The explicitly formalized B-v1 contract therefore entails neither the renewal root judgment nor its negation.
+This is a model-theoretic nonentailment result, stronger than assigning false to the displayed chain implications alone.
+It selects no semantic convention, proves no independent normative success or nonexistence, and establishes neither general undecidability nor impossibility of a complete procedure for an independently settled judgment.
+
+#### Algorithm applicability and the next gate
+
+The inspected algorithms address precise neighboring problems but supply no missing B-v1 semantic introduction rule.
+A finite quotient still needs exact extraction/reconstruction and semantic soundness before any cyclic or automata procedure can decide the independent judgment.
+
+| Primary research route | Applicable result | Missing B-v1 premise |
+| --- | --- | --- |
+| [FSA2003, Algorithm 3](https://www.cogsci.ed.ac.uk/~ht/XML_Europe_2003.html) | Proposes subsumption in place of case-based restriction | Accepted relation and contextual helper existence differ |
+| [Cyclic descent](https://www.pure.ed.ac.uk/ws/portalfiles/portal/12304236/bs_journal.pdf), Definition 5.5/Proposition 5.8 | Sound cyclic induction with a global trace condition | Chosen inductive meaning and proved descending traces |
+| [Coinductive equations](https://xavierleroy.org/publi/coindsem-journal.pdf), Sections 2/7 | Guarded proofs for a specified coinductive interpretation | Independent correspondence with intended Q |
+| [Regular coinduction](https://lmcs.episciences.org/8539/pdf), Theorem 5.2/Proposition 6.3 | Finite circular evidence and separate specification soundness | Exact labels do not repeat; a sound quotient is unproved |
+| [Nominal automata](https://lmcs.episciences.org/1157/pdf), Example 2.5/Theorem 5.2 | Orbit-finite quotients under name symmetry | Renaming preserves the growing number of retained records |
+| [WSTS](https://www.cmi.ac.in/~madhavan/courses/concurrency2017/literature/finkel-schnoebelen-wsts.pdf), Definition 2.5/Theorem 3.6 | Coverability with compatible order/effective predecessor bases | Helper inclusion need not preserve success; effective bases unproved |
+
+FSA2003's proposed relation change is also distinguished in the [documented case-based/subsumption comparison](https://lists.w3.org/Archives/Public/xmlschema-dev/2005Aug/0054.html); it is not an implementation of the selected particle rule.
+For WSTS, adding the locally legal retained consumers to the exact-vacuous U/M parent destroys its complete child, so plain helper inclusion supplies no success-preserving order.
+Arbitrary B-v1 candidate generation also has unbounded branching, and the existential-candidate/all-required-frontiers problem is not automatically the inspected single-player coverability problem.
+
+The next concrete gate is an independently justified dated-semantic principle distinguishing these formal models, followed by its correspondence proof with the full B-v1 predicates before a general algorithm is implemented.
+The finite two-step construction bound is not a bound on validation-proof depth, while legal recursive property closure does not itself justify coinduction across generated contexts.
+General witness coverage, adequate proof representation, input-derived bounds or an equivalent complete-negative criterion and mathematical termination remain open.
+
+All accepted packages, original operands, domain/evidence versions, failure categories and configurable sticky engineering budgets remain unchanged.
+No new production rule, cyclic acceptance, helper quotient, policy choice or activation is introduced; #179/#153/#184 retain their separate gates.
 
 ### No complete F child for the fixed membership-loss parent
 
