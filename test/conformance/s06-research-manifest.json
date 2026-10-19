@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "9ddb931679f1928f867016d39f34c5fe656dd15b1cfe51c1674596141bbf7525",
+          "sha256": "82178056e78882591a65077b70f0ad02583046662f4a1d3665513e2ecc5ffdf7",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1156,7 +1156,7 @@
         {
           "path": "src/compiler/schemaComponentEquality.ts",
           "role": "semantic-source",
-          "sha256": "abf08c3ebcc53f4e3f94ed6a9cc6d2292ff7f7c40d3852471d0cc39c6e24fb31"
+          "sha256": "a59b47ed836dd3c50314f8aeb0ba200eda138ad036cbfd919cf51ec0d1629c16"
         },
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
@@ -2342,6 +2342,36 @@
           "path": "test/conformance/fixtures/xsd/recovery/scope-property-equality-independent.xsd",
           "role": "fixture",
           "sha256": "170c82d5769ef7ea63448308511f0ffcd9f6a13153c45064e2508deb830e7fa2"
+        },
+        {
+          "path": "test/research/re01/scalar-content-properties.test.ts",
+          "role": "reference",
+          "sha256": "59243d00e7481329cb7e924d37f1f8cc121300539316af2a49703aa6e4c85a46"
+        },
+        {
+          "path": "test/conformance/reference/re01-scalar-content-properties.test.ts",
+          "role": "reference",
+          "sha256": "a45c686917363639825f53a5b66da061e329cbe9a2d296b546b7895c0e52ab3f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-content-property-independent.xsd",
+          "role": "fixture",
+          "sha256": "7432dd37c7b70b8d1fd01b6c2b8ebe2c2356698ec920c47da7180f1400ba7b49"
+        },
+        {
+          "path": "test/research/re01/property-type-references.test.ts",
+          "role": "reference",
+          "sha256": "986b0c62b2300a631cdc3066a5c98219d403bf655e49aa971ba4b29ff04e42c5"
+        },
+        {
+          "path": "test/conformance/reference/re01-property-type-references.test.ts",
+          "role": "reference",
+          "sha256": "83498893a81f342040d375611d0cf3e953656bc6b797b4b7c0e36e39bf8b2d69"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-reference-nested-independent.xsd",
+          "role": "fixture",
+          "sha256": "d54fa75669d266e2937bb42d57e94d585d5e1e446faefc9efe27aa495ad1fe91"
         }
       ]
     },

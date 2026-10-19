@@ -52,9 +52,18 @@ The equality owner now separates same-complex identity and effective AU property
 Complete copied and identity forests pass; genuinely consuming the failing base still rejects.
 
 The same read-only audit justifies first-fork padding of faithful original named-group rows without new components or fresh roots, while retaining Γ debts and later H legality.
-A fresh-active scalar-selector lemma preserves same-H typed values and facet properties; its general context-reconstruction lift remains unproved, so no scalar rule was changed.
+The [reviewed scalar-selector lift](content-model-s06-re-01.md#reviewed-active-facet-forest-normalization) now preserves a coherent finite semantic forest's chosen active facet recipes while leaving original Γ operands and genuine full-type duties unchanged.
+It constructs scalar facts directly from qualified exact content selectors, without assuming old recipe-only facade-formation duties already have proofs; it is not a normalization implementation or universal frontier theorem.
 
-Continue by proving that every completely qualified Q_f actual assessment has some executable finite forest with a justified semantic frontier, then establish complete search and negative/termination results.
+The [scalar content-property continuation](content-model-s06-re-01.md#candidate-scalar-content-property-repair) also repairs a real extension caller that read a complex scope's scalar content through its full facade.
+Candidate equality now uses that exact supplied scalar property; actual source normalization and genuine complex-type validity remain unchanged.
+Complete identity/copied three-node proofs pass, unequal scalar facets and unsupported anonymous-type restriction still reject, and genuinely consuming T requires its own hypothetical proof alongside the separate actual Γ proof.
+
+The [complex-reference composition audit](content-model-s06-re-01.md#complex-property-references-and-full-construction) extends the same boundary coherently: complex references recursively visited for property equality no longer publish full validity by themselves.
+A nested original-scope caller now completes identity/copied four-node proofs; a genuinely consumed inner type still requires and accepts a separate H proof, while an inherited method mismatch still rejects.
+AU matching shares collectors, but qualified same-QName declaration uniqueness rules out failed-branch-only complex scope alternatives; no blanket scalar-discard theorem or collector change is claimed.
+
+For the present finite-verifier route, continue by proving that every completely qualified Q_f actual assessment has some executable finite forest with a justified semantic frontier, then establish complete search and negative/termination results.
 That goal does not require translating every prescribed candidate or retaining a failed eager-installation method.
 Normative correspondence, arbitrary runtime representation, input-derived negative bounds or equivalent complete negatives and mathematical termination remain separate open gates.
 There is no production selector/API/version change, release or downstream activation in this choice.
@@ -74,6 +83,9 @@ There is no production selector/API/version change, release or downstream activa
 | Identity-read repair | Unrelated original type comparison no longer widens validity closure | Genuine consumed and fresh-root failures remain required |
 | Late original complex properties | Untouched original rows can first be reified in the consuming child with authentic correspondence | General executable-forest adequacy remains unproved; other row categories are unchanged |
 | Scope-property read repair | Copied-prefix proof no longer imports an unrelated scope-base validity root | Full construction and genuine consumed/fresh-root duties remain required |
+| Active scalar-selector forest normalization | Exact per-context scalar facts and finite semantic support preserved | Other publisher/representation paths remain unproved; no normalization implementation |
+| Scalar content-property repair | Candidate equality checks the exact scalar property without facade-only formation | Actual source and genuine complex-type consumption retain their prerequisites |
+| Complex property-reference repair | Authenticated recursive properties no longer manufacture full validity | Genuine construction/scalar/value duties and global composition proof remain |
 | Full RE01 procedure | Useful positives and scoped contradictions work | Coverage, adequacy, negatives and termination stay open |
 
 These failed reductions led to the semantic gate rather than another helper-length experiment.

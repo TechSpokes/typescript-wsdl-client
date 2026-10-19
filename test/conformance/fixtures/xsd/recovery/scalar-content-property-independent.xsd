@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:scalar-content-properties" targetNamespace="urn:recovery:scalar-content-properties">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="X"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="S"><xs:simpleContent><xs:extension base="xs:string"><xs:anyAttribute namespace="##any" processContents="lax"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:complexType name="T"><xs:simpleContent><xs:extension base="t:S"/></xs:simpleContent></xs:complexType>
+  <xs:element name="Left"><xs:complexType><xs:simpleContent><xs:restriction base="t:T"><xs:attribute name="a" type="xs:string"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+  <xs:element name="Right"><xs:complexType><xs:simpleContent><xs:restriction base="t:T"><xs:attribute name="a" type="xs:string"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+  <xs:element name="Narrow"><xs:complexType><xs:simpleContent><xs:restriction base="t:T"><xs:minLength value="1"/><xs:attribute name="a" type="xs:string"/></xs:restriction></xs:simpleContent></xs:complexType></xs:element>
+</xs:schema>
