@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(re01): recognize inherited-consumer obstruction for every nonempty finite flat optional-local prefix.
+
 - feat(re01): recognize a sufficient inherited-consumer obstruction in research without activating general negatives.
 
 - test(re01): prove fixed-parent complete-child nonexistence despite arbitrary permitted finite additions.

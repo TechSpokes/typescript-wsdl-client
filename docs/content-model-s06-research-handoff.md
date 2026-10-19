@@ -4,16 +4,25 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
-The [research recognition criterion](content-model-s06-re-01.md#research-recognition-of-the-three-position-inherited-consumer) makes #309's sufficient inherited-consumer obstruction executable through existing contexts and semantic owners.
-Given target/head/member/consumer IDs as selection hints, the research-only function verifies complete authenticated contexts, exact types and declaration properties, the target's nonprimitive duty, retained raw selectors and the three-position normalized consumer shape.
+The [finite flat-prefix continuation](content-model-s06-re-01.md#any-nonempty-finite-flat-prefix-of-optional-local-elements) extends the sufficient inherited-consumer obstruction to every nonempty finite flat prefix of original optional local element incidences.
+Given target/head/member/consumer IDs as selection hints, the research-only function verifies complete authenticated contexts, exact types and declaration properties, the target's nonprimitive duty, retained raw selectors and the normalized n + 2 explicit positions.
 It derives the base consumer and proves no permitted complete target child of that exact parent, including arbitrary finite additions and affiliates under both head and member.
+
+The unit original prefix sequence flattens without deleting optional element incidences, and complete strictly ordered Recurse mapping between equal finite lists forces every ordinal position to itself.
+The required M position still cannot map to effective(H), by the independent first-edge obstruction and mandatory M/global-QName argument.
 It does not assume the target's pending RE01 validity, classify immutable Γ as impossible, enumerate candidate children or activate a production negative branch.
+
+Single-element prefixes retain `inherited-three-position-consumer-v1`; longer prefixes publish `inherited-flat-prefix-consumer-v1` with the exact incidence count in `prefixLength`.
 `not-established` proves nothing; missing qualification, invalid input and inclusive/sticky resource exhaustion remain separate.
-The criterion requires the documented global/nonabstract declarations, global complex target/head types, fresh inherited consumer roots and exact original local prefix/required-empty-choice shape; other inputs remain unsupported by this recognizer.
-Typed controls include #309, consistent renaming, growing groups, complete unblocked/identity/primitive positives, altered consumers, missing properties/context mismatches and explicit budget exhaustion; independent reference controls preserve original operands and derive mapping expectations separately.
+The criterion retains the documented global/nonabstract declarations, global complex target/head types, fresh inherited consumer roots, disjoint local/M QNames and required empty choice; empty/nested/choice/all/wildcard/non-0..1 prefixes remain unsupported.
+
+Typed controls retain #309, renaming, identity/primitive positives and altered/missing-context cases, while adding direct n = 1, n = 2 and n = 5 parents, complete matching child rejection and complete unblocked positives with expanded H/M groups.
+Independent source/reference controls preserve the new operands and ordered mapping, and exact successful/one-below work/node controls preserve sticky resource failure.
 One fresh-context nonauthor reviewer scrutinizes the criterion before reliance and assesses the final code/proof and scoped #232 consistency.
+
 All accepted contracts, P1/F2, original operands, existing verifier claims and production ownership remain unchanged; full #234/#232 acceptance remains open.
-One next action is to prove or refute the same mapping obstruction when the shared original prefix contains two optional local elements, before broadening recognition.
+General arbitrary-success coverage, contextual evidence adequacy, copied-prefix transport, input-derived bounds or an equivalent complete-negative criterion and mathematical general termination remain open.
+The next investigation addresses copied-prefix transport or a proved reconstruction bypass, then general coverage/evidence reasoning; additional fixed-length prefix variants are unnecessary.
 
 The [fixed-parent nonexistence theorem](content-model-s06-re-01.md#no-complete-f-child-for-the-fixed-membership-loss-parent) settles #308's requested continuation over every permitted complete F child under B-v1, with arbitrary permitted finite additions and retained or fresh intermediates.
 Correspondence forces F's first edge to be restriction, while F and H.type=E remain distinct exact complex identities; any successful F-to-E path therefore contains the method excluded by H.block.

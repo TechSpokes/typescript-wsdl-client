@@ -43,6 +43,41 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it.each([['consumer-two-prefix.xsd', 2], ['consumer-five-prefix.xsd', 5]] as const)
+    ('retains every optional derived incidence in the %s complete outer mapping', (file, count) => {
+        // Independent source and finite order trace, without semantic-owner imports.
+        const schema = fixture(file), group = children(type(schema, 'A'), 'sequence')[0];
+        const prefix = children(group, 'element');
+        expect(bounds(group)).toEqual({minimum: 1n, maximum: 1n});
+        expect(prefix).toHaveLength(count);
+        for (const leaf of prefix) {
+            expect(bounds(leaf)).toEqual({minimum: 0n, maximum: 1n});
+            expect(attribute(leaf, 'ref')).toBeUndefined();
+            expect(attribute(leaf, 'substitutionGroup')).toBeUndefined();
+            expect(expandedQName(leaf, attribute(leaf, 'type')!)).toEqual({uri: XSD, local: 'string'});
+        }
+        // cos-particle-restrict.2.2 removes the unit nested sequence, not its
+        // nonempty leaves. H/M cannot become sequences and C is required.
+        const length = count + 2, maps: number[][] = [];
+        const complete = (image: readonly number[], next: number): void => {
+            if (image.length === length) {maps.push([...image]); return;}
+            for (let target = next; target < length; target++) complete([...image, target], target + 1);
+        };
+        complete([], 0);
+        const identity = Array.from({length}, (_, i) => i);
+        expect(maps).toEqual([identity]);
+        expect(maps[0][count]).toBe(count);
+        // Recurse's complete domain includes optional derived entries. Dropping
+        // one could admit a shifted image; its length exposes that invalid move.
+        expect(identity.slice(1)).toHaveLength(length - 1);
+        // RecurseLax must still place M, independent of implicit choice order.
+        const member = 'urn:review#M', derived = [member, 'urn:review#FreshM'];
+        for (const base of [['urn:review#H', 'urn:review#FreshH'], ['urn:review#FreshH', 'urn:review#H']]) {
+            expect(derived.every(name => base.includes(name))).toBe(false);
+            expect(derived.every(name => [...base, ...derived].includes(name))).toBe(true);
+        }
+    });
+
     it('retains source operands under a consistent consumer-fixture renaming', () => {
         // Independent source inspection, no semantic-owner/recognizer import.
         // QName spelling changes neither exact type roles nor occurrences.
@@ -477,6 +512,8 @@ describe('RE01 particle continuation: source clauses and live observations', () 
             ['particle-simple-content-original-chain.xsd', 'accepted'],
             ['particle-simple-content-inline-anchor-witness.xsd', 'accepted'],
             ['particle-simple-content-no-inline-restriction.xsd', 'accepted'],
+            ['consumer-two-prefix.xsd', 'accepted'],
+            ['consumer-five-prefix.xsd', 'accepted'],
         ];
         for (const [name, outcome] of cases) {
             const observation = await validateFixture(directory + name);

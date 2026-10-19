@@ -17,10 +17,11 @@ export type ConsumerSelection = Readonly<{target: NodeId; head: NodeId; member: 
 type Failure = Readonly<{kind: 'not-established' | 'unresolved' | 'invalid-input'; rule: string; component?: NodeId; message: string}>;
 export type InheritedConsumerResult = Failure | ResourceLimitFailure | Readonly<{
   kind: 'proved-no-construction'; domain: typeof RE01_DERIVATION_DOMAIN;
-  criterion: 'inherited-three-position-consumer-v1'; scope: 'complete-child-of-exact-parent';
+  scope: 'complete-child-of-exact-parent';
   actualContextId: string; parentContextId: string; target: NodeId; head: NodeId; member: NodeId;
   headType: NodeId; consumer: NodeId; baseConsumer: NodeId;
-}>;
+} & ({criterion: 'inherited-three-position-consumer-v1'}
+  | {criterion: 'inherited-flat-prefix-consumer-v1'; prefixLength: number})>;
 class Stop extends Error {constructor(readonly result: InheritedConsumerResult) {super(result.kind);}}
 
 /** IDs select operands; every decisive premise is read from authenticated owners.
@@ -144,6 +145,23 @@ export function recognizeInheritedConsumerObstruction(actual: SemanticContext, p
         && !fresh(prefix!), 'shared-original-prefix');
       const end = particle(last!), derivedUse = particle(middle!), baseUse = particle(baseRoot.term.children[1]!);
       match(unit(end) && end.term.kind === 'choice' && !end.term.children.length, 'required-empty-choice');
+      const prefixRoot = particle(prefix!);
+      match(prefixRoot.term.kind === 'element' || unit(prefixRoot) && prefixRoot.term.kind === 'sequence'
+        && prefixRoot.term.children.length > 0, 'nonempty-flat-original-prefix');
+      b.chargeWork();
+      const prefixLeaves = prefixRoot.term.kind === 'sequence' ? prefixRoot.term.children : [prefixRoot.id];
+      // Count ordered incidences, including repeated references, never a set of IDs.
+      for (const id of prefixLeaves) {
+        b.chargeWork(); const leaf = particle(id);
+        match(!fresh(id) && leaf.occurs.min === '0' && leaf.occurs.max === '1'
+          && leaf.term.kind === 'element', 'optional-original-local-prefix');
+        if (leaf.term.kind !== 'element') throw new Error('Unreachable matched prefix');
+        const declaration = parent.resolve(leaf.term.declaration);
+        match(declaration.kind === 'found' && declaration.node.kind === 'element'
+          && declaration.node.identity.kind === 'scoped'
+          && (declaration.node.name.namespace !== member.name.namespace || declaration.node.name.local !== member.name.local),
+        'local-prefix-declaration');
+      }
       // Four distinct inherited identities prohibit both root and middle identity shortcuts.
       b.chargeWork(10);
       match(new Set([derivedRoot.id, baseRoot.id, derivedUse.id, baseUse.id]).size === 4
@@ -156,14 +174,18 @@ export function recognizeInheritedConsumerObstruction(actual: SemanticContext, p
       }
       for (const type of [consumer, baseConsumer]) {
         const normalized = view(type);
-        match(unit(normalized) && normalized.kind === 'sequence' && normalized.children.length === 3
-          && normalized.orderBlocks.length === 3 && normalized.orderBlocks.every(block => {
+        const positions = prefixLeaves.length + 2;
+        match(unit(normalized) && normalized.kind === 'sequence' && normalized.children.length === positions
+          && normalized.orderBlocks.length === positions && normalized.orderBlocks.every(block => {
             b.chargeWork(); return block.kind === 'explicit' && block.children.length === 1;
-          }), 'three-explicit-normalized-positions');
-        const [first, mid, final] = normalized.children;
-        match(first!.kind === 'element' && first!.element?.identity.kind === 'scoped'
-          && first!.occurs.min === '0' && first!.occurs.max === '1' && !first!.children.length
-          && (first!.element.name.namespace !== member.name.namespace || first!.element.name.local !== member.name.local), 'local-prefix');
+          }), 'flat-prefix-explicit-normalized-positions');
+        for (let index = 0; index < prefixLeaves.length; index++) {
+          b.chargeWork(); const first = normalized.children[index]!;
+          match(first.kind === 'element' && first.element?.identity.kind === 'scoped'
+            && first.occurs.min === '0' && first.occurs.max === '1' && !first.children.length
+            && (first.element.name.namespace !== member.name.namespace || first.element.name.local !== member.name.local), 'local-prefix');
+        }
+        const mid = normalized.children[prefixLeaves.length], final = normalized.children[prefixLeaves.length + 1];
         match(final!.kind === 'choice' && unit(final!) && !final!.children.length && final!.originalParticle === end.id, 'retained-empty-choice');
         match(unit(mid!) && mid!.originalParticle === (type === consumer ? derivedUse.id : baseUse.id)
           && (mid!.kind === 'element' || mid!.kind === 'choice' && mid!.orderUnspecified
@@ -171,7 +193,9 @@ export function recognizeInheritedConsumerObstruction(actual: SemanticContext, p
       }
       b.chargeWork(16);
       return publish({kind: 'proved-no-construction', domain: RE01_DERIVATION_DOMAIN,
-        criterion: 'inherited-three-position-consumer-v1', scope: 'complete-child-of-exact-parent',
+        ...(prefixLeaves.length === 1 ? {criterion: 'inherited-three-position-consumer-v1'} as const
+          : {criterion: 'inherited-flat-prefix-consumer-v1', prefixLength: prefixLeaves.length} as const),
+        scope: 'complete-child-of-exact-parent',
         actualContextId: actual.contextId, parentContextId: parent.contextId, target: target.id,
         head: head.id, member: member.id, headType: e.id, consumer: consumer.id, baseConsumer: baseConsumer.id} as const);
     } catch (error) {

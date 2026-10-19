@@ -2648,10 +2648,66 @@ Missing raw properties, incomplete parents, foreign contexts, unavailable hints,
 The [independent reference controls](../test/conformance/reference/re01-particle-continuation.test.ts) inspect both source fixtures and derive QName mapping contrasts without importing this recognizer or semantic owners.
 Tests support the first-edge/mapping theorem; no finite enumeration establishes its universal quantifier.
 
-Unsupported cases include original rather than fresh consumer roots, abstract declarations, non-global target/head types, different prefixes/compositors/occurrences, scalar/AU roles and other obstruction families.
+Unsupported cases include original rather than fresh consumer roots, abstract declarations, non-global target/head types, scalar/AU roles and other obstruction families.
 `not-established` is no assertion of existence or absence; `unresolved` names an unavailable qualification, and `invalid-input` preserves owner input failures.
 Unauthenticated context handles retain the existing owners' `TypeError` boundary; exhausted requests return the shared sticky `resource-limit` envelope.
-One next action is to prove or refute the same mapping obstruction for a shared original prefix of two optional local elements before broadening this criterion.
+The following continuation proves the same obstruction for every nonempty finite flat optional-local prefix, including the two-element next step.
+
+### Any nonempty finite flat prefix of optional local elements
+
+This continuation starts at actual main `f87fe681f14ad4691634b7cd049fa15fdb9e4d20`, tree `70e55301563001961e16830ed7296ac31a53695f`.
+Retain every preceding criterion premise except the single-element prefix shape.
+The shared original prefix P is either one direct local element particle occurring `0..1`, or a unit sequence of n ≥ 1 direct local element-particle incidences, each occurring `0..1`.
+
+The prefix sequence and every leaf particle are original to Γ, and each leaf references a scoped local declaration whose expanded QName differs from M's.
+Count ordered child incidences, including repeated references to the same particle ID; a set of identities does not measure sequence length.
+Pairwise distinct prefix QNames are unnecessary for this obstruction; independent parent/child legality still applies.
+
+#### Normalization under arbitrary permitted finite additions
+
+The exact inherited raw consumers remain `sequence1[P,H1,C]` and `sequence1[P,M1,C]` with their distinct roots/required uses and shared required empty choice C.
+Under [cos-particle-restrict.2.2](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-restrict), a unit sequence nested immediately in a sequence is pointless, so P contributes precisely its n leaf incidences; a direct P contributes one.
+No optional local element is a pointless compositor, and the nonempty prefix has no empty group to remove.
+
+Permitted additions cannot rewrite these original particles or attach substitution-group members to a local declaration: [e-props-correct.3](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#e-props-correct) requires global scope for affiliation.
+The prefix leaves therefore retain their kinds, occurrence ranges, order and incidence count in every possible child, regardless of new type/declaration helpers.
+If some addition or retained component is illegal, that child already fails; assuming its legality cannot introduce another prefix shape.
+
+By cos-particle-restrict.2.1, the H/M use remains an element or becomes an implicit choice of element leaves, never a sequence.
+A singleton choice can reduce to its surviving element without changing its one outer position, and C is a required empty choice, which 2.2 does not discard.
+Thus both outer unit sequences retain exactly L = n + 2 ≥ 3 explicit positions in every permitted finite child; neither outer sequence is a singleton or empty compositor.
+
+#### Complete ordered mapping and inherited contradiction
+
+[Recurse](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-Recurse) requires a complete functional mapping from all derived particles, including those with minimum zero.
+Its definition of order-preserving requires each image to follow the preceding image, so the image positions f(1), …, f(L) are strictly increasing integers in {1, …, L}.
+For each i, the preceding i − 1 images imply f(i) ≥ i and the remaining L − i images imply f(i) ≤ i; hence f(i) = i.
+
+Optionality can justify skipping an unmapped base position only when a complete derived mapping still exists; it never deletes a derived prefix incidence.
+The required M position n + 1 must therefore map to the required H position n + 1, independently of prefix length, shared IDs or any optional prefix values.
+The [separate first-edge argument](#sufficient-criterion-and-first-edge-separation) excludes M from effective(H), while nonabstract M remains a mandatory effective(M) leaf and global QName uniqueness excludes an impersonating target.
+
+The preceding RecurseLax/NameAndTypeOK argument now applies unchanged at that position, for arbitrary direct/transitive affiliates under both H and M and every coherent implicit-choice order.
+Neither distinct inherited roots/uses nor fresh virtual leaves acquire a same-particle shortcut, and neither consumer has a wildcard.
+This proves no permitted complete target child of that exact parent, before any nested evidence could repair the inherited consumer duty.
+
+#### Recognition and discriminating controls
+
+The [research recognizer](../test/research/re01/inherited-consumer-obstruction.ts) checks the raw original flat prefix and the existing owner's normalized n + 2 explicit positions, in addition to all earlier authenticated premises.
+For n = 1 it preserves the exact `inherited-three-position-consumer-v1` result representation; for n > 1 it publishes `inherited-flat-prefix-consumer-v1` with `prefixLength` equal to the incidence count.
+These are sufficient criterion tags, not a general RE01 decision or a new semantic authority.
+
+The [typed controls](../test/research/re01/live-helper-forest.test.ts) retain every original case and add direct n = 1, n = 2 and n = 5 source-backed parents with all selected local constructions checked and the complete finite verifier's matching child failure.
+Removing restriction blocking yields complete successful certificates for n = 1, 2 and 5, including expanded H/M groups; growing blocked groups also preserve the obstruction at n = 2 and 5.
+The [independent reference controls](../test/conformance/reference/re01-particle-continuation.test.ts) inspect the new original operands and complete ordered-mapping contrast without importing the recognizer or semantic owners; live primary observations qualify both new source schemas separately.
+
+Empty, nested, choice, all, optional-group, required-element, repeated-element and wildcard prefixes remain unproved by this criterion.
+Explicit successful exact-usage and one-below work/node controls preserve inclusive accounting and sticky exhaustion; resource failure, invalid input, missing qualification and unmatched shapes remain distinct.
+The proof uses arbitrary finite n and additions; fixed test lengths support its discriminators and do not establish its quantifiers.
+
+No production code, B-v1 domain, finite-verifier claims, budget default, accepted AU C1/PW R-240/DT A/#178/GSC1/P1/F2 policy or original operand contract changes.
+General arbitrary-success coverage, contextual evidence adequacy, copied-prefix transport, input-derived bounds or an equivalent complete-negative criterion and mathematical general termination remain open.
+The next investigation concerns transport of copied prefixes or a justified reconstruction bypass, followed by general coverage/evidence reasoning; further fixed-length prefix variants are unnecessary.
 
 ### No complete F child for the fixed membership-loss parent
 
