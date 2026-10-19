@@ -4,6 +4,17 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [research recognition criterion](content-model-s06-re-01.md#research-recognition-of-the-three-position-inherited-consumer) makes #309's sufficient inherited-consumer obstruction executable through existing contexts and semantic owners.
+Given target/head/member/consumer IDs as selection hints, the research-only function verifies complete authenticated contexts, exact types and declaration properties, the target's nonprimitive duty, retained raw selectors and the three-position normalized consumer shape.
+It derives the base consumer and proves no permitted complete target child of that exact parent, including arbitrary finite additions and affiliates under both head and member.
+It does not assume the target's pending RE01 validity, classify immutable Γ as impossible, enumerate candidate children or activate a production negative branch.
+`not-established` proves nothing; missing qualification, invalid input and inclusive/sticky resource exhaustion remain separate.
+The criterion requires the documented global/nonabstract declarations, global complex target/head types, fresh inherited consumer roots and exact original local prefix/required-empty-choice shape; other inputs remain unsupported by this recognizer.
+Typed controls include #309, consistent renaming, growing groups, complete unblocked/identity/primitive positives, altered consumers, missing properties/context mismatches and explicit budget exhaustion; independent reference controls preserve original operands and derive mapping expectations separately.
+One fresh-context nonauthor reviewer scrutinizes the criterion before reliance and assesses the final code/proof and scoped #232 consistency.
+All accepted contracts, P1/F2, original operands, existing verifier claims and production ownership remain unchanged; full #234/#232 acceptance remains open.
+One next action is to prove or refute the same mapping obstruction when the shared original prefix contains two optional local elements, before broadening recognition.
+
 The [fixed-parent nonexistence theorem](content-model-s06-re-01.md#no-complete-f-child-for-the-fixed-membership-loss-parent) settles #308's requested continuation over every permitted complete F child under B-v1, with arbitrary permitted finite additions and retained or fresh intermediates.
 Correspondence forces F's first edge to be restriction, while F and H.type=E remain distinct exact complex identities; any successful F-to-E path therefore contains the method excluded by H.block.
 This excludes M from effective(H), independently of whether its affiliation stays legal under empty H.final.
@@ -14,7 +25,7 @@ Typed direct/transitive-affiliate and fresh-intermediate controls support the pr
 One fresh-context nonauthor reviewer challenges the universal argument before reliance and reviews final proof/code plus separate scoped #232 consistency.
 This proves impossibility for this inherited parent while preserving complete different Γ-root witnesses, all accepted AU/PW/DT/#178/GSC1/P1/F2 contracts, semantic owners, budgets and failure categories.
 No production obstruction API or general evidence-adequacy/negative/termination claim is added; full #234/#232 and downstream activation gates remain open.
-One next action is to delimit a reusable sufficient consumer-obstruction criterion and its recognition preconditions before proposing any production negative branch.
+The research recognition criterion above supplies this theorem's previously requested bounded next action; production activation remains separate.
 
 The [mandatory restriction-consumer lemma](content-model-s06-re-01.md#one-mandatory-restriction-consumer-of-retained-hm-membership) retains #307's exact optional disjoint-name S and adds only supplied R_H restricting E and R_M restricting R_H.
 Their content is sequence1[A.content,H1,required-empty-choice] and sequence1[A.content,M1,required-empty-choice], with distinct retained wrappers/uses and exact shared original A.content/separator; admission needs no wrapping correction.

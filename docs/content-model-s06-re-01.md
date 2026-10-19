@@ -2591,6 +2591,68 @@ Full #234/#232 acceptance, arbitrary-success coverage, general contextual eviden
 #179 activation, #153 combined acceptance and #184 runtime ownership remain separate; draft #231 stays unaccepted and untouched.
 The following continuation settles complete-child existence for that fixed parent without restricting the intermediate or finite additions.
 
+### Research recognition of the three-position inherited consumer
+
+This slice starts at actual main `6de486c672c7c4a792ddc3a186a2e18f9a0c2925`, tree `f8135275b6a03e8d7a2fd46c1af09d60a35da73f`.
+The following sufficient criterion is a research recognition boundary, independent of the integer-restoration source or any spelling of component names.
+It does not qualify a context by assuming the selected target's pending RE01 judgment.
+
+#### Premise-to-owner map
+
+| Decisive premise | Authority and recognition check |
+| --- | --- |
+| Complete immutable actual and inherited parent | Authenticated `SemanticContext` handles; same request and exact `originalContext()`; candidate parent; complete component/scalar/notation universes |
+| Nonprimitive extension target and forced first restriction | `checkComponentConstruction` supplies local premises and a nonprimitive `re01` duty; `re01Ancestor`, `immediateTypeBase` and exact type identity verify its ancestor and immediate complex base |
+| Distinct exact complex target/head types | `resolveSemanticType` and `declaredType`; head type is the target's immediate base, with element-only raw content; no type-content equality substitutes for identity |
+| Retained declaration properties | Exact authenticated nonabstract global declarations; distinct identities/QNames; member's declared type is target and direct affiliation is head; empty head final and restriction in head block through `declarationMethods` |
+| Mandatory nonabstract member | Member is nonabstract; effective-group same-declaration rule preserves its own leaf under arbitrary added affiliates |
+| Inherited child-context consumer duty | Selected consumer and its restriction base are fresh relative to actual; raw/canonical restriction edges and content selectors agree; both remain inherited roots under B-v1 |
+| Immutable raw operands | Exact distinct unit sequence roots/use particles, each with three raw children: shared prefix, required head/member use, shared required empty choice |
+| Forced normalized middle mapping | `deriveRawComplexContent` and `prepareSemanticParticleView` verify three explicit outer positions: optional local element, required head/member block, required empty choice |
+| No QName/identity/normalization/wildcard bypass | Prefix local QName differs from member; roots/uses distinct; no wildcard in either consumer; virtual leaves have no original-particle shortcut; canonical global uniqueness is enforced by context preparation |
+
+#### Sufficient criterion and first-edge separation
+
+Let the hints select target T, head h, member m and derived restriction consumer C in a complete authenticated inherited parent P over immutable actual Γ.
+Require the map above, including C restricting a distinct retained consumer B, B restricting exact h.type, and normalized content `sequence(local[0..1], h-or-m[1..1], choice()[1..1])` with shared first/last raw operands.
+The local prefix is a single element in the restriction view; its raw representation may be the exact unit sequence flattened by the existing owner.
+Target and head type are named global complex definitions; all selected type raw records must agree with canonical selectors and have element-only content.
+The consumer types are nonabstract, with empty AUs/attribute wildcards and empty type flags.
+The raw prefix is original to Γ; all four distinct consumer root/use particles and both consumers are fresh relative to Γ.
+No restriction is placed on the number of other admitted helpers or affiliates under either h or m.
+
+The reusable first-edge argument is the [fixed-parent theorem's type argument](#reusable-first-edge-obstruction): nonprimitive T must restrict an intermediate in any permitted child.
+Exact T differs from exact h.type, so any successful derivation to that complex type contains the first restriction; missing that type fails derivation outright.
+Restriction blocking therefore removes m from effective(h), with no identity/simple-union escape and without assuming T's RE01 validity.
+The recognizer checks this argument's premises separately from the consumer shape; it does not sample a child or search for an intermediate.
+
+The retained nonabstract m remains in effective(m) under arbitrary permitted finite additions, including direct/transitive affiliates under m.
+Every h alternative is global and cannot have m's reserved QName, including after arbitrary additions under h.
+The immutable three-position outer sequences force the middle mapping; complete RecurseLax must map m to a base leaf of its QName and cannot do so in any coherent order.
+The required empty choice survives normalization, the local prefix cannot accept m, distinct roots/uses prevent identity, and no consumer wildcard exists.
+Thus C necessarily fails its inherited child-context restriction duty before nested evidence could help, proving no complete T child of this exact P.
+
+This guarantee is contextual and sufficient only; unmatched shapes prove nothing, and immutable Γ is never classified as impossible.
+Missing qualification, invalid input and sticky shared resource exhaustion remain distinct from `not-established` and a criterion-tagged proof.
+The selected IDs are lookup hints only; no Boolean premise or caller-created receipt is accepted.
+General search, other shapes, arbitrary witness coverage/bounds, copied-prefix transport and production activation remain outside this slice.
+
+The research-only [recognizer](../test/research/re01/inherited-consumer-obstruction.ts) requires four selection IDs and derives the base consumer and head type itself.
+It publishes the exact actual/parent context IDs, target, head, member, consumer, base consumer and `inherited-three-position-consumer-v1` criterion.
+Local target/declaration construction receipts qualify only their local premises; their dependencies and the target's pending RE01 duty are not assumed discharged.
+The raw/normalized shape check applies the proved mapping argument without enumerating hypothetical children or implicit-choice permutations.
+
+The [typed controls](../test/research/re01/live-helper-forest.test.ts) exercise both #309 parents and a consistently renamed source/helper instance, with growing head/member groups including transitive affiliates.
+Removing restriction blocking, exact declared-type identity and a primitive target retain complete finite-verifier positive witnesses; changed middle occurrences, wildcard uses, identity roots, raw selectors and the shared separator do not earn a proof.
+Missing raw properties, incomplete parents, foreign contexts, unavailable hints, immutable Γ and explicit inclusive/sticky work/node exhaustion retain separate outcomes.
+The [independent reference controls](../test/conformance/reference/re01-particle-continuation.test.ts) inspect both source fixtures and derive QName mapping contrasts without importing this recognizer or semantic owners.
+Tests support the first-edge/mapping theorem; no finite enumeration establishes its universal quantifier.
+
+Unsupported cases include original rather than fresh consumer roots, abstract declarations, non-global target/head types, different prefixes/compositors/occurrences, scalar/AU roles and other obstruction families.
+`not-established` is no assertion of existence or absence; `unresolved` names an unavailable qualification, and `invalid-input` preserves owner input failures.
+Unauthenticated context handles retain the existing owners' `TypeError` boundary; exhausted requests return the shared sticky `resource-limit` envelope.
+One next action is to prove or refute the same mapping obstruction for a shared original prefix of two optional local elements before broadening this criterion.
+
 ### No complete F child for the fixed membership-loss parent
 
 This continuation starts from #308 at fetched main `cc81f01241c80d808c6c38977fedb2d09bd9f7cb`, tree `4dfdf3636657e68fe8fc992058e475ad9cc80750`.
