@@ -201,10 +201,9 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
     };
     const refKey = (context: SemanticContext, reference: SemanticTypeReference): string => {
       const found = resolveSemanticType(context, reference);
-      if ('identity' in found) {
-        charge(4); typeDependencies.add([{contextId: context.contextId, type: found.identity}]);
-        return semanticTypeKey(context, found.identity);
-      }
+      // Preservation compares an available type's identity. Full validity is
+      // owed through its semantic owners, not through an unrelated raw read.
+      if ('identity' in found) return semanticTypeKey(context, found.identity);
       return fail('reference-correspondence', undefined, 'Correspondence reference is unavailable', 'unresolved');
     };
     const sameSet = (a: readonly string[], c: readonly string[]): boolean => {

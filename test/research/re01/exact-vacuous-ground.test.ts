@@ -183,6 +183,44 @@ function compareParentComponents(left: SemanticContext, right: SemanticContext):
   return map;
 }
 
+async function reanchored(file: string, consume = false) {
+  const fixtures = path.resolve('test/conformance/fixtures');
+  const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery', file), {policy: {fileRoots: [fixtures]}});
+  const prepared = prepareSourceSchemaRequest(input);
+  if (prepared.kind !== 'prepared') throw new Error(JSON.stringify(prepared));
+  const request = prepared.request, actual = request.actual;
+  expect(checkSchemaDocumentSyntax(actual)).toMatchObject({kind: 'checked'});
+  const duties: string[] = [];
+  for (const id of actual.members) {
+    const result = checkComponentConstruction(actual, id);
+    expect(result).toMatchObject({kind: 'checked', obligations: []});
+    if (result.kind === 'checked' && result.re01 && !result.re01.primitive) duties.push(id);
+  }
+  expect(duties).toEqual([typeId('U')]);
+  const u = complex(actual, typeId('U'));
+  const endpoint = {...u, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(typeId('B')), facets: []}};
+  const rawTypes = request.graph.nodes.flatMap(node => {
+    if (node.kind !== 'complexType') return [];
+    const result = deriveActualComplexContent(actual, node.id);
+    assert.equal(result.kind, 'checked');
+    const type = node.id === u.id ? endpoint : node;
+    return [{type: type.id, derivation: {method: type.derivation?.kind ?? 'restriction', base: type.derivation?.base ?? anyType},
+      abstract: false, final: [], block: [], content: result.view.content, attributeUses: [], targetNamespace: namespace,
+      provenance: {kind: 'hypothetical-abstract' as const, originals: [type.id]}}];
+  });
+  const name = {namespace, local: 'Fresh'};
+  const fresh: ElementNode = {kind: 'element', id: globalId('element', name), identity: {kind: 'global', role: 'element', name}, name,
+    context: u.context, declaredAttributes: [], annotations: [], retained: [], syntaxDetails: [],
+    type: local(typeId('T')), nillable: false, abstract: false};
+  const child = request.candidate({key: consume ? 'fresh-consumes-T' : 'distinct-actual-anchor-U',
+    active: [...actual.members, ...(consume ? [fresh.id] : [])], endpoint, rawTypes,
+    additions: consume ? [fresh] : [], rawElements: consume ? [{element: fresh.id, type: fresh.type, final: [], block: []}] : []});
+  if (child.kind !== 'prepared') throw new Error(JSON.stringify(child));
+  const node: FiniteRe01EvidenceNode = {id: 'U', parent: actual, context: child.context, target: u.id,
+    intermediate: typeId('B'), ancestor: local(typeId('A')), premises: []};
+  return {request, actual, u, child, node, fresh};
+}
+
 describe('exact-vacuous extension ground and retained member identity', () => {
   it.each([false, true])('qualifies every local premise and distinguishes stable exact-B membership=%s', async stable => {
     const s = await seed(stable), actual = s.request.actual, parent = s.root.context, child = s.next.context;
@@ -241,40 +279,13 @@ describe('exact-vacuous extension ground and retained member identity', () => {
   });
 
   it('distinguishes immutable anchors under a complete component-property graph correspondence', async () => {
-    const old = await seed(false), fixtures = path.resolve('test/conformance/fixtures');
-    const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/exact-vacuous-consumer-reanchored.xsd'), {policy: {fileRoots: [fixtures]}});
-    const prepared = prepareSourceSchemaRequest(input);
-    if (prepared.kind !== 'prepared') throw new Error(JSON.stringify(prepared));
-    const request = prepared.request, actual = request.actual;
-    expect(checkSchemaDocumentSyntax(actual)).toMatchObject({kind: 'checked'});
+    const old = await seed(false), {actual, u, child, node} = await reanchored('exact-vacuous-consumer-reanchored.xsd');
     const parentCorrespondence = checkCandidateCorrespondence(old.request.actual, old.root.parent, old.root.context,
       old.root.target, old.root.intermediate, old.root.ancestor);
     assert.equal(parentCorrespondence.kind, 'checked');
     for (const id of old.root.context.members)
       expect(checkComponentConstruction(old.root.context, id, {correspondence: parentCorrespondence})).toMatchObject({kind: 'checked', obligations: []});
-    const duties: string[] = [];
-    for (const id of actual.members) {
-      const result = checkComponentConstruction(actual, id);
-      expect(result).toMatchObject({kind: 'checked', obligations: []});
-      if (result.kind === 'checked' && result.re01 && !result.re01.primitive) duties.push(id);
-    }
-    expect(duties).toEqual([typeId('U')]);
     compareParentComponents(old.root.context, actual);
-    const u = complex(actual, typeId('U'));
-    const endpoint = {...u, derivation: {kind: 'restriction' as const, contentKind: 'complex' as const, base: local(typeId('B')), facets: []}};
-    const rawTypes = request.graph.nodes.flatMap(node => {
-      if (node.kind !== 'complexType') return [];
-      const result = deriveActualComplexContent(actual, node.id);
-      assert.equal(result.kind, 'checked');
-      const type = node.id === u.id ? endpoint : node;
-      return [{type: type.id, derivation: {method: type.derivation?.kind ?? 'restriction', base: type.derivation?.base ?? anyType},
-        abstract: false, final: [], block: [], content: result.view.content, attributeUses: [], targetNamespace: namespace,
-        provenance: {kind: 'hypothetical-abstract' as const, originals: [type.id]}}];
-    });
-    const child = request.candidate({key: 'distinct-actual-anchor-U', active: actual.members, endpoint, rawTypes});
-    if (child.kind !== 'prepared') throw new Error(JSON.stringify(child));
-    const node: FiniteRe01EvidenceNode = {id: 'U', parent: actual, context: child.context, target: u.id,
-      intermediate: typeId('B'), ancestor: local(typeId('A')), premises: []};
     const positive = verifyFiniteRe01Evidence(actual, u.id, {root: 'U', nodes: [node]});
     expect(positive).toMatchObject({kind: 'checked-candidate', claims: {actualObligations: 'checked'}, proof: [{evidence: 'U'}]});
     assert.equal(positive.kind, 'checked-candidate'); assertFiniteCandidateReceipt(actual, positive);
@@ -284,8 +295,10 @@ describe('exact-vacuous extension ground and retained member identity', () => {
       expect(actualChecked.has(typeId(name))).toBe(true);
       expect(child.context.lookup(typeId(name))).toMatchObject({kind: 'found'});
     }
-    expect(hypotheticalChecked.has(typeId('R_H'))).toBe(true);
+    expect(hypotheticalChecked.has(typeId('R_H'))).toBe(false);
     expect(hypotheticalChecked.has(typeId('R_M'))).toBe(false);
+    expect(checkComponentConstruction(child.context, typeId('R_H'), {correspondence: step.correspondence}))
+      .toMatchObject({kind: 'checked', obligations: []});
     expect(checkComponentConstruction(child.context, typeId('R_M'), {correspondence: step.correspondence}))
       .toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4'});
     expect(verifyFiniteRe01Evidence(old.request.actual, old.x.id, {root: 'root', nodes: [old.root, old.next]}))
@@ -293,5 +306,31 @@ describe('exact-vacuous extension ground and retained member identity', () => {
     // Distinct authenticated inputs preserve their own original/fresh root
     // policies. No existing request is reanchored and no receipt is transferred.
     expect(actual).not.toBe(old.root.context);
+  });
+
+  it.each([false, true])('keeps identity-only original types outside hypothetical validity while fresh consumption=%s', async consume => {
+    const {actual, u, child, node, fresh} = await reanchored('exact-vacuous-identity-read.xsd', consume);
+    expect(actual.members).toHaveLength(23);
+    const correspondence = checkCandidateCorrespondence(actual, actual, child.context, u.id, typeId('B'), local(typeId('A')));
+    assert.equal(correspondence.kind, 'checked');
+    expect(checkComponentConstruction(child.context, typeId('R_M'), {correspondence}))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4'});
+    const result = verifyFiniteRe01Evidence(actual, u.id, {root: 'U', nodes: [node]});
+    if (consume) {
+      expect(checkComponentConstruction(child.context, fresh.id, {correspondence}))
+        .toMatchObject({kind: 'checked', dependencies: expect.arrayContaining([typeId('T')])});
+      expect(result).toMatchObject({kind: 'candidate-rejected', component: typeId('R_M'), rule: 'derivation-ok-restriction.5.4'});
+    } else {
+      expect(result).toMatchObject({kind: 'checked-candidate', claims: {actualObligations: 'checked', universalCoverage: false}});
+      assert.equal(result.kind, 'checked-candidate'); assertFiniteCandidateReceipt(actual, result);
+      const actualChecked = new Set(result.actualComponents.map(component => component.component));
+      const hypotheticalChecked = new Set(result.proof[0]!.components.map(component => component.component));
+      for (const name of ['T', 'V', 'R_H', 'R_M']) {
+        expect(actualChecked.has(typeId(name))).toBe(true);
+        expect(hypotheticalChecked.has(typeId(name))).toBe(false);
+        expect(child.context.lookup(typeId(name))).toMatchObject({kind: 'found'});
+      }
+      expect(result.proof[0]!.premises).toEqual([]);
+    }
   });
 });

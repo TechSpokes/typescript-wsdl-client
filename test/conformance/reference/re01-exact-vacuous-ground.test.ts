@@ -85,4 +85,36 @@ describe('independent exact-vacuous consumer source premises', () => {
     // This authenticates the second source, not cross-source semantic identity
     // or the separate complete contextual U certificate checked by typed owners.
   });
+
+  it('pins an unrelated primitive T and restriction V whose base identity still requires preservation', async () => {
+    const identityFile = 'xsd/recovery/exact-vacuous-identity-read.xsd';
+    const schema = parseXml(readFileSync(localFixture(identityFile), 'utf8'), identityFile);
+    expect(children(schema, 'complexType').map(node => attribute(node, 'name')).sort())
+      .toEqual(['A', 'A2', 'B', 'R', 'R_H', 'R_M', 'T', 'U', 'V', 'X']);
+    expect(children(schema, 'element').map(node => attribute(node, 'name')).sort()).toEqual(['H', 'M', 'Z']);
+    expect(named(schema, 'complexType', 'A2').children).toEqual([]);
+    for (const [name, method, base] of [['T', 'extension', 'A2'], ['V', 'restriction', 'T']]) {
+      const type = named(schema, 'complexType', name), body = children(type, 'complexContent')[0].children[0];
+      expect(body.local).toBe(method);
+      expect(expandedQName(body, attribute(body, 'base')!)).toEqual({uri: namespace, local: base});
+      const sequence = children(body, 'sequence')[0], use = children(sequence, 'element')[0];
+      expect(sequence.children).toHaveLength(1);
+      expect(expandedQName(use, attribute(use, 'ref')!)).toEqual({uri: namespace, local: 'Z'});
+      for (const node of [sequence, use]) expect([attribute(node, 'minOccurs'), attribute(node, 'maxOccurs')]).toEqual([undefined, undefined]);
+    }
+    const z = named(schema, 'element', 'Z');
+    expect(expandedQName(z, attribute(z, 'type')!)).toEqual({uri: namespace, local: 'R_M'});
+    const source = parseXml(readFileSync(localFixture('xsd/recovery/exact-vacuous-consumer-reanchored.xsd'), 'utf8'));
+    for (const name of ['A', 'B', 'R', 'X', 'U', 'R_H', 'R_M'])
+      expect(named(schema, 'complexType', name).xml).toBe(named(source, 'complexType', name).xml);
+    for (const name of ['H', 'M']) expect(named(schema, 'element', name).xml).toBe(named(source, 'element', name).xml);
+    expect(schema.namespaces).toEqual(source.namespaces);
+    for (const type of children(schema, 'complexType'))
+      for (const property of ['abstract', 'final', 'block', 'mixed']) expect(attribute(type, property)).toBeUndefined();
+    for (const kind of ['attribute', 'anyAttribute', 'any', 'annotation', 'key', 'keyref', 'unique']) expect(descendants(schema, kind)).toEqual([]);
+    expect(await validateFixture(identityFile, ['<M xmlns="' + namespace + '"/>', '<Z xmlns="' + namespace + '"><M/></Z>']))
+      .toMatchObject({phase: 'schema', outcome: 'accepted', instances: [{outcome: 'accepted'}, {outcome: 'accepted'}]});
+    // Source/instance acceptance is not an oracle for full RE01 validity or
+    // whether a raw identity read creates a hypothetical component obligation.
+  });
 });
