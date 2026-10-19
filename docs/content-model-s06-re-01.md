@@ -3203,6 +3203,137 @@ General witness coverage, adequate proof representation, input-derived bounds or
 All accepted packages, original operands, domain/evidence versions, failure categories and configurable sticky engineering budgets remain unchanged.
 No new production rule, cyclic acceptance, helper quotient, policy choice or activation is introduced; #179/#153/#184 retain their separate gates.
 
+### Executed source-to-B semantic bridge audit
+
+This investigation executes the [prepared packet](content-model-s06-research-handoff.md#current-purpose-and-next-investigation) at main `603d84dad2e5942e2aa76ee7e119c1c98661b8a4`, tree `a924ba281368b54ed8e6b0c08f51e2bb259d4bcf`.
+Its subjects are actual q_X = Q_B(Γ,Γ,X,A) and qᵢ = Q_B(Γ,Cᵢ,Uᵢ,A) from the consumed renewal source.
+It tests the dated-source correspondence and concrete semantic inference attempts, rather than treating formal nonentailment as a verdict about intended normative meaning.
+
+The independently reviewed result is a scoped proof obstacle: the inspected sources do not justify either attempted truth rule below, and no compatible omitted premise was established.
+This is not an exhaustive absence theorem about all sources, a semantic answer to renewal, full-XSD ambiguity or undecidability.
+The following paired control also disproves one optional history-erasing reduction; a direct history-aware proof need not establish that reduction.
+
+#### Completed clause-to-premise audit
+
+Line references use the [pinned Structures XML](https://github.com/jacoelho/xsd/blob/142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/structures.xml), SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+The complete `cos-ct-extends` constraint and valid-restriction definition were read, not only the explanatory clause-1.5 note.
+Every row retains full V, conditional primitive duties, actual Γ and each generated context; no pending Q is assumed during local qualification.
+
+| Source and status | Premise checked | Proposed consequence and result | Preserved discriminator |
+| --- | --- | --- | --- |
+| `cos-ct-extends`, 3993–4108; `cd-ct-extension`, 4106 | Valid extension includes 1.5 and all numbered premises | Full local/candidate definition confirmed; no independent truth introduction | Final, AU, wildcard and content checks |
+| `derivation-ok-restriction`, 4111–4270 | The second step must be a valid restriction | Raw shape alone is insufficient; no contextual support rank supplied | Retained R_M fails 5.4 |
+| `cos-ct-derived-ok`, 4277–4334 | Raw identity/base/method/exclusion recursion | Does not replace complete component validity | Exact B identity and H/Q blocks |
+| Type hierarchy, 709–744; `ct-props-correct`, 3983 | Base ancestry is acyclic inside each selected finite H | Does not imply wellfounded support across generated Hᵢ | Uᵢ→B→A has constant height |
+| `gloss-cos`, 1017–1021; conformance, 8816–8844 | Components owe their constraints and recursive property closure | Retained by V under the audited B formalization; no simultaneous generated-context introduction established | Primitive cycles and other actual debts |
+| Clause 1.5, 4070–4084; component universe, 632 onward | A finite construction must satisfy interpreted predicates | Does not quantify over interpretations of Q | S⁺/S⁻ disagree despite the same candidate vocabulary |
+| `key-typeRestriction`, 713–720, term definition | Describes one-to-one correspondence and payload inclusion | Adding unrestricted language inclusion conflicts with accepted component-based controls | Dead-wildcard intermediate/nonempty restriction |
+| Layer 1, 8046–8099 | Assembly order does not change one final assessment | Does not establish invariance when immutable derivability anchors differ | Distinct source/anchor pair below |
+
+The phrase requiring components to satisfy their constraints does not introduce a missing shortcut: restricting candidate quantification to fully V-qualified components is precisely the full frontier condition already present in N.
+Conformance's prohibition on assessing an instance against an invalid schema does not forbid representing and rejecting proposed construction records.
+Likewise, selected B supplies a finite H for each check; native property-reference closure is not a claim that the universe of possible constructions is finite.
+
+The term-definition route is a real compatibility question, not language dismissed as a note.
+Importing unrestricted instance-language inclusion would reject the already accepted [dead-intermediate contrasts](#source-authority-and-corrections), where numbered component restriction permits a nonempty restriction of an empty-language base.
+No independently justified narrower part of that description was found that distinguishes renewal while preserving those controls.
+
+#### Two concrete unselected principles and their failed inferences
+
+Let T_B denote the audited formalized candidate equations and additional accepted primitive/finite-positive rules.
+One proposed positive principle is semantic reflection:
+
+```text
+P_sat(j): Q(j) iff there exists an interpretation S satisfying T_B with j ∈ S.
+```
+
+This would make renewal positive through S⁺.
+Its first unsupported step replaces existence of a finite component construction c satisfying V(c), with predicates already interpreted, by existence of an interpretation S and a construction satisfying V_S(c).
+An interpretation of Q is neither one of the schema component kinds nor a component property supplied by the native construction vocabulary.
+
+S⁻ is a concrete countermodel to deriving this reflection from T_B: existence of the compatible model S⁺ is true while renewal is false in S⁻.
+This rejects the proposed inference from the audited premises; it does not prove that no other dated semantic source could justify an additional principle.
+Calling a consistent postfixed family valid would make the same unsupported truth-introduction step.
+
+The proposed necessary negative foundation is:
+
+```text
+P_found: for every nonprimitive j, Q(j) implies j ∈ μR.
+```
+
+R is exactly the optimistic auxiliary operator above, not the full candidate operator N and not semantic validity.
+This principle would exclude renewal while preserving accepted finite positives and legal primitive component cycles; it is only a necessary condition, not a complete interpretation or decision procedure.
+Its first unsupported implication is from wellfounded base ancestry and finite property closure inside each H to finite generated-context support across H₀,H₁,....
+
+Every Uᵢ still has Uᵢ→B→A→anyType, so fixed base height coexists with the displayed unbounded contextual support.
+S⁺ satisfies the audited structural/source premises but violates this foundation principle.
+The two-step construction bound, conditional primitive approval and rejection of cyclic stored evidence do not supply the missing implication.
+
+#### A paired anchor control and its exact projection
+
+The new [independently authenticated source Γ′](../test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer-reanchored.xsd) represents the current component properties of the earlier trapped parent P as a distinct actual input.
+It retains A/B/R, declares X already restricting B to empty, U vacuously extending B, M:U affiliated to H, R_H restricting B with `[H1]` and R_M restricting R_H with `[M1]`.
+Each request keeps its own immutable actual context throughout; no issued context is reset or reanchored.
+
+Define π to retain the following semantic component-property graph and erase only source contributions, source positions, provenance and immutable-anchor/root labels.
+The [typed comparison](../test/research/re01/exact-vacuous-ground.test.ts) constructs a bijection over both complete fifteen-member sets of represented canonical records: nine fixed global identities/QNames and six separately mapped particle incidences.
+It preserves scoped particle roles/owners, distinct wrappers/uses, ordered edges, occurrence bounds, element references, base/method references and all sharing, including the authoritative effective A/B/U content identity within each input.
+Sequence/model-group terms are carried inside wrapper particles; this record count is not a count of every native abstract component or builtin.
+
+The comparison also preserves type/declaration flags, target namespaces, empty annotations/AUs, absent wildcards and value/identity constraints, and absent scalar slots.
+It uses source-derived effective content/AUs where required, not equality of caller-supplied raw properties alone.
+This is a specified projection, not full B-input isomorphism, preservation of source operands or an identity claim about property-equal clones.
+
+Old P has all fifteen local premises qualified with authenticated correspondence, but is not fully valid: its mandatory U judgment is false by the preceding universal first-restriction/QName theorem.
+Every U child must check inherited fresh R_M, which necessarily fails 5.4 under arbitrary permitted finite additions.
+The executed rejected child illustrates that proof; it does not establish its universal quantifier.
+
+New Γ′ has all fifteen actual local premises and a complete one-node U-restrict-B certificate.
+R_M remains present and checked in actual Γ′, but is outside this child's ten-component hypothetical closure; R_H is included and passes.
+Checking R_M hypothetically with the authenticated step correspondence rejects 5.4, so the positive is not silently transferring its actual validity.
+
+Consequently no function of π alone equals selected Q_B on both admitted locally qualified queries.
+This does not refute factorization restricted to already fully valid parents or states reached by successful transformations, and does not describe two semantically valid schemas.
+It establishes anchor sensitivity of selected B on this domain, not an implementation defect, same-input inconsistency or permission to change the accepted root policy.
+
+Native factorization through π remains unproved: abstract component wording and same-assessment assembly invariance do not by themselves establish this cross-source correspondence.
+If such native factorization and uniform selected-B/native correspondence were both proposed, this pair would prevent their conjunction on these queries.
+A direct history-aware semantic proof need not erase Γ, prove cross-Γ invariance or transfer facts; its remaining dependency is the independently justified full-context truth rule described above.
+
+The [independent source/reference control](../test/conformance/reference/re01-exact-vacuous-ground.test.ts) pins both consumer chains, exact named references, flags and source contributions, with live source/instance acceptance separate from RE01 authority.
+The existing complete original-X and stable-M:B contrasts remain unchanged.
+No recognizer, semantic owner, proof API or production success/negative rule changes.
+
+#### Historical leads, read limits and concrete disposition
+
+The [WG bug 2235](https://www.w3.org/Bugs/Public/show_bug.cgi?id=2235) resolution on 20 October 2006 changes the explanatory note for the next working draft rather than establishing a replacement dated normative rule.
+The [24 October 2006 CMS mail](https://lists.w3.org/Archives/Public/xmlschema-dev/2006Oct/0072.html) conditions the two-step proposal on constructibility and rejects an intermediate violating EDC.
+The coordinator read the full letter; the investigator inspected authenticated limited excerpts after full retrieval failed, and does not claim a complete thread audit.
+
+The investigator read the bug resolution and current [second-edition errata page](https://www.w3.org/2004/03/xmlschema-errata); the listed Structures correction concerns default/PSVI behavior, with no adopted RE01 selector found there.
+This is a scoped source inventory, not proof that no historical source or applicable correction exists.
+Later-edition wording does not automatically amend the selected 2004 rule.
+
+The coordinator inspected the [2001 Formal Description WD](https://www.w3.org/TR/xmlschema-formal/), Sections 5.3–5.4, status and Appendix B: its forest-subset relation and stated omissions do not establish equivalence with full accepted component derivation.
+The [12 January 2003 notes](https://cmsmcq.com/2002/dctgnotes.html), Section 4, likewise leave component-constraint conformance as a proof obligation.
+These qualified coordinator readings supply no missing full-B truth rule; substituting their relation would require a new correspondence theorem.
+The whole XSTS archive, member-only discussions and unlisted later threads were not audited; no source-exhaustion conclusion is claimed.
+
+| Unselected route | Renewal consequence | Preserved facts and exact proof cost |
+| --- | --- | --- |
+| Independently justified positive reflection or another introduction | Could establish semantic success beyond current finite evidence | Prove authority/correspondence and a sound adequate proof mechanism; retain primitive cycles and trapped-consumer negative |
+| Independently justified generated-nonprimitive foundation | Would exclude renewal | Prove necessity from intended semantics; it preserves finite positives but supplies no complete positive criterion |
+| Concrete missing premise or correspondence repair | Depends on the corrected relation | Identify the exact clause, repair both translation directions and re-evaluate the models and controls |
+| Explicit project interpretation | Changes the stated contract only if separately selected | Specify alternatives and compatibility; a maintainer decision is not a source theorem |
+
+The recommendation is to preserve B-v1 and every gate while recording this concrete proof dependency, rather than select a model by convenience or add a solver for an unsettled judgment.
+No source-backed distinguishing truth rule or specific correspondence correction was established by this investigation after independent challenge.
+This is a genuine scoped obstacle, not a negative inferred from the checkpoint, a search budget or sampled fixtures.
+
+General witness coverage, semantic evidence adequacy, complete negatives and mathematical termination therefore remain open.
+All original Γ obligations, exact owning contexts, inherited fresh roots, original typed operands, conditional primitive truth, legal primitive cycles, seven accepted packages and P1/F2 remain binding.
+No policy is selected, no additional user approval is inferred, and #234/#232 or later #179/#153/#184 are not closed or activated.
+
 ### No complete F child for the fixed membership-loss parent
 
 This continuation starts from #308 at fetched main `cc81f01241c80d808c6c38977fedb2d09bd9f7cb`, tree `4dfdf3636657e68fe8fc992058e475ad9cc80750`.
@@ -4155,9 +4286,10 @@ Clause 1.5 remains present in that later edition.
 
 The official [Recommendation comments inventory](https://www.w3.org/2001/05/xmlschema-rec-comments.html), R-213, reports a formal attribute restriction that conflicts with the introductory language-inclusion description.
 R-243 reports tension between clause 1.5 and its no-restoration note, including an unchanged-original-only proposed repair.
-These entries are marked New/Unclassified with no adopted resolution shown; they expose contrary intentions rather than settle this abstract construction or supply an extra normative error predicate.
+These inventory entries are marked New/Unclassified with no adopted resolution shown there; they expose contrary intentions rather than settle this abstract construction or supply an extra normative error predicate.
 
-Only those public inventory entries were read; their full originating threads and member discussions were not verified.
+At that investigation only those public inventory entries were read; the [later executed audit](#historical-leads-read-limits-and-concrete-disposition) separately inspects the public 2006 bug resolution and limited mail excerpts.
+Member discussions and the complete originating-thread history remain unverified.
 The model is the documented component-predicate reading with an explicit preservation policy, not a claim of settled WG intent for every ambiguous phrase.
 
 This distinction changes outcomes without reopening AU01 C1 or its accepted universal source-replacement contract.
