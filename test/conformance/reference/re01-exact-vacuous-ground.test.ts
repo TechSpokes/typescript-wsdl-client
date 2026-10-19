@@ -44,4 +44,45 @@ describe('independent exact-vacuous consumer source premises', () => {
     // No engine observation supplies full Q_B, universal child nonexistence
     // or the missing semantic inference for the separate renewal family.
   });
+
+  it('authenticates the distinct actual source retaining both consumers and the same named references', async () => {
+    const reanchored = 'xsd/recovery/exact-vacuous-consumer-reanchored.xsd';
+    const schema = parseXml(readFileSync(localFixture(reanchored), 'utf8'), reanchored);
+    expect(attribute(schema, 'targetNamespace')).toBe(namespace);
+    expect(children(schema, 'complexType').map(node => attribute(node, 'name')).sort()).toEqual(['A', 'B', 'R', 'R_H', 'R_M', 'U', 'X']);
+    expect(children(schema, 'element').map(node => attribute(node, 'name')).sort()).toEqual(['H', 'M']);
+    for (const [name, method, base, reference, minimum] of [
+      ['A', undefined, undefined, 'H', '0'], ['B', 'extension', 'A'], ['R', 'restriction', 'A'],
+      ['X', 'restriction', 'B'], ['U', 'extension', 'B'],
+      ['R_H', 'restriction', 'B', 'H', undefined], ['R_M', 'restriction', 'R_H', 'M', undefined],
+    ]) {
+      const type = named(schema, 'complexType', name!);
+      expect([attribute(type, 'abstract'), attribute(type, 'final'), attribute(type, 'block'), attribute(type, 'mixed')]).toEqual([undefined, undefined, undefined, undefined]);
+      const body = method ? children(type, 'complexContent')[0].children[0] : type;
+      if (method) {
+        expect(body.local).toBe(method);
+        expect(expandedQName(body, attribute(body, 'base')!)).toEqual({uri: namespace, local: base});
+      }
+      if (reference) {
+        const sequence = children(body, 'sequence')[0], use = children(sequence, 'element')[0];
+        expect(sequence.children).toHaveLength(1);
+        expect([attribute(sequence, 'minOccurs'), attribute(sequence, 'maxOccurs')]).toEqual([undefined, undefined]);
+        expect(expandedQName(use, attribute(use, 'ref')!)).toEqual({uri: namespace, local: reference});
+        expect([attribute(use, 'minOccurs'), attribute(use, 'maxOccurs')]).toEqual([minimum, undefined]);
+      } else expect(body.children).toEqual([]);
+    }
+    for (const [name, type, affiliation, block] of [['H', 'B', undefined, 'restriction'], ['M', 'U', 'H', undefined]]) {
+      const declaration = named(schema, 'element', name!);
+      expect(expandedQName(declaration, attribute(declaration, 'type')!)).toEqual({uri: namespace, local: type});
+      expect(attribute(declaration, 'block')).toBe(block);
+      expect(attribute(declaration, 'substitutionGroup') ? expandedQName(declaration, attribute(declaration, 'substitutionGroup')!) : undefined)
+        .toEqual(affiliation ? {uri: namespace, local: affiliation} : undefined);
+      for (const property of ['abstract', 'nillable', 'final', 'default', 'fixed']) expect(attribute(declaration, property)).toBeUndefined();
+    }
+    for (const kind of ['attribute', 'anyAttribute', 'choice', 'any', 'annotation', 'key', 'keyref', 'unique']) expect(descendants(schema, kind)).toEqual([]);
+    expect(await validateFixture(reanchored, ['<M xmlns="' + namespace + '"/>']))
+      .toMatchObject({phase: 'schema', outcome: 'accepted', instances: [{outcome: 'accepted'}]});
+    // This authenticates the second source, not cross-source semantic identity
+    // or the separate complete contextual U certificate checked by typed owners.
+  });
 });

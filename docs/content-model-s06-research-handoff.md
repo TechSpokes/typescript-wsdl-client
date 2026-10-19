@@ -14,10 +14,13 @@ The [PR #313 theorem](content-model-s06-re-01.md#global-formal-models-and-renewa
 These are two consistent interpretations of our formalized rules: one accepts the repeating case and the other rejects it.
 That establishes a limit of those formalized premises, not ambiguity of all normative XSD, semantic success or failure, or undecidability.
 
-This packet prepares one semantic investigation; it does not execute it or choose an interpretation.
-Preparation starts from main `c33632eac0987f4cffe9628043435065e1facad6`, tree `c9e47848dc923af8e8711741d3958efaf72f2fba`.
-The reviewed baseline is the [leaf ledger](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6268599955) and [joint disposition](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6268604295).
-Before execution, reread the actual latest #234/#232 status and ownership, claim the bounded slice and record the newly fetched revision; newer accepted results supersede this preparation baseline.
+The [source-to-B investigation has now executed](content-model-s06-re-01.md#executed-source-to-b-semantic-bridge-audit) from main `603d84dad2e5942e2aa76ee7e119c1c98661b8a4`, tree `a924ba281368b54ed8e6b0c08f51e2bb259d4bcf`.
+The investigator and independent reviewer tested two concrete truth principles and a possible missing-context correspondence, rather than stopping at the preparation packet.
+Neither attempted source-to-rule proof established its truth principle; the result records their exact failed inferences, a paired executable control and a concrete unselected alternatives packet.
+
+Execution ownership is recorded in the [leaf claim](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6270086533) and [joint link](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6270089692).
+These are fixed execution records, not permanently latest status: any continuation must reread current #234/#232 acceptance and ownership before dispatch.
+The reading/control map and staged gates below remain the executed packet's reproduction and continuation boundaries.
 
 ### What is established and what remains unproved
 
@@ -29,6 +32,7 @@ Before execution, reread the actual latest #234/#232 status and ownership, claim
 | Exact-content vacuous extension ground | A retained consumer refutes the general ground | The renewal-specific verdict is not settled |
 | Renewal | No finite certificate under current justified leaves | Local productivity is not semantic success |
 | Global formal models | Two accepted-rule-compatible models disagree | Intended dated meaning still needs justification |
+| Executed semantic audit | Concrete positive/foundation inferences fail; paired anchor control qualifies | No authority-backed contextual truth rule or specific repair established |
 | Full RE01 procedure | Useful positives and scoped contradictions work | Coverage, adequacy, negatives and termination stay open |
 
 These failed reductions led to the semantic gate rather than another helper-length experiment.
@@ -39,24 +43,37 @@ Primitive truth stays conditional on its other duties, and legal primitive compo
 
 ### Practical routes and recommendation
 
-| Route | Required evidence | Place in this packet |
-| --- | --- | --- |
-| Repair a missing or mistranslated premise | Exact dated clause and failed correspondence step | Audit first; do not assume the formalization is exhaustive of intended meaning |
-| Prove a distinguishing semantic principle | Independent source justification and full B-v1 correspondence | Continue within the same slice if the bridge survives |
-| Clarify the project contract explicitly | Concrete alternatives, consequences and unresolved authority | Unselected later option requiring a separate decision packet |
+The remaining dependency is an authority-backed rule connecting finite per-context construction and its full recursive B duties to own-Q truth, or a specific correspondence correction that avoids that rule.
+Preserve B-v1 and every acceptance gate; adding a solver or selecting a model by convenience would not discharge this dependency.
 
-Start at the bridge from dated “possible to derive” and valid extension/restriction to the uniformly recursive finite-candidate definition.
-Identify a specific missing primary assumption or justify a specific truth-introduction or exclusion principle; merely restating the two model answers is insufficient.
-The local Q-occurrence inventory is already reviewed: reopen an entry only for an identified dependency or translation discrepancy.
+| Unselected route | Executed finding | Evidence still required |
+| --- | --- | --- |
+| Repair a missing or mistranslated premise | Full extension/restriction, component and conformance bridge inspected; no compatible omitted premise established | Exact clause, both translation directions and model/control re-evaluation |
+| Positive reflection P_sat | Would accept renewal, but moves from component existence to existence of a predicate interpretation | Independent authority/correspondence and adequate sound proof representation |
+| Necessary foundation P_found | Would exclude renewal and preserve finite positives/primitive cycles; is not a complete interpretation | Authority for finite generated-nonprimitive support, not merely finite base ancestry |
+| Explicit project interpretation | Concrete alternatives are now documented; none is selected | Separately scoped maintainer decision and compatibility analysis, not a source theorem |
+
+P_sat's failed step replaces a finite construction satisfying already interpreted predicates with a choice of the predicates' global interpretation.
+P_found's failed step replaces finite base ancestry/property closure inside each H with wellfounded support across generated Hᵢ; the renewal family keeps constant base height.
+Full component validity already retains every Q frontier duty, so requiring genuinely valid components does not add the missing introduction rule.
+
+The new paired control preserves a specified graph of nine global and six particle records across distinct authenticated inputs.
+Old P is locally qualified but not fully valid because its mandatory U judgment is false; new actual Γ′ has a complete one-node U proof.
+Only R_M is absent from the positive hypothetical closure; it remains checked in actual Γ′, and R_H is included hypothetically.
+
+This refutes anchor-erasing factorization over admitted locally qualified queries, not over a restricted class of already fully valid parents or successful transformations.
+Native cross-source invariance is unproved, and this optional shortcut is not a new gate for history-aware methods.
+A direct contextual proof can retain immutable Γ throughout; it still needs an independently justified truth introduction/exclusion or concrete correspondence repair.
 
 If contract clarification becomes a concrete alternative, compare its exact statement against both models, conditional primitive truth, mutual primitive cycles and the retained-consumer contradiction.
 Selecting a least or greatest fixed point is not justified merely by finite constructions or legal recursive schemas; naive least-model treatment can lose primitive-cycle positives.
 A guarded proof or quotient would change proof representation only after semantic soundness is proved; altering helper/root/context requirements changes the selected witness domain and must be stated as such.
-No clarification is selected here, and an unresolved checkpoint is not an automatic policy or approval request.
+No clarification is selected here, and the reviewed source obstacle is neither source-exhaustion evidence nor an automatic policy or approval request.
 
 ### Narrow reading and source inventory
 
-Read the following in order; historical statuses do not supersede later accepted contracts.
+The executed reading order is recorded below; historical statuses do not supersede later accepted contracts.
+The [completed matrix and read limits](content-model-s06-re-01.md#completed-clause-to-premise-audit) distinguish investigator readings, coordinator readings, limited excerpts and unaudited sources.
 
 | Order | Exact input | Extract for the investigation |
 | --- | --- | --- |
@@ -90,6 +107,7 @@ Use the [primitive approval](https://github.com/TechSpokes/typescript-wsdl-clien
 | [Renewal research](../test/research/re01/helper-renewal.test.ts) | `checks every local component in %s renewing contexts while the last child remains owed` | Existing 1/3/5-stage observations, not a semantic proof from sampling |
 | [Renewal contrast](../test/research/re01/helper-renewal.test.ts) | `retains a complete finite contrast when z no longer consumes the earlier endpoint` | Complete unconsumed positive |
 | [Exact-vacuous control](../test/research/re01/exact-vacuous-ground.test.ts) | `qualifies every local premise and distinguishes stable exact-B membership=%s` | Trapped consumer versus complete stable-membership positive |
+| [Distinct-anchor control](../test/research/re01/exact-vacuous-ground.test.ts) | `distinguishes immutable anchors under a complete component-property graph correspondence` | Complete represented-record bijection, local-old/full-new validity distinction and exact closure |
 | [Primitive controls](../test/research/re01/primitive-root-evidence.test.ts) | `has a valid primitive no-change proof although every added restriction step is forbidden` | Permanent recursive primitive positive |
 | [Other actual debts](../test/research/re01/primitive-root-evidence.test.ts) | `still requires and checks finite evidence for every nonprimitive actual obligation` | Primitive success does not discharge unrelated actual duties |
 | [Original scalar closure](../test/unit/schema-original-generated-binding-independent.test.ts) | `constructs an active original slot without requiring its inactive source container`; `rechecks slot legality in each sibling and nested context instead of transferring original or sibling success` | Exact slot versus source-owner identity; no original-legality transfer |
@@ -103,7 +121,11 @@ Renewal, exact-vacuous and primitive fixtures are under `test/conformance/fixtur
 Source acceptance and semantic expected outcomes must be recorded separately.
 Raw ancestry/property receipt reads do not automatically import full component validity; original scalar data or provenance likewise cannot certify a slot's legality in another context.
 
-### One bounded next slice and its evidence packet
+### Executed slice and reusable evidence packet
+
+The following stages were executed for the source bridge, positive reflection, necessary foundation and paired anchor audit.
+Independent review accepted the paired proposition and failed-inference scopes before permanent controls; no semantic rule or witness-domain change was authorized.
+The checkpoint was a progress boundary, not the reason for the unresolved semantic verdict.
 
 The investigator first audits the semantic bridge, then attempts one concrete source-grounded inference for the exact renewal judgment, with all required contextual duties.
 The target deliverable is a clause-to-premise proof or a precise failed inference and its next dependency, not a solver or another helper-family expansion.
@@ -165,10 +187,10 @@ One renewal verdict does not supply a general solver.
 | Research and joint closure | Independent full #234 review, AU/PW/DT compatibility, exact checks and #232 acceptance |
 | Production and combined qualification | Separate #179 adapter/activation and #153 acceptance; #184 retains runtime ownership |
 
-For this documentation-only preparation, use fresh docs/support-matrix, toolchain and affected manifest checks; reuse unchanged broad evidence only under the [proportional delivery contract](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918), with its original revision labeled.
-Later executable changes need their applicable strict, behavioral, resource, CI/reference and actual-main checks, not tests that merely restate this packet.
+This executed continuation adds strict research and independent source/reference controls, with their applicable behavioral, manifest, CI/reference and actual-main checks recorded by revision.
+Reuse unchanged broad evidence only under the [proportional delivery contract](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918), with its original revision labeled.
 Defaults remain configurable inclusive/sticky 100,000 nodes and 125,000,000 work; exhaustion and unresolved prerequisites never prove invalidity.
-Keep #234/#232 and downstream gates open until their actual criteria pass; no release, version bump or activation is part of this preparation.
+Keep #234/#232 and downstream gates open until their actual criteria pass; no release, version bump or activation is part of this continuation.
 
 ## Disposition and delivery boundary
 
@@ -183,7 +205,8 @@ Primitive approval excludes some other candidate-equation models; the result pro
 
 Thus the formalized contract entails neither that root nor its negation; this strengthens the earlier displayed-chain countervaluation without selecting either model as independent normative truth.
 No full-XSD ambiguity, semantic positive/nonexistence, general undecidability or new policy is inferred.
-The next concrete gate is an independently justified dated-semantic principle distinguishing these models, with correspondence to the complete B-v1 predicates before implementing a general algorithm.
+The [executed source bridge audit](content-model-s06-re-01.md#executed-source-to-b-semantic-bridge-audit) tests that next gate and records the precise remaining truth-rule/correspondence dependency, failed principles and unselected alternatives.
+It establishes no independent renewal verdict and leaves general algorithm implementation gated by that semantic correspondence.
 
 The [exact-vacuous ground investigation](content-model-s06-re-01.md#exact-vacuous-extension-ground-fails-with-a-retained-consumer) refutes an unconditional success rule for a pure U→B→A extension chain, even when all three types share exact content/AUs and every parent local premise qualifies.
 A retained consumer requires exact M; every U rebase removes M from effective(H), and no finite additions can repair the missing QName.

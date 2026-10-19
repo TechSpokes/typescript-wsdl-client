@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): execute the semantic bridge audit and distinguish immutable anchors with authenticated contextual proofs.
+
 - docs(re01): prepare the next semantic investigation with source, review and outcome gates.
 
 - docs(re01): prove global formal-model nonentailment and delimit algorithm applicability for renewing helpers.

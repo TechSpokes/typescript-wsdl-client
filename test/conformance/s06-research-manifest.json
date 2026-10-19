@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "0528601fe3d2c43975cbcbf9af02dc52355025142b09f9dbf5387da599f8fa56",
+          "sha256": "e7d7b7a91e7aa9b0d46683b72a1e66308fa34e1008045b15c94e1a2ba9b78bd4",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2291,17 +2291,22 @@
         {
           "path": "test/research/re01/exact-vacuous-ground.test.ts",
           "role": "reference",
-          "sha256": "93e7e4460dbc48a36dfcda78e1858ac7075c6d175f2b571d9e8a3d814f65b265"
+          "sha256": "9c75f1efd3ca0909e64d322c3ac2d44b98c7dcb3c29641883b171c19de636a93"
         },
         {
           "path": "test/conformance/reference/re01-exact-vacuous-ground.test.ts",
           "role": "reference",
-          "sha256": "133658e34eb78290ecc2049199c445cb4766e329cbd4a7d222e1e8372cbd54c4"
+          "sha256": "a8cd28f3dd24505ee9c27988f5a1b3eb2a94a0064df4ad1b98eb3aa5ef8aa1c5"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer.xsd",
           "role": "fixture",
           "sha256": "dbcf14f336c64d1a8486e4822c75e29d79f501708a6ffb70335994c68c76f30d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer-reanchored.xsd",
+          "role": "fixture",
+          "sha256": "5edfd90fd1aefd718f5b6cb6e55c0a6a77a9df97464f7715e9d6f3d8dec277a1"
         }
       ]
     },
@@ -2693,7 +2698,7 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 238
+    "currentArtifactCount": 239
   },
   "baselineSemanticDefaults": {
     "maxNodes": 100000,
