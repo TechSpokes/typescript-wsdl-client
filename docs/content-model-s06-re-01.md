@@ -7,6 +7,9 @@ Formal component witnesses, a finite particle construction and the remaining ful
 The [architecture recovery](https://github.com/TechSpokes/typescript-wsdl-client/issues/232) stages shared internal semantic owners before universal RE01 closure.
 The [domain and proof checkpoint](#architecture-recovery-domain-and-proof-checkpoint) below distinguishes executable local work from the remaining interpretation and completeness obligations.
 
+The [finite flat-prefix criterion](#any-nonempty-finite-flat-prefix-of-optional-local-elements) generalizes the sufficient inherited-consumer obstruction, and the [copied-prefix continuation](#copied-prefix-transport-and-optional-prefix-bypass) separates failed comparison transport from successful alternative witnesses.
+The [renewing-helper investigation](#renewing-helper-duties-and-the-finite-evidence-boundary) establishes a locally productive family with no finite certificate under the existing direct-only primitive rules, without identifying local productivity with independent semantic success.
+
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
 The [current derivability continuation](#derivability-and-affiliation-continuation) separates that assessment from hypothetical checking; neither the new comparison interface nor a dependency census supplies the missing complete theorem.
@@ -2755,8 +2758,147 @@ They refute strong transport while establishing a concrete alternative reconstru
 No cross-context receipt is transferred, and every predicate is recomputed in its owning context.
 
 This establishes only the displayed optional-prefix case, not arbitrary prefix bypass, helper/evidence bounds, complete general negatives or mathematical termination.
-General arbitrary-success coverage and contextual evidence adequacy remain open; the next investigation tests whether inherited consumed roots can force renewed helper obligations at every finite evidence leaf.
+General arbitrary-success coverage and contextual evidence adequacy remain open; the following investigation tests inherited consumed roots at every finite evidence leaf.
 All accepted contracts, authority versions, failure categories, configurable sticky budgets and later activation gates remain unchanged.
+
+### Renewing helper duties and the finite-evidence boundary
+
+This investigation starts from committed `dabf3c5d5879c4d17ba258f0d502bd1054e7576e`, tree `be820215dbaefe85f3884f9519724c9cd611f93f`.
+It distinguishes finite primitive-leaf evidence from an indefinitely locally productive family over the same accepted B-v1 domain.
+Neither result supplies the missing equivalence with independent semantic success.
+
+#### Exact source and locally qualified judgments
+
+The [consumed source](../test/conformance/fixtures/xsd/recovery/helper-renewal-consumed.xsd) retains the [two-head anchored source](#an-anchored-construction-requires-a-new-nonprimitive-extension), changing both z declarations to exact original X and Q's block to both extension and restriction.
+H and Q remain nonabstract globals of exact named complex type B, H affiliates with Q and blocks restriction, and their final sets remain empty.
+A's optional outer sequence contains H[4..4], required z:X and the fixed local Q:B/H:B choice; X's optional outer sequence contains the twice-repeated local H:B/H:B group, required z:X and global Q.
+
+B directly extends A vacuously, R restricts A to empty and original X extends R.
+Complete original local/source checks pass; the sole nonprimitive actual obligation is X, while B has its existing direct primitive discharge.
+X's actual existential judgment is the problem being investigated, never an assumed input qualification.
+
+Here a locally qualified candidate means exact authenticated correspondence and all required source/local component, scalar, AU, declaration, attribution and construction premises, except the generated RE01 existential duties being studied.
+Calling such a candidate locally qualified does not call it a complete witness.
+All primitive discharges use the existing direct-only rule; a vacuous multistep U→B→A path is not a new primitive leaf.
+
+#### A live nonprimitive duty in every required local closure
+
+The earlier exhaustive anchored shape argument applies to any permitted root intermediate and continues to apply to retained X in any locally qualified descendant.
+Raw extension requires the same A particle or a unit sequence beginning with a recursively property-equal copy.
+A's optional nonempty prefix cannot disappear; a surviving suffix leaves an outer range `1..1`, incompatible with X's fixed `0..1`, while erased suffixes reduce to the A-shaped comparison.
+
+In that comparison the first endpoint group cannot restrict an element, and complete ordered mapping cannot skip H[4..4].
+Thus H needs another nonabstract effective member M to create its implicit choice; MapAndSum then retains the exact total range 2 × 2 = 4.
+The final Q expansion can contain only original Q/H names, because every other global QName lacks a target in A's fixed local Q/H choice.
+
+Consequently every qualified mapping needs a fresh-QName member effective under H and excluded under Q.
+H blocks restriction, so M's qualified type path to exact complex B contains extension edges only; identity B would also be Q-effective, even through fresh affiliation bridges.
+The path is therefore proper, and Q's two-method block excludes its extension-derived member.
+
+Every type before B on this extension-only path is fresh relative to immutable Γ and nonprimitive: retained A/R cannot reach B, and X's already replaced restriction edge is H-blocked or misses B through a fresh intermediate.
+Simple/list/union alternatives cannot derive exact complex B; anonymous or named helper identity changes cannot create a new original B.
+At least one such fresh extension is a mandatory generated RE01 duty in the complete local closure.
+
+That closure cannot discard X in a child: fix one supporting M introduced by the first root, whose declaration and declared-type reference every descendant retains.
+This M remains a fresh legality root even after filtering removes it from effective(H); its declaration, affiliation and type ancestry must still be checked, and any legal affiliation reaches exact B.
+B consumes original A, whose unchanged z declaration consumes exact X, so retained X is required again in every locally qualified descendant.
+
+The same anchored argument therefore yields at least one nonprimitive duty at every required candidate node.
+It does not say that every arbitrary step adds a new helper: a context with several live supporters can rebase one while another remains live.
+It says that no locally qualified required closure is a finite-proof leaf.
+
+Any finite well-founded evidence graph has a sink among its required construction nodes.
+At that sink the mandatory nonprimitive duty needs another exact child, contradicting the absence of an outgoing required premise.
+Hence no permitted finite acyclic certificate with the current justified primitive leaves establishes this root, independently of helper count, search cutoff or tested trace length.
+
+#### Alternative audit
+
+| Proposed escape | Reason it does not supply a finite leaf |
+| --- | --- |
+| A live, wildcard or required-empty-choice suffix | Surviving outer unit range fails X's optional range |
+| An erased suffix or pointless wrapper | Restores the same anchored H/Q comparison |
+| A property-equal prefix copy | Preserves global H, exact named B/X references and fixed local Q/H names/flags |
+| A fresh global named H or Q | Original global QName uniqueness forbids impersonation |
+| A member typed by exact B | Identity makes it effective under Q as well as H |
+| Restriction or mixed type ancestry | H blocks any restriction method |
+| Simple or union type exceptions | The required exact target B is complex |
+| Fresh affiliation bridges or anonymous helpers | Preserve the same exact B reachability and method exclusions |
+| Rebasing a supporting-path type through a fresh direct extension of A | Loses an inherited member's required exact B affiliation |
+| Reusing B as child intermediate | Adds a restriction; a live supporter must still remain or be replenished |
+| A vacuous U→B→A path | The existing primitive rule requires a direct extension of its designated ancestor |
+| Filtering old members out of both groups | Retains their declaration/type roots and B/A/z:X dependencies |
+
+These are primary-rule arguments over every permitted finite addition, not exhaustive sampling.
+The first QName premise uses [NameAndTypeOK.1](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-NameAndTypeOK) before its both-global exception; membership uses [cos-equiv-derived-ok-rec](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec), and raw construction uses [cos-particle-extend](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-extend).
+The direct primitive boundary and all accepted domain/authority versions remain unchanged.
+
+#### An explicit locally productive family
+
+For each natural i, define finite context Cᵢ retaining the root X restriction of unchanged B, with fresh globally named U₀…Uᵢ and M₀…Mᵢ.
+Each Uⱼ has exact A content; Uⱼ restricts B when j < i, while Uᵢ extends B, and Mⱼ has exact declared type Uⱼ and direct affiliation to H.
+All other original and inherited properties remain unchanged, with empty new type/declaration flags, AUs and wildcards.
+
+Choose names by appending the natural-number decimal spelling to distinct reserved prefixes U and M; this supplies injective global identities disjoint from original A/B/R/X/H/Q.
+Each Cᵢ is finite; no infinite component graph or completed infinite request is admitted.
+The mathematical construction has no configured resource bound, and sufficiently long executed traces can correctly exhaust the existing engineering budgets.
+
+In Cᵢ, effective(H) = {H,Mᵢ} and effective(Q) = {Q,H}.
+All older Mⱼ affiliations remain legal under empty final sets even though their restriction-derived types are filtered from both groups.
+X's anchored mapping is locally valid, B remains primitive, and Uᵢ is the sole nonprimitive generated duty.
+
+A child for Uᵢ changes only its derivation to restriction of exact B, then introduces Uᵢ₊₁ extending B and Mᵢ₊₁ affiliated with H.
+The resulting context is Cᵢ₊₁, with exact candidate correspondence and every inherited/fresh root rechecked.
+Local construction follows inductively: all helper content comparisons use exact A, all affiliations reach exact B, the z delimiter preserves UPA and repeated names retain exact B/X type identities for EDC.
+
+Thus every finite stage has a locally qualified next construction with another outstanding duty.
+This explicit one-live family adds a helper at each step; the universal no-sink theorem needs only a live duty and does not impose that particular transition recipe on arbitrary candidates.
+There is no claim that an executed finite prefix, a cyclic storage node or an infinite local sequence is a semantically successful RE01 witness.
+
+#### The mathematical construction operator
+
+Fix this source Γ and let a construction node record its exact parent, child context, target, intermediate and designated ancestor, with all local premises qualified independently of pending RE01 judgments.
+Its finite frontier consists of every generated nonprimitive duty in the complete required closure; the existing direct primitive rules discharge only their own duties.
+Actual Γ's complete original obligations are checked separately, with X represented by the root and B primitive in this example.
+The original X(Γ) debt is not inserted again in each candidate frontier; consumed candidate X has a restriction edge and owes its local mapping check, while the displayed frontier contains only Uᵢ.
+
+For a set S of such nodes, define Φ(S) to contain precisely the locally qualified nodes whose every frontier duty has a matching exact child node in S.
+Φ is monotone and finitary: a node has finitely many duties, and a supporting choice uses finitely many children.
+Leaves with no nonprimitive duties are Φ(∅); no additional primitive or cyclic acceptance axiom is inserted.
+
+The least fixed point μΦ is exactly finite well-founded derivability for this local inference system; with the separately checked actual premises and sole actual X debt, this is the finite-certificate boundary for this fixture.
+One direction is induction on finite proof height; conversely, finite frontiers let each node in Φ(⋃ₙΦⁿ(∅)) choose children below a finite maximum height, so the union of these finite stages is a fixed point.
+Sharing exact completed children changes storage but not finite derivability, and configurable resource interruption supplies no membership in either fixed point.
+
+Let S contain the displayed root C₀ construction and every displayed Cᵢ→Cᵢ₊₁ child construction.
+The uniform local argument gives S ⊆ Φ(S), so these nodes belong to the greatest fixed point νΦ.
+The universal no-sink theorem excludes every root construction from μΦ, including alternatives outside the displayed family.
+
+This establishes a least/greatest fixed-point discriminator for the exact mathematical local-construction operator.
+It does not identify either fixed point with the independent semantic-success definition, establish an RE01 witness, refute semantic finite-evidence adequacy or justify a general negative answer.
+Choosing an SCC, a fixed point or a larger resource allowance in code would not prove that missing equivalence.
+Deleting or renaming inherited supporters inside an exact child violates its retained-root correspondence, but this does not refute an existential representative quotient.
+Such a quotient or a guarded proof mechanism still needs sound extraction/reconstruction and an independently justified semantic inference principle; finite trace similarity cannot supply them.
+
+The accepted domain also does not prohibit proving a new sufficient lemma for exact-content, vacuous all-extension chains such as U→B→A.
+The current direct-only rule does not discharge that path, and the concrete no-addition child through B fails consumed X; retaining unchanged U does not make it a direct extension of A, while a fresh intermediate loses the supporting member's exact B affiliation.
+These facts refute those concrete repairs, not an independently proved stronger semantic lemma, which remains unproved rather than refuted and must discharge every B-v1 ambient contextual duty beyond raw content/AU identity.
+
+#### Controls and next concrete proof obligation
+
+The [typed controls](../test/research/re01/helper-renewal.test.ts) check all original local/source premises, the sole actual X debt, exact correspondence and every component at one, three and five renewing stages.
+Each stage has precisely Uᵢ as its nonprimitive duty; even filtered inherited helpers' construction receipts retain exact X type dependencies, and truncated evidence reports `missing-nested-evidence` at the final Uᵢ.
+No-renewal and fresh-intermediate controls preserve local X or affiliation rejection, rather than relabeling either failure nonexistence.
+
+The [unconsumed contrast](../test/conformance/fixtures/xsd/recovery/helper-renewal-unconsumed.xsd) changes only both z types back to builtin string.
+Its complete two-node certificate succeeds without renewal, with all actual and inherited fresh roots checked; the earlier X is outside the helper child's required closure even though checking it there separately fails.
+The [independent source/reference controls](../test/conformance/reference/re01-helper-renewal.test.ts) pin the exact types, flags, ranges and recursive references, with live primary source acceptance separated from full RE01 semantics.
+
+The next concrete proposition is to derive from the accepted dated predicates which inference principle independent semantic success satisfies for this exact renewing system, then prove that correspondence rather than selecting a fixed point by preference.
+If every semantic success entails a finite primitive-leaf derivation, this family supplies a semantic negative; if a semantic success can be proved outside μΦ, the finite verifier needs an adequate additional proof mechanism.
+Neither implication is established here, and no new domain-policy or user-approval decision is requested.
+
+General witness coverage, semantic evidence adequacy, copied-prefix reconstruction, input-derived bounds or an equivalent terminating complete-negative criterion and the full #234/#232 gates remain open.
+All seven accepted packages, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original typed operands, inherited roots, failure categories, budgets and later #179/#153/#184 ownership are preserved.
 
 ### No complete F child for the fixed membership-loss parent
 

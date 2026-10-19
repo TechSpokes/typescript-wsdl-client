@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "a3cf9a7cf374c4c41b35c327e3e5f0602f5b94aa9ea4d153a1d98c0d75c576c4",
+          "sha256": "670ff919a8b99d0371edde8412a438b5db4f00bfe238b5c189df82b88740456f",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2267,6 +2267,26 @@
           "path": "test/conformance/fixtures/xsd/re01/copied-prefix-anonymous-types.xsd",
           "role": "fixture",
           "sha256": "1303b54baf69fd8ef692e00656d6cdbfa2fe389ca6b14bccf10ac563173e4c39"
+        },
+        {
+          "path": "test/research/re01/helper-renewal.test.ts",
+          "role": "reference",
+          "sha256": "484b1282318e48762973d843d75f0cbb4723b00cc23fcdee8e879ffaa48212e6"
+        },
+        {
+          "path": "test/conformance/reference/re01-helper-renewal.test.ts",
+          "role": "reference",
+          "sha256": "91528b8eb3ec9af90cc3d401e11b1b3403fba768362c2de2e6d9c6ca9bf7962a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-renewal-consumed.xsd",
+          "role": "fixture",
+          "sha256": "a02b1d6dd46fe3dd7d53d5e0ccf78d14284a16272508fc26b4eefad062f38465"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/helper-renewal-unconsumed.xsd",
+          "role": "fixture",
+          "sha256": "c8b17166b71d04228634e32a9d11daa7df3de3c089189e92604897a0f2f3aa1d"
         }
       ]
     },
