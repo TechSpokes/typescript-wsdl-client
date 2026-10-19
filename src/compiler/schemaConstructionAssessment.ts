@@ -309,8 +309,10 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             // Extension1.4.3.2.1 imposes no nonempty prefix when the base is empty.
           } else if (method === 'extension' && baseContent && 'particle' in own && prior && 'particle' in prior) {
             if (own.kind !== prior.kind) return fail('cos-ct-extends.1.4.3', 'Particle extension must preserve mixed versus element-only variety');
-            if (!checked(checkRawParticleExtension(context, ownContent, baseContent)).value)
+            const extension = checked(checkRawParticleExtension(context, ownContent, baseContent));
+            if (!extension.value)
               return fail('cos-particle-extend', 'Raw extension does not preserve the original particle or its exact first member');
+            scalarObligations(extension.scalarObligations);
           } else if (method === 'extension' && (own.kind === 'empty' && prior && 'particle' in prior || own.kind === 'simple' && prior?.kind === 'mixed'))
             return fail('cos-ct-extends.1.4', 'Extension cannot remove or change the base content variety');
           else if (own.kind === 'simple' && prior?.kind !== 'mixed') return fail('complex-content-relation', 'Simple content is incompatible with the base content');

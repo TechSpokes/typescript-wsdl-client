@@ -63,8 +63,13 @@ The [complex-reference composition audit](content-model-s06-re-01.md#complex-pro
 A nested original-scope caller now completes identity/copied four-node proofs; a genuinely consumed inner type still requires and accepts a separate H proof, while an inherited method mismatch still rejects.
 AU matching shares collectors, but qualified same-QName declaration uniqueness rules out failed-branch-only complex scope alternatives; no blanket scalar-discard theorem or collector change is claimed.
 
+The [typed scalar-premise continuation](content-model-s06-re-01.md#typed-scalar-premises-through-particle-extension) repairs a remaining local composition gate without weakening value or facade formation.
+Particle extension now retains exact scalar prerequisites and its construction caller sends them to the existing context-aware owners.
+Complete simple-base identity/copied two-node proofs genuinely consume both C types and include their formation discharges; complex-base missing-H and inherited-method failures remain binding.
+
 For the present finite-verifier route, continue by proving that every completely qualified Q_f actual assessment has some executable finite forest with a justified semantic frontier, then establish complete search and negative/termination results.
 That goal does not require translating every prescribed candidate or retaining a failed eager-installation method.
+The [reviewed C² follow-up](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6274763459) is a separate restricted logical positive, not a full-B encoding or a reason to require today's verifier layout of every method.
 Normative correspondence, arbitrary runtime representation, input-derived negative bounds or equivalent complete negatives and mathematical termination remain separate open gates.
 There is no production selector/API/version change, release or downstream activation in this choice.
 
@@ -86,6 +91,7 @@ There is no production selector/API/version change, release or downstream activa
 | Active scalar-selector forest normalization | Exact per-context scalar facts and finite semantic support preserved | Other publisher/representation paths remain unproved; no normalization implementation |
 | Scalar content-property repair | Candidate equality checks the exact scalar property without facade-only formation | Actual source and genuine complex-type consumption retain their prerequisites |
 | Complex property-reference repair | Authenticated recursive properties no longer manufacture full validity | Genuine construction/scalar/value duties and global composition proof remain |
+| Typed scalar-premise forwarding | Existing owners can discharge exact conditional extension prerequisites | Nonprimitive own-Q, string-local requirements and global frontier composition remain |
 | Full RE01 procedure | Useful positives and scoped contradictions work | Coverage, adequacy, negatives and termination stay open |
 
 These failed reductions led to the semantic gate rather than another helper-length experiment.

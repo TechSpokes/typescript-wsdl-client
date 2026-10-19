@@ -1,0 +1,20 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:scalar-premise-nonprimitive" targetNamespace="urn:recovery:scalar-premise-nonprimitive">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="X"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="S"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="RS"><xs:simpleContent><xs:restriction base="t:S"/></xs:simpleContent></xs:complexType>
+  <xs:element name="Left">
+    <xs:complexType>
+      <xs:sequence><xs:element name="inner" default="same"><xs:complexType><xs:simpleContent><xs:extension base="t:RS"/></xs:simpleContent></xs:complexType></xs:element></xs:sequence>
+      <xs:attribute name="a" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Right">
+    <xs:complexType>
+      <xs:sequence><xs:element name="inner" default="same"><xs:complexType><xs:simpleContent><xs:extension base="t:RS"/></xs:simpleContent></xs:complexType></xs:element></xs:sequence>
+      <xs:attribute name="a" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
