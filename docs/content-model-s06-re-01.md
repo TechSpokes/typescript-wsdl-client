@@ -18,6 +18,7 @@ The selection is an additional project definition; dated-XSD correspondence, arb
 The [late-property continuation](#late-reification-of-untouched-original-complex-properties) repairs a concrete candidate-layout limitation while preserving authentic correspondence and every fresh root.
 It separates a failed eager-installation transformation from the still-open goal of finding some executable forest for every successful Q_f assessment.
 The [scope-property continuation](#scope-property-reads-and-validity-dependencies) repairs another concrete false negative by separating AU/identity property reads from full scope validity.
+The [scalar-property continuation](#scalar-selectors-and-simple-content-property-reads) lifts a scoped active-facet normalization and repairs candidate simple-content equality without changing actual-source normalization or genuine type validity.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -3549,10 +3550,76 @@ Its [independently reviewed strict TypeScript scratch audit](https://github.com/
 A separate same-H scalar lemma preserves the exact typed value and facet properties when a newly chosen fresh active facet operand selects the exact content scalar instead of its complex facade, retaining owner, lexical namespaces, annotations and H notation availability.
 Original operands and generated recipes remain Γ-bound, ordered union member identity remains exact, and fresh facade roots remain mandatory.
 The [author-executed strict QName/union/GSC1/NOTATION scratch audit and independent source review](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6273300213) support this local statement; these are not committed regression controls or an independently executed scalar-engine run.
-Lifting it to a coherent rebuilt forest remains unproved and supplies no scalar implementation change.
+The [subsequent forest-normalization proof](#scalar-selectors-and-simple-content-property-reads) now establishes a scoped lift with independently executed scratch controls; it does not implement normalization or prove other publishers adequate.
 
 The next necessary theorem still asks for some authentic finite encoding of every successful complete Q_f assessment with scheduled duties inside its semantic frontier or already justified Γ/parent closures.
 Neither this repair nor the group/scalar sublemmas establish universal frontier inclusion, complete search, input-derived negative bounds, mathematical termination or dated-XSD correspondence.
+
+#### Scalar selectors and simple-content property reads
+
+This continuation starts from main `1915de6306f24f69361dc8267245880124b799df`, tree `e8a3c7f83e64e11a686ebb0f32ec1bff6f04bf5f`, under the [current execution claim](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6273930371).
+It separates an active facet's scalar recipe from a complex type's scalar content property and from genuine full complex-type consumption.
+Neither result changes the selected founded research relation or claims that every permitted semantic forest has an executable representation.
+
+##### Reviewed active-facet forest normalization
+
+The [independently reviewed lifting theorem](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6273778708) starts with finite coherent semantic proof support for genuine duties and the exact scalar descriptor prerequisites.
+A recipe-only `raw-simple-content-derivation-validity(C)` may remain undischarged; the proof does not assume that the old expanded scheduled full-C inventory already has finite evidence.
+It replaces only candidate-supplied active facet selectors of complex facades by their exact content scalar selectors at first row installation, and inherits each normalized row unchanged.
+
+Endpoint correspondence compares scalar `contentIdentity.definition`, which encodes the exact resolved scalar component, builtin or GSC1 slot identity.
+It therefore preserves that selector through permitted complex endpoint rewrites; scalar value equality alone is insufficient.
+Canonical/raw membership and sharing stay exact, and a consistent memo preserves shared facet records across installations.
+
+For constructor cycles, the old simple-owner-to-C reference already reaches C's exact scalar through its raw content slot or authentic original base/content path.
+Replacing that reference by the scalar shortcut adds no reachability; an original-generated slot does not import its complex provenance owner as a graph edge.
+No component, fresh root, declared type, base/item/member identity, lexical namespace or notation tuple is removed.
+
+Pair old Hᵢ with rebuilt Hᵢ at each forest node and induct on its qualified scalar dependency DAG.
+The facade copies its scalar descriptor and changes only root descriptor identity/reference plus formation(C); operand evaluation reads neither changed root field.
+Direct scalar selection preserves typed values, ordered union member identities, facets and annotation payloads while never requesting that recipe-only formation obligation.
+This pairs corresponding contexts, not parent/child values: a child may legitimately have a different notation domain.
+
+Original Γ operands, original-context selectors, facet bindings and generated recipes remain unchanged and Γ-bound.
+New active metadata in an original simple owner's overlay may be re-encoded only while authentic original-property correspondence still checks every scalar/facet/annotation property.
+Independent declared/base/full-C consumption stays owed; removing a proof-only branch never removes helpers from a retained context.
+
+The independently executed strict TypeScript scratch discriminator used eleven actual records, unchanged twenty-two-member parent/child contexts, five selector rewrites and eighteen paired observations in two complete two-node forests.
+It covers QName bindings, ordered unions, GSC1 enumeration/annotation, active NOTATION and an original simple overlay, including late original facade rows.
+Its facades have simple bases or are restrictions, so it checks coherence and values rather than pruning an unwanted nonprimitive C proof; annotation knowledge may improve while exact payload/correspondence stays equal.
+These are archived audit controls, separate from the committed caller regressions below, and do not prove universal publisher inclusion.
+
+##### Candidate scalar content-property repair
+
+The [authentic source](../test/conformance/fixtures/xsd/recovery/scalar-content-property-independent.xsd) has nineteen represented records, all source/local qualified, with actual nonprimitive duties X and T.
+S extends string with an any/lax attribute wildcard; T extends S.
+Two distinct original anonymous restrictions C1/C2 of T have property-equal but identity-distinct GSC1 scalar slots and separate local a:string uses; a third restriction adds minLength=1 as a negative.
+
+The parent adds FA with an optional local element p2, FR restricting FA to empty content and FT extending FR with empty content.
+Two fresh anonymous declared types D1/D2 use the original C1/C2 AUs, so the real extension caller reaches their simple-content scopes through AU/declaration property comparison.
+All nine fresh parent components remain mandatory; FT is the sole generated nonprimitive duty, and T is outside this parent closure.
+The child introduces FE extending FA with a unit sequence containing optional p1, the property-equal prefix, while FT restricts FE and retains empty content.
+
+The old equality owner had complete candidate raw simple-content views, but selected their containing complex owners for scalar comparison instead of the literal `content.type` scalar properties.
+That created facade-formation obligations for C1/C2; Particle Valid (Extension) immediately returned `raw-declaration-property-correspondence` unresolved before extra type evidence could be scheduled.
+The identity prefix already had a complete three-node forest including independent actual Γ-T evidence; the copied prefix now has one too.
+
+The [equality owner](../src/compiler/schemaComponentEquality.ts) now selects exact raw `content.type` only in candidate contexts, using the unchanged scalar property/facet kernel.
+Distinct GSC1 identities and all Γ-qualified source prerequisites remain present.
+Actual source views can contain diagnostic projections, so their existing containing-owner normalization is unchanged; `scalarPair`, arbitrary facade formation and full construction owners are unchanged.
+
+The first required-content attempt had a separate defect in its proposed witness: FT kept required p2 typed D2 while FE used required p1 typed D1.
+Even though the declared type properties compare equal, D2 does not derive from exact D1, so the corrected scalar reader exposes a valid `derivation-ok-restriction.5.4` rejection at FT.
+The optional/empty positive avoids that unsupported transport, and the required-content attempt remains a permanent negative rather than evidence for a successful construction.
+
+The [committed typed controls](../test/research/re01/scalar-content-properties.test.ts) authenticate all actual duties and retain every inherited fresh root.
+They check identity/copied three-node positives, identity-distinct equal GSC1 properties, differing-facet rejection and the required-content 5.4 negative.
+A fresh declaration genuinely typed T still needs separate hypothetical T evidence: omission is `missing-nested-evidence`, and supplying it gives a complete four-node forest rather than reusing Γ's proof in H.
+The [independent source/reference controls](../test/conformance/reference/re01-scalar-content-properties.test.ts) pin source ancestry, attributes and the unequal facet, then check original scalar instances; they do not decide hypothetical RE01 truth.
+
+This is a property-role repair and a scoped recipe normalization theorem, not failure or proof of existential SOME-forest coverage.
+The next theorem for the present finite-verifier route is composition: some faithful finite encoding of every complete Q_f semantic assessment must publish only its genuine semantic frontier or duties supplied in the same Γ/parent forest inventory.
+Genuine declared/base/full-C roles, other publisher paths, complete search, input-derived negatives and mathematical termination remain separate obligations; no request-budget/sticky-failure contract, production selector or API version changes here.
 
 #### External methods and applicability
 

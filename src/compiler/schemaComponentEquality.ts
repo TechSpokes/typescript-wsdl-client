@@ -184,7 +184,9 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (x.content.kind === 'empty') return true;
       if (x.content.kind === 'simple' && y.content.kind === 'simple') {
         charge(6);
-        const leftOperand = {kind: 'local', target: x.type} as const, rightOperand = {kind: 'local', target: y.type} as const;
+        // Raw content selects its scalar property; actual projections can be diagnostic.
+        const leftOperand = context.kind === 'candidate' ? x.content.type : {kind: 'local', target: x.type} as const;
+        const rightOperand = context.kind === 'candidate' ? y.content.type : {kind: 'local', target: y.type} as const;
         enqueue(state, {kind: 'scalar', a: leftOperand, b: rightOperand, owner: x.type});
         return true;
       }
