@@ -2,6 +2,174 @@
 
 Joint research evidence for #232 and its four leaves, with explicit decision and production gates. See the root [README](../README.md).
 
+## Current purpose and next investigation
+
+RE01 asks whether an XSD complex type's derivation can be rearranged into an extension followed by a restriction, possibly with no change in the second step.
+We can check supplied constructions and finite proofs, and prove some particular constructions impossible.
+We do not yet have a settled general semantic judgment or a complete decision procedure.
+Checking a design someone supplies is different from deciding whether any allowed design exists.
+
+The renewing-helper example explains the present difficulty: each proposed repair can pass its local checks while requiring another helper's derivation proof.
+The [PR #313 theorem](content-model-s06-re-01.md#global-formal-models-and-renewal-nonentailment) constructs two models of the audited, formalized selected-B contract that preserve accepted primitive and finite-positive rules but answer this example differently.
+These are two consistent interpretations of our formalized rules: one accepts the repeating case and the other rejects it.
+That establishes a limit of those formalized premises, not ambiguity of all normative XSD, semantic success or failure, or undecidability.
+
+This packet prepares one semantic investigation; it does not execute it or choose an interpretation.
+Preparation starts from main `c33632eac0987f4cffe9628043435065e1facad6`, tree `c9e47848dc923af8e8711741d3958efaf72f2fba`.
+The reviewed baseline is the [leaf ledger](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6268599955) and [joint disposition](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6268604295).
+Before execution, reread the actual latest #234/#232 status and ownership, claim the bounded slice and record the newly fetched revision; newer accepted results supersede this preparation baseline.
+
+### What is established and what remains unproved
+
+| Finding | Established scope | Remaining limit |
+| --- | --- | --- |
+| Shared local authorities and supplied finite proofs | Accepted local rules and context-bound checks | General helper existence is not decided |
+| Helper-count descent | Some proved reconstruction families terminate | New nonprimitive helpers can be necessary |
+| Copied-prefix transport | Strong transport fails; a displayed bypass succeeds | General reconstruction remains unproved |
+| Exact-content vacuous extension ground | A retained consumer refutes the general ground | The renewal-specific verdict is not settled |
+| Renewal | No finite certificate under current justified leaves | Local productivity is not semantic success |
+| Global formal models | Two accepted-rule-compatible models disagree | Intended dated meaning still needs justification |
+| Full RE01 procedure | Useful positives and scoped contradictions work | Coverage, adequacy, negatives and termination stay open |
+
+These failed reductions led to the semantic gate rather than another helper-length experiment.
+Neither a familiar fixed-point convention nor a larger search budget supplies the missing implication.
+The seven accepted recovery packages, AU C1, PW R-240, DT A, #178, GSC1 and selected P1/F2 remain binding.
+Actual Γ, exact owning contexts and original typed operands remain distinct; every inherited fresh root remains required.
+Primitive truth stays conditional on its other duties, and legal primitive component cycles must remain accepted.
+
+### Practical routes and recommendation
+
+| Route | Required evidence | Place in this packet |
+| --- | --- | --- |
+| Repair a missing or mistranslated premise | Exact dated clause and failed correspondence step | Audit first; do not assume the formalization is exhaustive of intended meaning |
+| Prove a distinguishing semantic principle | Independent source justification and full B-v1 correspondence | Continue within the same slice if the bridge survives |
+| Clarify the project contract explicitly | Concrete alternatives, consequences and unresolved authority | Unselected later option requiring a separate decision packet |
+
+Start at the bridge from dated “possible to derive” and valid extension/restriction to the uniformly recursive finite-candidate definition.
+Identify a specific missing primary assumption or justify a specific truth-introduction or exclusion principle; merely restating the two model answers is insufficient.
+The local Q-occurrence inventory is already reviewed: reopen an entry only for an identified dependency or translation discrepancy.
+
+If contract clarification becomes a concrete alternative, compare its exact statement against both models, conditional primitive truth, mutual primitive cycles and the retained-consumer contradiction.
+Selecting a least or greatest fixed point is not justified merely by finite constructions or legal recursive schemas; naive least-model treatment can lose primitive-cycle positives.
+A guarded proof or quotient would change proof representation only after semantic soundness is proved; altering helper/root/context requirements changes the selected witness domain and must be stated as such.
+No clarification is selected here, and an unresolved checkpoint is not an automatic policy or approval request.
+
+### Narrow reading and source inventory
+
+Read the following in order; historical statuses do not supersede later accepted contracts.
+
+| Order | Exact input | Extract for the investigation |
+| --- | --- | --- |
+| 1 | [Selected policies and proportional delivery](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918), then [accepted #286 handoff](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6149690148), then [#285 proof checkpoint](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6143189895) | Accepted policies, complete local owners, inherited-root and primitive interfaces |
+| 2 | [Semantic-success definition](content-model-s06-re-01.md#semantic-success-and-the-adequacy-question), [uniform contextual quantification](content-model-s06-re-01.md#quantified-claim-and-candidate-families), [primitive proof](content-model-s06-re-01.md#reviewed-primitive-no-change-proof) | Separate own Q, full validity and finite evidence |
+| 3 | [Global formal-model proof](content-model-s06-re-01.md#global-formal-models-and-renewal-nonentailment) and [complete local inventory](content-model-s06-re-01-resolver-implementation.md#complete-268-rule-inventory) | Candidate equivalence, local plans, full frontiers and accepted-rule compatibility |
+| 4 | [Pinned Structures XML](https://github.com/jacoelho/xsd/blob/142f25ee187e17f041af87b6bfcfc82385254520/docs/spec/xml/structures.xml) | Exact dated text and references listed below |
+| 5 | [Source authority and corrections](content-model-s06-re-01.md#source-authority-and-corrections), [AU/conformance contrasts](content-model-s06-re-01.md#why-xml-style-au-inheritance-is-insufficient), [algorithm applicability](content-model-s06-re-01.md#algorithm-applicability-and-the-next-gate) | Separate normative text, unresolved comments, project choices and proposed algorithms |
+
+Verify the pinned XML SHA-256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba` if retrieving a copy.
+Read all numbered `cos-ct-extends` premises at 3993–4108, including 1.5 and its note at 4070–4084, then `derivation-ok-restriction` at 4111 onward: the second step must be a valid restriction.
+Inspect `cd-ct-extension` at 4106, `cos-ct-derived-ok` at 4277 onward, and schema conformance at 8816–8844.
+Follow `e-props-correct.4`, `cos-equiv-derived-ok-rec` and `cos-equiv-class` only where the proposed inference consumes affiliation or membership.
+
+The note says “trivial to check”, and its construction recipe remains conditional on a valid restriction.
+The two-step bound concerns the construction, while conformance's recursive property closure concerns one finite schema; neither by itself selects a proof interpretation across generated contexts.
+For each erratum, later-edition text, engine observation or literature proposal, record its date, adoption status and applicability instead of importing it as dated authority.
+Use the [primitive approval](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6112070199) and [accepted B/evidence contract](https://github.com/TechSpokes/typescript-wsdl-client/issues/266#issuecomment-6143144936) as explicit project premises.
+
+### Existing owner and discriminator map
+
+| Owner or control | Exact entry point | What to inspect or preserve |
+| --- | --- | --- |
+| [Source preparation](../src/compiler/schemaDocumentSyntax.ts) | `prepareSourceSchemaRequest`, `checkSchemaDocumentSyntax` | Actual source qualification without pending RE01 truth |
+| [Correspondence](../src/compiler/re01CandidateCorrespondence.ts) | `re01Ancestor`, `checkCandidateCorrespondence` | Exact ancestor, coherent endpoint and retained properties |
+| [Component closure](../src/compiler/schemaConstructionAssessment.ts) | `checkComponentConstruction` | Local premises, owning contexts and outstanding own-Q duties |
+| [Finite evidence](../src/compiler/finiteRe01Verification.ts) | `verifyFiniteRe01Evidence`; internal `close`, `primitive`, `execute` | Actual obligations, every inherited fresh root, primitive conditions and child correspondence |
+| [Raw relations](../src/compiler/schemaTypeRelations.ts) | `checkTypeDerivation`, `checkSubstitution`, `effectiveSubstitutionMembers` | Raw ancestry/filtering versus positive component-validity duties |
+| [Particle construction](../src/compiler/particleExtension.ts), [views](../src/compiler/particleSemanticView.ts), [restriction](../src/compiler/particleRestriction.ts) | `checkRawParticleExtension`, `prepareSemanticParticleView`, `checkParticleRestriction` | Raw construction versus normalized comparison and complete mapping |
+| [Generated scalar shape](../src/compiler/schemaGeneratedScalarShape.ts), [scalar kernel](../src/compiler/schemaScalarKernel.ts) | `resolveOriginalScalarIdentity`, `originalGeneratedShape`, `checkOriginalGeneratedScalar` | GSC1 slot identity and its own context-bound legality, separate from its complex provenance owner |
+| [Renewal research](../test/research/re01/helper-renewal.test.ts) | `checks every local component in %s renewing contexts while the last child remains owed` | Existing 1/3/5-stage observations, not a semantic proof from sampling |
+| [Renewal contrast](../test/research/re01/helper-renewal.test.ts) | `retains a complete finite contrast when z no longer consumes the earlier endpoint` | Complete unconsumed positive |
+| [Exact-vacuous control](../test/research/re01/exact-vacuous-ground.test.ts) | `qualifies every local premise and distinguishes stable exact-B membership=%s` | Trapped consumer versus complete stable-membership positive |
+| [Primitive controls](../test/research/re01/primitive-root-evidence.test.ts) | `has a valid primitive no-change proof although every added restriction step is forbidden` | Permanent recursive primitive positive |
+| [Other actual debts](../test/research/re01/primitive-root-evidence.test.ts) | `still requires and checks finite evidence for every nonprimitive actual obligation` | Primitive success does not discharge unrelated actual duties |
+| [Original scalar closure](../test/unit/schema-original-generated-binding-independent.test.ts) | `constructs an active original slot without requiring its inactive source container`; `rechecks slot legality in each sibling and nested context instead of transferring original or sibling success` | Exact slot versus source-owner identity; no original-legality transfer |
+| [Inherited roots](../test/research/re01/live-helper-forest.test.ts) | `requires unused sibling extension evidence inside a required child` | Unused inherited additions remain mandatory |
+| [Independent evidence](../test/conformance/reference/re01-helper-renewal.test.ts), [exact-vacuous source](../test/conformance/reference/re01-exact-vacuous-ground.test.ts) | Source/anchor assertions and live engine observations | Independent premises, not an engine RE01 completeness oracle |
+
+The mutual-direct-primitive reproduction in PR #313's independent review is historical scratch evidence, not a committed executable test.
+The permanent recursive primitive and other-actual-debt controls above are available now; do not restore or invent fixtures during this preparation pass.
+The [copied-prefix control](../test/research/re01/copied-prefix-transport.test.ts), `retains complete copied and original-plus-tail witnesses while exact no-tail replacement fails`, preserves the distinction between a failed recipe and absence of all witnesses.
+Renewal, exact-vacuous and primitive fixtures are under `test/conformance/fixtures/xsd/recovery/`; the copied-prefix fixture is `test/conformance/fixtures/xsd/re01/copied-prefix-anonymous-types.xsd`.
+Source acceptance and semantic expected outcomes must be recorded separately.
+Raw ancestry/property receipt reads do not automatically import full component validity; original scalar data or provenance likewise cannot certify a slot's legality in another context.
+
+### One bounded next slice and its evidence packet
+
+The investigator first audits the semantic bridge, then attempts one concrete source-grounded inference for the exact renewal judgment, with all required contextual duties.
+The target deliverable is a clause-to-premise proof or a precise failed inference and its next dependency, not a solver or another helper-family expansion.
+
+| Stage | Required work | Reviewable output |
+| --- | --- | --- |
+| Start | Pin main, contracts, source and exact renewal judgment | Baseline and Q/full-validity/evidence definitions |
+| Bridge audit | Test both directions of the dated-rule to B-candidate correspondence | Specific missing premise or justified bridge, including uniform contextual B |
+| Inference attempt | Derive a precise introduction/exclusion rule and apply its complete closure | Formal statement, proof dependencies and preserved discriminators |
+| First checkpoint, 60–90 minutes after dispatch | Report findings even if no verdict follows | Filled evidence matrix and decisive inference or first failed step |
+| Independent disposition | Challenge applicability, contexts and countercontrols | Accepted scope or concrete corrections; next dispatch dependency |
+
+The checkpoint limits engineering scope, not mathematical truth or the source search universe.
+Not proving a result by then establishes neither normative underdetermination nor nonexistence; record what was read, what remains unchecked and the next bounded proof dependency.
+Root may narrow or continue the investigation from that concrete packet without repeating completed inventory work.
+
+Use one evidence row per claimed implication or concrete failure, with these fields:
+
+| Field | Required content |
+| --- | --- |
+| Claim and scope | Exact judgment, quantifiers and claimed positive/negative/translation result |
+| Authority | Pinned clause/line, short quotation, date and primary/erratum/project status |
+| Bridge | Source statement → formal assumption → exact inference; no omitted direction |
+| Context duties | Actual Γ, parent/generated contexts, all inherited roots and original typed operands |
+| Model and controls | Effect on both PR #313 models and expected preserved discriminator results |
+| Evidence status | Proof, counterexample or unproved step; distinguish observation from theorem |
+| Reproduction | Exact revision, command and result, or explicitly unrun evidence |
+| Independent review | Reviewer challenge, resolution and accepted scope |
+
+The investigator is `re01_implementer`, the same sole nonauthor reviewer is `re01_nonauthor`, and root is coordinator/integration owner.
+The investigator supplies the matrix and proof; the reviewer challenges source applicability, the decisive inference and all contexts before reliance.
+Root owns durable #234/#232 updates, any concrete later decision packet, scope transitions and normal delivery; no user relay or extra reviewer identity is required.
+
+### Outcome-specific gates
+
+| Outcome | Required acceptance | Permitted next action |
+| --- | --- | --- |
+| Concrete translation defect | Exact missing/mistranslated clause and independent review | Repair correspondence and re-evaluate both models before any semantic verdict |
+| Renewal semantic positive | Independently justified rule, full closure and primitive/consumer compatibility | If unchanged no-finite-certificate premises still hold, investigate evidence adequacy or a sound alternative proof format |
+| Renewal semantic negative | Independently justified exclusion over every permitted witness in the stated scope | Record only that scoped negative; broader criterion needs a separate theorem |
+| No justified conclusion | Exact failed source-to-inference step, read/unread inventory and next dependency | Continue bounded proof work or prepare a concrete, explicitly unselected clarification packet |
+
+A source-grounded verdict must do more than count which formal model survives: prove the rule's correspondence to the dated judgment and complete B-v1 obligations.
+If a clarification packet is warranted by concrete remaining authority/compatibility evidence, state alternative propositions, affected behaviors, preserved contracts, recommendation and who must decide; do not declare the full specification ambiguous from this checkpoint.
+No outcome here authorizes a production success rule, cyclic storage acceptance, altered witness domain or general-negative API.
+
+### Later implementation and full closure
+
+After independent semantic review, specify any changed proof interface and expected behavior before implementing it in the existing strict TypeScript owners.
+A quotient, guarded proof or other algorithm still needs sound extraction/reconstruction, exact contextual obligations and independently justified semantic correspondence.
+One renewal verdict does not supply a general solver.
+
+| Later gate | Evidence still required |
+| --- | --- |
+| Arbitrary-success coverage | Every permitted successful witness has a covered representative, or an equivalent complete criterion |
+| Evidence adequacy | Every semantic positive has a justified accepted proof mechanism with all contextual duties |
+| Complete negatives | Input-derived exhaustive bound or an equivalent complete-negative theorem |
+| Mathematical termination | Sufficient-resource termination independent of configurable request budgets |
+| Research and joint closure | Independent full #234 review, AU/PW/DT compatibility, exact checks and #232 acceptance |
+| Production and combined qualification | Separate #179 adapter/activation and #153 acceptance; #184 retains runtime ownership |
+
+For this documentation-only preparation, use fresh docs/support-matrix, toolchain and affected manifest checks; reuse unchanged broad evidence only under the [proportional delivery contract](https://github.com/TechSpokes/typescript-wsdl-client/issues/232#issuecomment-6141810918), with its original revision labeled.
+Later executable changes need their applicable strict, behavioral, resource, CI/reference and actual-main checks, not tests that merely restate this packet.
+Defaults remain configurable inclusive/sticky 100,000 nodes and 125,000,000 work; exhaustion and unresolved prerequisites never prove invalidity.
+Keep #234/#232 and downstream gates open until their actual criteria pass; no release, version bump or activation is part of this preparation.
+
 ## Disposition and delivery boundary
 
 The [global formal-model continuation](content-model-s06-re-01.md#global-formal-models-and-renewal-nonentailment) translates the explicitly stated B-v1 candidate equations in both directions and constructs two models satisfying the additional accepted rules, using the accepted complete local inventory.
@@ -431,12 +599,10 @@ That factual correction does not authorize removing negative-year or crossing-ze
 
 ## Downstream qualifications and next ready work
 
-The next ready work is completing the RE01 full-type criterion and negative-answer proof using locally accepted selected sibling contracts.
-The [resolver task plan](content-model-s06-re-01-resolver.md#implementation-tasks) has been delivered through #257/#258; repeating R1 is not the next assignment.
-The research owner must define the quantified ambient and abstract-construction domain, then prove a complete reduction covering original intermediates, fresh flags, disappearing raw prefixes and permitted auxiliary members.
-Minimal outgoing closure and empty intermediate `block` are disproved reductions; the audit supplies explicit controls that every replacement theorem must preserve.
-All-member semantic legality and other retained types' existential derivation obligations require a transfer or terminating joint argument before a failed complete enumeration can establish nonexistence.
-The new incidence checker remains an evidence tool; it is not that integration or an approved negative-answer procedure.
+The immediate next work is the [single semantic investigation packet](#current-purpose-and-next-investigation), beginning with the dated-rule correspondence audit and a concrete distinguishing inference or failed premise.
+B-v1's quantified domain and complete local contracts are already selected; historical resolver/domain assignments are not requests to redefine them.
+After that semantic gate, arbitrary-success coverage, evidence adequacy, complete negatives and mathematical termination still require the separate proofs listed above.
+Existing supplied-candidate and incidence checkers remain evidence tools rather than a general decision procedure.
 #179 may inspect these research inputs while keeping affected assessment gates open; the full accepted research epic must precede production activation.
 #153 remains the combined S06 acceptance owner and S07/S08 retain their existing dependencies.
 
