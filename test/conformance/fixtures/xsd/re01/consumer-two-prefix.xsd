@@ -1,0 +1,25 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review" targetNamespace="urn:review">
+  <xs:complexType name="A">
+    <xs:sequence>
+      <xs:element name="a" type="xs:string" minOccurs="0"/>
+      <xs:element name="b" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="B">
+    <xs:complexContent><xs:restriction base="t:A"/></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent>
+      <xs:extension base="t:B"><xs:sequence><xs:element name="a" type="xs:int"/></xs:sequence></xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Empty"><xs:sequence/></xs:complexType>
+  <xs:complexType name="Nested"><xs:sequence><xs:sequence><xs:element name="nested" minOccurs="0"/></xs:sequence></xs:sequence></xs:complexType>
+  <xs:complexType name="Choice"><xs:choice><xs:element name="choice" minOccurs="0"/></xs:choice></xs:complexType>
+  <xs:complexType name="All"><xs:all><xs:element name="all" minOccurs="0"/></xs:all></xs:complexType>
+  <xs:complexType name="OptionalGroup"><xs:sequence minOccurs="0"><xs:element name="group" minOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Required"><xs:sequence><xs:element name="required"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Repeated"><xs:sequence><xs:element name="repeated" minOccurs="0" maxOccurs="2"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Wildcard"><xs:sequence><xs:any minOccurs="0" processContents="skip"/></xs:sequence></xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

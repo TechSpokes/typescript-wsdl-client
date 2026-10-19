@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01-copied-prefix" targetNamespace="urn:re01-copied-prefix">
+  <xs:group name="G1">
+    <xs:sequence><xs:element name="a" minOccurs="0"><xs:complexType/></xs:element></xs:sequence>
+  </xs:group>
+  <xs:group name="G2">
+    <xs:sequence><xs:element name="a" minOccurs="0"><xs:complexType/></xs:element></xs:sequence>
+  </xs:group>
+  <xs:complexType name="A"><xs:group ref="t:G1"/></xs:complexType>
+  <xs:complexType name="B">
+    <xs:complexContent><xs:restriction base="t:A"/></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D">
+    <xs:complexContent><xs:extension base="t:B"><xs:group ref="t:G2"/></xs:extension></xs:complexContent>
+  </xs:complexType>
+  <xs:element name="root" type="t:D"/>
+</xs:schema>

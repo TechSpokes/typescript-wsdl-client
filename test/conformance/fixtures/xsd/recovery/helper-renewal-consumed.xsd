@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:helper-renewal" targetNamespace="urn:recovery:helper-renewal" elementFormDefault="qualified">
+  <xs:complexType name="A"><xs:sequence minOccurs="0">
+    <xs:element ref="t:H" minOccurs="4" maxOccurs="4"/>
+    <xs:element name="z" type="t:X"/>
+    <xs:choice><xs:element name="Q" type="t:B"/><xs:element name="H" type="t:B" block="restriction"/></xs:choice>
+  </xs:sequence></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="X"><xs:complexContent><xs:extension base="t:R"><xs:sequence minOccurs="0">
+    <xs:sequence minOccurs="2" maxOccurs="2"><xs:element name="H" type="t:B" block="restriction"/><xs:element name="H" type="t:B" block="restriction"/></xs:sequence>
+    <xs:element name="z" type="t:X"/>
+    <xs:element ref="t:Q"/>
+  </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="Q" type="t:B" block="extension restriction"/>
+  <xs:element name="H" type="t:B" substitutionGroup="t:Q" block="restriction"/>
+</xs:schema>

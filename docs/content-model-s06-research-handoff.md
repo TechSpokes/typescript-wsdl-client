@@ -4,16 +4,51 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
-The [research recognition criterion](content-model-s06-re-01.md#research-recognition-of-the-three-position-inherited-consumer) makes #309's sufficient inherited-consumer obstruction executable through existing contexts and semantic owners.
-Given target/head/member/consumer IDs as selection hints, the research-only function verifies complete authenticated contexts, exact types and declaration properties, the target's nonprimitive duty, retained raw selectors and the three-position normalized consumer shape.
+The [renewing-helper investigation](content-model-s06-re-01.md#renewing-helper-duties-and-the-finite-evidence-boundary) proves no finite acyclic certificate for its recursive two-head source under the current direct-only primitive rules.
+Every locally qualified required closure retains consumed X and needs some extension-only descendant of exact B, hence another nonprimitive duty; a finite evidence sink is impossible.
+The proof permits arbitrary finite helpers, property-equal prefix copies, affiliation bridges and alternative raw shapes; it does not require every arbitrary step to add a helper.
+
+An explicit family of finite contexts Cᵢ rebases the previous supporter and adds one fresh global Uᵢ₊₁/Mᵢ₊₁, with every local premise rechecked, all inherited affiliations legal and only the newest Uᵢ outstanding.
+One-, three- and five-stage controls stop honestly at missing nested evidence; removing the z:X dependency gives a complete two-node positive certificate.
+Actual Γ's sole nonprimitive X debt is represented by the root, and B has its existing direct primitive discharge; original X(Γ) is not a repeated child debt.
+
+For the exact mathematical local-construction operator Φ with finite child frontiers, finite well-founded evidence is μΦ and the uniform local family is postfixed, hence lies in νΦ.
+Neither fixed point is identified with independent semantic success, and no productive finite trace, cyclic storage acceptance, semantic positive or no-witness conclusion follows.
+Configured resource limits remain separate engineering limits, never a premise of the mathematical separation.
+
+The next concrete proof obligation is to derive the semantic inference principle for this exact renewing system from the accepted dated predicates and prove its correspondence to the displayed construction operator.
+An existential representative quotient or guarded proof alternative remains unrefuted but needs sound extraction/reconstruction and semantic inference, rather than deleting inherited roots inside exact children.
+An independently proved exact-content/vacuous all-extension sufficient lemma also remains open; the current direct-only leaves and concrete failed no-addition child do not refute that semantic route or discharge its ambient B-v1 duties.
+This is an unresolved proof obligation under the selected domain, with no new policy or approval request.
+
+The [copied-prefix continuation](content-model-s06-re-01.md#copied-prefix-transport-and-optional-prefix-bypass) refutes unconditional comparison transport from property-equal prefix copies under accepted B-v1 identity, while preserving complete alternative witnesses for the displayed optional-prefix case.
+Distinct original inline anonymous types compare property-equal without acquiring a derivation edge; a complete copied-prefix certificate passes, exact no-tail replacement fails and exact original-prefix replacement with a `0..1` or unbounded wildcard tail passes completely.
+This separates failed comparison transport from general witness existence and contextual finite-evidence adequacy.
+
+The original source syntax owner now qualifies a particle's retained inline type only through its exact same-source local declaration and owned anonymous type, including the source span and direct-child relationship.
+Canonical/source inventories remain retained, child-component syntax remains separate and particle annotation ordering remains enforced.
+Malformed, misplaced, duplicated and source/type-mismatched children retain rejection, with source-backed complex/simple positives and independent reference observations.
+
+General arbitrary-success coverage, contextual evidence adequacy, copied-prefix reconstruction, input-derived bounds or an equivalent complete-negative criterion and mathematical general termination remain open after these scoped results.
+
+The [finite flat-prefix continuation](content-model-s06-re-01.md#any-nonempty-finite-flat-prefix-of-optional-local-elements) extends the sufficient inherited-consumer obstruction to every nonempty finite flat prefix of original optional local element incidences.
+Given target/head/member/consumer IDs as selection hints, the research-only function verifies complete authenticated contexts, exact types and declaration properties, the target's nonprimitive duty, retained raw selectors and the normalized n + 2 explicit positions.
 It derives the base consumer and proves no permitted complete target child of that exact parent, including arbitrary finite additions and affiliates under both head and member.
+
+The unit original prefix sequence flattens without deleting optional element incidences, and complete strictly ordered Recurse mapping between equal finite lists forces every ordinal position to itself.
+The required M position still cannot map to effective(H), by the independent first-edge obstruction and mandatory M/global-QName argument.
 It does not assume the target's pending RE01 validity, classify immutable Γ as impossible, enumerate candidate children or activate a production negative branch.
+
+Single-element prefixes retain `inherited-three-position-consumer-v1`; longer prefixes publish `inherited-flat-prefix-consumer-v1` with the exact incidence count in `prefixLength`.
 `not-established` proves nothing; missing qualification, invalid input and inclusive/sticky resource exhaustion remain separate.
-The criterion requires the documented global/nonabstract declarations, global complex target/head types, fresh inherited consumer roots and exact original local prefix/required-empty-choice shape; other inputs remain unsupported by this recognizer.
-Typed controls include #309, consistent renaming, growing groups, complete unblocked/identity/primitive positives, altered consumers, missing properties/context mismatches and explicit budget exhaustion; independent reference controls preserve original operands and derive mapping expectations separately.
+The criterion retains the documented global/nonabstract declarations, global complex target/head types, fresh inherited consumer roots, disjoint local/M QNames and required empty choice; empty/nested/choice/all/wildcard/non-0..1 prefixes remain unsupported.
+
+Typed controls retain #309, renaming, identity/primitive positives and altered/missing-context cases, while adding direct n = 1, n = 2 and n = 5 parents, complete matching child rejection and complete unblocked positives with expanded H/M groups.
+Independent source/reference controls preserve the new operands and ordered mapping, and exact successful/one-below work/node controls preserve sticky resource failure.
 One fresh-context nonauthor reviewer scrutinizes the criterion before reliance and assesses the final code/proof and scoped #232 consistency.
+
 All accepted contracts, P1/F2, original operands, existing verifier claims and production ownership remain unchanged; full #234/#232 acceptance remains open.
-One next action is to prove or refute the same mapping obstruction when the shared original prefix contains two optional local elements, before broadening recognition.
+The copied-prefix continuation above addresses strong transport and the displayed bypass without settling general reconstruction; additional fixed-length prefix variants are unnecessary.
 
 The [fixed-parent nonexistence theorem](content-model-s06-re-01.md#no-complete-f-child-for-the-fixed-membership-loss-parent) settles #308's requested continuation over every permitted complete F child under B-v1, with arbitrary permitted finite additions and retained or fresh intermediates.
 Correspondence forces F's first edge to be restriction, while F and H.type=E remain distinct exact complex identities; any successful F-to-E path therefore contains the method excluded by H.block.

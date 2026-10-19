@@ -12,6 +12,7 @@ import {checkActualSchemaSyntax} from '../../src/compiler/schemaSyntaxAssessment
 import {loadSchemaInput} from '../../src/loader/schemaInput.js';
 
 const original = readFileSync('test/conformance/fixtures/xsd/syntax/actual-source-controls.xsd', 'utf8');
+const anonymous = readFileSync('test/conformance/fixtures/xsd/re01/copied-prefix-anonymous-types.xsd', 'utf8');
 async function graph(xml = original): Promise<CanonicalGraph> {
   const uri = 'https://syntax.test/actual.xsd', bytes = Buffer.from(xml);
   return buildCanonicalGraph(await loadSchemaInput(uri, {policy: {allowedOrigins: ['https://syntax.test']},
@@ -26,6 +27,78 @@ const node = (r: SemanticRequest, local: string) => r.graph.nodes.find(n => n.id
 const checks = (r: SemanticRequest) => r.graph.nodes.map(n => checkActualSchemaSyntax(r.actual, n.id));
 
 describe('original component source syntax owner', () => {
+  it.each(['complex', 'simple'] as const)('delegates an exact local element inline %s type without erasing retained syntax', async kind => {
+    const xml = kind === 'complex' ? anonymous : anonymous.replaceAll('<xs:complexType/>',
+      '<xs:simpleType><xs:restriction base="xs:string"/></xs:simpleType>');
+    const r = request(await graph(xml));
+    const particles = r.graph.nodes.filter(n => n.kind === 'particle' && n.term.kind === 'element');
+    expect(particles).toHaveLength(2);
+    for (const particle of particles) {
+      expect(particle.retained).toEqual([expect.objectContaining({name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: kind + 'Type'}})]);
+      expect(checkActualSchemaSyntax(r.actual, particle.id)).toMatchObject({kind: 'checked',
+        remaining: ['schema-document-syntax', 'child-component-syntax', 'semantic-construction']});
+    }
+    expect(checks(r).every(result => result.kind === 'checked')).toBe(true);
+  });
+
+  it.each([
+    ['stray child', '<xs:complexType/><xs:bogus/>'],
+    ['late annotation', '<xs:complexType/><xs:annotation/>'],
+    ['duplicate annotation', '<xs:annotation/><xs:annotation/><xs:complexType/>'],
+  ])('retains local element and particle rejection of %s beside an inline type', async (_label, replacement) => {
+    const r = request(await graph(anonymous.replace('<xs:complexType/>', replacement)));
+    for (const kind of ['element', 'particle']) {
+      const failed = r.graph.nodes.filter(n => n.kind === kind).map(n => checkActualSchemaSyntax(r.actual, n.id));
+      expect(failed).toContainEqual(expect.objectContaining({kind: 'invalid-schema', rule: 'schema-for-schemas'}));
+    }
+  });
+
+  it.each([
+    ['duplicate types', '<xs:element name="a" minOccurs="0"><xs:complexType/>', '<xs:element name="a" minOccurs="0"><xs:complexType/><xs:simpleType><xs:restriction base="xs:string"/></xs:simpleType>'],
+    ['named and inline types', '<xs:element name="a" minOccurs="0">', '<xs:element name="a" minOccurs="0" type="xs:string">'],
+    ['reference and inline type', '<xs:element name="a" minOccurs="0">', '<xs:element ref="t:root" minOccurs="0">'],
+  ])('keeps source construction rejection of %s', async (_label, before, after) => {
+    await expect(graph(anonymous.replace(before, after))).rejects.toMatchObject({category: 'invalid-schema'});
+  });
+
+  it.each(['foreign-name', 'wrong-kind', 'wrong-path', 'wrong-span', 'duplicate-retained'] as const)
+  ('does not delegate an unmatched retained inline child: %s', async change => {
+    const g = await graph(anonymous), p = g.nodes.find(n => n.kind === 'particle' && n.retained.length)!;
+    const inline = p.retained[0]!;
+    const changed = change === 'foreign-name' ? {...inline, name: {...inline.name, namespace: 'urn:foreign'}}
+      : change === 'wrong-kind' ? {...inline, name: {...inline.name, local: 'simpleType'}}
+      : change === 'wrong-path' ? {...inline, source: {...inline.source, path: inline.source.path + '/0'}}
+      : change === 'wrong-span' ? {...inline, source: {...inline.source, start: {...inline.source.start, offset: inline.source.start.offset + 1}}}
+      : inline;
+    const altered: GraphNode = {...p, retained: change === 'duplicate-retained' ? [inline, inline] : [changed]};
+    const r = request({...g, nodes: g.nodes.map(n => n.id === p.id ? altered : n)});
+    expect(checkActualSchemaSyntax(r.actual, p.id)).toMatchObject({kind: 'invalid-schema', rule: 'schema-for-schemas'});
+  });
+
+  it('rejects an inline child at a compositor rather than a local element', async () => {
+    const r = request(await graph(anonymous.replace('<xs:sequence>', '<xs:sequence><xs:complexType/>')));
+    expect(checks(r)).toContainEqual(expect.objectContaining({kind: 'invalid-schema', rule: 'schema-for-schemas'}));
+  });
+
+  it.each(['declaration-source', 'type-source', 'named-type'] as const)
+  ('requires the original same-source declaration and its owned anonymous type: %s', async change => {
+    const g = await graph(anonymous), p = g.nodes.find(n => n.kind === 'particle' && n.term.kind === 'element')!;
+    if (p.kind !== 'particle' || p.term.kind !== 'element' || p.term.declaration.kind !== 'local') throw new Error('Local element');
+    const declarationId = p.term.declaration.target;
+    const declaration = g.nodes.find(n => n.id === declarationId)!;
+    if (declaration.kind !== 'element' || declaration.type.kind !== 'local') throw new Error('Inline type');
+    const typeId = declaration.type.target;
+    const anonymousType = g.nodes.find(n => n.id === typeId)!;
+    const root = g.nodes.find(n => n.kind === 'element' && n.identity.kind === 'global');
+    if (root?.kind !== 'element') throw new Error('Global root');
+    const target = change === 'type-source' ? anonymousType : declaration;
+    const altered: GraphNode = change === 'named-type' ? {...declaration, type: root.type}
+      : {...target, context: {...target.context, source: {...target.context.source,
+        start: {...target.context.source.start, offset: target.context.source.start.offset + 1}}}};
+    const r = request({...g, nodes: g.nodes.map(n => n.id === target.id ? altered : n)});
+    expect(checkActualSchemaSyntax(r.actual, p.id)).toMatchObject({kind: 'invalid-schema', rule: 'schema-for-schemas'});
+  });
+
   it('checks a useful original graph without claiming aggregate or full representation validity', async () => {
     const r = request(await graph());
     for (const result of checks(r)) expect(result).toMatchObject({kind: 'checked',
@@ -94,9 +167,9 @@ describe('original component source syntax owner', () => {
     expect(checkActualSchemaSyntax(s.actual, node(s, 'Simple').id).kind).toBe('checked');
   });
 
-  it('shares inclusive cumulative limits and never publishes a checked result after exhaustion', async () => {
-    const g = await graph(), first = request(g);
-    const root = node(first, 'Derived');
+  it.each(['derived', 'inline'] as const)('shares inclusive cumulative limits and sticky exhaustion for %s syntax', async mode => {
+    const g = await graph(mode === 'inline' ? anonymous : original), first = request(g);
+    const root = mode === 'inline' ? first.graph.nodes.find(n => n.kind === 'particle' && n.retained.length)! : node(first, 'Derived');
     expect(checkActualSchemaSyntax(first.actual, root.id).kind).toBe('checked');
     const used = first.budget.usage().work;
     const exact = request(g, used);
