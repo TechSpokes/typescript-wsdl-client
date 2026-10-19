@@ -11,12 +11,12 @@ import {prepareSemanticParticleView} from '../../../src/compiler/particleSemanti
 import {checkParticleRestriction} from '../../../src/compiler/particleRestriction.js';
 import {checkRawParticleExtension} from '../../../src/compiler/particleExtension.js';
 import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
-import {checkCandidateCorrespondence} from '../../../src/compiler/re01CandidateCorrespondence.js';
+import {checkCandidateCorrespondence, re01Ancestor} from '../../../src/compiler/re01CandidateCorrespondence.js';
 import {assertFiniteCandidateReceipt, verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
 import type {FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verification.js';
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
 import {measureMeaningfulPrefixBounds} from './meaningful-prefix-bound.js';
-import {checkSubstitution, effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
+import {checkSubstitution, checkTypeDerivation, effectiveSubstitutionMembers, immediateTypeBase} from '../../../src/compiler/schemaTypeRelations.js';
 import {checkComplexParticleContent} from '../../../src/compiler/particleLocalAssessment.js';
 import {checkElementDeclarationsConsistent} from '../../../src/compiler/particleDeclarationConsistency.js';
 import {checkParticleAttribution} from '../../../src/compiler/particleAttribution.js';
@@ -687,5 +687,96 @@ describe('one mandatory restriction consumer of retained H/M membership', () => 
     }
     // The locally legal parent is not a complete original witness. Only this
     // retained pair and prescribed rebase recipe are rejected, not all witnesses.
+  });
+
+  // Expected answers follow cos-equiv-derived-ok-rec.2.3 and the total
+  // RecurseLax mapping: adding alternatives cannot remove retained M from
+  // the derived choice or supply its reserved global QName on the base side.
+  // These finite contrasts support the universal proof; they do not enumerate B.
+  it.each([false, true])('keeps the missing M obstruction when both choices grow, reverse=%s', async reverse => {
+    const seed = await forest({head: 'E', member: 'F', extensionOnly: true, block: ['restriction'],
+      liveHeadUse: 'before-separator', restrictionConsumers: true});
+    const parent = seed.build('repair'), [rh, rm] = seed.consumerTypes;
+    if (!seed.h || !seed.m || !rh || !rm) throw new Error('Expected fixed parent');
+    const affiliate = (name: string, head: ElementNode, type: string): ElementNode => ({...seed.m!,
+      id: globalId('element', {namespace, local: name}),
+      identity: {kind: 'global', role: 'element', name: {namespace, local: name}},
+      name: {namespace, local: name}, type: local(type), substitutionGroup: local(head.id)});
+    const hExtra = [affiliate(reverse ? 'ZHead' : 'AHead', seed.h, seed.e.id),
+      affiliate(reverse ? 'AHead' : 'ZHead', seed.h, seed.e.id)];
+    const mDirect = affiliate(reverse ? 'AMember' : 'ZMember', seed.m, seed.f.id);
+    const mTransitive = affiliate('NestedMember', mDirect, seed.f.id);
+    const added = [...hExtra, mDirect, mTransitive];
+    if (reverse) added.reverse();
+    const endpoint = {...complex(parent, seed.f.id), derivation: {
+      kind: 'restriction' as const, contentKind: 'complex' as const, base: local(seed.e.id), facets: []}};
+    const child = forkSemanticCandidate(parent, {key: 'expanded-both-' + reverse,
+      active: [...parent.members, ...added.map(node => node.id)], additions: added, endpoint,
+      rawTypes: [raw(endpoint)], rawElements: added.map(node => ({element: node.id, type: node.type, final: [], block: []}))});
+    if (child.kind !== 'prepared') throw new Error(JSON.stringify(child));
+    const context = child.context;
+    expect(checkCandidateCorrespondence(seed.request.actual, parent, context, seed.f.id, seed.e.id, local(seed.a.id)))
+      .toMatchObject({kind: 'checked'});
+    expect(checkComponentConstruction(parent, seed.f.id)).toMatchObject({kind: 'checked', re01: {primitive: false}});
+    expect(re01Ancestor(parent, seed.f.id)).toMatchObject({kind: 'checked', ancestor: local(seed.a.id)});
+    expect(immediateTypeBase(parent, local(seed.f.id))).toMatchObject({kind: 'checked', value: local(seed.e.id)});
+    for (const node of [...added, seed.h, seed.m, seed.e, rh])
+      expect(checkComponentConstruction(context, node.id)).toMatchObject({kind: 'checked'});
+    expect(checkSubstitution(context, seed.m.id, seed.h.id, {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+    expect(checkSubstitution(context, seed.m.id, seed.h.id, {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: false});
+    expect(checkTypeDerivation(context, local(seed.f.id), local(seed.e.id), []))
+      .toMatchObject({kind: 'checked', value: true});
+    expect(checkTypeDerivation(context, local(seed.f.id), local(seed.e.id), ['restriction']))
+      .toMatchObject({kind: 'checked', value: false});
+    const derived = restricted(context, rm.id), base = restricted(context, rh.id);
+    const memberChoice = derived.root.children[1]!, headChoice = base.root.children[1]!;
+    expect(derived.root.originalParticle).not.toBe(base.root.originalParticle);
+    expect(memberChoice).toMatchObject({kind: 'choice', occurs: {min: '1', max: '1'}, orderUnspecified: true});
+    expect(headChoice).toMatchObject({kind: 'choice', occurs: {min: '1', max: '1'}, orderUnspecified: true});
+    expect(memberChoice.originalParticle).not.toBe(headChoice.originalParticle);
+    expect(memberChoice.children.map(node => node.element?.id)).toEqual(expect.arrayContaining([seed.m.id, mDirect.id, mTransitive.id]));
+    expect(headChoice.children.map(node => node.element?.id).sort()).toEqual([seed.h.id, ...hExtra.map(node => node.id)].sort());
+    expect(memberChoice.children).toHaveLength(3); expect(headChoice.children).toHaveLength(3);
+    expect([...derived.root.children, ...base.root.children].some(node => node.kind === 'any')).toBe(false);
+    expect(checkParticleRestriction(context, derived, base)).toMatchObject({kind: 'checked', value: false});
+    expect(checkComponentConstruction(context, rm.id))
+      .toMatchObject({kind: 'candidate-rejected', component: rm.id, rule: 'derivation-ok-restriction.5.4'});
+    for (const node of [...seed.declarations, ...seed.consumerTypes, ...seed.consumerParticles])
+      expect(context.lookup(node.id)).toEqual(parent.lookup(node.id));
+    // A new global with M's QName has M's identity and cannot be added.
+    expect(forkSemanticCandidate(parent, {key: 'duplicate-M', active: parent.members, additions: [{...seed.m, type: local(seed.e.id)}]}))
+      .toMatchObject({kind: 'candidate-rejected', code: 'identity', component: seed.m.id});
+  });
+
+  it('separates a fresh intermediate that misses E from the effective-membership failure', async () => {
+    const seed = await forest({head: 'E', member: 'F', extensionOnly: true, block: ['restriction'],
+      liveHeadUse: 'before-separator', restrictionConsumers: true});
+    const parent = seed.build('repair'), [rh, rm] = seed.consumerTypes;
+    if (!seed.h || !seed.m || !rh || !rm) throw new Error('Expected fixed parent');
+    const middle: ComplexTypeNode = {...seed.e, id: named('AlternativeIntermediate'),
+      identity: {kind: 'global', role: 'type', name: {namespace, local: 'AlternativeIntermediate'}}};
+    const endpoint = {...complex(parent, seed.f.id), derivation: {
+      kind: 'restriction' as const, contentKind: 'complex' as const, base: local(middle.id), facets: []}};
+    const child = forkSemanticCandidate(parent, {key: 'fresh-intermediate', active: [...parent.members, middle.id],
+      endpoint, additions: [middle], rawTypes: [raw(middle), raw(endpoint)]});
+    if (child.kind !== 'prepared') throw new Error(JSON.stringify(child));
+    const context = child.context;
+    expect(checkCandidateCorrespondence(seed.request.actual, parent, context, seed.f.id, middle.id, local(seed.a.id)))
+      .toMatchObject({kind: 'checked'});
+    expect(checkComponentConstruction(context, middle.id)).toMatchObject({kind: 'checked'});
+    expect(checkComponentConstruction(context, seed.f.id)).toMatchObject({kind: 'checked'});
+    expect(checkTypeDerivation(context, local(seed.f.id), local(seed.e.id), []))
+      .toMatchObject({kind: 'checked', value: false});
+    expect(checkSubstitution(context, seed.m.id, seed.h.id, {mode: 'affiliation'}))
+      .toMatchObject({kind: 'checked', value: false});
+    expect(checkComponentConstruction(context, seed.m.id))
+      .toMatchObject({kind: 'candidate-rejected', component: seed.m.id, rule: 'e-props-correct.4'});
+    expect(checkComponentConstruction(context, rm.id))
+      .toMatchObject({kind: 'candidate-rejected', component: rm.id, rule: 'derivation-ok-restriction.5.4'});
+    // Retaining the old extension edge cannot bypass endpoint correspondence.
+    const unchanged = forkSemanticCandidate(parent, {key: 'unchanged-F', active: parent.members, endpoint: complex(parent, seed.f.id)});
+    if (unchanged.kind !== 'prepared') throw new Error(JSON.stringify(unchanged));
+    expect(checkCandidateCorrespondence(seed.request.actual, parent, unchanged.context, seed.f.id, seed.e.id, local(seed.a.id)))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'two-step-construction'});
   });
 });

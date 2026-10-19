@@ -43,6 +43,59 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it('keeps the mandatory M QName when fresh affiliates expand both consumer choices', () => {
+        // cos-equiv-class: nonabstract M remains in its own group even when
+        // it has incoming affiliates; blocking under H removes M only there.
+        // Independent finite traces exercise selected reversals of both
+        // implicit choices, not all orders or all B.
+        const member = ['urn:review', 'M'];
+        const derived = [member, ['urn:review', 'NewM'], ['urn:review', 'NestedM']];
+        const base = [['urn:review', 'H'], ['urn:review', 'NewH1'], ['urn:review', 'NewH2']];
+        const equalName = (x: readonly string[], y: readonly string[]) => x[0] === y[0] && x[1] === y[1];
+        for (const r of [derived, [...derived].reverse()]) for (const b of [base, [...base].reverse()]) {
+            // RecurseLax requires every derived alternative to have a target.
+            // NameAndTypeOK.1 precedes the global-declaration exception.
+            expect(r.some(name => equalName(name, member))).toBe(true);
+            expect(b.some(name => equalName(name, member))).toBe(false);
+            expect(r.every(name => b.some(target => equalName(name, target)))).toBe(false);
+        }
+        // sch-props-correct.2 reserves M's global QName. A fresh M would be
+        // the same global identity, not a new alternative repairing the gap.
+        const globals = new Set([...derived, ...base].map(name => JSON.stringify(name)));
+        const count = globals.size;
+        globals.add(JSON.stringify(member));
+        expect(globals.size).toBe(count);
+        // A's optional local a and required empty C are fixed other positions;
+        // new global affiliates do not turn either position into a wildcard.
+        const schema = fixture('reordered-particle-int.xsd');
+        const a = children(children(type(schema, 'A'), 'sequence')[0], 'element')[0];
+        expect(equalName(['', attribute(a, 'name')!], member)).toBe(false);
+        expect(children(type(schema, 'A'), 'any')).toEqual([]);
+    });
+
+    it('distinguishes exact complex identity from a restriction-first path or a missing E', () => {
+        // cos-ct-derived-ok.1 exempts exact identity only. The initial F and
+        // E are distinct named complex definitions under B-v1 correspondence.
+        // A fresh intermediate cannot erase F's required first restriction.
+        const traces = [
+            {identity: false, reachesE: true, methods: ['restriction'], allowed: false},
+            {identity: false, reachesE: true, methods: ['restriction', 'extension'], allowed: false},
+            {identity: false, reachesE: false, methods: ['restriction', 'extension'], allowed: false},
+            {identity: true, reachesE: true, methods: [], allowed: true},
+            {identity: false, reachesE: true, methods: ['extension'], allowed: true},
+        ];
+        for (const trace of traces) {
+            // cos-equiv-derived-ok-rec.2.3 with restriction in H.block.
+            const substitutes = trace.identity || trace.reachesE && !trace.methods.includes('restriction');
+            expect(substitutes).toBe(trace.allowed);
+        }
+        // The last two are independent controls, not permitted rewrites of
+        // fixed F: equal declared types and the original extension parent.
+        // cos-st-derived-ok's union-member alternative needs a simple union
+        // target; exact E is complex element-only, neither anySimpleType nor
+        // a union. It supplies no alternative path to that complex identity.
+    });
+
     it('forces the retained mandatory M position through the effective H choice', () => {
         const schema = fixture('reordered-particle-int.xsd');
         const a = children(children(type(schema, 'A'), 'sequence')[0], 'element')[0];

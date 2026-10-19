@@ -2589,7 +2589,132 @@ All #307 and earlier controls, seven recovery inputs, B-v1, AU C1/PW R-240/DT A/
 
 Full #234/#232 acceptance, arbitrary-success coverage, general contextual evidence adequacy, copied-prefix transport, input-derived helper/identity/evidence bounds, complete general negatives and mathematical general search termination remain open.
 #179 activation, #153 combined acceptance and #184 runtime ownership remain separate; draft #231 stays unaccepted and untouched.
-One next action is to determine whether the same fixed consumer pair's membership-loss trap admits a different complete F child, without assuming E rebasing is mandatory or inferring nonexistence from this failed recipe.
+The following continuation settles complete-child existence for that fixed parent without restricting the intermediate or finite additions.
+
+### No complete F child for the fixed membership-loss parent
+
+This continuation starts from #308 at fetched main `cc81f01241c80d808c6c38977fedb2d09bd9f7cb`, tree `4dfdf3636657e68fe8fc992058e475ad9cc80750`.
+Investigation/implementation began at `2026-10-19T07:17:00Z`, with cutoff `2026-10-19T08:47:00Z`; #234 records the earlier finding freeze and subsequent review/checks/delivery.
+The question quantifies over every permitted complete F child of the fixed parent, including retained or fresh intermediates and arbitrary permitted finite additions under `RE01-derivation-B-v1`.
+
+#### Fixed context and theorem
+
+Fix either admitted original or repaired #308 parent from the preceding subsection, with exact p=M.type=F, q=H.type=E, F initially extending E, H.final empty and H.block containing restriction.
+H and M are the retained nonabstract global declarations with distinct names disjoint from original local a; F and E are distinct exact named complex definitions.
+Keep all other supplied records and obligations, including R_H restricting E, R_M restricting R_H, their distinct wrappers/required uses, exact shared A.content and required empty choice C.
+
+There is no permitted complete F child of this fixed parent.
+This is a contextual nonexistence theorem about inherited obligations, not a general-negative decision procedure or a claim that no different Γ-root witness exists.
+The proof uses necessary local premises only; failure occurs before nested evidence for any newly added extension could repair the child.
+
+#### Reusable first-edge obstruction
+
+In the fixed parent, F's immediate base E differs from its designated ancestor A, whose immediate base is anyType.
+Thus the accepted primitive-no-change rule does not apply to F.
+The B-v1 nontrivial construction requires the endpoint retaining exact F identity to restrict a complex intermediate I which extends exact A; a vacuous restriction still has that restriction edge.
+
+`re01CandidateCorrespondence.ts:checkCandidateCorrespondence` owns these two direct edges and preserves the endpoint's effective non-derivation properties.
+`schemaConstructionAssessment.ts` identifies F's nonprimitive obligation, while `finiteRe01Verification.ts` admits primitive identity only when the immediate base is the designated ancestor.
+This uses the accepted B-v1 construction interpretation of [cos-ct-extends.1.5](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends); it adds no new blanket interpretation of the primary composition/vacuity note.
+
+For any such child, exact F remains distinct from exact E.
+By [Type Derivation OK (Complex)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-derived-ok), a successful F-to-E derivation must follow F's base ancestry and includes its first restriction edge.
+If that ancestry misses E, it cannot establish F-to-E derivation at all.
+
+The exact-identity alternative cannot remove this first edge: equal content, a reused particle, or a fresh equal-property type is not identity with E.
+The primary [identity note](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#no-identity) and accepted exact identity contract keep the two named definitions distinct; adding globals cannot alias either existing type.
+`schemaTypeIdentity.ts:resolveSemanticType` and `schemaTypeRelations.ts:relationStep` implement those exact identities rather than content equality.
+
+The simple-type exceptions supply no bypass.
+F, I and E are complex; F's restriction cannot have a simple base under [ct-props-correct.2](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#ct-props-correct), and E retains element-only complex content.
+Even if a later ancestry step could enter simple types, [Type Derivation OK (Simple)](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-st-derived-ok) offers identity, simple-base recursion, the simple ur-type and a union target's members; none reaches this distinct named complex E without encountering E itself.
+
+In particular E is neither anySimpleType nor a simple union target.
+The owner `schemaTypeRelations.ts:substitutionTypes` first qualifies type derivation, retains accumulated complex-prefix methods and blocks, and considers union alternatives only for a union target.
+No later method, added helper or simple/union alternative erases the initial restriction.
+
+Consequently [Substitution Group OK (Transitive).2.3](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec) excludes M from effective(H), because restriction belongs to H.block and to every successful F-to-E method set.
+M and H are distinct declarations, so the same-element exception does not apply either.
+Additional entered type blocks or substitution in H.block can only add an exclusion.
+
+This reusable obstruction concerns effective membership, not immediate affiliation.
+With empty H.final, an I retaining an F-to-E path can keep M's affiliation legal under [e-props-correct.4](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#e-props-correct); an I whose path misses E fails that separate obligation as well.
+`schemaTypeRelations.ts:checkSubstitution` keeps affiliation and substitutability separate, and `effectiveSubstitutionMembers` applies the latter plus the nonabstract filter.
+
+#### Consumer mapping under arbitrary finite additions
+
+The preceding reusable argument alone does not prove the consumer comparison fails: #308's original mapping lemma assumed its stated incoming-affiliation inventory.
+Now allow any permitted finite declarations and affiliations under H, under M or elsewhere, and recompute both effective groups in the child.
+If any addition violates its own declaration/type/construction duties, the child already fails; assume those duties hold when considering a possible mapping repair.
+
+Nonabstract retained M is always in effective(M), by the same-declaration alternative of cos-equiv-derived-ok-rec and [cos-equiv-class](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-class).
+Thus the derived required m1 position either remains the M element or becomes a required implicit choice with M as one of its leaves.
+Fresh affiliates can add leaves; they cannot remove that mandatory M leaf, make M abstract, change its type or affiliation, or lower m1's occurrence range.
+
+The base required h1 position either remains H or becomes a required implicit choice of effective(H).
+It contains no M leaf by the first-edge obstruction.
+Every such virtual leaf is a global declaration: [e-props-correct.3](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#e-props-correct) requires global scope for an affiliated declaration.
+[sch-props-correct.2](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#sch-props-correct) and B-v1 global uniqueness prohibit another declaration with M's expanded QName, including a fresh affiliate intended to impersonate M; a fresh local declaration cannot join that group.
+
+The fixed outer sequences normalize to three positions: optional original local a, required H/M or its implicit choice, and C.
+New globals cannot affiliate to or rewrite local a; its distinct QName cannot accept M.
+C remains a required empty choice under [cos-particle-restrict.2.2](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-restrict), so it has no M target; formal emptiability or an empty instance language is not a component-mapping exception.
+
+The distinct sequence roots and required use particles cannot use cos-particle-restrict.1's same-particle shortcut.
+Exact A.content/C sharing permits equality for those operands only; adding particles cannot replace or alias the inherited middle uses.
+`particleSemanticView.ts` retains these authenticated identities, flattens the unit A sequence, and virtualizes declarations without unfolding their declared type content.
+Its fresh virtual leaves carry no `originalParticle`, so expansion of both middle choices cannot introduce a shared original-particle shortcut.
+
+Both normalized outer sequences have three explicit positions.
+[Recurse](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-Recurse) requires a complete strictly order-preserving functional mapping; with these equal three-position lists, the middle position must map to the middle position.
+Within that pair, element-to-choice uses [RecurseAsIfGroup](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-RecurseAsIfGroup) and then [RecurseLax](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-RecurseLax); choice-to-choice uses RecurseLax directly.
+
+RecurseLax maps every derived leaf, including M, to a base leaf.
+[NameAndTypeOK.1](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-NameAndTypeOK) requires matching expanded names before its both-global-declarations exception, so M has no base target.
+If new affiliates virtualize M but leave H an element, choice-to-element has no permitted restriction dispatch; if both remain elements, their distinct names fail directly.
+
+The accepted implicit-order interpretation permits some coherent enumeration, but no ordering creates a missing QName or omits a derived leaf.
+Fresh choice alternatives cannot cross the surrounding explicit sequence positions; pointless unit-choice removal preserves its surviving leaf and does not delete M.
+`particleRestriction.ts` implements these complete mappings and coherent order choices; failure is independent of their enumeration order or cardinalities.
+
+There is no wildcard in either consumer comparison.
+E's retained tail is an operand of R_H-to-E, not R_M-to-R_H; a new affiliate's declared type wildcard is not an element-choice alternative or an inserted consumer particle.
+New groups, particles, AUs, scalar helpers and other additions have no permission to rewrite the inherited consumer content or references, so no wildcard rule supplies a bypass.
+
+#### Complete-child consequence and controls
+
+R_M and R_H remain fresh relative to immutable Γ and are inherited mandatory legality roots in every F child, along with their particles and dependencies.
+The [finite verifier](../src/compiler/finiteRe01Verification.ts) enumerates all such inherited roots relative to Γ, not merely the current child delta; this is also an obligation of semantic success independently of the evidence format.
+Their original-context or parent-context receipts cannot discharge the child-context comparison.
+
+Therefore R_M's particle fails [derivation-ok-restriction.5.4](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#derivation-ok-restriction) in every proposed complete child.
+This contradicts a necessary local duty before considering any further nested existential evidence.
+The conclusion quantifies over all permitted finite additions without a helper bound, enumeration argument, evidence-adequacy assumption or cross-context receipt transfer.
+
+| Premise or discriminator | Existing owner | Controls |
+| --- | --- | --- |
+| Nonprimitive F; restriction-first correspondence | Construction/correspondence | Retained E and fresh I; unchanged-edge rejection |
+| Effective membership versus affiliation | Type relations/declarations | First restriction excluded; fresh I misses E |
+| Both choices may grow; retained M cannot disappear | Effective groups/particle views | Direct H and direct/transitive M affiliates |
+| Missing QName defeats every implicit order | Restriction/QName identity | Equal-size virtual choices; varied names/insertion order |
+| Exact identity is a real exception | Type identity/type relations | Existing equal-declared-type stable-membership controls |
+| Inherited mandatory duties and full positive contrast | Finite verifier | Existing descendant rejection and complete stable positives |
+
+The [typed controls](../test/research/re01/live-helper-forest.test.ts) extend existing tests through these owners; the [independent clause traces](../test/conformance/reference/re01-particle-continuation.test.ts) import no semantic owner for their expectations.
+The nonauthor reviewer independently challenges the universal argument and constructs separate contrasts before reliance, then reviews final proof/code and scoped #232 consistency.
+The complete pinned Structures XML was re-read with editorial deletions excluded; SHA-256 is `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+
+The official second-edition errata, re-read October 19, contains only Part 1 E1-56's default/PSVI correction and no amendment to these clauses.
+The consumers retain empty AU/attribute-wildcard properties, and original string/int operands remain unchanged; AU C1, PW R-240, DT A, #178, GSC1 and P1/F2 keep their accepted scopes.
+There is no new production obstruction API, rule owner, verifier authority, search strategy, budget or activation change.
+
+Existing complete witnesses for other fresh inventories over the same integer-restoration Γ remain valid, including the stable-membership consumer roots and the earlier forest without this membership trap.
+Constructing such a different Γ-root may choose different fresh declarations/flags or no consumers; it does not supply a child of this fixed parent, whose inherited nonendpoint records cannot be omitted or rewritten.
+The theorem establishes neither general evidence inadequacy nor a complete general-negative procedure.
+
+Full #234/#232 acceptance remains open for arbitrary-success coverage, general contextual evidence adequacy, copied-prefix transport, input-derived bounds or an equivalent terminating negative criterion, and mathematical general search termination.
+#179/#153 activation and #184 runtime ownership remain separate; draft #231 is preserved.
+One next action is to state a reusable sufficient consumer-obstruction criterion from this first-edge/missing-QName proof and determine its exact recognition preconditions before proposing any production negative branch.
 
 ## Pure input and output contract
 

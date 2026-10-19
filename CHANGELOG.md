@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): prove fixed-parent complete-child nonexistence despite arbitrary permitted finite additions.
+
 - test(re01): prove one mandatory restriction consumer under structural membership preservation and retain its failing child contrast.
 
 - test(re01): prove optional retained-head reconstruction with recursive content closure and complete contextual evidence.

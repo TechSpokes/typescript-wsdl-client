@@ -4,6 +4,18 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [fixed-parent nonexistence theorem](content-model-s06-re-01.md#no-complete-f-child-for-the-fixed-membership-loss-parent) settles #308's requested continuation over every permitted complete F child under B-v1, with arbitrary permitted finite additions and retained or fresh intermediates.
+Correspondence forces F's first edge to be restriction, while F and H.type=E remain distinct exact complex identities; any successful F-to-E path therefore contains the method excluded by H.block.
+This excludes M from effective(H), independently of whether its affiliation stays legal under empty H.final.
+The separate mapping proof extends #308's limited affiliation inventory: retained nonabstract M remains a mandatory derived leaf even when additions expand both choices, while global QName uniqueness prevents another base leaf from supplying M's name.
+Complete Recurse/RecurseLax mappings, all implicit orders, exact identity, normalization, simple-union exceptions and absence of a consumer wildcard bypass are accounted for; unchanged R_M fails derivation-ok-restriction.5.4 in every child context.
+Both consumers and all inherited particles remain mandatory roots; retained declarations, their flags/declared-type references and consumer records/particles are neither omitted nor rewritten.
+Typed direct/transitive-affiliate and fresh-intermediate controls support the primary-rule proof; bounded controls do not prove the universal conclusion.
+One fresh-context nonauthor reviewer challenges the universal argument before reliance and reviews final proof/code plus separate scoped #232 consistency.
+This proves impossibility for this inherited parent while preserving complete different Γ-root witnesses, all accepted AU/PW/DT/#178/GSC1/P1/F2 contracts, semantic owners, budgets and failure categories.
+No production obstruction API or general evidence-adequacy/negative/termination claim is added; full #234/#232 and downstream activation gates remain open.
+One next action is to delimit a reusable sufficient consumer-obstruction criterion and its recognition preconditions before proposing any production negative branch.
+
 The [mandatory restriction-consumer lemma](content-model-s06-re-01.md#one-mandatory-restriction-consumer-of-retained-hm-membership) retains #307's exact optional disjoint-name S and adds only supplied R_H restricting E and R_M restricting R_H.
 Their content is sequence1[A.content,H1,required-empty-choice] and sequence1[A.content,M1,required-empty-choice], with distinct retained wrappers/uses and exact shared original A.content/separator; admission needs no wrapping correction.
 The R_M/R_H mapping must consume effective M under required H, with no wildcard or whole-pair identity shortcut.
@@ -12,7 +24,7 @@ Local constraints and the complete consumer/type/content recursive dependency co
 Complete stable-membership original/repaired five-/sixteen-node controls pass; the requested q=E,p=F-extension,H.final empty,H.block={restriction} parent is locally legal but its prescribed F child loses M and rejects retained R_M under derivation-ok-restriction.5.4 while affiliation and R_H remain legal.
 The two restriction types add no evidence nodes; four retained particles increase the repaired live count to eight, with the prefix/separator shared.
 This is a scoped positive and a failed fixed recipe, with no general nonexistence, production/API/budget or P1/F2 change; full #234/#232 acceptance stays open.
-One next action is to determine whether a different complete F child can preserve this same fixed consumer pair's required membership.
+The fixed-parent theorem above settles this earlier next action without changing the stable-membership positive lemma.
 
 The [retained optional-head lemma](content-model-s06-re-01.md#one-retained-optional-head-in-shared-live-content) extends #306 at exactly `S=sequence[A.content,H[0..1],required-empty-choice,wildcard]`, with H/M expanded names also disjoint from original local a.
 h0 survives reconstruction/normalization and is consumed by D′'s ordered skip and S's contextual attribution/EDC checks; all #306 path/final conditions remain.
