@@ -4,6 +4,10 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [exact-vacuous ground investigation](content-model-s06-re-01.md#exact-vacuous-extension-ground-fails-with-a-retained-consumer) refutes an unconditional success rule for a pure U→B→A extension chain, even when all three types share exact content/AUs and every parent local premise qualifies.
+A retained consumer requires exact M; every U rebase removes M from effective(H), and no finite additions can repair the missing QName.
+A complete original-X positive and a complete two-node contrast changing only M's original declared type to exact B distinguish this fixed-parent semantic obstruction from general witness nonexistence.
+
 The [renewing-helper investigation](content-model-s06-re-01.md#renewing-helper-duties-and-the-finite-evidence-boundary) proves no finite acyclic certificate for its recursive two-head source under the current direct-only primitive rules.
 Every locally qualified required closure retains consumed X and needs some extension-only descendant of exact B, hence another nonprimitive duty; a finite evidence sink is impossible.
 The proof permits arbitrary finite helpers, property-equal prefix copies, affiliation bridges and alternative raw shapes; it does not require every arbitrary step to add a helper.
@@ -16,9 +20,10 @@ For the exact mathematical local-construction operator Φ with finite child fron
 Neither fixed point is identified with independent semantic success, and no productive finite trace, cyclic storage acceptance, semantic positive or no-witness conclusion follows.
 Configured resource limits remain separate engineering limits, never a premise of the mathematical separation.
 
-The next concrete proof obligation is to derive the semantic inference principle for this exact renewing system from the accepted dated predicates and prove its correspondence to the displayed construction operator.
+The next concrete proof obligation is a semantic soundness theorem for a finite symbolic guarded proof of this exact renewing system, including complete reconstruction of every finite context and inherited duty.
+The attempted uniform proof establishes qᵢ₊₁⇒qᵢ and q₀⇒q_X, but supplies no base q value or independently justified simultaneous-validity introduction; the all-false countervaluation concerns only that displayed inference, not full B semantics.
 An existential representative quotient or guarded proof alternative remains unrefuted but needs sound extraction/reconstruction and semantic inference, rather than deleting inherited roots inside exact children.
-An independently proved exact-content/vacuous all-extension sufficient lemma also remains open; the current direct-only leaves and concrete failed no-addition child do not refute that semantic route or discharge its ambient B-v1 duties.
+The exact-vacuous counterexample refutes the unrestricted ground, while a narrower theorem for the renewal family's replaceable support remains open.
 This is an unresolved proof obligation under the selected domain, with no new policy or approval request.
 
 The [copied-prefix continuation](content-model-s06-re-01.md#copied-prefix-transport-and-optional-prefix-bypass) refutes unconditional comparison transport from property-equal prefix copies under accepted B-v1 identity, while preserving complete alternative witnesses for the displayed optional-prefix case.

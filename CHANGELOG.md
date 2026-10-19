@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): refute an unconditional exact-vacuous extension ground with a complete stable-membership contrast.
+
 - test(re01): expose renewing helper duties and separate finite evidence from local productivity.
 
 - fix(re01): qualify owned inline element types and delimit copied-prefix transport with complete witnesses.

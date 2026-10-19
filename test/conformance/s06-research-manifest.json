@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "670ff919a8b99d0371edde8412a438b5db4f00bfe238b5c189df82b88740456f",
+          "sha256": "6dd204277b1c2f4107b51672fa2926b790ca75d39ed12800e4d2abcef239645b",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2287,6 +2287,21 @@
           "path": "test/conformance/fixtures/xsd/recovery/helper-renewal-unconsumed.xsd",
           "role": "fixture",
           "sha256": "c8b17166b71d04228634e32a9d11daa7df3de3c089189e92604897a0f2f3aa1d"
+        },
+        {
+          "path": "test/research/re01/exact-vacuous-ground.test.ts",
+          "role": "reference",
+          "sha256": "93e7e4460dbc48a36dfcda78e1858ac7075c6d175f2b571d9e8a3d814f65b265"
+        },
+        {
+          "path": "test/conformance/reference/re01-exact-vacuous-ground.test.ts",
+          "role": "reference",
+          "sha256": "133658e34eb78290ecc2049199c445cb4766e329cbd4a7d222e1e8372cbd54c4"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer.xsd",
+          "role": "fixture",
+          "sha256": "dbcf14f336c64d1a8486e4822c75e29d79f501708a6ffb70335994c68c76f30d"
         }
       ]
     },
