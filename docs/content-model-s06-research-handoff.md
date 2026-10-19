@@ -46,6 +46,14 @@ Its synthetic content is installed only in that child and remains a mandatory fr
 The complete direct-B2 positive and eager-parent EDC failure show why installing every original's generated content early is not a general preservation recipe.
 A complete fresh-E2 alternative still exists, so the failed eager recipe does not refute existential forest adequacy.
 
+The [scope-property continuation](content-model-s06-re-01.md#scope-property-reads-and-validity-dependencies) repairs a reproduced copied-prefix false negative.
+Reading two anonymous scopes' complete properties had scheduled full validity of their otherwise unconsumed shared base.
+The equality owner now separates same-complex identity and effective AU property reads from full type construction, while retaining actual correspondence and every AU/declaration/scalar prerequisite.
+Complete copied and identity forests pass; genuinely consuming the failing base still rejects.
+
+The same read-only audit justifies first-fork padding of faithful original named-group rows without new components or fresh roots, while retaining Γ debts and later H legality.
+A fresh-active scalar-selector lemma preserves same-H typed values and facet properties; its general context-reconstruction lift remains unproved, so no scalar rule was changed.
+
 Continue by proving that every completely qualified Q_f actual assessment has some executable finite forest with a justified semantic frontier, then establish complete search and negative/termination results.
 That goal does not require translating every prescribed candidate or retaining a failed eager-installation method.
 Normative correspondence, arbitrary runtime representation, input-derived negative bounds or equivalent complete negatives and mathematical termination remain separate open gates.
@@ -65,6 +73,7 @@ There is no production selector/API/version change, release or downstream activa
 | Founded research completion | Q_f selected explicitly; conditional semantic forest adequacy proved | Runtime materialization and normative correspondence remain open |
 | Identity-read repair | Unrelated original type comparison no longer widens validity closure | Genuine consumed and fresh-root failures remain required |
 | Late original complex properties | Untouched original rows can first be reified in the consuming child with authentic correspondence | General executable-forest adequacy remains unproved; other row categories are unchanged |
+| Scope-property read repair | Copied-prefix proof no longer imports an unrelated scope-base validity root | Full construction and genuine consumed/fresh-root duties remain required |
 | Full RE01 procedure | Useful positives and scoped contradictions work | Coverage, adequacy, negatives and termination stay open |
 
 These failed reductions led to the semantic gate rather than another helper-length experiment.

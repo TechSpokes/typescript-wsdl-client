@@ -10,7 +10,7 @@ import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import {declarationMethods, RelationProblem} from './schemaTypeRelations.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import {checkDeclaration} from './schemaDeclarationPrimitives.js';
-import {assessRawAttributeUses, assessSourceAttributeUses} from './schemaAttributeUses.js';
+import {readRawAttributeProperties, assessSourceAttributeUses} from './schemaAttributeUses.js';
 import type {AttributeFailure, OriginalAttributeUse, AttributeWildcard} from './schemaAttributeUses.js';
 import {deriveActualComplexContent, deriveRawComplexContent, deriveModelGroupContent} from './complexTypeContent.js';
 import {prepareSemanticParticleView} from './particleSemanticView.js';
@@ -83,16 +83,22 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
         && textEqual(left.name.namespace, right.name.namespace) && textEqual(left.name.local, right.name.local);
       enqueue(state, {kind: 'node', a: left.node, b: right.node}); return true;
     };
-    const typeOperand = (selector: SemanticTypeReference) => {
+    const typeIdentity = (selector: SemanticTypeReference) => {
       const selected = resolveSemanticType(context, selector);
       if (selected.kind !== 'component' && selected.kind !== 'builtin' && selected.kind !== 'original-generated')
         return unresolved(a.id, 'component-property-reference', 'Referenced semantic type is unavailable');
-      charge(3); typeDependencies.add([{contextId: context.contextId, type: selected.identity}]);
       if (selected.kind === 'component') read(selected.node);
       return selected;
     };
+    const typeOperand = (selector: SemanticTypeReference) => {
+      const selected = typeIdentity(selector);
+      charge(3); typeDependencies.add([{contextId: context.contextId, type: selected.identity}]); return selected;
+    };
     const typeReference = (state: State, x: SemanticTypeReference, y: SemanticTypeReference, owner: NodeId): boolean => {
-      const left = typeOperand(x), right = typeOperand(y);
+      const left = typeIdentity(x), right = typeIdentity(y);
+      // Exact complex identity is a property fact, not another full validity root.
+      if (left.kind === 'component' && right.kind === 'component' && left.node === right.node && left.node.kind === 'complexType') return true;
+      charge(6); typeDependencies.add([{contextId: context.contextId, type: left.identity}, {contextId: context.contextId, type: right.identity}]);
       if (left.kind === 'builtin' && right.kind === 'builtin')
         return textEqual(left.name.namespace, right.name.namespace) && textEqual(left.name.local, right.name.local);
       if (left.kind === 'builtin' && left.name.local === 'anyType' || right.kind === 'builtin' && right.name.local === 'anyType') return false;
@@ -189,7 +195,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       enqueue(state, {kind: 'particle', a: left.view.root, b: right.view.root}); return true;
     };
     const attributes = (node: ComplexTypeNode) => {
-      const result = context.kind === 'actual' ? assessSourceAttributeUses(context, node.id) : assessRawAttributeUses(context, node.id);
+      const result = context.kind === 'actual' ? assessSourceAttributeUses(context, node.id) : readRawAttributeProperties(context, node.id);
       if (result.kind !== 'checked') throw new Incomplete(result);
       typeDependencies.add(result.typeDependencies);
       remember(result.scalarObligations);
