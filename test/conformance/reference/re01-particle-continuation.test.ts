@@ -43,6 +43,45 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it('retains source operands under a consistent consumer-fixture renaming', () => {
+        // Independent source inspection, no semantic-owner/recognizer import.
+        // QName spelling changes neither exact type roles nor occurrences.
+        for (const [file, ns, aName, bName, dName, leafName] of [
+            ['reordered-particle-int.xsd', 'urn:review', 'A', 'B', 'D', 'a'],
+            ['consumer-renamed.xsd', 'urn:renamed:consumer', 'Seed', 'Pruned', 'Finish', 'item'],
+        ]) {
+            const schema = fixture(file);
+            const prefix = children(children(type(schema, aName), 'sequence')[0], 'element')[0];
+            expect(attribute(prefix, 'name')).toBe(leafName);
+            expect(bounds(prefix)).toEqual({minimum: 0n, maximum: 1n});
+            expect(expandedQName(prefix, attribute(prefix, 'type')!)).toEqual({uri: XSD, local: 'string'});
+            const restriction = branch(schema, bName, 'restriction'), extension = branch(schema, dName, 'extension');
+            expect(expandedQName(restriction, attribute(restriction, 'base')!)).toEqual({uri: ns, local: aName});
+            expect(expandedQName(extension, attribute(extension, 'base')!)).toEqual({uri: ns, local: bName});
+            const leaf = children(children(extension, 'sequence')[0], 'element')[0];
+            expect(attribute(leaf, 'name')).toBe(leafName);
+            expect(expandedQName(leaf, attribute(leaf, 'type')!)).toEqual({uri: XSD, local: 'int'});
+        }
+    });
+
+    it('distinguishes restriction blocking from complete expanded consumer mapping', () => {
+        // cos-equiv-derived-ok-rec.2.3 excludes the first restriction only
+        // when the retained head blocks it. The same-global M target then
+        // returns under an unblocked head, including M's own affiliates.
+        for (const count of [0, 2, 31]) {
+            const member = 'urn:renamed:consumer#Payload';
+            const derived = [member, ...Array.from({length: count}, (_, i) => 'member-' + i)];
+            const headOnly = ['urn:renamed:consumer#Gate', ...Array.from({length: count}, (_, i) => 'head-' + i)];
+            const blocked = headOnly;
+            const unblocked = [...headOnly, ...derived];
+            // Every derived choice leaf owes a QName target in RecurseLax.
+            expect(derived.every(qname => blocked.includes(qname))).toBe(false);
+            expect(derived.every(qname => unblocked.includes(qname))).toBe(true);
+        }
+        // These finite contrasts support the primary-rule theorem. They do
+        // not establish unrestricted nonexistence by bounded enumeration.
+    });
+
     it('keeps the mandatory M QName when fresh affiliates expand both consumer choices', () => {
         // cos-equiv-class: nonabstract M remains in its own group even when
         // it has incoming affiliates; blocking under H removes M only there.

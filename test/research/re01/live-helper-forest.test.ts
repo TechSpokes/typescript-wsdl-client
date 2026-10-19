@@ -20,8 +20,12 @@ import {checkSubstitution, checkTypeDerivation, effectiveSubstitutionMembers, im
 import {checkComplexParticleContent} from '../../../src/compiler/particleLocalAssessment.js';
 import {checkElementDeclarationsConsistent} from '../../../src/compiler/particleDeclarationConsistency.js';
 import {checkParticleAttribution} from '../../../src/compiler/particleAttribution.js';
+import {recognizeInheritedConsumerObstruction} from './inherited-consumer-obstruction.js';
+import type {ConsumerSelection} from './inherited-consumer-obstruction.js';
+import {createSemanticBudget} from '../../../src/compiler/semanticBudget.js';
+import type {SemanticBudget} from '../../../src/compiler/semanticBudget.js';
 
-type ForestType = 'E' | 'F' | 'U' | 'R' | 'V';
+type ForestType = 'A' | 'E' | 'F' | 'U' | 'R' | 'V';
 type Affiliation = Readonly<{head: ForestType; member: ForestType;
   final?: readonly ('extension' | 'restriction')[];
   block?: readonly ('extension' | 'restriction' | 'substitution')[];
@@ -48,7 +52,7 @@ function particle(context: SemanticContext, id: string): ParticleNode {
 function raw(node: ComplexTypeNode): RawComplexTypeProperties {
   if (!node.content) throw new Error(node.id);
   return {type: node.id, derivation: {method: node.derivation?.kind ?? 'restriction', base: node.derivation?.base ?? anyType},
-    targetNamespace: namespace, abstract: false, final: [], block: [], attributeUses: [],
+    targetNamespace: node.context.effectiveNamespace, abstract: false, final: [], block: [], attributeUses: [],
     content: {kind: 'element-only', particle: node.content}, provenance: {kind: 'hypothetical-abstract', originals: []}};
 }
 function content(context: SemanticContext, id: string) {
@@ -62,10 +66,16 @@ function restricted(context: SemanticContext, id: string) {
   return result.view;
 }
 
-async function forest(affiliation?: Affiliation) {
+async function forest(affiliation?: Affiliation, renamed = false, budget?: SemanticBudget) {
+  const namespace = renamed ? 'urn:renamed:consumer' : 'urn:review';
+  const names: Readonly<Record<string, string>> = {A: 'Seed', B: 'Pruned', D: 'Finish', LiveE: 'Carrier',
+    F: 'Worker', U: 'Follower', R: 'Cut', V: 'Spare', H: 'Gate', M: 'Payload', R_H: 'Upper', R_M: 'Lower'};
+  const label = (name: string) => renamed ? names[name] ?? 'renamed-' + name : name;
+  const named = (name: string) => globalId('type', {namespace, local: label(name)});
   const fixtures = path.resolve('test/conformance/fixtures');
-  const input = await loadSchemaInput(path.join(fixtures, 'xsd/re01/reordered-particle-int.xsd'), {policy: {fileRoots: [fixtures]}});
-  const prepared = prepareSourceSchemaRequest(input);
+  const input = await loadSchemaInput(path.join(fixtures, renamed ? 'xsd/re01/consumer-renamed.xsd'
+    : 'xsd/re01/reordered-particle-int.xsd'), {policy: {fileRoots: [fixtures]}});
+  const prepared = prepareSourceSchemaRequest(input, {budget});
   if (prepared.kind !== 'prepared') throw new Error(prepared.kind);
   const request = prepared.request, a = complex(request.actual, named('A')), d = complex(request.actual, named('D'));
   if (!a.content || !d.content) throw new Error('Expected source particles');
@@ -86,12 +96,12 @@ async function forest(affiliation?: Affiliation) {
   const wrapper = makeParticle('content', {kind: 'sequence', children: [a.content, separator.id, tail.id, extra.id]});
   const old = makeParticle('old-helper-content', {kind: 'sequence', children: [d.content, d.content]});
   const unused = makeParticle('unused-dag', {kind: 'sequence', children: [old.id, old.id]});
-  const e: ComplexTypeNode = {...a, id: eId, identity: {kind: 'global', role: 'type', name: {namespace, local: 'LiveE'}},
+  const e: ComplexTypeNode = {...a, id: eId, identity: {kind: 'global', role: 'type', name: {namespace, local: label('LiveE')}},
     content: wrapper.id, derivation: {kind: 'extension', contentKind: 'complex', base: local(a.id), facets: []}};
   const helper = (name: string, base: string, method: 'extension' | 'restriction', owner?: string): ComplexTypeNode => ({
     ...e, id: owner ? scopedId(owner, '/' + name, 'type') : named(name),
     identity: owner ? {kind: 'scoped', owner, path: '/' + name, role: 'type'}
-      : {kind: 'global', role: 'type', name: {namespace, local: name}},
+      : {kind: 'global', role: 'type', name: {namespace, local: label(name)}},
     content: affiliation?.extensionOnly ? wrapper.id : old.id,
     derivation: {kind: method, contentKind: 'complex', base: local(base), facets: []},
   });
@@ -100,10 +110,10 @@ async function forest(affiliation?: Affiliation) {
   const r = helper('R', u.id, 'restriction', u.id);
   const v = helper('V', r.id, 'extension', unused.id); // No declaration/content consumes V.
   const helpers = [f, u, r, v];
-  const types = {E: e, F: f, U: u, R: r, V: v};
+  const types = {A: a, E: e, F: f, U: u, R: r, V: v};
   const element = (name: string, type: ForestType, abstract: boolean, head?: Reference, elementNamespace = namespace): ElementNode => ({
-    kind: 'element', id: globalId('element', {namespace: elementNamespace, local: name}),
-    identity: {kind: 'global', role: 'element', name: {namespace: elementNamespace, local: name}}, name: {namespace: elementNamespace, local: name},
+    kind: 'element', id: globalId('element', {namespace: elementNamespace, local: label(name)}),
+    identity: {kind: 'global', role: 'element', name: {namespace: elementNamespace, local: label(name)}}, name: {namespace: elementNamespace, local: label(name)},
     context: a.context, declaredAttributes: [], annotations: [], retained: [], syntaxDetails: [],
     type: local(types[type].id), nillable: false, abstract, substitutionGroup: head,
   });
@@ -778,5 +788,195 @@ describe('one mandatory restriction consumer of retained H/M membership', () => 
     if (unchanged.kind !== 'prepared') throw new Error(JSON.stringify(unchanged));
     expect(checkCandidateCorrespondence(seed.request.actual, parent, unchanged.context, seed.f.id, seed.e.id, local(seed.a.id)))
       .toMatchObject({kind: 'candidate-rejected', rule: 'two-step-construction'});
+  });
+});
+
+// The expected outcomes below follow the first restriction edge and complete
+// QName mapping argument, independently of the recognizer's implementation.
+describe('research recognition of an inherited three-position consumer', () => {
+  const blocked: Affiliation = {head: 'E', member: 'F', extensionOnly: true, block: ['restriction'],
+    liveHeadUse: 'before-separator', restrictionConsumers: true};
+  const select = (seed: Awaited<ReturnType<typeof forest>>): ConsumerSelection => ({target: seed.f.id,
+    head: seed.h!.id, member: seed.m!.id, consumer: seed.consumerTypes[1]!.id});
+
+  it.each([false, true])('recognizes the exact obstruction independently of consistent names, renamed=%s', async renamed => {
+    const seed = await forest(blocked, renamed), hints = select(seed);
+    for (const mode of ['original', 'repair'] as const) {
+      const parent = seed.build(mode);
+      expect(recognizeInheritedConsumerObstruction(seed.request.actual, parent, hints)).toEqual({
+        kind: 'proved-no-construction', domain: 'RE01-derivation-B-v1',
+        criterion: 'inherited-three-position-consumer-v1', scope: 'complete-child-of-exact-parent',
+        actualContextId: seed.request.actual.contextId, parentContextId: parent.contextId,
+        ...hints, headType: seed.e.id, baseConsumer: seed.consumerTypes[0]!.id});
+      // A concrete failed child supports, but does not establish, universality.
+      expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, seed.evidence(parent)))
+        .toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4', component: hints.consumer});
+    }
+  });
+
+  it.each([1, 5, 17])('recognizes growing groups under both declarations with %s direct affiliates', async count => {
+    const seed = await forest(blocked), initial = seed.build('repair');
+    const affiliate = (name: string, head: string, type: string): ElementNode => ({...seed.m!,
+      id: globalId('element', {namespace, local: name}), name: {namespace, local: name},
+      identity: {kind: 'global', role: 'element', name: {namespace, local: name}},
+      type: local(type), substitutionGroup: local(head)});
+    const additions: ElementNode[] = [];
+    for (let i = 0; i < count; i++) {
+      additions.push(affiliate('headChoice' + i, seed.h!.id, seed.e.id));
+      additions.push(affiliate('memberChoice' + i, seed.m!.id, seed.f.id));
+    }
+    additions.push(affiliate('transitiveChoice', additions[1]!.id, seed.f.id));
+    additions.reverse();
+    const prepared = forkSemanticCandidate(initial, {key: 'expanded-parent', active: [...initial.members, ...additions.map(x => x.id)],
+      additions, rawElements: additions.map(x => ({element: x.id, type: x.type, final: [], block: []}))});
+    if (prepared.kind !== 'prepared') throw new Error(JSON.stringify(prepared));
+    const parent = prepared.context;
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, parent, select(seed)))
+      .toMatchObject({kind: 'proved-no-construction', parentContextId: parent.contextId});
+    expect(effectiveSubstitutionMembers(parent, seed.m!.id)).toMatchObject({kind: 'checked', value: expect.arrayContaining([seed.m!.id, additions[0]!.id])});
+    // Even at 17/18 additions the recognizer uses views, not permutations of
+    // a supplied failed child. There is no affiliate/helper-count threshold.
+  });
+
+  it.each([
+    {head: 'E', member: 'F', block: []},
+    {head: 'F', member: 'F', block: ['restriction']},
+    {head: 'E', member: 'E', block: ['restriction']},
+  ] as const)('preserves complete positive boundaries %j', async contrast => {
+    const seed = await forest({...blocked, ...contrast}), parent = seed.build('repair');
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, parent, select(seed))).toMatchObject({kind: 'not-established'});
+    const result = verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, seed.evidence(parent));
+    expect(result).toMatchObject({kind: 'checked-candidate', claims: {
+      universalCoverage: false, completeNegativeAnswer: false, searchTermination: false}});
+  });
+
+  it('does not mistake primitive no-change for a forced restriction edge', async () => {
+    const seed = await forest({...blocked, head: 'A', member: 'E'}), parent = seed.build('repair');
+    expect(checkComponentConstruction(parent, seed.e.id)).toMatchObject({kind: 'checked', re01: {primitive: true}});
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, parent, {...select(seed), target: seed.e.id}))
+      .toMatchObject({kind: 'not-established', rule: 'nonprimitive-target'});
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, seed.evidence(parent)))
+      .toMatchObject({kind: 'checked-candidate'});
+  });
+
+  it.each([
+    {memberAbstract: true}, {headAbstract: true}, {restrictionConsumers: false},
+  ])('leaves declaration/consumer shape exceptions unproved %j', async contrast => {
+    const seed = await forest({...blocked, ...contrast}), parent = seed.build('repair');
+    const hints = {target: seed.f.id, head: seed.h!.id, member: seed.m!.id, consumer: seed.consumerTypes[1]?.id ?? seed.r.id};
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, parent, hints)).toMatchObject({kind: 'not-established'});
+  });
+
+  it('distinguishes absent properties, invalid hints, mismatched contexts and immutable Γ', async () => {
+    const seed = await forest(blocked), parent = seed.build('repair'), hints = select(seed);
+    const additions = parent.members.flatMap(id => {
+      if (seed.request.actual.lookup(id).kind === 'found') return [];
+      const found = parent.lookup(id); return found.kind === 'found' ? [found.node] : [];
+    });
+    const prepared = seed.request.candidate({key: 'missing-declaration-properties', active: parent.members, additions,
+      endpoint: complex(parent, seed.d.id),
+      rawTypes: parent.members.flatMap(id => {const props = parent.rawTypeProperties(id); return props ? [props] : [];}),
+      rawElements: [{element: seed.m!.id, type: seed.m!.type, final: [], block: []}]});
+    if (prepared.kind !== 'prepared') throw new Error(JSON.stringify(prepared));
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, prepared.context, hints))
+      .toMatchObject({kind: 'unresolved', rule: 'missing-component-properties'});
+    const originalGlobal = seed.request.actual.members.find(id => {
+      const found = seed.request.actual.lookup(id); return found.kind === 'found'
+        && found.node.kind === 'element' && found.node.identity.kind === 'global';
+    })!;
+    const subset = seed.request.candidate({key: 'incomplete-parent', active: parent.members.filter(id => id !== originalGlobal),
+      additions, endpoint: complex(parent, seed.d.id),
+      rawTypes: parent.members.flatMap(id => {const props = parent.rawTypeProperties(id); return props ? [props] : [];}),
+      rawElements: [seed.h!, seed.m!].map(x => ({element: x.id, type: x.type, final: [], block: x === seed.h ? ['restriction' as const] : []}))});
+    if (subset.kind !== 'prepared') throw new Error(JSON.stringify(subset));
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, subset.context, hints))
+      .toMatchObject({kind: 'unresolved', rule: 'complete-context'});
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, parent, {...hints, consumer: 'absent'}))
+      .toMatchObject({kind: 'invalid-input', rule: 'selected-component'});
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, parent, {...hints, target: undefined} as unknown as ConsumerSelection))
+      .toMatchObject({kind: 'invalid-input', rule: 'selection'});
+    const other = await forest(blocked);
+    expect(recognizeInheritedConsumerObstruction(other.request.actual, parent, hints))
+      .toMatchObject({kind: 'invalid-input', rule: 'context-relationship'});
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, seed.request.actual, hints))
+      .toMatchObject({kind: 'not-established', rule: 'inherited-parent'});
+    expect(() => recognizeInheritedConsumerObstruction({...seed.request.actual}, parent, hints)).toThrow('Unauthenticated');
+  });
+
+  it.each(['optional-middle', 'wildcard-middle', 'optional-separator', 'shared-root', 'raw-selector', 'invalid-declaration'] as const)
+  ('does not prove an altered consumer or invalid operand: %s', async change => {
+    const seed = await forest(blocked), original = seed.build('repair'), hints = select(seed);
+    const [baseRoot, , , memberUse] = seed.consumerParticles;
+    const additions = original.members.flatMap(id => {
+      if (seed.request.actual.lookup(id).kind === 'found') return [];
+      const found = original.lookup(id); if (found.kind !== 'found') return [];
+      const node = found.node;
+      if (node.kind === 'particle' && id === memberUse!.id && change === 'optional-middle')
+        return [{...node, occurs: {min: '0', max: '1'}}];
+      if (node.kind === 'particle' && id === memberUse!.id && change === 'wildcard-middle')
+        return [{...node, term: seed.tail.term}];
+      if (node.kind === 'particle' && id === seed.separator.id && change === 'optional-separator')
+        return [{...node, occurs: {min: '0', max: '1'}}];
+      if (node.kind === 'complexType' && id === hints.consumer && change === 'shared-root')
+        return [{...node, content: baseRoot!.id}];
+      if (node.kind === 'element' && id === hints.member && change === 'invalid-declaration')
+        return [{...node, nillable: 'invalid' as unknown as boolean}];
+      return [node];
+    });
+    const rawTypes = original.members.flatMap(id => {
+      const props = original.rawTypeProperties(id); if (!props) return [];
+      return [id === hints.consumer && (change === 'shared-root' || change === 'raw-selector')
+        ? {...props, content: {kind: 'element-only' as const, particle: baseRoot!.id}} : props];
+    });
+    const rebuilt = seed.request.candidate({key: change, active: original.members, additions,
+      endpoint: complex(original, seed.d.id), rawTypes,
+      rawElements: original.members.flatMap(id => {const props = original.rawElementProperties(id); return props ? [props] : [];})});
+    if (rebuilt.kind !== 'prepared') throw new Error(JSON.stringify(rebuilt));
+    // The separator is also live in E. Making it optional exposes E's
+    // wildcard beside its optional prefix/head, failing local UPA first.
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, rebuilt.context, hints))
+      .toMatchObject({kind: change === 'invalid-declaration' || change === 'optional-separator' ? 'invalid-input' : 'not-established'});
+  });
+
+  it('restores complete evidence with expanded H/M groups when restriction blocking is removed', async () => {
+    const seed = await forest({...blocked, block: []}), initial = seed.build('repair');
+    const extra = (name: string, head: string, type: string): ElementNode => ({...seed.m!,
+      id: globalId('element', {namespace, local: name}), name: {namespace, local: name},
+      identity: {kind: 'global', role: 'element', name: {namespace, local: name}},
+      type: local(type), substitutionGroup: local(head)});
+    const direct = extra('DirectExpandedMember', seed.m!.id, seed.f.id);
+    const newElements = [extra('ExpandedHead', seed.h!.id, seed.e.id), direct,
+      extra('TransitiveExpandedMember', direct.id, seed.f.id)];
+    const additions = initial.members.flatMap(id => {
+      if (seed.request.actual.lookup(id).kind === 'found') return [];
+      const found = initial.lookup(id); return found.kind === 'found' ? [found.node] : [];
+    });
+    const prepared = seed.request.candidate({key: 'complete-expanded-positive',
+      active: [...initial.members, ...newElements.map(x => x.id)], additions: [...additions, ...newElements],
+      endpoint: complex(initial, seed.d.id),
+      rawTypes: initial.members.flatMap(id => {const props = initial.rawTypeProperties(id); return props ? [props] : [];}),
+      rawElements: [...seed.h ? [{element: seed.h.id, type: seed.h.type, final: [], block: []}] : [],
+        ...[seed.m!, ...newElements].map(x => ({element: x.id, type: x.type, final: [], block: []}))]});
+    if (prepared.kind !== 'prepared') throw new Error(JSON.stringify(prepared));
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, prepared.context, select(seed)))
+      .toMatchObject({kind: 'not-established', rule: 'restriction-blocking'});
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, seed.evidence(prepared.context)))
+      .toMatchObject({kind: 'checked-candidate', claims: {universalCoverage: false, completeNegativeAnswer: false, searchTermination: false}});
+  });
+
+  it.each(['work', 'nodes'] as const)('preserves inclusive and sticky explicit %s exhaustion', async limit => {
+    const maxWork = 125_000_000, maxNodes = 100_000;
+    const budget = createSemanticBudget({maxWork, maxNodes}), seed = await forest(blocked, false, budget);
+    const parent = seed.build('repair'), hints = select(seed);
+    if (limit === 'work') budget.chargeWork(maxWork - budget.usage().work);
+    else budget.reserveNodes(maxNodes - budget.usage().nodes);
+    expect(budget.exhausted()).toBe(false); // Inclusive boundary is still admitted.
+    const result = recognizeInheritedConsumerObstruction(seed.request.actual, parent, hints);
+    expect(result).toMatchObject({kind: 'resource-limit', limit});
+    const usage = {...budget.usage()};
+    expect(recognizeInheritedConsumerObstruction(seed.request.actual, parent, hints)).toBe(result);
+    expect(budget.usage()).toEqual(usage);
+    expect(usage.work).toBeLessThanOrEqual(maxWork);
+    expect(usage.nodes).toBeLessThanOrEqual(maxNodes);
   });
 });

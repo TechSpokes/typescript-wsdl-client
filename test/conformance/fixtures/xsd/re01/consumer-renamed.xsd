@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:r="urn:renamed:consumer" targetNamespace="urn:renamed:consumer">
+  <xs:complexType name="Seed">
+    <xs:sequence><xs:element name="item" type="xs:string" minOccurs="0"/></xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Pruned">
+    <xs:complexContent><xs:restriction base="r:Seed"/></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Finish">
+    <xs:complexContent>
+      <xs:extension base="r:Pruned"><xs:sequence><xs:element name="item" type="xs:int"/></xs:sequence></xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="entry" type="r:Finish"/>
+</xs:schema>
