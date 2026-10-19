@@ -24,6 +24,8 @@ The [conditional-premise continuation](#conditional-prerequisites-through-partic
 The [original-property continuation](#guarded-original-property-views-in-the-current-context) reads a bounded class of untouched originals without installing source-generated wrappers as new validity roots.
 The [full original-input continuation](#guarded-original-inputs-to-full-construction) uses those properties as inputs to all current-context construction checks, preserving native wildcard origin and genuine dependencies.
 The [compositor-incidence continuation](#original-compositor-incidences-in-candidate-construction) also interprets authentic original child lists without promoting suppressed source diagnostics into hypothetical components.
+The [component-admission continuation](#source-only-original-records-and-full-component-admission) separately prevents a direct live reference from activating a retained diagnostic as an original semantic component.
+The [finite-observation continuation](#passive-affiliates-and-anchored-head-observations) proves a conditional positive pruning lemma and identifies the changing support observations still needed for a decision bound.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -3977,7 +3979,157 @@ An existing invalid minLength beneath a suppressed source item still fails actua
 This repair is limited to these three consumers and qualified original compositor incidence.
 The equality owner's recursive literal-child comparison is unchanged; no universal distinct-original property-comparison or arbitrary raw/fresh normalization theorem follows.
 The preceding original-input diagnostic lookahead remains deliberately literal and conservative, including through real particle/group descendants.
-Direct absent local-declaration semantics, general source-only roles, universal frontier/SOME-forest composition, complete negatives/search bounds, termination and dated correspondence remain open.
+The compositor result alone does not settle direct absent local-declaration semantics; the following admission continuation addresses genuine full-component requests.
+General source-only roles, universal frontier/SOME-forest composition, complete negatives/search bounds, termination and dated correspondence remain open.
+
+#### Source-only original records and full component admission
+
+This continuation starts from reviewed PR #322 `384af9d7d9f6e7228d77634189f8c58b62b6e4ce` and identical-tree actual main `58d03daa5a4cfc132c114624bad35ff6773b2583`, tree `689cd763b96c49163e90b799e01c65596ae054af`.
+The preceding compositor repair omits source-only incidences; it does not make their retained diagnostic IDs into semantic components when selected directly.
+The existing B-v1 component domain requires original semantic components plus the explicitly supplied fresh set F, not every source record available through `lookup`.
+
+##### Complete countercontrol and genuine fresh alternative
+
+The [authentic source](../test/conformance/fixtures/xsd/recovery/source-only-component-admission-independent.xsd) has eight represented actual records: empty A/B/R/X, Dormant with one sequence, and its local ghost:string declaration and particle at 0..0.
+All eight actual source/local checks pass; X alone has a nonprimitive actual duty, and the no-addition one-node X-restriction-B witness completes.
+The dated [local element mapping](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#declare-element), pinned XML lines 2078–2090, makes the ghost item correspond to no component, while retaining its source syntax obligations.
+
+The independently reproduced countercontrol adds exactly one fresh nonzero particle P referencing that original diagnostic declaration.
+Correspondence lists F = {P}; the original ghost ID is not a semantic original and is not a supplied fresh declaration.
+Nevertheless the old complete caller returned `checked-candidate` and included full H receipts for P and ghost, without consuming Dormant.
+Its legal declaration fields and available source record supplied no component-existence premise; silently calling ghost fresh would also omit its permitted identity, inventory and inherited root duties.
+This was a supplied-candidate admission error under the accepted component-set law, not a new policy choice or an existential negative for the whole input.
+
+The [permanent whole-evidence controls](../test/research/re01/source-only-component-admission.test.ts) now reject that nine-member carrier at ghost's full H admission, with exact H context and component ID.
+P still publishes its genuine declaration dependency; neither the dependency nor the actual source duty is hidden.
+An independently admitted declaration D_f and particle P_f instead produce a complete one-node ten-member carrier, all eight actual receipts, and exact H receipts for A/B/X/D_f/P_f.
+Both fresh records appear in F and remain mandatory roots, even though D_f's legal string properties and source text copy the diagnostic declaration.
+Original identity reservation remains binding; no activation flag or reuse of ghost's original ID is introduced.
+
+The [independent reference controls](../test/conformance/reference/re01-source-only-component-admission.test.ts) pin this source, exact zero bounds and empty derivation core, then qualify the original with the existing primary engine.
+They do not use that engine as an abstract admission or hypothetical RE01 oracle.
+
+##### Full-owner guard and origin boundaries
+
+The change is confined to [full component construction](../src/compiler/schemaConstructionAssessment.ts), after authenticated lookup and the unchanged actual source-syntax-only branch, before hypothetical property receipts and dependencies.
+Any candidate max-zero particle first retains the existing occurrence validation and `p-props-correct` rejection, regardless of source binding; uncertain source admission cannot override that structural failure.
+For other privately classified original-absent IDs, an exact source-bound H rejects `original-source-only-component`; retained-only carrier metadata leaves `original-source-component-admission` unresolved.
+Both new results identify the requested component and current H, not Γ invalidity or universal nonexistence.
+
+The native factory's existing private absence set is keyed by original identity and source mapping, not caller provenance.
+The authenticated immutable `notationUniverse` field supplies the already captured source-bound signal; this use performs no NOTATION lookup or validity check.
+No source-classification algorithm, identity format, `lookup`/`resolve`/owner operation, declaration/scalar predicate, correspondence or finite-verifier rule changes.
+
+| Role | Retained boundary |
+| --- | --- |
+| Actual source-only record | Syntax-only receipt and genuine global source dependencies stay in Γ |
+| H full original component duty | Reject qualified original absence; unqualified absence remains unresolved |
+| Direct max-zero particle | Preserve positive-maximum failure, including fresh and retained-only cases |
+| Nonzero suppressed descendant | No blanket particle exemption; apply the admission guard |
+| Metadata, source and property reads | Keep their scoped evidence; do not manufacture full owner validity |
+| Genuine fresh declaration | Require disjoint identity, exact F, ordinary fields and all fresh roots |
+| Private original particle inputs | Keep exact-H private authority/full predicates without membership promotion |
+| GSC1 slots and NOTATION | Keep separate admitted spaces, Γ operands and existing owners |
+
+The controls retain genuine nonabsent local/global construction, original lookup and declaration-property evidence, source-only hidden simple/complex/attribute/AU rejection, source-bound versus retained-only zero priority, authentication and inclusive/sticky resource behavior.
+The reused hidden/prohibited fixtures contain deliberately unrelated invalid scalar cases; those assertions are local admission controls, not full validity claims about those entire sources.
+Malformed suppressed syntax still fails actual Γ qualification, and a genuine global referenced by a prohibited use remains genuine.
+
+Under qualified source/component mapping, an original-absent ID is neither a semantic Γ component nor a permitted disjoint fresh addition.
+Checking its diagnostic properties cannot establish full H validity; the guard enforces that existing domain premise while preserving genuine fresh alternatives and all inherited roots.
+The PR #322 native-input/compositor positives and ordinary raw/fresh negatives remain unchanged.
+This local repair does not establish every source role or publication frontier, universal SOME-forest reconstruction, complete negatives or bounds, mathematical termination, dated correspondence or full #234/#232 acceptance.
+
+#### Passive affiliates and anchored head observations
+
+This mathematical continuation preserves B-v1 and the selected founded research judgment; its only runtime implementation change is the preceding full-component admission guard.
+The results are conditional on a finite successful semantic forest with faithful complete local predicates/frontiers and the stated passivity/observation premises.
+They do not supply general executable adequacy, dated-XSD correspondence or an unconditional input-derived bound.
+
+##### One passive birth batch in a successful finite forest
+
+Fix qualified actual Γ, a finite successful semantic assessment forest W, a direct Γ-root candidate H and a batch P of fresh global element declarations introduced in H.
+Include H itself and every retained descendant context in the analysis; legal primitive component cycles remain inside each finite component assessment, while generated nonprimitive duties follow W.
+The declarations are supplied abstract components and may be nonabstract effective members; no XML helper source is invented.
+
+Every p in P must be a passive leaf throughout that entire subtree.
+Its QName is distinct from Γ globals and every retained explicit element-QName role; no retained raw/canonical/source/scalar/identity-owner reference names p, and no declaration affiliates immediately to p.
+Audit complete inverse affiliation inventories, source bindings, owner slots and relevant negative lookups, not merely ordinary outgoing references.
+Its type, flags, values, immediate affiliation and typed prerequisites remain exact while it exists; wildcard namespace matching and implicit substitution expansion may still observe it.
+
+Let O contain all retained-head/context pairs (C,h), with h outside P and C ranging over descendant-or-self contexts including H.
+A smaller consumed-head inventory is permissible only after proving complete observation coverage.
+Let m = |O| and v(p)[C,h] indicate that p is a nonabstract effective member of h in exact C, recomputed from that context's own ancestry/method/block/final facts.
+For each nonzero profile retain any min(2, class size) identities; retain none from a zero profile, and call the retained pool P*.
+
+There exists a successful finite forest W* for the same Γ and root judgment, reconstructed from Γ with those deleted birth-batch declarations omitted uniformly, satisfying |P*| ≤ 2(2^m − 1).
+No other component is removed within any retained context; unused proof subtrees and components born only in those discarded subtrees may disappear together.
+All remaining fresh identities stay mandatory roots, and generated-proof depth does not increase.
+This does not delete a component from an already issued child's inherited membership or add removed declarations arbitrarily to another forest.
+
+##### Positive preservation argument
+
+Rebuild H* from Γ and each child from its reconstructed parent using the old endpoint/child additions except the discarded root-born declarations.
+Passivity preserves every retained reference, owner path, exact type/row/flags/value/scalar/notation/source operand, affiliation legality and raw extension comparison; no Γ record changes.
+Each retained predicate is rechecked in its own reconstructed context, without moving a receipt between contexts.
+
+For each head/context, retaining up to two per nonzero full profile preserves effective count categories 0, 1 and greater than 1, and existence of a nonself member.
+Virtual member particles remain unit tokens; their formal emptiability/effective ranges do not unfold the instance language of their declared type.
+Implicit choices keep their empty/singleton/nonsingleton category; explicit sequence/all arities and all explicit order blocks remain unchanged.
+
+Restrict each successful coherent implicit-choice enumeration/mapping to the retained identities.
+NameAndTypeOK first requires equal QNames, so a retained derived leaf cannot have relied only on a deleted, differently named base leaf; passivity excludes a retained explicit local declaration of that deleted name.
+Recurse/RecurseUnordered/RecurseLax preserve ordered/injective witnesses and required explicit coverage; removed implicit-choice alternatives add no required sequence/all position.
+Element-as-group keeps its unit wrapper, and element/group-to-wildcard checks retain namespaces/ranges.
+MapAndSum multiplies by direct derived sequence arity, which is unchanged even if a direct member contains a smaller implicit choice; it does not multiply by flattened choice cardinality.
+
+UPA loses alternatives without changing the preserved formal nullable structure; EDC compares a subset of same-QName positions with unchanged exact types/namedness.
+AU/facet/value/notation/source facts remain exact under the complete passivity audit, rather than by receipt transfer.
+Retained own-Q type ancestry and primitive status remain unchanged, and retained generated obligations correspond to supported old judgments with reconstructed contexts.
+Induction upward over finite W supplies W*, all actual Γ duties and all retained fresh roots, including legal finite primitive blocks.
+There are at most 2^m − 1 nonzero profiles, proving the stated bound; m comes from the given successful forest, not Γ alone.
+
+The [permanent positive control](../test/research/re01/finite-observation-pruning.test.ts) reuses the [anchored source](../test/conformance/fixtures/xsd/recovery/anchored-helper-support.xsd) with a genuinely nonprimitive U and passive members M1 through M5.
+It reconstructs a two-member pool from the same actual Γ, retaining the exact first two identities, separate U evidence, all actual duties and every inherited remaining root.
+Both complete two-node forests pass; root/child carriers have 30/30 and 27/27 members.
+The complete H/Q membership profiles are evaluated separately in root and child: U's restriction changes which head accepts each member, so this is not frozen root-to-child evidence.
+These controls exemplify the positive lemma and do not prove it universally by sampling pool sizes.
+
+##### Original global-head projection fails, but Γ QName roles can retain fresh heads
+
+The [fresh-head source](../test/conformance/fixtures/xsd/recovery/fresh-head-observation-independent.xsd) has empty A, vacuous B-extension-A and D-extension-B with two required local k:B positions, both blocking restriction.
+Γ has no global elements; the two local k positions are deterministic and have the same exact named type.
+The root adds E-extension-A with one global K:k occurrence at 2..2, U-extension-B empty, and passive M:m of type U affiliated to K; K has type B, restriction block and empty final.
+D becomes a restriction of E while preserving its exact content.
+
+At the root, effective(K) = {K,M}; D's two-position sequence restricts that choice by MapAndSum with exact 2..2 range and QName/type/block checks.
+U's genuine child restricts it to B, retains every root addition, and changes effective(K) to {K} while keeping M's affiliation legal.
+The inherited E/K/M/use roots are rechecked there; original D is not a consumed child obligation and no child result is installed back in the root.
+The [complete control](../test/research/re01/finite-observation-pruning.test.ts) passes with two nodes and 13/13 root/child members.
+
+Profiling M only against global heads originally in Γ gives a zero profile and deletes it, leaving E/K/U/use and the same intermediate/target structure.
+The resulting coherent 12/12 candidates now have a single K element, and the root sequence cannot use the sequence-to-choice MapAndSum branch; its local/full caller rejects 5.4.
+This refutes only that selected same-structure passive deletion, not another successful witness, a richer role quotient or general SOME coverage.
+The [independent source/reference controls](../test/conformance/reference/re01-source-only-component-admission.test.ts) pin Γ's local k roles and original source qualification separately from hypothetical truth.
+
+Let QΓ instead contain every explicit expanded element QName in Γ, including locals, and r = |QΓ|.
+Under complete coverage of every consumed expansion head by those names, exact context C plus QName q uniquely recovers the global h(C,q) if present; absence gives a false bit.
+This is a faithful reindexing with at most r times the number of contexts coordinates, not equality of head/type identities across contexts or a proof of coverage for arbitrary generated names.
+It includes the fresh K because k is an original local QName, while retaining its changing child observation.
+
+For one passive birth batch, additionally require that every consumed head is present in H and no later-born head acquires a consumed role, and every relevant passive-member/head bit is invariant across all retained descendant-or-self contexts.
+A sufficient frozen-relation-closure premise preserves complete affiliation paths, exact type/scalar/ordered-union ancestry and methods, abstract/block/final facts and source/context bindings; freezing just immediate bases or handles is insufficient.
+Unrelated helpers may vary, and new incoming affiliates do not alter an existing member's own bit.
+The profile coordinates then duplicate H's QΓ coordinates, so the same proof yields |P*| ≤ 2(2^r − 1), an input-derived bound for that passive batch under these additional premises.
+The fresh-head countercontrol deliberately violates invariance by rewriting observed U; its root membership cannot be installed in the child.
+
+##### Remaining support theorem for this route
+
+It is unproved that every successful full B input admits those coverage/invariance restrictions, or a computable Γ-derived bound on nonpassive helpers/owners, relevant heads/contexts, proof depth or raw/scalar record sizes.
+The next target for this quotient route is simultaneous normalization of that support and its changing observations, or an effective finite symbolic state with compatible positive reconstruction of SOME complete forest.
+Finite pointwise method/block observations alone do not prove finite transition behavior or preserve exact endpoint/owner/type support.
+Neither the failed projection nor the conditional passive bound proves that target impossible; alternate decision/reconstruction methods need not implement this quotient first.
+General frontier/runtime adequacy, complete negatives/search bounds, mathematical termination and dated correspondence remain open, with all seven packages, P1/F2 and #234/#232 gates preserved.
 
 #### External methods and applicability
 

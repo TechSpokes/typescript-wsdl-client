@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "68047543561d5b1a7c536801fa129ec3bccff270a446facab9a8e6d87370c9ca",
+          "sha256": "8c01dda15e6e30f5d081d1a6a6a8d51e048058a0d2e8e024c87523299d784f8b",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1161,7 +1161,7 @@
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
           "role": "semantic-source",
-          "sha256": "d0c86eb14c9356b8440777720d09eebf00d9d5039817beb45fa32e10d28e308f"
+          "sha256": "31427fb8db607c343814fc06163a39c3eaaf1b8e08e34eb3bd0a8c4ec3badfc6"
         },
         {
           "path": "src/compiler/schemaDatatypeValues.ts",
@@ -2462,6 +2462,31 @@
           "path": "test/conformance/fixtures/xsd/recovery/original-compositor-incidences-independent.xsd",
           "role": "fixture",
           "sha256": "52d9e888f1f33a8ed9d119882e6fece42b76e1f921bc45ff8930b0003bb65b57"
+        },
+        {
+          "path": "test/research/re01/source-only-component-admission.test.ts",
+          "role": "prototype",
+          "sha256": "4f869f7780df69a72d7cdb75ae88af311665439ca7fb4aae33c954f73907b758"
+        },
+        {
+          "path": "test/conformance/reference/re01-source-only-component-admission.test.ts",
+          "role": "reference",
+          "sha256": "a7853163f80395e2c6dc97ebdba383f095e5a8d0316030554d21529682da6551"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-only-component-admission-independent.xsd",
+          "role": "fixture",
+          "sha256": "78910626f7767de96acb3e4eca0e03ac7e94f86eb9fdc4175209c09684963c45"
+        },
+        {
+          "path": "test/research/re01/finite-observation-pruning.test.ts",
+          "role": "prototype",
+          "sha256": "5d58c72ba5e4fc1b124618a8d114434cf8bf955e84cdb264cd2b7e72fd25318f"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/fresh-head-observation-independent.xsd",
+          "role": "fixture",
+          "sha256": "3d65d8d1f4d08bf5ae5c7e2d560c3fc9f6d877722daa3218032dfd988e161c61"
         }
       ]
     },

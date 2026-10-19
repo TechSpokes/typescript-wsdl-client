@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:fresh-head-observation" targetNamespace="urn:recovery:fresh-head-observation" elementFormDefault="qualified">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:B"><xs:sequence>
+    <xs:element name="k" type="t:B" block="restriction"/>
+    <xs:element name="k" type="t:B" block="restriction"/>
+  </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>
