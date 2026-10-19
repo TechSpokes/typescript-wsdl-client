@@ -60,6 +60,8 @@ export type SemanticContext = Readonly<{
   resolve(reference: Reference): ContextResolution;
   sourceNode(id: NodeId): GraphNode | undefined;
   originalSourceComponentAbsent(id: NodeId): boolean;
+  /** Eligibility for reading retained original properties, never a validity receipt. */
+  originalComplexPropertySource(id: NodeId): ComplexTypeNode | undefined;
   /** Original source operand interpretation, with the same request budget. */
   originalContext(): SemanticContext;
   /** Original schema syntax evidence, not implicit hypothetical symbol membership. */
@@ -605,6 +607,12 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           },
           sourceNode(id: NodeId): GraphNode | undefined {authenticate(); key(id); return originals.get(id);},
           originalSourceComponentAbsent(id: NodeId): boolean {authenticate(); key(id); return absentOriginals.has(id);},
+          originalComplexPropertySource(id: NodeId): ComplexTypeNode | undefined {
+            authenticate(); key(id); budget.chargeWork(7);
+            const original = originals.get(id);
+            return kind === 'candidate' && sourceSchemas !== undefined && membership.has(id) && original?.kind === 'complexType'
+              && !rawProperties.has(id) && !changes.has(id) && !absentOriginals.has(id) ? original : undefined;
+          },
           originalContext(): SemanticContext {authenticate(); return actual;},
           sourceSchemaRetained(): CanonicalGraph['schemaRetained'] {authenticate(); return graph.schemaRetained;},
           rawTypeProperties(id: NodeId): RawComplexTypeProperties | undefined {checked(id); return rawProperties.get(id);},

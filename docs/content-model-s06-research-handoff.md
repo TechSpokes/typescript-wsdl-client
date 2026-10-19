@@ -67,6 +67,11 @@ The [conditional-premise continuation](content-model-s06-re-01.md#conditional-pr
 Particle extension retains exact scalar and known current-context mixed prerequisites, and its construction caller sends them to the existing owners; unknown string families remain unresolved.
 Complete simple-base and mixed identity/copied two-node proofs genuinely consume both C types, with formation discharges or exact default-declaration/emptiability checks; complex-base missing-H and inherited-method failures remain binding.
 
+The [guarded original-property continuation](content-model-s06-re-01.md#guarded-original-property-views-in-the-current-context) now reads untouched original particle/empty properties directly in the current H without installing source-generated wrappers.
+The authentic copied and identity two-node forests complete with unchanged membership; faithfully installed wrappers and genuinely consumed C still fail EDC.
+Raw rows remain authoritative, the factory authenticates lineage/source-absence eligibility, the content owner checks collisions through current-H lookup, and the AU property authority retains Γ source qualification plus current-H individual facts.
+This partial reader does not remove any real fresh root, transfer facts from a reified context, support simple/opaque fallback or establish universal allocation/forest coverage.
+
 For the present finite-verifier route, continue by proving that every completely qualified Q_f actual assessment has some executable finite forest with a justified semantic frontier, then establish complete search and negative/termination results.
 That goal does not require translating every prescribed candidate or retaining a failed eager-installation method.
 The [reviewed C² follow-up](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6274763459) is a separate restricted logical positive, not a full-B encoding or a reason to require today's verifier layout of every method.

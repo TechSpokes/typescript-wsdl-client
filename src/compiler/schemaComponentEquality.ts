@@ -10,9 +10,9 @@ import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import {declarationMethods, RelationProblem} from './schemaTypeRelations.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import {checkDeclaration} from './schemaDeclarationPrimitives.js';
-import {readRawAttributeProperties, assessSourceAttributeUses} from './schemaAttributeUses.js';
+import {readOriginalAttributeProperties, assessSourceAttributeUses} from './schemaAttributeUses.js';
 import type {AttributeFailure, OriginalAttributeUse, AttributeWildcard} from './schemaAttributeUses.js';
-import {deriveActualComplexContent, deriveRawComplexContent, deriveModelGroupContent} from './complexTypeContent.js';
+import {deriveActualComplexContent, deriveOriginalComplexPropertyContent, deriveModelGroupContent} from './complexTypeContent.js';
 import {prepareSemanticParticleView} from './particleSemanticView.js';
 import type {SemanticParticle} from './particleSemanticView.js';
 import {wildcardNamespaces} from './wildcardAlgebra.js';
@@ -176,7 +176,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       return true;
     };
     const content = (node: ComplexTypeNode) => {
-      const mapped = context.kind === 'actual' ? deriveActualComplexContent(context, node.id) : deriveRawComplexContent(context, node.id);
+      const mapped = context.kind === 'actual' ? deriveActualComplexContent(context, node.id) : deriveOriginalComplexPropertyContent(context, node.id);
       if (mapped.kind !== 'checked') throw new Incomplete(mapped); return mapped.view;
     };
     const particles = (state: State, x: ReturnType<typeof content>, y: ReturnType<typeof content>): boolean => {
@@ -197,7 +197,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       enqueue(state, {kind: 'particle', a: left.view.root, b: right.view.root}); return true;
     };
     const attributes = (node: ComplexTypeNode) => {
-      const result = context.kind === 'actual' ? assessSourceAttributeUses(context, node.id) : readRawAttributeProperties(context, node.id);
+      const result = context.kind === 'actual' ? assessSourceAttributeUses(context, node.id) : readOriginalAttributeProperties(context, node.id);
       if (result.kind !== 'checked') throw new Incomplete(result);
       typeDependencies.add(result.typeDependencies);
       remember(result.scalarObligations);
@@ -236,7 +236,8 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
       if (x.kind === 'complexType' && y.kind === 'complexType') {
         if (!textEqual(namespace(x), namespace(y)) || !methods(x, y, 'final') || !methods(x, y, 'block')) return false;
         const left = context.rawTypeProperties(x.id), right = context.rawTypeProperties(y.id);
-        if (context.kind === 'candidate' && (!left || !right)) return unresolved(x.id, 'component-complex-properties', 'Candidate complex types require complete raw properties');
+        if (context.kind === 'candidate' && (!left && !context.originalComplexPropertySource(x.id) || !right && !context.originalComplexPropertySource(y.id)))
+          return unresolved(x.id, 'component-complex-properties', 'Candidate complex properties require a raw row or an untouched original');
         const xm = left?.derivation.method ?? x.derivation?.kind ?? 'restriction', ym = right?.derivation.method ?? y.derivation?.kind ?? 'restriction';
         if (xm !== ym || (left?.abstract ?? x.abstract) !== (right?.abstract ?? y.abstract)) return false;
         const ur: Reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anyType'}};

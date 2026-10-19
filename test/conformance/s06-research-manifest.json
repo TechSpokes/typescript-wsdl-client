@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "7dd3acfb1ce857f99594cb1a53a3ea7016e6f8c74c90206766c32c6cbdb4d78e",
+          "sha256": "e33864511e8759eb6fed51a6163910fa3b1cc4cba4e5dcabf594ae24e6e83c1a",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1081,7 +1081,7 @@
         {
           "path": "src/compiler/complexTypeContent.ts",
           "role": "semantic-source",
-          "sha256": "e6fd14c0ecb84c85b0044712e6a04adaff5518157b70f8d93cd8fb5fbe7ab34a"
+          "sha256": "6656722ad7e42727e8cec140a1dcad7802a10758472d6ad0c772828d7c6bcb36"
         },
         {
           "path": "src/compiler/finiteRe01Verification.ts",
@@ -1151,12 +1151,12 @@
         {
           "path": "src/compiler/schemaAttributeUses.ts",
           "role": "semantic-source",
-          "sha256": "e80086c9d3b4dbcf184307d14e74815a34ff4d6a99314d3f794c688e479a3de7"
+          "sha256": "394ad71e2451acdf458cbf28b1123b098794f0b045066afbb9f1361a0a744f5c"
         },
         {
           "path": "src/compiler/schemaComponentEquality.ts",
           "role": "semantic-source",
-          "sha256": "a59b47ed836dd3c50314f8aeb0ba200eda138ad036cbfd919cf51ec0d1629c16"
+          "sha256": "f6925ecec0b0cb6fbdd8f6d192d3b7a24d5f2a0248f2188d2e18bf268aef51c9"
         },
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticContext.ts",
           "role": "semantic-source",
-          "sha256": "51214885afeba17eeb829bbdc66fbb068714b421640909309a902452115f520b"
+          "sha256": "66ed34235c57ad472ea06790da0b956b91834bb693061de8c04725992b30c4a1"
         },
         {
           "path": "src/compiler/wildcardAlgebra.ts",
@@ -2397,6 +2397,26 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-premise-mixed-independent.xsd",
           "role": "fixture",
           "sha256": "61fbecb9fdc7353831b8c45fe19f2302c20e053a76f053dbdec725e580cba8dd"
+        },
+        {
+          "path": "test/research/re01/original-property-projection.test.ts",
+          "role": "prototype",
+          "sha256": "bd0ff813580de8ad56a1d913c0444a7d7769c102b85deda395606bda35854b23"
+        },
+        {
+          "path": "test/research/re01/original-property-reader-boundaries.test.ts",
+          "role": "prototype",
+          "sha256": "5d1452863c069848f9dbb026067d77c95a2a89fb556cea5d4b6776f565464e37"
+        },
+        {
+          "path": "test/conformance/reference/re01-original-property-projection.test.ts",
+          "role": "reference",
+          "sha256": "eb81e0bdafb074cf54adbaf95f5be763a70665b3c7c51ed2a8a53318175517df"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-property-projection-independent.xsd",
+          "role": "fixture",
+          "sha256": "54b004dfaab2d52536881939e154b137875ddd4cc38ed04bb080eaa90df372fd"
         }
       ]
     },

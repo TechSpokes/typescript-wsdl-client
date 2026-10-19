@@ -10,7 +10,7 @@ import type {ResourceLimitFailure} from './semanticBudget.js';
 export type ParticleContentView = Readonly<{
   contextId: string;
   type: NodeId;
-  scope: 'actual-source-mapping' | 'candidate-raw-properties' | 'builtin-type' | 'model-group';
+  scope: 'actual-source-mapping' | 'candidate-raw-properties' | 'original-property-projection' | 'builtin-type' | 'model-group';
   /** Actual simple content can reference a diagnostic projection node, not an active scalar component.
    * Semantic scalar properties and the GSC1 identity come from the scalar owner's
    * contentProperties({kind: 'local', target: type}, type), including its obligations.
@@ -27,6 +27,7 @@ const authorities = new WeakMap<object, SemanticContext>();
 const generatedNodes = new WeakMap<object, ReadonlyMap<NodeId, GraphNode>>();
 const actualCaches = new WeakMap<object, Map<NodeId, ParticleContentView>>();
 const candidateCaches = new WeakMap<object, Map<NodeId, ParticleContentView>>();
+const originalPropertyCaches = new WeakMap<object, Map<NodeId, ParticleContentView>>();
 const ONE = Object.freeze({min: '1', max: '1'});
 const OPTIONAL_MANY = Object.freeze({min: '0', max: 'unbounded'});
 const EMPTY = Object.freeze({kind: 'empty'} as const);
@@ -210,6 +211,42 @@ export function deriveRawComplexContent(context: SemanticContext, type: NodeId):
     budget.chargeWork(12);
     const view = issueContentView(context, {contextId: context.contextId, type, scope: 'candidate-raw-properties', content: properties.content,
       synthetic: NONE, urTypeWildcards: NONE}, NONE);
+    cache.set(type, view);
+    return Object.freeze({kind: 'checked', view});
+  });
+}
+
+/** Retained source properties interpreted in H; never full hypothetical type validity. */
+export function deriveOriginalComplexPropertyContent(context: SemanticContext, type: NodeId): ContentViewResult {
+  assertSemanticContext(context);
+  const budget = context.budget;
+  return budget.guard(() => {
+    budget.chargeWork(10 + type.length);
+    const owner = context.lookup(type);
+    const fail = (rule: string, component = type): ContentViewResult => {
+      budget.chargeWork(8 + rule.length + component.length);
+      return Object.freeze({kind: 'unresolved', rule, component, message: 'Original property projection is unavailable'});
+    };
+    if (owner.kind !== 'found' || owner.node.kind !== 'complexType') return fail('component-complex-properties');
+    if (context.rawTypeProperties(type)) return deriveRawComplexContent(context, type);
+    if (!context.originalComplexPropertySource(type)) return fail('component-complex-properties');
+    let cache = originalPropertyCaches.get(context);
+    if (!cache) {budget.chargeWork(2); cache = new Map(); originalPropertyCaches.set(context, cache);}
+    const prior = cache.get(type);
+    if (prior) {budget.chargeWork(3); return Object.freeze({kind: 'checked', view: prior});}
+    const source = deriveActualComplexContent(context.originalContext(), type);
+    if (source.kind !== 'checked') return source;
+    if (source.view.content.kind === 'simple' || source.view.content.kind === 'opaque-builtin') return fail('component-content-properties');
+    const additions: GraphNode[] = [];
+    for (const id of source.view.synthetic) {
+      budget.chargeWork(3 + id.length);
+      if (context.lookup(id).kind !== 'missing') return fail('original-property-synthetic-collision', id);
+      const node = particleContentNode(context.originalContext(), source.view, id);
+      if (!node) return fail('original-property-synthetic-component', id);
+      additions.push(node);
+    }
+    const view = issueContentView(context, {contextId: context.contextId, type, scope: 'original-property-projection',
+      content: source.view.content, synthetic: source.view.synthetic, urTypeWildcards: source.view.urTypeWildcards}, additions);
     cache.set(type, view);
     return Object.freeze({kind: 'checked', view});
   });
