@@ -202,6 +202,17 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           obligations: Object.freeze([]), discharged: Object.freeze([])});
         b.chargeWork(); issued.set(receipt, context); return receipt;
       }
+      if (context.kind === 'candidate' && node.kind === 'particle' && node.occurs.max === '0') {
+        occurrenceAlgebra(b.chargeWork).validate(node.occurs);
+        return fail('p-props-correct', 'A particle component must have a positive maximum occurrence');
+      }
+      if (context.kind === 'candidate' && context.originalSourceComponentAbsent(id)) {
+        // This frozen factory field records exact source binding, without a NOTATION lookup.
+        if (context.notationUniverse !== 'source-bound') return fail('original-source-component-admission',
+          'Authentic original component membership has not been established', 'unresolved', context.contextId);
+        return fail('original-source-only-component', 'Retained source-only syntax does not denote an original semantic component',
+          'candidate-rejected', context.contextId);
+      }
       if (node.identity.kind === 'global') {
         b.chargeWork(node.identity.name.local.length + 2);
         if (!isXmlNCName(node.identity.name.local)) return fail('component-name', 'Global component name must be an XML NCName');

@@ -83,6 +83,17 @@ The factory supplies a frozen ordered subsequence to the construction prelude/pa
 Direct original zero IDs, fresh explicit lists/zero particles, actual source syntax and all genuine roots remain binding; the primary engine's UPA disagreement is recorded separately from the dated no-component mapping.
 This does not extend the full-input diagnostic lookahead, alter equality's literal-child path, settle direct absent declarations or prove general source-only/frontier coverage.
 
+The [component-admission continuation](content-model-s06-re-01.md#source-only-original-records-and-full-component-admission) now closes the demonstrated direct diagnostic-declaration gap at the full construction owner.
+A fresh live particle cannot make a source-absent original declaration into an H component merely by referencing its available record; the complete caller rejects that supplied candidate in exact H.
+A disjoint fresh declaration plus particle completes the same one-node witness with both explicit fresh roots, while actual syntax duties, property-only evidence and max-zero structural failures remain intact.
+This enforces the existing component domain without a new activation policy; retained-only absence is unresolved, and general source-role/frontier completeness remains open.
+
+The [finite-observation continuation](content-model-s06-re-01.md#passive-affiliates-and-anchored-head-observations) also proves a conditional one-way positive pruning lemma for a passive affiliate batch born in one Γ-root construction.
+Keeping at most two identities per nonzero complete head/context profile preserves some finite forest, but its general bound depends on the given forest's observation inventory.
+A complete fresh-head countercontrol defeats original-global-head-only profiling; Γ's local element QNames can anchor such fresh heads when all consumed roles are covered.
+An input-derived passive-pool bound follows only with that complete QName coverage plus invariant membership under the full frozen relation closure across retained contexts.
+Unrestricted nonpassive support, changing contexts, proof depth/record sizes and compatible SOME reconstruction remain the next quotient-route obligation, not a proved general bound or universal failure.
+
 For the present finite-verifier route, continue by proving that every completely qualified Q_f actual assessment has some executable finite forest with a justified semantic frontier, then establish complete search and negative/termination results.
 That goal does not require translating every prescribed candidate or retaining a failed eager-installation method.
 The [reviewed C² follow-up](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6274763459) is a separate restricted logical positive, not a full-B encoding or a reason to require today's verifier layout of every method.
