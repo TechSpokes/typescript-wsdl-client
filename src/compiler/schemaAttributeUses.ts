@@ -39,10 +39,11 @@ export type SourceAttributePlan = Readonly<{
   declarations: readonly DeclarationReceipt[];
 }>;
 export type AttributeFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'unsupported-capability' | 'unresolved'; rule: string; component: NodeId; source?: SyntaxSource; contextId?: string; message: string}>;
-export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2'; value: SourceAttributePlan;
+export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2' | 'AU01-C1-raw-properties-v1'; value: SourceAttributePlan;
   obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}> | AttributeFailure | ResourceLimitFailure;
 type Container = ComplexTypeNode | Extract<GraphNode, {kind: 'attributeGroup'}>;
 type AttributeRole = 'source' | 'raw';
+type AttributeMode = 'container' | 'standalone' | 'properties';
 type DeclarationFact = Readonly<{
   receipt: DeclarationReceipt; value: TypedAttributeConstraint | undefined;
   scalarObligations: readonly ScalarObligation[];
@@ -75,7 +76,7 @@ export function assessSourceAttributeUses(context: SemanticContext, ownerId: Nod
 /** Check one available original/fresh AU even if no effective type retains it. */
 export function assessAttributeUse(context: SemanticContext, useId: NodeId): AttributeResult {
   assertSemanticContext(context);
-  const result = assessAttributeUses(context, useId, context.kind === 'actual' ? 'source' : 'raw', true);
+  const result = assessAttributeUses(context, useId, context.kind === 'actual' ? 'source' : 'raw', 'standalone');
   return context.kind === 'candidate' && result.kind === 'invalid-schema' ? context.budget.guard(() => {
     if (result.contextId !== undefined && result.contextId === context.originalContext().contextId) return result;
     context.budget.chargeWork(8); return Object.freeze({...result, kind: 'candidate-rejected' as const});
@@ -84,14 +85,24 @@ export function assessAttributeUse(context: SemanticContext, useId: NodeId): Att
 
 /** Literal abstract AU properties: no source union or inherited omission. */
 export function assessRawAttributeUses(context: SemanticContext, ownerId: NodeId): AttributeResult {
-  const result = assessAttributeUses(context, ownerId, 'raw');
+  return rawResult(context, assessAttributeUses(context, ownerId, 'raw'));
+}
+
+/** Read complete effective AU properties without certifying the containing
+ * type's derivation. Individual AU/declaration/scalar premises remain checked.
+ */
+export function readRawAttributeProperties(context: SemanticContext, ownerId: NodeId): AttributeResult {
+  return rawResult(context, assessAttributeUses(context, ownerId, 'raw', 'properties'));
+}
+
+function rawResult(context: SemanticContext, result: AttributeResult): AttributeResult {
   return result.kind === 'invalid-schema' ? context.budget.guard(() => {
     if (result.contextId !== undefined && result.contextId === context.originalContext().contextId) return result;
     context.budget.chargeWork(8); return Object.freeze({...result, kind: 'candidate-rejected' as const});
   }) : result;
 }
 
-function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: AttributeRole, standalone = false): AttributeResult {
+function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: AttributeRole, mode: AttributeMode = 'container'): AttributeResult {
   assertSemanticContext(context);
   const budget = context.budget, charge = budget.chargeWork;
   return budget.guard(() => {
@@ -277,7 +288,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         }
         charge(result.length + 1); return Object.freeze(result);
       };
-      if (standalone) {
+      if (mode === 'standalone') {
         if (requested.kind !== 'attributeUse') return problem(requested, 'au-props-correct', 'Expected an attribute use');
         const mapped = use(requested);
         if (role === 'raw' && !mapped) return problem(requested, 'au-props-correct', 'A literal AU is a present use');
@@ -303,13 +314,14 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         if (failure) problem(item.source, failure.rule, failure.message);
       };
       if (role === 'raw') {
-        if (root.kind === 'attributeGroup') {
-          const raw = context.rawAttributeGroupProperties(root.id);
-          if (!raw) return problem(root, 'raw-attribute-group-properties', 'Complete literal attribute group properties are required', 'unresolved');
+        if (root.kind === 'attributeGroup' || mode === 'properties') {
+          const group = root.kind === 'attributeGroup';
+          const raw = group ? context.rawAttributeGroupProperties(root.id) : context.rawTypeProperties(root.id);
+          if (!raw) return problem(root, group ? 'raw-attribute-group-properties' : 'raw-type-properties', 'Complete literal attribute properties are required', 'unresolved');
           charge(2); const local: OriginalAttributeUse[] = [];
           for (const id of raw.attributeUses) {
             const item = get(id);
-            if (item.kind !== 'attributeUse' || item.use === 'prohibited') return problem(item, 'au-props-correct', 'A literal attribute group contains only present attribute uses');
+            if (item.kind !== 'attributeUse' || item.use === 'prohibited') return problem(item, 'au-props-correct', 'Literal effective properties contain only present attribute uses');
             const mapped = use(item)!; charge(); local.push(mapped);
           }
           const uses = checkUses(local, root), wildcard = raw.wildcard;
@@ -318,8 +330,10 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           charge(15 + uses.length + declarationEvidence.size + scalarObligations.length);
           const value = Object.freeze({owner: root.id, uses, attributes: presence(uses, root), wildcard,
             schemaOperands: uses, declarations: Object.freeze([...declarationEvidence.values()])});
-          return Object.freeze({kind: 'checked' as const, contextId: context.contextId, authority: 'AU01-C1-raw-v2' as const,
-            value, obligations: Object.freeze(['aggregate-group-validity', 'raw-group-property-correspondence']), scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
+          return Object.freeze({kind: 'checked' as const, contextId: context.contextId,
+            authority: mode === 'properties' ? 'AU01-C1-raw-properties-v1' as const : 'AU01-C1-raw-v2' as const,
+            value, obligations: Object.freeze(group ? ['aggregate-group-validity', 'raw-group-property-correspondence'] : ['aggregate-type-validity', 'raw-type-property-correspondence']),
+            scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
         }
         const sameType = (a: SemanticTypeReference, b: SemanticTypeReference, owner: GraphNode): boolean => {
           const x = resolveSemanticType(context, a), y = resolveSemanticType(context, b);

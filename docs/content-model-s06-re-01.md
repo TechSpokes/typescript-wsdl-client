@@ -17,6 +17,7 @@ The selection is an additional project definition; dated-XSD correspondence, arb
 
 The [late-property continuation](#late-reification-of-untouched-original-complex-properties) repairs a concrete candidate-layout limitation while preserving authentic correspondence and every fresh root.
 It separates a failed eager-installation transformation from the still-open goal of finding some executable forest for every successful Q_f assessment.
+The [scope-property continuation](#scope-property-reads-and-validity-dependencies) repairs another concrete false negative by separating AU/identity property reads from full scope validity.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -3488,7 +3489,7 @@ That structural statement is narrower than arbitrary native XSD representation o
 | --- | --- | --- |
 | Complex effective content/AUs | Explicit raw properties, actual correspondence and the narrow new late-original admission | Safe on-demand original reification proved only under these guards |
 | Original simple types and element/attribute declarations | Source-aware fallback in `scalarSchemaAssessment` and `declaredType`; complete raw data for abstract helpers | No analogous missing-row need established here |
-| Named attribute groups | Candidate owner requires complete raw effective AUs/wildcard; source mapping authenticates originals | No general late/eager group theorem or admission change claimed |
+| Named attribute groups | Original effective AUs/wildcard retain existing identities; source mapping authenticates original rows | Faithful first-fork row padding adds no components or fresh roots; consumed groups still require H legality |
 | Particles/model groups and AUs | Explicit records/references and complete local construction owners | New materializations remain fresh roots; property equality is not identity |
 | Generated scalars and notations | Original GSC1 slot membership, explicit fresh simple types and source-bound notation tables | Preserve scalar-slot versus complex-owner and original versus active operand contexts |
 
@@ -3500,6 +3501,58 @@ The next adequacy target is existential: every completely qualified Q_f actual a
 It may use on-demand reification or a separately proved whole-forest reconstruction; universal translation of every prescribed child or eager installation of every original is not an additional acceptance requirement.
 This repair does not establish that theorem, a complete candidate search, negative bounds or mathematical search termination.
 The selected research definition, dated-correspondence gate, seven accepted packages and P1/F2 remain unchanged.
+
+#### Scope property reads and validity dependencies
+
+This continuation starts from main `dd0ed387c698329189dcade73ed098e41c6cd66c`, tree `cea193af0a60403b0b6e96ea17f9424987823858`.
+The frontier audit found a second concrete distinction between consuming a component's validity and reading its properties for equality.
+The original [scope contract](#consumer-inventory-and-semantic-invariants) already keeps owner membership/cycle checks separate from full owner validity; this repair adds no stronger scope-validity rule.
+
+The [authentic source](../test/conformance/fixtures/xsd/recovery/scope-property-equality-independent.xsd) retains the reanchored A/B/U, H/M and R_H/R_M consumer contrast.
+Another type T vacuously extends A2, whose content is a local-namespace wildcard followed by optional namespaced Z:R_M.
+Two distinct original anonymous restrictions C1 and C2 of exact T each contain only an unqualified local l:string.
+The wildcard/tail namespaces are disjoint; both restrictions qualify, and all thirty-one actual represented records pass their local premises.
+
+The parent replaces U by restriction B and adds FA restricting anyType, FR restricting FA and FT extending FR, all borrowing exact C2's l particle p2.
+FT is its sole generated nonprimitive debt, and T is outside its required closure.
+The child uses a fresh FE extending FA with a unit sequence containing p1, the property-equal l particle from C1, while FT restricts FE and keeps exact p2.
+Both the FE local extension and correspondence check, but the old aggregate rejected unrelated R_M at 5.4.
+A second complete child using exact p2 instead of p1 already passed, so this was a concrete prescribed-child false negative rather than a failure of existential forest adequacy.
+
+Recursive equality must compare C1 and C2's properties to establish the declarations' scope correspondence.
+The old [equality owner](../src/compiler/schemaComponentEquality.ts) published full T validity before discovering that the base references selected the same authenticated complex component.
+It also called full raw AU construction on C1/C2 merely to read their complete effective AU sets; that owner checked their base ancestry/final/derivation and published C1/C2/T validity debts even though these were property reads.
+Those extra duties reached T's optional Z:R_M content and caused the rejection.
+Declared particle views themselves do not publish the containing complex scope as a validity root.
+
+The repair resolves and records exact complex identity without publishing a full type-validity dependency when both references select the same authenticated complex record.
+Distinct type comparisons and scalar-formation paths retain their prior dependencies.
+The existing [AU owner](../src/compiler/schemaAttributeUses.ts) now exposes a separate literal effective-property read using its same AU/declaration/scalar, duplicate/ID, presence and wildcard checks, without checking the containing complex derivation.
+Its distinct internal authority `AU01-C1-raw-properties-v1` retains pending `aggregate-type-validity` and `raw-type-property-correspondence`; it is not an aggregate validity receipt.
+Full raw construction and actual source assessment keep their existing entry points and authorities.
+
+Consequently equality reads complete supplied properties and retains each individually consumed declaration/scalar prerequisite without manufacturing unrelated scope validity.
+All original-property correspondence, genuine type consumption, actual Γ duties and mandatory fresh roots remain unchanged.
+The aggregate verifier, request-budget/sticky-failure contract and semantic research definition are unchanged; the narrower property path can perform less charged work.
+
+The [complete typed controls](../test/research/re01/scope-property-closure.test.ts) now accept both identity and property-equal two-node forests and authenticate every actual duty.
+They still reject a fresh mandatory declaration typed T, which genuinely reaches R_M, and an optional outer wrapper that violates Particle Valid (Extension).
+The [AU property controls](../test/unit/schema-attribute-raw-independent.test.ts) retain valid typed aliases and reject conflicting fixed values, multiple ID declarations and prohibited uses.
+The [independent source/reference controls](../test/conformance/reference/re01-scope-properties.test.ts) pin distinct anonymous scopes, exact shared base, namespace separation and live local-instance acceptance without supplying hypothetical RE01 truth.
+
+The same audit proves a limited original-group padding fact: source effective uses retain their existing AU identities, and wildcard combination stores namespace values plus existing wildcard source identities.
+Supplying authentic original group rows at the first fork adds no component or fresh root; new G-to-AU shortcuts already follow admitted source group-use reachability, so cannot introduce a forbidden cycle.
+The extra mapping obligations remain Γ-owned and must be discharged by the actual forest; every group consumed later is still checked in H.
+This justifies that particular whole-forest padding method, not a late-group admission or arbitrary validity transfer.
+Its [independently reviewed strict TypeScript scratch audit](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6272831477) checked unchanged membership/parent roots, Γ-qualified mapping duties and a later consumed-group positive; this is separate from the committed regression controls above.
+
+A separate same-H scalar lemma preserves the exact typed value and facet properties when a newly chosen fresh active facet operand selects the exact content scalar instead of its complex facade, retaining owner, lexical namespaces, annotations and H notation availability.
+Original operands and generated recipes remain Γ-bound, ordered union member identity remains exact, and fresh facade roots remain mandatory.
+The [author-executed strict QName/union/GSC1/NOTATION scratch audit and independent source review](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6273300213) support this local statement; these are not committed regression controls or an independently executed scalar-engine run.
+Lifting it to a coherent rebuilt forest remains unproved and supplies no scalar implementation change.
+
+The next necessary theorem still asks for some authentic finite encoding of every successful complete Q_f assessment with scheduled duties inside its semantic frontier or already justified Γ/parent closures.
+Neither this repair nor the group/scalar sublemmas establish universal frontier inclusion, complete search, input-derived negative bounds, mathematical termination or dated-XSD correspondence.
 
 #### External methods and applicability
 

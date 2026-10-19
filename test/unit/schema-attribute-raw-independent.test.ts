@@ -8,7 +8,7 @@ import {resolveCanonicalGraph} from '../../src/compiler/resolveCanonicalGraph.js
 import {prepareSemanticRequest} from '../../src/compiler/semanticContext.js';
 import type {SemanticContext} from '../../src/compiler/semanticContext.js';
 import {createSemanticBudget} from '../../src/compiler/semanticBudget.js';
-import {assessRawAttributeUses, assessSourceAttributeUses} from '../../src/compiler/schemaAttributeUses.js';
+import {assessRawAttributeUses, assessSourceAttributeUses, readRawAttributeProperties} from '../../src/compiler/schemaAttributeUses.js';
 import type {RawComplexTypeProperties} from '../../src/compiler/re01TypeProperties.js';
 
 // Independent raw/source discriminants authored before these tests:
@@ -36,6 +36,22 @@ function raw(context: SemanticContext, local: string, uses?: readonly string[]):
 }
 
 describe('independent literal raw AU construction boundaries', () => {
+  it.each(['GoodGroup', 'BadFixedGroup', 'TwoIds', 'ProhibitedGroup'] as const)
+    ('qualifies the complete literal %s AU set while reading complex properties', async name => {
+      const request = await setup(), found = request.actual.lookup(globalId('attributeGroup', {namespace, local: name}));
+      if (found.kind !== 'found' || found.node.kind !== 'attributeGroup') throw new Error(name);
+      const supplied = request.candidate({key: 'property-' + name, active: request.actual.members,
+        rawTypes: [raw(request.actual, 'Seven', found.node.attributes)]});
+      if (supplied.kind !== 'prepared') throw new Error(supplied.kind);
+      const result = readRawAttributeProperties(supplied.context, named('Seven'));
+      expect(result).toMatchObject({kind: name === 'GoodGroup' ? 'checked' : 'candidate-rejected'});
+      if (result.kind === 'checked') {
+        expect(result.authority).toBe('AU01-C1-raw-properties-v1');
+        expect(result.value.uses[0].effective?.value.operand.canonical).toBe('7');
+        expect(result.obligations).toEqual(['aggregate-type-validity', 'raw-type-property-correspondence']);
+      }
+    });
+
   it.each(['alias', 'same-id', 'distinct-same-name', 'two-ids', 'prohibited', 'wrong-fixed'] as const)
     ('checks literal helper-group %s with group-specific set and scalar rules', async variant => {
       const request = await setup();
