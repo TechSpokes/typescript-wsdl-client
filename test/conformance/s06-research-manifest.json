@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "989b8d10fd1044e5cc61a73686d0fdef391eb1ff39d301b397a6c508a083911d",
+          "sha256": "a3cf9a7cf374c4c41b35c327e3e5f0602f5b94aa9ea4d153a1d98c0d75c576c4",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -631,7 +631,7 @@
         {
           "path": "test/conformance/reference/re01-particle-continuation.test.ts",
           "role": "reference",
-          "sha256": "e2069270bda87a097fb216745cf13699857ae2500d68a7dfe89611a50239aa2c"
+          "sha256": "0741ee09e01cf2346a7feefe22d8b03ee97ccd579598562279acde22dce5da11"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/endpoint-all-original.xsd",
@@ -1216,7 +1216,7 @@
         {
           "path": "src/compiler/schemaSyntaxAssessment.ts",
           "role": "semantic-source",
-          "sha256": "0781e8802185d2b97d5970cce78ecfb778bdb3aa6ab2ffa1a73400ce561b87b5"
+          "sha256": "7c7436f88eabf3d502cde432bbc30369f1c9e9241ce151d24b3c91e9a8b1b0de"
         },
         {
           "path": "src/compiler/schemaTypeRelations.ts",
@@ -1486,7 +1486,7 @@
         {
           "path": "test/unit/schema-syntax-assessment.test.ts",
           "role": "expectations",
-          "sha256": "88969fa3b6f92983a7001b2b7c9a6f222475ea17eb4119d3dd8ded266d7ee7de"
+          "sha256": "61b4fed67861a5da996675899bb3d663477cb254317aca3eae027144a87c7a07"
         },
         {
           "path": "test/unit/schema-type-relations.test.ts",
@@ -2257,6 +2257,16 @@
           "path": "test/conformance/fixtures/xsd/re01/consumer-five-prefix.xsd",
           "role": "fixture",
           "sha256": "4d3107acf2dea85aaa104e9ac67a6c6d5e889dbe30ae81329bbf63b7662cbbf6"
+        },
+        {
+          "path": "test/research/re01/copied-prefix-transport.test.ts",
+          "role": "reference",
+          "sha256": "2cf4985eb738c4a3604d66e1954577eb4e5174a2fb48e066b4d4a7163cddcf16"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/re01/copied-prefix-anonymous-types.xsd",
+          "role": "fixture",
+          "sha256": "1303b54baf69fd8ef692e00656d6cdbfa2fe389ca6b14bccf10ac563173e4c39"
         }
       ]
     },

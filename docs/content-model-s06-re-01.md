@@ -1943,7 +1943,8 @@ Its `outside-slice` marker for other content kinds describes this measurement's 
 
 For a successful nonidentity raw extension in H, `cos-particle-extend.2` fixes the outer `1..1` sequence and requires recursively equal first-particle properties, except annotations.
 It does not require the first particle to have original P's identity: the current owner also checks distinct property-equal copies.
-The extraction below covers the exact-original-prefix subfamily; transport of comparisons from a distinct property-equal prefix to original P is an additional unresolved premise for arbitrary successful witnesses.
+The extraction below covers the exact-original-prefix subfamily.
+Unconditional transport of comparisons from a distinct property-equal prefix to original P is false under accepted B-v1 identity, as the [anonymous-type continuation](#copied-prefix-transport-and-optional-prefix-bypass) proves; general existential reconstruction remains open.
 With a meaningful normalized prefix, normalization retains a nonempty leading segment consisting of P's normalized direct members, or P itself when it is not a unit sequence.
 An ordered successful final-to-intermediate mapping therefore consumes an initial segment of final direct members in that prefix, skipping only prefix members whose formal emptiability has been established in H.
 
@@ -2707,7 +2708,55 @@ The proof uses arbitrary finite n and additions; fixed test lengths support its 
 
 No production code, B-v1 domain, finite-verifier claims, budget default, accepted AU C1/PW R-240/DT A/#178/GSC1/P1/F2 policy or original operand contract changes.
 General arbitrary-success coverage, contextual evidence adequacy, copied-prefix transport, input-derived bounds or an equivalent complete-negative criterion and mathematical general termination remain open.
-The next investigation concerns transport of copied prefixes or a justified reconstruction bypass, followed by general coverage/evidence reasoning; further fixed-length prefix variants are unnecessary.
+The next continuation investigates copied-prefix transport and a reconstruction bypass; further fixed-length prefix variants are unnecessary.
+
+### Copied-prefix transport and optional-prefix bypass
+
+The [source fixture](../test/conformance/fixtures/xsd/re01/copied-prefix-anonymous-types.xsd) contains groups G1 and G2, each with an optional local `a` whose inline anonymous complex type is empty.
+The two local declarations and their type definitions have distinct original identities/owners, while their corresponding properties compare equal under accepted B-v1.
+Ancestor A uses G1, B restricts A to empty and endpoint D extends B with G2.
+
+#### Original inline-element syntax qualification
+
+This source exposed a concrete defect in [the original syntax owner](../src/compiler/schemaSyntaxAssessment.ts): the canonical builder correctly maps each inline type through its local ElementNode, but also retains that same syntax child on the element ParticleNode.
+The generic retained-child rejection therefore rejected valid original complex/simple inline types before complete witness verification.
+Canonical inventories and original source evidence remain unchanged by the repair.
+
+The syntax owner now recognizes only a particle's local scoped declaration at the exact same source URI, digest, path and span, with a local anonymous simple/complex type owned by that declaration at a direct child source.
+Only the single retained child of matching XSD kind and exact type source is delegated; the particle's child-order check includes that owned type, so annotation ordering remains enforced.
+Child-component syntax and semantic validity remain separate obligations rather than being assumed from source correspondence.
+
+The [source-owner controls](../test/unit/schema-syntax-assessment.test.ts) cover valid inline complex/simple types, retained inventories, stray/misplaced children, late/duplicate annotations, duplicate types, named/ref plus inline types and independently altered source/type/retained operands.
+Malformed source forms retain construction or syntax rejection, and exact source/span/type ownership mismatches do not earn delegation.
+The [independent source/reference control](../test/conformance/reference/re01-particle-continuation.test.ts) inspects both original owned inline definitions and records live primary acceptance of the source with absent/present optional `a` instances.
+
+#### Strong comparison transport is false under accepted identity
+
+Let P be A's original G1 particle and Q be D's original G2 particle.
+The [complete typed control](../test/research/re01/copied-prefix-transport.test.ts) checks recursive component-property equality of the two local declarations, while type derivation from Q's anonymous type to P's exact anonymous type fails.
+The local types are distinct restriction-of-anyType definitions, and property equality does not create a derivation edge to the other exact type.
+
+A fresh primitive intermediate E with raw content `sequence1[Q,C]`, for required empty choice C, passes raw extension of A because Q and P have corresponding properties under cos-particle-extend.
+D restricts this E through its exact Q operand, and the entire finite certificate passes with every actual and fresh component checked in its required context.
+Replacing Q by exact original P in that otherwise unchanged E preserves raw extension but makes D's local-element NameAndTypeOK type duty fail; the complete verifier rejects this candidate at `derivation-ok-restriction.5.4` on D.
+
+Thus property equality plus restriction into Q does not imply restriction into exact P under accepted B-v1.
+This is a counterexample to that strong comparison-transfer premise, not a universal assertion about every implementation's treatment of anonymous XSD types or a proof that no alternative witness exists.
+The source, property equality and restriction relation are independently qualified rather than assuming the failed source syntax premise.
+
+#### Optional-prefix reconstruction survives this counterexample
+
+Use exact original P in E and append C followed by a `##any`, `processContents=skip` wildcard with range `0..1`.
+The optional original P can be skipped, C is formally emptiable, and D's optional Q leaf maps to the wildcard, so no comparison of the two anonymous declared types is needed.
+The complete finite verifier accepts this replacement and the `0..unbounded` tail contrast, with the original declarations, anonymous owners and all unused roots retained.
+
+The copied witness, failed no-tail recipe and successful original-prefix tail witnesses remain separate controls.
+They refute strong transport while establishing a concrete alternative reconstruction; a failed recipe does not refute general witness existence or finite-evidence adequacy.
+No cross-context receipt is transferred, and every predicate is recomputed in its owning context.
+
+This establishes only the displayed optional-prefix case, not arbitrary prefix bypass, helper/evidence bounds, complete general negatives or mathematical termination.
+General arbitrary-success coverage and contextual evidence adequacy remain open; the next investigation tests whether inherited consumed roots can force renewed helper obligations at every finite evidence leaf.
+All accepted contracts, authority versions, failure categories, configurable sticky budgets and later activation gates remain unchanged.
 
 ### No complete F child for the fixed membership-loss parent
 

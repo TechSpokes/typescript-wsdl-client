@@ -4,6 +4,17 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## Disposition and delivery boundary
 
+The [copied-prefix continuation](content-model-s06-re-01.md#copied-prefix-transport-and-optional-prefix-bypass) refutes unconditional comparison transport from property-equal prefix copies under accepted B-v1 identity, while preserving complete alternative witnesses for the displayed optional-prefix case.
+Distinct original inline anonymous types compare property-equal without acquiring a derivation edge; a complete copied-prefix certificate passes, exact no-tail replacement fails and exact original-prefix replacement with a `0..1` or unbounded wildcard tail passes completely.
+This separates failed comparison transport from general witness existence and contextual finite-evidence adequacy.
+
+The original source syntax owner now qualifies a particle's retained inline type only through its exact same-source local declaration and owned anonymous type, including the source span and direct-child relationship.
+Canonical/source inventories remain retained, child-component syntax remains separate and particle annotation ordering remains enforced.
+Malformed, misplaced, duplicated and source/type-mismatched children retain rejection, with source-backed complex/simple positives and independent reference observations.
+
+The next investigation tests whether inherited consumed roots can require renewed helpers at every finite evidence leaf; a productive local sequence alone does not establish semantic witness success.
+General arbitrary-success coverage, contextual evidence adequacy, copied-prefix reconstruction, input-derived bounds or an equivalent complete-negative criterion and mathematical general termination remain open.
+
 The [finite flat-prefix continuation](content-model-s06-re-01.md#any-nonempty-finite-flat-prefix-of-optional-local-elements) extends the sufficient inherited-consumer obstruction to every nonempty finite flat prefix of original optional local element incidences.
 Given target/head/member/consumer IDs as selection hints, the research-only function verifies complete authenticated contexts, exact types and declaration properties, the target's nonprimitive duty, retained raw selectors and the normalized n + 2 explicit positions.
 It derives the base consumer and proves no permitted complete target child of that exact parent, including arbitrary finite additions and affiliates under both head and member.
@@ -21,8 +32,7 @@ Independent source/reference controls preserve the new operands and ordered mapp
 One fresh-context nonauthor reviewer scrutinizes the criterion before reliance and assesses the final code/proof and scoped #232 consistency.
 
 All accepted contracts, P1/F2, original operands, existing verifier claims and production ownership remain unchanged; full #234/#232 acceptance remains open.
-General arbitrary-success coverage, contextual evidence adequacy, copied-prefix transport, input-derived bounds or an equivalent complete-negative criterion and mathematical general termination remain open.
-The next investigation addresses copied-prefix transport or a proved reconstruction bypass, then general coverage/evidence reasoning; additional fixed-length prefix variants are unnecessary.
+The copied-prefix continuation above addresses strong transport and the displayed bypass without settling general reconstruction; additional fixed-length prefix variants are unnecessary.
 
 The [fixed-parent nonexistence theorem](content-model-s06-re-01.md#no-complete-f-child-for-the-fixed-membership-loss-parent) settles #308's requested continuation over every permitted complete F child under B-v1, with arbitrary permitted finite additions and retained or fresh intermediates.
 Correspondence forces F's first edge to be restriction, while F and H.type=E remain distinct exact complex identities; any successful F-to-E path therefore contains the method excluded by H.block.

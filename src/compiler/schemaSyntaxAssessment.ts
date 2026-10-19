@@ -15,6 +15,36 @@ import {schemaBooleanLexical, schemaNonNegativeIntegerLexical} from './schemaSou
 const facetNames = new Set(["length", "minLength", "maxLength", "pattern", "enumeration", "whiteSpace", "minInclusive", "maxInclusive", "minExclusive", "maxExclusive", "totalDigits", "fractionDigits"]);
 const particleNames = new Set(["sequence", "choice", "all", "group"]);
 const excluded = new Set(["key", "keyref", "unique", "assert", "assertion", "alternative", "openContent", "defaultOpenContent", "explicitTimezone", "redefine"]);
+function sameSource(c: AssessmentContext, node: GraphNode, left: SyntaxSource, right: SyntaxSource): boolean {
+  c.step(node, 12);
+  return c.budget.compareText(left.uri, right.uri) === 0 && c.budget.compareText(left.digest, right.digest) === 0
+    && c.budget.compareText(left.path, right.path) === 0
+    && left.start.offset === right.start.offset && left.end.offset === right.end.offset
+    && left.start.line === right.start.line && left.start.column === right.start.column
+    && left.end.line === right.end.line && left.end.column === right.end.column;
+}
+/** The builder represents one local element source as declaration and use.
+ * Its retained inline child belongs to the exact declaration's anonymous type.
+ */
+function particleInlineType(c: AssessmentContext, node: GraphNode): Extract<GraphNode, {kind: "simpleType" | "complexType"}> | undefined {
+  c.step(node, 12);
+  if (node.kind !== "particle" || node.term.kind !== "element" || node.term.declaration.kind !== "local"
+    || node.identity.kind !== "scoped") return;
+  const declaration = c.get(node.term.declaration.target);
+  if (declaration.kind !== "element" || declaration.identity.kind !== "scoped" || declaration.type.kind !== "local"
+    || c.budget.compareText(declaration.identity.owner, node.identity.owner) !== 0
+    || !sameSource(c, node, declaration.context.source, node.context.source)) return;
+  const type = c.get(declaration.type.target);
+  if ((type.kind !== "simpleType" && type.kind !== "complexType") || type.identity.kind !== "scoped"
+    || c.budget.compareText(type.identity.owner, declaration.id) !== 0) return;
+  const source = type.context.source, owner = declaration.context.source;
+  c.text(source.path, node); c.text(owner.path, node); c.step(node, 6);
+  const prefix = owner.path + "/";
+  if (c.budget.compareText(source.uri, owner.uri) !== 0 || c.budget.compareText(source.digest, owner.digest) !== 0
+    || !source.path.startsWith(prefix) || source.path.slice(prefix.length).includes("/")
+    || source.start.offset < owner.start.offset || source.end.offset > owner.end.offset) return;
+  return type;
+}
 function checkSchemaSyntax(c: AssessmentContext, node: GraphNode) {
   if (node.kind === "wsdl") return;
   // Fixed grammar tables/closures below are bounded per component; reserve them
@@ -88,6 +118,7 @@ function checkSchemaSyntax(c: AssessmentContext, node: GraphNode) {
     for (const id of node.attributes) {const n = c.get(id); child(n.kind === "attributeWildcard" ? "wildcard" : "attribute", n.context.source);}
   } else if (node.kind === "group") child("content", c.get(node.content).context.source);
   else if (node.kind === "particle" && "children" in node.term) for (const id of node.term.children) child("member", c.get(id).context.source);
+  else if (node.kind === "particle") {const type = particleInlineType(c, node); if (type) child("content", type.context.source);}
   else if ((node.kind === "element" || node.kind === "attribute") && node.type.kind === "local") child("content", c.get(node.type.target).context.source);
   const ordered = c.budget.sorted(children, (a, b) => {c.step(node); return a.source.start.offset - b.source.start.offset;});
   let seenAnnotation = false, seenContent = false, stage = 0;
@@ -192,8 +223,12 @@ export function checkActualSchemaSyntax(context: SemanticContext, nodeId: NodeId
       checkSchemaSyntax(c, node);
       declarationMethods(context, node, 'final');
       declarationMethods(context, node, 'block');
+      const inline = node.retained.length ? particleInlineType(c, node) : undefined;
+      let inlineSeen = false;
       for (const retained of node.retained) {
         c.step(node); c.text(retained.name.local, node);
+        if (!inlineSeen && inline && retained.name.namespace === XSD_NAMESPACE && retained.name.local === inline.kind
+          && sameSource(c, node, retained.source, inline.context.source)) {inlineSeen = true; continue;}
         if (retained.name.namespace === XSD_NAMESPACE && excluded.has(retained.name.local))
           c.unsupported(node, `xsd:${retained.name.local}`, 'Retained feature needs its separate capability authority', retained.source);
         c.fail(node, 'schema-for-schemas', 'Unexpected child in the declaration content grammar', retained.source);

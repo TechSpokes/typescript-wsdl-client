@@ -43,6 +43,25 @@ function declarations(group: XmlNode): readonly unknown[] {
 }
 
 describe('RE01 particle continuation: source clauses and live observations', () => {
+    it('retains separate owned anonymous type sources and live original optional-prefix observations', async () => {
+        const schema = fixture('copied-prefix-anonymous-types.xsd');
+        const groups = children(schema, 'group');
+        expect(groups.map(group => attribute(group, 'name'))).toEqual(['G1', 'G2']);
+        const leaves = groups.map(group => children(children(group, 'sequence')[0], 'element')[0]);
+        expect(leaves.map(leaf => ({name: attribute(leaf, 'name'), bounds: bounds(leaf)})))
+            .toEqual(Array.from({length: 2}, () => ({name: 'a', bounds: {minimum: 0n, maximum: 1n}})));
+        const types = leaves.map(leaf => children(leaf, 'complexType')[0]);
+        expect(types[0]).not.toBe(types[1]);
+        for (const type of types) {expect(type.children).toEqual([]); expect(attribute(type, 'name')).toBeUndefined();}
+        // Live source legality is independent of accepted B-v1's exact type
+        // identity relation; libxml2 observation does not decide transport.
+        const observation = await validateFixture(directory + 'copied-prefix-anonymous-types.xsd', [
+            '<t:root xmlns:t="urn:re01-copied-prefix"/>',
+            '<t:root xmlns:t="urn:re01-copied-prefix"><a/></t:root>',
+        ]);
+        expect(observation).toMatchObject({phase: 'schema', outcome: 'accepted', instances: [{outcome: 'accepted'}, {outcome: 'accepted'}]});
+    });
+
     it.each([['consumer-two-prefix.xsd', 2], ['consumer-five-prefix.xsd', 5]] as const)
     ('retains every optional derived incidence in the %s complete outer mapping', (file, count) => {
         // Independent source and finite order trace, without semantic-owner imports.
