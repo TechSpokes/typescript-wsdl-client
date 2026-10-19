@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "e7d7b7a91e7aa9b0d46683b72a1e66308fa34e1008045b15c94e1a2ba9b78bd4",
+          "sha256": "ad515eb4dacad0c5422886abcc3cd9dad1339ce9a671e500908110f0528c8790",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1126,7 +1126,7 @@
         {
           "path": "src/compiler/re01CandidateCorrespondence.ts",
           "role": "semantic-source",
-          "sha256": "8230834311e502cd145258c6aab311f0611cfdc1c5b6fcd391ec9347814b28cd"
+          "sha256": "0ce16e1e30e404e5dc126159c3eebd359e9c860f2281b7bf32cf731417baae51"
         },
         {
           "path": "src/compiler/re01TypeProperties.ts",
@@ -2291,12 +2291,12 @@
         {
           "path": "test/research/re01/exact-vacuous-ground.test.ts",
           "role": "reference",
-          "sha256": "9c75f1efd3ca0909e64d322c3ac2d44b98c7dcb3c29641883b171c19de636a93"
+          "sha256": "efe781f871f3a4b4f17e4ffe0d447fd7a38ee84d004340c2f4ce73ccf7567d6f"
         },
         {
           "path": "test/conformance/reference/re01-exact-vacuous-ground.test.ts",
           "role": "reference",
-          "sha256": "a8cd28f3dd24505ee9c27988f5a1b3eb2a94a0064df4ad1b98eb3aa5ef8aa1c5"
+          "sha256": "010e3dffe178ecd09d54ec536493f202b5b8851d5cd96fe9548f9239a6293b8d"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer.xsd",
@@ -2307,6 +2307,11 @@
           "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer-reanchored.xsd",
           "role": "fixture",
           "sha256": "5edfd90fd1aefd718f5b6cb6e55c0a6a77a9df97464f7715e9d6f3d8dec277a1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/exact-vacuous-identity-read.xsd",
+          "role": "fixture",
+          "sha256": "f791680a89d6f7fcc01933af4f1eaec70236ed0e8dd914d8626e4b18a3b2c479"
         }
       ]
     },
@@ -2698,7 +2703,7 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 239
+    "currentArtifactCount": 240
   },
   "baselineSemanticDefaults": {
     "maxNodes": 100000,

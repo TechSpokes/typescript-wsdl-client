@@ -12,6 +12,9 @@ The [renewing-helper investigation](#renewing-helper-duties-and-the-finite-evide
 The [global formal-model continuation](#global-formal-models-and-renewal-nonentailment) gives a two-way translation of the explicit B-v1 predicate contract and proves that its models disagree on renewal.
 This formal nonentailment does not select an independent normative verdict or supply a complete decision algorithm.
 
+The [founded contextual continuation](#founded-contextual-research-completion-and-identity-read-repair) now selects the separately named research relation Q_f, proves conditional whole-assessment finite semantic forest adequacy and repairs a pure-identity dependency false negative.
+The selection is an additional project definition; dated-XSD correspondence, arbitrary executable representation and complete negative/termination proofs remain open.
+
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
 The [current derivability continuation](#derivability-and-affiliation-continuation) separates that assessment from hypothetical checking; neither the new comparison interface nor a dependency census supplies the missing complete theorem.
@@ -3289,7 +3292,8 @@ Every U child must check inherited fresh R_M, which necessarily fails 5.4 under 
 The executed rejected child illustrates that proof; it does not establish its universal quantifier.
 
 New Γ′ has all fifteen actual local premises and a complete one-node U-restrict-B certificate.
-R_M remains present and checked in actual Γ′, but is outside this child's ten-component hypothetical closure; R_H is included and passes.
+At the PR315 revision, R_M remained checked in actual Γ′ and outside the ten-component hypothetical closure, while R_H was included and passed.
+The [later identity-read repair](#identity-comparison-must-not-manufacture-validity-roots) removes that incidental R_H inclusion; both actual duties remain checked.
 Checking R_M hypothetically with the authenticated step correspondence rejects 5.4, so the positive is not silently transferring its actual validity.
 
 Consequently no function of π alone equals selected Q_B on both admitted locally qualified queries.
@@ -3333,6 +3337,129 @@ This is a genuine scoped obstacle, not a negative inferred from the checkpoint, 
 General witness coverage, semantic evidence adequacy, complete negatives and mathematical termination therefore remain open.
 All original Γ obligations, exact owning contexts, inherited fresh roots, original typed operands, conditional primitive truth, legal primitive cycles, seven accepted packages and P1/F2 remain binding.
 No policy is selected, no additional user approval is inferred, and #234/#232 or later #179/#153/#184 are not closed or activated.
+
+### Founded contextual research completion and identity-read repair
+
+This continuation starts at main `a606c8af846678523915c85468c2bfa599334207`, tree `d9e1f6e57dec1043bd4ea886f68510568af5594b`.
+It investigates both earlier proposals and external recursive-validation methods, proves a conditional finite-forest result and repairs a concrete executable correspondence defect.
+Under the user's delegated choice, the coordinator selects the additional research definition `founded-contextual-Q-v1` after independent compatibility review.
+
+#### Exact selected relation and incompatible alternatives
+
+Retain J, N, R, D and K exactly as defined in the [global formal-model proof](#global-formal-models-and-renewal-nonentailment), including every actual and hypothetical duty in full N/V.
+The additional definition is:
+
+```text
+Q_f = greatest fixed point of N restricted to K = S⁻
+K = J \ (Jₙ \ μR)
+```
+
+This is a separately named project research relation, not a theorem that dated XSD entails P_found or an adoption of ordinary logic-program/SHACL well-founded semantics.
+It retains B-v1 geometry, immutable Γ, exact contexts and operands, all inherited fresh roots, conditional primitive truth, legal primitive component cycles and accepted finite positives.
+It changes no domain export, finite-evidence authority, production policy/API, P1/F2 or accepted local package.
+Faithfulness to the independent dated judgment remains a separate open obligation.
+
+The two previous proposals cannot both be adopted unchanged.
+For T_B, existence of a compatible model containing j is exactly j∈S⁺: every compatible model is an N fixed point contained in νN, and νN itself satisfies the accepted additional rules.
+Thus P_sat selects S⁺, while P_found alone only requires Q⊆K and needs an additional completion to define a full relation.
+
+The selected Q_f is the greatest such completion.
+Renewal lies in S⁺ and outside μR, so P_sat makes it true while P_found excludes it.
+S⁺ remains a model of the old T_B; it is not the selected new relation, and restricting P_sat to founded models would be a different proposal.
+
+The recommendation favors the founded research route because it preserves the accepted positives and supports the finite-forest theorem below.
+This is an explicit interpretation choice with stated consequences, not a source-derived answer hidden behind an algorithm.
+It neither proves general negative decidability nor closes the dated-semantic correspondence gate.
+
+#### Whole-assessment finite semantic forest theorem
+
+Fix a finite admitted actual Γ and an applicable original RE01 target, with complete source, notation, scalar-slot, Q-free local and external-input qualifications.
+Let A_Γ contain every actual nonprimitive own-Q obligation, not only the requested target.
+Under the exact semantic closure conditions below:
+
+```text
+A_Γ ⊆ μR iff there is a complete finite semantic assessment forest for Γ.
+Assessment_Q_f(Γ) iff there is such a forest.
+```
+
+The forest uses exact candidates and the existing primitive no-change discipline; it is distinct from arbitrary runtime acceptance or an input-derived search bound.
+The required context-ownership condition is explicit: a candidate's full own-Q frontier belongs to its new H or immutable Γ.
+Property/identity reads of old parent P do not assert full V(P), original typed operands retain Γ, and scalar-slot validity does not import the complex provenance owner's own clause.
+
+For the forward direction, finitarity gives a finite R derivation for each member of the finite A_Γ.
+Take their finite union; when one exact parent/target appears more than once, choose a minimum-height witness coherently and prune unused alternatives.
+Every retained generated nonprimitive edge decreases that height, so the result is a finite DAG.
+
+Each witness supplies one exact new context H, with all generated children owned by that H and every inherited fresh root retained.
+Instantiate its context once and preserve its complete records, ordered incidences and bindings; distinct component identities are not quotient-merged.
+Its L premises qualify independently of pending Q, and its generated nonprimitive duties have the lower-height witnesses.
+
+Erased Γ-owned duties are discharged globally by the supplied forest for every actual nonprimitive and by actual primitive checking, not assumed true or inserted as construction backedges.
+Primitive identity closures add no debt beyond the complete context frontier: their inherited fresh roots are already required, and their original typed/property dependencies stay in that closure.
+Their finite same-context component blocks close under the accepted primitive discipline after the other duties are supplied, preserving legal property recursion without a new generated-cycle rule.
+
+The reverse direction is the existing finite-positive extraction: project the forest's frontiers and use topological induction on its generated nonprimitive child DAG.
+Each actual nonprimitive root then has a finite R derivation; no acyclicity of original Γ property references is assumed.
+
+For the second equivalence, complete Q_f assessment puts all actual nonprimitive duties in S⁻⊆K, hence in μR, and the first implication supplies the forest.
+Conversely, collect every own-Q in the semantic forest's complete actual/hypothetical closures.
+Its nonprimitive witnesses and primitive identity closures give finite postfixed support for N; the projected child DAG puts every nonprimitive member in μR, hence the support lies in K.
+Greatestness then places that support, including every actual duty and conditional primitive block, in S⁻ without assuming runtime materialization.
+This proves whole-assessment adequacy for the selected relation under these semantic forest conditions, not adequacy for independent dated Q or for one isolated μR target with other actual debts missing.
+
+Executable acceptance additionally requires authentic materialization of each chosen candidate/local plan and equality, or justified inclusion, between its semantic frontier and the verifier's scheduled frontier.
+The accepted local rules must discharge every Q-free/scalar prerequisite in its own context.
+These representation/frontier conditions remain explicit proof obligations beyond the concrete repair below; one regression fix does not establish arbitrary semantic-plan coverage.
+
+#### Identity comparison must not manufacture validity roots
+
+The new [source](../test/conformance/fixtures/xsd/recovery/exact-vacuous-identity-read.xsd) extends the reanchored control with empty A2, primitive T extending A2 with required Z, V restricting T with the same required Z and global Z:R_M.
+All twenty-three represented actual records qualify locally, and U remains the sole actual nonprimitive obligation.
+The U-restrict-B witness has no generated nonprimitive duty and does not consume unrelated original T, V, Z or R_M.
+
+Before the repair, `checkCandidateCorrespondence.refKey` compared preserved original V.base=T and published T as a hypothetical type-validity dependency.
+The finite verifier then closed T→Z→R_M and rejected R_M at 5.4, although T had only been read for exact identity preservation.
+Independent authenticated probes reproduced this false negative before the edit.
+
+The repair retains resolution, membership/role checks and collision-free identity comparison, while removing validity-debt publication from that pure comparison.
+Genuine scalar/facet and ancestor dependencies continue to come from their existing owners; the finite verifier and all mandatory fresh roots remain unchanged.
+The [typed regression](../test/research/re01/exact-vacuous-ground.test.ts) now accepts the complete one-node positive and still rejects R_M when a fresh mandatory declaration genuinely consumes T.
+
+This also corrects an incidental earlier observation: the PR315 reanchored positive formerly checked R_H hypothetically because of an identity read.
+Both unrelated original R_H and R_M may now remain outside that child closure, while both remain checked in actual Γ′; direct hypothetical R_H checking passes and R_M still fails.
+The old trapped parent's fresh R_H/R_M remain mandatory and its universal contradiction is preserved.
+The [independent reference control](../test/conformance/reference/re01-exact-vacuous-ground.test.ts) pins the additional source chain and live instance acceptance without treating the engine as an RE01 oracle.
+
+#### External methods and applicability
+
+The inspected precedents show how others handle recursive definitions, but none supplies an automatic dated-XSD truth rule.
+
+| Primary source | Actual result or practice | Transfer requirement for B |
+| --- | --- | --- |
+| [Dagnino, corrected bounded-fixed-point account](https://lmcs.episciences.org/5277/pdf), Proposition 3.6 | Greatest fixed point below a supplied prefixed bound | N(K)⊆K is proved; K remains additional semantic structure, not an XSD conclusion |
+| [Denecker/Bogaerts/Vennekens, inductive definitions](https://www.bartbogaerts.eu/articles/future/s001/SafeInductions.pdf), Definitions 3.16–3.17/Proposition 3.20 | Monotone inductive constructions yield the least closed structure | Establish inductive meaning; positivity alone does not select it or preserve primitive cycles |
+| [Bogaerts/Jakubowski, ICLP2021](https://www.bartbogaerts.eu/articles/2021/006-ICLP-RecursiveSHACL/RecursiveSHACL.pdf), Theorem 4.1/Section 4 | AFT derives several semantics after explicit order/evaluation choices | Preserve B's additional grounds and state the chosen interpretation |
+| [Okulmus/Šimkus, KR2024](https://proceedings.kr.org/2024/52/kr2024-0052-okulmus-et-al.pdf), Definition 3/Proposition 3/Section 7 | ShaWell translates chosen founded validation to propositional logic programs | Finite graph/shape atoms differ from unbounded exact construction contexts |
+| [Oudshoorn/Ortiz/Šimkus, KR2026](https://proceedings.kr.org/2026/50/kr2026-0050-oudshoorn-et-al.pdf), Theorems 3–8/Proposition 5 | ALCIO founded static analysis via hybrid μ-calculus and automata | Prove a finite effective encoding and both candidate reconstruction directions |
+| [XMLmind implementation limits](https://www.xmlmind.com/xmleditor/_distrib/doc/xmltool/xsd_structure_limitations.html) | Explicitly lists cos-ct-extends.1.5 as unchecked | Omission is not a solution or permitted weakening here |
+| [libxml2 c79c961](https://github.com/GNOME/libxml2/blob/c79c9612fcc77b06b0d16f35fd363d938bdbbf5e/xmlschemas.c#L16028) | Exact clause 1.5 remains TODO in the extension checker | Current-source omission is not a semantic theorem or a new reference-engine verdict |
+| [goxsd8 a5c3269](https://github.com/kud360/goxsd8/blob/a5c3269c20c26aed63c2940414cf43d97b8d54c5/xsd/complexextension.go#L444), [approximation issue 586](https://github.com/kud360/goxsd8/issues/586) | Checks a collapsed, unregistered throwaway intermediate | Does not supply coherent D′ and all B-v1 inherited-root validity duties |
+
+KR2026's unrestricted implication result is EXPTIME-complete; finite implication is stated decidable without that tight bound.
+ALCO has the cited finite-model property while ALCI does not, so the paper does not justify inferring a finite B witness from a generic fixed-point model.
+Drawing a graph of judgments/candidate edges does not encode candidate coherence, exact names/identities, raw particle/AU/scalar rules or retained-root conditions in its restricted syntax.
+
+The investigator inspected the cited definitions, applicability and algorithm sections, rather than every appendix or cited work.
+Dagnino's corrected Proposition 3.6 justifies the bounded fixed-point construction; its descending approximation results require additional continuity assumptions, not merely finite rule premises.
+No coaxiom is inferred that makes every original Γ judgment true: R erases selected premises only in the auxiliary analysis.
+The coordinator's positive investigator inspected the pinned libxml2/goxsd8 functions and documented code boundaries, without executing those toolchains or auditing their entire implementations.
+The official [Saxon 13 conformance page](https://www.saxonica.com/html/documentation13/conformance/schema11.html) documents use of XSD 1.1 derivation rules even for an XSD 1.0 request; that version policy is not correspondence with this dated relation.
+The 1991 well-founded-semantics author PDF had unusable extracted text, and the WWW2020 stable-model full PDF retrieval failed; neither uninspected proof is used.
+No whole-web absence or general undecidability conclusion follows.
+
+The next implementation route is exact candidate/frontier materialization and effective finite-forest search for Q_f, with a separately proved input-derived bound or equivalent complete-negative method before total claims.
+Normative correspondence, arbitrary runtime representation, general coverage, complete negatives and mathematical termination remain open.
+No release, production activation, negative API or downstream #179/#153/#184 ownership change follows from selecting this research relation.
 
 ### No complete F child for the fixed membership-loss parent
 

@@ -6,7 +6,7 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 RE01 asks whether an XSD complex type's derivation can be rearranged into an extension followed by a restriction, possibly with no change in the second step.
 We can check supplied constructions and finite proofs, and prove some particular constructions impossible.
-We do not yet have a settled general semantic judgment or a complete decision procedure.
+We now have a separately selected founded research judgment; its correspondence with dated XSD and a complete decision procedure remain unproved.
 Checking a design someone supplies is different from deciding whether any allowed design exists.
 
 The renewing-helper example explains the present difficulty: each proposed repair can pass its local checks while requiring another helper's derivation proof.
@@ -22,6 +22,28 @@ Execution ownership is recorded in the [leaf claim](https://github.com/TechSpoke
 These are fixed execution records, not permanently latest status: any continuation must reread current #234/#232 acceptance and ownership before dispatch.
 The reading/control map and staged gates below remain the executed packet's reproduction and continuation boundaries.
 
+### Selected founded research route
+
+The [external-resolution continuation](content-model-s06-re-01.md#founded-contextual-research-completion-and-identity-read-repair) executes both alternatives from main `a606c8af846678523915c85468c2bfa599334207`, tree `d9e1f6e57dec1043bd4ea886f68510568af5594b`.
+After independent compatibility review, the coordinator selects `founded-contextual-Q-v1` under the user's delegated choice: Q_f = S⁻ = ν(N restricted to K), with the existing K = J \ (Jₙ \ μR).
+This additional project research definition preserves B-v1 geometry and accepted primitives/finite positives; it is not a consequence attributed to dated XSD or ordinary SHACL well-founded semantics.
+
+P_sat would select the old greatest model S⁺, whereas P_found alone is only a necessary condition and needs a completion.
+They cannot both hold unchanged on renewal: S⁺ includes it and μR excludes it.
+The selected completion favors the founded route while keeping S⁺ as a model of the old formalized contract, rather than claiming the old source proof selected S⁻.
+
+For completely source/Q-free-qualified actual Γ, the new abstract theorem equates all actual nonprimitive duties lying in μR with a complete finite semantic assessment forest.
+Under Q_f, complete actual assessment is therefore equivalent to such a forest, with explicit exact-context, primitive-closure and materialization conditions.
+This supplies a conditional evidence-adequacy route; it is not a universal claim about the current executable interface or the independent dated judgment.
+
+The investigation also exposed and repaired a concrete false negative: comparing unchanged V.base=T published a hypothetical validity debt for unrelated original T.
+Identity preservation now checks membership/identity without manufacturing that debt; genuine scalar, ancestor and component-owner dependencies remain required.
+A complete one-node proof now passes, while a fresh mandatory declaration consuming T still reaches R_M and fails 5.4.
+
+Continue with exact semantic-to-executable candidate/frontier materialization and a complete finite-forest search argument for Q_f.
+Normative correspondence, arbitrary runtime representation, input-derived negative bounds or equivalent complete negatives and mathematical termination remain separate open gates.
+There is no production selector/API/version change, release or downstream activation in this choice.
+
 ### What is established and what remains unproved
 
 | Finding | Established scope | Remaining limit |
@@ -29,10 +51,12 @@ The reading/control map and staged gates below remain the executed packet's repr
 | Shared local authorities and supplied finite proofs | Accepted local rules and context-bound checks | General helper existence is not decided |
 | Helper-count descent | Some proved reconstruction families terminate | New nonprimitive helpers can be necessary |
 | Copied-prefix transport | Strong transport fails; a displayed bypass succeeds | General reconstruction remains unproved |
-| Exact-content vacuous extension ground | A retained consumer refutes the general ground | The renewal-specific verdict is not settled |
-| Renewal | No finite certificate under current justified leaves | Local productivity is not semantic success |
+| Exact-content vacuous extension ground | A retained consumer refutes the general ground | No unrestricted vacuous-chain success rule |
+| Renewal | False in selected Q_f; no finite certificate under current leaves | Independent dated-XSD verdict remains unproved |
 | Global formal models | Two accepted-rule-compatible models disagree | Intended dated meaning still needs justification |
 | Executed semantic audit | Concrete positive/foundation inferences fail; paired anchor control qualifies | No authority-backed contextual truth rule or specific repair established |
+| Founded research completion | Q_f selected explicitly; conditional semantic forest adequacy proved | Runtime materialization and normative correspondence remain open |
+| Identity-read repair | Unrelated original type comparison no longer widens validity closure | Genuine consumed and fresh-root failures remain required |
 | Full RE01 procedure | Useful positives and scoped contradictions work | Coverage, adequacy, negatives and termination stay open |
 
 These failed reductions led to the semantic gate rather than another helper-length experiment.
@@ -43,15 +67,16 @@ Primitive truth stays conditional on its other duties, and legal primitive compo
 
 ### Practical routes and recommendation
 
-The remaining dependency is an authority-backed rule connecting finite per-context construction and its full recursive B duties to own-Q truth, or a specific correspondence correction that avoids that rule.
-Preserve B-v1 and every acceptance gate; adding a solver or selecting a model by convenience would not discharge this dependency.
+For the independent dated judgment, the remaining dependency is an authority-backed truth rule or a specific correspondence correction.
+For the selected Q_f research route, proceed with exact executable materialization/frontier correspondence, then complete search and negative/termination proofs.
+Preserve B-v1 geometry and every gate; choosing a research relation does not make those later proofs automatic.
 
-| Unselected route | Executed finding | Evidence still required |
+| Compared route | Executed finding | Evidence still required |
 | --- | --- | --- |
 | Repair a missing or mistranslated premise | Full extension/restriction, component and conformance bridge inspected; no compatible omitted premise established | Exact clause, both translation directions and model/control re-evaluation |
 | Positive reflection P_sat | Would accept renewal, but moves from component existence to existence of a predicate interpretation | Independent authority/correspondence and adequate sound proof representation |
-| Necessary foundation P_found | Would exclude renewal and preserve finite positives/primitive cycles; is not a complete interpretation | Authority for finite generated-nonprimitive support, not merely finite base ancestry |
-| Explicit project interpretation | Concrete alternatives are now documented; none is selected | Separately scoped maintainer decision and compatibility analysis, not a source theorem |
+| Necessary foundation P_found | Excludes renewal; selected greatest completion is Q_f | Independent dated correspondence; foundation alone is not a complete interpretation |
+| Explicit project interpretation | Q_f is selected as an additional named research definition | Runtime/general decision proofs; do not present the choice as a source theorem |
 
 P_sat's failed step replaces a finite construction satisfying already interpreted predicates with a choice of the predicates' global interpretation.
 P_found's failed step replaces finite base ancestry/property closure inside each H with wellfounded support across generated Hᵢ; the renewal family keeps constant base height.
@@ -59,16 +84,17 @@ Full component validity already retains every Q frontier duty, so requiring genu
 
 The new paired control preserves a specified graph of nine global and six particle records across distinct authenticated inputs.
 Old P is locally qualified but not fully valid because its mandatory U judgment is false; new actual Γ′ has a complete one-node U proof.
-Only R_M is absent from the positive hypothetical closure; it remains checked in actual Γ′, and R_H is included hypothetically.
+Both R_H and R_M now remain outside the positive hypothetical closure while remaining checked in actual Γ′.
+The earlier R_H inclusion was an incidental identity-read debt corrected by this continuation; independent hypothetical R_H checking still passes.
 
 This refutes anchor-erasing factorization over admitted locally qualified queries, not over a restricted class of already fully valid parents or successful transformations.
 Native cross-source invariance is unproved, and this optional shortcut is not a new gate for history-aware methods.
-A direct contextual proof can retain immutable Γ throughout; it still needs an independently justified truth introduction/exclusion or concrete correspondence repair.
+For the independent dated judgment, a direct contextual proof can retain immutable Γ throughout and still needs independently justified truth introduction/exclusion or a concrete correspondence repair.
 
 If contract clarification becomes a concrete alternative, compare its exact statement against both models, conditional primitive truth, mutual primitive cycles and the retained-consumer contradiction.
 Selecting a least or greatest fixed point is not justified merely by finite constructions or legal recursive schemas; naive least-model treatment can lose primitive-cycle positives.
 A guarded proof or quotient would change proof representation only after semantic soundness is proved; altering helper/root/context requirements changes the selected witness domain and must be stated as such.
-No clarification is selected here, and the reviewed source obstacle is neither source-exhaustion evidence nor an automatic policy or approval request.
+The named research completion is selected explicitly, with no inference that the reviewed source obstacle establishes full normative ambiguity or source exhaustion.
 
 ### Narrow reading and source inventory
 
@@ -108,6 +134,7 @@ Use the [primitive approval](https://github.com/TechSpokes/typescript-wsdl-clien
 | [Renewal contrast](../test/research/re01/helper-renewal.test.ts) | `retains a complete finite contrast when z no longer consumes the earlier endpoint` | Complete unconsumed positive |
 | [Exact-vacuous control](../test/research/re01/exact-vacuous-ground.test.ts) | `qualifies every local premise and distinguishes stable exact-B membership=%s` | Trapped consumer versus complete stable-membership positive |
 | [Distinct-anchor control](../test/research/re01/exact-vacuous-ground.test.ts) | `distinguishes immutable anchors under a complete component-property graph correspondence` | Complete represented-record bijection, local-old/full-new validity distinction and exact closure |
+| [Identity-read control](../test/research/re01/exact-vacuous-ground.test.ts) | `keeps identity-only original types outside hypothetical validity while fresh consumption=%s` | Complete unrelated-original positive and genuine fresh-consumption negative |
 | [Primitive controls](../test/research/re01/primitive-root-evidence.test.ts) | `has a valid primitive no-change proof although every added restriction step is forbidden` | Permanent recursive primitive positive |
 | [Other actual debts](../test/research/re01/primitive-root-evidence.test.ts) | `still requires and checks finite evidence for every nonprimitive actual obligation` | Primitive success does not discharge unrelated actual duties |
 | [Original scalar closure](../test/unit/schema-original-generated-binding-independent.test.ts) | `constructs an active original slot without requiring its inactive source container`; `rechecks slot legality in each sibling and nested context instead of transferring original or sibling success` | Exact slot versus source-owner identity; no original-legality transfer |
@@ -206,7 +233,7 @@ Primitive approval excludes some other candidate-equation models; the result pro
 Thus the formalized contract entails neither that root nor its negation; this strengthens the earlier displayed-chain countervaluation without selecting either model as independent normative truth.
 No full-XSD ambiguity, semantic positive/nonexistence, general undecidability or new policy is inferred.
 The [executed source bridge audit](content-model-s06-re-01.md#executed-source-to-b-semantic-bridge-audit) tests that next gate and records the precise remaining truth-rule/correspondence dependency, failed principles and unselected alternatives.
-It establishes no independent renewal verdict and leaves general algorithm implementation gated by that semantic correspondence.
+It establishes no independent dated renewal verdict; the later [selected founded research relation](#selected-founded-research-route) supports continued research without claiming that missing normative correspondence.
 
 The [exact-vacuous ground investigation](content-model-s06-re-01.md#exact-vacuous-extension-ground-fails-with-a-retained-consumer) refutes an unconditional success rule for a pure U→B→A extension chain, even when all three types share exact content/AUs and every parent local premise qualifies.
 A retained consumer requires exact M; every U rebase removes M from effective(H), and no finite additions can repair the missing QName.
