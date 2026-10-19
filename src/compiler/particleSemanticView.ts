@@ -90,7 +90,8 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
           if (groupTerm.occurs.min !== '1' || groupTerm.occurs.max !== '1') return fail(id, 'Named model-group compositor must have occurrence 1..1');
           term = groupTerm;
         }
-        charge(7); return {node, term, children: 'children' in term.term ? term.term.children : EMPTY, index: 0};
+        charge(7); return {node, term, children: 'children' in term.term
+          ? context.originalCompositorChildren(term.id) ?? term.term.children : EMPTY, index: 0};
       };
       const build = (f: Frame): Shape | undefined => {
         const {node, term} = f;

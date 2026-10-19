@@ -22,6 +22,8 @@ The [scalar-property continuation](#scalar-selectors-and-simple-content-property
 The [complex-reference continuation](#complex-property-references-and-full-construction) completes that property-role boundary for distinct complex references, retaining independently consumed type validity.
 The [conditional-premise continuation](#conditional-prerequisites-through-particle-extension) forwards scalar and known mixed-content equality prerequisites to their existing construction owners without weakening formation or emptiability.
 The [original-property continuation](#guarded-original-property-views-in-the-current-context) reads a bounded class of untouched originals without installing source-generated wrappers as new validity roots.
+The [full original-input continuation](#guarded-original-inputs-to-full-construction) uses those properties as inputs to all current-context construction checks, preserving native wildcard origin and genuine dependencies.
+The [compositor-incidence continuation](#original-compositor-incidences-in-candidate-construction) also interprets authentic original child lists without promoting suppressed source diagnostics into hypothetical components.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -3794,7 +3796,8 @@ Fresh owners and previously rewritten originals do not enter this fallback.
 [complexTypeContent.ts](../src/compiler/complexTypeContent.ts) reissues only fixed Γ particle/empty data under a private current-H `original-property-projection` authority.
 It preserves every field, occurrence, ordered incidence, shared original particle, distinct synthetic origin, source lexical context and ur-type wildcard marker.
 Every source-synthetic ID must have lookup result `missing` in H; both `found` and `outside-context` yield unresolved rather than shadowing, renaming or ignoring a real record.
-Simple and opaque content retain unresolved fallback behavior; full complex construction still requires its existing raw properties.
+Simple and opaque content retain unresolved fallback behavior.
+At this property-only checkpoint full complex construction still required raw properties; the [full-input continuation](#guarded-original-inputs-to-full-construction) below subsequently extends that separate path.
 
 The AU property reader in [schemaAttributeUses.ts](../src/compiler/schemaAttributeUses.ts) obtains fixed effective AU IDs/wildcard data through the authentic Γ mapper, retaining its exact Γ-owned typed prerequisites and failures.
 It then runs the existing individual use/declaration/scalar/presence checks in H, using H/raw-role fact caches rather than Γ fact-cache entries.
@@ -3827,6 +3830,154 @@ Its identity success is not an existing shadowing bug, because actual views rema
 No universal private-name allocator, arbitrary selected-layout translation, consumed-wrapper coverage or general SOME-forest theorem follows.
 The next theorem for the present finite-verifier route is still composition into some authentic executable forest for every completely qualified Q_f actual assessment, or an independently justified alternative reconstruction.
 Dated correspondence, complete search/negative bounds, mathematical termination and full #234/#232 acceptance remain open; B-v1, the seven accepted packages and P1/F2 are preserved.
+
+#### Guarded original inputs to full construction
+
+This continuation starts from reviewed ec8d3d52217988057c7a92f7c86d7686712499f6 and identical-tree actual main `505e09be32b0ff5b2f6e02dda709b1e49d01b099`, tree `2bb2e2b997ddff3c3655ce5d45d06e910fdc0d82`.
+It addresses genuine consumption of a retained original, not just property comparison.
+The preceding property reader supplies authenticated data; it does not by itself establish containing AU derivation, complete particle validity or own RE01.
+
+##### Origin-sensitive failed reification and complete positive
+
+The [authentic source](../test/conformance/fixtures/xsd/recovery/original-construction-inputs-independent.xsd) has eight represented actual records: empty A/B/R/X, mixed Ur extending builtin anyType, mixed D restricting Ur with a skip/any/0..unbounded wildcard, and D's two original particles.
+Every actual source/local check passes, X is the only nonprimitive actual duty, and the original one-node X-to-B witness closes all actual obligations including the conditional primitive blocks.
+
+Ur's effective content contains four private source particles: an empty mixed-content sequence, the native ur wildcard, its sequence, and an outer sequence combining inherited and local content.
+The pinned [ur-type definition](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#ur-type-itself), XML lines 4368–4412, fixes its mixed content and any/lax/0..unbounded wildcard.
+[NSSubset clause 3](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-NSSubset), lines 5566–5591, exempts that actual native wildcard from the usual process-strength requirement.
+A structurally identical ordinary lax wildcard has no such exception.
+
+Before the repair, fresh RequiredD:D genuinely consumed D and Ur but the sparse runtime candidate lacked their raw representation.
+Its exact H-issued views already made D's skip restriction true under the native-origin exception; they were not full validity receipts.
+Installing four structurally corresponding real particle clones and original raw rows passed correspondence, full Ur and every new root check, but lost native origin and rejected D/aggregate at 5.4.
+Thus structural/bijective correspondence plus valid new particle roots does not preserve every origin-sensitive restriction observation.
+This does not refute an actually origin-preserving representation or general SOME-forest adequacy.
+
+The [new whole-input control](../test/research/re01/original-construction-inputs.test.ts) now completes RequiredD as a one-node proof with exactly nine members, no D/Ur rows and no installed source particles.
+It checks all eight actual components, exact current-H D/Ur/RequiredD receipts, D's real particle descendants and Ur/B's current conditional primitive obligations.
+The same suite retains the valid-root raw-reification 5.4 failure and an ordinary fresh lax-wildcard negative.
+The [independent reference controls](../test/conformance/reference/re01-original-construction-inputs.test.ts) pin and validate the original source, without treating an engine as a hypothetical RE01 oracle.
+
+##### Input authority and full predicate inventory
+
+The fallback retains the exact factory guard: source-bound active original complex, absent raw row, no canonical change anywhere in lineage and no source absence; every synthetic origin must remain lookup-missing.
+Raw rows always win, even if their origin representation is insufficient or their installed components fail.
+The original-input receipt explicitly records current H, original Γ, `guarded-original-particle-empty-input` scope and pending actual-source/full-type qualification.
+It is not a fabricated raw validation receipt or a transfer of Γ validity.
+
+| Predicate or dependency | Current owner and retained rule |
+| --- | --- |
+| Name, identity, role, namespace and flags | Authentic unchanged original fields plus current membership and existing flag parser |
+| Immediate base, final and derivation | Resolve/require the base in H; run current final, method and base-role checks |
+| Effective AU set and wildcard | Authentic Γ data followed by the complete current-H AU stack, not the property-only authority |
+| Mixed/empty varieties and particle relation | Existing extension/restriction branches, formal emptiability and conditional equality premises |
+| Private particle local properties | Authenticate the exact H subtree, check bounds/generated shape/wildcard and run existing local legality on each private root |
+| Whole declared content | Existing all placement, incidence-preserving EDC and exact UPA checks in H |
+| Real descendants and typed operands | Full real particle/group/declaration/type/AU/member closure and exact scalar/value contexts |
+| Own RE01 | Existing dynamic current-H ancestor loop and primitive/nonprimitive classification |
+| Source qualification | Γ syntax, mapping and operand duties supplied by the complete actual assessment, not retagged as H validity |
+
+The [AU owner](../src/compiler/schemaAttributeUses.ts) uses a small raw-first frame-data provider in its existing full stack.
+For eligible originals it obtains fixed Γ effective AU identities/wildcard and retains Γ typed prerequisites/failures, then reruns H individual facts, cycles/base/final, extension name/type coverage and wildcard containment, restriction replacement/required-name/value compatibility and wildcard process/namespace predicates.
+Its distinct `AU01-C1-original-construction-v1` authority describes full local AU derivation conditional on Γ qualification; the property-only authority remains distinct.
+Literal/source paths, selected pair-local matching semantics and per-H/raw fact caches are unchanged.
+
+The [construction owner](../src/compiler/schemaConstructionAssessment.ts) replaces the admitted original's declared-source prelude with effective field dependencies.
+It requires the current base, effective AU identities/wildcard sources, and real dependencies reached through authenticated private content.
+It never merely drops `requireNode(privateID)`: the finite traversal continues through all private children and reachable real particle/group edges.
+Real nodes remain full component duties, including their declaration/type/value/incoming-affiliate support; source metadata ownership alone is not promoted to type validity.
+
+The [content owner](../src/compiler/complexTypeContent.ts) issues an exact-H private subtree view preserving source sharing and native markers.
+Each traversed private particle receives its own existing declared local-legality check, in addition to whole-C legality; whole-model UPA alone is not assumed to prove a possibly unreachable subtree legal.
+A found/outside/raw/fresh node cannot be reclassified as private or native.
+No private particle becomes an H member, and no installed/inherited real fresh root is waived.
+
+##### Same-H frontier proof and bounded diagnostics
+
+Fix eligible C and its authentic finite original property graph interpreted in exact H.
+Induction over private sequences reaches every real child while preserving ordered incidence and shared original identities; native wildcard leaves retain their authenticated origin and fixed source lexical data.
+The source mapper follows a single acyclic base chain, so mappings sharing an ancestor have the same processed ancestor prefix and synthetic origin fields; no independent cloning or global allocator is introduced.
+Private per-root checks and whole-content checks establish local particle predicates, while real frontier debts require the ordinary full component/scalar owners in this same H.
+The current base/AU/content/RE01 branches therefore check construction from those inputs rather than assuming its conclusion.
+
+Γ premises remain Γ premises in the same finite assessment forest; a parent or actual proof need not have completed before constructing a child.
+The [nonprimitive control](../test/research/re01/property-type-references.test.ts) removes one original inner type's row: genuine H consumption still generates missing-nested-evidence despite a separate actual Γ proof, and supplying its exact H proof completes five nodes.
+The [genuine EDC control](../test/research/re01/original-property-projection.test.ts) now consumes C without rows and still rejects the H-specific QName/type clash.
+
+The initial source-only boundary is deliberately partial.
+Lookahead continues through reachable real original particles/groups and returns unresolved on unsupported suppressed/max0 diagnostic vertices; it does not promote them into rejected semantic particles or silently filter actual H roots.
+Direct raw/fresh particle construction retains its ordinary max0 rejection.
+Simple/opaque fallback and ineligible lineage/collision cases remain unresolved rather than becoming semantic negatives.
+
+The [boundary controls](../test/research/re01/original-construction-boundaries.test.ts) complete a nonempty-AU original scope, distinguish full/property authorities, reject current-H base final/name/wildcard errors, and check real-child diagnostic lookahead, subtree authenticity and exact/one-below sticky work.
+Their deliberately bad base rows are structural-only local-owner controls, not complete correspondence-positive schemas.
+Existing `checks literal %s using supplied final uses and exact type/value constraints` controls in [raw AU tests](../test/unit/schema-attribute-raw-independent.test.ts) retain required-name/fixed-value/restriction cases; [origin controls](../test/unit/schema-attribute-origin-independent.test.ts) and the receiving [reader controls](../test/research/re01/original-property-reader-boundaries.test.ts) preserve Γ versus H scalar failures.
+The new extension variants are not reported as separately executing every restriction branch.
+
+This partial full-input path preserves B-v1, all seven accepted packages, P1/F2 and the selected research judgment.
+General source-only projection, collision-free universal allocation, simple/opaque support, complete SOME-forest/frontier composition, complete search/negative bounds, mathematical termination and dated correspondence remain open.
+Alternate faithful reconstruction or logical methods need not first materialize this particular interface.
+
+#### Original compositor incidences in candidate construction
+
+This sequential continuation shares the preceding full-input baseline but addresses a separate edge owner.
+An original type may have a raw row and a changed method/base while its retained particle identities and semantic child incidences remain unchanged.
+The containing type's absent-row guard is therefore neither required nor appropriate for this particle input.
+
+##### Qualified whole witness and failed source-edge realization
+
+The [authentic source](../test/conformance/fixtures/xsd/recovery/original-compositor-edge-independent.xsd) defines A with a unit sequence containing any/any/lax/0..unbounded, B extending A without additions, R restricting A with the same wildcard followed by local ghost:string at 0..0, and X extending R without additions.
+It has ten represented canonical records: four types, four real sequence/wildcard records, and two retained source-diagnostic ghost records.
+All ten actual source/local checks pass, including syntax-only qualification of the last two; X alone has a nonprimitive actual duty.
+
+The pinned [local element mapping](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#declare-element), XML lines 2078–2090, assigns no component to this local 0..0 item.
+The [model-group mapping](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#declare-contentModel), lines 4880–4913, supplies the ordered particles corresponding to child items, not a particle for a no-component item.
+Conversely, [Particle Correct](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#p-props-correct), lines 5269–5286, requires a genuine finite maximum to be at least one.
+These are the existing primary XML with SHA256 `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`, not a new global zero-particle exemption.
+
+H changes X to restriction of the existing B, adds nothing, and supplies authentic complex raw rows with X's content anchored at R's original nonsynthetic sequence ID.
+Correspondence, the same-H restriction, all eight genuine semantic local components and B's conditional primitive block qualify the one-node semantic witness.
+Before this repair, the complete runtime caller nevertheless rejected at the ghost particle: the original sequence's construction prelude and particle branch published its literal source child ID as a component-validity debt.
+This refutes that prescribed raw realization's frontier fidelity, not existence of some other forest for Γ.
+
+The [whole-evidence controls](../test/research/re01/original-compositor-edges.test.ts) now complete this exact one-node witness with unchanged membership, no fresh roots and all ten actual receipts.
+Its seven required H receipts omit the unused original R type as well as both diagnostic records; R's sequence and wildcard remain genuinely consumed.
+The endpoint retains its original particle ID and explicit raw data, so this success is independent of the preceding absent-row full-input fallback.
+Directly selecting the original zero particle still rejects `p-props-correct`; a fresh explicit compositor naming it retains that dependency, and a fresh explicit zero wildcard still rejects.
+
+The [independent source/reference controls](../test/conformance/reference/re01-original-compositor-edges.test.ts) pin the exact mapping premises and separately record live primary observations.
+Libxml2-wasm 0.7.2 / libxml2 2.15.1 rejects this R/X source as nondeterministic, although the dated mapping removes the local no-component item and leaves one wildcard.
+That recorded UPA disagreement is not treated as a component-mapping or RE01 oracle; the independent incidence fixture is accepted by the same engine.
+
+##### Factory-owned incidence data and three consumers
+
+`originalCompositorChildren` in the [context factory](../src/compiler/semanticContext.ts) authenticates its exact receiver and reads only private original/source binding, source absence, current membership and cumulative canonical changes.
+It applies to an active, nonabsent, unchanged original sequence/choice/all particle whose current record is the private original record and whose literal children are original particle incidences.
+It returns a frozen, cached stable subsequence omitting only private original source-absent children; it neither sorts nor deduplicates and preserves each retained ID, order, repetition, sharing and occurrence.
+The vector is conditional source-mapping selector data, not a validity receipt.
+Actual contexts, source-unbound requests, copied receivers, missing/outside parents, absent parents and fresh parents gain no such selector authority.
+Existing methods' receiver behavior is not generalized from this new accessor's explicit refusal.
+
+| Consumer | Exact retained boundary |
+| --- | --- |
+| Construction prelude | Select the original vector instead of literal contained children only for eligible compositors |
+| Construction particle branch | Use the same vector for child-kind/all checks; retain bounds, wildcard, placement, EDC and UPA predicates |
+| Semantic-view frame | Select before DFS, using the resolved compositor `term.id` for a named-group use; keep its use position/occurrence |
+
+Under qualified original source mapping, the source-ordered canonical list enumerates these child incidences and the no-component mappings omit exactly the source-absent items.
+Induction on each retained original group/compositor edge therefore supplies the same semantic list in the three consumers, with real targets and all genuine scalar/type/declaration/group duties still checked in exact H.
+The context's structural availability/ownership edges remain literal; removing a retained live child from membership still fails preparation.
+Every installed/inherited real fresh root and every direct raw/fresh particle remains subject to ordinary full construction.
+No Γ validity is retagged, no record is deleted and no native origin is manufactured.
+
+The [boundary controls](../test/research/re01/original-compositor-boundaries.test.ts) retain live/zero/live order, named-group root resolution, repeated use positions with shared original leaves, all placement, distinct empty choice/sequence kinds, source binding, receiver/membership/absence guards and charged sticky cache limits.
+Empty choice remains unrealizable while formally emptiable under the existing occurrence owner; it is not rewritten into an empty sequence.
+An existing invalid minLength beneath a suppressed source item still fails actual source syntax.
+
+This repair is limited to these three consumers and qualified original compositor incidence.
+The equality owner's recursive literal-child comparison is unchanged; no universal distinct-original property-comparison or arbitrary raw/fresh normalization theorem follows.
+The preceding original-input diagnostic lookahead remains deliberately literal and conservative, including through real particle/group descendants.
+Direct absent local-declaration semantics, general source-only roles, universal frontier/SOME-forest composition, complete negatives/search bounds, termination and dated correspondence remain open.
 
 #### External methods and applicability
 

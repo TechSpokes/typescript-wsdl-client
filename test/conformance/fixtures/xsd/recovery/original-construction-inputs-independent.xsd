@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:consumed-wrapper" targetNamespace="urn:recovery:consumed-wrapper">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="X"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Ur" mixed="true"><xs:complexContent mixed="true"><xs:extension base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D" mixed="true"><xs:complexContent mixed="true"><xs:restriction base="t:Ur"><xs:sequence><xs:any namespace="##any" processContents="skip" minOccurs="0" maxOccurs="unbounded"/></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+</xs:schema>

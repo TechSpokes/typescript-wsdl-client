@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:original-compositor" targetNamespace="urn:recovery:original-compositor">
+  <xs:group name="G"><xs:sequence><xs:element name="first" type="xs:string"/><xs:element name="ghost" type="xs:string" minOccurs="0" maxOccurs="0"/><xs:element name="last" type="xs:string"/></xs:sequence></xs:group>
+  <xs:complexType name="Seq"><xs:sequence><xs:element name="first" type="xs:string"/><xs:element name="ghost" type="xs:string" minOccurs="0" maxOccurs="0"/><xs:element name="last" type="xs:string"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Named"><xs:sequence><xs:group ref="t:G"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Repeated"><xs:sequence><xs:group ref="t:G"/><xs:group ref="t:G"/></xs:sequence></xs:complexType>
+  <xs:complexType name="All"><xs:all><xs:element name="first" type="xs:string"/><xs:element name="ghost" type="xs:string" minOccurs="0" maxOccurs="0"/><xs:element name="last" type="xs:string"/></xs:all></xs:complexType>
+  <xs:complexType name="EmptyChoice"><xs:choice><xs:element name="ghost" type="xs:string" minOccurs="0" maxOccurs="0"/></xs:choice></xs:complexType>
+  <xs:complexType name="EmptySequence"><xs:sequence><xs:element name="ghost" type="xs:string" minOccurs="0" maxOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Absent"><xs:sequence minOccurs="0" maxOccurs="0"><xs:element name="hidden" type="xs:string"/></xs:sequence></xs:complexType>
+</xs:schema>

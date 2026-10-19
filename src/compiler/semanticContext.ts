@@ -62,6 +62,8 @@ export type SemanticContext = Readonly<{
   originalSourceComponentAbsent(id: NodeId): boolean;
   /** Eligibility for reading retained original properties, never a validity receipt. */
   originalComplexPropertySource(id: NodeId): ComplexTypeNode | undefined;
+  /** Original semantic incidences only; undefined keeps the explicit child list. */
+  originalCompositorChildren(id: NodeId): readonly NodeId[] | undefined;
   /** Original source operand interpretation, with the same request budget. */
   originalContext(): SemanticContext;
   /** Original schema syntax evidence, not implicit hypothetical symbol membership. */
@@ -530,6 +532,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         const frozenMembers = Object.freeze([...members]);
         const contextId = `${requestId}:${kind}:${++serial}`;
         let context: SemanticContext;
+        let compositorChildren: Map<NodeId, readonly NodeId[]> | undefined;
         const authenticate = (): void => {assertSemanticContext(context); budget.chargeWork();};
         const lookup = (id: NodeId): ContextLookup => {
           authenticate(); key(id); budget.chargeWork(3);
@@ -612,6 +615,26 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             const original = originals.get(id);
             return kind === 'candidate' && sourceSchemas !== undefined && membership.has(id) && original?.kind === 'complexType'
               && !rawProperties.has(id) && !changes.has(id) && !absentOriginals.has(id) ? original : undefined;
+          },
+          originalCompositorChildren(id: NodeId): readonly NodeId[] | undefined {
+            assertSemanticContext(this);
+            if (this !== context) throw new TypeError('Foreign compositor context');
+            authenticate(); key(id); budget.chargeWork(10);
+            const original = originals.get(id);
+            if (kind !== 'candidate' || sourceSchemas === undefined || !membership.has(id) || original?.kind !== 'particle'
+              || !('children' in original.term) || absentOriginals.has(id) || changes.has(id) || record(id) !== original) return undefined;
+            const prior = compositorChildren?.get(id);
+            if (prior) {budget.chargeWork(2); return prior;}
+            const children: NodeId[] = [];
+            for (const child of original.term.children) {
+              key(child); budget.chargeWork(5 + child.length);
+              if (originals.get(child)?.kind !== 'particle') return undefined;
+              if (!absentOriginals.has(child)) children.push(child);
+            }
+            budget.chargeWork(4 + children.length);
+            const result = Object.freeze(children);
+            if (!compositorChildren) {budget.chargeWork(2); compositorChildren = new Map();}
+            compositorChildren.set(id, result); return result;
           },
           originalContext(): SemanticContext {authenticate(); return actual;},
           sourceSchemaRetained(): CanonicalGraph['schemaRetained'] {authenticate(); return graph.schemaRetained;},

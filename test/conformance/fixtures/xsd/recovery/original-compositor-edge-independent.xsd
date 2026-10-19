@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:raw-original-edge" targetNamespace="urn:recovery:raw-original-edge">
+  <xs:complexType name="A"><xs:sequence><xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/></xs:sequence></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"><xs:sequence><xs:any namespace="##any" processContents="lax" minOccurs="0" maxOccurs="unbounded"/><xs:element name="ghost" type="xs:string" minOccurs="0" maxOccurs="0"/></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="X"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+</xs:schema>

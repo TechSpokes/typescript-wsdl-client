@@ -252,6 +252,24 @@ export function deriveOriginalComplexPropertyContent(context: SemanticContext, t
   });
 }
 
+/** Same-H private subtree input for local predicates, never a component-validity receipt. */
+export function deriveOriginalContentSubtree(context: SemanticContext, source: ParticleContentView, particle: NodeId): ContentViewResult {
+  assertParticleContentView(context, source);
+  const budget = context.budget;
+  return budget.guard(() => {
+    budget.chargeWork(12 + particle.length + source.synthetic.length);
+    if (source.scope !== 'original-property-projection' || !context.originalComplexPropertySource(source.type)
+      || !source.synthetic.includes(particle) || context.lookup(particle).kind !== 'missing')
+      return Object.freeze({kind: 'unresolved', rule: 'original-content-subtree', component: particle, message: 'Authentic private original subtree required'});
+    const node = particleContentNode(context, source, particle);
+    if (node?.kind !== 'particle') return Object.freeze({kind: 'unresolved', rule: 'original-content-subtree', component: particle, message: 'Private subtree must be a particle'});
+    budget.chargeWork(source.synthetic.length + 4);
+    return Object.freeze({kind: 'checked', view: issueContentView(context, {contextId: context.contextId, type: source.type,
+      scope: source.scope, content: Object.freeze({kind: 'element-only', particle}), synthetic: source.synthetic,
+      urTypeWildcards: source.urTypeWildcards}, [...generatedNodes.get(source)!.values()])});
+  });
+}
+
 const builtinCaches = new WeakMap<object, Map<NodeId, ParticleContentView>>();
 /** The primary ur-type component, never inferred from an ordinary wildcard's spelling. */
 export function deriveBuiltinAnyTypeContent(context: SemanticContext, anchor: NodeId): ContentViewResult {

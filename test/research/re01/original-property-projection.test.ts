@@ -136,7 +136,8 @@ describe('guarded original property views in exact candidate contexts', () => {
       expect(child.context.rawTypeProperties(scope.owner.id)).toBeUndefined();
       expect(child.context.lookup(scope.sourceOuter.id).kind).toBe('missing');
       expect(child.proof.proof.flatMap(step => step.components.map(receipt => receipt.component))).not.toContain(scope.owner.id);
-      expect(checkComponentConstruction(child.context, scope.owner.id, {correspondence: child.correspondence}).kind).toBe('unresolved');
+      expect(checkComponentConstruction(child.context, scope.owner.id, {correspondence: child.correspondence}))
+        .toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent'});
     }
     const t = child.proof.proof.flatMap(step => step.components.filter(receipt => receipt.component === s.t.id));
     expect(t.length).toBeGreaterThan(0); for (const receipt of t) expect(receipt.re01?.primitive).toBe(true);
@@ -169,7 +170,7 @@ describe('guarded original property views in exact candidate contexts', () => {
     }
     for (const result of copied.wrappers) expect(result).toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent'});
     expect(copied.proof).toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent'});
-    const consumed = s.child(true, true, true);
+    const consumed = s.child(true, false, true);
     expect(checkComponentConstruction(consumed.context, s.scopes[0].owner.id, {correspondence: consumed.correspondence}))
       .toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent'});
     expect(consumed.proof).toMatchObject({kind: 'candidate-rejected', rule: 'cos-element-consistent'});

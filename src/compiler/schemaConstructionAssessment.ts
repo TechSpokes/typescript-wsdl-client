@@ -6,14 +6,14 @@ import type {SemanticContext} from './semanticContext.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {checkActualSchemaSyntax} from './schemaSyntaxAssessment.js';
 import {checkDeclaration} from './schemaDeclarationPrimitives.js';
-import {assessAttributeUse, assessRawAttributeUses, assessSourceAttributeUses} from './schemaAttributeUses.js';
+import {assessAttributeUse, assessRawAttributeUses, assessCandidateAttributeUses, assessSourceAttributeUses} from './schemaAttributeUses.js';
 import type {AttributeResult} from './schemaAttributeUses.js';
 import {createSchemaScalarKernel} from './schemaScalarKernel.js';
 import type {ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import {checkImmediateTypeFinal, immediateTypeBase} from './schemaTypeRelations.js';
 import type {RelationResult} from './schemaTypeRelations.js';
-import {deriveActualComplexContent, deriveRawComplexContent, deriveBuiltinAnyTypeContent, deriveModelGroupContent} from './complexTypeContent.js';
+import {deriveActualComplexContent, deriveOriginalComplexPropertyContent, deriveOriginalContentSubtree, particleContentNode, deriveBuiltinAnyTypeContent, deriveModelGroupContent} from './complexTypeContent.js';
 import type {ParticleContentView} from './complexTypeContent.js';
 import {validateRawComplexTypeProperties} from './re01TypePropertyValidation.js';
 import {isXmlNCName, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -207,9 +207,61 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         if (!isXmlNCName(node.identity.name.local)) return fail('component-name', 'Global component name must be an XML NCName');
       }
       const rawComplex = node.kind === 'complexType' ? context.rawTypeProperties(id) : undefined;
+      const originalComplex = node.kind === 'complexType' ? context.originalComplexPropertySource(id) : undefined;
+      const originalContent = originalComplex ? checked(deriveOriginalComplexPropertyContent(context, id)).view : undefined;
       const rawSimple = node.kind === 'simpleType' ? context.rawSimpleTypeProperties(id) : undefined;
       const rawGroup = node.kind === 'attributeGroup' ? context.rawAttributeGroupProperties(id) : undefined;
-      if (rawComplex) {
+      const particleChildren = node.kind === 'particle' && 'children' in node.term
+        ? context.originalCompositorChildren(id) ?? node.term.children : undefined;
+      const content = (target: NodeId): ParticleContentView => checked(context.kind === 'actual'
+        ? deriveActualComplexContent(context, target) : deriveOriginalComplexPropertyContent(context, target)).view;
+      const particleLegal = (view: ParticleContentView): void => {
+        const legal = checked(checkComplexParticleContent(context, view));
+        if (!legal.value) return fail(legal.failedRule ?? 'particle-local-legality', 'Particle content violates its local constraints');
+      };
+      if (originalComplex && originalContent) {
+        b.chargeWork(100 + context.contextId.length + context.originalContext().contextId.length + id.length);
+        receipts.push(Object.freeze({kind: 'checked-original-input', authority: 'XSD10-original-complex-input-v1',
+          contextId: context.contextId, originalContextId: context.originalContext().contextId, component: id,
+          scope: 'guarded-original-particle-empty-input', remaining: Object.freeze(['actual-source-qualification', 'complete-type-validity'])}));
+        reference(originalComplex.derivation?.base ?? ANY);
+        const pending = 'particle' in originalContent.content ? [originalContent.content.particle] : [], seen = new Set<NodeId>();
+        while (pending.length) {
+          b.chargeWork(4); const target = pending.pop()!;
+          if (seen.has(target)) continue; seen.add(target);
+          const item = particleContentNode(context, originalContent, target);
+          if (!item) return fail('original-content-frontier', 'Original content dependency is unavailable', 'unresolved', undefined, target);
+          const privateParticle = context.lookup(target).kind === 'missing' && originalContent.synthetic.includes(target);
+          if (!privateParticle) {
+            if (context.originalSourceComponentAbsent(target) || item.kind === 'particle' && item.occurs.max === '0' && context.sourceNode(target))
+              return fail('original-content-source-only', 'Source-only content traversal is not supported', 'unresolved', undefined, target);
+            requireNode(target);
+          }
+          if (item.kind === 'group') {b.chargeWork(); pending.push(item.content); continue;}
+          if (item.kind !== 'particle') return fail('original-content-frontier', 'Content edge must denote a particle or group', 'unresolved', undefined, target);
+          if (privateParticle) {
+            occurrenceAlgebra(b.chargeWork).validate(item.occurs);
+            if (item.term.kind === 'sequence' && item.occurs.min === '1' && item.occurs.max === '1') {
+              // Exact mapper-owned composition, never a new H component.
+            } else if (item.term.kind === 'any' && originalContent.urTypeWildcards.includes(target)
+              && item.occurs.min === '0' && item.occurs.max === 'unbounded'
+              && namespaceExpressible(wildcardNamespaces(item.term.wildcard, b.chargeWork), b.chargeWork)
+              && item.term.wildcard.processContents === 'lax') {
+              // Authenticated native ur wildcard; ordinary fresh wildcards never enter this branch.
+            } else return fail('original-content-shape', 'Unsupported private content shape', 'unresolved', undefined, target);
+            particleLegal(checked(deriveOriginalContentSubtree(context, originalContent, target)).view);
+          }
+          if ('children' in item.term) {b.chargeWork(item.term.children.length); pending.push(...item.term.children);}
+          else if (item.term.kind === 'group') {
+            const group = reference(item.term.reference);
+            if (group?.kind !== 'group') return fail('particle-properties', 'Group use must reference a model group');
+            b.chargeWork(); pending.push(group.id);
+          } else if (item.term.kind === 'element') {
+            const declaration = reference(item.term.declaration);
+            if (declaration?.kind !== 'element') return fail('particle-properties', 'Element use must reference a declaration');
+          }
+        }
+      } else if (rawComplex) {
         reference(rawComplex.derivation.base);
         for (const use of rawComplex.attributeUses) {b.chargeWork(); requireNode(use);}
         if (rawComplex.content.kind === 'simple' || rawComplex.content.kind === 'opaque-builtin') reference(rawComplex.content.type);
@@ -225,16 +277,10 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         for (const slot of context.references(id)) {b.chargeWork(); reference(slot.reference);}
         if (node.kind === 'complexType' || node.kind === 'attributeGroup') b.chargeWork(node.attributes.length + 2);
         if (node.kind === 'particle' && 'children' in node.term) b.chargeWork(node.term.children.length + 2);
-        for (const child of containedNodes(node)) {b.chargeWork(); requireNode(child);}
+        for (const child of particleChildren ?? containedNodes(node)) {b.chargeWork(); requireNode(child);}
       }
       let re01: ComponentConstructionReceipt['re01'];
       let ownRawSimpleContentChecked = false;
-      const content = (target: NodeId): ParticleContentView => checked(context.kind === 'actual'
-        ? deriveActualComplexContent(context, target) : deriveRawComplexContent(context, target)).view;
-      const particleLegal = (view: ParticleContentView): void => {
-        const legal = checked(checkComplexParticleContent(context, view));
-        if (!legal.value) return fail(legal.failedRule ?? 'particle-local-legality', 'Particle content violates its local constraints');
-      };
       switch (node.kind) {
         case 'element': case 'attribute': {
           reference(declaredType(context, node));
@@ -250,7 +296,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           if (!relation(checkImmediateTypeFinal(context, local(id)))) return fail('st-props-correct.final', 'Immediate base prohibits this simple derivation');
           break;
         case 'complexType': {
-          if (context.kind === 'candidate') {
+          if (context.kind === 'candidate' && !originalContent) {
             const validation = validateRawComplexTypeProperties(context, id, correspondence);
             if (validation.kind === 'resource-limit') throw new ConstructionAbort(validation);
             if (validation.kind !== 'checked-structure') return fail(validation.rule, 'Raw complex properties are not structurally qualified', validation.kind === 'unresolved' ? 'unresolved' : 'invalid-schema');
@@ -260,7 +306,12 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           const method = rawComplex?.derivation.method ?? node.derivation?.kind ?? 'restriction';
           const baseNode = reference(base);
           if (!relation(checkImmediateTypeFinal(context, local(id)))) return fail('ct-props-correct.final', 'Immediate base prohibits this complex derivation');
-          attributes(context.kind === 'actual' ? assessSourceAttributeUses(context, id) : assessRawAttributeUses(context, id));
+          const uses = context.kind === 'actual' ? assessSourceAttributeUses(context, id) : assessCandidateAttributeUses(context, id);
+          attributes(uses);
+          if (originalContent && uses.kind === 'checked') {
+            for (const use of uses.value.uses) {b.chargeWork(); requireNode(use.id);}
+            for (const source of uses.value.wildcard?.sources ?? []) {b.chargeWork(); requireNode(source);}
+          }
           const ownContent = content(id), own = ownContent.content;
           const ownScalar = own.kind === 'simple' ? context.kind === 'actual' ? local(id) : own.type : undefined;
           const baseSimple = base.kind === 'original-generated' || (base.kind === 'builtin' ? base.name.local !== 'anyType' : baseNode?.kind === 'simpleType');
@@ -383,7 +434,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             if (!namespaceExpressible(wildcardNamespaces(node.term.wildcard, b.chargeWork), b.chargeWork) ||
               !['strict', 'lax', 'skip'].includes(node.term.wildcard.processContents))
               return fail('wildcard-properties', 'Particle wildcard namespace is not expressible');
-          } else for (const child of node.term.children) {
+          } else for (const child of particleChildren ?? node.term.children) {
             b.chargeWork(); const item = requireNode(child);
             if (item.kind !== 'particle') return fail('particle-properties', 'Model group children must be particles');
             if (node.term.kind === 'all' && (item.term.kind !== 'element' || !['0', '1'].includes(item.occurs.min) || !['0', '1'].includes(item.occurs.max)))
