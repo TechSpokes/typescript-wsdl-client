@@ -2879,9 +2879,9 @@ Choosing an SCC, a fixed point or a larger resource allowance in code would not 
 Deleting or renaming inherited supporters inside an exact child violates its retained-root correspondence, but this does not refute an existential representative quotient.
 Such a quotient or a guarded proof mechanism still needs sound extraction/reconstruction and an independently justified semantic inference principle; finite trace similarity cannot supply them.
 
-The accepted domain also does not prohibit proving a new sufficient lemma for exact-content, vacuous all-extension chains such as U→B→A.
-The current direct-only rule does not discharge that path, and the concrete no-addition child through B fails consumed X; retaining unchanged U does not make it a direct extension of A, while a fresh intermediate loses the supporting member's exact B affiliation.
-These facts refute those concrete repairs, not an independently proved stronger semantic lemma, which remains unproved rather than refuted and must discharge every B-v1 ambient contextual duty beyond raw content/AU identity.
+The accepted domain permits investigating additional sufficient grounds rather than treating the current direct-only rule as complete.
+The [following exact-vacuous counterexample](#exact-vacuous-extension-ground-fails-with-a-retained-consumer) refutes an unconditional ground based on U→B→A and exact content/AU equality, even when every parent local premise passes.
+A narrower renewal-specific theorem remains open and must account for replaceable support and every B-v1 ambient contextual duty.
 
 #### Controls and next concrete proof obligation
 
@@ -2899,6 +2899,102 @@ Neither implication is established here, and no new domain-policy or user-approv
 
 General witness coverage, semantic evidence adequacy, copied-prefix reconstruction, input-derived bounds or an equivalent terminating complete-negative criterion and the full #234/#232 gates remain open.
 All seven accepted packages, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original typed operands, inherited roots, failure categories, budgets and later #179/#153/#184 ownership are preserved.
+
+### Exact-vacuous extension ground fails with a retained consumer
+
+This investigation starts at main `adcc956f87740a7b456b20428099a569f0b8426c`, tree `d83f53ac1721613bea2a1fdf65a71cedb9bcea2c`.
+It tests a proposed sufficient semantic ground before changing any inference rule: a pure extension chain U→B→A, with exact unchanged effective content/AUs and independently qualified non-RE01 premises, need not have a complete B-v1 U construction.
+The following fixed parent has no complete U child under arbitrary permitted finite additions; this is stronger than rejecting one supplied certificate.
+
+#### Judgments and exact source
+
+Write Q_B(Γ,P,T,A) for the accepted semantic clause-1.5 judgment in immutable actual Γ and exact parent P, independently of finite checker evidence.
+A permitted finite candidate must supply the two derivation steps and correspondence and satisfy every applicable predicate of its required roots and consumed components in that candidate.
+Full component validity V includes any applicable Q_B duty; qualifying local premises with that duty still pending does not establish V.
+
+The [original source](../test/conformance/fixtures/xsd/recovery/exact-vacuous-consumer.xsd) gives A the exact raw unit sequence `[H0..1]`.
+Original nonabstract global H has exact named complex type B, empty final and block containing restriction; B vacuously extends A, R restricts A to empty and X extends R to empty.
+The base chains are acyclic, while H:B and B/A content references form legal component-reference recursion; A is emptiable and its language is nonempty.
+
+All original local/source predicates qualify, and a complete one-node original-X certificate uses existing B without additions.
+This independently establishes original obligations without assuming the pending helper judgment below.
+All relevant type flags and AU identities are empty, and no type has an attribute wildcard.
+
+#### Locally qualified parent with exact shared content
+
+The finite parent P replaces X by a restriction of existing B and adds U, M, R_H, R_M and four distinct consumer particles.
+U extends exact B vacuously and has the literal original A content particle; M is nonabstract, has exact declared type U and affiliates directly with H.
+R_H restricts B with unit sequence `[H1]`, while R_M restricts R_H with unit sequence `[M1]`; their roots and required use particles are distinct fresh identities.
+
+Every original and fresh parent component passes its local construction predicates with no residual non-RE01 obligation; U is the sole nonprimitive duty and B has its existing direct primitive discharge.
+The original content owner derives B's effective content from exact A, and raw construction and candidate correspondence qualify the supplied properties.
+Thus A, B and U share one exact raw content component, empty effective AUs, absent wildcards, nonabstract status and empty final/block sets; this is stronger than textual or property-copy equality.
+
+Parent effective(H) contains H and M, so R_M's required M maps to the same global M leaf in R_H's implicit choice.
+R_H's required H use narrows B's optional H use, and all attribution, QName, occurrence, declaration and type predicates qualify.
+These are local premises, not an assumption that the parent's pending U judgment or complete V already holds.
+
+#### No complete U child under arbitrary finite additions
+
+Any permitted nonprimitive U child retains exact U and replaces its edge by restriction of an intermediate I that immediately extends exact A.
+Any successful U-to-B derivation contains that first restriction edge; missing exact B instead fails M's required affiliation legality.
+By [Type Derivation OK](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-derived-ok) and [Substitution Group OK](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-equiv-derived-ok-rec), H's restriction block therefore excludes retained M from effective(H), independently of I and every further finite addition.
+
+Retained nonabstract M remains its own mandatory leaf in effective(M).
+Every effective(H) alternative is global and none may acquire M's reserved expanded QName under [global uniqueness](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#sch-props-correct); new affiliations under either head cannot remove M or restore its blocked membership.
+The identity and complex-type premises exclude replacing U/B by a content-equal component or using simple-type alternatives to erase the first restriction.
+
+Restriction normalization removes the pointless unit singleton wrappers but retains the distinct H/M uses or their implicit choices.
+Two elements fail [NameAndTypeOK.1](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-NameAndTypeOK); element-to-choice uses RecurseAsIfGroup/RecurseLax and lacks an M target; choice-to-choice must map every derived leaf, including M.
+Choice-to-element has no permitted dispatch unless a singleton normalizes back to the same QName failure.
+
+Neither consumer has a wildcard, and their distinct roots/uses prevent a same-particle shortcut.
+Added helper content cannot rewrite the inherited consumer particles, substitute a duplicate global QName or turn an element's declared type content into a consumer alternative.
+Thus R_M necessarily fails [derivation-ok-restriction.5.4](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#derivation-ok-restriction) in every proposed child.
+
+R_H, R_M and all their particles remain fresh relative to immutable Γ and mandatory roots in every descendant.
+This local contradiction precedes any nested RE01 evidence, so no complete U child exists, independently of finite-evidence adequacy or a fixed-point interpretation.
+It refutes the general implication from exact-vacuous extension properties and qualified local premises to Q_B, while original X still has its separate complete positive without this trapped helper inventory.
+
+#### Complete contrast and authority limits
+
+The [typed controls](../test/research/re01/exact-vacuous-ground.test.ts) qualify all original and parent local premises, the source-derived exact A/B content, U's raw extension and both candidate correspondences.
+They preserve a complete original-X positive, check the same-context R_M/R_H comparison and distinguish legal affiliation from restriction-blocked effective membership before verifying the complete child failure.
+The universal quantifier follows from the first-edge/QName proof, not from this one executed child.
+
+An independent positive changes only M's declared type to exact B when creating the parent, retaining the same identities and complete root inventory.
+U still has the same nonprimitive vacuous chain, but rebasing U preserves M's membership; the complete two-node certificate passes with every inherited fresh root checked.
+The [independent source/reference controls](../test/conformance/reference/re01-exact-vacuous-ground.test.ts) pin original types, flags, ranges and source contributions, and record source/recursive-instance acceptance separately from full RE01 semantics.
+
+The pinned dated XML SHA-256 remains `e496af408b14853e6169ac7c1fca09d55a81bd73771758ad6be020960e1317ba`.
+As already recorded in the [conditional rank discussion](#r4-retained-obligations-and-a-conditional-well-founded-measure), the cos-ct-extends.1.5 note says the all-extension case is “trivial to check”, not unconditionally satisfied; its construction recipe remains conditional on a valid restriction.
+The accepted direct same-component epsilon ground is preserved, and no new ground, recognizer extension, production negative, authority version or failure category is introduced.
+
+#### Surviving renewal-specific proof attempt
+
+The general counterexample does not refute a theorem restricted to the preceding renewal family Cᵢ.
+That family's retained X requires some H-effective/Q-ineffective supporter rather than the particular Mᵢ: fresh Uᵢ₊₁/Mᵢ₊₁ can replace lost support and restore every local predicate.
+The fixed R_M consumer here requires exact M, which cannot be replaced by a different QName.
+
+For the renewal family, let qᵢ abbreviate Q_B(Γ,Cᵢ,Uᵢ,A), and keep q_X for the separate actual X judgment.
+Complete local qualification of Cᵢ₊₁ proves qᵢ₊₁ implies qᵢ for every natural i; the root construction proves q₀ implies q_X.
+These conditional rules include all inherited roots, consumed candidate X and affiliations; original X(Γ) is not inserted as a repeated child debt.
+
+The attempted finite symbolic proof packages the uniform local invariant and successor witness function i↦Cᵢ₊₁, then tries to conclude q₀.
+Its first unsupported inference is from all those local facts and implications qᵢ₊₁⇒qᵢ to q₀: assigning every qᵢ false satisfies the displayed premises.
+This is only a countervaluation to that proposed inference, not a model of all accepted B semantics or a claim of policy ambiguity.
+
+Ordinary induction has no established base q value, and the known implication points from successor to predecessor.
+Finite acyclic type ancestry and [recursive schema-property closure](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#conformance-schemaValidity) concern one finite context; Cᵢ₊₁ is a generated witness context, not a property-valued component of Cᵢ.
+Likewise the two-step clause bounds each derivation path without supplying an inference across arbitrarily many qualification contexts.
+
+The remaining concrete proposition is a semantic soundness theorem for a finite symbolic guarded proof of this exact family, including complete reconstruction of every finite context and inherited obligation.
+Its proof must derive the simultaneous-validity introduction from independent dated semantics; assuming qᵢ₊₁, invoking the same unproved ground recursively or merely restating postfixed local closure cannot establish it.
+A representative quotient needs sound extraction/reconstruction as well, and a quotient cycle alone supplies no base judgment.
+
+This investigation proves neither renewal-specific semantic success nor semantic nonexistence, general evidence inadequacy or impossibility of a complete procedure.
+General coverage, input-derived bounds or an equivalent terminating negative criterion, mathematical termination and full #234/#232 acceptance remain open.
+All seven recovery packages, B-v1, finite-evidence-v1, AU C1/PW R-240/DT A/#178/GSC1/P1/F2, original operands, configurable sticky budgets and later #179/#153/#184 ownership remain unchanged.
 
 ### No complete F child for the fixed membership-loss parent
 
