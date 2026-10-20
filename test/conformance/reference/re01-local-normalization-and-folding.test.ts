@@ -8,6 +8,7 @@ const files = [
   'xsd/recovery/pointless-optional-choice.xsd',
   'xsd/recovery/one-entry-chain-erasure.xsd',
   'xsd/recovery/coherent-order-key-retraction.xsd',
+  'xsd/recovery/private-observed-copy-erasure.xsd',
 ] as const;
 const xsd = 'http://www.w3.org/2001/XMLSchema';
 
@@ -87,6 +88,37 @@ describe('independent source premises for local normalization and finite-forest 
     expect(restriction.children).toEqual([]);
     const final = children(children(types[3], 'complexContent')[0], 'extension')[0];
     expect(expandedQName(final, attribute(final, 'base')!)).toEqual({uri: namespace, local: 'B'}); expect(final.children).toEqual([]);
+  });
+
+  it('pins the recursive original template and actual head member separately from its observed-copy replacement', () => {
+    const file = files[3], schema = parseXml(readFileSync(localFixture(file), 'utf8'), file);
+    const namespace = 'urn:re01:private-observed-copy-erasure';
+    expect(attribute(schema, 'targetNamespace')).toBe(namespace); expect(attribute(schema, 'elementFormDefault')).toBe('qualified');
+    const heads = children(schema, 'element'); expect(heads.map(head => attribute(head, 'name'))).toEqual(['H', 'M']);
+    for (const head of heads) expect(expandedQName(head, attribute(head, 'type')!)).toEqual({uri: xsd, local: 'string'});
+    expect(expandedQName(heads[1], attribute(heads[1], 'substitutionGroup')!)).toEqual({uri: namespace, local: 'H'});
+    const group = children(schema, 'group')[0]; expect(attribute(group, 'name')).toBe('G');
+    const members = children(children(group, 'sequence')[0], 'element'); expect(members).toHaveLength(3);
+    expect(expandedQName(members[0], attribute(members[0], 'ref')!)).toEqual({uri: namespace, local: 'H'});
+    expect([attribute(members[1], 'name'), attribute(members[1], 'minOccurs')]).toEqual(['next', '0']);
+    const q = children(members[1], 'complexType')[0], extension = children(children(q, 'complexContent')[0], 'extension')[0];
+    expect(expandedQName(extension, attribute(extension, 'base')!)).toEqual({uri: namespace, local: 'P'});
+    const suffix = children(children(extension, 'sequence')[0], 'element');
+    expect(attribute(suffix[0], 'name')).toBe('z');
+    expect(expandedQName(suffix[1], attribute(suffix[1], 'ref')!)).toEqual({uri: namespace, local: 'H'});
+    expect(attribute(members[2], 'name')).toBe('end');
+    const types = children(schema, 'complexType'); expect(types.map(type => attribute(type, 'name'))).toEqual(['P', 'R', 'D']);
+    const pUse = children(types[0], 'group')[0];
+    expect(expandedQName(pUse, attribute(pUse, 'ref')!)).toEqual({uri: namespace, local: 'G'});
+    const restriction = children(children(types[1], 'complexContent')[0], 'restriction')[0];
+    expect(expandedQName(restriction, attribute(restriction, 'base')!)).toEqual({uri: namespace, local: 'P'});
+    const end = children(children(restriction, 'sequence')[0], 'element'); expect(end).toHaveLength(2);
+    expect(expandedQName(end[0], attribute(end[0], 'ref')!)).toEqual({uri: namespace, local: 'H'}); expect(attribute(end[1], 'name')).toBe('end');
+    const final = children(children(types[2], 'complexContent')[0], 'extension')[0];
+    expect(expandedQName(final, attribute(final, 'base')!)).toEqual({uri: namespace, local: 'R'});
+    const finalSuffix = children(children(final, 'sequence')[0], 'element'); expect(finalSuffix).toHaveLength(2);
+    expect(attribute(finalSuffix[0], 'name')).toBe('z');
+    expect(expandedQName(finalSuffix[1], attribute(finalSuffix[1], 'ref')!)).toEqual({uri: namespace, local: 'H'});
   });
 
   it.each(files)('qualifies source %s without deciding any hypothetical transformation', async file => {

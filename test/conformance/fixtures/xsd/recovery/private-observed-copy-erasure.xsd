@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:private-observed-copy-erasure" targetNamespace="urn:re01:private-observed-copy-erasure" elementFormDefault="qualified">
+  <xs:element name="H" type="xs:string"/><xs:element name="M" type="xs:string" substitutionGroup="t:H"/>
+  <xs:group name="G"><xs:sequence><xs:element ref="t:H"/><xs:element name="next" minOccurs="0"><xs:complexType>
+    <xs:complexContent><xs:extension base="t:P"><xs:sequence><xs:element name="z" type="xs:string"/><xs:element ref="t:H"/></xs:sequence></xs:extension></xs:complexContent>
+  </xs:complexType></xs:element><xs:element name="end" type="xs:string"/></xs:sequence></xs:group>
+  <xs:complexType name="P"><xs:group ref="t:G"/></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:P"><xs:sequence><xs:element ref="t:H"/><xs:element name="end" type="xs:string"/></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"><xs:sequence><xs:element name="z" type="xs:string"/><xs:element ref="t:H"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

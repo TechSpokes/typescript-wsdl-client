@@ -2438,6 +2438,15 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     if(reference.kind==='original-generated'||raw?.facetBinding) required.add(recipe(reference.kind==='original-generated'?reference:raw!.facetBinding!.type,owner).typeDependencies);
     return {...result,typeDependencies:required.snapshot()};
   };
+  const qualifyNotationConstituent = (value: Description, owner: GraphNode): void => {
+    c.step(owner);
+    if (value.plan.primitive !== 'NOTATION') return;
+    for (const layer of value.plan.layers) {
+      c.step(owner, layer.facets.length + 1);
+      if (layer.facets.some(facet => facet.name === 'enumeration')) return;
+    }
+    c.fail(owner, 'enumeration-required-notation', 'A NOTATION list item or union member requires an enumeration-qualified datatype');
+  };
   const ensure = (reference: Reference, owner: GraphNode): Description => {
     reference=normalizeReference(reference,owner);
     const rootKey = referenceKey(reference, owner), active = new Set<string>();
@@ -2614,9 +2623,13 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         }
         result = {...result, plan: {...result.plan, id: node.id, reference: frame.reference}};
       } else return c.fail(node, "src-simple-type", "Expected scalar type");
+      if (result.item) qualifyNotationConstituent(result.item, node);
       c.step(node, (result.plan.obligations?.length ?? 0) + (result.item?.plan.obligations?.length ?? 0) + 2);
       const obligations = [...(result.plan.obligations ?? []), ...(result.item?.plan.obligations ?? [])];
-      for (const member of result.members ?? []) {c.step(node, (member.plan.obligations?.length ?? 0) + 1); obligations.push(...(member.plan.obligations ?? []));}
+      for (const member of result.members ?? []) {
+        qualifyNotationConstituent(member, node);
+        c.step(node, (member.plan.obligations?.length ?? 0) + 1); obligations.push(...(member.plan.obligations ?? []));
+      }
       result = withDependencies(frame.reference,{...result, plan: {...result.plan, obligations}},node);
       descriptions.set(key, result); active.delete(key); stack.pop();
     }

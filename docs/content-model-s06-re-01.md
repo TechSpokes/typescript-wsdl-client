@@ -4523,6 +4523,459 @@ Required empty choices remain intact; canonical/raw records and the declared vie
 Direct absent or zero-maximum component admission remains a separate construction check.
 This is a narrow correction under the existing dated comparison contract, not a general confluence/fixed-point theorem or a change to scalar P1/F2.
 
+#### Exact numerical and finite-syntax local decisions
+
+These results decide explicitly supplied local sectors and give constructive encoded witness bounds.
+They preserve all seven accepted packages, B-v1, P1/F2 and exact current-H versus immutable-Γ duties.
+They supply neither a finite nominal/type/owner basis nor complete successful assessment forests.
+An exhausted engineering budget still yields resource-limit, never mathematical nonexistence.
+
+##### Incidences, dead syntax and inner exact counts
+
+Use the accepted untrimmed reachable-prefix semantics: different AST child incidences have distinct tags,
+while repeated activations of one incidence reuse its tag. Each tag has its exact fixed matching set.
+No declaration-name/profile quotient identifies two positions, and no fact changes assessment context.
+The grammar here is sequence, choice and counted repetition; all/interleaving is a separate case.
+
+For fixed labels, lowering one positive exact count n to m, with `1<=m<=n`, preserves UPA in every
+unchanged surrounding sequence/choice/count expression, including productive repeats and dead branches.
+This closes the earlier local inner-count question; it does not preserve arbitrary arithmetic premises.
+The productive step follows the inspected [Groz–Maneth algorithm](https://doi.org/10.1016/j.jcss.2017.05.013),
+section 3.4: exact lowering preserves returned flexibility values and can only remove flexible loop edges.
+
+The imported predicate is global marked-word one-unambiguity, specified in Definition 2.1 and Theorem 6.6
+of [Kilpeläinen–Tuhkanen's author preprint](https://www.cs.uku.fi/tutkimus/publications/reports/A-2006-2.pdf),
+printed pages 4 and 20; Groz–Maneth Proposition 3.12 explicitly imports that result.
+On productive syntax, every reachable consuming prefix completes; the earliest different tags of two
+histories therefore give the same marked prefix and conflicting next positions in that definition.
+Conversely such marked accepted words supply the two native histories. Their counter valuations need not agree.
+
+The later paper's page-13 wording about one configuration is not used as an equivalent definition.
+Its own Example 3.13, `(b? a2..3)3..3 b`, has a conflict after six a tokens across histories with
+outer counters two and three; the power-two contrast passes. The semantic theorem accounts for those histories.
+The primary semantic definition and characterization were inspected; Appendix C's full proof was not rederived.
+
+For a productive root containing a maximal dead subtree H, first replace a zero-minimum activation of
+a dead body by epsilon-or-body. H is then an alternative of a productive choice with a completing sibling.
+Replace H by a choice of its ORIGINAL first positions p, each followed by its own private delimiter.
+No old position is copied. Every completed p/delimiter block before a first conflict can be replaced,
+in each run separately, by the same completing sibling word, preserving that run's outside counters.
+Thus original UPA implies summary UPA; summary UPA plus intrinsic UPA of every hole implies original UPA.
+
+Induct first on dead roots and then productive roots with the same dead-node count.
+A dead left sequence factor prevents reaching its right factor; a positive repetition of a dead body
+cannot return from its first activation. Productive summaries use the primary exact-lowering theorem.
+Appending one fresh labelled probe gives the required boundary-label inclusion for the next induction step.
+Fixed set labels reduce by choosing one representative per tag at the first conflict, without clones.
+The argument proves a fixed-label attribution theorem, not source/property or complete-frontier lifting.
+
+##### A finite private derived-side numeric alphabet
+
+Supply finitely many positive restriction proofs with FIXED base operands and qualified non-count gates.
+Only private first-born DERIVED-side occurrence fields may change; original/parent/native/source/template
+counts and raw extension prefixes remain exact. No varying payload is also used as another varying base,
+and no unlisted count equality, property selector or upper constraint on a derived minimum is imposed.
+Every count-affected enclosing incidence is in the stated nonall grammar; legal all zero/one ranges stay fixed.
+
+Let C>=2 contain EVERY evaluated fixed lower threshold actually compared: base occurrence minima,
+fixed formal-ETR minima, selected wildcard lower bounds and MapAndSum root bounds, including normalized values.
+For an old positive-maximum interval, specialize minimum zero to0..1, unit1..1 to itself, and otherwise
+choose exact k=max(2,old.min) inside the old interval. Complete and prefix runs only disappear.
+MinimumZERO, positive maximum and unit/nonunit normalization categories remain exact.
+
+Then lower every private exact k>C to exact C by the fixed-label theorem above.
+The saturation tau(x)=min(C,x) respects nonnegative sum, product, minimum and maximum,
+including formal0*infinity=0. Every old fixed lower comparison with threshold<=C remains true;
+maxima only decrease. Formal minimumZERO stays exact, separately from nullability or language emptiness.
+The resulting alphabet is0..1,1..1 and d..d for2<=d<=C, with input-bounded decimal digits.
+
+The old positive mapping proof replays, including selected wildcard child-minimum0 and MapAndSum arity.
+This preserves an EXISTENTIAL relation proof, not the operational search's exact query footprint or receipt.
+A newly range-eligible alternative can expose another fixed scalar/type query or publish a new dependency.
+All such qualifications/frontier duties remain explicit; old success does not qualify every unused alternative.
+Shared physical counts use finitely many incidence applications as a mathematical proof of the coherent final AST.
+
+##### Fixed-prefix and isolated-root numeric bounds
+
+For unit concatenation P;S let X(P) mean some P run completes, F(S) its initial label union,
+and D(P) the continuing label union at a prefix that also admits P exit. Keep dead prefixes.
+If X(P) is false, concatenation UPA equals P UPA; otherwise it is exactly
+`UPA(P) and UPA(S) and D(P) intersect F(S)=empty`.
+At the earliest differing tags, different consuming entry times into S already create that boundary conflict.
+S's separately required own-root checks remain mandatory even when P cannot exit.
+
+For fixed body G with no consuming continuation, root minimum only gates final acceptance;
+intrinsic UPA is minimum-independent and downward monotone in positive root maximum.
+Let M count exact individual configurations of G at root0..unbounded, including inactive flags
+and nested unbounded counters saturated at their fixed minima. A two-run epsilon/synchronized-token
+product has at most M*M vertices. A simple conflict path gives a witness with maximum at most M*M+1.
+Therefore finitely many maxima decide the exact standalone threshold; test minimum zero before transfer.
+This does not lower an inner range with a continuation or authorize an infinite runtime budget.
+
+A supplied finite body/template library with one first-born root interval has finitely many normalization
+and mapping cases. Fixed-arity arithmetic, formal ETR and zero/unit/infinity/all-placement cases compile
+to Boolean-linear integer constraints. [Cooper's Presburger procedure](https://www21.in.tum.de/teaching/logik/SS16/Exercises/Cooper.pdf)
+decides the formula; model enumeration after SAT terminates and constructs a numeric/digit bound.
+An inherited interval is fixed. A supplied complete forest shape still needs model-specific frontier coverage.
+
+##### Arbitrary-width declared flat-leaf MapAndSum
+
+Fix exact raw U_i=sequence1..1[P_i,S], finite contextual nominal/scalar/source censuses, and fixed B_i
+whose normalized roots are choices of ELEMENT alternatives. Assume normalized U_i is unit sequence
+of at least two direct positions; retained prefix contributions and their positive matches are fixed.
+S is a DECLARED flat word of finite permitted leaf descriptors or exact fixed identity blocks.
+Every block must normalize to exactly ONE ELEMENT in every required restriction context; a raw global-head leaf must remain an element there.
+Every possible non-count query is independently Q-free qualified, not supplied as a Q_f oracle.
+
+The empty word uses an empty unit sequence; one block is used DIRECTLY; two or more use a unit sequence.
+A fresh singleton wrapper could overwrite an existing block's originalParticle identity during collapse.
+Fixed identity blocks retain their entire source/count behavior. No arbitrary raw-to-flat projection is inferred.
+Every global/type/affiliate record remains, even when S stops using its particle occurrences.
+Faithful finite-index fresh-ID allocation/materialization is a separate representation premise.
+
+For a marked factor E record N=nullability, X=some completion, F=initial matching union,
+D=completion-boundary matching union and V=UPA, over the exact finite token quotient.
+For disjoint-tag unit concatenation EF, V=V(E) and(not X(E) or(V(F) and D(E) disjoint F(F))).
+Also N=N(E)and N(F), X=X(E)and X(F), and F=F(E)union(if N(E)then F(F)).
+When V is true, D is empty unless both factors complete; otherwise it is
+`D(F) union(if N(F) then D(E) else empty)`.
+Different consuming entry times would already violate V; the remaining boundary witnesses compose exactly.
+
+A single terminal with fixed label set A and interval m..n of positive maximum has F=A,
+N=(m=0), X=(m=0 or A nonempty), V=true, and D=A iff m<n, otherwise empty.
+Thus finitely many descriptors and zero/positive/exact/flexible/finite/infinite range modes determine its state.
+Accumulate the exact concatenation and EDC states for BOTH S and P_i;S, including separately checked roots.
+EDC keeps exact named-type identities and unnamed-incidence multiplicity0/1/>1, not anonymous aliases.
+
+For word length q and fixed prefix direct contribution p_i, actual MapAndSum tests
+`[p_i+q,p_i+q] within B_i.root.occurs`, with p_i+q>=2; it does NOT sum leaf ranges.
+Each descriptor has a selected positive match to a B_i leaf; intersect those fixed leaf ranges to l..u.
+For t occurrences, aggregate minima M and finite maxima R have exact linear realizability constraints:
+
+| Mode | Aggregate conditions for t>0 |
+| --- | --- |
+| Positive exact | M=R, M>=t*max(1,l), M<=t*u when u finite |
+| Positive flexible finite | M>=t*max(1,l), R>=M+t, R<=t*u when u finite |
+| Zero-min finite | l=0, M=0, R>=t, R<=t*u when u finite |
+| Infinite maximum | u infinite; M=0 or M>=t*max(1,l), according to mode |
+
+The t=0 case has zero aggregates. All products have fixed constant factors.
+Distribute M into the allowed minima, start flexible maxima at minimum+1, and distribute remaining excess
+within capacities. This reconstructs individual intervals for EVERY aggregate model and preserves its mode.
+Fixed blocks add constant-weight ETR; infinity flags and formal minimumZERO are finite/linear cases.
+
+Accepted word multiplicities have an exact Presburger encoding: choose positive transition support and
+accepting end, impose flow balances and connected nonzero undirected support containing the start.
+Conversely the resulting directed multigraph has an Euler trail; reading it reconstructs an accepted word.
+Flow balance alone is insufficient. Conjoin the range/arity/ETR constraints and apply Presburger decision.
+Model enumeration, Euler reconstruction, interval distribution and the identity-safe assembler give
+a total computable ABSTRACT encoded bound and a complete negative ONLY for this stipulated sector.
+
+##### Exact finite-tree UPA recognition beyond flat words
+
+Fix a finite positive-minimum FINITE-upper interval alphabet, with optional0..1 separate and unit omitted.
+The primary productive grammar's empty/epsilon-only and normalization conditions remain explicit.
+Neither width nor numeric-iterator nesting is bounded. Original position equality remains node equality.
+Algorithm3 returns1 at letters, infinity at optional, max at union and one child/constant at concatenation;
+only an iterator multiplies the returned value by its fixed ratio n/m>=1.
+
+Collapse every returned value>=2, including infinity, to TOP. Let R be the finite ratios>1.
+Choose B with(min R)^B>=2; products below2 have fewer than B nonneutral factors and form a finite exact set.
+Ratio1 is neutral; TOP is a congruence for all returned-value operations.
+For finite x=N*n>=2, returned1 never passes `g>=x/(x-1)`, TOP always passes, and1<g<2 passes iff
+`x>=ceil(g/(g-1))`. Saturate finite N at the maximum of these finitely many integer thresholds and2.
+Multiplication/reset and EVERY mark comparison are exact in both directions; large finite N is not infinity.
+For the clamped exact+optional alphabet the returned states are simply1/TOP and the saturation threshold is2.
+
+These finite annotations have unique bottom-up/top-down solutions. Genuine-position First/Last conditions,
+concatenation follow generators and flex-enabled loop generators are finite-tree MSO formulas.
+Both primary follow relations are supplied; the ACTUAL Proposition3.12 criterion yields the exact bad sentence.
+MSO bit marking, projection, complement/determinization and grammar intersection construct a finite automaton.
+No finite-profile equality substitutes for x=y, and generic overlapping attribution aliases are not admitted.
+Finite set labels refine into disjoint token cells; one old position has at most one refinement per token.
+
+For dead syntax use the nonduplicating hole summary above, retaining original first positions once.
+Its private delimiter equality pulls back to equality of the original source node, not infinite data labels.
+Per-root annotation sets are ordinary nested MSO quantifiers, not a binary root-position relation.
+Require intrinsic V at proper hole descendants; dead sequence/choice/repetition equations and fresh boundary
+probes determine V uniquely by subtree induction. Whole-epsilon summaries/probes are handled directly;
+redundant nullable optionals are removed to meet primary R3. The summary adds no numeric alphabet labels.
+Thus the exact finite-tree filter also covers dead prefixes and separately required subtree roots.
+
+Intersect any SUPPLIED effective grammar with this filter. Reachable-state saturation decides emptiness.
+A smallest binary witness cannot repeat a run state along a root-to-leaf path; for Q states,
+`2^(Q+1)-1` nodes is a safe loose bound. Finite labels give an encoded bound under faithful materialization.
+This is an effective mathematical compiler, not an implemented literal formula or a covering B grammar.
+Unbounded-upper operators, zero-min numeric upper>=2 operators without a separate reduction, all/interleaving,
+arbitrary protected macros under variable repeats and raw/source/identity reconstruction remain outside it.
+
+##### Stipulated finite-census raw-content decision
+
+This result is conditional on the following supplied sector; it is not a covering B construction family.
+
+Fix finitely many exact contexts H_i, inherited raw prefixes P_i and normalized restriction bases B_i.
+Supply one finite nominal/scalar/source inventory, exact contextual substitution censuses, and finite
+allowed declaration/LEXICAL wildcard descriptors with faithful raw source/owner construction templates.
+All possible non-count descriptor/base/type/scalar/source queries have independently checkable Q-free
+answers invariant under the private body; no recursive Q_f validity answer is supplied as an oracle.
+An unknown payload-reading type/property query is outside this sector, not a negative result.
+
+The variable S is any finite NEW private sequence/choice/element/wildcard TREE, of arbitrary depth/width,
+using that finite library. No private group references, all/interleaving, shared private particle identities
+or protected infinite-count macros occur inside S. Every H_i has raw U_i=sequence1..1[P_i,S], with no
+enclosing repeat or continuation. P_i remains EXACT, including sharing, source origins and protected
+infinite counts; its complete fixed interface is used at the final unit seam, not as an iteration congruence.
+Private IDs avoid all protected canonical/raw/view/source-private identities and ordering keys.
+
+Decide SOME S satisfying raw exact-P extension, every new particle's own source/construction/declared
+legality, S/U_i UPA/EDC/placement and all U_i-to-fixed-B_i particle restrictions. Additional formal tests
+are only clamp-preserved fixed lower bounds on derived minima, fixed upper bounds on derived maxima
+and prescribed formal minimumZERO. Private fields are not another varying BASE or retained property
+selector. Extra ETR equalities, maximum-lower bounds and maximum=infinity are excluded unless invariant.
+All nominal/type/global/affiliate records stay present; omitting old particle scaffolds requires a full
+identity.owner/source/reference privacy audit. Faithful finite-index materialization is an explicit premise.
+
+The accepted derived-side clamp gives the finite private interval alphabet0..1,1..1,d..d with2<=d<=C.
+C includes every evaluated fixed lower threshold. It preserves an existential positive relation proof,
+UPA/EDC/placement and formal minimumZERO under these guards. A finite-alphabet candidate already belongs
+to the old domain, so existence is equivalent in both directions. This does not preserve arbitrary
+operational receipts: the finite qualified gate table must cover newly exposed alternatives too.
+
+Declared/raw UPA is recognized by the preceding exact finite-tree filter, conjoining V at EVERY new
+particle root, including roots unreachable behind a dead prefix. Whole P_i;S uses fixed P_i's exact
+Exit/boundary interface and S's First/UPA; source/EDC/all-placement use the faithful DECLARED interpretation.
+Restriction-normalized virtual member leaves are not re-expanded or used to recover erased raw roles.
+The finite template/owner checks and permitted formal thresholds are separate regular filters.
+
+For ONE restriction root query, assign finite Boolean R_b states for its fixed base subtrees.
+Element-to-composite same-node calls are computed in base-subtree postorder. Group mappings use finite
+base-index or used-subset states; MapAndSum uses DIRECT arity; selected wildcard recursion uses child min0.
+Saturated formal arithmetic plus an infinity bit evaluates every fixed comparison exactly.
+One implicit-block permutation is shared across that query's entire R_b vector and repeated key uses.
+Separate root calls project INDEPENDENT assignments before intersection; one call can choose the opposite
+order to another. This constructs an exact finite hedge automaton A for the normalized relation.
+
+The raw normalizer has a constructive regular preimage for A. Determinize A and take the product of its
+finite horizontal transition monoids. A raw subtree stores normalized absence/presence, finite root
+descriptor, the monoid of its normalized CHILD WORD and child-count class0/1/>1.
+The root descriptor preserves exact protected originalParticle colors, source/ur flags and finite selectors;
+generic private colors never identify two AST incidences or ordering keys.
+
+Flattening a same-kind unit child emits its child-word monoid; retaining it emits its single root state.
+Concatenate those monoids. Singleton collapse appears to need a recursively unbounded sole-grandchild
+summary, but the actual normal form prevents it: a normalized UNIT sequence/choice cannot have ONE child,
+except the early-return implicit global-expansion choice, whose sole child is a finite-census virtual ELEMENT.
+Thus a flattened singleton uses that finite exception; a nonflattened singleton already supplies its finite
+root/inner-word summary. Nonunit singleton groups never flatten, so no recursive summary stack is needed.
+
+The nonall singleton rule keeps the child's interval, with no new range product. Its source, ur flag and
+order blocks also come from the CHILD; only projection id/originalParticle take the parent's override.
+Origin lists concatenate parent and child and are regenerated authentically, not erased or merged as aliases.
+Global expansion uses its exact finite census; required/optional empty cases follow the corrected normalizer.
+If a complete root normalizes absent, apply the ACTUAL final fallback: sequence1..1[] sourced at content.type,
+with undefined originalParticle. It remains a real relation operand when both P_i and S disappear.
+
+These finite bottom-up equations compute exactly A's state on the normalized output, in both directions.
+Private global-reference nodes choose their finite query-local permutations once and retain them through
+flattening; protected keys in P_i/B_i have one finite coherent enumeration per root call.
+P_i is precomputed as its EXACT root/child-word summary, with no anonymous copying or opaque identity fold.
+Finite products handle contexts with the same S fields but their separate exact census/qualification tables.
+
+Intersect the finite raw grammar, declared/source/own-root filters and these normalized preimages.
+Every old successful body yields an accepted tree after clamp; every accepted raw tree decodes to SOME
+body satisfying ALL stipulated local predicates, which can be rechecked by the existing semantic owners.
+First-child/next-sibling encoding gives a finite binary automaton; reachability decides emptiness.
+With Q states a smallest witness has at most2^(Q+1)-1 nodes. Finite labels/count digits and the faithful
+finite-index source builder give a total computable encoded bound, not a scopedId/hash injectivity theorem.
+
+The implementation target is this finite descriptor/gate input, automaton construction, witness decoder and
+existing-owner recheck. No actual general fresh nominal/type/owner/wildcard basis is supplied here.
+Nor does local SAT preserve descendant consumers, newly published Q/current-H duties, inherited fresh
+roots or complete Γ support. Authentic simultaneous founded-forest reconstruction remains the SUCCESS gate.
+
+##### Owners, next implementation and successful-forest boundary
+
+| Result | Existing semantic owner retained |
+| --- | --- |
+| Incidence tags, untrimmed UPA | [particleAttribution.ts](../src/compiler/particleAttribution.ts) |
+| Zero/unit/implicit-order normalization | [particleSemanticView.ts](../src/compiler/particleSemanticView.ts) |
+| Mapping, MapAndSum, identity shortcuts | [particleRestriction.ts](../src/compiler/particleRestriction.ts) |
+| Selected child-minimum0 wildcard recursion | [particleWildcardRelation.ts](../src/compiler/particleWildcardRelation.ts) |
+| Formal ETR/minimumZERO | [occurrenceAnalysis.ts](../src/compiler/occurrenceAnalysis.ts) |
+| Exact declaration/type incidence | [particleDeclarationConsistency.ts](../src/compiler/particleDeclarationConsistency.ts) |
+
+The immediate implementation target is the stipulated flat-word compiler: enumerate qualified descriptor/modes,
+build the finite UPA/EDC transition system, emit exact connected-flow/aggregate arithmetic constraints,
+reconstruct a satisfying suffix, and recheck it with the existing owners and identity-safe assembler.
+The general tree compiler next needs an exact transcription of the primary follow distinction before coding.
+The [author manuscript](https://www.pure.ed.ac.uk/ws/portalfiles/portal/32885322/jcss2017_3.pdf), pages7,11,21–22,
+was inspected through indexed text; its follow typography is lost there and screenshots returned placeholders.
+No visual transcription or local PDF-byte pin is claimed. Both relations are MSO, so this read limit does not
+invalidate the mathematical definability proof, but it must be resolved for a literal formula implementation.
+
+The classical [Thatcher–Wright theorem](https://doi.org/10.1007/BF01691346) supplies the finite-tree MSO bridge;
+the explicit finite-bit compilation above states its use. The original1968 full proof was not reread.
+Presburger source inspection covered Cooper's introduction and elimination construction, not a new solver run.
+Bounded owner/algebra controls support their correspondence; no finite test establishes the general theorem.
+
+Lifting to SUCCESS still requires SOME covering finite nominal/type/owner/source basis and raw reconstruction,
+all newly consumed current-H/Γ qualifications, authentic complete frontier/child composition, inherited fresh
+roots, and every actual Γ duty. Independent valid support pools cannot simply be united or identities merged.
+The accepted local decisions do not supply b(Γ,P,target), unrestricted negatives, full termination or activation.
+
+#### Private recursive-copy cones and retained observed representatives
+
+The following reconstruction removes a private family of anonymous complex copies without
+assuming an acyclic declared-type graph. It preserves every retained particle identity and
+content selector, including global-head `(particle,head)` coherent-order keys. It does not
+identify copied particles with original particles and does not revive the refuted universal fold.
+
+##### Exact premises
+
+Fix the immutable original graph Γ, a finite immutable parent P, and a complete founded finite
+forest W. Let O contain only components born in W's first candidate, disjoint from Γ and P.
+Its type records are ordinary scoped primitive extensions copied from untouched anonymous Γ
+types q, with exact original named/builtin immediate bases, methods, namespace and flags.
+Their content is empty or element-only. Simple-base/simple/mixed content, current endpoints,
+inherited-P templates, copied scalar definitions, values, identity constraints and generated
+scalar/source-binding roles are outside this proposition. Particle containment remains finite
+and acyclic; recursive declared-type/property covers and original global heads are allowed.
+
+Each q has genuine full current-H construction support in every retained W context, supplied
+independently by a persistent retained source/base/particle closure. Property equality and owner
+availability do not supply that support. Its attributes, scalar prerequisites and generated
+own-Q duties must already be covered in that context; Γ validity is not imported as H validity.
+
+The only permitted stored incoming selectors to O are classified declared-type slots B on
+retained root-born local declarations. Redirect each such t selector to its exact original q,
+coherently in canonical and effective records. Every other retained identity, owner, source
+binding, raw content selector, particle incidence and evidence parameter stays exact.
+
+After that redirection, privacy must hold throughout W, including later births: no retained
+reference, owner chain, derived element/attribute scope walk, typed scalar/source operand,
+opaque authenticated selector or active key reaches O. Every historical, current and future
+original-retirement intermediate/evidence role is excluded. An ordinary reference census or
+the fact that t differs from one current intermediate E does not establish this privacy.
+
+The complete boundary-consumer classification permits the specified positive copy/original
+property pairs, closed by q identity inside their surrounding property cover, including checked
+forced AU declaration/type/scope pairs. Restriction uses affected by B must be exact identity
+uses changed on both sides, or a base-side local entry compared with a fixed original ordinary
+complex derived operand, where erased t is distinct from that query's current E. The reviewed
+original-to-fresh necessity lemma excludes a positive old NTO call in the latter case.
+Unhandled fresh-derived, type-base, member/head, scalar/simple-union or property consumers
+are excluded. Newly attempted query observations must remain inside unchanged supported
+particle/declaration closures plus the independently full q closure; identical backtracking
+traces are not promised.
+
+##### Reconstruction and complete-forest proof
+
+Omit O before the first candidate is issued and install the redirected B slots at first birth.
+Privacy leaves no missing retained reference or owner. All retained IDs and owners remain exact,
+so this operation allocates no new scoped identity and does not reparent inherited components.
+Each surviving fresh root, including unused roots and later births, remains mandatory in every
+descendant where it was inherited. This is never deletion from an already issued parent.
+
+Retained particle syntax, occurrences, normalization shapes, MapAndSum arities, wildcard data
+and coherent-order keys are exact. Replay each selected positive restriction derivation with
+its same coherent assignment: identity cases remain exact, and no required positive leaf can
+be the excluded original-derived NTO case. Private O keys disappear with their omitted roots;
+they are not merged with q's keys. No global declaration type or affiliation changes, so every
+effective member census remains exact. UPA labels and EDC QName incidences and named/anonymous
+status remain exact. Boundary names, flags and scopes are fixed; excluded scalar roles are
+not inferred harmless from this nominal argument.
+
+The changed property pairs close by q identity within the specified cover. Full q support
+already covers the new declared-type dependencies and any additional supported observations.
+All new local predicates are nevertheless rechecked. No old receipt is relabelled as a receipt
+for the reconstructed context, and Γ actual duties retain their separate proofs in Γ.
+
+O types are primitive, hence none is an own-Q target. No retained intermediate or ancestor
+selects O. Surviving methods, base paths and generated-target classifications remain exact,
+and q introduces no uncovered duty. Reissue the same finite founded evidence-node structure,
+with the corresponding coherent endpoint replacements and every surviving inherited fresh
+root. The result is a complete finite forest. This private role needs zero fresh copy support,
+regardless of the old copy-cover size or cycle length.
+
+##### Retaining protected observed roles while cutting recursive tails
+
+Let R be a supplied finite set of observed primitive copies. Keep every R identity, method,
+base, flag, raw root and particle/declaration identity exact, even when original-target 5.4
+queries consume those particles. Apply the preceding erasure only below boundary type slots
+into private copies outside R. Keep all R-to-R selectors, including current-E self selectors
+and cycles: an original endpoint can legitimately have a positive restriction-only path to E.
+Every erased outside-R copy must still satisfy the complete forest-wide privacy premises.
+
+If r is the supplied number of R copies, this leaves at most r semantic copy types and at most
+r times the maximum finite Γ-template particle incidence size, apart from fixed P/source sharing
+and owner support. This removes dependence on recursive cover depth. It derives neither r nor
+owner support from Γ/P. Bounded keys per query and finitely many original retirements per branch
+do not alone bound all protected roles across contexts or reconstruct arbitrary fresh consumers.
+
+##### Complete discriminators and remaining gates
+
+The [retained-role controls](../test/research/re01/private-observed-copy-erasure.test.ts) reproduce the observed case and its owner-only privacy negative.
+The [independent source pin](../test/conformance/reference/re01-local-normalization-and-folding.test.ts) qualifies the recursive source separately from hypothetical forest truth.
+
+The theorem permits an empty observed set R. The committed controls exercise the retained-role case,
+including a recursive original q and a three-copy cycle containing global H with actual member M.
+
+The retained-role control uses the actual original D intermediate t0 in 5.4. It retains t0 and
+its four particle records, redirects only its private next-type boundary to q, and erases 12
+tail records. Complete two-node forests check all 26 actual components and surviving inherited
+fresh roots; sizes 51/52 become 39/40, with exact D/t0 keys and full q support at both nodes.
+Its privacy-negative companion first proves a complete old forest with an extra retained
+particle whose term selects only original H but whose owner is erased t1. The owner edge makes
+erasure fail the privacy audit despite no ordinary semantic reference into the removed cone.
+
+These controls support the stated conditional reconstruction. No general privacy extractor,
+Γ/P-derived observed-role or owner bound, universal successful basis, complete negative result
+or termination theorem follows from it.
+
+#### Qualify NOTATION at datatype constituent formation
+
+Direct builtin NOTATION used as a list item or union member previously escaped the declared-datatype guard.
+That guard inspected only the selected plan's top atomic primitive; a composite plan could construct, describe and assess successfully even when one of its constituent uses was forbidden.
+The independently reproduced pre-repair complete one-node forest checked all six actual components, including both invalid original constructors; removing their attribute consumers still checked all four remaining actual components.
+
+##### Dated rule and existing owner contract
+
+The dated [Datatypes NOTATION constraint](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#enumeration-required-notation) states: “It is an error for NOTATION to be used directly in a schema. Only datatypes that are derived from NOTATION by specifying a value for enumeration can be used in a schema.”
+The pinned primary XML has this mandatory clause at lines 4798–4807, following its current-schema notation-QName universe at lines 4784–4796.
+Its SHA256 is `430f010df8ed077a4ed11d9d5812ea5e5d62ba67e715f1bbeeaa8ee1765d84c7`.
+
+An item/member selecting bare NOTATION is a direct datatype use, including in an unused constructor.
+The separate attribute/target-namespace compatibility advice is not the premise for this correction.
+The existing [schema-only DT owner contract](content-model-s06-dt-01.md#shared-source-staging-in-architecture-recovery) already requires usable declared datatypes while permitting private primitive assessment to construct enumeration operands.
+This repairs an implementation omission under that contract; it introduces no new B-v1 exclusion or P1/F2 policy.
+
+##### Constructor boundary and preserved primitive roles
+
+The [scalar formation owner](../src/compiler/scalarSchemaAssessment.ts) qualifies each formed list item's and union member's immediate description before publishing or caching the composite.
+An atomic NOTATION constituent needs an effective enumeration layer; bottom-up formation applies the same rule to nested source, raw and original-generated composite descriptions.
+A later outer enumeration cannot legalize the already invalid underlying constructor.
+
+Builtin NOTATION remains available as an atomic restriction base and private typed enumeration operand.
+The check runs on the constituent-use edge even when another valid enum restriction has already cached the primitive description in the same H.
+Original/active facet operand ownership, exact generated-slot identity, ordered member selection, formation dependencies and shared request accounting retain their existing owners.
+
+##### Independent source and complete evidence controls
+
+The [research controls](../test/research/re01/notation-constituent-use.test.ts) reject bare source item/member uses, unused actual constructors, nested offending uses and an outer enum that selects only a different branch.
+Fresh raw list and union constructors over a fully qualified Γ reject in their own H after same-context private NOTATION cache priming.
+Invalid original-generated list/union properties remain rejected in their exact original context when accessed through H.
+
+Positive controls retain atomic Q restricted from NOTATION with enum N, qualified list/ordered-union nesting and private primitive enum construction.
+Their complete one-node forests check every actual member and generated scalar slot, and the fresh raw positive checks every added composite root.
+Existing direct-declared and missing-notation negatives remain separate.
+
+The [reference controls](../test/conformance/reference/re01-notation-constituent-use.test.ts) pin both explicit source constructor edges and the qualified source shape.
+Pinned `libxml2-wasm 0.7.2 / libxml2 2.15.1` accepts both the qualified and bare source fixtures.
+The bare-source acceptance is recorded as a contrary external observation; it does not override the independently reviewed dated use constraint or certify hypothetical RE01 evidence.
+
+This correction does not establish NOTATION empty-template normalization, namespace-map erasure, a universal representation theorem or a local encoded-size bound.
+Full coverage, complete negatives, termination, dated correspondence and #234/#232 acceptance remain open.
+
 #### External methods and applicability
 
 The inspected precedents show how others handle recursive definitions, but none supplies an automatic dated-XSD truth rule.

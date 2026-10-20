@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "e2d7e6a46e08226efe926791ae2a893c16522889990adc7cc1b66b5d2b7164ad",
+          "sha256": "ed22b61001cb2ca5e6ae82185ce22207ae0c1691cee3f8a24129075e2b82a5d1",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "22d7f829684ea46e86ec08593802b10f1b4408e05230e5c891464d38bcfe4229"
+          "sha256": "211ff49ce8f6f27cde684af787dc6a65c741d5c5b1ed0fd0af61a6ab97d5235d"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -2571,7 +2571,37 @@
         {
           "path": "test/conformance/reference/re01-local-normalization-and-folding.test.ts",
           "role": "reference",
-          "sha256": "1c861e245ad4f8f6d85a7ea40138039956b2b652bed12c20ecc2a82ea067b564"
+          "sha256": "68ae0b9aa71eeda5340b01904a1c141c467cb60521f9520b21258439ac7fb979"
+        },
+        {
+          "path": "test/research/re01/notation-constituent-use.test.ts",
+          "role": "prototype",
+          "sha256": "a2561de462ce85dad4c72e3f03125d9958796d6abdcc76042d1916d26a489e44"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-constituent-use.xsd",
+          "role": "fixture",
+          "sha256": "912f589e8cd1096e74cd874828ad6c239e63f5d0f36076b926bf7e4aaff6aecf"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/notation-constituent-direct-use.xsd",
+          "role": "fixture",
+          "sha256": "fb432201250398f05ce4804c44127025fd3637f8dc82c76b4afd55c372a572be"
+        },
+        {
+          "path": "test/conformance/reference/re01-notation-constituent-use.test.ts",
+          "role": "reference",
+          "sha256": "593d839a43d19e6361fc6f1c2c7b9c9fc320a90a8f7330ce2a31c5fff0d2e4a0"
+        },
+        {
+          "path": "test/research/re01/private-observed-copy-erasure.test.ts",
+          "role": "prototype",
+          "sha256": "6ba51a620fa477357d580845cb3baf78b3a8f7141701833ffe161d0e17e5f3ee"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-observed-copy-erasure.xsd",
+          "role": "fixture",
+          "sha256": "6805a74a84d7746ac23a7eaabd88515a5f9f2fc3ecbee5eae346cc3ecea1ec37"
         }
       ]
     },
