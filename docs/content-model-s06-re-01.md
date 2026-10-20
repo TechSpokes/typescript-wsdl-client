@@ -5543,6 +5543,28 @@ General successful-construction coverage, universal executable evidence adequacy
 The scalar support-word realization and finite nominal/global/helper inventory must coexist with this reconstruction before a general decision procedure can rely on them.
 B-v1, all seven recovery contracts, P1/F2, original contexts and #179/#153/#184 gates remain unchanged.
 
+### Assessed fixed values at the particle boundary
+
+This investigation exposed a concrete caller defect independent of the helper bound.
+The dated Structures element value-property mapping uses the declared simple type or simple content type, and otherwise builtin string; NameAndTypeOK compares those assessed values.
+The declaration owner already supplies that assessment, including its exact declared-TYPE dependencies and mixed-emptiable prerequisite.
+
+The [particle restriction owner](../src/compiler/particleRestriction.ts) formerly sent the declared complex TYPE directly to the scalar-only comparison.
+Two legal mixed fixed declarations therefore returned unresolved for both equal and unequal values; builtin anyType could return invalid-schema.
+The caller now obtains both checked declaration constraints and compares their assessed type references and lexical contexts.
+Both declaration dependency inventories and all declaration/comparison scalar formation gates remain explicit.
+Direct nonsimple-content complex TYPE requests to the scalar owner retain their existing refusal.
+
+The relation's component-validity and particle-local-legality prerequisites remain unchanged.
+Full consumed declaration construction still checks its exact active TYPE, formal mixed emptiability and scalar formation in that context; a string fallback receipt proves none of those duties by itself.
+No Gamma receipt moves into H.
+
+The [independent particle controls](../test/unit/particle-restriction-independent.test.ts) add eleven cases using a [qualified source fixture](../test/conformance/fixtures/xsd/recovery/mixed-fixed-particle-independent.xsd).
+Equal/unequal mixed and anyType values, integer aliases, missing fixed fields, both current-H complex dependencies and pending raw simple-content formation distinguish the repair.
+A complete zero-node primitive forest checks all 47 actual records, including a genuine restriction with two distinct local declarations.
+A legal nonempty mixed TYPE still makes its fixed declaration fail full construction even though the local value comparison is conditionally true.
+This preserves the distinction between local comparison and complete legality; it supplies no general negative or evidence-bound theorem.
+
 ## Pure input and output contract
 
 The proposed production input is immutable accepted analysis plus a specific extension type and its original ancestor chain. It retains original particles/group uses, local and group-use bounds, original attribute uses/declarations, wildcard namespace/process contexts, scalar and element fixed/default operands, `final`/`block`, content mode and all source/QName/chameleon context. An effective interval or flattened attribute object is insufficient.

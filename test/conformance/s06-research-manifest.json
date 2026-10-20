@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "f42eae609e3870c04de6a5b21521f31fa4b5f7ecf03ce1e352154280af2e5b33",
+          "sha256": "106e635df7d98b264a5ddae5c773658754b19d6422e86b30b4145da227eb699f",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1111,7 +1111,7 @@
         {
           "path": "src/compiler/particleRestriction.ts",
           "role": "semantic-source",
-          "sha256": "3aac677c8ebebb8864735368fb7375c32e885d8493e5aa31250077d3bb8bf7cf"
+          "sha256": "5f37c37882c524795252d10c899f61f9c692676d121982e6d8428d04befbc91c"
         },
         {
           "path": "src/compiler/particleSemanticView.ts",
@@ -1421,7 +1421,7 @@
         {
           "path": "test/unit/particle-restriction-independent.test.ts",
           "role": "expectations",
-          "sha256": "69a5e11cc12f579c873f16854b1cb2e927e60a4e4f6e631884f20173c2f52da1"
+          "sha256": "b3e13a8b283da7db6ee20589b54a60df3cdc9334eac6cb2dffcef462c9903e8f"
         },
         {
           "path": "test/unit/particle-upa-independent.test.ts",
@@ -2637,6 +2637,11 @@
           "path": "test/conformance/fixtures/xsd/recovery/restriction-nontransitivity.xsd",
           "role": "fixture",
           "sha256": "7dee6889d7b84e37d2cc88bef6faba866b6321884bb8d9a93fd8458fd29fbebc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/mixed-fixed-particle-independent.xsd",
+          "role": "fixture",
+          "sha256": "03972088e96ac41fabe7d68f795c3c881eb75c2347c0ae722cd3a28e9061a727"
         }
       ]
     },
