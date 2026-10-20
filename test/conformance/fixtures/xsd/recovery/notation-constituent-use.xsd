@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:research:notation-constituent" targetNamespace="urn:research:notation-constituent">
+  <xs:notation name="N" public="notation example"/>
+  <xs:simpleType name="Q"><xs:restriction base="xs:NOTATION"><xs:enumeration value="t:N"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="U"><xs:union memberTypes="t:Q xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="L"><xs:list itemType="t:Q"/></xs:simpleType>
+  <xs:simpleType name="NestedUnion"><xs:union memberTypes="t:U xs:int"/></xs:simpleType>
+  <xs:simpleType name="NestedList"><xs:list itemType="t:U"/></xs:simpleType>
+  <xs:complexType name="ListBase"><xs:simpleContent><xs:extension base="t:L"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="GeneratedList"><xs:simpleContent><xs:restriction base="t:ListBase"><xs:length value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="UnionBase"><xs:simpleContent><xs:extension base="t:U"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="GeneratedUnion"><xs:simpleContent><xs:restriction base="t:UnionBase"/></xs:simpleContent></xs:complexType>
+  <xs:attribute name="unionUse" type="t:U"/>
+  <xs:attribute name="listUse" type="t:L"/>
+  <xs:complexType name="B"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="D"><xs:simpleContent><xs:extension base="t:B"/></xs:simpleContent></xs:complexType>
+</xs:schema>

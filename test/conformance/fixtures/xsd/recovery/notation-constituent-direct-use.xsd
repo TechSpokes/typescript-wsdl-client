@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:research:notation-constituent" targetNamespace="urn:research:notation-constituent">
+  <xs:notation name="N" public="notation example"/>
+  <xs:simpleType name="U"><xs:union memberTypes="xs:NOTATION xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="L"><xs:list itemType="xs:NOTATION"/></xs:simpleType>
+  <xs:attribute name="unionUse" type="t:U"/>
+  <xs:attribute name="listUse" type="t:L"/>
+  <xs:complexType name="B"><xs:simpleContent><xs:extension base="xs:string"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="D"><xs:simpleContent><xs:extension base="t:B"/></xs:simpleContent></xs:complexType>
+</xs:schema>
