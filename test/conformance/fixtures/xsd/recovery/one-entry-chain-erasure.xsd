@@ -1,0 +1,7 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:one-entry-chain-erasure" targetNamespace="urn:re01:one-entry-chain-erasure">
+  <xs:complexType name="B"/>
+  <xs:complexType name="C"><xs:complexContent><xs:extension base="t:B"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:C"/></xs:complexContent></xs:complexType>
+  <xs:element name="H-R" type="t:B" abstract="true" block="restriction"/>
+  <xs:element name="H" type="t:B" abstract="true" substitutionGroup="t:H-R"/>
+</xs:schema>

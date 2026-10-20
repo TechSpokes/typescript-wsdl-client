@@ -1,0 +1,6 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:restriction">
+  <xs:complexType name="Carrier"><xs:choice minOccurs="0" maxOccurs="1"><xs:choice/><xs:choice/></xs:choice></xs:complexType>
+  <xs:complexType name="RequiredAfterFlatten"><xs:choice><xs:choice/><xs:choice/></xs:choice></xs:complexType>
+  <xs:complexType name="RequiredEmpty"><xs:choice/></xs:complexType>
+  <xs:complexType name="NewlySingleton"><xs:choice><xs:sequence/><xs:element name="e" type="xs:string"/></xs:choice></xs:complexType>
+</xs:schema>

@@ -135,6 +135,8 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
           } else {charge(4); flattened.push(child); blocks.push({kind: 'explicit', children: [child]});}
         }
         p.children = flattened; p.orderBlocks = blocks;
+        // Flattening unit choices can remove the last comparison member.
+        if (!flattened.length && (p.kind !== 'choice' || p.occurs.min === '0')) return undefined;
         if (flattened.length === 1 && (p.kind === 'all' || p.occurs.min === '1' && p.occurs.max === '1')) {
           const child = flattened[0]; charge(4 + p.origins.length + child.origins.length);
           p = {...child, id: p.id, originalParticle: p.originalParticle, occurs: p.kind === 'all' ? Object.freeze(algebra.product(p.occurs, child.occurs)) : child.occurs,
