@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "ed22b61001cb2ca5e6ae82185ce22207ae0c1691cee3f8a24129075e2b82a5d1",
+          "sha256": "1ca8c21ae840cdf43e424a18ad01c0ddf9b3d9bcaf4d3f540096244808e5ea8f",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1081,7 +1081,7 @@
         {
           "path": "src/compiler/complexTypeContent.ts",
           "role": "semantic-source",
-          "sha256": "943d970cde5f2f158027ed22e008f20cbd30c6f2dac43f52801b7f7a36d1d8b2"
+          "sha256": "3ceab4e143da6ae6b0e75e08722ebc33ab02627ad25a5f95abbe81ebe131fd88"
         },
         {
           "path": "src/compiler/finiteRe01Verification.ts",
@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticContext.ts",
           "role": "semantic-source",
-          "sha256": "b5d2f97e3d0d1c4d7f105066b93606bf7ed405a508861530f9e0333a9e22f003"
+          "sha256": "6998e020542daf993956aece6e166b91c0861bf8e2acdcec2ed16e328813facc"
         },
         {
           "path": "src/compiler/wildcardAlgebra.ts",
@@ -2506,7 +2506,7 @@
         {
           "path": "test/research/re01/original-particle-handles.test.ts",
           "role": "prototype",
-          "sha256": "e17892113638937f4ee4f3801075858ad9a39aefc51aa3743010ebe4af783938"
+          "sha256": "32b19d24e1d2ea0013a42fe10940c290eb082e5bd2d712718ce2173db9ef0dd3"
         },
         {
           "path": "test/research/re01/fresh-target-flattening.test.ts",
@@ -2596,12 +2596,47 @@
         {
           "path": "test/research/re01/private-observed-copy-erasure.test.ts",
           "role": "prototype",
-          "sha256": "6ba51a620fa477357d580845cb3baf78b3a8f7141701833ffe161d0e17e5f3ee"
+          "sha256": "66e0c974b8c0907d0d2d8580796a331f041b0648a5910524c132c00afbedd092"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/private-observed-copy-erasure.xsd",
           "role": "fixture",
           "sha256": "6805a74a84d7746ac23a7eaabd88515a5f9f2fc3ecbee5eae346cc3ecea1ec37"
+        },
+        {
+          "path": "src/compiler/hypotheticalScopedIdentity.ts",
+          "role": "semantic-source",
+          "sha256": "afda1a3a4e5b095bcb3a53fa05fc21eeabd763a1e65d0c3201c52f724f62e623"
+        },
+        {
+          "path": "test/unit/hypothetical-scoped-identity-independent.test.ts",
+          "role": "prototype",
+          "sha256": "8e30a802101837ac2852ecd943f67d51dde511213b540586675de11054639cdb"
+        },
+        {
+          "path": "test/research/re01/frozen-prefix-transport.test.ts",
+          "role": "prototype",
+          "sha256": "d08380e8a874d716647017f9c9117bf07b94760fc8242016cd3beeae3443a1e4"
+        },
+        {
+          "path": "test/research/re01/restriction-nontransitivity.test.ts",
+          "role": "prototype",
+          "sha256": "28e54d7b4edfb3c9905fb6fc8ea85f4735250378649f7319010eb32f77af47ce"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/frozen-prefix-transport.xsd",
+          "role": "fixture",
+          "sha256": "14576b38c80f5fbe918ebcc3a3913269fd7b6bd7effe09484b9b44189ead7d1b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/frozen-prefix-transport-inside.xsd",
+          "role": "fixture",
+          "sha256": "43ae6448c4049d5a54584ed27b7bf94d42c8cf61164b2a6e72c3e766dbf71a69"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/restriction-nontransitivity.xsd",
+          "role": "fixture",
+          "sha256": "7dee6889d7b84e37d2cc88bef6faba866b6321884bb8d9a93fd8458fd29fbebc"
         }
       ]
     },

@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:sandwich-dead-prefix" targetNamespace="urn:re01:sandwich-dead-prefix:inside">
+  <xs:import namespace="urn:re01:sandwich-dead-prefix" schemaLocation="frozen-prefix-transport.xsd"/>
+  <xs:element name="M" type="t:B" substitutionGroup="t:Hs"/>
+</xs:schema>
