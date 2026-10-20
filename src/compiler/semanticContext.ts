@@ -9,7 +9,8 @@ import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {createSemanticBudget} from './semanticBudget.js';
 import type {ResourceLimitFailure, SemanticBudget} from './semanticBudget.js';
 import {assertRawComplexTypeShape} from './re01TypeProperties.js';
-import type {RawComplexTypeProperties} from './re01TypeProperties.js';
+import type {OriginalComplexParticleHandle, RawComplexTypeProperties} from './re01TypeProperties.js';
+import {originalComplexParticleSource, particleContentNode} from './complexTypeContent.js';
 import {validateRawSimpleTypeShape} from './schemaSimpleTypeProperties.js';
 import type {RawSimpleTypeProperties} from './schemaSimpleTypeProperties.js';
 import {validateRawElementShape} from './schemaElementProperties.js';
@@ -62,6 +63,8 @@ export type SemanticContext = Readonly<{
   originalSourceComponentAbsent(id: NodeId): boolean;
   /** Eligibility for reading retained original properties, never a validity receipt. */
   originalComplexPropertySource(id: NodeId): ComplexTypeNode | undefined;
+  /** Actual source-mapping eligibility only, including owners later rewritten in H. */
+  originalComplexContentSource(id: NodeId): ComplexTypeNode | undefined;
   /** Original semantic incidences only; undefined keeps the explicit child list. */
   originalCompositorChildren(id: NodeId): readonly NodeId[] | undefined;
   /** Original source operand interpretation, with the same request budget. */
@@ -348,6 +351,29 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           if (!membership.has(id)) throw new InvalidContext('outside-context', id);
           return node;
         };
+        const originalParticleEdges = (handle: OriginalComplexParticleHandle, root: NodeId): readonly NodeId[] => {
+          const source = originalComplexParticleSource(actual, handle);
+          if (root !== handle.particle || requireMember(handle.owner).kind !== 'complexType') throw new InvalidContext('reference', root);
+          budget.chargeWork(6 + source.synthetic.length * 2);
+          const privateIds = new Set(source.synthetic), pending = [root], seen = new Set<NodeId>(), frontier: NodeId[] = [];
+          for (const id of privateIds) {
+            key(id);
+            if (record(id)) throw new InvalidContext(membership.has(id) ? 'identity' : 'outside-context', id);
+          }
+          while (pending.length) {
+            budget.chargeWork(4); const id = pending.pop()!;
+            if (seen.has(id)) continue; seen.add(id);
+            if (!privateIds.has(id)) {
+              if (requireMember(id).kind !== 'particle') throw new InvalidContext('reference', id);
+              budget.chargeWork(); frontier.push(id); continue;
+            }
+            const node = particleContentNode(actual, source, id);
+            if (node?.kind !== 'particle') throw new InvalidContext('reference', id);
+            if ('children' in node.term) {budget.chargeWork(node.term.children.length); pending.push(...node.term.children);}
+            else if (node.term.kind !== 'any') throw new InvalidContext('representation', id);
+          }
+          return Object.freeze(frontier);
+        };
         for (const properties of rawTypes) {
           assertRawComplexTypeShape(properties, budget);
           key(properties.type);
@@ -359,7 +385,11 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           }
           rawComplexSlots.set(properties.type, Object.freeze(references));
           const children = [...properties.attributeUses];
-          if ('particle' in properties.content) {budget.chargeWork(); children.push(properties.content.particle);}
+          if ('particle' in properties.content) {
+            budget.chargeWork();
+            if (properties.content.original) children.push(...originalParticleEdges(properties.content.original, properties.content.particle));
+            else children.push(properties.content.particle);
+          }
           rawComplexEdges.set(properties.type, Object.freeze(children));
         }
         for (const properties of rawSimpleTypes) {
@@ -464,7 +494,8 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           budget.chargeWork(3); const edges: NodeId[] = [];
           rawReference(properties.type, properties.derivation.base, edges);
           if (properties.content.kind === 'simple' || properties.content.kind === 'opaque-builtin') rawReference(properties.type, properties.content.type, []);
-          if ('particle' in properties.content && requireMember(properties.content.particle).kind !== 'particle') throw new InvalidContext('reference', properties.type);
+          if ('particle' in properties.content && !properties.content.original
+            && requireMember(properties.content.particle).kind !== 'particle') throw new InvalidContext('reference', properties.type);
           for (const id of properties.attributeUses) if (requireMember(id).kind !== 'attributeUse') throw new InvalidContext('reference', properties.type);
           for (const id of properties.wildcard?.sources ?? []) requireMember(id);
           rawEdges.set(properties.type, edges);
@@ -616,6 +647,14 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             return kind === 'candidate' && sourceSchemas !== undefined && membership.has(id) && original?.kind === 'complexType'
               && !rawProperties.has(id) && !changes.has(id) && !absentOriginals.has(id) ? original : undefined;
           },
+          originalComplexContentSource(id: NodeId): ComplexTypeNode | undefined {
+            assertSemanticContext(this);
+            if (this !== context) throw new TypeError('Foreign original-content context');
+            authenticate(); key(id); budget.chargeWork(5);
+            const original = originals.get(id);
+            return kind === 'actual' && sourceSchemas !== undefined && membership.has(id) && original?.kind === 'complexType'
+              && !absentOriginals.has(id) ? original : undefined;
+          },
           originalCompositorChildren(id: NodeId): readonly NodeId[] | undefined {
             assertSemanticContext(this);
             if (this !== context) throw new TypeError('Foreign compositor context');
@@ -689,6 +728,18 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           if (notationDelta !== undefined && (!Array.isArray(notationActive) || (notationAdditions !== undefined && !Array.isArray(notationAdditions)))) throw new InvalidContext('representation');
           budget.reserveNodes((additions ? dataField(additions, 'length') as number : 0) + (endpoint ? 1 : 0)
             + (notationAdditions ? dataField(notationAdditions, 'length') as number : 0));
+          // Snapshot data, but retain the identity of privately issued source
+          // selectors only after authenticating them against this exact Γ.
+          const originalHandles = new Map<number, OriginalComplexParticleHandle>();
+          for (let index = 0; index < (rawTypes?.length ?? 0); index++) {
+            const row = dataField(rawTypes, String(index)), content = dataField(row, 'content');
+            if (dataField(content, 'original') === undefined) continue;
+            assertRawComplexTypeShape(row, budget);
+            if (!('particle' in row.content) || !row.content.original) throw new InvalidContext('representation');
+            originalComplexParticleSource(actual, row.content.original);
+            if (row.content.particle !== row.content.original.particle) throw new InvalidContext('reference', row.type);
+            budget.chargeWork(3); originalHandles.set(index, row.content.original);
+          }
           const delta = budget.freeze(budget.snapshot(input));
           budget.chargeWork(12 + delta.active.length + parent.changes.size * 2 + parent.slots.size * 2 + parent.edges.size * 2
             + parent.raw.size * 2 + parent.simple.size * 2 + parent.elements.size * 2 + parent.attributes.size * 2 + parent.groups.size * 2);
@@ -745,7 +796,11 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           };
           budget.chargeWork(4); const seenRaw = new Set<NodeId>(), seenSimple = new Set<NodeId>(), seenElements = new Set<NodeId>(), seenAttributes = new Set<NodeId>(), seenGroups = new Set<NodeId>();
           const unique = (id: NodeId, seen: Set<NodeId>): void => {key(id); if (seen.has(id)) throw new InvalidContext('identity', id); budget.chargeWork(); seen.add(id);};
-          for (const row of delta.rawTypes ?? []) {
+          for (const [index, copied] of (delta.rawTypes ?? []).entries()) {
+            const original = originalHandles.get(index);
+            budget.chargeWork(5);
+            const row = original && 'particle' in copied.content
+              ? Object.freeze({...copied, content: Object.freeze({...copied.content, original})}) : copied;
             assertRawComplexTypeShape(row, budget); budget.chargeWork(6);
             // A first row may reify an untouched original's latent properties.
             // Preparation stays structural; correspondence must authenticate

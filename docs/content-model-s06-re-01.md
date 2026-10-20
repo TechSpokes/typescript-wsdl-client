@@ -28,6 +28,8 @@ The [component-admission continuation](#source-only-original-records-and-full-co
 The [finite-observation continuation](#passive-affiliates-and-anchored-head-observations) proves a conditional positive pruning lemma and identifies the changing support observations still needed for a decision bound.
 The [first-birth reconstruction](#first-birth-restriction-reconstruction-of-common-content-helpers) removes helper child duties under explicit role guards while retaining their exact base identities.
 Its same-input alternative distinguishes failure of a chosen transformation from failure of existential construction.
+The [original-particle continuation](#original-effective-particle-handles-and-fresh-target-selection) preserves authentic source particle identities in raw candidates and establishes a conditional fresh-target final-record selection theorem.
+Its remaining bound is local to a finite parent, rather than an assumed bound on all future contexts.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -3908,8 +3910,9 @@ The current base/AU/content/RE01 branches therefore check construction from thos
 The [nonprimitive control](../test/research/re01/property-type-references.test.ts) removes one original inner type's row: genuine H consumption still generates missing-nested-evidence despite a separate actual Γ proof, and supplying its exact H proof completes five nodes.
 The [genuine EDC control](../test/research/re01/original-property-projection.test.ts) now consumes C without rows and still rejects the H-specific QName/type clash.
 
-The initial source-only boundary is deliberately partial.
-Lookahead continues through reachable real original particles/groups and returns unresolved on unsupported suppressed/max0 diagnostic vertices; it does not promote them into rejected semantic particles or silently filter actual H roots.
+The initial source-only boundary was deliberately partial.
+Its lookahead returned unresolved on suppressed/max0 diagnostic vertices; the [later original-particle continuation](#original-effective-particle-handles-and-fresh-target-selection) supersedes that limit by using authenticated semantic compositor incidence.
+Neither path promotes diagnostic records into semantic particles or silently filters actual H roots.
 Direct raw/fresh particle construction retains its ordinary max0 rejection.
 Simple/opaque fallback and ineligible lineage/collision cases remain unresolved rather than becoming semantic negatives.
 
@@ -4268,6 +4271,110 @@ It does not prove that arbitrary successful inputs admit those inventories or ro
 The next coverage proposition must provide SOME simultaneous reconstruction of needed raw content and declared-type/head support, or an equivalent decidable symbolic representation.
 Input QName/particle-position anchors are candidate support, not a proved complete basis.
 Full executable evidence adequacy, complete negatives, mathematical termination and dated correspondence remain open.
+
+#### Original effective particle handles and fresh-target selection
+
+This continuation starts from main `9d038b1ba058acaa89deb94a2e051368bbb19a95`, tree `58490683ea05987b1ca65ba00bfc2c1f47df172a`.
+It separates an authenticated representation repair from a semantic selection theorem and the still-unproved complete decision criterion.
+Neither result supplies an executable general-negative branch.
+
+##### Source origin and the prescribed-forest countercontrol
+
+The pinned primary complex content property is a Particle component, and extension mapping constructs its sequence from inherited and declared content.
+Schema construction includes components recursively occurring as property values, so this exact source-composed wrapper exists before hypothetical F even when it lacks a separate canonical record.
+An authenticated handle to that same component exposes original data; an isomorphic allocated wrapper remains fresh.
+
+The source fixture has A containing optional local unqualified p, B restricting A to another optional p, and D extending B with optional global H:string.
+D's actual effective content has a private outer sequence, while hypothetical E uses A's exact prefix and a namespace wildcard.
+An unrelated fresh helper has a child that adds a legal unqualified p affiliate of H.
+
+E and the other fresh roots remain legal there, and original D is not consumed in that child.
+An installed fresh copy z of D's outer wrapper nevertheless remains mandatory and fails UPA: the p prefix conflicts with H's new p member.
+The handle permits the original source property without introducing z, while consuming that property through a fresh borrower still fails UPA in the same H.
+
+This contrast refutes the prescribed promoted-copy materialization, not SOME evidence adequacy or Γ nonexistence.
+The same Γ has other complete candidates.
+No installed fresh particle is omitted or exempted.
+
+##### Authenticated raw content and current-context obligations
+
+`deriveOriginalComplexParticle` issues an opaque whole-root handle from an active, nonabsent source-bound actual complex mapping.
+Raw mixed/element-only content may select that exact particle through its optional `original` handle.
+Candidate preparation authenticates the exact request and root before snapshotting, preserves the issued object through forks, and rejects forged, cloned, foreign or mismatched handles.
+
+The content owner retains source order, sharing, original references and native ur-wildcard origins in an H-owned view.
+Every source-private identity must remain absent from H; a found or outside collision cannot acquire original status.
+The borrower's content variety remains its raw property, while endpoint correspondence still preserves D's original variety and particle incidence.
+
+The raw validator authenticates the selected particle root through the content owner.
+The construction owner traverses the authenticated graph to every real particle/group/declaration/type dependency.
+Private particles receive their existing local checks, and complete content still runs all placement, EDC, UPA, restriction/extension and scalar prerequisites in current H.
+Selecting a source owner's property does not itself assert that owner's full validity, and Γ validity receipts are never relabelled as H receipts.
+
+Source-content traversal uses the existing authenticated original compositor incidence, including suppression of source-only max0 uses.
+The same real original root now completes through ordinary raw content and its authentic handle; direct references to an absent diagnostic component still reject.
+The earlier Host boundary therefore has a checked local semantic compositor, while its unrelated invalid original scalar still prevents a complete Γ assessment.
+
+The semantic particle owner preserves authentic original particle identity under raw handles as well as the existing original-property path.
+Correspondence compares retained parent-H content with candidate-H content, including inherited raw handles, rather than remapping a changed endpoint through actual derivation.
+All genuine fresh roots, including copied wrappers and inherited unused components, retain the existing verifier policy.
+
+The [focused controls](../test/research/re01/original-particle-handles.test.ts) exercise the complete two-node origin contrast, full borrower failures, authentication/collision guards, shared nested source backing, native ur origin and coherent recursive references to D′.
+Independent source/reference observations qualify source mappings, not hypothetical RE01 truth.
+This whole-root representation adds no helper allocator, public persisted format, production activation or universal materialization theorem.
+
+##### Fresh-target final-record selection
+
+Fix immutable Γ, exact parent P and a nonprimitive target U fresh relative to Γ.
+Under the selected relation's current-H/Γ frontier conditions and the history-erasure premises below, a projected judgment U in μR admits some direct candidate over P whose local premises hold and whose generated frontier stays in μR, with no newly added nonprimitive complex extension type.
+The selection keeps every inherited record, changes only U and supplies fresh additions in their final forms.
+
+Choose a finite projected R derivation and its first U candidate H.
+Whenever the current descendant contains a nonprimitive type V born after P, follow the derivation child for V.
+Each selected child has smaller finite R height; V is Γ-fresh and mandatory, so its duty cannot disappear from the complete frontier.
+
+Stop at a descendant C with no post-P nonprimitive type.
+No P identity other than the initial U was targeted, U's original restriction edge stays fixed, and its initial intermediate is primitive or a qualified simple-base extension without own RE01.
+U remains a mandatory fresh legality root in every selected descendant, so C still checks its complete Q-free local construction and every inherited fresh root's local duties.
+
+Introduce C's post-P components directly over P with their final records.
+Abstract B-v1 does not require the earlier XML construction histories of those new components.
+Direct U correspondence still holds because every preserved U property and every other P record is unchanged along the selected path.
+
+History erasure retains exact canonical/raw fields, owners, source/QName bindings, active-current or immutable-Γ scalar operands and Γ-issued property handles.
+Late original rows must still authenticate directly from Γ.
+Rebuild the contexts and remaining finite subforest, recomputing correspondence, local predicates and all receipts; record equality is not permission to retag a prior receipt.
+
+This proves a SOME projected semantic selection under the explicit ownership and history-erasure premises.
+For a complete actual Q_f assessment, the whole-assessment forest theorem additionally supplies Γ-owned duties and primitive blocks; an isolated U judgment does not assert the validity of all Γ.
+Runtime use still requires authentic materialization, and neither the additions' size nor universal executable materialization is proved.
+The original-target analogue fails because original D can leave descendant legality closure, as the existing anchored-helper control demonstrates.
+
+The [permanent control](../test/research/re01/fresh-target-flattening.test.ts) compares a complete six-node forest with a two-node alternative.
+The original fresh U child introduces two live nonprimitive helpers; the alternative introduces their exact terminal restriction records directly.
+It checks final canonical/raw equality, two newly born nonprimitive duties versus zero, unchanged P/U properties, complete inherited roots and identical terminal/flattened head membership.
+
+##### Local size bound and remaining decision gates
+
+The next sufficient theorem is a total computable bound b(Γ,P,target) on the full encoding of some successful candidate whenever one exists.
+For fresh targets the bounded candidate must also add no nonprimitive types, using the selection above.
+A bound on Q-free local satisfiability alone is insufficient: every remaining generated judgment must retain successful finite support.
+
+Conditional on that theorem, use lexicographic rank `(q,n)` along generated contextual branches.
+Here q counts original extension identities not yet rewritten to restriction, and n counts current fresh nonprimitive types.
+An original step decreases q and can add its bounded batch; a fresh step decreases n and adds none.
+
+Each original identity is rewritten at most once, and primitive additions remain primitive.
+Iterating a monotone envelope of b over these finitely many phases gives a computable size and height bound, even if sizes grow substantially.
+Γ-owned dependencies are supplied by the separate complete actual forest and are not contextual successors that reset this rank.
+
+No such success-preserving local bound has yet been proved.
+The remaining proof must cover finite P's exact heads, nominal/scalar types, incoming and outgoing union alternatives, raw particles/AUs, owners, values, sharing and complete required closures.
+Encoded bounds must also cover literal magnitudes, namespaces, facet expressions and annotation/source data.
+
+Two failed shortcuts remain explicit: independently valid passive member pools need not have a valid union because choice matching has finite injective capacity, and replacing a property-equal fresh scalar by an original union member can change blocked substitution membership through identity.
+Neither failure proves general nonexistence or prevents another complete reconstruction.
+General coverage, executable evidence adequacy, complete negatives, mathematical termination and dated-semantic correspondence remain open, with all seven accepted packages, B-v1, P1/F2 and downstream gates preserved.
 
 #### External methods and applicability
 

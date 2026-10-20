@@ -7,9 +7,14 @@ import type {SemanticTypeReference} from './semanticTypeReference.js';
 
 export const RE01_DERIVATION_DOMAIN = 'RE01-derivation-B-v1' as const;
 export type ComplexDerivationMethod = 'extension' | 'restriction';
+declare const originalParticleAuthority: unique symbol;
+/** Opaque selection of an actual source-mapped particle, never a validity receipt. */
+export type OriginalComplexParticleHandle = Readonly<{
+  owner: NodeId; particle: NodeId; [originalParticleAuthority]: true;
+}>;
 export type RawComplexContent = Readonly<
   {kind: 'empty'} | {kind: 'simple'; type: SemanticTypeReference} |
-  {kind: 'mixed' | 'element-only'; particle: NodeId} |
+  {kind: 'mixed' | 'element-only'; particle: NodeId; original?: OriginalComplexParticleHandle} |
   {kind: 'opaque-builtin'; type: Reference}
 >;
 /**
@@ -83,12 +88,15 @@ export function assertRawComplexTypeShape(value: unknown, budget: SemanticBudget
   const d = object(r['derivation'], ['base', 'method']); method(d['method']); reference(d['base']);
   if (typeof r['abstract'] !== 'boolean') return fail();
   list(r['final'], method); list(r['block'], method); list(r['attributeUses'], id);
-  const content = object(r['content'], ['kind', 'type', 'particle']);
+  const content = object(r['content'], ['kind', 'type', 'particle', 'original']);
   if (content['kind'] === 'simple' || content['kind'] === 'opaque-builtin') {
-    if ('particle' in content) return fail(); reference(content['type']);
+    if ('particle' in content || 'original' in content) return fail(); reference(content['type']);
   } else if (content['kind'] === 'mixed' || content['kind'] === 'element-only') {
     if ('type' in content) return fail(); id(content['particle']);
-  } else if (content['kind'] !== 'empty' || 'type' in content || 'particle' in content) return fail();
+    if (content['original'] !== undefined) {
+      const original = object(content['original'], ['owner', 'particle']); id(original['owner']); id(original['particle']);
+    }
+  } else if (content['kind'] !== 'empty' || 'type' in content || 'particle' in content || 'original' in content) return fail();
   if (r['wildcard'] !== undefined) {
     const w = object(r['wildcard'], ['namespace', 'processContents', 'sources']);
     if (w['processContents'] !== 'strict' && w['processContents'] !== 'lax' && w['processContents'] !== 'skip') return fail();

@@ -73,14 +73,15 @@ describe('full original-input construction boundaries', () => {
     // whole-input correspondence/validity is claimed for them.
   });
 
-  it('looks through a real original particle before declining a source-only diagnostic child', async () => {
+  it('uses original semantic incidences without admitting source-only diagnostic children', async () => {
     const input = await loadSchemaInput(path.join(fixtures, 'xsd/recovery/original-generated-absent-independent.xsd'), {policy: {fileRoots: [fixtures]}});
     const prepared = prepareSourceSchemaRequest(input); assert.equal(prepared.kind, 'prepared');
     const request = prepared.request, owner = globalId('type', {namespace: 'urn:recovery:original-generated-binding', local: 'Host'});
     const candidate = request.candidate({key: 'diagnostic-lookahead', active: request.actual.members}); assert.equal(candidate.kind, 'prepared');
-    expect(checkComponentConstruction(candidate.context, owner)).toMatchObject({kind: 'unresolved', rule: 'original-content-source-only'});
+    const checked = checkComponentConstruction(candidate.context, owner); assert.equal(checked.kind, 'checked');
     const zero = request.graph.nodes.find(node => node.kind === 'particle' && node.occurs.max === '0'); assert.ok(zero);
     expect(checkComponentConstruction(candidate.context, zero.id)).toMatchObject({kind: 'candidate-rejected', rule: 'p-props-correct'});
+    expect(checked.dependencies).not.toContain(zero.id);
     // Live scalar failures elsewhere in this existing fixture are unrelated;
     // this test makes only the structural diagnostic/noncomponent distinction.
   });
