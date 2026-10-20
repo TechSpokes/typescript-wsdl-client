@@ -201,6 +201,23 @@ The [exact-facet controls](../test/unit/schema-exact-facet-components-independen
 This corrects one independently reproduced formation false positive.
 It does not complete scalar alias construction, reconcile the held nonexact full-inventory claim or establish general helper coverage, complete negatives or termination.
 
+### Raw facet groups and identity authority
+
+Caller-supplied raw groups contain facet data, not internal identity evidence.
+The earlier import retained an undocumented `identity` field and subsequently installed it in the scalar owner's private layer-identity map.
+A base pattern `a` and a successor pattern `b` could therefore compare equal and receive complete evidence despite admitting different values.
+
+The existing owner now copies only documented fields at that boundary: facets and component annotation for exact inventories, and facets alone for legacy layers.
+Allocation is precharged; genuinely issued original-recipe identities keep their separate trusted import path.
+No validator rule, input form, whole-description shortcut or selected P1/F2 rule changes.
+
+The [raw-group authority controls](../test/research/re01/raw-facet-group-authority.test.ts) cover exact and legacy rows with shared object hints, shared primitive hints, distinct hints and no hint.
+Different patterns reject; matching patterns retain complete actual/current-H evidence.
+The [exact-facet unit controls](../test/unit/schema-exact-facet-components-independent.test.ts) also preserve differing pattern values, unknown enumeration qualifications and genuine typed enumeration failures.
+
+This closes the independently reproduced caller-identity false positive.
+It grants no new immediate-base component selector and establishes neither universal scalar formation soundness nor general RE01 coverage, negatives or termination.
+
 ### Alternative A and recorded project decision
 
 Alternative A fixes the original global symbol and affiliation universe while allowing fresh internal components.

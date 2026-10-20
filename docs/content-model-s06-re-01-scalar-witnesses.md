@@ -14,6 +14,10 @@ An enum producer must either establish same component/equal complete annotation 
 Unknown annotation equality cannot silently supply retention, and a failed new-introduction attempt cannot reject a still-possible retained component.
 This owner correction does not establish the general enum lexical-map producer or a complete scalar materializer.
 
+The [raw-group authority correction](content-model-s06-re-01.md#raw-facet-groups-and-identity-authority) separately prevents caller-added identity fields from entering internal facet comparison evidence.
+Literal input equality or object sharing never supplies an authenticated inherited component selector.
+The proposed opaque-component selection interface remains a separate adequacy obligation, with no general negative answer inferred from an unproved literal copy.
+
 ## Why a new endpoint operation is required
 
 Literal complete-payload copying is not always a legal restriction under selected F2.

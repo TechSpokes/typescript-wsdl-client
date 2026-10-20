@@ -219,6 +219,11 @@ Otherwise every member must have a complete immediate-base membership witness.
 Unknown retention with unproved new formation retains the existing scalar prerequisite, while successful new formation suffices without resolving annotation equality.
 Source and original-bound fallback metadata comes only from that layer's own facets and existing issued identity.
 The [complete enumeration controls](../test/research/re01/enumeration-retention-annotation.test.ts) preserve both contexts, all inherited fresh roots, required children and missing-evidence failures.
+
+Raw group import copies documented fields before any internal identity processing.
+An extra caller `identity` field cannot populate the private layer-identity map or bypass pattern/value comparison.
+Exact component annotations remain data; genuine original-recipe-issued identities retain their separate authenticated path.
+The [raw-group authority controls](../test/research/re01/raw-facet-group-authority.test.ts) distinguish matching patterns from differing patterns under shared, distinct, primitive and absent caller hints in complete contexts.
 The separate [scalar witness record](content-model-s06-re-01-scalar-witnesses.md) states the new bounded endpoint problem and the remaining full F2 materialization gates.
 
 Failure ownership is also context-qualified.
