@@ -35,6 +35,51 @@ const component=(facet:ScalarFacet,evidence:FacetAnnotation|undefined=facet.anno
 };
 
 describe('exact supplied facet component and annotation evidence',()=>{
+  it.each(['legacy','exact'] as const)('ignores caller group identities when comparing distinct %s pattern properties',async representation=>{
+    const s=await originalSimpleSetup(),identity={caller:'not-issued'};
+    const raw=(type:string,value:string)=>{
+      const {annotation:_annotation,...facet}=s.facet('pattern',value);
+      const group={facets:[facet],annotation:'absent' as const,identity};
+      return representation==='exact'?exact(s.raw(type),[group]):{...s.raw(type),facetLayers:[group]};
+    };
+    const context=s.overlay([raw('Empty','a'),raw('PeerEmpty','b')]);
+    expect(compareSchemaFacetProperties(context,named('Empty'),id('Empty'),context,named('PeerEmpty'),id('PeerEmpty')))
+      .toMatchObject({kind:'checked',value:false});
+  });
+
+  it.each(['legacy','exact'] as const)('does not let extra %s group identities settle unknown enum retention',async representation=>{
+    for(const identity of [{caller:'not-issued'},'not-an-issued-object']){
+      const s=await originalSimpleSetup();
+      const decimal=(name:string,value:string):ScalarFacet=>({name,fixed:false,lexical:{value,context:s.seed.context},
+        operand:{type:builtin('decimal'),owner:id('D'),context:'active'}});
+      const minimum={facets:[{...decimal('minInclusive','2'),annotation:'absent' as const}]};
+      const enumeration={facets:[decimal('enumeration','1'),decimal('enumeration','2')],identity};
+      const raw=(type:string,base:ReturnType<typeof builtin>):RawSimpleTypeProperties=>representation==='exact'
+        ?exact(s.raw(type,[],{base}),[{facets:[decimal('minInclusive','2')],annotation:'absent'},enumeration])
+        :{...s.raw(type,[],{base}),facetLayers:[minimum,enumeration]};
+      const context=s.overlay([raw('Empty',builtin('decimal')),raw('PeerEmpty',named('Empty'))]);
+      const kernel=createSchemaScalarKernel(context);
+      expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
+      expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'checked',
+        obligations:[{rule:'raw-simple-facet-restriction-validity',component:id('PeerEmpty')}]});
+      expect(kernel.assess(named('PeerEmpty'),{value:'2',context:s.seed.context},id('PeerEmpty')))
+        .toMatchObject({kind:'checked',obligations:[{rule:'raw-simple-facet-restriction-validity',component:id('PeerEmpty')}]});
+    }
+  });
+
+  it.each(['legacy','exact'] as const)('rejects changed %s enum values despite shared caller identity',async representation=>{
+    const s=await originalSimpleSetup(),identity={caller:'not-issued'};
+    const raw=(type:string,base:ReturnType<typeof builtin>,value:string):RawSimpleTypeProperties=>{
+      const facet:ScalarFacet={name:'enumeration',fixed:false,lexical:{value,context:s.seed.context},
+        operand:{type:builtin('decimal'),owner:id('D'),context:'active'}};
+      const group={facets:[facet],annotation:'absent' as const,identity};
+      return representation==='exact'?exact(s.raw(type,[],{base}),[group]):{...s.raw(type,[],{base}),facetLayers:[group]};
+    };
+    const context=s.overlay([raw('Empty',builtin('decimal'),'1'),raw('PeerEmpty',named('Empty'),'2')]);
+    expect(createSchemaScalarKernel(context).describe(named('PeerEmpty'),id('PeerEmpty')))
+      .toMatchObject({kind:'invalid-schema',rule:'st-restrict-facets'});
+  });
+
   it.each(['1','2'])('proves new enum membership or retains unknown introduction qualification at minInclusive %s',async minimum=>{
     const s=await originalSimpleSetup();
     const decimal=(name:string,value:string):ScalarFacet=>{

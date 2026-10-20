@@ -2523,7 +2523,12 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
             if(item.payload!==undefined)boundAnnotationPayloads.set(facet,item.payload);
           }
           groups.push({facets,identity:group.identity});
-        } else for (const group of rawSimple.facetLayers ?? rawSimple.facetComponentSet ?? []) {c.step(node);groups.push(group);}
+        } else if (rawSimple.facetComponentSet) for (const group of rawSimple.facetComponentSet) {
+          // Caller extensions are data, never privately issued component identity.
+          c.step(node, 2); groups.push({facets: group.facets, annotation: group.annotation});
+        } else for (const group of rawSimple.facetLayers ?? []) {
+          c.step(node, 2); groups.push({facets: group.facets});
+        }
         if (node.identity.kind === "global" && rawSimple.targetNamespace !== undefined) {
           c.text(rawSimple.targetNamespace, node); c.text(node.identity.name.namespace, node);
           if (rawSimple.targetNamespace !== node.identity.name.namespace) c.fail(node, "raw-simple-target-namespace", "Named type namespace differs from its immutable identity");

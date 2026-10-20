@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): keep caller facet hints out of internal identity evidence.
+
 - fix(scalar): distinguish retained enumeration components from new immediate-base introductions.
 
 - fix(scalar): preserve inherited exact facet identities without skipping current-context value and formation checks.
