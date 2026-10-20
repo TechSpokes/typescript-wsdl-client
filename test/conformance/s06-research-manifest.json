@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "197a1b1e884582a593881d7fce2e8e9758a5c717779309011b9d42ac921d6c97",
+          "sha256": "3f96a427a8b189d445cf7ebbde2076a826a9c63ca1dd0e1bd6a8b080bb90ad1b",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "5f191f50c1131dc2c987a1920cd23308db7e9b2e8204824103b9987effce4c72"
+          "sha256": "9978fc17d3231e8a0c6e67c6b58ee52451fe669ceb4c65754d4bd8e55d16d32e"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "211ff49ce8f6f27cde684af787dc6a65c741d5c5b1ed0fd0af61a6ab97d5235d"
+          "sha256": "7cbff7d15dc054af51b4f5d6715dd20ad99e8040aef5871323e37a3225d92ea1"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1951,7 +1951,7 @@
         {
           "path": "test/unit/schema-exact-facet-components-independent.test.ts",
           "role": "expectations",
-          "sha256": "39df3428a5a4ba11812deb2d9f4ce1acc577ee5823c616f5953b94f12fc3960a"
+          "sha256": "f863c3c8d4b3d47e19575e8cb154da576083b9dc9cf8a9362dc2638fb43cfa72"
         },
         {
           "path": "test/unit/schema-original-generated-binding-independent.test.ts",
@@ -2702,6 +2702,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/abstract-particle-wildcard-properties.xsd",
           "role": "fixture",
           "sha256": "416056833cf26b67a7b942ae5808f4938b75dcdc87616ea775789996f829c79e"
+        },
+        {
+          "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
+          "role": "decision",
+          "sha256": "19abfde277de53f41697d5aa6091ebbb9d7d03ad681423fbdebd63c3486df225"
+        },
+        {
+          "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
+          "role": "prototype",
+          "sha256": "0c4b3f852214e536a4534572eb9a815f8cf6b0aeda84a64e89d774fedfa66d9e"
         }
       ]
     },

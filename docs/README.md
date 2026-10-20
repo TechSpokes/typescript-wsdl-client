@@ -54,6 +54,7 @@ The [S06 research handoff](content-model-s06-research-handoff.md) links the four
 - [Semantic catalog format 2](content-model-catalog.md): deterministic persistence, validation and compatibility routing
 - [RE01 research resolver implementation](content-model-s06-re-01-resolver-implementation.md): supplied-candidate and abstract wildcard checks, qualification limits and the future production adapter
 - [RE01 support reconstruction](content-model-s06-re-01-support-reconstruction.md): conditional copy/bundle reductions, value/name palettes and open bounds
+- [RE01 scalar witness construction](content-model-s06-re-01-scalar-witnesses.md): shared endpoint tuples and open materialization gates
 
 - [Root README](../README.md): project overview, quick start, and authoritative Documentation section
 - [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow

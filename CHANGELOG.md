@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): preserve inherited exact facet identities without skipping current-context value and formation checks.
+
+- docs(re01): derive bounded shared endpoint witnesses and retain complete scalar construction obligations.
+
 - fix(re01): represent abstract particle wildcard namespace properties with immutable inheritance and correct empty-alphabet occurrence analysis.
 
 - test(re01): qualify private copy and helper-bundle reconstruction with complete contextual evidence and guarded value/name projections.

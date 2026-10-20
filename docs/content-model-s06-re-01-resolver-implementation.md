@@ -200,12 +200,19 @@ Raw properties cannot turn such syntax into an original component or make its se
 
 Complete raw properties for an original simple type are compared with its immutable source properties through the shared scalar owner.
 The comparison preserves base, item and ordered member identities, typed facet values, fixed metadata and annotation properties or an exact original facet-component binding; an equal component ID alone does not prove correspondence.
-An authenticated original facet binding preserves the exact original component set and its source operands, while active type and value legality remain separate obligations.
-Missing annotation metadata is unresolved; explicit absence is data, and independently constructed multi-operand groups retain any unsettled mapping prerequisite.
+An authenticated original facet binding preserves its original recipe/component authority and source operands, while active type and value legality remain separate obligations.
+Its native nonexact clearance alone does not establish equality to an unreduced complete tuple inventory; the existing normal-form qualification and independent property comparison still apply.
+The stronger exact-inventory claim remains an open contract/normal-form reconciliation, not a discharged constructor theorem or an authorized weakening of P1/F2.
+Missing annotation metadata is unresolved unless authentic component identity establishes correspondence; explicit absence is data, and independently constructed multi-operand groups retain any unsettled mapping prerequisite.
 
 Exact supplied facet components retain their typed values in the owning scalar description before effective constraint reduction.
 Enumeration operands belong to their installed constraint layer, including when a descendant inherits that layer.
 Reusing the same supplied facet object in another datatype cannot change earlier equality or membership results; independent controls cover both evaluation orders and copied-object contrasts at the unchanged request limits.
+For an inherited exact raw row, the scalar owner preserves each component occurrence through a private token for that authenticated immutable row and ordinal.
+Distinct rows, repeated incidences and independent births do not share this identity merely through caller data or type IDs.
+Only the same incidence's annotation and immutable pattern spelling can use it; actual typed values, full formation and context-qualified dependencies are still computed independently.
+The [complete inherited-facet controls](../test/research/re01/inherited-raw-facet-identity.test.ts) keep every fresh root and required child; this is not a whole-description or new-alias binding.
+The separate [scalar witness record](content-model-s06-re-01-scalar-witnesses.md) states the new bounded endpoint problem and the remaining full F2 materialization gates.
 
 Failure ownership is also context-qualified.
 An intrinsically invalid original datatype remains an actual-schema failure through scalar, AU and aggregate consumers.

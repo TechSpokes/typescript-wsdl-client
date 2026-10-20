@@ -110,6 +110,9 @@ type RecipeLayer = {facets: readonly RecipeFacet[]; identity?: object};
 type Recipe = {context: SemanticContext; layers: readonly RecipeLayer[]; obligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]; identity: Description};
 const originalRecipes = new WeakMap<OriginalScalarFacetRecipe, Recipe>();
 const facetEvidence = new WeakMap<ScalarFacetEvidence, FacetEvidenceRecord>();
+// Factory-owned frozen rows survive descendant contexts. Caller group sharing,
+// another row, or another component incidence never supplies this identity.
+const rawFacetOccurrences = new WeakMap<RawSimpleTypeProperties, readonly object[]>();
 const excluded = new Set(["NOTATION", "ID", "IDREF", "IDREFS", "ENTITY", "ENTITIES"]);
 const boundNames = ["minInclusive", "minExclusive", "maxInclusive", "maxExclusive"];
 const lengthNames = ["length", "minLength", "maxLength"];
@@ -122,6 +125,17 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   originalFacet?: (type: Reference, lexical: LexicalValue, owner: NodeId) => {operand: SchemaOperand; obligations: readonly ScalarObligation[];typeDependencies:readonly SemanticTypeDependency[]}} = {}) {
   const originalRecipeTokens=new WeakMap<Description,OriginalScalarFacetRecipe>();
   const descriptions = new Map<string, Description>(), values = schemaDatatypeValues(c), patterns = schemaPatterns(c), intrinsicPatterns=intrinsicBuiltinPatterns(c);
+  const rawFacetIdentities = (row: RawSimpleTypeProperties, owner: GraphNode): readonly object[] => {
+    c.step(owner, 4);
+    const prior = rawFacetOccurrences.get(row);
+    if (prior) return prior;
+    const count = row.facetComponentSet!.length;
+    c.step(owner, count * 4 + 6);
+    const identities = Object.freeze(Array.from({length: count}, () => Object.freeze({})));
+    c.step(owner, 2);
+    rawFacetOccurrences.set(row, identities);
+    return identities;
+  };
   const regular = schemaRegularLanguages(c);
   const decimalLanguages = schemaDecimalLanguages(c);
   const intrinsicFacets=new WeakSet<Facet>(), intrinsicCompiled=new WeakSet<SchemaPattern>();
@@ -2527,6 +2541,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         c.step(node);
         const intrinsic = result, conjuncts: Description[] = [];
         const exactComponentSet: ExactFacetComponent[] | undefined = rawSimple.facetComponentSet === undefined ? undefined : [];
+        const identities = rawSimple.facetComponentSet?.length ? rawFacetIdentities(rawSimple, node) : undefined;
         for (const group of groups) {
           c.step(node, group.facets.length + 1);
           if (urBase && group.facets.some(facet => variety.kind === "union" || facet.name !== "whiteSpace")) c.fail(node, "cos-st-restricts", "List/union construction facets violate the simple ur-base rule");
@@ -2539,7 +2554,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
             exactComponentSet.push({name, facet: name === 'pattern' || name === 'enumeration' ? undefined : group.facets[0], values:group.facets.map(facet => name === 'pattern'
               ? {fixed:false, lexical:facet.lexical.value} : name === 'enumeration'
                 ? {fixed:false, operand:enumerations.get(installed)!.get(facet)!} : facetProperty(formed, name, node)!),
-            annotation:group.annotation});
+            annotation:group.annotation, identity:identities![exactComponentSet.length]});
           }
           conjuncts.push(formed);
         }

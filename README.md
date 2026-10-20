@@ -224,6 +224,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [S06 Attribute Research](docs/content-model-s06-au-01.md) | Repeated attribute-use identities, constraints and interpretation alternatives |
 | [S06 Reordered Derivation Research](docs/content-model-s06-re-01.md) | Constructive witnesses, counterexamples and decision-procedure proof obligations |
 | [S06 RE01 Support Reconstruction](docs/content-model-s06-re-01-support-reconstruction.md) | Conditional member/copy/bundle reductions, value/name palettes and open support bounds |
+| [S06 RE01 Scalar Witness Construction](docs/content-model-s06-re-01-scalar-witnesses.md) | Shared endpoint tuple construction, scalar counterexamples and open materialization gates |
 | [S06 Hypothetical Resolver Specification](docs/content-model-s06-re-01-resolver.md) | Candidate contexts, component identity, validation ownership and implementation tasks |
 | [S06 Research Resolver Implementation](docs/content-model-s06-re-01-resolver-implementation.md) | Resolver guarantees, abstract wildcard properties, verification and the future production seam |
 | [S06 Wildcard Research](docs/content-model-s06-pw-01.md) | Member and whole-group cardinality, original namespace context and authority |

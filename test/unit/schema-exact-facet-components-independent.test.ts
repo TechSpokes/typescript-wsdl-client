@@ -4,6 +4,9 @@ import {compareFacetAnnotation, validateFacetAnnotation} from '../../src/compile
 import type {FacetAnnotation} from '../../src/compiler/schemaFacetAnnotation.js';
 import {createSemanticBudget, DEFAULT_MAX_WORK} from '../../src/compiler/semanticBudget.js';
 import type {RawScalarFacetComponent, RawSimpleTypeProperties, ScalarFacet} from '../../src/compiler/schemaSimpleTypeProperties.js';
+import type {SimpleTypeNode} from '../../src/compiler/canonicalGraph.js';
+import type {RawComplexTypeProperties} from '../../src/compiler/re01TypeProperties.js';
+import {forkSemanticCandidate} from '../../src/compiler/semanticContext.js';
 import {originalSimpleSetup, builtin, id, named} from './helpers/original-simple-correspondence.js';
 
 const xsd = 'http://www.w3.org/2001/XMLSchema';
@@ -32,6 +35,74 @@ const component=(facet:ScalarFacet,evidence:FacetAnnotation|undefined=facet.anno
 };
 
 describe('exact supplied facet component and annotation evidence',()=>{
+  it('identifies an inherited row without identifying shared caller groups or sibling births',async()=>{
+    const s=await originalSimpleSetup(),{annotation:_annotation,...facet}=s.facet('minLength','1');
+    const group:RawScalarFacetComponent={facets:[facet]};
+    const leftRow=exact(s.raw('Empty'),[group]),rightRow=exact(s.raw('PeerEmpty'),[group]);
+    const parent=s.overlay([leftRow,rightRow],'shared-unknown-component-data');
+    const fork=forkSemanticCandidate(parent,{key:'same-inherited-rows',active:parent.members});
+    expect(fork.kind).toBe('prepared');if(fork.kind!=='prepared')throw new Error('Expected inherited context');
+    expect(compareSchemaFacetProperties(parent,named('Empty'),id('Empty'),fork.context,named('Empty'),id('Empty')))
+      .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'equal',
+        sourceFacetAnnotations:{left:'unresolved',right:'unresolved'},obligations:[]});
+    expect(compareSchemaFacetProperties(parent,named('Empty'),id('Empty'),parent,named('PeerEmpty'),id('PeerEmpty')))
+      .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'unresolved',obligations:[]});
+    const sibling=s.overlay([leftRow],'separate-first-birth-same-type-id');
+    expect(compareSchemaFacetProperties(parent,named('Empty'),id('Empty'),sibling,named('Empty'),id('Empty')))
+      .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'unresolved',obligations:[]});
+    expect(fork.context.rawSimpleTypeProperties(id('Empty'))).toEqual(parent.rawSimpleTypeProperties(id('Empty')));
+  });
+
+  it('preserves repeated incidences and immutable pattern values without equating a subset row',async()=>{
+    const s=await originalSimpleSetup(),pattern=(value:string):RawScalarFacetComponent=>{
+      const {annotation:_annotation,...facet}=s.facet('pattern',value);return {facets:[facet]};
+    };
+    const shared=pattern('a'),other=pattern('b');
+    const parent=s.overlay([exact(s.raw('Empty'),[shared,shared,other]),exact(s.raw('PeerEmpty'),[shared])],'repeated-component-incidences');
+    const fork=forkSemanticCandidate(parent,{key:'inherited-repeated-components',active:parent.members});
+    expect(fork.kind).toBe('prepared');if(fork.kind!=='prepared')throw new Error('Expected inherited pattern row');
+    expect(compareSchemaFacetProperties(parent,named('Empty'),id('Empty'),fork.context,named('Empty'),id('Empty')))
+      .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'equal',obligations:[]});
+    expect(compareSchemaFacetProperties(parent,named('Empty'),id('Empty'),parent,named('PeerEmpty'),id('PeerEmpty')))
+      .toMatchObject({kind:'checked',value:false});
+    expect(compareSchemaFacetProperties(parent,named('PeerEmpty'),id('PeerEmpty'),parent,named('Empty'),id('Empty')))
+      .toMatchObject({kind:'checked',value:false});
+  });
+
+  it('reassesses active typed operands and retains their H formation duties despite inherited identity',async()=>{
+    const s=await originalSimpleSetup(),d=s.complex('D');
+    const node:SimpleTypeNode={...s.seed,id:id('ActiveEnum'),identity:{kind:'global',role:'type',
+      name:{namespace:s.seed.context.effectiveNamespace,local:'ActiveEnum'}}};
+    const {annotation:_annotation,...facet}=s.facet('enumeration','1');
+    const row=exact({...s.raw('Empty'),type:node.id},[{facets:[{...facet,
+      operand:{type:named('D'),owner:d.id,context:'active'}}]}]);
+    const properties=(type:'string'|'decimal'):RawComplexTypeProperties=>({type:d.id,
+      derivation:{method:'extension',base:builtin(type)},content:{kind:'simple',type:builtin(type)},
+      abstract:false,final:[],block:[],attributeUses:[],provenance:{kind:'hypothetical-abstract',originals:[d.id]}});
+    // Structural contexts isolate the value reader; changed D is not claimed to correspond to the source.
+    const parent=s.request.candidate({key:'active-enum-string',active:[...s.request.actual.members,node.id],
+      additions:[node],rawSimpleTypes:[row],rawTypes:[properties('string')]});
+    expect(parent.kind).toBe('prepared');if(parent.kind!=='prepared')throw new Error('Expected active operand parent');
+    const child=forkSemanticCandidate(parent.context,{key:'active-enum-decimal',active:parent.context.members,
+      endpoint:d,rawTypes:[properties('decimal')]});
+    expect(child.kind).toBe('prepared');if(child.kind!=='prepared')throw new Error('Expected changed active operand');
+    const before=createSchemaScalarKernel(parent.context).describe({kind:'local',target:node.id},node.id);
+    expect(before).toMatchObject({kind:'checked',obligations:expect.arrayContaining([
+      {rule:'raw-simple-content-derivation-validity',component:d.id}])});
+    if(before.kind!=='checked')throw new Error('Expected conditional scalar formation');
+    expect(before.typeDependencies).toEqual(expect.arrayContaining([
+      {contextId:parent.context.contextId,type:{kind:'component',id:node.id}},
+      {contextId:parent.context.contextId,type:{kind:'builtin',name:{namespace:xsd,local:'string'}}},
+    ]));
+    const compared=compareSchemaFacetProperties(parent.context,{kind:'local',target:node.id},node.id,
+      child.context,{kind:'local',target:node.id},node.id);
+    expect(compared).toMatchObject({kind:'invalid-schema',rule:'facet-value-type',side:'right',contextId:child.context.contextId,
+      obligations:expect.arrayContaining([{rule:'raw-simple-content-derivation-validity',component:d.id,
+        contextId:parent.context.contextId}])});
+    expect(createSchemaScalarKernel(child.context).describe({kind:'local',target:node.id},node.id))
+      .toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+  });
+
   // Independently reproduced in the PR #282 source review: JavaScript object
   // sharing and unrelated scalar evaluation must not change typed equality.
   it.each(['minInclusive','enumeration'] as const)('keeps shared %s values in their own scalar domains in either evaluation order',async name=>{

@@ -47,6 +47,8 @@ The number of signatures, copies and protected ports remains unbounded by these 
 
 The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.
+The [inherited facet continuation](#inherited-exact-facet-occurrences) preserves the identity of one immutable exact component incidence across actual descendant contexts while retaining independent value and formation checks.
+The [scalar witness construction](content-model-s06-re-01-scalar-witnesses.md) separates a supplied shared-endpoint decision from the open complete F2 materializer and general witness bound.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -152,6 +154,30 @@ The unit controls separately cover selected process/set equality, source corresp
 This repairs one concrete native representation gap.
 It does not prove that every semantic B construction has a faithful native encoding, complete local qualification or founded operational evidence.
 Source-private subroot realization, genuine identity-constraint properties and the input-derived helper/evidence bounds remain separate obligations; no general-negative or termination result follows.
+
+### Inherited exact facet occurrences
+
+One raw exact facet component can have unknown annotation metadata while still being locally formed.
+Before this repair, rebuilding its scalar description in a child context lost the component's identity and left unchanged inherited correspondence unresolved.
+Known absent annotation data passed the same complete two-node construction.
+That baseline limitation is not a semantic prohibition on such inherited inputs.
+
+The existing scalar owner now identifies an exact occurrence by its authenticated frozen raw SIMPLE row and component ordinal.
+Candidate preparation snapshots the first-born row, and descendants inherit that exact immutable row.
+A private weak cache issues a complete charged token array for it; no caller field, diagnostic type ID or shared group object supplies this authority.
+Distinct rows, repeated incidences and independent sibling births have distinct identities even when their supplied data are shared.
+
+The identity closes annotation correspondence for that same occurrence.
+Both actual-context scalar readers, complete formation, typed values, base/item/ordered-member properties, source interpretation, dependencies and originating obligations still execute.
+The pattern identity reader is safe only because the same incidence contains immutable ordered expression strings and pattern operands cannot be active typed values.
+There is no whole-description shortcut, original binding grant or equality of separately constructed aliases.
+
+The [exact component controls](../test/unit/schema-exact-facet-components-independent.test.ts) distinguish inherited rows from shared caller groups and independent births, retain repeated pattern incidences and re-evaluate active typed-operand duties.
+The [complete forest controls](../test/research/re01/inherited-raw-facet-identity.test.ts) preserve all actual and inherited fresh roots in the unknown/known annotation contrast and retain a genuinely required child's missing-evidence failure.
+Every selected F2 fixed, cross-kind, endpoint and containment duty remains intact.
+
+This repairs an independently demonstrated supplied-construction correspondence gap.
+It creates neither a selective immediate-base facet binding nor a complete scalar alias producer, and it proves no general negative or search bound.
 
 ### Alternative A and recorded project decision
 
