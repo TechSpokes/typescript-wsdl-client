@@ -1,0 +1,17 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:research:mixed-fixed" targetNamespace="urn:research:mixed-fixed">
+  <xs:complexType name="M" mixed="true"><xs:sequence/></xs:complexType>
+  <xs:complexType name="Base"><xs:sequence><xs:element name="e" type="t:M" fixed="v"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Same"><xs:sequence><xs:element name="e" type="t:M" fixed="v"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Different"><xs:sequence><xs:element name="e" type="t:M" fixed="w"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Absent"><xs:sequence><xs:element name="e" type="t:M"/></xs:sequence></xs:complexType>
+  <xs:complexType name="AnyBase"><xs:sequence><xs:element name="e" fixed="v"/></xs:sequence></xs:complexType>
+  <xs:complexType name="AnySame"><xs:sequence><xs:element name="e" fixed="v"/></xs:sequence></xs:complexType>
+  <xs:complexType name="AnyDifferent"><xs:sequence><xs:element name="e" fixed="w"/></xs:sequence></xs:complexType>
+  <xs:complexType name="IntBase"><xs:sequence><xs:element name="e" type="xs:int" fixed="01"/></xs:sequence></xs:complexType>
+  <xs:complexType name="IntSame"><xs:sequence><xs:element name="e" type="xs:int" fixed="+1"/></xs:sequence></xs:complexType>
+  <xs:complexType name="IntDifferent"><xs:sequence><xs:element name="e" type="xs:int" fixed="2"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Restriction"><xs:complexContent><xs:restriction base="t:Base">
+    <xs:sequence><xs:element name="e" type="t:M" fixed="v"/></xs:sequence>
+  </xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="Primitive" mixed="true"><xs:complexContent mixed="true"><xs:extension base="t:M"/></xs:complexContent></xs:complexType>
+</xs:schema>

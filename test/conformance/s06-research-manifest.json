@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "99db962c4107eece6a1e15e7abfb1fa9c06b4827efd370739282f19251aa581a",
+          "sha256": "4c0f72c5c349eef2df561a14c66f14d6863a8ad2a0f72220ca7f861dc89a1fb3",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1111,7 +1111,7 @@
         {
           "path": "src/compiler/particleRestriction.ts",
           "role": "semantic-source",
-          "sha256": "3aac677c8ebebb8864735368fb7375c32e885d8493e5aa31250077d3bb8bf7cf"
+          "sha256": "5f37c37882c524795252d10c899f61f9c692676d121982e6d8428d04befbc91c"
         },
         {
           "path": "src/compiler/particleSemanticView.ts",
@@ -1421,7 +1421,7 @@
         {
           "path": "test/unit/particle-restriction-independent.test.ts",
           "role": "expectations",
-          "sha256": "69a5e11cc12f579c873f16854b1cb2e927e60a4e4f6e631884f20173c2f52da1"
+          "sha256": "b3e13a8b283da7db6ee20589b54a60df3cdc9334eac6cb2dffcef462c9903e8f"
         },
         {
           "path": "test/unit/particle-upa-independent.test.ts",
@@ -2596,7 +2596,7 @@
         {
           "path": "test/research/re01/private-observed-copy-erasure.test.ts",
           "role": "prototype",
-          "sha256": "66e0c974b8c0907d0d2d8580796a331f041b0648a5910524c132c00afbedd092"
+          "sha256": "f429fdbceb31b1c366cf8d3b49ceff60dabafbe87bb8e286e3243f8ef66345a4"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/private-observed-copy-erasure.xsd",
@@ -2637,6 +2637,21 @@
           "path": "test/conformance/fixtures/xsd/recovery/restriction-nontransitivity.xsd",
           "role": "fixture",
           "sha256": "7dee6889d7b84e37d2cc88bef6faba866b6321884bb8d9a93fd8458fd29fbebc"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/mixed-fixed-particle-independent.xsd",
+          "role": "fixture",
+          "sha256": "03972088e96ac41fabe7d68f795c3c881eb75c2347c0ae722cd3a28e9061a727"
+        },
+        {
+          "path": "test/research/re01/free-ur-common-mixed-payload.test.ts",
+          "role": "prototype",
+          "sha256": "790195e3c99d7f2a9cf86eb756dafd08f8446bd78c93be40d6aec415a25a71e6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-ur-common-mixed-payload.xsd",
+          "role": "fixture",
+          "sha256": "3ea86ad48d91dbfc61b5a2cab7aef31619f8695476bbbeb36e48d13bd4c27067"
         }
       ]
     },

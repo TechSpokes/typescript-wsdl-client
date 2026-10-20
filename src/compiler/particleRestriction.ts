@@ -8,6 +8,7 @@ import {occurrenceAlgebra} from './occurrenceAnalysis.js';
 import {checkTypeDerivation, declarationMethods, RelationProblem} from './schemaTypeRelations.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import {createSchemaScalarKernel} from './schemaScalarKernel.js';
+import {checkDeclaration} from './schemaDeclarationPrimitives.js';
 import type {ScalarFailure} from './schemaScalarKernel.js';
 import {evaluatePreparedGroupWildcard} from './particleWildcardRelation.js';
 import type {DecisionParticle} from './particleWildcardRelation.js';
@@ -104,10 +105,18 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
       const fixedEqual = (a: ElementNode, b: ElementNode): boolean => {
         if (b.value?.kind !== 'fixed') return true;
         if (a.value?.kind !== 'fixed') return false;
-        const result = scalar.equivalent(declaredType(context, a), a.value.lexical, declaredType(context, b), b.value.lexical, a.id);
+        const left = checkDeclaration(context, a.id), right = checkDeclaration(context, b.id);
+        if (left.kind !== 'checked') throw new Incomplete(left);
+        if (right.kind !== 'checked') throw new Incomplete(right);
+        typeDependencies.add(left.typeDependencies); typeDependencies.add(right.typeDependencies);
+        if (!left.constraint || !right.constraint) return unresolved(derived.root, 'Assessed fixed declaration constraint is unavailable');
+        // Full component validity still owes the declared TYPE and mixed
+        // emptiability; the constraint selects its assessed scalar value type.
+        const result = scalar.equivalent(left.constraint.type, left.constraint.lexical, right.constraint.type, right.constraint.lexical, a.id);
         if (result.kind !== 'checked') throw new Incomplete(result);
         typeDependencies.add(result.typeDependencies);
-        if (result.obligations.length) return unresolved(derived.root, 'Fixed value comparison has undischarged scalar prerequisites');
+        if (left.scalarObligations.length || right.scalarObligations.length || result.obligations.length)
+          return unresolved(derived.root, 'Fixed value comparison has undischarged scalar prerequisites');
         return result.value;
       };
       const decisions = new Map<SemanticParticle, DecisionParticle>();
