@@ -15,7 +15,6 @@ import type {AttributeFailure, OriginalAttributeUse, AttributeWildcard} from './
 import {deriveActualComplexContent, deriveOriginalComplexPropertyContent, deriveModelGroupContent} from './complexTypeContent.js';
 import {prepareSemanticParticleView} from './particleSemanticView.js';
 import type {SemanticParticle} from './particleSemanticView.js';
-import {wildcardNamespaces} from './wildcardAlgebra.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {declaredType, resolveSemanticType} from './schemaTypeIdentity.js';
@@ -276,7 +275,8 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
             if (y.originalParticle) {charge(2 + y.originalParticle.length); dependencies.add(y.originalParticle);}
             if (x.element && y.element) enqueue(state, {kind: 'node', a: x.element, b: y.element});
             else if (x.wildcard && y.wildcard) {
-              valid = wildcard({namespace: wildcardNamespaces(x.wildcard, charge), processContents: x.wildcard.processContents, sources: []}, {namespace: wildcardNamespaces(y.wildcard, charge), processContents: y.wildcard.processContents, sources: []});
+              valid = wildcard({namespace: x.wildcard.namespace, processContents: x.wildcard.processContents, sources: []},
+                {namespace: y.wildcard.namespace, processContents: y.wildcard.processContents, sources: []});
             }
             for (let index = 0; index < x.children.length; index++) enqueue(state, {kind: 'particle', a: x.children[index], b: y.children[index]});
           } else if (task.kind === 'use') {

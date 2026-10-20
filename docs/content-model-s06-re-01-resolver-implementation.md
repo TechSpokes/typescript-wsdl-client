@@ -54,6 +54,11 @@ Missing-input and separately owned aggregate qualifications remain explicit unde
 Graph-only `prepareSemanticRequest` remains useful structurally, but cannot supply missing source-document qualification to complete verification.
 `forkSemanticCandidate` constructs an authenticated direct child of the actual or hypothetical parent and preserves original source evidence separately from its active raw properties.
 
+`SemanticCandidateDelta.rawParticleWildcards` supplies complete namespace/process properties for genuinely new ANY particles, including the abstract finite empty namespace set.
+The [representation contract](content-model-s06-re-01.md#abstract-particle-wildcard-properties) retains first-birth identity protection, canonical set semantics, source/native-origin authority and every inherited fresh root.
+`rawParticleWildcardProperties` reads the context-owned tuple; semantic consumers share `readParticleWildcard` rather than interpreting the lexical diagnostic placeholder.
+The semantic projection supplies selected empty-alphabet viability to the existing occurrence owner without changing ordinary canonical analysis defaults.
+
 The internal `loadSemanticSchemaInput` entry shares the existing loader implementation and applies XML Schema whitespace mapping to XSD namespace and schema-location values before interpretation, comparison and cache keys.
 It preserves original syntax, bytes, digests and namespace bindings; `loadSchemaInput`, WSDL transport behavior and the public defaults are unchanged.
 Import referents must match both namespace presence and value, while an explicitly empty import namespace without a supplied referent is not itself forbidden.
@@ -114,6 +119,7 @@ The leaf issues retain exact reviewed revisions and unresolved findings; a mappe
 | Rule or property | Shared owner and entry | Independent controls and scope |
 | --- | --- | --- |
 | Complete B availability, collision domains, source identity, original/fork isolation | `semanticContext.ts`: `prepareSemanticRequest`, `forkSemanticCandidate` | `semantic-context-independent.test.ts`, `derivation-domain.behavior.test.ts`; structural authority only |
+| Fresh abstract particle namespace/process properties | `schemaParticleWildcardProperties.ts`, authenticated context tuple table | `particle-wildcard-properties-independent.test.ts`, complete abstract-wildcard RE01 and source-reference controls; source origin and formal/realized occurrence remain separate |
 | Inclusive request limits and immutable input/output | `semanticBudget.ts` | Context and finite-checker controls; sticky terminal result, charged snapshots and no getter/iterator invocation |
 | Actual document grammar and retained source universe | `schemaDocumentSyntax.ts`: `prepareSourceSchemaRequest`, `checkSchemaDocumentSyntax` | `schema-document-independent.test.ts`; complete notation property reconciliation, separate source syntax and namespace-mapping prerequisites |
 | Fixed assessment-schema declarations, values and XSI | `schemaSourceGrammar.ts`, `schemaSourceValues.ts`, `schemaSourceWildcards.ts` | Source and XML-inventory independent controls; contextual grammar, independent assessment universe, opaque handles, typed keys/IDs and complete dated import |

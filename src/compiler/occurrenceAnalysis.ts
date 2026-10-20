@@ -76,12 +76,18 @@ export type AnalysisResult = Readonly<
 
 /** Pure bounded DAG evaluation. Element/type value recursion is an atomic element boundary. */
 export function analyzeOccurrences(composed: ComposedGraph, limits?: SemanticLimits): AnalysisResult;
-export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits, accounting: Readonly<{budget: SemanticBudget}>): AnalysisResult | ResourceLimitFailure;
-export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits = {}, accounting?: Readonly<{budget: SemanticBudget}>): AnalysisResult | ResourceLimitFailure {
-  return accounting ? accounting.budget.guard(() => analyzeOwnedOccurrences(composed, limits, accounting.budget)) : analyzeOwnedOccurrences(composed, limits);
+export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits, accounting: Readonly<{
+  /** Selected semantic projection data; omission preserves canonical analysis's qualified ANY default. */
+  budget: SemanticBudget; wildcardRealization?: ReadonlyMap<NodeId, boolean>;
+}>): AnalysisResult | ResourceLimitFailure;
+export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits = {}, accounting?: Readonly<{
+  budget: SemanticBudget; wildcardRealization?: ReadonlyMap<NodeId, boolean>;
+}>): AnalysisResult | ResourceLimitFailure {
+  return accounting ? accounting.budget.guard(() => analyzeOwnedOccurrences(composed, limits, accounting.budget, accounting.wildcardRealization)) : analyzeOwnedOccurrences(composed, limits);
 }
 
-function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits, request?: SemanticBudget): AnalysisResult {
+function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits, request?: SemanticBudget,
+  wildcardRealization?: ReadonlyMap<NodeId, boolean>): AnalysisResult {
   let current: GraphNode | undefined;
   const allocate = (units: number) => request?.chargeWork(units);
   try {
@@ -177,7 +183,12 @@ function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits
           const id = target(node.term.declaration, node)!, declaration = get(id);
           if (declaration.kind !== "element") throw new Error("Checked element target changed");
           allocate(20); content = {nullable: false, hasRealization: true, elements: [{name: declaration.name, occurs: ONE_OCCURS, declarations: [id], particles: [node.id]}], wildcard: ZERO_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
-        } else if (node.term.kind === "any") {allocate(8); content = {nullable: false, hasRealization: true, elements: [], wildcard: ONE_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};}
+        } else if (node.term.kind === "any") {
+          let hasRealization = true;
+          if (wildcardRealization) {allocate(2); hasRealization = wildcardRealization.get(node.id) ?? true;}
+          allocate(8); content = {nullable: false, hasRealization, elements: [], wildcard: hasRealization ? ONE_OCCURS : ZERO_OCCURS,
+            effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
+        }
         else {
           allocate(1 + f.children.length); const parts: ParticleSummary[] = [];
           for (const id of f.children) {

@@ -225,7 +225,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [S06 Reordered Derivation Research](docs/content-model-s06-re-01.md) | Constructive witnesses, counterexamples and decision-procedure proof obligations |
 | [S06 RE01 Support Reconstruction](docs/content-model-s06-re-01-support-reconstruction.md) | Conditional member/copy/bundle reductions, value/name palettes and open support bounds |
 | [S06 Hypothetical Resolver Specification](docs/content-model-s06-re-01-resolver.md) | Candidate contexts, component identity, validation ownership and implementation tasks |
-| [S06 Research Resolver Implementation](docs/content-model-s06-re-01-resolver-implementation.md) | Resolver guarantees, verification and the future production adapter seam |
+| [S06 Research Resolver Implementation](docs/content-model-s06-re-01-resolver-implementation.md) | Resolver guarantees, abstract wildcard properties, verification and the future production seam |
 | [S06 Wildcard Research](docs/content-model-s06-pw-01.md) | Member and whole-group cardinality, original namespace context and authority |
 | [S06 Calendar Research](docs/content-model-s06-dt-01.md) | Exact negative-year calendar alternatives and corrected reference observations |
 | [S06 Research Handoff](docs/content-model-s06-research-handoff.md) | Joint contracts, reproducible evidence, unresolved gates and production ownership |

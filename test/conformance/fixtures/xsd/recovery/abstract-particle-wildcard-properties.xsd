@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:abstract-particle-wildcard" targetNamespace="urn:re01:abstract-particle-wildcard">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:element name="h" type="xs:anyType" abstract="true"/>
+  <xs:complexType name="B0"><xs:complexContent><xs:extension base="t:A"><xs:sequence><xs:any namespace="urn:left" processContents="strict"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="B1"><xs:complexContent><xs:extension base="t:A"><xs:sequence><xs:any namespace="urn:right" processContents="strict"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

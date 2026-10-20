@@ -5,7 +5,7 @@ import {assertSemanticParticleView} from './particleSemanticView.js';
 import type {SemanticParticle, SemanticParticleView} from './particleSemanticView.js';
 import {effectiveSubstitutionMembers} from './schemaTypeRelations.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
-import {namespaceAllows, wildcardNamespaces} from './wildcardAlgebra.js';
+import {namespaceAllows} from './wildcardAlgebra.js';
 import type {NamespaceConstraint} from './wildcardAlgebra.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
@@ -65,7 +65,7 @@ export function checkParticleAttribution(context: SemanticContext, view: Semanti
         charge(6); const p = leaf.particle, names: ExpandedName[] = [];
         let wildcard: NamespaceConstraint | undefined;
         if (p.wildcard) {
-          wildcard = wildcardNamespaces(p.wildcard, charge);
+          wildcard = p.wildcard.namespace;
           for (const ns of wildcard.namespaces) {charge(2 + ns.length); namespaces.add(ns);}
         } else {
           const element = p.element!;

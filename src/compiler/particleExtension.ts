@@ -9,7 +9,6 @@ import {assertParticleContentView} from './complexTypeContent.js';
 import {prepareSemanticParticleView} from './particleSemanticView.js';
 import type {SemanticParticle} from './particleSemanticView.js';
 import {checkDeclaredParticleLegality} from './particleLocalAssessment.js';
-import {wildcardNamespaces} from './wildcardAlgebra.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
@@ -84,7 +83,7 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
           }
         } else if (x.wildcard && y.wildcard) {
           if (x.wildcard.processContents !== y.wildcard.processContents) return done(false);
-          const a = wildcardNamespaces(x.wildcard, charge), z = wildcardNamespaces(y.wildcard, charge);
+          const a = x.wildcard.namespace, z = y.wildcard.namespace;
           if (a.kind !== z.kind || a.namespaces.length !== z.namespaces.length) return done(false);
           for (let i = 0; i < a.namespaces.length; i++) if (budget.compareText(a.namespaces[i], z.namespaces[i]) !== 0) return done(false);
         }

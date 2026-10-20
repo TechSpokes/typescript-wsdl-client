@@ -45,6 +45,9 @@ One closed co-born NP/copy bundle can use an existing representative and a genui
 The native private-copy control keeps the original template property-only in H while every actual and retained fresh root is checked.
 The number of signatures, copies and protected ports remains unbounded by these conditional results; general coverage and termination stay open.
 
+The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
+Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.
+
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
 The [current derivability continuation](#derivability-and-affiliation-continuation) separates that assessment from hypothetical checking; neither the new comparison interface nor a dependency census supplies the missing complete theorem.
@@ -100,6 +103,55 @@ Availability alone does not require unrelated original definitions to be revalid
 All actual obligations remain in Γ; an actual affiliation result cannot discharge a consumed hypothetical relation after D changes.
 Original source-level components such as notations remain explicit source-universe operands even when they have no canonical node ID.
 Unrepresented fresh categories and unqualified negative lookups return unresolved.
+
+### Abstract particle wildcard properties
+
+An abstract wildcard namespace property is not limited to an XML namespace spelling.
+The [dated component tableau](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#Wildcard_details) admits a finite set, including the empty set; the selected namespace algebra already preserves that interpretation.
+The current native `wildcardNamespaces` decoder accepts no spelling of the empty set: `##any` and `##other` are complements, and every accepted finite token list contributes at least one member.
+This is a native representation boundary, not a claim that the dated XML Schema namespace-list datatype forbids an empty list.
+
+The internal candidate delta therefore accepts `rawParticleWildcards`, containing `RawParticleWildcardProperties` rows with an exact particle ID, namespace constraint and processContents.
+Only a genuinely new active ANY particle can receive a row at its first addition.
+Original, source-private, already stored and inherited identities cannot acquire or override one, including identities inactive in the parent view.
+
+Preparation snapshots and charges the data, rejects accessors or unsupported fields, and canonicalizes namespace sets to sorted duplicate-free arrays.
+Omitting the table in a descendant inherits the existing immutable property; it cannot remove or replace that property.
+This extends the internal abstract representation, not the canonical catalog or source XML format.
+
+`schemaParticleWildcardProperties.ts` selects the property once for semantic consumers.
+Construction, declared and restriction views, attribution, particle restriction, raw extension, component equality and endpoint correspondence use the same namespace/process tuple.
+Original and authenticated source-private wildcards retain their lexical authority; no abstract tuple creates native ur-type origin.
+
+The ordinary canonical occurrence analyzer retains its existing contract.
+The authentic semantic projection passes empty-alphabet viability at the final projected particle ID to that same analyzer, including after singleton collapse.
+No second occurrence algorithm or epsilon transition for a required wildcard is introduced.
+
+| Abstract particle | Formal ETR | Schema emptiable | Nullable | Has a realization | Realized wildcard count |
+| --- | --- | --- | --- | --- | --- |
+| EMPTY 1..1 | 1..1 | false | false | false | 0..0 |
+| EMPTY 0..1 | 0..1 | true | true | true | 0..0 |
+
+An empty namespace set does not waive processContents or other component rules.
+In particular EMPTY `strict` restricts each of two disjoint singleton `strict` bases, while EMPTY `skip` still fails their required process restriction.
+Formal range and schema emptiability remain distinct from possible instance content.
+
+The complete native control adds fresh U and V restricting original primitive B0 and B1, whose singleton wildcard namespaces are disjoint.
+U and V select the same real EMPTY wildcard, with its own mandatory full construction root.
+An independent empty A/B/R/D host supplies the D-to-B evidence.
+
+The one-node control checks all eleven actual components, three fresh roots, fourteen H members and twelve H component receipts.
+The separate two-node control adds C and nonprimitive Z, checks all five fresh roots in both contexts, and requires Z's exact child with inherited EMPTY properties.
+Its H receipts are fourteen and twelve; omitting the Z child remains unresolved.
+These counts describe consumed H obligations, not a transfer of every Gamma receipt into each child.
+
+Independent source parsing and one live engine qualify the original XML fixture only.
+The abstract EMPTY property and complete forest are established by the component rules and native controls, not by an invented XML spelling or an engine oracle for that property.
+The unit controls separately cover selected process/set equality, source correspondence, inherited inactive identities, collapsed projection IDs, attribution reachability and inclusive sticky budget boundaries.
+
+This repairs one concrete native representation gap.
+It does not prove that every semantic B construction has a faithful native encoding, complete local qualification or founded operational evidence.
+Source-private subroot realization, genuine identity-constraint properties and the input-derived helper/evidence bounds remain separate obligations; no general-negative or termination result follows.
 
 ### Alternative A and recorded project decision
 

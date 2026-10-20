@@ -8,6 +8,7 @@
   },
   "include": [
     "wildcard-algebra.test.ts",
+    "particle-wildcard-properties-independent.test.ts",
     "semantic-context-independent.test.ts",
     "hypothetical-scoped-identity-independent.test.ts",
     "semantic-type-dependencies.test.ts",

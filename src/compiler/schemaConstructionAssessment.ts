@@ -18,6 +18,7 @@ import type {ParticleContentView} from './complexTypeContent.js';
 import {validateRawComplexTypeProperties} from './re01TypePropertyValidation.js';
 import {isXmlNCName, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import {wildcardNamespaces, namespaceExpressible} from './wildcardAlgebra.js';
+import {readParticleWildcard} from './schemaParticleWildcardProperties.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
 import {occurrenceAlgebra} from './occurrenceAnalysis.js';
 import {checkComplexParticleContent} from './particleLocalAssessment.js';
@@ -452,8 +453,9 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             const group = reference(node.term.reference);
             if (group?.kind !== 'group') return fail('particle-properties', 'Group particle must reference a model group');
           } else if (node.term.kind === 'any') {
-            if (!namespaceExpressible(wildcardNamespaces(node.term.wildcard, b.chargeWork), b.chargeWork) ||
-              !['strict', 'lax', 'skip'].includes(node.term.wildcard.processContents))
+            const wildcard = readParticleWildcard(context, node);
+            if (!namespaceExpressible(wildcard.namespace, b.chargeWork) ||
+              !['strict', 'lax', 'skip'].includes(wildcard.processContents))
               return fail('wildcard-properties', 'Particle wildcard namespace is not expressible');
           } else for (const child of particleChildren ?? node.term.children) {
             b.chargeWork(); const item = requireNode(child);
