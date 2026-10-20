@@ -102,6 +102,14 @@ There is no production selector/API/version change, release or downstream activa
 
 ### What is established and what remains unproved
 
+The [first-birth helper reconstruction](content-model-s06-re-01.md#first-birth-restriction-reconstruction-of-common-content-helpers) retains exact base identities while changing eligible fresh extension methods to restriction.
+With common exact content and complete affiliation, membership, property-equality and frontier guards, its helper child duties disappear.
+Complete live-consumer controls pass where the older E-cut recipe rejects affiliation; every actual and fresh obligation remains checked.
+
+This is conditional reconstruction, not a Γ-derived bound or a complete search.
+A separate fresh-head control also reconstructs a different complete root when pointwise recolouring fails, without deleting any inherited component.
+The next general task is to extract some compatible raw-content/type/head support from arbitrary complete successful forests, rather than preserve every prescribed helper graph.
+
 | Finding | Established scope | Remaining limit |
 | --- | --- | --- |
 | Shared local authorities and supplied finite proofs | Accepted local rules and context-bound checks | General helper existence is not decided |

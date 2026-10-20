@@ -91,7 +91,7 @@ async function freshHeadSeed() {
     const members = [root.context, child.context].map(context => {const checked = effectiveSubstitutionMembers(context, k.id); assert.equal(checked.kind, 'checked'); return checked.value;});
     return {root: root.context, child: child.context, result, members, additions};
   };
-  return {actual, d, e, u, k, m, make};
+  return {request, actual, a, b, d, e, u, k, m, use, endpoint, raw, make};
 }
 
 describe('scoped finite-forest observation pruning', () => {
@@ -128,5 +128,37 @@ describe('scoped finite-forest observation pruning', () => {
     expect(deleted.result).toMatchObject({kind: 'candidate-rejected', component: s.d.id, rule: 'derivation-ok-restriction.5.4'});
     // K's global identity is fresh but its QName is an ORIGINAL LOCAL role.
     // The failed same-structure deletion does not refute another SOME witness.
+  });
+
+  it('rebuilds another complete root when pointwise recolouring loses a consumed fresh head member', async () => {
+    const s = await freshHeadSeed(), original = s.make(true);
+    assert.equal(original.result.kind, 'checked-candidate', JSON.stringify(original.result));
+    const restricted: ComplexTypeNode = {...s.u, derivation: {kind: 'restriction', contentKind: 'complex', base: local(s.b.id), facets: []}};
+    const recoloured = s.request.candidate({key: 'first-birth-recoloured-head', active: original.root.members,
+      additions: original.additions.map(node => node.id === s.u.id ? restricted : node), endpoint: s.endpoint,
+      rawTypes: [s.raw(s.a), s.raw(s.b), s.raw(s.endpoint), s.raw(s.e), s.raw(restricted)],
+      rawElements: [{element: s.k.id, final: [], block: ['restriction']}, {element: s.m.id, final: [], block: []}]});
+    assert.equal(recoloured.kind, 'prepared');
+    const verifyRoot = (context: typeof s.actual) => verifyFiniteRe01Evidence(s.actual, s.d.id, {root: 'root', nodes: [
+      {id: 'root', parent: s.actual, context, target: s.d.id, intermediate: s.e.id, ancestor: local(s.a.id), premises: []},
+    ]});
+    expect(verifyRoot(recoloured.context)).toMatchObject({kind: 'candidate-rejected',
+      component: s.d.id, rule: 'derivation-ok-restriction.5.4'});
+
+    // A is empty in THIS source, so E may select exact original D.content.
+    // This new root never introduces the old helpers; no inherited row is removed.
+    const e: ComplexTypeNode = {...s.e, content: s.d.content};
+    const rebuilt = s.request.candidate({key: 'exact-original-content-alternative', active: [...s.actual.members, e.id],
+      additions: [e], endpoint: s.endpoint, rawTypes: [s.raw(s.a), s.raw(s.b), s.raw(s.endpoint), s.raw(e)]});
+    assert.equal(rebuilt.kind, 'prepared');
+    const result = verifyRoot(rebuilt.context);
+    assert.equal(result.kind, 'checked-candidate', JSON.stringify(result));
+    expect(result.proof).toHaveLength(1);
+    expect(new Set(result.actualComponents.map(receipt => receipt.component))).toEqual(new Set(s.actual.members));
+    expect(new Set(result.proof[0]!.correspondence.fresh)).toEqual(new Set([e.id]));
+    expect(result.proof[0]!.components.some(receipt => receipt.component === e.id)).toBe(true);
+    expect(rebuilt.context.members).toEqual(expect.arrayContaining([...s.actual.members]));
+    expect(rebuilt.context.members).toHaveLength(s.actual.members.length + 1);
+    expect(rebuilt.context.lookup(s.d.id)).toEqual(original.root.lookup(s.d.id));
   });
 });

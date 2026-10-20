@@ -13,7 +13,7 @@ import {checkRawParticleExtension} from '../../../src/compiler/particleExtension
 import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import {checkCandidateCorrespondence, re01Ancestor} from '../../../src/compiler/re01CandidateCorrespondence.js';
 import {assertFiniteCandidateReceipt, verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
-import type {FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verification.js';
+import type {FiniteRe01Evidence, FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verification.js';
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
 import {measureMeaningfulPrefixBounds} from './meaningful-prefix-bound.js';
 import {checkSubstitution, checkTypeDerivation, effectiveSubstitutionMembers, immediateTypeBase} from '../../../src/compiler/schemaTypeRelations.js';
@@ -199,6 +199,152 @@ async function forest(affiliation?: Affiliation, renamed = false, budget?: Seman
   return {request, a, d, e, f, u, r, v, helpers, particles, declarations, h, m,
     wrapper, separator, tail, extra, old, unused, headUse, leaf, consumerTypes, consumerParticles, build, evidence};
 }
+
+// Reconstruct these fixture helpers at first birth over the same immutable Γ.
+// Preserve their exact bases and every other row; an issued parent is not edited.
+function recolourFreshHelpers(seed: Awaited<ReturnType<typeof forest>>, from: SemanticContext): SemanticContext {
+  const selected = new Set(seed.helpers.map(node => node.id));
+  const additions = from.members.flatMap(id => {
+    if (seed.request.actual.lookup(id).kind === 'found') return [];
+    const found = from.lookup(id);
+    if (found.kind !== 'found') throw new Error(id);
+    const node = found.node;
+    return [node.kind === 'complexType' && selected.has(id) && node.derivation?.kind === 'extension'
+      ? {...node, derivation: {...node.derivation, kind: 'restriction' as const}} : node];
+  });
+  const rawTypes = from.members.flatMap(id => {
+    const row = from.rawTypeProperties(id);
+    return row ? [selected.has(id) && row.derivation.method === 'extension'
+      ? {...row, derivation: {...row.derivation, method: 'restriction' as const}} : row] : [];
+  });
+  const rawElements = from.members.flatMap(id => {
+    const row = from.rawElementProperties(id); return row ? [row] : [];
+  });
+  const rebuilt = seed.request.candidate({key: 'first-birth-restrictions', active: from.members, additions,
+    endpoint: complex(from, seed.d.id), rawTypes, rawElements});
+  if (rebuilt.kind !== 'prepared') throw new Error(JSON.stringify(rebuilt));
+  return rebuilt.context;
+}
+
+function rootOnlyEvidence(seed: Awaited<ReturnType<typeof forest>>, context: SemanticContext): FiniteRe01Evidence {
+  return {root: 'root', nodes: [{id: 'root', parent: seed.request.actual, context, target: seed.d.id,
+    intermediate: seed.e.id, ancestor: local(seed.a.id), premises: []}]};
+}
+
+describe('first-birth common-content restriction reconstruction', () => {
+  // The role guards are supplied for this finite family. These controls do not
+  // extract it from arbitrary successes or establish general negative answers.
+  it.each([false, true])('retains exact interior ancestry and live roots, restriction consumers=%s', async restrictionConsumers => {
+    const seed = await forest({head: 'R', member: 'V', liveHeadUse: 'before-separator', restrictionConsumers});
+    const original = seed.build('repair'), rebuilt = recolourFreshHelpers(seed, original);
+    if (!seed.h || !seed.m) throw new Error('Expected interior affiliation');
+    expect(checkComponentConstruction(original, seed.m.id)).toMatchObject({kind: 'checked'});
+    const oldProof = seed.evidence(original);
+    const cut = oldProof.nodes.find(node => node.parent === original && node.target === seed.v.id)!;
+    expect(complex(cut.context, seed.v.id).derivation?.base).toEqual(local(seed.e.id));
+    expect(checkSubstitution(cut.context, seed.m.id, seed.h.id, {mode: 'affiliation'}))
+      .toMatchObject({kind: 'checked', value: false});
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, oldProof))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'e-props-correct.4', component: seed.m.id});
+
+    const result = verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, rootOnlyEvidence(seed, rebuilt));
+    expect(result).toMatchObject({kind: 'checked-candidate'});
+    if (result.kind !== 'checked-candidate') throw new Error(JSON.stringify(result));
+    assertFiniteCandidateReceipt(seed.request.actual, result);
+    expect(result.proof).toHaveLength(1);
+    const step = result.proof[0]!;
+    expect(step.premises).toEqual([]);
+    expect(new Set(result.actualComponents.map(receipt => receipt.component))).toEqual(new Set(seed.request.actual.members));
+    expect(result.actualComponents.every(receipt => receipt.contextId === seed.request.actual.contextId)).toBe(true);
+    // A one-node TOTAL certificate is justified here because D is the sole
+    // actual nonprimitive target; other Γ forests are not being discarded.
+    expect(result.actualComponents.filter(receipt => receipt.re01 && !receipt.re01.primitive)
+      .map(receipt => receipt.component)).toEqual([seed.d.id]);
+    const fresh = rebuilt.members.filter(id => !seed.request.actual.members.includes(id));
+    expect(step.components.map(receipt => receipt.component)).toEqual(expect.arrayContaining(fresh));
+    expect(step.components.every(receipt => receipt.contextId === rebuilt.contextId)).toBe(true);
+    expect(step.components.filter(receipt => receipt.re01 && !receipt.re01.primitive)).toEqual([]);
+    expect(step.primitiveNoChange).toContain(seed.e.id);
+    expect(rebuilt.members).toEqual(original.members);
+    const helpers = new Set(seed.helpers.map(node => node.id));
+    for (const id of original.members) {
+      const found = original.lookup(id);
+      if (found.kind !== 'found') throw new Error(id);
+      const node = found.node;
+      // Full row equality protects bases, ownership, sharing, declarations,
+      // particles, endpoint fields and E's protected extension together.
+      expect(rebuilt.lookup(id)).toEqual({kind: 'found', node: helpers.has(id) && node.kind === 'complexType'
+        ? {...node, derivation: {...node.derivation!, kind: 'restriction'}} : node});
+      const row = original.rawTypeProperties(id);
+      expect(rebuilt.rawTypeProperties(id)).toEqual(row && helpers.has(id)
+        ? {...row, derivation: {...row.derivation, method: 'restriction'}} : row);
+      expect(rebuilt.rawElementProperties(id)).toEqual(original.rawElementProperties(id));
+    }
+    for (const helper of seed.helpers) {
+      expect(complex(rebuilt, helper.id)).toMatchObject({content: seed.wrapper.id, derivation: {kind: 'restriction'}});
+      expect(rebuilt.rawTypeProperties(helper.id)?.content).toEqual({kind: 'element-only', particle: seed.wrapper.id});
+      const receipt = step.components.find(item => item.component === helper.id)!;
+      expect(receipt.obligations).toEqual([]);
+      expect(receipt.re01).toBeUndefined();
+    }
+    expect(checkSubstitution(rebuilt, seed.m.id, seed.h.id, {mode: 'affiliation'}))
+      .toMatchObject({kind: 'checked', value: true});
+    const members = {kind: 'checked', value: [seed.h.id, seed.m.id]};
+    expect(effectiveSubstitutionMembers(original, seed.h.id)).toMatchObject(members);
+    expect(effectiveSubstitutionMembers(rebuilt, seed.h.id)).toMatchObject(members);
+    for (const consumer of seed.consumerTypes)
+      expect(checkComponentConstruction(rebuilt, consumer.id)).toMatchObject({kind: 'checked', obligations: []});
+    expect(result.claims).toMatchObject({universalCoverage: false, completeNegativeAnswer: false, searchTermination: false});
+  });
+
+  it('still rejects an unused malformed fresh root after removing helper extension duties', async () => {
+    const seed = await forest(), original = seed.build('repair', 'unused');
+    const rebuilt = recolourFreshHelpers(seed, original);
+    expect(rebuilt.lookup(seed.unused.id)).toEqual(original.lookup(seed.unused.id));
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, rootOnlyEvidence(seed, rebuilt)))
+      .toMatchObject({kind: 'candidate-rejected', rule: 'invalid-schema', component: seed.unused.id});
+  });
+
+  it('rejects recolouring an inherited helper in an issued parent', async () => {
+    const seed = await forest(), parent = seed.build('repair');
+    const node = complex(parent, seed.u.id);
+    const changed = {...node, derivation: {...node.derivation!, kind: 'restriction' as const}};
+    expect(forkSemanticCandidate(parent, {key: 'inherited-method-edit', active: parent.members,
+      additions: [changed], endpoint: complex(parent, seed.d.id), rawTypes: [raw(changed)]}))
+      .toMatchObject({kind: 'candidate-rejected', code: 'identity', component: seed.u.id});
+    expect(complex(parent, seed.u.id)).toEqual(node);
+  });
+
+  it.each(['final', 'block'] as const)('requires the independent head %s guard', async guard => {
+    const options: Affiliation = {head: 'E', member: 'F', extensionOnly: true,
+      liveHeadUse: 'before-separator', restrictionConsumers: true};
+    const neutral = await forest(options), neutralRoot = recolourFreshHelpers(neutral, neutral.build('repair'));
+    expect(verifyFiniteRe01Evidence(neutral.request.actual, neutral.d.id, rootOnlyEvidence(neutral, neutralRoot)))
+      .toMatchObject({kind: 'checked-candidate'});
+    const seed = await forest({...options, [guard]: ['restriction']});
+    const original = seed.build('repair'), rebuilt = recolourFreshHelpers(seed, original);
+    const [rh, rm] = seed.consumerTypes;
+    if (!seed.h || !seed.m || !rh || !rm) throw new Error('Expected consumed affiliation');
+    // F extends E, which extends A: an all-extension path is insufficient for
+    // primitive status because F's immediate base is not designated A.
+    expect(checkComponentConstruction(original, seed.f.id)).toMatchObject({kind: 'checked', re01: {primitive: false}});
+    expect(checkComponentConstruction(original, seed.m.id)).toMatchObject({kind: 'checked'});
+    expect(checkComponentConstruction(original, rm.id)).toMatchObject({kind: 'checked'});
+    expect(effectiveSubstitutionMembers(original, seed.h.id))
+      .toMatchObject({kind: 'checked', value: [seed.h.id, seed.m.id]});
+    expect(checkSubstitution(rebuilt, seed.m.id, seed.h.id, {mode: 'affiliation'}))
+      .toMatchObject({kind: 'checked', value: guard === 'block'});
+    expect(effectiveSubstitutionMembers(rebuilt, seed.h.id))
+      .toMatchObject({kind: 'checked', value: guard === 'final' ? [seed.h.id, seed.m.id] : [seed.h.id]});
+    expect(checkComponentConstruction(rebuilt, rm.id)).toMatchObject(guard === 'final'
+      ? {kind: 'checked'} : {kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4', component: rm.id});
+    expect(verifyFiniteRe01Evidence(seed.request.actual, seed.d.id, rootOnlyEvidence(seed, rebuilt)))
+      .toMatchObject(guard === 'final'
+        ? {kind: 'candidate-rejected', rule: 'e-props-correct.4', component: seed.m.id}
+        : {kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4', component: rm.id});
+    // These distinguish two rejected supplied roots, not Γ nonexistence.
+  });
+});
 
 describe('simultaneous live-E and finite helper forest reconstruction', () => {
   it('keeps the original two-position witness and trim-only failure, then repairs the complete mixed forest', async () => {

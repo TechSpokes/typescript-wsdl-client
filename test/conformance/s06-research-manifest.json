@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "8c01dda15e6e30f5d081d1a6a6a8d51e048058a0d2e8e024c87523299d784f8b",
+          "sha256": "b70de73f9feb1187d5e88185d4809499e06bf99f18753980073e49776001a2b4",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2236,7 +2236,7 @@
         {
           "path": "test/research/re01/live-helper-forest.test.ts",
           "role": "reference",
-          "sha256": "d28d43378c81e50d9c16c94ceeb4c62d7b2fd8ef80eb4ad51ecbaceed1232409"
+          "sha256": "2b0bffdd1ac9f175089e5e1797aa37e523f7c3df18b8857b11e5f07055e6254b"
         },
         {
           "path": "test/research/re01/inherited-consumer-obstruction.ts",
@@ -2481,7 +2481,7 @@
         {
           "path": "test/research/re01/finite-observation-pruning.test.ts",
           "role": "prototype",
-          "sha256": "5d58c72ba5e4fc1b124618a8d114434cf8bf955e84cdb264cd2b7e72fd25318f"
+          "sha256": "f00629e761d5225948c4f642667ec3e96eee4845a6b5f16ececd458da6337b35"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/fresh-head-observation-independent.xsd",
