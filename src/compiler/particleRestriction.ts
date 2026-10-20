@@ -12,7 +12,6 @@ import {checkDeclaration} from './schemaDeclarationPrimitives.js';
 import type {ScalarFailure} from './schemaScalarKernel.js';
 import {evaluatePreparedGroupWildcard} from './particleWildcardRelation.js';
 import type {DecisionParticle} from './particleWildcardRelation.js';
-import {wildcardNamespaces} from './wildcardAlgebra.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -131,8 +130,8 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
           if (!source) return unresolved(p, 'Semantic particle provenance is unavailable');
           decisions.set(p, Object.freeze({owner: Object.freeze({id: p.source, context: Object.freeze({source})}), kind: p.kind, occurs: p.occurs,
             total: p.summary.effectiveTotalRange, members: Object.freeze(p.children.map(child => decisions.get(child)!)), namespace: p.element?.name.namespace,
-            wildcard: p.wildcard ? Object.freeze({constraint: wildcardNamespaces(p.wildcard, charge), processContents: p.wildcard.processContents,
-              lexical: Object.freeze({value: p.wildcard.namespace.value, effectiveNamespace: p.wildcard.namespace.context.effectiveNamespace})}) : undefined}));
+            wildcard: p.wildcard ? Object.freeze({constraint: p.wildcard.namespace, processContents: p.wildcard.processContents,
+              lexical: Object.freeze({value: p.wildcard.lexical.value, effectiveNamespace: p.wildcard.lexical.context.effectiveNamespace})}) : undefined}));
         }
         return decisions.get(root)!;
       };

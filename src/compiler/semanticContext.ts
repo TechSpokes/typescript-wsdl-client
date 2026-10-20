@@ -27,6 +27,8 @@ import type {OriginalGeneratedScalarReference, SemanticTypeReference} from './se
 import {validateRawAttributeShape} from './schemaAttributeProperties.js';
 import type {RawAttributeProperties} from './schemaAttributeProperties.js';
 import {computeOriginalSourceAbsence} from './originalSourceMembership.js';
+import {prepareRawParticleWildcardProperties} from './schemaParticleWildcardProperties.js';
+import type {RawParticleWildcardProperties} from './schemaParticleWildcardProperties.js';
 
 export const SEMANTIC_CONTEXT_CONTRACT = 'RE01-domain-boundary-v1' as const;
 export type ContextLookup = Readonly<{kind: 'found'; node: GraphNode} | {kind: 'missing' | 'outside-context'; id: NodeId}>;
@@ -78,6 +80,7 @@ export type SemanticContext = Readonly<{
   rawElementProperties(id: NodeId): RawElementProperties | undefined;
   rawAttributeProperties(id: NodeId): RawAttributeProperties | undefined;
   rawAttributeGroupProperties(id: NodeId): RawAttributeGroupProperties | undefined;
+  rawParticleWildcardProperties(id: NodeId): RawParticleWildcardProperties | undefined;
   /** Checked accessors throw SemanticContextAccessError for an inactive/missing owner. */
   references(id: NodeId): readonly SemanticReferenceSlot[];
   owner(id: NodeId): NodeId | undefined;
@@ -96,6 +99,8 @@ export type SemanticCandidateDelta = Readonly<{
   /** Independent scalar component membership; omission inherits the parent. */
   scalarSlots?: readonly OriginalGeneratedScalarReference[];
   rawAttributeGroups?: readonly RawAttributeGroupProperties[];
+  /** Complete abstract properties, admitted only with the particle's genuine first birth. */
+  rawParticleWildcards?: readonly RawParticleWildcardProperties[];
   /** Omission inherits the parent; an explicit selection must include every new addition. */
   notations?: Readonly<{active: readonly ExpandedName[]; additions?: readonly SchemaNotationProperties[]}>;
 }>;
@@ -227,6 +232,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         edges: ReadonlyMap<NodeId, readonly NodeId[]>; raw: ReadonlyMap<NodeId, RawComplexTypeProperties>;
         simple: ReadonlyMap<NodeId, RawSimpleTypeProperties>; elements: ReadonlyMap<NodeId, RawElementProperties>;
         attributes: ReadonlyMap<NodeId, RawAttributeProperties>; groups: ReadonlyMap<NodeId, RawAttributeGroupProperties>;
+        particleWildcards: ReadonlyMap<NodeId, RawParticleWildcardProperties>;
         notations: NotationState; scalarSlots: ScalarSlotState};
       const states = new WeakMap<SemanticContext, ContextState>();
 
@@ -331,7 +337,8 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       budget.chargeWork(12);
       const sharedMetadata: SemanticGraphMetadata = Object.freeze({model: graph.model, origins: graph.origins,
         schemaAnnotations: graph.schemaAnnotations, schemaRetained: graph.schemaRetained, loading: graph.loading});
-      const buildContext = (kind: SemanticContext['kind'], members: readonly NodeId[], changes: ReadonlyMap<NodeId, GraphNode>, changedSlots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>, changedEdges: ReadonlyMap<NodeId, readonly NodeId[]>, rawTypes: readonly RawComplexTypeProperties[] = [], rawSimpleTypes: readonly RawSimpleTypeProperties[] = [], rawElements: readonly RawElementProperties[] = [], rawGroups: readonly RawAttributeGroupProperties[] = [], notations: NotationState = actualNotations, scalarSlots: ScalarSlotState = actualScalarSlots, rawAttributes: readonly RawAttributeProperties[] = []): SemanticContext => {
+      budget.chargeWork(2); const noParticleWildcards: ReadonlyMap<NodeId, RawParticleWildcardProperties> = new Map();
+      const buildContext = (kind: SemanticContext['kind'], members: readonly NodeId[], changes: ReadonlyMap<NodeId, GraphNode>, changedSlots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>, changedEdges: ReadonlyMap<NodeId, readonly NodeId[]>, rawTypes: readonly RawComplexTypeProperties[] = [], rawSimpleTypes: readonly RawSimpleTypeProperties[] = [], rawElements: readonly RawElementProperties[] = [], rawGroups: readonly RawAttributeGroupProperties[] = [], notations: NotationState = actualNotations, scalarSlots: ScalarSlotState = actualScalarSlots, rawAttributes: readonly RawAttributeProperties[] = [], particleWildcards: ReadonlyMap<NodeId, RawParticleWildcardProperties> = noParticleWildcards): SemanticContext => {
         budget.chargeWork(5);
         const membership = new Set<NodeId>();
         const rawProperties = new Map<NodeId, RawComplexTypeProperties>();
@@ -735,6 +742,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           rawElementProperties(id: NodeId): RawElementProperties | undefined {checked(id); return rawElementProperties.get(id);},
           rawAttributeProperties(id: NodeId): RawAttributeProperties | undefined {checked(id); return rawAttributeProperties.get(id);},
           rawAttributeGroupProperties(id: NodeId): RawAttributeGroupProperties | undefined {checked(id); return rawGroupProperties.get(id);},
+          rawParticleWildcardProperties(id: NodeId): RawParticleWildcardProperties | undefined {checked(id); return particleWildcards.get(id);},
           references(id: NodeId): readonly SemanticReferenceSlot[] {checked(id); return slotsFor(id);},
           owner(id: NodeId): NodeId | undefined {const node = checked(id); return node.identity.kind === 'scoped' ? node.identity.owner : undefined;},
           incomingAffiliates(id: NodeId): readonly NodeId[] {checked(id); return reverse.get(id) ?? empty;},
@@ -744,7 +752,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         identityOccupants.set(context, identityOccupant);
         requests.set(context, requestAuthority);
         states.set(context, {changes, slots: changedSlots, edges: changedEdges, raw: rawProperties, simple: rawSimpleProperties,
-          elements: rawElementProperties, attributes: rawAttributeProperties, groups: rawGroupProperties, notations, scalarSlots});
+          elements: rawElementProperties, attributes: rawAttributeProperties, groups: rawGroupProperties, particleWildcards, notations, scalarSlots});
         forks.set(context, input => candidate(input, context));
         let projection: CanonicalGraph | undefined;
         projections.set(context, () => {
@@ -773,13 +781,15 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           const additions = dataField(input, 'additions'), endpoint = dataField(input, 'endpoint'), rawTypes = dataField(input, 'rawTypes');
           const rawSimpleTypes = dataField(input, 'rawSimpleTypes'), rawElements = dataField(input, 'rawElements'), rawGroups = dataField(input, 'rawAttributeGroups');
           const rawAttributes = dataField(input, 'rawAttributes'), inputScalarSlots = dataField(input, 'scalarSlots');
+          const rawParticleWildcards = dataField(input, 'rawParticleWildcards');
           const notationDelta = dataField(input, 'notations');
           const notationActive = notationDelta === undefined ? undefined : dataField(notationDelta, 'active');
           const notationAdditions = notationDelta === undefined ? undefined : dataField(notationDelta, 'additions');
           if (typeof candidateKey !== 'string' || !Array.isArray(candidateActive)
             || (additions !== undefined && !Array.isArray(additions)) || (rawTypes !== undefined && !Array.isArray(rawTypes))
             || (rawGroups !== undefined && !Array.isArray(rawGroups)) || (rawSimpleTypes !== undefined && !Array.isArray(rawSimpleTypes)) || (rawElements !== undefined && !Array.isArray(rawElements))
-            || (rawAttributes !== undefined && !Array.isArray(rawAttributes)) || (inputScalarSlots !== undefined && !Array.isArray(inputScalarSlots))) throw new InvalidContext('representation');
+            || (rawAttributes !== undefined && !Array.isArray(rawAttributes)) || (inputScalarSlots !== undefined && !Array.isArray(inputScalarSlots))
+            || (rawParticleWildcards !== undefined && !Array.isArray(rawParticleWildcards))) throw new InvalidContext('representation');
           if (notationDelta !== undefined && (!Array.isArray(notationActive) || (notationAdditions !== undefined && !Array.isArray(notationAdditions)))) throw new InvalidContext('representation');
           budget.reserveNodes((additions ? dataField(additions, 'length') as number : 0) + (endpoint ? 1 : 0)
             + (notationAdditions ? dataField(notationAdditions, 'length') as number : 0));
@@ -800,6 +810,8 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             + parent.raw.size * 2 + parent.simple.size * 2 + parent.elements.size * 2 + parent.attributes.size * 2 + parent.groups.size * 2);
           const changes = new Map(parent.changes), slots = new Map(parent.slots), edges = new Map(parent.edges);
           const raw = new Map(parent.raw), simple = new Map(parent.simple), elements = new Map(parent.elements), attributes = new Map(parent.attributes), groups = new Map(parent.groups);
+          budget.chargeWork(2 + parent.particleWildcards.size * 2);
+          const particleWildcards = new Map(parent.particleWildcards);
           const active = new Set(delta.active);
           let scalarSlots = parent.scalarSlots;
           if (delta.scalarSlots !== undefined) {
@@ -853,6 +865,15 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           };
           budget.chargeWork(4); const seenRaw = new Set<NodeId>(), seenSimple = new Set<NodeId>(), seenElements = new Set<NodeId>(), seenAttributes = new Set<NodeId>(), seenGroups = new Set<NodeId>();
           const unique = (id: NodeId, seen: Set<NodeId>): void => {key(id); if (seen.has(id)) throw new InvalidContext('identity', id); budget.chargeWork(); seen.add(id);};
+          for (const supplied of delta.rawParticleWildcards ?? []) {
+            const row = prepareRawParticleWildcardProperties(supplied, budget), node = changes.get(row.particle);
+            key(row.particle); budget.chargeWork(6);
+            // Stored inactive additions count too: an inherited particle never acquires or replaces this role.
+            if (originals.has(row.particle) || parent.changes.has(row.particle) || particleWildcards.has(row.particle)
+              || !active.has(row.particle) || node?.kind !== 'particle' || node.term.kind !== 'any')
+              throw new InvalidContext('representation', row.particle);
+            budget.chargeWork(); particleWildcards.set(row.particle, row);
+          }
           for (const [index, copied] of (delta.rawTypes ?? []).entries()) {
             const original = originalHandles.get(index);
             budget.chargeWork(5);
@@ -872,7 +893,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           for (const row of delta.rawAttributes ?? []) {if (!validateRawAttributeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.attribute); unique(row.attribute, seenAttributes); budget.chargeWork(); attributes.set(row.attribute, row);}
           for (const row of delta.rawAttributeGroups ?? []) {validateRawAttributeGroupShape(row, budget); permittedProperty(row.group); unique(row.group, seenGroups); budget.chargeWork(); groups.set(row.group, row);}
           budget.chargeWork(5 + raw.size + simple.size + elements.size + attributes.size + groups.size);
-          const context = buildContext('candidate', delta.active, changes, slots, edges, [...raw.values()], [...simple.values()], [...elements.values()], [...groups.values()], notations, scalarSlots, [...attributes.values()]);
+          const context = buildContext('candidate', delta.active, changes, slots, edges, [...raw.values()], [...simple.values()], [...elements.values()], [...groups.values()], notations, scalarSlots, [...attributes.values()], particleWildcards);
           budget.chargeWork(); parents.set(context, from);
           budget.chargeWork(3); return Object.freeze({kind: 'prepared', context});
         } catch (error: unknown) {

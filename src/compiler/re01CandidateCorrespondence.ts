@@ -14,7 +14,8 @@ import type {ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import type {RawAttributeGroupProperties} from './schemaAttributeGroupProperties.js';
 import {checkTypeDerivation, declarationMethods, immediateTypeBase, RelationProblem} from './schemaTypeRelations.js';
-import {namespaceSetSubset, wildcardNamespaces} from './wildcardAlgebra.js';
+import {namespaceSetSubset} from './wildcardAlgebra.js';
+import {readParticleWildcard} from './schemaParticleWildcardProperties.js';
 import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
 import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
@@ -378,8 +379,9 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
           if (x.term.children.length !== y.term.children.length) return fail('endpoint-raw-particle', right.type, 'Generated compositor child count changed');
           for (let i = 0; i < x.term.children.length; i++) {charge(3); pairs.push([x.term.children[i]!, y.term.children[i]!]);}
         } else if (x.term.kind === 'any' && y.term.kind === 'any') {
-          const xs = wildcardNamespaces(x.term.wildcard, charge), ys = wildcardNamespaces(y.term.wildcard, charge);
-          if (x.term.wildcard.processContents !== y.term.wildcard.processContents || !namespaceSetSubset(xs, ys, charge) || !namespaceSetSubset(ys, xs, charge)) return fail('endpoint-raw-wildcard', right.type, 'Generated wildcard properties changed');
+          const xs = readParticleWildcard(left.context, x), ys = readParticleWildcard(candidate, y);
+          if (xs.processContents !== ys.processContents || !namespaceSetSubset(xs.namespace, ys.namespace, charge)
+            || !namespaceSetSubset(ys.namespace, xs.namespace, charge)) return fail('endpoint-raw-wildcard', right.type, 'Generated wildcard properties changed');
         } else return fail('endpoint-generated-kind', right.type, 'Unqualified generated content component', 'unresolved');
       }
     };

@@ -50,6 +50,11 @@ function constraint(kind: NamespaceConstraint['kind'], values: readonly string[]
   return Object.freeze({kind, namespaces});
 }
 
+/** Canonical mathematical namespace properties; no XML lexical form is invented. */
+export function canonicalNamespaceConstraint(value: NamespaceConstraint, charge: WildcardCharge): NamespaceConstraint {
+  return constraint(value.kind, value.namespaces, charge);
+}
+
 export function wildcardNamespaces(wildcard: Wildcard, charge: WildcardCharge = noCharge): NamespaceConstraint {
   const raw = wildcard.namespace.value;
   charge(4 * raw.length + 4); // Scans and token/text output before regex/split.
