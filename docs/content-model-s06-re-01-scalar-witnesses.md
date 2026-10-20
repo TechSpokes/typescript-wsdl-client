@@ -9,6 +9,11 @@ It is not an implemented endpoint solver or a complete scalar/RE01 witness produ
 The existing [scalar owners and selected P1/F2 rules](content-model-s06-re-01-resolver-implementation.md#selected-scalar-comparison-policies) retain their contracts.
 General helper coverage, native/evidence adequacy, complete negatives, mathematical termination and dated correspondence remain open.
 
+The [enumeration-introduction correction](content-model-s06-re-01.md#enumeration-retention-and-new-introduction) separates equal value-set coverage from genuine component retention.
+An enum producer must either establish same component/equal complete annotation or prove every newly introduced value belongs to its immediate base.
+Unknown annotation equality cannot silently supply retention, and a failed new-introduction attempt cannot reject a still-possible retained component.
+This owner correction does not establish the general enum lexical-map producer or a complete scalar materializer.
+
 ## Why a new endpoint operation is required
 
 Literal complete-payload copying is not always a legal restriction under selected F2.

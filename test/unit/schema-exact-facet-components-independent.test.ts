@@ -35,6 +35,44 @@ const component=(facet:ScalarFacet,evidence:FacetAnnotation|undefined=facet.anno
 };
 
 describe('exact supplied facet component and annotation evidence',()=>{
+  it.each(['1','2'])('proves new enum membership or retains unknown introduction qualification at minInclusive %s',async minimum=>{
+    const s=await originalSimpleSetup();
+    const decimal=(name:string,value:string):ScalarFacet=>{
+      const {annotation:_annotation,...facet}=s.facet(name,value);
+      return {...facet,operand:{type:builtin('decimal'),owner:id('D'),context:'active'}};
+    };
+    const bound:RawScalarFacetComponent={facets:[decimal('minInclusive',minimum)],annotation:'absent'};
+    const values=[decimal('enumeration','1'),decimal('enumeration','2')];
+    const parent=exact(s.raw('Empty',[],{base:builtin('decimal')}),[bound,{facets:values,annotation:annotation('retained')}]);
+    const supplied=exact(s.raw('PeerEmpty',[],{base:named('Empty')}),[bound,{facets:values}]);
+    const context=s.overlay([parent,supplied]),kernel=createSchemaScalarKernel(context);
+    expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
+    const obligations=minimum==='1'?[]:[{rule:'raw-simple-facet-restriction-validity',component:id('PeerEmpty')}];
+    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'checked',obligations,
+      typeDependencies:expect.arrayContaining([
+        {contextId:context.contextId,type:{kind:'component',id:id('Empty')}},
+        {contextId:context.contextId,type:{kind:'builtin',name:{namespace:xsd,local:'decimal'}}},
+      ])});
+    expect(kernel.assess(named('PeerEmpty'),{value:'2',context:s.seed.context},id('PeerEmpty')))
+      .toMatchObject({kind:'checked',obligations});
+    expect(compareSchemaFacetProperties(context,named('Empty'),id('Empty'),context,named('PeerEmpty'),id('PeerEmpty')))
+      .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'unresolved'});
+    s.request.budget.guard(()=>s.request.budget.chargeWork(DEFAULT_MAX_WORK));
+    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toBe(s.request.budget.failure());
+  });
+
+  it('does not hide an invalid typed enum operand behind ambiguous retention',async()=>{
+    const s=await originalSimpleSetup();
+    const scalar=(name:string,base:ReturnType<typeof builtin>,operand:ReturnType<typeof builtin>)=>
+      exact(s.raw(name,[],{base}),[{facets:[{name:'enumeration',fixed:false,
+        lexical:{value:'1',context:s.seed.context},operand:{type:operand,owner:id('D'),context:'active'}}]}]);
+    const context=s.overlay([scalar('Empty',builtin('decimal'),builtin('decimal')),
+      scalar('PeerEmpty',named('Empty'),builtin('string'))]);
+    const kernel=createSchemaScalarKernel(context);
+    expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+  });
+
   it('identifies an inherited row without identifying shared caller groups or sibling births',async()=>{
     const s=await originalSimpleSetup(),{annotation:_annotation,...facet}=s.facet('minLength','1');
     const group:RawScalarFacetComponent={facets:[facet]};
