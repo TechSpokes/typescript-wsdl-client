@@ -37,6 +37,11 @@ The [identity continuation](#identity-allocation-and-remaining-reconstruction-ob
 The [owner-conditional continuation](#owner-conditional-joint-helper-reconstruction) rebuilds an unobserved family with complete inherited roots, removing comparisons that disappear with their owner's old payload; complete support bounds remain open.
 The [nominally observed continuation](#common-mixed-payload-without-changing-the-nominal-fresh-family) preserves observed helper identities and exact type paths while choosing one common mixed payload; its complete child evidence is retained and general inventory remains open.
 
+The [support reconstruction](content-model-s06-re-01-support-reconstruction.md) classifies fresh complex inheritance boundaries, reduces a closed exact-B module batch and makes private affiliation interiors into leaves under explicit guards.
+Its complete native controls preserve a private literal member class at two representatives and reduce a closed batch's five-node proof to two nodes.
+The one-member normalization failure and the remaining representative's own required child stay explicit.
+The number of signatures, copies and protected ports remains unbounded by these conditional results; general coverage and termination stay open.
+
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
 The [current derivability continuation](#derivability-and-affiliation-continuation) separates that assessment from hypothetical checking; neither the new comparison interface nor a dependency census supplies the missing complete theorem.
