@@ -53,7 +53,7 @@ The [S06 research handoff](content-model-s06-research-handoff.md) links the four
 - [Canonical schema graph](content-model-graph.md): immutable declarations, use sites and lexical reference context
 - [Semantic catalog format 2](content-model-catalog.md): deterministic persistence, validation and compatibility routing
 - [RE01 research resolver implementation](content-model-s06-re-01-resolver-implementation.md): supplied-candidate checks, qualification limits and the future production adapter
-- [RE01 support reconstruction](content-model-s06-re-01-support-reconstruction.md): conditional helper reductions and open bounds
+- [RE01 support reconstruction](content-model-s06-re-01-support-reconstruction.md): conditional copy/bundle reductions, value/name palettes and open bounds
 
 - [Root README](../README.md): project overview, quick start, and authoritative Documentation section
 - [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): qualify private copy and helper-bundle reconstruction with complete contextual evidence and guarded value/name projections.
+
 - test(re01): qualify private-member and exact-B module reductions with complete contextual evidence.
 
 - test(re01): preserve nominal helper paths during complete payload reconstruction.
