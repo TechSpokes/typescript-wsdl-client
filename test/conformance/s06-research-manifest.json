@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "1ca8c21ae840cdf43e424a18ad01c0ddf9b3d9bcaf4d3f540096244808e5ea8f",
+          "sha256": "99db962c4107eece6a1e15e7abfb1fa9c06b4827efd370739282f19251aa581a",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticContext.ts",
           "role": "semantic-source",
-          "sha256": "6998e020542daf993956aece6e166b91c0861bf8e2acdcec2ed16e328813facc"
+          "sha256": "08a68db57e03f88137ae60d2e81f94297a14a166758a32f6b8d318495aa4f287"
         },
         {
           "path": "src/compiler/wildcardAlgebra.ts",
@@ -2401,7 +2401,7 @@
         {
           "path": "test/research/re01/original-property-projection.test.ts",
           "role": "prototype",
-          "sha256": "f5c84207500662dae5b4ab512518368933733517e908619d7a4fda0c8226ce8b"
+          "sha256": "07f65a12562a5e660a43f04a46825ed9cc5b9544448d5ddeedc3108857b06342"
         },
         {
           "path": "test/research/re01/original-property-reader-boundaries.test.ts",

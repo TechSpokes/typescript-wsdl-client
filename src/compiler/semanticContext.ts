@@ -210,7 +210,6 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       budget.chargeWork(6);
       const originals = new Map<NodeId, GraphNode>();
       const originalNames = new Map<string, NodeId>();
-      budget.chargeWork(4); const originalIdentityIndex = new Map<string, NodeId>();
       const originalSlots = new Map<NodeId, readonly ReferenceSlot[]>();
       const originalEdges = new Map<NodeId, readonly NodeId[]>();
       const knownReferences = new WeakSet<object>();
@@ -316,8 +315,6 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         if (originals.has(node.id) || node.id !== identityId(node)) throw new InvalidContext('identity', node.id);
         budget.chargeWork(2);
         originals.set(node.id, node);
-        const tuple = semanticIdentityTuple(node.identity, budget.chargeWork);
-        budget.chargeWork(4 + tuple.length + node.id.length); originalIdentityIndex.set(tuple, node.id);
         if (node.identity.kind === 'global') originalNames.set(node.id, node.id);
         indexNode(node, originalSlots, originalEdges);
         if (node.kind === 'complexType' && node.derivation?.contentKind === 'simple' && node.derivation.kind === 'restriction' && !absentOriginals.has(node.id)) {
@@ -371,8 +368,19 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             changedIdentityIndex = completed;
           }
           const wanted = semanticIdentityTuple(identity, budget.chargeWork);
-          budget.chargeWork(4 + 2 * wanted.length);
-          return changedIdentityIndex.get(wanted) ?? originalIdentityIndex.get(wanted);
+          budget.chargeWork(2 + wanted.length);
+          const changed = changedIdentityIndex.get(wanted);
+          if (changed !== undefined) return changed;
+          // Originals admit only exact native IDs. Tuple lookup needs no second
+          // source index, but must distinguish tuples sharing a legacy hash.
+          if (identity.kind === 'scoped') budget.chargeWork(64 + 6 * (identity.owner.length + identity.path.length + identity.role.length));
+          const originalId = identity.kind === 'global' ? wanted : scopedId(identity.owner, identity.path, identity.role);
+          key(originalId);
+          const original = originals.get(originalId);
+          if (!original) return undefined;
+          const actual = semanticIdentityTuple(original.identity, budget.chargeWork);
+          budget.chargeWork(1 + wanted.length + actual.length);
+          return wanted === actual ? original.id : undefined;
         };
         if (hasEncodedIdentity) {
           const duplicateIdentity = duplicateIdentityTuple(identityRecords(), budget.chargeWork);

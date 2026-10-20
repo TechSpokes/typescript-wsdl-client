@@ -5165,7 +5165,7 @@ Legacy hypothetical spellings remain admitted, but two spellings of one semantic
 
 Reservations include the entire immutable original graph and all stored changes, including source-only originals and inactive inherited records.
 Duplicate admission is checked before any private-content query is needed.
-Source indexes are prepared once, and each immutable context has its own completed-only lazy change index; a sibling cannot supply another context's reservations.
+The existing native-ID original index is prepared once, and each immutable context has its own completed-only lazy change index; a sibling cannot supply another context's reservations.
 
 For fixed owner and role, consider paths `/$hypothetical/0` through `/$hypothetical/N`, where N is the sum of the sizes of the forbidden-ID and forbidden-tuple sets.
 These N+1 candidates have pairwise distinct tuples and pairwise distinct injective IDs.
@@ -5195,7 +5195,9 @@ Every predicate is checked in its required current context, without relabelling 
 
 A full encoding-independent tuple lookup is required after private IDs become tagged.
 Checking the new private string alone would miss a legacy stored component with the same owner/path/role tuple.
-The immutable original index and final-change index jointly cover that case even in an otherwise all-legacy context.
+The immutable native-ID original index and final-change tuple index jointly cover that case even in an otherwise all-legacy context.
+Every original passed exact legacy-ID admission, so a given scoped tuple can occupy only its computed legacy ID.
+A direct lookup followed by full semantic-identity comparison finds that occupant without conflating distinct tuples that share a legacy hash.
 
 Lookup scope and rejection policy stay separate.
 Actual effective-content and builtin issuance reject active occupation, preserving their existing inactive-only permission.
@@ -5215,12 +5217,15 @@ An arbitrary caller-supplied parent containing a genuine reserved tuple alias st
 
 ### Measured preparation and query locality
 
-The full tuple inventory belongs in authenticated original preparation, rather than the first content query.
-Building the entire original index during that query made 2,048 unrelated originals add 732,496 work units and failed the existing locality control.
-Preparing originals once and indexing only final changes per context restores that control without omitting inactive or source-only reservations.
+Two unnecessary full original tuple indexes were rejected during qualification.
+Building that index at the first content query made 2,048 unrelated originals add 732,496 work units and failed the existing locality control.
+Moving it into preparation restored query locality but made Weather preparation use 1,082,493 work units, failing its unchanged 1,000,000 control in full CI.
 
-The final author profile uses 938,105 work units for the unchanged 950,000 control, and the existing 990,000 nested control passes.
-Independent qualification reruns both assertions, the unrelated-original query control and the complete legacy/injective two-node forests.
+The final implementation reuses exact legacy-ID admission and direct original lookup instead, with a charged full-tuple comparison after a hit.
+Only final changes need the lazy dual-encoding tuple index; every stored original remains covered without another source scan or preparation index.
+Weather now prepares in 988,108 work units, and the complete author profile uses 934,832 for the unchanged 950,000 control.
+The existing 990,000 nested control, unrelated-original query control and complete legacy/injective two-node forests also pass.
+Independent qualification rechecks these corrected-source contracts, including the previously missed source-preparation suites.
 These are measured engineering controls, not mathematical bounds on the accepted witness domain.
 
 ### Ownership depth and unused particle support
