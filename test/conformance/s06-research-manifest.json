@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "b70de73f9feb1187d5e88185d4809499e06bf99f18753980073e49776001a2b4",
+          "sha256": "58e5f1e790d3db3dda0ab4967e3bcd05af96828c6f64efab9caa6ffa7fdeb178",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2487,6 +2487,21 @@
           "path": "test/conformance/fixtures/xsd/recovery/fresh-head-observation-independent.xsd",
           "role": "fixture",
           "sha256": "3d65d8d1f4d08bf5ae5c7e2d560c3fc9f6d877722daa3218032dfd988e161c61"
+        },
+        {
+          "path": "test/research/re01/equality-anchor-reconstruction.test.ts",
+          "role": "prototype",
+          "sha256": "cb78d0abc7d5c5cedd3adc9a77727017d168ad276e06f6c81911318cd05c7549"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/equality-anchor-reconstruction-independent.xsd",
+          "role": "fixture",
+          "sha256": "88e7e24d9204726a1ab79c7aa01b5859a82d0e3c362b62896b0572e7c1edddc9"
+        },
+        {
+          "path": "test/conformance/reference/re01-equality-anchor-reconstruction.test.ts",
+          "role": "reference",
+          "sha256": "012b65098f8e789ddbe1575ef67b1cf2b007787c105acb6c018b036b98f87c99"
         }
       ]
     },

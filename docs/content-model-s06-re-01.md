@@ -4225,6 +4225,40 @@ Since this particular Γ has empty A and the required remaining frontier is chec
 That nine-member, one-node construction checks all eight actual roots and its sole fresh E.
 It omits never-born helpers while constructing a different root; it never removes an inherited component from a retained issued context.
 
+##### Genuine original equality anchors require contextual reconstruction
+
+Positive property equality does not by itself permit replacing a fresh declared-type reference with a genuine original type.
+The [original-anchor controls](../test/research/re01/equality-anchor-reconstruction.test.ts) use two genuine original anonymous types P/Q extending the same empty B with property-equal nonempty local x:string content.
+Their immutable ancestor A is empty; X, P and Q have separately checked actual Γ proofs.
+
+A complete root for X introduces FA extending A with exact P.content, C extending FA with a unit wrapper whose first child is exact Q.content, fresh scoped t copying Q, and fresh declaration N:t.
+C's raw prefix comparison reads the properties of the distinct local x scopes Q/P, including their extension methods, without requesting their full H validity.
+The separate t child changes t while original Q remains an extension, so the complete original forest passes seven nodes, nineteen root members and all fourteen actual receipts.
+
+The tested first-birth fold redirects N.type to genuine Q and omits never-born t, which owns no remaining component.
+All original rows and every other addition stay fixed; surviving owner closure is valid.
+This is a coherent reference-only fold, not an owner-edge-preserving graph-homomorphism claim.
+Correspondence and C's local construction still pass at the root, but N now genuinely consumes Q and creates its own nonprimitive H duty.
+
+Every Q child changes Q's first method to restriction.
+Inherited C still compares exact Q.content against exact P.content through their local x scopes, so recursive property equality now compares restriction with extension and fails cos-particle-extend.
+C/FA/P and the original particles are protected in that child; extra affiliations cannot change these local declarations, and a separate C child cannot install a repair into this context.
+This proves no complete Q child for that fixed folded root under arbitrary permitted finite additions.
+It proves no unrestricted negative for Γ.
+
+A joint first-birth reconstruction does succeed: retain C's identity and exact FA base, but give C exact FA.content and restriction method in both rows.
+Keep the old detached wrapper unchanged as a required fresh root, redirect N to Q and omit t before birth.
+C now uses restriction identity and stops consuming the cross-scope method comparison; Q has a valid child with a primitive intermediate extending A and exact Q.content.
+
+The complete repaired forest passes four nodes, eighteen root members and all fourteen actual receipts.
+Every remaining fresh component, including the detached wrapper and newly born child intermediate, is checked in its required context.
+Actual Γ P/Q proofs remain separate from the new H Q proof; no receipt moves between those contexts.
+The [independent reference control](../test/conformance/reference/re01-equality-anchor-reconstruction.test.ts) qualifies the original source shape separately from RE01 truth.
+
+The failed implication is property equality plus genuine admission and safe reference/owner substitution implying contextual evidence preservation.
+A repaired general method must reconstruct the consumed property interface jointly, retain a distinct nominal copy, or certify the anchor in the exact reconstructed context.
+The example establishes neither universal success of that repair nor a finite bound on its required interfaces.
+
 ##### Scope and next missing proposition
 
 The theorem handles arbitrary finite eligible T and consumer inventories, without a helper cap.

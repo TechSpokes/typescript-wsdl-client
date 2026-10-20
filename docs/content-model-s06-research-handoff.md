@@ -110,6 +110,10 @@ This is conditional reconstruction, not a Γ-derived bound or a complete search.
 A separate fresh-head control also reconstructs a different complete root when pointwise recolouring fails, without deleting any inherited component.
 The next general task is to extract some compatible raw-content/type/head support from arbitrary complete successful forests, rather than preserve every prescribed helper graph.
 
+The [genuine original-anchor contrast](content-model-s06-re-01.md#genuine-original-equality-anchors-require-contextual-reconstruction) shows why equal properties alone do not justify replacing a fresh declared type with an original.
+That replacement creates a different H obligation and breaks a retained scope comparison; jointly reconstructing the consumer repairs the exact example with complete four-node evidence.
+The general method must therefore account for property-only scope observations and full declared-type consumption together, while retaining each proof's exact context.
+
 | Finding | Established scope | Remaining limit |
 | --- | --- | --- |
 | Shared local authorities and supplied finite proofs | Accepted local rules and context-bound checks | General helper existence is not decided |
