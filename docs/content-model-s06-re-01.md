@@ -34,6 +34,7 @@ The [scoped reconstruction continuation](#scoped-size-bounds-and-coherent-order-
 The [comparison normalization repair](#pointless-comparison-groups-after-flattening) also removes an optional group that becomes empty during flattening.
 These results leave the complete success-preserving local bound and general decision gates open.
 The [identity continuation](#identity-allocation-and-remaining-reconstruction-obligations) adds injective fresh/private allocation while preserving source identities and complete inherited roots; it records the remaining simultaneous helper and scalar bounds.
+The [owner-conditional continuation](#owner-conditional-joint-helper-reconstruction) rebuilds an unobserved family with complete inherited roots, removing comparisons that disappear with their owner's old payload; complete support bounds remain open.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -5387,6 +5388,160 @@ It therefore does not supply the missing decision theorem for this native contra
 
 General construction coverage, universal executable evidence adequacy, complete negative answers, mathematical termination and dated correspondence remain open.
 No production activation, public format change, domain exclusion or semantic-budget reinterpretation follows from this continuation.
+
+## Owner-conditional joint helper reconstruction
+
+This continuation starts from verified main `b0aae81b844c502454eb0bc03f0647be7894801f`, tree `841225856bb12de6921e39aa3b2f6c2a957545ed`.
+It supplies a complete-context reconstruction theorem for a stated unobserved family, not a finite bound on all successful constructions.
+The theorem and its optional-value premise received separate nonauthor source scrutiny before the native before/after control was executed.
+
+### Quantified input and observations
+
+Fix source-qualified immutable Gamma, an authentic initial parent P and one supplied finite complete founded SUCCESS forest W.
+Every node includes its required current-context full construction, every inherited fresh root, typed/scalar/source obligations and its separate actual-Gamma duties.
+Assume faithful native reauthentication, authentic original handles/private views and enough configured resources for the rebuilt finite construction.
+These representation premises are not discharged by checking local truth alone.
+
+For every positive production raw-extension property query in W, record its owning complex extension z and its forced complex paired graph in that exact context and reification phase.
+The production caller is [raw particle extension](../src/compiler/particleExtension.ts); arbitrary standalone equality calls do not become new construction obligations.
+A successful query has a finite coinductive paired tableau, including recurrent pairs.
+
+The only branching in [component-property comparison](../src/compiler/schemaComponentEquality.ts) is AU matching.
+Qualified same-QName attribute sets force the same exact declaration pair, hence the same structural type/scope pairs, across its matching branches.
+Lexical own-value pairings can differ; deterministic property readers already qualify their scalar TYPE/formation recipes.
+Deleting a traversal can change the first memo visit, so the proof uses this forced structural closure rather than one incidental execution trace.
+
+### Finite owner-conditional marking
+
+Start with all Gamma/P complex identities and the active effective TYPE of each original/P declaration, including raw selectors.
+Also seed every retained global element's complex declared type and base path, every retained source/scalar payload operand and every retained foreign middle/ancestor.
+Unprojected scalar, simple-content, source and fixed-evidence ports remain seeds; a separately proved projection may justify removing a port, but the theorem does not assume one merely because the record is fresh.
+Mandatory full checking of a newly born helper is not itself a seed for its old payload recipe.
+
+Use one history-wide finite set of marks, with base-ancestor closure over every old W context.
+Activate a recorded property query only when its owner z is marked.
+Within an activated query, propagate a mark across a forced complex pair only when one operand is already marked; repeat with base closure to a fixed point.
+
+This is conditional edge propagation.
+An activated query may compare two unmarked fresh types; they can be rebuilt together.
+An identity pair cannot mark a previously unmarked payload, because exact identity closes that comparison before its fields are opened.
+
+Let X be the unmarked post-P complex identities born with method extension.
+Let C include X and the unmarked birth-restriction types whose restriction-only base paths reach X in retained simulated nodes.
+No C own-retirement branch is retained in the new forest.
+
+C restriction bases stay in C.
+An outside unmarked extension would belong to X, an outside unmarked restriction entering C would belong to its restriction cone, and a marked type cannot have an unmarked base ancestor.
+Consequently outside base paths and retained global-element type paths avoid C.
+Whole-history base closure also protects every retained outside target's exact old-child middle and ancestor; those are not chosen using the eventual C set.
+
+For an activated positive query, a complex pair touching C has both operands in C.
+A marked other operand would mark the first; for two unmarked operands, matching E/R methods and finite paired restriction paths reach unmarked extensions together.
+This is a local closure argument on acyclic immediate-base paths, not an assumption that recursive content/property graphs are acyclic.
+
+### Simultaneous first-birth construction
+
+Choose one fresh global K, an empty restriction of builtin anyType with empty final/block, AUs and attribute wildcard.
+Reserve its name and identity against the whole supplied finite W, including all later births and every stored source/inherited reservation; current-parent freshness alone is insufficient.
+Introduce K at the first C birth on each retained branch and keep it thereafter.
+Finite fresh identity allocation supplies this name; it does not bound the number of old components.
+
+Keep every C identity, owner, path, QName, lexical context, namespace and abstract/final/block flag.
+Keep every C birth method and every C restriction base edge; redirect only C extension bases to K.
+At first birth choose empty canonical/raw content, attributes/AUs and wildcard for all C rows, with coherent content-construction fields.
+
+Retain every old particle, declaration, AU, group, owner record and mandatory fresh root, even when its owner no longer selects that payload.
+Outside raw roots, source/semantic selectors and real particle IDs remain exact.
+Every C extension is primitive over K; every C restriction has only Q-free C support.
+Empty/empty content/AU clauses, K's empty final and each unchanged legal R edge construct the family.
+
+The complex restriction-only TypeDerivation answers used by NameAndTypeOK remain exact: R edges are unchanged and excluded E stops before recursion through the changed base.
+Its eager immediate-base descriptor read can newly publish K; mandatory K/builtin construction covers that fact.
+Global membership/affiliation, EDC identity/namedness, old particle order-key sharing and census capacities remain exact.
+No old particle keys are merged into original keys.
+
+### Optional local values and required frontiers
+
+A mixed NP declaration, or a simple-content R descendant, can have a value constraint; particle-only invalidity is not a general value-erasure argument.
+Erase only genuinely new C-typed local declaration values under the following joint presence projection.
+Keep all original/P/global ordinary fields and all AU fields.
+
+Use positive full-property equality edges only from activated queries; C-owner queries that disappear are not retained observations.
+Activated C pairs have C on both sides, so paired values can be removed together.
+For a positive fixed-value restriction implication into a C-typed declaration, its base type must be on the same restriction-only C segment before the excluded E; an outside fixed antecedent cannot enter this erased set.
+
+Removing a fixed field can enable additional particle mapping states.
+The proof preserves a successful mapping, not identical matching execution: newly reached real declarations, type/base facts, head census and scalar recipes require the complete consumed-operand closure in their owning context.
+Property-only scope reads instead use the forced positive query graph; they are not promoted to full current-H validity.
+With fully qualified operands and enough resources, an additional pending order path does not suppress the retained clear successful path, and no new fatal local input/schema error is introduced by weakening these fields.
+
+If an input cannot establish that frontier/presence premise, keep its relevant value/scalar observer as a seed or leave this transformation unqualified.
+Exhaustion or a missing qualification remains unresolved, never nonexistence.
+
+### Queries that remain and queries that disappear
+
+Every retained outside-C extension owner is marked: an unmarked post-P birth extension would be in X, while all original/P types were seeded.
+Its new property query therefore maps to an activated old query in that node and phase, with unchanged outside content/base selectors.
+Authentic source correspondence transports reencoded private wrappers down to their exact real declaration ports; it does not require literal equality of every wrapper ID.
+
+In an activated query, outside pairs keep their fields and successor tasks.
+C/R pairs keep their old base pair; C/E pairs replace their bases by K/K identity.
+Both C contents/AU sets are empty, so the old C payload tasks disappear.
+All namespace, identity, method and flag gates remain exact.
+
+Changed memo order cannot create an unsupported structural pair: every new nonidentity task is in the old forced closure or the empty-C/K case.
+The scalar formation recipes of outside AU alternatives were already read by the old positive query.
+This is necessary because complex base comparisons are queued; their eventual mismatch does not prevent earlier LIFO attribute/content reads.
+
+An unmarked C owner's own old query need not preserve its comparisons with marked original types.
+Its reconstructed empty/empty extension closes before raw particle comparison, so that entire query disappears.
+Independent full checking of its retained old payload roots does not restore the deleted owner query.
+
+This distinction repairs the circular observation problem.
+A previous original-only source-dominance approach had an open route through a retired original anonymous type's fresh primitive middle and borrowed content, exposing an original scope without full consuming it.
+The owner-conditional construction does not require that stronger consumption claim; it can remove the self-owner query that made the borrowed scope relevant.
+
+### Complete evidence reconstruction
+
+Rebuild the complete conjunction at every retained node: outside roots/frontiers, every old F/payload root, and the new C/K empty clauses.
+All remaining NP duties are outside C and were present in the old complete conjunction.
+Take their exact old required children and outside endpoint/middle choices, reissue contexts and apply the same first-birth rule to newly born C rows.
+Protected base paths retain the exact ancestor/correspondence contracts.
+
+Induct on old W subtree height for every selected child.
+C own-retirement children are omitted because those extensions are now primitive; no visited NP judgment justifies itself.
+Same-context component recurrence closes only the component conjunction, not the existential proof induction.
+The result is a finite complete forest retaining all inherited fresh roots and independent Gamma duties, without cross-context receipt transfer.
+
+### Native proof-to-control map
+
+The [recursive-copy control](../test/research/re01/private-observed-copy-erasure.test.ts) reuses its existing [source fixture](../test/conformance/fixtures/xsd/recovery/private-observed-copy-erasure.xsd).
+Its original controls keep the D-to-t0 observation fixed; that foreign middle must remain protected.
+The new control instead uses exact original q as D's middle, making five fresh E rows eligible while retaining every old helper and scaffold.
+
+The old complete forest has two evidence nodes and 51/52 members, with V as the only root NP duty.
+Joint reconstruction empties the five eligible rows and rebases them to K, yielding one evidence node and 52 members.
+All 26 actual-Gamma records and all 25 old fresh roots plus K are checked; every old member, declaration, particle, owner and all 20 noncomplex fresh scaffolds remain.
+
+The replacement has 51 current-H component receipts: original R remains available but is no longer H-consumed, while its separate Gamma receipt remains present.
+The test preserves exact outside D/q selectors and order keys, checks all five rebuilt types are primitive, and requires no remaining NP or construction obligations.
+It explicitly permits changed C-to-original property comparisons because their C-owner queries have disappeared.
+This executed construction supports the theorem's discriminator; it does not establish a general input-derived inventory bound by experiment.
+
+### Remaining acceptance gates
+
+The transformation covers a supplied finite forest and a stated eligible family.
+It does not bound retained nominal/member paths, anchored non-NP copies, semantic/scalar ports, helper multiplicity or encoded fields.
+Whole-history marks may retain a birth-E identity that becomes anchored only after retirement; a later equality does not bound its earlier birth height.
+
+A persistent activated query cannot first mark a fresh current own-NP operand through a distinct property pair: its already marked, distinct owner survives that operand's mandatory E-to-R retirement, which makes the forced pair fail.
+This observation requires that persistence premise; marking alone does not make an original owner's current-H query persist in the child.
+This pointwise restriction does not remove the history-late R exception or supply a copy count.
+Original/global/source seed roles and current base paths still need a joint finite inventory.
+
+General successful-construction coverage, universal executable evidence adequacy, complete negatives, mathematical termination and dated correspondence remain open.
+The scalar support-word realization and finite nominal/global/helper inventory must coexist with this reconstruction before a general decision procedure can rely on them.
+B-v1, all seven recovery contracts, P1/F2, original contexts and #179/#153/#184 gates remain unchanged.
 
 ## Pure input and output contract
 

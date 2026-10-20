@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "99db962c4107eece6a1e15e7abfb1fa9c06b4827efd370739282f19251aa581a",
+          "sha256": "f42eae609e3870c04de6a5b21521f31fa4b5f7ecf03ce1e352154280af2e5b33",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2596,7 +2596,7 @@
         {
           "path": "test/research/re01/private-observed-copy-erasure.test.ts",
           "role": "prototype",
-          "sha256": "66e0c974b8c0907d0d2d8580796a331f041b0648a5910524c132c00afbedd092"
+          "sha256": "f429fdbceb31b1c366cf8d3b49ceff60dabafbe87bb8e286e3243f8ef66345a4"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/private-observed-copy-erasure.xsd",

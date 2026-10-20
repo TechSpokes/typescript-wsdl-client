@@ -1,4 +1,4 @@
-/** Preserve one observed original-target copy and erase its private recursive descendants before birth. */
+/** Preserve observed recursive copies or rebuild an unobserved family without dropping its fresh roots. */
 import assert from 'node:assert/strict';
 import {describe, expect, it} from 'vitest';
 import path from 'node:path';
@@ -13,6 +13,7 @@ import type {SemanticParticle} from '../../../src/compiler/particleSemanticView.
 import {forkSemanticCandidate} from '../../../src/compiler/semanticContext.js';
 import type {SemanticContext} from '../../../src/compiler/semanticContext.js';
 import {verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
+import type {FiniteRe01EvidenceNode} from '../../../src/compiler/finiteRe01Verification.js';
 import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import {compareComponentProperties} from '../../../src/compiler/schemaComponentEquality.js';
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
@@ -24,7 +25,8 @@ const local = (target: string): Reference => ({kind: 'local', target});
 const anyType: Reference = {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'anyType'}};
 const typeId = (name: string) => globalId('type', {namespace, local: name});
 const filename = path.join(directory, 'xsd/recovery/private-observed-copy-erasure.xsd');
-async function subject(encoding: 'legacy' | 'injective' = 'legacy', scopedEndpoint = false) {
+async function subject({encoding = 'legacy', scopedEndpoint = false, originalMiddle = false}:
+  Readonly<{encoding?: 'legacy' | 'injective'; scopedEndpoint?: boolean; originalMiddle?: boolean}> = {}) {
   const scopedId = encoding === 'legacy' ? legacyScopedId : hypotheticalScopedId;
   const loaded = await loadSchemaInput(filename, {policy: {fileRoots: [directory]}});
   const prepared = prepareSourceSchemaRequest(loaded); assert.equal(prepared.kind, 'prepared');
@@ -76,6 +78,13 @@ async function subject(encoding: 'legacy' | 'injective' = 'legacy', scopedEndpoi
   const globalV = extension('V', r.id, r.content), eChild = extension('E-V', p.id, p.content);
   const v: ComplexTypeNode = scopedEndpoint ? {...globalV, id: nodeId('/scoped-V', 'type'),
     identity: {kind: 'scoped', owner: group.id, path: '/scoped-V', role: 'type'}} : globalV;
+  const middle = originalMiddle ? q.id : types[0].id;
+  const family = new Set([...types, eRoot, v].map(node => node.id));
+  const k: ComplexTypeNode = {...p, id: typeId('K-empty'),
+    identity: {kind: 'global', role: 'type', name: {namespace, local: 'K-empty'}},
+    derivation: {kind: 'restriction', contentKind: 'complex', base: anyType, facets: []}, content: undefined,
+    attributes: [], abstract: false};
+  assert.equal(actual.lookup(k.id).kind, 'missing');
   const raw = (node: ComplexTypeNode, content?: RawComplexTypeProperties['content']): RawComplexTypeProperties => ({
     type: node.id, targetNamespace: namespace, derivation: {method: node.derivation?.kind ?? 'restriction', base: node.derivation?.base ?? anyType},
     content: content ?? (node.content ? {kind: 'element-only', particle: node.content} : {kind: 'empty'}),
@@ -104,13 +113,21 @@ async function subject(encoding: 'legacy' | 'injective' = 'legacy', scopedEndpoi
   assert.equal(retainedOwnerObserver.identity.kind, 'scoped');
   assert.ok(coneIds.has(retainedOwnerObserver.identity.owner));
   for (const target of coneIds) assert.ok(!JSON.stringify(retainedOwnerObserver.term).includes(target));
-  const make = (erase: boolean, withRetainedOwnerObserver = false) => {
+  const make = (erase: boolean, withRetainedOwnerObserver = false, {emptyCone = false}: Readonly<{emptyCone?: boolean}> = {}) => {
+    assert.ok(!emptyCone || originalMiddle && !erase, 'C/K reduction requires the fixed original middle and every old cone root');
+    const rebuild = (node: ComplexTypeNode): ComplexTypeNode => {
+      if (!emptyCone || !family.has(node.id)) return node;
+      assert.equal(node.derivation?.kind, 'extension');
+      return {...node, content: undefined, attributes: [], derivation: {...node.derivation, base: local(k.id)}};
+    };
     const selectedCone = erase ? cone.slice(0, 6).map(node => node.id === decls[0].id ? {...node as ElementNode, type: local(q.id)} : node) : cone;
-    const endpoint: ComplexTypeNode = {...d, derivation: {kind: 'restriction', contentKind: 'complex', base: local(types[0].id), facets: []}};
+    const endpoint: ComplexTypeNode = {...d, derivation: {kind: 'restriction', contentKind: 'complex', base: local(middle), facets: []}};
     const additions: GraphNode[] = [...selectedCone, entry, entryH, entryNext, entryPrefix, eRoot, eContent, v,
-      ...(withRetainedOwnerObserver ? [retainedOwnerObserver] : [])];
+      ...(withRetainedOwnerObserver ? [retainedOwnerObserver] : [])].map(node => node.kind === 'complexType' ? rebuild(node) : node);
+    if (emptyCone) additions.push(k);
     const dRow = originalRows.find(row => row.type === d.id); assert.ok(dRow);
-    const rows = [...originalRows.filter(row => row.type !== d.id), raw(endpoint, dRow.content), raw(eRoot), raw(v), ...(erase ? types.slice(0, 1) : types).map(type => raw(type))];
+    const rows = [...originalRows.filter(row => row.type !== d.id), raw(endpoint, dRow.content), raw(rebuild(eRoot)), raw(rebuild(v)),
+      ...(erase ? types.slice(0, 1) : types).map(type => raw(rebuild(type))), ...(emptyCone ? [raw(k)] : [])];
     if (erase) {
       const audit = (value: unknown): void => {
         if (typeof value === 'string') assert.ok(!coneIds.has(value), 'retained canonical/raw/owner field still selects erased cone');
@@ -118,22 +135,27 @@ async function subject(encoding: 'legacy' | 'injective' = 'legacy', scopedEndpoi
         else if (value && typeof value === 'object') Object.values(value).forEach(audit);
       };
       audit({additions, rows, endpoint, eChild,
-        evidenceParameters: [{target: d.id, intermediate: types[0].id, ancestor: local(p.id)}, {target: v.id, intermediate: eChild.id, ancestor: local(p.id)}]});
+        evidenceParameters: [{target: d.id, intermediate: middle, ancestor: local(p.id)}, {target: v.id, intermediate: eChild.id, ancestor: local(p.id)}]});
     }
     const active = [...actual.members, ...additions.map(node => node.id)];
-    const built = request.candidate({key: erase ? 'private-cone-erased' : 'recursive-copy-cycle', active, additions, endpoint,
+    const built = request.candidate({key: emptyCone ? 'owner-conditioned-empty-cone' : erase ? 'private-cone-erased' : 'recursive-copy-cycle', active, additions, endpoint,
       rawTypes: rows, rawElements: additions.flatMap(node => node.kind === 'element' ? [{element: node.id, type: node.type, final: [], block: []}] : [])});
     assert.equal(built.kind, 'prepared', JSON.stringify(built));
-    const childEndpoint: ComplexTypeNode = {...v, derivation: {kind: 'restriction', contentKind: 'complex', base: local(eChild.id), facets: []}};
-    const child = forkSemanticCandidate(built.context, {key: 'V-child', active: [...active, eChild.id], additions: [eChild], endpoint: childEndpoint,
-      rawTypes: [raw(eChild), raw(childEndpoint)]}); assert.equal(child.kind, 'prepared', JSON.stringify(child));
-    const forest = verifyFiniteRe01Evidence(actual, d.id, {root: 'D', nodes: [
-      {id: 'D', parent: actual, context: built.context, target: d.id, intermediate: types[0].id, ancestor: local(p.id), premises: ['V']},
-      {id: 'V', parent: built.context, context: child.context, target: v.id, intermediate: eChild.id, ancestor: local(p.id), premises: []},
-    ]}); assert.equal(forest.kind, 'checked-candidate', JSON.stringify(forest));
+    const contexts: SemanticContext[] = [built.context];
+    const nodes: FiniteRe01EvidenceNode[] = [
+      {id: 'D', parent: actual, context: built.context, target: d.id, intermediate: middle, ancestor: local(p.id), premises: emptyCone ? [] : ['V']}];
+    if (!emptyCone) {
+      const childEndpoint: ComplexTypeNode = {...v, derivation: {kind: 'restriction', contentKind: 'complex', base: local(eChild.id), facets: []}};
+      const child = forkSemanticCandidate(built.context, {key: 'V-child', active: [...active, eChild.id], additions: [eChild], endpoint: childEndpoint,
+        rawTypes: [raw(eChild), raw(childEndpoint)]}); assert.equal(child.kind, 'prepared', JSON.stringify(child));
+      contexts.push(child.context);
+      nodes.push({id: 'V', parent: built.context, context: child.context, target: v.id, intermediate: eChild.id, ancestor: local(p.id), premises: []});
+    }
+    const forest = verifyFiniteRe01Evidence(actual, d.id, {root: 'D', nodes});
+    assert.equal(forest.kind, 'checked-candidate', JSON.stringify(forest));
     assert.deepEqual(new Set(forest.actualComponents.map(item => item.component)), new Set(actual.members));
     for (const step of forest.proof) {
-      const context: SemanticContext = step.contextId === built.context.contextId ? built.context : child.context;
+      const context = contexts.find(item => item.contextId === step.contextId); assert.ok(context);
       const checked: Set<string> = new Set(step.components.map(item => item.component));
       assert.ok(checked.has(q.id), 'original q support is genuine full closure, not property-only');
       for (const id of context.members) if (!actual.members.includes(id)) assert.ok(checked.has(id), 'fresh mandatory root escaped: ' + id);
@@ -142,19 +164,19 @@ async function subject(encoding: 'legacy' | 'injective' = 'legacy', scopedEndpoi
     }
     for (const type of erase ? types.slice(0, 1) : types) {
       const looked: ReturnType<SemanticContext['lookup']> = built.context.lookup(type.id); assert.equal(looked.kind, 'found');
-      const eq = compareComponentProperties(built.context, looked.node, q); assert.equal(eq.kind, 'checked'); assert.equal(eq.value, true);
+      const eq = compareComponentProperties(built.context, looked.node, q); assert.equal(eq.kind, 'checked'); assert.equal(eq.value, !emptyCone);
       const formation = checkComponentConstruction(built.context, type.id); assert.equal(formation.kind, 'checked'); assert.equal(formation.re01?.primitive, true);
     }
-    return {kind: forest.kind, forest, contexts: [built.context, child.context] as const,
-      proofNodes: forest.proof.length, contextSizes: [built.context.members.length, child.context.members.length],
+    return {kind: forest.kind, forest, contexts,
+      proofNodes: forest.proof.length, contextSizes: contexts.map(context => context.members.length),
       actualComponents: forest.actualComponents.length,
-      retainedQueryKeys: [built.context, child.context].map(context => ({derived: keys(context, d.id), base: keys(context, types[0].id)}))};
+      retainedQueryKeys: contexts.map(context => ({derived: keys(context, d.id), base: keys(context, middle)}))};
   };
-  return {make, request, originalGraph, derived: d.id, retainedIntermediate: types[0].id,
-    privateIds: privateTail.map(node => node.id), retainedOwnerObserver, freshEndpoint: v};
+  return {make, request, originalGraph, derived: d.id, retainedIntermediate: middle,
+    privateIds: privateTail.map(node => node.id), retainedOwnerObserver, freshEndpoint: v, family, k, r};
 }
 
-describe('guarded erasure below a retained observed recursive copy', () => {
+describe('guarded reconstruction of recursive complex copies', () => {
   it('retains exact D-to-t0 observations while omitting only the private tail before birth in both complete forests', async () => {
     const s = await subject(), old = s.make(false), erased = s.make(true);
     expect(old.contextSizes).toEqual([51, 52]); expect(erased.contextSizes).toEqual([39, 40]);
@@ -187,7 +209,7 @@ describe('guarded erasure below a retained observed recursive copy', () => {
 
   it('checks complete legacy and injective forests while retiring the same inherited scoped endpoint', async () => {
     for (const encoding of ['legacy', 'injective'] as const) {
-      const s = await subject(encoding, true), old = s.make(false), erased = s.make(true);
+      const s = await subject({encoding, scopedEndpoint: true}), old = s.make(false), erased = s.make(true);
       expect(old.contextSizes).toEqual([51, 52]); expect(erased.contextSizes).toEqual([39, 40]);
       expect(old.actualComponents).toBe(26); expect(erased.actualComponents).toBe(26);
       expect(old.proofNodes).toBe(2); expect(erased.proofNodes).toBe(2);
@@ -206,5 +228,49 @@ describe('guarded erasure below a retained observed recursive copy', () => {
       }
       expect(JSON.stringify(s.request.graph)).toBe(s.originalGraph);
     }
+  });
+
+  it('empties the owner-conditioned family while keeping every old root, scope and outside construction', async () => {
+    // The original q middle protects D independently of the copied types.
+    // Only C-owned queries connect the recursive copies to q; empty C clauses remove those queries.
+    const s = await subject({originalMiddle: true}), old = s.make(false), replacement = s.make(false, false, {emptyCone: true});
+    expect(old.contextSizes).toEqual([51, 52]); expect(replacement.contextSizes).toEqual([52]);
+    expect(old.proofNodes).toBe(2); expect(replacement.proofNodes).toBe(1);
+    expect(old.actualComponents).toBe(26); expect(replacement.actualComponents).toBe(26);
+    const before = old.contexts[0], after = replacement.contexts[0], step = replacement.forest.proof[0];
+    expect(after.members.filter(id => !before.members.includes(id))).toEqual([s.k.id]);
+    expect(before.members.every(id => after.members.includes(id))).toBe(true);
+    expect(before.members.filter(id => !s.request.actual.members.includes(id))).toHaveLength(25);
+    const fresh = after.members.filter(id => !s.request.actual.members.includes(id)); expect(fresh).toHaveLength(26);
+    const checked = new Set(step.components.map(item => item.component));
+    expect(checked.size).toBe(51); expect(fresh.every(id => checked.has(id))).toBe(true);
+    expect(after.members.filter(id => !checked.has(id))).toEqual([s.r.id]);
+    expect(replacement.forest.actualComponents.map(item => item.component)).toContain(s.r.id);
+    expect(step.correspondence).toMatchObject({target: s.derived, intermediate: s.retainedIntermediate});
+    expect(step.components.filter(item => item.re01 && !item.re01.primitive)).toEqual([]);
+    expect(step.components.flatMap(item => item.obligations)).toEqual([]);
+    expect(s.family.size).toBe(5);
+    let scaffolds = 0;
+    for (const id of before.members) {
+      const a = before.lookup(id), b = after.lookup(id); assert.equal(a.kind, 'found'); assert.equal(b.kind, 'found');
+      if (!s.family.has(id)) {
+        expect(b.node).toEqual(a.node);
+        expect(after.rawTypeProperties(id)).toEqual(before.rawTypeProperties(id));
+      } else {
+        assert.equal(a.node.kind, 'complexType'); assert.equal(b.node.kind, 'complexType');
+        expect({...b.node, content: a.node.content, attributes: a.node.attributes,
+          derivation: {...b.node.derivation, base: a.node.derivation!.base}}).toEqual(a.node);
+        expect(after.rawTypeProperties(id)).toMatchObject({content: {kind: 'empty'}, attributeUses: [],
+          derivation: {method: 'extension', base: local(s.k.id)}});
+        expect(after.rawTypeProperties(id)?.wildcard).toBeUndefined();
+        expect(step.components.find(item => item.component === id)).toMatchObject({re01: {primitive: true}});
+      }
+      expect(after.rawElementProperties(id)).toEqual(before.rawElementProperties(id));
+      if (a.node.kind !== 'complexType' && !s.request.actual.members.includes(id)) scaffolds++;
+    }
+    expect(scaffolds).toBe(20);
+    expect(step.components.find(item => item.component === s.k.id)).toMatchObject({kind: 'checked', obligations: []});
+    expect(replacement.retainedQueryKeys[0]).toEqual(old.retainedQueryKeys[0]);
+    expect(JSON.stringify(s.request.graph)).toBe(s.originalGraph);
   });
 });
