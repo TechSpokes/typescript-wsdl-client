@@ -26,6 +26,8 @@ The [full original-input continuation](#guarded-original-inputs-to-full-construc
 The [compositor-incidence continuation](#original-compositor-incidences-in-candidate-construction) also interprets authentic original child lists without promoting suppressed source diagnostics into hypothetical components.
 The [component-admission continuation](#source-only-original-records-and-full-component-admission) separately prevents a direct live reference from activating a retained diagnostic as an original semantic component.
 The [finite-observation continuation](#passive-affiliates-and-anchored-head-observations) proves a conditional positive pruning lemma and identifies the changing support observations still needed for a decision bound.
+The [first-birth reconstruction](#first-birth-restriction-reconstruction-of-common-content-helpers) removes helper child duties under explicit role guards while retaining their exact base identities.
+Its same-input alternative distinguishes failure of a chosen transformation from failure of existential construction.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -4131,6 +4133,142 @@ Finite pointwise method/block observations alone do not prove finite transition 
 Neither the failed projection nor the conditional passive bound proves that target impossible; alternate decision/reconstruction methods need not implement this quotient first.
 General frontier/runtime adequacy, complete negatives/search bounds, mathematical termination and dated correspondence remain open, with all seven packages, P1/F2 and #234/#232 gates preserved.
 
+#### First-birth restriction reconstruction of common-content helpers
+
+This continuation starts at main `559b20ad509bf41f856a8134d8367c0c9832f946`, tree `c421f1abf28c26f342674b92d76c635db4da34e0`.
+It reconstructs helper methods at their first birth, rather than removing their interior type ancestors in each later child.
+The result is conditional positive construction, not a complete search or a change to B-v1, P1/F2 or the selected founded research relation.
+
+##### Exact family and protected fields
+
+Fix a qualified immutable actual Γ, endpoint D and its selected component ancestor A.
+A direct candidate has D′ restricting E, where E is a locally legal primitive extension of A.
+Let T be a finite set of strictly fresh root-born complex types, excluding E, D′ and every original, source-bound or protected generated row.
+
+Each type in T has its exact immediate base in T or E, and these finite acyclic paths reach E.
+Every such type and E selects one exact shared element-only raw particle S, with empty AU sets, absent attribute wildcards and empty type final/block sets.
+Canonical and raw rows agree; every other property, identity, owner, particle, declaration, affiliation and source/typed operand remains fixed.
+Separate restriction consumers and legal declaration/type/content cycles are permitted.
+
+Assume local construction, correspondence, E's extension and D′'s restriction have been established independently of pending RE01 duties in T.
+Inventory every resulting H root and consumed dependency: the resulting hypothetical frontier contains no nonprimitive extension outside T.
+Actual Γ duties keep their own complete proofs in Γ.
+
+Reconstruct directly from the same Γ, changing each extension in T to restriction in both its canonical and raw row.
+Keep its exact base reference; do not rebase it to E.
+Protect E's extension, all original/endpoint rows and the complete original/fresh membership inventory.
+This is a different first-birth candidate, not an edit to an inherited row in an issued context.
+
+##### Complete consumer guards
+
+For every consumed complex type path, scan its unchanged exact base identities and replace only the selected extension methods with restriction.
+Do not remove extension from the whole method union when a protected edge still contributes it.
+Entered type blocks, identity and reachability remain unchanged.
+
+Every immediate affiliation, including abstract, blocked and unused members, must remain legal against its head's final set.
+Separately, every consumed effective substitution set must remain identical under its complete reverse-affiliation census, head block and entered type blocks.
+Fresh heads and original local QName roles are included; immediate legality alone does not establish this guard.
+
+A previously successful all-complex NameAndTypeOK comparison excludes extension/list/union, so recolouring introduces no forbidden edge on that successful path.
+Every other consumed type relation retains its own excluded-method test.
+No scalar, source, facet, AU or generated-slot observation may change under this family.
+
+Raw extension can compare distinct declarations recursively through their scopes and declared types.
+The existing component-equality owner observes a complex type's derivation method directly.
+In the finite pair closure of every consumed positive nonidentity property comparison, require both formerly extension rows to be recoloured or neither; identity-bypassed pairs need no method test.
+All other compared fields stay fixed, so the same positive paired computation survives, including its finite recurrence cases.
+False or unused comparisons need not be preserved.
+
+##### First-edge necessity for a retained fresh affiliate
+
+Let a retained fresh affiliate m have exact complex declared type p, distinct from its retained head's complex type q.
+If p has a checked nonprimitive extension duty, every complete forest must supply its child construction and retain m there.
+That child changes p's first edge to restriction.
+If the head's final excludes restriction, the type-derivation rule rejects this own edge before reaching any distinct q, regardless of permitted finite additions or the chosen intermediate.
+Thus no complete child exists for that fixed parent; an originally legal such affiliation cannot occur in a complete successful forest.
+
+This necessity is tied to the actual nonprimitive receipt, not to an informal count of extension edges.
+The identity case p=q, primitive no-change cases and simple/union head alternatives are outside the statement.
+It discharges this particular immediate-final obstruction for complete successful regions; consumed membership and property-equality guards remain independent.
+It establishes no unrestricted negative over Γ, which may admit a different root.
+
+##### Local validity and complete evidence
+
+Each changed t-to-base edge compares the same exact S particle, so restriction identity proves that edge separately.
+Empty AU/wildcard/base-final premises discharge the stipulated remaining derivation conditions.
+This invokes neither raw-restriction transitivity nor an input-language inclusion substitute.
+
+Unchanged particles and consumed expansions preserve the chosen restriction mappings, coherent implicit orders, formal ranges, UPA and EDC.
+The positive property-pair guard preserves any consumed copied-prefix equality; declarations and other roots retain the separately checked method/flag obligations.
+Every retained predicate is checked or reconstructed in the new H; no old H receipt is retagged.
+
+The rebuilt T types are restrictions and therefore owe no own extension clause-1.5 duty.
+They are not described as primitive extensions.
+Under the complete-frontier premise, one selected hypothetical node suffices, together with the independently discharged actual Γ forest.
+One total executable node additionally requires D to be the sole actual nonprimitive target; unrelated actual proofs cannot be omitted.
+
+##### Observable controls and the SOME distinction
+
+The [live-helper controls](../test/research/re01/live-helper-forest.test.ts) retain F restricting E, U extending F, R restricting U and V extending R, with all helper contents selecting S.
+The live head H has type R, affiliate M has type V, and S consumes H before its required empty choice.
+The prescribed E-cut child erases R from V's ancestry and rejects M's affiliation.
+First-birth method reconstruction keeps V.base=R and U.base=F and completes one node with all 24 members and ten actual component receipts.
+
+Retaining the separate R_H/R_M restriction consumers completes all 30 members in one node.
+Every fresh root, including unused particles and scoped owners, remains checked.
+Malformed unused roots and inherited method edits still reject; head-final and consumed-membership contrasts retain their distinct failure rules.
+Neither rejected certificate establishes unrestricted nonexistence.
+
+The [fresh-head control](../test/research/re01/finite-observation-pruning.test.ts) provides a separate same-input boundary.
+Its original 13-member, two-node forest passes, but merely recolouring U with the same K/M support loses the expansion needed by D's MapAndSum comparison.
+Since this particular Γ has empty A and the required remaining frontier is checked, another root lets E select exact original D.content and introduces none of U/K/M/their use.
+That nine-member, one-node construction checks all eight actual roots and its sole fresh E.
+It omits never-born helpers while constructing a different root; it never removes an inherited component from a retained issued context.
+
+##### Genuine original equality anchors require contextual reconstruction
+
+Positive property equality does not by itself permit replacing a fresh declared-type reference with a genuine original type.
+The [original-anchor controls](../test/research/re01/equality-anchor-reconstruction.test.ts) use two genuine original anonymous types P/Q extending the same empty B with property-equal nonempty local x:string content.
+Their immutable ancestor A is empty; X, P and Q have separately checked actual Γ proofs.
+
+A complete root for X introduces FA extending A with exact P.content, C extending FA with a unit wrapper whose first child is exact Q.content, fresh scoped t copying Q, and fresh declaration N:t.
+C's raw prefix comparison reads the properties of the distinct local x scopes Q/P, including their extension methods, without requesting their full H validity.
+The separate t child changes t while original Q remains an extension, so the complete original forest passes seven nodes, nineteen root members and all fourteen actual receipts.
+
+The tested first-birth fold redirects N.type to genuine Q and omits never-born t, which owns no remaining component.
+All original rows and every other addition stay fixed; surviving owner closure is valid.
+This is a coherent reference-only fold, not an owner-edge-preserving graph-homomorphism claim.
+Correspondence and C's local construction still pass at the root, but N now genuinely consumes Q and creates its own nonprimitive H duty.
+
+Every Q child changes Q's first method to restriction.
+Inherited C still compares exact Q.content against exact P.content through their local x scopes, so recursive property equality now compares restriction with extension and fails cos-particle-extend.
+C/FA/P and the original particles are protected in that child; extra affiliations cannot change these local declarations, and a separate C child cannot install a repair into this context.
+This proves no complete Q child for that fixed folded root under arbitrary permitted finite additions.
+It proves no unrestricted negative for Γ.
+
+A joint first-birth reconstruction does succeed: retain C's identity and exact FA base, but give C exact FA.content and restriction method in both rows.
+Keep the old detached wrapper unchanged as a required fresh root, redirect N to Q and omit t before birth.
+C now uses restriction identity and stops consuming the cross-scope method comparison; Q has a valid child with a primitive intermediate extending A and exact Q.content.
+
+The complete repaired forest passes four nodes, eighteen root members and all fourteen actual receipts.
+Every remaining fresh component, including the detached wrapper and newly born child intermediate, is checked in its required context.
+Actual Γ P/Q proofs remain separate from the new H Q proof; no receipt moves between those contexts.
+The [independent reference control](../test/conformance/reference/re01-equality-anchor-reconstruction.test.ts) qualifies the original source shape separately from RE01 truth.
+
+The failed implication is property equality plus genuine admission and safe reference/owner substitution implying contextual evidence preservation.
+A repaired general method must reconstruct the consumed property interface jointly, retain a distinct nominal copy, or certify the anchor in the exact reconstructed context.
+The example establishes neither universal success of that repair nor a finite bound on its required interfaces.
+
+##### Scope and next missing proposition
+
+The theorem handles arbitrary finite eligible T and consumer inventories, without a helper cap.
+It removes their helper child-context dependency, but S, its owners, heads and positive property pairs are still supplied finite inventories.
+It does not prove that arbitrary successful inputs admit those inventories or role guards, or that a prescribed failed parent must be repairable.
+
+The next coverage proposition must provide SOME simultaneous reconstruction of needed raw content and declared-type/head support, or an equivalent decidable symbolic representation.
+Input QName/particle-position anchors are candidate support, not a proved complete basis.
+Full executable evidence adequacy, complete negatives, mathematical termination and dated correspondence remain open.
+
 #### External methods and applicability
 
 The inspected precedents show how others handle recursive definitions, but none supplies an automatic dated-XSD truth rule.
@@ -4144,6 +4282,7 @@ Neither a failed direct decoder nor that scoped positive settles full-B represen
 | [Bogaerts/Jakubowski, ICLP2021](https://www.bartbogaerts.eu/articles/2021/006-ICLP-RecursiveSHACL/RecursiveSHACL.pdf), Theorem 4.1/Section 4 | AFT derives several semantics after explicit order/evaluation choices | Preserve B's additional grounds and state the chosen interpretation |
 | [Okulmus/Šimkus, KR2024](https://proceedings.kr.org/2024/52/kr2024-0052-okulmus-et-al.pdf), Definition 3/Proposition 3/Section 7 | ShaWell translates chosen founded validation to propositional logic programs | Finite graph/shape atoms differ from unbounded exact construction contexts |
 | [Oudshoorn/Ortiz/Šimkus, KR2026](https://proceedings.kr.org/2026/50/kr2026-0050-oudshoorn-et-al.pdf), Theorems 3–8/Proposition 5 | ALCIO founded static analysis via hybrid μ-calculus and automata | Prove a finite effective encoding and both candidate reconstruction directions |
+| [Barguñó et al., TABG](https://arxiv.org/pdf/1302.6960), Definition 3.2, Sections 4.1–4.2 and Theorem 5.22 | Decidable tree emptiness with global subtree equality and restricted natural counting thresholds | Prove nominal sharing/context reconstruction and stay within the actual arithmetic syntax |
 | [XMLmind implementation limits](https://www.xmlmind.com/xmleditor/_distrib/doc/xmltool/xsd_structure_limitations.html) | Explicitly lists cos-ct-extends.1.5 as unchecked | Omission is not a solution or permitted weakening here |
 | [libxml2 c79c961](https://github.com/GNOME/libxml2/blob/c79c9612fcc77b06b0d16f35fd363d938bdbbf5e/xmlschemas.c#L16028) | Exact clause 1.5 remains TODO in the extension checker | Current-source omission is not a semantic theorem or a new reference-engine verdict |
 | [goxsd8 a5c3269](https://github.com/kud360/goxsd8/blob/a5c3269c20c26aed63c2940414cf43d97b8d54c5/xsd/complexextension.go#L444), [approximation issue 586](https://github.com/kud360/goxsd8/issues/586) | Checks a collapsed, unregistered throwaway intermediate | Does not supply coherent D′ and all B-v1 inherited-root validity duties |
@@ -4159,6 +4298,17 @@ The coordinator's positive investigator inspected the pinned libxml2/goxsd8 func
 The official [Saxon 13 conformance page](https://www.saxonica.com/html/documentation13/conformance/schema11.html) documents use of XSD 1.1 derivation rules even for an XSD 1.0 request; that version policy is not correspondence with this dated relation.
 The 1991 well-founded-semantics author PDF had unusable extracted text, and the WWW2020 stable-model full PDF retrieval failed; neither uninspected proof is used.
 No whole-web absence or general undecidability conclusion follows.
+
+The TABG continuation inspected the defining equality semantics, arithmetic boundary and pumping theorem through coordinator-supplied primary excerpts; it did not audit the whole paper.
+Global state-pair equality compares whole subterms, not properties conditionally joined by an unbounded nominal helper ID.
+Its decidable arithmetic uses nonnegative counting coefficients and constant thresholds; arbitrary cross-state count comparisons combined with subtree equality are outside that result and have an undecidability theorem for that automaton formalism.
+No reduction from that hard formalism to immutable B-v1 inputs was established.
+
+Strict owner-executed controls also distinguish exact raw mappings from language equivalence: pointwise unrolling of a fresh repeated compositor can reject an otherwise complete forest while all original particles remain fixed.
+Another complete forest realizes a shared fresh sequence with exact x repetitions and y-occurrence wildcard content; separate restriction consumers bind x, y and their effective-total-range product.
+The product and each binding mismatch retain their own actual full-checker outcomes.
+That optional fresh support can be omitted, so these controls establish neither RE01 hardness nor failure of a SOME normalization.
+The earlier fixed-layout arithmetic result keeps raw compositor counts constant and is unaffected.
 
 The next implementation route is exact candidate/frontier materialization and effective finite-forest search for Q_f, with a separately proved input-derived bound or equivalent complete-negative method before total claims.
 Normative correspondence, arbitrary runtime representation, general coverage, complete negatives and mathematical termination remain open.

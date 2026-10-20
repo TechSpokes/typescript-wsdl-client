@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): verify first-birth helper reconstruction and joint original-type anchoring with complete contextual roots.
+
 - fix(re01): reject source-only original records as hypothetical components while retaining legal fresh declarations.
 
 - fix(re01): check retained original construction inputs and compositor incidences without installing representation-only roots or promoting suppressed source items.

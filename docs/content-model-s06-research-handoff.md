@@ -102,6 +102,18 @@ There is no production selector/API/version change, release or downstream activa
 
 ### What is established and what remains unproved
 
+The [first-birth helper reconstruction](content-model-s06-re-01.md#first-birth-restriction-reconstruction-of-common-content-helpers) retains exact base identities while changing eligible fresh extension methods to restriction.
+With common exact content and complete affiliation, membership, property-equality and frontier guards, its helper child duties disappear.
+Complete live-consumer controls pass where the older E-cut recipe rejects affiliation; every actual and fresh obligation remains checked.
+
+This is conditional reconstruction, not a Γ-derived bound or a complete search.
+A separate fresh-head control also reconstructs a different complete root when pointwise recolouring fails, without deleting any inherited component.
+The next general task is to extract some compatible raw-content/type/head support from arbitrary complete successful forests, rather than preserve every prescribed helper graph.
+
+The [genuine original-anchor contrast](content-model-s06-re-01.md#genuine-original-equality-anchors-require-contextual-reconstruction) shows why equal properties alone do not justify replacing a fresh declared type with an original.
+That replacement creates a different H obligation and breaks a retained scope comparison; jointly reconstructing the consumer repairs the exact example with complete four-node evidence.
+The general method must therefore account for property-only scope observations and full declared-type consumption together, while retaining each proof's exact context.
+
 | Finding | Established scope | Remaining limit |
 | --- | --- | --- |
 | Shared local authorities and supplied finite proofs | Accepted local rules and context-bound checks | General helper existence is not decided |
