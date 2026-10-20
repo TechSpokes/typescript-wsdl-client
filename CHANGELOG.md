@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): distinguish retained enumeration components from new immediate-base introductions.
+
 - fix(scalar): preserve inherited exact facet identities without skipping current-context value and formation checks.
 
 - docs(re01): derive bounded shared endpoint witnesses and retain complete scalar construction obligations.

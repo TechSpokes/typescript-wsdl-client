@@ -212,6 +212,13 @@ For an inherited exact raw row, the scalar owner preserves each component occurr
 Distinct rows, repeated incidences and independent births do not share this identity merely through caller data or type IDs.
 Only the same incidence's annotation and immutable pattern spelling can use it; actual typed values, full formation and context-qualified dependencies are still computed independently.
 The [complete inherited-facet controls](../test/research/re01/inherited-raw-facet-identity.test.ts) keep every fresh root and required child; this is not a whole-description or new-alias binding.
+
+Enumeration value-set coverage and component-introduction validity are separate checks.
+The scalar owner associates an exact raw enumeration component with its own installed layer; same occurrence or determinate equal annotation can establish retention only after typed values match.
+Otherwise every member must have a complete immediate-base membership witness.
+Unknown retention with unproved new formation retains the existing scalar prerequisite, while successful new formation suffices without resolving annotation equality.
+Source and original-bound fallback metadata comes only from that layer's own facets and existing issued identity.
+The [complete enumeration controls](../test/research/re01/enumeration-retention-annotation.test.ts) preserve both contexts, all inherited fresh roots, required children and missing-evidence failures.
 The separate [scalar witness record](content-model-s06-re-01-scalar-witnesses.md) states the new bounded endpoint problem and the remaining full F2 materialization gates.
 
 Failure ownership is also context-qualified.

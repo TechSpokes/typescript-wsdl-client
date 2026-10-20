@@ -179,6 +179,28 @@ Every selected F2 fixed, cross-kind, endpoint and containment duty remains intac
 This repairs an independently demonstrated supplied-construction correspondence gap.
 It creates neither a selective immediate-base facet binding nor a complete scalar alias producer, and it proves no general negative or search bound.
 
+### Enumeration retention and new introduction
+
+Equal enumeration value sets establish value-set coverage, not identity of the component that introduced them.
+An anchor with minimum-inclusive two and enumeration one/two can legally retain that old enumeration while admitting only two.
+A fresh successor with those same values but a definitely different annotation introduces a new component; its member one must belong to the immediate anchor and does not.
+
+The existing scalar owner now records each exact raw enumeration component alongside its installed value layer.
+An authenticated same occurrence or equal complete annotation, together with the existing typed value equality, establishes retention.
+Source and original-bound layers use only their own annotation and issued identity evidence; unrelated equal-valued groups supply no authority.
+
+Every genuinely new member follows the existing complete immediate-base membership procedure.
+When retention remains possible because metadata is unknown, failure to prove new introduction keeps the precise scalar formation prerequisite.
+Conversely, proving every new member suffices without deciding that unknown annotation equality.
+Invalid operands, source failures, dependencies and sticky resource failures retain their existing propagation.
+
+The [complete enumeration controls](../test/research/re01/enumeration-retention-annotation.test.ts) distinguish legal retained and newly narrowed enumerations from changed-annotation and illegal-member cases.
+They check every actual and inherited fresh root, an independently required child and its missing-evidence contrast.
+The [exact-facet controls](../test/unit/schema-exact-facet-components-independent.test.ts) also distinguish failed from successful new introduction under unknown metadata and retain typed-operand and budget failures.
+
+This corrects one independently reproduced formation false positive.
+It does not complete scalar alias construction, reconcile the held nonexact full-inventory claim or establish general helper coverage, complete negatives or termination.
+
 ### Alternative A and recorded project decision
 
 Alternative A fixes the original global symbol and affiliation universe while allowing fresh internal components.

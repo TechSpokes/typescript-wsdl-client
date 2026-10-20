@@ -326,6 +326,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   // Inherited layers retain values assessed by their own base. A shared raw
   // facet object is syntax identity, not a datatype or evaluation-context key.
   const enumerations = new WeakMap<ScalarConstraintLayer, ReadonlyMap<Facet, SchemaOperand>>();
+  const enumerationComponents = new WeakMap<ScalarConstraintLayer, ExactFacetComponent>();
   const facetDependencies = new Map<Facet,readonly SemanticTypeDependency[]>();
   const facetObligations = new Map<Facet, readonly ScalarObligation[]>();
   const excludedByValueFacets = (base: Description, value: SchemaOperand, owner: GraphNode): boolean => {
@@ -2343,17 +2344,40 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         if (name === "enumeration") c.fail(owner, "st-restrict-facets", "Complete raw facet properties omit an inherited enumeration component");
       }
     }
+    const component = (layer: ScalarConstraintLayer): Pick<ExactFacetComponent, 'annotation' | 'identity'> => {
+      c.step(owner, layer.facets.length * 2 + 2);
+      const exact = enumerationComponents.get(layer); if (exact) return exact;
+      const payloads = layer.facets.filter(facet => facet.name === 'enumeration').map(facet =>
+        boundAnnotationPayloads.get(facet) ?? sourceFacetPayloads.get(facet) ?? facet.annotation);
+      return {identity: layerIdentities.get(layer) ?? layer,
+        annotation: payloads.length > 1 && payloads.some(payload => payload !== 'absent') ? undefined : payloads[0]};
+    };
     for (const group of result.plan.layers) {
       c.step(owner, group.facets.length + 1);
-      if (base.plan.layers.some(prior => groupEqual(prior, group, "enumeration"))) continue;
+      if (!group.facets.some(facet => facet.name === 'enumeration')) continue;
+      // Equal values cover an inherited value-set property, but retaining its
+      // introduction also needs this component's annotation or issued identity.
+      const supplied = component(group); let retained = false, ambiguous = false;
+      for (const prior of base.plan.layers) {
+        if (!groupEqual(prior, group, 'enumeration')) continue;
+        const inherited = component(prior), relation = supplied.identity && supplied.identity === inherited.identity
+          ? 'equal' : annotationRelation(supplied.annotation, inherited.annotation);
+        if (relation === 'equal') {retained = true; break;}
+        if (relation === 'unresolved') ambiguous = true;
+      }
+      if (retained) continue;
       for (const facet of group.facets) if (facet.name === "enumeration") {
         const expected = enumerations.get(group)!.get(facet)!;
-        if (excludedByEnumeration(base, expected, owner) || excludedByValueFacets(base, expected, owner)) c.fail(owner, "enumeration-valid-restriction", "Enumeration component contains a value outside the base value space", facet.lexical.context.source);
+        if (excludedByEnumeration(base, expected, owner) || excludedByValueFacets(base, expected, owner)) {
+          // Failed new formation cannot reject a still-possible retained component.
+          if (ambiguous) {complete = false; continue;}
+          c.fail(owner, "enumeration-valid-restriction", "Enumeration component contains a value outside the base value space", facet.lexical.context.source);
+        }
         // Every candidate is assessed by the exact base, retaining ordered
         // union selection and namespace context. Failed finite search is not
         // a complete negative membership answer.
         const membership = membershipWitness(base, expected, facet.lexical, owner);
-        if (membership === false) c.fail(owner, 'enumeration-valid-restriction', 'No base lexical spelling denotes the typed enumeration value', facet.lexical.context.source);
+        if (membership === false && !ambiguous) c.fail(owner, 'enumeration-valid-restriction', 'No base lexical spelling denotes the typed enumeration value', facet.lexical.context.source);
         if (membership !== true) complete = false;
       }
     }
@@ -2550,11 +2574,13 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
           if (group.identity) for (const installed of formed.plan.layers) {c.step(node);layerIdentities.set(installed,group.identity);}
           if (exactComponentSet) {
             const name = group.facets[0].name, installed = formed.plan.layers.at(-1)!;
-            c.step(node, group.facets.length * 5 + 4);
-            exactComponentSet.push({name, facet: name === 'pattern' || name === 'enumeration' ? undefined : group.facets[0], values:group.facets.map(facet => name === 'pattern'
+            c.step(node, group.facets.length * 5 + 6);
+            const component: ExactFacetComponent = {name, facet: name === 'pattern' || name === 'enumeration' ? undefined : group.facets[0], values:group.facets.map(facet => name === 'pattern'
               ? {fixed:false, lexical:facet.lexical.value} : name === 'enumeration'
                 ? {fixed:false, operand:enumerations.get(installed)!.get(facet)!} : facetProperty(formed, name, node)!),
-            annotation:group.annotation, identity:identities![exactComponentSet.length]});
+            annotation:group.annotation, identity:identities![exactComponentSet.length]};
+            exactComponentSet.push(component);
+            if (name === 'enumeration') enumerationComponents.set(installed, component);
           }
           conjuncts.push(formed);
         }
