@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "583e29fcdff0309c13ed719ab0f8b7efa372df146e2c4e78bd2f454c25f56390",
+          "sha256": "560e6db0c45e361fea9ff7b104d010632bd577c878edf5a2339851ae2139f0a9",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "b08a473c0b145aa7c7a89de4f1387a097951cd791eb001f8fa4bc89fc3c3235f"
+          "sha256": "954d81a1a64ab965991891c1e0c83955a07aa0ed02758d624fa8bb02f9411101"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2667,6 +2667,16 @@
           "path": "test/research/re01/phase-local-exact-b-quotient.test.ts",
           "role": "prototype",
           "sha256": "bd9c9fa61374aac5e65625d593b079d4bf8b76e7e2127871ece7abff0a444258"
+        },
+        {
+          "path": "test/research/re01/private-gamma-copy-representative.test.ts",
+          "role": "prototype",
+          "sha256": "a248eac851144879aa812f033d4bb4453d344e848020cc6d19ad0503310e4e54"
+        },
+        {
+          "path": "test/research/re01/private-copy-np-bundle.test.ts",
+          "role": "prototype",
+          "sha256": "b2cf08457896e0eae17551b1fae2c8d25755dab634fa30d9a0c1845bca27d388"
         }
       ]
     },

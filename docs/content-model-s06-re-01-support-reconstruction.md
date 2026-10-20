@@ -6,9 +6,10 @@ Conditional complete-forest reductions and the remaining joint support bound. Se
 
 This record continues the [RE01 proof](content-model-s06-re-01.md) from verified main `760bcc00987e694b3da14b579126dbd98e4278f6`, tree `4b28398b4f01e736692a5c5d46d092498c2a1867`.
 The [resolver contract](content-model-s06-re-01-resolver.md) and [implementation authorities](content-model-s06-re-01-resolver-implementation.md) remain unchanged.
-It records independently scrutinized mathematical reductions and new complete native controls for private-member multiplicity and a closed exact-B batch.
+It records independently scrutinized conditional support reductions and complete native controls.
+The continuation adds private-copy sharing, ordinary value/name palettes, guarded SC selector transport and a closed NP/copy bundle reduction.
 
-Every theorem starts from a supplied finite complete founded forest, authentic current-context/source materialization and sufficient finite configured resources.
+Every forest transformation starts from a supplied finite complete founded forest, authentic current-context/source materialization and sufficient finite configured resources.
 Every retained old fresh component and independent actual-Gamma duty remains required in its own context.
 The theorems remove components only before first birth; no inherited root disappears merely because it becomes unused.
 
@@ -18,6 +19,9 @@ The theorems remove components only before first birth; no inherited root disapp
 | Closed exact-B batch | One TYPE representative per admitted batch | General module roles |
 | Native head/body inversion | Fixed SEQ/ALL arity and private leafification | Joint body/member pruning |
 | Literal private members | At most two per supplied exact signature | Number of signatures |
+| Private Gamma copies | One selected representative per supplied template/private interface | Protected-port and copy extraction |
+| Ordinary values/AU names | Finite input value/name palettes | Field, scalar and component counts |
+| Co-born NP/copy bundles | One NP representative per sealed batch | Number and general geometry of batches |
 
 The first-boundary classification invokes the already proved [common nonscalar payload](content-model-s06-re-01.md#common-mixed-payload-without-changing-the-nominal-fresh-family) only with that theorem's full premises.
 Its simple-content case requires a separate scalar projection, ordinary-value and clear particle-formation proof; that application is not promoted here.
@@ -753,6 +757,957 @@ The theorem caps duplication per exact supplied signature, not the number of sig
 Finite catalog extraction, global coverage, executable adequacy, complete negatives and general termination remain open.
 
 
+
+## Copy and ordinary support continuation
+
+The following conditional results continue from actual main `254aba0f36071d1724e097ef80fde65fb944e04b`, tree `373254762c07493118dfa306aa095080f0c5307c`.
+They reduce specific dimensions of a supplied complete forest and keep their source/current-context and closed-omission premises.
+The private-copy and NP-bundle native controls below exercise their stated value-free NONSC realizations.
+The ordinary-value/AU projections and guarded SC transport remain separately qualified source results.
+No composition is inferred merely because two projections have each been proved: their active selectors, first-birth frames, retained roots and complete child/frontier interfaces must agree in the SAME reconstructed forest.
+
+
+## Private Gamma-copy tails with one representative per template
+
+### Quantified scope
+
+Fix source-qualified Gamma, an authentic closed parent P and one supplied finite complete founded forest W.
+Apply the reviewed fresh scope-stop owner compression before the construction below.
+Retain the usual faithful finite fresh allocation, source/private reauthentication and capacity qualifications.
+This proposal concerns ordinary empty/particle/mixed complex copies and is not a scalar-congruence theorem.
+
+Let Q be a fixed finite graph of original Gamma anonymous complex templates.
+Every q in Q is restriction or primitive extension, with exact immediate base a named Gamma complex type or builtin anyType.
+Its ordinary declaration/AU value constraints are absent, and every scalar TYPE selected by its attributes is retained exactly.
+No q is a simple-base extension or a raw SC complex facade.
+Copy edges through declared TYPE or semantic scope may be recursive; finite source XML is not assumed to make the effective property graph acyclic.
+
+Let T be a post-P finite cover of these Q templates throughout W.
+Each copy has one fixed template label, the same own method/base/namespace/flags and the template's selected declared particle/AU diagram.
+Global declarations and named TYPE/base references are exact Gamma identities.
+The cover preserves ordered child incidences, local declarations and scope stops, actual fields and any chosen AU matching, while allowing different anonymous copies and different particle-sharing partitions.
+It is a persistent current-context cover at every retained occurrence, not merely a property equality observed at birth.
+
+Every copy in T is therefore Q-free: a restriction has no own NP, and a primitive extension keeps its exact immediate-anyType ancestor.
+All are genuine fresh roots after birth, so each old copy and its exact named/builtin base are fully constructed in its own old H.
+This genuine old-copy/base support is used instead of assuming full original q validity from a property read.
+
+Supply a protected interface K.
+It includes every T identity entered by a retained foreign complex base, any own-NP/evidence/intermediate/ancestor port, a source/scalar exact port or a separately protected exact TYPE identity.
+It also includes every retained external raw particle/AU port into the copy bodies, with its finite Q-template incidence projection.
+Original/P components remain exact.
+The foreign-base and evidence audit ranges over every old W context and future birth, including an original endpoint's newly installed middle.
+A global declaration TYPE selecting a private copy is not by itself an exact identity port: all such selectors are rewritten jointly below.
+
+Call copies outside the protected TYPE set private.
+Every remaining incoming reference to a private copy must be a local/global declaration TYPE or a semantic complex scope stop, in a genuinely post-P record that may be coherently reconstructed at its own birth.
+Declaration TYPE means the active semantic declaredType selector, including an admitted fresh rawElement override; canonical node.type alone is not authoritative.
+Every changed TYPE/scope selector is a literal admitted fresh selector, not an edit of authenticated original source backing or an unchanged inherited P row.
+All ordinary fields in these declaration/AU diagrams, including all retargeted global ELEMENTs, are value-free; scalar references and words outside the diagrams stay exact.
+Protect any SC/value/source port instead of treating positive component-property equality as permission to change its assessment dialect.
+
+The conditional conclusion is a complete reconstructed forest with at most
+
+```text
+|K_TYPE| + |Q|
+```
+
+active copy TYPE identities in each reconstructed context, plus that context's fixed outside environment.
+The representative persists along each branch, so the same bound holds for the active branch inventory when K_TYPE is supplied for that branch.
+Representatives first born in incomparable old children may be different existing IDs; no bound on the union of all sibling-branch IDs follows from this decoder.
+Each surviving public or representative diagram has its supplied or certified finite semantic selected-bundle bound b(q).
+This is not a bound on raw scaffold records, path encoding, private materialization or auxiliary source formation inferred merely from a property cover.
+The theorem does not bound K or the outside body/member environment from input.
+
+### Representatives and closed omission
+
+For each template that has private copies, retain one existing PRIVATE copy as its representative r(q).
+Do not use the original q and do not use a protected primitive middle as the private representative.
+On each branch choose the representative when that private template first appears; once born it persists unchanged through descendants.
+Reference closure permits simultaneous choices for a recursive family first born in the same context.
+Each chosen row and its raw body come from one actual old current node, with its genuine full construction.
+
+Every public copy remains, with its exact raw content root, particle/group/AU selectors, base and flags.
+Every representative also keeps its exact raw content root and those selectors.
+At every new local or global declaration's first birth, send a private declared TYPE to its representative.
+Rewrite the active semantic selector and every fresh canonical/raw reference needed for a closed realization coherently, then inherit those choices exactly.
+Retain each global ELEMENT identity, QName, affiliation field, abstract/nillable/final/block flags and all individual particle selectors exactly.
+For a private semantic scope stop, give the declaration the corresponding representative as direct complex owner, using the accepted compressed scope-stop representation.
+All QName/namespace/flags and lexical GraphContexts remain exact.
+
+Since a declaration's scoped owner changed, reissue its scoped ID injectively and update every fresh reference to it at first birth.
+Choose distinct fresh private paths when old declarations had equal path/role fields under different owners; an injective tuple encoding cannot distinguish equal rewritten tuples.
+Reserve the entire finite W, including later births, and require every affected declaration/identity/path/reference port to permit this coherent fresh renaming.
+If an exact path or identity observer forbids that repair, retain the corresponding copy/declaration in the protected interface instead.
+Use the accepted admitted identity allocator with complete reservations; do not assume legacy hash injectivity.
+The copy complex identities themselves already have the fixed compressed Gamma owner and do not need new owners.
+Fresh particles/groups/AUs likewise have their compressed non-scope owner independent of the copy type.
+
+Retain the raw particle IDs of every surviving public, representative or external protected body exactly.
+Their global HEAD selectors are unchanged.
+Changing a local declaration ID cannot change an implicit order key, which consists of the real global-head particle ID and exact global ELEMENT ID.
+No protected/source original backing is edited; an authentic original handle still denotes its actual Gamma content.
+
+Keep the selected containment/reference closure of these public, representative and protected diagrams after the TYPE/scope retargeting.
+Omit other private copy/body/scaffold nodes only before birth after a complete closed retained-reference/owner/source audit.
+An outside raw root or source port makes its selected diagram protected; it is not silently dropped as an unused owner.
+The bound concerns the resulting closed selected cone, not arbitrary old standalone fresh nodes that fail this omission test.
+
+### Property task graph
+
+Map every private copy identity to r(q), keeping each original/P and public identity fixed.
+Each surviving diagram keeps its own particle identities and positions; only its local TYPE/scope successor selectors are mapped.
+The projected cover remains a finite graph over the same Q diagrams.
+Two mapped complex successors from the same old template satisfy a positive coinductive structural relation by matching method/base/flags, ordered particles, exact scalar selectors and the corresponding chosen TYPE/scope successors.
+
+For a retained old TRUE component-property tableau, push each structural pair through this map.
+An old identity stays identity.
+New identity closures delete work; remaining expanded pairs match the same fixed Q fields and recursively pair the selected representatives.
+The old forced same-QName AU declaration/scope argument handles matching branches; value operands in the selected cover are absent and all other scalar selectors are exact.
+
+This is an explicit finite bisimulation of the pure structural diagrams, not transitivity of particle restriction or a generic theorem about SC scalar properties.
+Original q and its nested original scopes remain property-only where they were property-only.
+No original q formation receipt is introduced by the construction.
+
+### Nominal and real particle predicates
+
+A copy's own type path consists of its unchanged own method followed by its exact named/builtin Gamma base path in that current context.
+A different fresh copy is not on that path.
+Accordingly every old positive complex TypeDerivation from a local copy to an original/fixed target keeps the same path, and an old same-copy identity stays identity.
+The only new positive relations are identity comparisons between declaration TYPEs sent to the same representative.
+
+An original or inherited TYPE cannot start deriving through the private representative: that would need a protected middle or foreign base entry, which the interface has excluded from private copies.
+An outside fresh complex derivation entering a private copy similarly supplies a foreign base port and would have protected it.
+Scalar union alternatives do not create an incoming path to a complex private target.
+This is a scoped relation fact for the actual real declaration calls, not preservation of arbitrary exposed TypeDerivation(private_i, private_j) answers.
+
+To obtain exact global membership, fix an old literal affiliation edge e to h.
+If h selects a private copy c, the old fully formed edge requires TypeDerivation(TYPE(e),c,[]) true.
+The foreign-base exclusion and the all-complex exact-base frame imply TYPE(e)=c: no distinct copy, outside complex path or simple union can derive into c.
+Induction down a literal affiliation chain proves every descendant of such a head is in that same exact copy family.
+Both endpoints are sent to the same representative, so their old identity affiliation and substitutability answers remain identity answers, independently of their element final/block flags.
+If h is outside private copies, an entering copy has its old method and exact common base suffix; its own block is not entered, while every entered base/suffix block is the same.
+An outside declared TYPE reaching a private target would be a forbidden foreign path, so there is no omitted third case.
+Thus existing affiliation edges remain legal with their exact exclusions, and each member/head substitutability answer along the unchanged affiliation forest is exact.
+Merging distinct sibling copy identities does not add a new affiliation path between their element families.
+This argument is pointwise in every simulated H, including later births and lawful shared Gamma-base retirements.
+
+The effective substitution universe, every global element identity and every actual head set are therefore exact in each corresponding H.
+UPA has the same names, wildcard descriptors, incidence tags and counters.
+EDC keeps the same anonymous/global TYPE status; a valid duplicate QName class could not previously have selected two anonymous TYPEs.
+Its named classes remain exact.
+The same observation covers anonymous TYPEs on global members: coalescing them does not make any formerly legal repeated-QName incidence depend on a named TYPE.
+
+Every surviving raw content root and every coherent order key stays exact.
+An old clear RP mapping therefore retains its arity, occurrence arithmetic, names, wildcard tests and selected order witnesses.
+Its positive local TYPE answers stay positive; same-template local identity gains may create additional successful mapping states.
+No raw root is replaced by the original q or by another copy's raw root at a foreign consumer, which is precisely the key-merging step refuted by the earlier fold counterexample.
+
+### Full current-H frontier
+
+Each representative remains a genuine fresh full root with its old immediate base.
+Its old complete construction already consumed that named/builtin base and every selected declaration/type/scalar record in its retained diagram in the same H.
+After the rewrite its exact raw restriction witnesses remain positive, or its raw extension property tableau is the structural bisimulation above.
+Its immediate-final check and every source/range/placement clause are unchanged.
+
+Each public copy has the same argument, with the same exact raw body and only local TYPE/scope retargeting.
+A newly retained declaration TYPE read reaches a Q-free representative and its already genuine exact base closure.
+It introduces no new original NP merely by folding to an original anonymous q; that original fold is never performed here.
+
+Extra RP scan states are not assumed to match the old selected backtracking footprint.
+Their real operands belong to the already fully consumed declaration/type/base closure of the two particle operands, with a private TYPE receipt replaced by its genuine full representative receipt.
+Value-free selected diagrams add no fixed/default scalar comparison; all untouched scalar inputs remain in their precovered full authority.
+The repaired pending/fatal and clear-state dominance guards apply to those same full operands.
+No property-only original scope is promoted to full construction.
+
+Deleting an earlier structural pair visit can change first-visit order.
+The finite pushed cover relation supplies that new structural pair with the corresponding representative fields; unchanged scalar readers keep their old fixed descriptors.
+Any supported new dependency is a full representative/base duty or a mapped old diagram duty, rather than an arbitrary unvisited original scope validity assertion.
+
+### Complete forest and limits
+
+All retained copies are Q-free before and after reconstruction, so none supplies a required child target that disappears ambiguously.
+Every remaining NP subject is outside the private cone.
+Take its exact old endpoint/intermediate/ancestor child, keep its outside additions and apply the same branch-persistent first-birth representatives and declaration-ID repair.
+The protected interface includes every future foreign middle/base/source use, so a private cone is never reopened through an omitted identity.
+
+Induction on old W height supplies the complete child family and reissues every source, scalar and current-H receipt.
+Component cycles among representative diagrams are closed by their finite conjunction and do not stand in for founded NP evidence.
+All original/P and inherited fresh roots that remain in the construction retain their exact lawful inherited versions.
+Other old copy/scaffold components were omitted before their first birth under the explicit closed-cone rule, never dropped after becoming mandatory.
+
+This gives one active representative per private template in each context/branch without requiring full original q and without merging any surviving particle/head order keys.
+It still assumes the persistent cover, exact Gamma base class, non-SC/value-free ports and a supplied closed K interface.
+Arbitrary inherited P anonymous bases, late-R anchor classes, scalar assessment transport and extraction of input-bounded K remain separate.
+
+The conditional quotient received independent source scrutiny.
+Its separate complete native control is recorded below; no global component bound or universal evidence-adequacy conclusion follows.
+
+## Ordinary values under the non-SC private copy quotient
+
+This independently scrutinized extension relaxes the preceding quotient's value-free condition only with its exact persistent-template and full current-H frontier premises.
+It does not supply SC assessment congruence, extract a cover or interface, or bound either one.
+
+### Exact frame
+
+Keep the private quotient's source-qualified Gamma, authentic parent P, complete finite forest and faithful persistent Q-template cover.
+Every selected copy and representative has ordinary empty, element-only or mixed content, never simple content.
+Keep every physical ordinary value field, its default/fixed kind, word, namespace map and GraphContext exact.
+
+To lift the baseline value-free Q cover, permit valued Q templates only with a persistent corresponding cover that already matches every paired field's presence, kind and assessed actual value in its chosen successful property tableau.
+Paired copies may use different old lexical objects when their actual values agree; each physical object's own word/map remains exact under this transport.
+This is a retained value-property premise of the cover, not permission to install arbitrary values or to infer value equality from the nonvalue particle diagram alone.
+
+Only the already permitted new declaration TYPE and semantic-scope selectors are retargeted at their coherent first birth.
+Original/P declarations and source backing remain exact, and all selected scalar TYPE references on attributes remain exact.
+All named/global selectors, selected particle diagrams and the quotient's proved global membership census remain in its fixed frame.
+
+### The actual value assessment has no copy-type dialect
+
+For an element declaration with a value and a non-SC complex declared TYPE C, `checkDeclaration` requires mixed content and emits `element-default-mixed-emptiable:C` (`schemaDeclarationPrimitives.ts:84–96`).
+Its assessed constraint TYPE is builtin string, independently of C's nominal identity.
+Full success already excludes a constrained element-only or empty-content C.
+
+The representative has the same template content kind, so it is also mixed whenever an old constrained declaration selected C.
+The unchanged word/map is therefore assessed by the same builtin string plan before and after TYPE retargeting.
+The actual family/value, normalization and assessed fixed/default kind remain exact; no union member identity or SC contentIdentity transport is needed.
+
+Attribute declarations cannot select a complex C at all, and their retained scalar references preserve their old assessments.
+AU own constraints use those same retained attribute scalar references, so their own/declaration compatibility and effective fallback values are likewise unchanged.
+
+### Formal emptiability is a separately retained construction duty
+
+The mixed-value obligation is discharged by full construction using the declared complex TYPE's restriction-normalized particle view (`schemaConstructionAssessment.ts:123–134`).
+The transport does not replace this duty by the value parser or by property-only equality.
+It reissues the duty for the genuine full representative in the same H.
+
+The persistent template cover preserves compositor kind, all selected ordered incidences and occurrence counters.
+The quotient preserves every global head selector and its effective membership census, so its restriction-view expansion has the same real leaf alternatives and occurrence shape (`particleSemanticView.ts:86–152`).
+Group indirection and authentic original child selection remain under the quotient's faithful selected-diagram/source qualification.
+
+After zero-maximum removal, flattening and unit-compositor collapse, corresponding view shapes have equal effective-total ranges.
+This follows by induction over their acyclic particle expansion: leaves have unit content range, sequence/all add child ranges, choice takes alternative ranges, and each particle multiplies by its own occurrence interval (`occurrenceAnalysis.ts:115–125,179–196`).
+Thus `schemaEmptiable`, defined by effective-total minimum zero, is equal for C and its representative in every corresponding H.
+
+This argument uses the persistent exact diagram and current census premises.
+A bare past TRUE component-property observation is not substituted for those premises or for full original-template validity.
+
+### Every current caller keeps the assessed value
+
+Declaration formation changes only the declared TYPE and mixed-emptiability dependency from C to its already fully formed representative.
+Component-property value comparison still has the identical builtin-string actual values on each affected element.
+RP NameAndTypeOK fixed comparison uses the declarations' assessed constraints, not their nominal complex TYPEs (`particleRestriction.ts:105–121`).
+
+The repaired RP caller retains the declared TYPE dependencies and every standalone scalar prerequisite gate.
+The representative's genuine full closure discharges its mixed-emptiability duty; this is not a claim that arbitrary scalar obligations disappear in a standalone relation call.
+No raw-SC formation debt is created by these affected non-SC value comparisons.
+
+Consequently all old ordinary equality, kind/presence, AU compatibility and fixed implication answers stay exact under the TYPE/scope quotient.
+The quotient's already separate proof for new nominal identity matches and extra RP states must still provide full real declaration/TYPE coverage, clear-winner preservation and pending/fatal discipline.
+That proof is not obtained solely from the word-level argument here.
+
+### Conditional extension and boundary
+
+Under these premises, the private Q-template quotient may retain corresponding ordinary declaration/AU constraints throughout its persistently value-matched non-SC selected diagrams and on its retargeted globals.
+They need not be erased merely because their complex declared TYPE is sent to a same-template representative.
+All ordinary words/maps and all assessed actual values remain exact, so no ordinary-value finite envelope or optional-field projection is required for this step.
+
+The conclusion does not extend to SC copies selecting different scalar descriptors, foreign exact TYPE/base/source ports, or a nonpersistent property-copy observation.
+It does not merge selectedMembers references, change scalar contentIdentity, omit a mandatory scalar root, or provide an input-derived bound on private interface K.
+This is a source-level value-transport theorem; the native representative control below remains value-free.
+
+## Scalar property pairs at one actual lexical context
+
+This is an independently scrutinized conditional value lemma for the SC-copy selection gate.
+It is a value-assessment lemma, not an identity-changing SC construction or scalar-root omission theorem.
+All existing source, native, scalar-formation and universal F2 duties remain separate.
+
+### The namespace quantifier cannot be dropped
+
+For a scalar S and a fixed namespace map kappa, let Image(S,kappa) be the actual family/canonical values returned by successful assessment of some XML word with that map.
+Equal complete scalar properties do not imply Image(S,kappa1)=Image(S,kappa2) for arbitrary maps.
+Even S=QName has only empty-namespace values under the empty map, while map {p:urn:fresh} admits p:x with value {urn:fresh}x and the empty map has no spelling of that value.
+
+The actual scalar parser reads `lexical.context.namespaces` (`schemaDatatypeValues.ts:143–149`).
+Selecting an original TYPE is not selecting its source namespace map: `schemaScalarKernel.ts:50–52` forwards the supplied lexical object to the original assessor unchanged.
+Thus a replacement can keep the actual operand map even when its TYPE recipe comes from Gamma.
+
+### Supplied pair graph and total authority class
+
+Fix two fully formed finite scalar dependency DAGs and a successful complete scalar PROPERTY tableau pairing them.
+The tableau retains primitive/variety, exact base and ordered item/member pair structure, whitespace and complete facet-value/component properties under selected P1/F2.
+Use the same actual lexical object, namespace map and primitive value authority for corresponding assessments.
+Admission here is the resource-independent datatype predicate; a finite budget's work counters, failure diagnostics and collector footprint need not agree.
+Every pair containing a builtin descriptor is an exact builtin-identity cut on both sides; a user component with the same QName/properties is not promoted to builtin authority by this lemma.
+This is an explicit checkable pair-cover guard, not a claim that QName comparison alone establishes literal builtin identity or that every structurally prepared candidate automatically satisfies it.
+
+Exclude reachable ENTITY/ENTITIES parse paths from the proposed total class: component ENTITY requires an unavailable DTD authority, and total same-word admission cannot be inferred from its ordinary primitive/facet tuple.
+This is the documented DTD input qualification, not a new datatype ban or a claim that every formed ENTITY definition is invalid.
+An exact residual source authority outside this class remains a protected cut and is not normalized by the lemma.
+
+For QName, retain the supplied map exactly.
+For NOTATION, use the same complete actual notation census, or require corresponding enum-qualified use plans whose equal enum values were genuinely qualified in their common original/source universe.
+The latter keeps every possibly successful NOTATION value in that common universe; adding other H notations cannot make an admitted enum-qualified ordinary/member/item value change.
+
+Intrinsic builtin name predicates must keep their established intrinsic compiler authority when promoted into raw facet recipes.
+An equal pattern string is not permission to replace the intrinsic consumer by an unsupported application-pattern compiler; authenticated original facet bindings already preserve this marker (`scalarSchemaAssessment.ts:2480–2484,2897`).
+Every compared facet value and source binding keeps its proper old authority and full formation witness.
+
+### Atomic source/raw reconstruction
+
+At an exact primitive or unchanged builtin leaf, equal primitive, whitespace and actual map select the same canonical parser and actual value.
+The source/raw distinction is explicit: source-derived atomic plans invoke their builtin name, while raw plans invoke their primitive (`scalarSchemaAssessment.ts:231–237`).
+For admitted total derived builtins, the complete intrinsic facet inventory reproduces the builtin's extra lexical/value tests.
+
+The string-derived family uses its exact whitespace plus language/Name/NCName/NMTOKEN intrinsic predicates.
+The decimal-derived integer family uses its exact integer grammar, fractionDigits and range endpoints.
+Primitive numeric, URI, binary, calendar, duration, QName and qualified NOTATION parsing uses its unchanged primitive authority; source ID/IDREF canonical values use their existing schema-only name semantics, with application identity policy unchanged.
+
+These are the existing dated builtin/primitive owner contracts, not a new generic regex or numeric decision procedure (`schemaBuiltinFacets.ts:17–54`; `schemaDatatypeValues.ts:111–181`).
+The direct ENTITY exception is why total authority is printed above rather than inferred merely from primitive=string.
+Builtin identity and anySimpleType leaves remain exact cuts, so no anonymous raw alias is asserted property-equal to a differently named builtin.
+
+Complete facet correspondence gives the same effective whitespace, pattern conjunction/disjunction groups, enumeration actual-value groups, bounds, precision and length predicates.
+They therefore accept or reject the same normalized primitive result and preserve its actual value.
+The proof uses the established P1 exact expression and complete raw facet inventory semantics, including raw conjunct application; it does not substitute syntax identity for a tuple's typed value.
+
+For ordinary fixed/default assessment, the ID-derived value-constraint prohibition is also preserved: the complete base-pair DAG reaches the same exact named ID builtin leaf and retains its inherited builtin classification, rather than merely agreeing on primitive string.
+Lists/unions do not become ID-derived atomic plans by selecting an ID value, and corresponding NOTATION ordinary/member/item enum qualification remains part of full formation.
+Thus the declaration value-check guards are not dropped when applying this datatype assessment lemma to an ordinary field.
+
+### Lists and ordered unions
+
+Induct over the finite scalar base/item/member pair graph after its exact original/generated definition normalization.
+For a list pair, both sides collapse/split the same word into the same finite tokens and recursively assess each token by its paired item recipe.
+The induction gives identical item acceptance and actual family/value tuples; the builtin list nonempty rule is also its complete minLength facet property.
+
+For a union pair, corresponding effective ordered members have identical admission answers and actual values on that same lexical object.
+The first successful index is consequently the same; later members remain unselected on both sides.
+Source nominal union flattening uses its effective ordered atomic/list description already compared by the complete PROPERTY tableau, not an arbitrary raw nested-union encoding.
+
+The selected actual value and normalized word agree, so the union's own complete facet predicates agree as in the atomic step.
+Raw conjunct recipes repeat that same intrinsic item/member assessment with their supplied facet groups and introduce no new constituent graph outside this pair induction.
+Reference-valued `selectedMembers` paths may name different source/raw descriptors and are not transported as identities.
+
+### Conditional conclusion and SC use
+
+Within the printed total authority class and one actual kappa, successful complete scalar PROPERTY pairs give the same whole-word admission and the same actual family/canonical result, including ordered list item values.
+Hence their actual value images at that kappa are equal; the original same word is already a witness, so no independent re-spelling theorem is needed for this narrow case.
+An SC facade forwards its selected scalar description with only outer id/reference/formation obligations changed (`scalarSchemaAssessment.ts:2572–2575`), so this value conclusion applies to its selected property pair too.
+
+For a future SC-copy reconstruction, preserve physical ordinary words/maps and use this lemma only for privately rebuilt selected recipes satisfying these authority guards.
+Retain all original/P source tuples, literal WORD ports, foreign scalar/base/contentIdentity ports and every old simple/generated full root under their prior authority.
+Changing a complex SC selector still requires its own coherent before-birth contentIdentity/derivation construction and complete child/frontier proof.
+
+No SC constructor normalization, protected identity substitution, standalone RP prerequisite discharge, scalar count, owner omission or full SOME theorem follows here.
+This source-level lemma does not assert a native SC control execution.
+
+## SC-copy declaration selection through an exact old representative
+
+This independently scrutinized conditional result extends the private Gamma-copy quotient's declaration-selection step to a supplied SC template class.
+It depends on the narrow SAME-kappa scalar value lemma and the baseline's persistent cover, identity repair, census and frontier qualifications.
+It does not normalize an SC content selector to the original source scalar or delete any old scalar root.
+
+### Exact SC class and protected interface
+
+Keep the reviewed private-copy quotient frame, including active semantic declaredType/rawElement selectors and coherent first-birth identity/path/reference repair.
+For this addendum, q is an anonymous original complex restriction with exact builtin anyType base.
+Each supplied q-copy c is likewise a genuinely post-P raw SC restriction over anyType, with the same namespace/flags and persistently matched selected AU/value properties.
+All such complex copies are Q-free, independently of their selected scalar recipe.
+
+Let S_q be q's authentic source scalar property, including an original generated scalar slot where required.
+Each c retains its exact OLD scalar content selector S_c and has a complete successful scalar PROPERTY pair cover S_c~S_q in every corresponding H.
+All scalar recipes, original bindings, words/maps, intrinsic authorities, scalar roots and full F2 proofs stay exact.
+The pair cover and every retargeted ordinary operand must satisfy the preceding value lemma's total source/raw authority guards.
+
+The protected interface K still includes every foreign complex base, own-NP/evidence/intermediate/ancestor port and exact source/scalar/contentIdentity/TYPE/WORD port.
+An eligible new private active facet TYPE=c may first project to exact OLD S_c under the reviewed facade-operand lemma; an ineligible or protected descriptor instead keeps c in K.
+No literal scalar base/item/member reference is silently retargeted by this addendum.
+
+All ordinary physical fields keep their old presence/kind, word, actual namespace map and GraphContext.
+The persistent Q cover already matches corresponding field presence/kind/actual values; it is not merely a match of nonvalue particle shapes.
+Retargeted outside globals need not have a source-template value field, but their old scalar assessment must satisfy the same total pair lemma at their own unchanged actual map.
+
+### Retain the representative's actual content identity
+
+Choose the same branch-persistent existing representative r(q) as the baseline quotient.
+Keep r's exact raw SC row, S_r selector, scalar contentIdentity, method/base and all old scalar dependency/formation rows.
+Keep every public c and, for this retain-all version, every other old c and S_c root as well.
+
+Change only eligible newly born declaration TYPE and semantic complex scope-stop selectors from private c to r, with the baseline's admitted ID/path/reference repair.
+No scalar description is replaced by S_q, and no SC extension/restriction identity check is reinterpreted as a value-space check.
+Foreign SC E/base consumers are protected K ports and therefore never retarget a complex base identity through this rule.
+
+The two finite scalar pair covers S_c~S_q and S_r~S_q give a pair relation between S_c and S_r at corresponding base/item/ordered-member positions.
+Primitive/variety, name/namespace/final, complete facet tuples and ordered successors agree through the common source cover.
+The finite DAG product proves the same complete scalar property relation; typed facet equality is transitive actual family/canonical sameValue, not source reference identity.
+
+The SAME-kappa lemma consequently assesses every retargeted declaration's unchanged lexical object under S_r with exactly its old actual value and normalization under S_c.
+Its selectedMembers references may differ and are not an ordinary schema fixed/default property observation.
+Every source/residual scalar authority remains its own exact old formation duty.
+
+### Property task graph and genuine scalar frontier
+
+Push the baseline's selected TRUE structural tableaux through the declaration/scope map.
+Complex SC node pairs enqueue their selected raw scalar properties, not an invented full original q receipt (`schemaComponentEquality.ts:183–191`).
+For a newly paired S_r and outside scalar X, combine S_r~S_q, the old S_c~S_q cover and the old successful S_c~X pair relation at their corresponding DAG positions.
+
+Every scalar node read by that product already belongs to the genuine full representative scalar closure or an old qualified property/formation closure.
+The product adds no base/item/member selector or facet operand word that was absent from those old graphs.
+Newly paired facet values were already assessed under their own old authorities; the property comparison uses their unchanged actual tuples and P1 expressions.
+
+Ordinary property-value comparisons keep the same physical kinds and actual values by the preceding lexical lemma.
+Their outer raw-SC obligations may name r rather than c; r is a genuine mandatory full root in that same H, and every selected S_r dependency is reissued under its actual authority.
+Property-only original q/scopes are never promoted to full H component construction, and no P receipt is transplanted into H.
+
+### Fixed-value RP and extra matching states
+
+At the semantic fixed implication, every affected declaration has the same fixed/default kind and actual value, so each old fixed comparison remains equal.
+The actual repaired `fixedEqual` caller also preserves its standalone scalar prerequisite gate (`particleRestriction.ts:105–121`).
+A raw SC declaration assessment carries `raw-simple-content-derivation-validity:c` from its facade, even if c has a separate full construction receipt.
+
+Thus an old clear RP winner cannot have relied on a non-global fixed comparison through an affected raw-SC c: that comparison would already have been pending.
+Its clear cases instead close by unchanged particle identity/originalParticle identity before leaf testing, use the both-global QName shortcut, skip comparison because the base value is not fixed, or leave that fixed comparison's TYPE outside the retargeted class.
+These cases remain clear after the rewrite.
+
+New nominal identity matches can enable extra RP scan states.
+Their real declarations, TYPEs and scalar recipes are in the full consumed frontier already covered by the baseline plus S_r; their unchanged lexical data is valid by the value lemma.
+An extra raw-SC fixed comparison may remain pending, but creates no fatal invalid-input/value and cannot dominate the retained old clear winner.
+
+No arbitrary scalar obligation is declared discharged merely because r is full.
+Property/aggregate callers reissue supported debts through their proper consumers; the standalone particle gate remains a gate.
+The baseline's exhaustive coherent-order and pending/fatal discipline remains a separate premise of this full runtime replay.
+
+### Complete forest of the retain-all selector projection
+
+Complex nominal dispatch still has variety=complex for an SC payload, and each copy retains its exact R(anyType) nominal path.
+The baseline's sibling-complex/global-affiliation census argument therefore applies without using S_c as a nominal simple base.
+Every global identity/QName/affiliation, real particle/root/order key and all original/P fields remain exact.
+
+Reissue every old full component/scalar root and the same outside own-NP child skeleton, projecting each eligible selector once at birth and inheriting it consistently.
+All copy complex types remain Q-free; no old scalar root is omitted because a declaration no longer selects its old facade.
+Induction over the supplied finite old forest height gives the corresponding complete successful forest under the printed owner/frontier and scalar-value premises.
+
+The result has at most one selected private representative TYPE per q, plus protected K, among the declaration selectors being quotiented.
+It does not bound all present complex components: an old S_c may retain its scoped owner c, and all such old roots remain in this version.
+Omitting c/S_c or other scalar/body scaffolds requires a separate closed before-birth owner/source/reference audit and is not inferred from this selection result.
+
+### Closed before-birth omission corollary
+
+The retain-all version is not an assertion that every old fresh root must be born in the alternative forest.
+After the selector/scope projection, supply a whole-cone audit for a nonrepresentative c, its private S_c recipes and the associated raw/source/owner scaffolds proposed for omission.
+Every incoming port from a retained original/P, representative, public copy or outside component must be absent or one of the eligible declaration TYPE/scope ports already coherently rewritten above.
+
+The audit covers every old future context and birth, including literal scalar base/item/member selectors, raw SC content and contentIdentity consumers, source bindings, typed facet descriptors, lexical/diagnostic owners and scoped identity owners.
+An exact residual port instead protects the needed c/S_c cone in K; it is not erased by declaring its payload unobserved.
+All source records and original generated slots in Gamma/P remain exact outside this omitted cone.
+Keep the complete notation side census, including every old post-P addition, exact in each corresponding H; no notation declaration or lookup entry is removed as part of a scalar/source cone.
+The cone contains no real global ELEMENT declaration or protected particle/head/order identity, so the quotient's exact outside element census and coherent keys remain unchanged.
+Any complex node omitted by this corollary is one of the Q-free copy/scaffold nodes of the supplied class; unrelated complex NP owners remain outside, unless a separate omission theorem is supplied for them.
+
+Under that explicit closed-cone premise, omit the entire cone at its first birth and throughout the transformed branch.
+The edge S_c-to-owner-c then disappears together with S_c; it does not force c to remain after the whole cone has been removed.
+If a retained S_r or outside record instead selects S_c or its owner c, the premise fails and that cone remains protected.
+
+These copy complex roots are R(anyType), and the remaining simple/local/scaffold nodes have no own-NP target under the printed class and prior facade/owner producer qualification.
+Removing their local clauses therefore removes no independently required own-NP child; all surviving child evidence is replayed by the same finite-height induction and exact outside census frame.
+No component is removed after becoming an inherited root in the chosen alternative forest.
+
+When every nonrepresentative private copy bundle satisfies this audit, the same per-context/per-branch copy-TYPE bound as the baseline quotient extends to this SC class: at most protected K_TYPE plus one existing representative per q.
+Representatives in incomparable old branches may differ, and no bound on their union across all siblings follows.
+The corollary bounds only these closed copy bundles, not K, arbitrary scalar witnesses/encodings, latent union members or the total component universe.
+
+No general SC catalogue, input-bound K, scalar/latent-slot count, unrestricted image theorem, unconditional root omission or full SOME bound is claimed.
+This is a source-level selector and closed-omission theorem; no native SC execution is claimed.
+
+## Complete native private-copy control
+
+The [private-copy representative control](../test/research/re01/private-gamma-copy-representative.test.ts) reuses the unchanged [property-only source](../test/conformance/fixtures/xsd/recovery/original-property-projection-independent.xsd).
+All 25 actual-Gamma components are checked independently.
+Three primitive anonymous copies of one q template carry real local declaration/attribute scope recursion, with q itself remaining a property-only H operand.
+The cover is not recursive declared-TYPE unfolding, and the control is value-free and NONSC.
+
+The complete old one-node forest has 62 members, 51 H receipts and every 37 fresh roots.
+The complete replacement has 54 members, 43 H receipts and every 29 remaining fresh roots.
+Public t0 and the EXISTING private representative t1 keep their raw content roots and real global-head keys.
+The eight-record t2 body cone is omitted before birth; all six fresh global head/member/descendant identities remain.
+Five effective pools are explicitly specified and equal in the two constructions.
+
+Every active canonical/raw TYPE selector formerly selecting t2 now selects t1.
+A retained local observer simultaneously changes its TYPE and semantic scope, and its scoped ID is reissued under a distinct path because merely changing the owner would collide with another retained observer tuple.
+Its selecting real particle stays exact apart from the required declaration reference.
+The test accounts for nine old-only identities (the eight body records and old observer) and one new observer identity, checks every omitted record, and verifies actual input immutability.
+
+The test first appears at commit 901dbd9fd8ec02576eb947a7c0f079bd56ed0c29, SHA256 a248eac851144879aa812f033d4bb4453d344e848020cc6d19ad0503310e4e54.
+The sole nonauthor independently replayed the exact prototype and its strict check; the promoted Vitest adaptation received exact-byte assertion/source review.
+The author exercised 55 tests across six files plus RE01 strict, toolchain and whitespace checks.
+Those are distinct attributed executions; no second independent Vitest run is claimed for the adapted harness.
+
+## Directed ordinary-value projection and a finite input value envelope
+
+This is an independently scrutinized conditional source-level complete-forest projection.
+It changes only freely born ordinary element, attribute-declaration and attribute-use value fields; scalar recipes and facet operands are not projected here.
+Its finite value set is computed from Gamma/P input words and maps, never from the number or signature of the old forest's new fields.
+
+### Exact fixed frame and physical fields
+
+Fix actual Gamma, authentic creator P and one finite complete represented successful forest W.
+Retain all identities, methods/bases, active declaration TYPE selectors, raw content/AU/particle selectors, incidence/order keys, source handles and notation census at every old context.
+Retain all scalar/facet recipes, their exact WORD/context/typed witness obligations and every old fresh/full root.
+
+A physical field is an element declaration value, an attribute declaration value or an AU own value, with its fixed/default kind and lexical object.
+Every physical field belonging to an original Gamma or creator-P record is protected exactly.
+Every new field is chosen once at its first birth and projected consistently through every later inherited occurrence in W.
+
+Production consumers are declaration/AU formation, component-property equality and RP/AU restriction fixed implications.
+No separate public API observation or instance augmentation outcome is required to remain equal.
+Any additional genuinely protected ordinary WORD/presence port must be seeded explicitly; this theorem does not erase it by assuming semantic nonconsumption.
+For the Gamma/P-only V conclusion, every such additional seed must itself be fixed Gamma/P input data.
+An externally supplied extra new-value observation must instead enlarge the declared input and its value envelope; an arbitrary old-W field is not an extra input seed.
+
+### History invariance of an ordinary assessment
+
+The same physical word/map must have the same actual value at every successful inherited occurrence before the closure can propagate values across contexts.
+Simple type records are never complex RE01 endpoints; their base/item/member and facet recipes remain fixed after birth.
+An SC complex endpoint retains its exact scalar content definition under correspondence, while a nonscalar mixed declaration continues to assess its word as builtin string.
+
+Induct over the qualified scalar dependency DAG to retain the actual interpretation of every fixed facet tuple and scalar recipe.
+An eligible raw/source scalar slot keeps its original authority; no property-only type read establishes that authority.
+Private facet NOTATION assessments can lose admission if a needed notation is absent, but cannot change the canonical QName of their fixed word/map; every retained full scalar root in W already qualifies those assessments.
+
+Every NOTATION datatype used as an ordinary declaration, list item, union member or SC content has the admitted enumeration qualification.
+Its finite enum values were genuinely declared when the datatype was formed; later notation additions outside that enum cannot admit a new selected value through it.
+Thus changing the notation census in later old contexts cannot change an ordinary union's selected value on a fixed physical word, and an invalid missing-name case is excluded by W's full formation.
+
+Under this complete scalar/source qualification, a physical ordinary field has one history-stable actual value, even if its declaration's outer complex TYPE is retired later.
+The projection retains every word, map and scalar recipe used by that statement, so it preserves the same value at every remaining occurrence.
+Without this source/SC/qualified-NOTATION history lemma, a field-level reachability graph alone would not prove a finite input value envelope.
+
+### Virtual AU slots and the directed closure
+
+For every mapped present AU occurrence, add a virtual effective-value slot e with the old source own if present, otherwise declaration.
+Its value/kind is the old assessed value/kind, not a new independent lexical record.
+Keep the occurrence context/phase tags, while physical fields retain one history-wide first-birth identity.
+
+Seed all protected physical fields and protected effective slots.
+For each old TRUE production component-property query choose a successful finite tableau and add bidirectional presence/kind edges between its paired physical declaration fields and paired AU own fields.
+These edges concern kind/presence equality; if a side is absent there is no present value to preserve.
+
+For each retained positive RP NameAndTypeOK pair whose base field is fixed, add a directed edge from that base physical field to the derived fixed field.
+For each positive AU replacement whose base effective slot is fixed, add a directed edge from that base slot to the derived effective fixed slot.
+These are implications, not bidirectional equality edges.
+
+Whenever a declared attribute fixed field is retained, retain every effective AU slot it governs.
+Whenever an effective slot is retained, retain its old selected physical own-or-declaration source.
+The declared-fixed/own compatibility rule ensures that an existing own source then has fixed kind and the same actual value.
+
+Close this finite graph from its seeds and retain every reached physical field.
+Erase only unreached NEW physical fields at birth; all untouched lexical objects/maps remain exact.
+Do not seed a new field just because its containing component is a mandatory root.
+
+### AU fallback is not an untracked new constraint
+
+The actual mapper selects `effective = own ?? declared` and checks every own value against a declaration fixed value (`schemaAttributeUses.ts:239–251`).
+A retained declared fixed value forces its old effective slot and selected source through the preceding closure.
+Thus removing an unforced own field cannot reveal an unequal retained fixed declaration value or turn an old effective default into a new incompatible fixed value.
+
+If the declaration fixed field is also new and unforced, it is removed together; otherwise the old equal own source is retained conservatively.
+If only a default fallback is exposed, its kind/value comes from an unchanged physical declaration field or disappears with that field.
+An unprotected base effective fixed condition can disappear and weaken a replacement; a retained one still forces an equal derived fixed effective slot.
+
+No source fixed/default compatibility test becomes false.
+Presence/conflict/augmentation payloads may change where optional unprotected defaults are removed; those payloads are not separate schema-invalidity predicates in the admitted construction semantics.
+Every original/P augmentation source remains exact.
+
+### Local predicate preservation
+
+Declaration formation retains exact TYPE/full-validity duties and merely omits value assessments for erased fields.
+AU formation retains exact declared types, requiredness, uses and declaration identities; removing compatible optional constraints cannot violate its own/declaration rules.
+All scalar roots and exact scalar recipes remain formed independently.
+
+In a selected TRUE component-property tableau, paired fields are both retained with their old kind/value or both absent after projection.
+AU own-value pairs obey the same rule, while their declaration pair remains in the original successful structural closure.
+The selected positive tableau therefore survives; no TYPE/base/scope property is rewritten.
+
+For a retained positive RP fixed implication, a retained fixed base forces its old equal derived field, while an erased fixed base weakens that clause.
+AU replacement has the same implication rule on effective slots, with the fallback closure already proved.
+All old successful nominal relations, QName/namedness gates, census predicates and coherent order assignments are exact because their inputs are unchanged.
+
+### Extra search states and the full frontier
+
+Removing fixed constraints can make an old FALSE RP leaf TRUE and advance new ordered-scan states.
+It can also enable AU property permutations whose earlier own-kind/presence gate failed.
+The proof does not assert exact operational state or collector equality.
+
+Both consumed particle operands already require their complete real declaration/TYPE/base/scalar closure and complete incoming head census in the same H.
+The repaired fixed-value caller uses assessed declaration constraints; an erased base comparison disappears, and every retained old clear comparison keeps its exact inputs and standalone scalar-debt gate.
+No new raw-SC debt is silently discharged by full component validity.
+
+Newly reached real values are either unchanged individually checked fields or valid mapped AU fallbacks under the previous argument.
+Thus the new search cannot encounter fatal invalid-input/invalid-schema from a newly fabricated value; a possible unresolved scalar/IC branch remains pending.
+The actual clear-state dominance and exhaustive order search preserve the retained old clear winner (`particleRestriction.ts:95–103,172–214,246–269`).
+
+Property-only original scope operands are not promoted to full validity.
+The reviewed forced ordered particle/declaration/scope closure and fixed same-QName AU declaration IDs cover every newly traversed structural pair of a TRUE property query.
+AU property readers form all fixed declarations and scalar descriptions before permutations, so an enabled pairing adds no new scalar formation recipe.
+
+Retain every old full component/fresh-root duty and every original Gamma proof separately.
+Any changed exported dependency comes from deleting a value read or a scalar recipe already in that same-H precovered frontier.
+No P receipt is reused as an H fact and no unsupported existential cycle is closed.
+
+### Whole finite forest
+
+Keep every old endpoint, intermediate and ancestor choice, all nonvalue rows and every old mandatory fresh root.
+The projected parent and child inherit identical projected ordinary fields, so original/P correspondence and all later inherited-field frames remain coherent.
+Reissue the exact old child proof with the projected local conjunction and its precovered generated frontier.
+
+Induct on the finite old forest height.
+All remaining own NP requirements have the same nominal geometry and their old children; deleting ordinary values introduces no new component identity or NP subject.
+This gives a complete successful projected forest under the stated represented-frontier/local-owner qualifications.
+
+### A finite Gamma/P value envelope
+
+V contains semantic actual-value classes under the admitted family/canonical `sameValue` relation.
+It does not contain or bound raw operand records, normalized-word strings, selectedMembers reference identities or diagnostic provenance.
+The projection keeps each retained field's old assessment data by keeping its word, map and TYPE recipe, rather than replacing that data by the input representative.
+
+For an input-only envelope V, collect every protected Gamma/P physical lexical word and its exact immutable namespace map.
+For each word evaluate every admitted atomic primitive family under each of preserve, replace and collapse whitespace modes, retaining every successful actual family/canonical value.
+Also include a NOTATION-tagged QName parse when the word has a well-bound QName shape: later census membership may change admission, but not that canonical name.
+
+For list possibilities collapse/split that fixed word into its finite token sequence.
+For each token take the same finite atomic parse-output set and form every ordered tuple of those outputs, including the zero-token list tuple.
+Admitted list items are atomic or unions of atomic types, and unions select an atomic or list value, so no deeper value shape is required.
+
+This envelope is finite and computable solely from the finite input words/maps and the finite admitted primitive family table.
+It overapproximates TYPE admission and may contain values excluded by the actual P type; that does not affect the bound.
+It avoids assuming a protected word has only one possible future union selection or importing an unproved current-H formation receipt into P.
+
+Every seed actual value lies in V: an atomic selection is one primitive parse of its fixed word, and a list selection is one ordered token parse tuple.
+All closure edges between present values carry old successful actual-value equality, including the declared-fixed/effective-source edges.
+Every retained new physical field therefore has an actual value in V; exposing a retained declaration default also stays in this same envelope.
+
+The number of new fields is not bounded by this argument, and no enumeration of their old W signature enters V.
+The claim concerns ordinary schema fields only: new facet endpoints, enumeration application supports and auxiliary shadow parse values are separate closures handled by their own guarded scalar procedures.
+Protected P facet words/maps and exclusive-endpoint witnesses remain exact.
+
+### Separately conditional free ur constructor consequence
+
+The finite ordinary V theorem above does not depend on a joint scalar-inventory hypothesis or supply its nominal/SC/property/source cut classification.
+The following consequence is conditional on an exact local classification: the new ur-family has no outgoing positive derivation to a retained non-ur scalar target, no retained non-ur SC scalar-parent boundary, no positive complete scalar property boundary, and no protected source/WORD port that instead makes it an input anchor cut.
+Every remaining outside presence-forcing edge into this family must then have ur/mixed assessed actual string family; all fresh-to-fresh edges must remain within this classified family or reach one of those same cuts.
+
+The direction matters: a positive P-to-new-union NTO does not force the P base field, because the fixed implication runs from the restriction base to its derived field.
+A forced new derived field is reached by an outgoing new-TYPE-to-protected-base obligation or by a bidirectional complete property edge, with the explicit AU effective/source closure already included.
+Under the supplied cut classification, every forced free ur-union ordinary value is therefore string-valued.
+
+A free ur-list cannot meet that string equality; under the same classification its ordinary list values are unforced and removed unless a separately protected source/property port creates an anchor cut.
+This is a conditional route to the proposed finite ur-constructor palette, not an extracted classification or an assumption that every fresh value is optional.
+The classification, latent member-slot bound, finite scalar copy/owner catalogue, joint constructor/F2 realization and full encoded local bound remain open.
+
+The projection is a mathematical result, not an executable general projector or an input-derived field-count bound.
+
+## Fresh effective attribute-use lists over the input name palette
+
+### Exact conditional result
+
+Fix source-qualified Gamma, an authentic closed parent P and one supplied finite complete founded successful forest W.
+Retain the existing faithful reauthentication, private-view availability and capacity qualifications.
+Let K contain every expanded attribute-declaration QName in Gamma/P, including source-only and unused declarations, and every independently fixed input attribute-name/explicit AU-list port.
+Extra protected ports must be part of the declared input; arbitrary observations of W are not made input parameters.
+
+For every genuinely post-P complex type or attribute group, filter its literal effective attributeUses list to uses whose declaration QName is in K.
+Apply the filter at its first birth and to every lawful later endpoint version of that row.
+Every original/P effective list and actual/source mapping remains exact.
+Keep all other canonical/raw fields, IDs, owners, paths, source handles, wildcard descriptors and lists, scalar recipes, lexical contexts and ordinary constraints exact.
+In particular, retain every old AU, declaration, group, particle, complex/simple type and fresh root, including now-unselected contributions.
+
+The conclusion is another complete successful forest with the same members, own-NP subjects and child skeleton, whose genuinely new effective AU lists use only K names.
+No AU/declaration component is deleted, no owner is reanchored, and no scalar diagnostic owner or raw wildcard.sources field needs repair for this theorem.
+The result concerns schema construction and its selected predicates; it does not preserve each fresh helper's instance augmentation/PSVI plan.
+
+### Why original and inherited rows need no filter
+
+The source attribute mapper obtains uses from actual declarations and source groups/base chains, so every Gamma effective name belongs to K.
+An exact closed P contains each declaration selected by its literal rows, hence all of its effective names belong to K too.
+Complete all-original correspondence requires exact effective AU identity sets for original complex/group rows and exact inherited nonderivation lists for endpoint rows.
+Thus a later original/P overlay cannot introduce a fresh outside-K AU in a complete old forest.
+This argument uses the accepted full correspondence, not a structurally admissible raw overlay alone.
+
+Every full genuinely fresh complex has its literal raw complex properties, and a genuinely fresh attribute group has its literal raw effective group list.
+Those are the eligible lists.
+Keep canonical contribution arrays unchanged: their AU/group references remain available, while these complete literal effective lists select the semantic AU properties in the candidate owners.
+The fresh raw validator checks selected AU role/presence/uniqueness but does not require a fresh effective list to reproduce canonical source/XML contribution syntax.
+No adapter recomputation from new XML is assumed.
+
+### Per-name attribute construction
+
+Write pi_K(U) for filtering an effective AU array U by its declaration QName.
+The same filter is applied to every fresh base/derived list in the same H; an original/P list is already its own filter.
+All kept records and the relative order/repetitions of kept uses are exact.
+
+checkUses cannot acquire a declaration-uniqueness or ID-derived-cardinality violation by deleting uses.
+For each kept QName, its entire old use group remains: requiredness, own/declaration constraints, effective fallback, type identity and scalar assessment are unchanged.
+The C1 present/absent/default/conflict plan for each kept QName is therefore exact.
+An outside-K plan disappears from that helper's effective attribute properties, but its individual AU/declaration remains fully checked as an ordinary retained root.
+
+For extension, each surviving base name/type witness has its same old surviving derived witness because both have that QName.
+A removed base use no longer demands a match.
+The exact base/derived wildcard namespace/process condition is unchanged.
+
+For restriction, every kept derived use has the same complete group of old matching base uses, or the same exact base-wildcard admission when no such base use existed.
+All compatible-pair, requiredness, type-derivation and fixed-value tests in that group are unchanged.
+Every kept required base QName has its old kept required derived witness.
+A removed required fresh base use is removed from both effective contexts, so no new missing-required test appears.
+An original/P required use cannot be removed because its QName lies in K.
+The namespace/process restriction test on the unchanged wildcards is exact.
+
+For raw attribute groups the effective list has only the filtered checkUses/presence construction; it does not synthesize a source inheritance rule.
+Global attribute registries are not scanned by these schema attribute-derivation predicates as a substitute for literal AU lists.
+No attribute-to-wildcard weakening or source-domain reinterpretation is used.
+
+### Component-property task deletion
+
+The sole production component-property caller is raw particle extension.
+Its successful old outer particle/declaration query remains the query to replay: particle roots, source origins and real declaration operands are unchanged.
+For every old TRUE AU bijection, equal QNames lie on the same side of the K filter.
+Restricting that bijection therefore supplies a bijection between the two filtered arrays, with the same use/declaration/type/value/scope properties for every kept pair.
+Removed AU pairs and their complex scope subqueries need not survive.
+This includes optional extra AUs on a primitive middle that were not bounded by an original endpoint's own AU array.
+
+The finite structural task graph is the old one with those paired AU tasks deleted.
+If first-visit order changes, the represented-frontier forced-pair lemma supplies the same retained same-QName declaration/scope tasks; within a valid complex AU list repeated same-QName uses select the same exact declaration.
+Different failed AU permutations may compare different own lexical pairings, but their fixed scalar formation recipes were already covered by the same retained declaration/use closures.
+All scalar descriptors, words/maps and values are exact, rather than inferred from property equality.
+
+No new particle/root/order key, nominal answer, effective element member set or real restriction pair is introduced.
+UPA, EDC, mixed emptiability, occurrence arithmetic and real particle restriction plans are therefore unchanged.
+Deleting a complex-scope property task removes its property read; standalone full AU/declaration formation does not promote that scope owner to full current-H construction.
+
+### Full frontier and complete child replay
+
+Every unchanged AU/declaration still has its old full local construction and scalar receipts.
+Every filtered container has the per-name local proof above; each source/raw/current-H property receipt is reissued under its proper context.
+The remaining semantic frontier is an old retained duty or a subset of old property/attribute duties.
+There is no new component or newly selected scalar/complex operand to justify by a property-only validity inference.
+The unchanged complete member set also retains every source-list availability/full dependency exactly.
+
+Methods, literal bases, flags, all element TYPEs/affiliations, content roots and own-NP eligibility are unchanged.
+For every old required target child, apply the same list projection to that child and its new additions.
+An inherited fresh endpoint's old nonderivation AU list was already filtered at its birth, and its child has that same projected list, so endpoint correspondence remains exact.
+Nonendpoint inherited lists are never changed by a later delta.
+All original/P endpoint and intermediate/ancestor roles remain exact.
+
+Induction on the supplied old W height constructs the corresponding complete child family.
+All old fresh roots stay mandatory; none is dropped after its birth or excused because an effective AU selection disappeared.
+The finite component conjunction discharges any unchanged component cycle, while founded own-NP evidence follows the same old child induction.
+
+### Scope and remaining count
+
+This is a retain-all-components semantic projection, narrower than deleting all new outside-K AU/declaration components.
+It avoids the separate owner/facet/source/privacy questions needed for that subsequent omission.
+A broader component-deletion proposal would need a separate owner/source/scalar audit; it is not used here.
+
+The finite name palette does not by itself bound retained multiplicity at one QName, scoped declaration/type copies, source records, scalar recipes or the size of W.
+It removes outside-input AU-name property-opening tasks from the reconstructed effective lists before owner-conditional marking.
+Full support inventory, arbitrary native materialization and semantic-success-to-finite-evidence adequacy remain separate.
+
+The list-only projection received independent source scrutiny.
+No executable projector or general finite-basis conclusion is claimed.
+
+## One representative for a closed co-born NP and primitive-copy bundle
+
+### Quantified scope
+
+Fix source-qualified Gamma, an authentic parent P and a supplied complete founded finite forest W.
+Use the accepted faithful fresh allocation, private/source reauthentication and capacity qualifications.
+Consider one opening C0 and its subtree, and one finite batch born jointly at C0.
+This is a supplied closed-batch transformation; it does not yet extract every batch from Gamma/P.
+
+Let q be one Gamma anonymous primitive complex template extending a proper complex A, where A is not anyType and A has immediate base anyType.
+Let c1,...,cn be distinct genuinely fresh ordinary NONSC/value-free copies of q.
+They and their selected Q-free helper diagrams satisfy the persistent Gamma-cover conditions of the accepted private-copy quotient.
+Every ci has exact extension base A, the q namespace/flags and its qualified selected declared particle/AU diagram.
+No ci has an own-NP duty or later endpoint rewrite.
+
+Let u1,...,un be distinct genuinely fresh complex types with initial extension base ci respectively.
+All ui are therefore own-NP subjects with designated ancestor A.
+The ui are all anonymous or all global; every changed declared TYPE retains that namedness class.
+Their own raw NONDERIVATION payloads may be different, and need not be the exact ci or q payload.
+All retargeted complex-typed declarations and all selected payload diagrams are NONSC and ordinary-value-free.
+Retain all selected scalar definitions, words/maps and attribute scalar TYPEs exactly.
+
+For each i there is a persistent mandatory global element mi, of exact active declared TYPE ui, with literal affiliation to a persistent head hi of exact active TYPE ci.
+The heads may be abstract; their exact declarations, affiliation fields and flags persist.
+Consequently every old own-ui child must select exact ci as its primitive middle: ui R->E E->A can derive to the distinct proper ci E->A only when E=ci.
+The old initial and required-child constructions already prove ci.final admits both ui extension and restriction.
+
+### Complete consumer and birth closure
+
+The following are substantive whole-W guards, including later additions and all old child contexts.
+They must not be inferred merely from equal current head pools.
+
+Every incoming complex base to a ci is its paired ui, and no incoming complex base enters a ui.
+The copied Q-free helper bases are the same exact named Gamma/builtin bases as in the private-copy theorem.
+No original/P endpoint, foreign intermediate/ancestor/evidence, exact source/scalar operand, fixed path/name or protected owner port selects an omitted ui or ci.
+The one allowed own-ui middle use is its own ci, which is replaced jointly with that ui's family.
+
+Every remaining TYPE reference to a ui or ci is the active semantic declaredType of a genuinely new element; fresh rawElement overrides and coherent canonical references are included.
+Every remaining semantic scope/owner reference is an eligible new local declaration whose first-birth identity/path and all referring slots permit coherent alpha repair.
+Original/P selectors and authentic source backing are exact.
+Nondeclaration fresh ownership has already been compressed to a retained Gamma owner, so omitting a complex identity does not leave its old particle/group/use identities ownerless.
+
+For the ui, a retained production property query outside that ui's own private construction cone can observe only an exact ui/ui identity pair, never an expanded nonidentity complex pair involving ui.
+This guard includes the post-retirement R states; current-E NP obstruction alone does not discharge those later reads.
+Queries owned by an omitted ui, and queries in its wholly omitted private cone, need not survive.
+The retained u1 cone may observe u1 itself and the persistent Q-free ci cover; it has no required nonidentity payload dependency on another uj.
+
+All raw particle/AU ports into an omitted ui's arbitrary payload lie wholly in its closed before-birth omission cone.
+There is no retained foreign content-root consumer of that arbitrary ui payload.
+Selected bodies of ci copies may be retained at external ports exactly as in the accepted Q-free quotient, with every surviving real particle/root/head key exact.
+Their local TYPE/scope successors are mapped through the persistent Q-free cover, not replaced by an original-q root handle.
+
+Apply a complete retained-reference/source/owner audit before omitting any node.
+Shared outside components, every original/P component and every retained fresh root remain present with their lawful inherited versions.
+No later opening first births another ui/ci in this batch; a later original-target phase is a separate batch.
+Future declarations may select already born ui/ci only through the permitted first-birth slots above.
+
+### Before-birth decoder
+
+Keep existing u1 and c1 with their exact old identities, own metadata, selected raw roots and surviving particle IDs.
+Keep u1's entire old qualified private payload/formation cone.
+Retain the selected Q-free c1/helper representatives and any externally protected copy-body diagrams.
+Omit u2,...,un and their closed arbitrary private cones before their first birth.
+Omit other private ci TYPEs/scaffolds only after the accepted Q-free selected-cone audit.
+
+At each eligible element's birth send ui to u1 and ci to c1 in every active semantic/canonical/raw TYPE selector.
+Repair semantic scope stops to their retained representative and reissue only affected new local declaration IDs.
+Choose DISTINCT fresh paths when different old owners would otherwise produce equal owner/path/role tuples; reserve the entire old subtree including future births.
+An exact identity/path observer excludes that port from this decoder.
+Keep every global ELEMENT identity, QName, affiliation, abstract/nillable/final/block flag and raw global HEAD selector exact.
+
+No surviving u1 or c1 content root is replaced, and no surviving real global-head particle/global-element order key is merged.
+This preserves the accepted coherent per-query order semantics rather than choosing a common sort.
+
+### Uniform states and nominal family proof
+
+The new root is compared to old C0, where every ui is E-to-ci.
+After u1's new retirement, compare only to an old node where every ui is R-to-ci.
+The ci remain primitive E-to-A throughout both stages.
+
+At either uniform stage, an old literal affiliation path can enter only one ui/ci bundle family before joining A's exact suffix.
+A distinct sibling ci is not on ci's finite literal base path.
+Likewise ui cannot derive into another uj or cj, and an outside path entering a ci or ui would require a forbidden foreign base/middle port.
+Within one bundle the possible TYPE cut order is ui, ci, A and the unchanged suffix.
+Joint retargeting preserves that order, every method on it and every entered ci/A/suffix block.
+The starting ui block is not entered; a head of exact ui closes by identity.
+Heads of exact ci see the same E or R ui edge followed by that same ci identity.
+
+All literal affiliation fields stay exact, so TYPE coalescence creates no new element affiliation path between the old families.
+Thus affiliation legality and every member/head substitutability answer are exact at corresponding uniform stages.
+All effective member pools, global IDs, implicit choice arities/categories and per-key permutation domains are exact.
+
+UPA keeps its old incidence labels/counters and EDC keeps TYPE namedness.
+For a named repeated-QName class every old valid class selected the same named TYPE and is retargeted coherently; an anonymous TYPE could not have supported a repeated-QName class.
+All actual positive complex NTO routes remain positive; only sibling identities may gain local matches.
+New local matching states use the genuine full u1/c1/base closure, with the same old real declaration inputs and current pending/fatal/clear-state discipline.
+
+### Full local rows and property work
+
+c1 and its Q-free helpers use their genuine old full current-H construction, the accepted finite structural cover simulation and exact named/builtin bases.
+No property-only original q is promoted to full H validity.
+
+u1 keeps its own old payload rather than replacing that payload by c1 or by another ui's recipe.
+At an E stage its base and raw extension prefix are its old c1 operands, with only the admitted Q-free cover/identity selector repairs.
+At an R stage its base and raw restriction target are its old c1 operands too.
+Its old same-stage clear witnesses therefore replay with exact particle keys and monotone local NTO answers.
+The proof never infers a parent payload-to-c1 restriction from a different child's membership context.
+
+The allowed outside property pairs ui/ui remain identity after the joint substitution and add no payload task.
+Any omitted owner's old self-query disappears with its before-birth omitted cone.
+No surviving outside query requires a newly expanded arbitrary ui payload pair, including after R, by the explicit closure guard.
+The Q-free ci task graph is handled by its accepted persistent-template bisimulation and full representative support.
+
+Every new full TYPE read reaches u1 or c1, both genuine old mandatory roots in the corresponding uniform node.
+The retained u1 private cone was already fully consumed there; shared outside additions and scalar/source duties are retained.
+This gives local component/frontier replay, not by itself founded evidence for u1's NP duty.
+
+### Founded representative child
+
+For u1's own child take its genuine old child, whose exact middle is c1.
+Then descend old required children for each remaining extension ui, in any fixed order, until all ui are restrictions to their own ci.
+Each ui remains an old fresh mandatory root throughout this descent, so its actual successful child exists and is forced to ci.
+Only that old ui changes among inherited rows at each step.
+Every outside addition made along the descent is kept unless it independently passes the same before-birth private-cone omission audit.
+
+The final old node has all ui R-to-ci, with full closure for every old inherited fresh root and every retained outside fresh addition.
+Project that node to the new u1 R-to-c1 child.
+u1's endpoint payload and c1 target are its exact old ones; the new child does not use a discarded ui payload receipt against c1.
+The first old u1 child supplies c1's exact raw intermediate row if it was not already installed.
+
+Do not transfer validity for an original endpoint that became unconsumed along the old descent.
+Independent Gamma-owned duties remain in Gamma, and only current-H duties genuinely consumed by the new retained frontier are replayed.
+Those lie in the old terminal full u1/c1/retained-fresh closure or the unchanged outside frontier.
+
+For any outside NP target, take its old required child at the current uniform old node.
+Its endpoint update leaves the batch's inherited ui states fixed, and its new additions obey the same closed first-birth decoder.
+Old height strictly decreases in this case and in the representative-child serial descent.
+Induction on old W height therefore constructs the complete new child family.
+Finite component cycles may close component conjunctions, but never substitute for this founded NP-child induction.
+
+### Bound and exact unresolved coverage
+
+The batch's n NP tops are replaced by ONE active NP top, plus one retained primitive copy/template class and the selected private Q-free helper representatives.
+The claim is per context/branch; incomparable old branches may retain different existing representatives.
+The number of global elements and their capacities are unchanged.
+No raw payload-size or total current-component bound follows from this NP-count reduction.
+
+This internalizes the specific foreign base/middle ui-to-ci roles that would otherwise force every ci into the supplied K of the Q-free quotient.
+It does not internalize arbitrary foreign R/base observers, retained raw ui payload consumers, later expanded ui-R property classes, scalar/SC ports or protected source/evidence identities.
+Nor does it prove that every necessary fresh NP belongs to such a co-born forced-ci class.
+
+Common-I/same-B modules with different arbitrary frozen payloads are a separate closely related case: keep one old payload and use the serial all-R terminal rather than exact-B recooking.
+The current packet does not silently identify an inherited I with a reached primitive B or assume restriction transitivity.
+
+The next input-bound obligation is to derive a finite catalogue of essential bundle geometries and first-birth phases from Gamma/P, and to reconstruct or postpone the remaining outside payload/scope consumers.
+Repeated expanded NP property recursion in one query has at most its own fresh NP owner as a fresh NP operand, but arbitrarily many separate nominally required owners are not bounded by that fact.
+Scalar/source/materialization and semantic-success-to-finite-evidence adequacy remain separate.
+
+This conditional source proposition received independent scrutiny.
+It supplies no general bundle extractor or complete decision procedure.
+The separate native control below retains this theorem's exact scope.
+
+## Complete native NP-bundle control
+
+The [private-copy NP-bundle control](../test/research/re01/private-copy-np-bundle.test.ts) reuses the same property-only source and independently checks all 25 actual-Gamma components.
+C1 and C2 are primitive anonymous copies of q over exact A2.
+Globally named U1 extends C1 and U2 extends C2; persistent member/descendant declarations select their paired Ui and affiliate through a head of TYPE Ci with restriction blocked.
+Each Ui therefore requires a genuine own-NP child, whose primitive middle is forced to exact Ci.
+Original q stays property-only in every H node; no q full-validity receipt is installed.
+
+The Ui raw payloads differ: U1 has a sequence of C1's exact root followed by ONE optional empty choice, whereas U2 has TWO distinct optional empty-choice tails after C2's root.
+These tails are inert and disappear in restriction normalization.
+Neither Ui raw root is its Ci root, and the replacement keeps U1's own old raw root, tail, C1 row and real keys.
+This qualifies non-exact-Ci RAW payload retention, not a productive normalized suffix or an arbitrary later-opening experiment.
+
+The complete old forest has five nodes with 69 members and all 44 fresh roots per context.
+Its H receipt counts are 58,55,55,55,55 and its current fresh NP counts are 2,1,0,1,0.
+Both possible first Ui retirements and both serial all-R terminals are explicitly checked.
+The replacement has two nodes with 57 members, all 32 remaining fresh roots, H receipts 46,43 and NP counts 1,0.
+It retains existing U1/C1 and omits the twelve-record U2/C2 cone before birth.
+The exact identity difference is thirteen old-only records including the old scoped observer, plus one coherently reissued new observer.
+
+All six global head/member/descendant identities and their unchanged non-TYPE fields remain.
+The test checks every active canonical/raw TYPE selector, five explicit member pools at the root and BOTH old uniform terminals, and the different pool in a mixed first child.
+It compares emitted U1/C1 root and child keys, raw rows and Ci/A2 witness selectors in their own corresponding contexts.
+The original source-symbol spelling of A2 is retained and its semantic identity separately resolved.
+Deleting the representative U1 child is still unresolved missing nested evidence.
+
+The test first appears at commit 3e6cfd4b557358a74fe10b220bc1d9347c73ec17, SHA256 b2cf08457896e0eae17551b1fae2c8d25755dab634fa30d9a0c1845bca27d388.
+The sole nonauthor independently replayed the exact prototype and strict check; the promoted test received exact-byte assertion/source review.
+Author qualification exercised 46 tests across six files with RE01 strict, toolchain and whitespace checks.
+The independent prototype execution and final author Vitest run are attributed separately; no second independent Vitest execution is claimed.
+
 ## Joint bound still required
 
 The results compose only when their actual privacy, first-birth, full-frontier, source and TYPE observations agree.
@@ -770,3 +1725,29 @@ Both reuse the [free-UR source fixture](../test/conformance/fixtures/xsd/recover
 The existing [finite verifier](../src/compiler/finiteRe01Verification.ts), [particle restriction](../src/compiler/particleRestriction.ts), [component equality](../src/compiler/schemaComponentEquality.ts) and [TYPE relations](../src/compiler/schemaTypeRelations.ts) own their semantics.
 No new decision API, production activation, accepted-domain restriction or policy change follows from these reductions.
 The [joint handoff](content-model-s06-research-handoff.md), #179/#153 activation gates and #184 payload ownership remain in force.
+
+
+### External methods and their exact limits
+
+The inspected [goxsd8 collapsed intermediate](https://github.com/kud360/goxsd8/blob/465dcac5f398628ee90d3ecda435a3ad5cce82fa/xsd/collapsedintermediate.go) recovers extension contributions against each old base and reapplies them to one accumulator while skipping restrictions.
+Its shared producer retains the original attribute contributions when inversion would lose information.
+That is a useful construction pattern, but its temporary intermediate is not installed as a new schema root, and its restriction owner uses XSD 1.1 containment.
+The [remaining limits](https://github.com/kud360/goxsd8/issues/586) include undecided inversion exits and explicit wildcard/assertion approximations.
+Those choices supply neither this native XSD 1.0 predicate nor complete fresh-root/child evidence.
+The inspection covered the relevant functions and issue records, not the whole implementation or its soundness.
+
+The [weak nested class-memory automata result](https://www.cs.ox.ac.uk/andrzej.murawski/papers/lata15.pdf) requires a fixed finite nesting level and weakened per-name final acceptance.
+A direct serial encoding of complete member permutations needs every created member to complete its eligible checks; that condition is not supplied by the weak model.
+Pruning incompletely checked names would need a separate simultaneous deletion theorem.
+The [laminar-set transduction](https://drops.dagstuhl.de/storage/00lipics/lipics-vol374-icalp2026/html/LIPIcs.ICALP.2026.174/LIPIcs.ICALP.2026.174.html) recovers the set tree, but does not encode TYPE/base links, raw bodies or coherent query orders, and equal descendant sets can hide distinct head identities.
+These are limits of the proposed direct translations, not native undecidability results or claims that no other translation can work.
+
+### Why finishing every nonpublic NP helper early is still unproved
+
+A local NTO argument cannot select one common primitive middle for an entire future forest.
+The old proof may supply a different middle E_T after each outside T retirement.
+Installing one E0 before birth instead makes E0 and every new E0 support component mandatory in ALL those children.
+The implication from each child's own middle to one common middle is not established.
+Moreover, restoring an original endpoint check may reintroduce an original duty absent from the old terminal c-child, and retained support additions may change unrelated head pools.
+These are exact new construction obligations of that early-retirement method, not a demand that every strategy preserve all old observations.
+No formed counterforest or impossibility theorem is claimed; the general first-demand reduction remains open.

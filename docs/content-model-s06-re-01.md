@@ -40,6 +40,9 @@ The [nominally observed continuation](#common-mixed-payload-without-changing-the
 The [support reconstruction](content-model-s06-re-01-support-reconstruction.md) classifies fresh complex inheritance boundaries, reduces a closed exact-B module batch and makes private affiliation interiors into leaves under explicit guards.
 Its complete native controls preserve a private literal member class at two representatives and reduce a closed batch's five-node proof to two nodes.
 The one-member normalization failure and the remaining representative's own required child stay explicit.
+Its continuation shares private Gamma copies without merging surviving particle keys, preserves ordinary values under explicit NONSC/SC authority guards and derives input value/attribute-name palettes.
+One closed co-born NP/copy bundle can use an existing representative and a genuine serial all-restriction child.
+The native private-copy control keeps the original template property-only in H while every actual and retained fresh root is checked.
 The number of signatures, copies and protected ports remains unbounded by these conditional results; general coverage and termination stay open.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
