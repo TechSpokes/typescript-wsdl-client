@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:sandwich-dead-prefix" targetNamespace="urn:re01:sandwich-dead-prefix" elementFormDefault="qualified">
+  <xs:import namespace="urn:re01:sandwich-dead-prefix:inside" schemaLocation="frozen-prefix-transport-inside.xsd"/>
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"><xs:sequence><xs:any namespace="urn:re01:sandwich-dead-prefix:inside" processContents="skip" minOccurs="0" maxOccurs="unbounded"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="T0"><xs:complexContent><xs:extension base="t:B"><xs:sequence><xs:choice/><xs:element ref="t:Hs" minOccurs="0"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="Hs" type="t:B" abstract="true" block="restriction"/>
+  <xs:element name="G" type="t:T0" substitutionGroup="t:Hs"/>
+  <xs:element name="H_B" type="t:B"/>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+</xs:schema>

@@ -1,6 +1,7 @@
 /** Internal structural contexts. Preparation never certifies actual or hypothetical XSD legality. */
 import {GRAPH_MODEL, globalId, isBuiltinType, scopedId} from './canonicalGraph.js';
-import type {CanonicalGraph, ComplexTypeNode, GraphNode, NodeId, Reference} from './canonicalGraph.js';
+import {duplicateIdentityTuple, matchesHypotheticalNodeId, sameSemanticIdentity, semanticIdentityTuple} from './hypotheticalScopedIdentity.js';
+import type {CanonicalGraph, ComplexTypeNode, GraphNode, Identity, NodeId, Reference} from './canonicalGraph.js';
 import {containedNodes, referenceSlots} from './graphTraversal.js';
 import type {ReferenceSlot} from './graphTraversal.js';
 import type {ResolvedGraph} from './resolveCanonicalGraph.js';
@@ -113,6 +114,15 @@ export type SemanticRequest = Readonly<{
 export type SemanticPreparation = Readonly<{kind: 'prepared'; request: SemanticRequest}> | ContextFailure | ResourceLimitFailure;
 
 const contexts = new WeakSet<object>();
+const identityOccupants = new WeakMap<object, (identity: Identity) => NodeId | undefined>();
+
+/** Full stored-tuple lookup, independent of ID spelling and active membership.
+ * Each caller retains its own active-only or any-stored collision policy.
+ */
+export function storedIdentityOccupant(context: SemanticContext, identity: Identity): NodeId | undefined {
+  assertSemanticContext(context); context.budget.chargeWork(2);
+  return identityOccupants.get(context)!(identity);
+}
 const requests = new WeakMap<object, object>();
 const parents = new WeakMap<object, SemanticContext>();
 
@@ -331,12 +341,51 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         const rawElementProperties = new Map<NodeId, RawElementProperties>();
         const rawAttributeProperties = new Map<NodeId, RawAttributeProperties>();
         const rawGroupProperties = new Map<NodeId, RawAttributeGroupProperties>();
-        let expectedMembers = originals.size;
-        for (const id of changes.keys()) {key(id); if (!originals.has(id)) expectedMembers++;}
+        let expectedMembers = originals.size, hasEncodedIdentity = false;
+        for (const [id, node] of changes) {
+          key(id); if (!originals.has(id)) expectedMembers++;
+          // Every stored change has already passed the exact legacy/new ID gate.
+          // Inactive inherited changes still participate in this scan.
+          budget.chargeWork(3);
+          if (node.identity.kind === 'scoped' && id[0] === '[') hasEncodedIdentity = true;
+        }
         const reverse = new Map<NodeId, NodeId[]>();
         const slotsFor = (id: NodeId): readonly SemanticReferenceSlot[] => rawComplexSlots.get(id) ?? rawSimpleSlots.get(id) ?? changedSlots.get(id) ?? originalSlots.get(id) ?? [];
         const edgesFor = (id: NodeId): readonly NodeId[] => rawComplexEdges.get(id) ?? changedEdges.get(id) ?? originalEdges.get(id) ?? [];
         const record = (id: NodeId): GraphNode | undefined => changes.get(id) ?? originals.get(id);
+        budget.chargeWork(6);
+        function* identityRecords(): Generator<GraphNode> {yield* originals.values(); yield* changes.values();}
+        let changedIdentityIndex: ReadonlyMap<string, NodeId> | undefined;
+        const identityOccupant = (identity: Identity): NodeId | undefined => {
+          budget.chargeWork(2);
+          if (!changedIdentityIndex) {
+            budget.chargeWork(4); const completed = new Map<string, NodeId>();
+            for (const node of changes.values()) {
+              const tuple = semanticIdentityTuple(node.identity, budget.chargeWork);
+              budget.chargeWork(4 + tuple.length + node.id.length); completed.set(tuple, node.id);
+            }
+            // Final changes include inactive rows. Never publish an exhausted partial index.
+            changedIdentityIndex = completed;
+          }
+          const wanted = semanticIdentityTuple(identity, budget.chargeWork);
+          budget.chargeWork(2 + wanted.length);
+          const changed = changedIdentityIndex.get(wanted);
+          if (changed !== undefined) return changed;
+          // Originals admit only exact native IDs. Tuple lookup needs no second
+          // source index, but must distinguish tuples sharing a legacy hash.
+          if (identity.kind === 'scoped') budget.chargeWork(64 + 6 * (identity.owner.length + identity.path.length + identity.role.length));
+          const originalId = identity.kind === 'global' ? wanted : scopedId(identity.owner, identity.path, identity.role);
+          key(originalId);
+          const original = originals.get(originalId);
+          if (!original) return undefined;
+          const actual = semanticIdentityTuple(original.identity, budget.chargeWork);
+          budget.chargeWork(1 + wanted.length + actual.length);
+          return wanted === actual ? original.id : undefined;
+        };
+        if (hasEncodedIdentity) {
+          const duplicateIdentity = duplicateIdentityTuple(identityRecords(), budget.chargeWork);
+          if (duplicateIdentity !== undefined) throw new InvalidContext('identity', duplicateIdentity);
+        }
         for (const id of members) {
           key(id);
           if (membership.has(id)) throw new InvalidContext('identity', id);
@@ -359,6 +408,10 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           for (const id of privateIds) {
             key(id);
             if (record(id)) throw new InvalidContext(membership.has(id) ? 'identity' : 'outside-context', id);
+            const backing = particleContentNode(actual, source, id);
+            if (!backing) throw new InvalidContext('representation', id);
+            const occupied = identityOccupant(backing.identity);
+            if (occupied !== undefined) throw new InvalidContext('identity', occupied);
           }
           while (pending.length) {
             budget.chargeWork(4); const id = pending.pop()!;
@@ -687,6 +740,8 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           incomingAffiliates(id: NodeId): readonly NodeId[] {checked(id); return reverse.get(id) ?? empty;},
         });
         contexts.add(context); metadata.set(context, sharedMetadata);
+        budget.chargeWork(4);
+        identityOccupants.set(context, identityOccupant);
         requests.set(context, requestAuthority);
         states.set(context, {changes, slots: changedSlots, edges: changedEdges, raw: rawProperties, simple: rawSimpleProperties,
           elements: rawElementProperties, attributes: rawAttributeProperties, groups: rawGroupProperties, notations, scalarSlots});
@@ -780,14 +835,16 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           }
           for (const node of delta.additions ?? []) {
             key(node.id);
-            if (originals.has(node.id) || changes.has(node.id) || originalNames.has(identityId(node)) || node.id !== identityId(node)) throw new InvalidContext('identity', node.id);
+            if (originals.has(node.id) || changes.has(node.id) || originalNames.has(identityId(node)) || !matchesHypotheticalNodeId(node, budget.chargeWork)) throw new InvalidContext('identity', node.id);
             if (!active.has(node.id)) throw new InvalidContext('outside-context', node.id);
             budget.chargeWork(); changes.set(node.id, node); indexNode(node, slots, edges);
           }
           if (delta.endpoint) {
             const node = delta.endpoint; key(node.id);
             const original = parent.changes.get(node.id) ?? originals.get(node.id);
-            if (from.lookup(node.id).kind !== 'found' || !original || original.kind !== 'complexType' || node.kind !== 'complexType' || node.id !== identityId(node) || !active.has(node.id)) throw new InvalidContext('endpoint', node.id);
+            if (from.lookup(node.id).kind !== 'found' || !original || original.kind !== 'complexType' || node.kind !== 'complexType'
+              || !sameSemanticIdentity(original, node, budget.chargeWork) || !matchesHypotheticalNodeId(node, budget.chargeWork)
+              || !active.has(node.id)) throw new InvalidContext('endpoint', node.id);
             budget.chargeWork(); changes.set(node.id, node); indexNode(node, slots, edges);
           }
           const permittedProperty = (id: NodeId): void => {

@@ -193,15 +193,19 @@ describe('authentic original particle handles', () => {
     expect(step.components.find(item => item.component === s.d.id)?.obligations).toEqual([]);
   });
 
-  it('rejects active and outside-context collisions with latent original identities', async () => {
+  it('rejects private-tag admission and active or inactive aliases of latent original identities', async () => {
     const s = await seed();
     expect(s.makeRoot(false, [s.sourceOuter])).toMatchObject({kind: 'candidate-rejected', code: 'identity', component: s.sourceOuter.id});
-    const sparse = s.request.candidate({key: 'collision-carrier', active: [...s.actual.members, s.sourceOuter.id], additions: [s.sourceOuter]});
+    assert.equal(s.sourceOuter.identity.kind, 'scoped');
+    const alias = {...s.sourceOuter, id: scopedId(s.sourceOuter.identity.owner, s.sourceOuter.identity.path, s.sourceOuter.identity.role)};
+    expect(s.makeRoot(false, [alias])).toMatchObject({kind: 'candidate-rejected', code: 'identity', component: alias.id});
+    const sparse = s.request.candidate({key: 'collision-carrier', active: [...s.actual.members, alias.id], additions: [alias]});
     assert.equal(sparse.kind, 'prepared');
     const child = forkSemanticCandidate(sparse.context, {key: 'outside-collision', active: s.actual.members,
       endpoint: {...s.d, derivation: {kind: 'restriction', contentKind: 'complex', base: local(s.a.id), facets: []}},
       rawTypes: [s.row(s.d.id, local(s.a.id), 'restriction', s.original.content)]});
-    expect(child).toMatchObject({kind: 'candidate-rejected', code: 'outside-context', component: s.sourceOuter.id});
+    // The new private ID is disjoint; the complete stored-tuple gate retains the inactive reservation.
+    expect(child).toMatchObject({kind: 'candidate-rejected', code: 'identity', component: alias.id});
   });
 
   it('does not execute row-content or original-selector accessors during the authenticated prescan', async () => {

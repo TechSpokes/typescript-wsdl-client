@@ -33,6 +33,7 @@ Its remaining bound is local to a finite parent, rather than an assumed bound on
 The [scoped reconstruction continuation](#scoped-size-bounds-and-coherent-order-reconstruction) proves single-entry support erasure and fixed-tail numeric bounds while preserving a coherent-order counterexample to a broader copy fold.
 The [comparison normalization repair](#pointless-comparison-groups-after-flattening) also removes an optional group that becomes empty during flattening.
 These results leave the complete success-preserving local bound and general decision gates open.
+The [identity continuation](#identity-allocation-and-remaining-reconstruction-obligations) adds injective fresh/private allocation while preserving source identities and complete inherited roots; it records the remaining simultaneous helper and scalar bounds.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -5145,6 +5146,247 @@ The theorem establishes neither general evidence inadequacy nor a complete gener
 Full #234/#232 acceptance remains open for arbitrary-success coverage, general contextual evidence adequacy, copied-prefix transport, input-derived bounds or an equivalent terminating negative criterion, and mathematical general search termination.
 #179/#153 activation and #184 runtime ownership remain separate; draft #231 is preserved.
 One next action is to state a reusable sufficient consumer-obstruction criterion from this first-edge/missing-QName proof and determine its exact recognition preconditions before proposing any production negative branch.
+
+## Identity allocation and remaining reconstruction obligations
+
+This continuation starts from actual main `f8e0368fb32ac8caf131d50695b7dde33eddb0d2`, tree `d3e878f75863377c1379a09c23fad581cddb2f17`.
+It preserves B-v1, the selected founded research relation, all seven accepted recovery contracts and P1/F2.
+The implementation removes a finite identity-allocation obstruction; it does not supply the missing successful-construction bound.
+
+### Fresh scoped identities and complete stored reservations
+
+Actual source and global identities keep their existing spelling.
+A genuinely fresh scoped hypothetical component may additionally use the exact JSON tuple `['hypothetical-scoped-v1', owner, path, role]`.
+The existing admission owner checks the complete tuple; an inherited endpoint replacement must retain both its exact stored ID and its exact semantic identity.
+
+The tuple encoding is injective on its UTF-16 fields: equality of the serialized arrays implies equality of each field.
+This argument does not assume that the legacy finite hash is injective.
+Legacy hypothetical spellings remain admitted, but two spellings of one semantic tuple cannot coexist.
+
+Reservations include the entire immutable original graph and all stored changes, including source-only originals and inactive inherited records.
+Duplicate admission is checked before any private-content query is needed.
+The existing native-ID original index is prepared once, and each immutable context has its own completed-only lazy change index; a sibling cannot supply another context's reservations.
+
+For fixed owner and role, consider paths `/$hypothetical/0` through `/$hypothetical/N`, where N is the sum of the sizes of the forbidden-ID and forbidden-tuple sets.
+These N+1 candidates have pairwise distinct tuples and pairwise distinct injective IDs.
+Each forbidden ID or tuple excludes at most one candidate, so at least one candidate is available.
+
+The allocator checks the finite forbidden sets and returns such an identity.
+For an already finite acyclic ownership cohort, allocate owners before their dependent declarations and extend the forbidden sets after each allocation.
+This proves finite fresh allocation for that supplied cohort; it does not bound the cohort or its encoded size from the input.
+
+Every variable-length tuple is charged before serialization or publication, including escaping and recursively encoded owner lengths.
+Lookup, storage and comparisons remain charged; exhaustion is sticky and supplies no nonexistence result.
+The actual/source admission format is unchanged, and a tag string is not authority to issue a semantic view.
+
+### Private effective-content and ur-type identities
+
+The two private backing-particle issuers now use `['semantic-private-particle-v1', family, owner, path, role]`.
+The family distinguishes actual effective-content particles from builtin anyType particles.
+No receiving context, selected outer type or per-view nonce is added to the actual source tuple.
+
+Thus equal source tuples retain equal private IDs across ancestor/descendant mappings, while different complete tuples have different IDs.
+Real source particle IDs, declaration IDs, child incidence, occurrence ranges and native ur-wildcard markers stay exact.
+Injectively renaming the private particle coordinate preserves equality of coherent particle/head order keys.
+
+Raw original handles, property projections and authenticated subtrees reuse the actual backing identities.
+Their private WeakMap/request/root provenance remains authoritative; copied wrappers and guessed strings remain insufficient.
+Every predicate is checked in its required current context, without relabelling a Gamma validity receipt as a hypothetical receipt.
+
+A full encoding-independent tuple lookup is required after private IDs become tagged.
+Checking the new private string alone would miss a legacy stored component with the same owner/path/role tuple.
+The immutable native-ID original index and final-change tuple index jointly cover that case even in an otherwise all-legacy context.
+Every original passed exact legacy-ID admission, so a given scoped tuple can occupy only its computed legacy ID.
+A direct lookup followed by full semantic-identity comparison finds that occupant without conflating distinct tuples that share a legacy hash.
+
+Lookup scope and rejection policy stay separate.
+Actual effective-content and builtin issuance reject active occupation, preserving their existing inactive-only permission.
+Original imports, projections and handle admission reject any stored occupation, including outside-context records.
+
+The appended private rows in `ParticleContentView.graph` are diagnostic backing rows, not newly admitted canonical members or persisted catalog entries.
+Private tags are rejected as actual components, hypothetical additions and endpoint IDs.
+No canonical-source validator is relaxed to accept them.
+
+For genuinely source-built Gamma, relative canonical paths are slash-separated decimal source indexes or `/`.
+They cannot be private `$semantic-content/` or `$semantic-builtin-anyType/` paths.
+Choosing all reconstructed scoped additions in the separate `/$hypothetical/` family also prevents future private semantic-tuple aliases.
+
+The distinct tags separately prevent string collisions with component IDs.
+Consequently this chosen finite source-derived reconstruction has no hash-range obstruction at later private issuance.
+An arbitrary caller-supplied parent containing a genuine reserved tuple alias still correctly rejects; universal incoming availability is not claimed.
+
+### Measured preparation and query locality
+
+Two unnecessary full original tuple indexes were rejected during qualification.
+Building that index at the first content query made 2,048 unrelated originals add 732,496 work units and failed the existing locality control.
+Moving it into preparation restored query locality but made Weather preparation use 1,082,493 work units, failing its unchanged 1,000,000 control in full CI.
+
+The final implementation reuses exact legacy-ID admission and direct original lookup instead, with a charged full-tuple comparison after a hit.
+Only final changes need the lazy dual-encoding tuple index; every stored original remains covered without another source scan or preparation index.
+Weather now prepares in 988,108 work units, and the complete author profile uses 934,832 for the unchanged 950,000 control.
+The existing 990,000 nested control, unrelated-original query control and complete legacy/injective two-node forests also pass.
+Independent qualification rechecks these corrected-source contracts, including the previously missed source-preparation suites.
+These are measured engineering controls, not mathematical bounds on the accepted witness domain.
+
+### Ownership depth and unused particle support
+
+Fresh ownership depth has a separate conditional normalization.
+Fix qualified Gamma, authentic parent P, a complete finite forest and one actual Gamma component D available throughout that forest.
+Keep protected original/P identities and non-derivation fields fixed.
+The permitted endpoint method/base replacement may refer to a freshly renamed intermediate through the same coherent renaming.
+Every explicit semantic source, type, scalar and evidence selector retains its selected meaning; original bindings and lexical contexts are not reassigned.
+
+At first birth, a local element or attribute is reowned by its old first complex-type, group, attribute-group or global scope stop.
+Every other fresh scoped component is reowned by D.
+Apply one coherent fresh-ID renaming to genuine semantic references, preserving every old complex scope stop and every absent/global scope category.
+
+The simultaneous declaration rewrite is essential.
+Resetting only an intermediate owner's edge can change a declaration's scope from absent to a complex type.
+Keeping the old stopping component directly as the declaration's owner avoids that change.
+
+Every new declaration then reaches an immutable stop in one edge, or a fresh nondeclaration whose next edge reaches D.
+If H(P,Gamma) bounds immutable ownership depth, total new depth is at most H(P,Gamma)+2.
+Rebuilding the entire forest from Gamma and normalizing every birth gives the input-derived corollary H(Gamma)+2 in every retained context.
+
+Explicit facet operand owners follow their selected old semantic record under the coherent renaming; they are not reset to D.
+Original bindings, generated scalar authorities, namespace maps, lexical contexts and source recipes remain qualified in their existing owners.
+Private current-context views are reissued authentically; no receipt is transferred across contexts.
+
+The noncontainment type/base/content/source reference graph, particle sharing and coherent order-key equality patterns remain isomorphic.
+Declaration scope comparisons retain their exact stopping components; the containment-owner edges themselves are intentionally shortened.
+The old finite forest can therefore be replayed under that renaming, pruning only duties no longer consumed while retaining every inherited fresh root and independent actual Gamma obligation.
+This is an ownership-depth result, not a bound on component count, field count, group width, scope anchors or contexts.
+
+After this normalization, a fresh particle need not remain merely as another component's containment owner.
+An unused closed particle-only scaffold can be omitted before birth; if it first becomes needed later, introduce its old current record at that later birth and replay the supported current-context closure.
+All nonparticle selectors, group/content ports and inherited particles remain protected, and the full reference/frontier audit is still necessary.
+
+### Local decisions still need a complete successful inventory
+
+The preceding stipulated finite-census local content result requires a supplied qualified nominal/scalar/source inventory and its source/identity/key interpretation.
+It does not independently compare two freely chosen content blocks or bound how many such blocks an arbitrary successful construction needs.
+Counting only extension/restriction method masks does not connect nonadjacent retained payloads.
+
+Follow-on local infinity, incoming fixed-derived and exact-frontier constructions require their own complete integration and qualification.
+They are not silently supplied by this identity implementation.
+
+### A complete forest refutes frozen-prefix transport
+
+The [two-namespace source](../test/conformance/fixtures/xsd/recovery/frozen-prefix-transport.xsd) and its [import](../test/conformance/fixtures/xsd/recovery/frozen-prefix-transport-inside.xsd) have fourteen actual components.
+B is a primitive extension of A with an inside-namespace wildcard; T0 extends B with a dead suffix containing a required empty choice followed by optional global Hs.
+The outside original G has type T0 and affiliates with Hs; the inside original M has type B and also affiliates with Hs.
+
+Hs blocks restriction, so G is effective while T0 extends B and is filtered when T0 restricts B.
+Its fixed global identity and type keep that change independent of any added member.
+T0 has complete native UPA/EDC, but its content does not restrict B in the parent: the namespace check reaches outside G even beyond the dead choice.
+
+The complete positive adds U restricting T0 with empty content, V extending U with empty content and N of type V affiliated with the fixed head H_B of type B.
+The endpoint D restricts existing B.
+Its six-node finite assessment forest supplies the separate actual T0 proof and both retirement orders for the main context's T0 and V duties.
+
+Every actual component is covered and every one of U, V and N remains checked in all five main proof contexts.
+This is complete evidence rather than a locally successful candidate with missing children.
+No original validity receipt is reused in a changed context.
+
+Now prescribe exact T0 content for both U and V at their first birth, keeping their identities and base path.
+Both parent constructions check, and the T0-first branch has the expected legal local checks.
+The V-first child fails `derivation-ok-restriction.5.4`: its middle must be exact B, while inherited T0 is still an extension and G remains visible outside B's wildcard namespace.
+
+The exact middle is forced by N's persistent affiliation to H_B:B.
+The child's intermediate directly extends A, and reaching unchanged B on that path therefore requires the intermediate to be B itself.
+Finite additions cannot remove immutable G or insert a restriction into unchanged T0's path before that child's check.
+
+A legal raw extension of the prescribed T0 prefix must retain its property-identical global Hs occurrence.
+The global identity cannot be replaced by a local same-name declaration, and the retained G remains in that occurrence's expansion.
+The native wildcard rule inspects it despite the required empty choice, so no permitted finite additions repair this frozen-prefix prescription in the V-first child.
+
+The [two controls](../test/research/re01/frozen-prefix-transport.test.ts) preserve the complete old forest and the exact failed recook.
+The U/V/N cone is unused by the host D and can be omitted before birth.
+Thus this refutes that prescribed transport, not general SOME reconstruction, a different common payload, executable evidence adequacy or a complete decision procedure.
+
+### Fully formed restriction chains are not transitive
+
+The [same-context source](../test/conformance/fixtures/xsd/recovery/restriction-nontransitivity.xsd) has twelve actual components and no generated nonprimitive obligation.
+A is a primitive extension of empty Z with an ordinary required `##any`/`skip` wildcard; B restricts A with a unit choice of distinct local a:string and b:string; D restricts B with a required empty choice.
+The ordinary wildcard is not the distinguished builtin ur-type wildcard.
+
+All twelve actual roots pass full finite verification, with zero evidence nodes and only primitive A recorded as no-change.
+UPA, EDC, source syntax, exact occurrence ranges and both immediate restrictions are qualified in one actual context.
+No changed substitution census or independent ordering assignment is used to explain the result.
+
+Restriction normalization leaves D as a required empty choice and B as its two-member choice, while A's unit sequence normalizes to its wildcard.
+D restricts B because the choice branch has no derived children and its root range is 1..1.
+B restricts A because its formal total range is 1..1 and every element namespace is admitted.
+
+D does not restrict A: the wildcard branch compares its formal total range 0..0 with A's required minimum 1 and rejects.
+D is formally schema-emptiable but nonnullable and unrealizable; those separate facts do not change the selected restriction branches.
+Thus two positive, fully formed adjacent restriction steps cannot generally be replaced by one direct positive particle comparison.
+
+The [native control](../test/research/re01/restriction-nontransitivity.test.ts) checks all actual roots and the exact true/true/false tuple on authenticated views from the same context.
+This disproves unconditional particle-restriction transitivity, not a SOME normal form or a bounded interpolation theorem.
+It establishes neither unbounded minimum bridge length nor undecidability.
+
+### Token capacity of a supplied scalar support closure
+
+Fix qualified P, a supplied finite scalar dependency/observer skeleton and finitely many positive initial assessments whose actual values form V.
+These are ordinary retained values or protected P facet operands; gratuitous new facet queries are not initial anchors.
+Keep complete formation, F2, namespace/source qualification and every mandatory frontier duty as premises.
+
+Expand a positive assessment through its actual selected union member and list items, retaining failed earlier attempts where needed.
+For a successful new restriction value, choose its qualified immediate-base witness with the same actual family and value.
+The following computable K bounds the token count of every LIST attempt in this closure, including failed attempts.
+
+| Value family in V | Token bound for any spelling of that fixed value |
+| --- | --- |
+| list | Exact number of items |
+| string or anyURI | Token count after XML-whitespace collapse of the canonical string |
+| base64Binary | Canonical nonspace base64 length, 4 times ceiling(byte length divided by 3) |
+| Other admitted atomic family | One |
+
+Take the maximum of these quantities and 1.
+The base64 quantity is the re-encoded base64 length, not the stored hexadecimal canonical length.
+Every nonempty token uses at least one of those fixed nonspace characters, so arbitrary inserted XML whitespace cannot exceed that bound.
+
+Selected union edges and successful immediate-base witnesses preserve their anchored actual value.
+Any earlier LIST member attempt shares that same whole lexical word, so the family bound applies even when the list attempt fails.
+Its item assessments each receive one whitespace-free token.
+
+New auxiliary values can arise in these item assessments, including earlier failed item-union attempts.
+A qualified item union and every corresponding union on its base path have only atomic members; an atomic corresponding member cannot derive a list target.
+Consequently these auxiliary branches create no further LIST attempt.
+
+An auxiliary binary value can genuinely need a spaced union-base spelling because an earlier atomic member shadows its token spelling.
+That base path remains atomic-member-only, so this exception does not create an unbounded token/list branch.
+Source union flattening and raw constructor qualification must both be included; referring only to a source syntax name is insufficient.
+
+This proof does not replace a list's pattern while keeping its enclosing union unchanged.
+Such a local change can expose a later member's different typed value and violate F2; parsing also precedes the pattern check and may expose an unqualified branch.
+The token bound avoids that unproved rewrite and retains the required old failed attempts.
+
+K bounds list branching for the supplied positive support inventory.
+It does not extract that inventory from Gamma, bound lexical word lengths, namespace maps, auxiliary atomic values or fresh scalar types, or decide their simultaneous realization.
+Complete scalar SUCCESS and an input-derived scalar encoding bound remain open.
+
+### Exact remaining closure plan
+
+A total local bound b(Gamma,P,target), or an equivalent complete local criterion, must cover complete SUCCESS rather than just current local predicate truth.
+It must supply faithful executable evidence, every inherited fresh root and every genuinely consumed actual/hypothetical duty.
+The existing fresh-target final-record selection permits no newly added nonprimitive type at a fresh-target step; it does not remove mandatory inherited nonprimitive types.
+
+Given such a computable local bound, the lexicographic measure counts unretired original nonprimitive types first and remaining inherited fresh nonprimitive types second.
+Original-target steps decrease the first count and may add a bounded finite batch; fresh-target steps decrease the second count without adding a new batch.
+Finite bounded candidate enumeration and induction on that measure would then justify terminating positive and negative answers.
+
+The local bound has not been proved.
+Open ingredients include a bounded useful global-member/nominal-role inventory, simultaneous payload interpolation across retained-type retirements, the joint scalar support-word realization bound, and executable frontier/materialization adequacy.
+A supplied finite skeleton, successful finite experiment or rejected reconstruction does not discharge those universal claims.
+
+The full dated-XSD correspondence gate remains separate from the selected founded research definition.
+External engines are observations only: XMLmind's own [implementation-limit record](https://xmlmind.com/xmleditor/_distrib/doc/xmltool/xsd_structure_limitations.html) lists clause cos-ct-extends.1.5 among unchecked schema constraints and describes a different particle-restriction algorithm.
+It therefore does not supply the missing decision theorem for this native contract.
+
+General construction coverage, universal executable evidence adequacy, complete negative answers, mathematical termination and dated correspondence remain open.
+No production activation, public format change, domain exclusion or semantic-budget reinterpretation follows from this continuation.
 
 ## Pure input and output contract
 

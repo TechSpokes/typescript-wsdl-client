@@ -96,7 +96,11 @@ async function seed() {
   }
   assert.deepEqual(parentOwed, [ft.id]); for (const scope of scopes) assert.equal(parentChecked.has(scope.owner.id), false);
   const membership = effectiveSubstitutionMembers(parent, head.id); assert.equal(membership.kind, 'checked'); assert.ok(membership.value.includes(n.id));
-  const collision: ParticleNode = {...sourceScopes[0].sourceOuter, term: {kind: 'element', declaration: local(n.id)}};
+  const backing = sourceScopes[0].sourceOuter; assert.equal(backing.identity.kind, 'scoped');
+  // A real canonical alias occupies the backing tuple; the private ID itself
+  // cannot be installed as a context member.
+  const collision: ParticleNode = {...backing, id: scopedId(backing.identity.owner, backing.identity.path, backing.identity.role),
+    term: {kind: 'element', declaration: local(n.id)}};
   const child = (identity: boolean, reify = false, consume = false, collide = false) => {
     const prefix = particles[identity ? 1 : 0], fe = helper('FE', 'extension', local(fa.id));
     const outer: ParticleNode = {...prefix, id: scopedId(fe.id, '/outer', 'particle'), identity: {kind: 'scoped', owner: fe.id, path: '/outer', role: 'particle'},

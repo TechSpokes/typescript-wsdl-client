@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): allocate injective fresh and private identities while preserving source sharing and complete contextual checks.
+
 - fix(re01): qualify NOTATION constituents and establish guarded finite-content and recursive-helper reconstruction results.
 
 - fix(re01): remove newly empty optional comparison groups and qualify guarded helper reconstruction and numeric bounds.
