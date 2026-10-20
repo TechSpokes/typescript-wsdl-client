@@ -1,7 +1,7 @@
 /** Concrete effective-content mapping, separate from source and raw component validity. */
-import {scopedId} from './canonicalGraph.js';
+import {privateParticleId} from './hypotheticalScopedIdentity.js';
 import type {CanonicalGraph, ComplexTypeNode, GraphNode, NodeId, Occurs, ParticleNode, Reference} from './canonicalGraph.js';
-import {assertSemanticContext, graphForSemanticContext} from './semanticContext.js';
+import {assertSemanticContext, graphForSemanticContext, storedIdentityOccupant} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import type {OriginalComplexParticleHandle, RawComplexContent} from './re01TypeProperties.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
@@ -97,10 +97,11 @@ export function deriveActualComplexContent(context: SemanticContext, type: NodeI
       const synthetic = (owner: ComplexTypeNode, term: ParticleNode['term'], occurs: Occurs = ONE): NodeId => {
         budget.reserveNodes(1);
         const path = `$semantic-content/${context.contextId}/${additions.length}`;
-        budget.chargeWork(96 + 6 * (owner.id.length + path.length));
         const identity = Object.freeze({kind: 'scoped', owner: owner.id, path, role: 'particle'} as const);
-        const id = scopedId(owner.id, path, 'particle');
+        const id = privateParticleId('effective', owner.id, path, 'particle', budget.chargeWork);
         if (context.lookup(id).kind === 'found') return fail(id, 'Synthetic semantic identity collision');
+        const occupied = storedIdentityOccupant(context, identity);
+        if (occupied !== undefined && context.lookup(occupied).kind === 'found') return fail(id, 'Synthetic semantic tuple collision');
         budget.chargeWork(16 + id.length);
         additions.push(Object.freeze({id, identity, kind: 'particle', occurs, term, context: owner.context,
           declaredAttributes: NONE, annotations: NONE, retained: NONE, syntaxDetails: NONE}));
@@ -256,6 +257,8 @@ export function deriveRawComplexContent(context: SemanticContext, type: NodeId):
           component: id, message: 'Original particle identity is occupied'});
         const node = particleContentNode(actual, source, id);
         if (!node) throw new TypeError('Missing original particle backing');
+        if (storedIdentityOccupant(context, node.identity) !== undefined) return Object.freeze({kind: 'unresolved',
+          rule: 'original-property-synthetic-collision', component: id, message: 'Original particle semantic identity is occupied'});
         additions.push(node);
       }
     } else if ('particle' in properties.content) {
@@ -300,6 +303,7 @@ export function deriveOriginalComplexPropertyContent(context: SemanticContext, t
       if (context.lookup(id).kind !== 'missing') return fail('original-property-synthetic-collision', id);
       const node = particleContentNode(context.originalContext(), source.view, id);
       if (!node) return fail('original-property-synthetic-component', id);
+      if (storedIdentityOccupant(context, node.identity) !== undefined) return fail('original-property-synthetic-collision', id);
       additions.push(node);
     }
     const view = issueContentView(context, {contextId: context.contextId, type, scope: 'original-property-projection',
@@ -345,7 +349,8 @@ export function deriveBuiltinAnyTypeContent(context: SemanticContext, anchor: No
     budget.reserveNodes(2);
     const path = '$semantic-builtin-anyType/' + context.contextId;
     budget.chargeWork(180 + 12 * (anchor.length + path.length));
-    const anyId = scopedId(anchor, path + '/any', 'particle'), groupId = scopedId(anchor, path + '/sequence', 'particle');
+    const anyId = privateParticleId('builtin-anyType', anchor, path + '/any', 'particle', budget.chargeWork),
+      groupId = privateParticleId('builtin-anyType', anchor, path + '/sequence', 'particle', budget.chargeWork);
     if (context.lookup(anyId).kind === 'found' || context.lookup(groupId).kind === 'found') {
       budget.chargeWork(8); return Object.freeze({kind: 'unresolved', rule: 'builtin-anyType-content', component: anchor, message: 'Synthetic ur-type identity collision'});
     }
@@ -355,6 +360,13 @@ export function deriveBuiltinAnyTypeContent(context: SemanticContext, anchor: No
       occurs: OPTIONAL_MANY, term: Object.freeze({kind: 'any', wildcard})});
     const sequence: ParticleNode = Object.freeze({...common, id: groupId, identity: Object.freeze({kind: 'scoped', owner: anchor, path: path + '/sequence', role: 'particle'}),
       occurs: ONE, term: Object.freeze({kind: 'sequence', children: Object.freeze([anyId])})});
+    budget.chargeWork(4);
+    for (const node of [any, sequence]) {
+      budget.chargeWork(3);
+      const occupied = storedIdentityOccupant(context, node.identity);
+      if (occupied !== undefined && context.lookup(occupied).kind === 'found') return Object.freeze({kind: 'unresolved',
+        rule: 'builtin-anyType-content', component: anchor, message: 'Synthetic ur-type semantic identity collision'});
+    }
     budget.chargeWork(25);
     const view = issueContentView(context, {contextId: context.contextId, type: anchor, scope: 'builtin-type',
       content: Object.freeze({kind: 'mixed', particle: groupId}),

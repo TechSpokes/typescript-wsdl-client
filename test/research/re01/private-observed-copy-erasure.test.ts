@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {describe, expect, it} from 'vitest';
 import path from 'node:path';
 import {loadSchemaInput} from '../../../src/loader/schemaInput.js';
-import {globalId, scopedId} from '../../../src/compiler/canonicalGraph.js';
+import {globalId, scopedId as legacyScopedId} from '../../../src/compiler/canonicalGraph.js';
+import {hypotheticalScopedId} from '../../../src/compiler/hypotheticalScopedIdentity.js';
 import type {ComplexTypeNode, ElementNode, GraphNode, ParticleNode, Reference} from '../../../src/compiler/canonicalGraph.js';
 import {prepareSourceSchemaRequest, checkSchemaDocumentSyntax} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {deriveActualComplexContent, deriveOriginalComplexParticle, deriveOriginalComplexPropertyContent} from '../../../src/compiler/complexTypeContent.js';
@@ -23,10 +24,13 @@ const local = (target: string): Reference => ({kind: 'local', target});
 const anyType: Reference = {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'anyType'}};
 const typeId = (name: string) => globalId('type', {namespace, local: name});
 const filename = path.join(directory, 'xsd/recovery/private-observed-copy-erasure.xsd');
-async function subject() {
+async function subject(encoding: 'legacy' | 'injective' = 'legacy', scopedEndpoint = false) {
+  const scopedId = encoding === 'legacy' ? legacyScopedId : hypotheticalScopedId;
   const loaded = await loadSchemaInput(filename, {policy: {fileRoots: [directory]}});
   const prepared = prepareSourceSchemaRequest(loaded); assert.equal(prepared.kind, 'prepared');
   const request = prepared.request, actual = request.actual; assert.equal(checkSchemaDocumentSyntax(actual).kind, 'checked');
+  for (const node of request.graph.nodes) if (node.identity.kind === 'scoped')
+    assert.equal(node.id, legacyScopedId(node.identity.owner, node.identity.path, node.identity.role));
   const originalGraph = JSON.stringify(request.graph);
   const get = (id: string): GraphNode => {const found = actual.lookup(id); assert.equal(found.kind, 'found'); return found.node;};
   const original = (name: string): ComplexTypeNode => {const node = get(typeId(name)); assert.equal(node.kind, 'complexType'); return node;};
@@ -69,7 +73,9 @@ async function subject() {
     derivation: {kind: 'extension', contentKind: 'complex', base: local(base), facets: []}});
   const eRoot = extension('E-root', p.id, nodeId('/entry/wrapper', 'particle'));
   const eContent = particle('/entry/wrapper', {kind: 'sequence', children: [entryPrefix.id]});
-  const v = extension('V', r.id, r.content), eChild = extension('E-V', p.id, p.content);
+  const globalV = extension('V', r.id, r.content), eChild = extension('E-V', p.id, p.content);
+  const v: ComplexTypeNode = scopedEndpoint ? {...globalV, id: nodeId('/scoped-V', 'type'),
+    identity: {kind: 'scoped', owner: group.id, path: '/scoped-V', role: 'type'}} : globalV;
   const raw = (node: ComplexTypeNode, content?: RawComplexTypeProperties['content']): RawComplexTypeProperties => ({
     type: node.id, targetNamespace: namespace, derivation: {method: node.derivation?.kind ?? 'restriction', base: node.derivation?.base ?? anyType},
     content: content ?? (node.content ? {kind: 'element-only', particle: node.content} : {kind: 'empty'}),
@@ -145,7 +151,7 @@ async function subject() {
       retainedQueryKeys: [built.context, child.context].map(context => ({derived: keys(context, d.id), base: keys(context, types[0].id)}))};
   };
   return {make, request, originalGraph, derived: d.id, retainedIntermediate: types[0].id,
-    privateIds: privateTail.map(node => node.id), retainedOwnerObserver};
+    privateIds: privateTail.map(node => node.id), retainedOwnerObserver, freshEndpoint: v};
 }
 
 describe('guarded erasure below a retained observed recursive copy', () => {
@@ -177,5 +183,28 @@ describe('guarded erasure below a retained observed recursive copy', () => {
     for (const target of s.privateIds) expect(JSON.stringify(s.retainedOwnerObserver.term)).not.toContain(target);
     expect(() => s.make(true, true)).toThrow(/retained canonical\/raw\/owner field still selects erased cone/);
     expect(JSON.stringify(s.request.graph)).toBe(s.originalGraph);
+  });
+
+  it('checks complete legacy and injective forests while retiring the same inherited scoped endpoint', async () => {
+    for (const encoding of ['legacy', 'injective'] as const) {
+      const s = await subject(encoding, true), old = s.make(false), erased = s.make(true);
+      expect(old.contextSizes).toEqual([51, 52]); expect(erased.contextSizes).toEqual([39, 40]);
+      expect(old.actualComponents).toBe(26); expect(erased.actualComponents).toBe(26);
+      expect(old.proofNodes).toBe(2); expect(erased.proofNodes).toBe(2);
+      expect(old.retainedQueryKeys).toEqual(erased.retainedQueryKeys);
+      assert.equal(s.freshEndpoint.identity.kind, 'scoped');
+      const encode = encoding === 'legacy' ? legacyScopedId : hypotheticalScopedId;
+      expect(s.freshEndpoint.id).toBe(encode(s.freshEndpoint.identity.owner, s.freshEndpoint.identity.path, s.freshEndpoint.identity.role));
+      for (const result of [old, erased]) {
+        for (const context of result.contexts) {
+          expect(context.lookup(s.freshEndpoint.id)).toMatchObject({kind: 'found',
+            node: {id: s.freshEndpoint.id, identity: s.freshEndpoint.identity}});
+          expect(context.sourceNode(s.freshEndpoint.id)).toBeUndefined();
+        }
+        expect(result.forest.proof.find(step => step.target === s.freshEndpoint.id)?.parentContext)
+          .toBe(result.contexts[0].contextId);
+      }
+      expect(JSON.stringify(s.request.graph)).toBe(s.originalGraph);
+    }
   });
 });
