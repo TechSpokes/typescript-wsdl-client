@@ -6,7 +6,7 @@ import type {SemanticContext} from './semanticContext.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import type {RawComplexTypeProperties} from './re01TypeProperties.js';
 import {RE01_DERIVATION_DOMAIN} from './re01TypeProperties.js';
-import {deriveActualComplexContent, particleContentNode} from './complexTypeContent.js';
+import {deriveActualComplexContent, deriveRawComplexContent, particleContentNode} from './complexTypeContent.js';
 import type {ParticleContentView} from './complexTypeContent.js';
 import {assessSourceAttributeUses} from './schemaAttributeUses.js';
 import {compareSchemaFacetProperties, createSchemaScalarKernel} from './schemaScalarKernel.js';
@@ -275,7 +275,16 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
     };
     const mapped = (id: NodeId): Mapped => {
       const prior = parent.rawTypeProperties(id);
-      if (prior) {charge(8); return {properties: prior, context: parent, synthetic: [], scalarObligations: [], typeDependencies: []};}
+      if (prior) {
+        charge(8);
+        if ('particle' in prior.content && prior.content.original) {
+          const content = deriveRawComplexContent(parent, id);
+          if (content.kind !== 'checked') throw new CorrespondenceAbort(content.kind === 'resource-limit' ? content
+            : {...content, kind: content.kind === 'invalid-input' ? 'invalid-evidence' : 'unresolved'});
+          return {properties: prior, context: parent, view: content.view, synthetic: content.view.synthetic, scalarObligations: [], typeDependencies: []};
+        }
+        return {properties: prior, context: parent, synthetic: [], scalarObligations: [], typeDependencies: []};
+      }
       let cache = actualMappings.get(actual);
       if (!cache) {charge(2); cache = new Map(); actualMappings.set(actual, cache);}
       const cached = cache.get(id);
@@ -351,6 +360,9 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
         return;
       }
       if (!('particle' in a) || !('particle' in c)) return fail('endpoint-content-variety', right.type, 'Content property mismatch');
+      const rightContent = deriveRawComplexContent(candidate, right.type);
+      if (rightContent.kind !== 'checked') throw new CorrespondenceAbort(rightContent.kind === 'resource-limit' ? rightContent
+        : {...rightContent, kind: rightContent.kind === 'invalid-input' ? 'invalid-evidence' : 'unresolved'});
       charge(6 + left.synthetic.length); const synthetic = new Set(left.synthetic), forward = new Map<string, string>(), reverse = new Map<string, string>();
       charge(3); const pairs: [NodeId, NodeId][] = [[a.particle, c.particle]];
       while (pairs.length) {
@@ -359,9 +371,9 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
         if (forward.has(xid)) {if (forward.get(xid) !== yid) return fail('endpoint-particle-sharing', right.type, 'Shared generated particle was split'); continue;}
         if (reverse.has(yid)) return fail('endpoint-particle-sharing', right.type, 'Distinct generated particles were merged');
         charge(4); forward.set(xid, yid); reverse.set(yid, xid);
-        const x = left.view && particleContentNode(left.context, left.view, xid), y = node(candidate, yid);
-        if (x?.kind === 'particle' && y.kind === 'particle') charge(4 + x.occurs.min.length + x.occurs.max.length + y.occurs.min.length + y.occurs.max.length);
-        if (x?.kind !== 'particle' || y.kind !== 'particle' || x.term.kind !== y.term.kind || x.occurs.min !== y.occurs.min || x.occurs.max !== y.occurs.max) return fail('endpoint-raw-particle', right.type, 'Generated raw particle structure changed');
+        const x = left.view && particleContentNode(left.context, left.view, xid), y = particleContentNode(candidate, rightContent.view, yid);
+        if (x?.kind === 'particle' && y?.kind === 'particle') charge(4 + x.occurs.min.length + x.occurs.max.length + y.occurs.min.length + y.occurs.max.length);
+        if (x?.kind !== 'particle' || y?.kind !== 'particle' || x.term.kind !== y.term.kind || x.occurs.min !== y.occurs.min || x.occurs.max !== y.occurs.max) return fail('endpoint-raw-particle', right.type, 'Generated raw particle structure changed');
         if ('children' in x.term && 'children' in y.term) {
           if (x.term.children.length !== y.term.children.length) return fail('endpoint-raw-particle', right.type, 'Generated compositor child count changed');
           for (let i = 0; i < x.term.children.length; i++) {charge(3); pairs.push([x.term.children[i]!, y.term.children[i]!]);}

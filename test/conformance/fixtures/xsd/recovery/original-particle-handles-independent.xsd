@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:research:endpoint-origin-frontier" targetNamespace="urn:research:endpoint-origin-frontier">
+  <xs:element name="H" type="xs:string"/>
+  <xs:complexType name="A"><xs:sequence><xs:element name="p" type="xs:string" minOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:restriction base="t:A"><xs:sequence><xs:element name="p" type="xs:string" minOccurs="0"/></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:B"><xs:sequence><xs:element ref="t:H" minOccurs="0"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="A0"/>
+  <xs:complexType name="B0"><xs:complexContent><xs:extension base="t:A0"/></xs:complexContent></xs:complexType>
+</xs:schema>

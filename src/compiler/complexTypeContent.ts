@@ -3,7 +3,7 @@ import {scopedId} from './canonicalGraph.js';
 import type {CanonicalGraph, ComplexTypeNode, GraphNode, NodeId, Occurs, ParticleNode, Reference} from './canonicalGraph.js';
 import {assertSemanticContext, graphForSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
-import type {RawComplexContent} from './re01TypeProperties.js';
+import type {OriginalComplexParticleHandle, RawComplexContent} from './re01TypeProperties.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 
@@ -28,6 +28,9 @@ const generatedNodes = new WeakMap<object, ReadonlyMap<NodeId, GraphNode>>();
 const actualCaches = new WeakMap<object, Map<NodeId, ParticleContentView>>();
 const candidateCaches = new WeakMap<object, Map<NodeId, ParticleContentView>>();
 const originalPropertyCaches = new WeakMap<object, Map<NodeId, ParticleContentView>>();
+const originalParticles = new WeakMap<object, Readonly<{context: SemanticContext; view: ParticleContentView}>>();
+const originalParticleCaches = new WeakMap<object, Map<NodeId, OriginalComplexParticleHandle>>();
+const originalRawViews = new WeakSet<object>();
 const ONE = Object.freeze({min: '1', max: '1'});
 const OPTIONAL_MANY = Object.freeze({min: '0', max: 'unbounded'});
 const EMPTY = Object.freeze({kind: 'empty'} as const);
@@ -188,6 +191,42 @@ export function deriveActualComplexContent(context: SemanticContext, type: NodeI
   });
 }
 
+export type OriginalParticleResult = Readonly<{kind: 'checked'; content: Extract<RawComplexContent, {particle: NodeId}>}>
+  | RelationFailure | ResourceLimitFailure;
+
+/** Select the same source component, conditional on the separate actual-source
+ * qualification. Neither the source owner's nor its current-H validity is imported. */
+export function deriveOriginalComplexParticle(context: SemanticContext, type: NodeId): OriginalParticleResult {
+  assertSemanticContext(context);
+  return context.budget.guard(() => {
+    const b = context.budget; b.chargeWork(12 + type.length);
+    if (!context.originalComplexContentSource(type)) return Object.freeze({kind: 'unresolved',
+      rule: 'original-particle-source', component: type, message: 'Authentic actual complex source mapping required'});
+    const source = deriveActualComplexContent(context, type);
+    if (source.kind !== 'checked') return source;
+    if (!('particle' in source.view.content)) return Object.freeze({kind: 'unresolved',
+      rule: 'original-particle-source', component: type, message: 'Original content must be a particle'});
+    let cache = originalParticleCaches.get(context);
+    if (!cache) {b.chargeWork(2); cache = new Map(); originalParticleCaches.set(context, cache);}
+    let handle = cache.get(type);
+    if (!handle) {
+      b.chargeWork(8 + type.length + source.view.content.particle.length);
+      handle = Object.freeze({owner: type, particle: source.view.content.particle}) as OriginalComplexParticleHandle;
+      originalParticles.set(handle, {context, view: source.view}); cache.set(type, handle);
+    }
+    b.chargeWork(5);
+    return Object.freeze({kind: 'checked', content: Object.freeze({...source.view.content, original: handle})});
+  });
+}
+
+/** Private issuer authentication used before the context factory snapshots raw data. */
+export function originalComplexParticleSource(context: SemanticContext, handle: OriginalComplexParticleHandle): ParticleContentView {
+  assertSemanticContext(context); context.budget.chargeWork(4);
+  const source = originalParticles.get(handle);
+  if (!source || source.context !== context || context.kind !== 'actual') throw new TypeError('Unauthenticated or foreign original particle handle');
+  return source.view;
+}
+
 /** Raw candidate properties are read directly; their component validity remains a separate prerequisite. */
 export function deriveRawComplexContent(context: SemanticContext, type: NodeId): ContentViewResult {
   assertSemanticContext(context);
@@ -202,7 +241,24 @@ export function deriveRawComplexContent(context: SemanticContext, type: NodeId):
     if (context.kind !== 'candidate' || !properties) {
       budget.chargeWork(8); return Object.freeze({kind: 'unresolved', rule: 'effective-complex-content', component: type, message: 'Candidate raw type properties are required'});
     }
-    if ('particle' in properties.content) {
+    const additions: GraphNode[] = [];
+    let synthetic: readonly NodeId[] = NONE, urTypeWildcards: readonly NodeId[] = NONE;
+    const original = 'particle' in properties.content ? properties.content.original : undefined;
+    if (original) {
+      const actual = context.originalContext(), source = originalComplexParticleSource(actual, original);
+      const owner = context.lookup(original.owner);
+      if (owner.kind !== 'found' || owner.node.kind !== 'complexType' || !('particle' in properties.content)
+        || properties.content.particle !== original.particle) throw new TypeError('Invalid original particle selection');
+      synthetic = source.synthetic; urTypeWildcards = source.urTypeWildcards;
+      for (const id of synthetic) {
+        budget.chargeWork(3 + id.length);
+        if (context.lookup(id).kind !== 'missing') return Object.freeze({kind: 'unresolved', rule: 'original-property-synthetic-collision',
+          component: id, message: 'Original particle identity is occupied'});
+        const node = particleContentNode(actual, source, id);
+        if (!node) throw new TypeError('Missing original particle backing');
+        additions.push(node);
+      }
+    } else if ('particle' in properties.content) {
       const particle = context.lookup(properties.content.particle);
       if (particle.kind !== 'found' || particle.node.kind !== 'particle') {
         budget.chargeWork(8); return Object.freeze({kind: 'unresolved', rule: 'effective-complex-content', component: type, message: 'Raw content particle is unavailable'});
@@ -210,7 +266,8 @@ export function deriveRawComplexContent(context: SemanticContext, type: NodeId):
     }
     budget.chargeWork(12);
     const view = issueContentView(context, {contextId: context.contextId, type, scope: 'candidate-raw-properties', content: properties.content,
-      synthetic: NONE, urTypeWildcards: NONE}, NONE);
+      synthetic, urTypeWildcards}, additions);
+    if (original) originalRawViews.add(view);
     cache.set(type, view);
     return Object.freeze({kind: 'checked', view});
   });
@@ -258,7 +315,7 @@ export function deriveOriginalContentSubtree(context: SemanticContext, source: P
   const budget = context.budget;
   return budget.guard(() => {
     budget.chargeWork(12 + particle.length + source.synthetic.length);
-    if (source.scope !== 'original-property-projection' || !context.originalComplexPropertySource(source.type)
+    if (!(originalRawViews.has(source) || source.scope === 'original-property-projection' && context.originalComplexPropertySource(source.type))
       || !source.synthetic.includes(particle) || context.lookup(particle).kind !== 'missing')
       return Object.freeze({kind: 'unresolved', rule: 'original-content-subtree', component: particle, message: 'Authentic private original subtree required'});
     const node = particleContentNode(context, source, particle);

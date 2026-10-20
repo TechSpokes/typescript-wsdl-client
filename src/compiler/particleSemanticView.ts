@@ -103,7 +103,7 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
         const original = context.lookup(node.id);
         charge(1 + content.synthetic.length);
         if (original.kind === 'found' && original.node === node && original.node.kind === 'particle'
-          || content.scope !== 'candidate-raw-properties' && content.synthetic.includes(node.id)) p.originalParticle = node.id;
+          || content.synthetic.includes(node.id)) p.originalParticle = node.id;
         if (term.term.kind === 'element') {
           const declaration = target(term.term.declaration, node.id);
           if (declaration.kind !== 'element') return fail(node.id, 'Element particle requires an element declaration');

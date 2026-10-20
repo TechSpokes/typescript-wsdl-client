@@ -10,6 +10,7 @@ import {RE01_DERIVATION_DOMAIN} from './re01TypeProperties.js';
 import type {RawComplexTypeProperties} from './re01TypeProperties.js';
 import {assertCandidateCorrespondence} from './re01CandidateCorrespondence.js';
 import type {CorrespondenceReceipt} from './re01CandidateCorrespondence.js';
+import {deriveRawComplexContent, particleContentNode} from './complexTypeContent.js';
 
 export type RawTypeValidation = Readonly<{
   kind: 'checked-structure'; contract: typeof RE01_DERIVATION_DOMAIN; component: NodeId;
@@ -27,7 +28,7 @@ export function validateRawComplexTypeProperties(context: SemanticContext, typeI
   assertSemanticContext(context);
   if (correspondence) assertCandidateCorrespondence(context, correspondence);
   const b = context.budget;
-  return b.guard((): Exclude<RawTypeValidation, ResourceLimitFailure> => {
+  return b.guard((): RawTypeValidation => {
     try {
       b.chargeWork(3 + typeId.length);
       const fail = (rule: string, unresolved = false): never => {throw new InvalidRawType(rule, unresolved);};
@@ -92,7 +93,13 @@ export function validateRawComplexTypeProperties(context: SemanticContext, typeI
         case 'empty': break;
         case 'simple': reference(content.type, true); break;
         case 'mixed': case 'element-only':
-          node(content.particle, 'particle'); break;
+          if (content.original) {
+            const mapped = deriveRawComplexContent(context, typeId);
+            if (mapped.kind === 'resource-limit') return mapped;
+            if (mapped.kind !== 'checked' || particleContentNode(context, mapped.view, content.particle)?.kind !== 'particle')
+              return fail('raw-type-original-particle', true);
+          } else node(content.particle, 'particle');
+          break;
         case 'opaque-builtin':
           if (b.compareText(reference(content.type), reference(ur)) !== 0) return fail('raw-type-content');
           break;

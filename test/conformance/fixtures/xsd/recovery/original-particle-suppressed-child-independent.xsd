@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:research:handle-suppressed-child" targetNamespace="urn:research:handle-suppressed-child">
+  <xs:complexType name="A"/>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"><xs:sequence><xs:element name="p" type="xs:string" minOccurs="0"/><xs:element name="z" type="xs:string" minOccurs="0" maxOccurs="0"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>
