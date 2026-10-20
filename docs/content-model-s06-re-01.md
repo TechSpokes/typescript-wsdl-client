@@ -35,6 +35,7 @@ The [comparison normalization repair](#pointless-comparison-groups-after-flatten
 These results leave the complete success-preserving local bound and general decision gates open.
 The [identity continuation](#identity-allocation-and-remaining-reconstruction-obligations) adds injective fresh/private allocation while preserving source identities and complete inherited roots; it records the remaining simultaneous helper and scalar bounds.
 The [owner-conditional continuation](#owner-conditional-joint-helper-reconstruction) rebuilds an unobserved family with complete inherited roots, removing comparisons that disappear with their owner's old payload; complete support bounds remain open.
+The [nominally observed continuation](#common-mixed-payload-without-changing-the-nominal-fresh-family) preserves observed helper identities and exact type paths while choosing one common mixed payload; its complete child evidence is retained and general inventory remains open.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -5564,6 +5565,133 @@ Equal/unequal mixed and anyType values, integer aliases, missing fixed fields, b
 A complete zero-node primitive forest checks all 47 actual records, including a genuine restriction with two distinct local declarations.
 A legal nonempty mixed TYPE still makes its fixed declaration fail full construction even though the local value comparison is conditionally true.
 This preserves the distinction between local comparison and complete legality; it supplies no general negative or evidence-bound theorem.
+
+## Common mixed payload without changing the nominal fresh family
+
+### Conditional statement
+
+Fix a qualified actual schema Γ, an exact retained parent P, and a supplied finite complete founded forest W.
+Let F be a role-closed family of genuinely post-P complex identities, present with complete raw rows wherever used in W.
+Every F content is nonscalar: empty, element-only or mixed; its immediate base is in F or builtin anyType, denoted UR.
+In every retained context, every complex base consumer entering F also belongs to F.
+This includes endpoint versions and their selected child intermediates, rather than only the initial parent graph.
+
+Every surviving positive production property query whose owner lies outside F is closed at the F boundary.
+A forced distinct complex pair entering F has both operands in F; an exact identity pair remains an identity shortcut.
+Queries owned inside F are reconstructed from the common recipe instead of preserving their old payload tasks.
+These are hypotheses about W's genuine query owners and forced pair closure, not a test of arbitrary standalone comparisons.
+
+No original/P payload, original declaration TYPE, scalar facade, typed facet, genuine scalar recipe or foreign middle fixes an F payload.
+Independently required simple-content components are excluded; unwrapping an operand does not erase their full-component duty.
+Original Γ operands, source bindings, namespace contexts and protected outside scalar/source fields remain exact.
+An F record used only as immutable lexical-owner metadata retains its exact identity and context.
+
+Then F can select one common mixed payload before birth while preserving a complete forest with the same NP child geometry.
+The construction does not find F, bound its size or establish that every qualified input has such W.
+
+### Allocation and coherent first births
+
+Reserve the whole finite retained W, including later births and all original/source/private identity reservations.
+Allocate three ordinary particles with distinct authenticated fresh identities, valid owners and sufficient capacity in every rebuilt H.
+Reissue each native view in its exact rebuilt H; collision freedom and authority are checked, not inferred from hash uniqueness.
+The allocation premise includes the private UR view identities generated for every retained family member.
+
+Choose w = ANY ##any/lax at 0..unbounded, q = SEQ1[w], and p = SEQ1[q].
+The ordinary wildcard w receives neither a native ur-origin marker nor an original-content handle.
+Select mixed p, no effective AUs, and a universal lax attribute wildcard with an empty sources list for every F birth.
+Canonical mixed/content and complete raw fields agree; canonical derivation contentKind remains complex.
+Keep each F identity, QName, owner/path, context, method, immediate base, flags and existing evidence choices.
+
+The new nonderivation recipe is chosen at first birth and retained exactly in every later endpoint version.
+This is not a later change to an inherited nonendpoint payload.
+Every old real payload particle, declaration, AU and scaffold remains a member and mandatory fresh root.
+An owner's newly selected content need not select every real particle that it still owns.
+Outside canonical/raw roots, real identities, TYPE selectors, coherent order keys and all Γ/P records remain unchanged.
+
+### Existing owner proof map
+
+The shared p is legal, UPA-valid, EDC-valid and schema-emptiable, with one wildcard incidence after restriction normalization.
+It contains no element declaration, scalar recipe, substitution expansion or implicit order key.
+F-to-F extension closes on exact shared raw p identity; F-to-F restriction closes on the same normalized p identity.
+Methods, bases and final flags stay exact, so the immediate derivation-final checks retain their old answers.
+
+Direct restriction from UR uses the existing restriction-from-anyType branch.
+Direct extension from UR compares q with the native unit sequence containing its optional unbounded wildcard.
+Their kind, occurrence, namespace and process descriptors agree; ordinary and native wildcard origins remain distinct.
+Both sequence wrappers are required for that raw extension comparison; one wrapper exposes w where the native sequence is expected.
+The empty AU sets and universal lax attribute wildcard satisfy the existing internal and UR AU derivation checks.
+
+Full construction still follows every exact base, all retained fresh roots and the new p/q/w roots.
+Its new duties are supported by the same family/base/UR closure and the three constructive particle roots.
+No property read transfers Γ validity or imports full validity of an unrelated backing type into H.
+
+### Nominal, property and value observations
+
+Type relations keep identity, namedness, method, base and final/block data.
+Thus declared type paths, affiliations, effective membership censuses and EDC type identities remain exact jointly.
+Outside particle geometry, occurrence capacities and coherent order keys also remain exact.
+The argument neither unions member pools nor treats duplicated module data as idempotent.
+
+An outside positive F/F property pair keeps its namespace, flags, method and exact old base-pair gates.
+Its new payload tasks are p/p and empty-AU/empty-AU, so the old successful tableau loses tasks without adding a foreign F boundary.
+Changed first visits lie in the old forced positive structural closure or the new constructive support.
+Failed AU lexical alternatives retain the already prepared outside scalar prerequisites; no LIFO early-rejection order is assumed.
+
+An old admitted ordinary F-typed value was mixed, since F is nonscalar and empty/element-only values are inadmissible.
+Both old and new declarations assess the same lexical word, namespace context and builtin-string constraint.
+The new p directly proves formal mixed emptiability while the exact declared F TYPE and full base closure remain owed.
+The repaired particle fixedEqual caller uses those assessed constraint references and lexical values.
+Both declarations' type dependencies and scalar obligations, plus comparison dependencies and obligations, remain retained.
+Direct scalar TYPE admission of a particle/mixed complex type remains unchanged and nonscalar.
+
+These facts use particleRestriction.ts SHA256 5f37c37882c524795252d10c899f61f9c692676d121982e6d8428d04befbc91c.
+The old theorem's wrong-caller observation is replaced by its separately accepted assessed-caller compatibility argument.
+All facts are recomputed in paired old/rebuilt contexts; no receipt is transported between different H contexts.
+
+### Replay of the same finite proof
+
+The exact method/base graph preserves each own-NP subject and designated ancestor.
+For an F target, its exact old child middle is also in F by all-context base-consumer closure.
+Its extension and the endpoint restriction therefore use the common internal clauses without changing the chosen middle.
+For an outside target, its protected base path and foreign middle payload remain outside F.
+
+Parent/child correspondence compares the same newly selected nonderivation content/AU/wildcard fields.
+All inherited original/P data and declaration selectors stay exact; all retained real fresh roots are checked again where required.
+Induction on the old W subtree height replays the same old children and reaches the same old leaves.
+Full actual Γ obligations remain independently supplied, rather than inferred from one H construction.
+This is a conditional complete-forest reconstruction, not a claim that local predicate truth alone supplies SUCCESS.
+
+### Concrete native qualification
+
+The reusable source fixture has five actual components: A empty, B extends A, R restricts A, D extends R, and abstract h:UR.
+The fixed outside D proof uses original B and ancestor A in both forests; no original payload recipe changes.
+Fresh T0 restricts UR empty; T1 extends T0 with mixed optional a; T2 extends T1 with mixed SEQ[exact T1 root,b?].
+Primitive U extends UR through two ordinary wrappers; the same T2 child restricts T2 to primitive V extending T0.
+Global M:T2 and Mu:U both affiliate to h and retain the exact fixed-v values, lexical contexts and TYPE selectors.
+
+The nine old scaffolds are local declarations a/b and seven particles: their two leaves, two content roots and U's three particles.
+M and Mu are two additional retained noncomplex records, so there are eleven old noncomplex records in total.
+All nine scaffolds, both observers, every family ID/owner/method/base and the same V child are retained.
+Only three new ordinary p/q/w particles are added; the native UR view separately retains its authentic wildcard marker.
+
+Both complete forests have two proof nodes and check all five actual Γ components.
+Old memberships 20/21 become 23/24; all fresh-root counts 15/16 become 18/19.
+Exact H receipt counts are 19/17 before and 22/20 after, each with no unresolved construction obligations.
+Original R is Γ-only in both H nodes; A/B/D are also Γ-only in the T2-child node.
+T2 is the sole root-H NP duty, the child has none, and T1/U/V remain primitive where present.
+
+Omitting T2's child still yields missing-nested-evidence at T2.
+Selecting only q while retaining all roots rejects the genuinely observed U at cos-particle-extend.
+The three native cases qualify this supplied geometry; they do not prove the family guards for arbitrary inputs.
+
+### Evidence and remaining gates
+
+The statement is the accepted uniform-P submission 08d32a9d plus assessed-caller addendum 8dd59a03 and review 8030.
+The new test is free-ur-common-mixed-payload.test.ts, SHA256 790195e3c99d7f2a9cf86eb756dafd08f8446bd78c93be40d6aec415a25a71e6.
+Its fixture SHA256 is 3ea86ad48d91dbfc61b5a2cab7aef31619f8695476bbbeb36e48d13bd4c27067.
+Author qualification passed 69 distinct tests in seven files, RE01 strict, toolchain and diff checks.
+No reference-engine forest oracle, general SC extension or universal native materialization theorem is asserted.
+Family extraction, general coverage, input-derived counts, complete negatives, termination and dated correspondence remain open.
 
 ## Pure input and output contract
 

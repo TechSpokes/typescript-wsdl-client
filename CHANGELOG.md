@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): preserve nominal helper paths during complete payload reconstruction.
+
 - fix(particle): compare fixed element constraints through assessed declaration values.
 
 - test(re01): preserve complete contextual evidence while rebuilding unobserved helper contents jointly.

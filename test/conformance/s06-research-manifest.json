@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "106e635df7d98b264a5ddae5c773658754b19d6422e86b30b4145da227eb699f",
+          "sha256": "4c0f72c5c349eef2df561a14c66f14d6863a8ad2a0f72220ca7f861dc89a1fb3",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2642,6 +2642,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/mixed-fixed-particle-independent.xsd",
           "role": "fixture",
           "sha256": "03972088e96ac41fabe7d68f795c3c881eb75c2347c0ae722cd3a28e9061a727"
+        },
+        {
+          "path": "test/research/re01/free-ur-common-mixed-payload.test.ts",
+          "role": "prototype",
+          "sha256": "790195e3c99d7f2a9cf86eb756dafd08f8446bd78c93be40d6aec415a25a71e6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-ur-common-mixed-payload.xsd",
+          "role": "fixture",
+          "sha256": "3ea86ad48d91dbfc61b5a2cab7aef31619f8695476bbbeb36e48d13bd4c27067"
         }
       ]
     },
