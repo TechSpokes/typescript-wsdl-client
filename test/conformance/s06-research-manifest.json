@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "41dd6d0885262982168b7c2a894e6b7de4e260ce3abb06acdee1ee1e5845d7fe",
+          "sha256": "e2d7e6a46e08226efe926791ae2a893c16522889990adc7cc1b66b5d2b7164ad",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1116,7 +1116,7 @@
         {
           "path": "src/compiler/particleSemanticView.ts",
           "role": "semantic-source",
-          "sha256": "cbb475245398cc4b119c349c37e3046d4f7a608fdaa9235d621f551f0f2c089c"
+          "sha256": "c25c2c128acc245c21daf853126791a2d02c39097dedef6292e7ec545bb5e266"
         },
         {
           "path": "src/compiler/particleWildcardRelation.ts",
@@ -1421,7 +1421,7 @@
         {
           "path": "test/unit/particle-restriction-independent.test.ts",
           "role": "expectations",
-          "sha256": "787aa1b0fbfad5d24084b3bc5aa7f960afdea1b86fb1cc6ca8ca173c43d51017"
+          "sha256": "69a5e11cc12f579c873f16854b1cb2e927e60a4e4f6e631884f20173c2f52da1"
         },
         {
           "path": "test/unit/particle-upa-independent.test.ts",
@@ -2542,6 +2542,36 @@
           "path": "test/conformance/fixtures/xsd/recovery/original-particle-suppressed-child-independent.xsd",
           "role": "fixture",
           "sha256": "e5e0192488a20d729990bf2f65ddbe2d27370ddc67d1acd10aaf03e3aa6ec85a"
+        },
+        {
+          "path": "test/research/re01/one-entry-chain-erasure.test.ts",
+          "role": "prototype",
+          "sha256": "a56989696b8dece9ced8f367b9f402a791e28dd52c33abc647ccb9195bfd9056"
+        },
+        {
+          "path": "test/research/re01/coherent-order-key-retraction.test.ts",
+          "role": "prototype",
+          "sha256": "1095cd372340ca129e0cfa92f2d4208242c3db19f7fed1fb7d2a00ed99d79d28"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/one-entry-chain-erasure.xsd",
+          "role": "fixture",
+          "sha256": "e929e1a0450ca9b4168401d41e6cb56dd6d3b86ecdcb01f5ad5698f0709bfb28"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/coherent-order-key-retraction.xsd",
+          "role": "fixture",
+          "sha256": "2d075f5bf7a7800979f55c01256371ffd60f6db9e8ec674a0d3c28d5f6472d5e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/pointless-optional-choice.xsd",
+          "role": "fixture",
+          "sha256": "985cbf0b47f93d59a4d160911e184104fb4b6f8ec68f925ac8f403a45f12912b"
+        },
+        {
+          "path": "test/conformance/reference/re01-local-normalization-and-folding.test.ts",
+          "role": "reference",
+          "sha256": "1c861e245ad4f8f6d85a7ea40138039956b2b652bed12c20ecc2a82ea067b564"
         }
       ]
     },

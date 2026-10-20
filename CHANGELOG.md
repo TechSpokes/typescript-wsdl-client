@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): remove newly empty optional comparison groups and qualify guarded helper reconstruction and numeric bounds.
+
 - fix(re01): preserve original particle identities in raw candidates and qualify fresh-target final-record selection.
 
 - test(re01): verify first-birth helper reconstruction and joint original-type anchoring with complete contextual roots.

@@ -30,6 +30,9 @@ The [first-birth reconstruction](#first-birth-restriction-reconstruction-of-comm
 Its same-input alternative distinguishes failure of a chosen transformation from failure of existential construction.
 The [original-particle continuation](#original-effective-particle-handles-and-fresh-target-selection) preserves authentic source particle identities in raw candidates and establishes a conditional fresh-target final-record selection theorem.
 Its remaining bound is local to a finite parent, rather than an assumed bound on all future contexts.
+The [scoped reconstruction continuation](#scoped-size-bounds-and-coherent-order-reconstruction) proves single-entry support erasure and fixed-tail numeric bounds while preserving a coherent-order counterexample to a broader copy fold.
+The [comparison normalization repair](#pointless-comparison-groups-after-flattening) also removes an optional group that becomes empty during flattening.
+These results leave the complete success-preserving local bound and general decision gates open.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -4375,6 +4378,150 @@ Encoded bounds must also cover literal magnitudes, namespaces, facet expressions
 Two failed shortcuts remain explicit: independently valid passive member pools need not have a valid union because choice matching has finite injective capacity, and replacing a property-equal fresh scalar by an original union member can change blocked substitution membership through identity.
 Neither failure proves general nonexistence or prevents another complete reconstruction.
 General coverage, executable evidence adequacy, complete negatives, mathematical termination and dated-semantic correspondence remain open, with all seven accepted packages, B-v1, P1/F2 and downstream gates preserved.
+
+#### Scoped size bounds and coherent-order reconstruction
+
+This continuation starts from main `a46140eedd8cbcce26d98575ad5471ffb0753397`, tree `f61cfb8878b2927e4c92ae4a7e82f0b3867c57c2`.
+Its semantic results use the selected founded relation, complete current-H/immutable-Γ frontier and history-erasure conditions above.
+Each transformation rebuilds and checks contexts; no receipt changes its owner context.
+Neither a fixed-template satisfiability result nor a successful supplied forest proves the missing local bound b.
+
+##### One-entry support erasure
+
+Fix a complete successful finite forest over P and a Γ-fresh nonprimitive U.
+Let O contain only Γ-fresh P components, and construct a reference-closed P′ by omitting O and changing only U's canonical/raw immediate-base selectors.
+The only retained references into O must be those two selectors.
+The audit includes scoped owners, raw/property references, source handles and scalar bindings, not only nominal base/type edges.
+
+Require P′'s initial construction to be independently qualified, U's complete non-derivation/source interface to remain exact, the same designated ancestor A, and an admissible directly materializable old intermediate E over P′.
+This theorem does not construct P′ or derive those premises from method/block masks.
+
+Take the old U child, which replaces U by restriction to E and therefore overwrites the only changed retained edge.
+Descend through required nonprimitive targets absent from P′ until none remains.
+These targets include omitted inherited O as well as later additions; all are Γ-fresh mandatory roots.
+Finite founded proof height strictly decreases, while retained P′ records are never selected for replacement.
+
+Introduce every absent component of the terminal context directly over P′ with its final record.
+All retained records now agree exactly except for U's required replacement, so the new child has the old terminal canonical/raw graph and membership.
+Reauthenticate original operands, recheck correspondence and replay the remaining finite subforest with new receipts.
+Every reintroduced fresh component remains a complete root, and separate Γ duties remain required.
+Thus U has a successful own construction over P′.
+
+Whole-parent assembly additionally requires U to be its sole initial generated nonprimitive duty, or separate complete P′ constructions for every other initial duty.
+A proof starting below U does not prove a different V at the initial P′.
+The [complete control](../test/research/re01/one-entry-chain-erasure.test.ts) compares five-node and two-node forests, including an observer born before or after an omitted type's retirement.
+It checks exact terminal maps, unchanged parent/U content, all inherited roots and nonprimitive counts two to one to zero.
+This selection can postpone omitted support until its final birth; it does not bound that later support's size.
+
+##### Coherent-order keys obstruct a broader copy fold
+
+The proposed universal retraction of root-born copies of untouched anonymous original complex types is false even for primitive copies with exact named bases, value-free content and independently consumed original closure.
+Property equality and a particle-tree alignment do not preserve sharing of the `(particle,head)` implicit-order variables used by one restriction query.
+
+In the [complete countercontrol](../test/research/re01/coherent-order-key-retraction.test.ts), original q and copied t are primitive and property-equal.
+A fresh restriction consumer W uses t, while a separate original particle also occurs in W's content.
+The old query has independent copied and original keys and can order them oppositely.
+Selecting q's original content during the specified fold merges those keys: one query now requires both orders of the same key and fails rule 5.4.
+All copied scaffolds and their owners remain mandatory, so this is not an omission or ownership failure.
+
+A further first-birth repair of W uses an existing copied particle and succeeds for the same Γ, preserving its components and complete roots.
+The failed transformation is not a Γ-wide negative or evidence-inadequacy result.
+In particular, independently meaningful original particle identity cannot be merged merely because its fields compare equal.
+
+Starting from a complete successful finite forest, a narrower conditional copy congruence remains available when every changed complete content root is substitution-free after group expansion, the finite graph cover preserves repeated sharing, and all other source/scalar/owner guards hold.
+Such roots contain only scoped local element leaves and wildcards, so they contain no implicit-order key that the replacement could merge.
+The selected copies are scoped components first-born in this candidate, and their targets are untouched anonymous Γ originals.
+Each copy/target pair agrees on method, exact base, target namespace, content variety and abstract/final/block properties; the complete raw graph cover aligns ordered incidences, ranges, wildcard fields, typed slots, attribute uses and compatible scope-owner chains.
+Complex slots fold coherently to their aligned original selectors, while every other type selector remains the same exact original or builtin identity.
+Original anonymous targets must be restriction or qualified primitive complex extensions, with an exact original named complex type or builtin anyType as immediate base and persistent independent full contextual support.
+That support comes from genuine consumed source closure, not a property-only scope read.
+All P/Γ non-derivation fields remain protected, and each affected fresh type's content recipe is selected once at birth and frozen in descendants.
+Scalar selectors remain exact; copied values, identity constraints, simple/mixed content and unavailable original private subroots are excluded from this lemma.
+Birth-frozen content recipes repair lost raw extension identity, and every old copied scaffold remains a full root.
+The statement is a guarded congruence, not a general elimination algorithm or helper-count bound.
+
+##### Exact fixed-prefix and root-range UPA bounds
+
+Use the accepted nontrimmed reachable-prefix attribution semantics, with a fixed context/census and distinct incidence tags.
+For unit concatenation P;S, let Exit(P) mean that some P run completes.
+Let Bdry(P) collect labels enabled in a reachable P configuration set that also permits P exit after the same input prefix.
+Let First(S) be the labels enabled in S's initial epsilon closure.
+
+If P cannot exit, S is unreachable and concatenation UPA equals P's UPA.
+Otherwise concatenation UPA is equivalent to P and S being UPA and `Bdry(P) ∩ First(S)` being empty.
+For sufficiency, choose the earliest differing tags of two conflicting runs.
+A conflict inside either factor contradicts its UPA; different entry offsets into S first produce a P/S boundary conflict.
+This argument retains dead branches and does not require a completing word.
+
+For a standalone fixed body G, its root minimum gates only final exit and cannot enable another consuming transition.
+Its intrinsic UPA is therefore independent of that minimum and downward monotone in its positive root maximum.
+The same conclusion applies to the final S of the stated unit concatenation, with its separate fixed-prefix boundary test.
+It does not justify changing an inner occurrence range with a consuming continuation.
+
+There is an effective finite maximum threshold for this fixed body.
+Construct G with root range `0..unbounded` and let M bound its individual control/counter configurations, retaining inactive values and saturating each unbounded counter at its fixed minimum.
+In the product of two configurations, allow epsilon steps in either run and paired consuming steps with an overlapping label.
+A reachable pair with differently tagged overlapping next transitions is exactly a UPA conflict.
+A simple path has at most `M*M-1` edges, so root maximum `K=M*M+1` admits its completed iterations and conflicting next transitions.
+
+Thus either the unbounded root is conflict-free for every legal positive maximum, or some first bad finite maximum occurs among `1..K`.
+Testing those finite cases yields the exact intrinsic threshold; test minimum zero and then use minimum independence only for legal intervals.
+This is a mathematical finite-state bound, not permission to ignore shared engineering limits or interpret resource exhaustion as a negative.
+
+For a supplied finite template library with one variable first-born S root interval, fixed internal ranges/census/source data and the stated isolated UPA placements, restriction normalization and mappings have finitely many structural cases.
+Their arithmetic uses only addition and constant multiplication, including MapAndSum's fixed member count; zero, unit, infinity, all-placement and formal-emptiability cases remain explicit.
+Classical Presburger decision followed by model enumeration gives a total numeric/digit bound for this supplied sector.
+An inherited S retains its exact parent interval instead of being resynthesized.
+The finite library and any forest shape are extra inputs: successful model-specific frontier coverage remains a separate premise, so this is not b(Γ,P,target).
+
+The inspected [Groz–Maneth primary algorithm](https://www.pure.ed.ac.uk/ws/portalfiles/portal/32885322/jcss2017_3.pdf), section 3.4, also supports exact positive count shrinking for its productive marked-expression syntax.
+Its ordinary First/Last/flexibility argument does not automatically cover the accepted owner's noncompleting prefixes.
+Duplicated-prefix encodings require aliases, and filtering structural bad pairs by those aliases is unsound: `(a1 b)+(a2 c)` can alias a1/a2 while distinct b/c tags still conflict after input a.
+General inner-count shrinking under productive repeated ancestors therefore remains open.
+
+##### Small private tails against a fixed wildcard
+
+For a fixed qualified prefix P and a direct wildcard target W, assume only a private first-born suffix S is free and no other property consumer constrains it.
+If some unit P;S restricts W, put `L=max(0,W.min-P.ETR.min)`.
+When L is zero, choose a required empty choice as S.
+Otherwise choose a unit sequence of a required empty choice followed by an exact-L wildcard copying W's namespace/process properties.
+
+Its formal effective total range is L, its live First set is empty, and it contributes no element declaration or EDC QName.
+The old success supplies the upper-range and recursive wildcard-cap premises; exact namespace/process copies satisfy their respective checks.
+This gives at most three new tail particles and input-bounded occurrence digits for this direct-W sector, with no new nonprimitive type.
+W must have an available qualified lexical descriptor; an abstract empty namespace set is not silently encoded as another wildcard.
+
+For one mapped wildcard slot below a parent, a stable opposite-kind carrier can preserve its single normalized position: a sequence parent uses a two-branch choice of dead sequences, while a choice parent uses a dead sequence.
+This keeps the required formal range and avoids same-kind flattening; it is different from exploiting an optional group that ought to disappear.
+The body bound retains the complete supplied global/affiliation census and does not bound unrelated owner scaffolds.
+It is still a local reconstruction; simultaneous raw/property consumers and successful future obligations need their own proof.
+
+##### Remaining complete bound
+
+The established sectors do not compose into a general finite basis without further proof.
+The local bound must cover shared nominal cuts with multiple retained endpoints, global-containing copied templates and their coherent-order partitions, scoped owners, exact scalar/source observations and faithful executable geometry.
+Changing membership can be legal; preservation is required only for facts actually transferred or installed by the chosen transformation.
+Every required judgment still belongs to its exact current-H or immutable-Γ context, with all inherited fresh roots checked.
+
+Ordinary annotations and diagnostic source fields on unanchored first-born components can be normalized under their explicit observation guards, but lexical namespace maps cannot be trimmed to prefixes occurring in one token.
+An unused binding may be the only spelling admitted by an anchored QName pattern.
+NOTATION formation can also require a fresh active notation recipe; a nominal-only use does not by itself waive value/facet qualification.
+These payload observations do not supply unrestricted scalar or encoded-size bounds.
+
+General construction coverage, executable evidence adequacy, complete negatives, mathematical termination and dated correspondence remain open.
+No bounded experiment, rejected fold, supplied-sector UNSAT or measured allowance changes that disposition.
+
+#### Pointless comparison groups after flattening
+
+The dated Structures rule 2.2 ignores a unit choice nested directly in a choice, and separately ignores an empty choice with minimum zero.
+For `choice0..1(choice1..1(),choice1..1())`, removing both inner wrappers therefore leaves a removable optional empty choice.
+The prior restriction-view builder tested empty children before flattening but failed to repeat that condition afterwards.
+It retained this optional choice while an authentic literal copy of the emitted shape normalized to an empty unit sequence in the same H, producing different restriction answers.
+
+The existing particle-view owner now repeats its existing removable-empty predicate after flattening, before singleton collapse.
+Required empty choices remain intact; canonical/raw records and the declared view are unchanged.
+Direct absent or zero-maximum component admission remains a separate construction check.
+This is a narrow correction under the existing dated comparison contract, not a general confluence/fixed-point theorem or a change to scalar P1/F2.
 
 #### External methods and applicability
 

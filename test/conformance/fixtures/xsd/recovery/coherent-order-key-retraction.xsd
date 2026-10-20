@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:review:copy-order-key-collision" targetNamespace="urn:review:copy-order-key-collision" elementFormDefault="qualified">
+  <xs:element name="H" type="xs:string"/><xs:element name="M" type="xs:string" substitutionGroup="t:H"/>
+  <xs:complexType name="P"><xs:sequence><xs:element ref="t:H"/></xs:sequence></xs:complexType>
+  <xs:group name="G"><xs:sequence><xs:element name="outer" minOccurs="0"><xs:complexType>
+    <xs:complexContent><xs:extension base="t:P"><xs:choice><xs:element name="M" type="xs:string"/><xs:element name="H" type="xs:string"/></xs:choice></xs:extension></xs:complexContent>
+  </xs:complexType></xs:element></xs:sequence></xs:group>
+  <xs:complexType name="A"><xs:group ref="t:G"/></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:B"/></xs:complexContent></xs:complexType>
+</xs:schema>
