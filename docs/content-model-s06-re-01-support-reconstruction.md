@@ -4253,6 +4253,30 @@ A valid B-v1 continuation must exploit its actual input and birth discipline or 
 Born fresh guards are mandatory once present, but that does not force their birth or protect an old program's chosen aliases.
 No all-candidate input host forcing this arithmetic portfolio, and no complete elimination of its possible interior counterparts, is proved here.
 
+### A future-only middle requirement and the first-demand gap
+
+The [allocation control](../test/research/re01/future-middle-allocation.test.ts) refutes using only positive pre-cut TYPE comparisons to inventory required middles.
+Its authentic input has empty A, distinct primitive Phi and K extending A, U extending Phi, global h:A blocking restriction, m:U affiliated with h, and global t:K.
+Write D for required empty CHOICE[2..2], and C for CHOICE[2..2] of local h:A, local m:U and D.
+The source BODY is SEQ[D,h[2..2],local t:U[0..1]]; the target is SEQ[D,C,ANY[0..2],global t:K[0..1]].
+D makes the overlapping later wildcard positions unreachable for UPA; EDC and all component duties still apply.
+
+Before U retires, h expands to h/m: its CHOICE maps to C and local t maps to ANY, while R-only NTO(U,K) is false.
+After U retires, m is excluded by h's restriction block.
+Without further affiliates, h is ELEMENT[2..2], whose outer unit coercion cannot match C[2..2].
+Further affiliates have new QNames that cannot match C's h/m alternatives or its required empty choice; h must therefore use ANY, leaving local t to match global t:K.
+That comparison forces the selected primitive middle to be exact existing K; adding affiliates to t supplies no alternative declaration with the same QName.
+
+An unrelated X construction first births fresh S/B readers using authentic input WHOLE handles, making both immutable required FULL roots at U's child.
+The control supplies complete three-node evidence, including separate actual-U and parent-specific U proofs; choosing K passes, while choosing Phi fails the retained S reader.
+This is a fixed-parent obstruction to that Phi choice under arbitrary permitted additions, not a claim that every X construction must birth those readers.
+Its K and source recipes are finite input ports; no unbounded fresh-middle obstruction follows.
+
+The surviving proof obligation is first-demand reconstruction: every founded successful forest must admit some rebuilt success whose future-only middle demands are charged to input-derived ports or lawfully replaced at genuine first birth.
+When K is first born later, installing its old recipe earlier is not a producer: its BODY, support, all coupled TYPE/value/IC/SOURCE clients, current FULL and required children must be established there.
+The cover must bound necessary encoded instances, multiplicity and evidence, or support an independently terminating criterion; finitely many profiles alone do not suffice.
+This implication remains neither proved nor refuted, so no complete implementation, negative-answer branch or termination claim is justified by this investigation.
+
 ## Initial-payload code catalogues and a bounded exposed-owner subfamily
 
 Fix complete pre-event input P, an existing selected endpoint T in P and its boundary A in P.

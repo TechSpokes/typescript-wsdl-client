@@ -4,6 +4,8 @@ Formal component witnesses, a finite particle construction and the remaining ful
 
 ## Delivery status and scope
 
+The [future-only middle control and first-demand gap](content-model-s06-re-01-support-reconstruction.md#a-future-only-middle-requirement-and-the-first-demand-gap) show why a pre-cut comparison inventory is insufficient and identify the remaining joint producer obligation.
+
 The [architecture recovery](https://github.com/TechSpokes/typescript-wsdl-client/issues/232) stages shared internal semantic owners before universal RE01 closure.
 The [domain and proof checkpoint](#architecture-recovery-domain-and-proof-checkpoint) below distinguishes executable local work from the remaining interpretation and completeness obligations.
 The [full-domain viability gate](content-model-s06-re-01-support-reconstruction.md#full-domain-viability-gate) identifies the missing input-bounded joint producer interface and withholds a general implementation until that theorem or an equivalent total criterion is established.

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): preserve a complete future-only middle allocation control and state the remaining first-demand proof gap.
+
 - fix(re01): recognize fixed-value reflexivity for one authentic declaration while retaining complete scalar validity checks.
 
 - test(re01): qualify native joint arithmetic constraints and distinguish the fixed-input reconstruction problem.
