@@ -6,6 +6,7 @@ Formal component witnesses, a finite particle construction and the remaining ful
 
 The [architecture recovery](https://github.com/TechSpokes/typescript-wsdl-client/issues/232) stages shared internal semantic owners before universal RE01 closure.
 The [domain and proof checkpoint](#architecture-recovery-domain-and-proof-checkpoint) below distinguishes executable local work from the remaining interpretation and completeness obligations.
+The [full-domain viability gate](content-model-s06-re-01-support-reconstruction.md#full-domain-viability-gate) identifies the missing input-bounded joint producer interface and withholds a general implementation until that theorem or an equivalent total criterion is established.
 
 The [finite flat-prefix criterion](#any-nonempty-finite-flat-prefix-of-optional-local-elements) generalizes the sufficient inherited-consumer obstruction, and the [copied-prefix continuation](#copied-prefix-transport-and-optional-prefix-bypass) separates failed comparison transport from successful alternative witnesses.
 The [renewing-helper investigation](#renewing-helper-duties-and-the-finite-evidence-boundary) establishes a locally productive family with no finite certificate under the existing direct-only primitive rules, without identifying local productivity with independent semantic success.

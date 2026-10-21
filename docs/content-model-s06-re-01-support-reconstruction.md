@@ -4,6 +4,8 @@ Conditional complete-forest reductions and the remaining joint support bound. Se
 
 ## Status and connection to the decision proof
 
+The [full-domain viability gate](#full-domain-viability-gate) identifies the unproved input-bounded interface needed before the conditional bounds below can support a complete procedure.
+
 This record continues the [RE01 proof](content-model-s06-re-01.md) from verified main `760bcc00987e694b3da14b579126dbd98e4278f6`, tree `4b28398b4f01e736692a5c5d46d092498c2a1867`.
 The [resolver contract](content-model-s06-re-01-resolver.md) and [implementation authorities](content-model-s06-re-01-resolver-implementation.md) remain unchanged.
 It records independently scrutinized conditional support reductions and complete native controls.
@@ -4162,6 +4164,32 @@ The open joins are the literal-field realization, dynamic HEAD/member lifecycle,
 Before-birth omission needs complete closure; no inherited stored mandatory support disappears merely because a use was removed.
 General coverage, semantic/native/evidence adequacy, complete source/F2 and actual-root duties, complete negatives, mathematical termination and dated correspondence remain open.
 These mathematical constructors are not newly executed native controls, an activated solver or a general SOME/NO procedure.
+
+## Full-domain viability gate
+
+The scope, naming, roster and count reductions do not establish coverage of the full accepted B-v1 domain.
+For authentic Gamma, complete pre-event P and target T, a complete procedure still needs an input-computable bound on some successful encoded construction and its founded child evidence, or an equivalent total criterion.
+The current cohort, future selected middles and an old successful forest are output or extraction premises, not additional input constants.
+
+The first missing implication is that every founded success admits an input-bounded, jointly reconstructible observer and producer interface.
+The [literal catalogue](#initial-payload-code-catalogues-and-a-bounded-exposed-owner-subfamily) bounds code relative to a complete supplied interface I; its exposed-owner count also assumes input-bounded initial FIELD positions J.
+Using an old witness interface I(W) to obtain code bounds and then using those bounds to justify I or J is circular.
+
+A retained unsealed borrower can require direct EXT(X,G), RP(G,Phi) and RP(X,K), together with FIELD, first-birth, current FULL and descendant duties.
+Fresh G and X and adaptive child-middle K do not become fixed input portfolios merely because they have finitely many syntactic role names.
+Input-bounded first PROPERTY entrances do not bound the fresh BODY and peer constraints reached after those entrances.
+
+A genuine NEW WHOLE child may supply new support without retaining the old frontier or the old child choice.
+For the particle-bearing NONSC case, its direct [raw extension gate](../src/compiler/particleExtension.ts) still requires original-particle identity or genuine unit-SEQUENCE base-first matching against A, including actual declaration PROPERTY comparisons.
+The old EXT(X,G) and RP(G,Phi) calls do not establish that direct gate; covered common-payload recooks separately require their real boundary and first-birth interfaces.
+
+The missing theorem is joint middle/borrower interpolation: successful systems behind finitely many input or current-event ports admit bounded actual BODY, HEAD and FIELD producers satisfying all required direct comparisons, births and newly generated frontiers.
+Reconstruction may omit removable fresh-only queries, choose different children and issue genuinely new support.
+No result here proves or refutes this interpolation theorem.
+
+Do not use further closed-family count bounds to justify a general implementation before this interface theorem, or a justified alternative total criterion, is established.
+General coverage, authentic executable and evidence adequacy, complete encoded bounds, complete negatives and mathematical termination remain open; independent dated-XSD correspondence remains a separate gate.
+The finite checker still checks supplied constructions and evidence, and this route decision proves neither semantic nonexistence nor native undecidability.
 
 ## Initial-payload code catalogues and a bounded exposed-owner subfamily
 
