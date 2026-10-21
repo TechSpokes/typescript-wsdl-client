@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "9138d8c31c51ba6f664a3567ea5643e884011e12dc47b0e1fd8f852fb75596be",
+          "sha256": "a36db26254f7138ccf46849211ab28dc16c099bd8a66401092fe27648c993955",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "65deb273e087840ec66c84966eadd36f11b33ebccb19a7e926a4ab5e11855125"
+          "sha256": "dfe721b18f09aa3afedb40545fb8a2d45815ad1d95e6bb07912fc897a41e85e4"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2691,7 +2691,7 @@
         {
           "path": "test/research/re01/abstract-particle-wildcard-properties.test.ts",
           "role": "prototype",
-          "sha256": "e1a8dae11a1eea5a43f58bd81aea30f0c74093cb4d8262d5c76bf1c3fb441d6c"
+          "sha256": "4ca765f10db154fe3e661bc4bfa5458d3658c30f92f6e83db139dc606d8f1daf"
         },
         {
           "path": "test/conformance/reference/re01-abstract-particle-wildcard-properties.test.ts",
@@ -2852,6 +2852,11 @@
           "path": "test/conformance/fixtures/xsd/recovery/source-group-self-prefix.xsd",
           "role": "fixture",
           "sha256": "538a0e1f7f1067ade06b93a27c9a16f033451a807b5088908d5b6a5dc0e71bb2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/pure-any-dead-source-cell.xsd",
+          "role": "fixture",
+          "sha256": "b9577bd11ac0302e1bce6ada711b10bf7ae7ee03e46e0e610b8e64e1385cc50d"
         }
       ]
     },

@@ -3769,3 +3769,139 @@ The reduced open problem is therefore the joint solution of `EXT(X_w,Y_w)` and d
 Input-indexed binder forms do not yet prove that one physical binder per form suffices.
 The new arguments are source-reviewed scoped constructions and obstructions, not newly executed native controls or a general search algorithm.
 General coverage, semantic/native/evidence adequacy, complete input-derived bounds/negatives, mathematical termination and dated correspondence remain open.
+
+## Input-sized particle compilers and private FIELD entries
+
+These results retain the preceding ordinary all-complex NONSC, value/IC-free, empty-AU/no-AW frame and actual source, owner, alias and first-birth guards.
+They bound or simplify ordinary particle geometry while leaving exact TYPE/SCOPE fields, dynamic GLOBAL orbits and complete evidence separate.
+All judgments are rebuilt in their own actual H, including every inherited fresh FULL root; no receipt is transferred between contexts.
+
+### A consumed declared prefix has input-bounded geometry
+
+Suppose an ordinary declared prefix P_A has a positive real PROPERTY comparison with its actual fixed boundary A, and its complete consumed FULL prerequisites hold.
+The backing is A's fixed actual authentic compositor incidence; identity shortcuts retain its physical closure or a qualified generated shape/sharing reconstruction.
+Unfold A's finite ordinary particle/GROUP containment, stopping at ELEMENT and ANY leaves, and let U_A count those positions.
+Synchronous declared PROPERTY fixes compositor kinds, direct children and occurrences, so P_A has at most U_A visible unfolded positions.
+One GROUP use can hide only its GROUP and unit definition-root wrapper at such a position; its physical particle/GROUP closure therefore has at most 3U_A components.
+
+This is a bound on ordinary containment, not on declaration TYPE, semantic SCOPE, source syntax, owners, retained support or physical copies.
+PROPERTY alone would permit arbitrarily many semantically suppressed zero-maximum children.
+Actual consumed FULL rejects admitted ordinary particles with maximum zero and follows their real children, so that padding is unavailable here.
+Original no-component diagnostic SOURCE syntax remains fixed input syntax rather than a new admitted particle.
+WHOLE authority alone never issues a proper child of that backing.
+
+### Three writable primitive target skeletons
+
+Let K E A be a primitive whose complete ordinary BODY is writable at its lawful first issue.
+Its exact identity, BASE, method, flags, content variety and every protected reader remain fixed or are genuinely compiled in the same plan.
+An immutable existing K BODY cannot be overwritten through this lemma.
+
+Supply all incoming positive restriction-source recipes in every required descendant, with their declared geometries drawn from a fixed finite input-template family.
+Their number of actual instances may be unbounded.
+Let U be the maximum unfolded particle/GROUP size and L=max(1,U), counting a HEAD as one declared position before virtual expansion.
+GLOBAL expansion creates CHOICE, never additional SEQUENCE positions, so each actual normalized SEQUENCE source has direct arity at most L.
+
+Retain the real first extension prefix P_A, all its fields, its complete normalized prefix block and its actual direct P_A/A proof.
+Every selected prefix match, whole/proper alias, exact stop, SOURCE handle, external BODY reader and TYPE/FULL predicate must be retained or jointly reissued.
+A PROPERTY-equal independent prefix does not supply that interface.
+
+There are three physical normalization modes, fixed at issue rather than chosen separately per H:
+
+- WHOLE or erased tail keeps WHOLE A or uses SEQ1[P_A, empty unit SEQUENCE].
+- Erased P_A uses SEQ1[P_A, ordinary ANY ##any/skip0..unbounded], normalizing to that ANY.
+- Surviving prefix and tail use SEQ1[P_A, P0, W_1, ..., W_L], with required empty CHOICE P0 at1..1.
+
+Each W_j is a genuine ordinary ANY ##any/skip0..unbounded.
+P0 is formal-range zero and has no realization; its occurrence is required, not optional.
+The literal EMPTY-A branch uses its genuine higher-level empty-base extension constructor and keeps the chosen content variety explicit.
+
+In the surviving mode, replay each old source match into the unchanged normalized prefix block.
+Map each remaining source child in order to a distinct W_j; there are at most L, and the native universal PW predicates hold directly.
+The old root dispatch must already be ELEMENT-to-SEQUENCE coercion or SEQUENCE, including a genuine shared-root structural diagonal when needed.
+Root ANY, CHOICE and ALL are not silently coerced to this mode.
+
+Skip P0 and unused W_j by formal emptiability and retain the old root occurrence check.
+Literal EMPTY source content instead uses clause5.3 and the retained zero prefix minimum where required.
+The other two modes keep the old restriction root or use the directly universal ANY relation.
+This proves each actual RP query directly, without transitivity.
+
+Restrict each old ROOT-call order to retained source/prefix keys; new guards and wildcards create no implicit GLOBAL keys.
+P0 blocks access to the new wildcard suffix, preserving UPA; no new ELEMENT declaration is added for EDC.
+The complete own K extension proof still uses real P_A/A fields, not just rendered shape.
+Under the consumed-prefix qualification, target particle/GROUP closure is at most 3U_A+L+2 in the largest mode.
+
+Old tail support can be omitted only through complete closed omission before birth.
+This geometry theorem does not bound recursive field support, dynamic census, independently mandatory roots or extra incoming sources lacking an input-derived geometry charge.
+The exact fixed-K and foreign WHOLE/ALL nominal counterexamples remain genuine coupled field constraints.
+
+### A derived cell read only against ordinary ANY targets
+
+A separate inverse operation handles one genuinely private writable normalized source cell whose complete incoming RP readers are ordinary ANY targets, directly or through proposed2232 ancestor checks.
+Private copy diagonals must be co-rewritten; no retained fixed PROPERTY, rawEXT, target-side RP, exact count, SOURCE, owner or nominal reader is waived.
+The actual normalized cell, GROUP-definition wrapper, ALL placement and aliases must admit the genuine constructor.
+
+Let r be the old cell's formal minimum.
+For r=0 use a required empty CHOICE at2..2, whose formal range is0..0 and which has neither labels nor epsilon.
+Its nonunit occurrence prevents flattening into a parent CHOICE; its kind differs from a parent SEQUENCE.
+For r>0 use genuine ordinary RAW ANY with abstract empty namespace set, strict processing and occurrence r..r, under the existing abstract-property issuer contract.
+Neither recipe uses a private SOURCE child selector or an invented lexical wildcard spelling.
+
+Each replacement preserves formal minimum, decreases formal maximum and deletes labels without introducing epsilon.
+Those facts directly preserve the selected ancestor PW gates, while unchanged surrounding formal minima stay exact and maxima decrease.
+The zero case is legal because grouped PW uses effective total range zero, separately from the group's own2..2 occurrence.
+Actual local legality, dependency closure and complete enclosing FULL duties remain distinct checks.
+
+An optional empty-namespace ANY0..1 is not an interchangeable zero recipe.
+It introduces epsilon when the old zero-minimum cell was dead but nonnullable, potentially exposing two later same-name positions and failing UPA.
+The maintained control must distinguish that failure from the individually positive cell-to-ANY predicates and local formation checks.
+This result does not erase independently mandatory old TYPE support or provide input-derived numeric bounds without their separate fixed-threshold premises.
+
+The [maintained wildcard controls](../test/research/re01/abstract-particle-wildcard-properties.test.ts) use the authentic [required-empty-choice D fixture](../test/conformance/fixtures/xsd/recovery/pure-any-dead-source-cell.xsd).
+OLD uses its own fresh required empty CHOICE followed by an optional wildcard, while SAFE uses the required2..2 empty CHOICE.
+Both admit complete one-node D-to-primitive forests with independent actual-Gamma assessment and every fresh root checked.
+UNSAFE uses an abstract empty-namespace ANY0..1: its local cell/dependency closure, direct ordinary-ANY restriction and EDC pass, while its actual parent and aggregate forest fail cos-nonambig.
+The three earlier abstract-wildcard controls remain unchanged; the new controls check this exact epsilon distinction, not general input coverage.
+
+```bash
+npx vitest run test/research/re01/abstract-particle-wildcard-properties.test.ts
+```
+
+### Erase private FIELD entries by actual endpoint, not spelling
+
+The preceding private-name operation extends to a complete first-birth LOCAL-use orbit even when its old spelling coincides with an input QName.
+Eligibility depends on actual readers: no unchanged fixed declaration/PROPERTY endpoint, selected literal or real-GLOBAL RP endpoint, protected source/identity/owner client or untransported future/stored use may touch the orbit.
+All positive private LOCAL declaration pairs, whole/proper aliases and eligible uses are changed coherently.
+
+For a genuinely finite namespace-test library, issue actual abstract SG-none GLOBAL STRING helpers for inhabited cells, reserving names against the complete retained/future plan.
+That library is input-bounded only if it is fixed input or separately normalized; a finite old library gives only a finite witness operation.
+Install them no later than each changed declaration's real first birth; incomparable first births may need separate actual identities.
+Retain particle geometry, intervals and keys, and redirect eligible declarations to the same real helper on both ends of each positive pair.
+Their GLOBAL identity closes before TYPE/SCOPE; ELEMENT-to-ANY keeps its namespace/range predicates.
+
+Abstract helpers delete consuming labels, preserve UPA and remain raw ELEMENTs without affiliates.
+Fresh names and genuinely named builtin STRING preserve EDC.
+Thus a wholly private recursive TYPE/SCOPE entry need not be reproduced solely because its old identity graph recurred.
+An independently retained mandatory SCC or support root still requires its own evidence; only a completely closed cone omitted before birth disappears.
+
+Fixed nominal/property endpoints, real GLOBAL lifecycle joins, exact BODY aliases and authentic SOURCE/owner ports remain explicit.
+The result supplies no bound on their number, physical births or recursive realization and does not justify merging distinct exact stops with equal PROPERTY recipes.
+
+### Foundation and complete decision gates
+
+All preceding whole-forest reconstructions start from an actually founded finite successful forest.
+For the selected Q_f route, the accepted fresh-target no-new-NP selector likewise starts from membership in mu R and a finite derivation.
+It cannot first prove that independent dated success has such a derivation.
+
+An independently hereditary selector for a relation S would suffice: original-target steps may add finitely many NP rows, while fresh-target steps add no newly stored NP identity.
+Each selected candidate must be genuinely finite with its actual local premises and complete generated frontier still in S.
+Then omega*q+n decreases, with q counting all unretired original E identities and n the complete stored fresh NP population, including lawfully inactive/reactivatable rows.
+Counting such rows grants neither current availability nor FULL; Gamma-owned backsupport and primitive blocks keep their separate assessment discipline.
+This conditional rank gives a finite logical generated tree, not an input-derived encoded bound.
+
+Alternatively, one finite NP identity reserve for a complete productive strategy gives descent by its not-yet-retired identities, crediting absent identities before birth.
+The stronger premise that every full-N postfixed support has such a reserve is false: the accepted consumed-renewal discriminator is postfixed but has no founded support.
+It establishes neither independent dated truth nor undecidability.
+
+The valid remaining target is a computable complete encoded bound or equivalent total procedure for the founded relation, plus authentic materialization, full evidence adequacy and the separate dated correspondence theorem.
+Finite template positions still carry unresolved TYPE/SCOPE values, support and port multiplicity; those fields, first-birth realization, dynamic GLOBAL joins and physical helper multiplicity need a joint input-derived construction.
+Bounded experiments, engineering exhaustion and a failed candidate supply no general negative answer.

@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:pure-any-dead-source-cell" targetNamespace="urn:re01:pure-any-dead-source-cell">
+  <xs:complexType name="A"><xs:complexContent><xs:restriction base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="I"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:I"><xs:choice/></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>
