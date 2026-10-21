@@ -3376,3 +3376,115 @@ Arbitrary PROPERTY/SC/scalar/source sectors, general initial coverage, complete 
 The source/math arguments retain the actual endpoint, first-birth and stored-domain checks in [semanticContext.ts](../src/compiler/semanticContext.ts) and [candidate correspondence](../src/compiler/re01CandidateCorrespondence.ts).
 The [finite verifier](../src/compiler/finiteRe01Verification.ts) still requires every consumed original, every inherited fresh root and exact-parent child evidence.
 No new constructor API, semantic convention, native execution or general activation follows from this condensation.
+
+## An ordinary whole E export can use a real explicit prefix
+
+Use the persistent PROPERTY section and qualified explicit-E transport above, keeping every affected ordinary TYPE/scope continuation under the same map.
+For an outside writable v E u with old whole BODY p, require p to be a genuinely installable ordinary real non-ALL/non-GROUP prefix child, with actual source/native-origin, owner and key transport.
+At v's original birth use real `SEQ1[p, empty CHOICE0..1]` and BASE F(u), retaining variety, headers, attributes and all nominal gates.
+
+The declared unit SEQUENCE reaches the real first-child PROPERTY branch; the positive-max empty CHOICE is an actual FULL particle, not max-zero backing.
+Restriction preparation erases that optional empty tail, then flattens a unit SEQUENCE child or copies another single child's already prepared shape without a second cleanup.
+This preserves a direct GLOBAL HEAD's implicit CHOICE, including singleton mode; an outer CHOICE wrapper would not supply the same argument.
+
+The root originalParticle marker changes to the wrapper ID, while old physical HEAD/key partitions and order blocks remain exact.
+Each lost root shortcut needs its genuine same-fields structural diagonal: exact LOCAL TYPE/constraints, GLOBAL IDs/current pools and qualified wildcard/native origin.
+If p projects away, both preparations reach the same empty fallback; actual max-zero component rejection is never bypassed.
+
+The new particles introduce no consuming label, TYPE or NP subject; old UPA/EDC incidences and actual full support replay in every descendant H.
+All changed declared PROPERTY, foreign E prefix, whole/proper alias, source/root/key/marker and future inherited readers must be protected or jointly rebuilt.
+Every RP export, including the genuine child, still maps both operands of the same old positive call; an independently selected inside-section target is not covered.
+
+An inaccessible SOURCE-WHOLE handle is not authority to install its private root as a child, and root ALL cannot occupy this prefix position.
+The wrapper removes this qualified ordinary whole-root obstruction without advancing births, replacing the opening frontier or counting outside consumers.
+
+## A finite active portfolio for persistent generic-R WHOLE cells
+
+Fix inherited P, q inherited NP subjects, no fresh NP births and their real adaptive middle/cut program; put `M=sum_{k=0}^q q!/(q-k)!`.
+Supply s co-born persistent positive-max ordinary WHOLE CHOICE cells, each with at least two UNIT abstract fresh HEAD uses and actual WHOLE-root UPA in every required H.
+Each HEAD TYPE is proper post-P generic R, not UR-based, P or a selected P middle; all ancestry is literal all-complex NONSC and every other new TYPE is Q-free.
+
+Keep TYPE/SG/flags immutable, exact P/source names/TYPE/scope/identity cuts and actual same-H FULL affiliation/final support; introduce no VALUE, IC, scalar, AU or lexical/source authority.
+Incoming ports are nonempty implicit UNIT choices of fixed P heads; outgoing targets are qualified P CHOICE/ANY or admitted cells, checked only where the reader exists.
+Every other constructor is EMPTY-base, a jointly rewritten exact whole alias or a separately unchanged actual gate; expanded PROPERTY, proper/root/source, owner, foreign key and future exact readers remain explicit.
+
+For c let I_c be identity-c members and T_c add proper R-path members with no entered R block; a nonempty abstract head K of TYPE c cannot block substitution:
+
+```text
+Pool(K) = SG-descendants(K) intersect I_c, if K.block contains R
+Pool(K) = SG-descendants(K) intersect T_c, otherwise
+```
+
+Identity is checked before entering c.block; an R-blocked ancestor and same-TYPE unblocked descendant can therefore overlap partially.
+Existing-member membership in these generic R targets is fixed, while later genuine births add members; incompatible sibling births remain separate instances.
+Different-TYPE comparable overlapping pools are contained toward their SG ancestor, as are equal-TYPE pools beneath an unblocked ancestor.
+
+Join heads sharing an EVER nonabstract member and color each by one occurrence cell; whole-cell UPA makes this an s-coloring, but colorability alone is insufficient.
+An unblocked highest SG head contains its component; for a blocked highest head, stop each top branch at its first nonempty-EVER unblocked head.
+The compressed top region has the same TYPE and comparability edges witnessed by identity members, hence clique chains of length at most s; residual components lie below an unblocked boundary and lose its color.
+
+Thus an elimination forest has `d(0)=0`, `d(s)<=s+d(s-1)<=s*(s+1)/2`, and every simple overlap path has at most `L=2^d(s)-1` vertices.
+Empty observed heads do not stop that top-region construction or accumulate their blocks into another head's query.
+The depth bound uses the native pool representation, not an arbitrary bounded-color or chordal-graph claim.
+
+Use the complete fixed-P head/QName/namespace predicates over all M nodes for coherent cap-two seeds, with counts h0,e,w and protected input declarations.
+The seeds do not count unknown fresh heads as input; genuine birth/profile issuers and eligible owner transport remain required.
+
+```text
+g0 = |P_GLOBAL| + h0*M + e*M*M + 2*M*2^(h0*M*M+w*M)
+N0 = s*g0 + e + 2*s
+Delta = M*s
+Hstar <= N0*sum_{i=0}^L Delta^i
+Gstar <= g0 + M*Hstar
+```
+
+Seed heads contain a retained seed member, have an explicit P fallback QName or supply two old guard occurrences per cell.
+For each retained nonempty head and each H where it was nonempty, choose an old member already born there and retain every head containing it, closing this operation.
+Each witness touches at most s heads; directed closure has outdegree at most Delta and simple paths bounded by L, giving the displayed bounds.
+
+Retain each selected head at every occurrence in every cell/whole alias, including empty fallbacks; its pool is exactly the old pool restricted to the final member roster.
+Anchors preserve every nonempty threshold at its earliest real activation, while two actual guard uses preserve at least two semantic atoms and the old root/interval category.
+Keep retained member TYPE/QName/header fields exact, apart from genuine injective owner-only scoped-ID transport; there is no TYPE fold or BASE edit.
+
+Incoming GLOBAL matches retain the same declaration on both sides; closure retains every target head containing a kept source member.
+Outgoing deletion restricts the old injection with actual matching GLOBAL/LOCAL/ANY and formally skippable children; same keys/orders and native origins need their actual proofs.
+UPA loses alternatives and EDC loses incidences; neither RP transitivity nor a changed fallback threshold is assumed.
+
+Plan leafification and SG projection once before birth, reparenting old nonleaf children through genuine retained-ancestor/P shields with empty final and available TYPEs.
+Provisional all-observer shields are planning objects only; emit only final shields at their first lawful demand and reissue actual source/owner/current-H FULL worklists and old-height children.
+Other fresh roots require lawful neutralization/reissue or complete never-born omission, including every future reference; old F membership alone is not protected.
+
+This bounds active HEAD IDs and nonabstract member instances, not all TYPE support, physical incidences, metadata or scaffolds.
+Branch-private/nonpersistent cells, composite or nonunit arms, missing WHOLE UPA, fresh NP cohorts and uncontrolled readers are outside.
+In particular `q<=8*K(Hstar(q))` is circular: fixed-q M does not yield an input-derived opening-q bound or a terminating fixed-point procedure.
+
+## All-complex root ALL through nominal target marks
+
+Retain the complete persistent section's finite ordinary role/geometry cover, Q-free height H, all-H BASE-closed A, common cohort and actual source/owner/alias materializer.
+Supply an input-derived context bound M; neither an observed success length nor M(q) for an unbounded opening q supplies it.
+EVERY LOCAL TYPE slot of a handled root-ALL export recipe is all-complex X/A, including only genuine complex builtin cuts.
+
+Scalar cuts elsewhere retain their original exact interfaces and are excluded from target marks and first-Z/slot projection.
+The held broader scalar implication fails because STRING can match fresh GLOBAL UNION[STRING] through the target-union alternative without that target on the source BASE prefix.
+The accepted all-complex fork does not use that implication or supply a scalar projection theorem.
+
+Let N be covered LOCAL QNames, n=|N| and r the LOCAL incidence bound; exported BODY(u) has a declared ALL with at least two positive positions and protected primitive boundary a has nonempty ALL.
+FULL formation makes direct ALL children ELEMENT positions; opaque zero backing and source-private components retain their genuine exact input authority.
+FULL J E a can use only the genuine whole-root/origin exit, since an explicit SEQUENCE prefix would illegally nest ALL; its exact target is BODY(a), also when J is section-selected.
+No private source-child splice or forged originalParticle authority is inferred.
+
+In each required H collect target GLOBAL TYPE candidates with QNames in N, including raw fallbacks and abstract/unproductive declarations.
+Actual GLOBAL QName uniqueness gives at most nM candidates; only targets used by positive LOCAL matches become private marks, lying on the source's R-only X/A BASE path.
+Mark those private vertices and ancestors, obtaining `|Z|<=|A|+(H+1)*n*M`; unique nominal colors fix their identities under F without freezing outgoing BODY selectors or recursively closing their BODY fields.
+
+Refine each ordered all-complex LOCAL slot by exact c in Z, or first Z ancestor z plus the all-R private-prefix flag; the factor is at most `(3*|Z|+1)^r` beyond original exact alternatives.
+These codes give each corresponding slot the same actual-H R-only answer to every marked target, using the exact current z suffix rather than a frozen history bit.
+Replay the old same-H RP injection against BODY(a): mapped positive paths fix t in Z, GLOBAL declarations/current pools transport coherently and exact LOCAL target cuts stay protected.
+
+FULL EDC includes raw heads and all effective members; repeated target QNames need the same exact named TYPE or reject unnamed ambiguity, without productive UPA uniqueness.
+Keys/orders and any lost whole/proper shortcut need genuine same-fields diagonals with coherent key pullback; declared ALL isomorphism alone is insufficient.
+Before v's cut preserve the true whole alias to the selected BASE; afterward the fixed-ALL target proof covers its chosen middle without borrowing another child's future receipt.
+
+All selectors, scopes, aliases, source authorities and future members retain their lawful births, every actual FULL root and required old child; the roster need not be frozen.
+Independent PROPERTY/proper/whole/WORD/scalar/source readers and foreign BASE clients retain their complete protected interface or separately proved transport.
+This is a qualified fork reduction, not opening-bank extraction, general SUCCESS coverage, native/evidence adequacy, a full encoded bound or a semantic NO/termination procedure.

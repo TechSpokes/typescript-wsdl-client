@@ -56,6 +56,9 @@ The [strict fresh-interval bound](content-model-s06-re-01-support-reconstruction
 The [explicit extension export](content-model-s06-re-01-support-reconstruction.md#explicit-extension-exports-through-a-persistent-property-section) removes a qualified outside E BASE port through actual PROPERTY composition and paired child reconstruction.
 The [closed branch reissue](content-model-s06-re-01-support-reconstruction.md#closed-branch-reissue-and-finite-original-event-induction) preserves genuine original-child frontiers and gives a conditional finite-original-event recurrence.
 Its input-derived initial-controller and successful fresh-interval constructors remain open; delaying an unbounded cohort alone supplies neither bound.
+The [ordinary whole-extension wrapper](content-model-s06-re-01-support-reconstruction.md#an-ordinary-whole-e-export-can-use-a-real-explicit-prefix) preserves qualified restriction views through a genuinely installable declared prefix.
+The [persistent generic-R observer bound](content-model-s06-re-01-support-reconstruction.md#a-finite-active-portfolio-for-persistent-generic-r-whole-cells) bounds active names for fixed inherited q and a complete cell interface; it supplies no opening-q bound.
+The [all-complex root-ALL reconstruction](content-model-s06-re-01-support-reconstruction.md#all-complex-root-all-through-nominal-target-marks) uses finite nominal marks and actual same-context comparisons, retaining the failed scalar target-union contrast and separate materializer gates.
 
 The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.
