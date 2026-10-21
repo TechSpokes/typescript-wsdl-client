@@ -9,6 +9,10 @@ The [resolver contract](content-model-s06-re-01-resolver.md) and [implementation
 It records independently scrutinized conditional support reductions and complete native controls.
 The continuation adds private-copy sharing, ordinary value/name palettes, guarded SC selector transport and a closed NP/copy bundle reduction.
 
+The BODY-boundary continuation starts from main `3759cddf4e9ddb1d1c28d9e76b27898a323b1203`, tree `5fbd1d959abb0238fc489e2942decd518e8e4bed`.
+It separates closed common-content modules from a necessary input PROPERTY copy with a distinct nominal cut.
+Its reader inventory and native controls do not establish a general finite interface.
+
 Every forest transformation starts from a supplied finite complete founded forest, authentic current-context/source materialization and sufficient finite configured resources.
 Every retained old fresh component and independent actual-Gamma duty remains required in its own context.
 The theorems remove components only before first birth; no inherited root disappears merely because it becomes unused.
@@ -22,6 +26,8 @@ The theorems remove components only before first birth; no inherited root disapp
 | Private Gamma copies | One selected representative per supplied template/private interface | Protected-port and copy extraction |
 | Ordinary values/AU names | Finite input value/name palettes | Field, scalar and component counts |
 | Co-born NP/copy bundles | One NP representative per sealed batch | Number and general geometry of batches |
+| Closed BODY modules | Common content with exact nominal identities and children | Input-imposed boundary extraction |
+| Necessary input copy | One copy at an exact input PROPERTY/nominal-cut pair | General copy and HEAD counts |
 
 The first-boundary classification invokes the already proved [common nonscalar payload](content-model-s06-re-01.md#common-mixed-payload-without-changing-the-nominal-fresh-family) only with that theorem's full premises.
 Its simple-content case requires a separate scalar projection, ordinary-value and clear particle-formation proof; that application is not promoted here.
@@ -2002,6 +2008,236 @@ They establish neither general B-v1 coverage nor a complete native materializer.
 The finite-word step uses the effective finite-word MSO construction described
 in the [MONA manual, sections 3 and 7](https://www.brics.dk/NS/01/1/BRICS-NS-01-1.pdf);
 no external solver execution or dated-XSD inference is claimed.
+
+## One common BODY for a closed nominal-only module
+
+Fix finite exact inherited `P` and a complete founded local witness `W`.
+Let `A` be a fixed complex boundary with immediate BASE `anyType`, and let
+`M E A` be an existing primitive row whose complete NONSC content is `R`.
+Keep `M`, `A`, their selected content and every nominal TYPE record exact.
+
+A closed post-`P` helper module may choose that same complete content `R`
+before each row's original birth. This copies mixed/element-only/EMPTY
+variety as well as its particle root; it does not merely share a particle
+under incompatible old variety flags. AU, VALUE, local IC, SC/scalar and
+independently protected source/evidence BODY ports are absent from the
+changed support closure or separately reconstructed.
+
+In every actual descendant, a changed row's BASE is `M`, another changed
+row, or exact `A`. Every edge leaving the module for `A` has method E.
+Every selected cut middle is genuinely new, already assigned `R` at its
+own original birth, or exact `M`. An inherited different-body middle is
+an outside port; so is a terminal R-to-`A` edge, since `M` extends `A` and
+need not restrict it.
+
+All surviving BODY readers must be the module's own constructors or
+constructors of jointly changed rows. An unchanged RP/rawEXT/PROPERTY,
+whole-alias, source or evidence consumer remains a boundary until its
+actual reconstruction is proved. A fresh caller is not immutable merely
+because the old witness selected it, but its replacement must really form.
+
+The actual finite-verifier call graph has no hidden nominal BODY parser.
+Its entrances are own E/R construction and scaffold legality, rawEXT's
+recursive declaration PROPERTY, ordinary mixed VALUE and SC/AU predicates,
+complete correspondence, and authentic source/representation backing.
+TYPE derivation, SG membership and particle nominal gates do not recursively
+parse complex payloads. This reader exhaustion classifies entrances, not
+their graph, number, timing or size.
+
+Install `R` only as a genuinely usable real whole root or admitted whole
+handle. FULL(`M`) does not authorize a private nonwhole source subtree.
+Canonical/raw content, references, identities, owners and source backing
+must be coherent at original birth; inherited rows are never edited later.
+Reserve new identities against the entire witness, including later births
+and independent roots, and keep support genuinely lineage-local.
+
+Internal E comparisons now close whole-root rawEXT identity. Internal R
+comparisons close the normalized roots' actual original-particle identity.
+EMPTY/EMPTY uses its own constructor branch, rather than an invented
+RP(emptySEQ,particle) test. A terminal E-to-`A` reissues `M`'s actual
+current-H content calculation against the same exact `A`.
+
+FULL(`M`), FULL(`A`), every new standalone particle/GROUP/declaration root
+and all installed dependencies remain genuine current-H duties. The same
+whole root adds no position inside it, so its actual UPA/EDC checks keep
+the old key partition. Source, owner and immediate-final obligations are
+not discharged by particle equality.
+
+A fresh orphan middle `J E A` can keep its actual TYPE identity, BASE,
+final/block and nominal consumers while choosing whole `R` at its child
+birth. The inherited subject's R-to-`J` content comparison then closes
+identity. `J` need not equal `M`: forcing that TYPE identity could change
+entered block masks and effective pools.
+
+Nominal paths, GLOBAL identities, SG fields, names and flags stay exact,
+so actual memberships and NP classifications remain exact. Rebuild every
+old required child with the same nominal update and the frozen content
+assignment. Induction on old witness height supplies founded evidence;
+adaptive choices are retained without claiming that cuts commute.
+
+Old payload scaffolds remain mandatory while retained. Their disappearance
+needs complete before-birth reference/source/owner closure and pruning.
+The result is a common-BODY transport, not an input-derived module, helper,
+TYPE, BODY-library or complete forest bound. An authentic input-origin
+PROPERTY pair can still reach two independently variable current middles;
+that paired interface is not made constant by this lemma.
+
+The source owners are [complex construction](../src/compiler/schemaConstructionAssessment.ts),
+[raw extension](../src/compiler/particleExtension.ts),
+[particle restriction](../src/compiler/particleRestriction.ts),
+[component PROPERTY](../src/compiler/schemaComponentEquality.ts) and
+[complete evidence](../src/compiler/finiteRe01Verification.ts).
+
+## A necessary input PROPERTY copy at a distinct nominal cut
+
+Universal reuse of an input declaration's TYPE can lose a real input role.
+The following local example needs one new TYPE with finite label
+`(PROPERTY anchor p, exact nominal cut bPrime)`.
+It does not require an unbounded copy graph or establish a SOME failure.
+
+All displayed host rows are NONSC, with no AU/AW, ordinary VALUE, IC or
+scalar authority, empty final/block flags and coherent canonical/RAW backing.
+
+Use authentic Gamma with three named EMPTY rows: `X R anyType`, primitive
+`I E X`, and original `D E I`. Retire `D R J0` with primitive EMPTY `J0 E X`
+and introduce the following RAW cohort in inherited `P`. These are genuine
+post-Gamma full roots; no original QName BASE refers to an anonymous TYPE.
+
+Anonymous `b` and `bPrime` are distinct EMPTY primitive E-to-`X` rows.
+Anonymous `p` is EMPTY R-to-`b`. `A R anyType` has the element-only body
+`CHOICE[0..unbounded]` containing `LOCAL gamma : TYPE p, scope A`. `q R A` has CONTENT
+EMPTY, permitted by `A`'s formal minimum zero. Abstract GLOBAL `H` has name
+`alpha`, different from `gamma`, and exact TYPE `bPrime`. Finally `T E q`
+has BODY exact HEAD `H`; `T` is the cohort's only nonprimitive duty.
+
+The successful T child introduces anonymous EMPTY `pPrime R bPrime` and
+primitive `M E A`. Its raw unit SEQ has a first prefix copied from `A`,
+using LOCAL `gamma : TYPE pPrime, scope A`, followed by optional empty
+CHOICE. New nonabstract GLOBAL `gamma` has TYPE `pPrime` and SG `H`.
+
+PROPERTY(`pPrime`,`p`) checks equal EMPTY R headers, then equal EMPTY E
+BASEs `bPrime`/`b`, and stops at exact named `X`. Therefore the rawEXT
+first-prefix calculation succeeds. Restriction normalization erases the
+optional empty tail and outer unit SEQ, leaving the nonunit one-arm CHOICE.
+The nonself singleton HEAD pool is still an implicit CHOICE1. It restricts
+that target by the same-name local TYPE identity `pPrime`.
+
+All inherited roots remain checked, and no new NP is generated. In
+particular, `q.EMPTY` removed `A`'s local `gamma:p` from T's source, so the
+effective GLOBAL gamma does not duplicate an anonymous local TYPE there.
+The single declared/virtual incidences satisfy their own UPA/EDC checks.
+
+The necessity argument permits arbitrary finite additional child records.
+Correspondence keeps all P rows and T's inherited head particle/content fixed.
+M's E-to-element-only-`A` construction requires a particle BODY and admits
+only exact `A` alias or a unit SEQ with its declared first prefix.
+That prefix is a non-erasing CHOICE0..unbounded with one LOCAL gamma leaf.
+PROPERTY fixes its TYPE `c` to an anonymous EMPTY R row over an anonymous
+primitive E-to-exact-named-`X` row `bDoublePrime`.
+
+Any restriction-visible tail leaves a target SEQ, rejected by T's derived
+CHOICE. With erased tail or whole alias the target has one CHOICE arm.
+Zero effective H members gives the wrong-name alpha fallback; at least
+two members exceed target capacity. Thus one effective GLOBAL gamma is
+needed, and GLOBAL/GLOBAL RP shortcuts do not apply to the LOCAL target.
+
+Its TYPE `r` derives `bPrime` by full SG formation and derives `c` through
+the LOCAL gate's R-only prefix. Both lie on its unique complex BASE path.
+Since `c R bDoublePrime E X` and fixed `bPrime E X`, their comparability
+forces `bDoublePrime = bPrime`. A SIMPLE exit cannot return to a proper
+complex target; SC content does not create a second nominal BASE path.
+Thus `c` is a genuinely new anonymous EMPTY R-to-`bPrime` copy; fixed P
+contains no such row, and correspondence cannot change `p.BASE = b`.
+The exhibited `pPrime` proves that one copy suffices.
+
+Exact input declaration reuse instead needs TYPE `pPrime` to derive `p`
+while still deriving fixed `bPrime` for affiliation. Their distinct input
+BASE branches make this impossible. This is the finite input-product
+exception to universal reuse, not permission to retain every old helper.
+
+The bounded author probe checks a complete two-node forest with Gamma 3,
+P 15 and child 23 members. Exact-declaration reuse and a disjoint optional
+ANY-tail control both fail T's restriction while M's local construction,
+PROPERTY and affiliation remain clear. Removing T's child is unresolved.
+The probe is distinct from execution of the permanent regression adaptation
+in [input-property-copy-cut.test.ts](../test/research/re01/input-property-copy-cut.test.ts)
+and its [source fixture](../test/conformance/fixtures/xsd/recovery/input-property-copy-cut.xsd).
+
+Neither this finite copy role nor the common module proves the remaining
+simultaneous input-copy fold, filter-port count, physical support bound,
+fresh-head reconstruction or general founded-evidence/dated-rule bridge.
+
+## A common BODY for a closed free-UR complex region
+
+Fix finite inherited P and a complete founded local evidence tree W.
+Every changed TYPE is genuinely post-P, and its literal complex BASE path
+leaves the changed region only at builtin anyType. Every actual new middle
+obeys the same condition. Preserve TYPE identities, BASE/methods, abstract/final/block,
+GLOBAL declarations, SG edges and nominal readers; change only eligible
+NONSC content properties and their selected mixed variety before first birth.
+
+Allocate ordinary real particles with these exact fields:
+
+```text
+W0 = ANY(##any, lax, 0..unbounded)
+Q0 = SEQUENCE(1..1, [W0])
+Q  = SEQUENCE(1..1, [Q0])
+```
+
+Every reset NONSC row selects the same physical mixed Q in its lineage.
+These particles carry no native-UR tag or source-private identity.
+Actual builtin anyType declared content is a unit SEQUENCE containing its
+private wildcard with W0's fields. Consequently an E-to-UR rawEXT check
+compares Q's first child Q0 structurally to that genuine BASE root and
+checks true. Using Q0 alone as the whole BODY would fail this first-child
+test; the outer Q is necessary.
+
+An R-to-UR row uses the native restriction-to-UR branch. Between reset
+NONSC rows, E closes whole-root rawEXT identity and R closes normalized
+original-particle identity. Mixed varieties agree. Q has one wildcard
+position, no declarations or ALL/GROUP boundary, and genuine own-root
+UPA/EDC and range legality. A small new R-to-UR helper may own the support;
+it adds no NP subject. Its actual materializer/formation remains required.
+
+Every surviving BODY reader must be such a construction, an admitted SC
+recipient or NONSC ordinary-value check, or a transported internal PROPERTY
+pair. An unchanged RP/rawEXT/PROPERTY/source/evidence or exact-BODY authority
+is a boundary unless independently reconstructed. An unchanged SC/source/
+PROPERTY reader cannot observe reset BODY beyond the proved mixed-emptiable
+gate. A fresh prefix's comparison to an input TYPE is a possible real
+anchor; P's inability to name an unborn row does not exclude that reader.
+
+Retain effective AU/attribute-wildcard rows and their complete same-H
+derivation/source/scalar support. An old positive NONSC ordinary value
+already required mixed, formally emptiable content and used builtin STRING.
+Q preserves that gate and the same declaration, physical lexical context,
+word, value kind and assessed STRING value. No ID or typed-source authority
+is inferred from PROPERTY equality.
+
+SC rows keep their exact selected S, recipe, parsing/typed-value identities
+and genuine current-H scalar/source backing. An old SC restriction over a
+NONSC BASE required mixed, formally emptiable content, which Q preserves; its
+own scalar construction is still owed. SC extension over NONSC and NONSC
+replacement of SC were already invalid. Unchanged SC-to-SC and simple-BASE
+cases retain their actual BASE scalar identities. Standalone raw-SC
+fixedEqual debts remain separate; full SC construction does not clear them.
+
+Reserve Q, any owner helper and all backing identities against whole W,
+including later/sibling births. Choose coherent raw/canonical content and
+reference backing at each original component birth. Authentic whole/root
+source authority is required; no private nonwhole selector is invented.
+
+The nominal graph and GLOBAL roster stay exact, so NP subjects, designated
+ancestors, affiliations, pools and actual child identities correspond.
+Assign Q to new NONSC middles at their actual child births and reissue all
+current-H full/source/frontier duties. Induction on old evidence height
+supplies founded local evidence without assuming cut commutation.
+
+Independent Gamma assessment/NP root trees need their own genuine support.
+Old mandatory particle/declaration/GROUP/scalar scaffolds remain full until
+a separate complete before-birth omission theorem removes them. This is
+one BODY-role transport, not a HEAD/TYPE/scalar/support count, finite-port
+extraction, arbitrary materializer or complete B-v1 decision theorem.
 
 ## Joint bound still required
 
