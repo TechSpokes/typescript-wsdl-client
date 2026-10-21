@@ -106,6 +106,9 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
         charge(3); if (!states.has(key) || states.get(key) !== undefined && pending === undefined) states.set(key, pending);
       };
       const fixedEqual = (a: ElementNode, b: ElementNode): boolean => {
+        // One authentic declaration has one constraint; full validity still
+        // owes its value and current TYPE, as for particle identity above.
+        if (a === b) return true;
         if (b.value?.kind !== 'fixed') return true;
         if (a.value?.kind !== 'fixed') return false;
         const left = checkDeclaration(context, a.id), right = checkDeclaration(context, b.id);

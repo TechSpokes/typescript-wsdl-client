@@ -151,7 +151,9 @@ async function fixedSubject() {
     assert.equal(content.kind, 'checked');
     const normalized = prepareSemanticParticleView(context, content.view, 'restriction'); assert.equal(normalized.kind, 'checked'); return normalized.view;
   };
-  const fresh = ({nonempty = false, simpleFacade = false}: Readonly<{nonempty?: boolean; simpleFacade?: boolean}> = {}) => {
+  const fresh = ({nonempty = false, simpleFacade = false, sharedDeclaration = false, wrapped = false}: Readonly<{
+    nonempty?: boolean; simpleFacade?: boolean; sharedDeclaration?: boolean; wrapped?: boolean;
+  }> = {}) => {
     const template = type('M'), id = fixedId('FreshMixed');
     const nodeId = (suffix: string, role: string) => scopedId(id, suffix, role);
     const left: ElementNode = {...declaration('Same'), id: nodeId('/left', 'element'),
@@ -163,7 +165,10 @@ async function fixedSubject() {
       declaredAttributes: [], annotations: [], retained: [], syntaxDetails: []});
     const required: ElementNode = {...left, id: nodeId('/required', 'element'), identity: {kind: 'scoped', owner: id, path: '/required', role: 'element'},
       name: {namespace: '', local: 'required'}, type: builtin('string'), value: undefined};
-    const requiredLeaf = leaf('/required-position', required), leftLeaf = leaf('/left-position', left), rightLeaf = leaf('/right-position', right);
+    const requiredLeaf = leaf('/required-position', required), leftLeaf = leaf('/left-position', left), rightLeaf = leaf('/right-position', sharedDeclaration ? left : right);
+    const wrapper = (suffix: string, particle: ParticleNode): ParticleNode => ({...particle, id: nodeId(suffix, 'particle'),
+      identity: {kind: 'scoped', owner: id, path: suffix, role: 'particle'}, term: {kind: 'sequence', children: [particle.id]}});
+    const leftWrapper = wrapper('/left-wrapper', leftLeaf), rightWrapper = wrapper('/right-wrapper', rightLeaf);
     const root: ParticleNode = {...leftLeaf, id: nodeId('/content', 'particle'), identity: {kind: 'scoped', owner: id, path: '/content', role: 'particle'},
       term: {kind: 'sequence', children: nonempty ? [requiredLeaf.id] : []}};
     const derivation = {kind: simpleFacade ? 'extension' as const : 'restriction' as const,
@@ -171,7 +176,7 @@ async function fixedSubject() {
       base: simpleFacade ? builtin('string') : nonempty ? builtin('anyType') : local(template.id), facets: []};
     const mixed: ComplexTypeNode = {...template, id, identity: {kind: 'global', role: 'type', name: {namespace: fixedNamespace, local: 'FreshMixed'}},
       mixed: !simpleFacade, derivation, content: simpleFacade ? undefined : root.id, attributes: []};
-    const additions = [mixed, root, left, right, leftLeaf, rightLeaf, ...(nonempty ? [required, requiredLeaf] : [])];
+    const additions = [mixed, root, left, right, leftLeaf, rightLeaf, ...(wrapped ? [leftWrapper, rightWrapper] : []), ...(nonempty ? [required, requiredLeaf] : [])];
     const built = request.candidate({key: 'fixed-candidate-' + nonempty + '-' + simpleFacade, active: [...actual.members, ...additions.map(node => node.id)], additions,
       rawTypes: [{type: id, targetNamespace: fixedNamespace, derivation: {method: derivation.kind, base: derivation.base},
         content: simpleFacade ? {kind: 'simple', type: builtin('string')} : {kind: 'mixed', particle: root.id},
@@ -182,7 +187,8 @@ async function fixedSubject() {
       const content = deriveModelGroupContent(built.context, id); assert.equal(content.kind, 'checked');
       const normalized = prepareSemanticParticleView(built.context, content.view, 'restriction'); assert.equal(normalized.kind, 'checked'); return normalized.view;
     };
-    return {context: built.context, mixed, left, right, derived: view(leftLeaf.id), base: view(rightLeaf.id)};
+    return {context: built.context, mixed, left, right,
+      derived: view(wrapped ? leftWrapper.id : leftLeaf.id), base: view(wrapped ? rightWrapper.id : rightLeaf.id)};
   };
   return {request, actual, type, declaration, particle, fresh};
 }
@@ -244,5 +250,17 @@ describe('fixed particle values use assessed declaration scalar types', () => {
     const declaration = checkDeclaration(f.context, f.left.id); assert.equal(declaration.kind, 'checked');
     expect(declaration.scalarObligations).toContainEqual({rule: 'raw-simple-content-derivation-validity', component: f.mixed.id});
     expect(checkParticleRestriction(f.context, f.derived, f.base)).toMatchObject({kind: 'unresolved', rule: 'cos-particle-restrict'});
+  });
+
+  it.each([false, true])('compares one authentic fixed declaration through distinct particles, wrapped=%s', async wrapped => {
+    const s = await fixedSubject(), f = s.fresh({simpleFacade: true, sharedDeclaration: true, wrapped});
+    expect(f.derived.root.originalParticle).not.toBe(f.base.root.originalParticle);
+    expect(f.derived.root.element).toBe(f.base.root.element);
+    const declaration = checkDeclaration(f.context, f.left.id); assert.equal(declaration.kind, 'checked');
+    expect(declaration.scalarObligations).toContainEqual({rule: 'raw-simple-content-derivation-validity', component: f.mixed.id});
+    const result = checkParticleRestriction(f.context, f.derived, f.base); assert.equal(result.kind, 'checked');
+    expect(result.value).toBe(true);
+    expect(result.obligations).toEqual(['component-validity', 'particle-local-legality']);
+    expect(result.typeDependencies).toContainEqual({contextId: f.context.contextId, type: {kind: 'component', id: f.mixed.id}});
   });
 });

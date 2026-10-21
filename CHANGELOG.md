@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): recognize fixed-value reflexivity for one authentic declaration while retaining complete scalar validity checks.
+
 - test(re01): qualify native joint arithmetic constraints and distinguish the fixed-input reconstruction problem.
 
 - docs(re01): identify the missing input-bounded reconstruction interface before general implementation.

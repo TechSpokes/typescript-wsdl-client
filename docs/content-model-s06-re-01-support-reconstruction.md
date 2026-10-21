@@ -1181,11 +1181,11 @@ Property-only original q/scopes are never promoted to full H component construct
 ### Fixed-value RP and extra matching states
 
 At the semantic fixed implication, every affected declaration has the same fixed/default kind and actual value, so each old fixed comparison remains equal.
-The actual repaired `fixedEqual` caller also preserves its standalone scalar prerequisite gate (`particleRestriction.ts:105–121`).
+The `fixedEqual` caller preserves its standalone scalar prerequisite gate for distinct declarations in [particle restriction](../src/compiler/particleRestriction.ts).
 A raw SC declaration assessment carries `raw-simple-content-derivation-validity:c` from its facade, even if c has a separate full construction receipt.
 
-Thus an old clear RP winner cannot have relied on a non-global fixed comparison through an affected raw-SC c: that comparison would already have been pending.
-Its clear cases instead close by unchanged particle identity/originalParticle identity before leaf testing, use the both-global QName shortcut, skip comparison because the base value is not fixed, or leave that fixed comparison's TYPE outside the retargeted class.
+Thus an old clear RP winner cannot have relied on a non-global fixed comparison between distinct declarations through an affected raw-SC c: that comparison would already have been pending.
+Its clear cases instead close by unchanged particle identity/originalParticle identity before leaf testing, use the both-global QName shortcut or same-declaration fixed-value reflexivity, skip comparison because the base value is not fixed, or leave that fixed comparison's TYPE outside the retargeted class.
 These cases remain clear after the rewrite.
 
 New nominal identity matches can enable extra RP scan states.
@@ -1195,6 +1195,23 @@ An extra raw-SC fixed comparison may remain pending, but creates no fatal invali
 No arbitrary scalar obligation is declared discharged merely because r is full.
 Property/aggregate callers reissue supported debts through their proper consumers; the standalone particle gate remains a gate.
 The baseline's exhaustive coherent-order and pending/fatal discipline remains a separate premise of this full runtime replay.
+
+#### Same-declaration fixed-value reflexivity
+
+Distinct particle positions can select the same authentic declaration in one current context.
+[NameAndTypeOK 3.2.2](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#rcase-NameAndTypeOK) then compares one fixed value constraint with itself; a second scalar assessment is unnecessary for that comparison.
+The existing owner recognizes only physical declaration identity, with QName, occurrence, nillability, IC, block and TYPE checks still applied independently.
+
+Previously, distinct particle roots could turn this reflexive comparison into a pending raw-SC formation prerequisite even with complete component evidence.
+Unit singleton compositor normalization can also create this distinction while retaining the same underlying ELEMENT leaf: normalized original-particle identity belongs to the outer root.
+The [unit controls](../test/unit/particle-restriction-independent.test.ts) cover both shapes, retain the current TYPE dependency and keep the existing distinct-declaration raw-SC comparison pending.
+
+The [complete controls](../test/research/re01/fixed-declaration-reflexivity.test.ts) check genuine finite candidate evidence with two different particle roots selecting one fixed integer declaration, directly and through singleton wrappers.
+Every fresh component remains a required root.
+An invalid common integer value still fails full declaration construction and aggregate verification at `cvc-datatype-valid`, even though the local identity comparison is true under its component-validity premise.
+
+This repair neither discharges scalar formation through an unrelated FULL receipt nor equates different declarations, lexical strings or contexts.
+It removes one avoidable executable obstruction to reconstruction, without proving private-alias elimination, complete BODY coverage, evidence adequacy or termination.
 
 ### Complete forest of the retain-all selector projection
 

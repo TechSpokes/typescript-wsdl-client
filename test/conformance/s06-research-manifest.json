@@ -1111,7 +1111,7 @@
         {
           "path": "src/compiler/particleRestriction.ts",
           "role": "semantic-source",
-          "sha256": "63777e2ae3605a316202516508f5edf3fd73c5e7f160a2706b392b4831712d80"
+          "sha256": "716a46fbe20f61cf52b01c97832bf121d005ffaec30d08c13ea7025e5689e4f1"
         },
         {
           "path": "src/compiler/particleSemanticView.ts",
@@ -1421,7 +1421,7 @@
         {
           "path": "test/unit/particle-restriction-independent.test.ts",
           "role": "expectations",
-          "sha256": "b3e13a8b283da7db6ee20589b54a60df3cdc9334eac6cb2dffcef462c9903e8f"
+          "sha256": "415056af60e0150fe9f56a45b6ec116a3d3bc69e803c8b91d6f9316f9d8ea580"
         },
         {
           "path": "test/unit/particle-upa-independent.test.ts",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "4ebf570b5f2535a22c9ab72fecd423dd9135a9a8fc8dd1db94f4f5def7db4497"
+          "sha256": "bd518e8afc7448ca9a1dbd09f15c606074137e9bc97b709c42b8711558c4155e"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2867,6 +2867,11 @@
           "path": "test/research/re01/joint-native-arithmetic.test.ts",
           "role": "prototype",
           "sha256": "34aea0ac55aad8b6bdd57bf018580371008cb83e96cd332a51bcd59e0533d5f7"
+        },
+        {
+          "path": "test/research/re01/fixed-declaration-reflexivity.test.ts",
+          "role": "prototype",
+          "sha256": "b279c3065f5e778bf0d6f94083a3821d91978e05552b2f8d0ea88e9ec1f639ef"
         }
       ]
     },
