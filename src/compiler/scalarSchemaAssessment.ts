@@ -2113,6 +2113,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       return supplied.some(derived => restrictsScalar(derived, prior, owner));
     });
     if (covered) return complete;
+    // Every main layer tests the same selected normalized result. An empty
+    // intersection proves containment without comparing whitespace modes;
+    // separate conjuncts, list items and union members do not share that word.
+    c.step(owner, result.plan.layers.length * 2 + 2);
+    const mainPatterns: RegularLanguage[] = [];
+    for (const layer of result.plan.layers) if (layer.patterns.length) {
+      c.step(owner, layer.patterns.length * 2 + 2);
+      mainPatterns.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
+    }
+    if (mainPatterns.length && regular.witness(regular.intersect(mainPatterns, owner), owner) === undefined) return complete;
     if (regularLengthContainment(base, result, inherited, supplied, owner)) return complete;
     if (decimalContainment(base, result, inherited, supplied, owner)) return complete;
     // A complete enumeration bounds the result's entire value space, even

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): prove containment for empty main pattern intersections without strengthening whitespace rules.
+
 - fix(scalar): keep caller facet hints out of internal identity evidence.
 
 - fix(scalar): distinguish retained enumeration components from new immediate-base introductions.

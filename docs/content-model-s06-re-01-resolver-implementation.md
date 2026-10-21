@@ -367,6 +367,12 @@ Private Boolean reductions, productive-state pruning, deterministic Moore minimi
 
 `regularLengthContainment` intersects every retained pattern layer with normalized spellings and supplied value-length constraints. String lengths use code points, hex/base64 lengths use decoded octets, list lengths count tokens, and QName/NOTATION length predicates are vacuous under the dated value clauses. Sufficient overapproximations may prove a positive; a failed sufficient proof proceeds to the complete admitted-domain authority rather than creating an algorithm qualification.
 
+After scalar formation prechecks and ordinary scalar coverage, an empty intersection of the result's main pattern-component languages proves whole-value containment directly.
+Each component contributes its alternative union, and every main component tests the same selected normalized result, including an ordered union.
+The owner returns its existing qualification flag; it neither combines separately normalized conjuncts nor removes the whitespace guard from potentially nonempty containment proofs.
+Outer c-fr, enum introduction, constituent, source, NOTATION and complete current-context validity still run.
+The [complete-context controls](../test/research/re01/empty-main-pattern-certificate.test.ts) distinguish the previously unresolved whitespace case, an existing positive, fixed violations and missing required-child evidence.
+
 `schemaDecimalLanguage.ts:relation` and `precision`, consumed by `decimalContainment`, supply exact regular preimages for signed decimal bounds and total/fraction digits. Decimal zero, signs, leading zeros, omitted integer digits and trailing fractional zeros retain their value meaning. Every selected counterexample is reassessed through the shared exact decimal owner.
 
 `inverseExpression`, `inversePredicate`, `fixedAtomicPredicate` and `regularMembership` cover complete atomic inverse images. Whitespace normalization belongs to the selected primitive; QName/NOTATION aliases retain the original namespace context, and URI grammar is shared with the actual URI parser. Hex case, base64 padding and whitespace, boolean spellings and decimal leading/trailing zero aliases map to their actual typed values.
