@@ -230,9 +230,43 @@ Returning the existing qualification flag preserves earlier unresolved duties; o
 The [two-node controls](../test/research/re01/empty-main-pattern-certificate.test.ts) preserve all actual and inherited fresh roots and the fixed and missing-child negatives.
 
 The independently reviewed [finite semantic private-alias catalogue](content-model-s06-re-01-scalar-witnesses.md#finite-semantic-private-alias-catalogue) retains actual input enum/pattern components and reduces new bound choices to the supplied shared endpoint decision.
-It assumes authentic immediate-base component selection and complete local authorities; that selector and endpoint solver remain unimplemented.
+It assumes authentic immediate-base component selection and complete local authorities.
+The raw-exact selector below implements a qualified part of that interface; source/generated inventories and the shared endpoint solver remain unimplemented.
 The theorem proves a bounded recipe relative to one supplied anchor, not an input-derived number of anchors or a complete executable forest.
 An old component's identity does not waive changed whole-kind local-S membership, and existential same-kind matching does not imply universal whitespace coverage.
+
+### Authenticated immediate-base component retention
+
+A first-born fresh canonical SIMPLE row may use `{baseComponent: n}` in `facetComponentSet` to retain an actual component from its formed immediate base's raw exact row.
+The zero-based ordinal is a nonnegative safe integer; it does not select another datatype, source slot or caller identity.
+Literal component entries keep their existing meaning.
+All stored parent identities count when checking first birth, including inactive ones; an inherited row can be reactivated but cannot acquire or change a selector later.
+
+The [scalar owner](../src/compiler/scalarSchemaAssessment.ts) builds its private replay table from actual completed current-H components and their typed construction recipes.
+Selected recipes are formed again in H, using their actual operand TYPEs, owners, lexical maps, dependencies, P1 expressions and fixed properties.
+An unbranded property comparison must succeed before the owner attaches the actual base-component identity.
+The fresh alias retains its own datatype identity and BASE edge.
+This transfers no whole-description validity or evidence receipt, and every actual and inherited fresh root still needs its complete required child evidence.
+
+The implemented positive sector retains every actual enumeration and main P1 component, including every distinct opaque incidence.
+Additional ordinary P1 components must have distinct P1 properties from the input components and each other; language equivalence does not establish property equality.
+Each bound kind uses whole-kind KEEP or one ordinary NEW component.
+Other selected scalar subsets remain subject to the existing local-S construction, universal fixedness, ancestry, cross-kind and complete F2 checks.
+LIST ITEM and ordered UNION MEMBERS must retain exact constituent identities in this sector; genuinely derived different constituents remain qualified after their ordinary formation checks.
+
+Partial enum/P1 retention, new enum contributions, mixed bound replacement and overlapping new P1 properties are outside this implemented positive sector.
+They do not establish invalidity: ordinary formation and known failures run before the sector qualification whenever the replay inventory is available.
+Source, builtin, generated and legacy/nonexact bases have no invented ordinal table.
+When the table is unavailable, known literal/parser/type facts still run, but a partial inventory cannot establish a false omission failure.
+An available table with an out-of-range ordinal is an actionable selector failure; malformed or late-installed selectors fail representation admission.
+
+Repeated selection of one actual component is set-idempotent and remains charged; it cannot cover another unknown same-valued component.
+The private replay table can serve a later selector on an inherited alias, with all current-H facts re-established.
+The [complete forest controls](../test/research/re01/immediate-base-component-retention.test.ts) and [independent unit controls](../test/unit/schema-exact-facet-components-independent.test.ts) cover these boundaries, changed typed operands, fixed violations, genuine constituent nonderivation and missing child evidence.
+Literal changed-derived LIST/UNION baselines remain valid; their selected-component counterparts stay qualified rather than becoming invalid.
+
+This supplies a native materializer for the printed raw-exact KEEP sector.
+It does not establish source-component extraction, the finite endpoint solver, an input-derived anchor count, complete witness/evidence adequacy, complete negatives or mathematical termination.
 
 ### Alternative A and recorded project decision
 

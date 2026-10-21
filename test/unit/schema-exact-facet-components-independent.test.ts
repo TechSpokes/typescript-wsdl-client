@@ -3,8 +3,9 @@ import {compareSchemaFacetProperties, createSchemaScalarKernel} from '../../src/
 import {compareFacetAnnotation, validateFacetAnnotation} from '../../src/compiler/schemaFacetAnnotation.js';
 import type {FacetAnnotation} from '../../src/compiler/schemaFacetAnnotation.js';
 import {createSemanticBudget, DEFAULT_MAX_WORK} from '../../src/compiler/semanticBudget.js';
-import type {RawScalarFacetComponent, RawSimpleTypeProperties, ScalarFacet} from '../../src/compiler/schemaSimpleTypeProperties.js';
-import type {SimpleTypeNode} from '../../src/compiler/canonicalGraph.js';
+import {validateRawSimpleTypeShape} from '../../src/compiler/schemaSimpleTypeProperties.js';
+import type {RawFacetComponentEntry,RawScalarFacetComponent, RawSimpleTypeProperties, ScalarFacet} from '../../src/compiler/schemaSimpleTypeProperties.js';
+import type {Reference,SimpleTypeNode} from '../../src/compiler/canonicalGraph.js';
 import type {RawComplexTypeProperties} from '../../src/compiler/re01TypeProperties.js';
 import {forkSemanticCandidate} from '../../src/compiler/semanticContext.js';
 import {originalSimpleSetup, builtin, id, named} from './helpers/original-simple-correspondence.js';
@@ -33,8 +34,151 @@ const component=(facet:ScalarFacet,evidence:FacetAnnotation|undefined=facet.anno
   const {annotation:_operand,...value}=facet;
   return evidence===undefined?{facets:[value]}:{facets:[value],annotation:evidence};
 };
+async function selectorSetup(){
+  const s=await originalSimpleSetup(),names=new Map<string,string>();
+  const facet=(name:string,value:string,fixed=false):ScalarFacet=>{
+    const {annotation:_annotation,...result}=s.facet(name,value,fixed);
+    return ['enumeration','minInclusive','maxInclusive'].includes(name)?{...result,operand:{type:builtin('decimal'),owner:id('D'),context:'active'}}:result;
+  };
+  const entry=(name:string,value:string,fixed=false):RawScalarFacetComponent=>({facets:[facet(name,value,fixed)],annotation:'absent'});
+  const raw=(name:string,base:Reference,facetComponentSet:readonly RawFacetComponentEntry[],
+    variety:RawSimpleTypeProperties['variety']={kind:'atomic'}):RawSimpleTypeProperties & {base:Reference;facetComponentSet:readonly RawFacetComponentEntry[]}=>{
+    names.set(id(name),name);return {type:id(name),base,variety,final:[],facetComponentSet,provenance:{kind:'hypothetical-abstract',originals:[]}};
+  };
+  const candidate=(rows:readonly (RawSimpleTypeProperties & {base:Reference})[])=>{
+    const additions:SimpleTypeNode[]=rows.map(row=>({...s.seed,id:row.type,
+      identity:{kind:'global',role:'type',name:{namespace:s.seed.identity.kind==='global'?s.seed.identity.name.namespace:'',local:names.get(row.type)!}},
+      variety:{kind:'restriction',base:row.base,facets:[]}}));
+    const prepared=s.request.candidate({key:'component-selectors',active:[...s.request.actual.members,...additions.map(node=>node.id)],
+      additions,rawSimpleTypes:rows});
+    if(prepared.kind!=='prepared')throw new Error(JSON.stringify(prepared));
+    return {context:prepared.context,kernel:createSchemaScalarKernel(prepared.context)};
+  };
+  return {...s,facet,entry,raw,candidate};
+}
 
 describe('exact supplied facet component and annotation evidence',()=>{
+  it('validates own ordinal data without granting caller metadata or invoking accessors',async()=>{
+    const s=await selectorSetup(),base=s.raw('SelectorShape',builtin('decimal'),[]);
+    for(const index of [0,Number.MAX_SAFE_INTEGER])expect(validateRawSimpleTypeShape({...base,facetComponentSet:[{baseComponent:index}]},createSemanticBudget())).toBe(true);
+    for(const index of [-1,0.5,Number.MAX_SAFE_INTEGER+1,'0',NaN])
+      expect(validateRawSimpleTypeShape({...base,facetComponentSet:[{baseComponent:index}]},createSemanticBudget())).toBe(false);
+    for(const selected of [{baseComponent:0,annotation:'absent'},{baseComponent:0,annotation:undefined},{baseComponent:0,facets:undefined}])
+      expect(validateRawSimpleTypeShape({...base,facetComponentSet:[selected]},createSemanticBudget())).toBe(false);
+    let accessed=0;const getter={get baseComponent(){accessed++;return 0;}};
+    expect(validateRawSimpleTypeShape({...base,facetComponentSet:[getter]},createSemanticBudget())).toBe(false);expect(accessed).toBe(0);
+    // An extra ordinal on a literal is ignored, just like caller identity.
+    const literal={...s.entry('minInclusive','0'),baseComponent:-1,identity:'caller'};
+    const {kernel}=s.candidate([s.raw('LiteralOrdinal',builtin('decimal'),[literal])]);
+    expect(kernel.describe(named('LiteralOrdinal'),id('LiteralOrdinal'))).toMatchObject({kind:'checked',obligations:[]});
+    const original={...base,type:id('Empty'),facetComponentSet:[{baseComponent:0}]};
+    expect(s.request.candidate({key:'original-selector',active:s.request.actual.members,rawSimpleTypes:[original]}))
+      .toMatchObject({kind:'candidate-rejected',code:'representation',component:id('Empty')});
+  });
+
+  it('keeps whole bound kinds or re-forms ordinary singleton replacements without hiding endpoint failures',async()=>{
+    const s=await selectorSetup(),minimum=(value:string):RawScalarFacetComponent=>({facets:[s.facet('minInclusive',value)]});
+    const {kernel}=s.candidate([
+      s.raw('BoundAnchor',builtin('decimal'),[minimum('1'),minimum('2'),s.entry('enumeration','2')]),
+      s.raw('WholeBound',named('BoundAnchor'),[{baseComponent:0},{baseComponent:1},{baseComponent:2}]),
+      s.raw('PartialBound',named('BoundAnchor'),[{baseComponent:1},{baseComponent:2}]),
+      s.raw('ReplaceBound',named('BoundAnchor'),[s.entry('minInclusive','2'),{baseComponent:2}]),
+      s.raw('BadReplacement',named('BoundAnchor'),[s.entry('minInclusive','3'),{baseComponent:2}]),
+      s.raw('BadMixed',named('BoundAnchor'),[{baseComponent:1},s.entry('minInclusive','3'),{baseComponent:2}]),
+    ]);
+    for(const name of ['BoundAnchor','WholeBound','ReplaceBound'])expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.describe(named('PartialBound'),id('PartialBound'))).toMatchObject({kind:'checked',
+      obligations:[{rule:'raw-simple-facet-restriction-validity',component:id('PartialBound')}]});
+    for(const name of ['BadReplacement','BadMixed'])expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'invalid-schema',rule:'minInclusive-value'});
+  });
+
+  it('preserves fixed/cross-kind duties and supports nonbound common-fixed selection with disjoint dead patterns',async()=>{
+    const s=await selectorSetup();
+    const {kernel}=s.candidate([
+      s.raw('FixedAnchor',builtin('decimal'),[s.entry('minInclusive','1',true),s.entry('minInclusive','0'),s.entry('enumeration','1')]),
+      s.raw('FixedCopy',named('FixedAnchor'),[{baseComponent:0},{baseComponent:1},{baseComponent:2}]),
+      s.raw('UpperBase',builtin('decimal'),[s.entry('maxExclusive','1')]),
+      s.raw('UpperAnchor',named('UpperBase'),[s.entry('maxExclusive','1'),s.entry('maxInclusive','0')]),
+      s.raw('UpperCopy',named('UpperAnchor'),[{baseComponent:0},{baseComponent:1}]),
+      s.raw('WhitespaceAnchor',builtin('string'),[s.entry('whiteSpace','replace',true),s.entry('whiteSpace','collapse')]),
+      s.raw('WhitespaceSubset',named('WhitespaceAnchor'),[{baseComponent:0},s.entry('pattern','a'),s.entry('pattern','b')]),
+    ]);
+    for(const name of ['FixedAnchor','UpperAnchor','WhitespaceAnchor','WhitespaceSubset'])
+      expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.describe(named('FixedCopy'),id('FixedCopy'))).toMatchObject({kind:'invalid-schema',rule:'facet-fixed'});
+    expect(kernel.describe(named('UpperCopy'),id('UpperCopy'))).toMatchObject({kind:'invalid-schema',rule:'maxExclusive-valid-restriction'});
+  });
+
+  it('retains unknown pattern occurrences and isolates base membership and cache failure facts',async()=>{
+    const s=await selectorSetup(),pattern={facets:[s.facet('pattern','a')]};
+    const {context,kernel}=s.candidate([
+      s.raw('PatternAnchor',builtin('string'),[pattern,{facets:pattern.facets}]),
+      s.raw('PeerPatternAnchor',builtin('string'),[pattern,{facets:pattern.facets}]),
+      s.raw('PatternCopy',named('PatternAnchor'),[{baseComponent:0},{baseComponent:1}]),
+      s.raw('PeerPatternCopy',named('PeerPatternAnchor'),[{baseComponent:0},{baseComponent:1}]),
+      s.raw('PatternDead',named('PatternAnchor'),[{baseComponent:0},{baseComponent:1},s.entry('pattern','b'),s.entry('pattern','c')]),
+    ]);
+    expect(kernel.describe(named('PatternDead'),id('PatternDead'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(compareSchemaFacetProperties(context,named('PatternAnchor'),id('PatternAnchor'),context,named('PatternCopy'),id('PatternCopy')))
+      .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'equal',obligations:[]});
+    expect(compareSchemaFacetProperties(context,named('PatternCopy'),id('PatternCopy'),context,named('PeerPatternCopy'),id('PeerPatternCopy')))
+      .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'unresolved',obligations:[]});
+    expect(kernel.assess(named('PatternCopy'),{value:'a',context:s.seed.context},id('PatternCopy'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('PatternCopy'),{value:'b',context:s.seed.context},id('PatternCopy'))).toMatchObject({kind:'invalid-schema'});
+    s.request.budget.guard(()=>s.request.budget.chargeWork(100_000_000));
+    expect(kernel.describe(named('PatternCopy'),id('PatternCopy'))).toBe(s.request.budget.failure());
+  });
+
+  it('does not invent ordinal tables for source or legacy descriptions',async()=>{
+    const s=await selectorSetup(),legacyExact=s.raw('LegacyBase',builtin('decimal'),[s.entry('minInclusive','0')]);
+    const {facetComponentSet:components,...properties}=legacyExact;
+    const legacy:RawSimpleTypeProperties & {base:Reference}={...properties,facetLayers:components.map(entry=>{
+      if(!('facets' in entry))throw new Error('Expected literal legacy recipe');return {facets:entry.facets};
+    })};
+    const {kernel}=s.candidate([legacy,s.raw('LegacyBorrower',named('LegacyBase'),[{baseComponent:0}]),
+      s.raw('SourceBorrower',named('Empty'),[{baseComponent:0}])]);
+    expect(kernel.describe(named('LegacyBase'),id('LegacyBase'))).toMatchObject({kind:'checked',obligations:[]});
+    for(const name of ['LegacyBorrower','SourceBorrower'])expect(kernel.describe(named(name),id(name)))
+      .toMatchObject({kind:'unresolved',rule:'raw-simple-facet-restriction-validity'});
+  });
+
+  it('qualifies changed derived constituents after ordinary formation and preserves literal baselines',async()=>{
+    const s=await selectorSetup(),ur=builtin('anySimpleType'),string=builtin('string');
+    const list={kind:'list' as const,item:named('Item')},members=[string,builtin('int')];
+    const {kernel}=s.candidate([
+      s.raw('Item',string,[]),s.raw('ItemChild',named('Item'),[]),
+      s.raw('ListBase',ur,[s.entry('whiteSpace','collapse',true)],list),
+      s.raw('ListSame',named('ListBase'),[{baseComponent:0}],list),
+      s.raw('ListChanged',named('ListBase'),[{baseComponent:0}],{kind:'list',item:named('ItemChild')}),
+      s.raw('ListLiteralChanged',named('ListBase'),[s.entry('whiteSpace','collapse',true)],{kind:'list',item:named('ItemChild')}),
+      s.raw('ListChangedBadWhitespace',named('ListBase'),[{baseComponent:0},s.entry('whiteSpace','replace')],{kind:'list',item:named('ItemChild')}),
+      s.raw('ListNotDerived',named('ListBase'),[{baseComponent:0}],{kind:'list',item:builtin('decimal')}),
+      s.raw('UnionBare',ur,[],{kind:'union',members}),
+      s.raw('UnionBase',named('UnionBare'),[s.entry('pattern','a')],{kind:'union',members}),
+      s.raw('UnionSame',named('UnionBase'),[{baseComponent:0}],{kind:'union',members}),
+      s.raw('UnionChanged',named('UnionBase'),[{baseComponent:0}],{kind:'union',members:[named('ItemChild'),builtin('int')]}),
+      s.raw('UnionLiteralChanged',named('UnionBase'),[s.entry('pattern','a')],{kind:'union',members:[named('ItemChild'),builtin('int')]}),
+      s.raw('UnionNotDerived',named('UnionBase'),[{baseComponent:0}],{kind:'union',members:[builtin('decimal'),builtin('int')]}),
+    ]);
+    for(const name of ['ListBase','ListSame','ListLiteralChanged','UnionBase','UnionSame','UnionLiteralChanged'])
+      expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'checked',obligations:[]});
+    for(const name of ['ListChanged','UnionChanged'])expect(kernel.describe(named(name),id(name)))
+      .toMatchObject({kind:'checked',obligations:[{rule:'raw-simple-facet-restriction-validity',component:id(name)}]});
+    expect(kernel.describe(named('ListChangedBadWhitespace'),id('ListChangedBadWhitespace'))).toMatchObject({kind:'invalid-schema',rule:'whiteSpace-valid-restriction'});
+    for(const name of ['ListNotDerived','UnionNotDerived'])expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'invalid-schema',rule:'cos-st-restricts'});
+  });
+
+  it('retains an integer-derived pattern only through the formed raw exact inventory',async()=>{
+    const s=await selectorSetup(),{kernel}=s.candidate([
+      s.raw('IntegerAnchor',builtin('integer'),[s.entry('whiteSpace','collapse',true),
+        s.entry('fractionDigits','0',true),s.entry('pattern','[\\-+]?[0-9]+')]),
+      s.raw('IntegerCopy',named('IntegerAnchor'),[{baseComponent:0},{baseComponent:1},{baseComponent:2}]),
+    ]);
+    for(const name of ['IntegerAnchor','IntegerCopy'])expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('IntegerCopy'),{value:'1',context:s.seed.context},id('IntegerCopy'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('IntegerCopy'),{value:'1.5',context:s.seed.context},id('IntegerCopy'))).toMatchObject({kind:'invalid-schema'});
+  });
+
   it('keeps the existing whitespace prerequisite for a nonempty main pattern image',async()=>{
     const s=await originalSimpleSetup();
     const entry=(name:string,value:string,fixed=false):RawScalarFacetComponent=>{
@@ -274,12 +418,17 @@ describe('exact supplied facet component and annotation evidence',()=>{
     const {annotation:_annotation,...facet}=s.facet('enumeration','1');
     const row=exact({...s.raw('Empty'),type:node.id},[{facets:[{...facet,
       operand:{type:named('D'),owner:d.id,context:'active'}}]}]);
+    const alias:SimpleTypeNode={...node,id:id('ActiveEnumAlias'),identity:{kind:'global',role:'type',
+      name:{namespace:s.seed.context.effectiveNamespace,local:'ActiveEnumAlias'}},
+      variety:{kind:'restriction',base:{kind:'local',target:node.id},facets:[]}};
+    const aliasRow:RawSimpleTypeProperties={type:alias.id,base:{kind:'local',target:node.id},final:[],
+      variety:{kind:'atomic'},facetComponentSet:[{baseComponent:0}],provenance:{kind:'hypothetical-abstract',originals:[]}};
     const properties=(type:'string'|'decimal'):RawComplexTypeProperties=>({type:d.id,
       derivation:{method:'extension',base:builtin(type)},content:{kind:'simple',type:builtin(type)},
       abstract:false,final:[],block:[],attributeUses:[],provenance:{kind:'hypothetical-abstract',originals:[d.id]}});
     // Structural contexts isolate the value reader; changed D is not claimed to correspond to the source.
-    const parent=s.request.candidate({key:'active-enum-string',active:[...s.request.actual.members,node.id],
-      additions:[node],rawSimpleTypes:[row],rawTypes:[properties('string')]});
+    const parent=s.request.candidate({key:'active-enum-string',active:[...s.request.actual.members,node.id,alias.id],
+      additions:[node,alias],rawSimpleTypes:[row,aliasRow],rawTypes:[properties('string')]});
     expect(parent.kind).toBe('prepared');if(parent.kind!=='prepared')throw new Error('Expected active operand parent');
     const child=forkSemanticCandidate(parent.context,{key:'active-enum-decimal',active:parent.context.members,
       endpoint:d,rawTypes:[properties('decimal')]});
@@ -292,12 +441,16 @@ describe('exact supplied facet component and annotation evidence',()=>{
       {contextId:parent.context.contextId,type:{kind:'component',id:node.id}},
       {contextId:parent.context.contextId,type:{kind:'builtin',name:{namespace:xsd,local:'string'}}},
     ]));
+    expect(createSchemaScalarKernel(parent.context).describe({kind:'local',target:alias.id},alias.id))
+      .toMatchObject({kind:'checked',obligations:expect.arrayContaining([{rule:'raw-simple-content-derivation-validity',component:d.id}])});
     const compared=compareSchemaFacetProperties(parent.context,{kind:'local',target:node.id},node.id,
       child.context,{kind:'local',target:node.id},node.id);
     expect(compared).toMatchObject({kind:'invalid-schema',rule:'facet-value-type',side:'right',contextId:child.context.contextId,
       obligations:expect.arrayContaining([{rule:'raw-simple-content-derivation-validity',component:d.id,
         contextId:parent.context.contextId}])});
     expect(createSchemaScalarKernel(child.context).describe({kind:'local',target:node.id},node.id))
+      .toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+    expect(createSchemaScalarKernel(child.context).describe({kind:'local',target:alias.id},alias.id))
       .toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
   });
 

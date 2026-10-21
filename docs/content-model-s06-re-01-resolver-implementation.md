@@ -359,6 +359,37 @@ Exact component inventories preserve repeated tuples and fixed metadata. Source 
 
 The 43 independently specified policy controls and 14 additional reviewer controls cover these distinctions. Reviewer regressions include dropped inherited calendar constraints, fixed duties on an empty source restriction, hidden old constraints after replacement, whole-kind local reconstruction, erased inherited bound kinds, repeated exclusive endpoints and mixed-representation equality. Retained bound kinds compare annotation properties as well as value and fixed metadata; unknown metadata keeps a qualification when no valid local construction is proved. The lower inclusive/exclusive prohibition applies to the complete datatype, while the upper-pair prohibition applies to the local derivation step, following their distinct dated clauses.
 
+### Immediate-base raw component selectors
+
+`RawFacetComponentEntry` adds `{baseComponent: number}` beside the existing literal `RawScalarFacetComponent`.
+`validateRawSimpleTypeShape` requires an own data ordinal that is a nonnegative safe integer and rejects annotation overrides.
+Only that ordinal is interpreted; extra caller fields supply no component authority or metadata.
+`semanticContext` admits selectors only when a fresh canonical SIMPLE definition and its raw row are first installed together.
+The guard includes inactive stored parent changes and original rows; inherited selector rows stay immutable.
+The usual dependency traversal permits a co-born base to appear later in the supplied array.
+
+`scalarSchemaAssessment` owns a lazy, per-kernel replay table for completed raw-exact rows.
+Each entry pairs an actual component with its immutable public facet recipe; neither a `Description` nor caller identity hints serve as imported evidence.
+For a selected entry the owner forms the recipe unbranded in actual H, checks its typed value/fixed/P1 properties, then attaches the issued component identity.
+The row's own TYPE identity, BASE edge and dependency obligations remain separate.
+Tables are published after ordinary dependency/qualification assembly and are charged before allocation and replay.
+Requests without selectors retain their existing budget path.
+
+The supported positive sector requires whole actual enum/P1 KEEP, distinct ordinary new P1 properties, and whole-kind bound KEEP or one ordinary NEW bound.
+Coverage uses the completed base's actual main-component associations, not merely its raw array; uncovered intrinsic or source properties retain qualification.
+Exact LIST ITEM and ordered UNION MEMBER identities are sector conditions, not new schema-validity rules.
+Different genuinely derived constituents qualify only after ordinary c-fr/F2 and enum formation have run; genuine nonderivation and weakening still fail those rules.
+Other available but unsupported combinations likewise preserve known formation failures before returning qualification.
+
+An unavailable raw table is an unresolved construction prerequisite, not permission to invent an input inventory or prove an omitted component.
+Known literal/parser/type checks still run before that qualification.
+An available ordinal outside its table fails `raw-base-facet-component`; a changed replayed property fails `raw-base-facet-component-value`.
+Malformed or late-installed selectors fail context representation admission.
+Resource exhaustion keeps its separate sticky outcome.
+
+See the [scoped contract](content-model-s06-re-01.md#authenticated-immediate-base-component-retention), [complete forest controls](../test/research/re01/immediate-base-component-retention.test.ts) and [independent scalar controls](../test/unit/schema-exact-facet-components-independent.test.ts).
+Source/generated table issuance, a general scalar recipe producer and the general RE01 coverage/negative/termination gates remain open.
+
 ### Complete scalar membership and containment authorities
 
 `schemaRegularLanguage.ts` owns authenticated private language programs, Boolean operations, complete reachability, quotients, concatenation, reversal, whitespace preimages/images and finite-language classification. `schemaPattern.ts:language` reads a private copy of compiled atoms and root, so mutating a published plan cannot manufacture a certificate. Character partitions use the existing admitted Unicode authority, include only XML code points, and preserve intrinsic XML-name ranges and their colon exclusion.
