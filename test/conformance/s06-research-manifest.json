@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "0ae19ad666782639b76b1fca8fb48f34044fb96d25cecf3e5a1407af476fa95f",
+          "sha256": "9f2ef4744ec670b774ce3cf02c3ca657beeb231375f591680dd25cadb75d7d18",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "4fcce588cbe519d83944a198dd16cc2f85659c566c9b5428737e435c3e3eb572"
+          "sha256": "e3ec8b85fb163a780db6e35031d76bba90542570bd8536baadd4854b7ce6175c"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2837,6 +2837,21 @@
           "path": "test/conformance/fixtures/xsd/recovery/original-ic-no-owner.xsd",
           "role": "fixture",
           "sha256": "050fcd8ae507ec394db47723448bde3cfcdd3d404a2a9f22aebc0b1b2ab0b8e7"
+        },
+        {
+          "path": "test/research/re01/source-group-self-reconstruction.test.ts",
+          "role": "prototype",
+          "sha256": "5f8970b7928a46979d5d6eafbc93a1d3800f7129d5aa48ced30d585c43e99cf7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-group-self-empty.xsd",
+          "role": "fixture",
+          "sha256": "d2375ae503d235e58e4b19225605f7a3f0dba4b7352789643acbcf81d20ea9f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-group-self-prefix.xsd",
+          "role": "fixture",
+          "sha256": "538a0e1f7f1067ade06b93a27c9a16f033451a807b5088908d5b6a5dc0e71bb2"
         }
       ]
     },

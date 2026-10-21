@@ -61,6 +61,7 @@ The [persistent generic-R observer bound](content-model-s06-re-01-support-recons
 The [all-complex root-ALL reconstruction](content-model-s06-re-01-support-reconstruction.md#all-complex-root-all-through-nominal-target-marks) uses finite nominal marks and actual same-context comparisons, retaining the failed scalar target-union contrast and separate materializer gates.
 The [SOURCE SELF base argument](content-model-s06-re-01-support-reconstruction.md#a-genuine-source-self-copy-selects-the-exact-named-base) fixes the exact original named BASE without requiring FULL of a property-only template.
 The accompanying protected-GLOBAL instance charge remains conditional on complete input name coverage; the first candidate's unknown payload and general helper count remain open.
+The [SOURCE GROUP reconstruction](content-model-s06-re-01-support-reconstruction.md#genuine-source-group-feedback-and-two-concrete-bounded-reconstructions) preserves recursive TYPE feedback and complete three-to-two helper forests in two displayed boundary families; general initial helper and payload bounds remain open.
 
 The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.

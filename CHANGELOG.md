@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): verify complete SOURCE GROUP helper reconstruction in empty and required-prefix families.
+
 - docs(re01): record SOURCE base geometry and conditional opening declaration bounds.
 
 - fix(re01): check original schema identity constraints and authenticate first-born declaration reuse.

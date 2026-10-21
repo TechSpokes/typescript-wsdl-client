@@ -3547,3 +3547,81 @@ Retain the old child for every remaining real NP duty and prune only unreachable
 The initial J_D/Phi remains an opening payload, not something these instance charges bound or replace.
 Unsealed BODY/fresh-only Phi identity stops may still carry retained fresh LOCAL/fallback names outside extracted input coordinates; eliminating or canonically bounding those ports is the exact unproved complete-name premise.
 These results do not give general NP counts, SUCCESS/native adequacy, complete negatives, encoded bounds or termination.
+
+## Genuine SOURCE GROUP feedback and two concrete bounded reconstructions
+
+A genuine SOURCE model group can carry recursive TYPE feedback into a fresh helper's own extension comparison.
+The original GROUP G contains optional LOCAL t with inline anonymous type q extending exact named R; q's tail refers back to G.
+This is a TYPE/reference cycle through a finite particle graph, rather than a forbidden direct model-group-reference cycle.
+
+In the scoped construction, a fresh helper v extends exact R and uses a private G_v with t.TYPE=v.
+Its first-prefix comparison reaches an original anonymous a already retired to a primitive middle J_delta.
+The actual rJ/J_delta comparison reads delta's scopes v/q, and the complete v/q BODY task also repeats through G_v.t.TYPE v versus G.t.TYPE q.
+That latter recurrence has undefined GROUP scopes, so an argument allowing SELF only through SCOPE would omit a real TYPE obligation.
+The exact named-original BASE condition remains unchanged.
+
+The resident proper delta fragment needs q available as a semantic scope; it does not consume FULL(q).
+Each original q, a and D duty still has its own genuine original-input proof.
+GROUP expansion and TYPE-property recurrence do not supply that independent proof or waive any inherited fresh root.
+
+### The two admitted source families
+
+The first family has an EMPTY proper boundary A; the second has exact source prefix `SEQ1[p:STRING]`, with p required.
+Named I extends A, named R extends A with optional gamma of anonymous TYPE a, a extends exact I, and q extends exact R with optional delta and the GROUP recurrence.
+Names p, gamma, delta, t and h are disjoint where present.
+Original abstract head h has TYPE A and block R; all VALUE/IC fields and unrelated external clients are absent in these displayed families.
+The displayed NONSC families have empty AU sets, no attribute wildcard and empty final/block fields except h.block R.
+The q tail uses an optional GROUP occurrence in the EMPTY family and a unit GROUP occurrence in the required-p family; G's LOCAL t remains optional in both.
+
+At the original-a creator, a new persistent GLOBAL d0 has exact TYPE D and no affiliation.
+It forces actual current FULL(D) and D's required child, and continues to require D in every descendant.
+Original membership in Gamma alone is not used as a current dependency.
+D retains its genuine source SEQUENCE/root/key containing h, with the exact inherited A prefix in the second family.
+
+At D's child, issue n private families v_i/ru_i/rJ_i/G_i and n distinct private GLOBAL members m_i of h with TYPE v_i.
+The only clients of their private names are the displayed newly chosen payload arms.
+The primitive J_D payload has LOCAL h:TYPE A plus one LOCAL m_i:TYPE v_i arm per family, retaining the exact A prefix in the nonempty case.
+All canonical/RAW recipes, owners, scopes, current source authority and private declarations are chosen coherently before birth.
+
+### Actual children and changing head pools
+
+In the EMPTY family, v_i's child uses a primitive K_i extending A with the exact ordinary whole BODY(v_i).
+Its restriction is an identity call and its extension is directly legal over EMPTY A.
+
+In the required-p family, K_i's actual BODY is `SEQ1[S_A, EMPTYCHOICE1, ANY0..unbounded, ANY0..unbounded, ANY0..unbounded]`, with universal skip wildcards.
+The first child S_A gives the direct raw-extension identity.
+The source restriction positions p, gamma, delta and t map to p and the three wildcards, skipping the formally emptiable required empty CHOICE.
+That CHOICE has positive maximum and no realization; it is not made optional or treated as language-nullable.
+It prevents the wildcard tail from adding reachable attribution ambiguity.
+
+Before v_i's cut, the member's nominal path to A uses only E, so m_i is effective at h.
+After v_i retires to R K_i, block R removes m_i from h's effective pool while its affiliation, identity, TYPE and mandatory FULL duty remain legal.
+D's repeated restriction maps each current member to its same-QName LOCAL payload arm by exact TYPE identity.
+When no members remain, raw h fallback maps to the retained LOCAL h arm; it is not replaced by an empty choice.
+Unused target CHOICE arms may remain unmatched.
+
+### Simultaneous reconstruction and limits
+
+Before D's birth retain any `min(n,2)` complete private families, their members and their J_D arms; never issue the other closed private cones.
+The preceding direct constructions prove every required retained child in either cut order and every later D/head-pool check.
+No old terminal context or unproved product of old subset states is transferred to the opening.
+The SOURCE SELF parameter and identities of the retained rows remain real throughout.
+
+This proves a two-family bound only for these explicitly constructed EMPTY/required-p families and their private-client conditions.
+It does not prove that these helpers are input-indispensable or that arbitrary permitted successful constructions have two-family representatives.
+Fixed exported middle identities, unrelated RAW/PROPERTY/WHOLE/proper-root readers, nonvirtual R-entry targets and other base shapes still need their actual joint compiler.
+General coverage, executable evidence adequacy, input-derived complete bounds, general negatives, mathematical termination and dated correspondence remain open.
+
+### Executable complete-forest controls
+
+The [maintained control](../test/research/re01/source-group-self-reconstruction.test.ts) loads authentic [EMPTY](../test/conformance/fixtures/xsd/recovery/source-group-self-empty.xsd) and [required-p](../test/conformance/fixtures/xsd/recovery/source-group-self-prefix.xsd) source fixtures.
+In each frame, the original three-family and reconstructed two-family forests contain all sixteen versus five D cut-prefix contexts, plus the separate actual-Gamma duties and the creator.
+They check current TYPE recurrence, exact head pools and fallback, retained affiliations, every inherited fresh root and the persistent d0/D dependency.
+Removing a required v or D child yields missing nested evidence in that exact context; removing the independent actual-q branch yields missing actual evidence.
+
+Over EMPTY A the complete K check uses the higher-level extension-over-EMPTY rule; standalone nonempty-prefix rawEXT is not its expected predicate.
+The required-p frame separately checks its literal rawEXT prefix and ordered wildcard restriction.
+
+```bash
+npx vitest run test/research/re01/source-group-self-reconstruction.test.ts
+```
