@@ -1,0 +1,7 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:head-two-groups:n1" targetNamespace="urn:re01:head-two-groups:n1" elementFormDefault="qualified">
+  <xs:complexType name="X"><xs:complexContent><xs:restriction base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="I"><xs:complexContent><xs:extension base="t:X"/></xs:complexContent></xs:complexType>
+  <xs:element name="Hi" type="t:X" abstract="true"/>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:I"><xs:sequence><xs:element ref="t:Hi"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:restriction base="xs:anyType"><xs:sequence><xs:any namespace="##any" processContents="skip" minOccurs="0" maxOccurs="unbounded"/></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+</xs:schema>

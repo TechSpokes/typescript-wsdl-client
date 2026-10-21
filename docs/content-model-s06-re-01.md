@@ -5635,6 +5635,10 @@ The [closed BODY modules and necessary input-copy role](content-model-s06-re-01-
 Unobserved closed modules admit joint content reconstruction, while one complete local input requires a fresh copy with both an input PROPERTY anchor and a distinct exact nominal cut.
 Neither a finite list of reader kinds nor that finite product label bounds the general copy, HEAD, scalar or evidence graph.
 
+The [primitive HEAD and pooling reductions](content-model-s06-re-01-support-reconstruction.md#primitive-head-endpoints-and-finite-primitive-options) bound effective exception names in a fixed-cut sector, give a guarded finite primitive option palette and preserve actual empty-pool fallbacks when coalescing one homogeneous whole CHOICE.
+Their complete controls distinguish effective members from raw fallback atoms and preserve every required inherited-root context.
+Alternating profiles, protected ports, adaptive controllers and a general materializable helper/evidence bound remain open.
+
 The full dated-XSD correspondence gate remains separate from the selected founded research definition.
 External engines are observations only: XMLmind's own [implementation-limit record](https://xmlmind.com/xmleditor/_distrib/doc/xmltool/xsd_structure_limitations.html) lists clause cos-ct-extends.1.5 among unchecked schema constraints and describes a different particle-restriction algorithm.
 It therefore does not supply the missing decision theorem for this native contract.
