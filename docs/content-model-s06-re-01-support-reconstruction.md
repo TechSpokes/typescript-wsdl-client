@@ -4703,3 +4703,123 @@ The native ROOT construction and private-R producer discharge specific operation
 Actual orbit/borrower classification, linked SELF/FIELD updates, first-demand declarations, fallback witnesses, key order/capacity and complete producer/frontier/child reconstruction remain open.
 So do the input-derived owner bank, semantic/native/evidence adequacy, complete positive and negative bounds, mathematical termination and dated correspondence.
 No solver, production normalization, new native run or general acceptance claim is introduced by this documentation.
+
+## Fixed ROOT profiles, all-born names and a homogeneous gap bound
+
+Three scoped results reduce different parts of a reconstruction problem: a current fixed-input RP Boolean, a joined all-born NAME family per retained owner, and an abstract homogeneous position game.
+Their hypotheses do not compose automatically.
+In particular, a Boolean observation does not construct a semantic context, deleting names does not delete owners, and one abstract position need not be one physical owner action.
+
+### A current fixed-input ROOT Boolean has a finite profile observation
+
+Fix both actual particle recipes, references, occurrence constants, source/provenance authorities and ROOT keys from the complete pre-event P.
+Allow arbitrary fixed SEQ, CHOICE, ALL, ELEMENT, ANY and acyclic GROUP shapes, with checked restriction views and current fixed-leaf judgments.
+Unfold their particle/GROUP DAGs without following declaration TYPE or SCOPE; let N_s and N_t count input incidences, including selected synthetic scaffolds.
+Put U_s=N_s+1, U_t=N_t+1 and T=U_s U_t^2+1, which is at least two.
+
+Protect every actual current GLOBAL whose QName is literal in either recipe, including HEAD and fallback names, together with its actual current leaf table.
+Such a GLOBAL need not have been born or FULL at the opening.
+For other names, a profile records membership in every input HEAD and namespace allowance for every input target ANY.
+The checked current RP Boolean depends only on these protected data, the fixed recipes and profile populations truncated at T.
+
+The at-least-two floor preserves raw fallback, singleton, multiple-member and wrapper-cleanup modes and their authentic identity authority.
+High-profile virtual leaves stay unmarked unit GLOBALs under CHOICE; they cannot become direct SEQ or ALL children.
+Thus their multiplication does not change direct non-CHOICE arities or MapAndSum's input-bound multiplier.
+Formal ranges retain a representative for each alternative profile; required-empty CHOICE and max-zero syntax are kept literally, without identifying formal emptiability with epsilon realization.
+
+Fix one complete ROOT key assignment and select one successful witness per true semantic particle pair under that assignment.
+There are at most U_s U_t group/group pairs and at most U_t direct target ANY/GROUP cells per relevant CHOICE injection.
+At most B=U_s U_t^2 distinct high-profile names can therefore make a first exceptional expanded entry into such a cell.
+Subsequent per-name ELEMENT-to-GROUP descent charges that same name; it is not counted as input-bounded skeleton geometry.
+
+Projection removes names from every corresponding bag and restricts each actual key once.
+For inverse lift, choose a retained pivot outside the union of exceptional names and replace it by one common block in every containing source/target key.
+Exact GLOBAL-QName matches expand coherently and unused target CHOICE alternatives may remain unused.
+Whole-GROUP-to-ANY and genuine identity calls lift separately through unchanged formal summaries, namespace answers and authority.
+A source-only profile need not create any per-name exceptions when its call stays coarse-covered; only a genuinely expanded occurrence would force all T retained names into the B exceptional cells.
+
+The [restriction](../src/compiler/particleRestriction.ts) and [semantic-view](../src/compiler/particleSemanticView.ts) arguments establish a current Boolean observation, without assuming UPA of an unconsumed original operand.
+View authentication, effective-member formation, EDC/UPA, resource outcomes, actual TYPE/source/scalar support and current FULL remain producer obligations.
+Unknown Phi/COPY recipes, new keys, later births and linked actions do not become fixed P input through this observation.
+No resized context or strategy decoder is supplied.
+
+### Existing common-word names can be projected per anonymous owner
+
+Start instead with authentic Gamma, complete P, a lawful common opening H0 and an OLD finite founded successful forest.
+Keep one exact anonymous all-complex owner w and its actual BODY, identities, actions, selected middle/header and old genuine children.
+Use the ordinary value/IC-free, qualified no-AU/no-AW frame and the admitted flat unit-CHOICE C/COPY family; fixed SOURCE S remains sealed and imposes RP(S,C_peer).
+
+Every eligible outside-Q QName already has its actual GLOBAL in H0 and a LOCAL arm in common C and every joined COPY, all selecting exact w in canonical and RAW data.
+An unrelated GLOBAL cannot be its representative, and a later birth cannot stand in for a deleted H0 name.
+Every chosen representative keeps its old declaration identity, position, flags, TYPE, physical context and semantic scope; no co-naming, relocation or cross-pairing of scopes occurs.
+Source/owner/value/IC/WORD/exact-name clients stay protected or join one genuine complete first-issue map, including future stored aliases and BODY/WHOLE/proper readers.
+
+Assume the actual P-only SG-parent/shared-shield projection has already supplied at most h P parents, h shields and the no-parent case.
+Eligible GLOBALs are leaves, no retained affiliate points into a deleted leaf, and none is itself a queried HEAD identity.
+For exact w, literal SG parent and abstractness define at most 2(2h+1) roles.
+By the [actual relation owner](../src/compiler/schemaTypeRelations.ts), role members have identical formation and effective-membership answers in each H, through every real w retirement and chosen action.
+
+Keep any two old common-word NAME orbits per role, or its sole orbit, and delete the others coherently before affected first issues.
+This leaves at most 4(2h+1) all-born private NAME orbits per w.
+Each role contributes all its persistent old members or zero at each H, so retaining min(2,n) preserves every pool's zero/one/multiple class and a nonself witness where one existed.
+The cap-two guard preserves raw fallback versus implicit CHOICE and the joined multiple-word mode; empty and singleton word modes remain separate.
+Actual anonymous EDC permits at most one incidence of a QName per FULL word, so this also bounds corresponding unit arms per COPY.
+
+Restrict each old ROOT key order once and co-delete matching GLOBAL and joined LOCAL incidences.
+Remaining incoming/outgoing injections and exact surviving leaf/property tasks remain old tasks; unused target CHOICE cells incur no emptiability debt.
+MapAndSum keeps its genuine fixed direct syntax and finite normalization mode.
+UPA loses consuming labels without adding epsilon, EDC loses incidences, and nonempty unit CHOICE ranges and positive ordinary wildcard checks retain their old data.
+
+If opening RP(C,K) has a genuine nonidentity CHOICE ordered injection, at most e_K source arms use K's nonvirtual direct cells.
+This charge uses injectivity, not target UPA or FULL(K), which remain separate wherever the actual reconstruction requires them.
+Every other still-E complex LOCAL TYPE w matching a same-QName virtual GLOBAL must stop at exact TYPE w under the R-only NTO gate; it cannot cross w's E step.
+A stable-R source needs its independent exact join or reverse-path argument.
+Protect unborn or otherwise nonjoined slots, giving at most |Q|+e_K+4(2h+1) for this anonymous-owner interface, plus any genuinely independently bounded external family.
+
+All retained owners and support rows remain actual current FULL roots wherever required, with complete owning-context component/scalar/typed frontiers.
+Every changed boundary producer must have its complete actual same-H component/scalar/typed frontier and required-child coverage at the retained real parent.
+Any owner/backing transport for a deleted declaration must be genuinely completed first.
+Keep every old owner child, real parent, selected action and lawful finite additions; prune only genuinely unused premises at their actual parents.
+This operation does not omit a cut, advance a birth, infer a protected-family bound from an old witness list, or bound the number of owners.
+
+### One homogeneous position game has an online gap cutoff
+
+This third result is an abstract game with initial word e^n and no initial retired anchors, one live letter and finite terminal/action alphabets.
+An adversary requests any live position; a full enabled action retires only that position, adds nonnegative counter increments and moves a finite register upward.
+Action parameters and permitted register successors read only (min(C,E),min(C,z),rho), with C at least one, r counters and register-chain change bound L.
+The live decrement is concrete; its capped successor need not be determined by the previous cap, and initial counter/register values do not depend on hidden exact n.
+
+Initial, ongoing and terminal observer predicates read that same observation.
+Ongoing word safety D, including its initial check, and terminal word predicate F must be subword closed; the observation predicates need not be hereditary because their values are preserved exactly.
+All predicate tests are effective and the action data are finite.
+Put d=rC+L and B_gap=C*2^d.
+If e^N wins for N>B_gap, then e^(N-1) wins; searching 0 through B_gap decides existence in this exact family, testing n=0 by its own guards.
+
+Before one virtual retirement, the old and real words differ by one live e in one distinguished all-e gap; every retired anchor and outside position has a fixed ordered image.
+Progress means that a capped z coordinate or rho changes, excluding the E decrement; at most d actions are progress.
+On nonprogress rho stays equal, and every positively incremented coordinate was already at least C before the action, so its skipped increment stays invisible.
+Copy every outside-gap response, including nonprogress responses.
+For requested real rank j in a gap of size g, choose old rank t=j+1 when the real left side is larger, otherwise t=j, before inspecting the old response.
+On progress, share that full action and keep the extra old e on the larger surviving side, whose real size is at least floor(g/2); the new terminal becomes a fixed anchor.
+
+After p such progress splits, g is at least floor((N-1)/2^p), hence at least C*2^(d-p) for p at most d.
+Outside progress consumes the same total budget without shrinking the gap.
+On nonprogress, re-embed only within the untouched gap, omit exactly t and execute its action virtually.
+Fix the embedding permanently, then answer the pending real request from its distinct genuine old live image in that continuation.
+The skipped increment affects only already saturated nondecreasing coordinates; exact live counts now agree and all observations continue to match.
+
+At all relevant points the real word is a subword of the old word, transferring D and terminal F.
+The gap stays at least C until the virtual move, so it occurs before real exhaustion; every real round retires one position and at most one extra old move occurs.
+No infinite stutter, fairness, retrospective rank assignment or response exchange across retired anchors is assumed.
+Finite backward induction for bounded n needs no effectively supplied old strategy.
+
+### The unjoined physical owner interface
+
+The profile lemma concerns fixed P/P current calls, the NAME projection retains every owner and its old strategy, and the game pumps independent positions.
+They give no composition theorem for a physical common word such as a1:wa, b1:wb, a2:wa, b2:wb, where one actual wa cut changes both separated a positions and one wb cut changes both b positions.
+A per-owner NAME cap or a homogeneous symbol at every slot does not turn these linked actions into independent position requests or justify moving their immutable incidence.
+Mixed initial letters, arbitrary extra allowed-length languages, initial anchors, nonhereditary word predicates, changing action alphabets and births are outside the gap theorem.
+
+Complete linked FIELD/SELF and key-order realization, lawful first-demand support, all owning-context FULL/frontier/required-child producers and the actual input-derived owner bank remain open.
+These source results supply no native cutoff, complete SOME/NO procedure, general negative, semantic/native/evidence adequacy or general RE01 mathematical termination claim.
+No toy solver, new abstraction, production change or native execution is introduced by this record.

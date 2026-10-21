@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): record fixed ROOT profile bounds, all-born name projection and a scoped homogeneous-game cutoff.
+
 - docs(re01): record qualified ROOT word operations and private-R producers with conditional finite-game bounds.
 
 - test(re01): verify shared private R suffixes with complete contextual evidence and entered-block contrasts.
