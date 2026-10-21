@@ -47,6 +47,8 @@ The number of signatures, copies and protected ports remains unbounded by these 
 The [finite active-HEAD construction](content-model-s06-re-01-support-reconstruction.md#finite-active-head-construction-in-a-supplied-legal-product) gives an explicit observer/shield bound under a supplied genuine legal product and complete reader interface.
 The [first PROPERTY entrances](content-model-s06-re-01-support-reconstruction.md#finite-first-complex-property-entrances-from-inherited-input) are charged to inherited BASE retirements, while simultaneous reconstruction beyond them remains open.
 The [SOURCE controller controls](content-model-s06-re-01-support-reconstruction.md#a-source-whole-payload-and-its-nominal-controller) preserve complete children while jointly choosing a writable member TYPE at birth; they do not impose full validity on an unconsumed original property owner.
+The [closed scoped-template construction](content-model-s06-re-01-support-reconstruction.md#simultaneous-copies-of-a-closed-scoped-template-cover) assigns TYPE, BASE, scope and actual whole BODY prototypes together under a supplied complete cover.
+Its complete child control keeps a failing original template PROPERTY-only while independently validating its copy; extracting the cover and bounding the general forest remain open.
 
 The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.

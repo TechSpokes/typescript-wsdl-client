@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): preserve complete scoped-template copies without assuming full validity of their original templates.
+
 - fix(scalar): retain authenticated source decimal-union components and record conditional finite support interfaces.
 
 - fix(scalar): retain authenticated source QName facet components with current-context value and map checks.
