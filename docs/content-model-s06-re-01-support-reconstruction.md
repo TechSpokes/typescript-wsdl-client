@@ -2811,3 +2811,123 @@ This construction separates the nominal controller U from a restriction-template
 It shows why failure of an unchanged-member payload split does not establish failure of every reconstruction.
 It does not permit editing an inherited member, erasing an exact protected TYPE reader or dropping an inherited fresh root.
 General protected reader reconstruction, support bounds, evidence adequacy, complete negatives and mathematical termination remain open.
+
+## Simultaneous copies of a closed scoped-template cover
+
+This continuation starts at main `0a9febfac18afa0721fdba199e121df00b0d30e6`, tree `0fbfa4f6bbf3e97c9db7313168fa572c0be1b91c`.
+It constructs actual TYPE, BASE, scope and ordinary particle selectors together in one restricted family.
+The finite template cover is a premise here; the first-PROPERTY-entrance bound does not establish that cover.
+
+### Exact cover and required contexts
+
+Fix a complete founded forest W over exact inherited P and a finite BASE-closed template graph Q with acyclic literal BASE descent.
+Every Q vertex is NONSC and Q-free: restriction or primitive extension, with no own nonprimitive extension duty.
+Every affected fresh copy is anonymous/scoped and has an actual positive PROPERTY label in Q throughout its required contexts.
+The label matches exact method, namespace, abstract/final/block fields and content variety.
+The complete ordered cover includes every anonymous BASE, LOCAL TYPE and complex semantic-scope successor; named and builtin terminal selectors remain exact.
+An optional exact anonymous P selector in place of its private copy is outside this theorem.
+The recorded fields, ordinary declared particle shapes and selector roles are persistent, with a genuine first-birth plan for their dependencies.
+
+No affected copy has a nonprimitive extension duty.
+All other controllers and their actual required children remain in the plan.
+This excludes introducing a new controller merely because it has a template label.
+Actual terminal cuts retain their old current-H support whenever consumed; availability alone does not establish FULL of a terminal.
+
+Use the value-free ordinary NONSC sector with fixed scalar selectors, an empty effective AU set and a complete fixed exact attribute-wildcard program.
+There is no protected source WHOLE/proper-particle alias into the part being rebuilt, changed scalar authority, physical WORD, exact private identity or unlisted owner/reference reader.
+Every affected root comparison, scope, current pool, source dependency and mandatory fresh component is in the complete interface.
+Obsolete support is never issued only after its complete canonical, RAW, owner, source and future-reference closure has been repaired.
+
+The template graph need not itself be FULL in H.
+The old copies have successful constructors in W; the proof below transports those constructors on their actual mapped operands.
+It does not replace a valid copy by its possibly invalid original template.
+
+### One joint selector assignment
+
+Compute structural equivalence on the finite Q graph, comparing all recorded fields, ordered declared incidences, BASE, LOCAL TYPE and scope successors.
+Treat every exact terminal cut as a distinct constant.
+The greatest such equivalence is finite graph bisimulation for this deterministic diagram, not particle-restriction transitivity.
+
+Each class has one BASE successor class or exact terminal cut.
+BASE descent reaches that cut after the same finite number of steps on both sides of a positive pair.
+A class therefore cannot identify a proper ancestor with its descendant.
+Equal-height positive all-complex LOCAL nominal comparisons still require exact TYPE identity; mere PROPERTY equality is insufficient.
+
+Choose one genuinely issued fresh representative per class, at its first qualified cohort.
+Map every old copy to its class representative and map its BASE, LOCAL TYPE and scope cells through that same assignment.
+Keep exact cuts fixed and other controllers injective.
+A copy with several valid labels has labels in the same structural class, so the assignment is well-defined.
+This supplies a joint selector solution instead of choosing a potentially incompatible representative separately at each particle leaf.
+
+Named cuts retain their exact names and identities; new copies remain anonymous.
+Positive local nominal paths follow the mapped literal BASE path with the same methods.
+No two positions of that path are merged.
+For a genuinely formed literal affiliation chain, each proper head TYPE already lies on its member TYPE's BASE path.
+Thus the same path word and entered blocks preserve actual positive and negative effective membership; arbitrary unobserved negative TYPE queries are not an additional preservation claim.
+
+### Ordinary BODY codes and actual materialization
+
+Unfold each finite template's declared particle DAG by ordered child incidence, retaining exact kind, occurrence, wildcard and declaration fields.
+Inline only genuinely eligible ordinary GROUP uses, with their real occurrence and compositor shape.
+This creates ordinary RAW support for the selected shape; it does not install an original source-private semantic node as an active child.
+
+Each LOCAL declaration uses the jointly selected TYPE and semantic scope.
+Each GLOBAL leaf remains the exact declaration selected by the template.
+Equivalent templates consequently give the same complete mapped BODY code.
+The code records the actual sharing partition, protected constants, field values and selected identities, rather than only an unlabelled tree shape.
+
+Allocate one prototype for each complete WHOLE code used in the lineage.
+Different codes have disjoint private particle and implicit-order keys.
+Within a prototype retain its coded distinct positions and sharing; do not intern isomorphic proper subgraphs independently.
+An exact surviving cross-root proper alias is a protected constant or needs its separately justified before-birth transport.
+If two old TYPEs select one new representative, their mapped whole code agrees, giving that representative one coherent BODY.
+
+For RP between equal new whole roots, use its actual identity rule.
+For different roots, transport the old winning key orders through their incidence-preserving maps.
+Repeated keys within an operand and protected shared keys retain one order; private keys split between prototypes can independently use the corresponding old order.
+A lost private identity shortcut has a diagonal structural proof with the same counts, declarations, mapped nominal targets and orders.
+This is an induction over the finite ordinary graph, not RP transitivity or language containment.
+
+Raw extension similarly uses real whole-root identity or its actual first-prefix geometry and mapped PROPERTY tableau.
+UPA keeps child-edge positions and consuming labels; EDC retains namedness and every required positive named-TYPE equality.
+No new occurrence is justified merely by sharing a template.
+
+Representative FULL follows from an old successful copy's constructor on both mapped operands.
+Its BASE and declaration TYPE/scope closure stay within the jointly issued cover or genuinely consumed exact cuts.
+Recursive TYPE/scope references form a finite simultaneous component closure; they do not require FULL of Q as an extra premise.
+Every actual new and retained fresh root is rechecked in H, together with the original root predicate where required.
+The old finite forest supplies the unchanged controller children, replayed by its finite height with genuine first-birth availability.
+No parent validity receipt is retagged for a child.
+
+If there are c template classes and at most s ordinary private particles/declarations per cover representative's complete code, their BODY prototypes use at most c*s private particles/declarations, plus their exact protected closures and genuine allocator support.
+Outside fresh alias or constructor consumers can have other codes; their support is separately retained or bounded and is not included in c*s.
+It is not an encoded bound on the whole witness or forest.
+The cover's extraction, optional exact-anonymous-P-cut versus private-copy choices, new NP copies, arbitrary scalar/source support and general evidence size remain outside this theorem.
+
+### A template can fail FULL while its copy succeeds
+
+The [maintained three-case control](../test/research/re01/scoped-template-full-support.test.ts) uses its [genuine source fixture](../test/conformance/fixtures/xsd/recovery/scoped-template-full-support.xsd): X EMPTY restriction of anyType, I EMPTY restriction of X, global H in namespace N with TYPE anyType, anonymous p EMPTY restriction of X and anonymous q extension of I with unit SEQUENCE[H].
+At creator P, q becomes restriction of fresh primitive J extending X.
+J's ordinary CHOICE at zero-to-unbounded contains ANY_N/lax and unqualified LOCAL delta with TYPE p and scope J.
+P also introduces EMPTY Z extending I, whose nonprimitive duty requires its actual child.
+
+In that child Z restricts exact existing J; J's formal minimum zero supplies the genuine EMPTY restriction branch.
+The child introduces rp EMPTY restriction of X, primitive rJ extending X with J's shape but LOCAL delta.TYPE rp and scope rJ, and rq restricting rJ with ordinary SEQUENCE[H].
+It also introduces unqualified global delta with TYPE rp and affiliation to H.
+The namespace-N wildcard and unqualified LOCAL delta are disjoint.
+
+At P, H's pool contains only H and q is FULL.
+In the child, H's pool also contains global delta.
+Current q fails rule 5.4: the new delta cannot match ANY_N, and rp is a distinct restriction sibling of exact p.
+The copied rq passes because rJ's LOCAL target uses exact rp.
+The actual PROPERTY pairs rp/p, rJ/J and rq/current-q are positive, including the genuine scope-pair recursion.
+Both rq and current q have method restriction; this is not comparison with q's old extension row in Gamma.
+
+Complete evidence checks all nine actual Gamma components there, six fresh components at P and sixteen persistent fresh components in the child.
+The consumed FULL frontiers have thirteen and nineteen receipts respectively.
+The child legitimately consumes FULL(p) through J, while q and q's carrier remain available PROPERTY inputs outside its required FULL closure.
+Removing Z's required child is unresolved, not a successful one-node proof.
+
+This control establishes neither that PROPERTY implies FULL nor that every input template admits such a copy.
+It preserves the proof's actual distinction between a property label and independently checked copy support.
+General cover extraction, complete executable evidence adequacy, input-derived helper/evidence bounds, complete negatives, mathematical termination and dated correspondence remain open.
