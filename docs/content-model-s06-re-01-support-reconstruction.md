@@ -4454,3 +4454,99 @@ The results leave actual borrower coverage, shared FIELD realization, protected 
 They neither bind an unknown controller to a new Xi nor authorize prospective unsealing, renewal or a reserve cutoff.
 All general coverage, semantic/native/evidence adequacy, complete bank/negative bounds, mathematical termination and dated correspondence gates remain open.
 These are source-reviewed constructions and failed transformations, not new native runs, an activated solver or a complete SOME/NO procedure.
+
+## Private R paths share an eleven-row catalogue
+
+Fix authentic Gamma, the complete pre-event P, an OLD finite founded successful forest and one retained post-P SOURCE owner w.
+Keep w's exact named input BASE, installed ordinary BODY C_w and actual later retirement/middle unchanged.
+The admitted frame is all-complex NONSC, value/IC/WORD-free and empty-AU/no-AW.
+For the complete private-reader cone below, arbitrarily many strict R-only entries above this same exact w can be replaced at first birth by six named selectors and five shared R carries.
+This bounds entries per eligible owner, not the number of owners or an arbitrary helper forest.
+
+### Complete reader and first-birth premises
+
+Every shortened row is post-P, strictly above w on a nonempty literal R path, with immutable R BASE/block/final data in every stored context.
+No fixed P identity or fixed target inside that path is removed.
+Eligible clients are coherently mapped declaration TYPE selectors, physical identity FIELD stops and required positive R-only nominal comparisons.
+Retain actual GLOBAL declaration identities, QNames, flags, SG parent and first birth; map matching private LOCAL TYPE and canonical/RAW selectors together.
+
+Every retained HEAD.TYPE target is outside the shortened cone or exact w.
+An internal HEAD target, required negative NTO, exact TYPE identity/name, typed SOURCE/WORD or lexical/evidence authority is protected.
+Expanded nonidentity PROPERTY, including a complex semantic-scope comparison on an entry, requires its own complete genuine decoder.
+BODY/proper/WHOLE exports and unchanged E/R borrowers reading an old entry BODY likewise remain cuts unless genuinely reissued with the complete construction.
+
+These guards cover the entire retained program, including later original callbacks, stored/future aliases, scopes and first-use readers.
+They do not follow merely from SOURCE role absence, equal BODYs or the list of possible reader kinds.
+A joined external decoder owes its actual same-H component/scalar/typed/source frontier and matching required children at the retained parent; Boolean compatibility supplies neither.
+Cross-context duties retain actual support in their owning contexts.
+
+### Actual shared suffix ancestors
+
+For an old entry x, let B(x) be the union of TYPE.block bits strictly after x and before w.
+Neither the start's own block nor w.block belongs to B(x).
+Along x R y above w, B(x)=y.block union B(y), so successive B sets only decrease.
+After removing consecutive repetitions, the suffix word pi(x) is one of these six words:
+
+```text
+[0], [E,0], [R,0], [ER,0], [ER,E,0], [ER,R,0]
+```
+
+Here 0 is empty, E/R are the complex derivation bits and ER contains both.
+Issue one named ordinary R top a_p per word p, each with empty block/final and actual complete C_w BODY.
+Set a_[0] R w.
+For each nonzero p=[B]+q, issue c_p R a_q with block B minus first(q), empty final and C_w BODY; set a_p R c_p.
+The six tops and five carries share their suffix tops as actual BASE ancestors and form an acyclic graph.
+Map every eligible x to a_pi(x), with one coherent before-birth canonical/RAW/reference plan and genuinely reserved TYPE names.
+
+If old x reaches eligible y by R only, pi(y) is a suffix of pi(x).
+Equal words now close by identity; otherwise the new literal path visits a_pi(y), preserving the old positive NTO for every allowed exclusion set.
+A parallel top with the same block profile is insufficient: top[E,0] must reach top[0] through its carry.
+Old negative internal NTO can become positive, which is why internal HEAD stops and independently required negatives need their separate decoder.
+
+### Exact external answers and complete current support
+
+The carry blocks telescope to B(x), while every strict new prefix contributes the same R method as the old nonempty prefix.
+The remaining actual suffix at w, including w.block and its current E g or R K row, stays exact.
+Thus both true and false affiliation/effective answers to every admitted outside stop or exact w are preserved through w's real cut.
+The complete GLOBAL pools and ROOT key domains are unchanged; each call can retain its actual coherent ordering and injection.
+LOCAL/GLOBAL positive RP leaves retain names, occurrence/declaration flags and their required nominal paths.
+UPA consumes the same labels; EDC retains namedness where required and admits the coherent named TYPE coalescence.
+
+An actual old last R edge into w proves w.final permits restriction already at the catalogue's birth, since that final is immutable.
+All other new immediate bases have empty final.
+Every new own restriction closes at genuine C_w identity/version diagonal or EMPTY/EMPTY with compatible content variety and empty attributes.
+Install the catalogue with w, or at a retained earlier point where w is available and no changed client is born yet.
+No future K, GLOBAL ELEMENT or new E/NP subject is introduced.
+
+All eleven rows are real mandatory FULL roots, rechecked with current w and its already owed C_w dependencies in every required H, including after w R K.
+Legitimate TYPE/FULL cycles are handled as one current finite component conjunction; no BASE or evidence-child cycle is introduced.
+An old FULL receipt, available source or compatible scope is not a current assessment.
+Keep every real endpoint action outside the shortened cone and every surviving independent child at its actual parent.
+Recompute the emitted frontier and prune only unused proof edges; no child additions move into another context and no stored inherited row is deleted later.
+
+This supplies a founded replay under the full reader/birth/producer premises, not an independent dated foundation or automatic recognition of every private SOURCE alias.
+The remaining joins include protected internal HEADs, unknown borrower coverage, private FIELD/GLOBAL orbit and ROOT order reconstruction, and an input-derived owner bank.
+General coverage, semantic/native/evidence adequacy, complete bounds/negatives, mathematical termination and dated correspondence remain open.
+
+### Complete finite controls and two failed maps
+
+The [maintained controls](../test/research/re01/private-r-entry-suffix-carries.test.ts) reuse the unchanged [membership fixture](../test/conformance/fixtures/xsd/recovery/helper-membership-vector.xsd).
+Its EMPTY host tests the path, entered-block and current-FULL operation; it does not recognize the theorem's full SOURCE/PROPERTY/birth interface.
+The old thirteen disjoint R rows and the eleven-row shared catalogue each have a complete two-node forest: original X R new E over A, then owner w E P retired to w R existing primitive P.
+All actual-Gamma components and every fresh root, including all eleven rows, have debt-free construction receipts in their owning parent and child contexts.
+Dropping both the owner child and its incoming proof edge yields exact-w missing-nested-evidence, rather than a dangling proof-reference error.
+
+Members form a real SG chain through an abstract exact-w head, an abstract exact-P head with empty flags and the existing P head blocking E.
+Direct affiliation is checked on each declared edge; effective pools use their genuine transitive ancestry.
+In word order [0],[E,0],[R,0],[ER,0],[ER,E,0],[ER,R,0], their independently specified member vectors are:
+
+| Observed head | Before w retires | After w R P |
+| --- | --- | --- |
+| P, empty block | 100000 | 110000 |
+| P, block E | 000000 | 110000 |
+| exact w, empty block | 110000 | 110000 |
+
+A parallel-leaf catalogue preserves these vectors and has complete evidence, but loses old x_E R y_blockE R w's required positive NTO to its mapped suffix selector.
+The shared catalogue retains that literal ancestor.
+Moving an entered R bit onto the direct start's own block also has complete evidence but changes the effective vector: the native walker ignores the start's own block.
+These are counterexamples to two particular maps, not malformed schemas, SOME negatives or full coverage outside the explicit cone guards.

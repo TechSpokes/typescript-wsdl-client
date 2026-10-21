@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "6af469e6184de79303e9848e2de6fe235b2c3867c5ab3c3774722d191f2597b5",
+          "sha256": "f12fc2f6f0fc1b538eead70aeacf607b40e43e75bbfbd2e3ad12d88fbc31d808",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "1f56e0ca5f05a5c7b569e0d615bc799ed2646f70fbead02d528981435920f4f5"
+          "sha256": "bf7ff74c39f42bd37414b8e1ce8432a65ff629304df4032bf58b1910e28db261"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2857,6 +2857,11 @@
           "path": "test/conformance/fixtures/xsd/recovery/pure-any-dead-source-cell.xsd",
           "role": "fixture",
           "sha256": "b9577bd11ac0302e1bce6ada711b10bf7ae7ee03e46e0e610b8e64e1385cc50d"
+        },
+        {
+          "path": "test/research/re01/private-r-entry-suffix-carries.test.ts",
+          "role": "prototype",
+          "sha256": "a3e2dc6f2a28212b3ebbae9338a427d26319d0b3bd4cc112e1e9db544cae97ab"
         }
       ]
     },

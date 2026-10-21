@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): verify shared private R suffixes with complete contextual evidence and entered-block contrasts.
+
 - docs(re01): record covered common-payload recooks and scoped SOURCE reserve children.
 
 - docs(re01): record input-relative initial payloads and the qualified exposed-owner bound.
