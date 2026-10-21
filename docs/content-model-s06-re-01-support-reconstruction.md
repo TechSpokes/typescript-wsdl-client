@@ -3625,3 +3625,147 @@ The required-p frame separately checks its literal rawEXT prefix and ordered wil
 ```bash
 npx vitest run test/research/re01/source-group-self-reconstruction.test.ts
 ```
+
+## Initial payload synthesis, fixed stops and dynamic names
+
+The following source-only results narrow the ordinary all-complex NONSC sector with empty AU sets, no attribute wildcard and no affected VALUE/IC/scalar/WORD authority.
+They preserve every original/P identity and every inherited fresh FULL root in its required context.
+Their complete source, owner, exact-field and whole/proper-alias guards are substantive; these results do not cover the whole accepted B-v1 domain or supply an input-derived controller bound.
+
+### The remaining simultaneous obligations
+
+For an actual original event D, let the selected primitive be J_D E A with complete BODY Phi.
+Each retained outside extension w E g has frozen BODY X_w, its immediate base has BODY Y_w, and its genuine child selects exact primitive K_w E A.
+An existing fixed K_w is an exact identity, while a free newly synthesized middle is a different kind of choice.
+
+The same physical recipes and their real current census must satisfy these direct native predicates:
+
+```text
+EXT_H(Phi, BODY_H(A))
+RP_H(BODY_H(D), Phi)
+RP_H(Y_g, BODY_H(next(g)))
+EXT_H(X_w, Y_w)                         while w is E
+RP_H(X_w, BODY_H(K_w))                  at w's child and required descendants
+PROPERTY_H(actual selected field pairs)
+FULL_H(all new and inherited mandatory roots)
+```
+
+Each installed BODY also owes UPA/EDC, declaration formation and genuine source/key/owner authority.
+SG formation uses the actual TYPE path and head.final; effective membership separately uses head.block and entered TYPE blocks.
+Empty, singleton and multiple pools, raw-head fallback and coherent per-ROOT implicit order remain distinct native cases.
+Neither RP nor rawEXT is used transitively to replace these equations.
+
+The input supplies actual Gamma identities, literal QNames, declared positions and namespace predicates.
+Earlier primitive event payloads Phi_r, arbitrary inherited P stops, private SELF instances and dynamic member orbits remain parameters until an independent operation bounds or reconstructs them.
+An old roster, unknown q or its histories M(q) cannot serve as the input alphabet for that same bound.
+
+### A persistent prefix cannot bind the newly retiring TYPE
+
+Suppose mandatory J_D E A has an actual first prefix P_A whose rawEXT proof compares the same real LOCAL TYPE fields c/tau at the opening and at w's genuine child.
+Require tau's whole literal BASE path and its methods to remain unchanged at this w event and its closure to avoid w, for example through a proved pre-cohort fixed-boundary cut.
+Then c's literal BASE closure also avoids w.
+
+If BASE descent from c first reached w at depth d, positive complex PROPERTY would reach the distinct pair w/BASE^d(tau).
+An earlier identity closure would instead put w in tau's closure, contrary to the premise.
+The fixed opposite row must be E at the opening; w becomes R at its child while that row stays E, so the required method equality fails.
+Finite BASE descent makes this a local contradiction even when TYPE/SCOPE tasks elsewhere recur coinductively.
+
+Apply this separately to every actual child of the new cohort when the same field/disjointness premises hold.
+It excludes those new NP vertices from these prefix TYPE BASE paths, not from every recursive TYPE/BODY/Phi dependency.
+A previously inherited t R w is an actual avoiding-w nominal stop and does not meet the new disjointness premise.
+Keep that stop; neither this result nor the crossing-only R-alias constructor permits replacing every prefix by SELF w.
+
+### Formal-zero A removes an eligible private R corridor
+
+Assume the complete writable-reader and genuine prefix-installer guards, fixed incoming source recipes D_i, and a boundary A whose actual restriction view has formal minimum zero in every required H.
+Keep each exported X_w, exact old K_w child choice, nominal graph and all its actual readers.
+Let L be at least one and the largest direct SEQUENCE arity of the fixed input D_i after finite GROUP normalization, counting a HEAD as one position before virtual expansion.
+An additional unknown incoming source is outside this input-derived capacity until reconstructed.
+
+For a genuine unit-SEQUENCE E prefix P_A there are three cases determined by physical normalization, not by a guessed terminal pool.
+If P_A restriction-erases, use `SEQ1[P_A, ANY0..unbounded/skip]`, which normalizes to one universal ANY.
+Do not insert a required empty CHOICE there: an old source ANY cannot restrict the newly exposed SEQUENCE mode.
+If P_A remains and every old tail erases, retain the old already-formal-zero recipe.
+
+If prefix and tail both remain, use `SEQ1[P_A, EMPTYCHOICE1, U_1, ..., U_L]` with universal optional skip wildcards.
+Preserve each old D_i match into the unchanged prefix; map each later source position in order to a distinct U_j.
+There are at most L such positions, and the unmatched prefix, required empty CHOICE and wildcards are formally skippable.
+The required empty CHOICE has occurrence1..1 and no realization; it prevents new reachable attribution overlap but does not waive any particle's own legality.
+
+The new J_D is formally emptiable and still extends A through its genuine prefix or whole identity.
+Give every eligible private proper-R corridor row EMPTY content before birth.
+Its own restriction uses EMPTY/EMPTY or the formal-emptiable-base branch, while unchanged X_w extends EMPTY g through the actual higher-level empty-base rule.
+Each w child still checks the exact old X_w/K_w RP in its own unchanged nominal/census state; no FULL(K_w) is imported earlier.
+This removes these corridor BODY variables without bounding X_w, names, SELF fields or the controller roster.
+
+The prefix must be an actual ordinary child or have a qualified ordinary installer preserving each affected native call.
+An authenticated SOURCE WHOLE handle does not grant access to a private proper child, and PROPERTY equality alone does not restore a lost originalParticle/native-UR shortcut.
+Every outside BODY reader is retained or actually transported; calling a corridor unsealed does not prove that closure.
+
+### A positive ordinary-ANY kernel
+
+A separate direct constructor handles A's actual resident unit SEQUENCE containing one ordinary ANY with positive range I, exact namespace/process/context, no native-UR marker, and fixed K E A with no added content and that same complete recipe.
+Require genuine persistent prefix P_A and current child FULL/final permission for K.
+All rewritten J_D/g/w rows use the exact particle content variety of A/K, and K retains its genuine same-H E/A construction.
+Use `BODY(J_D)=SEQ1[P_A, EMPTYCHOICE1, U_1, ..., U_L]` with the same input-derived capacity and installer guards.
+Give eligible corridor rows and w the common Q=`SEQ1[P_A, EMPTYCHOICE1]`.
+
+The genuine P_A/A comparison directly proves J_D's primitive extension, rather than importing a K FULL receipt; Q/J_D has a direct prefix injection and shared Q rows use actual identity constructors.
+At w's child, Q has exact formal ETR I and directly restricts the fixed K ANY through native PW with its actual namespace/process constraints.
+J_D instead has minimum I.min and unbounded maximum because of its optional wildcard tail.
+The required empty CHOICE blocks reachable attribution in both recipes.
+This is a positive-A kernel, not a general compiler for arbitrary fixed K or arbitrary incoming BODY readers.
+
+### A selected fixed middle need not be FULL at the opening
+
+An authentic SOURCE counter separates availability from consumed legality.
+Take required-p A, named I E A, original D E I, and fixed named K E A containing optional LOCAL delta of anonymous TYPE q E I.
+The q tail has optional HEAD h followed by optional LOCAL m:STRING; h is abstract, TYPE A and empty final/block, while K.block contains R.
+In actual Gamma no GLOBAL m exists, so q's original construction and its own required evidence are checked separately.
+
+At D's child issue primitive J_D E A and proper g/w rows with required-p BODY, plus GLOBAL m.TYPE=w affiliated to h and a persistent d0.TYPE=D.
+While w is E, m is effective and q's h expansion collides with its LOCAL m, so current FULL(K) would fail through q's UPA/EDC.
+K and q are not opening FULL duties in this genuine constructor.
+
+At w's child choose exact K and change w to R K.
+The R edge then enters K.block R, removing m from h's effective pool while its affiliation remains formed; q and K become locally legal in that required context.
+Their actual nested duties, the inherited fresh rows and d0/D are checked there.
+Thus future selection of K cannot justify placing its FULL frontier at the earlier opening; this counter establishes neither a necessary K choice nor general nonexistence.
+
+### Remove private LOCAL names without changing source arity
+
+Let N be the genuine finite fixed-input/protected literal QName set, excluding the old list of fresh GLOBAL and Phi-tail spellings.
+Consider whole fresh LOCAL-use orbits outside N, closed under selected private PROPERTY/rawEXT correspondences, shared identities, aliases and jointly rewritten positive LOCAL/LOCAL matches.
+An orbit must have no selected positive match with a real noninput GLOBAL, and every stored/future name, TYPE, scope, owner, source or evidence client must be retained or coherently reissued.
+
+A positive match to a fixed literal LOCAL or explicit/fallback GLOBAL is impossible outside N by QName mismatch.
+ELEMENT-to-ANY sees namespace and interval rather than LOCAL TYPE/scope.
+For an actual fixed finite wildcard namespace library, choose one URI per nonempty cell and issue a genuinely fresh abstract GLOBAL STRING helper for that cell, with no SG or affiliates and empty VALUE/IC/final/block.
+Reserve its QName against the complete retained/future physical plan.
+
+Redirect each eligible use to that real helper identity at first birth, preserving the actual particle geometry, counts, whole/proper alias partition and ROOT keys.
+This is a new GLOBAL declaration use, not relabeling an old scoped LOCAL identity.
+Joint private declaration pairs now close by GLOBAL identity; retained ELEMENT-to-ANY calls keep their namespace/range tests.
+No source position is added, so native compositor dispatch and injection arity are unchanged.
+
+The abstract helper removes consuming labels, preserving UPA; its fresh QName and common named STRING TYPE preserve EDC.
+Any independent TYPE/scope roots remain mandatory, even when their former PROPERTY task disappears.
+An old originalParticle or native-UR identity shortcut needs coherent retention or an actual structural diagonal; rendered shape alone is insufficient.
+The operation grants no SOURCE private-child authority and no input bound on an unbounded retained dynamic census or arbitrary private wildcard library.
+
+By contrast, replacing primitive peer tails by `EMPTYCHOICE1` and common ANY slots requires the actual proper-unit-SEQUENCE mode, genuine same-H peer-prefix PROPERTY pairs, retained incoming positive witnesses and complete private-tail/readership guards.
+Its finite common width comes from those actual calls and is not automatically the preceding input-derived L; WHOLE, erased-prefix/tail and root-ALL modes stay separate.
+A foreign fixed-K E export can distinguish that arity change: required p plus optional delta formerly has two source positions, while an independently rebuilt three-position `p/P0/ANY` WHOLE follower fails the two-position target.
+That failure refutes the independent WHOLE-follower recipe, not a simultaneous SOME solution.
+
+### The remaining genuine joins
+
+A private LOCAL can positively match a fresh GLOBAL exposed through an input HEAD even though its QName lies outside N.
+That orbit is not eligible for the preceding projection.
+Selecting the same GLOBAL earlier can fail its actual first-birth/SG TYPE condition; replacing its TYPE by K can change entered-block responses to ancestor heads.
+Its whole census, raw fallback and each coherent ROOT-call block order remain actual simultaneous obligations.
+
+The reduced open problem is therefore the joint solution of `EXT(X_w,Y_w)` and direct all-descendant `RP(X_w,K_w)`, together with those real LOCAL/GLOBAL nominal-identity, birth and pool joins.
+Input-indexed binder forms do not yet prove that one physical binder per form suffices.
+The new arguments are source-reviewed scoped constructions and obstructions, not newly executed native controls or a general search algorithm.
+General coverage, semantic/native/evidence adequacy, complete input-derived bounds/negatives, mathematical termination and dated correspondence remain open.
