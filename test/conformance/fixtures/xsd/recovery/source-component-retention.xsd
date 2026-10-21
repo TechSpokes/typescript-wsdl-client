@@ -4,4 +4,9 @@
   <xs:simpleType name="SourceList"><xs:list itemType="xs:string"/></xs:simpleType>
   <xs:simpleType name="SourceUnion"><xs:union memberTypes="xs:string xs:decimal"/></xs:simpleType>
   <xs:simpleType name="SourceQName"><xs:restriction base="xs:QName"><xs:enumeration value="p:item"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameOpaqueB"><xs:restriction base="xs:QName"><xs:enumeration value="p:a"><xs:annotation><xs:documentation>opaque QName group</xs:documentation></xs:annotation></xs:enumeration><xs:enumeration value="p:b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameOpaqueA"><xs:restriction base="t:QNameOpaqueB"><xs:pattern value="p:a"/></xs:restriction></xs:simpleType>
+  <xs:element name="qname-opaque-tau"><xs:simpleType><xs:restriction base="t:QNameOpaqueA"><xs:pattern value="(p:a)"/></xs:restriction></xs:simpleType></xs:element>
+  <xs:simpleType name="QNameKnownB"><xs:restriction base="xs:QName"><xs:enumeration value="p:a"/><xs:enumeration value="p:b"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameKnownA"><xs:restriction base="t:QNameKnownB"><xs:pattern value="p:a"/></xs:restriction></xs:simpleType>
 </xs:schema>

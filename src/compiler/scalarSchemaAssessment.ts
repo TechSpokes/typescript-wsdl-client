@@ -2539,7 +2539,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
    * VALUE/P1 identity. Every entry owns its already formed H introduction. */
   const sourceComponentTable = (base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
     c.step(owner, 3);
-    if (base.rawProperties || base.plan.variety !== 'atomic' || !['decimal', 'string'].includes(base.plan.primitive!)) return undefined;
+    if (base.rawProperties || base.plan.variety !== 'atomic' || !['decimal', 'string', 'QName'].includes(base.plan.primitive!)) return undefined;
     c.text(base.definition, owner);
     if (base.definition.startsWith('builtin:') || base.definition.startsWith('content:')) return undefined;
     const cached = sourceComponentTables?.get(base); if (cached !== undefined) return cached || undefined;
