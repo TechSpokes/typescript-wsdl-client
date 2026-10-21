@@ -3905,3 +3905,260 @@ It establishes neither independent dated truth nor undecidability.
 The valid remaining target is a computable complete encoded bound or equivalent total procedure for the founded relation, plus authentic materialization, full evidence adequacy and the separate dated correspondence theorem.
 Finite template positions still carry unresolved TYPE/SCOPE values, support and port multiplicity; those fields, first-birth realization, dynamic GLOBAL joins and physical helper multiplicity need a joint input-derived construction.
 Bounded experiments, engineering exhaustion and a failed candidate supply no general negative answer.
+
+## Per-event FIELD constraints, static HEAD joins and literal particle palettes
+
+These results use the complete finite pre-event input P of `b(Gamma,P,T)`, not just the original Gamma.
+Earlier middles, private BODYs, names, exact stops, owners and inactive stored rows of P are legitimate input.
+Stored membership supplies neither availability nor FULL in a later H.
+The selected original event's new middle and cohort are output; an old future context or that unknown cohort cannot be charged back to P.
+An original-event induction still needs an independently bounded reconstructed next input before applying its lower-index step.
+
+The changed domain is ordinary all-complex NONSC, value/IC-free and empty-AU/no-AW, with authentic SOURCE and owner authorities retained.
+Every changed record is genuinely issuable at its original first birth, with coherent canonical/RAW data and all stored/future references transported together.
+Each actual Gamma duty, inherited fresh FULL root and required child remains checked in its own H; neither receipt transfer nor availability replaces those duties.
+These are complementary scoped constructions, not a joint controller-bank bound or a complete forest decoder.
+
+### Persistent FIELD comparisons exclude a distinct new NP recipient
+
+Take an actual production rawEXT/PROPERTY query belonging to a mandatory FULL owner o while o remains E.
+Its ordinary prefix and actual declaration TYPE or complex-SCOPE selectors must persist through the child retiring a distinct new recipient c.
+Authentic generated backing must preserve the real declaration lineage and supply an actual diagonal if an old identity shortcut disappears.
+This premise excludes an original-only owner which leaves the frontier, a changed BODY selector and a merely available scope owner.
+
+Suppose the expanded opening complex pair c/tau is positive, tau is an exact inherited P TYPE, and c is genuinely new and NP.
+The [component equality owner](../src/compiler/schemaComponentEquality.ts) first requires the two E methods to agree.
+At c's actual child, c becomes R while tau's method stays unchanged; the same persistent pair fails before comparison can follow c's new BASE.
+A first failing visit cannot be rescued by a seen-pair cycle, and a distinct new identity is not an inherited identity shortcut.
+
+The argument applies at the first new NP on a forced synchronous BASE continuation too.
+If the opposite path first reaches an actually selected primitive middle, the task is a separate peer-register entry, not a fixed-P comparison by assertion.
+An actual c/c identity exit is also separate from an expanded c/tau task.
+
+Owner SELF is the real exception: retiring the owner removes its own E-prefix query.
+SOURCE GROUP feedback can expose SELF through TYPE as well as semantic SCOPE; no second distinct NP gains that exception.
+A primitive E owner never retires as NP, so its mandatory prefix comparison has no new-NP SELF exception.
+In particular a new primitive's actual P_A/A query keeps all genuinely expanded new FIELD recipients Q-free under this frame.
+The exclusion of a direct fresh E-to-UR row uses the separate no-AW gate, not a new global restriction on all schemas.
+
+At w's actual independent FIRST child, where every other current-cohort NP is still E, take a positive R-only match from a resident opening-FULL literal source to a fixed P LOCAL target of TYPE exact tau.
+Its source TYPE path either avoids w or crosses that retirement.
+An avoiding path already existed and consumed its exact inherited stop at the opening.
+A crossing path follows an R-only prefix to w R K and ends at exact tau=K: it cannot continue through K.E.
+No other still-E new NP can lie on that positive prefix.
+A child-born or newly required operand has its own first-use case and supplies no earlier FULL(tau).
+
+Conversely, a fixed P source first entering new support through an inherited endpoint's primitive middle stops at that exact register value.
+Different register labels may denote one existing middle; a label grants neither distinct identity nor earlier availability.
+Keep avoiding inherited stops and SELF/register identity cuts exact rather than replacing them by equal-property peers.
+
+A finite role grammar follows only after supplying a genuine joint compiler for every new BODY and incoming RP/rawEXT, WHOLE/proper, source and owner reader.
+It must cover the source of RP(X_w,fixed K), protected prefix fields and paired primitive/foreign-export equations, not only a writable target tail.
+Its role forms are fixed P templates, actual primitive compiler/register modes, exact cuts and one owner SELF parameter, retaining every role required of a shared counterpart.
+An unexpanded Phi identity exit is genuinely erased by an eligible private-entry operation or remains an explicit port.
+
+PROPERTY constructor variables and physical TYPE identities remain separate; repeated selectors, shared declarations and actual WHOLE roots share their real variables.
+R-only reachability is not yet a finite rational equality: even one ELEMENT may select a TYPE with arbitrarily many R links to tau.
+Enumerating BASE exponents needs an independent section/corridor bound, and finite equations still need bounded physical instantiation and all-H birth decoding.
+No C_LIT, port multiplicity or next-input bound follows merely from these finite role labels.
+
+### First-demand nominal aliases retain real endpoint parameters
+
+In this phase all new NP controllers are born at the original event; the supplied founded fresh-target selector adds no later NP.
+At the true birth or lawful reissue of a writable nominal-only LOCAL coordinate, its old FULL declaration consumes the selected TYPE and its literal BASE dependencies.
+Keep the nearest exact P or protected non-P stop, builtin UR, retained controller endpoint x or already available primitive register, including Phi_T.
+All removed links before that endpoint are R; exact interior clients remain cuts or receive genuine transport.
+
+Keep an already-selected endpoint, or issue one real R alias to it with the required namedness and its actual complete BODY at that demand.
+Freeze that alias BODY at true demand; a fresh endpoint's BODY stays unchanged on its retirement.
+The last old R edge supplies final(R) permission; the alias's restriction uses current BODY identity and actual endpoint FULL, not RP transitivity.
+Opaque input attribute programs still need that old last edge's direct compatible attribute check; scalar/SC, VALUE, IC and other untransported programs remain excluded.
+UR uses the separate genuine EMPTY R-to-UR/attribute constructor, not an invented copy of opaque universal content.
+Canonical/RAW variety, ROOT/WHOLE/source authority, QName, scope/owner and all references must be coherent at birth.
+Repeated named coordinates select one actual alias; each required H rechecks endpoint/alias FULL and authentic generated reencodings need their real structural diagonal.
+
+A later x R tau can first make tau reachable and FULL; it never licenses choosing tau at an earlier coordinate birth which only consumed x.
+Keep actual x then, rather than its as-yet-unselected future K.
+Independent PROPERTY, whole/proper, immutable E-BODY, exact owner/source and GLOBAL/SG entered-block clients are retained or jointly compiled.
+
+For fixed complex tau in P, let L be the true-demand R prefix including its first E endpoint r, or ending at UR.
+Identity stops before reading the target's method; an already-R endpoint is traversed in its actual current state.
+Then the admitted phase descendants satisfy
+
+```text
+RPath(aliasR(t), tau)
+  iff tau is in L or (r has genuinely retired and K_r is exactly tau).
+```
+
+A primitive r, including current Phi_T, never retires as NP; an eligible new E endpoint x contributes only retired(x) AND K_x=tau to a fixed-P target atom.
+These are finite P-indexed answer alternatives, not a bound on private prefix length, endpoint multiplicity or physical births.
+Positive local R-only atoms to fixed P targets persist under new NP cuts; this gives no monotonicity of RP, FULL, pools or original callbacks.
+ANY-exposed positions may still retain another controller/register parameter, so neither SELF reduction nor its bank charge is complete.
+
+### Static input HEADs can join bounded writable LOCAL choices
+
+Fix h observed P BODY heads and w actual namespace tests; N contains all fixed Gamma/P declaration names and independently charged literal ports, with every other outside-N LOCAL name consumer in the writable catalogue.
+The complete affected opening portfolio consists of positive normalized P-HEAD-to-C queries, including real fallback, singleton and implicit-bag cases.
+Each C is a genuinely writable flat CHOICE of unit LOCAL ELEMENT arms, with positive maximum and a nonempty incoming portfolio.
+Its real CHOICE category, root interval and matching-cell boundary must survive normalization; unconstrained required empty choices stay exact.
+
+Other admitted readers are derived-side ordinary ANY/PW calls and coherently rewritten private PROPERTY/rawEXT diagonals.
+Unlisted target-side RP, fixed LOCAL/composite inputs, MapAndSum or other arm-count readers are outside this constructor.
+Fixed SOURCE/P geometry, exact declarations, protected scopes, markers and proper fragments stay literal ports.
+Let ell be an independently input-bounded number of literal arm coordinates per aligned C component, not its old arm count.
+
+First perform one genuine before-birth P-relative SG/owner plan.
+A new member m with closest P SG ancestor k may move below one abstract shield f_k of exact TYPE k.TYPE, empty flags and SG k.
+Actual unrestricted affiliation paths form m to f_k, while f_k to k closes by TYPE identity; no inherited P declaration is reparented.
+This needs complete descendant/reference transport, no protected exact affiliation reader and no retained fresh HEAD observing an intermediate pool.
+Before thinning it preserves all P pools; at most |P_GLOBAL| shields are needed, not merely h.
+
+Keep P GLOBALs and new GLOBALs with names in N, then at most two eligible nonabstract members per current h-bit head/w-bit namespace profile.
+One global selection serves all C queries and preserves nonself expansion and zero/one/multiple categories at the observed heads.
+Unobserved heads may lose members only under the complete reader premise; an abstract singleton implicit CHOICE remains CHOICE1.
+If R contains the kept emitted identities and P fallback heads, a safe bound is
+
+```text
+r = |R| <= |P_GLOBAL| + |N| + 2 * 2^(h+w).
+```
+
+Shields add no emitted letter, and deleting a GLOBAL use never silently deletes its mandatory TYPE support.
+Restrict each old ROOT-key order coherently to R, including repeated physical keys.
+Each source is then a fallback ELEMENT or an injective word of length at most r.
+
+Let W(r)=sum_{j=0}^r (r)_j count those ordered injective words.
+For each word and each assignment of letters to ell retained literal coordinates, retain one old QName-order embedding when it exists.
+Use the same position indices in every positionwise PROPERTY-related choice and keep every literal coordinate independently.
+There are at most (ell+1)^r assignments per word and at most r private positions per embedding.
+Native CHOICE injection allows unused target arms, giving the per-component bound
+
+```text
+number of arms <= ell + r * W(r) * (ell+1)^r + 2.
+```
+
+The final two positions allow genuine abstract SG-none STRING filler particles to keep a unit C from collapsing into a singleton.
+A nonunit C keeps at least one real arm; the helper is raw ELEMENT fallback with no implicit key and an allowed namespace cell.
+Fresh helper QNames are reserved against the complete retained plan, not an old fresh-name list.
+
+Private targets remain LOCAL, with genuinely hypothetical abstract=true, nillable=true, empty flags/value/IC fields and coherent TYPE data.
+This is not permission to put a global-only abstract attribute on an actual local SOURCE occurrence.
+For named M.TYPE, or an anonymous TYPE at a unique QName incidence, exact M.TYPE makes the nominal leaf comparison identity.
+For a repeated QName with anonymous M.TYPE, old EDC and a real positive match supply a named target on its literal R-only path.
+Choose the closest such actual t_M and use it coherently at every repeated private arm of that QName.
+
+Current FULL(M) already consumes t_M; no property-only template or later use is promoted to early FULL.
+The R-only prefix before t_M stays literal through legal E-to-R updates and stops by identity before reading t_M's own method.
+Thus at most M.TYPE and t_M are needed per retained private member, without replacing its real block/nominal path by a primitive alias.
+An anonymous TYPE still permits only one incidence of its QName in each checked whole BODY.
+
+Eligible private scopes may be reissued beneath one actual neutral GROUP with unit empty-SEQUENCE content, yielding undefined scopes on both sides of private pairs.
+Every protected original/P/SOURCE scope and owner client stays outside this operation; inherited declarations are not reowned in place.
+Required abstract LOCAL arms remove labels without adding epsilon, and the named repeated TYPEs preserve EDC.
+Nonempty unit-arm choices keep formal ETR equal to their root interval I and retain admitted ancestor ANY summaries.
+
+This is a static opening constructor, not a lifetime replacement for every C.
+An unresolved later-activated or later-born GLOBAL may need an old private placeholder omitted by the opening word selection.
+Retaining an unbounded future-placeholder list puts the entire component outside the width bound unless a separate input bound is proved.
+The stable t_M path does not supply those missing future words, UPA/FULL proofs or lawful earlier births.
+
+### A literal fixed-target portfolio has a finite particle grammar
+
+Here source means the derived operand of RP, not authority to rewrite immutable SOURCE syntax.
+Supply a finite portfolio T of fixed ordinary target recipes from P, with positive maxima, all fixed member/fallback QNames Q and actual occurrence/namespace/process descriptors.
+No dynamic GLOBAL expansion is admitted; a stable complete input expansion may instead be an authentic fixed macro with its full incidence, keys, labels and current FULL duties.
+Fixed selectors and fixed pools do not make the macro's nominal TYPE answers H-invariant.
+
+The changed old source is ordinary NONSC, locally legal and UPA/EDC-valid with current TYPE support in every required H.
+Private GROUP uses may be unfolded and sharing split only through one lawful incidence/owner/reference map.
+Immutable SOURCE/WHOLE, exact identity, SCOPE, declared PROPERTY and rawEXT code readers remain input-sized macros or join the simultaneous rewrite.
+An arbitrary old witness subtree is not an input macro merely because it remains unchanged.
+
+For example n genuine unit SEQUENCE wrappers around one fixed LOCAL p normalize to p and restrict that single target.
+A declared PROPERTY or actual first-prefix reader against a separate exact n-wrapper tree still observes all n wrappers.
+Thus no bound in that target alone holds without accounting for the protected opposite tree or co-rewriting the real borrower.
+
+Choose B>=2 above every finite target endpoint and admitted fixed ancestor-ANY lower threshold.
+Writable non-ALL counts are reduced by
+
+```text
+[0,n]       -> [0,min(n,B)]
+[1,1]       -> [1,1]
+[1,n>=2]    -> [2,2]
+[m,n],m>=2  -> [min(m,B),min(m,B)].
+```
+
+This preserves zero/positive and exact unit/nonunit categories and decreases maxima.
+The accepted balanced shrinking argument preserves UPA, including dead prefixes, at every separately checked compositor root.
+Saturation at B preserves passing fixed lower tests under natural sums/products/minima; upper tests only weaken.
+MapAndSum still multiplies source root count by direct child count, so no injective width bound has been inferred.
+ALL remains its separately legal zero/one root case; no nested ALL is imported into the sequence/choice/count argument.
+
+Every non-ANY native recursive RP edge descends in the finite normalized target; ELEMENT coercion adds no source-child descent.
+Below an input-derived depth, every positive derivation therefore reads a writable cell only through ANY, except retained exact input identity macros.
+Use the genuine pure-ANY inverse there: required empty CHOICE2..2 for formal minimum zero, or RAW empty-namespace strict ANY at min(r,B)..min(r,B) otherwise.
+These cells add neither labels nor epsilon, decrease maxima and preserve all fixed lower tests pointwise, not just one chosen alignment.
+Real normalized-cell placement and aliases remain required; an ALL ELEMENT child cannot receive a non-ELEMENT replacement.
+Surviving non-ANY ALL comparisons have input-bounded arity and finite subset-mask control.
+This bounds writable height H_0 and count values B independently of old source width, depth or history length.
+
+An outside-Q ELEMENT is not automatically an ANY-only cell: it may pass an actual ELEMENT-to-SEQUENCE coercion before a wildcard test.
+Keep its ELEMENT category and use the eligible whole-orbit private-name projection to an abstract SG-none named-STRING helper per inhabited fixed namespace cell.
+The real RAW fallback remains ELEMENT, introduces no key or consuming label, and keeps the actual occurrence/coercion predicates.
+All SOURCE/name/owner/exact and future real-GLOBAL endpoints stay protected; encoded fresh-name bounds remain separate.
+
+For each retained q outside fixed macros, EDC leaves at most one actual old TYPE port c_q.
+Repeated QName incidences require the same named TYPE identity; even two occurrences of one anonymous TYPE do not satisfy that rule.
+Keep these real TYPE ports, their earliest FULL requirements and all later current-H duties rather than replacing them by property equality.
+Use finite input-indexed nominal atoms
+
+```text
+N_qj(H) = checkTypeDerivation_H(c_q,t_j,{E,LIST,UNION}).value.
+```
+
+Fixed macro leaf/target TYPE pairs add their own finite atom positions with H-dependent answers.
+The alphabet counts positions and correlations, not old histories, concrete TYPE descriptions or arbitrary realizable Boolean valuations.
+For each target subtree, the native RP recurrence is an exact finite Boolean function of those shared atoms.
+Ordered injections use next-position sets; SEQUENCE-to-ALL uses masks; MapAndSum uses per-child target alternatives and a saturated child counter.
+Target CHOICE arms may be reused, so finite child-word automata close width without falsely imposing an injection bound.
+
+For retained macros evaluate the functions over the complete finite product of actual input particle/head-key assignments.
+One total alpha component serves every occurrence of a repeated key within that ROOT call, including source/target sharing.
+Existential alpha is chosen separately for each ROOT call and is not fixed across H.
+Retain real input key-bearing handles; a fresh copied key needs a separate authentic assignment pullback.
+A changing pool, unavailable macro or uncounted new key remains an external dynamic port.
+
+Bounded writable counts/height give finitely many iteration copies; fixed macros add finite input automaton/control factors, including fixed unbounded-repeat loops.
+Build a finite-copy epsilon-NFA tagged by original declared leaf incidence: different child uses have different tags, while numeric repetition shares a tag.
+Use untrimmed prefix reachability, so a live prefix before a required dead suffix still contributes FIRST/FOLLOW.
+Before first tag divergence, synchronized runs have one original incidence and two finite copy/control indices, not necessarily equal counter valuations.
+The virtual initial start handles immediate FIRST conflicts; every synchronized consuming edge requires a nonempty token label.
+Ambiguity is exactly a reachable next pair of distinct tags with overlapping finite token cells; repeated copies of one tag are harmless.
+Declared macro labels are their full token sets, independent of RP permutations; bounded ALL adds finite mask/control factors.
+
+This finite-copy reachability predicate has an effective MSO/tree-automaton construction using finitely many unary closed sets.
+Intersect it with finite height/counts, placement, flags, EDC and each exact RP-function vector, at every real compositor/GROUP root checked by FULL.
+The transformed old source witnesses nonemptiness; ordinary grammar reachability selects one smallest first-child/next-sibling tree per nonempty intersection.
+For s bottom-up states, a smallest encoding has no repeated state on a root-to-leaf path; 2^(s+1) is a safe loose node bound.
+The resulting finite palette bounds particle positions and count literals, not recursive TYPE/BASE/SIMPLE graphs, physical owner copies or lexical encodings.
+
+### A complete fixed prefix distinguishes one private SELF orbit
+
+An eligible injective whole-plan QName transport may move a LOCAL and its future GLOBAL together at their real old births, without early FULL(K), but supplies no reduction in orbit count.
+Pointwise controller/name folding is insufficient: duplicate GLOBAL QNames violate identity uniqueness, while retaining just one can remove a CHOICE injection position; repeated anonymous LOCAL TYPEs also fail EDC.
+In the precise delayed join with a genuine complete declared prefix equal to inherited G, a distinct positive-max LOCAL lambda:TYPE w and a matching virtual GLOBAL of TYPE exact w occur together after w R exact G.
+The prefix retains the same GLOBAL identities, so whole-BODY EDC sees both lambda incidences and requires w to be named, even though their TYPE identities agree.
+An actual positive nonidentity PROPERTY seal to an anonymous SOURCE SELF template blocks that naming, but this is not a no-SELF theorem for proper-R bases lacking that complete prefix or for a different named R-only stop.
+An actual unit-SEQUENCE prefix with n>=2 surviving cells plus a surviving tail also fails restriction into its n-cell fixed G target before TYPE repair; erased/EMPTY/WHOLE/ANY and other dispatcher cases are excluded.
+The remaining proper-R SOURCE/anonymous orbit must jointly solve real BODYs, future GLOBAL birth/TYPE, upper-head blocks, uniqueness and ROOT injections; no early FULL(K) or unbounded placeholder list supplies it.
+
+### The remaining joint and complete gates
+
+A selected palette tree still needs genuine canonical/RAW issue, empty-namespace authority, coherent scopes/owners and complete stored/future references.
+A retained GROUP keeps its actual unit definition and FULL duty; fixed macros and all TYPE ports remain current-H FULL where consumed.
+Private WHOLE and rawEXT borrowers need authentic root authority and a direct co-rewritten prefix/property proof, with every protected target in the same shared-source portfolio.
+Several independently constrained fresh source/target variables remain a joint code/FIELD problem.
+
+The open joins are the literal-field realization, dynamic HEAD/member lifecycle, shared bank selection, physical first births/multiplicity and an input-bound on each reconstructed next P.
+Before-birth omission needs complete closure; no inherited stored mandatory support disappears merely because a use was removed.
+General coverage, semantic/native/evidence adequacy, complete source/F2 and actual-root duties, complete negatives, mathematical termination and dated correspondence remain open.
+These mathematical constructors are not newly executed native controls, an activated solver or a general SOME/NO procedure.

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): record per-event FIELD and nominal constraints with scoped HEAD joins and literal particle palettes.
+
 - test(re01): distinguish safe dead-cell reconstruction from nullable ambiguity and record scoped particle compilers.
 
 - docs(re01): record joint initial-payload constraints and scoped fixed-prefix and private-name reductions.
