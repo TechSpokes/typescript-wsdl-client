@@ -30,6 +30,8 @@ import type {CorrespondenceReceipt} from './re01CandidateCorrespondence.js';
 import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
 import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import {collectIdentityConstraintDependencies} from './schemaIdentityConstraints.js';
+import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js';
 
 export type ConstructionObligation = Readonly<{rule: string; component: NodeId; contextId: string}>;
 export type ComponentConstructionReceipt = Readonly<{
@@ -37,6 +39,7 @@ export type ComponentConstructionReceipt = Readonly<{
   scope: 'local-component-premises' | 'original-source-syntax-only'; receipts: readonly object[];
   dependencies: readonly NodeId[]; builtinDependencies: readonly string[];
   typeDependencies: readonly SemanticTypeDependency[];
+  identityConstraintDependencies: readonly IdentityConstraintDependency[];
   re01?: Readonly<{target: NodeId; ancestor: SemanticTypeReference; primitive: boolean}>;
   obligations: readonly ConstructionObligation[];
   discharged: readonly ConstructionObligation[];
@@ -85,6 +88,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       if (found.kind !== 'found') return fail('component-membership', 'Component is unavailable in the selected context', 'unresolved');
       const node = found.node, receipts: object[] = [], dependencies = new Set<NodeId>(), builtins = new Set<string>();
       const typeDependencies = collectSemanticTypeDependencies(context);
+      const identityConstraintDependencies = collectIdentityConstraintDependencies(context);
       const obligations: ConstructionObligation[] = [];
       const requireNode = (target: NodeId): GraphNode => {
         b.chargeWork(2 + target.length);
@@ -155,6 +159,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             failed.contextId, failed.contextId === undefined ? id : failed.component ?? id);
         }
         if ('typeDependencies' in result) typeDependencies.add((result as T & {typeDependencies: readonly SemanticTypeDependency[]}).typeDependencies);
+        if ('identityConstraintDependencies' in result) identityConstraintDependencies.add((result as T & {identityConstraintDependencies: readonly IdentityConstraintDependency[]}).identityConstraintDependencies);
         b.chargeWork(); receipts.push(result); return result as Extract<T, {kind: 'checked'}>;
       };
       const scalar = createSchemaScalarKernel(context);
@@ -200,6 +205,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         const receipt: ComponentConstructionReceipt = Object.freeze({kind: 'checked', authority: 'XSD10-component-construction-v1',
           scope: 'original-source-syntax-only', contextId: context.contextId, component: id, receipts: Object.freeze(receipts),
           dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([]), typeDependencies: typeDependencies.snapshot(),
+          identityConstraintDependencies: identityConstraintDependencies.snapshot(),
           obligations: Object.freeze([]), discharged: Object.freeze([])});
         b.chargeWork(); issued.set(receipt, context); return receipt;
       }
@@ -483,7 +489,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       const receipt: ComponentConstructionReceipt = Object.freeze({kind: 'checked', authority: 'XSD10-component-construction-v1',
         scope: 'local-component-premises', contextId: context.contextId, component: id, receipts: Object.freeze(receipts),
         dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([...builtins]), re01,
-        typeDependencies: typeDependencies.snapshot(),
+        typeDependencies: typeDependencies.snapshot(), identityConstraintDependencies: identityConstraintDependencies.snapshot(),
         obligations: b.freeze(b.snapshot(pending)),
         discharged: ownRawSimpleContentChecked
           ? b.freeze(b.snapshot([{rule: 'raw-simple-content-derivation-validity', component: id, contextId: context.contextId}])) : Object.freeze([])});

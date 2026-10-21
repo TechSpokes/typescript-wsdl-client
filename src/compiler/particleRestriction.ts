@@ -18,11 +18,14 @@ import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import {declaredType} from './schemaTypeIdentity.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import type {SemanticTypeDependency} from './semanticTypeReference.js';
+import {readElementIdentityConstraints, collectIdentityConstraintDependencies} from './schemaIdentityConstraints.js';
+import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js';
 
 export type ParticleRestrictionResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-particle-restrict'; contextId: string;
   obligations: readonly ['component-validity', 'particle-local-legality'];
   typeDependencies: readonly SemanticTypeDependency[];
+  identityConstraintDependencies: readonly IdentityConstraintDependency[];
 }> | RelationFailure | ScalarFailure | ResourceLimitFailure;
 class Incomplete extends Error {constructor(readonly result: RelationFailure | ScalarFailure | ResourceLimitFailure) {super(result.kind);}}
 type Debt = RelationFailure | ScalarFailure | ResourceLimitFailure;
@@ -43,6 +46,7 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
       charge(24);
       if (derived.purpose !== 'restriction' || base.purpose !== 'restriction') return unresolved(derived.root, 'Restriction-normalized views required');
       const typeDependencies = collectSemanticTypeDependencies(context);
+      const identityConstraintDependencies = collectIdentityConstraintDependencies(context);
       typeDependencies.add(derived.typeDependencies); typeDependencies.add(base.typeDependencies);
       const algebra = occurrenceAlgebra(charge), scalar = createSchemaScalarKernel(context);
       const within = (r: Occurs, b: Occurs) => algebra.compare(r.min, b.min) >= 0 && algebra.compare(r.max, b.max) <= 0;
@@ -108,6 +112,7 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
         if (left.kind !== 'checked') throw new Incomplete(left);
         if (right.kind !== 'checked') throw new Incomplete(right);
         typeDependencies.add(left.typeDependencies); typeDependencies.add(right.typeDependencies);
+        identityConstraintDependencies.add(left.identityConstraintDependencies); identityConstraintDependencies.add(right.identityConstraintDependencies);
         if (!left.constraint || !right.constraint) return unresolved(derived.root, 'Assessed fixed declaration constraint is unavailable');
         // Full component validity still owes the declared TYPE and mixed
         // emptiability; the constraint selects its assessed scalar value type.
@@ -145,9 +150,13 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
           if (x.name.namespace !== y.name.namespace || x.name.local !== y.name.local || !within(r.occurs, b.occurs)) return false;
           if (x.identity.kind === 'global' && y.identity.kind === 'global') return true;
           if (x.nillable && !y.nillable || !fixedEqual(x, y)) return false;
-          for (const declaration of [x, y]) for (const syntax of declaration.retained) {
-            charge(5 + syntax.name.namespace.length + syntax.name.local.length);
-            if (syntax.name.namespace === XSD_NAMESPACE && ['key', 'keyref', 'unique'].includes(syntax.name.local)) return unresolved(r, 'Identity constraint subset prerequisite is unavailable');
+          if (x !== y) {
+            const left = readElementIdentityConstraints(context, x.id), right = readElementIdentityConstraints(context, y.id);
+            if (left.kind !== 'checked') throw new Incomplete(left);
+            if (right.kind !== 'checked') throw new Incomplete(right);
+            identityConstraintDependencies.add(left.identityConstraintDependencies); identityConstraintDependencies.add(right.identityConstraintDependencies);
+            charge(2 + left.value.length * (right.value.length + 1));
+            if (!left.value.every(id => right.value.includes(id))) return false;
           }
           const required = declarationMethods(context, y, 'block'), actual = declarationMethods(context, x, 'block');
           charge(1 + required.length * (actual.length + 1));
@@ -275,7 +284,8 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
       }
       if (!value && pending) return pending;
       charge(10); return Object.freeze({kind: 'checked', value, rule: 'cos-particle-restrict', contextId: context.contextId,
-        obligations: Object.freeze(['component-validity', 'particle-local-legality'] as const), typeDependencies: typeDependencies.snapshot()});
+        obligations: Object.freeze(['component-validity', 'particle-local-legality'] as const), typeDependencies: typeDependencies.snapshot(),
+        identityConstraintDependencies: identityConstraintDependencies.snapshot()});
     } catch (error: unknown) {if (error instanceof Incomplete || error instanceof RelationProblem) return error.result; if (error instanceof SemanticError) {budget.chargeWork(10 + error.message.length); return Object.freeze({kind: 'invalid-input', rule: 'cos-particle-restrict', component: error.component, message: error.message});} throw error;}
   });
 }

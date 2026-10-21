@@ -20,12 +20,15 @@ import type {ResourceLimitFailure} from './semanticBudget.js';
 import {declaredType, resolveSemanticType} from './schemaTypeIdentity.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
+import {readElementIdentityConstraints, collectIdentityConstraintDependencies} from './schemaIdentityConstraints.js';
+import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js';
 
 type Failure = RelationFailure | ScalarFailure | AttributeFailure | ResourceLimitFailure;
 export type ComponentEqualityResult = Readonly<{kind: 'checked'; value: boolean; contextId: string;
   authority: 'XSD10-component-properties-v1'; obligations: readonly string[];
   scalarObligations: readonly ScalarObligation[];
   typeDependencies: readonly SemanticTypeDependency[];
+  identityConstraintDependencies: readonly IdentityConstraintDependency[];
   /** Concrete component operands whose property facts this comparison consumed. */
   dependencies: readonly NodeId[]}> | Failure;
 class Incomplete extends Error {constructor(readonly result: Failure) {super(result.kind);}}
@@ -51,6 +54,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
     const scalar = createSchemaScalarKernel(context);
     charge(12); const dependencies = new Set<NodeId>(), obligations = new Set<string>(['component-validity']), scalarObligations: ScalarObligation[] = [];
     const typeDependencies = collectSemanticTypeDependencies(context);
+    const identityConstraintDependencies = collectIdentityConstraintDependencies(context);
     const remember = (required: readonly ScalarObligation[]) => {
       for (const item of required) {charge(4 + scalarObligations.length); if (!scalarObligations.some(prior => prior.rule === item.rule && prior.component === item.component && (prior.contextId ?? context.contextId) === (item.contextId ?? context.contextId))) scalarObligations.push(item);}
     };
@@ -221,10 +225,12 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
           if (x.abstract !== y.abstract || x.nillable !== y.nillable || !methods(x, y, 'final') || !methods(x, y, 'block')) return false;
           if (!!x.substitutionGroup !== !!y.substitutionGroup) return false;
           if (x.substitutionGroup && y.substitutionGroup && !reference(state, x.substitutionGroup, y.substitutionGroup)) return false;
-          for (const node of [x, y]) for (const syntax of node.retained) {
-            charge(4 + syntax.name.namespace.length + syntax.name.local.length);
-            if (syntax.name.namespace === XSD_NAMESPACE && ['key', 'keyref', 'unique'].includes(syntax.name.local)) return unresolved(node.id, 'component-identity-constraint-properties', 'Identity constraint components have no complete property view');
-          }
+          const leftIC = readElementIdentityConstraints(context, x.id), rightIC = readElementIdentityConstraints(context, y.id);
+          if (leftIC.kind !== 'checked') throw new Incomplete(leftIC);
+          if (rightIC.kind !== 'checked') throw new Incomplete(rightIC);
+          identityConstraintDependencies.add(leftIC.identityConstraintDependencies); identityConstraintDependencies.add(rightIC.identityConstraintDependencies);
+          charge(2 + leftIC.value.length * (rightIC.value.length + 1));
+          if (leftIC.value.length !== rightIC.value.length || !leftIC.value.every(id => rightIC.value.includes(id))) return false;
         }
         return true;
       }
@@ -256,7 +262,8 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
     const finish = (value: boolean): ComponentEqualityResult => {
       charge(dependencies.size + obligations.size + scalarObligations.length + 12);
       return budget.freeze(budget.snapshot({kind: 'checked' as const, value, contextId: context.contextId, authority: 'XSD10-component-properties-v1' as const,
-        obligations: [...obligations], scalarObligations, dependencies: [...dependencies], typeDependencies: typeDependencies.snapshot()}));
+        obligations: [...obligations], scalarObligations, dependencies: [...dependencies], typeDependencies: typeDependencies.snapshot(),
+        identityConstraintDependencies: identityConstraintDependencies.snapshot()}));
     };
     charge(12); const states: State[] = [{tasks: [{kind: 'node', a, b}], pairs: new Map(), scalarPairs: new Map()}];
     let unknown: Failure | undefined;

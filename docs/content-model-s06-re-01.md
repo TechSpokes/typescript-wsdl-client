@@ -169,7 +169,58 @@ The unit controls separately cover selected process/set equality, source corresp
 
 This repairs one concrete native representation gap.
 It does not prove that every semantic B construction has a faithful native encoding, complete local qualification or founded operational evidence.
-Source-private subroot realization, genuine identity-constraint properties and the input-derived helper/evidence bounds remain separate obligations; no general-negative or termination result follows.
+Source-private subroot realization and the input-derived helper/evidence bounds remain separate obligations; no general-negative or termination result follows.
+Original identity-constraint reuse has the separate schema-only authority described next; unrepresented fresh definitions gain no admission from it.
+
+### Original schema identity constraints
+
+The [internal IC owner](../src/compiler/schemaIdentityConstraints.ts) represents original key, unique and keyref components in their separate namespace/name symbol space.
+It implements the schema-only [2004 component rules](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cIdentity-constraint_Definitions).
+Application document selection, key-value satisfaction and XPath implication remain outside this owner and retain their existing downstream scope.
+
+An entry records its category, restricted selector with its static namespace meaning, nonempty ordered field list, annotations and exact keyref target.
+The source registry uses authentic interpreted schema occurrences and reserves identities before resolving forward references.
+Repeated acquisition reuses the same component; conflicting definitions cannot overwrite one another.
+Physical schema grammar, value, namespace, annotation and composition duties remain independent checks.
+
+The finite former checks the actual component properties and every referenced target in the calling context.
+A keyref must select a key or unique with the same field arity.
+Its only component dependency is that target; no IC property introduces FULL of its diagnostic source element or that element's TYPE.
+Actual Gamma checks the complete original IC universe, including independently mapped definitions below an erased zero-zero local element.
+Such a definition creates no erased ELEMENT component or nonempty element-property set.
+An authentic IC-free erased occurrence retains its existing empty diagnostic property projection; FULL admission still rejects it.
+
+Selector and field parsing accepts only the restricted grammar and its standard XPath axis abbreviations.
+The source representation also satisfies its own dated S4S lexical restrictions.
+Unprefixed XPath NameTests have absent namespace; schema-component keyref QNames separately obey import and chameleon interpretation.
+Field order is retained, and an attribute test can occur only at a field path's final step.
+
+The shared element-set accessor drives declaration formation, component PROPERTY, raw extension and nonglobal particle restriction.
+PROPERTY compares authentic IC identity sets, while NameAndTypeOK uses derived-set inclusion in the base set.
+This uses component identity rather than equality of XML strings or implication between different constraints.
+Exact declaration identity may close a relation subcheck; it never supplies the independent IC or declaration formation receipt.
+
+Fresh abstract elements may select existing original IDs through their first-born `identityConstraints` set.
+The set is snapshotted and immutable throughout the stored domain, including inactive additions.
+Original and previously stored elements cannot acquire or replace it through an overlay or reactivation.
+No independently fresh IC-definition API, GraphNode role, public catalog property or application evaluator is introduced.
+
+An IC-free abstract element's absent set and explicit empty set agree.
+Unknown retained key, unique or keyref syntax remains unavailable even if the caller supplies an empty set, and even when the element is an otherwise unused fresh root.
+Graph-only canonical IC-free properties supply no SOURCE-universe receipt and do not satisfy the complete verifier's source qualification.
+
+Consumed definitions have separate `identityConstraintDependencies` and current-context formation receipts.
+They do not become ordinary TYPE dependencies, and a Gamma receipt is not retagged for a child.
+Original source obligations and every new or inherited fresh component root remain independently required.
+All parsing, indexing, lookup, copying and result publication retain the shared precharged, inclusive and sticky budget contract.
+
+The [independent owner controls](../test/unit/schema-identity-constraints-independent.test.ts) distinguish set equality from directional inclusion, authentic source mappings from retained tokens, and invalid references from missing authority.
+The [complete recovery controls](../test/research/re01/original-identity-constraint-reuse.test.ts) require genuine original evidence and every fresh root.
+Their separate owner-independence contrast retains an available but FULL-failing original type outside the child frontier while forming its original ICs for a fresh STRING declaration.
+This tests the absence of an invented IC-to-element ownership edge.
+
+This authority supplies one missing native premise for constructions that reuse genuine original IC definitions.
+It does not prove a universal native encoding, general witness coverage, complete negative answers or mathematical termination.
 
 ### Inherited exact facet occurrences
 

@@ -17,6 +17,8 @@ import {checkOriginalGeneratedScalar, assertOriginalGeneratedScalarReceipt} from
 import type {GeneratedScalarResult} from './schemaScalarKernel.js';
 import {resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
 import type {OriginalGeneratedScalarReference, SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
+import {checkIdentityConstraintFormation} from './schemaIdentityConstraints.js';
+import type {IdentityConstraintDependency, IdentityConstraintReceipt} from './schemaIdentityConstraints.js';
 
 export type FiniteScalarSlotReceipt = Extract<GeneratedScalarResult, {kind: 'checked'}>;
 
@@ -40,6 +42,7 @@ export type FiniteProofStep = Readonly<{evidence: string; parentContext: string;
   correspondence: CorrespondenceReceipt; components: readonly ComponentConstructionReceipt[];
   scalarSlots: readonly FiniteScalarSlotReceipt[];
   notations: readonly FiniteNotationReceipt[];
+  identityConstraints: readonly IdentityConstraintReceipt[];
   premises: readonly string[]; primitiveNoChange: readonly NodeId[]}>;
 export type FiniteCandidateReceipt = Readonly<{
   kind: 'checked-candidate'; authority: 'RE01-finite-evidence-v1'; domain: typeof RE01_DERIVATION_DOMAIN;
@@ -47,6 +50,7 @@ export type FiniteCandidateReceipt = Readonly<{
   actualComponents: readonly ComponentConstructionReceipt[]; actualPrimitiveNoChange: readonly NodeId[];
   actualScalarSlots: readonly FiniteScalarSlotReceipt[];
   actualNotations: readonly FiniteNotationReceipt[];
+  actualIdentityConstraints: readonly IdentityConstraintReceipt[];
   proof: readonly FiniteProofStep[];
   claims: Readonly<{actualObligations: 'checked'; suppliedCandidate: 'checked'; universalCoverage: false; completeNegativeAnswer: false; searchTermination: false}>;
 }>;
@@ -63,7 +67,8 @@ class VerificationAbort extends Error {constructor(readonly result: FiniteVerifi
 type Requirement = NonNullable<ComponentConstructionReceipt['re01']>;
 type Closure = Readonly<{components: readonly ComponentConstructionReceipt[]; requirements: readonly Requirement[];
   byComponent: ReadonlyMap<NodeId, ComponentConstructionReceipt>; context: SemanticContext;
-  scalarSlots: readonly FiniteScalarSlotReceipt[]; byScalarSlot: ReadonlyMap<NodeId, FiniteScalarSlotReceipt>}>;
+  scalarSlots: readonly FiniteScalarSlotReceipt[]; byScalarSlot: ReadonlyMap<NodeId, FiniteScalarSlotReceipt>;
+  identityConstraints: readonly IdentityConstraintReceipt[]}>;
 
 export function assertFiniteCandidateReceipt(actual: SemanticContext, receipt: FiniteCandidateReceipt): void {
   assertSemanticContext(actual);
@@ -224,6 +229,28 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
       charge(4); const closures = new Map<string, Closure>();
       charge(); const typedDependencies: {from: SemanticContext; dependency: SemanticTypeDependency}[] = [];
       const close = (context: SemanticContext, roots: readonly NodeId[], correspondence?: CorrespondenceReceipt): Closure => {
+        charge(8);
+        const identityConstraints: IdentityConstraintReceipt[] = [], checkedICs = new Set<string>();
+        const requireIdentityConstraints = (required: readonly IdentityConstraintDependency[]): void => {
+          charge(3 + required.length); const pending = [...required];
+          while (pending.length) {
+            const dependency = pending.pop()!; charge(6 + dependency.identity.length);
+            if (dependency.contextId !== context.contextId) return fail('identity-constraint-context',
+              'Identity constraint dependency does not belong to this current context', 'unresolved', context);
+            if (checkedICs.has(dependency.identity)) continue;
+            const receipt = checkIdentityConstraintFormation(context, dependency.identity);
+            if (receipt.kind !== 'checked') throw new VerificationAbort(receipt.kind === 'resource-limit' ? receipt : {
+              ...receipt, contextId: receipt.contextId ?? context.contextId,
+              kind: receipt.kind === 'invalid-schema' && context.kind === 'candidate' && receipt.contextId === context.contextId ? 'candidate-rejected' : receipt.kind});
+            charge(5 + receipt.identityConstraintDependencies.length); checkedICs.add(dependency.identity); identityConstraints.push(receipt);
+            pending.push(...receipt.identityConstraintDependencies);
+          }
+        };
+        if (context.kind === 'actual') {
+          const registry = context.originalIdentityConstraints();
+          charge(3 + registry.identities.length * 4);
+          requireIdentityConstraints(registry.identities.map(identity => ({contextId: context.contextId, identity})));
+        }
         if (context.scalarSlotMembership !== 'complete-original') return fail('scalar-slot-active-membership',
           'Finite evidence requires every original generated scalar slot', 'unresolved', context);
         charge(12 + roots.length + (context.kind === 'actual' ? context.scalarSlots.length : 0));
@@ -283,12 +310,13 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
           for (const pending of result.obligations) rejectPending(context, pending);
           charge(4 + id.length); byComponent.set(id, result); components.push(result);
           requireTypes(result.typeDependencies);
+          requireIdentityConstraints(result.identityConstraintDependencies);
           if (result.re01) {charge(); requirements.push(result.re01);}
           for (const dependency of result.dependencies) {charge(2); if (!byComponent.has(dependency)) queue.push(dependency);}
         }
         charge(10 + components.length + requirements.length + scalarSlots.length);
         const closure = Object.freeze({context, components: Object.freeze(components), requirements: Object.freeze(requirements), byComponent,
-          scalarSlots: Object.freeze(scalarSlots), byScalarSlot});
+          scalarSlots: Object.freeze(scalarSlots), byScalarSlot, identityConstraints: Object.freeze(identityConstraints)});
         charge(context.contextId.length + 1); closures.set(context.contextId, closure); return closure;
       };
       const actualClosure = close(actual, actual.members);
@@ -366,6 +394,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
             correspondence: frame.correspondence!, components: frame.closure.components,
             scalarSlots: frame.closure.scalarSlots,
             notations: notationReceipts.get(item.context)!,
+            identityConstraints: frame.closure.identityConstraints,
             premises: Object.freeze(frame.used), primitiveNoChange: Object.freeze(frame.primitive)}));
           completed.add(item.id); active.delete(item.id); stack.pop();
         }
@@ -441,7 +470,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         actualContextId: actual.contextId, target,
         actualComponents: actualClosure.components, actualPrimitiveNoChange: Object.freeze(actualPrimitiveNoChange), proof: Object.freeze(proof),
         actualScalarSlots: actualClosure.scalarSlots,
-        actualNotations};
+        actualNotations, actualIdentityConstraints: actualClosure.identityConstraints};
       if (primitiveRoot) {
         charge(12);
         const result: FinitePrimitiveReceipt = Object.freeze({...common, kind: 'checked-primitive',

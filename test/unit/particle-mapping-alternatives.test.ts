@@ -2,7 +2,9 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 import {loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
 import {globalId} from '../../src/compiler/canonicalGraph.js';
-import {prepareSourceSchemaRequest} from '../../src/compiler/schemaDocumentSyntax.js';
+import {buildCanonicalGraph} from '../../src/compiler/buildCanonicalGraph.js';
+import {resolveCanonicalGraph} from '../../src/compiler/resolveCanonicalGraph.js';
+import {prepareSemanticRequest} from '../../src/compiler/semanticContext.js';
 import {createSemanticBudget} from '../../src/compiler/semanticBudget.js';
 import {deriveActualComplexContent} from '../../src/compiler/complexTypeContent.js';
 import {prepareSemanticParticleView} from '../../src/compiler/particleSemanticView.js';
@@ -11,9 +13,13 @@ import {checkParticleRestriction} from '../../src/compiler/particleRestriction.j
 const fixtures = path.resolve('test/conformance/fixtures');
 async function setup() {
   const source = await loadSemanticSchemaInput(path.join(fixtures, 'xsd/recovery/particle-mapping-alternatives.xsd'), {policy: {fileRoots: [fixtures]}});
-  const prepared = prepareSourceSchemaRequest(source, {budget: createSemanticBudget({maxWork: 100_000_000})});
+  // This local backtracking control intentionally has retained-only IC data.
+  // Genuine SOURCE sets now form; their empty-subset positive is tested in the
+  // independent IC suite. No complete SOURCE receipt is claimed by this harness.
+  const prepared = prepareSemanticRequest(resolveCanonicalGraph(buildCanonicalGraph(source)), {budget: createSemanticBudget({maxWork: 100_000_000})});
   if (prepared.kind !== 'prepared') throw new Error('Expected structural source preparation');
   const context = prepared.request.actual;
+  expect(context.originalIdentityConstraints().sourceBound).toBe(false);
   const view = (local: string) => {
     const content = deriveActualComplexContent(context, globalId('type', {namespace: 'urn:recovery:mapping-alternatives', local}));
     if (content.kind !== 'checked') throw new Error('Expected effective content');
@@ -36,7 +42,7 @@ describe('particle mapping alternatives with explicit local prerequisites', () =
 
   it('retains unresolved when no checked alternative succeeds', async () => {
     const {context, view} = await setup();
-    expect(checkParticleRestriction(context, view('A'), view('ChoiceOnlyPending'))).toMatchObject({kind: 'unresolved', rule: 'cos-particle-restrict'});
+    expect(checkParticleRestriction(context, view('A'), view('ChoiceOnlyPending'))).toMatchObject({kind: 'unresolved', rule: 'component-identity-constraint-properties'});
   });
 
   it('does not hide malformed component input behind another mapping', async () => {

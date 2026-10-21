@@ -29,6 +29,8 @@ import type {RawAttributeProperties} from './schemaAttributeProperties.js';
 import {computeOriginalSourceAbsence} from './originalSourceMembership.js';
 import {prepareRawParticleWildcardProperties} from './schemaParticleWildcardProperties.js';
 import type {RawParticleWildcardProperties} from './schemaParticleWildcardProperties.js';
+import {createOriginalIdentityConstraintRegistry} from './schemaIdentityConstraints.js';
+import type {OriginalIdentityConstraintRegistry} from './schemaIdentityConstraints.js';
 
 export const SEMANTIC_CONTEXT_CONTRACT = 'RE01-domain-boundary-v1' as const;
 export type ContextLookup = Readonly<{kind: 'found'; node: GraphNode} | {kind: 'missing' | 'outside-context'; id: NodeId}>;
@@ -58,6 +60,8 @@ export type SemanticContext = Readonly<{
   notationMembership: 'complete-original-plus-additions' | 'structural-subset';
   notationUniverse: 'source-bound' | 'retained-only';
   lookupNotation(name: ExpandedName): ContextNotationLookup;
+  /** Private SOURCE universe, distinct from graph/TYPE membership and FULL owners. */
+  originalIdentityConstraints(): OriginalIdentityConstraintRegistry;
   lookup(id: NodeId): ContextLookup;
   /** Owns immutable selector data only; every resolution still checks current membership. */
   ownTypeReference(reference: SemanticTypeReference): SemanticTypeReference;
@@ -202,6 +206,9 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       // Private exact-handle binding is read before snapshotting loses that identity.
       // Availability of all source roots is distinct from source/component validity.
       const sourceSchemas = sourceSchemasForResolvedGraph(resolved);
+      let identityConstraints: OriginalIdentityConstraintRegistry | undefined;
+      const originalIdentityConstraints = (): OriginalIdentityConstraintRegistry =>
+        identityConstraints ??= createOriginalIdentityConstraintRegistry(sourceSchemas, budget);
       const inputGraph = dataField(resolved, 'graph');
       const inputNodes = dataField(inputGraph, 'nodes');
       if (dataField(inputGraph, 'model') !== GRAPH_MODEL || !Array.isArray(inputNodes)) {
@@ -648,6 +655,11 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         };
         context = Object.freeze({
           contextId, profileVersion: GRAPH_MODEL, contractVersion: SEMANTIC_CONTEXT_CONTRACT,
+          originalIdentityConstraints(): OriginalIdentityConstraintRegistry {
+            assertSemanticContext(this);
+            if (this !== context) throw new TypeError('Foreign identity-constraint context');
+            authenticate(); return originalIdentityConstraints();
+          },
           kind, acceptance: 'structural-only', membership: membership.size === expectedMembers ? 'complete-actual-plus-additions' : 'structural-subset', budget, members: frozenMembers,
           scalarSlots: scalarSlots.members,
           scalarSlotMembership: scalarSlots.active.size === originalScalarSlots.size ? 'complete-original' : 'structural-subset',
@@ -898,7 +910,19 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             }
             permittedProperty(row.type); unique(row.type, seenSimple); budget.chargeWork(); simple.set(row.type, row);
           }
-          for (const row of delta.rawElements ?? []) {if (!validateRawElementShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.element); unique(row.element, seenElements); budget.chargeWork(); elements.set(row.element, row);}
+          for (const row of delta.rawElements ?? []) {
+            if (!validateRawElementShape(row, budget)) throw new InvalidContext('representation');
+            if ((row.identityConstraints !== undefined || parent.elements.get(row.element)?.identityConstraints !== undefined)
+              && (originals.has(row.element) || parent.changes.has(row.element)
+              || parent.elements.has(row.element) || changes.get(row.element)?.kind !== 'element')) throw new InvalidContext('representation', row.element);
+            if (row.identityConstraints?.length) {
+              const registry = originalIdentityConstraints();
+              budget.chargeWork(4 + row.identityConstraints.length * (registry.identities.length + 1));
+              if (!registry.sourceBound || row.identityConstraints.some(identity => !registry.identities.includes(identity)))
+                throw new InvalidContext('reference', row.element);
+            }
+            permittedProperty(row.element); unique(row.element, seenElements); budget.chargeWork(); elements.set(row.element, row);
+          }
           for (const row of delta.rawAttributes ?? []) {if (!validateRawAttributeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.attribute); unique(row.attribute, seenAttributes); budget.chargeWork(); attributes.set(row.attribute, row);}
           for (const row of delta.rawAttributeGroups ?? []) {validateRawAttributeGroupShape(row, budget); permittedProperty(row.group); unique(row.group, seenGroups); budget.chargeWork(); groups.set(row.group, row);}
           budget.chargeWork(5 + raw.size + simple.size + elements.size + attributes.size + groups.size);

@@ -11,10 +11,13 @@ import type {ResourceLimitFailure} from './semanticBudget.js';
 import {resolveSemanticType, declaredType} from './schemaTypeIdentity.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
+import {readElementIdentityConstraints} from './schemaIdentityConstraints.js';
+import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js';
 
 export type DeclarationReceipt = Readonly<{kind: 'checked'; component: NodeId; contextId: string;
   authority: 'XSD10-declaration-properties-v1'; constraint?: AssessedSchemaOperand;
-  obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies:readonly SemanticTypeDependency[]}>;
+  obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies:readonly SemanticTypeDependency[];
+  identityConstraintDependencies: readonly IdentityConstraintDependency[]}>;
 export type DeclarationResult = DeclarationReceipt | ScalarFailure | ResourceLimitFailure;
 const nameAttribute = (node: GraphNode, name: string): string | undefined =>
   node.declaredAttributes.find(a => a.name.namespace === '' && a.name.local === name)?.value;
@@ -44,6 +47,12 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
     if (node.identity.kind !== 'global') {
       if (nameAttribute(node, 'substitutionGroup') !== undefined || nameAttribute(node, 'abstract') !== undefined || nameAttribute(node, 'final') !== undefined) return fail('src-element', 'Local declaration has a global-only property');
     }
+    }
+    let identityConstraintDependencies: readonly IdentityConstraintDependency[] = [];
+    if (node.kind === 'element') {
+      const constraints = readElementIdentityConstraints(context, id);
+      if (constraints.kind !== 'checked') return constraints;
+      identityConstraintDependencies = constraints.identityConstraintDependencies;
     }
     const type=declaredType(context,node), selected = resolveSemanticType(context,type);
     const typed=collectSemanticTypeDependencies(context);
@@ -102,6 +111,6 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
     }
     const owned=context.budget.freeze(context.budget.snapshot({kind:'checked' as const,component:id,contextId:context.contextId,
       authority:'XSD10-declaration-properties-v1' as const,constraint,obligations,scalarObligations}));
-    const typeDependencies=typed.snapshot();context.budget.chargeWork(24);return Object.freeze({...owned,typeDependencies});
+    const typeDependencies=typed.snapshot();context.budget.chargeWork(24);return Object.freeze({...owned,typeDependencies,identityConstraintDependencies});
   });
 }

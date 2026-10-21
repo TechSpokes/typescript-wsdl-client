@@ -229,6 +229,8 @@ export function checkActualSchemaSyntax(context: SemanticContext, nodeId: NodeId
         c.step(node); c.text(retained.name.local, node);
         if (!inlineSeen && inline && retained.name.namespace === XSD_NAMESPACE && retained.name.local === inline.kind
           && sameSource(c, node, retained.source, inline.context.source)) {inlineSeen = true; continue;}
+        if (retained.name.namespace === XSD_NAMESPACE && ['key', 'unique', 'keyref'].includes(retained.name.local)
+          && context.originalIdentityConstraints().ownsSyntax(node, retained)) continue;
         if (retained.name.namespace === XSD_NAMESPACE && excluded.has(retained.name.local))
           c.unsupported(node, `xsd:${retained.name.local}`, 'Retained feature needs its separate capability authority', retained.source);
         c.fail(node, 'schema-for-schemas', 'Unexpected child in the declaration content grammar', retained.source);

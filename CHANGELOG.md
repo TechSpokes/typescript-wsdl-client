@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): check original schema identity constraints and authenticate first-born declaration reuse.
+
 - docs(re01): preserve conditional whole-export, observer and all-complex ALL reconstruction.
 
 - docs(re01): reconstruct qualified extension exports and defer optional helper branches at original events.
