@@ -334,12 +334,15 @@ The fresh alias retains its own datatype identity and BASE edge.
 This transfers no whole-description validity or evidence receipt, and every actual and inherited fresh root still needs its complete required child evidence.
 
 The implemented positive sector retains every actual enumeration and main P1 component, including every distinct opaque incidence.
+It may add an ordinary enumeration component when every introduced value has a checked lexical witness in the exact current base.
+Retained components keep their issued identities; new components gain no inherited annotation authority.
+The ordinary component-cover, scalar containment and complete F2 checks still run, so excluded values reject and missing membership evidence remains qualified.
 Additional ordinary P1 components must have distinct P1 properties from the input components and each other; language equivalence does not establish property equality.
 Each bound kind uses whole-kind KEEP or one ordinary NEW component.
 Other selected scalar subsets remain subject to the existing local-S construction, universal fixedness, ancestry, cross-kind and complete F2 checks.
 LIST ITEM and ordered UNION MEMBERS must retain exact constituent identities in this sector; genuinely derived different constituents remain qualified after their ordinary formation checks.
 
-Partial enum/P1 retention, new enum contributions, mixed bound replacement and overlapping new P1 properties are outside this implemented positive sector.
+Partial enum/P1 retention, mixed bound replacement and overlapping new P1 properties are outside this implemented positive sector.
 They do not establish invalidity: ordinary formation and known failures run before the sector qualification whenever the replay inventory is available.
 Source bases outside the qualified sector below, builtin, generated and legacy/nonexact bases have no invented ordinal table.
 When the table is unavailable, known literal/parser/type facts still run, but a partial inventory cannot establish a false omission failure.

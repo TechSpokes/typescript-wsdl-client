@@ -381,6 +381,7 @@ The RAW path stays lazy; eligible SOURCE property readers also request their imm
 Existing preparation/locality and explicit budget controls remain required.
 
 The supported positive sector requires whole actual enum/P1 KEEP, distinct ordinary new P1 properties, and whole-kind bound KEEP or one ordinary NEW bound.
+Additional NEW enumeration components are permitted after ordinary current-base membership and complete c-fr/F2 checks; issued KEEP identities never authenticate a new component's annotation.
 Coverage uses the completed base's actual main-component associations, not merely its raw array; uncovered intrinsic or source properties retain qualification.
 Exact LIST ITEM and ordered UNION MEMBER identities are sector conditions, not new schema-validity rules.
 Different genuinely derived constituents qualify only after ordinary c-fr/F2 and enum formation have run; genuine nonderivation and weakening still fail those rules.

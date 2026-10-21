@@ -2652,7 +2652,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     for (let index = 0; index < groups.length; index++) {
       c.step(owner, 2); if (groups[index].selected) continue;
       const component = components[index];
-      if (component.name === 'enumeration') complete = false;
+      // Ordinary correspondence still checks every new enumeration value
+      // against the current base; retained components cover its old sets.
       if (component.name !== 'pattern') continue;
       const expression = patternValue(component);
       for (const entry of table) if (entry.component.name === 'pattern') {

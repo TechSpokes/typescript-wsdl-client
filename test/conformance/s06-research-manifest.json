@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "6c074ad4027c16e13a4bae945b7418689e1e4e88fd31b38b883d30e602d7ceb6",
+          "sha256": "94162505912725f56ba207d0a05d02a6c0da93d6add12f2550720f5f92b24ac6",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "fe344340acf1eb167e259193f052a10ff1a5e4ed00219e88aa0b15707f36b4a1"
+          "sha256": "6e5656d4a8fdf9abdcdcadd51e0ca75d4904536e802cd1e9f4b71357e67ec521"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "c052023b8e4fff95269e2869638f43ffba22980430fc0871972e99a0faeee371"
+          "sha256": "ffe50517d375ec4126ac51dfbfb947d804d0dfc65a1176be1ae6cd04b7d2cfc2"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -2731,7 +2731,7 @@
         {
           "path": "test/research/re01/immediate-base-component-retention.test.ts",
           "role": "prototype",
-          "sha256": "688081ea4c1a0d3d8dbe91e7d324984deaa1b673a2e1e071b471e556e2b78e52"
+          "sha256": "cb7cc700bb77dbf0dfe6e4620e221900e5a28f3e44ccd05fea5e7831e234d1f2"
         },
         {
           "path": "test/research/re01/source-facet-current-components.test.ts",
