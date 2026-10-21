@@ -16,7 +16,8 @@ This owner correction does not establish the general enum lexical-map producer o
 
 The [raw-group authority correction](content-model-s06-re-01.md#raw-facet-groups-and-identity-authority) separately prevents caller-added identity fields from entering internal facet comparison evidence.
 Literal input equality or object sharing never supplies an authenticated inherited component selector.
-The proposed opaque-component selection interface remains a separate adequacy obligation, with no general negative answer inferred from an unproved literal copy.
+The [qualified immediate-base selector](content-model-s06-re-01.md#authenticated-current-source-component-retention) implements only its printed RAW and SOURCE sectors, including pure SOURCE QName ancestry.
+General opaque-component materialization remains a separate adequacy obligation, with no general negative answer inferred from an unproved literal copy.
 
 ## Why a new endpoint operation is required
 

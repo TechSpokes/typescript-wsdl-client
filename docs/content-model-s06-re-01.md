@@ -232,7 +232,7 @@ The [two-node controls](../test/research/re01/empty-main-pattern-certificate.tes
 
 The independently reviewed [finite semantic private-alias catalogue](content-model-s06-re-01-scalar-witnesses.md#finite-semantic-private-alias-catalogue) retains actual input enum/pattern components and reduces new bound choices to the supplied shared endpoint decision.
 It assumes authentic immediate-base component selection and complete local authorities.
-The selector below implements qualified RAW-exact and source-only atomic DECIMAL/STRING parts of that interface.
+The selector below implements qualified RAW-exact and source-only atomic DECIMAL/STRING/QName parts of that interface.
 Other source/generated inventories and the shared endpoint solver remain unimplemented.
 The theorem proves a bounded recipe relative to one supplied anchor, not an input-derived number of anchors or a complete executable forest.
 An old component's identity does not waive changed whole-kind local-S membership, and existential same-kind matching does not imply universal whitespace coverage.
@@ -274,7 +274,7 @@ It does not establish general source-component extraction, the finite endpoint s
 ### Authenticated current SOURCE component retention
 
 The SOURCE extension uses the same first-birth selector shape and whole-KEEP sector.
-It requires a genuinely formed atomic DECIMAL or STRING base whose complete restriction ancestry consists of immutable source SIMPLE rows ending at that exact builtin primitive.
+It requires a genuinely formed atomic DECIMAL, STRING or QName base whose complete restriction ancestry consists of immutable source SIMPLE rows ending at that exact builtin primitive.
 An active RAW row takes the existing RAW path first.
 Any explicit typed-operand recipe, RAW ancestor, LIST/UNION constructor, contextual authority, generated slot or unbacked intrinsic component makes this SOURCE table unavailable.
 No partial table is published.
@@ -289,6 +289,10 @@ The restricted source ancestry, immutable syntax/maps and primitive parsing impl
 The existing prohibition on installing or replacing an inherited SIMPLE row supplies the lifetime premise.
 Each H still reforms source construction, resolves availability and establishes this restricted closure before publishing a completed table.
 A prior read in another context cannot activate table authority or bind an ordinal operationally.
+
+For the QName sector, each source enum operand resolves its original word using its immutable source namespace map.
+QName parsing consults no mutable declaration or NOTATION/ENTITY census, so the source-only ancestry induction preserves expanded values, P1 properties and current survivor order.
+This does not normalize arbitrary maps or import a value from another context; every H still performs the ordinary source formation and typed comparison.
 
 Each entry retains its actual same-H source introduction values, lexical contexts, dependencies and obligations.
 The selected RAW component replays through private facet bindings, compares unbranded typed/fixed/P1 properties, then receives a separate annotation-incidence identity.
@@ -308,6 +312,11 @@ NEW enum member one and endpoint three fail their ordinary immediate-base admiss
 A separate annotated multioperand P1 group retains its whole ordered expression, including a repeated operand.
 Excluded source sectors qualify, available bad ordinals fail, caller hints grant no authority and sticky budgets remain separate.
 All actual roots and inherited fresh duties remain checked; missing required child evidence remains unresolved.
+
+The QName controls retain the actual opaque enum component E with values `{p:a,p:b}` from a SOURCE base that admits only `p:a`.
+A fresh anonymous copy adds the distinct P1 property `(p:a)` while keeping E and the base's P1 `p:a`; it does not introduce `p:b` anew.
+A genuinely new enum containing `p:b` still fails immediate-base membership, and a rebound map for `p:a` cannot bypass expanded-value checking.
+An actual RAW ancestor excludes only the SOURCE table; the existing authenticated RAW table remains a separate supported route.
 
 This is a qualified constructor, not general scalar recipe adequacy or a bounded search.
 General source/builtin/generated materialization, helper and evidence bounds, complete negatives and mathematical termination remain open.

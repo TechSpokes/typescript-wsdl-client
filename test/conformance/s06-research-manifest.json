@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "d1a1eaedca1c243c2828aef385b257a2f50f439018e008079b82a3475d49fca9",
+          "sha256": "6f282bfd34be0ebfe408cc5d2314081d89aec24f715b231d657d121a12e654d1",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "b16b1faff41bb61aa6f27e12f0ea6117761d6eb3097c3f5fc4dfee2106d2bbdd"
+          "sha256": "3e81131b0fe4735270404a8a78508c8ca305f9a53d32d9ed72727123f5e28447"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "be5228a1a8298b468387929619227651c3b725489663d15ead5c50a144c0e5fa"
+          "sha256": "60eb42d52e178bd89179b2757e4255cc6cfa441d6fb7eab0421ef0f14c06fbf2"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2746,12 +2746,12 @@
         {
           "path": "test/research/re01/source-component-retention.test.ts",
           "role": "prototype",
-          "sha256": "7e49f7e54cd2894ba243bbe789c764d538c73bb556f0990fdde18b11f49ab267"
+          "sha256": "8f05aa5ae2d389a4f5a5c19018ce23a90a6a39426b4d2cfee9cb08ada83e1f03"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/source-component-retention.xsd",
           "role": "fixture",
-          "sha256": "c8e2798e21b2caa1f5278c1a79a2ef973157021f622effb6abca6a012b207b63"
+          "sha256": "0a5e21c4aaf006b706de77314a6a9d02c46032d894de4011ccf739f2e524c686"
         },
         {
           "path": "test/research/re01/input-property-copy-cut.test.ts",
