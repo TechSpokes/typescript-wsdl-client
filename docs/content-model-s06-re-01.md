@@ -49,6 +49,10 @@ The [first PROPERTY entrances](content-model-s06-re-01-support-reconstruction.md
 The [SOURCE controller controls](content-model-s06-re-01-support-reconstruction.md#a-source-whole-payload-and-its-nominal-controller) preserve complete children while jointly choosing a writable member TYPE at birth; they do not impose full validity on an unconsumed original property owner.
 The [closed scoped-template construction](content-model-s06-re-01-support-reconstruction.md#simultaneous-copies-of-a-closed-scoped-template-cover) assigns TYPE, BASE, scope and actual whole BODY prototypes together under a supplied complete cover.
 Its complete child control keeps a failing original template PROPERTY-only while independently validating its copy; extracting the cover and bounding the general forest remain open.
+The [bounded BASE-section construction](content-model-s06-re-01-support-reconstruction.md#persistent-input-roles-and-a-bounded-base-section) selects coherent ordinary constructors under an input-bounded protected interface and persistent role/height premises.
+The [own-extension scope control](content-model-s06-re-01-support-reconstruction.md#own-extension-scope-roles-and-a-complete-source-control) preserves an authentic self-carrier and its local repair, including both independent original proof branches.
+Neither the section nor the control bounds the original opening's arbitrary NP cohort or establishes complete general negatives.
+The [strict fresh-interval bound](content-model-s06-re-01-support-reconstruction.md#conditional-encoded-bound-for-a-strict-fresh-interval) is conditional on complete reconstruction interfaces and qualified native gates; it supplies no arbitrary-P verifier API or general-negative implementation.
 
 The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.

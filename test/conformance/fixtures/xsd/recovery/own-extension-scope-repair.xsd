@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:re01:own-e-source-scope"
+           targetNamespace="urn:re01:own-e-source-scope"
+           elementFormDefault="qualified">
+  <xs:complexType name="X"><xs:complexContent><xs:restriction base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="I"><xs:complexContent><xs:extension base="t:X"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:extension base="t:X">
+    <xs:sequence><xs:element name="gamma" minOccurs="0"><xs:complexType>
+      <xs:complexContent><xs:extension base="t:I"/></xs:complexContent>
+    </xs:complexType></xs:element></xs:sequence>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="qCarrier"><xs:complexType><xs:complexContent><xs:extension base="t:R">
+    <xs:sequence><xs:element name="delta" type="xs:string" minOccurs="0"/></xs:sequence>
+  </xs:extension></xs:complexContent></xs:complexType></xs:element>
+</xs:schema>

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): preserve complete source-scope reconstruction and required original branches with conditional selector bounds.
+
 - test(re01): preserve complete scoped-template copies without assuming full validity of their original templates.
 
 - fix(scalar): retain authenticated source decimal-union components and record conditional finite support interfaces.

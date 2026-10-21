@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "8fbe7c9f83372541858e370c1cd1770b80d6d5e95ed9d70cca0f666fe5c6d505",
+          "sha256": "f19c448cb83c374b1c227aa16b019253fd64529c5e97589bc38918c5ad822122",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "a4ce2f224afab7c535a5a5b11a1b857f0f4a4bca8954794cb672fd010e773c50"
+          "sha256": "a5d18c7115da9e728e5c218ae5d0a686dc92ec379a99dc037acecb6e0ee9fe77"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2802,6 +2802,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/scoped-template-full-support.xsd",
           "role": "fixture",
           "sha256": "89ffdd993b288f059493d349af6fbb718ed589ad9348885d765440ff748c7cfc"
+        },
+        {
+          "path": "test/research/re01/own-extension-scope-repair.test.ts",
+          "role": "prototype",
+          "sha256": "8ccaa44d6f96968fe09b3042e95618da50b8577b737ba9ac4aa9121006e8a0f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/own-extension-scope-repair.xsd",
+          "role": "fixture",
+          "sha256": "da5ba8ba53c9111a8db2990b014b9d7717963c48fc265b631f3b32f872f7c21d"
         }
       ]
     },
