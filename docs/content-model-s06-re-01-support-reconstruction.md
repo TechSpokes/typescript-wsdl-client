@@ -4191,6 +4191,51 @@ Do not use further closed-family count bounds to justify a general implementatio
 General coverage, authentic executable and evidence adequacy, complete encoded bounds, complete negatives and mathematical termination remain open; independent dated-XSD correspondence remains a separate gate.
 The finite checker still checks supplied constructions and evidence, and this route decision proves neither semantic nonexistence nor native undecidability.
 
+### An unrestricted joint native constraint solver is insufficient
+
+Consider a separate synthesis problem whose input mandates finitely many particle and GROUP roles, regular child-list constructor templates, an acyclic GROUP-reference graph, native RP calls and full local component roots.
+Intervals are free wellformed data; numeric equalities are not extra template predicates.
+This generic problem is undecidable, so it cannot supply an unrestricted regular or Presburger solver for the missing interface.
+Its mandatory templates are additional assumptions: no reduction from actual fixed B-v1 input to these compulsory roles is established.
+
+Let E be required empty CHOICE[2..2], and let A and B be CHOICE[2..2] bags of two disjoint unit string elements each.
+E survives restriction normalization but has formal total zero; A and B have formal total two.
+For each variable v, place a universal skip ANY carrier C_v with free interval in a genuine shared unit GROUP.
+A mandatory live guard SEQ[use C_v, ANY1] forces its interval to be exact by UPA, while RP(C_v,ANY[4..unbounded]) excludes zero and forces a lower bound of four.
+Zero maximum is not a blanket component-formation error.
+
+Let Num_v be CHOICE at a free interval with direct children A and B.
+RP(Num_v,C_v) forces its interval to be exact v and the carrier interval to be exact 2v, with v at least two.
+Let W_v be a unit GROUP whose SEQUENCE has the regular child list E+ A and arbitrary arity n_v.
+RP(use1 W_v,Num_v) uses native MapAndSum to force n_v=v; positive empty choices and nonunit inner bags prevent flattening.
+
+For x*y=z, use W_x at a free interval and require RP to both C_y and Num_z.
+The first call reads effective total to force that interval to exact y; the second reads direct arity to force x*y=z.
+For x+y=z, PW-bind two fresh, alphabet-disjoint Num-style bodies to C_x and C_y, then restrict their unit SEQUENCE to C_z.
+Its exact formal total is 2x+2y; constants use a fixed exact ANY target and equality uses a shared carrier.
+Thus every free numeric value is transmitted through actual shared components and native predicates.
+
+Finite addition/multiplication circuits over integers at least two retain [Diophantine undecidability](https://logic.pdmi.ras.ru/~yumat/H10Pbook/preface.htm).
+Substitute v-2 for each natural variable, collect positive and negative terms on opposite sides and add two to both sides; the resulting positive circuits need no zero/one intermediate.
+The construction above translates those circuits effectively into the mandated native portfolios.
+An exact Presburger summary retaining the product coordinates would also define the squares by diagonalization and projection, which is impossible.
+This does not rule out every tree or graph encoding independently of its operations.
+
+All component templates admit genuine source instances with unit GROUP definitions, distinct consuming labels and R-only TYPE rows, without own-NP debt.
+An RP atom can also be represented mathematically by a fresh restriction row over a holder with the target BODY; this is not a claimed executed whole-circuit conversion.
+The [native controls](../test/research/re01/joint-native-arithmetic.test.ts) check authenticated source, local components, GROUP sharing, UPA/EDC, multiplication/addition contrasts and exactness propagation through PW.
+Those finite controls support the native calculations; the circuit reduction supplies the unbounded theorem.
+
+The actual input problem is more constrained.
+For a fixed inherited BODY R, RP(R,ANY[p..p]) fixes p to both endpoints of its formal total; an infinite maximum cannot satisfy a finite exact carrier.
+An exposed Num target is similarly fixed by the inherited root interval, fixed SEQUENCE interval times direct arity, or unit ELEMENT coercion.
+Dynamic HEAD expansion creates CHOICE populations, not unbounded SEQUENCE arity, and preserves the head's formal total.
+These facts bound exposed roots, not unmatched target CHOICE arms, fresh borrowers or later child interfaces.
+
+A valid B-v1 continuation must exploit its actual input and birth discipline or establish another total criterion.
+Born fresh guards are mandatory once present, but that does not force their birth or protect an old program's chosen aliases.
+No all-candidate input host forcing this arithmetic portfolio, and no complete elimination of its possible interior counterparts, is proved here.
+
 ## Initial-payload code catalogues and a bounded exposed-owner subfamily
 
 Fix complete pre-event input P, an existing selected endpoint T in P and its boundary A in P.

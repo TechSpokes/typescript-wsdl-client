@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "487d46abf92b399b68fc36e57d4137c0a33bf399eb8068e62f1f912cafdf3089",
+          "sha256": "13fd171147b1f582ec1b1c5f610d6733a60e8d6c2bae697f423516f0ad0a0e33",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "6755f0790ed3d3d3b76920376eeb318e54ebdc6da9f39cd7d2d6a4f11c38f0c2"
+          "sha256": "4ebf570b5f2535a22c9ab72fecd423dd9135a9a8fc8dd1db94f4f5def7db4497"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2862,6 +2862,11 @@
           "path": "test/research/re01/private-r-entry-suffix-carries.test.ts",
           "role": "prototype",
           "sha256": "a3e2dc6f2a28212b3ebbae9338a427d26319d0b3bd4cc112e1e9db544cae97ab"
+        },
+        {
+          "path": "test/research/re01/joint-native-arithmetic.test.ts",
+          "role": "prototype",
+          "sha256": "34aea0ac55aad8b6bdd57bf018580371008cb83e96cd332a51bcd59e0533d5f7"
         }
       ]
     },

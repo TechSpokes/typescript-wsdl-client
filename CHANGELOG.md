@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): qualify native joint arithmetic constraints and distinguish the fixed-input reconstruction problem.
+
 - docs(re01): identify the missing input-bounded reconstruction interface before general implementation.
 
 - docs(re01): record fixed ROOT profile bounds, all-born name projection and a scoped homogeneous-game cutoff.
