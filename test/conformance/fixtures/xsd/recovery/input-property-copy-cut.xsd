@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:raw-property-prefix-host" targetNamespace="urn:re01:raw-property-prefix-host" elementFormDefault="qualified">
+  <xs:complexType name="X"><xs:complexContent><xs:restriction base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="I"><xs:complexContent><xs:extension base="t:X"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:I"/></xs:complexContent></xs:complexType>
+</xs:schema>

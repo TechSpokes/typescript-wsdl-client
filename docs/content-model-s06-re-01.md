@@ -5631,6 +5631,10 @@ The local bound has not been proved.
 Open ingredients include a bounded useful global-member/nominal-role inventory, simultaneous payload interpolation across retained-type retirements, the joint scalar support-word realization bound, and executable frontier/materialization adequacy.
 A supplied finite skeleton, successful finite experiment or rejected reconstruction does not discharge those universal claims.
 
+The [closed BODY modules and necessary input-copy role](content-model-s06-re-01-support-reconstruction.md#one-common-body-for-a-closed-nominal-only-module) sharpen this interface.
+Unobserved closed modules admit joint content reconstruction, while one complete local input requires a fresh copy with both an input PROPERTY anchor and a distinct exact nominal cut.
+Neither a finite list of reader kinds nor that finite product label bounds the general copy, HEAD, scalar or evidence graph.
+
 The full dated-XSD correspondence gate remains separate from the selected founded research definition.
 External engines are observations only: XMLmind's own [implementation-limit record](https://xmlmind.com/xmleditor/_distrib/doc/xmltool/xsd_structure_limitations.html) lists clause cos-ct-extends.1.5 among unchecked schema constraints and describes a different particle-restriction algorithm.
 It therefore does not supply the missing decision theorem for this native contract.
