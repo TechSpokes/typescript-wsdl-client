@@ -239,17 +239,116 @@ Empty new patterns do not waive any of those duties.
 
 The endpoint theorem supplies a local decision for at most four shared bound roles, not the entire new datatype.
 A prospective strict alias may enumerate KEEP of each complete input bound kind versus REPLACE by one endpoint, subject to every fixed, inherited cross-kind, local-upper-pair, endpoint-membership and internal consistency duty.
-Extracting this choice from an old successful restriction requires a genuinely formed immediate exact raw restriction, not a source/nonexact normal form or a locally productive candidate.
-Any such extraction and whole-forest reconstruction must receive its own review.
+The [semantic catalogue](#finite-semantic-private-alias-catalogue) below supplies this extraction for a qualified private proper-alias sector using hypothetical authentic component selection.
+A source/nonexact normal form or a locally productive candidate does not establish its premises, and whole-forest reconstruction remains separate.
 
 KEEP of a component includes its annotation and authentic component authority where required.
 An unknown annotation on an inherited immutable row must not be converted into an input-domain prohibition or inferred equal on a separately assembled alias.
 Known property copying and an authenticated immediate-base component selector are different possible materializers; no new selector is implemented by this theorem.
 Inherited pattern and enumeration components, proper-ancestor length witnesses, whitespace coverage, ordered members, NOTATION qualification and every current-context scalar/source duty remain separate.
 
-After all earlier F2 construction duties are clear, two separate singleton pattern components a and b can provide the existing finite-pattern certificate for an empty value image.
+After all earlier F2 construction duties are clear, two separate disjoint singleton pattern components prove an empty value image.
 Their emptiness does not clear a failed or unresolved formation duty.
 This is not a general permission to omit inherited kinds, fixedness, endpoints, annotations or required child evidence.
+
+## Empty main pattern certificate
+
+Every main pattern layer tests the same selected normalized result.
+Its alternatives form a union; the different layers are conjunctive.
+If the intersection of these authentic languages is empty, no normalized result can pass them all, so the whole value image is empty independently of base whitespace.
+The same argument applies after an ordered union has selected its main result.
+
+The [scalar owner](../src/compiler/scalarSchemaAssessment.ts) checks this sufficient certificate after all scalar formation prechecks and its ordinary coverage fast path.
+It uses the existing private pattern and regular-language owners and returns the existing `complete` flag.
+It does not merge patterns found only in separately normalized conjunct descriptions, use an approximate primitive grammar, or weaken the existing whitespace guard for nonempty containment.
+Raw component coverage and enum formation, source/constituent/NOTATION duties, typed dependencies and every complete current-H root remain outside this containment certificate.
+
+The diagnostic base has fixed replace and nonfixed collapse whitespace components.
+A result retaining only replace and adding two disjoint main singleton pattern components meets selected existential same-kind compatibility and universal fixedness, and has an empty semantic image.
+The old sufficient containment guard W nevertheless fails on the base's collapse component.
+The [controls](../test/research/re01/empty-main-pattern-certificate.test.ts) preserve complete baseline/current-H evidence and the fixed-value and missing-child failures.
+
+Universal whitespace-rank coverage does not follow from selected existential same-kind matching.
+The earlier attempted inference is withdrawn; direct result emptiness supplies the needed containment proof without a new whitespace policy.
+Authentic retention also does not waive current-base membership for a changed whole bound kind's local S contribution.
+
+## Finite semantic private-alias catalogue
+
+### Supplied premises and exact conclusion
+
+Fix one authentic H and a finite fully formed proper SIMPLE anchor a with an authenticated complete exact component inventory.
+Its variety is atomic, list or union; the simple ur-type constructor case is excluded.
+All base, constituent, typed-value, source and relevant NOTATION-use duties are supplied, together with the applicable complete word/value authorities.
+Own-type formation alone does not supply a missing NOTATION enum/use qualification.
+
+Assume some semantic proper restriction of a satisfies the full selected F2 rules, including its genuine c-fr decomposition and current local-S endpoint duties.
+The replacement alias is private before birth: no required value, fixed WORD/source tuple, exact facet/TYPE identity, IC or foreign payload observation fixes its recipe.
+Required namedness, a legal fresh identity, an expressible base reference and an already available operand owner are explicit parameters.
+
+Assume a hypothetical representation can select actual components of this immediate base in H, retaining their identity, values, fixedness, annotation, parser/source authority and dependencies.
+This is a representation premise, not an implemented selector API or permission for caller identity hints.
+Every current F2 duty still applies; selecting part of a bound kind does not turn its local S into empty S.
+
+Under these premises a finite computable catalogue contains a fully formed proper alias with empty whole value image.
+This preserves existence in the stated private sector, not the old alias's language or arbitrary outside observations.
+It supplies neither a native materializer nor a bound on how many anchors, TYPEs, owners or contexts an RE01 forest needs.
+
+### Finite choices and endpoint extraction
+
+Keep a's variety, primitive and identical list item or ordered union member references.
+Genuine old success supplies permission to restrict a; identical constituents use identity derivations and avoid a changed-earlier-member containment duty.
+Flags and required namedness remain finite explicit interface choices.
+
+For each inherited bound kind enumerate KEEP of its entire actual component set or REPLACE by one genuinely new endpoint, a Boolean fixed flag and known-absent annotation.
+Absent bound kinds stay absent.
+For each inherited nonbound scalar kind enumerate its nonempty actual component subsets.
+Retain every actual input enum and pattern component; no new enum or enum-word reconstruction is needed.
+
+In a genuine old c-fr witness, a bound kind absent from local S is wholly retained, so KEEP is valid.
+For a kind present in local S, select one of its old effective tuples for REPLACE.
+It has a compatible input prior, equals every applicable fixed input value and obeys every inherited cross-kind prohibition.
+Its endpoint has current-a membership or the actual same-kind exclusive-repeat exception, even if local S overlaps an old component.
+
+Every new internal bound pair occurs among old effective pairs.
+Selecting fewer old local kinds preserves the prohibition on introducing both upper kinds, and old full validity supplies the whole-datatype lower-pair rule.
+Extra old bound kinds absent from a can be omitted in this private recipe; emptiness later supplies containment but waives none of these checks.
+
+Compile all compatible-prior disjunctions, universal fixed/cross-kind tests, internal pairs, local upper-kind rules and endpoint membership/exception tests together.
+There are at most four new endpoints of one bound-capable primitive family.
+The [shared endpoint theorem](#supplied-shared-endpoint-tuple-theorem) decides each finite mode and produces genuine words while preserving less/equal/greater/indeterminate outcomes.
+Primitive operand words and current-a membership words may differ; no artificial shared-WORD requirement is imposed.
+That mathematical endpoint operation remains unimplemented.
+
+### Nonbound selection and direct emptiness
+
+For a nonbound kind with no fixed input value, keep the whole actual kind.
+If fixed input components exist, old full success forces their actual values to agree; choose the nonempty input subset equal to every fixed value.
+Each selected tuple has its identical compatible input prior and satisfies universal fixedness.
+Length/precision tuples are subsets of a's consistent inventory, and a's required no-length proper ancestor remains a proper ancestor of the new alias.
+
+Actual selection preserves unknown annotation and source authority instead of guessing it.
+The whole input enum/pattern inventory is retained with no enum contribution to S.
+This does not settle partial same-value/different-metadata replacement or let one selected occurrence authenticate another.
+
+If a has p pattern components, choose one literal expression among a, aa, ..., a repeated p+1 times whose P1 property differs from every input pattern property.
+Choose another among b, bb, ..., b repeated p+1 times under the same rule.
+Each finite list has p+1 distinct properties, so at least one escapes the p input properties.
+They denote disjoint singleton languages and become separate ordinary components, each with absent annotation and fixed=false.
+
+All earlier c-fr, fixed, cross-kind, local-S, endpoint, length, whitespace, typed-value, enum, parser and constituent checks remain mandatory.
+After they hold, these two new main components make the semantic whole image empty directly.
+No universal inherited whitespace-rank condition W is inferred, and no nonempty containment rule changes.
+
+### Bound and remaining implementation gates
+
+The mode set, flags, input subsets, component ordinals and constituents are finite.
+Each endpoint decision terminates with bounded finite output, so the maximum of its successful decoded recipe lengths is computable from the supplied inputs and interface parameters.
+At most the input component count plus four new bound components and two new pattern components is needed.
+Opaque metadata remains an authenticated input reference rather than a guessed value.
+
+This theorem has independent scoped acceptance and does not depend on a new numeric enum witness or lexical-map normalization theorem.
+The immediate-base selection interface, nonexact original full-inventory reconciliation, native scalar materialization, cross-context reconstruction, anchor/TYPE counts and general forest bounds remain open.
+The empty-main-pattern certificate supplies its local containment part only; it does not complete those other gates or establish general RE01 negatives or termination.
 
 ## Source and proof boundaries
 

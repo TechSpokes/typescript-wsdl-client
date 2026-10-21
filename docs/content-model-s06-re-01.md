@@ -218,6 +218,22 @@ The [exact-facet unit controls](../test/unit/schema-exact-facet-components-indep
 This closes the independently reproduced caller-identity false positive.
 It grants no new immediate-base component selector and establishes neither universal scalar formation soundness nor general RE01 coverage, negatives or termination.
 
+### Empty main patterns and the remaining scalar catalogue
+
+A formed exact STRING anchor can contain fixed replace and nonfixed collapse whitespace components under selected F2.
+A proper result retaining only replace and adding separate disjoint singleton main patterns has an empty image, while the old sufficient whitespace-coverage guard fails.
+Complete author and independent native controls isolate the unresolved containment duty from anchor formation, required NP children and universal fixedness.
+
+The [scalar containment owner](../src/compiler/scalarSchemaAssessment.ts) now intersects only the result's authentic main pattern-component languages after all scalar prechecks and ordinary coverage.
+Every layer tests the same selected normalized result, so an empty intersection proves whole-image containment without a universal whitespace-rank premise.
+Returning the existing qualification flag preserves earlier unresolved duties; outer c-fr/enum, source, constituent, NOTATION and complete current-H checks continue.
+The [two-node controls](../test/research/re01/empty-main-pattern-certificate.test.ts) preserve all actual and inherited fresh roots and the fixed and missing-child negatives.
+
+The independently reviewed [finite semantic private-alias catalogue](content-model-s06-re-01-scalar-witnesses.md#finite-semantic-private-alias-catalogue) retains actual input enum/pattern components and reduces new bound choices to the supplied shared endpoint decision.
+It assumes authentic immediate-base component selection and complete local authorities; that selector and endpoint solver remain unimplemented.
+The theorem proves a bounded recipe relative to one supplied anchor, not an input-derived number of anchors or a complete executable forest.
+An old component's identity does not waive changed whole-kind local-S membership, and existential same-kind matching does not imply universal whitespace coverage.
+
 ### Alternative A and recorded project decision
 
 Alternative A fixes the original global symbol and affiliation universe while allowing fresh internal components.

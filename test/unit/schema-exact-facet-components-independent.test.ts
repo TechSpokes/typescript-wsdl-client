@@ -35,6 +35,121 @@ const component=(facet:ScalarFacet,evidence:FacetAnnotation|undefined=facet.anno
 };
 
 describe('exact supplied facet component and annotation evidence',()=>{
+  it('keeps the existing whitespace prerequisite for a nonempty main pattern image',async()=>{
+    const s=await originalSimpleSetup();
+    const entry=(name:string,value:string,fixed=false):RawScalarFacetComponent=>{
+      const {annotation:_annotation,...facet}=s.facet(name,value,fixed);return {facets:[facet],annotation:'absent'};
+    };
+    const replace=entry('whiteSpace','replace',true);
+    const context=s.overlay([exact(s.raw('Empty'),[replace,entry('whiteSpace','collapse')]),
+      exact(s.raw('PeerEmpty',[],{base:named('Empty')}),[replace,entry('pattern','a')])]);
+    const kernel=createSchemaScalarKernel(context);
+    expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('PeerEmpty'),{value:'a',context:s.seed.context},id('PeerEmpty')))
+      .toMatchObject({kind:'checked',obligations:[{rule:'raw-simple-facet-restriction-validity',component:id('PeerEmpty')}]});
+  });
+
+  it('takes alternatives within one main pattern component as a union',async()=>{
+    const s=await originalSimpleSetup();
+    const facet=(name:string,value:string)=>{const {annotation:_annotation,...result}=s.facet(name,value);return result;};
+    const minimum=(value:string):RawScalarFacetComponent=>({facets:[facet('minLength',value)],annotation:'absent'});
+    const alternatives:RawScalarFacetComponent={facets:[facet('pattern','aa'),facet('pattern','bbb')],annotation:'absent'};
+    const context=s.overlay([
+      exact(s.raw('Empty'),[minimum('2'),minimum('3')]),
+      exact(s.raw('PeerEmpty',[],{base:named('Empty')}),[minimum('2'),alternatives]),
+    ]);
+    // The main component admits aa, so the result is not contained in min3.
+    expect(createSchemaScalarKernel(context).describe(named('PeerEmpty'),id('PeerEmpty')))
+      .toMatchObject({kind:'invalid-schema',rule:'scalar-value-space-restriction'});
+  });
+
+  it('does not intersect the independent patterns of a list item union',async()=>{
+    const s=await originalSimpleSetup();
+    const facet=(name:string,value:string,fixed=false)=>{const {annotation:_annotation,...result}=s.facet(name,value,fixed);return result;};
+    const entry=(name:string,value:string,fixed=false):RawScalarFacetComponent=>({facets:[facet(name,value,fixed)],annotation:'absent'});
+    const names=['ItemA','ItemB','ItemUnion','ListBare','ListBase','ListResult','ListWitness'] as const;
+    const node=(name:typeof names[number],base:ReturnType<typeof builtin>):SimpleTypeNode=>({...s.seed,id:id(name),
+      identity:{kind:'global',role:'type',name:{namespace:s.seed.identity.kind==='global'?s.seed.identity.name.namespace:'',local:name}},
+      variety:{kind:'restriction',base,facets:[]}});
+    const row=(name:typeof names[number],base:ReturnType<typeof builtin>,variety:RawSimpleTypeProperties['variety'],
+      facetComponentSet:readonly RawScalarFacetComponent[]):RawSimpleTypeProperties & {base:ReturnType<typeof builtin>}=>({type:id(name),base,variety,final:[],
+      facetComponentSet,provenance:{kind:'hypothetical-abstract',originals:[]}});
+    const string=builtin('string'),ur=builtin('anySimpleType'),members=[named('ItemA'),named('ItemB')];
+    const list={kind:'list' as const,item:named('ItemUnion')},whitespace=entry('whiteSpace','collapse',true);
+    const rows=[row('ItemA',string,{kind:'atomic'},[entry('pattern','a')]),
+      row('ItemB',string,{kind:'atomic'},[entry('pattern','b')]),
+      row('ItemUnion',ur,{kind:'union',members},[]),
+      row('ListBare',ur,list,[whitespace]),
+      row('ListBase',named('ListBare'),list,[whitespace,entry('minLength','1'),entry('minLength','2')]),
+      row('ListResult',named('ListBase'),list,[whitespace,entry('minLength','1')]),
+      row('ListWitness',named('ListBare'),list,[whitespace,entry('minLength','1')])];
+    const context=s.candidate(rows,rows.map((value,index)=>node(names[index],value.base))),kernel=createSchemaScalarKernel(context);
+    for(const value of ['a','b']){
+      const assessed=kernel.assess(named('ListWitness'),{value,context:s.seed.context},id('ListWitness'));
+      expect(assessed,JSON.stringify(assessed)).toMatchObject({kind:'checked',obligations:[]});
+    }
+    expect(kernel.describe(named('ListBase'),id('ListBase'))).toMatchObject({kind:'checked',obligations:[]});
+    // a and b are alternative item values, not contradictory main predicates.
+    expect(kernel.describe(named('ListResult'),id('ListResult')))
+      .toMatchObject({kind:'invalid-schema',rule:'scalar-value-space-restriction'});
+  });
+
+  it('retains enum introduction ambiguity despite an empty main pattern intersection',async()=>{
+    const s=await originalSimpleSetup();
+    const facet=(name:string,value:string,fixed=false)=>{const {annotation:_annotation,...result}=s.facet(name,value,fixed);return result;};
+    const entry=(name:string,value:string,fixed=false):RawScalarFacetComponent=>({facets:[facet(name,value,fixed)],annotation:'absent'});
+    const replace=entry('whiteSpace','replace',true),enumeration=[facet('enumeration','a'),facet('enumeration','a  b')];
+    const context=s.overlay([
+      exact(s.raw('Empty'),[replace,entry('whiteSpace','collapse'),{facets:enumeration,annotation:annotation('base')}]),
+      exact(s.raw('PeerEmpty',[],{base:named('Empty')}),[replace,{facets:enumeration},entry('pattern','a'),entry('pattern','b')]),
+    ]),kernel=createSchemaScalarKernel(context);
+    expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('Empty'),{value:'a  b',context:s.seed.context},id('Empty'))).toMatchObject({kind:'invalid-schema'});
+    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'checked',
+      obligations:[{rule:'raw-simple-facet-restriction-validity',component:id('PeerEmpty')}]});
+  });
+
+  it('returns an unresolved local-bound prerequisite rather than clearing it with empty patterns',async()=>{
+    const s=await originalSimpleSetup();
+    const facet=(name:string,value:string):ScalarFacet=>{
+      const {annotation:_annotation,...result}=s.facet(name,value);
+      return ['enumeration','minInclusive'].includes(name)?{...result,operand:{type:builtin('decimal'),owner:id('D'),context:'active'}}:result;
+    };
+    const entry=(name:string,value:string):RawScalarFacetComponent=>({facets:[facet(name,value)],annotation:'absent'});
+    const minimum:RawScalarFacetComponent={facets:[facet('minInclusive','0')]},enumeration=entry('enumeration','1');
+    const context=s.overlay([
+      exact(s.raw('Empty',[],{base:builtin('decimal')}),[minimum,enumeration,entry('totalDigits','1'),entry('totalDigits','2')]),
+      exact(s.raw('PeerEmpty',[],{base:named('Empty')}),[minimum,enumeration,entry('totalDigits','2'),entry('pattern','a'),entry('pattern','b')]),
+    ]),kernel=createSchemaScalarKernel(context);
+    expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
+    // The result's digits2 does not cover inherited digits1. Empty main
+    // patterns prove containment, but unknown min0 retention remains live:
+    // its alternative new endpoint0 is outside the base enumeration{1}.
+    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'checked',
+      obligations:[{rule:'raw-simple-facet-restriction-validity',component:id('PeerEmpty')}]});
+  });
+
+  it.each(['enum','omission','endpoint'] as const)('keeps the %s formation duty with contradictory main patterns',async mode=>{
+    const s=await originalSimpleSetup();
+    const facet=(name:string,value:string):ScalarFacet=>{
+      const {annotation:_annotation,...result}=s.facet(name,value);
+      return ['enumeration','minInclusive'].includes(name)?{...result,operand:{type:builtin('decimal'),owner:id('D'),context:'active'}}:result;
+    };
+    const entry=(name:string,value:string,evidence:FacetAnnotation='absent'):RawScalarFacetComponent=>({facets:[facet(name,value)],annotation:evidence});
+    const dead=[entry('pattern','a'),entry('pattern','b')];
+    const base=mode==='omission'?builtin('string'):builtin('decimal');
+    const prior=mode==='omission'?[entry('minLength','2'),entry('minLength','3'),entry('pattern','aaa')]
+      :[entry('minInclusive','2'),{facets:[facet('enumeration','1'),facet('enumeration','2')],annotation:annotation('base')}];
+    const supplied=mode==='omission'?[entry('minLength','2'),...dead]
+      :mode==='endpoint'?[entry('minInclusive','3'),prior[1],...dead]
+        :[entry('minInclusive','2'),{facets:[facet('enumeration','1'),facet('enumeration','2')],annotation:'absent' as const},...dead];
+    const context=s.overlay([exact(s.raw('Empty',[],{base}),prior),exact(s.raw('PeerEmpty',[],{base:named('Empty')}),supplied)]);
+    const kernel=createSchemaScalarKernel(context);
+    expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'invalid-schema',
+      rule:mode==='enum'?'enumeration-valid-restriction':mode==='omission'?'st-restrict-facets':'minInclusive-value'});
+  });
+
   it.each(['legacy','exact'] as const)('ignores caller group identities when comparing distinct %s pattern properties',async representation=>{
     const s=await originalSimpleSetup(),identity={caller:'not-issued'};
     const raw=(type:string,value:string)=>{
