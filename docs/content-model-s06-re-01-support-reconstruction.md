@@ -4550,3 +4550,156 @@ A parallel-leaf catalogue preserves these vectors and has complete evidence, but
 The shared catalogue retains that literal ancestor.
 Moving an entered R bit onto the direct start's own block also has complete evidence but changes the effective vector: the native walker ignores the start's own block.
 These are counterexamples to two particular maps, not malformed schemas, SOME negatives or full coverage outside the explicit cone guards.
+
+## ROOT word operations and conditional finite games
+
+The native results identify actual ROOT predicates and one prospective ordinary producer; the two finite-game results apply only after a complete native-to-game construction supplies their premises.
+Neither a finite collection of current answers nor an abstract winning strategy supplies immutable FIELD data, lawful births, current FULL proofs or required children.
+Fix authentic Gamma, the complete pre-event P and an OLD finite founded successful forest throughout each native reconstruction.
+All changed identities and canonical/RAW selectors are chosen coherently before their first births.
+
+### Current flat-CHOICE ROOT observations
+
+Consider one declared-PROPERTY-corresponding ordinary flat unit-CHOICE LOCAL word C and its joined COPY peers under an independently input-bounded ROOT portfolio.
+A fixed SOURCE owner S remains sealed and imposes its actual RP(S,C_peer); it is not rewritten as C.
+The nontrivial word mode has positive maximum and at least two unit LOCAL arms; empty, singleton, fallback and required-empty-CHOICE modes retain their separate native clauses.
+
+The [restriction dispatcher](../src/compiler/particleRestriction.ts) does not turn every source compositor into a word injection.
+SEQ-to-flat-CHOICE MapAndSum compares each direct source child with one direct target ELEMENT, permits reuse and applies its own count test.
+A surviving CHOICE, SEQ or ALL child fails that comparison; it is not compared with the entire target word.
+Actual normalization and genuine particle-identity shortcuts remain explicit exceptions.
+
+For a directly competing source CHOICE, current declared UPA makes its live HEAD bags pairwise disjoint by QName.
+Two syntax incidences sharing a nonabstract effective member conflict even if they share physical backing.
+An actual current FULL source supplies its own UPA check; availability, historical FULL or a suppressed original BODY does not supply that check for another RP operand.
+Empty raw fallbacks and implicit singleton CHOICEs must not be replaced by explicit-wrapper cleanup assumptions.
+
+For a single-use private target name, coverage and genuine current leaf predicates determine its GLOBAL/LOCAL data record and its demanded source-bag index.
+After protected literal and repeat positions are chosen consistently, ordered injection holds exactly when no two target positions reverse their demanded bag order.
+One bag is permuted once in that ROOT call; separate calls may choose separate orders.
+Two calls with opposite source orders can require ABA, so one target occurrence per name is not a general normal form.
+Repeated anonymous TYPE incidences fail EDC; a qualified named TYPE may repeat only with one actual named value in every joined projection.
+
+For an outgoing positive RP(C,K) to a current FULL fixed CHOICE K, UPA makes K's virtual private GLOBAL cells unique by QName.
+An actual injection uses at most e_K nonvirtual input cells.
+Protecting those exceptional incidences and their possible same-name main occurrences leaves at most 2e_K repeat incidences in immutable C; remaining private names are single-use.
+This bounds exceptions for that interface, not the roster or the union of future assignments.
+Other target kinds, ANY and shortcut modes keep their actual clauses and nominal leaf tests.
+
+### A qualified named-track constructor
+
+In the separate one-sided incoming branch with ordinary outgoing ANY tests, an input-bounded protected skeleton B fixes its old order and placements.
+The prospective finite roster U and its TYPE data come from the old lawful immutable word; its selected TYPE support must have actual current FULL at lawful first issue and in every required H, not merely be available.
+U can still be arbitrarily large; it is not a finite input alphabet.
+
+Choose a master order of U and put one whole U track in each protected gap for each input source HEAD incidence or literal demand.
+This bounds multiplicity per data record by the supplied portfolio, not the number of records.
+At each actual H, a bag uses its currently active U subset in that track order; unused target arms may be skipped and each ROOT retains one coherent key order.
+No GLOBAL is born early and no old owner TYPE is replaced by a future middle.
+
+The repeated TYPEs must be genuinely named and consistently projected.
+Any changed abstract/nillable/block/value flags require the complete unobserved-field permission; anonymous repeated records stay protected in B.
+An incoming IC set must actually be empty or have a genuine joined IC producer, since the native comparison requires source IC subset target IC.
+An abstract LOCAL removes consuming labels without adding epsilon; it does not justify copying an interior HEAD into an arbitrary surrounding compositor.
+
+Retain the root interval and content variety and use only the old copied namespaces, deriving the ordinary outgoing ANY checks from those unchanged data.
+The free-root constructor, declared UPA/EDC, occurrence, namespace and variety checks all remain real.
+Proper and WHOLE exports, source lineage, originalParticle, semantic scope, owner, VALUE/IC/WORD/scalar readers and required children remain exact or receive their complete first-issue decoder.
+Each typed or source duty has actual support in its owning context; FULL of another owner or an old parent is not that receipt.
+
+Deleting an entire qualified name orbit and restricting the genuine orders preserves the unary and forbidden-ordered-pair core while its normalization mode stays fixed.
+Required presence, fallback/category changes, count bounds, linked owner positions, births and FULL/child duties are additional predicates.
+An arbitrary DFA loop deletion is therefore not yet a physical owner deletion.
+
+### One autonomous private-R producer
+
+The following is the exact ordinary cb2 component over EMPTY A, not a classification of all outside-input orbits.
+Its actual frame is all-complex NONSC, empty-AU/no-AW and value/IC/WORD-free.
+Its protected name set Q includes all fixed Gamma/P declaration QNames and independently protected SOURCE/name ports.
+An unchanged nonidentity complex PROPERTY client, exact nominal stop, source/proper/WHOLE handle, WORD/value/IC/scalar field or independent future reader remains a boundary.
+
+Originally a private lambda selector in Phi and joined COPY code selects fresh w E exact g, while retained v has a genuine SOURCE program with SELF v and FIELD w.
+Before first birth, omit w and its otherwise unreferenced private code and issue r R K E exact EMPTY A.
+Both r and K select one actual ordinary V_r root from the qualified q-copy allocator, with SELF r and private FIELD r.
+Phi and the joined private FIELD/GLOBAL selectors select r from their own lawful first births, while v keeps SELF v.
+This installs ordinary code; no authentic WHOLE(q) handle or inherited row is edited.
+
+K's extension uses the particle-over-EMPTY branch and r's restriction uses actual root identity.
+The supporting EMPTY restrictions use their genuinely formal-zero choices, not RP or rawEXT transitivity.
+The omitted w's own E comparison is absent; it is not preserved through the false R/E pair r/q.
+Retained v still opens its actual SOURCE comparison: FIELD r/r closes by identity and scope v/q retains the genuine E/E certificate with exact BASE g.
+
+FULL(Phi) consumes actual current FULL(r).
+The finite component conjunction through r, K and their ordinary BODY support is legal, while BASE and direct containment remain acyclic.
+The original g/a path and independent original callbacks remain actual separate branches.
+Retained v has its real child v R K_v, where fresh K_v E A selects actual resident WHOLE(V_v); all inherited fresh roots are checked again there.
+
+In this discharged component r may be genuinely globally named at first birth, reserving its QName against the complete fixed and retained whole plan, including inactive and future identities.
+Canonical/RAW namespaces and every affected TYPE, BASE, scope and stored reference are transported together.
+Every surviving FIELD task is r/r; no distinct expanded PROPERTY reader of r's namedness survives, and v remains anonymous.
+This can license matching repeated named lambda TYPEs, but supplies neither a roster-track construction nor a general anonymous-to-named normalization.
+
+For an old proper-G channel w E g0 R ... R G E A with at least one old R edge before exact G, the real child w R G changes the G-directed method set from ER to R and only removes entered-prefix blocks.
+At fixed A/UR suffix targets the methods remain ER; old positive effective answers and genuine affiliation-final tests cannot worsen.
+A discarded nonprimitive literal affiliation target cannot be retained merely because it was ineffective: its real declared edge must still form.
+
+For a free A/UR channel whose old path already contains R, choose K.block as the old internal g0-through-G block union and r.block as old w.block.
+Qualified strict-entry starts then retain their actual entered-block union, while a direct start still ignores its own block.
+This preserves the fixed-suffix profile only under the complete client interface; an E-only old path or an internal HEAD stop is outside it.
+Every retained declaration still needs its real name, SG, ROOT and current-FULL producer.
+A GLOBAL formerly born only in an omitted w-child needs an actual new first-demand birth; absence of that callback proves neither birth nor nonexistence.
+
+### A virtual-cut bound for an explicitly supplied count game
+
+Let e contain k live-class counts, z contain r terminal counters, and rho range over a finite monotone poset of supplied rank at most L.
+For C at least one, the complete observation is (min(C,e), min(C,z), rho).
+All initial, ongoing and final predicates read only that observation; any phase distinction is an explicit monotone register coordinate.
+The adversary requests any nonempty class and the controller chooses a supplied finite observation/class-dependent action.
+It concretely subtracts one live token, adds a nonnegative terminal vector and moves rho upward.
+The capped successor of e need not be observation-determined: C and C+1 differ after a concrete decrement.
+
+At most D=rC+L responses change a terminal cap or the register.
+From a winning population with e_i>C+D, simulate its actual strategy with one extra virtual i token.
+Copy every other-class response, including nonprogress responses for j different from i, and copy every progress i response.
+At the first nonprogress i response, consume only the virtual token, then answer the pending real request using the next genuine i response in that actual continuation.
+The real count is still at least C, the live vectors now match exactly, and the skipped terminal contribution is forever invisible because it only affects saturated nondecreasing coordinates.
+
+Repeating this construction yields a winning initial population with at most B=C+rC+L tokens per class, preserving the initial z and rho.
+Every play is finite because each real request reduces the live total; no infinite stutter or fairness premise is used.
+Effective finite game data then permits search over e in {0,...,B}^k and backward recursion on the exact live total.
+This is an existential winning-population cutoff for that game, not a claim that all smaller or larger populations win.
+
+For RE01, q-independent classes/actions, immutable code and identity transport, exact ROOT observations, monotone protected registers and a causal producer for every chosen action remain substantive premises.
+A late GLOBAL can change still-E profiles rather than merely add a terminal contribution.
+Equal observations must decode current owning-context FULL and every required child, not just old Boolean answers.
+
+### An effective bound for hereditary independent-letter games
+
+In a different game, fix finite E/R alphabets and a finite action list A(e) of retired letters for each live letter.
+An adversary chooses any live position; the controller changes exactly that position once, without global guards, linked updates or births.
+Assume ongoing D, including the initial check, and terminal F are closed under arbitrary order-preserving position deletion.
+Then winning words are subword closed: send retained requests through the genuine old strategy, never request omitted positions during real play, and virtually finish them only to establish the terminal predicate.
+
+If regular initial language I has an m-state DFA and contains a winning word, it contains one of length at most m-1, including the epsilon case.
+A shortest accepted subword has no repeated state in its accepting run.
+Terminating membership procedures for D and F, such as supplied DFAs, make bounded enumeration and finite backward induction a total decision procedure for this exact game.
+No effective automaton for the full winning language is asserted.
+
+Unary admissibility and absence of forbidden ordered pairs are hereditary, including through fixed ignore projections.
+Presence, exact counts, fallback modes, protected-marker retention and one owner changing several separated positions do not automatically qualify.
+Every other native predicate and action must join the same actual hereditary decoder before this bound applies physically.
+
+### The arbitrary-regular boundary and remaining native gates
+
+For arbitrary regular ongoing/final predicates and an effectively regular generally infinite initial family, the independent once-only game has an undecidable existential-winning-word problem.
+The published basis is Muscholl, Schwentick and Segoufin, [Active Context-Free Games](https://doi.org/10.1007/s00224-005-1278-3), Theorem 7.1, together with its checked fixed normal-form constructions.
+The initial workspace choice ranges over an effectively regular family; the fixed normal-form encodings preserve that regularity and leave finite depth-one rules with terminal right-hand sides.
+Encode each terminal right-hand side as one retired letter and decode it by a fixed homomorphism; inverse-homomorphic decoding preserves the regular safety tests without adding positions or later requests inside that letter.
+Thus its general presentation has no uniform effective winning-region construction or total computable witness-length cutoff, although each fixed finite-word game is decidable.
+That reduction needs protocol/adjacency/interval predicates not translated into the native unary/ordered-pair interface; it gives no RE01 undecidability, native impossibility or SOME/NO conclusion.
+
+The two positive games and the arbitrary-regular boundary are compatible because their hypotheses differ.
+The native ROOT construction and private-R producer discharge specific operations rather than a complete game representation.
+Actual orbit/borrower classification, linked SELF/FIELD updates, first-demand declarations, fallback witnesses, key order/capacity and complete producer/frontier/child reconstruction remain open.
+So do the input-derived owner bank, semantic/native/evidence adequacy, complete positive and negative bounds, mathematical termination and dated correspondence.
+No solver, production normalization, new native run or general acceptance claim is introduced by this documentation.

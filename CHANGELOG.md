@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): record qualified ROOT word operations and private-R producers with conditional finite-game bounds.
+
 - test(re01): verify shared private R suffixes with complete contextual evidence and entered-block contrasts.
 
 - docs(re01): record covered common-payload recooks and scoped SOURCE reserve children.
