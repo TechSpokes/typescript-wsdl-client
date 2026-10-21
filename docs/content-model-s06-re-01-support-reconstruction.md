@@ -1708,6 +1708,301 @@ The sole nonauthor independently replayed the exact prototype and strict check; 
 Author qualification exercised 46 tests across six files with RE01 strict, toolchain and whitespace checks.
 The independent prototype execution and final author Vitest run are attributed separately; no second independent Vitest execution is claimed.
 
+## A current observer interface admits cap two
+
+Fix one authentic current H and a complete finite retained interface Pi.
+Pi contains every actual retained BODY/GROUP-root, HEAD, wildcard,
+explicit-name and own full RP reader, including all real-declaration and
+full-frontier reads, canonical/raw, source and owner backing.
+Protect every explicit QName, selected head and independently fixed identity.
+Eligible members are genuinely new nonabstract SG leaves outside that
+protected explicit-QName/HEAD set, with the complete interface above.
+No closed nonleaf SG cone deletion is inferred. Compute each such member's current profile from
+its effective-membership bits at those HEADs and the wildcard namespace tests.
+The profile does not contain a TYPE identity or an old future-history label.
+
+Keep two members in each eligible profile class and all protected globals.
+The eligible remainder has size at most `2^(|HEAD(Pi)|+|NS(Pi)|+1)`.
+Deletion requires a genuine complete incoming-reference audit: no retained
+owner, availability, raw/canonical, source, evidence or affiliate edge may
+still select a removed member. An anonymous TYPE whose identity owner is
+that member is such an edge. Retaining that TYPE unchanged would block deletion.
+
+This is before-birth deletion in the reconstructed current model, not loss
+of an already issued mandatory fresh root. All retained TYPE/scalar/owner
+rows and their actual full duties stay exact. Source/materializer and
+complete eager-query frontier qualifications remain real prerequisites.
+
+The profile and protected-head guards preserve whether a head has a nonself
+member. This matters because an empty abstract head pool remains an ELEMENT
+fallback; it is not an implicit empty CHOICE. Keeping two generic peers
+also prevents CHOICE-arity cleanup from changing a surviving many-member
+block into a singleton. Root kind, marker and formal range remain qualified.
+
+Restrict each old root query's chosen implicit orders by the same omitted
+member IDs at every occurrence of that key. No two HEAD keys are merged,
+and no single order is imposed across independent root calls. A deleted
+virtual target can only have matched its same-QName deleted source, unless
+an explicit protected name would have prevented deletion. Native MapAndSum
+uses the unchanged direct source-SEQ arity. Wildcard checks only lose names.
+
+UPA and EDC retain their actual surviving labels and TYPE support. The
+[particle owner](../src/compiler/particleRestriction.ts) still checks all
+leaf gates, and [declaration consistency](../src/compiler/particleDeclarationConsistency.ts)
+still observes named-TYPE equality. This is positive pruning in one H.
+It is not a future-history quotient, a TYPE/library count, or a theorem
+that supplied Pi is input-bounded. Current twins can split after retirement.
+
+## HEAD-port reductions relative to exact input and birth lineages
+
+The following reductions retain finite exact Gamma/P and genuine current-H
+full/source/frontier support. They do not replace the joint support bound
+by a count of supplied ports. Changes are made coherently at original first
+birth, with canonical content, raw content, typed references, owner identity
+paths and availability backing repaired together. Independent root lineages
+keep their own support and evidence; an incomparable receipt is not imported.
+
+### A free primitive middle needs no free tail HEADs
+
+Let M be a genuinely new primitive E-to-exact-A row, with A's immediate BASE
+anyType. An input-relative prefix bound requires A and its declared template
+to be fixed Gamma/P. Merely available fresh A supplies a finite template
+parameter, not an input-bound on its possibly unbounded body.
+
+Work in the affected NONSC/STRING frame with AU, ordinary values, local IC
+and scalar recipes absent. All actual body consumers of M are its own full
+E construction and retained incoming restrictions U_i RP M. Outgoing-body,
+PROPERTY/source and foreign E/mandatory whole-alias observations must be
+kept exact or separately reconstructed; they are not discharged by this rule.
+Direct prefix scope tasks already identity-close or use the qualified
+exact-TYPE prefix-version reconstruction. No recursive property demand on
+M's changed body is hidden in its retained prefix.
+
+In the explicit branch keep M's genuine derived first prefix and its real
+HEAD-key partition. Its complete declared correspondence to A bounds active
+prefix incidences by A's fixed template. Reusing A's exact root instead can
+merge independent old key domains and is not a general replacement.
+An original private-subroot comparison view is not an installable handle.
+
+Suppose M's restriction view is a proper unit SEQ. Let r be the old number
+of surviving flattened tail target positions, frozen before first birth.
+Keep the prefix, append required empty CHOICE P0 with occurrence 1..1,
+then `max(1,r)` ordinary `##any/skip` wildcards with occurrence 0..unbounded.
+Each old incoming injection keeps its prefix matches and sends old tail
+target j to wildcard j. PW accepts the entire old source subtree there;
+P0 and unused wildcard slots are formally schema-emptiable and skippable.
+Thus arbitrary retained incoming R/helper widths require no new HEAD key.
+
+Under ordinary/GROUP-qualified geometry, global expansion creates CHOICE/EL,
+not new flattened SEQ slots, and max-zero cleanup is static. A source macro
+outside this invariant needs separate qualification; r is not reselected
+at each descendant. Whole-identity shortcuts need a genuine structural
+expansion or an exact retained input-root branch.
+
+If the prefix restriction view erases, keep the declared prefix and append
+one universal wildcard: normalization collapses to that wildcard and PW
+handles every qualified incoming NONSC particle. For genuinely EMPTY A no
+prefix is required. An old EMPTY M can remain EMPTY through its actual TYPE
+clause, not a fictitious particle RP(emptySEQ,target) premise. If the old
+tail erases, one optional empty CHOICE preserves the surviving prefix view.
+Keep old mixed versus element-only variety and exact input whole aliases.
+
+P0 has no accepting path, so the new proper-SEQ tail adds no consuming UPA
+behavior; its wildcards add no QName/EDC conflict. Every new standalone root,
+ALL placement, GROUP USE/BODY and authentic source handle is still checked.
+The new body introduces no NP. Its BASE and prefix support are genuinely
+owed by the old full M; a property-only original is not promoted to FULL.
+
+All replacement wildcards share one namespace-observation predicate. The
+tail has zero HEAD keys even though its ordinary width r remains unbounded.
+With only fixed input incoming operands D_i, their maximum direct SEQ arity
+instead bounds the wildcard slots. Hidden raw zero/owner/source scaffolds
+are not bounded by a declared-view incidence count; complete closed-cone
+omission or a bounded materializer remains necessary. All retained old roots
+remain full. Mandatory aliases can change another consumer's SOURCE body,
+so their outgoing/fixed-child predicates still need joint reconstruction.
+
+### Proper nonprimitive head pools are static between external events
+
+Fix a retained member m and a head h on its immutable SG chain, with actual
+FULL(m) and full chain formation in every required retirement child. Let
+A_m be this member family's unique immediate-UR boundary on its literal
+all-complex BASE path. It is not a boundary chosen from another family.
+Suppose h.TYPE=v is neither A_m, UR nor primitive E-to-A_m.
+
+Full affiliation places v on m.TYPE's literal path even when effective
+membership is false. No proper prefix vertex can be current NP: its child
+would replace the suffix by primitive J-to-A_m-to-UR and lose exact v while
+m and h persist. A primitive E proper prefix is impossible for the same
+path reason. All proper prefix edges are therefore stable R edges.
+Retiring v itself changes only the edge below the comparison target.
+
+Existing-member eligibility at h is consequently invariant under private
+NP retirements. Exact identity cases and immutable SG/block fields remain
+exact. New member births and inherited input events are separate; this is
+not a statement that every future head pool is fixed.
+
+### Protected names charge primitive head TYPE identities
+
+Let Q be a supplied finite set of protected global expanded names with one
+coherent first-birth declaration, TYPE selector and SG chain per QName over
+the compared descendant subtree. P/common-creator globals satisfy this
+condition. Independently born same-name siblings require separate lineage
+charges. The argument does not extract Q from arbitrary fresh bodies.
+
+At a protected member's birth, full literal affiliation places all its head
+TYPEs on one BASE path. Such a path contains at most two primitive E
+identities: one E-to-A above its unique immediate-UR A, and possibly A E-to-UR.
+It contains at most one immediate-UR boundary identity. A later head cannot
+acquire that old member because its stored affiliation cannot name an
+unborn head. A child bypassing an already observed primitive J must select
+exact J as middle; a distinct primitive sibling cannot reach it.
+
+Thus observed fresh primitive-E head TYPEs charge at most `2|Q|` identities,
+and immediate-UR boundary TYPEs at most `|Q|`, per coherent lineage.
+Several heads with the same TYPE can still differ in descendant subset,
+self/fallback, flags and EDC duties. They have not been merged here.
+Generic names outside Q, unobserved E-run scaffolds and retained orphan NP
+roots are not counted by this charge. These reductions leave Q extraction,
+equal-TYPE head compression and the joint BODY/source decoder open.
+
+## Conditional finite nominal-word reconstruction
+
+Fix finite exact inputs Gamma and P and one local target program.
+Suppose the following genuine finite interfaces have been established for
+the proposed witness subfamily. Their extraction from an arbitrary B-v1
+witness is a separate premise, not a consequence of finite labels.
+
+The first interface is a finite alphabet of actual TYPE/BODY recipes for
+one genuinely new BASE-word prefix above its exact protected input suffix. The decoder
+chooses canonical/raw rows coherently at their original first birth and
+preserves every inherited row thereafter. It supplies authentic ordinary,
+GROUP and whole-source constructors, standalone-root legality, UPA/EDC,
+rawEXT, RP, content-variety, scalar, IC and formation prerequisites wherever
+those readers occur. Unsupported outcomes are not replaced by Boolean labels.
+
+All alias and implicit-order ports have their actual interpretation.
+Permitted sharing comprises fixed opaque input macros and the decoder's
+BASE-directed whole-root/prefix ports. A mandatory E whole alias continues
+to select its exact frozen BASE root after that BASE retires. Arbitrary
+variable proper-subroot sharing, cross-position equality and identification
+of independent old implicit keys require a separate decoder and are excluded.
+A same-H original private subroot view is not an installable constructor.
+
+The second interface is a fixed finite nominal roster, born with the word.
+Each nominated member/head selects an exact input TYPE or a singleton-marked
+word position. Its QName, literal SG path, namespace role, ordinary fields
+and all consumers have their exact program interpretation. No unrecorded
+declaration TYPE, foreign BASE, expanded PROPERTY, owner, source or evidence
+reader selects a private position. No old unbounded G(W) is an input color.
+
+Every required word BODY and observable support record is genuinely present
+in this initial lineage. A private word retirement introduces no GLOBAL,
+declaration selector, scalar, notation, head, helper NP or other observable
+support. A necessary later birth must belong to the bounded event interface
+below; finitely many colors alone do not permit moving a birth earlier.
+
+Let C be exactly the new prefix positions born as mandatory nonprimitive E types.
+It is disjoint from the protected input suffix and inherited event subjects I.
+Each remains a current NP duty until its own retirement. Primitive E support
+and fixed noncut E letters are excluded from C. Genuine designated-ancestor
+and primitive classification establish this invariant.
+
+Fix exact A and an available primitive B E over A; every cut has designated A.
+Every cut deterministically reuses B, with genuine full support in each H.
+Every decoded cut BODY satisfies the actual full retirement predicate to B
+in all admitted phases and roster states, including orphan states. This
+includes RP or the actual EMPTY clause, variety, AU/wildcard and final gates.
+Particle truth alone does not establish this premise.
+
+A cut preserves the position's frozen BODY, real identities, alias partition,
+flags and support; only its method and BASE become R and B. All raw/canonical,
+membership, availability and support updates therefore commute. The current
+context is determined by the retired set S and the finite input phase gamma.
+An active-to-B/orphan-to-new-envelope policy is not covered merely by one S:
+its final rows may remember the order in which positions became orphans.
+
+Let I contain every independently inherited P NP identity that can become a
+full duty, including P-fresh roots, and the relevant original Gamma targets.
+Their inherited nonderivation/source/owner/BODY rows stay exact. Each retires
+at most once and has a finite effective list of actual legal option bundles.
+The bundles have genuine birth, correspondence, source and full-support
+predicates and add no NP outside I and the frozen word. A phase gamma stores
+all chosen current rows and Qfree support bundles persistently.
+
+For each gamma, the genuine decoder must effectively supply MSO predicates
+Full_gamma(S), Consumed_a,gamma(S) and Legal_a,o,gamma(S) on the word.
+Full checks every current full obligation except recursive NP children.
+Consumed identifies actual current input duties; Legal checks the real child
+option at that exact parent. These predicates include complete eager query
+exports, negative effective-membership facts used by UPA/EDC, HEAD fallback,
+fixed key ports and same-H formation/source support. Availability is not FULL.
+Nominal segment/path tests are MSO, but this fact alone does not compile the
+remaining native readers or an arbitrary BODY comparison into this interface.
+
+Define W_gamma(S) by induction on the unretired identities of I:
+
+```text
+W_gamma(S) = forall T subset C:
+  S subset T implies
+    Full_gamma(T)
+    and for every a in I:
+      Consumed_a,gamma(T) implies
+        OR over permitted options o:
+          Legal_a,o,gamma(T) and W_next(gamma,a,o)(T).
+```
+
+The option OR is inside the universal quantifier. Choices may depend on the
+actual retired set and input-event branch; no history-dependent strategy is
+prelabelled once. Expansion is finite because every recursive phase retires
+one input identity. The initial condition is the decoder's root/port language
+and W_gamma0(empty), hence an effective finite-word MSO formula.
+
+For soundness, induct on the number of unretired C positions plus unretired
+input identities. Taking T=S gives all current full checks. A current fresh
+child has state S union {x}; its formula follows by restricting the quantified
+supersets. An actually consumed input duty has a witnessing legal option and
+a recursive child with one fewer input identity. Every move decreases rank.
+All receipts are reissued by actual authorities at the reconstructed parent;
+inherited orphan word rows remain mandatory and are checked there.
+
+For completeness within this canonical subfamily, every T containing S is
+reachable by successively requesting its unretired C duties. Commuting exact-B
+cuts and the absence of births make the resulting fields identical. A complete
+obligation tree therefore supplies Full_gamma(T) for every T, and a permitted
+option and smaller subtree for each consumed input duty. Induction yields W.
+There is no reachability antecedent which could hide a failing mandatory cut.
+
+The effective MSO-to-word-automaton construction gives an automaton Z accepting
+exactly these successful canonical words. Nonemptiness has a shortest witness
+of length at most the standard finite-state bound. This yields a computable
+TYPE-row bound from Gamma, P and the three actual finite interfaces.
+
+A total encoded bound additionally requires a bounded actual schema decoder
+for particles, declarations, groups, scalar/source support, counts and alias
+references of a bounded word. Copying arbitrary old scaffolds as label data
+does not qualify. Without this decoder the result bounds only TYPE rows.
+With n cut positions, every branch has at most n+|I| retirements; the sum of
+falling factorials through that depth bounds the local obligation-tree nodes.
+The bounded decoder and actual evidence format then bound its full encoding.
+
+This tree is the local program's obligation tree. Independent actual-Gamma
+assessment and NP root trees need their own qualified programs or genuine
+same-lineage evidence and size accounting before the whole verifier forest
+is bounded. Incomparable-root receipts are never reused by Full_gamma.
+
+This theorem does not extract the BODY/alias alphabet, nominal roster,
+observable-birth list or event options from arbitrary successful constructions.
+Those are the remaining composition dependencies. Two functional parent
+graphs plus arbitrary TYPE/BODY/source/owner crosslinks are not automatically
+one tree grammar. No solver execution or general B-v1 decision follows here.
+
+These source-level reductions retain their explicit supplied interfaces.
+They establish neither general B-v1 coverage nor a complete native materializer.
+The finite-word step uses the effective finite-word MSO construction described
+in the [MONA manual, sections 3 and 7](https://www.brics.dk/NS/01/1/BRICS-NS-01-1.pdf);
+no external solver execution or dated-XSD inference is claimed.
+
 ## Joint bound still required
 
 The results compose only when their actual privacy, first-birth, full-frontier, source and TYPE observations agree.

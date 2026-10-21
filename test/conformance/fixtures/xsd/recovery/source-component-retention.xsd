@@ -1,0 +1,7 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:source-facet-current" xmlns:p="urn:re01:source-value" targetNamespace="urn:re01:source-facet-current">
+  <xs:include schemaLocation="source-facet-current-components.xsd"/>
+  <xs:simpleType name="PatternOpaque"><xs:restriction base="xs:string"><xs:pattern value="a"><xs:annotation><xs:documentation>opaque group</xs:documentation></xs:annotation></xs:pattern><xs:pattern value="b"/><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SourceList"><xs:list itemType="xs:string"/></xs:simpleType>
+  <xs:simpleType name="SourceUnion"><xs:union memberTypes="xs:string xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="SourceQName"><xs:restriction base="xs:QName"><xs:enumeration value="p:item"/></xs:restriction></xs:simpleType>
+</xs:schema>

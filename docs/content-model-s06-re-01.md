@@ -232,13 +232,15 @@ The [two-node controls](../test/research/re01/empty-main-pattern-certificate.tes
 
 The independently reviewed [finite semantic private-alias catalogue](content-model-s06-re-01-scalar-witnesses.md#finite-semantic-private-alias-catalogue) retains actual input enum/pattern components and reduces new bound choices to the supplied shared endpoint decision.
 It assumes authentic immediate-base component selection and complete local authorities.
-The raw-exact selector below implements a qualified part of that interface; source/generated inventories and the shared endpoint solver remain unimplemented.
+The selector below implements qualified RAW-exact and source-only atomic DECIMAL/STRING parts of that interface.
+Other source/generated inventories and the shared endpoint solver remain unimplemented.
 The theorem proves a bounded recipe relative to one supplied anchor, not an input-derived number of anchors or a complete executable forest.
 An old component's identity does not waive changed whole-kind local-S membership, and existential same-kind matching does not imply universal whitespace coverage.
 
 ### Authenticated immediate-base component retention
 
-A first-born fresh canonical SIMPLE row may use `{baseComponent: n}` in `facetComponentSet` to retain an actual component from its formed immediate base's raw exact row.
+A first-born fresh canonical SIMPLE row may use `{baseComponent: n}` in `facetComponentSet` to retain an actual component from its formed immediate base's complete authenticated replay table.
+The existing RAW-exact table retains its supplied row order; the qualified SOURCE table below has its own deterministic current-component order.
 The zero-based ordinal is a nonnegative safe integer; it does not select another datatype, source slot or caller identity.
 Literal component entries keep their existing meaning.
 All stored parent identities count when checking first birth, including inactive ones; an inherited row can be reactivated but cannot acquire or change a selector later.
@@ -257,7 +259,7 @@ LIST ITEM and ordered UNION MEMBERS must retain exact constituent identities in 
 
 Partial enum/P1 retention, new enum contributions, mixed bound replacement and overlapping new P1 properties are outside this implemented positive sector.
 They do not establish invalidity: ordinary formation and known failures run before the sector qualification whenever the replay inventory is available.
-Source, builtin, generated and legacy/nonexact bases have no invented ordinal table.
+Source bases outside the qualified sector below, builtin, generated and legacy/nonexact bases have no invented ordinal table.
 When the table is unavailable, known literal/parser/type facts still run, but a partial inventory cannot establish a false omission failure.
 An available table with an out-of-range ordinal is an actionable selector failure; malformed or late-installed selectors fail representation admission.
 
@@ -266,8 +268,49 @@ The private replay table can serve a later selector on an inherited alias, with 
 The [complete forest controls](../test/research/re01/immediate-base-component-retention.test.ts) and [independent unit controls](../test/unit/schema-exact-facet-components-independent.test.ts) cover these boundaries, changed typed operands, fixed violations, genuine constituent nonderivation and missing child evidence.
 Literal changed-derived LIST/UNION baselines remain valid; their selected-component counterparts stay qualified rather than becoming invalid.
 
-This supplies a native materializer for the printed raw-exact KEEP sector.
-It does not establish source-component extraction, the finite endpoint solver, an input-derived anchor count, complete witness/evidence adequacy, complete negatives or mathematical termination.
+This supplies native materializers for the printed RAW-exact KEEP sector and qualified SOURCE sector below.
+It does not establish general source-component extraction, the finite endpoint solver, an input-derived anchor count, complete witness/evidence adequacy, complete negatives or mathematical termination.
+
+### Authenticated current SOURCE component retention
+
+The SOURCE extension uses the same first-birth selector shape and whole-KEEP sector.
+It requires a genuinely formed atomic DECIMAL or STRING base whose complete restriction ancestry consists of immutable source SIMPLE rows ending at that exact builtin primitive.
+An active RAW row takes the existing RAW path first.
+Any explicit typed-operand recipe, RAW ancestor, LIST/UNION constructor, contextual authority, generated slot or unbacked intrinsic component makes this SOURCE table unavailable.
+No partial table is published.
+
+The table orders scalar kinds lexically, then actual current enum/P1 survivors in their constructor order.
+One source step contributes one whole typed enum set and one whole P1 group, rather than an enum component per lexical member.
+Discarded same-valued historical components receive no ordinal; distinct whole values and P1 expressions retain separate positions.
+A formed source with no components has an available empty table, so every ordinal is out of range.
+This differs from an unavailable inventory.
+
+The restricted source ancestry, immutable syntax/maps and primitive parsing imply stable typed values, P1 properties and replacement decisions across descendant H.
+The existing prohibition on installing or replacing an inherited SIMPLE row supplies the lifetime premise.
+Each H still reforms source construction, resolves availability and establishes this restricted closure before publishing a completed table.
+A prior read in another context cannot activate table authority or bind an ordinal operationally.
+
+Each entry retains its actual same-H source introduction values, lexical contexts, dependencies and obligations.
+The selected RAW component replays through private facet bindings, compares unbranded typed/fixed/P1 properties, then receives a separate annotation-incidence identity.
+That identity is rooted in the authenticated immutable defining source record and component kind within the original context family.
+It identifies retention of the same opaque component; it supplies no typed equality, P1 equality, dominance, parser, containment or whole-validity shortcut.
+The ordinary value/P1 identity fields remain separate.
+
+Both the actual base metadata view and selected clone expose that incidence through immutable completed projections.
+Ordinary property reads obtain the same metadata view before or after selector lookup.
+Generic current records are not branded in place, and unavailable SOURCE sectors gain no token authority.
+The selected result remains a complete RAW inventory without source-step provenance or an inherited base union.
+Every ordinary c-fr/F2, fixed, new-S, source, dependency and full-root duty still runs.
+
+In the [complete controls](../test/research/re01/source-component-retention.test.ts), source EnumOpaqueC retains an opaque enum{1,2} and minInclusive2 while admitting only the value `2`.
+KEEP plus genuine NEW maxInclusive2 and two distinct dead P1 components forms; literal unknown-metadata copying remains qualified.
+NEW enum member one and endpoint three fail their ordinary immediate-base admission.
+A separate annotated multioperand P1 group retains its whole ordered expression, including a repeated operand.
+Excluded source sectors qualify, available bad ordinals fail, caller hints grant no authority and sticky budgets remain separate.
+All actual roots and inherited fresh duties remain checked; missing required child evidence remains unresolved.
+
+This is a qualified constructor, not general scalar recipe adequacy or a bounded search.
+General source/builtin/generated materialization, helper and evidence bounds, complete negatives and mathematical termination remain open.
 
 ### Current source components and historical enforcement
 

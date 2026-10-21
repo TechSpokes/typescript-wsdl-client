@@ -377,7 +377,8 @@ Each entry pairs an actual component with its immutable public facet recipe; nei
 For a selected entry the owner forms the recipe unbranded in actual H, checks its typed value/fixed/P1 properties, then attaches the issued component identity.
 The row's own TYPE identity, BASE edge and dependency obligations remain separate.
 Tables are published after ordinary dependency/qualification assembly and are charged before allocation and replay.
-Requests without selectors retain their existing budget path.
+The RAW path stays lazy; eligible SOURCE property readers also request their immutable metadata projection so authority never depends on a prior selector lookup.
+Existing preparation/locality and explicit budget controls remain required.
 
 The supported positive sector requires whole actual enum/P1 KEEP, distinct ordinary new P1 properties, and whole-kind bound KEEP or one ordinary NEW bound.
 Coverage uses the completed base's actual main-component associations, not merely its raw array; uncovered intrinsic or source properties retain qualification.
@@ -392,7 +393,7 @@ Malformed or late-installed selectors fail context representation admission.
 Resource exhaustion keeps its separate sticky outcome.
 
 See the [scoped contract](content-model-s06-re-01.md#authenticated-immediate-base-component-retention), [complete forest controls](../test/research/re01/immediate-base-component-retention.test.ts) and [independent scalar controls](../test/unit/schema-exact-facet-components-independent.test.ts).
-Source/generated table issuance, a general scalar recipe producer and the general RE01 coverage/negative/termination gates remain open.
+Qualified source-only atomic DECIMAL/STRING issuance is described below; other source/generated inventories, general scalar recipes and general RE01 coverage/negative/termination remain open.
 
 ### Current source repeatable-component ownership
 
@@ -412,7 +413,31 @@ Replay forms actual typed operands in H before recomputing dominance; no cached 
 The private view is charged and kernel-local, and does not replace `Description.exactComponentSet`, ordinary F2 or full validity.
 
 See the [contract and discriminator](content-model-s06-re-01.md#current-source-components-and-historical-enforcement) and [complete source controls](../test/research/re01/source-facet-current-components.test.ts).
-Source ordinal issuance, full RAW same-value metadata reconstruction and general RE01 coverage/adequacy/bounds/negatives/termination remain separate gates.
+Qualified SOURCE ordinal issuance now reuses this current view; full RAW same-value metadata reconstruction and general RE01 coverage/adequacy/bounds/negatives/termination remain separate gates.
+
+### SOURCE replay tables and metadata authority
+
+The scalar owner qualifies the complete SOURCE restriction closure after ordinary formation, without re-entering ensure from its table builder.
+It pairs actual scalar tuples and current repeatable components with their authenticated defining source facets.
+Scalar-kind lexical order followed by current survivor order is deterministic in the admitted source-only DECIMAL/STRING sector.
+Intrinsic/derived-builtin prefixes, contextual constructors, RAW ancestors, explicit typed operands and unavailable grouping/replay backing prevent the whole table.
+
+A private original-context/source-record/kind incidence cache supplies annotationIdentity on completed immutable projections.
+It never changes the existing value/P1 identity fields or generic current-component cache.
+Exact value/fixed/P1 comparison runs before selected clones receive this metadata authority.
+Annotation correspondence and authenticated whole-KEEP association may use it; parser selection, replacement dominance and scalar equality may not.
+The base projection is available independently of a selector lookup, preserving read-order independence.
+
+SOURCE entries bind actual formed H values and lexical/source context through the existing private per-facet binding maps.
+They retain genuine current dependencies and outstanding obligations, with no Gamma validity transfer.
+Installed selected components remain RAW inventory entries without source-step provenance.
+Unavailable tables preserve known independent literal/type failures; available empty or out-of-range tables retain actionable ordinal failures.
+All table, cache, token, copy, comparison and publication work is charged before allocation or processing.
+
+See the [qualified SOURCE contract](content-model-s06-re-01.md#authenticated-current-source-component-retention),
+[new source controls](../test/research/re01/source-component-retention.test.ts) and
+[existing RAW controls](../test/unit/schema-exact-facet-components-independent.test.ts).
+No general source issuer, builtin/generated materializer or negative-search bound follows from this extension.
 
 ### Complete scalar membership and containment authorities
 

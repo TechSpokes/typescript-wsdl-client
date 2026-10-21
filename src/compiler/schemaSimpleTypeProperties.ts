@@ -30,7 +30,7 @@ export type RawScalarFacetLayer = Readonly<{facets: readonly ScalarFacet[]}>;
 export type RawScalarFacetComponent = Readonly<{facets: readonly ScalarFacet[];
   /** Annotation of the abstract component, including grouped pattern/enum. */
   annotation?: FacetAnnotation}>;
-/** An actual component in the formed immediate base's raw exact row. */
+/** An actual component in the formed immediate base's available replay table. */
 export type RawBaseFacetComponent = Readonly<{baseComponent: number}>;
 export type RawFacetComponentEntry = RawScalarFacetComponent | RawBaseFacetComponent;
 export type RawSimpleFacetInput = Readonly<
