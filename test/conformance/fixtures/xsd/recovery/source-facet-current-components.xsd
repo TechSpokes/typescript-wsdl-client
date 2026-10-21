@@ -1,0 +1,22 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:source-facet-current" targetNamespace="urn:re01:source-facet-current">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:element name="h" type="xs:anyType" abstract="true"/>
+  <xs:simpleType name="EnumB"><xs:restriction base="xs:decimal"><xs:enumeration value="1"><xs:annotation><xs:documentation>first</xs:documentation></xs:annotation></xs:enumeration></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumA"><xs:restriction base="t:EnumB"><xs:enumeration value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumC"><xs:restriction base="t:EnumA"><xs:minExclusive value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumOther"><xs:restriction base="xs:decimal"><xs:enumeration value="1"><xs:annotation><xs:documentation>different</xs:documentation></xs:annotation></xs:enumeration></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumBack"><xs:restriction base="t:EnumA"><xs:enumeration value="1"><xs:annotation><xs:documentation>different</xs:documentation></xs:annotation></xs:enumeration></xs:restriction></xs:simpleType>
+  <xs:simpleType name="PatternB"><xs:restriction base="xs:string"><xs:pattern value="a"><xs:annotation><xs:documentation>first</xs:documentation></xs:annotation></xs:pattern></xs:restriction></xs:simpleType>
+  <xs:simpleType name="PatternA"><xs:restriction base="t:PatternB"><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="PatternDistinct"><xs:restriction base="t:PatternB"><xs:pattern value="(a)"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumDistinctB"><xs:restriction base="xs:decimal"><xs:enumeration value="1"/><xs:enumeration value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumDistinctA"><xs:restriction base="t:EnumDistinctB"><xs:enumeration value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumOpaque"><xs:restriction base="xs:decimal"><xs:enumeration value="1"><xs:annotation><xs:documentation>first</xs:documentation></xs:annotation></xs:enumeration><xs:enumeration value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EnumOpaqueC"><xs:restriction base="t:EnumOpaque"><xs:minInclusive value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="IntegerPattern"><xs:restriction base="xs:integer"><xs:pattern value="[\-+]?[0-9]+"><xs:annotation><xs:documentation>integer</xs:documentation></xs:annotation></xs:pattern></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ComboB"><xs:restriction base="xs:string"><xs:pattern value="a"><xs:annotation><xs:documentation>pattern</xs:documentation></xs:annotation></xs:pattern><xs:enumeration value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ComboA"><xs:restriction base="t:ComboB"><xs:enumeration value="a"><xs:annotation><xs:documentation>new enum</xs:documentation></xs:annotation></xs:enumeration></xs:restriction></xs:simpleType>
+</xs:schema>

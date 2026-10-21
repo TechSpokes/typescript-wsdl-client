@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): exclude discarded source facet components from current property and retention checks while preserving replay history.
+
 - feat(re01): retain authentic immediate-base facet components with current-context replay and explicit unsupported combinations.
 
 - fix(scalar): prove containment for empty main pattern intersections without strengthening whitespace rules.
