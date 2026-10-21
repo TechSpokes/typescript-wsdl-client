@@ -13,6 +13,10 @@ The BODY-boundary continuation starts from main `3759cddf4e9ddb1d1c28d9e76b27898
 It separates closed common-content modules from a necessary input PROPERTY copy with a distinct nominal cut.
 Its reader inventory and native controls do not establish a general finite interface.
 
+The finite-observer continuation starts from main `bdd274ff80c556cec6b158aa58888ceca95d7d9d`, tree `e545335978c09091758ae063212843fa4b57a3c3`.
+It bounds active HEAD observers in a supplied legal canonical product, with actual SG reconstruction and one final birth plan.
+The supplied module, primitive palette, roster and retirement product remain substantive premises.
+
 Every forest transformation starts from a supplied finite complete founded forest, authentic current-context/source materialization and sufficient finite configured resources.
 Every retained old fresh component and independent actual-Gamma duty remains required in its own context.
 The theorems remove components only before first birth; no inherited root disappears merely because it becomes unused.
@@ -28,6 +32,9 @@ The theorems remove components only before first birth; no inherited root disapp
 | Co-born NP/copy bundles | One NP representative per sealed batch | Number and general geometry of batches |
 | Closed BODY modules | Common content with exact nominal identities and children | Input-imposed boundary extraction |
 | Necessary input copy | One copy at an exact input PROPERTY/nominal-cut pair | General copy and HEAD counts |
+| Canonical-product HEADs | Explicit active-observer and shield bounds | Module, palette, roster and product extraction |
+| Input PROPERTY entrances | At most one first fresh complex entrance per inherited BASE retirement | Joint reconstruction beyond entrances |
+| SOURCE controller payload | Complete displayed joint TYPE/payload reconstruction | General protected reader interfaces |
 
 The first-boundary classification invokes the already proved [common nonscalar payload](content-model-s06-re-01.md#common-mixed-payload-without-changing-the-nominal-fresh-family) only with that theorem's full premises.
 Its simple-content case requires a separate scalar projection, ordinary-value and clear particle-formation proof; that application is not promoted here.
@@ -2517,3 +2524,290 @@ The implication from each child's own middle to one common middle is not establi
 Moreover, restoring an original endpoint check may reintroduce an original duty absent from the old terminal c-child, and retained support additions may change unrelated head pools.
 These are exact new construction obligations of that early-retirement method, not a demand that every strategy preserve all old observations.
 No formed counterforest or impossibility theorem is claimed; the general first-demand reduction remains open.
+
+## Finite active HEAD construction in a supplied legal product
+
+This source theorem bounds active BODY observers, rather than all stored HEAD, TYPE or member records.
+It is conditional on the actual finite interface below.
+The [self-contained research finding](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6309009962) records the independent source review and its exact scope.
+No native general constructor or total witness bound is claimed by this section.
+
+### Exact constructor and program premises
+
+Fix finite inherited P and one coherent first-birth cohort over P.
+All changed fields have authentic canonical/RAW/source/owner backing at that birth, and protected P selectors remain exact.
+Supply L genuinely post-P proper primitive complex rows J extension A with A.BASE=anyType.
+Every relevant member TYPE path is all-complex.
+Each mutable NP coordinate retires directly by restriction to its own exact J.
+
+Every subset of those coordinates must be an actual legal FULL state, with fixed roster, TYPE graph, headers and SG fields.
+No support/member birth, inherited event, new middle choice or unproved orphan repair occurs inside this product.
+This premise includes full final/AU/value/source/correspondence duties; membership equations alone do not establish it.
+Independent root lineages require their own authentic recipes and receipts.
+
+M is freely reconstructible NONSC content over an EMPTY base, or belongs to a separately certified jointly rewritten exact whole-BODY alias module.
+Its old normalized restriction root is CHOICE at one fixed positive-maximum interval I, containing n>=2 distinct unit GLOBAL HEAD occurrences, each once.
+Every observed head is new, abstract and typed by the supplied palette; SG nesting is allowed.
+
+Every nonidentity incoming reader is a genuine nonempty UNIT implicit GLOBAL choice H_a in P.
+There are ell>=1 fixed-P CHOICE outputs B_j with actual RP(M,B_j) in every product state.
+Additional fixed ANY outputs retain their actual PW duties.
+LOCAL/composite incoming programs, protected nonempty rawEXT prefixes and unlisted readers are outside this frame.
+
+The interface includes every mandatory F/GROUP/root read, whole/proper-fragment alias, implicit key, exact-name observer and canonical/source/owner field.
+Other affected VALUE/IC/scalar/PROPERTY authorities are absent or separately transported.
+A stored row is omitted only through complete closed omission before birth, or genuinely reissued with all its full duties.
+Stopping BODY references does not remove its mandatory fresh-root obligation.
+
+### One common failure state and permanent anchors
+
+Call a member permanent when it is effective in every supplied product state.
+For one exact J and ELEMENT head-block class, one genuine subset empties all abstract heads without permanent members.
+The proof uses entered TYPE blocks: a starting TYPE's own block is unentered, while traversed methods and entered blocks accumulate.
+
+Combine the head block with the entered J TYPE block.
+If R is externally excluded, an all-cut positive witness must have TYPE identity J and is permanent.
+If E but not R is excluded, an initially positive witness has an R-only path or identity and is permanent.
+Substitution-blocked abstract heads are already empty.
+
+In the remaining case, a nonpermanent initially positive path has a strict entered R-blocker on an all-E suffix.
+Take the bottommost such blockers over the unanchored heads; they form an antichain.
+None is itself a member TYPE of one of those heads, because its clean suffix would supply a permanent witness.
+Retire that antichain.
+Every crossing path now traverses R and the chosen entered R-block, while noncrossing paths retain their initial failure.
+Initially negative crossing members also fail, so this is a common state rather than one selected failure per head.
+The full-product premise supplies its genuine legality; immutable P E rows are not silently made cut coordinates.
+
+A permanent member at a proper post-P J can have a fixed-P SG ancestor only at TYPE A or anyType.
+Its FINAL positivity at such an input head persists across the product.
+Actual FULL B_j UPA gives that member a unique productive direct virtual target-block occurrence in each output.
+Occurrences include their actual addresses, rather than only particle or HEAD IDs.
+
+### Input cells and an explicit observer bound
+
+For B_j let p_j bound its productive direct implicit block occurrences and r_j its nonvirtual direct target children.
+These are genuine normalized P/source occurrence counts over the admitted program.
+Protected P literal SG and active TYPE selectors remain the admitted P selectors.
+Fallbacks cannot escape into a productive virtual target through an unproved identity/QName shortcut.
+
+Let h be the finite admitted ELEMENT header alphabet, retaining every observed final/block/nillable field.
+Use the following deliberately coarse quantities:
+
+```text
+r = min_j r_j
+b = L*h*r
+e = sum_j r_j
+V = product_j max(1,p_j)
+t = b + e + 2*V
+c = L*h*V
+N = t + (|P_GLOBAL| + t + 1)*(c + c*c)
+```
+
+At the common failure state each unanchored head needs a distinct nonvirtual target cell.
+There are at most b such heads over all J/header classes; retain them separately.
+At FINAL the permanent anchors assigned a nonvirtual cell contribute at most e further exceptions.
+Every other anchor has a fixed vector of productive virtual block occurrences, from at most V vectors.
+If some p_j is zero that anchor class is empty; the max convention only keeps the formula uniform.
+
+Retain the first and last head carrying each vector, adding at most 2V boundary heads.
+An ordered injection places every intervening current member between the same two target coordinates in each B_j.
+Thus all such members remain in that same block vector in every state.
+Neither a nonvirtual exception nor an empty fallback can occur inside the bracket, and different vectors cannot interleave.
+This yields finitely many cells without retaining the old alternating word as a hidden parameter.
+
+### Actual SG projection and top-down quotient
+
+For each retained observed/P head h used as an ancestor, plan an abstract shield f_h with TYPE exactly h.TYPE, empty ELEMENT final/block and SG h.
+It is not a BODY HEAD occurrence and adds no effective member.
+Redirect each eligible writable fresh branch to the shield of its nearest proper retained old ancestor.
+Unobserved nonabstract intermediate declarations remain ordinary members; their HEAD role is not silently counted as an observed port or omitted.
+
+Old FULL affiliation supplies the unrestricted literal TYPE path to h.TYPE.
+The redirected branch forms against f_h, and f_h forms against h by TYPE identity even under restrictive h.final.
+P ancestor pools and retained structural reachability remain exact at this projection stage.
+Same-H full-reference closure supplies genuine h and h.TYPE; every new shield still requires actual source/owner/allocator backing and full checks in every required H.
+
+A stable observed ancestor of a primitive J head also has exact TYPE J.
+A lower stable head blocking R has an identity-J witness overlapping every stable ancestor, contrary to whole-M UPA.
+Otherwise its FINAL R-only witness overlaps any R-absent ancestor.
+The only possible stable ancestor therefore blocks R and can have no further stable ancestor.
+Stable-only observed segments have depth at most two between special/P ports.
+
+Process retained parents before children.
+Inside one fixed-vector cell, merge stable sibling heads with the same exact J/header and retained parent.
+Choose an actually available representative and redirect its fresh incoming branches coherently.
+Its pool is the old sibling union in every state; children and P ancestor pools retain their actual sets.
+After a parent merge its children really are siblings, permitting the next level without an SG cycle.
+At most c colours occur per level and there are at most two stable levels per segment, yielding N.
+At most |P_GLOBAL|+N additional final-parent shields are needed.
+
+Projection and quotient plan one final cohort before issuing any changed record.
+Temporary observers/shields are proof objects, not previously born rows whose inherited SG fields are edited.
+Only final-parent shields are allocated and charged.
+An earliest representative needs authentic first-birth availability, or a separately justified early reissue.
+
+### Orders, root shape and full evidence
+
+Each outgoing root call chooses the order of an entire productive target block from the complete new source subword, including unchanged boundaries.
+Shared keys are not independently sorted.
+FULL UPA excludes duplicate productive root uses; composite-arm occurrences retain the certified unit-ELEMENT order-invariance gate.
+Incoming H_a pools keep their exact GLOBAL positions and choose their corresponding subsequence order independently for each root call.
+No RP transitivity or single common query order is asserted.
+
+Special fallbacks and their actual target gates stay exact.
+ANY outputs retain their global/fallback multiset and formal range I.
+At least two retained HEAD occurrences remain and each contributes an atom, so the explicit root remains CHOICE at I.
+A real named GROUP BODY still requires interval ONE; the notation does not waive its representation owner.
+Declared UPA preserves disjoint union labels, while raw EDC deletes unused raw head names without duplicating effective QName/TYPE incidences.
+Every own rawEXT, variety, AU, source and full-root duty remains checked.
+
+Replay the supplied finite forest only under its genuine constructor/birth interface, rebuilding contexts and all retained-root receipts in their actual H.
+Old-height reasoning does not permit importing a receipt from another phase or omitting an obsolete born component.
+This establishes the displayed active-observer/shield bound under the premises.
+It does not bound the stored member/TYPE roster, extract a finite primitive palette or canonical program from arbitrary adaptive evidence, or prove a total encoded witness bound.
+
+### A failed birth replay does not prevent joint reconstruction
+
+One exact two-state recipe has K.TYPE=J with block R, m.TYPE=p extension J affiliated to K, and a steady L/l branch.
+M uses CHOICE[HEAD K, HEAD L], while a fixed B has CHOICE[ANY_N, HEAD Hs].
+Initially its word is [m,l]; after p restriction J the old recipe births n.TYPE=J and obtains [n,l].
+Both inject into [ANY_N,l], but moving unchanged n to the initial cohort gives [m,n,l] and fails the two-cell injection.
+This refutes unchanged birth advancement.
+
+Under the complete no-other-TYPE-reader guard, choose m.TYPE=J at m's original birth and never birth n.
+The displayed host also has no other affected exact-name, HEAD, source, BODY or census readers of n.
+Its omission passes the complete before-birth availability, owner, source and full-root closure; absence of another TYPE reader alone would not establish that condition.
+Keep p and its real p restriction J child.
+The BODY word stays [m,l] and all actual mapping/full duties replay.
+Inherited or independently protected TYPE-p ports require their own reconstruction; the example supplies no general roster theorem.
+
+Likewise, retiring every fresh helper first cannot justify copying a terminal snapshot into the initial original-target candidate.
+The initial original endpoint can leave the child's required closure and lose its earlier RP/HEAD predicate, as the anchored helper falsifier already establishes.
+The selected fresh-target final-record theorem has a different mandatory-fresh-root premise.
+General module, palette, roster, adaptive-program and support extraction remain open.
+
+## Finite first complex PROPERTY entrances from inherited input
+
+Fix exact finite P, immutable Gamma and one lineage of a complete founded local forest for target t over P.
+Mark one side of an actual qualified node/declared-particle PROPERTY task that starts at a literal P component or an authentic immutable P/source template position.
+The number of first post-P complex BODY subjects reached by that marked side is at most |P_CT| along the lineage.
+Each is a middle selected by a once-only retirement of an inherited P complex subject, including t.
+
+This bound concerns first entrance subjects, not the graph reached after them.
+An unmarked fresh clone does not become input merely by carrying a P-template label.
+No copy-class, module, primitive-library, member, support or whole-forest bound follows.
+
+### Actual immutable support and generated backing
+
+Inherited identities, owners, admitted declaration TYPE/SG selectors, source bindings and nonderivation properties retain their actual correspondence.
+An active RAW facade cannot silently replace an inherited declaration TYPE by a newborn selector.
+Only the actual endpoint BASE update enters a new legal E middle; each inherited complex subject changes from E to R at most once.
+Arbitrary inherited post-Gamma rows are part of finite P input, rather than a Gamma-only catalogue.
+
+Include the authentic finite source containment support of each marked template.
+Private composition wrappers and builtin anyType particles are selected through their existing whole-view owners.
+Original generated scalar slots belong to the finite Gamma-issued catalogue and retain their original shape/source references.
+Their delegated scalar/VALUE/WORD/F2 duties remain separate; a qualified scalar fact is not replaced by the complex entrance bound.
+
+Actual endpoint correspondence permits generated compositor/ANY backing to receive fresh IDs through a coherent bijection preserving kind, interval, children, sharing and wildcard properties.
+Mark these finitely many positions by their correspondence addresses.
+Every non-generated particle keeps its exact identity, and this exception introduces no new declaration TYPE or scope selector.
+The proof therefore does not impose a stronger literal generated-root-ID requirement on the accepted domain.
+
+### Declared PROPERTY tracing
+
+The component-property owner compares complex content through the declared particle view.
+That view retains a real GLOBAL declaration; it does not expand its substitution population into a virtual restriction CHOICE.
+At a positive GLOBAL comparison the role and expanded QName must agree.
+Uniqueness in the complete authentic context makes that the same declaration identity, closing the task rather than entering an unrelated new member TYPE.
+Different global names fail instead of choosing a virtual member as another PROPERTY witness.
+
+Nonidentity particle tasks compare kind, exact range and direct child count, then queue the corresponding children.
+Whole/original particle identity closes using its authentic component.
+Until the marked side leaves input support, its containment positions remain in that finite support.
+
+Inherited LOCAL declaration TYPE and semantic scope follow their exact admitted P selectors and owner chains.
+An inherited complex TYPE or scope therefore reaches another P component, a fixed group/absent stop or the global category.
+Recursive TYPE edges may revisit P; no acyclic TYPE-reference graph is assumed.
+Attribute-use, ordinary-value and scalar tasks keep their own qualification owners.
+
+At a marked P complex row, current content, attributes and nonderivation properties remain those admitted by correspondence.
+Its BASE is the only complex-property selector that can leave P/support through a lawful endpoint update.
+An already inherited BASE stays in P.
+A genuinely post-P BASE is the selected middle of that exact inherited subject's retirement.
+The task may close at that middle, fail before expanding it or actually enter its BODY; counting all such selections only overcounts entrances.
+
+### Count, context and exact remaining obligation
+
+Charge each first new subject to the inherited P complex subject whose BASE update selected it.
+That subject is retired at most once along the lineage.
+Shared or already inherited middles reduce the number of distinct entrances, giving the bound |P_CT|.
+The initial target t is included in P and is not an additional exception.
+Sibling branches may choose different middles, so this does not bound their union or the number of evaluations at different fresh-cut states.
+
+After entering a new middle, a PROPERTY tableau may traverse arbitrarily large fresh declared geometry and sharing.
+Fresh-only constructors also have real R/E-to-P filters, proper/whole aliases, fixed incoming RP calls and initial-root observations.
+PROPERTY-unanchored does not mean closed or freely replaceable by common content.
+The closed-module theorems require their actual full reader, first-birth, source and owner premises.
+
+Likewise an initial original target may leave the full frontier of a later fresh-child judgment.
+Its unchanged canonical fields do not preserve its earlier RP/HEAD predicate in that child.
+This temporal limitation does not add a PROPERTY entrance, but remains an actual input-root duty for reconstruction.
+
+The established count is a source-only boundary theorem over the existing equality, declared-particle, correspondence and generated-source owners.
+It leaves simultaneous SOME reconstruction behind the entrances, bounded template/cut/HEAD/phase classes, native decoding, complete negatives and mathematical termination open.
+
+## A SOURCE whole payload and its nominal controller
+
+### Exact supplied construction
+
+The [maintained control](../test/research/re01/source-head-controller-payload.test.ts) uses the reusable [SOURCE fixture](../test/conformance/fixtures/xsd/recovery/source-head-controller-payload.xsd).
+These are three supplied constructions, not an enumeration of possible witnesses.
+Actual Gamma has 14 components, each independently constructed before hypothetical additions exist.
+
+EMPTY A restricts anyType.
+Named B extends A with CHOICE0..unbounded of LOCAL rho:B and LOCAL delta:B.
+Nonabstract GLOBAL H named rho has TYPE B.
+An anonymous SOURCE tau restricts B with unit SEQ[ref H]; EMPTY I restricts B and EMPTY D extends I.
+Ordinary values, AUs/AWs, identity constraints and restrictive flags are absent.
+
+The D candidate uses an EMPTY primitive J0 extending A and retires D by restriction to J0.
+It adds anonymous U with BODY equal to tau's authenticated original WHOLE particle and a fresh GLOBAL delta affiliated to H.
+The complete U child retains every fresh record and retires U by restriction to exact B.
+The child is a separate evidence node in its own current H.
+
+### OLD, INTERNAL and JOINT
+
+OLD chooses U extension I and delta.TYPE U.
+The complete two-node forest passes, although U.BODY-to-B restriction is false initially and true in U's child.
+The initial failure is the delta TYPE path's extension step; the child has the required restriction-only path.
+U's full EMPTY-base extension uses the production constructor branch, which does not require the false standalone nonempty-particle raw-extension predicate.
+
+INTERNAL adds c restriction B with the same authenticated WHOLE BODY and chooses U extension c.
+Keeping delta.TYPE U makes c's own restriction fail rule5.4 at the parent, despite true same-WHOLE U/c raw extension and U's local full construction.
+c becomes valid in the U child, but that later receipt cannot discharge its parent's duty.
+This rejects this particular internal rewrite rather than proving nonexistence.
+
+JOINT additionally chooses delta.TYPE c at delta's original birth.
+c's restriction to B passes immediately, U/c raw extension remains true, and the complete two-node forest passes.
+The finite c/H/delta/c content dependency cycle is permitted; BASE and affiliation paths remain acyclic and the evidence child remains founded.
+U is still a mandatory NP root and keeps its genuine exact-B child.
+
+### Context and frontier checks
+
+OLD has three fresh records and 17 members in both parent and child; its checked current-H component counts are 15 and 13.
+JOINT has four fresh records and 18 members in each context; its counts are 15 and 14.
+Every fresh record appears in the appropriate full frontier, and every component/dependency receipt names its actual current context.
+Omitting U's required child is unresolved in both positive controls.
+
+Original tau and its carrier remain available for authentic source properties but are not silently made current full roots.
+Full tau fails initially in OLD and becomes valid in the child; actual-Gamma tau was checked before the new member existed.
+The diagnostic U/tau PROPERTY comparison is false at the parent and true at the child.
+It is not an invented early full premise and is not transferred between contexts.
+
+### Established consequence and limit
+
+This construction separates the nominal controller U from a restriction-template payload c by changing a writable member TYPE jointly at first birth.
+It shows why failure of an unchanged-member payload split does not establish failure of every reconstruction.
+It does not permit editing an inherited member, erasing an exact protected TYPE reader or dropping an inherited fresh root.
+General protected reader reconstruction, support bounds, evidence adequacy, complete negatives and mathematical termination remain open.

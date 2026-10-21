@@ -2534,12 +2534,13 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     c.fail(owner, 'enumeration-required-notation', 'A NOTATION list item or union member requires an enumeration-qualified datatype');
   };
-  /** Completed source-only atomic chains have invariant current survivor order.
+  /** Completed source-only atomic or singleton-DECIMAL union chains have stable survivors.
    * This reader never enters ensure, brands generic CURRENT records or issues
    * VALUE/P1 identity. Every entry owns its already formed H introduction. */
   const sourceComponentTable = (base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
     c.step(owner, 3);
-    if (base.rawProperties || base.plan.variety !== 'atomic' || !['decimal', 'string', 'QName'].includes(base.plan.primitive!)) return undefined;
+    const sourceUnion = base.plan.variety === 'union';
+    if (base.rawProperties || !sourceUnion && (base.plan.variety !== 'atomic' || !['decimal', 'string', 'QName'].includes(base.plan.primitive!))) return undefined;
     c.text(base.definition, owner);
     if (base.definition.startsWith('builtin:') || base.definition.startsWith('content:')) return undefined;
     const cached = sourceComponentTables?.get(base); if (cached !== undefined) return cached || undefined;
@@ -2549,8 +2550,20 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     let reference: Reference = {kind: 'local', target: base.definition};
     while (reference.kind !== 'builtin') {
       const node = c.get(c.target(reference, owner)!);
-      if (node.kind !== 'simpleType' || node.variety.kind !== 'restriction'
-        || c.context.sourceNode(node.id) !== node || c.context.rawSimpleTypeProperties(node.id)) return unavailable();
+      if (node.kind !== 'simpleType' || c.context.sourceNode(node.id) !== node || c.context.rawSimpleTypeProperties(node.id)) return unavailable();
+      if (sourceUnion && node.variety.kind === 'union') {
+        c.step(owner, 12);
+        if (node.variety.members.length !== 1 || base.plan.members?.length !== 1 || base.members?.length !== 1) return unavailable();
+        const literal = node.variety.members[0], effective = base.plan.members[0], member = base.members[0];
+        if (literal.kind !== 'builtin' || effective.kind !== 'builtin') return unavailable();
+        for (const reference of [literal, effective]) {c.text(reference.name.namespace, owner); c.text(reference.name.local, owner);}
+        c.text(member.definition, owner);
+        if (literal.name.namespace !== XSD_NAMESPACE || literal.name.local !== 'decimal'
+          || effective.name.namespace !== XSD_NAMESPACE || effective.name.local !== 'decimal'
+          || member.definition !== 'builtin:decimal' || member.plan.builtin !== 'decimal') return unavailable();
+        break;
+      }
+      if (node.variety.kind !== 'restriction') return unavailable();
       c.step(owner, node.variety.facets.length * 3 + 3);
       for (const facet of node.variety.facets) {
         if ('operand' in facet && facet.operand !== undefined) return unavailable();
@@ -2558,8 +2571,11 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       }
       reference = node.variety.base;
     }
-    c.text(reference.name.namespace, owner); c.text(reference.name.local, owner);
-    if (reference.name.namespace !== XSD_NAMESPACE || reference.name.local !== base.plan.primitive) return unavailable();
+    if (reference.kind === 'builtin') {
+      if (sourceUnion) return unavailable();
+      c.text(reference.name.namespace, owner); c.text(reference.name.local, owner);
+      if (reference.name.namespace !== XSD_NAMESPACE || reference.name.local !== base.plan.primitive) return unavailable();
+    }
     const scalars = scalarTuples(base, owner);
     c.step(owner, scalars.length * 3 + 3);
     scalars.sort((a, b) => {c.text(a.name, owner); c.text(b.name, owner); return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;});
