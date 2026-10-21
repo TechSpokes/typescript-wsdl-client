@@ -538,7 +538,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           if (properties.variety.kind === 'list') rawReference(properties.type, properties.variety.item, edges);
           if (properties.variety.kind === 'union') for (const member of properties.variety.members) rawReference(properties.type, member, edges);
           if (properties.facetBinding) rawReference(properties.type, properties.facetBinding.type, [], true);
-          for (const layer of properties.facetLayers ?? properties.facetComponentSet ?? []) for (const facet of layer.facets) {
+          for (const layer of properties.facetLayers ?? properties.facetComponentSet ?? []) if ('facets' in layer) for (const facet of layer.facets) {
             budget.chargeWork(2); const operand = facet.operand; if (!operand) continue;
             if (operand.context === 'active') {requireMember(operand.owner); rawReference(properties.type, operand.type, edges);}
             else {
@@ -888,7 +888,16 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             if (!lateOriginal) permittedProperty(row.type);
             unique(row.type, seenRaw); budget.chargeWork(); raw.set(row.type, row);
           }
-          for (const row of delta.rawSimpleTypes ?? []) {if (!validateRawSimpleTypeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.type); unique(row.type, seenSimple); budget.chargeWork(); simple.set(row.type, row);}
+          for (const row of delta.rawSimpleTypes ?? []) {
+            if (!validateRawSimpleTypeShape(row, budget)) throw new InvalidContext('representation');
+            if (row.facetComponentSet) {
+              budget.chargeWork(row.facetComponentSet.length + 2);
+              if (row.facetComponentSet.some(entry => !('facets' in entry))
+                && (originals.has(row.type) || parent.changes.has(row.type) || parent.simple.has(row.type)
+                  || changes.get(row.type)?.kind !== 'simpleType')) throw new InvalidContext('representation', row.type);
+            }
+            permittedProperty(row.type); unique(row.type, seenSimple); budget.chargeWork(); simple.set(row.type, row);
+          }
           for (const row of delta.rawElements ?? []) {if (!validateRawElementShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.element); unique(row.element, seenElements); budget.chargeWork(); elements.set(row.element, row);}
           for (const row of delta.rawAttributes ?? []) {if (!validateRawAttributeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.attribute); unique(row.attribute, seenAttributes); budget.chargeWork(); attributes.set(row.attribute, row);}
           for (const row of delta.rawAttributeGroups ?? []) {validateRawAttributeGroupShape(row, budget); permittedProperty(row.group); unique(row.group, seenGroups); budget.chargeWork(); groups.set(row.group, row);}

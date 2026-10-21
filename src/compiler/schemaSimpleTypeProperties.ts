@@ -30,9 +30,12 @@ export type RawScalarFacetLayer = Readonly<{facets: readonly ScalarFacet[]}>;
 export type RawScalarFacetComponent = Readonly<{facets: readonly ScalarFacet[];
   /** Annotation of the abstract component, including grouped pattern/enum. */
   annotation?: FacetAnnotation}>;
+/** An actual component in the formed immediate base's raw exact row. */
+export type RawBaseFacetComponent = Readonly<{baseComponent: number}>;
+export type RawFacetComponentEntry = RawScalarFacetComponent | RawBaseFacetComponent;
 export type RawSimpleFacetInput = Readonly<
   {facetLayers: readonly RawScalarFacetLayer[]; facetBinding?: never; facetComponentSet?: never} |
-  {facetComponentSet: readonly RawScalarFacetComponent[]; facetLayers?: never; facetBinding?: never} |
+  {facetComponentSet: readonly RawFacetComponentEntry[]; facetLayers?: never; facetBinding?: never} |
   {facetBinding: Readonly<{kind: 'original'; type: SemanticTypeReference}>; facetLayers?: never; facetComponentSet?: never}
 >;
 export type RawSimpleTypeProperties = Readonly<{
@@ -66,7 +69,14 @@ export function validateRawSimpleTypeShape(value: unknown, budget: SemanticBudge
   if (value.variety.kind === 'union') for (const member of value.variety.members as unknown[]) assertSemanticTypeReferenceShape(member, budget);
   for (const layer of layers) {
     budget.chargeWork(4);
-    if (!object(layer) || !Array.isArray(layer.facets) || exact !== undefined && !layer.facets.length) return false;
+    if (!object(layer)) return false;
+    if (exact !== undefined && !('facets' in layer)) {
+      const selected = Object.getOwnPropertyDescriptor(layer, 'baseComponent');
+      if ('annotation' in layer || !selected || !('value' in selected)
+        || !Number.isSafeInteger(selected.value) || selected.value < 0) return false;
+      continue;
+    }
+    if (!Array.isArray(layer.facets) || exact !== undefined && !layer.facets.length) return false;
     budget.chargeWork(layer.facets.length * 4);
     if (exact !== undefined) {
       const first=layer.facets[0];

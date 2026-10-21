@@ -244,7 +244,9 @@ A source/nonexact normal form or a locally productive candidate does not establi
 
 KEEP of a component includes its annotation and authentic component authority where required.
 An unknown annotation on an inherited immutable row must not be converted into an input-domain prohibition or inferred equal on a separately assembled alias.
-Known property copying and an authenticated immediate-base component selector are different possible materializers; no new selector is implemented by this theorem.
+Known property copying and an authenticated immediate-base component selector are different possible materializers; this theorem alone supplies neither.
+The separately implemented [raw-exact selector](content-model-s06-re-01.md#authenticated-immediate-base-component-retention) covers the printed whole-KEEP sector with actual current-H replay.
+It does not issue source/generated inventories or implement the endpoint solver.
 Inherited pattern and enumeration components, proper-ancestor length witnesses, whitespace coverage, ordered members, NOTATION qualification and every current-context scalar/source duty remain separate.
 
 After all earlier F2 construction duties are clear, two separate disjoint singleton pattern components prove an empty value image.
@@ -286,7 +288,7 @@ The replacement alias is private before birth: no required value, fixed WORD/sou
 Required namedness, a legal fresh identity, an expressible base reference and an already available operand owner are explicit parameters.
 
 Assume a hypothetical representation can select actual components of this immediate base in H, retaining their identity, values, fixedness, annotation, parser/source authority and dependencies.
-This is a representation premise, not an implemented selector API or permission for caller identity hints.
+This is a representation premise; the separate raw-exact selector implements only its stated sector and accepts no caller identity hints.
 Every current F2 duty still applies; selecting part of a bound kind does not turn its local S into empty S.
 
 Under these premises a finite computable catalogue contains a fully formed proper alias with empty whole value image.
@@ -347,8 +349,107 @@ At most the input component count plus four new bound components and two new pat
 Opaque metadata remains an authenticated input reference rather than a guessed value.
 
 This theorem has independent scoped acceptance and does not depend on a new numeric enum witness or lexical-map normalization theorem.
-The immediate-base selection interface, nonexact original full-inventory reconciliation, native scalar materialization, cross-context reconstruction, anchor/TYPE counts and general forest bounds remain open.
+The raw-exact selector supplies part of the immediate-base selection interface.
+Nonexact original full-inventory reconciliation, the endpoint solver, complete native scalar materialization, cross-context reconstruction, anchor/TYPE counts and general forest bounds remain open.
 The empty-main-pattern certificate supplies its local containment part only; it does not complete those other gates or establish general RE01 negatives or termination.
+
+## Input scalar observations and their exact cuts
+
+Fix the immutable input SIMPLE reference closure A, including actual original/generated selectors and the complete admitted builtin BASE/ITEM/MEMBER dependencies.
+An old fresh selector does not become an input merely because a supplied successful forest uses it.
+Original/inherited raw SIMPLE correspondence preserves its literal BASE, ITEM and every ordered MEMBER identity.
+
+For input SIMPLE alpha and genuinely fresh atomic or LIST target T, nominal `typeDerivation(alpha,T)` is false.
+The reader follows alpha's immutable literal BASE path; it does not add a LIST ITEM or derived UNION MEMBER as another ancestor.
+A genuinely fresh RAW UNION target has one exception: a successful target-member alternative must select an input atomic/LIST literal ancestor of alpha.
+Fresh raw UNION members are atomic/LIST, so this exception cannot recurse through another fresh UNION member.
+Matching ITEM alone therefore cannot make an input LIST derive a new LIST, and an input UNION cannot use this atomic/LIST-ancestor exception.
+Restriction exclusions, final checks and authentic full frontier duties remain independent.
+
+A surviving TRUE expanded scalar PROPERTY query against input scalar a supplies a different bound.
+Unfold a's finite property DAG along labelled BASE, ITEM and ordered MEMBER edges, including complete builtin dependencies and all input subtrees below identity cuts.
+Let U(a) be the number of positions in this finite unfolding.
+Builtin selectors are not terminal merely because they are builtin; a distinct-definition property comparison still expands their scalar properties.
+An edge-free boundary is terminal, and an unavailable scalar view cannot create a successful new subtree.
+
+The complete property tableau matches name status/name, namespace, variety, primitive, final flags, facet properties, edge presence and ordered arity at each expanded pair.
+Every first-entry fresh dependency follows a corresponding strictly lower input position; sharing or pair recurrence cannot create an unmatched first-entry child.
+An identity cut is the actual input definition, whose closure is already charged in U(a).
+Thus one such rooted task bounds its fresh BASE/ITEM/MEMBER support by U(a).
+It does not bound the number of copy roots or their typed facet operands, owners, source backing and foreign SC/TYPE users.
+
+An input ordinary VALUE, a protected physical WORD/source tuple, exact SC contentIdentity and literal SC contentDerivation remain separate observations.
+An empty private alias cannot satisfy a required nonempty value or full property copy merely because it has the same outgoing nominal ancestry.
+The corresponding owners are [type relations](../src/compiler/schemaTypeRelations.ts), [component equality](../src/compiler/schemaComponentEquality.ts), [candidate correspondence](../src/compiler/re01CandidateCorrespondence.ts) and [declaration primitives](../src/compiler/schemaDeclarationPrimitives.ts).
+
+## Finite numeric VALUE recipes at a supplied RAW anchor
+
+Fix one authentic H and a supplied fully formed exact proper RAW atomic anchor a with primitive decimal, float, double, an admitted calendar primitive or duration.
+Use the private catalogue's base, formation and authority premises, with its privacy condition extended only to the freely respellable VALUE roles specified here.
+Assume authentic component selection, all actual word/value authorities, and a semantic immediate proper restriction admitting a finite set V of required actual values.
+No full PROPERTY, protected WORD/source tuple, exact facet/TYPE identity, SC identity or foreign caller may fix that restriction's recipe.
+Every respelled ordinary field is chosen coherently before its first birth; original and inherited fields and namespace maps are preserved.
+
+For nonempty V, a finite semantic catalogue contains a proper restriction with whole image exactly V under actual `sameValue`.
+Use the private catalogue's whole-bound KEEP/singleton NEW modes and nonbound fixed-compatible subsets, retaining every actual input enum/P1 component and adding no new enum.
+For each of at most four NEW endpoints add every actual value test requiring every v in V to pass every effective bound, including strictness and determinate-order requirements.
+The shared endpoint theorem decides these finite modes with fixed input-value comparisons and genuine membership/spelling witnesses.
+The old successful restriction supplies a satisfying mode; fixed, cross-kind, local-S, ancestry and all formation duties remain explicit.
+
+For precisely this RAW represented sector, `whitespaceFor(primitive)` initializes the atomic plan at collapse.
+Aggregate whitespace takes the maximum rank, and every atomic conjunct is rewritten to that same mode.
+Thus both a and the recreated alias observe collapse at their main patterns and conjuncts.
+This is a constructor fact, not an implicit primitive facet or a universal fixed-whitespace rule.
+For each v the complete fixed-anchor inverse/image authority returns an admitted word w; set z to collapse(w).
+Idempotence makes reassessment on z use exactly the successful pre-parser strings already observed on w.
+Calendar/duration parsers' private trimming does not change this equality of observed strings.
+No inference that parser success implies a whitespace-free spelling is used.
+
+Construct one ordinary pattern for exactly the finite set of z words, with supported literal escaping and ordered alternatives.
+If a has p P1 components, p+1 distinct redundant-parenthesis spellings supply a P1 property different from every input P1 property while preserving this finite language.
+Every v remains admitted, and every admitted normalized alias word belongs to the whitelist and parses as its selected v.
+This proves both image inclusions without changing atomic value interpretation, source authority or any fixed/formation obligation.
+The catalogue needs at most the selected input component count plus four new bound components and one ordinary pattern component; its successful word lengths are computable from finitely many complete queries.
+For empty V use the empty private-alias catalogue instead.
+
+This theorem is semantic and normalization-qualified: it supplies no generic source/generated/FULL normalization inference or native nonempty-containment shortcut.
+It excludes string, QName/NOTATION, LIST and ordered UNION, protected WORD sharing and arbitrary lexical-map rewriting.
+It bounds one recipe relative to a,V, not the number of anchors, required VALUE roots or complete forest size.
+
+## Free LIST ordinary values and directed forcing
+
+Use a supplied complete represented forest with the reviewed directed ordinary-presence projection and authentic scalar/source/NOTATION history qualification.
+Mark the immutable scalar input closure A and every scalar descriptor connected to it by a complete TRUE scalar PROPERTY tableau.
+These marks are dependency-closed: lifting a BASE/ITEM/ordered MEMBER edge along a property-pair path reaches that same dependency of A.
+Identity cuts and pair recurrence use their complete first expansion rather than omitting a dependency.
+
+A free ur-LIST or ur-UNION has an unmarked post-input literal BASE path of its own variety to `anySimpleType`, with no input/source/generated/property cut.
+Every genuinely new SIMPLE recipe in this represented sector is RAW; authentic source/generated selectors remain input cuts.
+Trace any retained ordinary field backwards through the projection's finite seed path.
+AU effective/source and complete PROPERTY edges preserve the selected scalar state and actual value.
+An RP/AU fixed implication points from base field to derived field, so this backwards trace examines derived-to-base TYPE derivation.
+
+A free LIST reaches a nonunion non-ur target only along its literal LIST ancestry; the nominal reader does not follow ITEM.
+A target-UNION escape selects a LIST member on that ancestry.
+Full corresponding-member formation, followed backwards along that UNION's own BASE path, forces each corresponding member to remain a literal LIST ancestor.
+If the UNION reached an input/property cut, its marked member would mark the original LIST path, contradicting freedom.
+Thus the escape reaches a free UNION.
+A free UNION cannot return to LIST: its literal ancestors are UNIONs, fresh target members are atomic/LIST, and immutable input member closures cannot name unborn ancestors.
+
+SC steps use exact scalar contentIdentity or literal contentDerivation, preserving these free states.
+For a successful nonidentity RP NTO path the complex prefix uses restriction; extension is excluded, so a simple-base extension supplies no escape.
+The permitted SC-to-nonscalar boundary with an ordinary value is an actual STRING assessment, including formally emptiable mixed content and `anyType`.
+Consequently backward transitions are LIST to LIST/UNION/STRING and UNION to UNION/STRING; there is no return from UNION to LIST.
+A protected input seed cannot have a free post-input selector.
+The finite seed path must therefore reach STRING, carrying actual `sameValue` equality throughout.
+A successful LIST value, including the empty LIST, has family LIST and cannot equal STRING.
+No free LIST ordinary field belongs to the retained closure, so the reviewed projection removes its unprotected new physical field coherently before birth.
+The same argument says a retained ordinary value selected by a free UNION is STRING-valued; it does not classify every UNION value.
+
+Protected WORD/source/property ports are input cuts and remain.
+LIST ITEM, corresponding UNION members, SC identity/ancestry, global eligibility and all old mandatory roots still require their own reconstruction or complete closed-cone omission audit.
+The projection's full frontier, new RP-state pending/fatal coverage, effective-AU fallback and complete child replay remain premises.
+This field classification supplies neither a scalar constructor nor a global SIMPLE/root count, native evidence adequacy, complete negatives or mathematical termination.
 
 ## Source and proof boundaries
 
