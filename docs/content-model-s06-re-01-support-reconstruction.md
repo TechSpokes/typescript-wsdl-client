@@ -2239,6 +2239,241 @@ a separate complete before-birth omission theorem removes them. This is
 one BODY-role transport, not a HEAD/TYPE/scalar/support count, finite-port
 extraction, arbitrary materializer or complete B-v1 decision theorem.
 
+## Primitive HEAD endpoints and finite primitive options
+
+These are conditional reconstructions of supplied successful contexts and their
+genuine before-birth records. They do not extract a general finite interface.
+The immutable local input is the exact finite Γ/P, including inherited fresh
+components; a dependency is checked where its actual reader requires it.
+
+### Whole-head readers and the temporal endpoint bound
+
+A genuinely new global head K cannot have an old/P global declaration as a
+proper affiliate: the old immutable affiliation chain cannot name unborn K.
+A positive fixed GLOBAL property-copy leaf likewise cannot introduce K,
+because role/QName equality identifies the same global declaration. LOCAL
+and GLOBAL property roles do not compare equal.
+
+For fixed old/P H and genuinely new K, with distinct nonerased whole
+HEAD operands, a checked-positive H RP K
+forces genuine nonself implicit CHOICE views. An old H fallback cannot
+match a member below unborn K, and CHOICE-to-ELEMENT dispatch cannot
+target K's fallback. Max-zero source erasure is outside this assertion.
+The resulting ordered injection gives Pool(H) ⊆ Pool(K) in that context.
+
+If this actual incoming query covers every affected required context, a
+free whole K selector can instead select H.
+Every affected incoming reader must be controlled by H or separately
+rechecked/rebuilt; this one positive query does not waive other incoming
+demands. Outgoing CHOICE injections restrict to the selected subsequence;
+outgoing ANY proofs retain the same
+formal range and surviving namespace tests. The same argument applies
+when H's members were distributed among a whole flat unit-GLOBAL choice.
+Retain the actual EDC, raw/source, alias, key and FULL support checks:
+replacing a raw head introduces H's declaration and its query frontier.
+No general RP transitivity or enclosing compositor cleanup follows.
+
+There is a temporal bound on one fixed finite all-complex BASE word/path,
+with fixed existing members, fixed headers and SG facts, and cuts to one
+exact primitive B, with no intervening birth or input event.
+After the first relevant cut, R remains present; further cuts
+only shorten the current surviving prefix. Its E bit and entered block
+union can only shrink. At a fixed target above B, the suffix is constant,
+so positive membership can only gain after that first cut. A target in
+the bypassable prefix stays unchanged until it is bypassed. Every member
+ever in the actual positive pool is therefore in INITIAL or FINAL.
+Endpoint capacity r gives at most 2r ever-visible names for that pool.
+An arbitrarily chosen changing exception subset has no such implication.
+
+One actual port forces the fixed-cut premise. Let K.TYPE be genuinely
+post-P primitive J E A, with A a proper immediate-UR type, and let a FULL
+member retain K on its SG chain. Affiliation formation puts exact J on
+the member TYPE's literal BASE path. While NP u remains on that current
+path above J, its selected primitive J′ E A must retain J on the path.
+Distinct primitive siblings do not contain one another, so J′=J.
+Bypassed orphan u has no such constraint and cannot reenter that path.
+
+Consider effective exceptions E_K = Pool(K) minus the union of relevant
+fixed old target-head pools. FULL K forces each such older head TYPE to
+be A or UR. States with no relevant on-path cut have INITIAL answers.
+After a relevant cut, the CURRENT surviving prefix permanently contains R.
+At a current K-positive exception in such a state, an E/R prefix
+has no blocking E/R bit; each old target adds J's permanent E, so its
+failure has a fixed suffix/header cause. An R-only prefix has no remaining
+on-path NP. Thus every ever-effective exception is in INITIAL or FINAL.
+
+Take the historical union over ALL certified bags before applying
+capacity. The target-head union includes every fixed old head supplying
+B's virtual target positions. Require unit new HEAD bags whose expanded
+members are direct unit GLOBAL children of the normalized M CHOICE.
+If the actual outgoing M and fixed B roots are normalized CHOICE at both
+endpoints, ordinary injection bounds all endpoint
+exceptions together by r distinct nonvirtual fixed target positions.
+The total ever-effective exception-name set has size at most 2r,
+independent of the old bag count. Raw CHOICE syntax, MapAndSum, direct
+unguarded GLOBAL arms and raw empty-head fallbacks are outside this bound.
+
+### A preborn library in a closed common-BODY module
+
+In the [closed nominal-only module](#one-common-body-for-a-closed-nominal-only-module),
+fix primitive M E A with exact whole NONSC BODY R. In every relevant H,
+M and all real R/A support are genuinely FULL. Eligible later primitive
+middles J E A have this same R. They have no independent AU/AW, VALUE,
+IC, scalar, source, PROPERTY, exact-name or owner distinction left outside
+the audited interface.
+
+Their header (abstract, final, block) has at most 32 profiles, or 64 when
+namedness must be retained. One fresh primitive L per realized profile
+can be born in M's first batch H0 over its exact creator P. This requires
+the actual R to be installable then; availability or another root's
+receipt is insufficient. Earlier primitives remain exact P slots.
+Additional protected identity slots Z remain explicit supplied parameters.
+Reserve library IDs, owner paths and any fresh TYPE QNames against the
+whole supplied finite witness, including later and sibling births, using
+the actual allocator/issuer. The library adds no ELEMENT declarations.
+
+Retarget every eligible BASE, member TYPE and fresh HEAD TYPE coherently
+at its original birth. No inherited row is edited. FULL SG formation
+already puts a head TYPE on its member's literal BASE path, so endpoints
+connected by SG cannot be distinct primitive siblings before the fold.
+The coherent same-header fold creates no new SG identity pair; method,
+entered-block and final tests preserve every actual pool and fallback
+mode. An exact selector held outside that fold remains a protected slot.
+Exact R retains its variety, physical root, geometry and key partition.
+Only explicitly eligible co-born support declaration TYPE selectors
+follow the fold at their own birth; inherited R support remains exact.
+
+Every library row is a mandatory fresh FULL root in every descendant H.
+Its E-to-A construction uses the same real R/A calculation as M and adds
+no NP subject. Each original/P retirement choosing it must reissue its
+actual middle recipe, source correspondence and complete child checks.
+Old J records disappear only after complete before-birth incidence and
+owner closure. Replay the supplied finite tree by its old height, with
+actual parents and all retained roots checked in their own H.
+
+This bounds eligible generic primitive OPTION identities, including
+writable fresh HEAD TYPE targets. It does not bound HEAD declarations,
+protected Z, NP words or total support. Adaptive choices can still depend
+on history; a finite palette does not make cuts commute or instantiate
+the [conditional word theorem](#conditional-finite-nominal-word-reconstruction).
+
+## Two representative HEAD bags with actual empty-pool fallback
+
+This constructor handles a supplied homogeneous whole free CHOICE, not
+arbitrary alternating profiles or protected prefixes. Its n≥2 raw children
+are distinct unit references to distinct abstract fresh sibling heads
+K_i with the same exact primitive TYPE J, final/block/nillable header,
+fixed SG parent and fallback-name predicate profile. Each head occurs
+once. All changed branches admit coherent canonical/RAW/source reissue
+at their first births; representatives are already available then, or
+have a separately justified earlier birth with real J/parent support.
+
+The exhaustive interface contains every mandatory fresh FULL root,
+particle/DAG alias, source/property/owner/evidence reader and key use.
+Outside the coherent whole-M bundle no proper fragment or old K_i pool
+is observed. No affected scalar, VALUE, IC, AU, AW or independent typed-WORD
+distinction remains outside this exhaustive interface.
+The own rawEXT gate has EMPTY base content or a certified
+jointly rewritten whole-root alias. Fixed nonempty prefixes are excluded.
+Affected nonidentity RP readers are actual nonempty implicit GLOBAL
+H_a CHOICE to M, or M to CHOICE/ANY. A direct LOCAL/ELEMENT reader that
+could demand a removed fallback is excluded. These are required-context
+premises, not a demand to check an unconsumed original in every child.
+
+Split the old order into two nonempty contiguous groups and select one
+existing representative per group. Redirect fresh immediate SG branches
+to that representative at their original births. Keep M's real root ID
+and outer interval, replacing its child list by the two representative
+particle IDs. All exact whole aliases use that same root.
+
+Same TYPE/final formation and blocking make each new pool the union of
+the old group pools. The two unions are disjoint. Old fixed ancestor
+pools stay exact. For a nonempty group, choose the new implicit order as
+the old concatenated member word. An empty group keeps its actual old
+representative fallback. The new word is an old ordered subsequence:
+all virtual members survive, and only obsolete abstract fallbacks vanish.
+Contiguous grouping is essential to that order argument.
+
+Each group contributes at least one normalized atom, even when its pool
+is empty. Two groups therefore prevent singleton/empty cleanup from
+changing M's CHOICE category. Incoming nonabstract GLOBAL members never
+matched removed abstract K_i fallbacks, so their injection survives.
+Outgoing CHOICE injections restrict to the new word. Outgoing ANY
+namespace proofs and the formal unit-leaf range keep M's interval.
+
+Declared UPA merges disjoint alternative labels at the same CHOICE
+entry/exit. Raw EDC loses old head names while retaining every virtual
+member/type incidence with the same multiplicity; no new anonymous-TYPE
+duplicate is introduced. The new representative BFS enters only real
+dependencies already FULL through the old whole M in that SAME H.
+Reissue formation, views, exports and every retained root; do not retag
+receipts or discard inherited fresh obligations.
+
+Dormant old heads/particles can remain mandatory roots. Removing them
+requires a separate complete closed-incidence/owner omission before
+birth. Thus two observer slots alone are not a bound on stored records.
+A full tree transport still needs the actual common birth map and
+old-height induction; neither this constructor nor the primitive library
+supplies a general HEAD/interface or complete evidence bound.
+
+### One direct HEAD when its union stays nonempty
+
+Under the same homogeneous, whole-root, lifetime and support guards,
+one observer suffices if the union pool is nonempty in EVERY context
+requiring the changed M, including its own FULL roots and outgoing calls.
+A persistent actual nonempty incoming H_a supplies this premise: its
+nonabstract GLOBAL children could not match old abstract K_i fallbacks.
+An incoming receipt at the initial context alone is insufficient.
+
+Merge all fresh SG branches into one available representative and change
+M's free raw root TERM directly to that HEAD reference at its first birth,
+keeping its real root ID, interval and variety. Do not retain an outer
+CHOICE wrapper. Global expansion now returns an implicit CHOICE directly,
+including at pool size one, before enclosing compositor cleanup.
+
+The new private key is (M's outer particle ID, representative), rather
+than any old child key. Choose its order as the concatenated old virtual
+word, deleting all abstract fallback positions. It is an old subsequence
+and keeps every incoming match. Outgoing CHOICE/PW proofs restrict as
+above; declared UPA has the same union label, raw EDC loses only old head
+names, and the same-H full support is already owed through old M.
+Foreign key/fragment, source, protected arity and nonidentity rawEXT
+prefix readers remain excluded. No old key receipt is retagged.
+
+This direct constructor resolves the wrapped-singleton contrast below;
+two HEADs are not proved necessary. If the union can be empty in a
+required context, a direct HEAD instead becomes a raw ELEMENT fallback
+and this argument does not apply. Stored dormant records still need
+separate closed omission; alternating profiles and the general count
+remain open.
+
+### Complete controls and the one-representative contrast
+
+The [fallback control](../test/research/re01/head-empty-fallback.test.ts)
+uses a complete five-node forest with all original and inherited fresh
+roots in their required contexts, including independent Γ assessment.
+Its member is effective, then ineffective after one TYPE cut,
+then effective after another. Both fixed-head and K effective pools
+agree throughout: E_K is always empty, yet the middle context genuinely
+uses K's raw abstract fallback in an outgoing ANY arm. This is an
+uncounted constructor role, not a necessity or unboundedness theorem.
+
+The [two-group control](../test/research/re01/head-two-groups.test.ts)
+compares four old bags, two groups and one group in the same authentic
+input. Its separate fresh incoming reader remains mandatory in every H;
+original D is checked only where actually consumed. The complete old,
+two-group and direct-head forests preserve all inherited roots. In the wrapped one-group recipe,
+a unit outer CHOICE can collapse to ELEMENT when one virtual member
+survives. The required incoming implicit CHOICE then fails native
+dispatch while M's own local formation, affiliation and outgoing PW still pass.
+The rejected recipe proves neither general nonexistence nor adequacy
+failure. A nonunit outer CHOICE would retain its singleton category and
+would not supply this contrast.
+The direct-head alternative retains implicit CHOICE at that same
+singleton phase and passes the complete forest. These are separate
+recipes in the same input, rather than a necessity claim for two heads.
+
+
 ## Joint bound still required
 
 The results compose only when their actual privacy, first-birth, full-frontier, source and TYPE observations agree.

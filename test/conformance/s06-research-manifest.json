@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "3e78e25395accf5611b531f10c946105f9499eb364688464ef3e4b4c7f8a8e2c",
+          "sha256": "d1a1eaedca1c243c2828aef385b257a2f50f439018e008079b82a3475d49fca9",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "1e6508cbfabf6831a4515db396f9fda22fa0ab8bfbea92d4c8886d0b074f6fb9"
+          "sha256": "511ffe16166bf357c69ece885e760e3f5b6322925a32896f3932b4032012fc2c"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2762,6 +2762,26 @@
           "path": "test/conformance/fixtures/xsd/recovery/input-property-copy-cut.xsd",
           "role": "fixture",
           "sha256": "081ceee5733f4c44ae92835068ad9c6fbffa68845b788b371301f127cbd11650"
+        },
+        {
+          "path": "test/research/re01/head-empty-fallback.test.ts",
+          "role": "prototype",
+          "sha256": "0e4c93be8b6b98768a20066c4b40649d69cbd173dd295da7b82e0a3cbb82c82d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/head-empty-fallback.xsd",
+          "role": "fixture",
+          "sha256": "4dc6b789c52497ca9a9c857b7dffbf62fe8005cf2d76cf1cbb507aea1c62b89d"
+        },
+        {
+          "path": "test/research/re01/head-two-groups.test.ts",
+          "role": "prototype",
+          "sha256": "cac322e3a57f5a777b9f99e4f670932c704457dde118353df88e63410f80be2d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/head-two-groups.xsd",
+          "role": "fixture",
+          "sha256": "c9b9d84101a6ac57b5e37a5a0ac51cc3c17c7df20503475e3e31930316178132"
         }
       ]
     },

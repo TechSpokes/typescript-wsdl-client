@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): preserve transient head fallbacks and direct-head reconstruction with conditional helper bounds.
+
 - test(re01): preserve necessary input-copy roles and guarded common-content reconstruction.
 
 - fix(research): retain authenticated current SOURCE facets in qualified atomic restrictions and record conditional observer bounds.
