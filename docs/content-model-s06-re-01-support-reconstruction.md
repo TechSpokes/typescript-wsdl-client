@@ -4303,3 +4303,154 @@ The remaining joins include unexposed/identity-hidden SELF, dynamic HEAD/GLOBAL 
 All actual Gamma, inherited fresh FULL roots, source/IC/F2/WORD and complete evidence duties remain real; an old founded witness is an extraction premise, not a new winning strategy.
 No general coverage, complete negative, total encoded bound, semantic/native adequacy, mathematical termination or dated correspondence follows from this code catalogue and exposed-subfamily bound.
 These are source-reviewed mathematical constructions, not newly executed native controls or an activated SOME/NO implementation.
+
+## Covered recooks and preinstalled SOURCE reserve operations
+
+These operations start from authentic Gamma, complete pre-event stored P and an OLD supplied finite founded successful program W.
+They use W's actual births, current FULL closures and required children; they neither infer founded success from a postfixed support nor construct a new global strategy.
+The affected rows are ordinary all-complex NONSC, value/IC/WORD-free and empty-AU/no-AW, with genuine SOURCE, owner, identity and evidence cuts retained.
+Every changed row is issued coherently before birth; no inherited BODY, RAW tuple, selector or owner is edited later.
+
+The results construct particular local transformations rather than another conditional controller count.
+They supply no reserve cutoff, unknown-X rebinding, prospective unsealing or complete catalogue of all borrowers.
+All original Gamma duties and admitted inherited fresh FULL roots remain checked in their actual contexts.
+
+### A closed E/R component can select one persistent payload
+
+Supply an actually Gamma-fresh primitive Phi E exact A, with protected proper complex A whose immediate BASE is builtin anyType.
+Phi must be available and mandatory FULL in EVERY affected current H, including every rewritten first birth and descendant.
+Its exact complete payload C and actual E/A constructor are supplied there, rather than taken from an original anchor's obsolete opening receipt.
+C is EMPTY or genuinely installable ordinary/authenticated SOURCE-WHOLE content, not an opaque builtin or scalar recipe reified as a particle.
+
+Let U consist of post-P writable rows and the actual private middles required to close their BASE/child interface.
+It may include initial nonprimitive E borrowers, private R rows and E/R alternations; it is not restricted to a later no-new-NP interval.
+Each rewritten R has current BASE in U or Phi; each E has BASE in U, Phi, or exact A for a primitive-middle branch.
+Keep the old acyclic BASE paths and actual shared-middle identities in every context.
+
+Existing P middles are never recooked as new rows.
+An existing middle with the genuine same C selector/diagonal is compatible; a different selected BODY needs the actual direct RP(C,middle) in every required descendant.
+An incompatible existing K, outside R-over-A or input-role BODY remains a boundary, since C need not restrict A.
+
+At each old first issue choose actual whole C for u, retaining u's identity, namedness, namespace, scope owner, method/BASE trajectory and abstract/final/block fields.
+Keep every GLOBAL.TYPE, SG edge and nominal identity exact; shared old middles remain shared rather than cloned per use.
+Reset canonical content, RAW content and mixed/content variety coherently at that birth, with genuine root/source authority and actual availability.
+The later child preserves its rebuilt parent's C while applying the old endpoint update; this is not a late edit of an inherited BODY.
+
+Internal u R v closes by real C-root identity/version diagonal or the native EMPTY/EMPTY restriction.
+Internal u E v uses the genuine common-root rawEXT WHOLE branch or native EMPTY/EMPTY extension.
+Primitive u E A uses the same actual C/A predicate as Phi, including its real prefix, FIELD, attribute and immediate-final duties.
+Direct E-to-anyType is not assigned this constructor, and no RP transitivity is used.
+
+A simultaneous PROPERTY relation keeps the real old headers and literal BASE tasks of still-required pairs.
+Common C closes the new BODY comparison; repeated-pair closure applies only after those actual labels and successors are qualified.
+Internal FIELD subcalls which the new whole-root/EMPTY constructor no longer makes need not be retained solely because the old private tableau made them.
+An outside input-role, nonidentity TYPE/SCOPE, WHOLE/proper, source, marker/key or exact-selector client instead joins the same rewrite or keeps its real compatible boundary proof.
+If that proof is absent, the rewritten target itself is a boundary; marking the outside consumer does not license rewriting its target.
+
+### Boundary truth is weaker than a covered native frontier
+
+Every changed surviving boundary producer needs its complete actual emitted frontier at each retained H, including recursive changed subcalls of otherwise unchanged anchor/outside/support rows.
+Trace the [construction driver's](../src/compiler/schemaConstructionAssessment.ts) component, original-generated scalar, typed, source and authority debts with their real contexts.
+Every new current FULL dependency must already have an old assessment in that same H; each cross-context typed debt must be covered by an old actual debt in its owning context, not merely carry the right tag.
+Residual scalar/source/authority obligations need genuine discharge by the new producer or retained owning premise.
+Complex PROPERTY and scope availability do not manufacture FULL of their operands.
+
+The earlier strong Boolean-to-containment inference failed: an outside prefix formerly closed at particle identity, but its new nonidentity LOCAL comparison opened semantic scopes q1/q2.
+Those compatible scopes could have equal attribute declarations of simple TYPE S, causing a new current scalar TYPE debt although S had not been consumed in the old H closure.
+Empty attributes on U and Phi did not constrain those outside scopes; a separate original-Gamma check of S was not a current-H assessment.
+The preserved a130 finding refutes that inference, not common-payload normalization or SOME existence.
+The accepted correction adds complete covered boundary frontiers; a weaker theorem admitting new support is not silently substituted.
+
+Reprove Phi, U and retained supports as one current component conjunction, including legitimate finite TYPE-reference cycles through U.
+Old mandatory FULL(Phi) supplies C's old current frontier and unchanged facts, not a completed receipt over altered dependencies.
+Internal C/EMPTY producers and the explicit boundary guard yield new component/scalar closure contained in the old assessed closure, with all typed/authority interpretations retained.
+Nominal graphs, pools and actual key domains stay exact; independently stored old particles, declarations and GROUP scaffolds remain FULL where required.
+
+Recompute generated NP requirements from that new closure.
+Every remaining requirement has its old matching child at that SAME actual parent with the same ancestor and primitive classification.
+Recursively retain those edges and prune unused evidence nodes, keeping a shared node if a required edge still reaches it.
+No child is advanced or fused, and no pruned child's additions move into its parent, sibling or another branch.
+All rows in a retained old context's delta stay there, subject only to the lawful before-birth substitutions.
+
+An original-only debt may disappear when its sole consumed SOURCE-WHOLE selection is no longer read and it has no independent current root.
+Prune that obsolete premise rather than adding artificial R-to-UR carriers or substituting an exhausted descendant for an opening proof.
+This derives common BODY only inside the supplied closed component; it bounds neither boundary instances nor stored support.
+
+### A preinstalled reserve separates SELF from shared FIELD identity
+
+Supply the complete paired-selector interface for genuine SOURCE template C_q(SELF,X), exact named BASE g and a preinstalled anonymous reserve v.
+The reserve and every support row are issued at H0; a supplied founded fresh-target selector retires existing NP without adding stored NP until the next original callback.
+Shared X_j are actual initial TYPE selectors with one exact equality partition and current FULL/child duties, not profile colours.
+Old equality X_j=w does not force the syntactic FIELD and SELF roles to coincide in a new lawful first-birth plan.
+
+Recognized expanded SELF tasks use the actual v/q E certificate and its exact g/g BASE stop.
+Paired FIELD tasks keep X_j/X_j and stop by physical identity before method, BASE and BODY.
+All other expanded support tasks retain their actual positive code, nominal paths and source authority.
+A single protected selector, exact declaration or mandatory WHOLE alias cannot be split into incompatible roles by this rule.
+
+Audit all TYPE/SCOPE/BASE continuations, whole/proper roots, persistent support constructors and stored/future references.
+Reissue only genuinely private identities with real UPA/EDC, GROUP/scope, source and key-order pullback duties.
+Mandatory E aliases keep their actual selected complete BASE root; a merely isomorphic root is not an identity shortcut.
+No retained support E query may keep a distinct v/q continuation after v's own cut; its constructor needs its separate exact-path, paired-identity or formal-zero/EMPTY proof.
+An outside-input-QName arm excludes one declaration-name identification, not hidden TYPE sharing, R entries or owner/alias clients.
+
+At a genuine cut of X distinct from v, the unchanged FIELD query is still X_j/X_j, even when X_j is now R K_j.
+SELF v remains E and uses its own v/q certificate; actual current FULL(X_j) supplies the new middle and its frontier in that child.
+Neither K_j nor its receipt is imported into H0, and the proof does not derive a projected-state producer from a bit vector.
+Induction applies only through actual recognized cuts with their real current support while v stays E.
+
+The SOURCE instance can keep lambda.TYPE exact w in Phi and both private rJ copies, while their scopes are respectively q, w and v.
+After w retires, TYPE comparisons remain w/w FIELD identity and the reserve's distinct scope query remains v/q E/E.
+One lambda incidence per BODY, formal-zero CHOICE restrictions and real particle-over-EMPTY constructors supply its support duties.
+Scope q is available without an invented FULL(q), and a TYPE/FULL recurrence is not a BASE or evidence-child cycle.
+
+Blanket renaming only the copied FIELD w to v would instead make v/w fail E/R after w's cut.
+Changing only independently recognized SELF preserves the identity pair; this is not rebinding exact X to a different Xi or PROPERTY peer.
+The surviving protected client is GLOBAL M_t of input QName t and immutable TYPE w, first born at w's selected HEAD child.
+In v's analogous later child, LOCAL t:TYPE v cannot match it: v R K_v stops before K_v.E and reaches neither distinct w nor its sibling middle.
+Rewriting inherited M_t.TYPE, duplicating GLOBAL t or renaming the SOURCE LOCAL is not a repair.
+Over EMPTY A, a different genuine whole-V_v child remains possible, so this fails selected-child transport rather than SOME existence or helper necessity.
+
+### EMPTY-A supplies one genuine fresh reserve child
+
+At v's real child distinguish a genuinely new K E exact A from existing P/equal-register selections, whose stored BODY/RAW rows stay exact.
+When A is genuinely EMPTY, new K may select the installed actual WHOLE V_v root, or actual EMPTY when V_v is EMPTY.
+RP(v,K) closes by real root identity or EMPTY/EMPTY, and K's E/A uses the native particle-over-EMPTY or EMPTY/EMPTY branch.
+Its real identity, headers, content variety, canonical/RAW data, final/attribute permissions and whole/source issuer remain checked at first issue.
+Member.TYPE stays v; no TYPE=K shortcut or early FULL(K) is used.
+
+Each new BODY dependency was already selected by current V_v; SELF is now actual v R K and shared X values remain those same identities.
+Recheck the full current conjunction of v, K and their dependencies, including any finite TYPE return to v.
+v remains an inherited admitted fresh FULL root later, so V_v's continued legality is a real current duty after its E certificate ends.
+Historical v/q or FULL(v) receipts are not transferred into that later context.
+
+Existing E/R BASE clients of v still read immutable BODY(v), not BODY(K), while nominal and FULL clients use its actual new graph.
+Other BODY(K) readers must be real shared-root aliases or independently supported boundary producers; a PROPERTY copy with another scope is not whole identity.
+A new R client's old BODY-to-old-K proof cannot be reused against V_v without its actual new RP proof.
+Every changed surviving boundary producer needs its complete actual component/scalar/typed/source/authority frontier and discharge in the current H, including changed subcalls of unchanged outside rows; cross-context duties need actual support in their owning contexts.
+The direct factory may use genuinely produced new current support; old-frontier containment is additionally required only when invoking the covered-recook/pruning replay.
+Current requirements and any unused-proof pruning follow their actual parent producers; mandatory fresh roots and real births remain intact.
+
+This factory can retain an evolving HEAD through the same actual whole root without a fixed-census grammar, but all member TYPE/formation/birth dependencies remain real.
+For general nonempty A, whole V_v need not extend A: compile RP(V_v,K), rawEXT(K,A), fixed/template incoming and outgoing calls, Pa/A geometry, actual keys and FIELD masks together.
+That application is only c335's literal/stable-input-macro catalogue b_code(P,I), with a P-only bound only when complete I is genuinely input-derived.
+An external evolving HEAD producer does not turn dynamic data into a fixed macro; arbitrary two-free RP and old-selected/unissued future K BODYs remain outside that compiler.
+
+A child-born primitive can still open PROPERTY(K_x,K): fresh B R UR may contain a GROUP LOCAL.TYPE K, while later u E B supplies a genuine first-prefix counterpart of TYPE K_x.
+B can differ from A, so no-new-NP excludes neither this reader nor its separate boundary component.
+It needs actual joint transport or an explicit cut; the covered recook cannot be invoked without its full premises.
+Later original-only roots/callbacks can likewise first open K/K' or K/P-role comparisons outside the old SOURCE program; their true first-use frontiers join the next decoder.
+Existing P, equal-register, ROLE, SOURCE/proper and fixed-owner clients are real cuts rather than bare action headers.
+
+### Dynamic syntax reduction does not bound the member data
+
+For a chosen flat LOCAL roster S and current HEAD roster U, both with at least two members in nonfallback unit-CHOICE mode, the admitted two-way queries can express exactly U=S.
+Distinct S give infinitely many response functions despite equal finite colours/count caps; this refutes that proposed exact abstraction, not a SOME witness bound or joint pruning constructor.
+A qualified EMPTY-A whole-root HEAD copy has a direct same-GLOBAL proof when its current source/member FULL, exact joins, alias and first-birth premises hold in every required H.
+It is not an arbitrary interior graft: an optional abstract-LOCAL choice before ANY may be UPA, while optional HEAD copying adds consuming labels and fails UPA.
+Even a successful whole copy retains M.TYPE=f and its real FULL/nominal/SG dependencies; smaller BODY syntax is not a controller/data bound.
+
+The results leave actual borrower coverage, shared FIELD realization, protected export lifetime, dynamic census/order/capacity and genuine child-choice producers open.
+They neither bind an unknown controller to a new Xi nor authorize prospective unsealing, renewal or a reserve cutoff.
+All general coverage, semantic/native/evidence adequacy, complete bank/negative bounds, mathematical termination and dated correspondence gates remain open.
+These are source-reviewed constructions and failed transformations, not new native runs, an activated solver or a complete SOME/NO procedure.

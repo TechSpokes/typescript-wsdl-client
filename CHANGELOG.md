@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): record covered common-payload recooks and scoped SOURCE reserve children.
+
 - docs(re01): record input-relative initial payloads and the qualified exposed-owner bound.
 
 - docs(re01): record per-event FIELD and nominal constraints with scoped HEAD joins and literal particle palettes.
