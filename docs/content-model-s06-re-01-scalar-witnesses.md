@@ -16,7 +16,8 @@ This owner correction does not establish the general enum lexical-map producer o
 
 The [raw-group authority correction](content-model-s06-re-01.md#raw-facet-groups-and-identity-authority) separately prevents caller-added identity fields from entering internal facet comparison evidence.
 Literal input equality or object sharing never supplies an authenticated inherited component selector.
-The [qualified immediate-base selector](content-model-s06-re-01.md#authenticated-current-source-component-retention) implements only its printed RAW and SOURCE sectors, including pure SOURCE QName ancestry.
+The [qualified immediate-base selector](content-model-s06-re-01.md#authenticated-current-source-component-retention) implements only its printed RAW and SOURCE sectors, including pure SOURCE QName ancestry and a SOURCE union with one exact literal/effective builtin DECIMAL member.
+The union sector proves current survivor/ordinal stability through its immutable constituent and genuine source restriction steps; arbitrary effective-singleton unions do not acquire that authority.
 General opaque-component materialization remains a separate adequacy obligation, with no general negative answer inferred from an unproved literal copy.
 
 ## Why a new endpoint operation is required

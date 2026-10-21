@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:re01:source-head-payload-shadow"
+           targetNamespace="urn:re01:source-head-payload-shadow"
+           elementFormDefault="qualified">
+  <xs:complexType name="A"><xs:complexContent><xs:restriction base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"><xs:choice minOccurs="0" maxOccurs="unbounded">
+    <xs:element name="rho" type="t:B"/><xs:element name="delta" type="t:B"/>
+  </xs:choice></xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="rho" type="t:B"/>
+  <xs:element name="carrier"><xs:complexType><xs:complexContent><xs:restriction base="t:B">
+    <xs:sequence><xs:element ref="t:rho"/></xs:sequence>
+  </xs:restriction></xs:complexContent></xs:complexType></xs:element>
+  <xs:complexType name="I"><xs:complexContent><xs:restriction base="t:B"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:I"/></xs:complexContent></xs:complexType>
+</xs:schema>

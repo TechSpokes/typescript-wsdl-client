@@ -44,6 +44,9 @@ Its continuation shares private Gamma copies without merging surviving particle 
 One closed co-born NP/copy bundle can use an existing representative and a genuine serial all-restriction child.
 The native private-copy control keeps the original template property-only in H while every actual and retained fresh root is checked.
 The number of signatures, copies and protected ports remains unbounded by these conditional results; general coverage and termination stay open.
+The [finite active-HEAD construction](content-model-s06-re-01-support-reconstruction.md#finite-active-head-construction-in-a-supplied-legal-product) gives an explicit observer/shield bound under a supplied genuine legal product and complete reader interface.
+The [first PROPERTY entrances](content-model-s06-re-01-support-reconstruction.md#finite-first-complex-property-entrances-from-inherited-input) are charged to inherited BASE retirements, while simultaneous reconstruction beyond them remains open.
+The [SOURCE controller controls](content-model-s06-re-01-support-reconstruction.md#a-source-whole-payload-and-its-nominal-controller) preserve complete children while jointly choosing a writable member TYPE at birth; they do not impose full validity on an unconsumed original property owner.
 
 The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.
@@ -274,10 +277,15 @@ It does not establish general source-component extraction, the finite endpoint s
 ### Authenticated current SOURCE component retention
 
 The SOURCE extension uses the same first-birth selector shape and whole-KEEP sector.
-It requires a genuinely formed atomic DECIMAL, STRING or QName base whose complete restriction ancestry consists of immutable source SIMPLE rows ending at that exact builtin primitive.
+Its atomic sector requires a genuinely formed DECIMAL, STRING or QName base whose complete restriction ancestry consists of immutable source SIMPLE rows ending at that exact builtin primitive.
 An active RAW row takes the existing RAW path first.
-Any explicit typed-operand recipe, RAW ancestor, LIST/UNION constructor, contextual authority, generated slot or unbacked intrinsic component makes this SOURCE table unavailable.
+Explicit typed-operand recipes, RAW ancestors, LIST constructors, contextual authority, generated slots and unbacked intrinsic components make this SOURCE table unavailable.
 No partial table is published.
+
+One additional sector admits a formed SOURCE UNION restriction chain ending at an authentic SOURCE union constructor with exactly one literal builtin DECIMAL member.
+The formed effective member list and its actual completed member description must independently select that same exact builtin.
+Every restriction and the terminal constructor must be an immutable actual SOURCE SIMPLE row without a RAW overlay; origins are collected only from the restriction rows' own source facets.
+Nested unions, member aliases, multiple members and other primitive members remain outside this sector even when their effective flattened list happens to be singleton DECIMAL.
 
 The table orders scalar kinds lexically, then actual current enum/P1 survivors in their constructor order.
 One source step contributes one whole typed enum set and one whole P1 group, rather than an enum component per lexical member.
@@ -289,6 +297,13 @@ The restricted source ancestry, immutable syntax/maps and primitive parsing impl
 The existing prohibition on installing or replacing an inherited SIMPLE row supplies the lifetime premise.
 Each H still reforms source construction, resolves availability and establishes this restricted closure before publishing a completed table.
 A prior read in another context cannot activate table authority or bind an ordinal operationally.
+
+For the singleton-DECIMAL union sector, the actual union assessment always selects its one immutable builtin constituent.
+It retains the real union whitespace/member interpretation, rather than substituting an atomic normalization rule.
+Induct over the pure SOURCE restriction steps: immutable words, grouping and maps produce the same typed decimal enum values and P1 properties in each admissible H.
+Union restriction contributes enum/P1 components, so ordinary current whole-value dominance removes the same earlier entries and appends the same surviving groups in the same order.
+This proves inherited ordinal stability as well as same-H metadata authority.
+Actual source/constituent formation and every dependency still execute before the table is issued.
 
 For the QName sector, each source enum operand resolves its original word using its immutable source namespace map.
 QName parsing consults no mutable declaration or NOTATION/ENTITY census, so the source-only ancestry induction preserves expanded values, P1 properties and current survivor order.
@@ -317,6 +332,13 @@ The QName controls retain the actual opaque enum component E with values `{p:a,p
 A fresh anonymous copy adds the distinct P1 property `(p:a)` while keeping E and the base's P1 `p:a`; it does not introduce `p:b` anew.
 A genuinely new enum containing `p:b` still fails immediate-base membership, and a rebound map for `p:a` cannot bypass expanded-value checking.
 An actual RAW ancestor excludes only the SOURCE table; the existing authenticated RAW table remains a separate supported route.
+
+The union controls retain opaque E={1,2} introduced over the exact DECIMAL union, followed by a base P1 `1`.
+A fresh anonymous peer retains E and that P1, then adds the distinct P1 `(1)` to match the original anonymous template.
+Value2 is retained through its genuine earlier introduction, rather than introduced against the narrowed base.
+NEW enum2 still fails immediate-base membership, and omitting P1 `1` fails component coverage even though `(1)` has the same accepted language.
+Literal, legacy and original-binding recipes retain their actual qualifications; known annotation and existing atomic controls remain positive.
+The source ancestry/constructor/operand guards, inherited read-order behavior, sticky budgets and complete required-child frontier are independently exercised.
 
 This is a qualified constructor, not general scalar recipe adequacy or a bounded search.
 General source/builtin/generated materialization, helper and evidence bounds, complete negatives and mathematical termination remain open.

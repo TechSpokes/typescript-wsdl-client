@@ -9,4 +9,19 @@
   <xs:element name="qname-opaque-tau"><xs:simpleType><xs:restriction base="t:QNameOpaqueA"><xs:pattern value="(p:a)"/></xs:restriction></xs:simpleType></xs:element>
   <xs:simpleType name="QNameKnownB"><xs:restriction base="xs:QName"><xs:enumeration value="p:a"/><xs:enumeration value="p:b"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="QNameKnownA"><xs:restriction base="t:QNameKnownB"><xs:pattern value="p:a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DecimalUnion0"><xs:union memberTypes="xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="DecimalUnionB"><xs:restriction base="t:DecimalUnion0"><xs:enumeration value="1"><xs:annotation><xs:documentation>opaque union group</xs:documentation></xs:annotation></xs:enumeration><xs:enumeration value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DecimalUnionA"><xs:restriction base="t:DecimalUnionB"><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:element name="decimal-union-tau"><xs:simpleType><xs:restriction base="t:DecimalUnionA"><xs:pattern value="(1)"/></xs:restriction></xs:simpleType></xs:element>
+  <xs:simpleType name="DecimalUnionKnownB"><xs:restriction base="t:DecimalUnion0"><xs:enumeration value="1"/><xs:enumeration value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DecimalUnionKnownA"><xs:restriction base="t:DecimalUnionKnownB"><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="SourceDecimalAlias"><xs:restriction base="xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="UnionAliased"><xs:union memberTypes="t:SourceDecimalAlias"/></xs:simpleType>
+  <xs:simpleType name="UnionNested"><xs:union memberTypes="t:DecimalUnion0"/></xs:simpleType>
+  <xs:simpleType name="UnionMany"><xs:union memberTypes="xs:decimal xs:decimal"/></xs:simpleType>
+  <xs:simpleType name="UnionString"><xs:union memberTypes="xs:string"/></xs:simpleType>
+  <xs:simpleType name="UnionAliasedA"><xs:restriction base="t:UnionAliased"><xs:enumeration value="1"/><xs:enumeration value="2"/><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="UnionNestedA"><xs:restriction base="t:UnionNested"><xs:enumeration value="1"/><xs:enumeration value="2"/><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="UnionManyA"><xs:restriction base="t:UnionMany"><xs:enumeration value="1"/><xs:enumeration value="2"/><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="UnionStringA"><xs:restriction base="t:UnionString"><xs:enumeration value="1"/><xs:enumeration value="2"/><xs:pattern value="1"/></xs:restriction></xs:simpleType>
 </xs:schema>
