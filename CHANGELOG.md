@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): record SOURCE base geometry and conditional opening declaration bounds.
+
 - fix(re01): check original schema identity constraints and authenticate first-born declaration reuse.
 
 - docs(re01): preserve conditional whole-export, observer and all-complex ALL reconstruction.

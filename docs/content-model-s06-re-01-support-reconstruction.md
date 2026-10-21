@@ -3488,3 +3488,62 @@ Before v's cut preserve the true whole alias to the selected BASE; afterward the
 All selectors, scopes, aliases, source authorities and future members retain their lawful births, every actual FULL root and required old child; the roster need not be frozen.
 Independent PROPERTY/proper/whole/WORD/scalar/source readers and foreign BASE clients retain their complete protected interface or separately proved transport.
 This is a qualified fork reduction, not opening-bank extraction, general SUCCESS coverage, native/evidence adequacy, a full encoded bound or a semantic NO/termination procedure.
+
+## A genuine SOURCE SELF copy selects the exact named BASE
+
+Consider a positive nonidentity own-E PROPERTY task u/q with fresh mandatory FULL NP u and distinct original q in the qualified all-complex frame.
+Require q's actual parsed derivation from authentic SOURCE mapping, not a structurally asserted catalogue or arbitrary inherited RAW P row.
+The [mapper](../src/compiler/buildCanonicalGraph.ts) requires a complex-extension BASE QName; the [resolver](../src/compiler/resolveCanonicalGraph.ts) selects its exact global TYPE identity.
+
+A named q cannot be distinct under the [complex PROPERTY](../src/compiler/schemaComponentEquality.ts) name/kind gate and actual identity uniqueness.
+Thus q is anonymous SOURCE E; anyType would make it primitive, contrary to this NP exposure, so its BASE is exact named original R.
+The recursive BASE pair forces BASE(u)=R, excluding anonymous shape copies and differently named TYPEs.
+This uses available current properties, without requiring FULL(q).
+
+While u remains E its selector is immutable, so the same R was selected at u's lawful birth even if SELF is exposed later.
+The original R path first enters fresh support only at a genuine primitive retirement middle returning to its original boundary.
+Consequently u's birth height is at most |Gamma_CT|+2, with no genuinely fresh NP spine below u.
+This fixes this SOURCE sector's BASE geometry, not sibling multiplicity or arbitrary RAW-P geometry.
+
+No TYPE-descent or feedback exclusion follows: inherited/GROUP content can revisit anonymous templates, and SCOPE can reach PROPERTY-only q.
+An actual FULL(q) obstruction must come from its consumed frontier and real child, never from storage owner or source availability alone.
+
+## Conditional protection of opening GLOBAL instances
+
+Use authentic Gamma, exact closed inherited P and one coherent ordinary all-complex before-birth reconstruction with P-only selected HEADs.
+Keep original/P identities, source/proper/WHOLE roots and protected physical WORD/context tuples exact.
+Apply the qualified complex/particle and ATTRIBUTE/AU owner transports, ordinary RAW SIMPLE and eligible SC backing, and owner-only active facet-request replacement.
+Their actual TYPE/content joins, lexical maps, selected-member traces, current FULL and future-reference closure remain prerequisites.
+
+Wildcard.sources contributes real FULL dependencies until its separate faithful P-subsequence projection; owner renaming alone does not discharge them.
+Immutable SOURCE/GSC/original-binding input selectors cannot first name a post-P GLOBAL; lexical maps, annotation text and XPath names are not ELEMENT-ID selectors.
+Particle declarations and SG parents remain actual nominal ports under [semantic context](../src/compiler/semanticContext.ts) and the declaration/particle owners.
+
+Let A be an independently input-computed complete expanded-QName palette for retained P and original template declaration coordinates, plus every separately licensed input-derived name.
+Every protected IC/exact-field instance must be allocated to fixed Gamma/P, a distinguished shield, or this same A; another family needs an additive charge.
+Authentic current GLOBAL uniqueness bounds new A-named instances by |A|, regardless of repeated fields or SELF-copy multiplicity.
+
+Qualified shared SG shields contribute at most h opening instances, one per fixed protected head at its lawful first demand.
+Require real same-H head TYPE FULL, SG closure and complete reconstruction/omission of foreign fresh-HEAD consumers; later branch demands are not opening instances.
+The conditional protected count is `g_input + |A| + h`, where g_input includes the full fixed Gamma/P GLOBAL union.
+It counts declarations, not their TYPE/controller support or an old future-start roster.
+
+Outside A a wholly private post-P GLOBAL can omit its freely chosen VALUE field before birth: LOCAL matches would require its QName in A, same-GLOBAL comparison closes first, and ANY/SG/EDC/UPA add no VALUE reader.
+Retained original/P fields, immutable SOURCE/WORD contributions and genuine external field-copy ports are excluded until independently discharged.
+Keep TYPE, flags, SG, names, membership, keys and order; only the extra value/emptiability prerequisite frontier shrinks.
+
+## Private original-IC set omission preserves the actual frontier
+
+The [IC owner](../src/compiler/schemaIdentityConstraints.ts) uses a separate original-ID universe; restricted selector/field names do not resolve current ELEMENT identities and keyrefs retain original IC targets.
+For a private new GLOBAL outside complete A, choose an empty original-IC selector set at its lawful first [RAW ELEMENT](../src/compiler/schemaElementProperties.ts) issue and inherit that immutable choice.
+Do not change original/inherited sets, registry definitions, source syntax, annotations, maps, keyref targets or protected physical fields.
+Fresh retained unauthenticated key/unique/keyref syntax already prevents completeness; an explicit empty selection cannot erase that qualification.
+
+Own declaration formation loses only those selected IC dependencies; [EL restriction](../src/compiler/particleRestriction.ts) closes same-QName GLOBAL identity before IC reads, while nonself LOCAL matching requires its name in A.
+Component PROPERTY likewise closes GLOBAL identity or rejects kind/name before set comparison; SG/ANY/EDC/UPA introduce no further IC-set reader.
+Keep every original/P and inherited fresh root, form the whole original registry in actual Gamma, and rebuild all current-H receipts in the [finite verifier](../src/compiler/finiteRe01Verification.ts).
+Retain the old child for every remaining real NP duty and prune only unreachable evidence; no receipt moves between contexts and no IC-to-FULL(owner) premise appears.
+
+The initial J_D/Phi remains an opening payload, not something these instance charges bound or replace.
+Unsealed BODY/fresh-only Phi identity stops may still carry retained fresh LOCAL/fallback names outside extracted input coordinates; eliminating or canonically bounding those ports is the exact unproved complete-name premise.
+These results do not give general NP counts, SUCCESS/native adequacy, complete negatives, encoded bounds or termination.
