@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): retain authenticated source QName facet components with current-context value and map checks.
+
 - test(re01): preserve transient head fallbacks and direct-head reconstruction with conditional helper bounds.
 
 - test(re01): preserve necessary input-copy roles and guarded common-content reconstruction.
