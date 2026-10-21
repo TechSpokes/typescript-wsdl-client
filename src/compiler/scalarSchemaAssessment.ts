@@ -93,6 +93,8 @@ type PatternProperty = {expressions: readonly string[]; identity?: object};
 type ExactFacetComponent = {name: string; values: readonly FacetProperty[];
   annotation?: FacetAnnotation; identity?: object; facet?: Facet};
 type RawComponentReplay = Readonly<{component: ExactFacetComponent; facets: readonly Facet[]}>;
+type SourceFacetStep = Readonly<{sourceOwner: NodeId; facets: readonly Facet[]}>;
+type CurrentRepeatableComponent = Readonly<{component: ExactFacetComponent; layer?: ScalarConstraintLayer}>;
 /** Opaque internal evidence; its data is never accepted from a caller. */
 export type ScalarFacetEvidence = Readonly<{kind: 'scalar-facet-evidence'}>;
 export type ScalarFacetAnnotationPresence = 'absent' | 'present' | 'unresolved';
@@ -107,7 +109,7 @@ type FacetEvidenceRecord = {
 export type OriginalScalarFacetRecipe = Readonly<{kind:'original-scalar-facet-recipe'}>;
 type RecipeFacet = {facet: Facet; value?: SchemaOperand; intrinsicPattern?:true;
   annotation: ScalarFacetAnnotationPresence; payload?: FacetAnnotation};
-type RecipeLayer = {facets: readonly RecipeFacet[]; identity?: object};
+type RecipeLayer = {facets: readonly RecipeFacet[]; identity?: object; sourceStep?: SourceFacetStep};
 type Recipe = {context: SemanticContext; layers: readonly RecipeLayer[]; obligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]; identity: Description};
 const originalRecipes = new WeakMap<OriginalScalarFacetRecipe, Recipe>();
 const facetEvidence = new WeakMap<ScalarFacetEvidence, FacetEvidenceRecord>();
@@ -129,6 +131,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   // Context-local completed tables. The immutable row's incidence identity may
   // survive a fork; its typed values and replay facts never leave this owner.
   let rawComponentTables: WeakMap<RawSimpleTypeProperties, readonly RawComponentReplay[]> | undefined;
+  let sourceSteps: WeakMap<ScalarConstraintLayer, SourceFacetStep> | undefined;
+  let currentComponents: WeakMap<Description, readonly CurrentRepeatableComponent[]> | undefined;
   const rawFacetIdentities = (row: RawSimpleTypeProperties, owner: GraphNode): readonly object[] => {
     c.step(owner, 4);
     const prior = rawFacetOccurrences.get(row);
@@ -462,12 +466,11 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     return [...new Set([...description.facets.keys(), ...(description.intrinsic?.scalars.map(facet => facet.name) ?? [])])];
   };
   const patternProperties = (description: Description, owner: GraphNode): PatternProperty[] => {
-    c.step(owner, (description.intrinsic?.patterns.length ?? 0) * 2 + description.plan.layers.length + 2);
-    const result: PatternProperty[] = (description.intrinsic?.patterns ?? []).map(expression => ({expressions: [expression]}));
-    for (const group of description.plan.layers) {
-      c.step(owner, group.facets.length * 2 + 2);
-      const expressions = group.facets.filter(facet => facet.name === 'pattern').map(facet => facet.lexical.value);
-      if (expressions.length) result.push({expressions, identity: layerIdentities.get(group) ?? group});
+    const components = currentRepeatableComponents(description, owner);
+    c.step(owner, components.length * 3 + 2); const result: PatternProperty[] = [];
+    for (const {component} of components) if (component.name === 'pattern') {
+      c.step(owner, component.values.length + 2);
+      result.push({expressions: component.values.map(value => value.lexical!), identity: component.identity});
     }
     return result;
   };
@@ -487,6 +490,44 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     const left = patternExpression(a.expressions, owner), right = patternExpression(b.expressions, owner);
     c.step(owner, left.length + right.length);
     return left === right;
+  };
+  const attachSourceStep = (layer: ScalarConstraintLayer, step: SourceFacetStep, owner: GraphNode): void => {
+    c.step(owner, 4);
+    if (!sourceSteps) {c.step(owner, 2); sourceSteps = new WeakMap();}
+    sourceSteps.set(layer, step);
+  };
+  /** Source S replaces equal-valued base components; RAW groups already supply
+   * a complete result. Neither case adds the raw alias's parent inventory. */
+  const currentRepeatableComponents = (description: Description, owner: GraphNode): readonly CurrentRepeatableComponent[] => {
+    c.step(owner, 3);
+    const cached = currentComponents?.get(description); if (cached) return cached;
+    c.step(owner, (description.intrinsic?.patterns.length ?? 0) * 4 + description.plan.layers.length * 3 + 3);
+    let result: CurrentRepeatableComponent[] = (description.intrinsic?.patterns ?? []).map(expression =>
+      ({component: {name: 'pattern', values: [{fixed: false, lexical: expression}], annotation: 'absent'}}));
+    for (const layer of description.plan.layers) for (const name of ['pattern', 'enumeration']) {
+      c.step(owner, layer.facets.length * 5 + 3);
+      const facets = layer.facets.filter(facet => facet.name === name); if (!facets.length) continue;
+      let component = exactLayerComponents.get(layer);
+      if (!component || component.name !== name) {
+        c.step(owner, facets.length * 4 + 4);
+        const payloads = facets.map(facet => boundAnnotationPayloads.get(facet) ?? sourceFacetPayloads.get(facet) ?? facet.annotation);
+        component = {name, identity: layerIdentities.get(layer) ?? layer,
+          values: facets.map(facet => name === 'pattern' ? {fixed: false, lexical: facet.lexical.value}
+            : {fixed: false, operand: enumerations.get(layer)!.get(facet)!}),
+          annotation: facets.length > 1 && payloads.some(payload => payload !== 'absent') ? undefined : payloads[0]};
+      }
+      if (sourceSteps?.has(layer)) {
+        c.step(owner, result.length + 1);
+        // Recompute dominance from formed H properties, never a transported
+        // source visibility decision or an incidence-only value shortcut.
+        result = result.filter(prior => exactValueRelation({...prior.component, identity: undefined},
+          {...component, identity: undefined}, owner) !== 'equal');
+      }
+      c.step(owner, 2); result.push({component, layer});
+    }
+    c.step(owner, result.length * 2 + 4); const complete = Object.freeze(result.map(value => Object.freeze(value)));
+    if (!currentComponents) {c.step(owner, 2); currentComponents = new WeakMap();}
+    currentComponents.set(description, complete); return complete;
   };
   const checkLengthProperties = (description: Description, owner: GraphNode, checkAncestry = true): void => {
     c.step(owner, 4);
@@ -517,10 +558,12 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     const original = sourceRules ? c.context.sourceNode(owner.id) : undefined;
     const originalFacets = original?.kind === 'simpleType' && original.variety.kind === 'restriction' ? original.variety.facets
       : original?.kind === 'complexType' ? original.derivation?.facets ?? [] : [];
+    let sourceStep = sourceRules && !!original;
     for (const facet of facets) {
       c.step(owner); c.text(facet.lexical.value, owner); allowFacet(base, facet, owner);
       c.step(owner, originalFacets.length + 1);
       const sourceFacet = originalFacets.find(item => item === facet);
+      if ((facet.name === 'pattern' || facet.name === 'enumeration') && !sourceFacet) sourceStep = false;
       if (sourceFacet) {
         c.step(owner, sourceFacet.syntax.children.length + 2);
         const annotationNode = sourceFacet.syntax.children.find(child => {
@@ -613,6 +656,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.step(owner, facets.length + compiled.length + requirements.size + base.plan.layers.length + 2);
     const installed: ScalarConstraintLayer = {owner: owner.id, facets, patterns: compiled};
     enumerations.set(installed, localEnumerations);
+    if (sourceStep && (seen.has('pattern') || seen.has('enumeration'))) {
+      c.step(owner, 3); attachSourceStep(installed, Object.freeze({sourceOwner: owner.id, facets: originalFacets}), owner);
+    }
     result.plan = {...result.plan, layers: [...base.plan.layers, installed], enforcement: [...requirements]};
     if (base.conjuncts) {
       c.step(owner, base.conjuncts.length * 8 + 1);
@@ -2295,21 +2341,19 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.step(owner, inheritedScalars ? inheritedScalars.length * 2 + 2 : 1);
     const inheritedNames = inheritedScalars ? [...new Set(inheritedScalars.map(tuple => tuple.name))] : facetNames(base, owner);
     const inheritedPatterns = patternProperties(base, owner), suppliedPatterns = patternProperties(result, owner);
+    const inheritedRepeatables = currentRepeatableComponents(base, owner), suppliedRepeatables = currentRepeatableComponents(result, owner);
     // Presence comes from the supplied component inventory, before scalar
     // reduction. A qualified reduction can hide a supplied kind in the map;
     // that is missing correspondence evidence, not an omitted component.
     c.step(owner, 2); const suppliedKinds = new Set<string>();
     for (const group of result.plan.layers) for (const facet of group.facets) {
-      c.step(owner, 2); suppliedKinds.add(facet.name);
+      c.step(owner, 2); if (facet.name !== 'pattern' && facet.name !== 'enumeration') suppliedKinds.add(facet.name);
     }
     for (const facet of result.intrinsic?.scalars ?? []) {c.step(owner, 2); suppliedKinds.add(facet.name);}
-    if (result.intrinsic?.patterns.length) {c.step(owner, 2); suppliedKinds.add('pattern');}
+    for (const {component} of suppliedRepeatables) {c.step(owner, 2); suppliedKinds.add(component.name);}
     const hasEnumeration = (description: Description): boolean => {
-      for (const group of description.plan.layers) {
-        c.step(owner, group.facets.length + 1);
-        if (group.facets.some(facet => facet.name === 'enumeration')) return true;
-      }
-      return false;
+      const components = currentRepeatableComponents(description, owner); c.step(owner, components.length + 1);
+      return components.some(value => value.component.name === 'enumeration');
     };
     const omitted = (name: string): void => {
       c.step(owner);
@@ -2330,51 +2374,26 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     if (inheritedPatterns.length && !suppliedKinds.has('pattern')) omitted('pattern');
     if (hasEnumeration(base) && !suppliedKinds.has('enumeration')) omitted('enumeration');
-    const groupEqual = (a: ScalarConstraintLayer, b: ScalarConstraintLayer, name: string): boolean => {
-      c.step(owner, a.facets.length + b.facets.length + 1);
-      const left = a.facets.filter(facet => facet.name === name), right = b.facets.filter(facet => facet.name === name);
-      if (!left.length || !right.length) return false;
-      if (name === 'pattern') return samePatternProperty(
-        {expressions: left.map(facet => facet.lexical.value), identity: layerIdentities.get(a) ?? a},
-        {expressions: right.map(facet => facet.lexical.value), identity: layerIdentities.get(b) ?? b}, owner);
-      const same = (x: Facet, y: Facet): boolean => {
-        c.step(owner);
-        if (name === "pattern") {c.text(x.lexical.value, owner); c.text(y.lexical.value, owner); return x.lexical.value === y.lexical.value;}
-        const xValue = enumerations.get(a)!.get(x)!, yValue = enumerations.get(b)!.get(y)!;
-        return values.sameValue(xValue, yValue, owner);
-      };
-      return left.every(x => right.some(y => same(x, y))) && right.every(y => left.some(x => same(x, y)));
-    };
     for (const prior of inheritedPatterns) {
       c.step(owner);
       if (!suppliedKinds.has('pattern')) continue;
       if (suppliedPatterns.some(group => samePatternProperty(prior, group, owner))) continue;
       c.fail(owner, 'st-restrict-facets', 'Complete raw facet properties omit an inherited pattern expression');
     }
-    for (const prior of base.plan.layers) for (const name of ["enumeration"]) {
-      c.step(owner, prior.facets.length + 1);
-      if (!suppliedKinds.has(name)) continue;
-      if (prior.facets.some(facet => facet.name === name) && !result.plan.layers.some(group => groupEqual(prior, group, name))) {
-        if (name === "enumeration") c.fail(owner, "st-restrict-facets", "Complete raw facet properties omit an inherited enumeration component");
-      }
+    for (const {component: prior} of inheritedRepeatables) {
+      c.step(owner); if (prior.name !== 'enumeration' || !suppliedKinds.has('enumeration')) continue;
+      if (!suppliedRepeatables.some(group => exactValueRelation(prior, group.component, owner) === 'equal'))
+        c.fail(owner, 'st-restrict-facets', 'Complete raw facet properties omit an inherited enumeration component');
     }
-    const component = (layer: ScalarConstraintLayer): Pick<ExactFacetComponent, 'annotation' | 'identity'> => {
-      c.step(owner, layer.facets.length * 2 + 2);
-      const exact = exactLayerComponents.get(layer); if (exact) return exact;
-      const payloads = layer.facets.filter(facet => facet.name === 'enumeration').map(facet =>
-        boundAnnotationPayloads.get(facet) ?? sourceFacetPayloads.get(facet) ?? facet.annotation);
-      return {identity: layerIdentities.get(layer) ?? layer,
-        annotation: payloads.length > 1 && payloads.some(payload => payload !== 'absent') ? undefined : payloads[0]};
-    };
-    for (const group of result.plan.layers) {
-      c.step(owner, group.facets.length + 1);
-      if (!group.facets.some(facet => facet.name === 'enumeration')) continue;
+    for (const entry of suppliedRepeatables) {
+      c.step(owner); if (entry.component.name !== 'enumeration') continue;
+      const group = entry.layer!;
       // Equal values cover an inherited value-set property, but retaining its
       // introduction also needs this component's annotation or issued identity.
-      const supplied = component(group); let retained = false, ambiguous = false;
-      for (const prior of base.plan.layers) {
-        if (!groupEqual(prior, group, 'enumeration')) continue;
-        const inherited = component(prior), relation = supplied.identity && supplied.identity === inherited.identity
+      const supplied = entry.component; let retained = false, ambiguous = false;
+      for (const {component: inherited} of inheritedRepeatables) {
+        if (exactValueRelation(inherited, supplied, owner) !== 'equal') continue;
+        const relation = supplied.identity && supplied.identity === inherited.identity
           ? 'equal' : annotationRelation(supplied.annotation, inherited.annotation);
         if (relation === 'equal') {retained = true; break;}
         if (relation === 'unresolved') ambiguous = true;
@@ -2528,12 +2547,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     // Raw ordinals cover their completed components, not additional source or
     // intrinsic properties which have no entry in that replay inventory.
-    c.step(owner, (base.intrinsic?.patterns.length ?? 0) + base.plan.layers.length + 2);
-    if (base.intrinsic?.patterns.length) complete = false;
-    for (const layer of base.plan.layers) {
-      c.step(owner, layer.facets.length + 2);
-      if (!layer.patterns.length && !layer.facets.some(facet => facet.name === 'enumeration')) continue;
-      const component = exactLayerComponents.get(layer);
+    for (const {component} of currentRepeatableComponents(base, owner)) {
+      c.step(owner, 2);
       if (!component?.identity || !selected.has(component.identity)) complete = false;
     }
     const newPatterns: string[] = [];
@@ -2588,7 +2603,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       if (rawSimple) {
         const base = description(rawSimple.base), variety = rawSimple.variety;
         const bound = rawSimple.facetBinding ? recipe(rawSimple.facetBinding.type, node) : undefined;
-        const groups: {facets: readonly Facet[]; identity?: object; annotation?: FacetAnnotation; selected?: ExactFacetComponent; ordinal?: number}[] = [];
+        const groups: {facets: readonly Facet[]; identity?: object; annotation?: FacetAnnotation; selected?: ExactFacetComponent; ordinal?: number; sourceStep?: SourceFacetStep}[] = [];
         let selectedTable: readonly RawComponentReplay[] | undefined;
         let tableUnavailable = false;
         if (bound) for (const group of bound.layers) {
@@ -2600,7 +2615,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
             boundAnnotations.set(facet,item.annotation);
             if(item.payload!==undefined)boundAnnotationPayloads.set(facet,item.payload);
           }
-          groups.push({facets,identity:group.identity});
+          groups.push({facets,identity:group.identity,sourceStep:group.sourceStep});
         } else if (rawSimple.facetComponentSet) for (const [ordinal, group] of rawSimple.facetComponentSet.entries()) {
           if (!('facets' in group)) {
             selectedTable ??= componentTable(rawSimple.base, base, node);
@@ -2662,6 +2677,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
           if (urBase && variety.kind === "list" && group.facets.some(facet => !facet.fixed)) c.fail(node, "cos-st-restricts", "A list constructor requires its fixed-collapse whitespace component");
           const formed = layer(intrinsic, frame.reference, node, group.facets, false);
           if (group.identity) for (const installed of formed.plan.layers) {c.step(node);layerIdentities.set(installed,group.identity);}
+          if (group.sourceStep) attachSourceStep(formed.plan.layers.at(-1)!, group.sourceStep, node);
           if (exactComponentSet) {
             const name = group.facets[0].name, installed = formed.plan.layers.at(-1)!;
             c.step(node, group.facets.length * 5 + 6);
@@ -2859,6 +2875,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   /** Private snapshots are issued only by the owning context's scalar reader. */
   const readFacetProperties = (reference: Reference, owner: GraphNode): {evidence: ScalarFacetEvidence; obligations: readonly ScalarObligation[]; annotations: ScalarFacetAnnotationPresence;typeDependencies:readonly SemanticTypeDependency[]} => {
     const description = ensure(reference, owner), names = facetNames(description, owner);
+    const repeatables = currentRepeatableComponents(description, owner);
     c.step(owner, names.length * 3 + 12);
     const scalars = new Map<string, FacetProperty>(), enumerationGroups: SchemaOperand[][] = [];
     let annotations: ScalarFacetAnnotationPresence = description.plan.obligations?.length ? 'unresolved' : 'absent';
@@ -2871,27 +2888,10 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       c.step(owner, 3); scalars.set(name, facetProperty(description, name, owner)!);
       const explicit = description.facets.get(name); if (explicit) annotation(boundAnnotations.get(explicit.facet) ?? sourceFacetAnnotations.get(explicit.facet) ?? facetAnnotationPresence(explicit.facet.annotation));
     }
-    for (const group of description.plan.layers) {
-      c.step(owner, group.facets.length * 3 + 8); const members: SchemaOperand[] = [];
-      let patternCount = 0, enumerationCount = 0;
-      let patternAnnotation: ScalarFacetAnnotationPresence = 'absent', enumerationAnnotation: ScalarFacetAnnotationPresence = 'absent';
-      for (const facet of group.facets) {
-        const known = boundAnnotations.get(facet) ?? sourceFacetAnnotations.get(facet) ?? facetAnnotationPresence(facet.annotation);
-        if (facet.name === 'pattern') {
-          patternCount++;
-          if (known === 'present' || patternAnnotation === 'absent') patternAnnotation = known;
-        }
-        if (facet.name === 'enumeration') {
-          enumerationCount++; members.push(enumerations.get(group)!.get(facet)!);
-          if (known === 'present' || enumerationAnnotation === 'absent') enumerationAnnotation = known;
-        }
-      }
-      // Multi-value source mapping fixes the component VALUE, but does not
-      // select an aggregation of nonempty annotation adjuncts. All-absent is
-      // exact; annotated or unrepresented multioperand metadata stays unknown.
-      if (patternCount) annotation(patternCount > 1 && patternAnnotation !== 'absent' ? 'unresolved' : patternAnnotation);
-      if (enumerationCount) annotation(enumerationCount > 1 && enumerationAnnotation !== 'absent' ? 'unresolved' : enumerationAnnotation);
-      if (members.length) enumerationGroups.push(members);
+    for (const {component} of repeatables) {
+      c.step(owner, component.values.length + 3);
+      annotation(facetAnnotationPresence(component.annotation));
+      if (component.name === 'enumeration') enumerationGroups.push(component.values.map(value => value.operand!));
     }
     const patternGroups = patternProperties(description, owner);
     const exact: ExactFacetComponent[] | undefined = description.exactComponentSet !== undefined
@@ -2900,7 +2900,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     if (exact) {
       if (description.exactComponentSet !== undefined) {
         for (const component of description.exactComponentSet) {
-          c.step(owner); exact.push(component);
+          c.step(owner); if (component.name !== 'pattern' && component.name !== 'enumeration') exact.push(component);
         }
       } else {
         for (const name of names) {
@@ -2909,25 +2909,12 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
           exact.push({name,values:[scalars.get(name)!],
             annotation:explicit ? boundAnnotationPayloads.get(explicit.facet) ?? sourceFacetPayloads.get(explicit.facet) ?? explicit.facet.annotation : 'absent'});
         }
-        for (const expression of description.intrinsic?.patterns ?? []) {
-          c.step(owner, 4); exact.push({name:'pattern',values:[{fixed:false,lexical:expression}],annotation:'absent'});
-        }
-        for (const group of description.plan.layers) for (const name of ['pattern','enumeration']) {
-          const facets=group.facets.filter(facet=>facet.name===name);
-          if (!facets.length) continue;
-          c.step(owner, facets.length * 5 + 4);
-          const payloads=facets.map(facet=>boundAnnotationPayloads.get(facet) ?? sourceFacetPayloads.get(facet) ?? facet.annotation);
-          const ambiguous=facets.length>1 && payloads.some(payload=>payload!=='absent');
-          exact.push({name,values:facets.map(facet=>name==='pattern'
-            ? {fixed:false,lexical:facet.lexical.value} : {fixed:false,operand:enumerations.get(group)!.get(facet)!}),
-            annotation:ambiguous ? undefined : payloads[0],
-            identity:layerIdentities.get(group) ?? group});
-        }
       }
+      c.step(owner, repeatables.length + 1); for (const {component} of repeatables) exact.push(component);
     }
-    if(description.exactComponentSet!==undefined){
+    if(exact){
       annotations=description.plan.obligations?.length?'unresolved':'absent';
-      for(const component of description.exactComponentSet){
+      for(const component of exact){
         c.step(owner);
         if(component.annotation===undefined){if(annotations!=='present')annotations='unresolved';}
         else if(component.annotation!=='absent')annotations='present';
@@ -3052,7 +3039,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       c.step(owner,group.facets.length * 4 + 3); const facets:RecipeFacet[] = [];
       for (const facet of group.facets) if (facet.name === 'pattern' || facet.name === 'enumeration') facets.push({facet,value:enumerations.get(group)!.get(facet),
         annotation:sourceFacetAnnotations.get(facet) ?? 'unresolved',payload:sourceFacetPayloads.get(facet)});
-      if (facets.length) layers.push({facets,identity:layerIdentities.get(group) ?? group});
+      if (facets.length) layers.push({facets,identity:layerIdentities.get(group) ?? group,sourceStep:sourceSteps?.get(group)});
     }
     c.step(owner,4+(value.plan.obligations?.length??0)*8); const token:OriginalScalarFacetRecipe=Object.freeze({kind:'original-scalar-facet-recipe'});
     originalRecipes.set(token,{context:c.context,layers,identity:value,obligations:(value.plan.obligations ?? []).map(obligation=>({...obligation,contextId:obligation.contextId??c.context.contextId})),typeDependencies:value.typeDependencies??[]});

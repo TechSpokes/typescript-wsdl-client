@@ -106,11 +106,18 @@ describe('independent original simple property correspondence', () => {
     expect(s.correspondence(s.candidate([raw]))).toMatchObject({kind: 'checked'});
   });
 
-  it.each(['pattern', 'enumeration'] as const)('retains inherited %s annotations across later source groups', async kind => {
-    const s = await originalSimpleSetup(), name = kind === 'pattern' ? 'PatternAnnotationChild' : 'EnumAnnotationChild';
-    const raw = s.raw(name, [], {base: named(kind === 'pattern' ? 'PatternAnnotation' : 'EnumAnnotation'),
-      facetLayers: [{facets: [s.facet(kind, 'a')]}, {facets: [s.facet(kind, kind === 'pattern' ? 'a|b' : 'a')]}]});
+  it('retains inherited annotation for a distinct later source P1 property', async () => {
+    const s = await originalSimpleSetup();
+    const raw = s.raw('PatternAnnotationChild', [], {base: named('PatternAnnotation'),
+      facetLayers: [{facets: [s.facet('pattern', 'a')]}, {facets: [s.facet('pattern', 'a|b')]}]});
     expect(s.correspondence(s.candidate([raw]))).toMatchObject({kind: 'candidate-rejected', rule: 'original-facet-annotation-correspondence'});
+  });
+
+  it('replaces inherited annotation for an equal-valued later source enumeration component', async () => {
+    const s = await originalSimpleSetup();
+    const raw = s.raw('EnumAnnotationChild', [], {base: named('EnumAnnotation'),
+      facetLayers: [{facets: [s.facet('enumeration', 'a')]}, {facets: [s.facet('enumeration', 'a')]}]});
+    expect(s.correspondence(s.candidate([raw]))).toMatchObject({kind: 'checked', scalarObligations: []});
   });
 
   it('rejects malformed raw annotation metadata without invoking an accessor', async () => {

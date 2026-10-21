@@ -376,11 +376,63 @@ The complete property tableau matches name status/name, namespace, variety, prim
 Every first-entry fresh dependency follows a corresponding strictly lower input position; sharing or pair recurrence cannot create an unmatched first-entry child.
 An identity cut is the actual input definition, whose closure is already charged in U(a).
 Thus one such rooted task bounds its fresh BASE/ITEM/MEMBER support by U(a).
+The production `cos-particle-extend` property comparison excludes annotations; this support bound fixes structural positions, not fresh component metadata or its local-S/retention choice.
+Actual annotation correspondence and complete c-fr/F2 formation remain independent duties.
 It does not bound the number of copy roots or their typed facet operands, owners, source backing and foreign SC/TYPE users.
 
 An input ordinary VALUE, a protected physical WORD/source tuple, exact SC contentIdentity and literal SC contentDerivation remain separate observations.
 An empty private alias cannot satisfy a required nonempty value or full property copy merely because it has the same outgoing nominal ancestry.
 The corresponding owners are [type relations](../src/compiler/schemaTypeRelations.ts), [component equality](../src/compiler/schemaComponentEquality.ts), [candidate correspondence](../src/compiler/re01CandidateCorrespondence.ts) and [declaration primitives](../src/compiler/schemaDeclarationPrimitives.ts).
+
+## SC-only support at the first retained scalar boundary
+
+This independently reviewed source/math result bounds one producer class relative to a supplied boundary set A.
+It supplies neither a general bound on A nor a native scalar catalogue.
+Fix a complete qualified finite forest W over finite inherited parent P, with lineage-coherent A closed under actual effective scalar parent, ITEM and ordered MEMBER dependencies.
+A contains the immutable input/builtin/generated closure and every independently retained nominal, source, PROPERTY, VALUE, WORD, owner and evidence cut.
+
+Every scalar outside A to be omitted is post-P and used only by coherently reconstructible new SC rows or by the same closed scalar/scaffold cone.
+Complete whole-future incoming-reference and source/owner audits are required; being an old mandatory fresh root alone is not a retention seed.
+Inherited P records, original typed operands and protected physical words/maps remain exact.
+
+For S in A set rho(S)=S; otherwise follow S's literal effective parent chain to the first definition in A.
+RAW atomic, LIST and UNION constructors install their actual BASE as parent, including the ur constructor case.
+ITEM and MEMBER are support dependencies, not additional SC ancestry steps.
+Full formation gives a finite acyclic parent graph ending at a retained input/builtin boundary.
+
+The actual `contentDerivation` reader ensures both scalar operands and follows this parent chain, with its unchanged builtin relation only when both operands are builtin.
+It does not introduce a fresh target-UNION alternative.
+For an old positive restriction S to T, omitted T is reached before A, so rho(S)=rho(T).
+For retained T, rho(S) starts a suffix of the old successful traversal to T; a retained S cannot reach omitted T because A is parent-closed.
+Thus every SC restriction remains positive by identity or the same literal suffix, without arbitrary scalar transitivity.
+SC extension requires effective scalar identity, which the functional rho preserves.
+
+Keep complex identities, BASE/methods, flags, AUs, wildcards, particle/declaration incidences and global affiliations exact.
+SIMPLE BASE selectors are retained nominal cuts; initial mixed restrictions keep their genuine formal-emptiability duty, and the anyType branch keeps its own scalar formation.
+Raw complex nominal variety remains complex, so this scalar rewrite does not change the complex nominal paths used by affiliation and membership.
+Projected PROPERTY pairs still need actual positive production queries; selecting the same a on both sides is sufficient, while old PROPERTY equality alone is not.
+
+An ordinary-value extension applies only with an actual authorized inverse witness at each selected a and lexical context, available at birth.
+It retains fixed/default kind and actual value, the ordered-UNION/LIST assessment, source and relevant NOTATION/ID/ENTITY duties, and the qualified whole-history argument.
+ENTITY paths additionally require an existing complete immutable authority; an unavailable authority remains outside this transport claim.
+Choose and freeze the new field's word/map before birth; a finite value set or same-owner F2 does not prove admission at another namespace map.
+Protected tuples and an unavailable inverse remain boundary cuts.
+
+Parents exist no later than their children, so rho(S) is available when S or its SC consumer is born.
+Reconstruct each eligible SC selector and unobserved canonical inline/reference backing together before birth, then inherit that same assignment throughout its lineage.
+The zero-extra claim requires retained input/builtin backing or lawful omission of unforced inline backing, with no new SIMPLE proxy.
+An authentic original-generated content selector is directly admitted by the existing RAW SC constructor; its actual owner/dependencies remain, and its complex source owner is not treated as a SIMPLE component.
+An unavoidable placeholder or unresolved canonical incoming reference lies outside this claim.
+
+Every selected boundary retains its relevant declared/SC/item/member use qualifications, including enum-qualified NOTATION where required.
+Own FULL alone does not supply those qualifications or clear a standalone assessed `fixedEqual` prerequisite.
+Reissue source/scalar construction and the full actual current-H frontier, including pending/fatal replay and every retained inherited root; no parent or sibling receipt is transported.
+Only after the complete omission audit may the outside-A cone never be born.
+
+Consequently SC-only parent chains add zero scalar definitions beyond A, independently of their row count or length.
+For A equal to input closure this is an input support bound in the stated sector; with residual roots it is non-amplification only.
+Direct SIMPLE roles, mixed property-template/nominal-cut copies, context-sensitive VALUE roots and protected source/WORD/owner support still need a joint input-derived bound and genuine native materialization.
+General forest adequacy, complete negatives, mathematical termination and dated-XSD correspondence remain open.
 
 ## Finite numeric VALUE recipes at a supplied RAW anchor
 

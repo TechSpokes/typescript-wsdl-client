@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "7253f1a406d7d73c00b609d4585b36304b96ac43ce7e509da3933ec2aaa20652",
+          "sha256": "9a60ca772702ab55da517c15a1d3b63352dc3cd5547c8ce0d7973c5284c983fc",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "80c54bc50426a5cb17987cf6b45b706c2f626f4dad38d3060b9988cd9389af3e"
+          "sha256": "bd8a1d3391599f754a02ddca8df2c8c49d2e4ea2f5635fcd3e9712f914d591e0"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "cd704c0f0c1a02b001a4a1c1c58833534e2c181725da81e2f22682a503882d31"
+          "sha256": "f539c1c12741a3713f76e88c167487e63dc82f6661c7b7e2f033687ff186e34e"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1961,7 +1961,7 @@
         {
           "path": "test/unit/schema-simple-correspondence-independent.test.ts",
           "role": "expectations",
-          "sha256": "f139d5fa1086b86b74d5102dd2b75c41e8b3717886eea639669db482ae4bfcb6"
+          "sha256": "dc9a9f74d7cbe46b292ac9496a7fbd5cbeda4c6805121633c9643ab0cf1fc7fc"
         },
         {
           "path": "test/unit/semantic-type-dependencies.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "e29ca7466187349833abb85706887744e0a6429717a53e422d50c091a8b56c40"
+          "sha256": "be5228a1a8298b468387929619227651c3b725489663d15ead5c50a144c0e5fa"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2732,6 +2732,16 @@
           "path": "test/research/re01/immediate-base-component-retention.test.ts",
           "role": "prototype",
           "sha256": "688081ea4c1a0d3d8dbe91e7d324984deaa1b673a2e1e071b471e556e2b78e52"
+        },
+        {
+          "path": "test/research/re01/source-facet-current-components.test.ts",
+          "role": "prototype",
+          "sha256": "531de9cf092bfef94fbbf143627c51fdae08be0068fa64acbbca490d43c47545"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-facet-current-components.xsd",
+          "role": "fixture",
+          "sha256": "8154f7fa02d0ff139af2a93ef1281daeef2a4e5f7ed741eaf767e441148f0394"
         }
       ]
     },

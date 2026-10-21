@@ -355,7 +355,11 @@ The dated primary rules are [Structures st-restrict-facets](https://www.w3.org/T
 
 The checker proves scalar containment from retained scalar implications, complete finite enumeration and the exact language/image authorities below. An assessed result value outside the base proves widening. The retained `[a-z]{5,}` pattern with weaker scalar minimum has a complete regular certificate; IEEE, temporal and selected list/union images have their own complete datatype-aware procedures.
 
-Exact component inventories preserve repeated tuples and fixed metadata. Source descendants preserve all inherited components except scalar kinds explicitly replaced. The legacy `facetLayers` view denotes its proved normal form; comparing it with an exact inventory uses that normal form, preserving equality transitivity. An unproved normal form or missing annotation evidence retains its qualification.
+Exact component inventories preserve repeated tuples and fixed metadata.
+Source descendants apply their known local-S construction: scalar kinds are replaced, while enum/P1 occurrences with distinct whole values remain and equal-valued base occurrences are replaced by the local component.
+The current component inventory and complete historical enforcement layers are different views.
+The legacy `facetLayers` view denotes its proved normal form; comparing it with an exact inventory uses that normal form, preserving equality transitivity.
+An unproved normal form or missing annotation evidence retains its qualification.
 
 The 43 independently specified policy controls and 14 additional reviewer controls cover these distinctions. Reviewer regressions include dropped inherited calendar constraints, fixed duties on an empty source restriction, hidden old constraints after replacement, whole-kind local reconstruction, erased inherited bound kinds, repeated exclusive endpoints and mixed-representation equality. Retained bound kinds compare annotation properties as well as value and fixed metadata; unknown metadata keeps a qualification when no valid local construction is proved. The lower inclusive/exclusive prohibition applies to the complete datatype, while the upper-pair prohibition applies to the local derivation step, following their distinct dated clauses.
 
@@ -389,6 +393,26 @@ Resource exhaustion keeps its separate sticky outcome.
 
 See the [scoped contract](content-model-s06-re-01.md#authenticated-immediate-base-component-retention), [complete forest controls](../test/research/re01/immediate-base-component-retention.test.ts) and [independent scalar controls](../test/unit/schema-exact-facet-components-independent.test.ts).
 Source/generated table issuance, a general scalar recipe producer and the general RE01 coverage/negative/termination gates remain open.
+
+### Current source repeatable-component ownership
+
+The scalar owner keeps source-constructor provenance private and computes the current enum/P1 view from genuinely formed current-H data.
+It uses whole typed enum-set equality and selected P1 property equality; annotation comparison does not decide known-source replacement.
+Distinct overlapping enum sets and P1 a/(a) keep their separate components.
+Known source grouping is separate from an unknown annotation payload; an unavailable grouping keeps its qualification and acquires no authority through a caller field.
+
+Publication and `rawFacetCorrespondence` coverage/enum introduction use the same current base/result components.
+They cannot find a discarded old component in enforcement history and thereby bypass an actual new member's current-base admission.
+Parser/membership/containment, source formation and original-recipe replay keep every required historical layer and dependency.
+This reader distinction preserves authentic original binding even when a historical enum member is outside the final datatype's image.
+
+Source steps start from current base plus actual S; complete RAW rows start from their own supplied inventory.
+Authentic recipe provenance describes its internal source-constructor sequence, rather than adding the current alias base's missing components.
+Replay forms actual typed operands in H before recomputing dominance; no cached original visibility result substitutes for current-H equality.
+The private view is charged and kernel-local, and does not replace `Description.exactComponentSet`, ordinary F2 or full validity.
+
+See the [contract and discriminator](content-model-s06-re-01.md#current-source-components-and-historical-enforcement) and [complete source controls](../test/research/re01/source-facet-current-components.test.ts).
+Source ordinal issuance, full RAW same-value metadata reconstruction and general RE01 coverage/adequacy/bounds/negatives/termination remain separate gates.
 
 ### Complete scalar membership and containment authorities
 

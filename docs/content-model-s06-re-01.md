@@ -49,6 +49,7 @@ The [abstract particle-wildcard continuation](#abstract-particle-wildcard-proper
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.
 The [inherited facet continuation](#inherited-exact-facet-occurrences) preserves the identity of one immutable exact component incidence across actual descendant contexts while retaining independent value and formation checks.
 The [scalar witness construction](content-model-s06-re-01-scalar-witnesses.md) separates a supplied shared-endpoint decision from the open complete F2 materializer and general witness bound.
+Its [SC boundary projection](content-model-s06-re-01-scalar-witnesses.md#sc-only-support-at-the-first-retained-scalar-boundary) removes SC-only scalar amplification under complete canonical, value, use and frontier guards, while leaving the independently retained scalar-root inventory unbounded.
 
 The maintainer's [October 11 implementation addendum](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6110178846) supersedes the historical requirement that every hypothetical witness globally replace the supplied schema.
 Actual supplied Γ remains immutable and retains all actual-schema legality obligations.
@@ -267,6 +268,35 @@ Literal changed-derived LIST/UNION baselines remain valid; their selected-compon
 
 This supplies a native materializer for the printed raw-exact KEEP sector.
 It does not establish source-component extraction, the finite endpoint solver, an input-derived anchor count, complete witness/evidence adequacy, complete negatives or mathematical termination.
+
+### Current source components and historical enforcement
+
+A source restriction with a known local S applies the dated [c-fr construction](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#st-restrict-facets).
+For enumeration and pattern, inherited occurrences with distinct whole values remain; a local same-valued component replaces the base occurrence.
+Annotation differences do not turn equal enum sets or equal P1 expressions into distinct component values.
+P1 a and (a) remain distinct despite equal accepted languages.
+These source construction facts do not infer a local S partition for an arbitrary complete RAW inventory.
+
+The source B enum{1}/PRESENT followed by A enum{1}/ABSENT exposes the publication distinction: A has the new ABSENT component, while B's old layer can remain historical enforcement.
+If C then adds minExclusive1, its endpoint introduction is valid because one belongs to A, and its image is empty.
+A new raw child with PRESENT enum{1} cannot retain B's discarded component; it owes new member-one admission to C and must fail.
+Empty containment does not discharge that formation duty.
+The independent different-PRESENT contrast separates the bad historical match from unknown metadata, and current ABSENT retention and genuine original binding remain positive controls.
+
+The [scalar owner](../src/compiler/scalarSchemaAssessment.ts) uses one current repeatable-component view for publication, base/result coverage and enum introduction/retention.
+Actual source-constructor provenance determines the local step; whole typed enum-set and P1 equality are recomputed from installed current-H data.
+All original syntax, source formation, typed dependencies, parser constraints and historical enforcement layers remain.
+Genuine original recipes carry their source-step provenance and replay all history; they do not import an original-context visible/hidden decision.
+
+A source derivation step starts from current base components and its actual S.
+A complete RAW result starts from its own supplied/replayed inventory; it does not acquire missing components from its alias base.
+For an original binding, provenance reconstructs only the recipe's own internal source chain before the ordinary current-base comparison.
+Unknown annotation/retention alternatives, actual new-S membership, ordinary failures and resource limits retain their existing meanings.
+No caller field creates source provenance, no whole `Description` is imported, and `exactComponentSet` is not switched to alter source validity.
+
+The [source controls](../test/research/re01/source-facet-current-components.test.ts) preserve the [actual fixture](../test/conformance/fixtures/xsd/recovery/source-facet-current-components.xsd), current/old annotation contrasts, whole-value distinctions, original binding and complete contextual evidence.
+This corrects current-component publication and the independently reproduced stale-enum formation false positive.
+It supplies no source ordinal-selector API, arbitrary RAW same-value reconstruction, general scalar recipe catalogue, forest bound, complete negative answer or termination theorem.
 
 ### Alternative A and recorded project decision
 
