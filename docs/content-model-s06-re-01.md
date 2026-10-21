@@ -53,6 +53,9 @@ The [bounded BASE-section construction](content-model-s06-re-01-support-reconstr
 The [own-extension scope control](content-model-s06-re-01-support-reconstruction.md#own-extension-scope-roles-and-a-complete-source-control) preserves an authentic self-carrier and its local repair, including both independent original proof branches.
 Neither the section nor the control bounds the original opening's arbitrary NP cohort or establishes complete general negatives.
 The [strict fresh-interval bound](content-model-s06-re-01-support-reconstruction.md#conditional-encoded-bound-for-a-strict-fresh-interval) is conditional on complete reconstruction interfaces and qualified native gates; it supplies no arbitrary-P verifier API or general-negative implementation.
+The [explicit extension export](content-model-s06-re-01-support-reconstruction.md#explicit-extension-exports-through-a-persistent-property-section) removes a qualified outside E BASE port through actual PROPERTY composition and paired child reconstruction.
+The [closed branch reissue](content-model-s06-re-01-support-reconstruction.md#closed-branch-reissue-and-finite-original-event-induction) preserves genuine original-child frontiers and gives a conditional finite-original-event recurrence.
+Its input-derived initial-controller and successful fresh-interval constructors remain open; delaying an unbounded cohort alone supplies neither bound.
 
 The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.
