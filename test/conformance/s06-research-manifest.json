@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "c487676cd394e7f09ab9a49cb0a811e2702bdd77611e6d41437c6f4703d83931",
+          "sha256": "150b6157feec77ef970df0e17a88e43756afae90ca308da14f61d972d2a3251a",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "1205cdbcfe4a1d246e2092a03736a868c29e60c01c133172956704cc48560507"
+          "sha256": "47c757fc821b860079611ff71afffccfb41891956f5fd9d2b7ac22093658e5cc"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",

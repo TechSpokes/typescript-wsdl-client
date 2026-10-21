@@ -4162,3 +4162,144 @@ The open joins are the literal-field realization, dynamic HEAD/member lifecycle,
 Before-birth omission needs complete closure; no inherited stored mandatory support disappears merely because a use was removed.
 General coverage, semantic/native/evidence adequacy, complete source/F2 and actual-root duties, complete negatives, mathematical termination and dated correspondence remain open.
 These mathematical constructors are not newly executed native controls, an activated solver or a general SOME/NO procedure.
+
+## Initial-payload code catalogues and a bounded exposed-owner subfamily
+
+Fix complete pre-event input P, an existing selected endpoint T in P and its boundary A in P.
+The current primitive Phi E A and its newly born cohort are output, not additional input constants.
+T need not be an original Gamma row: its actual complete recipe is finite input for this event, with contextual TYPE answers retained.
+The initial incoming obligation therefore has a fixed geometry operand, RP(T,Phi).
+
+The following connection uses the ordinary all-complex NONSC, empty-AU/no-AW, value/IC-free frame and its actual source/owner authorities.
+It combines an input-relative particle/coordinate catalogue with a bound on one recognized exposed-owner subfamily.
+It does not turn code positions into a complete FIELD graph, count all controllers or construct a winning strategy.
+
+### Compile the initial payload in both RP directions
+
+Keep Phi's real [rawEXT to A](../src/compiler/particleExtension.ts), RP(T,Phi) and designated RP(Phi,K_fixed) calls as separate conjuncts.
+For required empty CHOICE P0, CHOICE[a,b] and ordinary ANY_N1, the first two successive RP calls can pass while P0-to-ANY fails its formal-minimum test.
+Neither RP transitivity nor the derived-side dead-cell inverse discharges Phi's incoming target role.
+
+Supply a complete finite interface I containing the fixed literal targets, P-template source signatures, stable input macros, protected names/readers and charged FIELD/root/key modes.
+The catalogue is input-derived from P alone only when I is genuinely computed or independently bounded from P; an old witness list is not that bound.
+Extra source-copy signatures are indexed by template positions, not every old instance or a list of H answers.
+An arbitrary proper-R borrower with an unknown fresh BODY is not one of these templates by assertion.
+Input macro member/fallback sets and actual key-bearing handles remain exact; their nominal TYPE atoms can still vary with H.
+Changing effective HEAD expansion is excluded: it can make Phi's LOCAL-slot count depend on the unknown cohort q and cannot be absorbed into I by assertion.
+
+Let Q contain all input/template declaration names, stable member/fallback names and independently protected QName ports.
+Completely eligible outside-Q ELEMENT orbits keep their ELEMENT category under the genuine abstract SG-none named-STRING helper projection.
+They do not become compositors merely because literal matches are absent; real ELEMENT-to-GROUP coercions remain possible.
+Helpers have no affiliates throughout the plan and no implicit key, and protected SOURCE/name/owner/exact clients remain ineligible.
+
+EDC supplies finitely many TYPE-coordinate positions c_q, with named repeated incidences distinguished from anonymous single incidences.
+These are variables with actual equality, namedness and first-use/all-use requirements, not available TYPE values supplied by membership in Q.
+Choose the finite active-coordinate subset and projection masks before shortest-code extraction; unrealizable masks yield no accepted component.
+
+The wildcard palette must preserve lower demands as well as outgoing bounds.
+Collect fixed/template source descendant ANY descriptors and singleton ELEMENT namespace demands, including actual PW descendant reads.
+For a free target descriptor S, retain the demands that natively restrict S.
+Their finite union is admissible when all are finite; one common cofinite demand can be retained exactly when the finite demands lie inside it.
+Distinct cofinite demands, or a finite demand outside that cofinite descriptor, require old S to be universal and select that unchanged universal.
+Mathematical union alone fails the native cofinite-equality test, even when the resulting namespace set is expressible.
+
+This hull preserves both incoming and outgoing positive namespace tests and only removes consuming labels.
+Process values stay exact; equality-observed Pa, macro and input-template wildcard coordinates retain their actual descriptors.
+Fresh ANY particles use their genuine RAW tuple on the same active particle object, not an invented SOURCE spelling or an unrelated lexical namespace context.
+
+Let C include all finite evaluated fixed-side thresholds: formal ranges, PW descendant uppers, MapAndSum source-count-times-arity and equality-read occurrence constants.
+Set B=C+1, clip finite endpoints only and keep physical infinity as a distinct label.
+This preserves comparison signs in both orientations and the actual MapAndSum unbounded-at-zero-arity branch.
+The accepted infinity-UPA filter does not replace actual infinite occurrences by finite components.
+
+GROUP USE retains its own range/reference role, distinct from its unit definition BODY; inlining cannot invent an extra counted standalone UPA duty.
+ALL has its genuine separate root-only placement and zero/one bounds; an unsupported private GROUP-ALL reissue remains unsupported.
+Apply each caller's actual raw-normalizer preimage and absent-content fallback, not a single assumed root category.
+
+Enumerate EMPTY, authentic WHOLE and proper unit-SEQUENCE prefix branches separately.
+The consumed positive-max Pa particle/GROUP geometry has its qualified3U_A bound and retains its complete declared FIELD continuation to A.
+No arbitrary proper SOURCE child is issued by reifying A's rendered shape.
+Equality-read prefix/input coordinates stay exact; only genuinely free suffix labels use the hull and private-name projection.
+
+Every changed-BODY geometry dependency must enter this same system.
+For example PROPERTY(Phi,input tau) pulls complete Phi/tau declared geometry into the unary filter, while its TYPE/SCOPE/BASE continuations remain FIELD equations.
+WHOLE borrowers share one authentic root; PROPERTY copies retain their actual projections and caller tags.
+Changed-BODY PROPERTY geometry pairs may join a genuinely qualified bounded copy/WHOLE/prefix-unification system with all instances, fields, births and its fixed-opposite RP premises supplied.
+Arbitrary RP between two free code operands is not covered by that unification result and needs a separate theorem.
+
+The incoming filter is bottom-up in variable Phi, including ELEMENT coercion and fixed-SEQUENCE-to-variable-CHOICE MapAndSum without a false injection bound.
+Outgoing filters keep their native dispatcher independently; both use whole Boolean functions of shared nominal/FIELD atoms, not one old valuation or alignment.
+For each ROOT call evaluate the entire vector under one coherent total assignment to retained input keys before existential projection.
+Repeated source/target keys agree within that call, while different calls quantify independently; stable macro TYPE answers remain H-indexed.
+
+Intersect these filters with actual metadata, source/template, EDC, placement and infinity-UPA at every genuine compositor/BODY root.
+The result is a finite tree/hedge grammar; one shortest representative per nonempty product-state/constructor case gives an input-relative code catalogue.
+For N product states a conservative binary-encoding witness bound is2^(N+1)-1 nodes.
+Call the resulting maximum particle-position count b_code(P,I); it bounds code and finite coordinate indices relative to that supplied interface, not assigned TYPE graphs or physical owner copies.
+
+An old qualified code witnesses the corresponding state, but a full component conclusion additionally needs all FIELD equations, changed-BODY closure, real masks, current FULL and source/owner/first-birth allocation.
+A shortest representative cannot invent an unavailable c_q, import later FULL(K) or admit an arbitrary Boolean table.
+
+### Fixed initial FIELD programs bound only the owners they expose
+
+Supply an actual opening H0 and an OLD complete founded successful program W, including every genuine independent child used below.
+Opening FULL alone supplies no such child.
+Each considered new SOURCE-sealed NP owner w remains a mandatory inherited fresh FULL E root until its own retirement.
+Its complete BODY, immediate BASE and real declaration TYPE/complex-SCOPE selectors stay fixed in the recognized ordinary SOURCE lineage.
+Declared PROPERTY does not expand changing HEAD pools, and SCOPE contributes its property operand/availability rather than FULL of its owner.
+
+Authentic original RAW or generated-backing changes retain the same complete ordered code, counts, sharing and exact nongenerated frontier.
+Lost inner shortcuts use their real declared diagonal; newly authentic shortcuts cannot hide distinct TYPE/SCOPE tasks.
+For the outer rawEXT WHOLE shortcut, losing closure cannot make a proper first child equal the entire same finite code.
+Unchanged source strings, root IDs or role labels alone are not this marker-lineage qualification.
+
+Consider every actual fresh-cut edge of W while w remains E, including Gamma-fresh NP subjects inherited in P.
+P's derivation fields are not assumed frozen, and inactive stored membership creates neither a child nor an available operand.
+An original Gamma callback, w's own retirement or a first-use reader outside the opening query family ends the respective phase/query interface.
+
+After the genuine address transport, a first new complex continuation would have to follow the changed endpoint x's BASE.
+An x/x comparison remains an identity cut; a distinct positive x/y or y/x task requires y.E before the cut.
+Only x becomes R, so that task would fail its [component-property method gate](../src/compiler/schemaComponentEquality.ts) before BASE/BODY in the actual successful child.
+The argument is symmetric in the operands and cannot be bypassed by seen-pair memoization.
+Thus w's required component-pair program and physical identity cuts equal its opening program along every admitted actual lineage.
+This is not commutation of cuts, a saturated subset product or a transfer of receipt bytes between contexts.
+
+Let J be independently input-bounded INITIAL FIELD positions whose issued H0 values d_j and selectors persist through that phase.
+Let A0 contain actual initial input complex identities and, where needed, the already issued current primitive register, with aliases unified.
+Neither new child-middle coordinates nor late GLOBAL.TYPE values become initial ports by having the same syntax kind; future K_x labels are not added to A0.
+
+For each(j,tau), count owners w whose own-E query exposes distinct active SELF w through the actual pair d_j/tau on some admitted history before w retires.
+Uniformity places that same pair and continuation in w's opening query.
+Two different owners for that pair would make the other's mandatory E query fail at w's genuine independent child.
+Consequently the union of this recognized exposed subfamily over all admitted histories has bound
+
+```text
+|O_exposed| <= |J| * |A0| <= |J| * (|P_CT| + 1).
+```
+
+The geometric compiler must genuinely supply J through complete changed-code/coordinate coverage over(P,I); a P-only bound additionally needs input-derived I, and the old payload's slot count is not input by fiat.
+Applying this count after a code replacement requires its lawful realization and actual founded program; the catalogue alone supplies neither premise.
+This does not bound all opening owners, identity-hidden direct SELF, new K_x payloads, late exports or physical realizers across original phases.
+Shared coordinates retain one actual identity partition, and no quotient, FIELD assignment, bank or birth allocator is constructed by this count.
+
+Lifting a literal match into this interface requires actual same-H SOURCE PROPERTY and all-complex R-only NTO, stopping at physical identity; BODY RP alone is insufficient.
+Primitive Pa/A callers keep their rigid origin and no NP SELF exception; a SOURCE owner's SELF exception ends only its own E check.
+Keep exact input identities, primitive peers and current cones distinct rather than unfolding behind an identity exit.
+
+### The new unsealed borrower remains a joint constraint
+
+A newly born unsealed E borrower with BODY X and proper-R base BODY G can require the simultaneous actual constraints
+
+```text
+EXT(X,G), RP(G,Phi), RP(X,K),
+plus current FULL, actual first births and every required descendant-H duty.
+```
+
+Its unknown source G is not the fixed pre-event T recipe, and the no-new-NP generic recook excludes this E-to-proper-R client.
+RP transitivity cannot infer the missing direct calls; a WHOLE wrapper alone neither reconstructs X against its fixed K nor closes all FIELD/owner/source borrowers.
+No accepted constructor here solves this arbitrary two-free RP system; it remains outside the initial unary catalogue.
+
+The remaining joins include unexposed/identity-hidden SELF, dynamic HEAD/GLOBAL lifecycle, FIELD values and equality, unknown borrower coverage, physical bank/birth multiplicity and bounded next original inputs.
+All actual Gamma, inherited fresh FULL roots, source/IC/F2/WORD and complete evidence duties remain real; an old founded witness is an extraction premise, not a new winning strategy.
+No general coverage, complete negative, total encoded bound, semantic/native adequacy, mathematical termination or dated correspondence follows from this code catalogue and exposed-subfamily bound.
+These are source-reviewed mathematical constructions, not newly executed native controls or an activated SOME/NO implementation.
