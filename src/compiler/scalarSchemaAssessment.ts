@@ -94,7 +94,7 @@ type ExactFacetComponent = {name: string; values: readonly FacetProperty[];
   annotation?: FacetAnnotation; identity?: object; annotationIdentity?: object; facet?: Facet};
 type RawComponentReplay = Readonly<{component: ExactFacetComponent; facets: readonly Facet[];
   source?: Readonly<{values: readonly (SchemaOperand | undefined)[]; obligations: readonly ScalarObligation[];
-    typeDependencies: readonly SemanticTypeDependency[]}>}>;
+    typeDependencies: readonly SemanticTypeDependency[]; intrinsicPatterns?: readonly boolean[]}>}>;
 type SourceFacetStep = Readonly<{sourceOwner: NodeId; facets: readonly Facet[]}>;
 type CurrentRepeatableComponent = Readonly<{component: ExactFacetComponent; layer?: ScalarConstraintLayer}>;
 /** Opaque internal evidence; its data is never accepted from a caller. */
@@ -138,6 +138,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   let sourceSteps: WeakMap<ScalarConstraintLayer, SourceFacetStep> | undefined;
   let currentComponents: WeakMap<Description, readonly CurrentRepeatableComponent[]> | undefined;
   let sourceComponentTables: WeakMap<Description, readonly RawComponentReplay[] | false> | undefined;
+  let generatedComponentTables: WeakMap<Description, readonly RawComponentReplay[] | false> | undefined;
   const rawFacetIdentities = (row: RawSimpleTypeProperties, owner: GraphNode): readonly object[] => {
     c.step(owner, 4);
     const prior = rawFacetOccurrences.get(row);
@@ -2611,8 +2612,46 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     c.step(owner, 3); const complete = Object.freeze(entries); sourceComponentTables.set(base, complete); return complete;
   };
+  /** A formed atomic GSC1 slot owns its current introductions, including opaque
+   * source annotations. KEEP reads that owner, never a property-equal sibling.
+   * Unlayered intrinsic components have no replay introduction in this sector. */
+  const generatedComponentTable = (base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
+    c.step(owner, 3);
+    if (base.plan.variety !== 'atomic') return undefined;
+    const cached = generatedComponentTables?.get(base); if (cached !== undefined) return cached || undefined;
+    if (!generatedComponentTables) {c.step(owner, 2); generatedComponentTables = new WeakMap();}
+    const unavailable = (): undefined => {c.step(owner, 2); generatedComponentTables!.set(base, false); return undefined;};
+    const scalars = scalarTuples(base, owner), repeatables = currentRepeatableComponents(base, owner);
+    c.step(owner, scalars.length * 3 + 3);
+    scalars.sort((a, b) => {c.text(a.name, owner); c.text(b.name, owner); return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;});
+    c.step(owner, scalars.length * 7 + repeatables.length * 5 + 4);
+    const drafts: {component: ExactFacetComponent; facets: readonly Facet[]}[] = [];
+    for (const tuple of scalars) {
+      if (!tuple.facet) return unavailable();
+      drafts.push({component: {name: tuple.name, values: [tuple.property], facet: tuple.facet,
+        annotation: tuple.annotation, identity: tuple.identity ?? tuple.facet, annotationIdentity: tuple.annotationIdentity}, facets: [tuple.facet]});
+    }
+    for (const {component, layer} of repeatables) {
+      if (!layer) return unavailable();
+      c.step(owner, layer.facets.length * 2 + 2);
+      const facets = layer.facets.filter(facet => facet.name === component.name);
+      if (!facets.length || facets.length !== component.values.length) return unavailable();
+      drafts.push({component, facets});
+    }
+    c.step(owner, drafts.length * 5 + 3); const entries: RawComponentReplay[] = [];
+    for (const {component, facets} of drafts) {
+      c.step(owner, facets.length * 5 + 5);
+      const values = facets.map((facet, index) => facet.name === 'enumeration' || boundNames.includes(facet.name)
+        ? component.values[index].operand : undefined);
+      const intrinsic = facets.map(facet => intrinsicFacets.has(facet));
+      entries.push(Object.freeze({component, facets, source: Object.freeze({values: Object.freeze(values),
+        intrinsicPatterns: Object.freeze(intrinsic), obligations: base.plan.obligations ?? [], typeDependencies: base.typeDependencies ?? []})}));
+    }
+    c.step(owner, 3); const complete = Object.freeze(entries); generatedComponentTables.set(base, complete); return complete;
+  };
   const componentTable = (reference: Reference, base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
-    const node = reference.kind === 'original-generated' ? undefined : scalarOperandNode(reference, owner);
+    if (reference.kind === 'original-generated') return generatedComponentTable(base, owner);
+    const node = scalarOperandNode(reference, owner);
     const row = node?.kind === 'simpleType' ? c.context.rawSimpleTypeProperties(node.id) : undefined;
     if (!row) return sourceComponentTable(base, owner);
     if (!row.facetComponentSet) return undefined;
@@ -2701,7 +2740,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       if (rawSimple) {
         const base = description(rawSimple.base), variety = rawSimple.variety;
         const bound = rawSimple.facetBinding ? recipe(rawSimple.facetBinding.type, node) : undefined;
-        const groups: {facets: readonly Facet[]; identity?: object; annotation?: FacetAnnotation; selected?: ExactFacetComponent; ordinal?: number; sourceStep?: SourceFacetStep}[] = [];
+        const groups: {facets: readonly Facet[]; identity?: object; annotation?: FacetAnnotation; selected?: ExactFacetComponent; ordinal?: number; sourceStep?: SourceFacetStep;
+          replay?: RawComponentReplay['source']}[] = [];
         let selectedTable: readonly RawComponentReplay[] | undefined;
         let tableUnavailable = false;
         if (bound) for (const group of bound.layers) {
@@ -2726,10 +2766,11 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
             if (selected.source) for (const [index, facet] of facets.entries()) {
               c.step(node, 4); const value = selected.source.values[index];
               if (value) boundFacetValues.set(facet, value);
+              if (selected.source.intrinsicPatterns?.[index]) intrinsicFacets.add(facet);
               facetObligations.set(facet, selected.source.obligations);
               facetDependencies.set(facet, selected.source.typeDependencies);
             }
-            groups.push({facets, annotation: selected.component.annotation, selected: selected.component}); continue;
+            groups.push({facets, annotation: selected.component.annotation, selected: selected.component, replay: selected.source}); continue;
           }
           // Caller extensions are data, never privately issued component identity.
           c.step(node, 2); groups.push({facets: group.facets, annotation: group.annotation, ordinal});
@@ -2830,7 +2871,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         }
         if (selectedTable) {
           c.step(node, groups.length * 4 + 3);
-          replayTable = Object.freeze(groups.map((group, index) => Object.freeze({component: exactComponentSet![index], facets: group.facets})));
+          replayTable = Object.freeze(groups.map((group, index) => Object.freeze({component: exactComponentSet![index], facets: group.facets, source: group.replay})));
         }
         // These are exact supplied effective constraints. Proving they restrict
         // the base's complete constraints is a separate semantic obligation.

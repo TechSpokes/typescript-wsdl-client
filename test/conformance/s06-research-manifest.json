@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "ffe50517d375ec4126ac51dfbfb947d804d0dfc65a1176be1ae6cd04b7d2cfc2"
+          "sha256": "8db674c1d74c91dd4d4d4ee0271095fb2a844f4431fc1b058dcd0301ae887f43"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "8d346fa71468d79b153472ff9537ebaf01d8bee1cbab3df8f0007e367e2f23f6"
+          "sha256": "1c2f313a80f1366cb91ea8dd3c9783c23137483987b30698479349586061a3ca"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2897,6 +2897,16 @@
           "path": "test/research/re01/canonical-nominal-bank.test.ts",
           "role": "prototype",
           "sha256": "3b25cf280ec28aaf1e30ba4e5c64e30824f25b671f098b41d2c16e5cb4f516d2"
+        },
+        {
+          "path": "test/research/re01/generated-scalar-component-retention.test.ts",
+          "role": "prototype",
+          "sha256": "6e913bb1c6d0f6d3808d4e276ec7e48c9b42711269fa6b08e6e520e8c69ff78e"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/generated-scalar-component-retention.xsd",
+          "role": "fixture",
+          "sha256": "c0bf4caf382313f860fe80c8c462ac4b560b7ff1cf1c2e3116ad4171a1f8c96d"
         }
       ]
     },

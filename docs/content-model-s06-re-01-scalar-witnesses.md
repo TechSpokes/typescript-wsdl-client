@@ -18,7 +18,30 @@ The [raw-group authority correction](content-model-s06-re-01.md#raw-facet-groups
 Literal input equality or object sharing never supplies an authenticated inherited component selector.
 The [qualified immediate-base selector](content-model-s06-re-01.md#authenticated-current-source-component-retention) implements only its printed RAW and SOURCE sectors, including pure SOURCE QName ancestry and a SOURCE union with one exact literal/effective builtin DECIMAL member.
 The union sector proves current survivor/ordinal stability through its immutable constituent and genuine source restriction steps; arbitrary effective-singleton unions do not acquire that authority.
+The [atomic GSC1 replay](#actual-atomic-gsc1-component-replay) also retains complete supported generated scalar inventories.
 General opaque-component materialization remains a separate adequacy obligation, with no general negative answer inferred from an unproved literal copy.
+
+## Actual atomic GSC1 component replay
+
+The existing immediate-BASE ordinal selector now accepts a complete supported inventory from a formed atomic GSC1 slot.
+The scalar owner derives that inventory from its actual current scalar tuples and repeatable layers, preserving component identity, opaque annotation identity, assessed values and source obligations.
+It returns unresolved when any component lacks a supported replay introduction; it does not publish a partial inventory.
+
+The [source fixture](../test/conformance/fixtures/xsd/recovery/generated-scalar-component-retention.xsd) has distinct A1/A2 slots with equal facet values, inherited enumeration `{1,2}` and a later minimum-exclusive bound of one.
+The inherited enumeration still exists although one is outside the current value image.
+A new scalar over exact A1 can retain that actual component and introduce enumeration `{2}`, matching sibling Y's facet values without borrowing Y's distinct annotation component or authority.
+
+The [native controls](../test/research/re01/generated-scalar-component-retention.test.ts) supply a complete finite forest and retain every fresh root.
+An exact A1 binding completes but has different facet properties; a sibling Y binding or literal inventory can match the properties while leaving F2 unresolved.
+Missing KEEP, an invalid ordinal and introduction of a new enumeration value one are rejected independently.
+
+Inherited and chained selectors retain their actual typed operands and dependencies.
+A genuine intrinsic pattern with a replayable layer keeps its private compiler mark through the selected successor; caller data cannot create that mark or a component identity.
+Existing SOURCE and RAW ordinal tables keep their order, and all new components still undergo the existing P1/F2 checks.
+
+This closes the displayed atomic generated-scalar representation gap.
+LIST, ordered UNION and intrinsic components without a replayable layer remain outside this exporter and require separate arguments.
+General scalar coverage, native evidence adequacy, encoded bounds, complete negatives and mathematical termination remain open.
 
 ## Why a new endpoint operation is required
 

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): retain formed atomic GSC1 facet components while adding new constraints.
+
 - test(re01): construct canonical nominal banks with complete inherited-root and required-child controls.
 
 - test(re01): reissue selected ordinary prototypes with shared identities and complete required-child controls.
