@@ -4950,4 +4950,18 @@ Authenticated same-source WHOLE handles remain opaque and unchanged. Forged or f
 
 Native controls exercise simultaneous shared-BODY reconstruction, FIELD folding into a retained pending TYPE, fixed external BASEs, collision-free merged scopes, SOURCE authority and repeated versus independent HEAD keys. The positive reconstruction supplies a complete two-node evidence forest; omitting its required child remains unresolved.
 
-The builder does not find the section or prove an input-derived global bank bound. In particular, the simultaneous `EXT(X,G)`, `RP(G,Phi)` and `RP(X,K)` borrower construction remains a separate open obligation. General coverage, complete evidence adequacy, complete negative answers and mathematical termination remain open.
+The builder does not find the section or prove an input-derived global bank bound. Reconstruction preserving a supplied `EXT(X,G)`, `RP(G,Phi)` and `RP(X,K)` borrower remains open in general. A root-coverage proof may instead justify replacing that optional old structure; a failed fixed-parent repair does not establish that every successful root needs it. General coverage, complete evidence adequacy, complete negative answers and mathematical termination remain open.
+
+## Canonical nominal bank issuance
+
+The research-only `prepareCanonicalNominalBank` builder in `test/research/re01/canonical-nominal-bank.ts` constructs a supplied ordinary nominal role forest over an unchanged SOURCE anchor. It derives authentic WHOLE content and effective attribute uses and wildcard from their existing owners. It returns candidate deltas and child recipes, not validity receipts or a decision result.
+
+The caller supplies shared TYPE roles, methods, block masks, namedness and GLOBAL member ports. Shared starts and branches remain shared. Named TYPEs retain the representation needed for repeated-QName EDC; anonymous TYPEs use flat scoped storage. Allocation checks active and inactive stored identities and caller reservations. Abstract SG bridges discharge the direct parent-final guard without adding visible particle members.
+
+For a proper primitive B anchor, pending roles receive an endpoint-restriction recipe selecting exact B. For the free A/UR observation sector, the SOURCE anchor is the designated height-one A: a pending role receives a new primitive q extending A with the same authentic content and block-extension, then restricts to q. A member path through the retired role to A or UR enters q's block-extension and still contains extension, so it becomes ineffective there. Its declaration remains a legality root. A private head that stops at the role itself is outside that membership conclusion.
+
+Each recipe must be installed at a genuine fork with actual current membership. The existing finite verifier must check every inherited fresh root, each new component and every remaining required child. Native complete-forest controls and omitted-child contrasts exercise this requirement. The builder does not transfer a receipt or infer FULL from an available storage carrier.
+
+Simple content, opaque UR payload issuance, VALUE/IC declaration ports and rewritten SOURCE anchors remain outside this first constructor. Those results do not exclude such inputs from the accepted domain; they require their existing semantic owners and separate construction arguments.
+
+The remaining coverage proof must choose a complete finite bank and join input-template roles with nominal roles at lawful births. In particular, a finite current HEAD profile or a locally valid delta does not establish preservation of a successful continuation. General coverage, native evidence adequacy, complete negatives and mathematical termination remain open.

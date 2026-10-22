@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "ed3a900b7ab6ed8a9c5e79fb739fdb75b8f5d7ee780afd1bb187a23bf0b7aad6"
+          "sha256": "cf001ecea97e139d27e4df4d4153f365db346bc9a5da51f0760a07efc6a119d5"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2887,6 +2887,16 @@
           "path": "test/research/re01/selected-prototype-issuer.test.ts",
           "role": "prototype",
           "sha256": "01e386bfd93f509ac9fffd425ddf3ae2f69c550d2c4cb1fb9458320f0d913ee8"
+        },
+        {
+          "path": "test/research/re01/canonical-nominal-bank.ts",
+          "role": "prototype",
+          "sha256": "6c213c709e39aafc6aa134c4fbe0ea51c7cf357fa78d28529d1f98756c78f49d"
+        },
+        {
+          "path": "test/research/re01/canonical-nominal-bank.test.ts",
+          "role": "prototype",
+          "sha256": "3b25cf280ec28aaf1e30ba4e5c64e30824f25b671f098b41d2c16e5cb4f516d2"
         }
       ]
     },
