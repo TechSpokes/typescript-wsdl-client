@@ -928,3 +928,34 @@ The [aggregate dispatch controls](../test/research/re01/scalar-mixed-emptiabilit
 The [complete simple-content guard controls](../test/research/re01/scalar-sc-fixed-value-dispatch.test.ts) select a fixed BOOLEAN value at the declaration's map while preserving the required literal scalar ancestry and original QName selection at the producer's map. Their exact input-type and restriction-wrapper contrasts fail the required particle comparison. These are supplied constructions and chosen contrasts, not a universal helper-necessity result.
 
 This corrects the demonstrated inherited mixed-base and particle-prerequisite frontiers. It establishes no general reconstruction, late-frontier adequacy, complete negative answer or termination bound.
+
+## Inherited scalar definitions and private arithmetic support
+
+A checked RE01 successor preserves the scalar definition of every inherited complex simple-content type, including the endpoint changing from extension to restriction. The endpoint exception changes its BASE and method; it does not exempt its content from [candidate correspondence](../src/compiler/re01CandidateCorrespondence.ts). An extension first born over an exact input BASE therefore keeps that BASE's scalar-definition port throughout its later retirements.
+
+A genuinely new restriction helper has a different first-birth rule: it may select a new scalar definition with the required literal ancestry. This freedom cannot be applied retrospectively to an inherited endpoint. Inherited RAW SIMPLEs also undergo separate-context metadata, literal BASE/ITEM/ordered MEMBER, facet-property and annotation comparisons. Reassessing a CURRENT provider does not permit a committed facet property to change across a checked step. Context-qualified FULL duties remain actual obligations.
+
+These statements concern scalar identity and compared properties. They do not identify operands from different namespace maps, freeze the active NOTATION registry, supply a first-birth producer or bound the number of private providers. In particular, the remaining scalar contraction problem concerns static private SIMPLE constructor rows and their BASE DAG, rather than inherited scalar programs changing at NP retirements.
+
+### Exact successor portfolio
+
+There is a native arithmetic validation kernel. Let `Qq` and `Qr` be INTEGER singleton providers, `Z` be STRING restricted by the whole pattern `z`, and `J` be INTEGER with `minInclusive q` and `maxExclusive r`. The endpoint operands genuinely use `Qq` and `Qr`, respectively, and separately qualify in INTEGER. Retain the authentic builtin INTEGER components. With empty TOP inventories, form:
+
+```text
+U = UNION[Qq, STRING, INTEGER]
+V = UNION[Qq, Z, J] restricting U
+```
+
+The numeric image of U is `{q}`; V adds every integer in `[q,r)`. Native mixed-bound consistency requires `q<r`, so complete selected-image containment holds exactly when `r=q+1`. The corresponding-member derivations alone do not establish containment. Native controls check all six fresh SIMPLE roots: `(0,1)` passes, `(0,2)` fails V's selected-image restriction, and `(0,0)` fails J's bound order. These are supplied local portfolios, not complete RE01 forests or a compulsory iteration construction.
+
+### Private singleton reissue
+
+In a successful portfolio J accepts exactly every INTEGER lexical spelling of q. Before its birth, reissue the private J with the same identity, name, final set and INTEGER BASE, retaining authentic INTEGER components and adding one genuinely qualified enum q instead of its two bounds. Its actual enum provider is Qq. This preserves J's complete WORD/value behavior and the literal nominal graph, including V's exact MEMBER references and incoming target-UNION identity alternatives. Its constructor no longer reads Qr.
+
+This operation preserves semantic VALUE/WORD clients, including typed facet operands that assess J. It does not preserve the old bound components, annotations, complete scalar PROPERTY or component-replay selectors. Such clients require a coherent reconstruction or an explicit retained boundary. Private peer recipes must use their real newly issued component tables. Qr is omitted only after a complete reference/owner/source/root audit; retaining it for another client is permitted. No actual input row is edited, and no inherited fresh root is discarded after birth.
+
+Separate native controls check the five rebuilt fresh SIMPLE roots, genuine enum qualification, direct J assessments and nominal relations. Reissuing the successful `(0,1)` case preserves its semantics. Rebuilding the failed `(0,2)` case is a repair of that supplied portfolio; its old J value 1 is not preserved, and its failure proves no fixed-root nonexistence.
+
+A weaker replacement of only V's last incidence by a dead INTEGER also preserves V when that incidence is covered by earlier member domains before TOP. It can change incoming nominal queries and direct J clients. Absence from successful final outputs is insufficient: an earlier member can select a value that TOP rejects, preventing a later member from winning. Nor does FULL of an arbitrary BASE guarantee that KEEP-all plus an empty pattern passes cross-kind bound correspondence.
+
+The independent review and native receipts for these source-level results are recorded in the #234 ledger. No general scalar-port bound, private-client closure, complete reconstruction, negative-answer procedure or mathematical termination follows from these local operations.
