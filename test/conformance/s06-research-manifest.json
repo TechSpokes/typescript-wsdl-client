@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "8db674c1d74c91dd4d4d4ee0271095fb2a844f4431fc1b058dcd0301ae887f43"
+          "sha256": "bdcaee667a55709676f6689df30134d089f6d73ad17fbb6134135a44918edec0"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1951,7 +1951,7 @@
         {
           "path": "test/unit/schema-exact-facet-components-independent.test.ts",
           "role": "expectations",
-          "sha256": "1a7b78b6e21f907ff87397583c2346d1a0518cb6e87ee71fa813a4fd642b5273"
+          "sha256": "e5c6aa3fea795ad992e687b1a770563197c81561c191191dec1e3ee454ac0926"
         },
         {
           "path": "test/unit/schema-original-generated-binding-independent.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "1c2f313a80f1366cb91ea8dd3c9783c23137483987b30698479349586061a3ca"
+          "sha256": "b367f3922c205b55e060e8ceea2f4275a319f3bb70e4a434fa8cc5f49a19c738"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2731,7 +2731,7 @@
         {
           "path": "test/research/re01/immediate-base-component-retention.test.ts",
           "role": "prototype",
-          "sha256": "cb7cc700bb77dbf0dfe6e4620e221900e5a28f3e44ccd05fea5e7831e234d1f2"
+          "sha256": "8ec529e6cbb94e0f90fea7b2ef699dabfdf05bb8ee96aaacc4d9cc3e39983ea8"
         },
         {
           "path": "test/research/re01/source-facet-current-components.test.ts",
@@ -2746,7 +2746,7 @@
         {
           "path": "test/research/re01/source-component-retention.test.ts",
           "role": "prototype",
-          "sha256": "bb43a0f5bb959613ff46330fef9fe935792ee549117a122e6edd87dca15d329d"
+          "sha256": "b9013fcaff2a404cea8a9b03310b828a85dd922bbf0c4709acd021f86f25e147"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/source-component-retention.xsd",
@@ -2901,7 +2901,7 @@
         {
           "path": "test/research/re01/generated-scalar-component-retention.test.ts",
           "role": "prototype",
-          "sha256": "6e913bb1c6d0f6d3808d4e276ec7e48c9b42711269fa6b08e6e520e8c69ff78e"
+          "sha256": "528bbaee2331342e08a750d5ef089c9d2dfb597c59240c315c31da38de56d05d"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/generated-scalar-component-retention.xsd",
@@ -2917,6 +2917,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/source-ur-wildcard-borrowing.xsd",
           "role": "fixture",
           "sha256": "99c01fbfa1bf0e85d3000ab64e4fd34999e8ded85b3d326bcc1ef3f57bd5ade5"
+        },
+        {
+          "path": "test/research/re01/current-scalar-component-retention.test.ts",
+          "role": "prototype",
+          "sha256": "08a285a389b60a233bd876f92a02be51a9ec62e706caa1fc136c0fcbf89746e5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/current-scalar-component-retention.xsd",
+          "role": "fixture",
+          "sha256": "9b261849dc878aff5e5a57d637fd986f569df1268c7f21d3a22576cc4e88f497"
         }
       ]
     },

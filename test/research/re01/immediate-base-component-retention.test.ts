@@ -146,21 +146,21 @@ describe('authentic immediate-base component retention',()=>{
     expect(cyclic).toMatchObject({kind:'candidate-rejected'});
   });
 
-  it('separates bad ordinals, unsupported tables and stored first-birth violations',async()=>{
+  it('separates bad ordinals, known empty tables and stored first-birth violations',async()=>{
     const s=await setup('keep');
     const indexed=s.scalar('BadIndex',local(s.anchor.node.id),[{baseComponent:9}]);
-    const unsupported=s.scalar('NoRawTable',builtin('decimal'),[{baseComponent:0}]);
-    for(const selected of [indexed,unsupported]){
+    const empty=s.scalar('EmptyBuiltinTable',builtin('decimal'),[{baseComponent:0}]);
+    for(const selected of [indexed,empty]){
       const prepared=forkSemanticCandidate(s.child,{key:'table-'+selected.node.id,active:[...s.child.members,selected.node.id],
         additions:[selected.node],rawSimpleTypes:[selected.raw]});assert.equal(prepared.kind,'prepared');
       expect(createSchemaScalarKernel(prepared.context).describe(local(selected.node.id),selected.node.id))
-        .toMatchObject(selected===indexed?{kind:'invalid-schema',rule:'raw-base-facet-component'}
-          :{kind:'unresolved',rule:'raw-simple-facet-restriction-validity'});
+        .toMatchObject({kind:'invalid-schema',rule:'raw-base-facet-component'});
     }
-    const malformed=s.scalar('UnavailableBadLiteral',builtin('decimal'),[{baseComponent:0},s.entry('minInclusive','not-a-decimal')]);
-    const invalid=forkSemanticCandidate(s.child,{key:'unavailable-independent-literal',active:[...s.child.members,malformed.node.id],
+    const malformed=s.scalar('BadLiteralWithValidOrdinal',local(s.anchor.node.id),[{baseComponent:0},s.entry('minInclusive','not-a-decimal')]);
+    const invalid=forkSemanticCandidate(s.child,{key:'valid-ordinal-independent-literal',active:[...s.child.members,malformed.node.id],
       additions:[malformed.node],rawSimpleTypes:[malformed.raw]});assert.equal(invalid.kind,'prepared');
-    expect(createSchemaScalarKernel(invalid.context).describe(local(malformed.node.id),malformed.node.id)).toMatchObject({kind:'invalid-schema'});
+    expect(createSchemaScalarKernel(invalid.context).describe(local(malformed.node.id),malformed.node.id))
+      .toMatchObject({kind:'invalid-schema',rule:'cvc-datatype-valid'});
     expect(forkSemanticCandidate(s.child,{key:'change-inherited',active:s.child.members,rawSimpleTypes:[s.restriction.raw]}))
       .toMatchObject({kind:'candidate-rejected',code:'representation',component:s.restriction.node.id});
     const late=s.scalar('Late',local(s.anchor.node.id),[{baseComponent:0},{baseComponent:1}]);

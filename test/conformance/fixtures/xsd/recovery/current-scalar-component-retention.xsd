@@ -1,0 +1,40 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scalar:intrinsic-keep" targetNamespace="urn:scalar:intrinsic-keep">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"><xs:choice minOccurs="0"><xs:element ref="t:H"/><xs:element ref="t:Q"/></xs:choice></xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootR"><xs:complexContent><xs:restriction base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootD"><xs:complexContent><xs:extension base="t:RootR"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="NamedA1"><xs:restriction base="xs:NCName">
+    <xs:enumeration value="a"><xs:annotation><xs:documentation>named first</xs:documentation></xs:annotation></xs:enumeration>
+    <xs:enumeration value="b"><xs:annotation><xs:documentation>named second</xs:documentation></xs:annotation></xs:enumeration>
+    <xs:pattern value="b"/>
+  </xs:restriction></xs:simpleType>
+  <xs:element name="H" type="t:NamedA1" abstract="true" block="restriction"/>
+  <xs:element name="Q" type="t:NamedA1" abstract="true" block="extension" substitutionGroup="t:H"/>
+  <xs:element name="a1"><xs:simpleType><xs:restriction base="xs:NCName">
+    <xs:enumeration value="a"><xs:annotation><xs:documentation>a1 first</xs:documentation></xs:annotation></xs:enumeration>
+    <xs:enumeration value="b"><xs:annotation><xs:documentation>a1 second</xs:documentation></xs:annotation></xs:enumeration>
+    <xs:pattern value="b"/>
+  </xs:restriction></xs:simpleType></xs:element>
+  <xs:element name="y"><xs:simpleType><xs:restriction>
+    <xs:simpleType><xs:restriction base="xs:NCName">
+      <xs:enumeration value="a"><xs:annotation><xs:documentation>a2 first</xs:documentation></xs:annotation></xs:enumeration>
+      <xs:enumeration value="b"><xs:annotation><xs:documentation>a2 second</xs:documentation></xs:annotation></xs:enumeration>
+      <xs:pattern value="b"/>
+    </xs:restriction></xs:simpleType>
+    <xs:enumeration value="b"/>
+  </xs:restriction></xs:simpleType></xs:element>
+  <xs:simpleType name="List"><xs:list itemType="xs:decimal"/></xs:simpleType>
+  <xs:complexType name="ListB"><xs:simpleContent><xs:extension base="t:List"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ListT1"><xs:simpleContent><xs:restriction base="t:ListB">
+    <xs:enumeration value="1"><xs:annotation><xs:documentation>list first</xs:documentation></xs:annotation></xs:enumeration>
+    <xs:enumeration value="1 2"><xs:annotation><xs:documentation>list second</xs:documentation></xs:annotation></xs:enumeration>
+  </xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ListA1"><xs:simpleContent><xs:restriction base="t:ListT1"><xs:length value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:simpleType name="Union"><xs:union memberTypes="xs:decimal xs:string"/></xs:simpleType>
+  <xs:complexType name="UnionB"><xs:simpleContent><xs:extension base="t:Union"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="UnionT1"><xs:simpleContent><xs:restriction base="t:UnionB">
+    <xs:enumeration value="1"><xs:annotation><xs:documentation>union first</xs:documentation></xs:annotation></xs:enumeration>
+    <xs:enumeration value="2"><xs:annotation><xs:documentation>union second</xs:documentation></xs:annotation></xs:enumeration>
+  </xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="UnionA1"><xs:simpleContent><xs:restriction base="t:UnionT1"><xs:pattern value="2"/></xs:restriction></xs:simpleContent></xs:complexType>
+</xs:schema>

@@ -129,12 +129,13 @@ describe('actual immediate GSC1 scalar component retention', () => {
     }
   });
 
-  it.each(['list', 'union'] as const)('leaves %s GSC inventories outside the atomic exporter', async kind => {
-    const s = await setup('keep'), selected = s.scalar('/unsupported-' + kind, slot(kind === 'list' ? 'ListA' : 'UnionA'), {facetComponentSet: [{baseComponent: 0}]});
+  it.each(['list', 'union'] as const)('replays complete %s GSC inventories with exact constituents', async kind => {
+    const s = await setup('keep'), selected = s.scalar('/variety-' + kind, slot(kind === 'list' ? 'ListA' : 'UnionA'),
+      {facetComponentSet: (kind === 'list' ? [0, 1] : [0]).map(baseComponent => ({baseComponent}))});
     const row: RawSimpleTypeProperties = {...selected.row, variety: kind === 'list' ? {kind: 'list', item: builtin('string')}
       : {kind: 'union', members: [builtin('decimal'), builtin('string')]}};
-    const built = forkSemanticCandidate(s.context, {key: 'unsupported-' + kind, active: [...s.context.members, selected.node.id], additions: [selected.node], rawSimpleTypes: [row]});
+    const built = forkSemanticCandidate(s.context, {key: 'variety-' + kind, active: [...s.context.members, selected.node.id], additions: [selected.node], rawSimpleTypes: [row]});
     assert.equal(built.kind, 'prepared');
-    expect(checkComponentConstruction(built.context, selected.node.id)).toMatchObject({kind: 'unresolved', rule: 'raw-simple-facet-restriction-validity', component: selected.node.id});
+    expect(checkComponentConstruction(built.context, selected.node.id)).toMatchObject({kind: 'checked', obligations: []});
   });
 });

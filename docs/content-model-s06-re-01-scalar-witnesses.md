@@ -16,14 +16,37 @@ This owner correction does not establish the general enum lexical-map producer o
 
 The [raw-group authority correction](content-model-s06-re-01.md#raw-facet-groups-and-identity-authority) separately prevents caller-added identity fields from entering internal facet comparison evidence.
 Literal input equality or object sharing never supplies an authenticated inherited component selector.
-The [qualified immediate-base selector](content-model-s06-re-01.md#authenticated-current-source-component-retention) implements only its printed RAW and SOURCE sectors, including pure SOURCE QName ancestry and a SOURCE union with one exact literal/effective builtin DECIMAL member.
-The union sector proves current survivor/ordinal stability through its immutable constituent and genuine source restriction steps; arbitrary effective-singleton unions do not acquire that authority.
-The [atomic GSC1 replay](#actual-atomic-gsc1-component-replay) also retains complete supported generated scalar inventories.
-General opaque-component materialization remains a separate adequacy obligation, with no general negative answer inferred from an unproved literal copy.
+The [qualified immediate-base selector](content-model-s06-re-01.md#authenticated-current-source-component-retention) preserves its earlier RAW and SOURCE ordinal conventions, including pure SOURCE QName ancestry and the stated singleton-DECIMAL union sector.
+The [complete formed-inventory fallback](#complete-current-component-replay) also supplies current BASE components outside those earlier sectors.
+The [atomic GSC1 controls](#actual-atomic-gsc1-component-replay) retain the original generated-scalar example.
+Complete scalar recipe reconstruction remains a separate adequacy obligation, with no general negative answer inferred from an unproved literal copy.
+
+## Complete current component replay
+
+The immediate-BASE selector can export a complete determinate inventory from formed SOURCE, GSC1 and RAW scalar descriptions, including LIST, ordered UNION and genuine intrinsic components without a source layer.
+The existing exact component-set and earlier SOURCE tables retain their ordinals; the fallback orders reduced scalar kinds before their actual repeatable components.
+An unresolved legacy reduction does not become a complete inventory.
+
+The scalar owner retains actual component identity, opaque annotation information, typed operands, formation debts and semantic dependencies.
+Only genuine compiler-owned intrinsic introductions retain intrinsic pattern authority; caller expressions and shared Facet objects cannot create it.
+Legacy RAW layers expose their completed normal form rather than every unreduced conjunct as a new component.
+Private occurrences belong to immutable rows and their reduced kind or layer position, so inherited rows preserve annotation correspondence while their values and debts are reformed in each context.
+
+All selected recipes still require ordinary F2, complete enum/pattern retention and the applicable constituent checks.
+A wholly NEW bound kind may contain multiple tuples when ordinary F2 checks every tuple; this does not permit mixing KEEP and NEW within that kind or reduce a hard PROPERTY template to one endpoint.
+No property-equal sibling supplies another BASE's retention authority.
+
+The [native controls](../test/research/re01/current-scalar-component-retention.test.ts) cover a proper SIMPLE restriction role over a SOURCE NCName scalar with an opaque enum and intrinsic patterns, plus a new enum over its actual BASE.
+The selected GLOBAL role has different effective membership at its two existing heads; reusing the exact BASE violates the retained choice's UPA.
+That control demonstrates the chosen role constructor, not that every root witness must introduce that GLOBAL.
+Further controls retain opaque legacy RAW components through a complete required child, preserve a hard multi-NEW-bound inventory, and reject invalid selectors or new values.
+
+These owner repairs supply current component authority and ordinary formation, not a general scalar catalogue.
+Private alias endpoint bounds, changed-member UNION VALUE recipes, typed VALUE/map representatives, complete coverage and mathematical termination remain separate proof obligations.
 
 ## Actual atomic GSC1 component replay
 
-The existing immediate-BASE ordinal selector now accepts a complete supported inventory from a formed atomic GSC1 slot.
+The original atomic GSC1 case uses a complete supported inventory from its actual formed slot.
 The scalar owner derives that inventory from its actual current scalar tuples and repeatable layers, preserving component identity, opaque annotation identity, assessed values and source obligations.
 It returns unresolved when any component lacks a supported replay introduction; it does not publish a partial inventory.
 
@@ -39,8 +62,7 @@ Inherited and chained selectors retain their actual typed operands and dependenc
 A genuine intrinsic pattern with a replayable layer keeps its private compiler mark through the selected successor; caller data cannot create that mark or a component identity.
 Existing SOURCE and RAW ordinal tables keep their order, and all new components still undergo the existing P1/F2 checks.
 
-This closes the displayed atomic generated-scalar representation gap.
-LIST, ordered UNION and intrinsic components without a replayable layer remain outside this exporter and require separate arguments.
+This closes the displayed atomic generated-scalar representation gap; the complete current-inventory owner above extends its representation support.
 General scalar coverage, native evidence adequacy, encoded bounds, complete negatives and mathematical termination remain open.
 
 ## Why a new endpoint operation is required

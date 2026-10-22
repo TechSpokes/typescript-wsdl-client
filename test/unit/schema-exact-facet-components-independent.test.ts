@@ -129,7 +129,7 @@ describe('exact supplied facet component and annotation evidence',()=>{
     expect(kernel.describe(named('PatternCopy'),id('PatternCopy'))).toBe(s.request.budget.failure());
   });
 
-  it('distinguishes unavailable legacy tables from known source component ordinals',async()=>{
+  it('replays determinate legacy tables and checks known source component ordinals',async()=>{
     const s=await selectorSetup(),legacyExact=s.raw('LegacyBase',builtin('decimal'),[s.entry('minInclusive','0')]);
     const {facetComponentSet:components,...properties}=legacyExact;
     const legacy:RawSimpleTypeProperties & {base:Reference}={...properties,facetLayers:components.map(entry=>{
@@ -138,7 +138,9 @@ describe('exact supplied facet component and annotation evidence',()=>{
     const {kernel}=s.candidate([legacy,s.raw('LegacyBorrower',named('LegacyBase'),[{baseComponent:0}]),
       s.raw('SourceBorrower',named('Empty'),[{baseComponent:0}]),s.raw('SourceKnown',named('MinOne'),[{baseComponent:0}])]);
     expect(kernel.describe(named('LegacyBase'),id('LegacyBase'))).toMatchObject({kind:'checked',obligations:[]});
-    expect(kernel.describe(named('LegacyBorrower'),id('LegacyBorrower'))).toMatchObject({kind:'unresolved',rule:'raw-simple-facet-restriction-validity'});
+    expect(kernel.describe(named('LegacyBorrower'),id('LegacyBorrower'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('LegacyBorrower'),{value:'0',context:s.seed.context},id('LegacyBorrower'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('LegacyBorrower'),{value:'-1',context:s.seed.context},id('LegacyBorrower'))).toMatchObject({kind:'invalid-schema'});
     expect(kernel.describe(named('SourceBorrower'),id('SourceBorrower'))).toMatchObject({kind:'invalid-schema',rule:'raw-base-facet-component'});
     expect(kernel.describe(named('SourceKnown'),id('SourceKnown'))).toMatchObject({kind:'checked',obligations:[]});
   });

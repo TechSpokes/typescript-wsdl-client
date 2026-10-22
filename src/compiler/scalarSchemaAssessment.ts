@@ -118,6 +118,9 @@ const facetEvidence = new WeakMap<ScalarFacetEvidence, FacetEvidenceRecord>();
 // Factory-owned frozen rows survive descendant contexts. Caller group sharing,
 // another row, or another component incidence never supplies this identity.
 const rawFacetOccurrences = new WeakMap<RawSimpleTypeProperties, readonly object[]>();
+// A legacy RAW row publishes one reduced scalar component per kind. Its
+// occurrence survives forks; typed values are still formed in the current H.
+const rawReducedScalarOccurrences = new WeakMap<RawSimpleTypeProperties, Map<string, object>>();
 // Actual source incidences share metadata, never typed VALUE or P1 shortcuts.
 const sourceFacetIncidences = new WeakMap<SemanticContext, WeakMap<SimpleTypeNode, Map<string, object>>>();
 const excluded = new Set(["NOTATION", "ID", "IDREF", "IDREFS", "ENTITY", "ENTITIES"]);
@@ -138,12 +141,12 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   let sourceSteps: WeakMap<ScalarConstraintLayer, SourceFacetStep> | undefined;
   let currentComponents: WeakMap<Description, readonly CurrentRepeatableComponent[]> | undefined;
   let sourceComponentTables: WeakMap<Description, readonly RawComponentReplay[] | false> | undefined;
-  let generatedComponentTables: WeakMap<Description, readonly RawComponentReplay[] | false> | undefined;
+  let formedComponentTables: WeakMap<Description, readonly RawComponentReplay[] | false> | undefined;
   const rawFacetIdentities = (row: RawSimpleTypeProperties, owner: GraphNode): readonly object[] => {
     c.step(owner, 4);
     const prior = rawFacetOccurrences.get(row);
     if (prior) return prior;
-    const count = row.facetComponentSet!.length;
+    const count = (row.facetComponentSet ?? row.facetLayers ?? []).length;
     c.step(owner, count * 4 + 6);
     const identities = Object.freeze(Array.from({length: count}, () => Object.freeze({})));
     c.step(owner, 2);
@@ -507,9 +510,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   const currentRepeatableComponents = (description: Description, owner: GraphNode): readonly CurrentRepeatableComponent[] => {
     c.step(owner, 3);
     const cached = currentComponents?.get(description); if (cached) return cached;
-    c.step(owner, (description.intrinsic?.patterns.length ?? 0) * 4 + description.plan.layers.length * 3 + 3);
+    c.step(owner, (description.intrinsic?.patterns.length ?? 0) * 7 + description.plan.layers.length * 3 + 3);
     let result: CurrentRepeatableComponent[] = (description.intrinsic?.patterns ?? []).map(expression =>
-      ({component: {name: 'pattern', values: [{fixed: false, lexical: expression}], annotation: 'absent'}}));
+      ({component: {name: 'pattern', values: [{fixed: false, lexical: expression}], annotation: 'absent', identity: Object.freeze({})}}));
     for (const layer of description.plan.layers) for (const name of ['pattern', 'enumeration']) {
       c.step(owner, layer.facets.length * 5 + 3);
       const facets = layer.facets.filter(facet => facet.name === name); if (!facets.length) continue;
@@ -702,6 +705,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     return result;
   };
+  const reducedScalarIdentity = (description: Description, name: string, owner: GraphNode): object | undefined => {
+    c.step(owner, 5); const found = c.context.lookup(description.definition);
+    if (found.kind !== 'found' || found.node.kind !== 'simpleType') return undefined;
+    const row = c.context.rawSimpleTypeProperties(description.definition); if (!row) return undefined;
+    let identities = rawReducedScalarOccurrences.get(row);
+    if (!identities) {c.step(owner, 3); identities = new Map(); rawReducedScalarOccurrences.set(row, identities);}
+    c.text(name, owner); let identity = identities.get(name);
+    if (!identity) {c.step(owner, 4); identity = Object.freeze({}); identities.set(name, identity);}
+    return identity;
+  };
   /** Exact scalar inventories retain each tuple; legacy layers expose their normal form. */
   const scalarTuples = (description: Description, owner: GraphNode): ScalarTuple[] => {
     c.step(owner); const tuples: ScalarTuple[] = [];
@@ -714,7 +727,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       }
     } else for (const name of facetNames(description, owner)) {
       c.step(owner, 6); const facet = description.facets.get(name)?.facet;
-      tuples.push({name, property: facetProperty(description, name, owner)!, facet,
+      tuples.push({name, property: facetProperty(description, name, owner)!, facet, identity: reducedScalarIdentity(description, name, owner),
         annotation: facet ? boundAnnotationPayloads.get(facet) ?? sourceFacetPayloads.get(facet) ?? facet.annotation : 'absent'});
     }
     return tuples;
@@ -2612,29 +2625,34 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     c.step(owner, 3); const complete = Object.freeze(entries); sourceComponentTables.set(base, complete); return complete;
   };
-  /** A formed atomic GSC1 slot owns its current introductions, including opaque
-   * source annotations. KEEP reads that owner, never a property-equal sibling.
-   * Unlayered intrinsic components have no replay introduction in this sector. */
-  const generatedComponentTable = (base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
+  /** A complete formed inventory owns its current introductions. KEEP retains
+   * actual components, including opaque annotations and intrinsic builtin facts;
+   * it never borrows authority from a property-equal sibling. */
+  const formedComponentTable = (base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
     c.step(owner, 3);
-    if (base.plan.variety !== 'atomic') return undefined;
-    const cached = generatedComponentTables?.get(base); if (cached !== undefined) return cached || undefined;
-    if (!generatedComponentTables) {c.step(owner, 2); generatedComponentTables = new WeakMap();}
-    const unavailable = (): undefined => {c.step(owner, 2); generatedComponentTables!.set(base, false); return undefined;};
+    if (base.rawProperties && !base.exactComponentSet && !base.originalFacetIdentity
+      && base.plan.obligations?.some(item => item.rule === 'raw-simple-facet-restriction-validity')) return undefined;
+    const cached = formedComponentTables?.get(base); if (cached !== undefined) return cached || undefined;
+    if (!formedComponentTables) {c.step(owner, 2); formedComponentTables = new WeakMap();}
+    const unavailable = (): undefined => {c.step(owner, 2); formedComponentTables!.set(base, false); return undefined;};
     const scalars = scalarTuples(base, owner), repeatables = currentRepeatableComponents(base, owner);
     c.step(owner, scalars.length * 3 + 3);
     scalars.sort((a, b) => {c.text(a.name, owner); c.text(b.name, owner); return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;});
     c.step(owner, scalars.length * 7 + repeatables.length * 5 + 4);
     const drafts: {component: ExactFacetComponent; facets: readonly Facet[]}[] = [];
     for (const tuple of scalars) {
-      if (!tuple.facet) return unavailable();
-      drafts.push({component: {name: tuple.name, values: [tuple.property], facet: tuple.facet,
-        annotation: tuple.annotation, identity: tuple.identity ?? tuple.facet, annotationIdentity: tuple.annotationIdentity}, facets: [tuple.facet]});
+      c.step(owner, 7);
+      const facet: Facet = tuple.facet ?? {name: tuple.name, fixed: tuple.property.fixed,
+        lexical: {value: tuple.property.integer ?? tuple.property.operand?.canonical ?? tuple.property.lexical!, context: owner.context}};
+      drafts.push({component: {name: tuple.name, values: [tuple.property], facet,
+        annotation: tuple.annotation, identity: tuple.identity ?? facet, annotationIdentity: tuple.annotationIdentity}, facets: [facet]});
     }
     for (const {component, layer} of repeatables) {
-      if (!layer) return unavailable();
-      c.step(owner, layer.facets.length * 2 + 2);
-      const facets = layer.facets.filter(facet => facet.name === component.name);
+      c.step(owner, (layer?.facets.length ?? component.values.length) * 7 + 2);
+      if (!layer && component.name !== 'pattern') return unavailable();
+      const facets: readonly Facet[] = layer ? layer.facets.filter(facet => facet.name === component.name)
+        : component.values.map(property => ({name: 'pattern', fixed: false, lexical: {value: property.lexical!, context: owner.context}}));
+      if (!layer) for (const facet of facets) {c.step(owner); intrinsicFacets.add(facet);}
       if (!facets.length || facets.length !== component.values.length) return unavailable();
       drafts.push({component, facets});
     }
@@ -2647,14 +2665,14 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       entries.push(Object.freeze({component, facets, source: Object.freeze({values: Object.freeze(values),
         intrinsicPatterns: Object.freeze(intrinsic), obligations: base.plan.obligations ?? [], typeDependencies: base.typeDependencies ?? []})}));
     }
-    c.step(owner, 3); const complete = Object.freeze(entries); generatedComponentTables.set(base, complete); return complete;
+    c.step(owner, 3); const complete = Object.freeze(entries); formedComponentTables.set(base, complete); return complete;
   };
   const componentTable = (reference: Reference, base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
-    if (reference.kind === 'original-generated') return generatedComponentTable(base, owner);
+    if (reference.kind === 'original-generated') return formedComponentTable(base, owner);
     const node = scalarOperandNode(reference, owner);
     const row = node?.kind === 'simpleType' ? c.context.rawSimpleTypeProperties(node.id) : undefined;
-    if (!row) return sourceComponentTable(base, owner);
-    if (!row.facetComponentSet) return undefined;
+    if (!row) return sourceComponentTable(base, owner) ?? formedComponentTable(base, owner);
+    if (!row.facetComponentSet) return formedComponentTable(base, owner);
     c.step(owner, 4);
     if (!rawComponentTables) {c.step(owner, 2); rawComponentTables = new WeakMap();}
     const cached = rawComponentTables.get(row); if (cached) return cached;
@@ -2708,7 +2726,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       const indices = components.flatMap((component, index) => component.name === name ? [index] : []);
       if (indices.some(index => groups[index].selected)) {
         if (indices.some(index => !groups[index].selected) || inherited.some(entry => !selected.has(incidence(entry.component)))) complete = false;
-      } else if (indices.length > 1) complete = false;
+      }
     }
     return complete;
   };
@@ -2774,8 +2792,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
           }
           // Caller extensions are data, never privately issued component identity.
           c.step(node, 2); groups.push({facets: group.facets, annotation: group.annotation, ordinal});
-        } else for (const group of rawSimple.facetLayers ?? []) {
-          c.step(node, 2); groups.push({facets: group.facets});
+        } else for (const [ordinal, group] of (rawSimple.facetLayers ?? []).entries()) {
+          c.step(node, 2); groups.push({facets: group.facets, identity: rawFacetIdentities(rawSimple, node)[ordinal]});
         }
         if (node.identity.kind === "global" && rawSimple.targetNamespace !== undefined) {
           c.text(rawSimple.targetNamespace, node); c.text(node.identity.name.namespace, node);
@@ -2838,6 +2856,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
               if (group.selected.annotationIdentity) component.annotationIdentity = group.selected.annotationIdentity;
               else {
                 component.identity = group.selected.identity;
+                // Retention uses the actual BASE component above. This row's
+                // immutable occurrence supplies only annotation continuity.
+                component.annotationIdentity = identities![group.ordinal ?? exactComponentSet.length];
                 c.step(node, 2); layerIdentities.set(installed, component.identity!);
               }
             }
@@ -3065,7 +3086,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         for (const name of names) {
           const explicit = description.facets.get(name);
           c.step(owner, 4);
-          exact.push({name,values:[scalars.get(name)!],
+          exact.push({name,values:[scalars.get(name)!], identity: reducedScalarIdentity(description, name, owner),
             annotation:explicit ? boundAnnotationPayloads.get(explicit.facet) ?? sourceFacetPayloads.get(explicit.facet) ?? explicit.facet.annotation : 'absent'});
         }
       }
