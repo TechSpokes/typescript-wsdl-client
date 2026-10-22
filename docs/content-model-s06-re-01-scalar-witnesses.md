@@ -1082,6 +1082,26 @@ Complete ITEM labels and paired BASE edges establish the actual recursive proper
 
 Independent review accepted this conditional decoder. It does not extract the finite ITEM-code stock, closed parameter palette, bounded designated ports, ordinary writers or universally adequate native evidence from an arbitrary successful RE01 construction. Those missing extractions remain necessary before this supplies a general bound or a negative answer.
 
+### Deriving the ITEM-code stock under a closed palette
+
+A further conditional construction derives that finite full ITEM-code stock. Fix one actual H and registry, exact dependency-closed INPUT/SOURCE/generated-scalar authorities, constructor arity W, a bounded closed exterior interface, and the genuine outside-client writers. Supply a finite canonical palette of WORDs, maps, points, predicates, full header/name/namespace labels, occurrence inventories and qualification plans, including a bound on actual table positions. Finite endpoint values alone are insufficient; old fresh names and private expressions cannot simply be added as new input constants.
+
+Writable NEW facet providers can use the proved ready atomic or finite-observation LIST portfolio on the unchanged WORD/map. Uncovered SOURCE/generated providers retain their exact authority closure. Private scalar-only scoped ownership can be reissued injectively under a stable retained owner when no outside scope reader observes it; outside declaration, SC, nominal, ownership and component clients retain their actual protected ports or supplied writers.
+
+The historical-reference census then has explicit owners: literal BASE/ITEM/ordered MEMBER, those ready providers, exact original recipes, and authentic immediate-BASE component replay. KEEP refers to the newly completed current BASE table, rather than a hidden reference to a deleted introducing TYPE. Component/annotation sharing remains in the joint CURRENT state; an externally observed authority remains protected.
+
+The four scalar variety strata and final constituent spines give a bounded lower path scaffold, including a LIST ITEM's possible UNION-to-atomic drop and its actual member witness. Add designated ports, fixed source/parser/whitespace boundaries, physical/code forks and drop witnesses to a bounded protected set P. This does not charge every old transient owner or every unfolded ancestor as a port.
+
+First shorten atomic RAW parser/whitespace corridors. Their complete functions are pointwise nonincreasing and belong to the supplied finite predicate alphabet. Align equal-code copies, mark function changes and P, and use the joint CURRENT product to splice constant-function intervals. One coherent monotone TYPE map fixes protected positions and retargets every writable constituent use to its actual earlier ancestor; no independent register floor map is assumed.
+
+Recheck LIST ITEM changes through their genuine ordinary F2, length-ancestor and nominal owners. All-atomic UNION MEMBER changes use the separate atomic argument. Mixed outer UNIONs additionally need the complete native image frontend: saved-facet-map fixed-value scopes, actual LIST tuple and symbolic token fallbacks, the supported guarded atomic scopes and singleton IEEE scopes. Function equality alone does not prove that native completion, and real identity, final, provider and component authority remain required.
+
+This gives a computable finite atomic code stock K0. Each flat atomic-UNION MEMBER coordinate then moves monotonically through that stock, so a width-W tuple has at most `1+W*K0` successive configurations. Within a fixed tuple, the finite whole-function alphabet bounds decreasing function plateaus. The same joint earlier-table construction gives a finite full flat-UNION code stock K1; affected LISTs and mixed parents receive their actual qualification again.
+
+Atomic and flat atomic-UNION ITEM codes are therefore finite before applying the preceding common-recipe LIST/outer-UNION decoder. The dependency is finite supplied palette/interface, lower scaffold and protected set, atomic stock, flat-UNION stock, then parent/checkpoint histories. It contains no assumed finite old ITEM-code inventory or old history length.
+
+Independent review accepted this composition after finding and repairing an earlier misuse of the all-atomic MEMBER argument for mixed parents. Its fixed-world, ready-provider, complete palette, arity and exterior-writer premises remain supplied. Unknown private negative-property, exact-code and SC observers still require genuine transport, rather than merely a counted root ID. Extracting those parameters from arbitrary RE01 inputs, complete evidence adequacy, general negatives and mathematical termination remain open.
+
 ## An original root can require a new scalar function
 
 The maintained [simple-content fixed-value controls](../test/research/re01/scalar-sc-fixed-value-dispatch.test.ts) rule out solving every input with existing scalar functions and fresh aliases alone. This is a necessity statement for that exact finite SOURCE host, rather than a lower bound on arbitrary helper depth or parameter size.
