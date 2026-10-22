@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): bound qualified paired LIST histories and free restriction portfolios while proving one root needs a new scalar function.
+
 - fix(scalar): use effective SOURCE union members consistently in nominal relations and current RAW inheritance.
 
 - docs(re01): reconstruct qualified helper forests and regular scalar blockers while keeping general bounds open.

@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "43e2dffdbc25c53f6ae66d2d60d1b54939b88db15cb2467e8a1d1bed6bd6c373"
+          "sha256": "d4340cdc5c0cd79b6891b97c1f54ce2f1ea8eea8f0295ef22962e7cb12d0c2e1"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "acbac89fc161f4cc8a201726752e9ab815eb4a50dbab19c6d0374e2dc43e7181"
+          "sha256": "b41f790e3485a43f1a5c967abce03ec47e99c4abb89fd17fac3b6e26f6b7fc1e"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",

@@ -1062,7 +1062,41 @@ At equal states, reconstruct the suffix against the actual earlier BASE tables. 
 
 This reviewed decoder covers closed scalar constructor/provider duties, not ordinary declaration or complex simple-content owner FULL. General private/private PROPERTY unfolds BASE/ITEM/ordered MEMBER code and needs a synchronized graph rewrite; a current PROPERTY truth bit cannot authorize deletion. The fixed-constituent paired-tower case permits synchronized deletion, while branching copy graphs remain open.
 
-These independently reviewed source results distinguish infinite admission blockers from successful value support. General closed-use WORD/value stock, canonical palette and live-port bounds, private BASE donor reconstruction, joint PROPERTY/code shortening, complete negatives and mathematical termination remain open.
+These independently reviewed source results distinguish infinite admission blockers from successful value support. General closed-use WORD/value stock, canonical palette and live-port bounds, private BASE donor reconstruction, general joint PROPERTY/code shortening, complete negatives and mathematical termination remain open.
+
+### One common recipe for paired LIST histories
+
+There is a conditional construction beyond the fixed-constituent paired tower, in one fixed actual H, registry and INPUT world. Supply a closed finite palette of actual WORDs, values, maps, modes and qualification recipes; a finite stock of complete atomic or atomic-UNION ITEM property codes; and a bounded inventory of designated roots and held TYPE, component, annotation and owner ports. This interface is closed: every later literal reference to an old private identity is already held or protected, or is exact INPUT; unrepresented ancestry and code clients are excluded. The supplied provider writers must actually be ready, and each fixed INPUT authority and uncovered SOURCE or generated-scalar selector retains its complete authentic closure.
+
+For each paired proper-LIST code corridor, construct a finite graph of joint CURRENT states. One vertex records all physical copies together, including shared prefix components and annotations, complete operational descriptors and the actual full ITEM-code class. An edge must issue genuine FULL rows against each copy's own immediate BASE table; function equality alone does not create an edge.
+
+The union of the designated unary BASE paths has a finite physical sharing forest. Identifying equal complete unary property codes gives a separate code-prefix forest. Let n count designated paths and a count fixed INPUT code positions; overlaying their forks and protected positions needs at most `16*(n+a+1)^2` corridor endpoints. This counts neither every old row nor every unfolded ITEM occurrence.
+
+Each corridor receives one common row-label word. Physical copies can split while keeping the same property word; retain a persistent split ledger because distinct physical paths cannot later remerge. Live identity equality alone would forget that restriction and could produce a fictitious native replay.
+
+Choose a finite strongly connected component itinerary in each joint graph. Parent states retain their current native profiles, full identity partition, ordered live positions on each common word, protected checkpoints and SAME versus strictly later child requests. A nonrecurrent singleton can occur only once; a changed child at a repeated state needs a genuine positive-length return path.
+
+First choose a shortest accepting path in this finite parent graph. This bounds the requested child checkpoints independently of the old history length. Only then connect those bounded ordered requests inside each selected strongly connected component and issue one shared word for all its property copies. Shortening each copy independently, or starting with an unbounded old request list, would not prove the claim.
+
+Complete ITEM labels and paired BASE edges establish the actual recursive property equality by induction. Every connector row receives its own formation, qualification and inherited-fresh-root checks in the real resulting contexts. Ordinary declaration and complex simple-content clients require their supplied writers or protected ports; this scalar construction does not infer their validity from the common function.
+
+Independent review accepted this conditional decoder. It does not extract the finite ITEM-code stock, closed parameter palette, bounded designated ports, ordinary writers or universally adequate native evidence from an arbitrary successful RE01 construction. Those missing extractions remain necessary before this supplies a general bound or a negative answer.
+
+## An original root can require a new scalar function
+
+The maintained [simple-content fixed-value controls](../test/research/re01/scalar-sc-fixed-value-dispatch.test.ts) rule out solving every input with existing scalar functions and fresh aliases alone. This is a necessity statement for that exact finite SOURCE host, rather than a lower bound on arbitrary helper depth or parameter size.
+
+Its original T is the ordered UNION `[QName,BOOLEAN]`. Mixed formally emptiable Z supports simple-content Tau with that scalar; Sigma restricts Tau with retained P1 `true`. Original A has a two-arm CHOICE of optional LOCAL y declarations of exact named TYPE Tau, each fixed to lexical `1`, hence BOOLEAN true. Original I removes that content, and requested t extends I with references to two unrelated abstract GLOBAL heads whose exact TYPE is Sigma.
+
+Every legal middle extending A retains its complete LOCAL fixed-value prefix. A surviving SEQUENCE tail cannot receive t's CHOICE under the selected particle mapping, so a successful middle exposes A's two CHOICE arms. Each original head must supply a participating fresh GLOBAL y member; the GLOBAL-to-LOCAL comparison must preserve the fixed BOOLEAN true value.
+
+Affiliation forces the member's complex TYPE below exact Sigma, while the restriction comparison to Tau excludes extension. Genuine FULL construction on that literal complex corridor preserves simple content. Its scalar selector must consequently have literal scalar ancestry to Sigma's authentic generated scalar; a bare BOOLEAN selector cannot replace that ancestry.
+
+The only existing scalar at or below that anchor is Sigma's own scalar. It selects QName on every admitted collapse spelling of `true`, at every map, while the retained P1 excludes BOOLEAN's alternative lexical `1`. Fresh aliases and unchanged first RAW views therefore cannot supply the required BOOLEAN result. Some genuinely new scalar function is necessary.
+
+The existing positive constructs a QName enum at its actual ON definition map and a proper `[Guard,BOOLEAN]` UNION retaining Sigma's pattern. At the member's OFF map, Guard rejects and BOOLEAN wins. Its complete control checks the original context, actual qualifications, all fresh roots, correspondence and the one-node forest.
+
+Independent review accepted the necessity argument and its distinctions between literal scalar ancestry, nominal UNION fallback and actual VALUE selection. It neither requires this particular enum syntax nor proves that arbitrarily many functions, values, LIST layers or historical rows are necessary. A general procedure must bound permitted new constructions rather than omit them.
 
 ## Effective SOURCE members in nominal relations
 

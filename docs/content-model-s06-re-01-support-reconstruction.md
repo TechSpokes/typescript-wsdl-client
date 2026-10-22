@@ -5069,3 +5069,19 @@ The two inductions cover independent U children while f remains E and all later 
 This independently reviewed semantic transformation contracts the stated parallel cohort to one retirement per transformed branch. It retains all stable helper, particle, GROUP and SG scaffolding needed by the supplied finite proof and supplies no input-derived bound on their size or universal native materializer.
 
 An input-finite current export/shield table cannot be composed with this whole-forest theorem until every later observer is covered. A private SG intermediate unqueried at the current child may become a later HEAD. General frame extraction, joint RP-only client normalization, scalar/provider boundary transport, bounded physical catalogues, complete negatives and termination remain open.
+
+## A finite BODY portfolio inside a closed free restriction forest
+
+Within a supplied closed region of genuinely writable post-parent ordinary restriction rows, the native BODY constraints form a BASE forest: the production restriction call compares each own BODY to its literal immediate BASE BODY. Complete TYPE property pairs preserve that BASE successor. Chosen RAW or GROUP aliases do not create another independent native restriction issuer, but forced extension prefixes and hard retained GROUP ports remain boundaries.
+
+The region has no simple content, attribute uses or attribute wildcard. Preserve each TYPE's identity, nominal BASE, headers, every GLOBAL declaration and affiliation. Every immutable SOURCE or complete property role, selected primitive middle, hard incoming BODY source and pending extension interpolation needs its actual boundary recipe. A BODY-only locked source also makes its BASE target an interpolant boundary; stopping at the source alone would change its restriction test.
+
+For each supplied boundary BODY, use three directed modes: exact COPY, barrier-directed SHELL, and ZERO. SHELL descends through SEQUENCE or ALL, stops at every CHOICE or ELEMENT, and replaces an exposed ordinary ANY by a CHOICE of two distinct unit ANY particles with empty namespace and strict process. Keep the old ANY's outer occurrence range. The authentic empty namespace override makes the shell nonconsuming without a fabricated ur-wildcard marker, declaration, TYPE or QName.
+
+That two-arm shell restricts the old ANY with the same formal range. A subsequent ZERO replaces a suitable CHOICE by required empty CHOICE and propagates through the permitted compositor mappings. Shelling under an already retained CHOICE is invalid in general: normalization could flatten two arms into four and break the required injection. The stop rule is therefore essential.
+
+A required ELEMENT creates a barrier which a successful restriction cannot remove on the way to formal minimum zero. Without such a barrier, CHOICE can be zeroed directly, while required ANY needs the shell first. Thus an old satisfiable zero demand needs at most one shell layer before zero; the remaining rows reuse their coherent program by genuine identity.
+
+Plan demands over the row's entire lifetime. A later mixed VALUE consumer cannot make an immutable BODY newly formally emptiable: HEAD expansion and fallback preserve its formal occurrence range. A ZERO program relying on a required HEAD's CHOICE mode must consequently preserve that mode in every required context. One effective member at birth does not establish this guard.
+
+Choose the modes simultaneously for paired TYPE roles, issue particles at genuine birth, and regenerate all current dependencies and child evidence. The independently reviewed portfolio is finite for supplied boundary recipes and their count literals; it can remove old private HEAD geometry from this closed free region. It supplies no input-derived bound on boundary recipes, interpolants, pending actors, NAME inventories or the general evidence forest.
