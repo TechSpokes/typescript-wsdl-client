@@ -221,6 +221,11 @@ function makeKernel(context: SemanticContext) {
     });
   });
   return {
+    // Qualified word bound for the private alias sector's existing bound kinds.
+    privateAliasEndpointWordCapacity: (reference: Reference, owner: NodeId) => run(() => {
+      const safe = ownReference(reference); capture(safe, owner);
+      return core.privateAliasEndpointWordCapacity(safe, c.get(owner));
+    }),
     describe: (reference: Reference, owner: NodeId) => run(() => publishPlan(capture(ownReference(reference), owner))),
     contentIdentity,
     contentProperties: (reference: Reference, owner: NodeId) => run(() => {const frozen = ownReference(reference); capture(frozen, owner); return core.contentProperties(frozen, c.get(owner));}),

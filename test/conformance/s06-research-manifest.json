@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "07bf4d617be61c3d60bf6c95e6eeeada62a53a2dfa720984e44a4c35c060acd7"
+          "sha256": "bb76bc1ef8f6ba3bb4aec99d1c65f447ecdbf473b5ea68aafce97e2696537a52"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1206,7 +1206,7 @@
         {
           "path": "src/compiler/schemaScalarKernel.ts",
           "role": "semantic-source",
-          "sha256": "f4c3fe51c4c08f4f35d96ca9d171f2837422d7c1e3d269ab5f07005bda7a8563"
+          "sha256": "3882751d3e2dd89a40d2cbaf74628c4e09b64d2e9cfc664a76dac4c2684aa424"
         },
         {
           "path": "src/compiler/schemaSimpleTypeProperties.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "47d67010064835e0ea853fb7245976772dd83675d15fc71af5f9c3e9fa7a69fa"
+          "sha256": "541680f752a992f56aaeb41fec1194445f580e6ff985d0845eeb30a4227d6b32"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2937,6 +2937,21 @@
           "path": "test/conformance/fixtures/xsd/recovery/changed-scalar-constituents-retention.xsd",
           "role": "fixture",
           "sha256": "29eaa693df768483f1089233112377e9834e352ac3dfe9098ceb0cc8208446b7"
+        },
+        {
+          "path": "src/compiler/schemaEndpointWordCapacity.ts",
+          "role": "semantic-source",
+          "sha256": "45ef946be968b3b16cdb6f7ed750b0d0fd3b34d32df9bc59ef83b8010fb93413"
+        },
+        {
+          "path": "test/research/re01/private-alias-endpoint-capacity.test.ts",
+          "role": "prototype",
+          "sha256": "eccfac7a292e6c4234991291f913f47e6a93952bb3c4482709b93b629a2ac7ca"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-alias-endpoint-capacity.xsd",
+          "role": "fixture",
+          "sha256": "2f60b7b506672e2864fe46cbc5a4e2c5a2d505df72806f5d5f1cbd520821c78b"
         }
       ]
     },

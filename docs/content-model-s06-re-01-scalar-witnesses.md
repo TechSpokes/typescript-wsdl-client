@@ -71,6 +71,47 @@ Existing SOURCE and RAW ordinal tables keep their order, and all new components 
 This closes the displayed atomic generated-scalar representation gap; the complete current-inventory owner above extends its representation support.
 General scalar coverage, native evidence adequacy, encoded bounds, complete negatives and mathematical termination remain open.
 
+## Free ordinary UNION qualification reductions
+
+These reductions concern a new proper UNION alias before birth whose required ordinary typed values form a finite set V.
+Exact TYPE, component, WORD/map, source and PROPERTY observations remain protected input boundaries.
+They do not authorize rewriting an inherited row or transferring a receipt between contexts.
+
+### Removing a later top enumeration
+
+Every enumeration component retained by the final alias contains every value in V, since ordinary assessment checks each component.
+At the first genuinely NEW top enumeration on its restriction path, each value in V therefore had an actual immediate-BASE lexical representative, with its own qualified facet word and map.
+The prefix immediately before that introduction already serves V; an authentic same-members KEEP restriction can preserve a required proper named restriction role.
+
+An inherited input component or an annotation-retained equal component is not a NEW introduction for this argument.
+The reduction stops at an exact later identity, BASE, PROPERTY, component or WORD/map observation.
+It removes unnecessary top-enumeration qualification chains, while member-guard formation remains a separate obligation.
+
+### Input QName image without an extra witness variable
+
+Fix an authentic input BASE and one actual namespace map.
+Restrict raw words to those whose collapse normalization is a single QName token.
+On this scope the supported input atomic admission masks are regular; the IEEE overlap consists of INF and NaN, and an earlier LIST alternative has exactly one token with its actual ITEM, length, enumeration and conjunct checks.
+
+Compile each actual first-selected QName branch with all earlier admissions excluded and every top filter using the selected result's normalization.
+Project collapse normalization and quotient each bound prefix to obtain a regular local-name language for each namespace.
+A proposed QName interceptor belongs to the input selected image exactly when its namespace and local part satisfy these languages.
+
+NOTATION also retains its actual registry and qualified enumeration restrictions.
+Reserved xml and unbound named prefixes retain their existing meanings.
+Absent and empty default bindings both give an unprefixed QName namespace ''; an unbound nonempty prefix fails.
+This eliminates the alternative QName witness word by concrete regular operations; it does not assert that every datatype image has a regular raw preimage.
+
+### Remaining closure obligation
+
+A QName qualifier preserves its local part while changing only the prefix spelling and map.
+For a positive duration spelling that is also a QName token, STRING and URI preserve its nonspace characters, a QName prefix prevents duration parsing, and an admitted unpadded base64 spelling fixes the same nonspace encoding.
+Thus alternative atomic qualifiers in this component preserve one duration value; finitely many correlated spellings can use the shared finite-k endpoint theorem.
+
+This atomic observation does not cover multi-token LIST bridges or bound the number of required qualifier profiles.
+The remaining proof must extract an input-bounded, qualifier-complete observation stock and reconstruct genuine F2 steps over exact prior member identities.
+Finite traces alone do not establish that extraction, a complete scalar catalogue, general negative answers or mathematical termination.
+
 ## Why a new endpoint operation is required
 
 Literal complete-payload copying is not always a legal restriction under selected F2.
@@ -288,9 +329,31 @@ The intended F2 application must separately prove its finite endpoint reduction,
 Empty new patterns do not waive any of those duties.
 
 
+## Native capacity for private-alias endpoint words
+
+The existing scalar kernel supplies `privateAliasEndpointWordCapacity(reference, owner)` in the actual H.
+It derives the formed CURRENT component inventory, existing bound kinds, assessed constants and admission masks privately; callers provide no descriptions, regular languages or formula-size estimates.
+Its scope is the private-alias catalogue below: at most one replacement per existing bound kind, with absent kinds remaining absent.
+
+For decimal, duration and the eight calendar families, the result contains a finite arithmetic expression bounding the combined primitive and membership word lengths.
+The compiler bounds the complete finite field/carry case inventory from the actual mask states and constants, without exploring the carry graph or expanding the expression's potentially enormous numeral.
+The pure [capacity builder](../src/compiler/schemaEndpointWordCapacity.ts) reserves its fixed expression topology before construction.
+
+Float and double instead use their genuine finite format and existing inverse-word owner, with a finite current enumeration supplying a smaller value superset when present.
+Their maximum also includes primitive spellings of actual bound constants independently of CURRENT admission.
+This preserves a same-kind exclusive-repeat endpoint even when the anchor's whole admitted image is empty.
+
+The normal scalar capture retains formation obligations, original lexical contexts, dependencies and the actual H identity.
+An exact native spelling contradiction can establish an empty admission mask after those duties are captured; other masks use the existing admission compiler.
+Unresolved qualification and sticky resource limits remain separate from a checked capacity; neither establishes an empty solution set.
+
+The [native controls](../test/research/re01/private-alias-endpoint-capacity.test.ts) cover SOURCE, GSC1 and RAW inventories, inherited child-H reassessment and the empty-anchor exclusive exception.
+The operation supplies an encoding bound, not endpoint production, a formed alias or an F2 certificate.
+It does not cover arbitrary hard multi-NEW tuples, the general finite-k VALUE product or the full RE01 witness bound.
+
 ## Relation to full F2 construction
 
-The endpoint theorem supplies a local decision for at most four shared bound roles, not the entire new datatype.
+The endpoint theorem supplies a local decision for any supplied finite tuple, with at most four shared bound roles in this private-alias application.
 A prospective strict alias may enumerate KEEP of each complete input bound kind versus REPLACE by one endpoint, subject to every fixed, inherited cross-kind, local-upper-pair, endpoint-membership and internal consistency duty.
 The [semantic catalogue](#finite-semantic-private-alias-catalogue) below supplies this extraction for a qualified private proper-alias sector using hypothetical authentic component selection.
 A source/nonexact normal form or a locally productive candidate does not establish its premises, and whole-forest reconstruction remains separate.
@@ -298,8 +361,9 @@ A source/nonexact normal form or a locally productive candidate does not establi
 KEEP of a component includes its annotation and authentic component authority where required.
 An unknown annotation on an inherited immutable row must not be converted into an input-domain prohibition or inferred equal on a separately assembled alias.
 Known property copying and an authenticated immediate-base component selector are different possible materializers; this theorem alone supplies neither.
-The separately implemented [raw-exact selector](content-model-s06-re-01.md#authenticated-immediate-base-component-retention) covers the printed whole-KEEP sector with actual current-H replay.
-It does not issue source/generated inventories or implement the endpoint solver.
+The earlier [raw-exact selector](content-model-s06-re-01.md#authenticated-immediate-base-component-retention) covers its printed whole-KEEP sector with actual current-H replay.
+The [complete current selector](#complete-current-component-replay) also supplies determinate SOURCE and generated inventories.
+The native private-alias capacity operation bounds endpoint words; it does not produce the endpoints or a formed alias.
 Inherited pattern and enumeration components, proper-ancestor length witnesses, whitespace coverage, ordered members, NOTATION qualification and every current-context scalar/source duty remain separate.
 
 After all earlier F2 construction duties are clear, two separate disjoint singleton pattern components prove an empty value image.
@@ -402,8 +466,8 @@ At most the input component count plus four new bound components and two new pat
 Opaque metadata remains an authenticated input reference rather than a guessed value.
 
 This theorem has independent scoped acceptance and does not depend on a new numeric enum witness or lexical-map normalization theorem.
-The raw-exact selector supplies part of the immediate-base selection interface.
-Nonexact original full-inventory reconciliation, the endpoint solver, complete native scalar materialization, cross-context reconstruction, anchor/TYPE counts and general forest bounds remain open.
+The complete current selector supplies immediate-BASE authority where its formed inventory is determinate, and the private-alias capacity operation supplies its endpoint-word bound.
+Endpoint production, remaining unresolved original inventory qualifications, complete native scalar materialization, cross-context reconstruction, anchor/TYPE counts and general forest bounds remain open.
 The empty-main-pattern certificate supplies its local containment part only; it does not complete those other gates or establish general RE01 negatives or termination.
 
 ## Input scalar observations and their exact cuts

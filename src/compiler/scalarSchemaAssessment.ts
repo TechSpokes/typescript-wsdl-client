@@ -45,6 +45,7 @@ import {schemaSymbolicSequences} from './schemaSymbolicSequences.js';
 import type {SymbolicSequence} from './schemaSymbolicSequences.js';
 import {schemaTokenImages} from './schemaTokenImages.js';
 import {showInstant} from './schemaExactCalendar.js';
+import {endpointCapacity} from './schemaEndpointWordCapacity.js';
 
 export type ScalarEnforcement = "lexical-space" | "enumeration" | "pattern" | "whitespace" | "numeric-bounds" | "numeric-precision" | "length" | "QName-context" | "default-fixed" | "list" | "union";
 export type ScalarConstraintLayer = Readonly<{owner: NodeId; facets: readonly Facet[]; patterns: readonly SchemaPattern[]}>;
@@ -3224,7 +3225,96 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     originalRecipes.set(token,{context:c.context,layers,identity:value,obligations:(value.plan.obligations ?? []).map(obligation=>({...obligation,contextId:obligation.contextId??c.context.contextId})),typeDependencies:value.typeDependencies??[]});
     originalRecipeTokens.set(value,token);return token;
   };
-  return {typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
+  /** Private alias word bound from genuine CURRENT masks/tables, without caller descriptions. */
+  const privateAliasEndpointWordCapacity = (reference: Reference, owner: GraphNode) => {
+    const description = ensure(reference, owner), family = description.plan.primitive;
+    if (description.plan.variety !== 'atomic' || !family || !['decimal', 'duration', 'dateTime', 'date', 'time', 'gYear', 'gYearMonth', 'gMonthDay', 'gDay', 'gMonth', 'float', 'double'].includes(family))
+      return c.unsupported(owner, 'endpoint-bound-family', 'Endpoint capacity requires a bound-capable atomic family');
+    const table = componentTable(reference, description, owner);
+    if (!table) return c.unresolved(owner, 'endpoint-current-inventory', 'Endpoint capacity needs the genuine completed CURRENT component table');
+    c.step(owner, table.length * 4 + 4);
+    const inventory: {ordinal: number; kind: string; fixed: readonly boolean[]; annotation: ScalarFacetAnnotationPresence}[] = [];
+    let boundCount = 0, constantTextUnits = 0, inputMagnitude = 0n, magnitudeDigits = 1, primitiveConstantUnits = 0;
+    const kinds = new Set<string>();
+    for (let ordinal = 0; ordinal < table.length; ordinal++) {
+      const entry = table[ordinal], component = entry.component; c.step(owner, component.values.length * 8 + 6);
+      inventory.push({ordinal, kind: component.name, fixed: component.values.map(property => property.fixed), annotation: facetAnnotationPresence(component.annotation)});
+      if (!boundNames.includes(component.name)) continue;
+      kinds.add(component.name);
+      for (let valueAt = 0; valueAt < component.values.length; valueAt++) {
+        const value = component.values[valueAt].operand;
+        if (!value) return c.unresolved(owner, 'endpoint-current-bound-value', 'CURRENT bound component lacks its assessed primitive operand');
+        boundCount++;
+        const constantLexical = entry.facets[valueAt]?.lexical ?? {value: value.canonical, context: owner.context};
+        const text = constantLexical.value; c.text(text, owner); constantTextUnits += text.length;
+        if (family === 'float' || family === 'double') {
+          // A same-kind exclusive repeat needs only a primitive word, even if CURRENT admission is empty.
+          let primitiveWord: string | undefined;
+          try {if (values.sameValue(values.atomic(family, constantLexical, owner), value, owner)) primitiveWord = text;}
+          catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+          primitiveWord ??= ieeeLanguages.witness(expressionLanguage(primitiveLexicalExpression(description)!, owner), value, owner);
+          if (primitiveWord === undefined) return c.unresolved(owner, 'endpoint-primitive-constant', 'Actual bound value needs its genuine primitive operand spelling');
+          primitiveConstantUnits = Math.max(primitiveConstantUnits, primitiveWord.length);
+        }
+        const coordinates = [value.decimal, value.calendar?.seconds, value.duration?.seconds];
+        for (const coordinate of coordinates) if (coordinate) {
+          const digits = coordinate.digits ?? Math.max(text.length + 32, value.canonical.length + 32);
+          c.step(owner, (digits + 4) ** 2 + 8); const magnitude = coordinate.coefficient < 0n ? -coordinate.coefficient : coordinate.coefficient;
+          if (magnitude > inputMagnitude) inputMagnitude = magnitude; magnitudeDigits = Math.max(magnitudeDigits, digits);
+        }
+        if (value.duration) {
+          const digits = value.duration.digits + 32; c.step(owner, (digits + 4) ** 2 + 8);
+          const magnitude = value.duration.months < 0n ? -value.duration.months : value.duration.months;
+          if (magnitude > inputMagnitude) inputMagnitude = magnitude; magnitudeDigits = Math.max(magnitudeDigits, digits);
+        }
+      }
+    }
+    const roles = kinds.size, formulaLeaves = 16 * (boundCount + 4) ** 2;
+    if (!Number.isSafeInteger(roles) || roles < 0 || !Number.isSafeInteger(formulaLeaves) || formulaLeaves < 0)
+      throw new TypeError('Private endpoint demand counts must be finite safe naturals');
+    const lexical = {value: '', context: owner.context};
+    // A native spelling contradiction proves admission empty before costly calendar value preimages.
+    // Ensure/table qualification and all formation obligations have already been retained.
+    const syntax = regular.intersect(spellingConstraints(description, owner), owner);
+    const predicate: LexicalPredicate | undefined = regular.witness(syntax, owner) === undefined
+      ? {kind: 'regular', language: syntax} : atomicAdmissionPredicate(description, lexical, owner);
+    if (!predicate) return c.unresolved(owner, 'endpoint-current-admission', 'Endpoint capacity needs the actual scalar admission compiler');
+    if (family !== 'float' && family !== 'double') {
+      if (predicate.kind !== 'regular') return c.unresolved(owner, 'endpoint-current-admission', 'This atomic endpoint admission is not a compiled regular word mask');
+      const mask = regular.automaton(predicate.language, owner);
+      const metrics = {family, roles, formulaLeaves, rawMaskStates: roles * mask.states.length,
+        constantCount: boundCount, constantTextUnits, inputMagnitude, magnitudeDigits};
+      const capacity = endpointCapacity(metrics, count => c.step(owner, count));
+      c.step(owner, 8); return {...capacity, inventory, maskAuthority: 'current-atomic-admission' as const};
+    }
+    const languages: RegularLanguage[] = [];
+    const spelling = (node: LexicalPredicate): void => {
+      c.step(owner, 2); if (node.kind === 'regular') {languages.push(node.language); return;}
+      if (node.kind === 'numeric') return; // Taking all actual values is a conservative capacity superset.
+      if (node.kind === 'and') {for (const child of node.children) spelling(child); return;}
+      return c.unresolved(owner, 'endpoint-ieee-spelling', 'IEEE capacity needs the actual positive regular spelling conjunction');
+    };
+    spelling(predicate); const raw = regular.intersect(languages, owner), normalized = regular.whitespaceImage(raw, 'collapse', owner);
+    let maximum = primitiveConstantUnits;
+    let enumEntry: RawComponentReplay | undefined;
+    for (const entry of table) {c.step(owner, 3); if (entry.component.name === 'enumeration'
+      && (!enumEntry || entry.component.values.length < enumEntry.component.values.length)) enumEntry = entry;}
+    function* finiteValues(): Generator<SchemaOperand> {
+      if (enumEntry) for (const property of enumEntry.component.values) {c.step(owner); const operand = property.operand; if (operand && operand.family === family) yield operand;}
+      else yield* ieeeLanguages.formatValues(family as 'float' | 'double', owner);
+    }
+    for (const value of roles ? finiteValues() : []) {
+      const word = ieeeLanguages.witness(normalized, value, owner); if (word === undefined) continue;
+      const restored = regular.witness(regular.intersect([raw, regular.whitespacePreimage(expressionLanguage(quoteExpression(word, owner), owner), 'collapse', owner)], owner), owner);
+      if (restored === undefined) throw new TypeError('Exact IEEE whitespace image must have its raw preimage');
+      maximum = Math.max(maximum, restored.length);
+    }
+    const encodedTupleUnits = 2 * roles * maximum;
+    if (!Number.isSafeInteger(encodedTupleUnits)) {c.step(owner, Number.MAX_SAFE_INTEGER); throw new Error('Unreachable exhausted IEEE capacity');}
+    c.step(owner, 64); return {kind: 'finite-ieee-capacity' as const, family, roles, maximumWordUnits: maximum,
+      encodedTupleUnits, inventory, maskAuthority: 'current-ieee-spelling-and-finite-inverse' as const};
+  };
+  return {privateAliasEndpointWordCapacity,typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
     contentIdentity, contentProperties, readOriginalRecipe, contentDerivation, facetPropertiesEquivalent, readFacetProperties, compareFacetProperties,compareFacetAnnotations,
     selectOperand: (reference: Reference, owner: GraphNode): void => {scalarOperandNode(reference, owner, true);},
     assess: (reference: Reference, lexical: LexicalValue, owner: GraphNode) => operand(ensure(reference, owner), lexical, owner),
