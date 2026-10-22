@@ -36,7 +36,9 @@ All selected recipes still require ordinary F2, complete enum/pattern retention 
 A wholly NEW bound kind may contain multiple tuples when ordinary F2 checks every tuple; this does not permit mixing KEEP and NEW within that kind or reduce a hard PROPERTY template to one endpoint.
 No property-equal sibling supplies another BASE's retention authority.
 
-Retaining authentic BASE components also permits changed LIST items and ordered UNION members when ordinary constituent derivation and selected-image containment succeed.
+Retaining authentic BASE components also permits changed LIST items when actual ITEM derivation and ordinary facet duties succeed.
+Changed earlier ordered UNION members additionally invoke their actual selected-image containment check.
+The [native LIST preparation record](#native-list-preparation-and-actual-union-image-duties) distinguishes these obligations.
 Equal constituent identities are a sufficient special case, not an additional qualification requirement.
 The [changed-constituent controls](../test/research/re01/changed-scalar-constituents-retention.test.ts) use a QName guard to select a required STRING value at a later namespace map while retaining the BASE's opaque pattern component.
 The complete forest checks the actual head memberships, required consumer restriction and every fresh root.
@@ -773,3 +775,28 @@ The already accepted concrete-forbidden one-word authority supplies only the qua
 The dated sources are [Datatypes second edition](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/) and [Appendix E duration order](https://www.w3.org/TR/2004/REC-xmlschema-2-20041028/#adding-durations-to-dateTimes), interpreted through the accepted DT A decisions.
 No external validator certifies an abstract forest or supplies the missing arbitrary-witness bound.
 Engineering budgets can return resource-limit; neither that event nor exhaustion of a smaller candidate family establishes general nonexistence.
+
+## Native LIST preparation and actual UNION image duties
+
+A proper RAW LIST checks its actual ITEM derivation and ordinary facet formation/correspondence.
+Changing its ITEM does not itself invoke whole selected-LIST image containment.
+The selected-image check in `rawFacetCorrespondence` applies when both BASE and result are UNION and an earlier member definition changes.
+NEW enum operands separately require genuine membership in their actual immediate BASE.
+
+A free LIST can therefore use two stages under explicit premises.
+First prepare a FULL final ITEM `J` genuinely derived from the input ITEM, with every hard shared role preserved.
+Install `J` in a proper LIST `L0` using a legal coherent replayable facet mode; retain authentic inherited components and restore any required length implication with the existing regular-language owner.
+A formed CURRENT table alone does not guarantee a legal child: fixedness, length-ancestor duties and the family/variety shape of retained enum tuples remain checked.
+
+If each demanded tuple has an actual positive WORD/context at `L0`, a second LIST `L1` can KEEP that inventory and the exact same `J`, then introduce a finite enum using those same WORD/context operands.
+Those operands are qualified against actual `L0`; the construction does not assume that the original input LIST already selected them.
+No additional inverse WORD tree is required for this enum operation.
+An enclosing changed ordered UNION still needs its own selected-image check in its actual context.
+
+The [native gate controls](../test/research/re01/scalar-list-formation-gates.test.ts) distinguish these duties.
+Changed-ITEM LISTs with authentic TOP KEEP can be FULL while producing DD/FF tuples outside the input LIST image.
+The bundled alternative has complete evidence; serial ITEM UNION recovery fails its actual selected-image rule.
+A QName/string case checks complete `L0` to `L1` enum qualification and a GLOBAL VALUE, while direct input qualification and a separate enclosing UNION fail independently.
+
+Earlier whole-grid simulations remain sufficient conditional constructions; generic LIST image preservation is not a mandatory native premise.
+These controls and the two-stage lemma do not prove simultaneous bounded ITEM synthesis, arbitrary helper coverage, evidence adequacy, complete negatives or termination.

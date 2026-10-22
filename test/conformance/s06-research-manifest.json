@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "230ee9c00119acd9445d87ffc91578b9aaa50de683a199e32aebf67e7aa8a1df"
+          "sha256": "297e745489d37570924b0a1586039d4e149ebb27f16d51bc8daeaa2d16501055"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2987,6 +2987,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-builtin-pattern-import.xsd",
           "role": "fixture",
           "sha256": "740483c4992734ad0f9ea4c818a62a75af903190fd04630ad67bc86580b3c845"
+        },
+        {
+          "path": "test/research/re01/scalar-list-formation-gates.test.ts",
+          "role": "prototype",
+          "sha256": "5cc017a02dc19852a820b24d6b5f3b002d10e4df249b2d5b66db16320dcd90ab"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-list-formation-gates.xsd",
+          "role": "fixture",
+          "sha256": "b046677cbac11498cffe3b8b380da66fdcfd21c5b2f9516496b16e0619884586"
         }
       ]
     },

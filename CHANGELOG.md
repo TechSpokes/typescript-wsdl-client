@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): distinguish LIST preparation and enum qualification from actual UNION image obligations.
+
 - feat(scalar): import authenticated builtin pattern components alongside actual immediate-base retention.
 
 - test(re01): check ordered UNION activation shields and record scoped scalar reconstruction and conditional termination.

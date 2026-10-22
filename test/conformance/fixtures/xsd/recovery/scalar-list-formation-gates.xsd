@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scalar:list-formation-gates" targetNamespace="urn:scalar:list-formation-gates">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootR"><xs:complexContent><xs:restriction base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootD"><xs:complexContent><xs:extension base="t:RootR"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="A"><xs:restriction base="xs:decimal"><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="B"><xs:restriction base="xs:float"><xs:pattern value="01"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="C"><xs:restriction base="xs:float"><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="D"><xs:restriction base="xs:decimal"><xs:pattern value="01"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="UStart"><xs:union memberTypes="t:A t:B t:C t:D"/></xs:simpleType>
+  <xs:simpleType name="U"><xs:restriction base="t:UStart"><xs:enumeration value="1"/><xs:enumeration value="01"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="List"><xs:list itemType="t:U"/></xs:simpleType>
+  <xs:simpleType name="L"><xs:restriction base="t:List"><xs:pattern value="1 01|01 1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QStart"><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType>
+  <xs:simpleType name="QItem"><xs:restriction base="t:QStart"><xs:pattern value="foo"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QList"><xs:list itemType="t:QItem"/></xs:simpleType>
+  <xs:simpleType name="QOuter"><xs:union memberTypes="t:QList xs:duration"/></xs:simpleType>
+</xs:schema>
