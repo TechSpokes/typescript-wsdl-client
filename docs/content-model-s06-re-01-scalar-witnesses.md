@@ -800,3 +800,115 @@ A QName/string case checks complete `L0` to `L1` enum qualification and a GLOBAL
 
 Earlier whole-grid simulations remain sufficient conditional constructions; generic LIST image preservation is not a mandatory native premise.
 These controls and the two-stage lemma do not prove simultaneous bounded ITEM synthesis, arbitrary helper coverage, evidence adequacy, complete negatives or termination.
+
+## Whole bootstrap can require a nonfinal STRING guard
+
+Final atomic images do not by themselves justify moving final atomic lexical programs before the first enclosing ordered-UNION restriction. The following four-position cone gives a counterexample.
+
+Let the actual current A have ordered members STRING, Qp, Qq and FLOAT. The STRING member executes collapse and accepts exactly `INF|[a-z]+:INF`. Qp accepts only QName gamma, whose local is INF, on normalized INF. Qq accepts the same gamma on normalized `[a-z]+:INF`. FLOAT accepts infinity only on normalized INF. All relevant normalizations are collapse. These are ordinary formed atomic restrictions; A can be their UNION constructor.
+
+STRING preempts every possible later member success. Consequently A's whole selected image contains STRING values only, at every namespace map. It contains neither gamma nor FLOAT infinity.
+
+Require an eventual proper descendant in this literal four-position cone to select FLOAT infinity on INF at a caller map where Qp is off. FLOAT must remain live throughout: an atomic numeric restriction cannot delete infinity and later recover it. The final STRING program must reject INF.
+
+If the first whole restriction over A already uses that STRING behavior, its own map selects gamma or FLOAT infinity on INF. Qq cannot accept bare INF. Neither possible selected value belongs to A's whole image at that map. The actual changed-earlier-member check in [selectedUnionContainment](../src/compiler/scalarSchemaAssessment.ts) therefore rejects the step.
+
+A whole P1 guard cannot distinguish these outcomes because both have selected normalized spelling INF. A whole guard removing INF cannot later widen to restore it. A new whole enum permitting the eventual FLOAT call must contain infinity, and its separate immediate-BASE qualification fails over A. No inherited whole enum is available to KEEP. These alternatives do not repair the early-final move.
+
+A valid dynamic route first keeps STRING INF while removing its q:INF spelling. Choose q off at that row's own map, so q:INF rejects; a later q-on caller obtains the first whole gamma witness. A preinstalled r:INF spelling can then be activated at a map where q:INF already supplies gamma in BASE. Only after this funding does STRING INF disappear. The resulting own map can select funded gamma while a separate caller selects FLOAT infinity.
+
+This is a parameter proof about the stated proper cone. It does not assert an unrestricted root-necessity result or refute a finite dynamic catalogue. It shows why a contraction of atomic final snapshots must retain genuinely needed whole bootstrap stages. For LIST members, such a stage must fund a complete tagged tuple, rather than its QName components separately.
+
+## Auxiliary QName feedback preserves the token parameter stock
+
+Consider one whitespace-free ITEM token and a finite rooted interface of actual VALUEs, protected WORDs and authentic current enum operands. First close protected lexical cores under extraction of a legal QName local. A STRING core `p:P1Y` therefore contributes P1Y before counting fixed duration parameters.
+
+The native [sameValue operation](../src/compiler/schemaDatatypeValues.ts) compares both family and canonical value. In particular `hexBinary` and `base64Binary` remain distinct families. A same-family base64 ITEM inverse fixes its unique compact token. A hex inverse has only the finite A through F case choices. STRING and anyURI ITEM equality fixes the normalized token characters.
+
+QName and NOTATION parsing accepts one NCName or two NCNames separated by one colon. Same-value qualification preserves the local exactly. Decimal words start with a digit, sign or period. All native calendar forms start with a digit or minus; [parseReduced](../src/compiler/schemaExactCalendar.ts) permits gYear as `-?[0-9]{4,}` with an optional zone and no leading plus. None is an NCName. IEEE overlap contributes only INF and NaN, since minus-INF is not an NCName. Boolean overlap contributes only true and false.
+
+The only unbounded QName-compatible arithmetic family is positive P-duration spelling. Its inverse preserves the exact native months and seconds pair, even when leading zeroes, field decomposition or fractional trailing zeroes vary. Negative duration spelling starts with minus and is not an NCName. Native negative zero does not create another duration parameter.
+
+If u is such a duration alias, a QName spelling p:u still has local u. Its colon prevents decimal, IEEE, calendar, duration, hex and base64 parsing. A STRING or URI output pins p:u itself. Returning to a bare QName alias returns u, hence the same duration value. A second prefix cannot nest: q:p:u is rejected. A fixed binary core which is itself a legal QName contributes only its already fixed local and any duration parsed from that local.
+
+Thus auxiliary QName feedback cannot generate a new unbounded numeric or duration parameter. Only actual positive tagged qualification edges create inverse obligations; incidental co-parses do not become new positive families automatically. A positive binary ITEM does not produce positive LIST chunks, and a LIST inverse preserves tagged item values and arity.
+
+This closure does not bound alias multiplicity or prove a simultaneous whole-tuple schedule. A finite IEEE inverse can still produce an incidental unbounded decimal or shared-year parameter. That remains a joint numeric reset batch, with the actual WORD, INPUT masks, equality equations and protected point relations retained.
+
+## Uniform finite capacity of regular decimal inverse fibers
+
+Let D be a genuine S-state deterministic automaton over normalized whitespace-free token words, where S is at least one. For any native decimal q, the intersection of D with its exact same-value inverse is either infinite or contains at most `12*S*S` distinct words. The bound is independent of q's significant-digit length.
+
+The exact decimal branch of [inverseExpression](../src/compiler/scalarSchemaAssessment.ts) has finitely many sign and decimal-point choices. For nonzero q, the significant digit body and the point position are fixed. Only a leading integer zero run and a fractional trailing zero run are freely variable. Integer q may omit the point or append a point followed by zeroes. Zero has three sign choices and the integer-zero, integer-plus-point, or point-plus-fraction branches. There are at most two free zero runs in every branch. Integer subtypes only intersect this grammar with a narrower lexical language.
+
+If one accepted free zero run has length at least S, its DFA path repeats a state inside the run. Pumping that nonempty zero loop produces infinitely many accepted normalized words. Every pumped word still denotes the exact same q. Therefore every run in a finite fiber has length less than S. Each branch has at most S choices for each of two runs, and fewer than twelve fixed sign/point branches suffice. This proves the stated bound.
+
+The fixed significant body may be long, but it merely changes the DFA state transformation between the zero runs. It creates neither another free run nor another branch. The actual product automaton for the complete INPUT profile must be used; the bound is not inferred from an unrelated single-start-state mask.
+
+Refine overlapping lexical predicates into disjoint exact Boolean cells on that product DFA. Each cell has capacity zero through B, or infinity, where `B=12*S*S`. Finite cells can be exhausted; infinite cells supply any finite number of fresh aliases avoiding protected words. Hall demands over overlapping channels reduce to matching over these disjoint cell capacities. No truncation threshold depending on a future tuple or snapshot count is needed in this genuine regular sector.
+
+The result does not make arbitrary scientific IEEE predicates into raw DFAs. Value guards constant on q remain in the qualified numeric predicate. A protected binary or STRING value must contribute its genuine inverse constraint. Unprotected binary and STRING outputs derived from a reset token must be reconstructed coherently from the same chosen token; zero pumping generally changes those derived outputs. Shared normalized WORD equations cannot be pumped independently.
+
+These three results leave the global join open: a bounded common TOKEN pool must still support all actual namespace maps, complete tuples, current BASE witnesses and simultaneous updates. The [symbolic sequence owner](../src/compiler/schemaSymbolicSequences.ts) can check containment for an already finite recipe, but it does not establish that synthesis bound.
+
+## Local duration restriction intervals
+
+For one free duration restriction interval, the endpoint count can be fixed before choosing its WORD profiles. A checked interval with a common nonempty finite positive stock has a reconstruction using at most sixteen proper restriction transactions and 384 genuinely new endpoint values. Exact INPUT endpoint constants are additional finite data.
+
+This result concerns a private interval in one whitespace phase. Its intermediate rows have no protected BASE, identity, PROPERTY, source, component, annotation or WORD reader. Prescribed non-INPUT endpoint occurrences, equations and distinctness ports cut the free interval and are counted separately by the caller. The final code must permit the extra enum components used below; an exact PROPERTY/source component-table endpoint is outside this theorem.
+
+The INPUT scalar inventory is actual and authenticated. The ordinary numeric nonbound/whitespace mode must be coherent and cover the inherited whitespace duties. The result does not assume that an arbitrary formed inventory can self-KEEP. Every unchanged bound kind retains its complete CURRENT components and annotations; every changed kind still satisfies actual fixed, compatibility, cross-kind, endpoint-membership and internal-pair checks.
+
+### Native four-anchor projection
+
+The [duration comparator](../src/compiler/schemaExactCalendar.ts) returns equality only for the same native `(months,seconds)` pair. For different values, less means strictly less at all four Appendix E anchors. A tied anchor gives indeterminate. These outcomes are preserved by the [duration bound language](../src/compiler/schemaDurationLanguage.ts).
+
+Write V(u) for the four anchor coordinates of endpoint u. Native x<=u means either native sameValue(x,u), or strict inequality at all four coordinates. For a finite upper endpoint set U, put m_i=min(V_i(u):u in U).
+
+A maxExclusive conjunction is exactly the strict orthant V_i(x)<m_i. Retaining one actual endpoint attaining each minimum preserves it, using at most four endpoints.
+
+For maxInclusive, if no endpoint has full vector m, four minimum achievers also give exactly that strict orthant: equality to a selected endpoint fails another selected minimum. If an endpoint u0 has vector m, only its exact native value can be an additional admitted corner. Retain u0 alone if every old bound admits it; otherwise retain u0 and one actual rejecting bound. This again uses at most four endpoints.
+
+The native-equality case is essential. P400Y and P146097D have equal four-anchor vectors and different native values. Their inclusive conjunction rejects both endpoint values; choosing one would add an endpoint. Lower projection is the order-dual construction using maxima.
+
+An unchanged kind is never projected. INPUT values remain constants in the point pool, without forcing their components to occur actively in every child. Active presence follows from actual whole-kind KEEP or a genuine retained-component obligation.
+
+### Finite marked transactions
+
+After an exclusive endpoint u is introduced, its value is excluded. Proper same-family restriction cannot later admit it again. An outside-BASE occurrence therefore needs continuous same-kind sameValue-repeat authority. If a later genuine upper-exclusive value v is introduced while u remains, v is strictly below u at every anchor. Hence a final free upper-exclusive projection can choose its non-INPUT essential points from one latest genuine birth batch. The lower-exclusive argument is dual.
+
+Normalize unprotected genuinely local NEW flags to fixed=false at their original births. This does not change the current image or help the current row; it only removes future fixed obligations. It does not relabel a whole INPUT KEEP as NEW. Actual INPUT flags are cleared only by real legal transactions. A required final new flag is installed at the last retained replacement of its own kind, avoiding an invented simultaneous local change of both upper kinds.
+
+Mark the last local replacement of each final changed kind, at most three rows. Mark an essential birth batch if it precedes that final replacement, at most two more rows. Mark the first real clear of each inherited fixed kind in the flag-normalized path, at most three more rows. Coincident marks are one complete transaction, so there are at most eight marks.
+
+At an exclusive birth retain the union of an exact old-kind projection, at most four endpoints, and the selected final batch points, at most four. This preserves the old bound predicate exactly and carries the final outside-repeat authority. Necessary co-NEW clear components remain in that row. Whole-kind KEEP uses the reconstructed CURRENT objects exactly.
+
+### One conditional opposite-upper preparation
+
+The [scalar owner](../src/compiler/scalarSchemaAssessment.ts) permits indeterminate same-kind compatibility, but actual endpoint membership requires determinate bound admission. The proof uses that admission and native-order transitivity, not transitivity of the permissive compatibility predicate.
+
+After a genuine inclusive-upper update, its points are strictly below every CURRENT exclusive bound. A later inclusive update with exclusive KEEP therefore needs an intervening opposite update. Choose the first such old exclusive transaction. Its supplied endpoints cannot be outside repeats above the retained inclusive points, since the universal derived-exclusive versus prior-inclusive guard would reject them. Its genuine endpoints satisfy every earlier retained bound by their old BASE admission.
+
+After an exclusive update with a genuine point, that point is below every CURRENT inclusive bound. A second exclusive update similarly requires the first intervening inclusive transaction. Its genuine points have the required earlier admission. If an exclusive update contains only outside repeats, the derived-exclusive and kept-inclusive cross guards force the relevant pairs to be indeterminate, so that case already has a valid KEEP orientation.
+
+The argument holds for sets because one comparable cross-pair blocks KEEP and every cross-pair is checked. The preceding successful replay row handles mixed-age inventories: its genuine points supply the direct comparisons, while its outside-repeat part supplies the two-guard incomparability case. At most one conditional opposite preparation is needed before each mark. If it would change a kind after that kind's marked last replacement, the same argument would force a later old replacement, a contradiction. Unnecessary preparations are omitted.
+
+### Lower timing and genuine enum support
+
+Let p be any required positive. A selected final lower l and retained upper u satisfy l<=p<=u, strictly whenever the relevant exclusive bound requires it. Never move the final lower earlier than its original last local-kind mark. Its time is the later of that mark and the last bound fixed-clear mark. Co-issue it at that later already counted transaction when legal; a different value necessarily follows its own lower clear.
+
+Before that time keep the reconstructed coherent lower inventory, including its real fixed clear, and omit unneeded temporary lower updates. An essential lower-exclusive birth remains a preparation with unprotected flags false and continuous outside-repeat authority. This avoids installing a mixed final fixed lower set early and thereby invalidating later whole-kind KEEP. Required co-NEW clear components are not serialized.
+
+For each retained row i, let P_i contain the final required positives and all genuine endpoint values whose selected introduction is still later. Omit the current exclusive introduction value after its introduction. Outside-repeat operands are not asserted to be BASE members. Keep every inherited enum component and add one genuine NEW enum with value set P_i. The intersections implement the decreasing positive stock; inherited enum components never disappear.
+
+Future upper points and final positives have old admission through every earlier selected row. The rebuilt bounds preserve that admission. A delayed genuine lower point instead uses a direct canonical check: the retained lower predates its old introduction, every reconstructed upper admits it by l<=p<=u, and its authentic INPUT-qualified spelling is retained. An already outside lower point uses its continuous exception and stays out of P_i. Thus every NEW enum is qualified in the exact reconstructed immediate BASE.
+
+Keep INPUT lexical constraints during preparations and append the final private lexical guard in the last transaction. Bound operands are assessed in BASE, so that final guard does not invalidate their qualifications. The decreasing enums certify containment even when projected bound metadata is weaker. No extra enum-only row is required.
+
+### Bound and limits
+
+Eight marked rows and at most one opposite preparation per mark give sixteen transactions. With no marks, one coherent whole-KEEP guard row suffices. At most three kinds are present, and the conservative birth union has at most eight genuine points per kind per row. Therefore sixteen times three times eight gives 384 new endpoint values. At most sixteen new positive enum components are added, using the required positive stock and at most 384 future endpoint values.
+
+The positive stock's cardinality and WORD lengths are not bounded here. Once their separate finite role bound is established, the [supplied finite endpoint theorem](#supplied-shared-endpoint-tuple-theorem) can treat the finitely many endpoint and qualification roles jointly. The narrow native private-alias capacity operation is not an implementation of this larger construction.
+
+The empty case needs its own accepted alias construction or an exact empty-boundary argument. This theorem establishes no empty hard-end replay, outer ordered-UNION reconstruction, broad PROPERTY-image preservation, WORD-stock bound, scalar J or global g(P). It is a local source-semantic contraction, with no new native execution or public solver API.
