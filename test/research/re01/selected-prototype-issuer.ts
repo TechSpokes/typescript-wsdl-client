@@ -1,5 +1,5 @@
 /** Initial ordinary prototype reissue only; supplied deltas are not validity receipts. */
-import type {ComplexTypeNode, ElementNode, GraphNode, Identity, NodeId, ParticleNode, Reference} from '../../../src/compiler/canonicalGraph.js';
+import type {ComplexTypeNode, ElementNode, GraphNode, GroupNode, Identity, NodeId, ParticleNode, Reference} from '../../../src/compiler/canonicalGraph.js';
 import {allocateHypotheticalScopedIdentity, semanticIdentityTuple} from '../../../src/compiler/hypotheticalScopedIdentity.js';
 import {assertSemanticContext, storedIdentityOccupant} from '../../../src/compiler/semanticContext.js';
 import type {SemanticCandidateDelta, SemanticContext} from '../../../src/compiler/semanticContext.js';
@@ -69,6 +69,7 @@ export function prepareSelectedPrototypes(input: SelectedPrototypeInput): Select
       const types = new Map<NodeId, ComplexTypeNode>(), rows = new Map<NodeId, RawComplexTypeProperties>();
       const targets = new Map<NodeId, NodeId>(), particleMap = new Map<NodeId, NodeId>(), declarationMap = new Map<NodeId, NodeId>();
       const particles = new Map<NodeId, ParticleNode>(), declarations = new Map<NodeId, ElementNode>();
+      const groups = new Map<NodeId, GroupNode>();
       const bodies = new Map<NodeId, RawComplexContent>();
       const reservedIds = new Set<NodeId>(), reservedTuples = new Set<string>();
       const reserve = (id: NodeId, identity: Identity): void => {
@@ -164,7 +165,7 @@ export function prepareSelectedPrototypes(input: SelectedPrototypeInput): Select
             return mapped.kind === 'local' ? mapped.target : fail('unsupported-scope', declaration.id);
           }
           if (current.kind === 'group' || current.kind === 'attributeGroup') {
-            if (!fixed(current.id)) return fail('group-scope-rewrite-outside-frame', current.id);
+            if (!groups.has(current.id) && !fixed(current.id)) return fail('group-scope-rewrite-outside-frame', current.id);
             return current.id;
           }
         }
@@ -195,7 +196,25 @@ export function prepareSelectedPrototypes(input: SelectedPrototypeInput): Select
           if (node.occurs.max === '0') return fail('zero-particle-outside-frame', id);
           if (node.term.kind === 'group') {
             const group = donor.resolve(node.term.reference);
-            if (group.kind !== 'found' || group.node.kind !== 'group' || !fixed(group.node.id)) return fail('group-rewrite-outside-frame', id);
+            if (group.kind !== 'found' || group.node.kind !== 'group') return fail('group-rewrite-outside-frame', id);
+            if (!fixed(group.node.id) && !groups.has(group.node.id)) {
+              const definition = group.node;
+              // Only a donor-new GROUP is co-issued. Existing SOURCE/P groups
+              // remain exact, and a GROUP is not a complex FULL scope owner.
+              if (definition.identity.kind !== 'global' || definition.identity.role !== 'group'
+                || parent.lookup(definition.id).kind !== 'missing'
+                || donor.originalContext().lookup(definition.id).kind !== 'missing'
+                || storedIdentityOccupant(parent, definition.identity) !== undefined)
+                return fail('new-group-first-birth-required', definition.id);
+              if (reservedIds.has(definition.id) || reservedTuples.has(semanticIdentityTuple(definition.identity, b.chargeWork)))
+                return fail('new-group-identity-reserved', definition.id);
+              const root = get(definition.content);
+              if (root.kind !== 'particle' || !('children' in root.term)
+                || root.occurs.min !== '1' || root.occurs.max !== '1')
+                return fail('new-group-unit-compositor-required', definition.id);
+              reserve(definition.id, definition.identity);
+              groups.set(definition.id, definition); enqueue(definition.content);
+            }
           } else if (node.term.kind === 'element') {
             const declaration = donor.resolve(node.term.declaration);
             if (declaration.kind !== 'found' || declaration.node.kind !== 'element') return fail('element-unavailable', id);
@@ -244,6 +263,10 @@ export function prepareSelectedPrototypes(input: SelectedPrototypeInput): Select
         additions.push({...node, type});
         rawElements.push({element: node.id, type, final: declarationMethods(donor, prototype, 'final') as RawElementProperties['final'],
           block: declarationMethods(donor, prototype, 'block') as RawElementProperties['block']});
+      }
+      for (const node of groups.values()) {
+        b.chargeWork(16 + node.id.length);
+        additions.push({...node, content: component(node.content)});
       }
       for (const [old, node] of types) {
         b.chargeWork(32);

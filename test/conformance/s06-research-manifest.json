@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "cf001ecea97e139d27e4df4d4153f365db346bc9a5da51f0760a07efc6a119d5"
+          "sha256": "4150a36aead9e654d10343e5fe1865b3ecf34d676d3bac60a9d900e8b42b4862"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2881,7 +2881,7 @@
         {
           "path": "test/research/re01/selected-prototype-issuer.ts",
           "role": "prototype",
-          "sha256": "d853ac683dd3c28c3b1a3369ff3ac3c69816463a6bb5d0cee713809ccdb1dbef"
+          "sha256": "ddcd80c6efe9c72da3f28ce6c73c30e7c9c64da37cf6cb6307e657714205c98b"
         },
         {
           "path": "test/research/re01/selected-prototype-issuer.test.ts",
@@ -2962,6 +2962,11 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-empty-name-inverse.xsd",
           "role": "fixture",
           "sha256": "b9d1f85c4d6deb15f80ceab38dedf2d496f65757bb666c4c8be0de32cbbf5564"
+        },
+        {
+          "path": "test/research/re01/selected-prototype-new-group.test.ts",
+          "role": "prototype",
+          "sha256": "4de93d343dcf19bd865b79df06e8c3a156a6ecac8fc2cff7abe8ea218877e087"
         }
       ]
     },

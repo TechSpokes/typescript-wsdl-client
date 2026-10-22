@@ -4946,9 +4946,17 @@ The supplied section must be a retraction onto actual anonymous prototypes, pres
 
 Anonymous TYPE storage uses one retained carrier. LOCAL declaration owners use their mapped semantic scopes, with collision checks against both active and inactive stored identities and caller reservations. Required external identities record availability duties; they do not infer FULL of every storage owner.
 
+The builder also co-issues a donor-new global model GROUP when it is absent from complete parent and original storage and its root is a registered unit compositor.
+Its literal global identity is reserved before copying its backing through the existing particle map; shared uses retain one GROUP and one copied root.
+LOCAL declarations follow the TYPE section while their actual owner remains the GROUP, preserving undefined semantic scope instead of inheriting the TYPE carrier's scope.
+
 Authenticated same-source WHOLE handles remain opaque and unchanged. Forged or foreign authority, unsupported backing rewrites, VALUE/IC/SC/attribute frames and unsupported group/scope rewrites remain outside this first builder. A caller must merge the returned delta at a genuine first birth and obtain current semantic checks and complete required-child evidence from the existing verifier.
 
 Native controls exercise simultaneous shared-BODY reconstruction, FIELD folding into a retained pending TYPE, fixed external BASEs, collision-free merged scopes, SOURCE authority and repeated versus independent HEAD keys. The positive reconstruction supplies a complete two-node evidence forest; omitting its required child remains unresolved.
+
+The [new GROUP controls](../test/research/re01/selected-prototype-new-group.test.ts) check every emitted GROUP, backing and TYPE root in both contexts of a complete two-node forest.
+Missing child evidence, a missing GROUP, wrong declaration scope, reserved or inactive GROUP identities and a nonunit root retain their separate failures.
+Existing parent and SOURCE GROUPs remain exact references; this operation neither retargets SOURCE content nor supplies a GROUP or source owner's validity from its availability.
 
 The builder does not find the section or prove an input-derived global bank bound. Reconstruction preserving a supplied `EXT(X,G)`, `RP(G,Phi)` and `RP(X,K)` borrower remains open in general. A root-coverage proof may instead justify replacing that optional old structure; a failed fixed-parent repair does not establish that every successful root needs it. General coverage, complete evidence adequacy, complete negative answers and mathematical termination remain open.
 
