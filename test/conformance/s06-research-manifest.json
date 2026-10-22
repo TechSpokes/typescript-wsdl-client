@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "0cf615e507d68ad9732003a0c14b32b2598a5f80bb557f9112f401f7f8662645",
+          "sha256": "d24d17ecb36d2e9414d2c2eb56ba1874c571e68d0745268e35829df42017b6f9",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "2b0b30fab5cfbaeebc226aa6cd43d70b6c235fc1d72da42d7e73380c70bf6185"
+          "sha256": "ed45125f82167c495cdeec5ec0c315d981c2363d51c33aca92145a14e2e4eb4b"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1481,7 +1481,7 @@
         {
           "path": "test/unit/schema-scalar-independent.test.ts",
           "role": "expectations",
-          "sha256": "75423ad2c7506d628726832067cf3858841e76ef2caaa6fbc15be1452566e1dc"
+          "sha256": "f7c9a8124681630d75bd9ae3c936a3e326d45177516d0a64da45775c8aa28dc8"
         },
         {
           "path": "test/unit/schema-syntax-assessment.test.ts",
@@ -1951,7 +1951,7 @@
         {
           "path": "test/unit/schema-exact-facet-components-independent.test.ts",
           "role": "expectations",
-          "sha256": "b663bb49b05611d2ad2bf18f7d7658f293999ff5f1af082061aeee211135e44d"
+          "sha256": "ec8a2d8b0a749bf375d35bf1512db2fa2a37902c998cf38392bd107197bdbdf7"
         },
         {
           "path": "test/unit/schema-original-generated-binding-independent.test.ts",
@@ -3057,6 +3057,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-retained-enum-containment-context.xsd",
           "role": "fixture",
           "sha256": "b026b760b537da73891faa8ced6cee3363ca61c0e041dd9876885b541578acd2"
+        },
+        {
+          "path": "test/research/re01/scalar-retained-enum-item-family.test.ts",
+          "role": "prototype",
+          "sha256": "a08b34870e7e9a070764b0e5fb6a4a6ccd63eb5ed76e5f549db73079d18b44d7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-retained-enum-item-family.xsd",
+          "role": "fixture",
+          "sha256": "19fcbff9bb5922261c4bff7216984b9d40bf714fd4bd700873001545477f32df"
         }
       ]
     },
@@ -3448,7 +3458,7 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 246
+    "currentArtifactCount": 248
   },
   "baselineSemanticDefaults": {
     "maxNodes": 100000,

@@ -196,7 +196,8 @@ describe('independently specified schema scalar operands', () => {
       if (candidate.kind !== 'prepared') throw new Error('Expected represented typed operand');
       const kernel = createSchemaScalarKernel(candidate.context), ref: Reference = {kind: 'local', target: id};
       if (variant === 'typed-boolean') {
-        expect(kernel.assess(ref, lexical('true'), owner)).toMatchObject({kind: 'invalid-schema', rule: 'facet-value-type'});
+        // Genuine BOOLEAN assessment does not make its NEW enum a member of STRING BASE.
+        expect(kernel.assess(ref, lexical('true'), owner)).toMatchObject({kind: 'invalid-schema', rule: 'enumeration-valid-restriction'});
       } else {
         const accepted = variant === 'typed-token' ? 'a' : '\t a \t';
         const rejected = variant === 'typed-token' ? '\t a \t' : 'a';

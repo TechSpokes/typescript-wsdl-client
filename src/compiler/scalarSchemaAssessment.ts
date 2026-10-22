@@ -417,6 +417,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       value = operand(type, facet.lexical, originalOwner);
       c.step(owner, (type.plan.obligations?.length ?? 0) + 1); facetObligations.set(facet, type.plan.obligations ?? []);facetDependencies.set(facet,type.typeDependencies??[]);
     }
+    // A narrowed ITEM/member may make an authentic enum value inactive.
+    // Retention or NEW membership in the actual BASE is checked separately.
+    if (facet.name === 'enumeration') return value;
     // Valid component unions contain atomic/list members and list items are
     // atomic or unions of atomics, so this shape recursion has bounded depth.
     const alternatives = (description: Description, assessed: SchemaOperand): boolean => {

@@ -375,7 +375,8 @@ describe('exact supplied facet component and annotation evidence',()=>{
       scalar('PeerEmpty',named('Empty'),builtin('string'))]);
     const kernel=createSchemaScalarKernel(context);
     expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
-    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+    // STRING one cannot cover the inherited DECIMAL enum component, before NEW membership is checked.
+    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'invalid-schema',rule:'st-restrict-facets'});
   });
 
   it('identifies an inherited row without identifying shared caller groups or sibling births',async()=>{
@@ -446,13 +447,14 @@ describe('exact supplied facet component and annotation evidence',()=>{
       .toMatchObject({kind:'checked',obligations:expect.arrayContaining([{rule:'raw-simple-content-derivation-validity',component:d.id}])});
     const compared=compareSchemaFacetProperties(parent.context,{kind:'local',target:node.id},node.id,
       child.context,{kind:'local',target:node.id},node.id);
-    expect(compared).toMatchObject({kind:'invalid-schema',rule:'facet-value-type',side:'right',contextId:child.context.contextId,
+    // The reassessed DECIMAL enum is outside its actual STRING BASE; provider debts stay qualified.
+    expect(compared).toMatchObject({kind:'invalid-schema',rule:'enumeration-valid-restriction',side:'right',contextId:child.context.contextId,
       obligations:expect.arrayContaining([{rule:'raw-simple-content-derivation-validity',component:d.id,
         contextId:parent.context.contextId}])});
     expect(createSchemaScalarKernel(child.context).describe({kind:'local',target:node.id},node.id))
-      .toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+      .toMatchObject({kind:'invalid-schema',rule:'enumeration-valid-restriction'});
     expect(createSchemaScalarKernel(child.context).describe({kind:'local',target:alias.id},alias.id))
-      .toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+      .toMatchObject({kind:'invalid-schema',rule:'enumeration-valid-restriction'});
   });
 
   // Independently reproduced in the PR #282 source review: JavaScript object

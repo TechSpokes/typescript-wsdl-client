@@ -294,6 +294,22 @@ The [maintained controls](../test/research/re01/scalar-retained-enum-containment
 
 This closes the demonstrated context-selection defect under accepted P1/F2. It does not require cross-context image preservation, change retained component authority, or establish general scalar witness coverage, evidence adequacy, input-derived helper bounds, complete negatives or mathematical termination.
 
+### Enumeration values after ITEM-family narrowing
+
+An enumeration component's typed values belong to its actual introducing BASE. Narrowing a LIST ITEM can make a retained value inactive without introducing it again.
+
+A SOURCE LIST over an ordered QName/STRING union genuinely introduces a singleton QName-tuple enum; a proper RAW restriction with exact STRING ITEM and the authentic enum retained has an empty image. Another genuine KEEP over that empty BASE remains legal even though the old QName tuple belongs to neither current intrinsic ITEM family.
+
+A genuinely NEW enum also owes actual BASE membership rather than realizability by the result's narrower ITEM. A restriction over the unenumerated QName/STRING LIST may introduce the BASE-qualified QName tuple while selecting STRING ITEM; its result is empty too. A different QName or DECIMAL tuple excluded by the actual enumerated BASE still fails new introduction.
+
+The [existing scalar owner](../src/compiler/scalarSchemaAssessment.ts) first performs genuine original or active typed-provider assessment, or consumes its authenticated replay value, and preserves all formation obligations and semantic dependencies. It leaves enumeration retention and NEW membership to the existing actual-BASE correspondence owner, instead of rejecting the value against the result's intrinsic family first. Typed bound operands retain their separate family checks. Source formation, private component/annotation authority, complete current-H checks and sticky budgets remain required.
+
+The [independent controls](../test/research/re01/scalar-retained-enum-item-family.test.ts) check all eight actual components, the introducing QName tuple and the real STRING-to-target-UNION derivation first. Alias, narrowed C and another KEEP over empty C all complete one-node evidence with every fresh SIMPLE root; the separate NEW BASE-qualified result also completes evidence. Two BASE-excluded NEW controls preserve rejection.
+
+Existing wrong-family enum and changed-provider controls retain rejection at their genuine BASE or omitted-component duty, including their original RAW simple-content obligations.
+
+This repairs the demonstrated replay overcheck and qualifies these exact component rows. It establishes neither an alternative-exhaustion or ROOT-necessity theorem nor general native evidence adequacy, helper bounds, complete negatives or termination.
+
 ### Raw facet groups and identity authority
 
 Caller-supplied raw groups contain facet data, not internal identity evidence.
