@@ -1102,6 +1102,20 @@ Atomic and flat atomic-UNION ITEM codes are therefore finite before applying the
 
 Independent review accepted this composition after finding and repairing an earlier misuse of the all-atomic MEMBER argument for mixed parents. Its fixed-world, ready-provider, complete palette, arity and exterior-writer premises remain supplied. Unknown private negative-property, exact-code and SC observers still require genuine transport, rather than merely a counted root ID. Extracting those parameters from arbitrary RE01 inputs, complete evidence adequacy, general negatives and mathematical termination remain open.
 
+### Deriving constructor width before the history bound
+
+A reviewed extension removes the independent constructor-arity premise from the preceding closed-palette result. It retains one actual H and registry, the realized finite full parameter/header/name palette, READY provider plans, authentic current-component materializers, bounded closed exterior ports and their actual outside-client writers. Its whole-function alphabet is finite independently of MEMBER-array length, using the actual finite decision-table construction.
+
+First shorten nonflat proper UNION corridors using a genuine immediate-BASE CURRENT KEEP bridge that retains the later endpoint's actual MEMBER array. This preserves the following row's actual SAME positions while native mixed-image frontends recheck the new containment. The repeatable-only UNION argument separately justifies legacy-to-exact table replay; it makes no atomic scalar-mode conversion. Bounded retained rows then permit a simultaneous width projection keeping first function occurrences, inactive family-shape witnesses, actual protected slots and the old final-column sentinel.
+
+Those outer arrays expose finitely many LIST roots. Within a LIST phase, delete an unprotected repeated predecessor and replay its actual next row's NEW/KEEP mode against the matching earlier real table. Do not insert a self-KEEP alias. The state retains the actual encoding and ITEM function/parser/shape; native ITEM derivation follows literal UNION ancestry, at most one actual UNION-to-atomic drop, then literal atomic ancestry. Preserve genuine length witnesses for both reduced and exact ledgers, with at most four witnesses per palette length value on each root path.
+
+The distinction from self-KEEP is necessary. A valid LIST can first introduce minLength(1,fixed=true) and minLength(2,fixed=false), clear the kind through a genuine intermediate mode, then restore the old table. A direct KEEP-all alias instead compares the inherited fixed value 1 against supplied value 2 and fails. Replaying the actual next mode retains that fixed-clear operation rather than assuming a repeated table is self-replayable.
+
+The bounded LIST paths now supply finitely many actual ITEM checkpoints for flat UNIONs. Apply the same coordinated height and width reduction there, preserving positive full-code cohorts, real nominal witnesses and authentic CURRENT authority. The dependency order is outer UNION roots, LIST paths, flat ITEM requests, derived constructor width, then the preceding finite-history theorem. It does not assume a finite old ITEM-code stock or mark every old transient request as a port. Generated dependency vectors are re-evaluated against the reconstructed graph, not counted as historical alphabet labels.
+
+Independent review accepted this assembled argument after the fixed-clear counterexample invalidated the earlier LIST shortcut. The result derives conditional scalar constructor width and history, not the input-funded palette, ordinary helper bank, exterior writer or universal executable evidence adequacy. Those extractions, complete general negatives and mathematical termination remain open.
+
 ## An original root can require a new scalar function
 
 The maintained [simple-content fixed-value controls](../test/research/re01/scalar-sc-fixed-value-dispatch.test.ts) rule out solving every input with existing scalar functions and fresh aliases alone. This is a necessity statement for that exact finite SOURCE host, rather than a lower bound on arbitrary helper depth or parameter size.

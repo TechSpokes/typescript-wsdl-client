@@ -4,7 +4,7 @@ import path from 'node:path';
 import {describe, it} from 'vitest';
 import {loadSchemaInput} from '../../../src/loader/schemaInput.js';
 import {globalId, scopedId} from '../../../src/compiler/canonicalGraph.js';
-import type {AttributeUseNode, ComplexTypeNode, ElementNode, GraphNode, ParticleNode, Reference} from '../../../src/compiler/canonicalGraph.js';
+import type {AttributeUseNode, ComplexTypeNode, ElementNode, GraphNode, ParticleNode, Reference, SimpleTypeNode} from '../../../src/compiler/canonicalGraph.js';
 import {prepareSourceSchemaRequest, checkSchemaDocumentSyntax} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import {deriveActualComplexContent, deriveRawComplexContent} from '../../../src/compiler/complexTypeContent.js';
@@ -18,6 +18,8 @@ import {checkDeclaration, checkDeclarationValueProperty} from '../../../src/comp
 import {createSchemaScalarKernel, checkOriginalGeneratedScalar} from '../../../src/compiler/schemaScalarKernel.js';
 import {verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
 import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypeProperties.js';
+import type {RawSimpleTypeProperties} from '../../../src/compiler/schemaSimpleTypeProperties.js';
+import type {SemanticTypeReference} from '../../../src/compiler/semanticTypeReference.js';
 
 const namespace = 'urn:recovery:property-source-sc-value-frontier';
 const id = (name: string) => globalId('type', {namespace, local: name});
@@ -106,7 +108,19 @@ async function seed() {
       {id: 'FT', parent, context, target: ft.id, intermediate: middle.id, ancestor: local(fa.id), premises: []}]});
     return {context, correspondence, middle, fresh, extension, proof, required};
   };
-  return {request, actual, initialGraph, values, parent, parentCorrespondence, additions, scopes, ft, child, complex};
+  const port = (base: Reference, selector: SemanticTypeReference, extra: Readonly<{nodes?: readonly GraphNode[];
+    types?: readonly RawComplexTypeProperties[]; simple?: readonly RawSimpleTypeProperties[]}> = {}) => {
+    const carrier: ComplexTypeNode = {...helper('Port', 'extension', base), derivation: {kind: 'extension', contentKind: 'simple', base, facets: []}};
+    const declaration: ElementNode = {...elementSeed, id: globalId('element', {namespace, local: 'PortValue'}), name: {namespace, local: 'PortValue'},
+      identity: {kind: 'global', role: 'element', name: {namespace, local: 'PortValue'}}, type: local(carrier.id), value: values[0].value,
+      declaredAttributes: [], annotations: [], retained: [], syntaxDetails: []};
+    const fresh: GraphNode[] = [carrier, declaration, ...(extra.nodes ?? [])];
+    const issued = forkSemanticCandidate(parent, {key: 'literal-port', active: [...parent.members, ...fresh.map(node => node.id)], additions: fresh,
+      rawTypes: [raw(carrier, {kind: 'simple', type: selector}), ...(extra.types ?? [])], rawSimpleTypes: extra.simple,
+      rawElements: [{element: declaration.id, type: declaration.type, final: [], block: []}]});
+    assert.equal(issued.kind, 'prepared'); return {context: issued.context, carrier, declaration};
+  };
+  return {request, actual, initialGraph, values, parent, parentCorrespondence, additions, scopes, ft, child, complex, port, raw};
 }
 
 describe('untouched SOURCE simple-content VALUE properties', () => {
@@ -152,22 +166,78 @@ describe('untouched SOURCE simple-content VALUE properties', () => {
     assert.equal(c.proof.kind, 'unresolved'); assert.equal(c.proof.rule, 'component-content-properties'); assert.equal(c.proof.component, id('F'));
   });
 
-  it('rejects a VALUE that violates the genuine SOURCE scalar pattern', async () => {
-    const s = await seed(), c = s.child(true, {badValue: true});
+  it.each([false, true])('rejects a VALUE violating the genuine scalar pattern with RAW facade %s', async rawFacade => {
+    const s = await seed(), c = s.child(true, {badValue: true, rawFacade});
     const property = checkDeclarationValueProperty(c.context, c.required.id);
     assert.equal(property.kind, 'invalid-schema'); assert.equal(property.rule, 'cvc-pattern-valid');
     const full = checkDeclaration(c.context, c.required.id); assert.equal(full.kind, 'invalid-schema'); assert.equal(full.rule, 'cvc-pattern-valid');
     assert.equal(c.proof.kind, 'candidate-rejected'); assert.equal(c.proof.rule, 'cvc-pattern-valid');
   });
 
-  it('retains the RAW SC facade and its exact current local derivation debt', async () => {
-    const s = await seed(), c = s.child(false, {rawFacade: true});
+  it.each([true, false])('completes RAW identity prefix %s by selecting its actual GSC datatype', async same => {
+    const s = await seed(), c = s.child(same, {rawFacade: true});
     assert.ok(c.context.rawTypeProperties(id('F'))); assert.equal(c.context.originalComplexPropertySource(id('F')), undefined);
     const property = checkDeclarationValueProperty(c.context, s.values[0].id); assert.equal(property.kind, 'checked');
-    assert.equal(property.authority, 'XSD10-declaration-properties-v1');
-    assert.ok(property.typeDependencies.some(item => item.contextId === c.context.contextId && item.type.kind === 'component' && item.type.id === id('F')));
-    assert.ok(property.scalarObligations.some(item => item.rule === 'raw-simple-content-derivation-validity' && item.component === id('F') && (item.contextId ?? c.context.contextId) === c.context.contextId));
+    assert.equal(property.authority, 'XSD10-raw-simple-value-property-v1'); assert.equal(property.constraint?.operand.family, 'string');
+    assert.ok(property.typeDependencies.some(item => item.contextId === c.context.contextId && item.type.kind === 'original-generated' && item.type.owner === id('F')));
+    assert.ok(!property.typeDependencies.some(item => item.contextId === c.context.contextId && item.type.kind === 'component' && [id('F'), id('Z')].includes(item.type.id)));
+    assert.ok(property.scalarObligations.some(item => item.rule === 'simple-content-base-mixed-emptiable' && item.component === id('Z') && item.contextId === s.actual.contextId));
+    assert.ok(!property.scalarObligations.some(item => item.rule === 'raw-simple-content-derivation-validity' && item.component === id('F')));
+    assert.equal(c.proof.kind, 'checked-candidate', JSON.stringify(c.proof)); assert.equal(c.proof.proof.length, 2); assert.equal(c.proof.actualComponents.length, 25);
+    const step = c.proof.proof.find(item => item.target === s.ft.id); assert.ok(step);
+    for (const node of [...s.additions, ...c.fresh]) assert.ok(step.components.some(item => item.component === node.id));
+    for (const part of c.proof.proof) for (const target of [id('F'), id('Z')]) assert.ok(!part.components.some(item => item.component === target));
+    assert.equal(JSON.stringify(s.request.graph), s.initialGraph); assert.equal(s.actual.budget.exhausted(), false);
+  });
+
+  it('retains generic RAW facade assessment and genuine declared TYPE formation', async () => {
+    const s = await seed(), c = s.child(true, {rawFacade: true, consume: true});
+    const full = checkDeclaration(c.context, s.values[0].id); assert.equal(full.kind, 'checked');
+    assert.ok(full.typeDependencies.some(item => item.contextId === c.context.contextId && item.type.kind === 'component' && item.type.id === id('F')));
+    const generic = createSchemaScalarKernel(c.context).assess(local(id('F')), s.values[0].value!.lexical, s.values[0].id); assert.equal(generic.kind, 'checked');
+    for (const debts of [full.scalarObligations, generic.obligations])
+      assert.ok(debts.some(item => item.rule === 'raw-simple-content-derivation-validity' && item.component === id('F') && (item.contextId ?? c.context.contextId) === c.context.contextId));
     assert.equal(c.proof.kind, 'candidate-rejected'); assert.equal(c.proof.rule, 'cos-nonambig');
+  });
+
+  it.each(['complex', 'anyType'] as const)('rejects the %s literal content role before facade normalization', async kind => {
+    const s = await seed(), selector = kind === 'anyType' ? builtin('anyType') : local(id('F'));
+    const p = s.port(builtin('string'), selector), property = checkDeclarationValueProperty(p.context, p.declaration.id);
+    assert.equal(property.kind, 'invalid-schema'); assert.equal(property.rule, 'raw-type-content-role');
+  });
+
+  it('keeps self-content rejection at authentic context preparation', async () => {
+    const s = await seed(), carrier: ComplexTypeNode = {...s.complex('R'), id: id('SelfPort'),
+      identity: {kind: 'global', role: 'type', name: {namespace, local: 'SelfPort'}},
+      derivation: {kind: 'extension', contentKind: 'simple', base: builtin('string'), facets: []}};
+    const issued = forkSemanticCandidate(s.parent, {key: 'self-content', active: [...s.parent.members, carrier.id], additions: [carrier],
+      rawTypes: [s.raw(carrier, {kind: 'simple', type: local(carrier.id)})]});
+    assert.equal(issued.kind, 'candidate-rejected'); assert.equal(issued.code, 'cycle');
+  });
+
+  it.each([['ID', 'e-props-correct'], ['NOTATION', 'enumeration-required-notation']] as const)('retains the actual %s VALUE gate', async (name, rule) => {
+    const s = await seed(), p = s.port(builtin(name), builtin(name));
+    const scalar = createSchemaScalarKernel(p.context).checkValue(builtin(name), p.declaration.value!, p.declaration.id);
+    const property = checkDeclarationValueProperty(p.context, p.declaration.id);
+    assert.equal(scalar.kind, 'invalid-schema'); assert.equal(scalar.rule, rule);
+    assert.equal(property.kind, 'invalid-schema'); assert.equal(property.rule, rule);
+  });
+
+  it('forwards a genuine facade debt inside the selected SIMPLE support', async () => {
+    const s = await seed(), source = s.complex('F'), mapped = deriveActualComplexContent(s.actual, source.id); assert.equal(mapped.kind, 'checked');
+    const simple: SimpleTypeNode = {kind: 'simpleType', context: source.context, id: id('InnerScalar'),
+      identity: {kind: 'global', role: 'type', name: {namespace, local: 'InnerScalar'}}, variety: {kind: 'restriction', base: builtin('string'), facets: []},
+      declaredAttributes: [], annotations: [], retained: [], syntaxDetails: []};
+    const row: RawSimpleTypeProperties = {type: simple.id, targetNamespace: namespace, base: builtin('string'), final: [], variety: {kind: 'atomic'},
+      facetComponentSet: [{annotation: 'absent', facets: [{name: 'enumeration', fixed: false, lexical: s.values[0].value!.lexical,
+        operand: {context: 'active', type: local(source.id), owner: simple.id}}]}], provenance: {kind: 'hypothetical-abstract', originals: []}};
+    const p = s.port(local(simple.id), local(simple.id), {nodes: [simple], simple: [row], types: [s.raw(source, mapped.view.content)]});
+    const selected = createSchemaScalarKernel(p.context).describe(local(simple.id), p.declaration.id); assert.equal(selected.kind, 'checked');
+    const property = checkDeclarationValueProperty(p.context, p.declaration.id); assert.equal(property.kind, 'checked');
+    assert.equal(property.authority, 'XSD10-raw-simple-value-property-v1'); assert.equal(property.constraint?.operand.family, 'string');
+    assert.ok(property.typeDependencies.some(item => item.contextId === p.context.contextId && item.type.kind === 'component' && item.type.id === simple.id));
+    for (const debts of [selected.obligations, property.scalarObligations])
+      assert.ok(debts.some(item => item.rule === 'raw-simple-content-derivation-validity' && item.component === source.id && (item.contextId ?? p.context.contextId) === p.context.contextId));
   });
 
   it('does not grant untouched SOURCE authority to a changed facade without a RAW row', async () => {

@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): derive conditional scalar constructor width with native LIST predecessor replay and preserve the fixed-clear counterexample.
+
+- fix(re01): assess RAW simple-content value properties at their explicit simple datatype while retaining genuine formation duties.
+
 - fix(re01): read untouched SOURCE simple-content values with exact scalar support and without surplus facade construction.
 
 - docs(re01): derive conditional scalar history bounds from a closed palette and protected interface.

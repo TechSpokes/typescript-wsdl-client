@@ -22,7 +22,7 @@ export type DeclarationResult = DeclarationReceipt | ScalarFailure | ResourceLim
 type ConstraintResult = Readonly<{kind: 'checked'; constraint: AssessedSchemaOperand;
   scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}> | ScalarFailure | ResourceLimitFailure;
 export type DeclarationValuePropertyResult = DeclarationResult | Readonly<{kind: 'checked'; component: NodeId; contextId: string;
-  authority: 'XSD10-mixed-value-property-v1' | 'XSD10-source-simple-value-property-v1'; constraint: AssessedSchemaOperand; obligations: readonly string[];
+  authority: 'XSD10-mixed-value-property-v1' | 'XSD10-source-simple-value-property-v1' | 'XSD10-raw-simple-value-property-v1'; constraint: AssessedSchemaOperand; obligations: readonly string[];
   scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}>;
 const nameAttribute = (node: GraphNode, name: string): string | undefined =>
   node.declaredAttributes.find(a => a.name.namespace === '' && a.name.local === name)?.value;
@@ -53,13 +53,24 @@ export function checkDeclarationValueProperty(context: SemanticContext, id: Node
     const raw = context.rawTypeProperties(type.node.id), source = context.sourceNode(type.node.id);
     const sourceSimple = !raw && source?.kind === 'complexType' && source.derivation?.contentKind === 'simple'
       && (context.originalComplexContentSource(type.node.id) !== undefined || context.originalComplexPropertySource(type.node.id) !== undefined);
+    const rawSimple = raw?.content.kind === 'simple' ? raw.content : undefined;
+    if (rawSimple) {
+      const selected = resolveSemanticType(context, rawSimple.type);
+      if (selected.kind === 'missing' || selected.kind === 'outside-context')
+        return context.budget.freeze(context.budget.snapshot({kind: 'unresolved' as const, rule: 'src-resolve', component: type.node.id,
+          message: 'Simple content datatype is unavailable', source: type.node.context.source}));
+      if (!(selected.kind === 'builtin' && selected.name.local !== 'anyType' || selected.kind === 'original-generated'
+        || selected.kind === 'component' && selected.node.kind === 'simpleType'))
+        return context.budget.freeze(context.budget.snapshot({kind: 'invalid-schema' as const, rule: 'raw-type-content-role', component: type.node.id,
+          message: 'Simple content requires an actual simple datatype', source: type.node.context.source}));
+    }
     const mixed = raw ? raw.content.kind === 'mixed' : source?.kind === 'complexType' && source.mixed && source.derivation?.contentKind !== 'simple';
-    if (!sourceSimple && !mixed) return checkDeclaration(context, id);
-    const value = constraintValue(context, node, sourceSimple ? declared : {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'string'}});
+    if (!sourceSimple && !rawSimple && !mixed) return checkDeclaration(context, id);
+    const value = constraintValue(context, node, rawSimple?.type ?? (sourceSimple ? declared : {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'string'}}));
     if (value.kind !== 'checked') return value;
     return context.budget.freeze(context.budget.snapshot({kind: 'checked' as const, component: id, contextId: context.contextId,
-      authority: sourceSimple ? 'XSD10-source-simple-value-property-v1' as const : 'XSD10-mixed-value-property-v1' as const, constraint: value.constraint,
-      obligations: sourceSimple ? [] : ['element-default-mixed-emptiable:' + type.node.id],
+      authority: rawSimple ? 'XSD10-raw-simple-value-property-v1' as const : sourceSimple ? 'XSD10-source-simple-value-property-v1' as const : 'XSD10-mixed-value-property-v1' as const,
+      constraint: value.constraint, obligations: sourceSimple || rawSimple ? [] : ['element-default-mixed-emptiable:' + type.node.id],
       scalarObligations: value.scalarObligations, typeDependencies: value.typeDependencies}));
   });
 }
