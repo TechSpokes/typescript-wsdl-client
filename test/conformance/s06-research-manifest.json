@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "a0eff22cf62c8be8f01040c8f6fd2d68d3e8be4883f955daab64f4d5cf89f043"
+          "sha256": "d6b3662aa9d749f5c036a91ebb5fc45861a54ea0ab7059a6cdfc4f4f6dc6f92b"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1211,7 +1211,7 @@
         {
           "path": "src/compiler/schemaSimpleTypeProperties.ts",
           "role": "semantic-source",
-          "sha256": "d08698a3e7792109016ba1b36ce3b8f2e98f3ea426a24e8a74925e66af1ba056"
+          "sha256": "6374f78e63e82cf6c4b1df2392b995c094c6b578fb9db1283e65606781bb8883"
         },
         {
           "path": "src/compiler/schemaSyntaxAssessment.ts",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "cd006a46da18c20a8aa07bef110c0d7d06a81d14b518c3ef1197d4f889ca2476"
+          "sha256": "b5ec780b55d255fd2086dcd6b37461565e5f9b3884e81dee0aeb787f0bfd3b0c"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "2cb1375250ed8f09df98d7fcdaeb7c57378057512c732582b151c5ee3e555b45"
+          "sha256": "230ee9c00119acd9445d87ffc91578b9aaa50de683a199e32aebf67e7aa8a1df"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2977,6 +2977,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-union-activation-shields.xsd",
           "role": "fixture",
           "sha256": "e55cd833923d5b05e07bfca003d1e3199418fb72e1d19fd7c6068f2b59fb8631"
+        },
+        {
+          "path": "test/research/re01/scalar-builtin-pattern-import.test.ts",
+          "role": "prototype",
+          "sha256": "02dca519004e0286cf7e663de3d144c8647411604e654389e366eb2acfe176bd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-builtin-pattern-import.xsd",
+          "role": "fixture",
+          "sha256": "740483c4992734ad0f9ea4c818a62a75af903190fd04630ad67bc86580b3c845"
         }
       ]
     },

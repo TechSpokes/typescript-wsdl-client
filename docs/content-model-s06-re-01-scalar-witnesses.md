@@ -638,6 +638,31 @@ LIST ITEM, corresponding UNION members, SC identity/ancestry, global eligibility
 The projection's full frontier, new RP-state pending/fatal coverage, effective-AU fallback and complete child replay remain premises.
 This field classification supplies neither a scalar constructor nor a global SIMPLE/root count, native evidence adequacy, complete negatives or mathematical termination.
 
+## Authenticated builtin pattern introductions
+
+An exact RAW facet-component inventory may select a NEW whole builtin pattern component with `builtinPattern: {name, index}`.
+The zero-based index ranges over the selected builtin's complete pattern-component inventory, including inherited pattern properties.
+The existing builtin owner supplies its exact lexical context, annotation, private compiler marks and qualification dependencies; the caller supplies neither expression text nor an intrinsic-authority flag.
+
+The selected group receives a new row-local occurrence, while an actual `baseComponent` selector retains its own immediate-BASE introduction.
+The complete inventory still passes the existing formation, kind-presence, fixedness, corresponding-constituent and ordinary F2 checks.
+Selecting a builtin pattern does not certify another TYPE or promote a source owner's availability to FULL.
+
+The import also publishes authentic component replay when the row contains no BASE selector.
+A later fork can therefore KEEP that actual component with its compiler metadata and debts intact.
+Unknown or patternless builtins, invalid ordinals, mixed builtin-selector/literal entries and annotation overrides retain separate failures; an ordinary caller-written private intrinsic expression remains unsupported.
+
+This closes one concrete template-copy seam.
+A current RAW template can contain authenticated NCName patterns beyond those in its BASE, while a property-equivalent replacement BASE has a different enum annotation introduction.
+Whole foreign facet binding can then require an unqualifiable enum, and KEEP alone omits the required patterns; actual BASE KEEP combined with NEW authenticated builtin patterns supplies the missing recipe.
+
+The [builtin-pattern controls](../test/research/re01/scalar-builtin-pattern-import.test.ts) check all roots, independent PROPERTY and nominal derivation, annotation continuity and a complete three-node evidence forest for that case.
+They also preserve actual GLOBAL builtin-name shadows, their distinction from builtin nominal identity, a complete one-node forest, import-only replay through KEEP and a later fork, and the original failed alternatives.
+No builtin-name collision prohibition or unconditional shadow-contraction theorem is assumed.
+
+This is a representation constructor using existing builtin facts and P1 authority.
+It establishes neither arbitrary scalar template reconstruction nor the general LIST/UNION funding bound, complete negative answers or mathematical termination.
+
 ## Proper atomic UNION reconstruction
 
 The reviewed local extraction concerns a free proper ordered UNION cone over one actual input UNION with r atomic members.

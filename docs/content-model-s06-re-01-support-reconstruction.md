@@ -4976,6 +4976,10 @@ The remaining coverage proof must choose a complete finite bank and join input-t
 
 ## Conditional catalogue, evidence and termination interface
 
+A concrete scalar-template representation seam is covered by the [authenticated builtin pattern constructor](content-model-s06-re-01-scalar-witnesses.md#authenticated-builtin-pattern-introductions).
+It composes genuine NEW builtin pattern groups with actual immediate-BASE KEEP and rechecks the complete current inventory.
+Its positive required-child controls do not supply the remaining simultaneous scalar/WORD catalogue theorem.
+
 A sufficient remaining interface is a total computable finite catalogue for each actual finite `(Gamma,P,target)`, containing complete bounded native encodings.
 Its decoder must retain all inherited records, first-issue identities and input authority and provide at least one checked winning recipe whenever the selected semantic judgment succeeds.
 At a Gamma-fresh target that same bounded winning recipe must introduce no stored NP identity; separate existence claims for bounded and zero-new-NP candidates do not suffice.

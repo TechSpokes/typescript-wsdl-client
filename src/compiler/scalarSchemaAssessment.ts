@@ -2765,6 +2765,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         const groups: {facets: readonly Facet[]; identity?: object; annotation?: FacetAnnotation; selected?: ExactFacetComponent; ordinal?: number; sourceStep?: SourceFacetStep;
           replay?: RawComponentReplay['source']}[] = [];
         let selectedTable: readonly RawComponentReplay[] | undefined;
+        let importedPatterns = false;
         let tableUnavailable = false;
         if (bound) for (const group of bound.layers) {
           c.step(node, group.facets.length * 5 + 3); const facets: Facet[] = [];
@@ -2778,6 +2779,26 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
           groups.push({facets,identity:group.identity,sourceStep:group.sourceStep});
         } else if (rawSimple.facetComponentSet) for (const [ordinal, group] of rawSimple.facetComponentSet.entries()) {
           if (!('facets' in group)) {
+            if ('builtinPattern' in group) {
+              const source = builtin({kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: group.builtinPattern.name}}, node);
+              const table = formedComponentTable(source, node);
+              c.step(node, (table?.length ?? 0) * 2 + 4);
+              const selected = table?.filter(entry => entry.component.name === 'pattern')[group.builtinPattern.index];
+              if (!selected) return c.fail(node, 'raw-builtin-pattern-component', 'Builtin has no intrinsic pattern component at this ordinal');
+              const replay = selected.source;
+              if (!replay || replay.intrinsicPatterns?.length !== selected.facets.length || !replay.intrinsicPatterns.every(Boolean))
+                return c.fail(node, 'raw-builtin-pattern-component', 'Selected builtin component lacks intrinsic pattern authority');
+              c.step(node, selected.facets.length * 6 + 4);
+              const facets = c.budget.freeze(c.budget.snapshot(selected.facets.map(facet => ({name: facet.name, fixed: facet.fixed, lexical: facet.lexical}))));
+              for (const [index, facet] of facets.entries()) {
+                c.step(node, 4);
+                if (replay.intrinsicPatterns![index]) intrinsicFacets.add(facet);
+                facetObligations.set(facet, replay.obligations);
+                facetDependencies.set(facet, replay.typeDependencies);
+              }
+              groups.push({facets, annotation: selected.component.annotation, ordinal, replay});
+              importedPatterns = true; continue;
+            }
             selectedTable ??= componentTable(rawSimple.base, base, node);
             if (!selectedTable) {tableUnavailable = true; continue;}
             c.step(node, 24); const selected = selectedTable[group.baseComponent];
@@ -2892,7 +2913,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
           c.step(node, 4);
           facetCorrespondence = wholeKeepSector(base, selectedTable, groups, exactComponentSet!, node) && ordinaryCorrespondence;
         }
-        if (selectedTable) {
+        if (selectedTable || importedPatterns) {
           c.step(node, groups.length * 4 + 3);
           replayTable = Object.freeze(groups.map((group, index) => Object.freeze({component: exactComponentSet![index], facets: group.facets, source: group.replay})));
         }
