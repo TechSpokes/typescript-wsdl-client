@@ -1593,9 +1593,10 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     const finite = result.plan.layers.find(layer => (enumerations.get(layer)?.size ?? 0) > 0);
     if (finite) {
       let complete = true;
-      for (const [facet, value] of enumerations.get(finite)!) {
-        const present = regularMembership(result, value, facet.lexical, owner); if (present === false) continue;
-        const contained = regularMembership(base, value, facet.lexical, owner);
+      // Values retain their genuine introduction; containment uses this datatype's context.
+      for (const value of enumerations.get(finite)!.values()) {
+        const present = regularMembership(result, value, lexical, owner); if (present === false) continue;
+        const contained = regularMembership(base, value, lexical, owner);
         if (present === true && contained === false) c.fail(owner, 'scalar-value-space-restriction', 'A selected derived enumeration value is excluded by the base selected image');
         if (present === undefined || contained === undefined) complete = false;
       }
@@ -2209,15 +2210,17 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.step(owner, inherited.length * 2 + 1);
     const whitespaceCovered = inherited.filter(prior => prior.name === 'whiteSpace')
       .every(prior => supplied.some(derived => restrictsScalar(derived, prior, owner)));
+    // Saved facet contexts still qualify NEW operands, not the current whole image.
+    c.step(owner, 2); const lexical: LexicalValue = {value: '', context: owner.context};
     if (whitespaceCovered) for (const group of result.plan.layers) {
       c.step(owner); const members = enumerations.get(group);
       if (!members?.size) continue;
       let includesAll = true;
-      for (const [facet, value] of members) {
+      for (const value of members.values()) {
         c.step(owner);
         if (!excludedByValueFacets(base, value, owner)
           || excludedByValueFacets(result, value, owner) || excludedByEnumeration(result, value, owner)) continue;
-        const membership = membershipWitness(result, value, facet.lexical, owner);
+        const membership = membershipWitness(result, value, lexical, owner);
         if (membership === true)
           c.fail(owner, 'scalar-value-space-restriction', 'A derived enumeration value is excluded by the base');
         if (membership === undefined) includesAll = false;

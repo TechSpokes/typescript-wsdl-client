@@ -284,6 +284,16 @@ The [exact-facet controls](../test/unit/schema-exact-facet-components-independen
 This corrects one independently reproduced formation false positive.
 It does not complete scalar alias construction, reconcile the held nonexact full-inventory claim or establish general helper coverage, complete negatives or termination.
 
+### Retained enumeration containment in the datatype context
+
+A retained enumeration preserves its genuinely qualified typed values and introduction maps. Whole selected-image containment is a different duty: it compares RESULT and BASE at the result datatype's own definition context. Reusing a saved enumeration map for that comparison can reject an empty current image because the same program admits a value at another map.
+
+The [existing scalar owner](../src/compiler/scalarSchemaAssessment.ts) now uses the datatype context for finite selected-UNION containment and the finite-enumeration scalar-containment fallback. The cached typed enumeration value is unchanged; it is not reparsed in that context. Genuine NEW enumeration operands and new bound endpoints still undergo their separate immediate-BASE membership checks with their supplied lexical maps, providers and complete formation duties.
+
+The [maintained controls](../test/research/re01/scalar-retained-enum-containment-context.test.ts) form the actual source and three supporting fresh SIMPLEs before checking the retained result. An own-ON empty result completes a one-node forest containing all four fresh SIMPLEs even though its old OFF map admits FLOAT Infinity. The identical result defined at OFF rejects actual widening, and a genuinely NEW member still rejects formation against its empty immediate BASE. The separate changed-constituent control retains its rejection at the genuine NEW-member duty after the surplus whole-image rejection is removed.
+
+This closes the demonstrated context-selection defect under accepted P1/F2. It does not require cross-context image preservation, change retained component authority, or establish general scalar witness coverage, evidence adequacy, input-derived helper bounds, complete negatives or mathematical termination.
+
 ### Raw facet groups and identity authority
 
 Caller-supplied raw groups contain facet data, not internal identity evidence.

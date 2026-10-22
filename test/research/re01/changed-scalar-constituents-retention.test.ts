@@ -88,8 +88,9 @@ describe('retained BASE components with narrowed scalar constituents', () => {
     for (const type of s.actual.members) expect(checkComponentConstruction(s.actual, type)).toMatchObject({kind: 'checked', obligations: []});
     expect(checkComponentConstruction(s.context, s.guard.id)).toMatchObject({kind: 'checked', obligations: []});
     if (mode === 'wrong-guard' || mode === 'new-enum') {
-      // Complete empty inverses expose STRING foo outside BASE before enum introduction is checked.
-      const rule = 'scalar-value-space-restriction';
+      // The wrong guard widens the own-map image. The NEW enum instead fails
+      // genuine BASE qualification at its supplied facet map, even with an empty own-map image.
+      const rule = mode === 'new-enum' ? 'enumeration-valid-restriction' : 'scalar-value-space-restriction';
       expect(checkComponentConstruction(s.context, s.result.id)).toMatchObject({kind: 'candidate-rejected', rule});
       expect(s.forest).toMatchObject({kind: 'candidate-rejected', rule});
     } else {
