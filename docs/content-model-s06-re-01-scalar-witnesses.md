@@ -997,3 +997,23 @@ The [independent review ledger](https://github.com/TechSpokes/typescript-wsdl-cl
 FLOAT and DOUBLE scientific-bound preimages need not be regular. Their finite native endpoint alphabet does not make those WORD languages regular. Multiple contexts, guard and enum sizes, WORD lengths, provider closure, mixed LIST/UNION construction and ordinary helper counts remain separate open obligations.
 
 Mixed ordered UNIONs require first-selection observations even for values already available elsewhere. Removing an earlier member can expose a later value under the same WORD without creating a new primitive value. Counting only first-ever values therefore cannot establish general coverage, a terminating negative criterion or mathematical termination.
+
+## One common atomic guard for supplied calls
+
+A supplied finite atomic call interface admits a simpler common guard. Fix one actual context, an old checked atomic restriction phase ending at A with one primitive/whitespace phase, and its authentic first legal projected metadata mode M. The positive calls P must be accepted by both old A and M.
+
+Each selected value must have a genuine immediate-BASE inverse at its actual enum qualification map; neither a later LIST result nor future NOTATION activation supplies that premise.
+
+Let N contain the positives' selected normalizations and E contain their tagged native values. Add one ordinary P1 whitelist of N and one enum E to M, preserving authentic BASE repeatables and the projected whole-kind rules. For empty P, use an empty P1 and no empty enum component.
+
+Every positive survives. Conversely, an admitted call has a normalization from one positive and a value from another; every old private P1 accepts that normalization, and every old private bound, enum, precision or applicable length test accepts that value. The common guard therefore admits a subset of the old atomic function and preserves all its observed negatives across maps in this context.
+
+This combines the observations through normalization and whole tagged value. It does not license mixing individual items from different LIST tuples. Immutable selector, annotation, component-order and literal ancestry clients still require their actual protection or reconstruction.
+
+For nonempty P, put the new enum first in the writable component order. Its entries are genuinely BASE-qualified, so the owner's finite-enum F2 fallback completes without a general inverse-language proof. This also covers supplied FLOAT/DOUBLE positives; it does not make scientific-bound preimages regular or prove exact reconstruction of the entire old IEEE function.
+
+A native FLOAT control starts with genuine SOURCE S restricting builtin FLOAT without explicit facets, and RAW B having separate exclusive upper components 10 and 20. C reissues 20 through the actual inherited same-kind exclusive exception and adds enum `{1,3,5}`; D keeps C's actual components and adds P1 `1e0|3`. A direct D over B instead supplies enum `{1,3}` first, the repeated exclusive 20 and that P1.
+
+Both D constructions accept `1e0` and `3`, but reject canonical `1`. Removing only the P1 leaves a genuinely FULL construction that accepts `1`. E20 does not cover B's stronger E10, and FLOAT takes neither the length nor decimal fallback; the qualified enum completes the actual missing-coverage F2 branch. The repeated endpoint is explicitly outside B and uses its genuine S provider rather than invented B membership.
+
+Independent source/control review accepted these fixed-context observations. Strict typing and the three native cases passed at unchanged default limits with 1,084,342 cumulative work. No complete RE01 forest, finite mixed-call bound, cross-context activation transport or temporal decoder follows; decreasing semantic whitelists alone do not prove literal native KEEP between successive rows.

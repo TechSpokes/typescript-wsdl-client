@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): synthesize one qualified atomic observation guard and verify its IEEE enum certificate.
+
 - docs(re01): establish first-mode atomic contraction and delimit mixed list/union coverage obligations.
 
 - docs(re01): distinguish inherited scalar identity from private arithmetic support and prove scoped singleton reissue.
