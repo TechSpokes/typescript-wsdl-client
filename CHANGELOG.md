@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): qualify retained components with derived LIST items and UNION members through ordinary F2.
+
 - fix(scalar): retain complete formed facet inventories and qualify new bound sets through ordinary F2.
 
 - fix(re01): borrow authenticated source ur-type wildcards inside new registered particle constructions.

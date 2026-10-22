@@ -163,10 +163,8 @@ describe('exact supplied facet component and annotation evidence',()=>{
       s.raw('UnionLiteralChanged',named('UnionBase'),[s.entry('pattern','a')],{kind:'union',members:[named('ItemChild'),builtin('int')]}),
       s.raw('UnionNotDerived',named('UnionBase'),[{baseComponent:0}],{kind:'union',members:[builtin('decimal'),builtin('int')]}),
     ]);
-    for(const name of ['ListBase','ListSame','ListLiteralChanged','UnionBase','UnionSame','UnionLiteralChanged'])
+    for(const name of ['ListBase','ListSame','ListChanged','ListLiteralChanged','UnionBase','UnionSame','UnionChanged','UnionLiteralChanged'])
       expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'checked',obligations:[]});
-    for(const name of ['ListChanged','UnionChanged'])expect(kernel.describe(named(name),id(name)))
-      .toMatchObject({kind:'checked',obligations:[{rule:'raw-simple-facet-restriction-validity',component:id(name)}]});
     expect(kernel.describe(named('ListChangedBadWhitespace'),id('ListChangedBadWhitespace'))).toMatchObject({kind:'invalid-schema',rule:'whiteSpace-valid-restriction'});
     for(const name of ['ListNotDerived','UnionNotDerived'])expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'invalid-schema',rule:'cos-st-restricts'});
   });

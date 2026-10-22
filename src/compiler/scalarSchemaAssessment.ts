@@ -2885,10 +2885,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         const ordinaryCorrespondence = urBase || rawFacetCorrespondence(base, result, frame.reference, node);
         let facetCorrespondence = ordinaryCorrespondence;
         if (selectedTable) {
-          c.step(node, 4 + (variety.kind === 'union' ? variety.members.length * 2 : 0));
-          const identicalConstituents = !(variety.kind === 'list' && referenceKey(variety.item, node) !== referenceKey(base.plan.item!, node)
-            || variety.kind === 'union' && variety.members.some((member, index) => referenceKey(member, node) !== referenceKey(base.plan.members![index], node)));
-          facetCorrespondence = wholeKeepSector(base, selectedTable, groups, exactComponentSet!, node) && identicalConstituents && ordinaryCorrespondence;
+          c.step(node, 4);
+          facetCorrespondence = wholeKeepSector(base, selectedTable, groups, exactComponentSet!, node) && ordinaryCorrespondence;
         }
         if (selectedTable) {
           c.step(node, groups.length * 4 + 3);

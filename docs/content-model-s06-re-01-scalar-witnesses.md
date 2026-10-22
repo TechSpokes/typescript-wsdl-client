@@ -36,13 +36,19 @@ All selected recipes still require ordinary F2, complete enum/pattern retention 
 A wholly NEW bound kind may contain multiple tuples when ordinary F2 checks every tuple; this does not permit mixing KEEP and NEW within that kind or reduce a hard PROPERTY template to one endpoint.
 No property-equal sibling supplies another BASE's retention authority.
 
+Retaining authentic BASE components also permits changed LIST items and ordered UNION members when ordinary constituent derivation and selected-image containment succeed.
+Equal constituent identities are a sufficient special case, not an additional qualification requirement.
+The [changed-constituent controls](../test/research/re01/changed-scalar-constituents-retention.test.ts) use a QName guard to select a required STRING value at a later namespace map while retaining the BASE's opaque pattern component.
+The complete forest checks the actual head memberships, required consumer restriction and every fresh root.
+Wrong guard namespaces, an unqualified NEW STRING enum and an incompatible LIST item still fail their ordinary owners; an unchanged-member alias remains FULL but fails the required consumer mapping.
+
 The [native controls](../test/research/re01/current-scalar-component-retention.test.ts) cover a proper SIMPLE restriction role over a SOURCE NCName scalar with an opaque enum and intrinsic patterns, plus a new enum over its actual BASE.
 The selected GLOBAL role has different effective membership at its two existing heads; reusing the exact BASE violates the retained choice's UPA.
 That control demonstrates the chosen role constructor, not that every root witness must introduce that GLOBAL.
 Further controls retain opaque legacy RAW components through a complete required child, preserve a hard multi-NEW-bound inventory, and reject invalid selectors or new values.
 
 These owner repairs supply current component authority and ordinary formation, not a general scalar catalogue.
-Private alias endpoint bounds, changed-member UNION VALUE recipes, typed VALUE/map representatives, complete coverage and mathematical termination remain separate proof obligations.
+General private alias endpoint bounds, a complete changed-member UNION VALUE catalogue, typed VALUE/map representatives, coverage and mathematical termination remain separate proof obligations.
 
 ## Actual atomic GSC1 component replay
 

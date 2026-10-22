@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scalar:ordered-union-value-role" targetNamespace="urn:scalar:ordered-union-value-role" elementFormDefault="qualified">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootR"><xs:complexContent><xs:restriction base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootD"><xs:complexContent><xs:extension base="t:RootR"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="UnionBase"><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType>
+  <xs:simpleType name="A"><xs:restriction base="t:UnionBase"><xs:pattern value="foo"><xs:annotation><xs:documentation>actual BASE introduction</xs:documentation></xs:annotation></xs:pattern></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ListBase"><xs:list itemType="xs:decimal"/></xs:simpleType>
+  <xs:element name="H" type="t:A" abstract="true" block="restriction"/>
+  <xs:element name="Q" type="t:A" abstract="true" block="extension" substitutionGroup="t:H"/>
+  <xs:complexType name="ValueTarget"><xs:sequence><xs:element name="x" type="xs:anyType" fixed="foo"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Observer"><xs:choice minOccurs="0"><xs:element ref="t:H"/><xs:element ref="t:Q"/></xs:choice></xs:complexType>
+</xs:schema>
