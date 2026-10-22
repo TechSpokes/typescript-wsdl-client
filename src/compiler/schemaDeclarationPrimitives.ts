@@ -1,6 +1,6 @@
 import type {SemanticTypeReference as Reference, SemanticTypeDependency, OriginalGeneratedScalarReference} from './semanticTypeReference.js';
 /** Declaration-local properties only. EDC and containing type validity are separate. */
-import type {GraphNode, NodeId} from './canonicalGraph.js';
+import type {ElementNode, AttributeNode, GraphNode, NodeId} from './canonicalGraph.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import {isXmlNCName, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -19,8 +19,48 @@ export type DeclarationReceipt = Readonly<{kind: 'checked'; component: NodeId; c
   obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies:readonly SemanticTypeDependency[];
   identityConstraintDependencies: readonly IdentityConstraintDependency[]}>;
 export type DeclarationResult = DeclarationReceipt | ScalarFailure | ResourceLimitFailure;
+type ConstraintResult = Readonly<{kind: 'checked'; constraint: AssessedSchemaOperand;
+  scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}> | ScalarFailure | ResourceLimitFailure;
+export type DeclarationValuePropertyResult = DeclarationResult | Readonly<{kind: 'checked'; component: NodeId; contextId: string;
+  authority: 'XSD10-mixed-value-property-v1'; constraint: AssessedSchemaOperand; obligations: readonly string[];
+  scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}>;
 const nameAttribute = (node: GraphNode, name: string): string | undefined =>
   node.declaredAttributes.find(a => a.name.namespace === '' && a.name.local === name)?.value;
+/** Shared actual VALUE assessment; selecting a mixed value's STRING is not FULL of its complex owner. */
+function constraintValue(context: SemanticContext, node: ElementNode | AttributeNode, reference: Reference): ConstraintResult {
+  const constraint = node.value!;
+  if (constraint.kind !== 'default' && constraint.kind !== 'fixed') return context.budget.freeze(context.budget.snapshot({kind: 'invalid-schema' as const,
+    rule: 'declaration-value', component: node.id, message: 'Value constraint must be default or fixed', source: node.context.source}));
+  const scalar = createSchemaScalarKernel(context), checked = scalar.checkValue(reference, constraint, node.id);
+  if (checked.kind !== 'checked') return checked;
+  const assessed = scalar.assess(reference, constraint.lexical, node.id);
+  if (assessed.kind !== 'checked') return assessed;
+  const typed = collectSemanticTypeDependencies(context); typed.add(checked.typeDependencies); typed.add(assessed.typeDependencies);
+  context.budget.chargeWork(4 + checked.obligations.length + assessed.obligations.length);
+  return Object.freeze({kind: 'checked', constraint: assessed.value,
+    scalarObligations: Object.freeze([...checked.obligations, ...assessed.obligations]), typeDependencies: typed.snapshot()});
+}
+
+/** VALUE properties need their actual scalar and mixed fact, not full mixed TYPE/declaration validity. */
+export function checkDeclarationValueProperty(context: SemanticContext, id: NodeId): DeclarationValuePropertyResult {
+  assertSemanticContext(context);
+  return context.budget.guard(() => {
+    context.budget.chargeWork(8 + id.length);
+    const found = context.lookup(id);
+    if (found.kind !== 'found' || found.node.kind !== 'element' || !found.node.value) return checkDeclaration(context, id);
+    const node = found.node, type = resolveSemanticType(context, declaredType(context, node));
+    if (type.kind !== 'component' || type.node.kind !== 'complexType') return checkDeclaration(context, id);
+    const raw = context.rawTypeProperties(type.node.id), source = context.sourceNode(type.node.id);
+    if (!(raw ? raw.content.kind === 'mixed' : source?.kind === 'complexType' && source.mixed && source.derivation?.contentKind !== 'simple'))
+      return checkDeclaration(context, id);
+    const value = constraintValue(context, node, {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'string'}});
+    if (value.kind !== 'checked') return value;
+    return context.budget.freeze(context.budget.snapshot({kind: 'checked' as const, component: id, contextId: context.contextId,
+      authority: 'XSD10-mixed-value-property-v1' as const, constraint: value.constraint,
+      obligations: ['element-default-mixed-emptiable:' + type.node.id],
+      scalarObligations: value.scalarObligations, typeDependencies: value.typeDependencies}));
+  });
+}
 export function checkDeclaration(context: SemanticContext, id: NodeId): DeclarationResult {
   assertSemanticContext(context);
   return context.budget.guard(() => {
@@ -102,12 +142,10 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
         reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'string'}};
         }
       }
-      const valueCheck = scalar.checkValue(reference, node.value, node.id);
-      if (valueCheck.kind !== 'checked') return valueCheck;
-      const assessed = scalar.assess(reference, node.value.lexical, node.id);
-      if (assessed.kind !== 'checked') return assessed;
-      constraint = assessed.value;
-      remember(valueCheck.obligations); remember(assessed.obligations);typed.add(valueCheck.typeDependencies);typed.add(assessed.typeDependencies);
+      const value = constraintValue(context, node, reference);
+      if (value.kind !== 'checked') return value;
+      constraint = value.constraint;
+      remember(value.scalarObligations); typed.add(value.typeDependencies);
     }
     const owned=context.budget.freeze(context.budget.snapshot({kind:'checked' as const,component:id,contextId:context.contextId,
       authority:'XSD10-declaration-properties-v1' as const,constraint,obligations,scalarObligations}));

@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "94162505912725f56ba207d0a05d02a6c0da93d6add12f2550720f5f92b24ac6",
+          "sha256": "2728ebd47ebd5dfb5e244bc841d6907317b13825a19bffcdbaf202818098b950",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1156,12 +1156,12 @@
         {
           "path": "src/compiler/schemaComponentEquality.ts",
           "role": "semantic-source",
-          "sha256": "b53678f2b7f9beec85bc67564a68d7ee92c62751f08f7996b590031d1072de58"
+          "sha256": "aeedd132c39734c829546fc8a9d3e177bd881fd8b1eef9e0b56f8110b030baa9"
         },
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
           "role": "semantic-source",
-          "sha256": "197006485a91890d04bf542031ef68b4b7a7b49227631917b5ad4e728156a5d6"
+          "sha256": "48334552ba1e455ffc77a106806c98ab30f1c19416f2b861c710d1cfa54ea9c8"
         },
         {
           "path": "src/compiler/schemaDatatypeValues.ts",
@@ -1171,7 +1171,7 @@
         {
           "path": "src/compiler/schemaDeclarationPrimitives.ts",
           "role": "semantic-source",
-          "sha256": "5dff801792443a946f64110b460a34d9312e0ef78042542d62c2b6eecf59fb91"
+          "sha256": "4448398da1e9f7539a16d1314b48afa328d08f8c41a8f77ad199615c7a798620"
         },
         {
           "path": "src/compiler/schemaDocumentSyntax.ts",
@@ -3027,6 +3027,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-sc-fixed-value-dispatch.xsd",
           "role": "fixture",
           "sha256": "1774d5d5562da83e63c7841465bc6dbc947c7484092baa9a1d945d800d5cf7f8"
+        },
+        {
+          "path": "test/research/re01/property-mixed-value-frontier.test.ts",
+          "role": "prototype",
+          "sha256": "dfbfaf079a8a89b90124eb58583dee2c0f12e1daab1ec7516b80bf0c526afd6a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-mixed-value-frontier.xsd",
+          "role": "fixture",
+          "sha256": "3484ebae717bd25b659bfa82b00e08f4a1275b76c7433fbdce46aab97d023c06"
         }
       ]
     },
@@ -3418,7 +3428,7 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 240
+    "currentArtifactCount": 242
   },
   "baselineSemanticDefaults": {
     "maxNodes": 100000,

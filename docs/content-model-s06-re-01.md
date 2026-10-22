@@ -4073,12 +4073,12 @@ Same-H raw simple-content formation requires the exact complex owner C; its cons
 
 This statement covers the existing typed `ScalarObligation` union, not just raw simple-content formation.
 Other typed premises remain pending unless their existing owner actually discharges the exact rule/component/context.
-The only other current equality string producer is `checkDeclaration`'s `element-default-mixed-emptiable:C`, after filtering its declared-type marker.
+The only other current equality string producer is the declaration value property's `element-default-mixed-emptiable:C`, after filtering any declared-type marker.
 Scalar/facet/kernel requirements remain typed, and AU aggregate string requirements are not imported into this equality result.
 Unknown future string families retain the immediate unresolved gate.
 
 The known mixed prerequisite belongs to the current comparison context, H for a candidate or Γ for an actual call; it is not a string imported from an original facet callback.
-The existing `declarationObligation` dispatcher requires exact C, reads mixed content in that context and checks formal restriction-view emptiability.
+The `declarationObligation` dispatcher reads exact C's mixed content in that context and checks formal restriction-view emptiability, without making a property-only C a FULL root.
 Full C validity alone does not establish that predicate, and no lexical field, ID/default, NOTATION or source-syntax condition is erased or reinterpreted.
 
 The repair changes only [particleExtension.ts](../src/compiler/particleExtension.ts) and its sole [construction consumer](../src/compiler/schemaConstructionAssessment.ts).
@@ -4128,6 +4128,18 @@ That mandatory declaration also has its own independent checker, so this negativ
 The next theorem for the present finite-verifier route remains composition into some authentic executable forest for every completely qualified Q_f actual assessment.
 This repair supplies one exact pending-premise bridge; it does not prove universal scalar/value-frontier inclusion, complete search, input-derived negatives or termination.
 Alternate logical or quotient methods may instead integrate faithful reconstruction within their own correctness proof.
+
+##### Mixed VALUE properties and full declared types
+
+A later audit distinguishes a mixed VALUE property read from full declaration construction. The dated [element component properties](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#Element_Declaration_details), [immediate default rule](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-valid-default) and [particle extension rule](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-extend) require the actual STRING value and mixed/formally emptiable content for that read. They do not require FULL of every complex TYPE inspected through recursive TYPE or SCOPE property equality.
+
+Previously, equality called full `checkDeclaration` for this property and inherited its unconditional declared-TYPE dependency. The mixed dispatcher also independently required FULL of that TYPE. Original AU scopes can expose mixed VALUE providers outside the hypothetical BODY/fresh closure, so neither promotion follows from the existing frontier.
+
+The [declaration owner](../src/compiler/schemaDeclarationPrimitives.ts) now exposes a dedicated mixed-value property read using the same actual constraint assessment as full declaration checking. [Equality](../src/compiler/schemaComponentEquality.ts) consumes its STRING and exact mixed-fact prerequisites. The construction dispatcher checks the real current mixed content, restriction-view formal emptiability and generated view dependencies. Full declaration checking still publishes its declared TYPE; genuine TYPE consumers and every fresh or inherited fresh root remain FULL requirements. Nonmixed and simple-content property reads retain their existing conservative formation path.
+
+The [independent controls](../test/research/re01/property-mixed-value-frontier.test.ts) start with twenty-six actual components and separate evidence for all three actual nonprimitive extensions. An identity prefix has a complete four-node forest without either hypothetical provider. A copied prefix reaches both providers only through AU/SCOPE/VALUE properties. Before the repair it requests missing provider evidence; adding their children then breaks the retained prefix's method-property equality. After the repair, both prefixes complete with their exact mixed facts and without those surplus FULL roots.
+
+Contrasts reject a nonempty mixed default and retain missing-child evidence when a fresh declaration genuinely consumes the provider. Supplying that real child's evidence completes the five-node control. A direct provider-retirement contrast still rejects the broken persistent property comparison. Thus the control identifies one chosen fixed-parent reader defect; its complete identity alternative precludes a general no-construction or universal evidence-inadequacy claim.
 
 #### Guarded original-property views in the current context
 

@@ -132,7 +132,8 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           if (!pending.startsWith(rule + ':')) continue;
           const component = pending.slice(rule.length + 1);
           if (rule === 'element-default-mixed-emptiable') {
-            requireNode(component);
+            // Actual declarations already require their TYPE. A property-only
+            // VALUE read needs this mixed fact without promoting that TYPE to FULL.
             const mapped = content(component);
             if (mapped.content.kind !== 'mixed') return fail('e-props-correct.2', 'Element value constraint requires simple or mixed content');
             const view = checked(prepareSemanticParticleView(context, mapped, 'restriction'));

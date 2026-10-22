@@ -9,7 +9,7 @@ import type {ScalarFailure, ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import {declarationMethods, RelationProblem} from './schemaTypeRelations.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
-import {checkDeclaration} from './schemaDeclarationPrimitives.js';
+import {checkDeclarationValueProperty} from './schemaDeclarationPrimitives.js';
 import {readOriginalAttributeProperties, assessSourceAttributeUses} from './schemaAttributeUses.js';
 import type {AttributeFailure, OriginalAttributeUse, AttributeWildcard} from './schemaAttributeUses.js';
 import {deriveActualComplexContent, deriveOriginalComplexPropertyContent, deriveModelGroupContent} from './complexTypeContent.js';
@@ -140,7 +140,7 @@ export function compareComponentProperties(context: SemanticContext, a: GraphNod
     const values = (x: ElementNode | AttributeNode, y: ElementNode | AttributeNode): boolean => {
       if (x.value?.kind !== y.value?.kind) return false;
       if (!x.value || !y.value) return true;
-      const left = checkDeclaration(context, x.id), right = checkDeclaration(context, y.id);
+      const left = checkDeclarationValueProperty(context, x.id), right = checkDeclarationValueProperty(context, y.id);
       if (left.kind !== 'checked') throw new Incomplete(left); if (right.kind !== 'checked') throw new Incomplete(right);
       typeDependencies.add(left.typeDependencies); typeDependencies.add(right.typeDependencies);
       remember(left.scalarObligations); remember(right.scalarObligations);

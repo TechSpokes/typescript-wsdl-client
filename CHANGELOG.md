@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): check mixed value properties without promoting property-only types to full construction.
+
 - docs(re01): bound qualified paired LIST histories and free restriction portfolios while proving one root needs a new scalar function.
 
 - fix(scalar): use effective SOURCE union members consistently in nominal relations and current RAW inheritance.
