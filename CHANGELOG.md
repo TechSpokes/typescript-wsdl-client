@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): reissue selected ordinary prototypes with shared identities and complete required-child controls.
+
 - fix(scalar): admit checked new enumeration components alongside authenticated retained facets.
 
 - test(re01): preserve a complete future-only middle allocation control and state the remaining first-demand proof gap.

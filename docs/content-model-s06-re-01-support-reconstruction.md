@@ -4937,3 +4937,17 @@ Mixed initial letters, arbitrary extra allowed-length languages, initial anchors
 Complete linked FIELD/SELF and key-order realization, lawful first-demand support, all owning-context FULL/frontier/required-child producers and the actual input-derived owner bank remain open.
 These source results supply no native cutoff, complete SOME/NO procedure, general negative, semantic/native/evidence adequacy or general RE01 mathematical termination claim.
 No toy solver, new abstraction, production change or native execution is introduced by this record.
+
+## Selected initial prototype issuance
+
+The research-only `prepareSelectedPrototypes` builder in `test/research/re01/selected-prototype-issuer.ts` reissues a supplied initial ordinary TYPE section. It returns candidate additions and RAW rows, or an actionable outside-frame or resource-limit result. Its output is not a validity receipt or an existential answer.
+
+The supplied section must be a retraction onto actual anonymous prototypes, preserve BASE and the checked TYPE headers, and leave inherited TYPEs untouched. The builder allocates TYPE identities first, then reissues the selected actual particle/declaration closure with one injective private component map. Shared BODYs, adjacent BASE constructors and repeated implicit-choice particle keys retain their actual sharing; FIELD references use the supplied TYPE map.
+
+Anonymous TYPE storage uses one retained carrier. LOCAL declaration owners use their mapped semantic scopes, with collision checks against both active and inactive stored identities and caller reservations. Required external identities record availability duties; they do not infer FULL of every storage owner.
+
+Authenticated same-source WHOLE handles remain opaque and unchanged. Forged or foreign authority, unsupported backing rewrites, VALUE/IC/SC/attribute frames and unsupported group/scope rewrites remain outside this first builder. A caller must merge the returned delta at a genuine first birth and obtain current semantic checks and complete required-child evidence from the existing verifier.
+
+Native controls exercise simultaneous shared-BODY reconstruction, FIELD folding into a retained pending TYPE, fixed external BASEs, collision-free merged scopes, SOURCE authority and repeated versus independent HEAD keys. The positive reconstruction supplies a complete two-node evidence forest; omitting its required child remains unresolved.
+
+The builder does not find the section or prove an input-derived global bank bound. In particular, the simultaneous `EXT(X,G)`, `RP(G,Phi)` and `RP(X,K)` borrower construction remains a separate open obligation. General coverage, complete evidence adequacy, complete negative answers and mathematical termination remain open.

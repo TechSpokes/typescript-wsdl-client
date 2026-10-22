@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "7342e193c512ed2dd30b4c1bf34601d99f97a597bbf4c0f4ab1b5ef9a4254bf9"
+          "sha256": "ed3a900b7ab6ed8a9c5e79fb739fdb75b8f5d7ee780afd1bb187a23bf0b7aad6"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2877,6 +2877,16 @@
           "path": "test/research/re01/future-middle-allocation.test.ts",
           "role": "prototype",
           "sha256": "738d8cd6339c642316298234b3561881c77b4cb68d57f1a840259204cff41c9c"
+        },
+        {
+          "path": "test/research/re01/selected-prototype-issuer.ts",
+          "role": "prototype",
+          "sha256": "d853ac683dd3c28c3b1a3369ff3ac3c69816463a6bb5d0cee713809ccdb1dbef"
+        },
+        {
+          "path": "test/research/re01/selected-prototype-issuer.test.ts",
+          "role": "prototype",
+          "sha256": "01e386bfd93f509ac9fffd425ddf3ae2f69c550d2c4cb1fb9458320f0d913ee8"
         }
       ]
     },
