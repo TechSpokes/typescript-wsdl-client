@@ -4973,3 +4973,59 @@ Each recipe must be installed at a genuine fork with actual current membership. 
 Simple content, opaque UR payload issuance, VALUE/IC declaration ports and rewritten SOURCE anchors remain outside this first constructor. Those results do not exclude such inputs from the accepted domain; they require their existing semantic owners and separate construction arguments.
 
 The remaining coverage proof must choose a complete finite bank and join input-template roles with nominal roles at lawful births. In particular, a finite current HEAD profile or a locally valid delta does not establish preservation of a successful continuation. General coverage, native evidence adequacy, complete negatives and mathematical termination remain open.
+
+## Conditional catalogue, evidence and termination interface
+
+A sufficient remaining interface is a total computable finite catalogue for each actual finite `(Gamma,P,target)`, containing complete bounded native encodings.
+Its decoder must retain all inherited records, first-issue identities and input authority and provide at least one checked winning recipe whenever the selected semantic judgment succeeds.
+At a Gamma-fresh target that same bounded winning recipe must introduce no stored NP identity; separate existence claims for bounded and zero-new-NP candidates do not suffice.
+
+The semantic final-record selector is applied before normalization of a fresh target.
+The [proper atomic UNION result](content-model-s06-re-01-scalar-witnesses.md#proper-atomic-union-reconstruction) supplies one scoped extraction, rather than the missing complete ordinary/scalar catalogue.
+The bound must include all literal words, maps, facets, source selectors and certificate data, as well as component counts.
+
+### Native record and frontier obligations
+
+Literal native candidate records can retain authentic current RAW anchors and issue new finite RAW roles over them.
+The SOURCE-only restriction of `prepareCanonicalNominalBank` is a convenience-helper limit, not a global representability limit of `request.candidate`.
+A winning bounded encoding still needs genuine local owner checks; structural representability alone does not certify it.
+
+For each candidate the existing verifier schedules the target, middle and every active Gamma-fresh member, then closes under actual emitted component, scalar, typed, source and IC dependencies.
+Registered GROUPs, backing and LOCAL declarations remain roots where required.
+Inactive stored records constrain collisions and the rank below, but neither become active nor receive FULL merely by being stored.
+
+Compare semantic and native duties as exact owning-context/target pairs.
+Every semantic projected NP duty needs a matching checked child or an adequate derivation; every extra native NP duty must remain winning.
+Exact frontier equality is sufficient, but is not required when both of these implications hold.
+
+Each generated child uses its exact real parent and target, retaining every inherited fresh-root check.
+Finite installed candidates with checked local closures, complete exact children and all actual Gamma prerequisites compose into the existing finite evidence format; remove unused alternatives and share only identical parent/target witnesses.
+This proves native assembly conditionally on those checked local recipes, without completeness of every owner on every possible encoding.
+
+SOURCE WHOLE availability is not FULL of its source owner, and a TYPE storage carrier is not automatically a declaration's semantic scope.
+Changed comparisons reissue their actual scalar/AU/source obligations in the owning context.
+No old receipt is relabelled as a new-context result.
+
+### Local rank and finite search
+
+Let q(P) count immutable-Gamma NP identities not yet rewritten from E to R, and n(P) count all stored Gamma-fresh NP identities, including inactive or reactivatable records.
+An original-target action strictly decreases q and may introduce a finite fresh bank.
+A fresh-target action strictly decreases n without increasing q, by the joint no-new-NP catalogue premise.
+
+Nonendpoint correspondence prevents resurrection or a change to an inherited BASE selector.
+Primitive E types remain primitive under these cuts because their designated anyType edge is unchanged.
+Consequently `(q,n)` decreases lexicographically on every generated construction edge, even if stable recipe encodings grow.
+
+Finite branching and this well-founded rank give a terminating AND/OR search of the actual catalogues.
+Success selects a checked candidate and supplies all its current-H NP children; a complete negative requires failure of every candidate under proved coverage and total adequate local checks.
+Iterating the computable finite catalogues through the finitely many original-cut phases also gives a conditional encoded evidence bound; no uniform alphabet for all future contexts is needed.
+
+### Gamma support and open gates
+
+Use the selected `founded-contextual-Q-v1` relation: auxiliary R erases primitive and Gamma-owned premises while still deriving Gamma NP conclusions.
+Solve all actual Gamma NP roots and discharge Gamma-owned prerequisites globally.
+Gamma property backsupport may be cyclic; requiring each callback to have been admitted at a previous layer would impose a stronger unsupported relation.
+
+The unresolved premise is a complete success-preserving encoded catalogue with one bounded checked native recipe per winning case, including the scalar/LIST and hard-boundary joins and the joint fresh-target condition.
+Operational exhaustion, an uncertified candidate and an unmatched scoped obstruction retain their separate meanings.
+General coverage, evidence adequacy, complete negative answers, mathematical termination and #234/#232 joint acceptance remain open until this premise and its operational use are established.

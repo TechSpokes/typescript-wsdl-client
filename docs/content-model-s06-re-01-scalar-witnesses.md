@@ -638,6 +638,104 @@ LIST ITEM, corresponding UNION members, SC identity/ancestry, global eligibility
 The projection's full frontier, new RP-state pending/fatal coverage, effective-AU fallback and complete child replay remain premises.
 This field classification supplies neither a scalar constructor nor a global SIMPLE/root count, native evidence adequacy, complete negatives or mathematical termination.
 
+## Proper atomic UNION reconstruction
+
+The reviewed local extraction concerns a free proper ordered UNION cone over one actual input UNION with r atomic members.
+Its input is a finite winning projected R witness, with all immutable Gamma obligations discharged globally under the selected founded relation.
+Protected TYPE, BASE, PROPERTY, WORD/map, component-authority and exact nominal-stop ports remain boundaries; the construction preserves their finite typed VALUE demands.
+
+The theorem supplies a finite input-derived stock and row bound for this sector, independently of the old private R-chain length, pattern size and namespace count.
+At a fresh target first select an already-zero-new-NP winning successor by the accepted final-record theorem, then normalize that successor while preserving that mode.
+This is not a theorem for arbitrary LIST members, hard-boundary joins or a complete native all-domain catalogue.
+
+### Input quantities
+
+Let c count the fixed namespace colors in the actual current interface, including retained enum/NOTATION values and protected maps.
+Let q be the finite product of input DFA boundary transformations at colon, local-part and normalization-fiber boundaries, with the actual parser-branch and whitespace flags.
+Include input member/top P1 and genuinely regular sector masks for enum lexical inverses, STRING/URI, compact binary and selected QName/NOTATION images; new private patterns are not input coordinates.
+General numeric and IEEE inverse constraints stay in their qualified inverse products rather than being assumed regular DFAs.
+
+Let b count protected normalized seed cores, including every retained INPUT/SOURCE enum typed value and qualified operand WORD, ordinary VALUE seeds and protected WORDs.
+Expand the finite hex case variants of fixed hexBinary values and include QName/NOTATION local parts and the actual finite Boolean/IEEE special spellings.
+Close once under taking a QName token's colon-free local part before counting d, the distinct duration values parsed by those cores or explicitly required as duration VALUEs.
+
+The two binary families remain distinct under actual `sameValue`.
+A base64Binary ITEM token has no XML whitespace and has a unique compact encoding for its value; it has no hexBinary inverse qualification.
+These facts prevent an unsupported binary-family transfer without supplying a general LIST closure theorem.
+
+### Same-map QName funding
+
+For the bounded stock of L local parts, enumerate outside namespace profiles as typed admission matrices, with at most m=2^(rL) colors.
+At each retained row and its actual map choose a matrix S for each namespace satisfying E_CURRENT subset S subset E_BASE.
+Start with current typed admission bits and add a producer only for a needed whole QName with an actual BASE witness at that same map; translate all equal namespace bindings together.
+
+The lower inclusion preserves current positives, and the upper inclusion protects a BASE non-QName witness from new preemption.
+Every newly selected whole QName has its displayed same-map BASE witness.
+Installing all realizable static enum colors at birth permits later assessment at another map; it neither transfers a receipt nor broadcasts a value into every producer.
+
+Retain the first actual whole funding WORD per finite channel of profile, local, producer, input prefix class and whitespace phase.
+Enumerate every word of each finite legal prefix class; for an infinite class preinstall a fresh private prefix while retaining its input first winner.
+The fresh prefix may be unbound before activation, but remove its mutable STRING/URI prewinner only in a separate bound activation row after the whole value is funded.
+
+After activation retain that support and keep its own-definition bindings outside protected namespace colors.
+Fixed QName/NOTATION values use separate family/namespace channels: activate the next producer while the previous producer still funds the value, then retire the old fresh TOP word when its producer dies.
+Finite classes, bare/default cells and genuinely protected prefixes retain their exhaustive actual cells instead of assuming an immortal producer.
+
+Native namespace authority governs eligibility.
+In particular an explicitly stored named binding to the empty string is admitted; an undefined named binding rejects.
+Do not add a serialization restriction or rewrite a protected WORD/map.
+
+Proper FULL input NOTATION members have retained finite enum-qualified images, so their outside-profile bits are false.
+This does not forbid new NOTATION declarations in the accepted domain: fresh ur-constructor sectors must bound those recipes separately.
+QName and NOTATION keep distinct typed families even when namespace and local agree.
+
+### Rejected-result shields and genuine rows
+
+Retain complete STRING/URI complement shields outside the finite set Z of chosen normalized words.
+A finite enum containing only a bare STRING is insufficient: deleting its outer-whitespace spellings can expose a QName whose collapsed result passes TOP.
+The outside-Z shields are permanent; only the bounded Z cells follow their actual death schedule.
+
+TOP rejection includes both normalized P1 rejection and typed enum rejection.
+An outside QName rejected by a retained typed TOP enum has no whole-QName BASE funding debt; its atomic positive call still needs genuine qualification.
+Definition maps do not replace the authentic contexts of retained enum operands or later ordinary VALUEs.
+
+Numeric positive projection and the reviewed endpoint bridge contribute at most seven passive metadata rows per strict call event in the one-new-endpoint-per-kind free frame.
+Genuinely NEW endpoint operands remain actual positive calls in their immediate atomic BASE and need not enter the whole UNION stock.
+Unchanged exclusive endpoints may instead use the accepted outside-BASE repeat exception; they are not positive membership calls.
+Every reconstructed row names its exact predecessor members and is checked by the existing owner for inherited kinds, fixedness, authentic components, length ancestry, corresponding members and ordinary F2.
+
+### Explicit finite stock and encoding bound
+
+Put p=1+4r and k_D=2p(b+1)+2qp+1.
+For each fixed duration/input/phase class retain a fresh reserve or every member of a class with fewer than k_D cores, plus its first actual availability witness.
+The leader bound L=2p(b+1)+dqp(k_D+2) covers these choices; new prefixes introduce no duration parameter.
+
+Let a=m+2c+1, G=a(L+1)(r+1)(q+1)p and R be the number of protected prefix strings.
+Let f be the size of the finite legal prefix-language union, computable by the input DFAs and actual namespace authority.
+At most Ga fresh reserves suffice, chosen from pools of Ga+G+f+R+1 representatives per infinite class.
+
+The conservative lexical-role bound is z=3(L+1)(1+f+G+Ga).
+The strict-event bound is E=p(z+1)(r+1)(a+1)(q+1)+3Ga, giving at most 8(E+1) rows plus exact input boundary rows and finite nonbound subset choices.
+First-use induction retains an actual same-map whole witness for each activation and each fixed-value transfer before discarding any unneeded old support.
+
+These counts precede word selection.
+For an s-state DFA having at least k words, k distinct representatives have length at most s(k+1); use the actual fixed-duration inverse/profile languages and finite protected exclusions.
+Bound passive endpoint words with the existing finite-k capacity authority, then compile Z shields and new patterns from the chosen words without feeding their new DFA sizes back into q.
+
+The resulting encoding bound includes component slots, words, namespace maps, regex programs and references.
+It is a semantic extraction for the stated free atomic cone; the all-domain obligation still requires a bounded winning recipe whose complete native checks and contextual child evidence pass.
+An invalid encoding or a configured resource limit supplies no general negative answer.
+
+### Native controls and the remaining LIST question
+
+The [activation-shield controls](../test/research/re01/scalar-union-activation-shields.test.ts) use one shared source fixture and the existing complete verifier.
+They check a definition-TOP-dead QName mask with a later real STRING VALUE, the full regular whitespace shield, and a finite-enum contrast whose required construction fails ordinary F2.
+The fourth control keeps a singleton LIST QName tuple in the definition map and selects a later real duration VALUE under another map, with complete inherited-root evidence.
+
+These controls preserve the failed contrast and establish the stated concrete constructions.
+They do not prove that componentwise positive calls fund a multi-item whole LIST tuple, or bound mutually qualifying numeric/LIST recipes.
+General correlated LIST extraction, hard-boundary joins, checked-recipe adequacy, complete negatives and mathematical termination remain open.
+
 ## Source and proof boundaries
 
 The elementary DFA factorization, padding and bounded-carry construction above is self-contained.

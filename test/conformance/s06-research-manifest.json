@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "4150a36aead9e654d10343e5fe1865b3ecf34d676d3bac60a9d900e8b42b4862"
+          "sha256": "cd006a46da18c20a8aa07bef110c0d7d06a81d14b518c3ef1197d4f889ca2476"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "580926a0830ad253413e930b91e2f080f6dd5ece461f247fbc539486010f2ba9"
+          "sha256": "2cb1375250ed8f09df98d7fcdaeb7c57378057512c732582b151c5ee3e555b45"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2967,6 +2967,16 @@
           "path": "test/research/re01/selected-prototype-new-group.test.ts",
           "role": "prototype",
           "sha256": "4de93d343dcf19bd865b79df06e8c3a156a6ecac8fc2cff7abe8ea218877e087"
+        },
+        {
+          "path": "test/research/re01/scalar-union-activation-shields.test.ts",
+          "role": "prototype",
+          "sha256": "92dce2410afb4b358d13d19ae27fbe06f28218cbb5c256da40383a77798f7d6b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-union-activation-shields.xsd",
+          "role": "fixture",
+          "sha256": "e55cd833923d5b05e07bfca003d1e3199418fb72e1d19fd7c6068f2b59fb8631"
         }
       ]
     },

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): check ordered UNION activation shields and record scoped scalar reconstruction and conditional termination.
+
 - feat(re01): reissue donor-new model groups with mapped local types and preserved group scope.
 
 - fix(scalar): preserve empty QName and NOTATION inverses under actual namespace bindings.

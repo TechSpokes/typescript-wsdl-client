@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scalar:union-activation-shields" targetNamespace="urn:scalar:union-activation-shields">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootR"><xs:complexContent><xs:restriction base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootD"><xs:complexContent><xs:extension base="t:RootR"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="TopDeadUnion"><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType>
+  <xs:simpleType name="TopDeadBase"><xs:restriction base="t:TopDeadUnion"><xs:pattern value=" foo "/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="StringShield"><xs:restriction base="xs:string"><xs:pattern value="[ \t\r\n]*P1Y[ \t\r\n]*"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ShieldQName"><xs:restriction base="xs:QName"><xs:enumeration value="t:P1Y"/><xs:pattern value="P1Y"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ShieldUnion"><xs:union memberTypes="t:StringShield t:ShieldQName"/></xs:simpleType>
+  <xs:simpleType name="ShieldBase"><xs:restriction base="t:ShieldUnion"><xs:pattern value="P1Y"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameList"><xs:list itemType="xs:QName"/></xs:simpleType>
+  <xs:simpleType name="ListUnion"><xs:union memberTypes="t:QNameList xs:duration"/></xs:simpleType>
+  <xs:simpleType name="ListBase"><xs:restriction base="t:ListUnion"><xs:pattern value="P1Y"/></xs:restriction></xs:simpleType>
+</xs:schema>
