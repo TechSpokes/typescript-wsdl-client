@@ -1086,7 +1086,7 @@
         {
           "path": "src/compiler/finiteRe01Verification.ts",
           "role": "semantic-source",
-          "sha256": "1c20d21fb24f4ec9cc5d74d88b0dd098bad207688d3d1edb51183059552ed16f"
+          "sha256": "c59e2f05f566e41f37b659ca670a185f1817d8c120a5e4f86632c0efee854a20"
         },
         {
           "path": "src/compiler/particleAttribution.ts",
@@ -1111,7 +1111,7 @@
         {
           "path": "src/compiler/particleRestriction.ts",
           "role": "semantic-source",
-          "sha256": "716a46fbe20f61cf52b01c97832bf121d005ffaec30d08c13ea7025e5689e4f1"
+          "sha256": "6e2ce956ff6cf9d8a8d7e7ca68d0b3923e7651426443cb83d3db189ed98b4245"
         },
         {
           "path": "src/compiler/particleSemanticView.ts",
@@ -1161,7 +1161,7 @@
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
           "role": "semantic-source",
-          "sha256": "18dd93411486d0f8d95537c8753b744b99a3a37dfa3e51a41fd5d7651b622602"
+          "sha256": "197006485a91890d04bf542031ef68b4b7a7b49227631917b5ad4e728156a5d6"
         },
         {
           "path": "src/compiler/schemaDatatypeValues.ts",
@@ -1421,7 +1421,7 @@
         {
           "path": "test/unit/particle-restriction-independent.test.ts",
           "role": "expectations",
-          "sha256": "415056af60e0150fe9f56a45b6ec116a3d3bc69e803c8b91d6f9316f9d8ea580"
+          "sha256": "9bca61a9f396a6125378a21e23fb4800b0a38bbf0d5e026a4fcae6cc09d18480"
         },
         {
           "path": "test/unit/particle-upa-independent.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "fe8eda8f9bdb971abd79bda9036bb45158753b04255da5b325dfdc2911d4d084"
+          "sha256": "84998d71d892684db11a400343a3ac1493546a548483a671e05aec3b96f1df8a"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2997,6 +2997,26 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-list-formation-gates.xsd",
           "role": "fixture",
           "sha256": "b046677cbac11498cffe3b8b380da66fdcfd21c5b2f9516496b16e0619884586"
+        },
+        {
+          "path": "test/research/re01/scalar-mixed-emptiability-dispatch.test.ts",
+          "role": "prototype",
+          "sha256": "3780b131cdee829a80a24c56f524f77c6622a1414c19ff1779d2d78520deec12"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-mixed-emptiability-dispatch.xsd",
+          "role": "fixture",
+          "sha256": "65bc5f4221ea7bc6220be956dc350fb84e71e48b4ccf5243b5749ab1fb0d4277"
+        },
+        {
+          "path": "test/research/re01/scalar-sc-fixed-value-dispatch.test.ts",
+          "role": "prototype",
+          "sha256": "ca762ea1db652c89428a2711c34494e32a5d380cccc04905d411f1a57a419a18"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-sc-fixed-value-dispatch.xsd",
+          "role": "fixture",
+          "sha256": "1774d5d5562da83e63c7841465bc6dbc947c7484092baa9a1d945d800d5cf7f8"
         }
       ]
     },

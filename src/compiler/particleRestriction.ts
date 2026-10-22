@@ -10,6 +10,7 @@ import type {RelationFailure} from './schemaTypeRelations.js';
 import {createSchemaScalarKernel} from './schemaScalarKernel.js';
 import {checkDeclaration} from './schemaDeclarationPrimitives.js';
 import type {ScalarFailure} from './schemaScalarKernel.js';
+import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import {evaluatePreparedGroupWildcard} from './particleWildcardRelation.js';
 import type {DecisionParticle} from './particleWildcardRelation.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
@@ -24,6 +25,7 @@ import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js'
 export type ParticleRestrictionResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-particle-restrict'; contextId: string;
   obligations: readonly ['component-validity', 'particle-local-legality'];
+  scalarObligations: readonly Readonly<ScalarObligation & {contextId: string}>[];
   typeDependencies: readonly SemanticTypeDependency[];
   identityConstraintDependencies: readonly IdentityConstraintDependency[];
 }> | RelationFailure | ScalarFailure | ResourceLimitFailure;
@@ -34,7 +36,8 @@ type Enumeration = Readonly<{key: string; members: readonly NodeId[]}>;
 class NeedOrder extends Error {constructor(readonly enumeration: Enumeration) {super('Implicit choice enumeration required');}}
 const ONE = Object.freeze({min: '1', max: '1'});
 
-export function checkParticleRestriction(context: SemanticContext, derived: SemanticParticleView, base: SemanticParticleView): ParticleRestrictionResult {
+export function checkParticleRestriction(context: SemanticContext, derived: SemanticParticleView, base: SemanticParticleView,
+  options: Readonly<{deferScalarObligations?: boolean}> = {}): ParticleRestrictionResult {
   assertSemanticParticleView(context, derived); assertSemanticParticleView(context, base);
   const budget = context.budget, charge = (n = 1) => budget.chargeWork(n);
   return budget.guard(() => {
@@ -44,9 +47,20 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
     };
     try {
       charge(24);
+      const deferScalarObligations = budget.snapshot(options).deferScalarObligations === true;
       if (derived.purpose !== 'restriction' || base.purpose !== 'restriction') return unresolved(derived.root, 'Restriction-normalized views required');
       const typeDependencies = collectSemanticTypeDependencies(context);
       const identityConstraintDependencies = collectIdentityConstraintDependencies(context);
+      charge(2); const scalarObligations: (ScalarObligation & {contextId: string})[] = [], scalarKeys = new Set<string>();
+      const rememberScalar = (pending: readonly ScalarObligation[]): void => {
+        if (!deferScalarObligations) return;
+        for (const item of pending) {
+          const contextId = item.contextId ?? context.contextId;
+          charge(12 + 6 * (contextId.length + item.rule.length + item.component.length));
+          const key = JSON.stringify([contextId, item.rule, item.component]);
+          if (!scalarKeys.has(key)) {charge(4); scalarKeys.add(key); scalarObligations.push({...item, contextId});}
+        }
+      };
       typeDependencies.add(derived.typeDependencies); typeDependencies.add(base.typeDependencies);
       const algebra = occurrenceAlgebra(charge), scalar = createSchemaScalarKernel(context);
       const within = (r: Occurs, b: Occurs) => algebra.compare(r.min, b.min) >= 0 && algebra.compare(r.max, b.max) <= 0;
@@ -114,6 +128,8 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
         const left = checkDeclaration(context, a.id), right = checkDeclaration(context, b.id);
         if (left.kind !== 'checked') throw new Incomplete(left);
         if (right.kind !== 'checked') throw new Incomplete(right);
+        rememberScalar(left.scalarObligations);
+        rememberScalar(right.scalarObligations);
         typeDependencies.add(left.typeDependencies); typeDependencies.add(right.typeDependencies);
         identityConstraintDependencies.add(left.identityConstraintDependencies); identityConstraintDependencies.add(right.identityConstraintDependencies);
         if (!left.constraint || !right.constraint) return unresolved(derived.root, 'Assessed fixed declaration constraint is unavailable');
@@ -121,8 +137,9 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
         // emptiability; the constraint selects its assessed scalar value type.
         const result = scalar.equivalent(left.constraint.type, left.constraint.lexical, right.constraint.type, right.constraint.lexical, a.id);
         if (result.kind !== 'checked') throw new Incomplete(result);
+        rememberScalar(result.obligations);
         typeDependencies.add(result.typeDependencies);
-        if (left.scalarObligations.length || right.scalarObligations.length || result.obligations.length)
+        if (!deferScalarObligations && (left.scalarObligations.length || right.scalarObligations.length || result.obligations.length))
           return unresolved(derived.root, 'Fixed value comparison has undischarged scalar prerequisites');
         return result.value;
       };
@@ -288,6 +305,7 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
       if (!value && pending) return pending;
       charge(10); return Object.freeze({kind: 'checked', value, rule: 'cos-particle-restrict', contextId: context.contextId,
         obligations: Object.freeze(['component-validity', 'particle-local-legality'] as const), typeDependencies: typeDependencies.snapshot(),
+        scalarObligations: budget.freeze(budget.snapshot(scalarObligations)),
         identityConstraintDependencies: identityConstraintDependencies.snapshot()});
     } catch (error: unknown) {if (error instanceof Incomplete || error instanceof RelationProblem) return error.result; if (error instanceof SemanticError) {budget.chargeWork(10 + error.message.length); return Object.freeze({kind: 'invalid-input', rule: 'cos-particle-restrict', component: error.component, message: error.message});} throw error;}
   });

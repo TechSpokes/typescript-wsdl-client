@@ -19,6 +19,9 @@ import {resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
 import type {OriginalGeneratedScalarReference, SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
 import {checkIdentityConstraintFormation} from './schemaIdentityConstraints.js';
 import type {IdentityConstraintDependency, IdentityConstraintReceipt} from './schemaIdentityConstraints.js';
+import {deriveActualComplexContent, deriveOriginalComplexPropertyContent} from './complexTypeContent.js';
+import {assertSemanticParticleView, prepareSemanticParticleView} from './particleSemanticView.js';
+import type {SemanticParticleView} from './particleSemanticView.js';
 
 export type FiniteScalarSlotReceipt = Extract<GeneratedScalarResult, {kind: 'checked'}>;
 
@@ -107,13 +110,6 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
       return fail('evidence-reference', 'Proof reference is unavailable', 'unresolved', context);
     };
     charge(2); const deferred: {context: SemanticContext; obligation: ConstructionObligation}[] = [];
-    const rejectPending = (context: SemanticContext, pending: ConstructionObligation): void => {
-      if (pending.contextId !== context.contextId) {
-        charge(4); deferred.push({context, obligation: pending}); return;
-      }
-      if (pending.rule === 'complete-substitution-universe' && context.membership === 'complete-actual-plus-additions') return;
-      fail(pending.rule, 'A generated local semantic prerequisite remains undischarged', 'unresolved', context, pending.component);
-    };
     try {
       if (actual.kind !== 'actual' || actual.membership !== 'complete-actual-plus-additions') return fail('actual-environment', 'A complete immutable original context is required');
       const rootId = record(supplied, 'root'), sourceNodes = record(supplied, 'nodes');
@@ -228,6 +224,50 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
       const actualNotations = checkNotations(actual);
       charge(4); const closures = new Map<string, Closure>();
       charge(); const typedDependencies: {from: SemanticContext; dependency: SemanticTypeDependency}[] = [];
+      charge(); const mixedFacts = new Map<SemanticContext, Map<NodeId, SemanticParticleView>>();
+      const mixedRule = 'simple-content-base-mixed-emptiable';
+      const mixedFact = (context: SemanticContext, component: NodeId): SemanticParticleView => {
+        charge(5 + component.length);
+        let facts = mixedFacts.get(context), view = facts?.get(component);
+        if (!view) {
+          const found = context.lookup(component);
+          if (found.kind !== 'found' || found.node.kind !== 'complexType')
+            return fail(mixedRule, 'Mixed base properties are unavailable', 'unresolved', context, component);
+          const mapped = context.kind === 'actual' ? deriveActualComplexContent(context, component)
+            : deriveOriginalComplexPropertyContent(context, component);
+          if (mapped.kind !== 'checked') {
+            if (mapped.kind === 'resource-limit') throw new VerificationAbort(mapped);
+            return fail(mapped.rule, mapped.message, mapped.kind === 'unresolved' ? 'unresolved'
+              : context.kind === 'actual' ? 'invalid-schema' : 'candidate-rejected', context, mapped.component ?? component);
+          }
+          if (mapped.view.content.kind !== 'mixed')
+            return fail(mixedRule, 'Simple-content base must have mixed content', context.kind === 'actual' ? 'invalid-schema' : 'candidate-rejected', context, component);
+          const prepared = prepareSemanticParticleView(context, mapped.view, 'restriction');
+          if (prepared.kind !== 'checked') {
+            if (prepared.kind === 'resource-limit') throw new VerificationAbort(prepared);
+            return fail(prepared.rule, prepared.message, prepared.kind === 'unresolved' ? 'unresolved'
+              : context.kind === 'actual' ? 'invalid-schema' : 'candidate-rejected', context, prepared.component ?? component);
+          }
+          view = prepared.view;
+        }
+        assertSemanticParticleView(context, view);
+        if (view.content.type !== component || view.content.content.kind !== 'mixed' || view.purpose !== 'restriction')
+          return fail(mixedRule, 'Mixed base fact has another semantic subject', 'invalid-evidence', context, component);
+        if (!view.root.summary.schemaEmptiable)
+          return fail(mixedRule, 'Mixed simple-content base is not formally emptiable', context.kind === 'actual' ? 'invalid-schema' : 'candidate-rejected', context, component);
+        if (!facts) {charge(2); facts = new Map(); mixedFacts.set(context, facts);}
+        charge(2); facts.set(component, view);
+        return view;
+      };
+      const rejectPending = (context: SemanticContext, pending: ConstructionObligation,
+        requireTypes: (dependencies: readonly SemanticTypeDependency[]) => void): void => {
+        if (pending.contextId !== context.contextId) {
+          charge(4); deferred.push({context, obligation: pending}); return;
+        }
+        if (pending.rule === mixedRule) {requireTypes(mixedFact(context, pending.component).typeDependencies); return;}
+        if (pending.rule === 'complete-substitution-universe' && context.membership === 'complete-actual-plus-additions') return;
+        fail(pending.rule, 'A generated local semantic prerequisite remains undischarged', 'unresolved', context, pending.component);
+      };
       const close = (context: SemanticContext, roots: readonly NodeId[], correspondence?: CorrespondenceReceipt): Closure => {
         charge(8);
         const identityConstraints: IdentityConstraintReceipt[] = [], checkedICs = new Set<string>();
@@ -287,7 +327,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
             // genuine GraphNode-owned source premises can remain as debts;
             // the complex provenance owner cannot certify the scalar slot.
             for (const pending of result.obligations) {
-              charge(4); rejectPending(context, {...pending, contextId: pending.contextId ?? context.contextId});
+              charge(4); rejectPending(context, {...pending, contextId: pending.contextId ?? context.contextId}, requireTypes);
             }
             charge(4 + slot.owner.length); byScalarSlot.set(slot.owner, result); scalarSlots.push(result);
             requireTypes(result.typeDependencies);
@@ -307,7 +347,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
           if (result.kind !== 'checked') throw new VerificationAbort(result.kind === 'resource-limit' ? result
             : {...result, contextId: result.contextId ?? context.contextId});
           assertComponentConstruction(context, result);
-          for (const pending of result.obligations) rejectPending(context, pending);
+          for (const pending of result.obligations) rejectPending(context, pending, requireTypes);
           charge(4 + id.length); byComponent.set(id, result); components.push(result);
           requireTypes(result.typeDependencies);
           requireIdentityConstraints(result.identityConstraintDependencies);
@@ -411,6 +451,27 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
         execute(evidence);
       }
       if (completed.size !== nodes.size) return fail('unused-proof-node', 'Every supplied proof node must match a required obligation');
+      // A late property-only fact cannot reopen a closed FULL frontier. Its
+      // actual typed support must already be present in that exact context.
+      const lateMixedFact = (contextId: string, component: NodeId, from: SemanticContext): void => {
+        charge(4 + contextId.length); const closure = closures.get(contextId);
+        if (!closure) return fail(mixedRule, 'Mixed base fact has no checked originating context', 'unresolved', from, component);
+        const view = mixedFact(closure.context, component);
+        for (const dependency of view.typeDependencies) {
+          charge(5);
+          if (dependency.contextId === contextId) {
+            const type = dependency.type;
+            if (type.kind === 'component' && !closure.byComponent.has(type.id)
+              || type.kind === 'original-generated' && !closure.byScalarSlot.has(type.owner))
+              return fail(mixedRule, 'Late mixed base fact lacks checked type support', 'unresolved', closure.context, component);
+          }
+          typedDependencies.push({from: closure.context, dependency});
+        }
+      };
+      for (const pending of deferred) if (pending.obligation.rule === mixedRule)
+        lateMixedFact(pending.obligation.contextId, pending.obligation.component, pending.context);
+      for (const step of proof) for (const pending of step.correspondence.scalarObligations) if (pending.obligation.rule === mixedRule)
+        lateMixedFact(pending.contextId, pending.obligation.component, actual);
       // Dependency facts in checked component/slot/correspondence receipts are
       // privately owned and frozen. Resolve each exact builtin tuple once per
       // context; repeated uses still pay for the lookup and remain represented
@@ -448,6 +509,7 @@ export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId
       // type owner must have checked that same property in that same context.
       const discharged = (contextId: string, rule: string, component: NodeId): boolean => {
         charge(4 + contextId.length); const closure = closures.get(contextId);
+        if (rule === mixedRule) return closure !== undefined && mixedFacts.get(closure.context)?.has(component) === true;
         const owner = closure?.byComponent.get(component);
         for (const checked of owner?.discharged ?? []) {
           charge(3 + checked.rule.length + checked.component.length + checked.contextId.length);

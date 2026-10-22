@@ -912,3 +912,19 @@ Eight marked rows and at most one opposite preparation per mark give sixteen tra
 The positive stock's cardinality and WORD lengths are not bounded here. Once their separate finite role bound is established, the [supplied finite endpoint theorem](#supplied-shared-endpoint-tuple-theorem) can treat the finitely many endpoint and qualification roles jointly. The narrow native private-alias capacity operation is not an implementation of this larger construction.
 
 The empty case needs its own accepted alias construction or an exact empty-boundary argument. This theorem establishes no empty hard-end replay, outer ordered-UNION reconstruction, broad PROPERTY-image preservation, WORD-stock bound, scalar J or global g(P). It is a local source-semantic contraction, with no new native execution or public solver API.
+
+## Aggregate mixed-base emptiability
+
+An inherited SOURCE simple-content description can retain the prerequisite `simple-content-base-mixed-emptiable` after its direct complex owner has checked that prerequisite. Generated scalar slots and later scalar consumers must continue publishing the exact component and originating context. Their checked scalar results alone do not discharge the premise.
+
+The finite verifier resolves this known prerequisite with the existing content mapper and authenticated restriction particle view in that originating context. The content must be mixed and its formal `schemaEmptiable` summary must be true. The fact is cached separately from component construction; checking it neither supplies FULL of its named complex type nor schedules that FULL merely from the owner identifier.
+
+When the originating closure is open, the view's actual type dependencies enter its ordinary worklist. A late deferred or correspondence premise uses the already checked originating closure, and uncovered type support remains unresolved. A current-context fact cannot discharge an original-context premise or another candidate's premise. Unknown scalar prerequisites and ordinary F2 retain their existing behavior.
+
+The construction owner can explicitly request a conditional particle restriction comparison that forwards scalar prerequisites from completed fixed-value reads. The default standalone comparison continues to report unresolved when such prerequisites remain. Forwarded obligations retain their originating context and join the existing type and identity-constraint read footprint, including completed reads from an unsuccessful mapping alternative. Actual unresolved scalar calls remain unresolved. Raw simple-content formation still requires its genuine component owner; the mixed-content fact does not certify it.
+
+The [aggregate dispatch controls](../test/research/re01/scalar-mixed-emptiability-dispatch.test.ts) retain local scalar debts while checking complete evidence, nonempty and wrong-variety contrasts, context separation, required children and sticky resource limits.
+
+The [complete simple-content guard controls](../test/research/re01/scalar-sc-fixed-value-dispatch.test.ts) select a fixed BOOLEAN value at the declaration's map while preserving the required literal scalar ancestry and original QName selection at the producer's map. Their exact input-type and restriction-wrapper contrasts fail the required particle comparison. These are supplied constructions and chosen contrasts, not a universal helper-necessity result.
+
+This corrects the demonstrated inherited mixed-base and particle-prerequisite frontiers. It establishes no general reconstruction, late-frontier adequacy, complete negative answer or termination bound.

@@ -397,7 +397,9 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             if (own.kind === 'mixed' && prior.kind !== 'mixed') return fail('derivation-ok-restriction.5.4', 'Mixed restriction requires mixed base content');
             const derivedView = checked(prepareSemanticParticleView(context, ownContent, 'restriction'));
             const baseView = checked(prepareSemanticParticleView(context, baseContent, 'restriction'));
-            if (!checked(checkParticleRestriction(context, derivedView.view, baseView.view)).value)
+            const restriction = checked(checkParticleRestriction(context, derivedView.view, baseView.view, {deferScalarObligations: true}));
+            scalarObligations(restriction.scalarObligations);
+            if (!restriction.value)
               return fail('derivation-ok-restriction.5.4', 'Particle restriction is not satisfied');
           } else if (method === 'extension' && 'particle' in own && prior?.kind === 'empty') {
             // Extension1.4.3.2.1 imposes no nonempty prefix when the base is empty.

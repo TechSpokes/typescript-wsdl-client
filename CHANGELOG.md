@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): preserve scalar prerequisites through aggregate particle matching and discharge exact mixed-base emptiability.
+
 - docs(re01): prove scoped scalar capacity and duration bounds while preserving the dynamic bootstrap gap.
 
 - test(re01): distinguish LIST preparation and enum qualification from actual UNION image obligations.
