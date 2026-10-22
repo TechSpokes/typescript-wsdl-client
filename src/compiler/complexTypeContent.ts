@@ -3,7 +3,7 @@ import {privateParticleId} from './hypotheticalScopedIdentity.js';
 import type {CanonicalGraph, ComplexTypeNode, GraphNode, NodeId, Occurs, ParticleNode, Reference} from './canonicalGraph.js';
 import {assertSemanticContext, graphForSemanticContext, storedIdentityOccupant} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
-import type {OriginalComplexParticleHandle, RawComplexContent} from './re01TypeProperties.js';
+import type {OriginalComplexParticleHandle, OriginalUrWildcardHandle, RawComplexContent} from './re01TypeProperties.js';
 import type {RelationFailure} from './schemaTypeRelations.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 
@@ -31,6 +31,8 @@ const originalPropertyCaches = new WeakMap<object, Map<NodeId, ParticleContentVi
 const originalParticles = new WeakMap<object, Readonly<{context: SemanticContext; view: ParticleContentView}>>();
 const originalParticleCaches = new WeakMap<object, Map<NodeId, OriginalComplexParticleHandle>>();
 const originalRawViews = new WeakSet<object>();
+const originalUrWildcards = new WeakMap<object, Readonly<{context: SemanticContext; node: ParticleNode}>>();
+const originalUrCaches = new WeakMap<object, Map<NodeId, OriginalUrWildcardHandle>>();
 const ONE = Object.freeze({min: '1', max: '1'});
 const OPTIONAL_MANY = Object.freeze({min: '0', max: 'unbounded'});
 const EMPTY = Object.freeze({kind: 'empty'} as const);
@@ -54,6 +56,24 @@ function issueContentView(context: SemanticContext, fields: Omit<ParticleContent
   const budget = context.budget; budget.chargeWork(18 + additions.length * 2);
   const generated = new Map<NodeId, GraphNode>();
   for (const node of additions) {budget.chargeWork(2 + node.id.length); generated.set(node.id, node);}
+  const borrowed = context.originalUrWildcards();
+  if (borrowed.length) {
+    budget.chargeWork(8 + fields.synthetic.length + fields.urTypeWildcards.length + borrowed.length * 3);
+    const synthetic = new Set(fields.synthetic), markers = new Set(fields.urTypeWildcards);
+    for (const handle of borrowed) {
+      const node = originalUrWildcardSource(context.originalContext(), handle), prior = generated.get(node.id);
+      if (node.term.kind !== 'any') throw new TypeError('Invalid original UR wildcard backing');
+      if (prior && (prior.kind !== 'particle' || prior.term.kind !== 'any' || prior.id !== node.id
+        || prior.identity.kind !== 'scoped' || node.identity.kind !== 'scoped'
+        || prior.identity.owner !== node.identity.owner || prior.identity.path !== node.identity.path || prior.identity.role !== node.identity.role
+        || prior.occurs.min !== node.occurs.min || prior.occurs.max !== node.occurs.max
+        || prior.term.wildcard.namespace.value !== '##any' || prior.term.wildcard.processContents !== 'lax'
+        || prior.context !== node.context || prior.term.wildcard.namespace.context !== node.term.wildcard.namespace.context))
+        throw new TypeError('Conflicting original UR wildcard backing');
+      generated.set(node.id, node); synthetic.add(node.id); markers.add(node.id);
+    }
+    fields = {...fields, synthetic: Object.freeze([...synthetic]), urTypeWildcards: Object.freeze([...markers])};
+  }
   let projection: CanonicalGraph | undefined;
   const view: ParticleContentView = Object.freeze({...fields, get graph(): CanonicalGraph {
     budget.chargeWork();
@@ -228,6 +248,39 @@ export function originalComplexParticleSource(context: SemanticContext, handle: 
   return source.view;
 }
 
+export type OriginalUrWildcardResult = Readonly<{kind: 'checked'; handle: OriginalUrWildcardHandle}> | RelationFailure | ResourceLimitFailure;
+
+/** Select one unchanged native leaf from an authenticated actual SOURCE whole. */
+export function deriveOriginalUrWildcard(context: SemanticContext, original: OriginalComplexParticleHandle, particle: NodeId): OriginalUrWildcardResult {
+  assertSemanticContext(context);
+  return context.budget.guard(() => {
+    const b = context.budget, source = originalComplexParticleSource(context, original);
+    b.chargeWork(16 + particle.length + source.synthetic.length + source.urTypeWildcards.length);
+    const node = particleContentNode(context, source, particle);
+    if (!source.synthetic.includes(particle) || !source.urTypeWildcards.includes(particle) || node?.kind !== 'particle' || node.identity.kind !== 'scoped'
+      || node.term.kind !== 'any' || node.occurs.min !== '0' || node.occurs.max !== 'unbounded'
+      || node.term.wildcard.namespace.value !== '##any' || node.term.wildcard.processContents !== 'lax')
+      return Object.freeze({kind: 'unresolved', rule: 'original-ur-wildcard', component: particle, message: 'An unchanged actual-source native UR wildcard is required'});
+    let cache = originalUrCaches.get(context);
+    if (!cache) {b.chargeWork(2); cache = new Map(); originalUrCaches.set(context, cache);}
+    let handle = cache.get(particle);
+    if (!handle) {
+      b.reserveNodes(1); b.chargeWork(8 + node.identity.owner.length + particle.length);
+      handle = Object.freeze({owner: node.identity.owner, particle}) as OriginalUrWildcardHandle;
+      originalUrWildcards.set(handle, Object.freeze({context, node})); cache.set(particle, handle);
+    }
+    return Object.freeze({kind: 'checked', handle});
+  });
+}
+
+/** Private authentication used by preparation and same-H content owners. */
+export function originalUrWildcardSource(context: SemanticContext, handle: OriginalUrWildcardHandle): ParticleNode {
+  assertSemanticContext(context); context.budget.chargeWork(4);
+  const source = originalUrWildcards.get(handle);
+  if (!source || source.context !== context || context.kind !== 'actual') throw new TypeError('Unauthenticated or foreign original UR wildcard handle');
+  return source.node;
+}
+
 /** Raw candidate properties are read directly; their component validity remains a separate prerequisite. */
 export function deriveRawComplexContent(context: SemanticContext, type: NodeId): ContentViewResult {
   assertSemanticContext(context);
@@ -319,7 +372,8 @@ export function deriveOriginalContentSubtree(context: SemanticContext, source: P
   const budget = context.budget;
   return budget.guard(() => {
     budget.chargeWork(12 + particle.length + source.synthetic.length);
-    if (!(originalRawViews.has(source) || source.scope === 'original-property-projection' && context.originalComplexPropertySource(source.type))
+    if (!(originalRawViews.has(source) || source.scope === 'original-property-projection' && context.originalComplexPropertySource(source.type)
+      || context.originalUrWildcard(particle))
       || !source.synthetic.includes(particle) || context.lookup(particle).kind !== 'missing')
       return Object.freeze({kind: 'unresolved', rule: 'original-content-subtree', component: particle, message: 'Authentic private original subtree required'});
     const node = particleContentNode(context, source, particle);

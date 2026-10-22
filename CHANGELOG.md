@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): borrow authenticated source ur-type wildcards inside new registered particle constructions.
+
 - fix(scalar): retain formed atomic GSC1 facet components while adding new constraints.
 
 - test(re01): construct canonical nominal banks with complete inherited-root and required-child controls.

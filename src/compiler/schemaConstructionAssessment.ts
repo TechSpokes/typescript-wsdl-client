@@ -13,7 +13,7 @@ import type {ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import {checkImmediateTypeFinal, immediateTypeBase} from './schemaTypeRelations.js';
 import type {RelationResult} from './schemaTypeRelations.js';
-import {deriveActualComplexContent, deriveRawComplexContent, deriveOriginalComplexPropertyContent, deriveOriginalContentSubtree, particleContentNode, deriveBuiltinAnyTypeContent, deriveModelGroupContent} from './complexTypeContent.js';
+import {deriveActualComplexContent, deriveRawComplexContent, deriveOriginalComplexPropertyContent, deriveOriginalContentSubtree, particleContentNode, deriveBuiltinAnyTypeContent, deriveModelGroupContent, originalUrWildcardSource} from './complexTypeContent.js';
 import type {ParticleContentView} from './complexTypeContent.js';
 import {validateRawComplexTypeProperties} from './re01TypePropertyValidation.js';
 import {isXmlNCName, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -239,6 +239,18 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         const legal = checked(checkComplexParticleContent(context, view));
         if (!legal.value) return fail(legal.failedRule ?? 'particle-local-legality', 'Particle content violates its local constraints');
       };
+      const borrowedParticle = (target: NodeId): GraphNode | undefined => {
+        const handle = context.originalUrWildcard(target);
+        if (!handle) return undefined;
+        const leaf = originalUrWildcardSource(context.originalContext(), handle);
+        // Preparation authenticates this immutable terminal leaf. It is not
+        // an F component, and borrowing its provenance never requires FULL(owner).
+        occurrenceAlgebra(b.chargeWork).validate(leaf.occurs);
+        if (leaf.term.kind !== 'any' || leaf.occurs.min !== '0' || leaf.occurs.max !== 'unbounded'
+          || leaf.term.wildcard.namespace.value !== '##any' || leaf.term.wildcard.processContents !== 'lax')
+          return fail('original-ur-wildcard', 'Invalid borrowed native UR wildcard', 'unresolved', undefined, target);
+        return leaf;
+      };
       if (sourceContent) {
         if (originalComplex) {
           b.chargeWork(100 + context.contextId.length + context.originalContext().contextId.length + id.length);
@@ -305,7 +317,10 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         for (const slot of context.references(id)) {b.chargeWork(); reference(slot.reference);}
         if (node.kind === 'complexType' || node.kind === 'attributeGroup') b.chargeWork(node.attributes.length + 2);
         if (node.kind === 'particle' && 'children' in node.term) b.chargeWork(node.term.children.length + 2);
-        for (const child of particleChildren ?? containedNodes(node)) {b.chargeWork(); requireNode(child);}
+        for (const child of particleChildren ?? containedNodes(node)) {
+          b.chargeWork();
+          if (!(node.kind === 'particle' && 'children' in node.term && borrowedParticle(child))) requireNode(child);
+        }
       }
       let re01: ComponentConstructionReceipt['re01'];
       let ownRawSimpleContentChecked = false;
@@ -464,7 +479,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
               !['strict', 'lax', 'skip'].includes(wildcard.processContents))
               return fail('wildcard-properties', 'Particle wildcard namespace is not expressible');
           } else for (const child of particleChildren ?? node.term.children) {
-            b.chargeWork(); const item = requireNode(child);
+            b.chargeWork(); const item = borrowedParticle(child) ?? requireNode(child);
             if (item.kind !== 'particle') return fail('particle-properties', 'Model group children must be particles');
             if (node.term.kind === 'all' && (item.term.kind !== 'element' || !['0', '1'].includes(item.occurs.min) || !['0', '1'].includes(item.occurs.max)))
               return fail('cos-all-limited', 'All children must be element particles with zero/one bounds');

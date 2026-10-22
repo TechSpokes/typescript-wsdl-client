@@ -12,6 +12,11 @@ declare const originalParticleAuthority: unique symbol;
 export type OriginalComplexParticleHandle = Readonly<{
   owner: NodeId; particle: NodeId; [originalParticleAuthority]: true;
 }>;
+declare const originalUrWildcardAuthority: unique symbol;
+/** Unchanged actual-source native UR leaf, never a caller-supplied origin flag. */
+export type OriginalUrWildcardHandle = Readonly<{
+  owner: NodeId; particle: NodeId; [originalUrWildcardAuthority]: true;
+}>;
 export type RawComplexContent = Readonly<
   {kind: 'empty'} | {kind: 'simple'; type: SemanticTypeReference} |
   {kind: 'mixed' | 'element-only'; particle: NodeId; original?: OriginalComplexParticleHandle} |

@@ -10,8 +10,8 @@ import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {createSemanticBudget} from './semanticBudget.js';
 import type {ResourceLimitFailure, SemanticBudget} from './semanticBudget.js';
 import {assertRawComplexTypeShape} from './re01TypeProperties.js';
-import type {OriginalComplexParticleHandle, RawComplexTypeProperties} from './re01TypeProperties.js';
-import {originalComplexParticleSource, particleContentNode} from './complexTypeContent.js';
+import type {OriginalComplexParticleHandle, OriginalUrWildcardHandle, RawComplexTypeProperties} from './re01TypeProperties.js';
+import {originalComplexParticleSource, originalUrWildcardSource, particleContentNode} from './complexTypeContent.js';
 import {validateRawSimpleTypeShape} from './schemaSimpleTypeProperties.js';
 import type {RawSimpleTypeProperties} from './schemaSimpleTypeProperties.js';
 import {validateRawElementShape} from './schemaElementProperties.js';
@@ -74,6 +74,9 @@ export type SemanticContext = Readonly<{
   originalComplexContentSource(id: NodeId): ComplexTypeNode | undefined;
   /** Original semantic incidences only; undefined keeps the explicit child list. */
   originalCompositorChildren(id: NodeId): readonly NodeId[] | undefined;
+  /** Authenticated unchanged SOURCE leaves, outside ordinary component membership. */
+  originalUrWildcards(): readonly OriginalUrWildcardHandle[];
+  originalUrWildcard(id: NodeId): OriginalUrWildcardHandle | undefined;
   /** Original source operand interpretation, with the same request budget. */
   originalContext(): SemanticContext;
   /** Original schema syntax evidence, not implicit hypothetical symbol membership. */
@@ -105,6 +108,8 @@ export type SemanticCandidateDelta = Readonly<{
   rawAttributeGroups?: readonly RawAttributeGroupProperties[];
   /** Complete abstract properties, admitted only with the particle's genuine first birth. */
   rawParticleWildcards?: readonly RawParticleWildcardProperties[];
+  /** Borrow unchanged native SOURCE UR leaves; omission inherits the installed selections. */
+  originalUrWildcards?: readonly OriginalUrWildcardHandle[];
   /** Omission inherits the parent; an explicit selection must include every new addition. */
   notations?: Readonly<{active: readonly ExpandedName[]; additions?: readonly SchemaNotationProperties[]}>;
 }>;
@@ -240,6 +245,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         simple: ReadonlyMap<NodeId, RawSimpleTypeProperties>; elements: ReadonlyMap<NodeId, RawElementProperties>;
         attributes: ReadonlyMap<NodeId, RawAttributeProperties>; groups: ReadonlyMap<NodeId, RawAttributeGroupProperties>;
         particleWildcards: ReadonlyMap<NodeId, RawParticleWildcardProperties>;
+        originalUrWildcards: ReadonlyMap<NodeId, OriginalUrWildcardHandle>;
         notations: NotationState; scalarSlots: ScalarSlotState};
       const states = new WeakMap<SemanticContext, ContextState>();
 
@@ -345,7 +351,8 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       const sharedMetadata: SemanticGraphMetadata = Object.freeze({model: graph.model, origins: graph.origins,
         schemaAnnotations: graph.schemaAnnotations, schemaRetained: graph.schemaRetained, loading: graph.loading});
       budget.chargeWork(2); const noParticleWildcards: ReadonlyMap<NodeId, RawParticleWildcardProperties> = new Map();
-      const buildContext = (kind: SemanticContext['kind'], members: readonly NodeId[], changes: ReadonlyMap<NodeId, GraphNode>, changedSlots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>, changedEdges: ReadonlyMap<NodeId, readonly NodeId[]>, rawTypes: readonly RawComplexTypeProperties[] = [], rawSimpleTypes: readonly RawSimpleTypeProperties[] = [], rawElements: readonly RawElementProperties[] = [], rawGroups: readonly RawAttributeGroupProperties[] = [], notations: NotationState = actualNotations, scalarSlots: ScalarSlotState = actualScalarSlots, rawAttributes: readonly RawAttributeProperties[] = [], particleWildcards: ReadonlyMap<NodeId, RawParticleWildcardProperties> = noParticleWildcards): SemanticContext => {
+      const noOriginalUrWildcards: ReadonlyMap<NodeId, OriginalUrWildcardHandle> = new Map();
+      const buildContext = (kind: SemanticContext['kind'], members: readonly NodeId[], changes: ReadonlyMap<NodeId, GraphNode>, changedSlots: ReadonlyMap<NodeId, readonly ReferenceSlot[]>, changedEdges: ReadonlyMap<NodeId, readonly NodeId[]>, rawTypes: readonly RawComplexTypeProperties[] = [], rawSimpleTypes: readonly RawSimpleTypeProperties[] = [], rawElements: readonly RawElementProperties[] = [], rawGroups: readonly RawAttributeGroupProperties[] = [], notations: NotationState = actualNotations, scalarSlots: ScalarSlotState = actualScalarSlots, rawAttributes: readonly RawAttributeProperties[] = [], particleWildcards: ReadonlyMap<NodeId, RawParticleWildcardProperties> = noParticleWildcards, borrowedUr: ReadonlyMap<NodeId, OriginalUrWildcardHandle> = noOriginalUrWildcards): SemanticContext => {
         budget.chargeWork(5);
         const membership = new Set<NodeId>();
         const rawProperties = new Map<NodeId, RawComplexTypeProperties>();
@@ -365,7 +372,13 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         }
         const reverse = new Map<NodeId, NodeId[]>();
         const slotsFor = (id: NodeId): readonly SemanticReferenceSlot[] => rawComplexSlots.get(id) ?? rawSimpleSlots.get(id) ?? changedSlots.get(id) ?? originalSlots.get(id) ?? [];
-        const edgesFor = (id: NodeId): readonly NodeId[] => rawComplexEdges.get(id) ?? changedEdges.get(id) ?? originalEdges.get(id) ?? [];
+        const edgesFor = (id: NodeId): readonly NodeId[] => {
+          const edges = rawComplexEdges.get(id) ?? changedEdges.get(id) ?? originalEdges.get(id) ?? [];
+          const node = changes.get(id) ?? originals.get(id);
+          if (!borrowedUr.size || node?.kind !== 'particle' || !('children' in node.term)) return edges;
+          budget.chargeWork(3 + edges.length);
+          return edges.filter(child => !borrowedUr.has(child));
+        };
         const record = (id: NodeId): GraphNode | undefined => changes.get(id) ?? originals.get(id);
         budget.chargeWork(6);
         function* identityRecords(): Generator<GraphNode> {yield* originals.values(); yield* changes.values();}
@@ -414,6 +427,16 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           if (!membership.has(id)) throw new InvalidContext('outside-context', id);
           return node;
         };
+        for (const [id, handle] of borrowedUr) {
+          const node = originalUrWildcardSource(actual, handle);
+          key(id); budget.chargeWork(10);
+          if (id !== handle.particle || node.id !== id || requireMember(handle.owner).kind !== 'complexType') throw new InvalidContext('reference', id);
+          if (record(id)) throw new InvalidContext('identity', id);
+          const occupied = identityOccupant(node.identity);
+          if (occupied !== undefined) throw new InvalidContext('identity', occupied);
+          if (node.identity.kind !== 'scoped' || requireMember(node.identity.owner).kind !== 'complexType') throw new InvalidContext('reference', id);
+          if (particleWildcards.has(id)) throw new InvalidContext('representation', id);
+        }
         const originalParticleEdges = (handle: OriginalComplexParticleHandle, root: NodeId): readonly NodeId[] => {
           const source = originalComplexParticleSource(actual, handle);
           if (root !== handle.particle || requireMember(handle.owner).kind !== 'complexType') throw new InvalidContext('reference', root);
@@ -628,6 +651,8 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         for (const entries of reverse.values()) {budget.chargeWork(1 + entries.length); Object.freeze(entries);}
         budget.chargeWork(100 + members.length);
         const frozenMembers = Object.freeze([...members]);
+        budget.chargeWork(2 + borrowedUr.size);
+        const frozenUrWildcards = Object.freeze([...borrowedUr.values()]);
         const contextId = `${requestId}:${kind}:${++serial}`;
         let context: SemanticContext;
         let compositorChildren: Map<NodeId, readonly NodeId[]> | undefined;
@@ -747,6 +772,8 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             if (!compositorChildren) {budget.chargeWork(2); compositorChildren = new Map();}
             compositorChildren.set(id, result); return result;
           },
+          originalUrWildcards(): readonly OriginalUrWildcardHandle[] {authenticate(); return frozenUrWildcards;},
+          originalUrWildcard(id: NodeId): OriginalUrWildcardHandle | undefined {authenticate(); key(id); return borrowedUr.get(id);},
           originalContext(): SemanticContext {authenticate(); return actual;},
           sourceSchemaRetained(): CanonicalGraph['schemaRetained'] {authenticate(); return graph.schemaRetained;},
           rawTypeProperties(id: NodeId): RawComplexTypeProperties | undefined {checked(id); return rawProperties.get(id);},
@@ -764,7 +791,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         identityOccupants.set(context, identityOccupant);
         requests.set(context, requestAuthority);
         states.set(context, {changes, slots: changedSlots, edges: changedEdges, raw: rawProperties, simple: rawSimpleProperties,
-          elements: rawElementProperties, attributes: rawAttributeProperties, groups: rawGroupProperties, particleWildcards, notations, scalarSlots});
+          elements: rawElementProperties, attributes: rawAttributeProperties, groups: rawGroupProperties, particleWildcards, originalUrWildcards: borrowedUr, notations, scalarSlots});
         forks.set(context, input => candidate(input, context));
         let projection: CanonicalGraph | undefined;
         projections.set(context, () => {
@@ -794,6 +821,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           const rawSimpleTypes = dataField(input, 'rawSimpleTypes'), rawElements = dataField(input, 'rawElements'), rawGroups = dataField(input, 'rawAttributeGroups');
           const rawAttributes = dataField(input, 'rawAttributes'), inputScalarSlots = dataField(input, 'scalarSlots');
           const rawParticleWildcards = dataField(input, 'rawParticleWildcards');
+          const inputUrWildcards = dataField(input, 'originalUrWildcards');
           const notationDelta = dataField(input, 'notations');
           const notationActive = notationDelta === undefined ? undefined : dataField(notationDelta, 'active');
           const notationAdditions = notationDelta === undefined ? undefined : dataField(notationDelta, 'additions');
@@ -801,13 +829,19 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             || (additions !== undefined && !Array.isArray(additions)) || (rawTypes !== undefined && !Array.isArray(rawTypes))
             || (rawGroups !== undefined && !Array.isArray(rawGroups)) || (rawSimpleTypes !== undefined && !Array.isArray(rawSimpleTypes)) || (rawElements !== undefined && !Array.isArray(rawElements))
             || (rawAttributes !== undefined && !Array.isArray(rawAttributes)) || (inputScalarSlots !== undefined && !Array.isArray(inputScalarSlots))
-            || (rawParticleWildcards !== undefined && !Array.isArray(rawParticleWildcards))) throw new InvalidContext('representation');
+            || (rawParticleWildcards !== undefined && !Array.isArray(rawParticleWildcards))
+            || (inputUrWildcards !== undefined && !Array.isArray(inputUrWildcards))) throw new InvalidContext('representation');
           if (notationDelta !== undefined && (!Array.isArray(notationActive) || (notationAdditions !== undefined && !Array.isArray(notationAdditions)))) throw new InvalidContext('representation');
           budget.reserveNodes((additions ? dataField(additions, 'length') as number : 0) + (endpoint ? 1 : 0)
             + (notationAdditions ? dataField(notationAdditions, 'length') as number : 0));
           // Snapshot data, but retain the identity of privately issued source
           // selectors only after authenticating them against this exact Γ.
           const originalHandles = new Map<number, OriginalComplexParticleHandle>();
+          const urHandles: OriginalUrWildcardHandle[] = [];
+          for (let index = 0; index < (inputUrWildcards?.length ?? 0); index++) {
+            const handle = dataField(inputUrWildcards, String(index)) as OriginalUrWildcardHandle;
+            originalUrWildcardSource(actual, handle); budget.chargeWork(2); urHandles.push(handle);
+          }
           for (let index = 0; index < (rawTypes?.length ?? 0); index++) {
             const row = dataField(rawTypes, String(index)), content = dataField(row, 'content');
             if (dataField(content, 'original') === undefined) continue;
@@ -824,6 +858,13 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           const raw = new Map(parent.raw), simple = new Map(parent.simple), elements = new Map(parent.elements), attributes = new Map(parent.attributes), groups = new Map(parent.groups);
           budget.chargeWork(2 + parent.particleWildcards.size * 2);
           const particleWildcards = new Map(parent.particleWildcards);
+          budget.chargeWork(3 + parent.originalUrWildcards.size + urHandles.length);
+          const borrowedUr = new Map(parent.originalUrWildcards);
+          for (const handle of urHandles) {
+            key(handle.particle);
+            if (borrowedUr.has(handle.particle)) throw new InvalidContext('identity', handle.particle);
+            budget.chargeWork(2); borrowedUr.set(handle.particle, handle);
+          }
           const active = new Set(delta.active);
           let scalarSlots = parent.scalarSlots;
           if (delta.scalarSlots !== undefined) {
@@ -926,7 +967,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
           for (const row of delta.rawAttributes ?? []) {if (!validateRawAttributeShape(row, budget)) throw new InvalidContext('representation'); permittedProperty(row.attribute); unique(row.attribute, seenAttributes); budget.chargeWork(); attributes.set(row.attribute, row);}
           for (const row of delta.rawAttributeGroups ?? []) {validateRawAttributeGroupShape(row, budget); permittedProperty(row.group); unique(row.group, seenGroups); budget.chargeWork(); groups.set(row.group, row);}
           budget.chargeWork(5 + raw.size + simple.size + elements.size + attributes.size + groups.size);
-          const context = buildContext('candidate', delta.active, changes, slots, edges, [...raw.values()], [...simple.values()], [...elements.values()], [...groups.values()], notations, scalarSlots, [...attributes.values()], particleWildcards);
+          const context = buildContext('candidate', delta.active, changes, slots, edges, [...raw.values()], [...simple.values()], [...elements.values()], [...groups.values()], notations, scalarSlots, [...attributes.values()], particleWildcards, borrowedUr);
           budget.chargeWork(); parents.set(context, from);
           budget.chargeWork(3); return Object.freeze({kind: 'prepared', context});
         } catch (error: unknown) {
