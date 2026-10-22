@@ -1017,3 +1017,49 @@ A native FLOAT control starts with genuine SOURCE S restricting builtin FLOAT wi
 Both D constructions accept `1e0` and `3`, but reject canonical `1`. Removing only the P1 leaves a genuinely FULL construction that accepts `1`. E20 does not cover B's stronger E10, and FLOAT takes neither the length nor decimal fallback; the qualified enum completes the actual missing-coverage F2 branch. The repeated endpoint is explicitly outside B and uses its genuine S provider rather than invented B membership.
 
 Independent source/control review accepted these fixed-context observations. Strict typing and the three native cases passed at unchanged default limits with 1,084,342 cumulative work. No complete RE01 forest, finite mixed-call bound, cross-context activation transport or temporal decoder follows; decreasing semantic whitelists alone do not prove literal native KEEP between successive rows.
+
+## Regular admission blockers for ordered UNIONs
+
+Finite positive VALUE enums cannot in general replace an earlier STRING member. A STRING selection which fails the whole UNION pattern still prevents a later member from winning; reconstruction must preserve that admission as well as successful whole outputs.
+
+For example, take exact INPUT `B=[QName,STRING,D]`, where D is DECIMAL enum 1 with pattern `1` and restriction final. A proper V uses a QName enum selecting `(ON,x)`, preserving STRING S, exact D and whole P1 `x|1`. At ON, V returns BASE-funded QName x or STRING 1; at OFF, bare x returns STRING x, which B never selects at any map.
+
+Replacing S by enum `{STRING x,STRING 1}` exposes DECIMAL 1 on raw ` 1`: S now rejects, D collapses to 1 and the whole pattern passes. Instead, an ordinary S pattern `[ \t\r\n]*1[ \t\r\n]*|x` retains the complete whitespace blocker without an enum and preserves V's entire function across maps. The failed enum replacement proves no general nonexistence or necessity of this fixed cone.
+
+### A finite whole normalization guard
+
+At an already checked writable proper RAW UNION birth, append one ordinary P1 recognizing a finite normalization set Z covering every retained successful use of that TYPE. Include genuine BASE inverses and provider calls, rather than only final root VALUE calls. This same-row insertion preserves the other fields, existing component ordinals, all retained positives and all old negatives.
+
+The native F2 certificates remain supported in the qualified atomic/LIST frame: finite-enum fixed-value membership is total there, result-image languages only shrink and earlier member admissions are unchanged. This uses the [scalar owner's actual dispatch](../src/compiler/scalarSchemaAssessment.ts), not a rule that every semantic subset automatically has a native certificate. Descendants must retain the newly issued pattern or be reconstructed with authentic current tables.
+
+A ur-UNION constructor over anySimpleType forbids facets; it cannot receive this insertion. A facetBinding row needs a genuine materializer, and immutable INPUT or complete-inventory clients remain protected or are jointly reissued. These representation and authority conditions are part of the construction.
+
+### One preserving STRING slot
+
+There is a constructive local synthesis for one writable preserving STRING slot S, genuine preserving SOURCE STRING BASE A, finitely many proper UNION clients over exact INPUT BASEs and finite whole normalization guards. Other members and actual maps are fixed. Project the first legal metadata mode and let M be its admission language; the actual upper admission domain is `U=M intersect L_A`, where L_A is A's complete admission language.
+
+Compute regular R of words S must accept to prevent an unfunded later selection, and regular F of words where S acceptance would itself yield an unfunded whole result. Fold each retained direct or whole positive/negative call into those constraints by checking both selection outcomes. A negative whole call may require S acceptance followed by a whole veto.
+
+The conditions are `R subset U`, `R intersect F` empty and consistency of the fixed outcomes. If they hold, emit one ordinary P1 for R with no new enum; otherwise no solution exists within this fixed one-slot problem. Retain authentic repeatables, actual whitespace coverage and the first-mode formation witnesses; the owner's regular length product then certifies any remaining length containment. This scoped failure criterion is not a general RE01 negative answer.
+
+For XML whitespace preserve, replace and collapse, inverses of one literal normalization are effective ordinary regular expressions. Given finite Z, every potential whole success lies in a collapse fiber of Z. Fixed INPUT predicates, the replace/collapse ranges, literal ports and genuine capped multiplicities give an effective finite quotient for the bounded nested STRING equivalence fragment; this does not cover arbitrary nonSTRING donor relations.
+
+### Binary donors remain a separate relation
+
+A genuine changed-UNION image duty can require a BASE64 donor with different token boundaries. Let INPUT `U0=[FLOAT,QName,Sx]`, where Sx is preserving STRING with P1 `x`, `L0=LIST(U0)` and `B=[L0,BASE64]`. A QName restriction G has enum `(ON,x),(OFF,y)` and P1 `x|y`; proper `U1=[FLOAT,G,Sx]` is born at ON, and L1 restricts L0 with ITEM U1.
+
+Put N equal to 1 followed by 41 zeros and z equal to `N x y`. Proper `C=[L1,BASE64]` over B with whole literal P1 z selects binary alpha at its ON definition map, but selects `[FLOAT infinity,STRING x,QName(OFF,y)]` at OFF. B never selects STRING x in a LIST, so that tuple cannot qualify a new whole enum at any map.
+
+B on z selects a LIST, whereas B on `Nx y` selects the same binary alpha as C at ON. The two words have the same 44-character compact BASE64 core, but different collapse normalizations. Thus same-WORD funding and the STRING whitespace quotient do not solve this donor; the binary-scoped INPUT masks give a regular same-core repair. The typed tuple alone does not force the displayed N or z, and this fixed-cone calculation supplies no rooted lower bound or executed FULL receipt.
+
+### Conditional scalar history deletion
+
+Within one fixed actual H and registry world, given closed WORD/value/provider stock, finite actual code, guard, point, map and provider-plan palettes and a bounded total store of old TYPE/owner/component ports, repeated scalar states admit an actual suffix reconstruction in the closed scalar fragment. The stock covers private BASE inverses and endpoint qualification calls. Per-row ITEM/MEMBER arity alone does not establish the store bound; every later direct identity client must be registered or fixed INPUT.
+
+The function alphabet is finite without an equivalence oracle: primitive/whitespace output families and finite guard atoms give formal truth tables, atomic ITEM selectors give finitely many LIST output families and whole selection gives finitely many result tables. Equal tables imply equal complete functions, but native replay additionally keeps current operational descriptors, syntax, constituent graphs and identity/annotation incidences.
+
+At equal states, reconstruct the suffix against the actual earlier BASE tables. Resolve each CURRENT ordinal in that table, let the existing owner issue its real retained identity/annotation incidence and reassess NEW providers and genuine BASE inverses at their actual maps. Separate nominal/literal ancestry matrices and reduced/exact no-length ancestor ledgers retain the native historical queries; removed old receipts are regenerated with the shortened actual dependencies.
+
+This reviewed decoder covers closed scalar constructor/provider duties, not ordinary declaration or complex simple-content owner FULL. General private/private PROPERTY unfolds BASE/ITEM/ordered MEMBER code and needs a synchronized graph rewrite; a current PROPERTY truth bit cannot authorize deletion. The fixed-constituent paired-tower case permits synchronized deletion, while branching copy graphs remain open.
+
+These independently reviewed source results distinguish infinite admission blockers from successful value support. General closed-use WORD/value stock, canonical palette and live-port bounds, private BASE donor reconstruction, joint PROPERTY/code shortening, complete negatives and mathematical termination remain open.

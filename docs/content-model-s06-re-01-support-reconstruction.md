@@ -5033,3 +5033,39 @@ Gamma property backsupport may be cyclic; requiring each callback to have been a
 The unresolved premise is a complete success-preserving encoded catalogue with one bounded checked native recipe per winning case, including the scalar/LIST and hard-boundary joins and the joint fresh-target condition.
 Operational exhaustion, an uncertified candidate and an unmatched scoped obstruction retain their separate meanings.
 General coverage, evidence adequacy, complete negative answers, mathematical termination and #234/#232 joint acceptance remain open until this premise and its operational use are established.
+
+## Parallel SOURCE modules through the complete AND forest
+
+A qualified parallel SOURCE-module cohort can be folded to one controller while preserving the complete required-child forest. This extends the current-child construction to the other pending subjects' independent children; it is not an exhaustive ordinary producer grammar or a physical action bound.
+
+### Module and boundary conditions
+
+The anonymous modules have the same ordinary NONSC, value-free, IC-free, empty-AU/no-AW recipe over exact P, differing only by `(w_i,ru_i,rJ_i)` roles. Their skeleton is `w_i E g`, `ru_i R rJ_i`, primitive `rJ_i E A`; retained formed guards force each owner child to use exact existing primitive `G E A`. Paired GLOBAL, Phi and COPY TYPE columns are rewritten together before birth, and incompatible immutable FIELD, scope, scalar, GROUP or SOURCE interfaces remain protected boundaries.
+
+Plan one map sending these sibling roles to `(f,ru,rJ)`, fixing P and retaining all GLOBAL and retained GROUP identities. Reissue affected private scoped identities with their mapped owners and fresh distinguishing paths; keep outside roles injective. Correspondence uses that same allocation plan in every descendant.
+
+Every BASE path enters at most one sibling module before its common fixed suffix. Positive nominal walks retain their labels and blocks; formed SG ancestry excludes a foreign sibling from a queried head's TYPE cone. Keeping the complete GLOBAL/SG graph therefore preserves each actual head roster, including later private HEAD queries, instead of assuming only currently observed heads matter.
+
+### Actual BODY versions and ROOT orders
+
+The canonical BODY needs fresh ordinary keys and, when appropriate, a genuinely fresh GROUP. Retained GROUP ports keep their separate coherent definition versions; reusing one retained group's keys for the canonical module could require two incompatible old images in one ROOT comparison.
+
+Split unforced proper placements before identifying TYPE content roots. Forced E-WHOLE equalities follow the selected BASE BODY version at the actual first E birth; retirement does not retarget an inherited BODY. Optional E-over-EMPTY aliases are versioned separately, and the resulting forced-root graph remains birth-directed.
+
+An equal-root ROOT comparison closes by identity. Distinct operand classes have disjoint private key domains with functional old-key images and agreeing protected ports, so an old successful order assignment pulls back within that ROOT call. Newly exposed LOCAL diagonals use the literally identical post-map TYPE, not a general nominal covariance principle.
+
+### Two phases of the forest construction
+
+At an all-E context, reconstruct every noncohort subject U's child from its actual old child at that exact parent, keeping f E g, and recurse on smaller old evidence height. A U proof below an already retired cohort cannot answer this independent obligation.
+
+For f's own child, follow the old owners' selected exact-G actions until every owner is R G. Apply the accepted fresh-target final-record selector before normalization at each actual owner-parent: w_i is Gamma-fresh, remains a mandatory FULL root and keeps its already selected R/G edge while only post-parent NP identities are retired. Other inherited owners and existing G are unchanged.
+
+This supplies zero-new-NP owner actions uniformly, while permitting their stable final-R/primitive support rows. Co-issue the mapped final support at the real f R G child, then transport the all-R remaining forest by induction over its actual old children. Local construction, FULL dependencies and exact-parent correspondence are regenerated in each new context; obsolete own-E receipts are not reused.
+
+The two inductions cover independent U children while f remains E and all later requirements after f retires. No mixed E/R cohort context is identified with one f context, and no child retires U and f simultaneously. The imported final-record selector retains its current-H/Gamma, history-erasure and actual Gamma-support qualifications.
+
+### Scope of the resulting contraction
+
+This independently reviewed semantic transformation contracts the stated parallel cohort to one retirement per transformed branch. It retains all stable helper, particle, GROUP and SG scaffolding needed by the supplied finite proof and supplies no input-derived bound on their size or universal native materializer.
+
+An input-finite current export/shield table cannot be composed with this whole-forest theorem until every later observer is covered. A private SG intermediate unqueried at the current child may become a later HEAD. General frame extraction, joint RP-only client normalization, scalar/provider boundary transport, bounded physical catalogues, complete negatives and termination remain open.
