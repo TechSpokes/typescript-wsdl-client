@@ -1063,3 +1063,11 @@ At equal states, reconstruct the suffix against the actual earlier BASE tables. 
 This reviewed decoder covers closed scalar constructor/provider duties, not ordinary declaration or complex simple-content owner FULL. General private/private PROPERTY unfolds BASE/ITEM/ordered MEMBER code and needs a synchronized graph rewrite; a current PROPERTY truth bit cannot authorize deletion. The fixed-constituent paired-tower case permits synchronized deletion, while branching copy graphs remain open.
 
 These independently reviewed source results distinguish infinite admission blockers from successful value support. General closed-use WORD/value stock, canonical palette and live-port bounds, private BASE donor reconstruction, joint PROPERTY/code shortening, complete negatives and mathematical termination remain open.
+
+## Effective SOURCE members in nominal relations
+
+The [local type relation owner](../src/compiler/schemaTypeRelations.ts) uses the effective ordered atomic/LIST members of a SOURCE UNION for target-member fallback. XML Schema 1.0 flattens nested SOURCE UNIONs, including constrained UNION wrappers; a supplied RAW member property remains literal and has its independent FULL formation obligation.
+
+For SOURCE `X=UNION[STRING,BOOLEAN]`, `P=UNION[X]` and A restricting P, X is not itself an effective member of P or A. Both the original context and its authenticated first RAW P view therefore answer `[X derived from A, A derived from P, X derived from P]` as `[false,true,false]`. An inherited SOURCE restriction uses a current RAW view at its constructor stop rather than returning to the old declared member list.
+
+This repairs an adapter disagreement with the scalar component owner; it changes neither P1 nor F2 semantics. The [independent relation controls](../test/unit/schema-type-relations.test.ts) and [complete construction/correspondence controls](../test/research/re01/scalar-source-union-members.test.ts) retain effective order, SOURCE constraints, RAW authority, exclusions, generated scalar components and actual contextual prerequisites. It supplies no general SIMPLE transitivity theorem or global reconstruction bound.

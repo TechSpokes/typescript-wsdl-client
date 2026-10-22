@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): use effective SOURCE union members consistently in nominal relations and current RAW inheritance.
+
 - docs(re01): reconstruct qualified helper forests and regular scalar blockers while keeping general bounds open.
 
 - docs(re01): synthesize one qualified atomic observation guard and verify its IEEE enum certificate.

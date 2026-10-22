@@ -1221,7 +1221,7 @@
         {
           "path": "src/compiler/schemaTypeRelations.ts",
           "role": "semantic-source",
-          "sha256": "fb330db516fc834ec14ad82b023710d4620c7ded1cc8b69b908eb69bdb5c3986"
+          "sha256": "4f7c9e3bd9c165b321d87173d545b9313a7db656d095738354b42fef385a4bb7"
         },
         {
           "path": "src/compiler/schemaUri.ts",
@@ -1491,7 +1491,7 @@
         {
           "path": "test/unit/schema-type-relations.test.ts",
           "role": "expectations",
-          "sha256": "877ac7db28c8b475b972ddf4559e4ef78217f5c440eb85b9d1a435bc4886d2a8"
+          "sha256": "796fcc8e6ee8b15f78a0364ba899cfe77dad537d29137bc1befaae9bfeb5fd4d"
         },
         {
           "path": "test/unit/semantic-context-independent.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "a35df0c36528f4d6629323ba178ce2ae05f303185f3a168b3a702ff9853cf7da"
+          "sha256": "acbac89fc161f4cc8a201726752e9ab815eb4a50dbab19c6d0374e2dc43e7181"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2732,6 +2732,16 @@
           "path": "test/research/re01/immediate-base-component-retention.test.ts",
           "role": "prototype",
           "sha256": "8ec529e6cbb94e0f90fea7b2ef699dabfdf05bb8ee96aaacc4d9cc3e39983ea8"
+        },
+        {
+          "path": "test/research/re01/scalar-source-union-members.test.ts",
+          "role": "prototype",
+          "sha256": "81209dcd499f10867414a7f0b6a4864c107c19a6ce29153d1e4e44820498f29d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-source-union-members.xsd",
+          "role": "fixture",
+          "sha256": "ffcc0f31607df4f6b8fd25bb1a5a1bf8444b12c2adf25f8755e4203c04ace4b5"
         },
         {
           "path": "test/research/re01/source-facet-current-components.test.ts",

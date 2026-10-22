@@ -10,12 +10,14 @@ import type {SemanticContext} from '../../src/compiler/semanticContext.js';
 import {createSemanticBudget} from '../../src/compiler/semanticBudget.js';
 import {checkTypeDerivation, checkImmediateTypeFinal, checkSubstitution, effectiveSubstitutionMembers} from '../../src/compiler/schemaTypeRelations.js';
 import {createSchemaScalarKernel} from '../../src/compiler/schemaScalarKernel.js';
+import {checkComponentConstruction} from '../../src/compiler/schemaConstructionAssessment.js';
 import type {SimpleTypeNode} from '../../src/compiler/canonicalGraph.js';
 import {checkDeclaration} from '../../src/compiler/schemaDeclarationPrimitives.js';
 import type {RawComplexTypeProperties} from '../../src/compiler/re01TypeProperties.js';
 import type {RawSimpleTypeProperties} from '../../src/compiler/schemaSimpleTypeProperties.js';
 import type {RawElementProperties} from '../../src/compiler/schemaElementProperties.js';
-import {loadSchemaInput} from '../../src/loader/schemaInput.js';
+import {loadSchemaInput, loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
+import {prepareSourceSchemaRequest} from '../../src/compiler/schemaDocumentSyntax.js';
 import {buildCanonicalGraph} from '../../src/compiler/buildCanonicalGraph.js';
 import {resolveCanonicalGraph} from '../../src/compiler/resolveCanonicalGraph.js';
 
@@ -169,6 +171,114 @@ describe('shared local XSD type and declaration relations', () => {
       {mode: 'substitutability', blocking: ['typo'] as never})).toMatchObject({kind: 'invalid-input', rule: 'substitution-blocking'});
   });
 
+  it('uses effective SOURCE union members and current RAW stops with precise cached TYPE reads', async () => {
+    const fixtures = path.resolve('test/conformance/fixtures');
+    const input = await loadSemanticSchemaInput(path.join(fixtures, 'xsd/recovery/scalar-source-union-members.xsd'), {policy: {fileRoots: [fixtures]}});
+    const prepared = prepareSourceSchemaRequest(input); if (prepared.kind !== 'prepared') throw Error(prepared.kind);
+    const {request} = prepared, actual = request.actual, namespace = 'urn:re01:scalar-source-union-members';
+    const id = (name: string) => globalId('type', {namespace, local: name});
+    for (const target of ['P', 'A', 'ConstrainedP']) {
+      expect(checked(actual, builtin('boolean'), local(id(target)))).toMatchObject({kind: 'checked', value: true});
+      expect(checked(actual, local(id('X')), local(id(target)))).toMatchObject({kind: 'checked', value: false});
+    }
+    expect(checked(actual, local(id('ConstrainedX')), local(id('ConstrainedP')))).toMatchObject({kind: 'checked', value: false});
+    expect(checked(actual, local(id('StringList')), local(id('MixedP')))).toMatchObject({kind: 'checked', value: true});
+    expect(checked(actual, local(id('ConstrainedMixed')), local(id('MixedP')))).toMatchObject({kind: 'checked', value: false});
+    expect(checked(actual, builtin('boolean'), local(id('LockedP')))).toMatchObject({kind: 'checked', value: true});
+    const sourceRead = checked(actual, builtin('boolean'), local(id('A')));
+    expect(sourceRead).toMatchObject({kind: 'checked', value: true});
+    if (sourceRead.kind !== 'checked') throw Error(sourceRead.kind);
+    expect(sourceRead.typeDependencies).toContainEqual({contextId: actual.contextId, type: {kind: 'component', id: id('X')}});
+    const selected = actual.lookup(id('A')); if (selected.kind !== 'found' || selected.node.kind !== 'simpleType') throw Error('Expected SOURCE restriction');
+    const bad = {...selected.node, id: id('FinalBlocked'), identity: {kind: 'global', role: 'type', name: {namespace, local: 'FinalBlocked'}} as const};
+    const overlay: RawSimpleTypeProperties = {type: id('P'), targetNamespace: namespace, base: builtin('anySimpleType'), final: [],
+      variety: {kind: 'union', members: [builtin('string'), builtin('boolean')]}, facetBinding: {kind: 'original', type: local(id('P'))},
+      provenance: {kind: 'actual-mapped', original: id('P')}};
+    const blocked: RawSimpleTypeProperties = {type: bad.id, targetNamespace: namespace, base: local(id('LockedP')), final: [],
+      variety: {kind: 'union', members: [builtin('string'), builtin('boolean')]}, facetLayers: [],
+      provenance: {kind: 'hypothetical-abstract', originals: []}};
+    const candidate = request.candidate({key: 'source-union-current-members', active: [...actual.members, bad.id], additions: [bad], rawSimpleTypes: [overlay, blocked]});
+    if (candidate.kind !== 'prepared') throw Error(candidate.kind); const current = candidate.context;
+    expect(checked(current, local(id('X')), local(id('A')))).toMatchObject({kind: 'checked', value: false});
+    expect(checked(current, local(id('A')), local(id('P')))).toMatchObject({kind: 'checked', value: true});
+    expect(checked(current, builtin('boolean'), local(id('A')), ['restriction'])).toMatchObject({kind: 'checked', value: false});
+    expect(checked(current, local(id('A')), local(id('A')), ['restriction'])).toMatchObject({kind: 'checked', value: true});
+    expect(checked(current, local(bad.id), local(id('LockedP')))).toMatchObject({kind: 'checked', value: false});
+    const first = checked(current, builtin('boolean'), local(id('A')));
+    checked(current, builtin('NOTATION'), builtin('anyType'));
+    const repeated = checked(current, builtin('boolean'), local(id('A')));
+    expect(repeated).toEqual(first);
+    if (repeated.kind !== 'checked') throw Error(repeated.kind);
+    expect(repeated.typeDependencies).not.toContainEqual({contextId: current.contextId, type: {kind: 'component', id: id('X')}});
+    expect(repeated.dependencies).not.toContain('builtin:NOTATION');
+    expect(repeated.typeDependencies).not.toContainEqual({contextId: current.contextId, type: {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'NOTATION'}}});
+    const elementId = (name: string) => globalId('element', {namespace, local: name});
+    for (const world of [actual, current]) {
+      for (const [member, head, allowed] of [['BooleanMember', 'Head', true], ['AliasMember', 'Head', true], ['ContentMember', 'Head', true],
+        ['ExactBooleanMember', 'RestrictionBlockedHead', true], ['RestrictedBooleanMember', 'RestrictionBlockedHead', false],
+        ['ExtendedContentMember', 'ExtensionBlockedHead', false]] as const) {
+        expect(checkSubstitution(world, elementId(member), elementId(head), {mode: 'affiliation'})).toMatchObject({kind: 'checked', value: true});
+        expect(checkSubstitution(world, elementId(member), elementId(head), {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: allowed});
+      }
+      const members = effectiveSubstitutionMembers(world, elementId('Head')); expect(members).toMatchObject({kind: 'checked'});
+      if (members.kind === 'checked') expect(new Set(members.value)).toEqual(new Set(['BooleanMember', 'AliasMember', 'ContentMember'].map(elementId)));
+      const read = checkSubstitution(world, elementId('BooleanMember'), elementId('Head'), {mode: 'substitutability'});
+      if (read.kind !== 'checked') throw Error(read.kind);
+      expect(read.typeDependencies.some(entry => entry.type.kind === 'component' && entry.type.id === id('X'))).toBe(world === actual);
+    }
+  });
+
+  it('leaves an unconsumed SOURCE suffix unread in local substitution alternatives', async () => {
+    const namespace = 'urn:relations:source-union-lazy', uri = 'https://scalar-probe.invalid/source-union-lazy.xsd';
+    // This C-only relation frame deliberately has a non-FULL ur member, so
+    // its first identity alternative wins even in the BASE-first precheck.
+    const bytes = new TextEncoder().encode(`<xs:schema xmlns:xs="${XSD_NAMESPACE}" xmlns:t="${namespace}" targetNamespace="${namespace}">
+      <xs:simpleType name="A1"><xs:union memberTypes="xs:anySimpleType"/></xs:simpleType>
+      <xs:simpleType name="A2"><xs:union memberTypes="xs:string"/></xs:simpleType>
+      <xs:simpleType name="Target"><xs:union memberTypes="t:A1 t:A2"/></xs:simpleType>
+      <xs:element name="Head" type="t:Target" abstract="true"/>
+      <xs:element name="Member" type="xs:anySimpleType" substitutionGroup="t:Head"/>
+    </xs:schema>`);
+    const input = await loadSchemaInput(uri, {policy: {allowedOrigins: ['https://scalar-probe.invalid']},
+      offlineResources: new Map([[uri, {bytes, digest: createHash('sha256').update(bytes).digest('hex')}]])});
+    const prepared = prepareSourceSchemaRequest(input); if (prepared.kind !== 'prepared') throw Error(prepared.kind);
+    const {actual} = prepared.request, id = (role: 'type' | 'element', name: string) => globalId(role, {namespace, local: name});
+    expect(checkComponentConstruction(actual, id('type', 'A1'))).toMatchObject({kind: 'invalid-schema', rule: 'cos-st-restricts'});
+    const first = checkSubstitution(actual, id('element', 'Member'), id('element', 'Head'), {mode: 'substitutability'});
+    expect(first).toMatchObject({kind: 'checked', value: true, obligations: ['component-validity']});
+    checked(actual, builtin('NOTATION'), builtin('anyType'));
+    const repeated = checkSubstitution(actual, id('element', 'Member'), id('element', 'Head'), {mode: 'substitutability'});
+    expect(repeated).toEqual(first);
+    const members = effectiveSubstitutionMembers(actual, id('element', 'Head'));
+    expect(members).toMatchObject({kind: 'checked', value: [id('element', 'Member')], obligations: ['component-validity']});
+    for (const receipt of [first, repeated, members]) {
+      if (receipt.kind !== 'checked') throw Error(receipt.kind);
+      expect(receipt.typeDependencies).toContainEqual({contextId: actual.contextId, type: {kind: 'component', id: id('type', 'A1')}});
+      expect(receipt.typeDependencies).not.toContainEqual({contextId: actual.contextId, type: {kind: 'component', id: id('type', 'A2')}});
+      expect(receipt.dependencies).not.toContain('builtin:NOTATION');
+    }
+  });
+
+  it('maps deep SOURCE union members iteratively and rejects cyclic updates under the shared budget', async () => {
+    const namespace = 'urn:relations:source-union-depth', uri = 'https://scalar-probe.invalid/source-union-depth.xsd', depth = 1200;
+    const rows = Array.from({length: depth}, (_, index) => `<xs:simpleType name="U${index}"><xs:union memberTypes="${index + 1 === depth ? 'xs:boolean' : `t:U${index + 1}`}"/></xs:simpleType>`).join('');
+    const bytes = new TextEncoder().encode(`<xs:schema xmlns:xs="${XSD_NAMESPACE}" xmlns:t="${namespace}" targetNamespace="${namespace}">${rows}</xs:schema>`);
+    const input = await loadSchemaInput(uri, {policy: {allowedOrigins: ['https://scalar-probe.invalid']},
+      offlineResources: new Map([[uri, {bytes, digest: createHash('sha256').update(bytes).digest('hex')}]])});
+    const prepared = prepareSourceSchemaRequest(input); if (prepared.kind !== 'prepared') throw Error(JSON.stringify(prepared));
+    const {actual, budget} = prepared.request, target = local(globalId('type', {namespace, local: 'U0'}));
+    expect(checked(actual, builtin('boolean'), target)).toMatchObject({kind: 'checked', value: true});
+    // Authentication rejects this current member cycle before local queries.
+    const cycle = prepared.request.candidate({key: 'source-union-current-cycle', active: actual.members, rawSimpleTypes: [{
+      type: globalId('type', {namespace, local: `U${depth - 1}`}), targetNamespace: namespace, base: builtin('anySimpleType'), final: [],
+      variety: {kind: 'union', members: [target]}, facetLayers: [], provenance: {kind: 'hypothetical-abstract', originals: []}}]});
+    expect(cycle).toMatchObject({kind: 'candidate-rejected', code: 'cycle'});
+    const maxWork = 125_000_000;
+    budget.guard(() => budget.chargeWork(maxWork - budget.usage().work - 1000));
+    expect(checked(actual, builtin('string'), target)).toBe(budget.failure());
+    expect(checked(actual, builtin('boolean'), target)).toBe(budget.failure());
+  });
+
   it('checks declaration-local scalar/type/name constraints without assuming complete type validity', async () => {
     const request = await context(), seed = request.graph.nodes[0];
     const complex = type(seed, 'Complex');
@@ -212,7 +322,9 @@ describe('shared local XSD type and declaration relations', () => {
     const f = (name: string, value: string) => ({name, lexical: {value, context: seed.context}, fixed: false});
     const properties = (node: SimpleTypeNode, reference: Reference, variety: RawSimpleTypeProperties['variety'], facetLayers: RawSimpleTypeProperties['facetLayers'] = []): RawSimpleTypeProperties =>
       ({type: node.id, base: reference, variety, final: [], facetLayers, provenance: {kind: 'hypothetical-abstract', originals: []}});
-    const additions = [base, narrow, wide, union, invalidUnion, patterned];
+    const head = element(seed, 'RawUnionHead', local(invalidUnion.id), undefined, {block: 'restriction'});
+    const member = element(seed, 'RawUnionMember', local(union.id), head.id);
+    const additions = [base, narrow, wide, union, invalidUnion, patterned, head, member];
     const prepared = request.candidate({key: 'raw-scalars', additions, active: [...request.actual.members, ...additions.map(node => node.id)], rawSimpleTypes: [
       properties(base, builtin('decimal'), {kind: 'atomic'}, [{facets: [f('minInclusive', '0')]}]),
       properties(narrow, local(base.id), {kind: 'atomic'}, [{facets: [f('minInclusive', '1')]}]),
@@ -220,13 +332,16 @@ describe('shared local XSD type and declaration relations', () => {
       properties(union, builtin('anySimpleType'), {kind: 'union', members: [builtin('boolean'), builtin('integer')]}),
       properties(invalidUnion, builtin('anySimpleType'), {kind: 'union', members: [local(union.id)]}),
       properties(patterned, builtin('string'), {kind: 'atomic'}, [{facets: [f('pattern', 'a.*'), f('pattern', 'b.*')]}, {facets: [f('pattern', '.*z')]}]),
-    ]});
+    ], rawElements: [head, member].map(rawElement)});
     if (prepared.kind !== 'prepared') throw Error(prepared.kind);
     const scalar = createSchemaScalarKernel(prepared.context), lexical = (value: string) => ({value, context: seed.context});
     expect(scalar.assess(local(base.id), lexical('1.25'), base.id)).toMatchObject({kind: 'checked', value: {operand: {family: 'decimal'}}});
     expect(scalar.assess(local(narrow.id), lexical('2'), narrow.id)).toMatchObject({kind: 'checked', obligations: []});
     expect(scalar.assess(local(wide.id), lexical('2'), wide.id)).toMatchObject({kind: 'invalid-schema'});
     expect(scalar.assess(local(union.id), lexical('1'), union.id)).toMatchObject({kind: 'checked', value: {operand: {family: 'boolean', selectedMembers: [builtin('boolean')]}}});
+    // RAW component members remain literal local premises, even when FULL fails.
+    expect(checked(prepared.context, local(union.id), local(invalidUnion.id))).toMatchObject({kind: 'checked', value: true, obligations: ['component-validity']});
+    expect(checkSubstitution(prepared.context, member.id, head.id, {mode: 'substitutability'})).toMatchObject({kind: 'checked', value: true});
     expect(scalar.describe(local(invalidUnion.id), invalidUnion.id)).toMatchObject({kind: 'invalid-schema', rule: 'cos-st-restricts'});
     for (const value of ['az', 'bz']) expect(scalar.assess(local(patterned.id), lexical(value), patterned.id)).toMatchObject({kind: 'checked'});
     for (const value of ['ay', 'cz']) expect(scalar.assess(local(patterned.id), lexical(value), patterned.id)).toMatchObject({kind: 'invalid-schema'});

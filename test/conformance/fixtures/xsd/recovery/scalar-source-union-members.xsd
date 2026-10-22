@@ -1,0 +1,27 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:scalar-source-union-members" targetNamespace="urn:re01:scalar-source-union-members">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="X"><xs:union memberTypes="xs:string xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="P"><xs:union memberTypes="t:X"/></xs:simpleType>
+  <xs:simpleType name="A"><xs:restriction base="t:P"/></xs:simpleType>
+  <xs:simpleType name="ConstrainedX"><xs:restriction base="t:X"><xs:pattern value="z"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ConstrainedP"><xs:union memberTypes="t:ConstrainedX"/></xs:simpleType>
+  <xs:simpleType name="StringList"><xs:list itemType="xs:string"/></xs:simpleType>
+  <xs:simpleType name="Mixed"><xs:union memberTypes="t:StringList xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="ConstrainedMixed"><xs:restriction base="t:Mixed"><xs:pattern value="z"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="MixedP"><xs:union memberTypes="t:ConstrainedMixed"/></xs:simpleType>
+  <xs:simpleType name="LockedP" final="restriction"><xs:union memberTypes="t:X"/></xs:simpleType>
+  <xs:simpleType name="BooleanAlias"><xs:restriction base="xs:boolean"/></xs:simpleType>
+  <xs:complexType name="ContentBase"><xs:simpleContent><xs:extension base="t:P"/></xs:simpleContent></xs:complexType>
+  <xs:complexType name="ContentRestricted"><xs:simpleContent><xs:restriction base="t:ContentBase"><xs:pattern value="z"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="BooleanContent"><xs:simpleContent><xs:extension base="xs:boolean"/></xs:simpleContent></xs:complexType>
+  <xs:element name="Head" type="t:P" abstract="true"/>
+  <xs:element name="BooleanMember" type="xs:boolean" substitutionGroup="t:Head"/>
+  <xs:element name="AliasMember" type="t:BooleanAlias" substitutionGroup="t:Head"/>
+  <xs:element name="ContentMember" type="t:BooleanContent" substitutionGroup="t:Head"/>
+  <xs:element name="RestrictionBlockedHead" type="t:P" abstract="true" block="restriction"/>
+  <xs:element name="ExactBooleanMember" type="xs:boolean" substitutionGroup="t:RestrictionBlockedHead"/>
+  <xs:element name="RestrictedBooleanMember" type="t:BooleanAlias" substitutionGroup="t:RestrictionBlockedHead"/>
+  <xs:element name="ExtensionBlockedHead" type="t:P" abstract="true" block="extension"/>
+  <xs:element name="ExtendedContentMember" type="t:BooleanContent" substitutionGroup="t:ExtensionBlockedHead"/>
+</xs:schema>

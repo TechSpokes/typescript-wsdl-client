@@ -18,7 +18,8 @@ export type RelationResult<T = boolean> = RelationReceipt<T> | RelationFailure |
 export type SubstitutionOptions = Readonly<{mode: 'affiliation' | 'substitutability'; blocking?: readonly ('extension' | 'restriction' | 'substitution')[]}>;
 type Variety = 'complex' | 'simple-ur' | 'atomic' | 'list' | 'union';
 type Info = {key: string; ref: Reference; variety: Variety; base?: Reference; method: DerivationMethod;
-  final: readonly DerivationMethod[]; block: readonly DerivationMethod[]; items: readonly Reference[]};
+  final: readonly DerivationMethod[]; block: readonly DerivationMethod[]; items: readonly Reference[];
+  sourceUnionMembers?: true};
 const METHODS: readonly DerivationMethod[] = ['extension', 'restriction', 'list', 'union'];
 const builtin = (local: string): Reference => ({kind: 'builtin', name: {namespace: XSD_NAMESPACE, local}});
 const ur = builtin('anyType'), simpleUr = builtin('anySimpleType');
@@ -131,24 +132,31 @@ function kernel(context: SemanticContext) {
       return publish(row);
     }
     if (!context.sourceNode(node.id)) return problem('missing-type-component-properties', 'Abstract helper types require explicit component properties', node.id);
-    let variety: Variety = 'complex', items: readonly Reference[] = [];
+    let variety: Variety = 'complex', items: readonly Reference[] = [], sourceUnionMembers: true | undefined;
     if (node.kind === 'simpleType') {
       let current: GraphNode = node; const seen = new Set<string>();
-      while (current.kind === 'simpleType' && current.variety.kind === 'restriction') {
+      while (current.kind === 'simpleType') {
         budget.chargeWork(8);
         if (seen.has(current.id)) return problem('st-props-correct', 'Type dependency cycle', current.id);
         seen.add(current.id);
         const abstract = context.rawSimpleTypeProperties(current.id);
         if (abstract) {variety = abstract.variety.kind; if (abstract.variety.kind === 'union') items = abstract.variety.members; break;}
+        if (!context.sourceNode(current.id)) return problem('missing-type-component-properties', 'Abstract helper types require explicit component properties', current.id);
+        if (current.variety.kind !== 'restriction') {
+          variety = current.variety.kind;
+          if (current.variety.kind === 'union') {items = current.variety.members; sourceUnionMembers = true;}
+          break;
+        }
         const base = resolve(current.variety.base);
-        if (base.local || base.slot) {variety = info(current.variety.base).variety; break;}
+        if (base.local || base.slot) {
+          const inherited = info(current.variety.base);
+          variety = inherited.variety; items = inherited.items; sourceUnionMembers = inherited.sourceUnionMembers; break;
+        }
         current = base.node!;
       }
-      if (current.kind === 'simpleType' && current.variety.kind !== 'restriction') {
-        variety = current.variety.kind; if (current.variety.kind === 'union') items = current.variety.members;
-      } else if (current.kind !== 'simpleType') return problem('st-props-correct', 'Simple type has a complex base', node.id);
+      if (current.kind !== 'simpleType') return problem('st-props-correct', 'Simple type has a complex base', node.id);
     }
-    const row: Info = {key: selected.key, ref: {kind: 'local', target: selected.key}, variety, items,
+    const row: Info = {key: selected.key, ref: {kind: 'local', target: selected.key}, variety, items, sourceUnionMembers,
       base: node.kind === 'complexType' ? node.derivation?.base ?? ur : node.variety.kind === 'restriction' ? node.variety.base : simpleUr,
       method: node.kind === 'complexType' ? node.derivation?.kind ?? 'restriction' : node.variety.kind,
       final: declarationMethods(context, node, 'final') as readonly DerivationMethod[],
@@ -156,6 +164,25 @@ function kernel(context: SemanticContext) {
     return publish(row);
     } finally {collectors.pop(); typeCollectors.pop();}
   };
+  function* unionMembers(root: Info): Generator<Reference> {
+    if (!root.sourceUnionMembers) {yield* root.items; return;}
+    // XML component mapping replaces explicit unions by their effective
+    // members, including constrained unions. RAW and generated properties
+    // already supply that component property; they are authoritative stops.
+    const stack = [{row: root, index: 0}], active = new Set([root.key]);
+    while (stack.length) {
+      budget.chargeWork(5); const frame = stack.at(-1)!;
+      if (frame.index === frame.row.items.length) {active.delete(frame.row.key); stack.pop(); continue;}
+      const reference = frame.row.items[frame.index++], member = info(reference);
+      if (member.variety !== 'union') {yield reference; continue;}
+      if (!member.sourceUnionMembers) {
+        for (const item of member.items) {budget.chargeWork(); yield item;}
+        continue;
+      }
+      if (active.has(member.key)) return problem('st-props-correct', 'Union member dependency cycle', member.key);
+      budget.chargeWork(4); active.add(member.key); stack.push({row: member, index: 0});
+    }
+  }
   const validateMethods = (values: readonly DerivationMethod[]): readonly DerivationMethod[] => {
     budget.chargeWork(values.length + 1);
     if (values.some(x => !METHODS.includes(x))) throw new RelationProblem({kind: 'invalid-input', rule: 'excluded-methods', message: 'Unknown excluded derivation method'});
@@ -180,7 +207,7 @@ function kernel(context: SemanticContext) {
       if (yield {derived: d.base, base: query.base}) return true;
     }
     if ((d.variety === 'list' || d.variety === 'union') && b.key === 'builtin:anySimpleType') return true;
-    if (b.variety === 'union') for (const member of b.items) {
+    if (b.variety === 'union') for (const member of unionMembers(b)) {
       budget.chargeWork(); if (yield {derived: query.derived, base: member}) return true;
     }
     return false;
@@ -296,11 +323,21 @@ function kernel(context: SemanticContext) {
   const substitutionTypes = (derived: Reference, base: Reference, blocking: readonly string[]): boolean => {
     // Each alternative is independently qualified by Type Derivation OK; the
     // complex prefix remains in force when the simple union alternative runs.
-    type State = {d: Reference; b: Reference; methods: DerivationMethod[]; blocks: DerivationMethod[]};
-    const queue: State[] = [{d: derived, b: base, methods: [], blocks: blocking.filter(x => METHODS.includes(x as DerivationMethod)) as DerivationMethod[]}];
+    type State = {kind: 'type'; d: Reference; b: Reference; methods: DerivationMethod[]; blocks: DerivationMethod[]};
+    type Alternatives = {kind: 'members'; members: Iterator<Reference>; source: Reference; methods: DerivationMethod[]; blocks: DerivationMethod[]};
+    const queue: (State | Alternatives)[] = [{kind: 'type', d: derived, b: base, methods: [], blocks: blocking.filter(x => METHODS.includes(x as DerivationMethod)) as DerivationMethod[]}];
     const visited = new Set<string>();
     while (queue.length) {
-      budget.chargeWork(16); const task = queue.pop()!, d = info(task.d), b = info(task.b);
+      budget.chargeWork(16); const task = queue.pop()!;
+      if (task.kind === 'members') {
+        // Resolve the next alternative only after the preceding one fails.
+        const next = task.members.next();
+        if (!next.done) {
+          budget.chargeWork(12); queue.push(task, {kind: 'type', d: task.source, b: next.value, methods: task.methods, blocks: task.blocks});
+        }
+        continue;
+      }
+      const d = info(task.d), b = info(task.b);
       budget.chargeWork(d.key.length + b.key.length + (task.methods.length + task.blocks.length) * 16 + 8);
       const key = JSON.stringify([d.key, b.key, task.methods, task.blocks]);
       if (visited.has(key)) continue; visited.add(key);
@@ -319,8 +356,8 @@ function kernel(context: SemanticContext) {
         current = info(current.base);
         for (const block of current.block) if (!blocks.includes(block)) blocks.push(block);
       }
-      if (b.variety === 'union' && simple) for (let i = b.items.length - 1; i >= 0; i--) {
-        budget.chargeWork(8); queue.push({d: simple.ref, b: b.items[i], methods: prefixMethods, blocks: prefixBlocks});
+      if (b.variety === 'union' && simple) {
+        budget.chargeWork(8); queue.push({kind: 'members', members: unionMembers(b), source: simple.ref, methods: prefixMethods, blocks: prefixBlocks});
       }
     }
     return false;
