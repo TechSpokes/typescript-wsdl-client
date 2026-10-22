@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): read untouched SOURCE simple-content values with exact scalar support and without surplus facade construction.
+
 - docs(re01): derive conditional scalar history bounds from a closed palette and protected interface.
 
 - fix(re01): check mixed value properties without promoting property-only types to full construction.

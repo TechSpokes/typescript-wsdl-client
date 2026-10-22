@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "2728ebd47ebd5dfb5e244bc841d6907317b13825a19bffcdbaf202818098b950",
+          "sha256": "d6474b830025d0a152ea48e21f24e239c7016cadb72b6352db90dadfb04dff24",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1171,7 +1171,7 @@
         {
           "path": "src/compiler/schemaDeclarationPrimitives.ts",
           "role": "semantic-source",
-          "sha256": "4448398da1e9f7539a16d1314b48afa328d08f8c41a8f77ad199615c7a798620"
+          "sha256": "5f7ae40665d8a2a07916e521cd3076a902be98fbe789fa2c8af63735b7d5a7de"
         },
         {
           "path": "src/compiler/schemaDocumentSyntax.ts",
@@ -3037,6 +3037,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/property-mixed-value-frontier.xsd",
           "role": "fixture",
           "sha256": "3484ebae717bd25b659bfa82b00e08f4a1275b76c7433fbdce46aab97d023c06"
+        },
+        {
+          "path": "test/research/re01/property-source-sc-value-frontier.test.ts",
+          "role": "prototype",
+          "sha256": "298cdcca80270e09f70df1c2215277cab14ddbf96e2f7c2264f56fc16d0d5bbf"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-source-sc-value-frontier.xsd",
+          "role": "fixture",
+          "sha256": "1770d84245af6c3b9b7c25fe8a59d6b5c6b1f9029237d77fb0619e49bb0cf586"
         }
       ]
     },
@@ -3428,7 +3438,7 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 242
+    "currentArtifactCount": 244
   },
   "baselineSemanticDefaults": {
     "maxNodes": 100000,

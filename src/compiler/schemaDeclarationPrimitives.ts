@@ -22,7 +22,7 @@ export type DeclarationResult = DeclarationReceipt | ScalarFailure | ResourceLim
 type ConstraintResult = Readonly<{kind: 'checked'; constraint: AssessedSchemaOperand;
   scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}> | ScalarFailure | ResourceLimitFailure;
 export type DeclarationValuePropertyResult = DeclarationResult | Readonly<{kind: 'checked'; component: NodeId; contextId: string;
-  authority: 'XSD10-mixed-value-property-v1'; constraint: AssessedSchemaOperand; obligations: readonly string[];
+  authority: 'XSD10-mixed-value-property-v1' | 'XSD10-source-simple-value-property-v1'; constraint: AssessedSchemaOperand; obligations: readonly string[];
   scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}>;
 const nameAttribute = (node: GraphNode, name: string): string | undefined =>
   node.declaredAttributes.find(a => a.name.namespace === '' && a.name.local === name)?.value;
@@ -41,23 +41,25 @@ function constraintValue(context: SemanticContext, node: ElementNode | Attribute
     scalarObligations: Object.freeze([...checked.obligations, ...assessed.obligations]), typeDependencies: typed.snapshot()});
 }
 
-/** VALUE properties need their actual scalar and mixed fact, not full mixed TYPE/declaration validity. */
+/** VALUE properties select actual scalar/fact support; full declaration validity has its own owner. */
 export function checkDeclarationValueProperty(context: SemanticContext, id: NodeId): DeclarationValuePropertyResult {
   assertSemanticContext(context);
   return context.budget.guard(() => {
     context.budget.chargeWork(8 + id.length);
     const found = context.lookup(id);
     if (found.kind !== 'found' || found.node.kind !== 'element' || !found.node.value) return checkDeclaration(context, id);
-    const node = found.node, type = resolveSemanticType(context, declaredType(context, node));
+    const node = found.node, declared = declaredType(context, node), type = resolveSemanticType(context, declared);
     if (type.kind !== 'component' || type.node.kind !== 'complexType') return checkDeclaration(context, id);
     const raw = context.rawTypeProperties(type.node.id), source = context.sourceNode(type.node.id);
-    if (!(raw ? raw.content.kind === 'mixed' : source?.kind === 'complexType' && source.mixed && source.derivation?.contentKind !== 'simple'))
-      return checkDeclaration(context, id);
-    const value = constraintValue(context, node, {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'string'}});
+    const sourceSimple = !raw && source?.kind === 'complexType' && source.derivation?.contentKind === 'simple'
+      && (context.originalComplexContentSource(type.node.id) !== undefined || context.originalComplexPropertySource(type.node.id) !== undefined);
+    const mixed = raw ? raw.content.kind === 'mixed' : source?.kind === 'complexType' && source.mixed && source.derivation?.contentKind !== 'simple';
+    if (!sourceSimple && !mixed) return checkDeclaration(context, id);
+    const value = constraintValue(context, node, sourceSimple ? declared : {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'string'}});
     if (value.kind !== 'checked') return value;
     return context.budget.freeze(context.budget.snapshot({kind: 'checked' as const, component: id, contextId: context.contextId,
-      authority: 'XSD10-mixed-value-property-v1' as const, constraint: value.constraint,
-      obligations: ['element-default-mixed-emptiable:' + type.node.id],
+      authority: sourceSimple ? 'XSD10-source-simple-value-property-v1' as const : 'XSD10-mixed-value-property-v1' as const, constraint: value.constraint,
+      obligations: sourceSimple ? [] : ['element-default-mixed-emptiable:' + type.node.id],
       scalarObligations: value.scalarObligations, typeDependencies: value.typeDependencies}));
   });
 }
