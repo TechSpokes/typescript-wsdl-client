@@ -959,3 +959,41 @@ Separate native controls check the five rebuilt fresh SIMPLE roots, genuine enum
 A weaker replacement of only V's last incidence by a dead INTEGER also preserves V when that incidence is covered by earlier member domains before TOP. It can change incoming nominal queries and direct J clients. Absence from successful final outputs is insufficient: an earlier member can select a value that TOP rejects, preventing a later member from winning. Nor does FULL of an arbitrary BASE guarantee that KEEP-all plus an empty pattern passes cross-kind bound correspondence.
 
 The independent review and native receipts for these source-level results are recorded in the #234 ledger. No general scalar-port bound, private-client closure, complete reconstruction, negative-answer procedure or mathematical termination follows from these local operations.
+
+## First-mode atomic contraction
+
+A checked static atomic restriction path can contract to one proper row in the following scope. Fix one actual context, one non-IEEE primitive and one effective whitespace phase, with authentic BASE B and a genuinely legal first restriction row. The supported predicates are decimal bounds and digits, calendar and duration bounds, and applicable lengths; the final identity's private code is writable before birth.
+
+This is a constructor theorem, rather than a claim that copying the final metadata succeeds. An available description or FULL(B) does not itself supply the authentic first-row producer. Immutable component, annotation, literal ancestry, SOURCE and complete PROPERTY readers require separate protection or simultaneous reconstruction.
+
+### Legal metadata projection
+
+Let n count B's complete nonrepeatable tuples. Preserve every unchanged whole kind through its authentic complete B KEEP inventory. For each changed or introduced kind, select one actual component from the first legal row; also select its actual B coverage witnesses and a component realizing its effective whitespace rank.
+
+A coverage witness in an unchanged whole kind is discharged by the property-equal B tuple. It must not also be added as NEW alongside that whole KEEP kind. There are ten supported nonrepeatable kind names, so the projection has at most `2n+11` positions and at most `n+4` selected new bound points, besides B's existing points.
+
+The projection introduces no kind or newly localizes an unchanged bound kind. Supplied-pair, fixedness and cross-BASE checks remain valid after deletion of extra NEW tuples; each selected tuple retains its genuine BASE and ancestor witnesses. Same-kind exclusive endpoints outside B keep their actual inherited authority and are never presented as B-admitted values.
+
+### Exact lexical reconstruction
+
+Preserve B's authentic pattern and enum components. Reissue private contributing ordinary P1 and enum groups as separate NEW conjunctions; every genuinely NEW enum value uses an actual B inverse WORD at its actual map. Source-only intrinsic patterns outside the ordinary profile retain genuine selector authority or remain a reconstruction boundary.
+
+An inactive value merely carried by B's enum inventory keeps its authentic authority rather than receiving a fictional inverse.
+
+For fixed parameters, the supported non-IEEE final unary predicates have effective regular normalized-WORD preimages. Export these as ordinary P1 guards, including primitive validity where the containment product needs it, and retain the final private TOP conditions. QName binding and NOTATION registry validity remain with their primitive owners; a pattern does not replace map or registry lookup.
+
+The projected first mode relaxes the original first mode. Every original final success therefore passes that projection and the exact final guards; conversely, those guards and the unchanged primitive parser enforce every final value and lexical condition. The rebuilt final identity has exactly the old complete WORD, value and normalization function across maps in the fixed context.
+
+The actual F2 dispatch also completes. B coverage witnesses remain present; missing whitespace coverage retains the old first row's empty main-pattern certificate. Otherwise, finite-enum membership or the supported length, decimal, calendar and duration containment products include the exact guards and primitive validity, so they find no genuine widening value. This uses the [scalar assessment owner's dispatch](../src/compiler/scalarSchemaAssessment.ts), rather than an assumed rule that every semantic subset receives a certificate.
+
+### Native control and remaining gates
+
+A genuine SOURCE decimal B with `maxExclusive 20` admits C with authentic KEEP plus separate NEW `maxInclusive 10`, `11` and `12`. A later D keeps that entire inclusive kind and introduces `maxExclusive 9`. Copying D's final upper inventory directly over B fails `facet-bound-pair`, because both upper kinds become local.
+
+The reconstructed D instead keeps B's exclusive bound, retains one first-row inclusive bound, and adds an exact ordinary P1 for decimal values below 9. Its complete function equals old D's function. The missing-pattern contrast is genuinely FULL and admits 11; its failure to preserve the intended function proves no nonexistence claim.
+
+The [independent review ledger](https://github.com/TechSpokes/typescript-wsdl-client/issues/234#issuecomment-6346694806) records the exact proof and native control fingerprints. That local control checked eight FULL roots, strict typing and default limits; it was scalar-only evidence, not a complete RE01 forest.
+
+FLOAT and DOUBLE scientific-bound preimages need not be regular. Their finite native endpoint alphabet does not make those WORD languages regular. Multiple contexts, guard and enum sizes, WORD lengths, provider closure, mixed LIST/UNION construction and ordinary helper counts remain separate open obligations.
+
+Mixed ordered UNIONs require first-selection observations even for values already available elsewhere. Removing an earlier member can expose a later value under the same WORD without creating a new primitive value. Counting only first-ever values therefore cannot establish general coverage, a terminating negative criterion or mathematical termination.
