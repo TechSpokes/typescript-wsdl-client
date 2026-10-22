@@ -50,6 +50,24 @@ Further controls retain opaque legacy RAW components through a complete required
 These owner repairs supply current component authority and ordinary formation, not a general scalar catalogue.
 General private alias endpoint bounds, a complete changed-member UNION VALUE catalogue, typed VALUE/map representatives, coverage and mathematical termination remain separate proof obligations.
 
+## Empty name inverses in the actual lexical context
+
+A QName or NOTATION value has no lexical spelling when its namespace has no binding in the actual word context.
+That is a proved empty inverse, which the existing scalar owner distinguishes privately from an unsupported inverse representation.
+It constructs the empty language directly; an empty expression would instead admit the empty word.
+
+An inverse for a LIST is empty if any item inverse is empty, including after an unsupported item.
+Without an empty factor, unsupported remains unsupported; the zero-item LIST still has the empty word as its inverse.
+Absent and explicitly empty default bindings preserve the empty namespace, and named prefixes retain their actual map entries.
+
+The [native controls](../test/research/re01/scalar-empty-name-inverse.test.ts) check six complete forests for QName, NOTATION, LIST and the default/named-prefix cases at the normal configured budget.
+They retain every original and fresh root, reject an unbound spelling, and accept the same typed value with a genuine later binding.
+A separate changed-member contrast still rejects a STRING value exposed outside the immediate BASE image through ordinary F2.
+Complete empty inverses can establish that containment failure before the later enumeration-introduction check.
+
+This repair supplies the existing inverse authority without adding namespace bindings, transporting receipts or weakening component formation.
+The complete changed-member catalogue, finite simultaneous qualifier stock and general acceptance gates remain open.
+
 ## Actual atomic GSC1 component replay
 
 The original atomic GSC1 case uses a complete supported inventory from its actual formed slot.

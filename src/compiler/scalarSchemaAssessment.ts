@@ -761,7 +761,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.step(owner, 2); regularPatterns.set(pattern, language); return language;
   };
   const expressionLanguages = new Map<string, RegularLanguage>();
-  const expressionLanguage = (expression: string, owner: GraphNode): RegularLanguage => {
+  const expressionLanguage = (expression: string | null, owner: GraphNode): RegularLanguage => {
+    if (expression === null) return regular.union([], owner);
     c.text(expression, owner); c.step(owner); const known = expressionLanguages.get(expression); if (known) return known;
     const language = patternLanguage(patterns.compile({value: expression, context: owner.context}, owner), owner);
     c.step(owner, 2); expressionLanguages.set(expression, language); return language;
@@ -777,7 +778,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.text(value, owner); c.step(owner, value.length * 2 + 1);
     return value.replace(/[\\.\-^?*+{}()\[\]|]/g, '\\$&').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
   };
-  const inverseExpression = (value: SchemaOperand, lexical: LexicalValue, owner: GraphNode): string | undefined => {
+  /** null is a proved empty inverse; undefined leaves the representation unsupported. */
+  const inverseExpression = (value: SchemaOperand, lexical: LexicalValue, owner: GraphNode): string | null | undefined => {
     c.text(value.canonical, owner);
     if (value.family === 'string' || value.family === 'anyURI') return quoteExpression(value.canonical, owner);
     if (value.family === 'boolean') return value.canonical === 'true' ? '(true|1)' : '(false|0)';
@@ -808,16 +810,17 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         if (lexical.context.namespaces[prefix] === namespace) {c.step(owner, prefix.length + local.length + 4); expressions.push(quoteExpression(prefix ? prefix + ':' + local : local, owner));}
       }
       if (namespace === '' && lexical.context.namespaces[''] === undefined) expressions.push(quoteExpression(local, owner));
-      c.step(owner, expressions.length * 2 + 2); return expressions.length ? '(' + expressions.join('|') + ')' : undefined;
+      c.step(owner, expressions.length * 2 + 2); return expressions.length ? '(' + expressions.join('|') + ')' : null;
     }
     if (value.family === 'list' && value.items) {
-      c.step(owner, value.items.length * 2 + 2); const expressions: string[] = [];
+      c.step(owner, value.items.length * 2 + 2); const expressions: string[] = []; let unsupported = false;
       for (const item of value.items) {
         const expression = inverseExpression(item, lexical, owner);
-        if (expression === undefined) return undefined;
+        if (expression === null) return null;
+        if (expression === undefined) {unsupported = true; continue;}
         c.step(owner, expression.length + 4); expressions.push('(' + expression + ')');
       }
-      c.step(owner, expressions.length * 2 + 1); return expressions.join(' ');
+      c.step(owner, expressions.length * 2 + 1); return unsupported ? undefined : expressions.join(' ');
     }
     return undefined;
   };

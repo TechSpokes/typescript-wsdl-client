@@ -1,0 +1,17 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scalar:unbound-inverse" targetNamespace="urn:scalar:unbound-inverse">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootR"><xs:complexContent><xs:restriction base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootD"><xs:complexContent><xs:extension base="t:RootR"/></xs:complexContent></xs:complexType>
+  <xs:notation name="Foo" public="urn:scalar:notation:Foo"/>
+  <xs:simpleType name="QNameEnum"><xs:restriction base="xs:QName"><xs:enumeration value="t:Foo"/><xs:pattern value="Foo|yes:Foo|t:Foo"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="NotationEnum"><xs:restriction base="xs:NOTATION"><xs:enumeration value="t:Foo"/><xs:pattern value="Foo|yes:Foo|t:Foo"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EmptyNameEnum"><xs:restriction base="xs:QName"><xs:enumeration value="Foo"/><xs:pattern value="Foo|yes:Foo"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameList"><xs:list itemType="xs:QName"/></xs:simpleType>
+  <xs:simpleType name="ListEnum"><xs:restriction base="t:QNameList"><xs:enumeration value="t:Foo"/><xs:pattern value="Foo|yes:Foo|t:Foo"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="StringFoo"><xs:restriction base="xs:string"><xs:pattern value="Foo|yes:Foo|t:Foo"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QNameUnion"><xs:union memberTypes="t:QNameEnum t:StringFoo"/></xs:simpleType>
+  <xs:simpleType name="NotationUnion"><xs:union memberTypes="t:NotationEnum t:StringFoo"/></xs:simpleType>
+  <xs:simpleType name="EmptyNameUnion"><xs:union memberTypes="t:EmptyNameEnum t:StringFoo"/></xs:simpleType>
+  <xs:simpleType name="ListUnion"><xs:union memberTypes="t:ListEnum t:QNameList"/></xs:simpleType>
+</xs:schema>

@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "bb76bc1ef8f6ba3bb4aec99d1c65f447ecdbf473b5ea68aafce97e2696537a52"
+          "sha256": "a0eff22cf62c8be8f01040c8f6fd2d68d3e8be4883f955daab64f4d5cf89f043"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "541680f752a992f56aaeb41fec1194445f580e6ff985d0845eeb30a4227d6b32"
+          "sha256": "580926a0830ad253413e930b91e2f080f6dd5ece461f247fbc539486010f2ba9"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2931,7 +2931,7 @@
         {
           "path": "test/research/re01/changed-scalar-constituents-retention.test.ts",
           "role": "prototype",
-          "sha256": "bcea2a00b2c02f0f8f11a6d5e5d5287f46937985f673395f907d6d2e0d1721d0"
+          "sha256": "0d2358cccb8242796a1f361b03f21ec4d06dfa55fe926604b7fce27e6e90c664"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/changed-scalar-constituents-retention.xsd",
@@ -2952,6 +2952,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/private-alias-endpoint-capacity.xsd",
           "role": "fixture",
           "sha256": "2f60b7b506672e2864fe46cbc5a4e2c5a2d505df72806f5d5f1cbd520821c78b"
+        },
+        {
+          "path": "test/research/re01/scalar-empty-name-inverse.test.ts",
+          "role": "prototype",
+          "sha256": "7852109e1c4f4258d54f87c654894ce414b968e41f4354c35bf5f7d605a741f8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-empty-name-inverse.xsd",
+          "role": "fixture",
+          "sha256": "b9d1f85c4d6deb15f80ceab38dedf2d496f65757bb666c4c8be0de32cbbf5564"
         }
       ]
     },

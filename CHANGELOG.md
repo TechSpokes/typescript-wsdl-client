@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(scalar): preserve empty QName and NOTATION inverses under actual namespace bindings.
+
 - feat(re01): derive private-alias endpoint word capacities from authenticated current scalar inputs.
 
 - fix(scalar): qualify retained components with derived LIST items and UNION members through ordinary F2.

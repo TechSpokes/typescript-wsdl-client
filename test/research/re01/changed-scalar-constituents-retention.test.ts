@@ -88,7 +88,8 @@ describe('retained BASE components with narrowed scalar constituents', () => {
     for (const type of s.actual.members) expect(checkComponentConstruction(s.actual, type)).toMatchObject({kind: 'checked', obligations: []});
     expect(checkComponentConstruction(s.context, s.guard.id)).toMatchObject({kind: 'checked', obligations: []});
     if (mode === 'wrong-guard' || mode === 'new-enum') {
-      const rule = mode === 'wrong-guard' ? 'scalar-value-space-restriction' : 'enumeration-valid-restriction';
+      // Complete empty inverses expose STRING foo outside BASE before enum introduction is checked.
+      const rule = 'scalar-value-space-restriction';
       expect(checkComponentConstruction(s.context, s.result.id)).toMatchObject({kind: 'candidate-rejected', rule});
       expect(s.forest).toMatchObject({kind: 'candidate-rejected', rule});
     } else {
