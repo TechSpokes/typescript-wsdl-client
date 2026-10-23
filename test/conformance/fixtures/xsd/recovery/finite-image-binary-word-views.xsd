@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:finite-image-word" xmlns="urn:re01:word:on" targetNamespace="urn:re01:finite-image-word">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="Item"><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType>
+  <xs:simpleType name="Words"><xs:list itemType="t:Item"/></xs:simpleType>
+  <xs:simpleType name="Choices"><xs:restriction base="t:Words"><xs:pattern value="QU JD|Q UJD"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OnlySplit"><xs:restriction base="t:Words"><xs:pattern value="QU JD"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Image"><xs:restriction base="t:Words"><xs:enumeration value="QU JD"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EmptyImage"><xs:restriction base="t:Words"><xs:enumeration value=""/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="WrongPairs"><xs:restriction base="t:Words"><xs:enumeration value="QU UJD"/><xs:enumeration value="Q JD"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Core"><xs:restriction base="xs:string"><xs:pattern value="QUJD"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="First"><xs:union memberTypes="xs:string t:Words"/></xs:simpleType>
+  <xs:simpleType name="DecimalToken"><xs:restriction base="xs:float"><xs:pattern value="[0-9]{2}"/><xs:minInclusive value="10"/><xs:maxInclusive value="20"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="NumericList"><xs:list itemType="t:DecimalToken"/></xs:simpleType>
+  <xs:simpleType name="NumericImage"><xs:restriction base="t:NumericList"><xs:enumeration value="10 20"/></xs:restriction></xs:simpleType>
+</xs:schema>

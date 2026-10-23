@@ -44,6 +44,7 @@ import type {ScalarValueSet} from './schemaSymbolicValueSets.js';
 import {schemaSymbolicSequences} from './schemaSymbolicSequences.js';
 import type {SymbolicSequence} from './schemaSymbolicSequences.js';
 import {schemaTokenImages} from './schemaTokenImages.js';
+import {reconstructBinaryWords} from './schemaBinaryWordReconstruction.js';
 import {showInstant} from './schemaExactCalendar.js';
 import {endpointCapacity} from './schemaEndpointWordCapacity.js';
 
@@ -68,6 +69,32 @@ export type PrivateAliasEndpointAdmission = Readonly<{
   kind: 'admitted-witness'; operand: SchemaOperand;
   membershipWord: LexicalValue; primitiveWord: LexicalValue; primitive: Reference;
 }>);
+export type EndpointTupleTerm = Readonly<{kind: 'role' | 'constant'; index: number}>;
+/** A finite Boolean circuit in topological order; an empty circuit means true. */
+export type EndpointTupleFormula = readonly (
+  Readonly<{kind: 'same-value'; left: EndpointTupleTerm; right: EndpointTupleTerm}> |
+  Readonly<{kind: 'order'; left: EndpointTupleTerm; right: EndpointTupleTerm; outcome: 'less' | 'equal' | 'greater' | 'undefined'}> |
+  Readonly<{kind: 'and' | 'or'; operands: readonly number[]}> |
+  Readonly<{kind: 'not'; operand: number}>
+)[];
+export type PrivateAliasEndpointTupleInput = Readonly<{
+  roles: readonly Readonly<{type: Reference; exclusiveRepeat?: 'minExclusive' | 'maxExclusive'}>[];
+  constants: readonly Readonly<{type: Reference; lexical: LexicalValue}>[];
+  formula: EndpointTupleFormula;
+}>;
+export type PrivateAliasEndpointChoice = Readonly<{
+  type: Reference; operand: SchemaOperand; primitive: Reference; primitiveWord: LexicalValue;
+}> & (
+  Readonly<{branch: Readonly<{kind: 'current'}>; membershipWord: LexicalValue}> |
+  Readonly<{branch: Readonly<{kind: 'exclusive-repeat'; component: number; bound: 'minExclusive' | 'maxExclusive'}>; membershipWord?: never}>
+);
+/** Exact finite-role fragment, not the full shared digit-track tuple theorem. */
+export type PrivateAliasEndpointTuples = Readonly<{
+  scope: 'current-enumeration-or-singleton-endpoint-tuples-v1';
+}> & (
+  Readonly<{kind: 'empty-endpoint-tuples'}> |
+  Readonly<{kind: 'endpoint-tuple'; roles: readonly PrivateAliasEndpointChoice[]}>
+);
 /** Fixed, genuinely formed programmes in one current context; no unknown image labels. */
 export type RegularBinaryWordView = Readonly<{
   type: Reference; context: LexicalValue['context'];
@@ -80,6 +107,16 @@ export type RegularBinaryWordViews = Readonly<{
   Readonly<{kind: 'empty-word-views'}> |
   Readonly<{kind: 'word-views'; core: string; binary: SchemaOperand;
     views: readonly Readonly<{type: Reference; lexical: LexicalValue; operand: SchemaOperand}>[]}>);
+/** A saved-map label denotes membership in a genuinely formed finite LIST image. */
+export type FiniteImageBinaryWordView = RegularBinaryWordView & Readonly<{
+  labels: readonly Readonly<{image: Reference; context: LexicalValue['context']; positive: boolean}>[];
+}>;
+export type FiniteImageBinaryWordViews = Readonly<{
+  scope: 'finite-image-binary-word-views-v1';
+  excluded: readonly ['nonfinite-image-labels', 'duration-P-blocks', 'nonregular-numeric-joins'];
+}> & (Readonly<{kind: 'empty-word-views'}> | Readonly<{kind: 'word-views'; core: string; binary: SchemaOperand;
+  views: readonly Readonly<{type: Reference; lexical: LexicalValue; operand: SchemaOperand;
+    labels: readonly Readonly<{image: Reference; positive: boolean; inverseWord?: LexicalValue}>[]}>[]}>);
 /** References in this view select scalar content, including the private scalar
  * of a complex source owner. They are not synthetic GraphNode references.
  * Fundamental-facet equality follows equal complete determining properties;
@@ -3377,6 +3414,119 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     return {kind: 'word-views', scope, excluded, core, binary: operand(binaryDescription, {...binaryLexical, value: core}, owner), views: reconstructed};
   };
+  /** Finite whole-LIST image labels are joined before any physical WORD projection. */
+  const finiteImageBinaryWordViews = (views: readonly FiniteImageBinaryWordView[], owner: GraphNode): FiniteImageBinaryWordViews => {
+    const scope = 'finite-image-binary-word-views-v1' as const;
+    const excluded = ['nonfinite-image-labels', 'duration-P-blocks', 'nonregular-numeric-joins'] as const;
+    const outside = (rule: string, message: string): never => c.unsupported(owner, rule, message);
+    const all = regular.intersect([], owner), empty = regular.union([], owner);
+    const token = expressionLanguage('[^ \\t\\r\\n]+', owner), space = expressionLanguage(' ', owner);
+    const compile = (description: Description, lexical: LexicalValue, expected?: SchemaOperand): RegularLanguage => {
+      c.step(owner, 8);
+      if (description.plan.primitive === 'duration') return outside('finite-image-duration-blocks', 'Duration WORD tracks require the separate joint P-block producer');
+      if (description.plan.variety === 'atomic') {
+        const predicate = scalarAdmissionPredicate(description, lexical, owner, expected, all);
+        const admitted = predicate && regularPredicateInScope(predicate, all, owner);
+        return admitted ?? outside('finite-image-numeric-scope', 'The complete atomic WORD predicate is not regularizable on its actual spelling scope');
+      }
+      if (description.plan.variety === 'list') {
+        const admitted = listAdmissionInScope(description, lexical, all, owner);
+        if (!admitted) return outside('finite-image-list-scope', 'LIST admission requires regularizable complete token and whole-tuple predicates');
+        if (!expected) return admitted;
+        if (expected.family !== 'list' || !expected.items) return empty;
+        c.step(owner, expected.items.length * 3 + 4); const sequence: RegularLanguage[] = [];
+        for (const value of expected.items) {
+          if (sequence.length) sequence.push(space);
+          sequence.push(regular.intersect([token, compile(description.item!, lexical, value)], owner));
+        }
+        const inverse = regular.whitespacePreimage(regular.concatenate(sequence, owner), 'collapse', owner);
+        return regular.intersect([admitted, inverse], owner);
+      }
+      // FIRST rejects the complete admissions of every earlier member. Whole
+      // UNION enum components test the selected tagged tuple, never its items.
+      c.step(owner, (description.members?.length ?? 0) * 3 + 4);
+      const alternatives: RegularLanguage[] = [], previous: RegularLanguage[] = [];
+      for (const member of description.members ?? []) {
+        const admitted = compile(member, lexical), selected = expected ? compile(member, lexical, expected) : admitted;
+        c.step(owner, previous.length + 4); const constraints = [selected, ...previous.map(prior => regular.negate(prior, owner))];
+        const mode = member.plan.whitespace as 'preserve' | 'replace' | 'collapse';
+        for (const layer of description.plan.layers) {
+          if (layer.patterns.length) constraints.push(regular.whitespacePreimage(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner), mode, owner));
+          const values = enumerations.get(layer); if (!values?.size) continue;
+          c.step(owner, values.size * 2 + 2); const choices: RegularLanguage[] = [];
+          for (const value of values.values()) choices.push(compile(member, lexical, value));
+          constraints.push(regular.union(choices, owner));
+        }
+        alternatives.push(regular.intersect(constraints, owner)); previous.push(admitted);
+      }
+      for (const conjunct of description.conjuncts ?? []) {
+        const admitted = compile(conjunct, lexical);
+        for (let index = 0; index < alternatives.length; index++) alternatives[index] = regular.intersect([alternatives[index], admitted], owner);
+      }
+      return regular.union(alternatives, owner);
+    };
+    type ImageEntry = Readonly<{operand: SchemaOperand; inverseWord: LexicalValue}>;
+    const finiteImage = (reference: Reference, context: LexicalValue['context']): readonly ImageEntry[] => {
+      const image = ensure(reference, owner);
+      if (image.plan.variety !== 'list') return outside('finite-image-label-scope', 'Whole-value image labels currently require an enumerated LIST image');
+      // Every admitted image value belongs to each enum component. One genuine
+      // component therefore supplies a complete finite stock, including an
+      // empty or partially unrealizable stock after native membership replay.
+      let stock: ReadonlyMap<Facet, SchemaOperand> | undefined;
+      for (const layer of image.plan.layers) {
+        c.step(owner); const candidate = enumerations.get(layer);
+        if (candidate && (!stock || candidate.size < stock.size)) stock = candidate;
+      }
+      if (!stock) return outside('finite-image-label-scope', 'A whole-value image label needs a genuine finite enumeration component');
+      c.step(owner, stock.size * 2 + 2); const valuesInImage: ImageEntry[] = [];
+      for (const value of stock.values()) {
+        const word = regular.witness(compile(image, {value: '', context}, value), owner);
+        if (word === undefined) continue;
+        c.step(owner, word.length + 6); const inverseWord = {value: word, context};
+        const replayed = operand(image, inverseWord, owner);
+        if (!values.sameValue(value, replayed, owner)) throw new TypeError('A finite image inverse must preserve its complete tagged tuple');
+        valuesInImage.push({operand: replayed, inverseWord});
+      }
+      return valuesInImage;
+    };
+    c.step(owner, views.length * 6 + 8);
+    const masks: RegularLanguage[] = [], descriptions: Description[] = [], roots: (SchemaOperand | undefined)[] = [],
+      imageStocks: {image: Reference; positive: boolean; values: readonly ImageEntry[]}[][] = [];
+    for (const view of views) {
+      const description = ensure(view.type, owner), lexical = {value: '', context: view.context};
+      const root = view.root ? operand(ensure(view.root.type, owner), view.root.lexical, owner) : undefined;
+      const constraints = [compile(description, lexical, root)], stocks: {image: Reference; positive: boolean; values: readonly ImageEntry[]}[] = [];
+      for (const label of view.labels) {
+        const valuesInImage = finiteImage(label.image, label.context);
+        c.step(owner, valuesInImage.length * 2 + 4);
+        const selected = regular.union(valuesInImage.map(value => compile(description, lexical, value.operand)), owner);
+        constraints.push(label.positive ? selected : regular.negate(selected, owner));
+        stocks.push({image: label.image, positive: label.positive, values: valuesInImage});
+      }
+      c.step(owner, 6); masks.push(regular.intersect(constraints, owner)); descriptions.push(description); roots.push(root); imageStocks.push(stocks);
+    }
+    const binaryType: Reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'base64Binary'}};
+    const binaryDescription = ensure(binaryType, owner), binaryLexical = {value: '', context: owner.context};
+    const binaryMask = compile(binaryDescription, binaryLexical);
+    const reconstructed = reconstructBinaryWords(c, regular, masks, binaryMask,
+      word => expressionLanguage(quoteExpression(word, owner), owner), owner);
+    if (!reconstructed) return {kind: 'empty-word-views', scope, excluded};
+    c.step(owner, views.length * 3 + 4); const result: {type: Reference; lexical: LexicalValue; operand: SchemaOperand;
+      labels: {image: Reference; positive: boolean; inverseWord?: LexicalValue}[]}[] = [];
+    for (let index = 0; index < views.length; index++) {
+      const lexical = {value: reconstructed.words[index], context: views[index].context}, value = operand(descriptions[index], lexical, owner);
+      if (roots[index] && !values.sameValue(value, roots[index]!, owner)) throw new TypeError('A reconstructed WORD must retain its complete fixed ROOT');
+      c.step(owner, imageStocks[index].length * 4 + 2); const labels: {image: Reference; positive: boolean; inverseWord?: LexicalValue}[] = [];
+      for (const label of imageStocks[index]) {
+        const matched = label.values.find(expected => values.sameValue(value, expected.operand, owner));
+        if ((matched !== undefined) !== label.positive) throw new TypeError('A reconstructed WORD must retain every whole-value image label');
+        labels.push({image: label.image, positive: label.positive, ...(matched ? {inverseWord: matched.inverseWord} : {})});
+      }
+      c.step(owner, 4); result.push({type: views[index].type, lexical, operand: value, labels});
+    }
+    return {kind: 'word-views', scope, excluded, core: reconstructed.core,
+      binary: operand(binaryDescription, {...binaryLexical, value: reconstructed.core}, owner), views: result};
+  };
   /** Construct a unary endpoint's actual words without enumerating IEEE values. */
   const privateAliasEndpointAdmission = (reference: Reference, owner: GraphNode): PrivateAliasEndpointAdmission => {
     const description = ensure(reference, owner), family = description.plan.primitive;
@@ -3421,6 +3571,145 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     const membershipWord: LexicalValue = {value: word, context: owner.context};
     const assessed = operand(description, membershipWord, owner);
     return publishWitness(membershipWord, assessed);
+  };
+  /** Joint finite-role decisions: complete CURRENT enums, proved singletons,
+   * proved empty images, and genuine same-kind exclusive-repeat branches. */
+  const privateAliasEndpointTuples = (input: PrivateAliasEndpointTupleInput, owner: GraphNode): PrivateAliasEndpointTuples => {
+    const scope = 'current-enumeration-or-singleton-endpoint-tuples-v1' as const;
+    const universe = regular.negate(regular.union([], owner), owner);
+    const index = (at: number, length: number): boolean => Number.isSafeInteger(at) && at >= 0 && at < length;
+    // Validate the whole circuit before an empty role could short-circuit it.
+    const term = (at: EndpointTupleTerm): void => {
+      c.step(owner, 4);
+      if (!at || !['role', 'constant'].includes(at.kind) || !index(at.index, at.kind === 'role' ? input.roles.length : input.constants.length))
+        c.unresolved(owner, 'endpoint-tuple-formula', 'An endpoint formula term is outside the supplied roles/constants');
+    };
+    for (let at = 0; at < input.formula.length; at++) {
+      c.step(owner, 5); const node = input.formula[at];
+      if (node.kind === 'same-value' || node.kind === 'order') {
+        term(node.left); term(node.right);
+        if (node.kind === 'order' && !['less', 'equal', 'greater', 'undefined'].includes(node.outcome))
+          c.unresolved(owner, 'endpoint-tuple-formula', 'Unknown native endpoint comparison outcome');
+      } else if (node.kind === 'and' || node.kind === 'or') {
+        for (const prior of node.operands) {c.step(owner); if (!index(prior, at)) c.unresolved(owner, 'endpoint-tuple-formula', 'Boolean circuit operands must precede their owner');}
+      } else if (node.kind !== 'not' || !index(node.operand, at))
+        c.unresolved(owner, 'endpoint-tuple-formula', 'Boolean circuit operands must precede their owner');
+    }
+    c.step(owner, input.constants.length * 3 + 4);
+    const constants = input.constants.map(value => operand(ensure(value.type, owner), value.lexical, owner));
+    c.step(owner, input.roles.length * 4 + 4); const domains: PrivateAliasEndpointChoice[][] = [];
+    for (const role of input.roles) {
+      c.step(owner, 8);
+      if (role.exclusiveRepeat !== undefined && !['minExclusive', 'maxExclusive'].includes(role.exclusiveRepeat))
+        return c.unresolved(owner, 'endpoint-exclusive-kind', 'An exceptional branch requires an actual exclusive bound kind');
+      const description = ensure(role.type, owner), family = description.plan.primitive;
+      if (description.plan.variety !== 'atomic' || !family || !['decimal', 'duration', 'dateTime', 'date', 'time', 'gYear', 'gYearMonth', 'gMonthDay', 'gDay', 'gMonth', 'float', 'double'].includes(family))
+        return c.unsupported(owner, 'endpoint-bound-family', 'Endpoint tuples require bound-capable atomic roles');
+      const table = componentTable(role.type, description, owner);
+      if (!table) return c.unresolved(owner, 'endpoint-current-inventory', 'Endpoint tuples need each genuine completed CURRENT component table');
+      const primitive: Reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: family}}, primitiveDescription = ensure(primitive, owner);
+      const lexical: LexicalValue = {value: '', context: owner.context};
+      const inverseWord = (source: Description, expected: SchemaOperand): LexicalValue | undefined => {
+        const predicate = fixedAtomicPredicate(source, expected, lexical, owner);
+        if (!predicate) return c.unresolved(owner, 'endpoint-fixed-inverse', 'A tuple value lacks a qualified fixed-value inverse');
+        const word = lexicalPredicates.witness(predicate, universe, owner);
+        if (word === undefined) return undefined;
+        c.step(owner, 4); return {value: word, context: owner.context};
+      };
+      const primitiveWord = (value: SchemaOperand, hint?: LexicalValue): LexicalValue => {
+        if (hint) {
+          c.step(owner, hint.value.length + 8);
+          const normalized = {value: normalizeWhitespace(hint.value, 'collapse'), context: hint.context};
+          try {if (values.sameValue(operand(primitiveDescription, normalized, owner), value, owner)) return normalized;}
+          catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+        }
+        const word = inverseWord(primitiveDescription, value);
+        if (!word || !values.sameValue(operand(primitiveDescription, word, owner), value, owner))
+          throw new TypeError('A qualified endpoint value must have its genuine primitive spelling');
+        return word;
+      };
+      c.step(owner, 3); const choices: PrivateAliasEndpointChoice[] = [];
+      let enumeration: RawComponentReplay | undefined;
+      for (const entry of table) {
+        c.step(owner, 3);
+        if (entry.component.name === 'enumeration' && (!enumeration || entry.component.values.length < enumeration.component.values.length)) enumeration = entry;
+      }
+      if (enumeration) {
+        // Every CURRENT-admitted value belongs to each authentic enum set.
+        // Reconstruct through the complete final mask: the enum's saved
+        // spelling may itself be rejected by a later pattern or bound.
+        for (let at = 0; at < enumeration.component.values.length; at++) {
+          const property = enumeration.component.values[at];
+          c.step(owner, 5); const value = property.operand;
+          if (!value) return c.unresolved(owner, 'endpoint-current-enum-value', 'CURRENT enumeration lacks an assessed value');
+          let word: LexicalValue | undefined;
+          const hint = enumeration.facets[at]?.lexical;
+          if (hint) {
+            try {if (values.sameValue(operand(description, hint, owner), value, owner)) word = hint;}
+            catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+          }
+          word ??= inverseWord(description, value); if (!word) continue;
+          const actual = operand(description, word, owner);
+          if (!values.sameValue(actual, value, owner)) throw new TypeError('A fixed endpoint inverse must preserve its complete value');
+          c.step(owner, 8); choices.push({type: role.type, branch: {kind: 'current'}, membershipWord: word, operand: actual, primitive, primitiveWord: primitiveWord(actual, word)});
+        }
+      } else {
+        const admission = privateAliasEndpointAdmission(role.type, owner);
+        if (admission.kind === 'admitted-witness') {
+          // Prove singleton exhaustiveness rather than choosing one unary
+          // witness and treating joint failure as emptiness. IEEE guards stay
+          // numeric predicates; no format-value enumeration or DFA fiction.
+          const admitted = atomicAdmissionPredicate(description, lexical, owner), fixed = fixedAtomicPredicate(description, admission.operand, lexical, owner);
+          if (!admitted || !fixed) return c.unresolved(owner, 'endpoint-singleton-inverse', 'The complete admission and fixed-value predicates are required');
+          const other = lexicalPredicates.witness({kind: 'and', children: [admitted, {kind: 'not', child: fixed}]}, universe, owner);
+          if (other !== undefined) return c.unsupported(owner, 'endpoint-finite-role', 'A non-enumerated nonempty role must have a proved singleton CURRENT image in this tuple fragment');
+          c.step(owner, 8); choices.push({type: role.type, branch: {kind: 'current'}, membershipWord: admission.membershipWord,
+            operand: admission.operand, primitive: admission.primitive, primitiveWord: admission.primitiveWord});
+        }
+      }
+      if (role.exclusiveRepeat) for (let ordinal = 0; ordinal < table.length; ordinal++) {
+        c.step(owner, 4); const entry = table[ordinal];
+        if (entry.component.name !== role.exclusiveRepeat) continue;
+        for (let at = 0; at < entry.component.values.length; at++) {
+          const property = entry.component.values[at];
+          c.step(owner, 5); const value = property.operand;
+          if (!value) return c.unresolved(owner, 'endpoint-current-bound-value', 'CURRENT exclusive bound lacks an assessed operand');
+          c.step(owner, 10); choices.push({type: role.type, branch: {kind: 'exclusive-repeat', component: ordinal, bound: role.exclusiveRepeat},
+            operand: value, primitive, primitiveWord: primitiveWord(value, entry.facets[at]?.lexical)});
+        }
+      }
+      c.step(owner, 2); domains.push(choices);
+    }
+    const satisfied = (chosen: readonly PrivateAliasEndpointChoice[]): boolean => {
+      c.step(owner, input.formula.length + 3); const answers: boolean[] = [];
+      const value = (at: EndpointTupleTerm): SchemaOperand => at.kind === 'role' ? chosen[at.index].operand : constants[at.index];
+      for (const node of input.formula) {
+        c.step(owner, 5); let answer: boolean;
+        if (node.kind === 'same-value') answer = values.sameValue(value(node.left), value(node.right), owner);
+        else if (node.kind === 'order') {
+          const order = values.compare(value(node.left), value(node.right), owner);
+          const outcome = order === undefined ? 'undefined' : order < 0 ? 'less' : order > 0 ? 'greater' : 'equal';
+          answer = outcome === node.outcome;
+        } else if (node.kind === 'not') answer = !answers[node.operand];
+        else {
+          answer = node.kind === 'and';
+          for (const at of node.operands) {c.step(owner); if (node.kind === 'and') answer = answer && answers[at]; else answer = answer || answers[at];}
+        }
+        c.step(owner); answers.push(answer);
+      }
+      return answers.length === 0 || answers[answers.length - 1];
+    };
+    if (domains.some(domain => {c.step(owner); return domain.length === 0;})) return {kind: 'empty-endpoint-tuples', scope};
+    c.step(owner, domains.length * 3 + 4); const positions = domains.map(() => 0);
+    // Odometer traversal avoids a JavaScript recursion limit and tests each
+    // entire tuple against one native Boolean comparison circuit.
+    for (;;) {
+      c.step(owner, domains.length * 2 + 4); const chosen = domains.map((domain, at) => domain[positions[at]]);
+      if (satisfied(chosen)) return {kind: 'endpoint-tuple', scope, roles: chosen};
+      let at = domains.length - 1;
+      while (at >= 0) {c.step(owner, 3); positions[at]++; if (positions[at] < domains[at].length) break; positions[at] = 0; at--;}
+      if (at < 0) return {kind: 'empty-endpoint-tuples', scope};
+    }
   };
   /** Private alias word bound from genuine CURRENT masks/tables, without caller descriptions. */
   const privateAliasEndpointWordCapacity = (reference: Reference, owner: GraphNode) => {
@@ -3511,7 +3800,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.step(owner, 64); return {kind: 'finite-ieee-capacity' as const, family, roles, maximumWordUnits: maximum,
       encodedTupleUnits, inventory, maskAuthority: 'current-ieee-spelling-and-finite-inverse' as const};
   };
-  return {regularBinaryWordViews,privateAliasEndpointAdmission,privateAliasEndpointWordCapacity,typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
+  return {finiteImageBinaryWordViews,regularBinaryWordViews,privateAliasEndpointAdmission,privateAliasEndpointTuples,privateAliasEndpointWordCapacity,typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
     contentIdentity, contentProperties, readOriginalRecipe, contentDerivation, facetPropertiesEquivalent, readFacetProperties, compareFacetProperties,compareFacetAnnotations,
     selectOperand: (reference: Reference, owner: GraphNode): void => {scalarOperandNode(reference, owner, true);},
     assess: (reference: Reference, lexical: LexicalValue, owner: GraphNode) => operand(ensure(reference, owner), lexical, owner),

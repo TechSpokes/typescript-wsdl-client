@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "eafd5da95244331fcbf27b83aab9518d5d6c1053d6cc8e7082c0ea7e3e615bf7",
+          "sha256": "5ee397c722f41fbbd2919157389bd875efe5f731bc3066973803196756c804aa",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "601e60507fb41c5251a1a710c1e597914f546a73700adf8f93df9a3b5a1ff9f7"
+          "sha256": "bdc45c851fab7a60daac7c8743d833e32663400690a1bb0ddefcc654d1de1930"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1206,7 +1206,7 @@
         {
           "path": "src/compiler/schemaScalarKernel.ts",
           "role": "semantic-source",
-          "sha256": "e7bc8c558ddf09e973c9f221993881b1a1c723e0927e03b08bc04876d233dd83"
+          "sha256": "c22f1a6f2eb6d7e59e34ba8b3d1acb944b2586411bfe831d29bafd33e3b55d0f"
         },
         {
           "path": "src/compiler/schemaSimpleTypeProperties.ts",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "e33822ed234c2bf396988463d2cc23a4a66903eb16d2582a439c056bca199467"
+          "sha256": "02d9c40fdb8cd6227986da1164a9eb8be9568665cdef3a385ce2cb601b6c6ab4"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "e1290bc738cfb7bd4cd7a58205b98263df9f9d7b54715ce481335d40fbd58c70"
+          "sha256": "35547c8c3b467d8bbdc7d8ff84e45a855492fe886bdf1060677be4cffce6b75a"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -3001,7 +3001,7 @@
         {
           "path": "test/research/re01/scalar-list-formation-gates.test.ts",
           "role": "prototype",
-          "sha256": "5cc017a02dc19852a820b24d6b5f3b002d10e4df249b2d5b66db16320dcd90ab"
+          "sha256": "a75f818993d9d560a53b49b7eb8d9361e3af2e0c77606c38f144530afdb4122c"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/scalar-list-formation-gates.xsd",
@@ -3122,6 +3122,56 @@
           "path": "test/conformance/fixtures/xsd/recovery/regular-binary-word-views.xsd",
           "role": "fixture",
           "sha256": "6eb46861803b0cfaf0b91bc507f52bae8271040786cb386f818f16ffc0aa6125"
+        },
+        {
+          "path": "src/compiler/schemaBinaryWordReconstruction.ts",
+          "role": "semantic-source",
+          "sha256": "f14d309e0bbdd8ef3f80664368e67c64f536983d42e8704c0577310eeba75afc"
+        },
+        {
+          "path": "test/research/re01/free-list-assignment.ts",
+          "role": "prototype",
+          "sha256": "6f8a2be12a70f4a4593c77c4f63dd2f347a9ed9ff7a70934f4a02bd5967b1dab"
+        },
+        {
+          "path": "test/research/re01/free-list-assignment.test.ts",
+          "role": "prototype",
+          "sha256": "09c9c87815c6e4f9857d1e985f6ba53696ad09424f9229b57fefbedce64c020c"
+        },
+        {
+          "path": "test/research/re01/free-list-changed-item.test.ts",
+          "role": "prototype",
+          "sha256": "46a20126a2fe73d414ffedce8f84328e3dd2afec3df77638819e7e9d0bb46b51"
+        },
+        {
+          "path": "test/research/re01/private-alias-endpoint-tuples.test.ts",
+          "role": "prototype",
+          "sha256": "e249ddfdeab5a674833b8f4f09a232f306c9f63c1c0cee18de902acea93f354f"
+        },
+        {
+          "path": "test/research/re01/finite-image-binary-word-views.test.ts",
+          "role": "prototype",
+          "sha256": "2c621d9406cd579992c3dc02a12d9afb6098ea61c1eec0b9551bc520a981ddee"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-list-assignment.xsd",
+          "role": "fixture",
+          "sha256": "2bb4082e49b1a79152aeaab9e16c28b69aebd7dc7a594e586533dff03ea9f372"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-list-changed-item.xsd",
+          "role": "fixture",
+          "sha256": "af21078bd21b9a2e3ed2bb31ded6535072385d981bca20335a66bc23f07a2641"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-alias-endpoint-tuples.xsd",
+          "role": "fixture",
+          "sha256": "46391edc4c7f03ef0d69440cb20d611b0a116ecc4848dcf724ed77664508b36a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/finite-image-binary-word-views.xsd",
+          "role": "fixture",
+          "sha256": "0bd415a1133b28f1e722c1c73264105884075fade37c504b7f7b13674825f14c"
         }
       ]
     },

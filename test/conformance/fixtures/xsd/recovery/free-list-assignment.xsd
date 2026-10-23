@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:free-list" targetNamespace="urn:re01:free-list" elementFormDefault="qualified">
+  <xs:simpleType name="Item"><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType>
+  <xs:simpleType name="Words"><xs:list itemType="t:Item"/></xs:simpleType>
+  <xs:element name="h1" type="t:Words" abstract="true"/>
+  <xs:element name="h2" type="t:Words" abstract="true"/>
+  <xs:complexType name="A"><xs:complexContent><xs:restriction base="xs:anyType"><xs:choice>
+    <xs:element name="y1" type="t:Words" minOccurs="0" fixed="foo bar"/>
+    <xs:element name="y2" type="t:Words" minOccurs="0" fixed="bar baz"/>
+  </xs:choice></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"><xs:choice>
+    <xs:element ref="t:h1"/><xs:element ref="t:h2"/>
+  </xs:choice></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

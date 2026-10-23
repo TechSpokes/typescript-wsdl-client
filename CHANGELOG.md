@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(re01): construct input-derived first-enum LIST cohorts with native ordinary consumers and evidence.
+
 - feat(re01): construct exact CURRENT endpoint admission words and replay input-derived inherited ordinary/scalar assignments.
 
 - docs(re01): derive grounded binary WORD bounds and delimit the joint constructor still required for complete decisions.
