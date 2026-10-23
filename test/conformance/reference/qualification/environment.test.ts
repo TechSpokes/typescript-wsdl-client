@@ -1,8 +1,10 @@
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { assertDisposableWindows, assertProbes, assertRemovalInventory, assertUnavailableProbes, classifySpawn, cleanupEnvironment,
-    inventoryInterpreters, isInterpreterName, isWindowsLogicalWrapperPath,
+    createEnforcementProgress, inventoryInterpreters, isInterpreterName, isWindowsLogicalWrapperPath,
     parseRegistryInstallPaths, prepareWindowsRemoval, probeCandidates, probeExecutable, probeRemovalPaths, probesForCandidate, removeTargets,
     windowsInstallationPlan } from './environment.js';
 import type { EnvironmentEnforcement, FileAlias, Probe, RemovalRecord, RemovalTarget, TargetOperations, WindowsInstallationContext } from './environment.js';
@@ -29,6 +31,46 @@ function failedLookup(code = 'EACCES'): TargetOperations {
 }
 
 describe('interpreter execution qualification controls', () => {
+    it('persists inventory progress before an interrupted directory read without changing inventory results', () => {
+        mkdirSync('tmp/conformance', {recursive: true});
+        const root = resolve(mkdtempSync('tmp/conformance/interrupted-inventory-'));
+        const report = join(root, 'enforcement.json'), script = join(root, 'interrupt.ts');
+        try {
+            const entry = pathToFileURL(resolve('test/conformance/reference/qualification/environment.ts')).href;
+            writeFileSync(script, 'import {createEnforcementProgress, inventoryInterpreters} from ' + JSON.stringify(entry) + ';\n'
+                + 'const report: string = ' + JSON.stringify(report) + ';\n'
+                + 'inventoryInterpreters([{path: ' + JSON.stringify(root) + ', recursive: true}], [], {\n'
+                + 'progress: createEnforcementProgress(report, {testedRevision: "revision-control", sourceHash: "source-control"}, "initial"),\n'
+                + 'readDirectory: (_path: string): never => process.exit(73)});\n');
+            const interrupted = spawnSync(process.execPath, [script], {encoding: 'utf8'});
+            expect(interrupted.error).toBeUndefined();
+            expect(interrupted.status, interrupted.stderr).toBe(73);
+            const readProgress = () => JSON.parse(readFileSync(report + '.progress.json', 'utf8')) as Record<string, unknown>;
+            expect(readProgress()).toMatchObject({report, testedRevision: 'revision-control', sourceHash: 'source-control',
+                operation: 'initial', stage: 'inventory-directory', path: root, directoriesRead: 0});
+            mkdirSync(join(root, 'nested'));
+            fixtureFile(root, 'nested/python.exe');
+            const roots = [{path: root, recursive: true}];
+            let clock = 0;
+            const identity = {testedRevision: 'revision-control', sourceHash: 'source-control',
+                inventory: {paths: ['large-parent-state-must-not-be-copied']}, qualified: true};
+            const progress = createEnforcementProgress(report, identity, 'verification', () => clock);
+            expect(inventoryInterpreters(roots, [], {progress})).toEqual(inventoryInterpreters(roots));
+            expect(readProgress()).toMatchObject({operation: 'verification', stage: 'inventory-complete', directoriesRead: 2});
+            expect(readProgress()).not.toHaveProperty('inventory');
+            expect(readProgress()).not.toHaveProperty('qualified');
+            progress({stage: 'control-before-probe', path: 'first-control'});
+            const before = readFileSync(report + '.progress.json', 'utf8');
+            progress({stage: 'control-before-probe', path: 'throttled-control'});
+            expect(readFileSync(report + '.progress.json', 'utf8')).toBe(before);
+            clock = 1000;
+            progress({stage: 'control-before-probe', path: 'later-control'});
+            expect(readProgress()).toMatchObject({path: 'later-control'});
+            progress({stage: 'initial-probes'}); // Stage boundaries persist even at the same timestamp.
+            expect(readProgress()).toMatchObject({stage: 'initial-probes'});
+            expect(readProgress()).not.toHaveProperty('path');
+        } finally {rmSync(root, {recursive: true, force: true});}
+    });
     it('does not equate a failed interpreter exit with a blocked spawn', () => {
         const candidate = process.execPath;
         expect(probeExecutable(candidate, ['--definitely-not-a-real-node-option'])).toMatchObject({ outcome: 'started', status: 9 });
