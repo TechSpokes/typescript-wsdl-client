@@ -1,0 +1,12 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:scalar:legacy-value-containment"
+           targetNamespace="urn:scalar:legacy-value-containment">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootR"><xs:complexContent><xs:restriction base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootD"><xs:complexContent><xs:extension base="t:RootR"/></xs:complexContent></xs:complexType>
+  <xs:element name="carrier"><xs:simpleType><xs:restriction>
+    <xs:simpleType><xs:restriction base="xs:duration"><xs:maxInclusive value="P2M"/></xs:restriction></xs:simpleType>
+    <xs:maxInclusive value="P1M"/>
+  </xs:restriction></xs:simpleType></xs:element>
+</xs:schema>

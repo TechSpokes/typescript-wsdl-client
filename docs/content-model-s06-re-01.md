@@ -310,6 +310,18 @@ Existing wrong-family enum and changed-provider controls retain rejection at the
 
 This repairs the demonstrated replay overcheck and qualifies these exact component rows. It establishes neither an alternative-exhaustion or ROOT-necessity theorem nor general native evidence adequacy, helper bounds, complete negatives or termination.
 
+### Containment after legacy scalar reduction
+
+A legacy scalar's exported component properties need not describe every predicate still used by VALUE assessment. SOURCE anonymous B restricts duration by maxInclusive `P2M`, and SOURCE C restricts B by maxInclusive `P1M`. A private exact B copy followed by a legacy child with bounds `P1M` and `P30D` has complete SOURCE PROPERTY equality, but its hidden incomparable `P30D` bound rejects VALUE `P1M`, which SOURCE C admits.
+
+An authenticated CURRENT copy of only the public `P1M` component must therefore prove its own containment. Replaying that component can admit a value rejected by its literal BASE; successful metadata coverage alone cannot certify the selected F2 value implication. This is independent of annotation authority, namespace maps or missing fresh-root evidence.
+
+The [scalar owner](../src/compiler/scalarSchemaAssessment.ts) keeps public component tuples for metadata, fixedness, whole-kind local-S and correspondence. Its value-containment certificates instead inspect the active scalar predicates of both descriptions and their actual conjuncts. The same frontier feeds coverage and the existing length, decimal, IEEE, calendar, duration and enumeration fallbacks, including legacy continuations. It does not follow historical parent edges, add an ITEM-image rule, alter PROPERTY equality or withdraw the authentic public CURRENT table.
+
+The [independent controls](../test/research/re01/scalar-legacy-value-containment.test.ts) preserve the valid SOURCE/property/function contrast, reject unfiltered CURRENT and legacy widening, and check valid compensation by a genuinely BASE-qualified `P15D` enumeration or stronger `P20D` bound. Positive constructions include every fresh scalar in complete evidence; inactive retained components keep their genuine authority and are not reintroduced as NEW.
+
+This repairs the demonstrated F2 completion defect. PROPERTY-to-function substitution and arbitrary legacy reduction remain unjustified; the [finite duration VALUE basis](content-model-s06-re-01-scalar-witnesses.md#finite-duration-bases-for-hidden-value-predicates) supplies a separate predicate lemma, not a native reconstruction theorem. General witness coverage, executable evidence adequacy, input-derived bounds, complete negatives and mathematical termination remain open.
+
 ### Raw facet groups and identity authority
 
 Caller-supplied raw groups contain facet data, not internal identity evidence.

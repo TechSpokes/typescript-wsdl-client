@@ -1132,6 +1132,16 @@ The existing positive constructs a QName enum at its actual ON definition map an
 
 Independent review accepted the necessity argument and its distinctions between literal scalar ancestry, nominal UNION fallback and actual VALUE selection. It neither requires this particular enum syntax nor proves that arbitrarily many functions, values, LIST layers or historical rows are necessary. A general procedure must bound permitted new constructions rather than omit them.
 
+## Finite duration bases for hidden VALUE predicates
+
+The [legacy containment controls](../test/research/re01/scalar-legacy-value-containment.test.ts) distinguish public PROPERTY from the complete VALUE function. An exact BASE with maxInclusive `P2M` admits both `P1M` and `P30D`. A legacy child with those two incomparable bounds exports `P1M` while retaining both VALUE predicates. It can match SOURCE scalar properties without admitting every value of that SOURCE scalar. Native reconstruction must retain the physical predicates or prove a valid replacement; equal public code is insufficient.
+
+There is an independently reviewed finite predicate basis for one duration bound kind. At each of the four native Appendix E anchors, choose an actual old endpoint attaining the minimum coordinate for upper bounds, or maximum for lower bounds. These at most four endpoints preserve the conjunction of strict comparisons on every duration value.
+
+An inclusive test also admits exact native equality with its endpoint. The selected basis can have at most one accepted endpoint exception outside the strict conjunction: two distinct accepted endpoints would each have to be strictly below the other at every anchor. If that candidate fails an omitted old test, retain one actual rejecting endpoint. Thus five actual endpoints preserve an inclusive conjunction, even when different durations have identical anchor vectors. Adding the old public representative gives at most six endpoints for an inclusive kind or five for an exclusive kind.
+
+This is a VALUE-predicate lemma. It neither licenses a different effective-map order nor preserves fixedness, annotation, whole-kind, CURRENT or provider rules by itself. The selected endpoints still require actual native issuance and lexical support; their byte lengths are not bounded merely by choosing finitely many old witnesses. A complete scalar writer and the general decision gates remain open.
+
 ## Effective SOURCE members in nominal relations
 
 The [local type relation owner](../src/compiler/schemaTypeRelations.ts) uses the effective ordered atomic/LIST members of a SOURCE UNION for target-member fallback. XML Schema 1.0 flattens nested SOURCE UNIONs, including constrained UNION wrappers; a supplied RAW member property remains literal and has its independent FULL formation obligation.

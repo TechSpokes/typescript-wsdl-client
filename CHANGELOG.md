@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): include active legacy scalar predicates in restriction containment while preserving public facet metadata.
+
 - fix(re01): qualify enum values against their introducing base while allowing inactive values after item narrowing.
 
 - fix(re01): check retained enumeration containment in the datatype context while preserving genuine new-member qualification.

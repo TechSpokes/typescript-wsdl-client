@@ -736,6 +736,18 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     return tuples;
   };
+  /** VALUE also tests physical legacy conjuncts hidden by the public reduction. */
+  const valueFacetTuples = (description: Description, owner: GraphNode): ScalarTuple[] => {
+    c.step(owner, 4); const result: ScalarTuple[] = [], pending = [description], seen = new Set<Description>();
+    while (pending.length) {
+      c.step(owner, 3); const current = pending.pop()!;
+      if (seen.has(current)) continue;
+      c.step(owner, 2); seen.add(current);
+      for (const tuple of scalarTuples(current, owner)) {c.step(owner, 2); result.push(tuple);}
+      for (const conjunct of current.conjuncts ?? []) {c.step(owner, 2); pending.push(conjunct);}
+    }
+    return result;
+  };
   const restrictsScalar = (derived: ScalarTuple, base: ScalarTuple, owner: GraphNode): boolean => {
     c.step(owner);
     if (derived.name !== base.name) return false;
@@ -2191,11 +2203,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       }
       if (!witnessed) c.fail(owner, 'length-minLength-maxLength', 'Coexisting length and minimum/maximum require the matching proper ancestor');
     }
+    return scalarValueContainment(base, result, owner) && complete;
+  };
+  /** Containment concerns every actual VALUE predicate, separately from metadata. */
+  const scalarValueContainment = (base: Description, result: Description, owner: GraphNode): boolean => {
+    const inherited = valueFacetTuples(base, owner), supplied = valueFacetTuples(result, owner);
     const covered = inherited.every(prior => {
       c.step(owner);
       return supplied.some(derived => restrictsScalar(derived, prior, owner));
     });
-    if (covered) return complete;
+    if (covered) return true;
     // Every main layer tests the same selected normalized result. An empty
     // intersection proves containment without comparing whitespace modes;
     // separate conjuncts, list items and union members do not share that word.
@@ -2205,9 +2222,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       c.step(owner, layer.patterns.length * 2 + 2);
       mainPatterns.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
     }
-    if (mainPatterns.length && regular.witness(regular.intersect(mainPatterns, owner), owner) === undefined) return complete;
-    if (regularLengthContainment(base, result, inherited, supplied, owner)) return complete;
-    if (decimalContainment(base, result, inherited, supplied, owner)) return complete;
+    if (mainPatterns.length && regular.witness(regular.intersect(mainPatterns, owner), owner) === undefined) return true;
+    if (regularLengthContainment(base, result, inherited, supplied, owner)) return true;
+    if (decimalContainment(base, result, inherited, supplied, owner)) return true;
     // A complete enumeration bounds the result's entire value space, even
     // when an independently retained scalar bound is weaker than a base one.
     c.step(owner, inherited.length * 2 + 1);
@@ -2228,11 +2245,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
           c.fail(owner, 'scalar-value-space-restriction', 'A derived enumeration value is excluded by the base');
         if (membership === undefined) includesAll = false;
       }
-      if (includesAll) return complete;
+      if (includesAll) return true;
     }
-    if (ieeeContainment(base, result, inherited, supplied, owner)) return complete;
-    if (calendarContainment(base, result, inherited, supplied, owner)) return complete;
-    if (durationContainment(base, result, inherited, supplied, owner)) return complete;
+    // Try supplied spellings before constructing complete datatype products.
     const counterexample = (lexical: LexicalValue): void => {
       let value: SchemaOperand;
       try {value = operand(result, lexical, owner);}
@@ -2247,6 +2262,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       c.step(owner);
       if (tuple.facet && boundNames.includes(tuple.name)) counterexample(tuple.facet.lexical);
     }
+    if (ieeeContainment(base, result, inherited, supplied, owner)) return true;
+    if (calendarContainment(base, result, inherited, supplied, owner)) return true;
+    if (durationContainment(base, result, inherited, supplied, owner)) return true;
     if (whitespaceCovered) for (const group of result.plan.layers) {
       c.step(owner);
       if (!group.patterns.length) continue;
@@ -2260,7 +2278,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       }
       // Every normalized spelling passes this disjunction. If every branch
       // was exhaustively enumerated, no other derived value is possible.
-      if (finite) return complete;
+      if (finite) return true;
     }
     if (result.plan.primitive === 'string') {
       const size = lengthProperty(result, 'length') ?? lengthProperty(result, 'minLength') ?? '0';
@@ -2454,6 +2472,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         if (membership !== true) complete = false;
       }
     }
+    if (!exact && !scalarValueContainment(base, result, owner)) complete = false;
     return complete;
   };
   /** Selection/role checks concern the supplied operand request, separately
