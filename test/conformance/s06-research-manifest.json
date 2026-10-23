@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "159edc6629c218c0eaed1f70dd1b9470662d7f0894631547153907cc211e60b8"
+          "sha256": "0fc999a88035c1ebd15f4f02eb9a94ed150a2468f1483b9ac0a07ca674f0e18a"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -3077,6 +3077,16 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-legacy-value-containment.xsd",
           "role": "fixture",
           "sha256": "be96c6cd05c023b3e1b787ce3d8949ebcac006077574868f3b529087378fa45f"
+        },
+        {
+          "path": "test/research/re01/scalar-qname-proxy-batch.test.ts",
+          "role": "prototype",
+          "sha256": "ddf7a27e0cadc3448a65924a4b0d29aedd4194d537e07ac727efad63fb07e03a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-qname-proxy-batch.xsd",
+          "role": "fixture",
+          "sha256": "508b7b345add98909d254a70e685f94ce591b676660c7ebcfa3779dab21f90fe"
         }
       ]
     },

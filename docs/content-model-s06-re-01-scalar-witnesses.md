@@ -819,6 +819,46 @@ A valid dynamic route first keeps STRING INF while removing its q:INF spelling. 
 
 This is a parameter proof about the stated proper cone. It does not assert an unrestricted root-necessity result or refute a finite dynamic catalogue. It shows why a contraction of atomic final snapshots must retain genuinely needed whole bootstrap stages. For LIST members, such a stage must fund a complete tagged tuple, rather than its QName components separately.
 
+## A free ur-parent QName proxy batch
+
+A new free ur-parent can fund a finite batch of LIST values before exposing them on BASE64 words, without an early LIST guard stealing binary inverses. This is a local prebinding constructor, not a rewrite of a fixed INPUT member array or a general FIRST schedule. The actual private rows, identities, owner support and maps must be writable before birth.
+
+Choose nonempty principal WORDs `w_i` that parse as BASE64 and each contain an XMLWS-free TOKEN that is a legal unprefixed QName. Let T contain one chosen TOKEN text per WORD. Choose a nonempty namespace B outside every binding value and default interpretation of the retained hard ROOT maps, and one fresh prefix p. Every helper definition and enum facet uses the same actual own map with default B and `p -> B`; storage target namespaces remain separately valid.
+
+Let pi_i be the tuple selected on `w_i` by ITEM `[QName,STRING]` at that own map, and H the set of distinct pi_i. Each tuple has a QName `(B,t)` with `t in T`, and none has a STRING item whose value is in T. Form auxiliary `a_i` by prefixing every TOKEN in T with `p:` while preserving other TOKENs and order. It denotes the same tuple, contains a colon, and cannot parse as BASE64.
+
+### Nine genuine rows
+
+All rows have permissive final masks and genuine absent private annotations. Primitive STRING has no facet component to select, so its first whitespace component is NEW. P1 T is the disjunction of escaped literal TOKEN texts; separate P1 components are conjoined. The [scalar owner](../src/compiler/scalarSchemaAssessment.ts) supplies the ordinary formation, current-component and selected-image checks.
+
+| Row | Actual constructor |
+| --- | --- |
+| C_T | Restrict builtin STRING with NEW preserve WS and finite literal P1 T |
+| C_empty | Restrict C_T, KEEP its WS/P1, add conjunctive literal-colon P1 |
+| J0 | Facet-free ur-UNION `[C_T,QName,STRING]` |
+| J1 | Restrict J0 with corresponding members `[C_empty,QName,STRING]` |
+| L0 | ur-LIST with ITEM J0 and explicit fixed-collapse component |
+| Lcap | Restrict L0, KEEP collapse, introduce one enum H using provider L0 on `a_i` |
+| Lchange | Restrict Lcap with ITEM J1, KEEP its actual WS and enum components |
+| U0 | Facet-free ur-UNION `[Lcap,base64Binary]` |
+| U1 | Restrict U0 with corresponding members `[Lchange,base64Binary]` |
+
+C_empty is genuinely empty because T contains no colon. At J1's own map its only potentially new values are QName `(B,t)` for `t in T`; J0 already supplies each through the actual WORD `p:t`. Every other selected value is unchanged or removed, so J1's complete image is contained in J0's. QName/STRING admissions, WS preimages and own-map value images are regular, giving the existing guarded atomic image frontend its complete native F2 certificate. This constructor proof is at the actual own map, not at a ROOT query map without that prefix binding.
+
+Every Lcap enum entry is genuinely L0-positive on its auxiliary WORD and saved own map. Lchange has actual ITEM derivation J1 to J0 and unchanged fixed-collapse coverage; its retained enum introduces no new value. If Lcap succeeded on any WORD, C_T cannot have won on a TOKEN: that would return a STRING in T, absent from H. J1 therefore preserves every old successful tuple and normalization on that same WORD. Lchange admission grows while its only values remain H.
+
+### Whole-WORD funding and qualification
+
+Lcap rejects every BASE64 WORD. To return its required QName `(B,t)`, J0 must bypass C_T; the unprefixed TOKEN t would select STRING, so the QName TOKEN needs a prefix colon. BASE64 permits no colon. This holds for the whole raw inverse, even when a binary point has only one feasible collapsed cell.
+
+Every new U1 LIST result belongs to H, and U0 already selects that point on its auxiliary `a_i` through its first member Lcap. If U1 instead selects BASE64, Lchange failed there; old Lcap success would imply Lchange success, so U0 selects the same binary point on that very WORD. This proves whole selected-image containment, rather than independent coordinate funding. The native frontend has only the finite LIST singleton sequences H and regular binary selection/rejection masks, all evaluated at the common actual own map.
+
+At each hard ROOT map B is unreachable by any prefix or default, so neither cap can return a tuple in H on any WORD. Both outer unions therefore retain exactly the same BASE64 result or rejection at those maps. One namespace, one prefix, at most m markers and m enum facets serve m principal roles; no helper or color is allocated per TOKEN. The claim does not bound WORD bytes or tuple arities.
+
+The outer BASE must admit the auxiliary WORDs at this switch. The displayed free ur stage has no outer TOP filter; a protected binary-only P1 would exclude every auxiliary and invalidate the funding. After the switch the original WORDs already carry H, so a later independently valid same-member TOP narrowing can remove the auxiliaries. Fixed INPUT arrays, inherited filters, exact TYPE/component/code/owner readers and other residual member families require their own writer; this construction does not bypass them.
+
+The [maintained native control](../test/research/re01/scalar-qname-proxy-batch.test.ts) uses `TWFu` and `T WFu`, both binary `4d616e`, with different captured LIST arities. It checks SOURCE plus all nine direct FULL constructions with empty obligations, four genuine corresponding derivations, and independent own/ROOT/auxiliary result matrices under the unchanged defaults. These are local native checks, not endpoint correspondence, a complete RE01 forest, input-role extraction or global coverage.
+
 ## Auxiliary QName feedback preserves the token parameter stock
 
 Consider one whitespace-free ITEM token and a finite rooted interface of actual VALUEs, protected WORDs and authentic current enum operands. First close protected lexical cores under extraction of a legal QName local. A STRING core `p:P1Y` therefore contributes P1Y before counting fixed duration parameters.
