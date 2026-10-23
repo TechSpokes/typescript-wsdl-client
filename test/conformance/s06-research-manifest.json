@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "bdc45c851fab7a60daac7c8743d833e32663400690a1bb0ddefcc654d1de1930"
+          "sha256": "532993d17ba6357f525abeafb9a902e7b27aa87f80fd1b21abc548f639f4f706"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "35547c8c3b467d8bbdc7d8ff84e45a855492fe886bdf1060677be4cffce6b75a"
+          "sha256": "aa8d7bc6aedc5aafab89e6f5485e2aa19daa4dbee53e103f68140e24755c5145"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -3151,7 +3151,7 @@
         {
           "path": "test/research/re01/finite-image-binary-word-views.test.ts",
           "role": "prototype",
-          "sha256": "2c621d9406cd579992c3dc02a12d9afb6098ea61c1eec0b9551bc520a981ddee"
+          "sha256": "ea06986be2311757db782332c76f5b1dbbc8de8844f34dc47dee7cfbad47887b"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/free-list-assignment.xsd",
@@ -3171,7 +3171,7 @@
         {
           "path": "test/conformance/fixtures/xsd/recovery/finite-image-binary-word-views.xsd",
           "role": "fixture",
-          "sha256": "0bd415a1133b28f1e722c1c73264105884075fade37c504b7f7b13674825f14c"
+          "sha256": "1b18838ebed4a7a796bc1a3c68cb15084e8cf6409c4162a05122426994f5733b"
         },
         {
           "path": "test/research/re01/free-list-boolean-assignment.test.ts",

@@ -8,6 +8,9 @@
   <xs:simpleType name="Choices"><xs:restriction base="t:Words"><xs:pattern value="QU JD|Q UJD"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="OnlySplit"><xs:restriction base="t:Words"><xs:pattern value="QU JD"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="Image"><xs:restriction base="t:Words"><xs:enumeration value="QU JD"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ImagePattern"><xs:restriction base="t:Image"><xs:pattern value="QU JD"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ImageLength"><xs:restriction base="t:Image"><xs:length value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="ImageEliminated"><xs:restriction base="t:Image"><xs:length value="1"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="EmptyImage"><xs:restriction base="t:Words"><xs:enumeration value=""/></xs:restriction></xs:simpleType>
   <xs:simpleType name="WrongPairs"><xs:restriction base="t:Words"><xs:enumeration value="QU UJD"/><xs:enumeration value="Q JD"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="Core"><xs:restriction base="xs:string"><xs:pattern value="QUJD"/></xs:restriction></xs:simpleType>

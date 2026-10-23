@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(re01): select genuine finite LIST enum stocks through inherited pattern and length restrictions.
 - feat(re01): construct input-derived first-enum LIST cohorts with native ordinary consumers and evidence.
 - chore(reference): persist bounded environment-enforcement progress and calibrate Windows qualification time to measured workloads.
 

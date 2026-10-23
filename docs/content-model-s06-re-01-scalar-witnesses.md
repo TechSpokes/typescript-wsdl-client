@@ -1355,6 +1355,22 @@ enum component contains every possible image value; full saved-map image inverse
 Each positive label unions complete selected tagged-tuple inverses; a negative label complements that whole union.
 No per-token projection substitutes for a complete tuple label.
 
+Issue #354 repairs the finite stock selection: `layer()` registers an auxiliary enum map for every restriction,
+including restrictions without enumeration facets. Only a layer with a genuine enumeration facet supplies a stock.
+Every admitted image value must belong to that component; the complete image inverse then filters the stock through
+all inherited and local constraints in the saved map. An absent enum remains unsupported, an enum containing the empty
+LIST tuple remains a singleton stock, and a genuine enum whose values have no complete inverse yields an empty image.
+The adjacent endpoint tuple selector already requires a genuine CURRENT enumeration component and does not share this
+map-presence defect. Other nearby stock selectors require nonempty enum maps rather than map presence.
+
+Native regressions ran against unchanged main `f650172c897fb63ed514c2b864691c846a75b72f` with Node 24.19.0,
+npm 11.9.0 and Vitest 5.0.3. `npx vitest run test/research/re01/finite-image-binary-word-views.test.ts --reporter=verbose`
+discovered 15 cases: six failed and nine passed before the repair. Pattern-only and length-only inherited layers each
+produced false positive-label emptiness and false negative-label witnesses; both signs of the unenumerated `OnlySplit`
+image incorrectly returned checked results. Native scalar admission independently established the complete QName LIST
+values before those checks. The corrected controls also compare a negative witness's complete tagged tuple against
+that native operand, pin admitted ROOTs, and distinguish an eliminated enum from the admitted empty tuple.
+
 All constraints are conjoined on each physical WORD before XML-whitespace erasure. The
 [shared reconstruction owner](../src/compiler/schemaBinaryWordReconstruction.ts) intersects their projected languages
 with the native canonical BASE64 grammar, then reconstructs every view through its complete erasure preimage. Native
