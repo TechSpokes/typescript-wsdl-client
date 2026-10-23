@@ -125,6 +125,12 @@ Stage boundaries distinguish registry queries, installation discovery, directory
 preparation and probes. Cleanup preserves the sample so a killed process remains diagnosable in the uploaded artifact.
 The sample issues no qualification and changes no inventory scope, exclusion, removal or probe requirement.
 
+The Windows job allows 45 minutes for the complete workload. In PR #353, the
+[Node 26 run](https://github.com/TechSpokes/typescript-wsdl-client/actions/runs/39962575864/job/120444017485)
+completed in 28m23, while the [Node 24 run](https://github.com/TechSpokes/typescript-wsdl-client/actions/runs/39962575864/job/120444016946)
+spent 28m45 enforcing interpreter absence, passed strict checks, and reached the reference tests before the former 30-minute job deadline cancelled it.
+This operational allowance provides runner headroom; inventory, negative controls, probe deadlines and qualification criteria remain unchanged.
+
 New producer runs capture source/input/engine hashes at execution. Recorders reject stale output and write ignored `recorded-report.json` or `recorded-observations.json`; checked historical reports remain unchanged.
 
 ## Real-world relevance investigation

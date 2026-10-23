@@ -36,7 +36,7 @@ jobs:
   windows:
     name: Python absent (Windows Node ${{ matrix.node }})
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       NODE_REFERENCE_DISPOSABLE_WINDOWS: 'true'
     strategy:
