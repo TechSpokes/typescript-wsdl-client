@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:free-list-changed-item" targetNamespace="urn:re01:free-list-changed-item" elementFormDefault="qualified">
+  <xs:simpleType name="DecFirst"><xs:restriction base="xs:decimal"><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="FloatZero"><xs:restriction base="xs:float"><xs:pattern value="01"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="FloatLater"><xs:restriction base="xs:float"><xs:pattern value="1"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DecLater"><xs:restriction base="xs:decimal"><xs:pattern value="1|01|001"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Item"><xs:union memberTypes="t:DecFirst t:FloatZero t:FloatLater t:DecLater"/></xs:simpleType>
+  <xs:simpleType name="WordsBase"><xs:list itemType="t:Item"/></xs:simpleType>
+  <xs:simpleType name="Words"><xs:restriction base="t:WordsBase"><xs:minLength value="2"/></xs:restriction></xs:simpleType>
+  <xs:element name="head1" type="t:Words" abstract="true"/>
+  <xs:element name="head2" type="t:Words" abstract="true"/>
+  <xs:complexType name="A"><xs:choice><xs:element name="value1" type="t:Words" minOccurs="0" fixed="1 1"/><xs:element name="value2" type="t:Words" minOccurs="0" fixed="1 1"/></xs:choice></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"><xs:choice><xs:element ref="t:head1"/><xs:element ref="t:head2"/></xs:choice></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

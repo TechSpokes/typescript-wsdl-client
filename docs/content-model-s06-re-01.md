@@ -3792,6 +3792,32 @@ The recommendation favors the founded research route because it preserves the ac
 This is an explicit interpretation choice with stated consequences, not a source-derived answer hidden behind an algorithm.
 It neither proves general negative decidability nor closes the dated-semantic correspondence gate.
 
+#### Dated correspondence disposition after the first LIST constructor
+
+The independent comparison target remains the 28 October 2004 Second Edition [extension constraint](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends), including its separate restriction, component and type-derivation premises.
+Clause 1.5 requires a possible extension followed by restriction from the designated ancestor; it does not state a bound on hypothetical component support or a validation-proof rank.
+The [complex type-derivation relation](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-derived-ok) separately follows identity, bases, methods and exclusions, and explicitly qualifies incompletely specified component identity.
+The [Second Edition errata](https://www.w3.org/2004/03/xmlschema-errata), rechecked on October 23, 2026, records E1-56 concerning defaults and PSVI contributions; it supplies no generated-context foundation rule.
+
+For an explicit comparison judgment, fix the accepted B-v1 representation, identity and context qualifications, without assuming the requested RE01 truth.
+Let `D2004(S)(Gamma,P,T,A)` require a finite permitted two-step component construction, its endpoint correspondence, all Q-free dated local premises, and every consumed own clause-1.5 duty interpreted by `S` in its actual receiving context.
+This specifies the dated constraint scheme to compare with the existing `N(S)` translation; a source-to-B correspondence proof must justify that translation under the stated qualifications.
+It does not define `S` by successful execution of the new constructor.
+
+The precise additional implication needed for the selected research relation is that independently intended dated success excludes `D = J_n \ mu R`, followed by adequacy of the greatest completion inside `K`.
+The [two-model construction](#global-formal-models-and-renewal-nonentailment) shows that the previously formalized candidate equations and accepted finite positives alone do not entail that implication.
+Its renewal discriminator belongs to `S+` and not `Q_f`; this is not a verdict that the complete dated standard has two meanings.
+
+| Interpretation route | Renewal consequence | Required evidence |
+| --- | --- | --- |
+| Prove dated generated-context foundation and completion | Excluded, as in `Q_f` | Independent source principle and both correspondence directions |
+| Adopt greatest compatible-model existence | Included, as in `S+` | Explicit interpretation change and a different adequate procedure |
+| Retain the selected research relation with a separate standards gate | No dated verdict | Keep the implication open and preserve the discriminator |
+
+The third route remains the recommendation until the first route is proved or the maintainer deliberately selects another standards interpretation.
+No additional decision is required to continue unaffected research implementation; neither the LIST constructor nor a complete procedure for `Q_f` would establish the missing normative implication.
+The [renewal controls](../test/research/re01/helper-renewal.test.ts) and [identity-ground controls](../test/research/re01/exact-vacuous-ground.test.ts) preserve productive renewal, a failed retained consumer, and complete finite positives as separate observations.
+
 #### Whole-assessment finite semantic forest theorem
 
 Fix a finite admitted actual Γ and an applicable original RE01 target, with complete source, notation, scalar-slot, Q-free local and external-input qualifications.

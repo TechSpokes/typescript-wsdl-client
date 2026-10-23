@@ -1313,6 +1313,61 @@ debt on positive and empty results, and unsupported/exhausted outcomes. Reconstr
 one checked native candidate. Their common-core equation is established by the producer and separately replayed through
 native binary equality; the finite schema candidate does not encode an additional general WORD-sharing relation.
 
+### Executable finite endpoint tuples
+
+`createSchemaScalarKernel(H).privateAliasEndpointTuples({roles,constants,formula}, owner)` solves one joint native
+Boolean value/order circuit. Its exact fragment has bound-capable atomic CURRENT roles with genuine finite enum
+inventories, proved singleton images or proved empty images. A requested exclusive-repeat alternative names a matching
+actual CURRENT exclusive bound component and retains its ordinal and primitive spelling. The operation does not build
+a complete KEEP/REPLACE/fixedness inventory; additional facet-formation duties still belong to their native owner.
+
+For an enumerated role, every admitted value belongs to each genuine enum component. The smallest such component is
+therefore a complete finite candidate stock. Reconstruct each candidate through the full CURRENT fixed-value inverse,
+then reassess its genuine CURRENT and primitive words. A saved enum spelling is a positive shortcut only; a later
+pattern may require a different spelling. For an unenumerated admitted value v, prove the entire admission intersected
+with the complement of v's fixed-value inverse empty before treating v as exhaustive. A second value yields an explicit
+unsupported qualification. Numeric guards remain numeric predicates, including scientific float/double spellings.
+
+The finite Cartesian product evaluates the whole circuit using native `sameValue` and exact partial order, preserving
+`undefined` for calendar/duration comparisons. Exhaustive failure proves only local tuple emptiness in this qualified
+fragment. It never infers emptiness from independently selected unary witnesses. Authentic bound-repeat alternatives
+remain available even when CURRENT admission is empty. Every role/constant contributes formation obligations and type
+dependencies before a local empty result; shared precharged accounting remains sticky.
+
+The [tuple controls](../test/research/re01/private-alias-endpoint-tuples.test.ts) require `1 < 2` after independent unary
+choices both select `1`, reject a contradictory joint circuit with nonempty unary masks, and reconstruct equal values
+with spellings `01` and `1.0`. Other contrasts preserve undefined order, nonenumerated IEEE singleton positives and
+negatives, authentic empty-admission exclusive repeats, native complete-forest consumption and in-flight exhaustion.
+General digit-track tuples, non-singleton unenumerated roles, complete facet-inventory synthesis and uniform practical
+IEEE capacity remain #347 obligations. This operation does not establish the full supplied tuple theorem.
+
+### Executable finite whole-LIST image WORD labels
+
+`createSchemaScalarKernel(H).finiteImageBinaryWordViews(views, owner)` extends fixed regular atomic/UNION programmes to
+regularizable LIST programmes and positive or negative whole-LIST image labels. A label supplies a genuinely formed
+fixed LIST image, its actual saved map and a genuine finite enum component. Unenumerated image labels, duration P-block
+tracks and nonregular numeric joins remain explicit qualifications. Fixed LIST ROOT values are supported.
+
+The scalar owner first compiles complete LIST admission and each expected tuple's ordered token inverses. Intersecting
+the whole-tuple inverse with complete admission preserves LIST length, patterns, enum components and FIRST selection.
+UNION alternatives reject complete earlier-member admissions before applying whole-UNION facet tests. A genuine image
+enum component contains every possible image value; full saved-map image inverses remove unrealizable candidates.
+Each positive label unions complete selected tagged-tuple inverses; a negative label complements that whole union.
+No per-token projection substitutes for a complete tuple label.
+
+All constraints are conjoined on each physical WORD before XML-whitespace erasure. The
+[shared reconstruction owner](../src/compiler/schemaBinaryWordReconstruction.ts) intersects their projected languages
+with the native canonical BASE64 grammar, then reconstructs every view through its complete erasure preimage. Native
+reassessment checks the actual parser, ROOT and each whole-value label. Positive labels emit genuine inverse WORDs in
+their saved image maps. Every view, image and ROOT retains native obligations/dependencies, including on local empty
+results. This proves local existence or emptiness only when all complete predicates qualify for this regular path.
+
+The [image WORD controls](../test/research/re01/finite-image-binary-word-views.test.ts) preserve tuple correlation,
+positive/negative labels on one core, saved QName maps, FIRST preemption, fixed ROOT, empty tuples, GSC1 debts on positive
+and empty results, native ordinary VALUE consumers, bounded float token guards and in-flight exhaustion. They reuse
+the regular producer's whitespace, BASE64 residue/padding/low-bit and inverse controls. Shared duration arithmetic,
+nonfinite images, unknown cross-core LIST equality and unknown endpoint/substrings remain open; #348 is not complete.
+
 ### Outstanding joint claim
 
 The remaining theorem concerns one actual simultaneous construction. For every successful contextual judgment at authentic `(Gamma,P,target)`, derive a winning direct candidate with complete encoding bounded by a total computable function of that input. The input includes the entire exact inherited P, even historically fresh rows; it excludes arbitrary helper rows selected from an old successful witness.

@@ -75,6 +75,20 @@ it('forms changed-ITEM DD/FF LISTs but rejects serial ITEM UNION restoration', a
   assert.deepEqual(tables.DD, [['decimal', 'decimal'], ['decimal', 'decimal']]);
   assert.deepEqual(tables.Swapped, [['float', 'decimal'], ['decimal', 'float']]);
   const proof: ReturnType<typeof verifyFiniteRe01Evidence> = s.forest(context); assert.equal(proof.kind, 'checked-candidate', json(proof));
+  // Both float(1) coordinates occur in the original ITEM image, but the
+  // original whole LIST only selects [decimal,float] or [float,decimal].
+  // FF genuinely funds [float,float] at L0; per-ITEM or later-image funding
+  // cannot replace immediate-BASE whole-tuple containment for a NEW enum.
+  const tupleEnum: RawFacetComponentEntry = {annotation: 'absent', facets: [{name: 'enumeration', fixed: false,
+    lexical: {value: words[0]!, context: s.storage.context}, operand: {context: 'active', type: local(la.node.id), owner: s.storage.id}}]};
+  const funded = s.scalar('FundedTuple', local(la.node.id), {kind: 'list', item: local(ua.node.id)}, [{baseComponent: 0}, {baseComponent: 1}, tupleEnum]);
+  const unfunded = s.scalar('UnfundedTuple', local(id('L')), {kind: 'list', item: local(ua.node.id)}, [{baseComponent: 0}, {baseComponent: 1}, tupleEnum]);
+  const fundedContext = s.build('funded-tuple', [...rows, funded]);
+  assert.equal(s.forest(fundedContext).kind, 'checked-candidate');
+  const unfundedContext = s.build('unfunded-tuple', [...rows, unfunded]);
+  assert.deepEqual(checkComponentConstruction(unfundedContext, unfunded.node.id).kind, 'candidate-rejected');
+  const unfundedProof = s.forest(unfundedContext);
+  assert.equal(unfundedProof.kind, 'candidate-rejected', json(unfundedProof)); assert.equal(unfundedProof.rule, 'enumeration-valid-restriction');
   [ua, ub].forEach(base => {
     const role = s.scalar(base === ua ? 'SerialA' : 'SerialB', local(base.node.id), members(local(killA.node.id), local(killB.node.id)), [{baseComponent: 0}]);
     const failed = s.build('serial-' + base.node.id, [...rows, role]);

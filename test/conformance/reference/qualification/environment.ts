@@ -118,6 +118,36 @@ export interface EnvironmentEnforcement {
     cleanupErrors?: readonly string[];
 }
 
+export interface EnforcementProgress {
+    readonly stage: string;
+    readonly path?: string;
+    readonly directoriesRead?: number;
+    readonly pendingDirectories?: number;
+}
+export type EnforcementProgressObserver = (progress: EnforcementProgress) => void;
+/** Bounded latest sample, separate from the potentially large enforcement report.
+ * Cleanup deliberately preserves the last observed operation after interruption.
+ * Repeated directory samples are rate-limited; a sampled path is not a claim
+ * about the exact current directory between samples. No qualification is issued.
+ */
+export function createEnforcementProgress(report: string,
+    identity: Pick<EnvironmentEnforcement, 'testedRevision' | 'sourceHash'>,
+    operation: 'initial' | 'verification', clock: () => number = Date.now): EnforcementProgressObserver {
+    const path = report + '.progress.json';
+    let lastStage: string | undefined, lastWritten = -Infinity;
+    return progress => {
+        const now = clock();
+        if (progress.stage === lastStage && now - lastWritten < 1000) return;
+        mkdirSync(dirname(path), { recursive: true });
+        const snapshot = {formatVersion: 1, report: resolve(report), testedRevision: identity.testedRevision,
+            sourceHash: identity.sourceHash, operation,
+            sampledAt: new Date(now).toISOString(), ...progress};
+        writeFileSync(path + '.partial', JSON.stringify(snapshot, null, 2) + '\n');
+        renameSync(path + '.partial', path);
+        lastStage = progress.stage; lastWritten = now;
+    };
+}
+
 const names = ['python', 'python2', 'python2.7', 'python3', 'pythonw', 'py', 'pyw', 'pip', 'pip2', 'pip3',
     'pypy', 'pypy3', 'ipython', 'pipx', 'pipenv', 'virtualenv',
     ...Array.from({ length: 10 }, (_, index) => 'python3.' + (index + 7))];
@@ -225,6 +255,7 @@ interface InventoryOptions {
     readonly fileAliases?: readonly FileAlias[];
     readonly registry?: readonly RegistryObservation[];
     readonly errors?: readonly string[];
+    readonly progress?: EnforcementProgressObserver;
 }
 
 /** Enumerate canonical directory targets once; retain file aliases as separate candidates. */
@@ -260,6 +291,7 @@ export function inventoryInterpreters(roots: readonly InventoryRoot[], excluded:
         const { root, explicit } = pending.pop()!;
         const path = resolve(root.path);
         if (excludedRoot(root, path, explicit)) continue;
+        options.progress?.({stage: 'inventory-directory', path, directoriesRead, pendingDirectories: pending.length});
         try {
             const canonical = realpathSync(path);
             if (path !== canonical) aliases.push({ path, target: canonical });
@@ -304,6 +336,7 @@ export function inventoryInterpreters(roots: readonly InventoryRoot[], excluded:
             else errors.push(path + ': ' + message(error));
         }
     }
+    options.progress?.({stage: 'inventory-complete', directoriesRead, pendingDirectories: 0});
     return { roots, paths: [...paths].sort(), directoriesRead, errors,
         aliases: [...new Map(aliases.map(alias => [alias.path, alias])).values()],
         fileAliases: [...new Map(fileAliases.map(alias => [alias.path, alias])).values()],
@@ -325,7 +358,7 @@ export interface WindowsInstallationContext {
 }
 
 /** Installation trees and direct system commands, not recursive OS logs, databases or profile data. */
-export function windowsInstallationPlan(context: WindowsInstallationContext): InventoryPlan {
+export function windowsInstallationPlan(context: WindowsInstallationContext, progress?: EnforcementProgressObserver): InventoryPlan {
     const roots = new Map<string, InventoryRoot>();
     const errors: string[] = [];
     const aliases: CanonicalAlias[] = [];
@@ -336,6 +369,7 @@ export function windowsInstallationPlan(context: WindowsInstallationContext): In
             reason: selection ? reason : previous?.reason ?? reason, selection: selection ?? previous?.selection });
     };
     const discover = (path: string): readonly Dirent[] => {
+        progress?.({stage: 'installation-discovery', path});
         try {
             const canonical = realpathSync(path);
             if (resolve(path) !== canonical) aliases.push({ path: resolve(path), target: canonical });
@@ -385,6 +419,7 @@ export function windowsInstallationPlan(context: WindowsInstallationContext): In
     for (const entry of discover(context.users)) {
         if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
         const path = join(context.users, entry.name);
+        progress?.({stage: 'installation-profile', path});
         try {
             const canonical = realpathSync(path);
             if (resolve(path) !== canonical) aliases.push({ path: resolve(path), target: canonical });
@@ -457,11 +492,12 @@ export function parseRegistryInstallPaths(output: string, environment: NodeJS.Pr
     return { installPaths: [...new Set(installPaths)], executablePaths: [...new Set(executablePaths)], errors };
 }
 
-function registryInstallations(): RegistryObservation[] {
+function registryInstallations(progress?: EnforcementProgressObserver): RegistryObservation[] {
     const command = systemCommand('reg.exe');
     const observations: RegistryObservation[] = [];
     const keys = ['HKLM\\SOFTWARE\\Python', 'HKCU\\SOFTWARE\\Python'];
     for (const key of keys) for (const view of ['64', '32'] as const) {
+        progress?.({stage: 'registry-query-' + view, path: key});
         const result = spawnSync(command, ['query', key, '/s', '/reg:' + view], {
             encoding: 'utf8', windowsHide: true, timeout: 30000, maxBuffer: 4 * 1024 * 1024,
         });
@@ -482,8 +518,8 @@ function registryInstallations(): RegistryObservation[] {
     return observations;
 }
 
-function platformInventory(platform: EnforcementPlatform): Inventory {
-    if (platform === 'linux') return inventoryInterpreters([{ path: '/', recursive: true }], ['/proc', '/sys', '/dev']);
+function platformInventory(platform: EnforcementPlatform, progress: EnforcementProgressObserver): Inventory {
+    if (platform === 'linux') return inventoryInterpreters([{ path: '/', recursive: true }], ['/proc', '/sys', '/dev'], {progress});
     const driveRoot = (process.env.SystemDrive ?? 'C:') + '\\';
     const windows = process.env.SystemRoot ?? join(driveRoot, 'Windows');
     const present = (paths: readonly (string | undefined)[]) => paths.filter((path): path is string => !!path);
@@ -494,8 +530,8 @@ function platformInventory(platform: EnforcementPlatform): Inventory {
         recursiveDirectories: present([process.cwd(), process.env.GITHUB_WORKSPACE, process.env.RUNNER_TEMP,
             process.env.RUNNER_TOOL_CACHE, process.env.AGENT_TOOLSDIRECTORY]),
         profiles: present([process.env.USERPROFILE]), localAppData: process.env.LOCALAPPDATA, appData: process.env.APPDATA,
-        pathDirectories: (process.env.PATH ?? '').split(';').filter(Boolean), registry: registryInstallations() });
-    return inventoryInterpreters(plan.roots, plan.exclusions, { ...plan, platform });
+        pathDirectories: (process.env.PATH ?? '').split(';').filter(Boolean), registry: registryInstallations(progress) }, progress);
+    return inventoryInterpreters(plan.roots, plan.exclusions, { ...plan, platform, progress });
 }
 function knownPaths(platform: EnforcementPlatform): string[] {
     if (platform === 'linux') return ['/bin', '/usr/bin', '/usr/local/bin', '/opt/bin']
@@ -614,8 +650,10 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
         stateDirectory, strategy: platform === 'win32' ? 'disposable-windows-removal' : 'linux-absence',
         disposableHost, phase: 'preparing', qualified: false, removalTargets: [], removals: [] };
     writeState(report, state);
+    const progress = createEnforcementProgress(report, state, 'initial');
     try {
-        state.inventory = platformInventory(platform);
+        progress({stage: 'inventory-start'});
+        state.inventory = platformInventory(platform, progress);
         if (state.inventory.errors.length) throw new Error('Incomplete interpreter inventory: ' + state.inventory.errors.join('; '));
         if (platform === 'linux') {
             const executable = state.inventory.paths.filter(path => {
@@ -627,22 +665,29 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
             });
             if (executable.length) throw new Error('Linux image contains executable interpreters: ' + executable.join(', '));
             const controlPath = join(stateDirectory, 'python');
+            progress({stage: 'control-copy', path: controlPath});
             copyFileSync(process.execPath, controlPath);
             chmodSync(controlPath, 0o700);
+            progress({stage: 'control-before-probe', path: controlPath});
             const before = probeExecutable(controlPath, ['--version']);
             if (before.outcome !== 'started' || before.status !== 0) throw new Error('Copied Node control cannot execute before permission denial');
             state.control = { path: controlPath, sourceHash: sha(controlPath), before };
             writeState(report, state);
+            progress({stage: 'control-enforcement', path: controlPath});
             chmodSync(controlPath, 0o600);
+            progress({stage: 'control-after-probe', path: controlPath});
             state.control.after = probeExecutable(controlPath);
             if (state.control.after.outcome !== 'denied') throw new Error('Linux mode bits did not block the copied Node control');
         } else {
             const controlPath = join(stateDirectory, 'python.exe');
+            progress({stage: 'control-copy', path: controlPath});
             copyFileSync(process.execPath, controlPath);
+            progress({stage: 'control-before-probe', path: controlPath});
             const before = probeExecutable(controlPath, ['--version']);
             if (before.outcome !== 'started' || before.status !== 0) throw new Error('Copied Node control cannot execute before removal');
             state.control = { path: controlPath, sourceHash: sha(controlPath), before };
             writeState(report, state);
+            progress({stage: 'removal-preparation'});
             const preparation = prepareWindowsRemoval([...state.inventory.paths, controlPath], state.inventory.fileAliases);
             state.removalTargets = preparation.targets;
             state.targetLookups = preparation.targetLookups;
@@ -650,12 +695,15 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
             state.targetPreparationErrors = preparation.errors;
             writeState(report, state);
             if (preparation.errors.length) throw new Error('Incomplete Windows target enforcement: ' + preparation.errors.join('; '));
+            progress({stage: 'interpreter-removal'});
             state.removalErrors = removeTargets(state.removalTargets, state.removals, removeWindowsFile, () => writeState(report, state));
             if (state.removalErrors.length) throw new Error('Windows interpreter removal failed: ' + state.removalErrors.join('; '));
+            progress({stage: 'control-after-probe', path: controlPath});
             state.control.after = probeExecutable(controlPath);
             assertUnavailableProbes([state.control.after]);
         }
         const removedPaths = state.removalTargets.map(target => target.path);
+        progress({stage: 'initial-probes'});
         state.initialProbes = [...collectProbes(state.inventory, platform, removedPaths),
             ...(platform === 'win32' ? probeRemovalPaths(removedPaths) : [])];
         if (platform === 'win32') assertUnavailableProbes(state.initialProbes);
@@ -664,6 +712,7 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
         state.enforcedAt = new Date().toISOString();
         state.qualified = true;
         writeState(report, state);
+        progress({stage: 'enforced'});
         return state;
     } catch (error) {
         state.phase = 'failed';
@@ -677,6 +726,7 @@ export function enforceEnvironment(report: string): EnvironmentEnforcement {
 export function verifyEnvironment(report: string): EnvironmentEnforcement {
     const state = readState(report);
     if (!['enforced', 'verified'].includes(state.phase) || !state.qualified) throw new Error('No active qualified environment control');
+    const progress = createEnforcementProgress(report, state, 'verification');
     try {
         if (state.platform === 'win32') assertDisposableWindows();
         if (state.platform !== process.platform || state.node !== process.version || state.nodeExecutableHash !== sha(process.execPath))
@@ -686,7 +736,8 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
         const git = (...args: string[]) => execFileSync('git', args, { encoding: 'utf8' }).trim();
         if (state.testedRevision !== git('rev-parse', 'HEAD') || state.testedTree !== git('rev-parse', 'HEAD^{tree}'))
             throw new Error('Git candidate changed during qualification');
-        state.verificationInventory = platformInventory(state.platform);
+        progress({stage: 'inventory-start'});
+        state.verificationInventory = platformInventory(state.platform, progress);
         if (state.verificationInventory.errors.length) throw new Error('Incomplete verification inventory: ' + state.verificationInventory.errors.join('; '));
         if (state.platform === 'win32') {
             if (!state.control) throw new Error('Missing copied Node removal control');
@@ -703,6 +754,7 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
             if (executable.length) throw new Error('Install introduced executable interpreters: ' + executable.join(', '));
         }
         const originalPaths = [...state.inventory?.paths ?? [], ...state.removalTargets.map(target => target.path)];
+        progress({stage: 'verification-probes'});
         state.verificationProbes = [...collectProbes(state.verificationInventory, state.platform, originalPaths),
             ...(state.platform === 'win32' ? probeRemovalPaths([...originalPaths, ...state.verificationInventory.paths]) : [])];
         if (state.platform === 'win32') {
@@ -713,6 +765,7 @@ export function verifyEnvironment(report: string): EnvironmentEnforcement {
         state.phase = 'verified';
         state.verifiedAt = new Date().toISOString();
         writeState(report, state);
+        progress({stage: 'verified'});
         return state;
     } catch (error) {
         state.phase = 'failed';

@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:endpoint-tuples" targetNamespace="urn:re01:endpoint-tuples">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="Pair"><xs:restriction base="xs:decimal"><xs:enumeration value="1"/><xs:enumeration value="2"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Padded"><xs:restriction base="xs:decimal"><xs:enumeration value="1"/><xs:pattern value="01"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Fractional"><xs:restriction base="xs:decimal"><xs:enumeration value="1"/><xs:pattern value="1[.]0"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Month"><xs:restriction base="xs:duration"><xs:enumeration value="P1M"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Days"><xs:restriction base="xs:duration"><xs:enumeration value="P30D"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Zoned"><xs:restriction base="xs:dateTime"><xs:enumeration value="2000-01-01T00:00:00Z"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Local"><xs:restriction base="xs:dateTime"><xs:enumeration value="2000-01-01T00:00:00"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="EmptyFloat"><xs:restriction base="xs:float"><xs:minExclusive value="1"/><xs:enumeration value="2"/><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BoundedFloat"><xs:restriction base="xs:float"><xs:minInclusive value="1"/><xs:maxExclusive value="2"/><xs:pattern value="1[.]5E0"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BoundedDouble"><xs:restriction base="xs:double"><xs:minInclusive value="1"/><xs:maxExclusive value="2"/><xs:pattern value="1[.]5E0"/></xs:restriction></xs:simpleType>
+  <xs:complexType name="MixedBase" mixed="true"/>
+  <xs:complexType name="MixedScalar"><xs:simpleContent><xs:restriction base="t:MixedBase"><xs:simpleType><xs:restriction base="xs:decimal"/></xs:simpleType><xs:enumeration value="1"/></xs:restriction></xs:simpleContent></xs:complexType>
+</xs:schema>
