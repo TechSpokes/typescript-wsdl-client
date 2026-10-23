@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "02d9c40fdb8cd6227986da1164a9eb8be9568665cdef3a385ce2cb601b6c6ab4"
+          "sha256": "ce9a8c40af601d20185b10d585ebb9bf9ea436992f1c460141d3d774edee0ce3"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -3131,7 +3131,7 @@
         {
           "path": "test/research/re01/free-list-assignment.ts",
           "role": "prototype",
-          "sha256": "6f8a2be12a70f4a4593c77c4f63dd2f347a9ed9ff7a70934f4a02bd5967b1dab"
+          "sha256": "f6d2d456e1d884321cef49167862da956c1936d96d454ac7f145540cd23d6858"
         },
         {
           "path": "test/research/re01/free-list-assignment.test.ts",
@@ -3172,6 +3172,21 @@
           "path": "test/conformance/fixtures/xsd/recovery/finite-image-binary-word-views.xsd",
           "role": "fixture",
           "sha256": "0bd415a1133b28f1e722c1c73264105884075fade37c504b7f7b13674825f14c"
+        },
+        {
+          "path": "test/research/re01/free-list-boolean-assignment.test.ts",
+          "role": "prototype",
+          "sha256": "9d9239dc61ae18eb33c8b0155a852111bd40748f2dda41039d1c7ed3f1e8d0f6"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-list-boolean-assignment.xsd",
+          "role": "fixture",
+          "sha256": "d4640ee2d90e1ae945924d3419c63c90e7a33df96d7b8796fd66dab65ac2ef4b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/free-list-boolean-assignment-false.xsd",
+          "role": "fixture",
+          "sha256": "78f9a8916892e16e0cffdbeaac48eac246c9d817007daf1954a92eb044dbc27d"
         }
       ]
     },

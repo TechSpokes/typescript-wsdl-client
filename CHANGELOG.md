@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ## [Unreleased]
 
 - feat(re01): construct input-derived first-enum LIST cohorts with native ordinary consumers and evidence.
+- chore(reference): persist bounded environment-enforcement progress for interrupted platform qualification.
 
 - feat(re01): construct exact CURRENT endpoint admission words and replay input-derived inherited ordinary/scalar assignments.
 

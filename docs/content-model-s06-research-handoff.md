@@ -6,7 +6,7 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 The continuation from PR #352 starts at main `81aa7f0e297fbee248c99378cddc0605c6cf7568`, tree
 `c32446d1fb50eb42770fc28209ea117b0611ec03`. Its overall research status remains blocked and incomplete. It now delivers
-an input-only first-enum LIST constructor, joint finite endpoint tuples and fixed finite whole-LIST image WORD labels.
+input-only exact-ITEM and derived Boolean-ITEM LIST constructors, joint finite endpoint tuples and finite image WORD labels.
 The [single premise ledger](content-model-s06-re-01-support-reconstruction.md#joint-premise-ledger) records exact domains,
 owners, controls, next operations and independent reviewers. These scoped results do not complete #347-#351, #234 or #232.
 
@@ -17,6 +17,12 @@ It returns a separately authenticated physical delta/context, its derived FIELD/
 forest, the native checked receipt and post-assembly introduced-stored-NP count. Unsupported shapes remain unresolved;
 candidate rejection, actual invalidity and operational exhaustion retain native outcome categories. Production must
 not import this test module or treat a forest for a Gamma-fresh target as an independent actual-root receipt.
+
+`prepareBooleanFreeListAssignments` additionally derives one shared guarded ITEM over authentic `[QName,boolean]`,
+then forms genuine L0/L1 stages retaining a HEAD LIST's literal true/false P1 component. It rewrites physical member
+WORDs from original Boolean ROOT demands and checks the same ordinary/scalar candidate. The fresh namespace is
+derived from the complete FIELD map portfolio. A direct builtin-Boolean ITEM is also a lawful smaller alternative;
+the guarded UNION is a sufficient recipe, not an unavoidable shape extracted from arbitrary witnesses.
 
 The production scalar kernel exposes `privateAliasEndpointTuples({roles,constants,formula},owner)` in its actual H.
 Roles use authentic CURRENT enum, proved-singleton or empty inventories, with optional matching exclusive-repeat bound
@@ -48,12 +54,19 @@ miss a future-only middle in `future-middle-allocation.test.ts`; unrestricted Pr
 GROUP multiplication in `joint-native-arithmetic.test.ts`. The new changed-ITEM controls additionally reject serial
 restoration without a genuine selected BASE donor. None proves the complete research task impossible or undecidable.
 
-The next executable resumption is to derive anchored FIELD tuple demands and current HEAD LIST/ITEM ports, enumerate
+The next executable resumption is to generalize derived anchored FIELD demands and current HEAD LIST/ITEM ports, enumerate
 the qualified finite atomic-UNION deletion masks jointly, and natively test whole selected-image funding before L0/L1
 formation. The decimal donor `001` versus absent-donor contrast in
 [the changed-ITEM controls](../test/research/re01/free-list-changed-item.test.ts) supplies a minimal discriminator.
 Recursive ITEM graphs, arbitrary native authorities and unanchored joins require further extraction or an equivalent
 total criterion; a failed technique and an unsupported local input remain explicit limitations.
+
+Platform qualification is separate from semantic research acceptance. Re-query current jobs rather than reusing an old
+timeout verdict. PR #352 main's Windows/Node 26 job passed; its Windows/Node 24 job timed out inside initial environment
+enforcement before reference setup or semantic tests, with successful cleanup and zero removals. The existing report
+could not distinguish its pre-removal substages. Bounded revision-linked progress now preserves registry, installation,
+inventory, control and probe boundaries through interruption, without changing enforcement. Portable interrupted-reader
+and unchanged-inventory controls pass; Windows execution still requires the hosted jobs and their actual artifacts.
 
 ## Current purpose and next investigation
 

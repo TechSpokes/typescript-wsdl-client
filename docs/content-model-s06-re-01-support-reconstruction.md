@@ -5090,7 +5090,7 @@ or both adequacy directions for a catalogue that has not yet been constructed.
 | Claim | Exact domain | Owner | Proof/control evidence | Status | Next operation | Reviewer |
 | --- | --- | --- | --- | --- | --- | --- |
 | Inherited-middle replay | Retained E-over-A middles | `shared-assignment.ts` | Native actual/child controls | Scoped accepted | Preserve receiving contexts | PR #352 review |
-| First-enum LIST cohort | Initial-parent exact ITEM | `free-list-assignment.ts` | Direct construction; ordinary consumers | Scoped implemented | Derive changed ITEM and fresh-parent forest | Constructor review agent |
+| First-enum LIST cohort | Initial-parent exact/Boolean ITEM | `free-list-assignment.ts` | Derived shared ITEM; ordinary consumers | Scoped implemented | Recursive ITEM and fresh-parent forest | Constructor review agent |
 | Joint endpoint tuples | Enum/singleton/empty CURRENT roles | Scalar assessment/kernel | Exhaustive finite product; exact inverses | Scoped implemented | General digit tracks and facet modes | Constructor review agent |
 | Whole-image binary WORD | Regularizable fixed LIST image labels | Scalar assessment/reconstruction | Complete tuple inverses; shared core | Scoped implemented | Shared duration P blocks | Coverage review agent |
 | Native frontier adequacy | Eventual complete B-v1 catalogue | #350 | Scoped supplied-forest checks | Open | Prove both adequacy directions and totality | Scope reviewed only |
@@ -5105,7 +5105,7 @@ missing graph extraction. No all-candidate input host forcing the Diophantine po
 establishes neither RE01 undecidability nor impossibility of the requested catalogue.
 
 The exact-ITEM increment below derives new rows and the complete positive token union for its stated input sector.
-The next constructor operation is to derive changed ITEM programmes and recursive CODE pairs under protected inherited
+The next constructor operation is to generalize changed ITEM programmes and recursive CODE pairs under protected inherited
 ports, together with first-BASE providers and complete fresh-parent children. Every copy must reject or agree, with
 actual BASE membership, on every positive token, including tokens unobserved locally. The grounded WORD producer cannot
 supply those missing programmes, eliminate unknown cross-core LIST equalities or solve unknown endpoints shared with
@@ -5196,6 +5196,40 @@ A genuinely derived ITEM can restore the desired tags only when its immediate UN
 donor, possibly at another spelling. Without that donor the native F2 check rejects the ITEM. A two-token LIST minimum
 also rejects funding an enum from a single admitted ITEM. These supplied recipes do not derive their own program
 roster and do not complete the input-only changed-ITEM constructor.
+
+### Input-derived Boolean ITEM dispatch
+
+`prepareBooleanFreeListAssignments(actual,parent,target)` extends the same ordinary constructor through a second
+checkable source sector. FIELD TYPE is the direct LIST `Words` whose exact ordered ITEM is `[QName,boolean]`. HEAD TYPE
+is an original restriction of `Words` with exactly one genuine literal P1 component, `true` or `false`.
+
+Every FIELD's complete native fixed tuple must have exactly one Boolean item with that value. The original-parent, flat ordinary
+frame, protected observers, empty IC/AU and availability conditions above remain in force.
+
+The constructor derives one fresh namespace outside the finite union of all FIELD map URI portfolios. At most N+1
+distinct candidates suffice when that union has N members. Form a genuine QName guard enumerating the original HEAD
+pattern literal at that new definition map, then one shared proper ITEM `J = [guard,boolean]` over the exact inherited
+ITEM. At every retained FIELD map, the unprefixed literal misses the guard and selects its demanded Boolean value.
+The actual UNION owner checks selected-image containment; Boolean true/false have genuine inherited preimages `1`/`0`.
+
+Each L0 now restricts the HEAD LIST with J, retaining its authentic whitespace and P1 components. L1 uses the exact
+same J and retained components, introducing its enum against actual immediate L0. The complete tuple is therefore
+funded by L0 even though the original HEAD LIST selects a QName on that literal. The cohort token condition compares
+L1's complete pre-mask program with its own BASE L0; it does not require L0 and the original HEAD parser to agree.
+GLOBAL affiliates use the derived literal in each original FIELD map, and ordinary fixed-value comparison checks
+tagged Boolean tuple equality with the original `1`/`0` field value on that same candidate.
+
+This recipe derives J and its sharing, width, owners, maps and providers without caller-supplied programmes. It adds
+exactly two SIMPLE rows to the earlier `3k+1` additions. The fresh-URI loop is bounded by the actual map stock; its
+strings and all new facet WORDs have input-derived bounds. The complete native forest and post-assembly zero-NP
+argument remain the same. Precharges cover namespace inventory, fresh-URI selection and map allocation before work.
+
+The [Boolean constructor controls](../test/research/re01/free-list-boolean-assignment.test.ts) cover true/false, an
+occupied candidate namespace as the FIELD default, actual shared J, wrong inherited FIRST and enum funding against
+the wrong BASE. A smaller alternative setting ITEM directly to builtin Boolean also passes complete native checking.
+Thus the source input establishes insufficiency of the unchanged inherited parser, not necessity of a new private
+UNION function. The derived shared-J recipe is a sufficient construction. Recursive hard CODE roles, arbitrary
+changed ITEMs, inherited fresh parents and complete catalogue coverage remain unresolved.
 
 ## Parallel SOURCE modules through the complete AND forest
 

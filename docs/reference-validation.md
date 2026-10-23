@@ -116,6 +116,15 @@ The original candidate investigation used PATH denial and remains historical sta
 The Windows audit records its installation roots, registry-discovered paths, canonical aliases and protected OS-data exclusions. Unreadable selected installation roots fail qualification; the audit does not claim that arbitrarily renamed executables across the entire host filesystem are absent.
 Windows removal requires the explicit disposable-runner marker and GitHub-hosted runner identity; it is not a local development command. The removal plan records every inventoried file, symbolic-file alias and resolvable physical target before deletion. Failed canonical lookup is diagnostic information, not evidence of execution denial. Failed deletion prevents qualification. Original and new absolute paths, command names and alias reads must be unavailable before and after installation and execution, including original aliases absent from the later inventory. Missing registry-listed paths remain in the audit. A process that starts and exits unsuccessfully fails the absence check. The copied-Node control must execute successfully before removal and be unavailable afterward. Cleanup removes task-owned controls; deleted host interpreters are discarded with the runner VM.
 `record.ts` accepts an optional installation-evidence JSON path; without it, regeneration makes no installation claim.
+
+Platform enforcement also persists `<report>.progress.json` beside its main report. This bounded latest sample pins
+the tested revision, enforcement source hash, initial/verification operation, stage and sampled directory counters/path.
+Repeated directory samples are throttled; a path identifies the last sample and can differ from the active directory.
+
+Stage boundaries distinguish registry queries, installation discovery, directory inventory, control copying, target
+preparation and probes. Cleanup preserves the sample so a killed process remains diagnosable in the uploaded artifact.
+The sample issues no qualification and changes no inventory scope, exclusion, removal or probe requirement.
+
 New producer runs capture source/input/engine hashes at execution. Recorders reject stale output and write ignored `recorded-report.json` or `recorded-observations.json`; checked historical reports remain unchanged.
 
 ## Real-world relevance investigation
