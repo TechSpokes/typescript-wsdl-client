@@ -5034,6 +5034,82 @@ The unresolved premise is a complete success-preserving encoded catalogue with o
 Operational exhaustion, an uncertified candidate and an unmatched scoped obstruction retain their separate meanings.
 General coverage, evidence adequacy, complete negative answers, mathematical termination and #234/#232 joint acceptance remain open until this premise and its operational use are established.
 
+## Input-derived inherited-middle implementation checkpoint
+
+The research-only [shared assignment](../test/research/re01/shared-assignment.ts) accepts authentic `(Gamma,P,target)`.
+It enumerates retained complex E middles whose literal BASE is the designated ancestor, reifies required SOURCE properties
+through their existing owners, and changes the target to R over each such middle. It issues no new helper roster.
+This is the first shared replay increment for #349, not the requested genuinely free first-enum LIST constructor.
+
+One immutable parent plus one native delta is the physical assignment. The inherited graph supplies nominal selections,
+BASE/TYPE/SCOPE/SG, BODY/CODE, scalar first modes and first-BASE providers, and physical WORD/maps and VALUE slots.
+The delta preserves all of them apart from the intended endpoint edge. Genuine SOURCE particle handles retain identity;
+deep-copying their public fields would lose authority. The SOURCE-only bank and ordinary prototype issuers are unnecessary
+for this zero-addition increment; their convenience boundaries still do not restrict B-v1.
+
+### Scoped construction and replay claim
+
+The number of proposed assignments is at most the number of active P records. Every encoding is reconstructed from the
+exact inherited target properties, one inherited middle and SOURCE mapping of finite Gamma. No new literal, WORD, scalar
+program, map, provider, GROUP or evidence forest is guessed. These finite input selections bound this subfamily's full data;
+they supply no bound on helpers outside it and no extraction of an arbitrary successful witness into this subfamily.
+
+Each delta has empty additions and retains P membership. Persistent replay preserves inactive stored rows as well.
+Reifying SOURCE particle backing does not introduce complex NP identities. Consequently the fully replayed assignment
+introduces zero stored NP identities, including when the target is Gamma-fresh. This statement concerns these actual deltas;
+it does not establish that a winning zero-addition member exists for an arbitrary input.
+
+Preparation returns pending scalar obligations and type dependencies, not a validity receipt. Replay returns a provisional
+local evidence node with its exact parent and target. Its empty premise list must be completed by the caller when children
+are required. The existing verifier requires an enclosing actual-Gamma-root forest; it rejects a missing fresh-owner child.
+No arbitrary `(P,target)` node is passed off as a standalone actual-root receipt.
+
+The [native controls](../test/research/re01/shared-assignment.test.ts) independently require a retained LIST enum's QName
+value to agree with ordinary fixed-VALUE comparison. The positive replay checks the actual ordinary particle and scalar
+on one graph. A fresh inherited owner needs a second exact-parent child and introduces no NP in that child. The negative
+control admits `foo` independently in two namespace maps but rejects their incompatible LIST QName values in ordinary RP.
+This is candidate rejection, not full RE01 nonexistence. Exhaustion remains sticky and never returns a partial family.
+
+### Consumed authorities and unresolved duties
+
+| Authority | Qualified input | Evidence and outcome owner |
+| --- | --- | --- |
+| `re01Ancestor`, `immediateTypeBase` | Actual current nominal chain | Existing typed dependency and failure results |
+| Actual content, original particle mapping | Authentic SOURCE complex owner | Property availability, not FULL |
+| Source AU and declaration properties | Actual target or latent middle | Pending scalar duties and type dependencies |
+| Candidate preparation | Exact parent and native delta | Structural preparation or native refusal |
+| Finite evidence verifier | Complete actual-root forest | Complete supplied-witness check or native failure |
+
+The complete verifier remains responsible for primitive, scalar, SOURCE, notation, IC and required registered-owner duties,
+including inherited fresh roots and extra emitted dependencies in each receiving context. This checkpoint consumes that
+owner rather than deriving expected frontiers from its traversal. It does not establish #350's arbitrary-catalogue totality
+or both adequacy directions for a catalogue that has not yet been constructed.
+
+### Joint premise ledger
+
+| Claim or missing premise | Implementation owner | Proof obligation | Executable evidence and status |
+| --- | --- | --- | --- |
+| Inherited primitive-middle recipes | `shared-assignment.ts` | Exact native retention and replay | Scoped positive and incompatible LIST controls |
+| CURRENT endpoint admission | Scalar kernel and scalar assessment | Exact unary predicate and genuine words | Non-enumerated IEEE controls; tuple synthesis open |
+| Free first-enum LIST cohort | #349 | Input-derived roster, modes, first-BASE funding | Existing stage-funding contrasts; producer open |
+| Fixed-program common binary WORD | Scalar kernel and #348 | Joint shared tracks and reconstruction | Regular atomic fragment; LIST/duration/image producer open |
+| Native frontier adequacy | #350 | Both semantic/native implications and totality | Scoped native replay; general qualification open |
+| Full joint catalogue | #234 | Bounded graph/program/WORD/VALUE/evidence together | No complete extraction or equivalent criterion |
+| Ranked complete negatives | #351 | Accepted full coverage and local qualification | Entry gate remains closed |
+
+Two investigated shortcuts do not discharge the catalogue premise. Independent WORD/value projections lose the physical
+LIST QName equality exhibited above. Replacing every unknown ordinary numeric join with a Presburger formula also fails
+for the mandatory variable-arity multiplication portfolios in the [arithmetic boundary](#an-unrestricted-joint-native-constraint-solver-is-insufficient).
+Fixing direct arities makes the qualified count problem linear, but deriving the complete fixed library is precisely the
+missing graph extraction. No all-candidate input host forcing the Diophantine portfolio is proved, so this observation
+establishes neither RE01 undecidability nor impossibility of the requested catalogue.
+
+The next constructor operation is to derive the free-LIST cohort's new rows, recursive CODE pairs and complete union of
+positive token demands from actual input before choosing programs. Every copy must reject or agree, with actual BASE
+membership, on every such token, including tokens unobserved locally. The grounded WORD procedure cannot supply those
+missing fixed programs, eliminate unknown cross-core LIST equalities or solve unknown endpoints shared with substrings.
+These remain explicit research gates; complete negatives and the separate dated-XSD correspondence claim remain open.
+
 ## Parallel SOURCE modules through the complete AND forest
 
 A qualified parallel SOURCE-module cohort can be folded to one controller while preserving the complete required-child forest. This extends the current-child construction to the other pending subjects' independent children; it is not an exhaustive ordinary producer grammar or a physical action bound.

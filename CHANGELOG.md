@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(re01): construct exact CURRENT endpoint admission words and replay input-derived inherited ordinary/scalar assignments.
+
 - docs(re01): derive grounded binary WORD bounds and delimit the joint constructor still required for complete decisions.
 
 - test(re01): verify a free-parent QName proxy batch switches LIST selection without stealing BASE64 funding.

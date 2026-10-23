@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "48b9e1843692530472e4bce27fae88ee6a91741fab24df75caed61d387c19b9f"
+          "sha256": "601e60507fb41c5251a1a710c1e597914f546a73700adf8f93df9a3b5a1ff9f7"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1206,7 +1206,7 @@
         {
           "path": "src/compiler/schemaScalarKernel.ts",
           "role": "semantic-source",
-          "sha256": "3882751d3e2dd89a40d2cbaf74628c4e09b64d2e9cfc664a76dac4c2684aa424"
+          "sha256": "e7bc8c558ddf09e973c9f221993881b1a1c723e0927e03b08bc04876d233dd83"
         },
         {
           "path": "src/compiler/schemaSimpleTypeProperties.ts",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "d4340cdc5c0cd79b6891b97c1f54ce2f1ea8eea8f0295ef22962e7cb12d0c2e1"
+          "sha256": "e33822ed234c2bf396988463d2cc23a4a66903eb16d2582a439c056bca199467"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "bf52a0534af968c00e9ab44f790cac9e038fe4cacb886600291059550bdb9049"
+          "sha256": "e1290bc738cfb7bd4cd7a58205b98263df9f9d7b54715ce481335d40fbd58c70"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2961,7 +2961,7 @@
         {
           "path": "test/conformance/fixtures/xsd/recovery/private-alias-endpoint-capacity.xsd",
           "role": "fixture",
-          "sha256": "2f60b7b506672e2864fe46cbc5a4e2c5a2d505df72806f5d5f1cbd520821c78b"
+          "sha256": "33e6a0f7a44359586d32ac8e3268ea675f58b969c28079b9d7dcb11b9f1226e5"
         },
         {
           "path": "test/research/re01/scalar-empty-name-inverse.test.ts",
@@ -3087,6 +3087,41 @@
           "path": "test/conformance/fixtures/xsd/recovery/scalar-qname-proxy-batch.xsd",
           "role": "fixture",
           "sha256": "508b7b345add98909d254a70e685f94ce591b676660c7ebcfa3779dab21f90fe"
+        },
+        {
+          "path": "test/research/re01/shared-assignment.ts",
+          "role": "prototype",
+          "sha256": "5d28e60bed95759bc11d2a93537720f66690ed1aa5a7c1d31ec4cb750e7b7a1e"
+        },
+        {
+          "path": "test/research/re01/shared-assignment.test.ts",
+          "role": "prototype",
+          "sha256": "c9ca119193a4796d5ad98c243649dad8e69beb1d648777c039a05a787d8d2a4d"
+        },
+        {
+          "path": "test/research/re01/private-alias-endpoint-admission.test.ts",
+          "role": "prototype",
+          "sha256": "6b46225cae63a9c3813c49be5ac2da3807cecbece48ffdfc54fbc99f2a76196c"
+        },
+        {
+          "path": "test/research/re01/regular-binary-word-views.test.ts",
+          "role": "prototype",
+          "sha256": "8adc5a0de3e06fa96e24a26ea0e2a63f1cb4498cd1e76254b074f00b74fa2711"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/shared-inherited-list.xsd",
+          "role": "fixture",
+          "sha256": "06c0322b02f4c626b4696516f893e740e787fd116c6e71722e1758d5c6d4da6d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/shared-inherited-list-conflict.xsd",
+          "role": "fixture",
+          "sha256": "77a20c164ad6327ec701753fdd1872019e5d98180f1f0a2945f4f1af3a7cc235"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/regular-binary-word-views.xsd",
+          "role": "fixture",
+          "sha256": "6eb46861803b0cfaf0b91bc507f52bae8271040786cb386f818f16ffc0aa6125"
         }
       ]
     },

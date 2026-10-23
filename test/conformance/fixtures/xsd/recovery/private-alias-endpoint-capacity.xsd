@@ -9,6 +9,12 @@
   <xs:simpleType name="CalendarA"><xs:restriction base="xs:dateTime"><xs:maxInclusive value="2000-01-01T00:00:02Z"/><xs:enumeration value="2000-01-01T00:00:01Z"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="FloatA"><xs:restriction base="xs:float"><xs:maxInclusive value="1"/><xs:enumeration value="0"/><xs:enumeration value="1"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="EmptyFloat"><xs:restriction base="xs:float"><xs:minExclusive value="1"/><xs:enumeration value="2"/><xs:pattern value="a"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BoundedFloat"><xs:restriction base="xs:float"><xs:minInclusive value="1"/><xs:maxExclusive value="2"/><xs:pattern value="1[.]5E0"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="BoundedDouble"><xs:restriction base="xs:double"><xs:minInclusive value="1"/><xs:maxExclusive value="2"/><xs:pattern value="1[.]5E0"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DisjointFloat"><xs:restriction base="xs:float"><xs:minInclusive value="1"/><xs:maxExclusive value="2"/><xs:pattern value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="DisjointDouble"><xs:restriction base="xs:double"><xs:minInclusive value="1"/><xs:maxExclusive value="2"/><xs:pattern value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="AdjacentFloat"><xs:restriction base="xs:float"><xs:minExclusive value="1"/><xs:maxExclusive value="1.00000011920928955078125"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="AdjacentDouble"><xs:restriction base="xs:double"><xs:minExclusive value="1"/><xs:maxExclusive value="1.0000000000000002220446049250313080847263336181640625"/></xs:restriction></xs:simpleType>
   <xs:simpleType name="NotBound"><xs:list itemType="xs:decimal"/></xs:simpleType>
   <xs:complexType name="SCB"><xs:simpleContent><xs:extension base="t:DecimalA"/></xs:simpleContent></xs:complexType>
   <xs:complexType name="SCA"><xs:simpleContent><xs:restriction base="t:SCB"><xs:maxExclusive value="1"/></xs:restriction></xs:simpleContent></xs:complexType>

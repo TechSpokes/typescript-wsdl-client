@@ -58,6 +58,28 @@ export type ScalarSupportPlan = Readonly<{
   whitespace: "preserve" | "replace" | "collapse" | "member";
   enforcement: readonly ScalarEnforcement[]; runtimeOwner: "#184"; consumers: readonly ["#188", "#189", "#198"];
 }>;
+/** Unary CURRENT image decision, not private-alias tuple feasibility.
+ * An empty image does not rule out inherited exclusive-endpoint repeats.
+ * The enclosing scalar receipt retains all pending formation obligations.
+ */
+export type PrivateAliasEndpointAdmission = Readonly<{
+  scope: 'current-atomic-admission'; family: string;
+}> & (Readonly<{kind: 'empty-current-admission'}> | Readonly<{
+  kind: 'admitted-witness'; operand: SchemaOperand;
+  membershipWord: LexicalValue; primitiveWord: LexicalValue; primitive: Reference;
+}>);
+/** Fixed, genuinely formed programmes in one current context; no unknown image labels. */
+export type RegularBinaryWordView = Readonly<{
+  type: Reference; context: LexicalValue['context'];
+  root?: Readonly<{type: Reference; lexical: LexicalValue}>;
+}>;
+export type RegularBinaryWordViews = Readonly<{
+  scope: 'regular-atomic-binary-word-views-v1';
+  excluded: readonly ['LIST', 'duration', 'numeric-guards', 'whole-value-image-labels'];
+}> & (
+  Readonly<{kind: 'empty-word-views'}> |
+  Readonly<{kind: 'word-views'; core: string; binary: SchemaOperand;
+    views: readonly Readonly<{type: Reference; lexical: LexicalValue; operand: SchemaOperand}>[]}>);
 /** References in this view select scalar content, including the private scalar
  * of a complex source owner. They are not synthetic GraphNode references.
  * Fundamental-facet equality follows equal complete determining properties;
@@ -3274,6 +3296,132 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     originalRecipes.set(token,{context:c.context,layers,identity:value,obligations:(value.plan.obligations ?? []).map(obligation=>({...obligation,contextId:obligation.contextId??c.context.contextId})),typeDependencies:value.typeDependencies??[]});
     originalRecipeTokens.set(value,token);return token;
   };
+  /** Exact common-core reconstruction for regular atomic/atomic-UNION programmes.
+   * LIST, duration, numeric guards and whole-value image labels are outside this
+   * operation. All complete per-WORD tests are imposed before core projection.
+   */
+  const regularBinaryWordViews = (views: readonly RegularBinaryWordView[], owner: GraphNode): RegularBinaryWordViews => {
+    const scope = 'regular-atomic-binary-word-views-v1' as const;
+    const excluded = ['LIST', 'duration', 'numeric-guards', 'whole-value-image-labels'] as const;
+    const outside = (): never => c.unsupported(owner, 'regular-binary-word-view-scope',
+      'Binary WORD views require regular atomic or atomic-UNION programmes; LIST, duration, numeric guards and whole-value image labels need separate producers');
+    const qualify = (description: Description): void => {
+      c.step(owner, 4); const pending = [description], seen = new Set<Description>();
+      while (pending.length) {
+        c.step(owner, 3); const current = pending.pop()!;
+        if (seen.has(current)) continue;
+        seen.add(current);
+        if (current.plan.variety === 'list' || current.plan.primitive === 'duration') outside();
+        for (const member of current.members ?? []) {c.step(owner); pending.push(member);}
+        for (const conjunct of current.conjuncts ?? []) {c.step(owner); pending.push(conjunct);}
+      }
+    };
+    const language = (predicate: LexicalPredicate | undefined): RegularLanguage => {
+      if (!predicate) return outside();
+      c.step(owner, 6); const pending = [{node: predicate, after: false}], compiled = new Map<LexicalPredicate, RegularLanguage>();
+      while (pending.length) {
+        c.step(owner, 3); const {node, after} = pending.pop()!;
+        if (compiled.has(node)) continue;
+        if (node.kind === 'numeric') return outside();
+        if (node.kind === 'regular') {c.step(owner); compiled.set(node, node.language); continue;}
+        if (!after) {
+          c.step(owner, 3); pending.push({node, after: true});
+          if (node.kind === 'not') {c.step(owner, 3); pending.push({node: node.child, after: false});}
+          else for (const child of node.children) {c.step(owner, 3); pending.push({node: child, after: false});}
+          continue;
+        }
+        if (node.kind === 'not') compiled.set(node, regular.negate(compiled.get(node.child)!, owner));
+        else {
+          c.step(owner, node.children.length + 2); const children = node.children.map(child => compiled.get(child)!);
+          compiled.set(node, node.kind === 'and' ? regular.intersect(children, owner) : regular.union(children, owner));
+        }
+      }
+      return compiled.get(predicate)!;
+    };
+    const erased = [{lo: 9, hi: 10, remove: true}, {lo: 13, hi: 13, remove: true}, {lo: 32, hi: 32, remove: true}];
+    c.step(owner, views.length * 4 + 10);
+    const masks: RegularLanguage[] = [], descriptions: Description[] = [], roots: (SchemaOperand | undefined)[] = [];
+    for (const view of views) {
+      c.step(owner, 4); const description = ensure(view.type, owner); qualify(description);
+      const lexical = {value: '', context: view.context};
+      let root: SchemaOperand | undefined;
+      if (view.root) {
+        const source = ensure(view.root.type, owner); qualify(source);
+        root = operand(source, view.root.lexical, owner);
+      }
+      const mask = language(scalarAdmissionPredicate(description, lexical, owner, root));
+      c.step(owner, 3); masks.push(mask); descriptions.push(description); roots.push(root);
+    }
+    // Native BASE64 grammar supplies residue, padding and low-bit constraints.
+    const binaryType: Reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'base64Binary'}};
+    const binaryDescription = ensure(binaryType, owner), binaryLexical = {value: '', context: owner.context};
+    const binaryMask = language(atomicAdmissionPredicate(binaryDescription, binaryLexical, owner));
+    c.step(owner, masks.length + 2);
+    const projected = masks.map(mask => regular.characterImage(mask, erased, owner));
+    projected.push(regular.characterImage(binaryMask, erased, owner));
+    const core = regular.witness(regular.intersect(projected, owner), owner);
+    if (core === undefined) return {kind: 'empty-word-views', scope, excluded};
+    // This finite inverse is precisely every raw WORD erasing to the core.
+    const gap = '[ \\t\\r\\n]*'; c.step(owner, core.length * 2 + 4);
+    const pieces = [gap];
+    for (const character of core) {c.step(owner, character.length + gap.length + 4); pieces.push(quoteExpression(character, owner), gap);}
+    const inverse = expressionLanguage(pieces.join(''), owner);
+    c.step(owner, views.length * 3 + 4);
+    const reconstructed: {type: Reference; lexical: LexicalValue; operand: SchemaOperand}[] = [];
+    for (let index = 0; index < views.length; index++) {
+      const word = regular.witness(regular.intersect([masks[index], inverse], owner), owner);
+      if (word === undefined) throw new TypeError('A projected binary core must have its actual raw WORD preimage');
+      const lexical = {value: word, context: views[index].context}, value = operand(descriptions[index], lexical, owner);
+      if (roots[index] && !values.sameValue(value, roots[index]!, owner)) throw new TypeError('A fixed ROOT WORD must retain its complete tagged value');
+      c.step(owner, 4); reconstructed.push({type: views[index].type, lexical, operand: value});
+    }
+    return {kind: 'word-views', scope, excluded, core, binary: operand(binaryDescription, {...binaryLexical, value: core}, owner), views: reconstructed};
+  };
+  /** Construct a unary endpoint's actual words without enumerating IEEE values. */
+  const privateAliasEndpointAdmission = (reference: Reference, owner: GraphNode): PrivateAliasEndpointAdmission => {
+    const description = ensure(reference, owner), family = description.plan.primitive;
+    if (description.plan.variety !== 'atomic' || !family || !['decimal', 'duration', 'dateTime', 'date', 'time', 'gYear', 'gYearMonth', 'gMonthDay', 'gDay', 'gMonth', 'float', 'double'].includes(family))
+      return c.unsupported(owner, 'endpoint-bound-family', 'Endpoint admission requires a bound-capable atomic family');
+    const table = componentTable(reference, description, owner);
+    if (!table)
+      return c.unresolved(owner, 'endpoint-current-inventory', 'Endpoint admission needs the genuine completed CURRENT component table');
+    const publishWitness = (membershipWord: LexicalValue, assessed: SchemaOperand): PrivateAliasEndpointAdmission => {
+      c.text(membershipWord.value, owner); c.step(owner, membershipWord.value.length + 12);
+      const primitiveWord: LexicalValue = {value: normalizeWhitespace(membershipWord.value, 'collapse'), context: membershipWord.context};
+      const primitive: Reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: family}};
+      const primitiveValue = operand(ensure(primitive, owner), primitiveWord, owner);
+      if (!values.sameValue(assessed, primitiveValue, owner))
+        throw new TypeError('An atomic admission witness must reconstruct its primitive value');
+      return {kind: 'admitted-witness', scope: 'current-atomic-admission', family, operand: assessed,
+        membershipWord, primitiveWord, primitive};
+    };
+    // A CURRENT enum's authentic spelling is a cheap positive proposal only.
+    // It can fail a later mask, so trial failure never establishes emptiness.
+    for (const entry of table) {
+      c.step(owner); if (entry.component.name !== 'enumeration') continue;
+      for (const facet of entry.facets) {
+        c.step(owner); let assessed: SchemaOperand;
+        try {assessed = operand(description, facet.lexical, owner);}
+        catch (error) {
+          if (error instanceof SchemaAssessmentError && error.category === 'invalid-schema') continue;
+          throw error;
+        }
+        return publishWitness(facet.lexical, assessed);
+      }
+    }
+    const lexical: LexicalValue = {value: '', context: owner.context};
+    const syntax = regular.intersect(spellingConstraints(description, owner), owner);
+    // A spelling contradiction is exact independently of numeric predicates.
+    const predicate: LexicalPredicate | undefined = regular.witness(syntax, owner) === undefined
+      ? {kind: 'regular', language: syntax} : atomicAdmissionPredicate(description, lexical, owner);
+    if (!predicate) return c.unresolved(owner, 'endpoint-current-admission', 'The actual atomic admission predicate is unavailable');
+    const word = lexicalPredicates.witness(predicate, regular.negate(regular.union([], owner), owner), owner);
+    if (word === undefined) return {kind: 'empty-current-admission', scope: 'current-atomic-admission', family};
+    c.step(owner, 4);
+    const membershipWord: LexicalValue = {value: word, context: owner.context};
+    const assessed = operand(description, membershipWord, owner);
+    return publishWitness(membershipWord, assessed);
+  };
   /** Private alias word bound from genuine CURRENT masks/tables, without caller descriptions. */
   const privateAliasEndpointWordCapacity = (reference: Reference, owner: GraphNode) => {
     const description = ensure(reference, owner), family = description.plan.primitive;
@@ -3363,7 +3511,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.step(owner, 64); return {kind: 'finite-ieee-capacity' as const, family, roles, maximumWordUnits: maximum,
       encodedTupleUnits, inventory, maskAuthority: 'current-ieee-spelling-and-finite-inverse' as const};
   };
-  return {privateAliasEndpointWordCapacity,typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
+  return {regularBinaryWordViews,privateAliasEndpointAdmission,privateAliasEndpointWordCapacity,typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
     contentIdentity, contentProperties, readOriginalRecipe, contentDerivation, facetPropertiesEquivalent, readFacetProperties, compareFacetProperties,compareFacetAnnotations,
     selectOperand: (reference: Reference, owner: GraphNode): void => {scalarOperandNode(reference, owner, true);},
     assess: (reference: Reference, lexical: LexicalValue, owner: GraphNode) => operand(ensure(reference, owner), lexical, owner),

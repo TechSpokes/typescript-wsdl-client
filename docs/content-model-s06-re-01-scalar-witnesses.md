@@ -1265,6 +1265,56 @@ A common finite TOKEN mask has an additional cohort condition. For every TOKEN i
 
 ## Remaining joint constructor and evidence gates
 
+### Executable CURRENT admission ingredient
+
+`createSchemaScalarKernel(H).privateAliasEndpointAdmission(reference, owner)` now constructs a genuine CURRENT-admitted
+atomic operand and its membership and primitive WORDs, or reports `empty-current-admission` within exactly that unary
+problem. It reads the authentic completed component table and reuses the existing exact admission, numeric-image and
+regular-language owners. Non-enumerated bounded float and double controls use exact interval/spelling witnesses; they do
+not visit every IEEE rank. All emitted formation obligations, context and type dependencies remain in the scalar receipt.
+
+The positive shortcut tries genuine CURRENT enum spellings through the complete datatype before compiling a larger
+admission product. A rejected proposal never proves emptiness. The general path conjoins actual spelling and numeric
+predicates, and reconstructs both words through the existing CURRENT and primitive operand owners. Shared precharged
+resource limits apply throughout. Unsupported, unresolved, invalid input and exhaustion retain the native result boundary.
+
+The [admission controls](../test/research/re01/private-alias-endpoint-admission.test.ts) cover exact non-enumerated IEEE
+scientific spellings, disjoint masks, adjacent representable gaps, decimal/duration/calendar positives, GSC1 formation
+debt, unsupported input and sticky exhaustion. `EmptyFloat` has empty CURRENT admission while retaining inherited
+exclusive-repeat capacity. An empty unary image is therefore never reported as an empty endpoint-demand tuple.
+
+This operation is an executable ingredient for #347, not its complete tuple producer. Coupled endpoint comparisons,
+exceptional-repeat selection, full native formation discharge and the uniform IEEE capacity bound still need construction.
+The old `privateAliasEndpointWordCapacity` path still enumerates IEEE ranks without an enumeration component; one short
+admission witness cannot replace its maximum. No new capacity theorem or general negative cutoff follows from these tests.
+
+### Executable regular atomic WORD views
+
+`createSchemaScalarKernel(H).regularBinaryWordViews(views, owner)` implements the regular atomic and atomic-UNION
+fragment of #348. Each view supplies its authentic scalar reference, lexical map and optional fixed ROOT assessed through
+the native owner. The result explicitly excludes LIST, duration, numeric guards and whole-value image labels. It is not
+the complete grounded binary WORD producer and does not implement the shared duration P-block arithmetic.
+
+The operation compiles every complete raw-WORD admission and fixed-ROOT test before projection. Atomic UNIONs retain
+FIRST and failed earlier alternatives. It erases exactly XML whitespace from each regular mask, intersects their images
+with the native canonical BASE64 grammar, and finds an accepting core. For a chosen ASCII core `c1...cn`, the regular
+inverse `W* c1 W* ... cn W*`, with `W` exactly XML whitespace, is its complete erasure preimage. Intersecting that inverse
+with each original mask reconstructs one actual WORD per view. The existing operand owner reassesses every WORD, fixed
+tagged ROOT and primitive binary core. This proves local existence or emptiness only for the qualified fixed fragment.
+
+No finite IEEE alphabet is materialized. A predicate containing numeric guards is unsupported rather than projected away.
+Every view and ROOT contributes its actual formation duties and dependencies even when the joint result is empty.
+All products and reconstruction use the existing request budget, and resource exhaustion remains inconclusive.
+
+The [regular WORD controls](../test/research/re01/regular-binary-word-views.test.ts) independently require `QQ==` and
+`Q Q==` to share binary `41`, and reject individually feasible views whose cores disagree. Other contrasts preserve
+QName maps and FIRST, empty and whitespace-only cores, P-free cores, invalid residue/padding and low bits, ROOT formation
+debt on positive and empty results, and unsupported/exhausted outcomes. Reconstructed WORDs become two fixed VALUEs in
+one checked native candidate. Their common-core equation is established by the producer and separately replayed through
+native binary equality; the finite schema candidate does not encode an additional general WORD-sharing relation.
+
+### Outstanding joint claim
+
 The remaining theorem concerns one actual simultaneous construction. For every successful contextual judgment at authentic `(Gamma,P,target)`, derive a winning direct candidate with complete encoding bounded by a total computable function of that input. The input includes the entire exact inherited P, even historically fresh rows; it excludes arbitrary helper rows selected from an old successful witness.
 
 At a Gamma-fresh target, the same bounded winning candidate must introduce no newly stored nonprimitive identity. This must hold after scalar providers and ordinary owners have been added. Separate bounded-existence and no-new-identity witnesses do not imply their conjunction.
