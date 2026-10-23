@@ -129,7 +129,7 @@ describe('exact supplied facet component and annotation evidence',()=>{
     expect(kernel.describe(named('PatternCopy'),id('PatternCopy'))).toBe(s.request.budget.failure());
   });
 
-  it('distinguishes unavailable legacy tables from known source component ordinals',async()=>{
+  it('replays determinate legacy tables and checks known source component ordinals',async()=>{
     const s=await selectorSetup(),legacyExact=s.raw('LegacyBase',builtin('decimal'),[s.entry('minInclusive','0')]);
     const {facetComponentSet:components,...properties}=legacyExact;
     const legacy:RawSimpleTypeProperties & {base:Reference}={...properties,facetLayers:components.map(entry=>{
@@ -138,7 +138,9 @@ describe('exact supplied facet component and annotation evidence',()=>{
     const {kernel}=s.candidate([legacy,s.raw('LegacyBorrower',named('LegacyBase'),[{baseComponent:0}]),
       s.raw('SourceBorrower',named('Empty'),[{baseComponent:0}]),s.raw('SourceKnown',named('MinOne'),[{baseComponent:0}])]);
     expect(kernel.describe(named('LegacyBase'),id('LegacyBase'))).toMatchObject({kind:'checked',obligations:[]});
-    expect(kernel.describe(named('LegacyBorrower'),id('LegacyBorrower'))).toMatchObject({kind:'unresolved',rule:'raw-simple-facet-restriction-validity'});
+    expect(kernel.describe(named('LegacyBorrower'),id('LegacyBorrower'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('LegacyBorrower'),{value:'0',context:s.seed.context},id('LegacyBorrower'))).toMatchObject({kind:'checked',obligations:[]});
+    expect(kernel.assess(named('LegacyBorrower'),{value:'-1',context:s.seed.context},id('LegacyBorrower'))).toMatchObject({kind:'invalid-schema'});
     expect(kernel.describe(named('SourceBorrower'),id('SourceBorrower'))).toMatchObject({kind:'invalid-schema',rule:'raw-base-facet-component'});
     expect(kernel.describe(named('SourceKnown'),id('SourceKnown'))).toMatchObject({kind:'checked',obligations:[]});
   });
@@ -161,10 +163,8 @@ describe('exact supplied facet component and annotation evidence',()=>{
       s.raw('UnionLiteralChanged',named('UnionBase'),[s.entry('pattern','a')],{kind:'union',members:[named('ItemChild'),builtin('int')]}),
       s.raw('UnionNotDerived',named('UnionBase'),[{baseComponent:0}],{kind:'union',members:[builtin('decimal'),builtin('int')]}),
     ]);
-    for(const name of ['ListBase','ListSame','ListLiteralChanged','UnionBase','UnionSame','UnionLiteralChanged'])
+    for(const name of ['ListBase','ListSame','ListChanged','ListLiteralChanged','UnionBase','UnionSame','UnionChanged','UnionLiteralChanged'])
       expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'checked',obligations:[]});
-    for(const name of ['ListChanged','UnionChanged'])expect(kernel.describe(named(name),id(name)))
-      .toMatchObject({kind:'checked',obligations:[{rule:'raw-simple-facet-restriction-validity',component:id(name)}]});
     expect(kernel.describe(named('ListChangedBadWhitespace'),id('ListChangedBadWhitespace'))).toMatchObject({kind:'invalid-schema',rule:'whiteSpace-valid-restriction'});
     for(const name of ['ListNotDerived','UnionNotDerived'])expect(kernel.describe(named(name),id(name))).toMatchObject({kind:'invalid-schema',rule:'cos-st-restricts'});
   });
@@ -375,7 +375,8 @@ describe('exact supplied facet component and annotation evidence',()=>{
       scalar('PeerEmpty',named('Empty'),builtin('string'))]);
     const kernel=createSchemaScalarKernel(context);
     expect(kernel.describe(named('Empty'),id('Empty'))).toMatchObject({kind:'checked',obligations:[]});
-    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+    // STRING one cannot cover the inherited DECIMAL enum component, before NEW membership is checked.
+    expect(kernel.describe(named('PeerEmpty'),id('PeerEmpty'))).toMatchObject({kind:'invalid-schema',rule:'st-restrict-facets'});
   });
 
   it('identifies an inherited row without identifying shared caller groups or sibling births',async()=>{
@@ -446,13 +447,14 @@ describe('exact supplied facet component and annotation evidence',()=>{
       .toMatchObject({kind:'checked',obligations:expect.arrayContaining([{rule:'raw-simple-content-derivation-validity',component:d.id}])});
     const compared=compareSchemaFacetProperties(parent.context,{kind:'local',target:node.id},node.id,
       child.context,{kind:'local',target:node.id},node.id);
-    expect(compared).toMatchObject({kind:'invalid-schema',rule:'facet-value-type',side:'right',contextId:child.context.contextId,
+    // The reassessed DECIMAL enum is outside its actual STRING BASE; provider debts stay qualified.
+    expect(compared).toMatchObject({kind:'invalid-schema',rule:'enumeration-valid-restriction',side:'right',contextId:child.context.contextId,
       obligations:expect.arrayContaining([{rule:'raw-simple-content-derivation-validity',component:d.id,
         contextId:parent.context.contextId}])});
     expect(createSchemaScalarKernel(child.context).describe({kind:'local',target:node.id},node.id))
-      .toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+      .toMatchObject({kind:'invalid-schema',rule:'enumeration-valid-restriction'});
     expect(createSchemaScalarKernel(child.context).describe({kind:'local',target:alias.id},alias.id))
-      .toMatchObject({kind:'invalid-schema',rule:'facet-value-type'});
+      .toMatchObject({kind:'invalid-schema',rule:'enumeration-valid-restriction'});
   });
 
   // Independently reproduced in the PR #282 source review: JavaScript object

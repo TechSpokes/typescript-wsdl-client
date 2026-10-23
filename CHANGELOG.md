@@ -9,6 +9,104 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(re01): derive grounded binary WORD bounds and delimit the joint constructor still required for complete decisions.
+
+- test(re01): verify a free-parent QName proxy batch switches LIST selection without stealing BASE64 funding.
+
+- fix(re01): include active legacy scalar predicates in restriction containment while preserving public facet metadata.
+
+- fix(re01): qualify enum values against their introducing base while allowing inactive values after item narrowing.
+
+- fix(re01): check retained enumeration containment in the datatype context while preserving genuine new-member qualification.
+
+- docs(re01): derive conditional scalar constructor width with native LIST predecessor replay and preserve the fixed-clear counterexample.
+
+- fix(re01): assess RAW simple-content value properties at their explicit simple datatype while retaining genuine formation duties.
+
+- fix(re01): read untouched SOURCE simple-content values with exact scalar support and without surplus facade construction.
+
+- docs(re01): derive conditional scalar history bounds from a closed palette and protected interface.
+
+- fix(re01): check mixed value properties without promoting property-only types to full construction.
+
+- docs(re01): bound qualified paired LIST histories and free restriction portfolios while proving one root needs a new scalar function.
+
+- fix(scalar): use effective SOURCE union members consistently in nominal relations and current RAW inheritance.
+
+- docs(re01): reconstruct qualified helper forests and regular scalar blockers while keeping general bounds open.
+
+- docs(re01): synthesize one qualified atomic observation guard and verify its IEEE enum certificate.
+
+- docs(re01): establish first-mode atomic contraction and delimit mixed list/union coverage obligations.
+
+- docs(re01): distinguish inherited scalar identity from private arithmetic support and prove scoped singleton reissue.
+
+- fix(re01): preserve scalar prerequisites through aggregate particle matching and discharge exact mixed-base emptiability.
+
+- docs(re01): prove scoped scalar capacity and duration bounds while preserving the dynamic bootstrap gap.
+
+- test(re01): distinguish LIST preparation and enum qualification from actual UNION image obligations.
+
+- feat(scalar): import authenticated builtin pattern components alongside actual immediate-base retention.
+
+- test(re01): check ordered UNION activation shields and record scoped scalar reconstruction and conditional termination.
+
+- feat(re01): reissue donor-new model groups with mapped local types and preserved group scope.
+
+- fix(scalar): preserve empty QName and NOTATION inverses under actual namespace bindings.
+
+- feat(re01): derive private-alias endpoint word capacities from authenticated current scalar inputs.
+
+- fix(scalar): qualify retained components with derived LIST items and UNION members through ordinary F2.
+
+- fix(scalar): retain complete formed facet inventories and qualify new bound sets through ordinary F2.
+
+- fix(re01): borrow authenticated source ur-type wildcards inside new registered particle constructions.
+
+- fix(scalar): retain formed atomic GSC1 facet components while adding new constraints.
+
+- test(re01): construct canonical nominal banks with complete inherited-root and required-child controls.
+
+- test(re01): reissue selected ordinary prototypes with shared identities and complete required-child controls.
+
+- fix(scalar): admit checked new enumeration components alongside authenticated retained facets.
+
+- test(re01): preserve a complete future-only middle allocation control and state the remaining first-demand proof gap.
+
+- fix(re01): recognize fixed-value reflexivity for one authentic declaration while retaining complete scalar validity checks.
+
+- test(re01): qualify native joint arithmetic constraints and distinguish the fixed-input reconstruction problem.
+
+- docs(re01): identify the missing input-bounded reconstruction interface before general implementation.
+
+- docs(re01): record fixed ROOT profile bounds, all-born name projection and a scoped homogeneous-game cutoff.
+
+- docs(re01): record qualified ROOT word operations and private-R producers with conditional finite-game bounds.
+
+- test(re01): verify shared private R suffixes with complete contextual evidence and entered-block contrasts.
+
+- docs(re01): record covered common-payload recooks and scoped SOURCE reserve children.
+
+- docs(re01): record input-relative initial payloads and the qualified exposed-owner bound.
+
+- docs(re01): record per-event FIELD and nominal constraints with scoped HEAD joins and literal particle palettes.
+
+- test(re01): distinguish safe dead-cell reconstruction from nullable ambiguity and record scoped particle compilers.
+
+- docs(re01): record joint initial-payload constraints and scoped fixed-prefix and private-name reductions.
+
+- test(re01): verify complete SOURCE GROUP helper reconstruction in empty and required-prefix families.
+
+- docs(re01): record SOURCE base geometry and conditional opening declaration bounds.
+
+- fix(re01): check original schema identity constraints and authenticate first-born declaration reuse.
+
+- docs(re01): preserve conditional whole-export, observer and all-complex ALL reconstruction.
+
+- docs(re01): reconstruct qualified extension exports and defer optional helper branches at original events.
+
+- test(re01): preserve complete source-scope reconstruction and required original branches with conditional selector bounds.
+
 - test(re01): preserve complete scoped-template copies without assuming full validity of their original templates.
 
 - fix(scalar): retain authenticated source decimal-union components and record conditional finite support interfaces.

@@ -17,7 +17,8 @@ const fixtures=path.resolve('test/conformance/fixtures'),namespace='urn:re01:fre
 const id=(name:string)=>globalId('type',{namespace,local:name});
 const local=(target:string):Reference=>({kind:'local',target});
 const builtin=(name:string):Reference=>({kind:'builtin',name:{namespace:'http://www.w3.org/2001/XMLSchema',local:name}});
-type Mode='keep'|'new-endpoint'|'bad-endpoint'|'whole-duplicates'|'partial-duplicates'|'repeat-whole'|'repeat-partial'|'new-enum'|'bad-enum'|'overlap-pattern'|'disjoint-pattern'|'literal-copy';
+type Mode='keep'|'new-endpoint'|'bad-endpoint'|'whole-duplicates'|'partial-duplicates'|'repeat-whole'|'repeat-partial'|'new-enum'|'bad-enum'|'overlap-pattern'|'disjoint-pattern'|'literal-copy'
+  |'new-enum-pattern'|'omit-enum-keep'|'omit-pattern-keep'|'pending-enum-literal';
 
 async function setup(mode:Mode){
   const loaded=await loadSchemaInput(path.join(fixtures,'xsd/recovery/free-ur-common-mixed-payload.xsd'),{policy:{fileRoots:[fixtures]}});
@@ -39,8 +40,10 @@ async function setup(mode:Mode){
   const minimum:RawScalarFacetComponent={facets:[facet('minInclusive','2')]};
   const enumeration:RawScalarFacetComponent={facets:[facet('enumeration','1'),facet('enumeration','2')]};
   const duplicated=['whole-duplicates','partial-duplicates','repeat-partial'].includes(mode);
-  const patterned=mode==='overlap-pattern'||mode==='disjoint-pattern';
-  const components=[minimum,enumeration,...(duplicated?[{facets:enumeration.facets}]:[]),...(patterned?[entry('pattern','2')]:[])];
+  const newEnumPattern=['new-enum-pattern','omit-enum-keep','omit-pattern-keep','pending-enum-literal'].includes(mode);
+  const patterned=mode==='overlap-pattern'||mode==='disjoint-pattern'||newEnumPattern;
+  const pattern:RawScalarFacetComponent=newEnumPattern?{facets:[facet('pattern','2')]}:entry('pattern','2');
+  const components=[minimum,enumeration,...(duplicated?[{facets:enumeration.facets}]:[]),...(patterned?[pattern]:[])];
   const scalar=(name:string,base:Reference,facetComponentSet:readonly RawFacetComponentEntry[])=>{
     const node:SimpleTypeNode={...metadata,kind:'simpleType',id:id(name),identity:{kind:'global',role:'type',name:{namespace,local:name}},
       variety:{kind:'restriction',base,facets:[]}};
@@ -57,8 +60,11 @@ async function setup(mode:Mode){
   if(mode==='whole-duplicates'||patterned)selected.push({baseComponent:2});
   if(mode==='repeat-partial'||mode==='repeat-whole')selected.push({baseComponent:1});
   if(mode==='new-endpoint'||mode==='bad-endpoint')selected.push(entry('maxInclusive',mode==='new-endpoint'?'2':'3'));
-  if(mode==='new-enum'||mode==='bad-enum')selected.push(entry('enumeration',mode==='new-enum'?'2':'1'));
-  if(patterned)selected.push(entry('pattern',mode==='overlap-pattern'?'2':'3'));
+  if(mode==='new-enum'||mode==='bad-enum'||newEnumPattern)selected.push(entry('enumeration',mode==='bad-enum'?'1':'2'));
+  if(mode==='overlap-pattern'||mode==='disjoint-pattern')selected.push(entry('pattern',mode==='overlap-pattern'?'2':'3'));
+  if(mode==='omit-enum-keep')selected.splice(selected.findIndex(component=>'baseComponent' in component&&component.baseComponent===1),1);
+  if(mode==='omit-pattern-keep')selected.splice(selected.findIndex(component=>'baseComponent' in component&&component.baseComponent===2),1);
+  if(mode==='pending-enum-literal')selected.splice(selected.findIndex(component=>'baseComponent' in component&&component.baseComponent===1),1,enumeration);
   const restriction=scalar('OpaqueRestriction',local(anchor.node.id),selected);
   const retired:ComplexTypeNode={...z,derivation:{kind:'restriction',contentKind:'complex',base:local(b.id),facets:[]}};
   const fork=forkSemanticCandidate(parent,{key:mode,endpoint:retired,active:[...parent.members,restriction.node.id],additions:[restriction.node],
@@ -70,9 +76,10 @@ async function setup(mode:Mode){
 }
 
 describe('authentic immediate-base component retention',()=>{
-  it.each(['keep','new-endpoint','bad-endpoint','whole-duplicates','partial-duplicates','repeat-whole','repeat-partial','new-enum','bad-enum','overlap-pattern','disjoint-pattern','literal-copy'] as const)
+  it.each(['keep','new-endpoint','bad-endpoint','whole-duplicates','partial-duplicates','repeat-whole','repeat-partial','new-enum','bad-enum','overlap-pattern','disjoint-pattern','literal-copy',
+    'new-enum-pattern','omit-enum-keep','omit-pattern-keep','pending-enum-literal'] as const)
   ('checks the complete current-H frontier for %s',async mode=>{
-    const s=await setup(mode),valid=['keep','new-endpoint','whole-duplicates','repeat-whole','disjoint-pattern'].includes(mode);
+    const s=await setup(mode),valid=['keep','new-endpoint','whole-duplicates','repeat-whole','new-enum','new-enum-pattern','disjoint-pattern'].includes(mode);
     expect(s.parent.members).toHaveLength(7);expect(s.child.members).toHaveLength(8);
     for(const context of [s.parent,s.child])expect(checkComponentConstruction(context,s.anchor.node.id))
       .toMatchObject({kind:'checked',contextId:context.contextId,obligations:[]});
@@ -103,8 +110,14 @@ describe('authentic immediate-base component retention',()=>{
           .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'equal'});
         expect(kernel.assess(local(s.restriction.node.id),{value:'2',context:s.a.context},s.restriction.node.id)).toMatchObject({kind:'checked',obligations:[]});
       }
+      if(mode==='new-enum'||mode==='new-enum-pattern'){
+        expect(kernel.assess(local(s.restriction.node.id),{value:'2',context:s.a.context},s.restriction.node.id)).toMatchObject({kind:'checked',obligations:[]});
+        expect(kernel.assess(local(s.restriction.node.id),{value:'1',context:s.a.context},s.restriction.node.id)).toMatchObject({kind:'invalid-schema'});
+      }
     }else if(mode==='bad-endpoint'||mode==='bad-enum')expect(result).toMatchObject({kind:'candidate-rejected',
       rule:mode==='bad-endpoint'?'maxInclusive-value':'enumeration-valid-restriction',component:s.restriction.node.id,contextId:s.child.contextId});
+    else if(mode==='omit-enum-keep'||mode==='omit-pattern-keep')expect(result).toMatchObject({kind:'candidate-rejected',
+      rule:'st-restrict-facets',component:s.restriction.node.id,contextId:s.child.contextId});
     else expect(result).toMatchObject({kind:'unresolved',rule:'raw-simple-facet-restriction-validity',component:s.restriction.node.id,contextId:s.child.contextId});
     expect(verifyFiniteRe01Evidence(s.actual,s.d.id,{root:'D',nodes:[{...s.root,premises:[]}]}))
       .toMatchObject({kind:'unresolved',rule:'missing-nested-evidence',component:s.z.id,contextId:s.parent.contextId});
@@ -133,21 +146,21 @@ describe('authentic immediate-base component retention',()=>{
     expect(cyclic).toMatchObject({kind:'candidate-rejected'});
   });
 
-  it('separates bad ordinals, unsupported tables and stored first-birth violations',async()=>{
+  it('separates bad ordinals, known empty tables and stored first-birth violations',async()=>{
     const s=await setup('keep');
     const indexed=s.scalar('BadIndex',local(s.anchor.node.id),[{baseComponent:9}]);
-    const unsupported=s.scalar('NoRawTable',builtin('decimal'),[{baseComponent:0}]);
-    for(const selected of [indexed,unsupported]){
+    const empty=s.scalar('EmptyBuiltinTable',builtin('decimal'),[{baseComponent:0}]);
+    for(const selected of [indexed,empty]){
       const prepared=forkSemanticCandidate(s.child,{key:'table-'+selected.node.id,active:[...s.child.members,selected.node.id],
         additions:[selected.node],rawSimpleTypes:[selected.raw]});assert.equal(prepared.kind,'prepared');
       expect(createSchemaScalarKernel(prepared.context).describe(local(selected.node.id),selected.node.id))
-        .toMatchObject(selected===indexed?{kind:'invalid-schema',rule:'raw-base-facet-component'}
-          :{kind:'unresolved',rule:'raw-simple-facet-restriction-validity'});
+        .toMatchObject({kind:'invalid-schema',rule:'raw-base-facet-component'});
     }
-    const malformed=s.scalar('UnavailableBadLiteral',builtin('decimal'),[{baseComponent:0},s.entry('minInclusive','not-a-decimal')]);
-    const invalid=forkSemanticCandidate(s.child,{key:'unavailable-independent-literal',active:[...s.child.members,malformed.node.id],
+    const malformed=s.scalar('BadLiteralWithValidOrdinal',local(s.anchor.node.id),[{baseComponent:0},s.entry('minInclusive','not-a-decimal')]);
+    const invalid=forkSemanticCandidate(s.child,{key:'valid-ordinal-independent-literal',active:[...s.child.members,malformed.node.id],
       additions:[malformed.node],rawSimpleTypes:[malformed.raw]});assert.equal(invalid.kind,'prepared');
-    expect(createSchemaScalarKernel(invalid.context).describe(local(malformed.node.id),malformed.node.id)).toMatchObject({kind:'invalid-schema'});
+    expect(createSchemaScalarKernel(invalid.context).describe(local(malformed.node.id),malformed.node.id))
+      .toMatchObject({kind:'invalid-schema',rule:'cvc-datatype-valid'});
     expect(forkSemanticCandidate(s.child,{key:'change-inherited',active:s.child.members,rawSimpleTypes:[s.restriction.raw]}))
       .toMatchObject({kind:'candidate-rejected',code:'representation',component:s.restriction.node.id});
     const late=s.scalar('Late',local(s.anchor.node.id),[{baseComponent:0},{baseComponent:1}]);

@@ -4,8 +4,12 @@ Formal component witnesses, a finite particle construction and the remaining ful
 
 ## Delivery status and scope
 
+The [future-only middle control and first-demand gap](content-model-s06-re-01-support-reconstruction.md#a-future-only-middle-requirement-and-the-first-demand-gap) show why a pre-cut comparison inventory is insufficient and identify the remaining joint producer obligation.
+
 The [architecture recovery](https://github.com/TechSpokes/typescript-wsdl-client/issues/232) stages shared internal semantic owners before universal RE01 closure.
 The [domain and proof checkpoint](#architecture-recovery-domain-and-proof-checkpoint) below distinguishes executable local work from the remaining interpretation and completeness obligations.
+The [full-domain viability gate](content-model-s06-re-01-support-reconstruction.md#full-domain-viability-gate) identifies the missing input-bounded joint producer interface and withholds a general implementation until that theorem or an equivalent total criterion is established.
+The [joint-constraint boundary](content-model-s06-re-01-support-reconstruction.md#an-unrestricted-joint-native-constraint-solver-is-insufficient) excludes an unrestricted externally templated arithmetic solver, while leaving the actual input-directed reconstruction problem open.
 
 The [finite flat-prefix criterion](#any-nonempty-finite-flat-prefix-of-optional-local-elements) generalizes the sufficient inherited-consumer obstruction, and the [copied-prefix continuation](#copied-prefix-transport-and-optional-prefix-bypass) separates failed comparison transport from successful alternative witnesses.
 The [renewing-helper investigation](#renewing-helper-duties-and-the-finite-evidence-boundary) establishes a locally productive family with no finite certificate under the existing direct-only primitive rules, without identifying local productivity with independent semantic success.
@@ -49,6 +53,28 @@ The [first PROPERTY entrances](content-model-s06-re-01-support-reconstruction.md
 The [SOURCE controller controls](content-model-s06-re-01-support-reconstruction.md#a-source-whole-payload-and-its-nominal-controller) preserve complete children while jointly choosing a writable member TYPE at birth; they do not impose full validity on an unconsumed original property owner.
 The [closed scoped-template construction](content-model-s06-re-01-support-reconstruction.md#simultaneous-copies-of-a-closed-scoped-template-cover) assigns TYPE, BASE, scope and actual whole BODY prototypes together under a supplied complete cover.
 Its complete child control keeps a failing original template PROPERTY-only while independently validating its copy; extracting the cover and bounding the general forest remain open.
+The [bounded BASE-section construction](content-model-s06-re-01-support-reconstruction.md#persistent-input-roles-and-a-bounded-base-section) selects coherent ordinary constructors under an input-bounded protected interface and persistent role/height premises.
+The [own-extension scope control](content-model-s06-re-01-support-reconstruction.md#own-extension-scope-roles-and-a-complete-source-control) preserves an authentic self-carrier and its local repair, including both independent original proof branches.
+Neither the section nor the control bounds the original opening's arbitrary NP cohort or establishes complete general negatives.
+The [strict fresh-interval bound](content-model-s06-re-01-support-reconstruction.md#conditional-encoded-bound-for-a-strict-fresh-interval) is conditional on complete reconstruction interfaces and qualified native gates; it supplies no arbitrary-P verifier API or general-negative implementation.
+The [explicit extension export](content-model-s06-re-01-support-reconstruction.md#explicit-extension-exports-through-a-persistent-property-section) removes a qualified outside E BASE port through actual PROPERTY composition and paired child reconstruction.
+The [closed branch reissue](content-model-s06-re-01-support-reconstruction.md#closed-branch-reissue-and-finite-original-event-induction) preserves genuine original-child frontiers and gives a conditional finite-original-event recurrence.
+Its input-derived initial-controller and successful fresh-interval constructors remain open; delaying an unbounded cohort alone supplies neither bound.
+The [joint initial-payload constraints](content-model-s06-re-01-support-reconstruction.md#initial-payload-synthesis-fixed-stops-and-dynamic-names) separate scoped prefix/corridor/name reductions from the remaining simultaneous BODY and member-orbit construction.
+The [input-sized particle compilers](content-model-s06-re-01-support-reconstruction.md#input-sized-particle-compilers-and-private-field-entries) bound qualified geometry and remove eligible private FIELD entries; unresolved TYPE/SCOPE values, helper multiplicity and foundation gates remain explicit.
+The [per-event FIELD and literal-particle constructions](content-model-s06-re-01-support-reconstruction.md#per-event-field-constraints-static-head-joins-and-literal-particle-palettes) retain true-demand nominal endpoints and qualified static HEAD portfolios while leaving joint lifecycle, field realization and complete decision gates open.
+The [initial-payload catalogue and exposed-owner bound](content-model-s06-re-01-support-reconstruction.md#initial-payload-code-catalogues-and-a-bounded-exposed-owner-subfamily) connect qualified literal code positions to fixed-initial-FIELD exposures while leaving hidden SELF, dynamic members, lawful births and unsealed borrower coverage open.
+The [covered recook and SOURCE reserve operations](content-model-s06-re-01-support-reconstruction.md#covered-recooks-and-preinstalled-source-reserve-operations) provide guarded same-parent reconstruction and an EMPTY-boundary child while retaining shared FIELD identities, boundary frontiers and dynamic lifetime limits.
+The [shared private R-path catalogue](content-model-s06-re-01-support-reconstruction.md#private-r-paths-share-an-eleven-row-catalogue) replaces a completely qualified entry cone by eleven real rows per retained owner, with complete finite controls and explicit internal HEAD, PROPERTY, BODY and first-birth cuts; the owner bank remains unbounded by this result.
+The [ROOT word operations and conditional finite games](content-model-s06-re-01-support-reconstruction.md#root-word-operations-and-conditional-finite-games) identify qualified ordered-bag predicates, one prospective private-R producer and two abstract cutoff criteria; causal native actions, linked identities and lawful births remain separate premises. The actual owner bank, semantic/native/evidence adequacy, general negatives and mathematical termination remain open.
+
+The [fixed-profile, born-name and gap results](content-model-s06-re-01-support-reconstruction.md#fixed-root-profiles-all-born-names-and-a-homogeneous-gap-bound) separate a current fixed-input ROOT observation, an all-born NAME projection per retained owner and an abstract homogeneous-game cutoff; scattered linked owner actions and the complete native decision gates remain open.
+The [ordinary whole-extension wrapper](content-model-s06-re-01-support-reconstruction.md#an-ordinary-whole-e-export-can-use-a-real-explicit-prefix) preserves qualified restriction views through a genuinely installable declared prefix.
+The [persistent generic-R observer bound](content-model-s06-re-01-support-reconstruction.md#a-finite-active-portfolio-for-persistent-generic-r-whole-cells) bounds active names for fixed inherited q and a complete cell interface; it supplies no opening-q bound.
+The [all-complex root-ALL reconstruction](content-model-s06-re-01-support-reconstruction.md#all-complex-root-all-through-nominal-target-marks) uses finite nominal marks and actual same-context comparisons, retaining the failed scalar target-union contrast and separate materializer gates.
+The [SOURCE SELF base argument](content-model-s06-re-01-support-reconstruction.md#a-genuine-source-self-copy-selects-the-exact-named-base) fixes the exact original named BASE without requiring FULL of a property-only template.
+The accompanying protected-GLOBAL instance charge remains conditional on complete input name coverage; the first candidate's unknown payload and general helper count remain open.
+The [SOURCE GROUP reconstruction](content-model-s06-re-01-support-reconstruction.md#genuine-source-group-feedback-and-two-concrete-bounded-reconstructions) preserves recursive TYPE feedback and complete three-to-two helper forests in two displayed boundary families; general initial helper and payload bounds remain open.
 
 The [abstract particle-wildcard continuation](#abstract-particle-wildcard-properties) represents finite namespace properties, including the empty set, without inventing XML spelling or changing source wildcard authority.
 Its complete native controls preserve formal occurrence bounds, inherited fresh roots and process restrictions; universal native representation and the general decision gates remain open.
@@ -159,7 +185,58 @@ The unit controls separately cover selected process/set equality, source corresp
 
 This repairs one concrete native representation gap.
 It does not prove that every semantic B construction has a faithful native encoding, complete local qualification or founded operational evidence.
-Source-private subroot realization, genuine identity-constraint properties and the input-derived helper/evidence bounds remain separate obligations; no general-negative or termination result follows.
+Source-private subroot realization and the input-derived helper/evidence bounds remain separate obligations; no general-negative or termination result follows.
+Original identity-constraint reuse has the separate schema-only authority described next; unrepresented fresh definitions gain no admission from it.
+
+### Original schema identity constraints
+
+The [internal IC owner](../src/compiler/schemaIdentityConstraints.ts) represents original key, unique and keyref components in their separate namespace/name symbol space.
+It implements the schema-only [2004 component rules](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cIdentity-constraint_Definitions).
+Application document selection, key-value satisfaction and XPath implication remain outside this owner and retain their existing downstream scope.
+
+An entry records its category, restricted selector with its static namespace meaning, nonempty ordered field list, annotations and exact keyref target.
+The source registry uses authentic interpreted schema occurrences and reserves identities before resolving forward references.
+Repeated acquisition reuses the same component; conflicting definitions cannot overwrite one another.
+Physical schema grammar, value, namespace, annotation and composition duties remain independent checks.
+
+The finite former checks the actual component properties and every referenced target in the calling context.
+A keyref must select a key or unique with the same field arity.
+Its only component dependency is that target; no IC property introduces FULL of its diagnostic source element or that element's TYPE.
+Actual Gamma checks the complete original IC universe, including independently mapped definitions below an erased zero-zero local element.
+Such a definition creates no erased ELEMENT component or nonempty element-property set.
+An authentic IC-free erased occurrence retains its existing empty diagnostic property projection; FULL admission still rejects it.
+
+Selector and field parsing accepts only the restricted grammar and its standard XPath axis abbreviations.
+The source representation also satisfies its own dated S4S lexical restrictions.
+Unprefixed XPath NameTests have absent namespace; schema-component keyref QNames separately obey import and chameleon interpretation.
+Field order is retained, and an attribute test can occur only at a field path's final step.
+
+The shared element-set accessor drives declaration formation, component PROPERTY, raw extension and nonglobal particle restriction.
+PROPERTY compares authentic IC identity sets, while NameAndTypeOK uses derived-set inclusion in the base set.
+This uses component identity rather than equality of XML strings or implication between different constraints.
+Exact declaration identity may close a relation subcheck; it never supplies the independent IC or declaration formation receipt.
+
+Fresh abstract elements may select existing original IDs through their first-born `identityConstraints` set.
+The set is snapshotted and immutable throughout the stored domain, including inactive additions.
+Original and previously stored elements cannot acquire or replace it through an overlay or reactivation.
+No independently fresh IC-definition API, GraphNode role, public catalog property or application evaluator is introduced.
+
+An IC-free abstract element's absent set and explicit empty set agree.
+Unknown retained key, unique or keyref syntax remains unavailable even if the caller supplies an empty set, and even when the element is an otherwise unused fresh root.
+Graph-only canonical IC-free properties supply no SOURCE-universe receipt and do not satisfy the complete verifier's source qualification.
+
+Consumed definitions have separate `identityConstraintDependencies` and current-context formation receipts.
+They do not become ordinary TYPE dependencies, and a Gamma receipt is not retagged for a child.
+Original source obligations and every new or inherited fresh component root remain independently required.
+All parsing, indexing, lookup, copying and result publication retain the shared precharged, inclusive and sticky budget contract.
+
+The [independent owner controls](../test/unit/schema-identity-constraints-independent.test.ts) distinguish set equality from directional inclusion, authentic source mappings from retained tokens, and invalid references from missing authority.
+The [complete recovery controls](../test/research/re01/original-identity-constraint-reuse.test.ts) require genuine original evidence and every fresh root.
+Their separate owner-independence contrast retains an available but FULL-failing original type outside the child frontier while forming its original ICs for a fresh STRING declaration.
+This tests the absence of an invented IC-to-element ownership edge.
+
+This authority supplies one missing native premise for constructions that reuse genuine original IC definitions.
+It does not prove a universal native encoding, general witness coverage, complete negative answers or mathematical termination.
 
 ### Inherited exact facet occurrences
 
@@ -206,6 +283,44 @@ The [exact-facet controls](../test/unit/schema-exact-facet-components-independen
 
 This corrects one independently reproduced formation false positive.
 It does not complete scalar alias construction, reconcile the held nonexact full-inventory claim or establish general helper coverage, complete negatives or termination.
+
+### Retained enumeration containment in the datatype context
+
+A retained enumeration preserves its genuinely qualified typed values and introduction maps. Whole selected-image containment is a different duty: it compares RESULT and BASE at the result datatype's own definition context. Reusing a saved enumeration map for that comparison can reject an empty current image because the same program admits a value at another map.
+
+The [existing scalar owner](../src/compiler/scalarSchemaAssessment.ts) now uses the datatype context for finite selected-UNION containment and the finite-enumeration scalar-containment fallback. The cached typed enumeration value is unchanged; it is not reparsed in that context. Genuine NEW enumeration operands and new bound endpoints still undergo their separate immediate-BASE membership checks with their supplied lexical maps, providers and complete formation duties.
+
+The [maintained controls](../test/research/re01/scalar-retained-enum-containment-context.test.ts) form the actual source and three supporting fresh SIMPLEs before checking the retained result. An own-ON empty result completes a one-node forest containing all four fresh SIMPLEs even though its old OFF map admits FLOAT Infinity. The identical result defined at OFF rejects actual widening, and a genuinely NEW member still rejects formation against its empty immediate BASE. The separate changed-constituent control retains its rejection at the genuine NEW-member duty after the surplus whole-image rejection is removed.
+
+This closes the demonstrated context-selection defect under accepted P1/F2. It does not require cross-context image preservation, change retained component authority, or establish general scalar witness coverage, evidence adequacy, input-derived helper bounds, complete negatives or mathematical termination.
+
+### Enumeration values after ITEM-family narrowing
+
+An enumeration component's typed values belong to its actual introducing BASE. Narrowing a LIST ITEM can make a retained value inactive without introducing it again.
+
+A SOURCE LIST over an ordered QName/STRING union genuinely introduces a singleton QName-tuple enum; a proper RAW restriction with exact STRING ITEM and the authentic enum retained has an empty image. Another genuine KEEP over that empty BASE remains legal even though the old QName tuple belongs to neither current intrinsic ITEM family.
+
+A genuinely NEW enum also owes actual BASE membership rather than realizability by the result's narrower ITEM. A restriction over the unenumerated QName/STRING LIST may introduce the BASE-qualified QName tuple while selecting STRING ITEM; its result is empty too. A different QName or DECIMAL tuple excluded by the actual enumerated BASE still fails new introduction.
+
+The [existing scalar owner](../src/compiler/scalarSchemaAssessment.ts) first performs genuine original or active typed-provider assessment, or consumes its authenticated replay value, and preserves all formation obligations and semantic dependencies. It leaves enumeration retention and NEW membership to the existing actual-BASE correspondence owner, instead of rejecting the value against the result's intrinsic family first. Typed bound operands retain their separate family checks. Source formation, private component/annotation authority, complete current-H checks and sticky budgets remain required.
+
+The [independent controls](../test/research/re01/scalar-retained-enum-item-family.test.ts) check all eight actual components, the introducing QName tuple and the real STRING-to-target-UNION derivation first. Alias, narrowed C and another KEEP over empty C all complete one-node evidence with every fresh SIMPLE root; the separate NEW BASE-qualified result also completes evidence. Two BASE-excluded NEW controls preserve rejection.
+
+Existing wrong-family enum and changed-provider controls retain rejection at their genuine BASE or omitted-component duty, including their original RAW simple-content obligations.
+
+This repairs the demonstrated replay overcheck and qualifies these exact component rows. It establishes neither an alternative-exhaustion or ROOT-necessity theorem nor general native evidence adequacy, helper bounds, complete negatives or termination.
+
+### Containment after legacy scalar reduction
+
+A legacy scalar's exported component properties need not describe every predicate still used by VALUE assessment. SOURCE anonymous B restricts duration by maxInclusive `P2M`, and SOURCE C restricts B by maxInclusive `P1M`. A private exact B copy followed by a legacy child with bounds `P1M` and `P30D` has complete SOURCE PROPERTY equality, but its hidden incomparable `P30D` bound rejects VALUE `P1M`, which SOURCE C admits.
+
+An authenticated CURRENT copy of only the public `P1M` component must therefore prove its own containment. Replaying that component can admit a value rejected by its literal BASE; successful metadata coverage alone cannot certify the selected F2 value implication. This is independent of annotation authority, namespace maps or missing fresh-root evidence.
+
+The [scalar owner](../src/compiler/scalarSchemaAssessment.ts) keeps public component tuples for metadata, fixedness, whole-kind local-S and correspondence. Its value-containment certificates instead inspect the active scalar predicates of both descriptions and their actual conjuncts. The same frontier feeds coverage and the existing length, decimal, IEEE, calendar, duration and enumeration fallbacks, including legacy continuations. It does not follow historical parent edges, add an ITEM-image rule, alter PROPERTY equality or withdraw the authentic public CURRENT table.
+
+The [independent controls](../test/research/re01/scalar-legacy-value-containment.test.ts) preserve the valid SOURCE/property/function contrast, reject unfiltered CURRENT and legacy widening, and check valid compensation by a genuinely BASE-qualified `P15D` enumeration or stronger `P20D` bound. Positive constructions include every fresh scalar in complete evidence; inactive retained components keep their genuine authority and are not reintroduced as NEW.
+
+This repairs the demonstrated F2 completion defect. PROPERTY-to-function substitution and arbitrary legacy reduction remain unjustified; the [finite duration VALUE basis](content-model-s06-re-01-scalar-witnesses.md#finite-duration-bases-for-hidden-value-predicates) supplies a separate predicate lemma, not a native reconstruction theorem. General witness coverage, executable evidence adequacy, input-derived bounds, complete negatives and mathematical termination remain open.
 
 ### Raw facet groups and identity authority
 
@@ -257,12 +372,15 @@ The fresh alias retains its own datatype identity and BASE edge.
 This transfers no whole-description validity or evidence receipt, and every actual and inherited fresh root still needs its complete required child evidence.
 
 The implemented positive sector retains every actual enumeration and main P1 component, including every distinct opaque incidence.
+It may add an ordinary enumeration component when every introduced value has a checked lexical witness in the exact current base.
+Retained components keep their issued identities; new components gain no inherited annotation authority.
+The ordinary component-cover, scalar containment and complete F2 checks still run, so excluded values reject and missing membership evidence remains qualified.
 Additional ordinary P1 components must have distinct P1 properties from the input components and each other; language equivalence does not establish property equality.
 Each bound kind uses whole-kind KEEP or one ordinary NEW component.
 Other selected scalar subsets remain subject to the existing local-S construction, universal fixedness, ancestry, cross-kind and complete F2 checks.
 LIST ITEM and ordered UNION MEMBERS must retain exact constituent identities in this sector; genuinely derived different constituents remain qualified after their ordinary formation checks.
 
-Partial enum/P1 retention, new enum contributions, mixed bound replacement and overlapping new P1 properties are outside this implemented positive sector.
+Partial enum/P1 retention, mixed bound replacement and overlapping new P1 properties are outside this implemented positive sector.
 They do not establish invalidity: ordinary formation and known failures run before the sector qualification whenever the replay inventory is available.
 Source bases outside the qualified sector below, builtin, generated and legacy/nonexact bases have no invented ordinal table.
 When the table is unavailable, known literal/parser/type facts still run, but a partial inventory cannot establish a false omission failure.
@@ -3993,12 +4111,12 @@ Same-H raw simple-content formation requires the exact complex owner C; its cons
 
 This statement covers the existing typed `ScalarObligation` union, not just raw simple-content formation.
 Other typed premises remain pending unless their existing owner actually discharges the exact rule/component/context.
-The only other current equality string producer is `checkDeclaration`'s `element-default-mixed-emptiable:C`, after filtering its declared-type marker.
+The only other current equality string producer is the declaration value property's `element-default-mixed-emptiable:C`, after filtering any declared-type marker.
 Scalar/facet/kernel requirements remain typed, and AU aggregate string requirements are not imported into this equality result.
 Unknown future string families retain the immediate unresolved gate.
 
 The known mixed prerequisite belongs to the current comparison context, H for a candidate or Γ for an actual call; it is not a string imported from an original facet callback.
-The existing `declarationObligation` dispatcher requires exact C, reads mixed content in that context and checks formal restriction-view emptiability.
+The `declarationObligation` dispatcher reads exact C's mixed content in that context and checks formal restriction-view emptiability, without making a property-only C a FULL root.
 Full C validity alone does not establish that predicate, and no lexical field, ID/default, NOTATION or source-syntax condition is erased or reinterpreted.
 
 The repair changes only [particleExtension.ts](../src/compiler/particleExtension.ts) and its sole [construction consumer](../src/compiler/schemaConstructionAssessment.ts).
@@ -4048,6 +4166,42 @@ That mandatory declaration also has its own independent checker, so this negativ
 The next theorem for the present finite-verifier route remains composition into some authentic executable forest for every completely qualified Q_f actual assessment.
 This repair supplies one exact pending-premise bridge; it does not prove universal scalar/value-frontier inclusion, complete search, input-derived negatives or termination.
 Alternate logical or quotient methods may instead integrate faithful reconstruction within their own correctness proof.
+
+##### Mixed VALUE properties and full declared types
+
+A later audit distinguishes a mixed VALUE property read from full declaration construction. The dated [element component properties](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#Element_Declaration_details), [immediate default rule](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-valid-default) and [particle extension rule](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-particle-extend) require the actual STRING value and mixed/formally emptiable content for that read. They do not require FULL of every complex TYPE inspected through recursive TYPE or SCOPE property equality.
+
+Previously, equality called full `checkDeclaration` for this property and inherited its unconditional declared-TYPE dependency. The mixed dispatcher also independently required FULL of that TYPE. Original AU scopes can expose mixed VALUE providers outside the hypothetical BODY/fresh closure, so neither promotion follows from the existing frontier.
+
+The [declaration owner](../src/compiler/schemaDeclarationPrimitives.ts) now exposes a dedicated mixed-value property read using the same actual constraint assessment as full declaration checking. [Equality](../src/compiler/schemaComponentEquality.ts) consumes its STRING and exact mixed-fact prerequisites. The construction dispatcher checks the real current mixed content, restriction-view formal emptiability and generated view dependencies. Full declaration checking still publishes its declared TYPE; genuine TYPE consumers and every fresh or inherited fresh root remain FULL requirements. Untouched SOURCE simple-content has the separate guarded route below; other property reads retain their conservative formation path.
+
+The [independent controls](../test/research/re01/property-mixed-value-frontier.test.ts) start with twenty-six actual components and separate evidence for all three actual nonprimitive extensions. An identity prefix has a complete four-node forest without either hypothetical provider. A copied prefix reaches both providers only through AU/SCOPE/VALUE properties. Before the repair it requests missing provider evidence; adding their children then breaks the retained prefix's method-property equality. After the repair, both prefixes complete with their exact mixed facts and without those surplus FULL roots.
+
+Contrasts reject a nonempty mixed default and retain missing-child evidence when a fresh declaration genuinely consumes the provider. Supplying that real child's evidence completes the five-node control. A direct provider-retirement contrast still rejects the broken persistent property comparison. Thus the control identifies one chosen fixed-parent reader defect; its complete identity alternative precludes a general no-construction or universal evidence-inadequacy claim.
+
+##### Untouched SOURCE simple-content VALUE properties
+
+The same [element value-property mapping](https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#Element_Declaration_details) selects the genuine simple content type of an untouched SOURCE complex type. Its assessed value needs the actual scalar, generated-content origin and local formation facts. Recursive TYPE or SCOPE property comparison does not alone require FULL of that complex facade.
+
+The dedicated property reader accepts this route only for a genuine actual SOURCE simple-content declaration or a candidate facade accepted by `originalComplexPropertySource`, with no RAW overlay. It assesses the original declared reference and exact WORD/map through the shared constraint owner. The returned scalar obligations retain genuine S/GSC support, origin and contextual mixed-base facts. A changed facade without RAW support retains the full-declaration fallback; literal RAW content has the separate datatype route below.
+
+The [independent controls](../test/research/re01/property-source-sc-value-frontier.test.ts) begin with twenty-five fully checked actual components and one nonprimitive extension. Identity and copied prefixes both have complete two-node forests. Nested VALUE declarations use the same untouched SOURCE F, whose genuine generated scalar is supported without consuming hypothetical FULL F or Z. The copied prefix formerly stopped at `component-content-properties` because the unconditional FULL facade demanded an unsupported complex-content projection.
+
+A separate direct FULL Z contrast fails UPA after a fresh legal substitution member is added. This is not a claim that the former FULL F request traversed Z. The actual generated scalar retains its mixed-base emptiability debt in the actual context. A genuine fresh declaration typed by F still demands FULL F; an invalid value still fails its scalar pattern. Genuine RAW formation and changed-facade contrasts preserve their separate guards and full dependencies.
+
+This repairs one fixed-parent property-reader defect. The complete identity alternative rules out interpreting it as general nonexistence or universal evidence inadequacy. Universal construction coverage, evidence adequacy, input-derived bounds, complete negatives and mathematical termination remain open.
+
+##### Literal RAW simple-content VALUE properties
+
+For an authenticated RAW row F with simple content type S, the dated element VALUE mapping reads that literal datatype property. The [existing TYPE-property reader](../src/compiler/schemaComponentEquality.ts) already selects this same port. The property owner validates that S is an actual SIMPLE, active GSC or builtin simple datatype, then assesses the unchanged constraint, WORD, map and declaration owner through the existing scalar kernel.
+
+A complex content selector and builtin anyType fail the SIMPLE-role boundary; a self selector is rejected by context admission. The scalar kernel still checks S's genuine formation, origin, P1/F2 and applicable ID/NOTATION rules. Every obligation reached inside S, including a genuine RAW facade obligation of an active facet provider, is forwarded unchanged.
+
+The property receipt does not assert RAW F's complex derivation valid. Generic scalar assessment of F and full declaration or component construction retain its current RAW simple-content derivation, BASE, AU and other FULL duties. An inherited original RAW overlay can remain present after an earlier genuine FULL consumer leaves the structural closure; the RAW row alone does not establish a later full-consumer obligation.
+
+The [maintained controls](../test/research/re01/property-source-sc-value-frontier.test.ts) separately complete identity and copied RAW property-only forests, check genuine full consumers and invalid content roles, and preserve actual scalar and provider debts. This closes the identified RAW VALUE-property overcheck; it supplies neither arbitrary-witness reconstruction nor universal native evidence adequacy. Authority normalization, frontend scope, helper bounds and complete general negatives remain separate proof obligations.
+
+The [premise-forwarding controls](../test/research/re01/scalar-premise-forwarding.test.ts) retain genuine fresh C formation while completing the copied property-only four-node forest with actual-context C evidence. A fresh RequiredC declaration preserves the missing hypothetical child and inherited method-comparison negatives, so those contrasts continue to test genuine consumption.
 
 #### Guarded original-property views in the current context
 

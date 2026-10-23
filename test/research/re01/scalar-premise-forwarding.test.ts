@@ -8,7 +8,6 @@ import type {AttributeUseNode, ComplexTypeNode, ElementNode, GraphNode, Particle
 import {prepareSourceSchemaRequest, checkSchemaDocumentSyntax} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import type {ComponentConstructionReceipt} from '../../../src/compiler/schemaConstructionAssessment.js';
-import type {ScalarObligation} from '../../../src/compiler/scalarSchemaAssessment.js';
 import {deriveActualComplexContent, deriveRawComplexContent} from '../../../src/compiler/complexTypeContent.js';
 import {assessSourceAttributeUses} from '../../../src/compiler/schemaAttributeUses.js';
 import {forkSemanticCandidate} from '../../../src/compiler/semanticContext.js';
@@ -137,7 +136,7 @@ async function seed(scenario: 'simple-base' | 'nonprimitive' | 'mixed' = 'simple
     const correspondence = checkCandidateCorrespondence(actual, parent, context, target.id, middle.id, local(fa.id)); assert.equal(correspondence.kind, 'checked');
     const own = deriveRawComplexContent(context, middle.id), base = deriveRawComplexContent(context, fa.id); assert.equal(own.kind, 'checked'); assert.equal(base.kind, 'checked');
     const extension = checkRawParticleExtension(context, own.view, base.view);
-    const extra = support ? (identity ? [0] : [0, 1]).map(index => innerProof(context, index, 'nested-' + index)) : [];
+    const extra = support ? [innerProof(context, 0, 'nested-0')] : [];
     const proof = verifyFiniteRe01Evidence(actual, x.id, {root: 'X', nodes: [
       {id: 'X', parent: actual, context: parent, target: x.id, intermediate: id('B'), ancestor: local(id('A')), premises: ['FT']},
       {id: 'FT', parent, context, target: ft.id, intermediate: middle.id, ancestor: local(fa.id), premises: extra.map(node => node.id)}, ...originals, ...extra,
@@ -161,16 +160,17 @@ describe('typed scalar premise forwarding through particle extension', () => {
     }
     assert.equal(c.extension.kind, 'checked'); expect(c.extension.value).toBe(true);
     expect(Object.isFrozen(c.extension.scalarObligations)).toBe(true);
-    if (!identity) for (const node of s.innerTypes) {
-      const premise: ScalarObligation | undefined = c.extension.scalarObligations.find(item => item.rule === 'raw-simple-content-derivation-validity' && item.component === node.id); assert.ok(premise);
-      expect(premise.contextId ?? c.context.contextId).toBe(c.context.contextId); expect(Object.isFrozen(premise)).toBe(true);
-    }
+    expect(c.extension.scalarObligations).toEqual([]);
+    if (!identity) expect(c.extension.typeDependencies.some(item => item.contextId === c.context.contextId
+      && item.type.kind === 'builtin' && item.type.name.local === 'string')).toBe(true);
   });
 
-  it('retains the complete actual nonprimitive proofs without importing them into the identity child', async () => {
-    const s = await seed('nonprimitive'), c = s.child(true); assert.equal(c.proof.kind, 'checked-candidate');
+  it.each([true, false])('retains complete actual nonprimitive proofs without property-only H consumption for identity %s', async identity => {
+    const s = await seed('nonprimitive'), c = s.child(identity); assert.equal(c.proof.kind, 'checked-candidate');
     assertFiniteCandidateReceipt(s.actual, c.proof); expect(c.proof.proof).toHaveLength(4);
     for (const node of s.innerTypes) expect(c.proof.proof.filter(step => step.target === node.id).map(step => step.parentContext)).toEqual([s.actual.contextId]);
+    const step = c.proof.proof.find(item => item.target === s.id('FT')); assert.ok(step);
+    for (const node of s.innerTypes) expect(step.components.some(item => item.component === node.id)).toBe(false);
   });
 
   it('still requires a separate exact-H proof for genuine nonprimitive C consumption', async () => {
@@ -181,8 +181,8 @@ describe('typed scalar premise forwarding through particle extension', () => {
       .toEqual([s.actual.contextId, complete.context.contextId].sort());
   });
 
-  it('does not waive copied nonprimitive formation or the inherited FE method comparison', async () => {
-    const s = await seed('nonprimitive'), missing = s.child(false), rebased = s.child(false, {support: true});
+  it('retains copied genuine TYPE consumption and the inherited FE method comparison', async () => {
+    const s = await seed('nonprimitive'), missing = s.child(false, {consume: true}), rebased = s.child(false, {consume: true, support: true});
     expect(missing.proof).toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence'});
     assert.equal(missing.proof.kind, 'unresolved');
     expect(s.innerTypes.map(node => node.id)).toContain(missing.proof.component);

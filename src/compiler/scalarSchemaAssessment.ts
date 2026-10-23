@@ -45,6 +45,7 @@ import {schemaSymbolicSequences} from './schemaSymbolicSequences.js';
 import type {SymbolicSequence} from './schemaSymbolicSequences.js';
 import {schemaTokenImages} from './schemaTokenImages.js';
 import {showInstant} from './schemaExactCalendar.js';
+import {endpointCapacity} from './schemaEndpointWordCapacity.js';
 
 export type ScalarEnforcement = "lexical-space" | "enumeration" | "pattern" | "whitespace" | "numeric-bounds" | "numeric-precision" | "length" | "QName-context" | "default-fixed" | "list" | "union";
 export type ScalarConstraintLayer = Readonly<{owner: NodeId; facets: readonly Facet[]; patterns: readonly SchemaPattern[]}>;
@@ -94,7 +95,7 @@ type ExactFacetComponent = {name: string; values: readonly FacetProperty[];
   annotation?: FacetAnnotation; identity?: object; annotationIdentity?: object; facet?: Facet};
 type RawComponentReplay = Readonly<{component: ExactFacetComponent; facets: readonly Facet[];
   source?: Readonly<{values: readonly (SchemaOperand | undefined)[]; obligations: readonly ScalarObligation[];
-    typeDependencies: readonly SemanticTypeDependency[]}>}>;
+    typeDependencies: readonly SemanticTypeDependency[]; intrinsicPatterns?: readonly boolean[]}>}>;
 type SourceFacetStep = Readonly<{sourceOwner: NodeId; facets: readonly Facet[]}>;
 type CurrentRepeatableComponent = Readonly<{component: ExactFacetComponent; layer?: ScalarConstraintLayer}>;
 /** Opaque internal evidence; its data is never accepted from a caller. */
@@ -118,6 +119,9 @@ const facetEvidence = new WeakMap<ScalarFacetEvidence, FacetEvidenceRecord>();
 // Factory-owned frozen rows survive descendant contexts. Caller group sharing,
 // another row, or another component incidence never supplies this identity.
 const rawFacetOccurrences = new WeakMap<RawSimpleTypeProperties, readonly object[]>();
+// A legacy RAW row publishes one reduced scalar component per kind. Its
+// occurrence survives forks; typed values are still formed in the current H.
+const rawReducedScalarOccurrences = new WeakMap<RawSimpleTypeProperties, Map<string, object>>();
 // Actual source incidences share metadata, never typed VALUE or P1 shortcuts.
 const sourceFacetIncidences = new WeakMap<SemanticContext, WeakMap<SimpleTypeNode, Map<string, object>>>();
 const excluded = new Set(["NOTATION", "ID", "IDREF", "IDREFS", "ENTITY", "ENTITIES"]);
@@ -138,11 +142,12 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   let sourceSteps: WeakMap<ScalarConstraintLayer, SourceFacetStep> | undefined;
   let currentComponents: WeakMap<Description, readonly CurrentRepeatableComponent[]> | undefined;
   let sourceComponentTables: WeakMap<Description, readonly RawComponentReplay[] | false> | undefined;
+  let formedComponentTables: WeakMap<Description, readonly RawComponentReplay[] | false> | undefined;
   const rawFacetIdentities = (row: RawSimpleTypeProperties, owner: GraphNode): readonly object[] => {
     c.step(owner, 4);
     const prior = rawFacetOccurrences.get(row);
     if (prior) return prior;
-    const count = row.facetComponentSet!.length;
+    const count = (row.facetComponentSet ?? row.facetLayers ?? []).length;
     c.step(owner, count * 4 + 6);
     const identities = Object.freeze(Array.from({length: count}, () => Object.freeze({})));
     c.step(owner, 2);
@@ -412,6 +417,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       value = operand(type, facet.lexical, originalOwner);
       c.step(owner, (type.plan.obligations?.length ?? 0) + 1); facetObligations.set(facet, type.plan.obligations ?? []);facetDependencies.set(facet,type.typeDependencies??[]);
     }
+    // A narrowed ITEM/member may make an authentic enum value inactive.
+    // Retention or NEW membership in the actual BASE is checked separately.
+    if (facet.name === 'enumeration') return value;
     // Valid component unions contain atomic/list members and list items are
     // atomic or unions of atomics, so this shape recursion has bounded depth.
     const alternatives = (description: Description, assessed: SchemaOperand): boolean => {
@@ -506,9 +514,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
   const currentRepeatableComponents = (description: Description, owner: GraphNode): readonly CurrentRepeatableComponent[] => {
     c.step(owner, 3);
     const cached = currentComponents?.get(description); if (cached) return cached;
-    c.step(owner, (description.intrinsic?.patterns.length ?? 0) * 4 + description.plan.layers.length * 3 + 3);
+    c.step(owner, (description.intrinsic?.patterns.length ?? 0) * 7 + description.plan.layers.length * 3 + 3);
     let result: CurrentRepeatableComponent[] = (description.intrinsic?.patterns ?? []).map(expression =>
-      ({component: {name: 'pattern', values: [{fixed: false, lexical: expression}], annotation: 'absent'}}));
+      ({component: {name: 'pattern', values: [{fixed: false, lexical: expression}], annotation: 'absent', identity: Object.freeze({})}}));
     for (const layer of description.plan.layers) for (const name of ['pattern', 'enumeration']) {
       c.step(owner, layer.facets.length * 5 + 3);
       const facets = layer.facets.filter(facet => facet.name === name); if (!facets.length) continue;
@@ -701,6 +709,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     return result;
   };
+  const reducedScalarIdentity = (description: Description, name: string, owner: GraphNode): object | undefined => {
+    c.step(owner, 5); const found = c.context.lookup(description.definition);
+    if (found.kind !== 'found' || found.node.kind !== 'simpleType') return undefined;
+    const row = c.context.rawSimpleTypeProperties(description.definition); if (!row) return undefined;
+    let identities = rawReducedScalarOccurrences.get(row);
+    if (!identities) {c.step(owner, 3); identities = new Map(); rawReducedScalarOccurrences.set(row, identities);}
+    c.text(name, owner); let identity = identities.get(name);
+    if (!identity) {c.step(owner, 4); identity = Object.freeze({}); identities.set(name, identity);}
+    return identity;
+  };
   /** Exact scalar inventories retain each tuple; legacy layers expose their normal form. */
   const scalarTuples = (description: Description, owner: GraphNode): ScalarTuple[] => {
     c.step(owner); const tuples: ScalarTuple[] = [];
@@ -713,10 +731,22 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       }
     } else for (const name of facetNames(description, owner)) {
       c.step(owner, 6); const facet = description.facets.get(name)?.facet;
-      tuples.push({name, property: facetProperty(description, name, owner)!, facet,
+      tuples.push({name, property: facetProperty(description, name, owner)!, facet, identity: reducedScalarIdentity(description, name, owner),
         annotation: facet ? boundAnnotationPayloads.get(facet) ?? sourceFacetPayloads.get(facet) ?? facet.annotation : 'absent'});
     }
     return tuples;
+  };
+  /** VALUE also tests physical legacy conjuncts hidden by the public reduction. */
+  const valueFacetTuples = (description: Description, owner: GraphNode): ScalarTuple[] => {
+    c.step(owner, 4); const result: ScalarTuple[] = [], pending = [description], seen = new Set<Description>();
+    while (pending.length) {
+      c.step(owner, 3); const current = pending.pop()!;
+      if (seen.has(current)) continue;
+      c.step(owner, 2); seen.add(current);
+      for (const tuple of scalarTuples(current, owner)) {c.step(owner, 2); result.push(tuple);}
+      for (const conjunct of current.conjuncts ?? []) {c.step(owner, 2); pending.push(conjunct);}
+    }
+    return result;
   };
   const restrictsScalar = (derived: ScalarTuple, base: ScalarTuple, owner: GraphNode): boolean => {
     c.step(owner);
@@ -746,7 +776,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.step(owner, 2); regularPatterns.set(pattern, language); return language;
   };
   const expressionLanguages = new Map<string, RegularLanguage>();
-  const expressionLanguage = (expression: string, owner: GraphNode): RegularLanguage => {
+  const expressionLanguage = (expression: string | null, owner: GraphNode): RegularLanguage => {
+    if (expression === null) return regular.union([], owner);
     c.text(expression, owner); c.step(owner); const known = expressionLanguages.get(expression); if (known) return known;
     const language = patternLanguage(patterns.compile({value: expression, context: owner.context}, owner), owner);
     c.step(owner, 2); expressionLanguages.set(expression, language); return language;
@@ -762,7 +793,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     c.text(value, owner); c.step(owner, value.length * 2 + 1);
     return value.replace(/[\\.\-^?*+{}()\[\]|]/g, '\\$&').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
   };
-  const inverseExpression = (value: SchemaOperand, lexical: LexicalValue, owner: GraphNode): string | undefined => {
+  /** null is a proved empty inverse; undefined leaves the representation unsupported. */
+  const inverseExpression = (value: SchemaOperand, lexical: LexicalValue, owner: GraphNode): string | null | undefined => {
     c.text(value.canonical, owner);
     if (value.family === 'string' || value.family === 'anyURI') return quoteExpression(value.canonical, owner);
     if (value.family === 'boolean') return value.canonical === 'true' ? '(true|1)' : '(false|0)';
@@ -793,16 +825,17 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         if (lexical.context.namespaces[prefix] === namespace) {c.step(owner, prefix.length + local.length + 4); expressions.push(quoteExpression(prefix ? prefix + ':' + local : local, owner));}
       }
       if (namespace === '' && lexical.context.namespaces[''] === undefined) expressions.push(quoteExpression(local, owner));
-      c.step(owner, expressions.length * 2 + 2); return expressions.length ? '(' + expressions.join('|') + ')' : undefined;
+      c.step(owner, expressions.length * 2 + 2); return expressions.length ? '(' + expressions.join('|') + ')' : null;
     }
     if (value.family === 'list' && value.items) {
-      c.step(owner, value.items.length * 2 + 2); const expressions: string[] = [];
+      c.step(owner, value.items.length * 2 + 2); const expressions: string[] = []; let unsupported = false;
       for (const item of value.items) {
         const expression = inverseExpression(item, lexical, owner);
-        if (expression === undefined) return undefined;
+        if (expression === null) return null;
+        if (expression === undefined) {unsupported = true; continue;}
         c.step(owner, expression.length + 4); expressions.push('(' + expression + ')');
       }
-      c.step(owner, expressions.length * 2 + 1); return expressions.join(' ');
+      c.step(owner, expressions.length * 2 + 1); return unsupported ? undefined : expressions.join(' ');
     }
     return undefined;
   };
@@ -1575,9 +1608,10 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     const finite = result.plan.layers.find(layer => (enumerations.get(layer)?.size ?? 0) > 0);
     if (finite) {
       let complete = true;
-      for (const [facet, value] of enumerations.get(finite)!) {
-        const present = regularMembership(result, value, facet.lexical, owner); if (present === false) continue;
-        const contained = regularMembership(base, value, facet.lexical, owner);
+      // Values retain their genuine introduction; containment uses this datatype's context.
+      for (const value of enumerations.get(finite)!.values()) {
+        const present = regularMembership(result, value, lexical, owner); if (present === false) continue;
+        const contained = regularMembership(base, value, lexical, owner);
         if (present === true && contained === false) c.fail(owner, 'scalar-value-space-restriction', 'A selected derived enumeration value is excluded by the base selected image');
         if (present === undefined || contained === undefined) complete = false;
       }
@@ -2169,11 +2203,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       }
       if (!witnessed) c.fail(owner, 'length-minLength-maxLength', 'Coexisting length and minimum/maximum require the matching proper ancestor');
     }
+    return scalarValueContainment(base, result, owner) && complete;
+  };
+  /** Containment concerns every actual VALUE predicate, separately from metadata. */
+  const scalarValueContainment = (base: Description, result: Description, owner: GraphNode): boolean => {
+    const inherited = valueFacetTuples(base, owner), supplied = valueFacetTuples(result, owner);
     const covered = inherited.every(prior => {
       c.step(owner);
       return supplied.some(derived => restrictsScalar(derived, prior, owner));
     });
-    if (covered) return complete;
+    if (covered) return true;
     // Every main layer tests the same selected normalized result. An empty
     // intersection proves containment without comparing whitespace modes;
     // separate conjuncts, list items and union members do not share that word.
@@ -2183,32 +2222,32 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       c.step(owner, layer.patterns.length * 2 + 2);
       mainPatterns.push(regular.union(layer.patterns.map(pattern => patternLanguage(pattern, owner)), owner));
     }
-    if (mainPatterns.length && regular.witness(regular.intersect(mainPatterns, owner), owner) === undefined) return complete;
-    if (regularLengthContainment(base, result, inherited, supplied, owner)) return complete;
-    if (decimalContainment(base, result, inherited, supplied, owner)) return complete;
+    if (mainPatterns.length && regular.witness(regular.intersect(mainPatterns, owner), owner) === undefined) return true;
+    if (regularLengthContainment(base, result, inherited, supplied, owner)) return true;
+    if (decimalContainment(base, result, inherited, supplied, owner)) return true;
     // A complete enumeration bounds the result's entire value space, even
     // when an independently retained scalar bound is weaker than a base one.
     c.step(owner, inherited.length * 2 + 1);
     const whitespaceCovered = inherited.filter(prior => prior.name === 'whiteSpace')
       .every(prior => supplied.some(derived => restrictsScalar(derived, prior, owner)));
+    // Saved facet contexts still qualify NEW operands, not the current whole image.
+    c.step(owner, 2); const lexical: LexicalValue = {value: '', context: owner.context};
     if (whitespaceCovered) for (const group of result.plan.layers) {
       c.step(owner); const members = enumerations.get(group);
       if (!members?.size) continue;
       let includesAll = true;
-      for (const [facet, value] of members) {
+      for (const value of members.values()) {
         c.step(owner);
         if (!excludedByValueFacets(base, value, owner)
           || excludedByValueFacets(result, value, owner) || excludedByEnumeration(result, value, owner)) continue;
-        const membership = membershipWitness(result, value, facet.lexical, owner);
+        const membership = membershipWitness(result, value, lexical, owner);
         if (membership === true)
           c.fail(owner, 'scalar-value-space-restriction', 'A derived enumeration value is excluded by the base');
         if (membership === undefined) includesAll = false;
       }
-      if (includesAll) return complete;
+      if (includesAll) return true;
     }
-    if (ieeeContainment(base, result, inherited, supplied, owner)) return complete;
-    if (calendarContainment(base, result, inherited, supplied, owner)) return complete;
-    if (durationContainment(base, result, inherited, supplied, owner)) return complete;
+    // Try supplied spellings before constructing complete datatype products.
     const counterexample = (lexical: LexicalValue): void => {
       let value: SchemaOperand;
       try {value = operand(result, lexical, owner);}
@@ -2223,6 +2262,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       c.step(owner);
       if (tuple.facet && boundNames.includes(tuple.name)) counterexample(tuple.facet.lexical);
     }
+    if (ieeeContainment(base, result, inherited, supplied, owner)) return true;
+    if (calendarContainment(base, result, inherited, supplied, owner)) return true;
+    if (durationContainment(base, result, inherited, supplied, owner)) return true;
     if (whitespaceCovered) for (const group of result.plan.layers) {
       c.step(owner);
       if (!group.patterns.length) continue;
@@ -2236,7 +2278,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       }
       // Every normalized spelling passes this disjunction. If every branch
       // was exhaustively enumerated, no other derived value is possible.
-      if (finite) return complete;
+      if (finite) return true;
     }
     if (result.plan.primitive === 'string') {
       const size = lengthProperty(result, 'length') ?? lengthProperty(result, 'minLength') ?? '0';
@@ -2430,6 +2472,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         if (membership !== true) complete = false;
       }
     }
+    if (!exact && !scalarValueContainment(base, result, owner)) complete = false;
     return complete;
   };
   /** Selection/role checks concern the supplied operand request, separately
@@ -2611,11 +2654,54 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     }
     c.step(owner, 3); const complete = Object.freeze(entries); sourceComponentTables.set(base, complete); return complete;
   };
+  /** A complete formed inventory owns its current introductions. KEEP retains
+   * actual components, including opaque annotations and intrinsic builtin facts;
+   * it never borrows authority from a property-equal sibling. */
+  const formedComponentTable = (base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
+    c.step(owner, 3);
+    if (base.rawProperties && !base.exactComponentSet && !base.originalFacetIdentity
+      && base.plan.obligations?.some(item => item.rule === 'raw-simple-facet-restriction-validity')) return undefined;
+    const cached = formedComponentTables?.get(base); if (cached !== undefined) return cached || undefined;
+    if (!formedComponentTables) {c.step(owner, 2); formedComponentTables = new WeakMap();}
+    const unavailable = (): undefined => {c.step(owner, 2); formedComponentTables!.set(base, false); return undefined;};
+    const scalars = scalarTuples(base, owner), repeatables = currentRepeatableComponents(base, owner);
+    c.step(owner, scalars.length * 3 + 3);
+    scalars.sort((a, b) => {c.text(a.name, owner); c.text(b.name, owner); return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;});
+    c.step(owner, scalars.length * 7 + repeatables.length * 5 + 4);
+    const drafts: {component: ExactFacetComponent; facets: readonly Facet[]}[] = [];
+    for (const tuple of scalars) {
+      c.step(owner, 7);
+      const facet: Facet = tuple.facet ?? {name: tuple.name, fixed: tuple.property.fixed,
+        lexical: {value: tuple.property.integer ?? tuple.property.operand?.canonical ?? tuple.property.lexical!, context: owner.context}};
+      drafts.push({component: {name: tuple.name, values: [tuple.property], facet,
+        annotation: tuple.annotation, identity: tuple.identity ?? facet, annotationIdentity: tuple.annotationIdentity}, facets: [facet]});
+    }
+    for (const {component, layer} of repeatables) {
+      c.step(owner, (layer?.facets.length ?? component.values.length) * 7 + 2);
+      if (!layer && component.name !== 'pattern') return unavailable();
+      const facets: readonly Facet[] = layer ? layer.facets.filter(facet => facet.name === component.name)
+        : component.values.map(property => ({name: 'pattern', fixed: false, lexical: {value: property.lexical!, context: owner.context}}));
+      if (!layer) for (const facet of facets) {c.step(owner); intrinsicFacets.add(facet);}
+      if (!facets.length || facets.length !== component.values.length) return unavailable();
+      drafts.push({component, facets});
+    }
+    c.step(owner, drafts.length * 5 + 3); const entries: RawComponentReplay[] = [];
+    for (const {component, facets} of drafts) {
+      c.step(owner, facets.length * 5 + 5);
+      const values = facets.map((facet, index) => facet.name === 'enumeration' || boundNames.includes(facet.name)
+        ? component.values[index].operand : undefined);
+      const intrinsic = facets.map(facet => intrinsicFacets.has(facet));
+      entries.push(Object.freeze({component, facets, source: Object.freeze({values: Object.freeze(values),
+        intrinsicPatterns: Object.freeze(intrinsic), obligations: base.plan.obligations ?? [], typeDependencies: base.typeDependencies ?? []})}));
+    }
+    c.step(owner, 3); const complete = Object.freeze(entries); formedComponentTables.set(base, complete); return complete;
+  };
   const componentTable = (reference: Reference, base: Description, owner: GraphNode): readonly RawComponentReplay[] | undefined => {
-    const node = reference.kind === 'original-generated' ? undefined : scalarOperandNode(reference, owner);
+    if (reference.kind === 'original-generated') return formedComponentTable(base, owner);
+    const node = scalarOperandNode(reference, owner);
     const row = node?.kind === 'simpleType' ? c.context.rawSimpleTypeProperties(node.id) : undefined;
-    if (!row) return sourceComponentTable(base, owner);
-    if (!row.facetComponentSet) return undefined;
+    if (!row) return sourceComponentTable(base, owner) ?? formedComponentTable(base, owner);
+    if (!row.facetComponentSet) return formedComponentTable(base, owner);
     c.step(owner, 4);
     if (!rawComponentTables) {c.step(owner, 2); rawComponentTables = new WeakMap();}
     const cached = rawComponentTables.get(row); if (cached) return cached;
@@ -2652,7 +2738,8 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     for (let index = 0; index < groups.length; index++) {
       c.step(owner, 2); if (groups[index].selected) continue;
       const component = components[index];
-      if (component.name === 'enumeration') complete = false;
+      // Ordinary correspondence still checks every new enumeration value
+      // against the current base; retained components cover its old sets.
       if (component.name !== 'pattern') continue;
       const expression = patternValue(component);
       for (const entry of table) if (entry.component.name === 'pattern') {
@@ -2668,7 +2755,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       const indices = components.flatMap((component, index) => component.name === name ? [index] : []);
       if (indices.some(index => groups[index].selected)) {
         if (indices.some(index => !groups[index].selected) || inherited.some(entry => !selected.has(incidence(entry.component)))) complete = false;
-      } else if (indices.length > 1) complete = false;
+      }
     }
     return complete;
   };
@@ -2700,8 +2787,10 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       if (rawSimple) {
         const base = description(rawSimple.base), variety = rawSimple.variety;
         const bound = rawSimple.facetBinding ? recipe(rawSimple.facetBinding.type, node) : undefined;
-        const groups: {facets: readonly Facet[]; identity?: object; annotation?: FacetAnnotation; selected?: ExactFacetComponent; ordinal?: number; sourceStep?: SourceFacetStep}[] = [];
+        const groups: {facets: readonly Facet[]; identity?: object; annotation?: FacetAnnotation; selected?: ExactFacetComponent; ordinal?: number; sourceStep?: SourceFacetStep;
+          replay?: RawComponentReplay['source']}[] = [];
         let selectedTable: readonly RawComponentReplay[] | undefined;
+        let importedPatterns = false;
         let tableUnavailable = false;
         if (bound) for (const group of bound.layers) {
           c.step(node, group.facets.length * 5 + 3); const facets: Facet[] = [];
@@ -2715,6 +2804,26 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
           groups.push({facets,identity:group.identity,sourceStep:group.sourceStep});
         } else if (rawSimple.facetComponentSet) for (const [ordinal, group] of rawSimple.facetComponentSet.entries()) {
           if (!('facets' in group)) {
+            if ('builtinPattern' in group) {
+              const source = builtin({kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: group.builtinPattern.name}}, node);
+              const table = formedComponentTable(source, node);
+              c.step(node, (table?.length ?? 0) * 2 + 4);
+              const selected = table?.filter(entry => entry.component.name === 'pattern')[group.builtinPattern.index];
+              if (!selected) return c.fail(node, 'raw-builtin-pattern-component', 'Builtin has no intrinsic pattern component at this ordinal');
+              const replay = selected.source;
+              if (!replay || replay.intrinsicPatterns?.length !== selected.facets.length || !replay.intrinsicPatterns.every(Boolean))
+                return c.fail(node, 'raw-builtin-pattern-component', 'Selected builtin component lacks intrinsic pattern authority');
+              c.step(node, selected.facets.length * 6 + 4);
+              const facets = c.budget.freeze(c.budget.snapshot(selected.facets.map(facet => ({name: facet.name, fixed: facet.fixed, lexical: facet.lexical}))));
+              for (const [index, facet] of facets.entries()) {
+                c.step(node, 4);
+                if (replay.intrinsicPatterns![index]) intrinsicFacets.add(facet);
+                facetObligations.set(facet, replay.obligations);
+                facetDependencies.set(facet, replay.typeDependencies);
+              }
+              groups.push({facets, annotation: selected.component.annotation, ordinal, replay});
+              importedPatterns = true; continue;
+            }
             selectedTable ??= componentTable(rawSimple.base, base, node);
             if (!selectedTable) {tableUnavailable = true; continue;}
             c.step(node, 24); const selected = selectedTable[group.baseComponent];
@@ -2725,15 +2834,16 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
             if (selected.source) for (const [index, facet] of facets.entries()) {
               c.step(node, 4); const value = selected.source.values[index];
               if (value) boundFacetValues.set(facet, value);
+              if (selected.source.intrinsicPatterns?.[index]) intrinsicFacets.add(facet);
               facetObligations.set(facet, selected.source.obligations);
               facetDependencies.set(facet, selected.source.typeDependencies);
             }
-            groups.push({facets, annotation: selected.component.annotation, selected: selected.component}); continue;
+            groups.push({facets, annotation: selected.component.annotation, selected: selected.component, replay: selected.source}); continue;
           }
           // Caller extensions are data, never privately issued component identity.
           c.step(node, 2); groups.push({facets: group.facets, annotation: group.annotation, ordinal});
-        } else for (const group of rawSimple.facetLayers ?? []) {
-          c.step(node, 2); groups.push({facets: group.facets});
+        } else for (const [ordinal, group] of (rawSimple.facetLayers ?? []).entries()) {
+          c.step(node, 2); groups.push({facets: group.facets, identity: rawFacetIdentities(rawSimple, node)[ordinal]});
         }
         if (node.identity.kind === "global" && rawSimple.targetNamespace !== undefined) {
           c.text(rawSimple.targetNamespace, node); c.text(node.identity.name.namespace, node);
@@ -2796,6 +2906,9 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
               if (group.selected.annotationIdentity) component.annotationIdentity = group.selected.annotationIdentity;
               else {
                 component.identity = group.selected.identity;
+                // Retention uses the actual BASE component above. This row's
+                // immutable occurrence supplies only annotation continuity.
+                component.annotationIdentity = identities![group.ordinal ?? exactComponentSet.length];
                 c.step(node, 2); layerIdentities.set(installed, component.identity!);
               }
             }
@@ -2822,14 +2935,12 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         const ordinaryCorrespondence = urBase || rawFacetCorrespondence(base, result, frame.reference, node);
         let facetCorrespondence = ordinaryCorrespondence;
         if (selectedTable) {
-          c.step(node, 4 + (variety.kind === 'union' ? variety.members.length * 2 : 0));
-          const identicalConstituents = !(variety.kind === 'list' && referenceKey(variety.item, node) !== referenceKey(base.plan.item!, node)
-            || variety.kind === 'union' && variety.members.some((member, index) => referenceKey(member, node) !== referenceKey(base.plan.members![index], node)));
-          facetCorrespondence = wholeKeepSector(base, selectedTable, groups, exactComponentSet!, node) && identicalConstituents && ordinaryCorrespondence;
+          c.step(node, 4);
+          facetCorrespondence = wholeKeepSector(base, selectedTable, groups, exactComponentSet!, node) && ordinaryCorrespondence;
         }
-        if (selectedTable) {
+        if (selectedTable || importedPatterns) {
           c.step(node, groups.length * 4 + 3);
-          replayTable = Object.freeze(groups.map((group, index) => Object.freeze({component: exactComponentSet![index], facets: group.facets})));
+          replayTable = Object.freeze(groups.map((group, index) => Object.freeze({component: exactComponentSet![index], facets: group.facets, source: group.replay})));
         }
         // These are exact supplied effective constraints. Proving they restrict
         // the base's complete constraints is a separate semantic obligation.
@@ -3023,7 +3134,7 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
         for (const name of names) {
           const explicit = description.facets.get(name);
           c.step(owner, 4);
-          exact.push({name,values:[scalars.get(name)!],
+          exact.push({name,values:[scalars.get(name)!], identity: reducedScalarIdentity(description, name, owner),
             annotation:explicit ? boundAnnotationPayloads.get(explicit.facet) ?? sourceFacetPayloads.get(explicit.facet) ?? explicit.facet.annotation : 'absent'});
         }
       }
@@ -3163,7 +3274,96 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
     originalRecipes.set(token,{context:c.context,layers,identity:value,obligations:(value.plan.obligations ?? []).map(obligation=>({...obligation,contextId:obligation.contextId??c.context.contextId})),typeDependencies:value.typeDependencies??[]});
     originalRecipeTokens.set(value,token);return token;
   };
-  return {typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
+  /** Private alias word bound from genuine CURRENT masks/tables, without caller descriptions. */
+  const privateAliasEndpointWordCapacity = (reference: Reference, owner: GraphNode) => {
+    const description = ensure(reference, owner), family = description.plan.primitive;
+    if (description.plan.variety !== 'atomic' || !family || !['decimal', 'duration', 'dateTime', 'date', 'time', 'gYear', 'gYearMonth', 'gMonthDay', 'gDay', 'gMonth', 'float', 'double'].includes(family))
+      return c.unsupported(owner, 'endpoint-bound-family', 'Endpoint capacity requires a bound-capable atomic family');
+    const table = componentTable(reference, description, owner);
+    if (!table) return c.unresolved(owner, 'endpoint-current-inventory', 'Endpoint capacity needs the genuine completed CURRENT component table');
+    c.step(owner, table.length * 4 + 4);
+    const inventory: {ordinal: number; kind: string; fixed: readonly boolean[]; annotation: ScalarFacetAnnotationPresence}[] = [];
+    let boundCount = 0, constantTextUnits = 0, inputMagnitude = 0n, magnitudeDigits = 1, primitiveConstantUnits = 0;
+    const kinds = new Set<string>();
+    for (let ordinal = 0; ordinal < table.length; ordinal++) {
+      const entry = table[ordinal], component = entry.component; c.step(owner, component.values.length * 8 + 6);
+      inventory.push({ordinal, kind: component.name, fixed: component.values.map(property => property.fixed), annotation: facetAnnotationPresence(component.annotation)});
+      if (!boundNames.includes(component.name)) continue;
+      kinds.add(component.name);
+      for (let valueAt = 0; valueAt < component.values.length; valueAt++) {
+        const value = component.values[valueAt].operand;
+        if (!value) return c.unresolved(owner, 'endpoint-current-bound-value', 'CURRENT bound component lacks its assessed primitive operand');
+        boundCount++;
+        const constantLexical = entry.facets[valueAt]?.lexical ?? {value: value.canonical, context: owner.context};
+        const text = constantLexical.value; c.text(text, owner); constantTextUnits += text.length;
+        if (family === 'float' || family === 'double') {
+          // A same-kind exclusive repeat needs only a primitive word, even if CURRENT admission is empty.
+          let primitiveWord: string | undefined;
+          try {if (values.sameValue(values.atomic(family, constantLexical, owner), value, owner)) primitiveWord = text;}
+          catch (error) {if (!(error instanceof SchemaAssessmentError) || error.category !== 'invalid-schema') throw error;}
+          primitiveWord ??= ieeeLanguages.witness(expressionLanguage(primitiveLexicalExpression(description)!, owner), value, owner);
+          if (primitiveWord === undefined) return c.unresolved(owner, 'endpoint-primitive-constant', 'Actual bound value needs its genuine primitive operand spelling');
+          primitiveConstantUnits = Math.max(primitiveConstantUnits, primitiveWord.length);
+        }
+        const coordinates = [value.decimal, value.calendar?.seconds, value.duration?.seconds];
+        for (const coordinate of coordinates) if (coordinate) {
+          const digits = coordinate.digits ?? Math.max(text.length + 32, value.canonical.length + 32);
+          c.step(owner, (digits + 4) ** 2 + 8); const magnitude = coordinate.coefficient < 0n ? -coordinate.coefficient : coordinate.coefficient;
+          if (magnitude > inputMagnitude) inputMagnitude = magnitude; magnitudeDigits = Math.max(magnitudeDigits, digits);
+        }
+        if (value.duration) {
+          const digits = value.duration.digits + 32; c.step(owner, (digits + 4) ** 2 + 8);
+          const magnitude = value.duration.months < 0n ? -value.duration.months : value.duration.months;
+          if (magnitude > inputMagnitude) inputMagnitude = magnitude; magnitudeDigits = Math.max(magnitudeDigits, digits);
+        }
+      }
+    }
+    const roles = kinds.size, formulaLeaves = 16 * (boundCount + 4) ** 2;
+    if (!Number.isSafeInteger(roles) || roles < 0 || !Number.isSafeInteger(formulaLeaves) || formulaLeaves < 0)
+      throw new TypeError('Private endpoint demand counts must be finite safe naturals');
+    const lexical = {value: '', context: owner.context};
+    // A native spelling contradiction proves admission empty before costly calendar value preimages.
+    // Ensure/table qualification and all formation obligations have already been retained.
+    const syntax = regular.intersect(spellingConstraints(description, owner), owner);
+    const predicate: LexicalPredicate | undefined = regular.witness(syntax, owner) === undefined
+      ? {kind: 'regular', language: syntax} : atomicAdmissionPredicate(description, lexical, owner);
+    if (!predicate) return c.unresolved(owner, 'endpoint-current-admission', 'Endpoint capacity needs the actual scalar admission compiler');
+    if (family !== 'float' && family !== 'double') {
+      if (predicate.kind !== 'regular') return c.unresolved(owner, 'endpoint-current-admission', 'This atomic endpoint admission is not a compiled regular word mask');
+      const mask = regular.automaton(predicate.language, owner);
+      const metrics = {family, roles, formulaLeaves, rawMaskStates: roles * mask.states.length,
+        constantCount: boundCount, constantTextUnits, inputMagnitude, magnitudeDigits};
+      const capacity = endpointCapacity(metrics, count => c.step(owner, count));
+      c.step(owner, 8); return {...capacity, inventory, maskAuthority: 'current-atomic-admission' as const};
+    }
+    const languages: RegularLanguage[] = [];
+    const spelling = (node: LexicalPredicate): void => {
+      c.step(owner, 2); if (node.kind === 'regular') {languages.push(node.language); return;}
+      if (node.kind === 'numeric') return; // Taking all actual values is a conservative capacity superset.
+      if (node.kind === 'and') {for (const child of node.children) spelling(child); return;}
+      return c.unresolved(owner, 'endpoint-ieee-spelling', 'IEEE capacity needs the actual positive regular spelling conjunction');
+    };
+    spelling(predicate); const raw = regular.intersect(languages, owner), normalized = regular.whitespaceImage(raw, 'collapse', owner);
+    let maximum = primitiveConstantUnits;
+    let enumEntry: RawComponentReplay | undefined;
+    for (const entry of table) {c.step(owner, 3); if (entry.component.name === 'enumeration'
+      && (!enumEntry || entry.component.values.length < enumEntry.component.values.length)) enumEntry = entry;}
+    function* finiteValues(): Generator<SchemaOperand> {
+      if (enumEntry) for (const property of enumEntry.component.values) {c.step(owner); const operand = property.operand; if (operand && operand.family === family) yield operand;}
+      else yield* ieeeLanguages.formatValues(family as 'float' | 'double', owner);
+    }
+    for (const value of roles ? finiteValues() : []) {
+      const word = ieeeLanguages.witness(normalized, value, owner); if (word === undefined) continue;
+      const restored = regular.witness(regular.intersect([raw, regular.whitespacePreimage(expressionLanguage(quoteExpression(word, owner), owner), 'collapse', owner)], owner), owner);
+      if (restored === undefined) throw new TypeError('Exact IEEE whitespace image must have its raw preimage');
+      maximum = Math.max(maximum, restored.length);
+    }
+    const encodedTupleUnits = 2 * roles * maximum;
+    if (!Number.isSafeInteger(encodedTupleUnits)) {c.step(owner, Number.MAX_SAFE_INTEGER); throw new Error('Unreachable exhausted IEEE capacity');}
+    c.step(owner, 64); return {kind: 'finite-ieee-capacity' as const, family, roles, maximumWordUnits: maximum,
+      encodedTupleUnits, inventory, maskAuthority: 'current-ieee-spelling-and-finite-inverse' as const};
+  };
+  return {privateAliasEndpointWordCapacity,typeDependencies:(reference:Reference,owner:GraphNode)=>ensure(reference,owner).typeDependencies??[],ensure: (reference: Reference, owner: GraphNode) => ensure(reference, owner).plan, checkFinal, checkValue, assessConstraint, equivalent,
     contentIdentity, contentProperties, readOriginalRecipe, contentDerivation, facetPropertiesEquivalent, readFacetProperties, compareFacetProperties,compareFacetAnnotations,
     selectOperand: (reference: Reference, owner: GraphNode): void => {scalarOperandNode(reference, owner, true);},
     assess: (reference: Reference, lexical: LexicalValue, owner: GraphNode) => operand(ensure(reference, owner), lexical, owner),

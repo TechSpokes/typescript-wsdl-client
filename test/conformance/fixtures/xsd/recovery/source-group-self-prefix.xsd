@@ -1,0 +1,20 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:group-self"
+           targetNamespace="urn:re01:group-self" elementFormDefault="qualified">
+  <xs:complexType name="A"><xs:complexContent><xs:restriction base="xs:anyType"><xs:sequence>
+    <xs:element name="p" type="xs:string"/>
+  </xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="I"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:extension base="t:A"><xs:sequence>
+    <xs:element name="gamma" minOccurs="0"><xs:complexType><xs:complexContent><xs:extension base="t:I"/></xs:complexContent></xs:complexType></xs:element>
+  </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+  <xs:group name="G"><xs:sequence><xs:element name="t" minOccurs="0"><xs:complexType>
+    <xs:complexContent><xs:extension base="t:R"><xs:sequence>
+      <xs:element name="delta" type="xs:string" minOccurs="0"/>
+      <xs:group ref="t:G"/>
+    </xs:sequence></xs:extension></xs:complexContent>
+  </xs:complexType></xs:element></xs:sequence></xs:group>
+  <xs:element name="h" type="t:A" abstract="true" block="restriction"/>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:I"><xs:sequence>
+    <xs:element ref="t:h"/>
+  </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

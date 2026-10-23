@@ -32,7 +32,9 @@ export type RawScalarFacetComponent = Readonly<{facets: readonly ScalarFacet[];
   annotation?: FacetAnnotation}>;
 /** An actual component in the formed immediate base's available replay table. */
 export type RawBaseFacetComponent = Readonly<{baseComponent: number}>;
-export type RawFacetComponentEntry = RawScalarFacetComponent | RawBaseFacetComponent;
+/** A NEW component copying one genuine intrinsic builtin pattern property. */
+export type RawBuiltinPatternFacetComponent = Readonly<{builtinPattern: Readonly<{name: string; index: number}>}>;
+export type RawFacetComponentEntry = RawScalarFacetComponent | RawBaseFacetComponent | RawBuiltinPatternFacetComponent;
 export type RawSimpleFacetInput = Readonly<
   {facetLayers: readonly RawScalarFacetLayer[]; facetBinding?: never; facetComponentSet?: never} |
   {facetComponentSet: readonly RawFacetComponentEntry[]; facetLayers?: never; facetBinding?: never} |
@@ -71,12 +73,21 @@ export function validateRawSimpleTypeShape(value: unknown, budget: SemanticBudge
     budget.chargeWork(4);
     if (!object(layer)) return false;
     if (exact !== undefined && !('facets' in layer)) {
+      const pattern = Object.getOwnPropertyDescriptor(layer, 'builtinPattern');
+      if (pattern) {
+        if ('baseComponent' in layer || 'annotation' in layer || !('value' in pattern) || !object(pattern.value)) return false;
+        const name = Object.getOwnPropertyDescriptor(pattern.value, 'name'), index = Object.getOwnPropertyDescriptor(pattern.value, 'index');
+        if (!name || !('value' in name) || typeof name.value !== 'string' || !name.value
+          || !index || !('value' in index) || !Number.isSafeInteger(index.value) || index.value < 0) return false;
+        budget.chargeWork(name.value.length + 32); continue;
+      }
       const selected = Object.getOwnPropertyDescriptor(layer, 'baseComponent');
       if ('annotation' in layer || !selected || !('value' in selected)
         || !Number.isSafeInteger(selected.value) || selected.value < 0) return false;
       continue;
     }
     if (!Array.isArray(layer.facets) || exact !== undefined && !layer.facets.length) return false;
+    if (exact !== undefined && 'builtinPattern' in layer) return false;
     budget.chargeWork(layer.facets.length * 4);
     if (exact !== undefined) {
       const first=layer.facets[0];

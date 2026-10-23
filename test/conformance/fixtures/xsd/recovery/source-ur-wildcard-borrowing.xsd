@@ -1,0 +1,21 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:source-ur-prefix"
+  targetNamespace="urn:re01:source-ur-prefix" elementFormDefault="qualified">
+  <xs:complexType name="A" mixed="true">
+    <xs:complexContent mixed="true"><xs:extension base="xs:anyType"><xs:sequence>
+      <xs:choice minOccurs="2" maxOccurs="2"/>
+      <xs:any namespace="urn:re01:source-ur-prefix:x" processContents="strict"/>
+    </xs:sequence></xs:extension></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="G" mixed="true">
+    <xs:complexContent mixed="true"><xs:restriction base="t:A"><xs:sequence>
+      <xs:any processContents="skip"/>
+      <xs:choice minOccurs="2" maxOccurs="2"/>
+      <xs:any namespace="urn:re01:source-ur-prefix:x" processContents="strict"/>
+    </xs:sequence></xs:restriction></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="D" mixed="true">
+    <xs:complexContent mixed="true"><xs:extension base="t:G"><xs:sequence>
+      <xs:any namespace="urn:re01:source-ur-prefix:y" processContents="strict"/>
+    </xs:sequence></xs:extension></xs:complexContent>
+  </xs:complexType>
+</xs:schema>

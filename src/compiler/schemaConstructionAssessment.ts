@@ -13,7 +13,7 @@ import type {ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
 import {checkImmediateTypeFinal, immediateTypeBase} from './schemaTypeRelations.js';
 import type {RelationResult} from './schemaTypeRelations.js';
-import {deriveActualComplexContent, deriveRawComplexContent, deriveOriginalComplexPropertyContent, deriveOriginalContentSubtree, particleContentNode, deriveBuiltinAnyTypeContent, deriveModelGroupContent} from './complexTypeContent.js';
+import {deriveActualComplexContent, deriveRawComplexContent, deriveOriginalComplexPropertyContent, deriveOriginalContentSubtree, particleContentNode, deriveBuiltinAnyTypeContent, deriveModelGroupContent, originalUrWildcardSource} from './complexTypeContent.js';
 import type {ParticleContentView} from './complexTypeContent.js';
 import {validateRawComplexTypeProperties} from './re01TypePropertyValidation.js';
 import {isXmlNCName, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -30,6 +30,8 @@ import type {CorrespondenceReceipt} from './re01CandidateCorrespondence.js';
 import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
 import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
+import {collectIdentityConstraintDependencies} from './schemaIdentityConstraints.js';
+import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js';
 
 export type ConstructionObligation = Readonly<{rule: string; component: NodeId; contextId: string}>;
 export type ComponentConstructionReceipt = Readonly<{
@@ -37,6 +39,7 @@ export type ComponentConstructionReceipt = Readonly<{
   scope: 'local-component-premises' | 'original-source-syntax-only'; receipts: readonly object[];
   dependencies: readonly NodeId[]; builtinDependencies: readonly string[];
   typeDependencies: readonly SemanticTypeDependency[];
+  identityConstraintDependencies: readonly IdentityConstraintDependency[];
   re01?: Readonly<{target: NodeId; ancestor: SemanticTypeReference; primitive: boolean}>;
   obligations: readonly ConstructionObligation[];
   discharged: readonly ConstructionObligation[];
@@ -85,6 +88,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       if (found.kind !== 'found') return fail('component-membership', 'Component is unavailable in the selected context', 'unresolved');
       const node = found.node, receipts: object[] = [], dependencies = new Set<NodeId>(), builtins = new Set<string>();
       const typeDependencies = collectSemanticTypeDependencies(context);
+      const identityConstraintDependencies = collectIdentityConstraintDependencies(context);
       const obligations: ConstructionObligation[] = [];
       const requireNode = (target: NodeId): GraphNode => {
         b.chargeWork(2 + target.length);
@@ -128,7 +132,8 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           if (!pending.startsWith(rule + ':')) continue;
           const component = pending.slice(rule.length + 1);
           if (rule === 'element-default-mixed-emptiable') {
-            requireNode(component);
+            // Actual declarations already require their TYPE. A property-only
+            // VALUE read needs this mixed fact without promoting that TYPE to FULL.
             const mapped = content(component);
             if (mapped.content.kind !== 'mixed') return fail('e-props-correct.2', 'Element value constraint requires simple or mixed content');
             const view = checked(prepareSemanticParticleView(context, mapped, 'restriction'));
@@ -155,6 +160,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             failed.contextId, failed.contextId === undefined ? id : failed.component ?? id);
         }
         if ('typeDependencies' in result) typeDependencies.add((result as T & {typeDependencies: readonly SemanticTypeDependency[]}).typeDependencies);
+        if ('identityConstraintDependencies' in result) identityConstraintDependencies.add((result as T & {identityConstraintDependencies: readonly IdentityConstraintDependency[]}).identityConstraintDependencies);
         b.chargeWork(); receipts.push(result); return result as Extract<T, {kind: 'checked'}>;
       };
       const scalar = createSchemaScalarKernel(context);
@@ -200,6 +206,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         const receipt: ComponentConstructionReceipt = Object.freeze({kind: 'checked', authority: 'XSD10-component-construction-v1',
           scope: 'original-source-syntax-only', contextId: context.contextId, component: id, receipts: Object.freeze(receipts),
           dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([]), typeDependencies: typeDependencies.snapshot(),
+          identityConstraintDependencies: identityConstraintDependencies.snapshot(),
           obligations: Object.freeze([]), discharged: Object.freeze([])});
         b.chargeWork(); issued.set(receipt, context); return receipt;
       }
@@ -232,6 +239,18 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       const particleLegal = (view: ParticleContentView): void => {
         const legal = checked(checkComplexParticleContent(context, view));
         if (!legal.value) return fail(legal.failedRule ?? 'particle-local-legality', 'Particle content violates its local constraints');
+      };
+      const borrowedParticle = (target: NodeId): GraphNode | undefined => {
+        const handle = context.originalUrWildcard(target);
+        if (!handle) return undefined;
+        const leaf = originalUrWildcardSource(context.originalContext(), handle);
+        // Preparation authenticates this immutable terminal leaf. It is not
+        // an F component, and borrowing its provenance never requires FULL(owner).
+        occurrenceAlgebra(b.chargeWork).validate(leaf.occurs);
+        if (leaf.term.kind !== 'any' || leaf.occurs.min !== '0' || leaf.occurs.max !== 'unbounded'
+          || leaf.term.wildcard.namespace.value !== '##any' || leaf.term.wildcard.processContents !== 'lax')
+          return fail('original-ur-wildcard', 'Invalid borrowed native UR wildcard', 'unresolved', undefined, target);
+        return leaf;
       };
       if (sourceContent) {
         if (originalComplex) {
@@ -299,7 +318,10 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         for (const slot of context.references(id)) {b.chargeWork(); reference(slot.reference);}
         if (node.kind === 'complexType' || node.kind === 'attributeGroup') b.chargeWork(node.attributes.length + 2);
         if (node.kind === 'particle' && 'children' in node.term) b.chargeWork(node.term.children.length + 2);
-        for (const child of particleChildren ?? containedNodes(node)) {b.chargeWork(); requireNode(child);}
+        for (const child of particleChildren ?? containedNodes(node)) {
+          b.chargeWork();
+          if (!(node.kind === 'particle' && 'children' in node.term && borrowedParticle(child))) requireNode(child);
+        }
       }
       let re01: ComponentConstructionReceipt['re01'];
       let ownRawSimpleContentChecked = false;
@@ -376,7 +398,9 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             if (own.kind === 'mixed' && prior.kind !== 'mixed') return fail('derivation-ok-restriction.5.4', 'Mixed restriction requires mixed base content');
             const derivedView = checked(prepareSemanticParticleView(context, ownContent, 'restriction'));
             const baseView = checked(prepareSemanticParticleView(context, baseContent, 'restriction'));
-            if (!checked(checkParticleRestriction(context, derivedView.view, baseView.view)).value)
+            const restriction = checked(checkParticleRestriction(context, derivedView.view, baseView.view, {deferScalarObligations: true}));
+            scalarObligations(restriction.scalarObligations);
+            if (!restriction.value)
               return fail('derivation-ok-restriction.5.4', 'Particle restriction is not satisfied');
           } else if (method === 'extension' && 'particle' in own && prior?.kind === 'empty') {
             // Extension1.4.3.2.1 imposes no nonempty prefix when the base is empty.
@@ -458,7 +482,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
               !['strict', 'lax', 'skip'].includes(wildcard.processContents))
               return fail('wildcard-properties', 'Particle wildcard namespace is not expressible');
           } else for (const child of particleChildren ?? node.term.children) {
-            b.chargeWork(); const item = requireNode(child);
+            b.chargeWork(); const item = borrowedParticle(child) ?? requireNode(child);
             if (item.kind !== 'particle') return fail('particle-properties', 'Model group children must be particles');
             if (node.term.kind === 'all' && (item.term.kind !== 'element' || !['0', '1'].includes(item.occurs.min) || !['0', '1'].includes(item.occurs.max)))
               return fail('cos-all-limited', 'All children must be element particles with zero/one bounds');
@@ -483,7 +507,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       const receipt: ComponentConstructionReceipt = Object.freeze({kind: 'checked', authority: 'XSD10-component-construction-v1',
         scope: 'local-component-premises', contextId: context.contextId, component: id, receipts: Object.freeze(receipts),
         dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([...builtins]), re01,
-        typeDependencies: typeDependencies.snapshot(),
+        typeDependencies: typeDependencies.snapshot(), identityConstraintDependencies: identityConstraintDependencies.snapshot(),
         obligations: b.freeze(b.snapshot(pending)),
         discharged: ownRawSimpleContentChecked
           ? b.freeze(b.snapshot([{rule: 'raw-simple-content-derivation-validity', component: id, contextId: context.contextId}])) : Object.freeze([])});

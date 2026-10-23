@@ -421,7 +421,7 @@
         {
           "path": "docs/content-model-s06-re-01.md",
           "role": "decision",
-          "sha256": "8fbe7c9f83372541858e370c1cd1770b80d6d5e95ed9d70cca0f666fe5c6d505",
+          "sha256": "eafd5da95244331fcbf27b83aab9518d5d6c1053d6cc8e7082c0ea7e3e615bf7",
           "historical": {
             "path": "docs/content-model-s06-re-01.md",
             "sha256": "c4ab928c12542b18130e1c0c9968ad5b0964300fe8b33c531809af976b5f5944",
@@ -766,7 +766,7 @@
         {
           "path": "docs/content-model-s06-re-01-resolver-implementation.md",
           "role": "decision",
-          "sha256": "fe344340acf1eb167e259193f052a10ff1a5e4ed00219e88aa0b15707f36b4a1"
+          "sha256": "31dba6a87d12bcee9c888ee9a5f72e1f8a870e4ab472fb0209312fbffa86e537"
         },
         {
           "path": "test/conformance/fixtures/xsd/re01/abstract-fixed-restoration.xsd",
@@ -1081,12 +1081,12 @@
         {
           "path": "src/compiler/complexTypeContent.ts",
           "role": "semantic-source",
-          "sha256": "3ceab4e143da6ae6b0e75e08722ebc33ab02627ad25a5f95abbe81ebe131fd88"
+          "sha256": "fbeef7a6a4b195e82b53177fc027e421fa59c6f8d7470185e86f88bf0b58f1d0"
         },
         {
           "path": "src/compiler/finiteRe01Verification.ts",
           "role": "semantic-source",
-          "sha256": "6cd1dc9446d51f852f3c66d7696ac0883781cfc1d0288ca954d013d7771e2f0c"
+          "sha256": "c59e2f05f566e41f37b659ca670a185f1817d8c120a5e4f86632c0efee854a20"
         },
         {
           "path": "src/compiler/particleAttribution.ts",
@@ -1096,12 +1096,12 @@
         {
           "path": "src/compiler/particleDeclarationConsistency.ts",
           "role": "semantic-source",
-          "sha256": "890cb06ae4e2b163f2106ba51313d011f967a324ecf22f31a85fb51642bb673e"
+          "sha256": "679979d73d2a67c5e559656b98fa3ba46969cefd84b7ad0a7897ca3dfc14fee4"
         },
         {
           "path": "src/compiler/particleExtension.ts",
           "role": "semantic-source",
-          "sha256": "f6123eb50f6248a51711903df5d1eb3d0fd0f50f77babbd912759e9be244f053"
+          "sha256": "11b86f91f18a916e3777c9ce1f587daf72c1e07db68421859edb487d6692629a"
         },
         {
           "path": "src/compiler/particleLocalAssessment.ts",
@@ -1111,7 +1111,7 @@
         {
           "path": "src/compiler/particleRestriction.ts",
           "role": "semantic-source",
-          "sha256": "6e3c3840fb68376f7199a00ec83cb9b9f9882e448fdafbd5ede2698a1d5b03fa"
+          "sha256": "6e2ce956ff6cf9d8a8d7e7ca68d0b3923e7651426443cb83d3db189ed98b4245"
         },
         {
           "path": "src/compiler/particleSemanticView.ts",
@@ -1131,7 +1131,7 @@
         {
           "path": "src/compiler/re01TypeProperties.ts",
           "role": "semantic-source",
-          "sha256": "f4cd44acd3d69e707a4f0d3d35dee044888ce27f084502c2ae351c81d1e634dd"
+          "sha256": "084c13a8eb07af23f77c62aa1c5c51c4ea59c6b8d73b9fdb6f69c3f2c7c6a618"
         },
         {
           "path": "src/compiler/re01TypePropertyValidation.ts",
@@ -1141,7 +1141,7 @@
         {
           "path": "src/compiler/scalarSchemaAssessment.ts",
           "role": "semantic-source",
-          "sha256": "c052023b8e4fff95269e2869638f43ffba22980430fc0871972e99a0faeee371"
+          "sha256": "48b9e1843692530472e4bce27fae88ee6a91741fab24df75caed61d387c19b9f"
         },
         {
           "path": "src/compiler/schemaAttributeGroupProperties.ts",
@@ -1156,12 +1156,12 @@
         {
           "path": "src/compiler/schemaComponentEquality.ts",
           "role": "semantic-source",
-          "sha256": "080fe3fc1927769b04c5864b797b4a8d0c316677ffc496e072f005b680cd4192"
+          "sha256": "aeedd132c39734c829546fc8a9d3e177bd881fd8b1eef9e0b56f8110b030baa9"
         },
         {
           "path": "src/compiler/schemaConstructionAssessment.ts",
           "role": "semantic-source",
-          "sha256": "4df427a5e761f78f10c575060555bd868bb9d38c898e0a558854e45b75819cd9"
+          "sha256": "48334552ba1e455ffc77a106806c98ab30f1c19416f2b861c710d1cfa54ea9c8"
         },
         {
           "path": "src/compiler/schemaDatatypeValues.ts",
@@ -1171,7 +1171,7 @@
         {
           "path": "src/compiler/schemaDeclarationPrimitives.ts",
           "role": "semantic-source",
-          "sha256": "199de6f2cb32ef3d17ac59e33d6ba246aca8ed5d46deb1b661968273e2b296d6"
+          "sha256": "b3dfc9f81d3f58030fcd81882b4d24a3a585ff9d7e13879676e3123b55cbec7a"
         },
         {
           "path": "src/compiler/schemaDocumentSyntax.ts",
@@ -1181,7 +1181,7 @@
         {
           "path": "src/compiler/schemaElementProperties.ts",
           "role": "semantic-source",
-          "sha256": "595c5259cc5aefc8bcbde21665a44dc5171a3985f629d331c82637523c1ed6ce"
+          "sha256": "29a5780f939f9bac03dd6829ace233bdda046738be4786cf7c79855b2aa6c796"
         },
         {
           "path": "src/compiler/schemaExactCalendar.ts",
@@ -1206,22 +1206,22 @@
         {
           "path": "src/compiler/schemaScalarKernel.ts",
           "role": "semantic-source",
-          "sha256": "f4c3fe51c4c08f4f35d96ca9d171f2837422d7c1e3d269ab5f07005bda7a8563"
+          "sha256": "3882751d3e2dd89a40d2cbaf74628c4e09b64d2e9cfc664a76dac4c2684aa424"
         },
         {
           "path": "src/compiler/schemaSimpleTypeProperties.ts",
           "role": "semantic-source",
-          "sha256": "d08698a3e7792109016ba1b36ce3b8f2e98f3ea426a24e8a74925e66af1ba056"
+          "sha256": "6374f78e63e82cf6c4b1df2392b995c094c6b578fb9db1283e65606781bb8883"
         },
         {
           "path": "src/compiler/schemaSyntaxAssessment.ts",
           "role": "semantic-source",
-          "sha256": "7c7436f88eabf3d502cde432bbc30369f1c9e9241ce151d24b3c91e9a8b1b0de"
+          "sha256": "5e001dc34349f987eba3786277d2fd9dbcb53caed05beec1a1a4361c663a491e"
         },
         {
           "path": "src/compiler/schemaTypeRelations.ts",
           "role": "semantic-source",
-          "sha256": "fb330db516fc834ec14ad82b023710d4620c7ded1cc8b69b908eb69bdb5c3986"
+          "sha256": "4f7c9e3bd9c165b321d87173d545b9313a7db656d095738354b42fef385a4bb7"
         },
         {
           "path": "src/compiler/schemaUri.ts",
@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticContext.ts",
           "role": "semantic-source",
-          "sha256": "111a2e4fd9f63c58837c55226867661172ab1eb06c582f95367fc5ea3c4941fc"
+          "sha256": "73cabe4640938906ad6c1a1552c1114572e75f5b640f30bfa639c3c4e7ee7c23"
         },
         {
           "path": "src/compiler/wildcardAlgebra.ts",
@@ -1421,7 +1421,7 @@
         {
           "path": "test/unit/particle-restriction-independent.test.ts",
           "role": "expectations",
-          "sha256": "b3e13a8b283da7db6ee20589b54a60df3cdc9334eac6cb2dffcef462c9903e8f"
+          "sha256": "9bca61a9f396a6125378a21e23fb4800b0a38bbf0d5e026a4fcae6cc09d18480"
         },
         {
           "path": "test/unit/particle-upa-independent.test.ts",
@@ -1481,7 +1481,7 @@
         {
           "path": "test/unit/schema-scalar-independent.test.ts",
           "role": "expectations",
-          "sha256": "75423ad2c7506d628726832067cf3858841e76ef2caaa6fbc15be1452566e1dc"
+          "sha256": "f7c9a8124681630d75bd9ae3c936a3e326d45177516d0a64da45775c8aa28dc8"
         },
         {
           "path": "test/unit/schema-syntax-assessment.test.ts",
@@ -1491,7 +1491,7 @@
         {
           "path": "test/unit/schema-type-relations.test.ts",
           "role": "expectations",
-          "sha256": "877ac7db28c8b475b972ddf4559e4ef78217f5c440eb85b9d1a435bc4886d2a8"
+          "sha256": "796fcc8e6ee8b15f78a0364ba899cfe77dad537d29137bc1befaae9bfeb5fd4d"
         },
         {
           "path": "test/unit/semantic-context-independent.test.ts",
@@ -1831,7 +1831,7 @@
         {
           "path": "test/unit/particle-mapping-alternatives.test.ts",
           "role": "expectations",
-          "sha256": "46630a29cb0fd12b695cbfff6fb41e94447faae46e1ec5f17b1432c522786282"
+          "sha256": "31eede14a6536c4a73b5e3e0a5a7c155735bd09a2224a92336c7487192ef27d3"
         },
         {
           "path": "test/unit/particle-selected-order-independent.test.ts",
@@ -1951,7 +1951,7 @@
         {
           "path": "test/unit/schema-exact-facet-components-independent.test.ts",
           "role": "expectations",
-          "sha256": "1a7b78b6e21f907ff87397583c2346d1a0518cb6e87ee71fa813a4fd642b5273"
+          "sha256": "ec8a2d8b0a749bf375d35bf1512db2fa2a37902c998cf38392bd107197bdbdf7"
         },
         {
           "path": "test/unit/schema-original-generated-binding-independent.test.ts",
@@ -2376,7 +2376,7 @@
         {
           "path": "test/research/re01/scalar-premise-forwarding.test.ts",
           "role": "reference",
-          "sha256": "7f6c483e6423e56e81e414567d507b9aceae6cc572b586c75033f019afee8680"
+          "sha256": "66592564c5e96d53c7ede70d49281867cf680cc833eed60f14a76ef9099230a6"
         },
         {
           "path": "test/conformance/reference/re01-scalar-premise-forwarding.test.ts",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "a4ce2f224afab7c535a5a5b11a1b857f0f4a4bca8954794cb672fd010e773c50"
+          "sha256": "d4340cdc5c0cd79b6891b97c1f54ce2f1ea8eea8f0295ef22962e7cb12d0c2e1"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2691,7 +2691,7 @@
         {
           "path": "test/research/re01/abstract-particle-wildcard-properties.test.ts",
           "role": "prototype",
-          "sha256": "e1a8dae11a1eea5a43f58bd81aea30f0c74093cb4d8262d5c76bf1c3fb441d6c"
+          "sha256": "4ca765f10db154fe3e661bc4bfa5458d3658c30f92f6e83db139dc606d8f1daf"
         },
         {
           "path": "test/conformance/reference/re01-abstract-particle-wildcard-properties.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "8d346fa71468d79b153472ff9537ebaf01d8bee1cbab3df8f0007e367e2f23f6"
+          "sha256": "bf52a0534af968c00e9ab44f790cac9e038fe4cacb886600291059550bdb9049"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -2731,7 +2731,17 @@
         {
           "path": "test/research/re01/immediate-base-component-retention.test.ts",
           "role": "prototype",
-          "sha256": "688081ea4c1a0d3d8dbe91e7d324984deaa1b673a2e1e071b471e556e2b78e52"
+          "sha256": "8ec529e6cbb94e0f90fea7b2ef699dabfdf05bb8ee96aaacc4d9cc3e39983ea8"
+        },
+        {
+          "path": "test/research/re01/scalar-source-union-members.test.ts",
+          "role": "prototype",
+          "sha256": "81209dcd499f10867414a7f0b6a4864c107c19a6ce29153d1e4e44820498f29d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-source-union-members.xsd",
+          "role": "fixture",
+          "sha256": "ffcc0f31607df4f6b8fd25bb1a5a1bf8444b12c2adf25f8755e4203c04ace4b5"
         },
         {
           "path": "test/research/re01/source-facet-current-components.test.ts",
@@ -2746,7 +2756,7 @@
         {
           "path": "test/research/re01/source-component-retention.test.ts",
           "role": "prototype",
-          "sha256": "bb43a0f5bb959613ff46330fef9fe935792ee549117a122e6edd87dca15d329d"
+          "sha256": "b9013fcaff2a404cea8a9b03310b828a85dd922bbf0c4709acd021f86f25e147"
         },
         {
           "path": "test/conformance/fixtures/xsd/recovery/source-component-retention.xsd",
@@ -2802,6 +2812,281 @@
           "path": "test/conformance/fixtures/xsd/recovery/scoped-template-full-support.xsd",
           "role": "fixture",
           "sha256": "89ffdd993b288f059493d349af6fbb718ed589ad9348885d765440ff748c7cfc"
+        },
+        {
+          "path": "test/research/re01/own-extension-scope-repair.test.ts",
+          "role": "prototype",
+          "sha256": "8ccaa44d6f96968fe09b3042e95618da50b8577b737ba9ac4aa9121006e8a0f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/own-extension-scope-repair.xsd",
+          "role": "fixture",
+          "sha256": "da5ba8ba53c9111a8db2990b014b9d7717963c48fc265b631f3b32f872f7c21d"
+        },
+        {
+          "path": "src/compiler/schemaIdentityConstraints.ts",
+          "role": "semantic-source",
+          "sha256": "c23172f34c2d2a445e91a131cd0ad16f999c29fa6ce2f6e2b4525d1194aa9536"
+        },
+        {
+          "path": "test/unit/schema-identity-constraints-independent.test.ts",
+          "role": "prototype",
+          "sha256": "d45d2df9c06b710113d3997a0c620de7eaba2b0717ddfdc9fbff007ee1714558"
+        },
+        {
+          "path": "test/research/re01/original-identity-constraint-reuse.test.ts",
+          "role": "prototype",
+          "sha256": "8c06d446193d15643478e1fbe130a59162829f723e1a5077facf779a3b1b1a04"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-identity-constraints.xsd",
+          "role": "fixture",
+          "sha256": "02ac9483c5a79244d12fa53f3745a4607123c393d604535008f88591d67b50a2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/original-ic-no-owner.xsd",
+          "role": "fixture",
+          "sha256": "050fcd8ae507ec394db47723448bde3cfcdd3d404a2a9f22aebc0b1b2ab0b8e7"
+        },
+        {
+          "path": "test/research/re01/source-group-self-reconstruction.test.ts",
+          "role": "prototype",
+          "sha256": "5f8970b7928a46979d5d6eafbc93a1d3800f7129d5aa48ced30d585c43e99cf7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-group-self-empty.xsd",
+          "role": "fixture",
+          "sha256": "d2375ae503d235e58e4b19225605f7a3f0dba4b7352789643acbcf81d20ea9f2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-group-self-prefix.xsd",
+          "role": "fixture",
+          "sha256": "538a0e1f7f1067ade06b93a27c9a16f033451a807b5088908d5b6a5dc0e71bb2"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/pure-any-dead-source-cell.xsd",
+          "role": "fixture",
+          "sha256": "b9577bd11ac0302e1bce6ada711b10bf7ae7ee03e46e0e610b8e64e1385cc50d"
+        },
+        {
+          "path": "test/research/re01/private-r-entry-suffix-carries.test.ts",
+          "role": "prototype",
+          "sha256": "a3e2dc6f2a28212b3ebbae9338a427d26319d0b3bd4cc112e1e9db544cae97ab"
+        },
+        {
+          "path": "test/research/re01/joint-native-arithmetic.test.ts",
+          "role": "prototype",
+          "sha256": "34aea0ac55aad8b6bdd57bf018580371008cb83e96cd332a51bcd59e0533d5f7"
+        },
+        {
+          "path": "test/research/re01/fixed-declaration-reflexivity.test.ts",
+          "role": "prototype",
+          "sha256": "b279c3065f5e778bf0d6f94083a3821d91978e05552b2f8d0ea88e9ec1f639ef"
+        },
+        {
+          "path": "test/research/re01/future-middle-allocation.test.ts",
+          "role": "prototype",
+          "sha256": "738d8cd6339c642316298234b3561881c77b4cb68d57f1a840259204cff41c9c"
+        },
+        {
+          "path": "test/research/re01/selected-prototype-issuer.ts",
+          "role": "prototype",
+          "sha256": "ddcd80c6efe9c72da3f28ce6c73c30e7c9c64da37cf6cb6307e657714205c98b"
+        },
+        {
+          "path": "test/research/re01/selected-prototype-issuer.test.ts",
+          "role": "prototype",
+          "sha256": "01e386bfd93f509ac9fffd425ddf3ae2f69c550d2c4cb1fb9458320f0d913ee8"
+        },
+        {
+          "path": "test/research/re01/canonical-nominal-bank.ts",
+          "role": "prototype",
+          "sha256": "6c213c709e39aafc6aa134c4fbe0ea51c7cf357fa78d28529d1f98756c78f49d"
+        },
+        {
+          "path": "test/research/re01/canonical-nominal-bank.test.ts",
+          "role": "prototype",
+          "sha256": "3b25cf280ec28aaf1e30ba4e5c64e30824f25b671f098b41d2c16e5cb4f516d2"
+        },
+        {
+          "path": "test/research/re01/generated-scalar-component-retention.test.ts",
+          "role": "prototype",
+          "sha256": "528bbaee2331342e08a750d5ef089c9d2dfb597c59240c315c31da38de56d05d"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/generated-scalar-component-retention.xsd",
+          "role": "fixture",
+          "sha256": "c0bf4caf382313f860fe80c8c462ac4b560b7ff1cf1c2e3116ad4171a1f8c96d"
+        },
+        {
+          "path": "test/research/re01/source-ur-wildcard-borrowing.test.ts",
+          "role": "prototype",
+          "sha256": "25f919de34b8b48bccc0ab537e78bded7b1cb54d4b92a0d5c0841ada6456effe"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/source-ur-wildcard-borrowing.xsd",
+          "role": "fixture",
+          "sha256": "99c01fbfa1bf0e85d3000ab64e4fd34999e8ded85b3d326bcc1ef3f57bd5ade5"
+        },
+        {
+          "path": "test/research/re01/current-scalar-component-retention.test.ts",
+          "role": "prototype",
+          "sha256": "08a285a389b60a233bd876f92a02be51a9ec62e706caa1fc136c0fcbf89746e5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/current-scalar-component-retention.xsd",
+          "role": "fixture",
+          "sha256": "9b261849dc878aff5e5a57d637fd986f569df1268c7f21d3a22576cc4e88f497"
+        },
+        {
+          "path": "test/research/re01/changed-scalar-constituents-retention.test.ts",
+          "role": "prototype",
+          "sha256": "0c532288775de96b03275304e8f9654c3532f543fb179661735c498e195cd023"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/changed-scalar-constituents-retention.xsd",
+          "role": "fixture",
+          "sha256": "29eaa693df768483f1089233112377e9834e352ac3dfe9098ceb0cc8208446b7"
+        },
+        {
+          "path": "src/compiler/schemaEndpointWordCapacity.ts",
+          "role": "semantic-source",
+          "sha256": "45ef946be968b3b16cdb6f7ed750b0d0fd3b34d32df9bc59ef83b8010fb93413"
+        },
+        {
+          "path": "test/research/re01/private-alias-endpoint-capacity.test.ts",
+          "role": "prototype",
+          "sha256": "eccfac7a292e6c4234991291f913f47e6a93952bb3c4482709b93b629a2ac7ca"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-alias-endpoint-capacity.xsd",
+          "role": "fixture",
+          "sha256": "2f60b7b506672e2864fe46cbc5a4e2c5a2d505df72806f5d5f1cbd520821c78b"
+        },
+        {
+          "path": "test/research/re01/scalar-empty-name-inverse.test.ts",
+          "role": "prototype",
+          "sha256": "7852109e1c4f4258d54f87c654894ce414b968e41f4354c35bf5f7d605a741f8"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-empty-name-inverse.xsd",
+          "role": "fixture",
+          "sha256": "b9d1f85c4d6deb15f80ceab38dedf2d496f65757bb666c4c8be0de32cbbf5564"
+        },
+        {
+          "path": "test/research/re01/selected-prototype-new-group.test.ts",
+          "role": "prototype",
+          "sha256": "4de93d343dcf19bd865b79df06e8c3a156a6ecac8fc2cff7abe8ea218877e087"
+        },
+        {
+          "path": "test/research/re01/scalar-union-activation-shields.test.ts",
+          "role": "prototype",
+          "sha256": "92dce2410afb4b358d13d19ae27fbe06f28218cbb5c256da40383a77798f7d6b"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-union-activation-shields.xsd",
+          "role": "fixture",
+          "sha256": "e55cd833923d5b05e07bfca003d1e3199418fb72e1d19fd7c6068f2b59fb8631"
+        },
+        {
+          "path": "test/research/re01/scalar-builtin-pattern-import.test.ts",
+          "role": "prototype",
+          "sha256": "02dca519004e0286cf7e663de3d144c8647411604e654389e366eb2acfe176bd"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-builtin-pattern-import.xsd",
+          "role": "fixture",
+          "sha256": "740483c4992734ad0f9ea4c818a62a75af903190fd04630ad67bc86580b3c845"
+        },
+        {
+          "path": "test/research/re01/scalar-list-formation-gates.test.ts",
+          "role": "prototype",
+          "sha256": "5cc017a02dc19852a820b24d6b5f3b002d10e4df249b2d5b66db16320dcd90ab"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-list-formation-gates.xsd",
+          "role": "fixture",
+          "sha256": "b046677cbac11498cffe3b8b380da66fdcfd21c5b2f9516496b16e0619884586"
+        },
+        {
+          "path": "test/research/re01/scalar-mixed-emptiability-dispatch.test.ts",
+          "role": "prototype",
+          "sha256": "3780b131cdee829a80a24c56f524f77c6622a1414c19ff1779d2d78520deec12"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-mixed-emptiability-dispatch.xsd",
+          "role": "fixture",
+          "sha256": "65bc5f4221ea7bc6220be956dc350fb84e71e48b4ccf5243b5749ab1fb0d4277"
+        },
+        {
+          "path": "test/research/re01/scalar-sc-fixed-value-dispatch.test.ts",
+          "role": "prototype",
+          "sha256": "ca762ea1db652c89428a2711c34494e32a5d380cccc04905d411f1a57a419a18"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-sc-fixed-value-dispatch.xsd",
+          "role": "fixture",
+          "sha256": "1774d5d5562da83e63c7841465bc6dbc947c7484092baa9a1d945d800d5cf7f8"
+        },
+        {
+          "path": "test/research/re01/property-mixed-value-frontier.test.ts",
+          "role": "prototype",
+          "sha256": "dfbfaf079a8a89b90124eb58583dee2c0f12e1daab1ec7516b80bf0c526afd6a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-mixed-value-frontier.xsd",
+          "role": "fixture",
+          "sha256": "3484ebae717bd25b659bfa82b00e08f4a1275b76c7433fbdce46aab97d023c06"
+        },
+        {
+          "path": "test/research/re01/property-source-sc-value-frontier.test.ts",
+          "role": "prototype",
+          "sha256": "eff8ec19ed3fecfb3e25e39f5233edcd4e56dcce4c5165f16c356d2783e6e155"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/property-source-sc-value-frontier.xsd",
+          "role": "fixture",
+          "sha256": "1770d84245af6c3b9b7c25fe8a59d6b5c6b1f9029237d77fb0619e49bb0cf586"
+        },
+        {
+          "path": "test/research/re01/scalar-retained-enum-containment-context.test.ts",
+          "role": "prototype",
+          "sha256": "4665724ecca79b084b51d5594818c837f168895d31b4e4467669f8d7b9385193"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-retained-enum-containment-context.xsd",
+          "role": "fixture",
+          "sha256": "b026b760b537da73891faa8ced6cee3363ca61c0e041dd9876885b541578acd2"
+        },
+        {
+          "path": "test/research/re01/scalar-retained-enum-item-family.test.ts",
+          "role": "prototype",
+          "sha256": "a08b34870e7e9a070764b0e5fb6a4a6ccd63eb5ed76e5f549db73079d18b44d7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-retained-enum-item-family.xsd",
+          "role": "fixture",
+          "sha256": "19fcbff9bb5922261c4bff7216984b9d40bf714fd4bd700873001545477f32df"
+        },
+        {
+          "path": "test/research/re01/scalar-legacy-value-containment.test.ts",
+          "role": "prototype",
+          "sha256": "4ca59b482ec7771e2faffaccf2e2aa74fbb6011649e372fe12e49a6ad59ec7b1"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-legacy-value-containment.xsd",
+          "role": "fixture",
+          "sha256": "be96c6cd05c023b3e1b787ce3d8949ebcac006077574868f3b529087378fa45f"
+        },
+        {
+          "path": "test/research/re01/scalar-qname-proxy-batch.test.ts",
+          "role": "prototype",
+          "sha256": "ddf7a27e0cadc3448a65924a4b0d29aedd4194d537e07ac727efad63fb07e03a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/scalar-qname-proxy-batch.xsd",
+          "role": "fixture",
+          "sha256": "508b7b345add98909d254a70e685f94ce591b676660c7ebcfa3779dab21f90fe"
         }
       ]
     },
@@ -3193,7 +3478,7 @@
     "originalArtifactCount": 147,
     "originalManifestSha256": "8fcc4714f31f3a21c3c127c44c49bff6c0d810e277e987d9e25c8c631d55632e",
     "originalRevision": "f4e39e819f2d9aa264cfdd14d16154c6443c9bac",
-    "currentArtifactCount": 240
+    "currentArtifactCount": 250
   },
   "baselineSemanticDefaults": {
     "maxNodes": 100000,

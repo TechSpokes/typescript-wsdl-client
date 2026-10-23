@@ -111,6 +111,30 @@ No public API, persisted format or activation guard consumes these internal rece
 Its `proved-no-construction` result identifies a mandatory fresh affiliate whose fixed complex head is unreachable in every permitted two-step rebase; `not-established` supplies no verdict.
 The [proof and exceptions](content-model-s06-re-01.md#a-terminating-contextual-ancestry-contradiction) retain primitive no-change, original-intermediate identities and complete context-local obligations; this API does not assess actual legality or implement general witness search.
 
+### Borrowing an unchanged SOURCE ur-type wildcard
+
+`deriveOriginalUrWildcard(actual, wholeHandle, particle)` selects one private native ur-type wildcard from an authenticated actual SOURCE whole-content view.
+Its opaque handle identifies the unchanged `##any`, `lax`, `0..unbounded` leaf, including its actual backing and ur-type origin.
+An ordinary wildcard with the same lexical properties does not acquire that origin.
+
+A candidate imports these handles through `originalUrWildcards`; descendants inherit them monotonically.
+The borrowed leaf remains outside active component membership, while every new sequence, GROUP and wrapper is a genuine registered component and receives its complete FULL check.
+Containment, model-group and RAW content views, declaration consistency and FULL traversal resolve the same authenticated terminal leaf.
+No caller origin flag, changed backing, raw wildcard override, active addition or colliding stored identity is accepted.
+
+This supplies the missing construction for an actual SOURCE prefix embedded inside a new sequence.
+Reify its unit sequence wrappers as genuine new particles and retain only the authenticated ur-type leaf.
+The whole SOURCE handle still authenticates only its original root; a new wrapper receives no invented original root identity.
+Borrowing provenance does not introduce a FULL duty for the leaf's original storage owner, and actual SOURCE qualification remains independently required.
+
+The authority stock is finite: enumerate the native ur-type leaves exposed by actual input WHOLE views, cached by exact leaf identity.
+A candidate selects from that input stock; new compositor and GROUP code remains in the ordinary registered construction.
+
+The [native controls](../test/research/re01/source-ur-wildcard-borrowing.test.ts) construct a complete RE01 forest for a proper prefix with an additional tail, including a registered GROUP variant and inherited-root replay.
+Exact whole-content and prefix-only alternatives fail their required extension or restriction comparisons; a plain copy loses the origin needed by restriction.
+Missing, forged, foreign and changed handles, active admission, override, collision and containment-cycle controls preserve the owner boundary.
+This closes the stated representation gap; arbitrary-witness coverage, scalar reconstruction, complete negatives and mathematical termination remain separate obligations.
+
 ### Local rule and evidence map
 
 This map identifies the shared implementation and independent controls.
@@ -120,6 +144,7 @@ The leaf issues retain exact reviewed revisions and unresolved findings; a mappe
 | --- | --- | --- |
 | Complete B availability, collision domains, source identity, original/fork isolation | `semanticContext.ts`: `prepareSemanticRequest`, `forkSemanticCandidate` | `semantic-context-independent.test.ts`, `derivation-domain.behavior.test.ts`; structural authority only |
 | Fresh abstract particle namespace/process properties | `schemaParticleWildcardProperties.ts`, authenticated context tuple table | `particle-wildcard-properties-independent.test.ts`, complete abstract-wildcard RE01 and source-reference controls; source origin and formal/realized occurrence remain separate |
+| Unchanged SOURCE ur-type leaf inside new registered particles | `complexTypeContent.ts`, `semanticContext.ts`, local FULL and declaration-consistency owners | `source-ur-wildcard-borrowing.test.ts`; authenticated origin, complete forests, inherited roots and rejected forged or colliding imports |
 | Inclusive request limits and immutable input/output | `semanticBudget.ts` | Context and finite-checker controls; sticky terminal result, charged snapshots and no getter/iterator invocation |
 | Actual document grammar and retained source universe | `schemaDocumentSyntax.ts`: `prepareSourceSchemaRequest`, `checkSchemaDocumentSyntax` | `schema-document-independent.test.ts`; complete notation property reconciliation, separate source syntax and namespace-mapping prerequisites |
 | Fixed assessment-schema declarations, values and XSI | `schemaSourceGrammar.ts`, `schemaSourceValues.ts`, `schemaSourceWildcards.ts` | Source and XML-inventory independent controls; contextual grammar, independent assessment universe, opaque handles, typed keys/IDs and complete dated import |
@@ -381,6 +406,7 @@ The RAW path stays lazy; eligible SOURCE property readers also request their imm
 Existing preparation/locality and explicit budget controls remain required.
 
 The supported positive sector requires whole actual enum/P1 KEEP, distinct ordinary new P1 properties, and whole-kind bound KEEP or one ordinary NEW bound.
+Additional NEW enumeration components are permitted after ordinary current-base membership and complete c-fr/F2 checks; issued KEEP identities never authenticate a new component's annotation.
 Coverage uses the completed base's actual main-component associations, not merely its raw array; uncovered intrinsic or source properties retain qualification.
 Exact LIST ITEM and ordered UNION MEMBER identities are sector conditions, not new schema-validity rules.
 Different genuinely derived constituents qualify only after ordinary c-fr/F2 and enum formation have run; genuine nonderivation and weakening still fail those rules.

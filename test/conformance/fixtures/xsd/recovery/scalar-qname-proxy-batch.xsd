@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:re01:qname-proxy-batch:root"
+           targetNamespace="urn:re01:qname-proxy-batch">
+  <xs:simpleType name="S"><xs:restriction base="xs:string"/></xs:simpleType>
+</xs:schema>

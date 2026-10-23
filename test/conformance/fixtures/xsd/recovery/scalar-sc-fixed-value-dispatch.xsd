@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scalar:rooted-sc-guard" targetNamespace="urn:scalar:rooted-sc-guard" elementFormDefault="qualified">
+  <xs:simpleType name="T"><xs:union memberTypes="xs:QName xs:boolean"/></xs:simpleType>
+  <xs:complexType name="Z" mixed="true"><xs:complexContent mixed="true"><xs:restriction base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Tau"><xs:simpleContent><xs:restriction base="t:Z"><xs:simpleType><xs:restriction base="t:T"/></xs:simpleType></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Sigma"><xs:simpleContent><xs:restriction base="t:Tau"><xs:pattern value="true"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:element name="h1" type="t:Sigma" abstract="true"/>
+  <xs:element name="h2" type="t:Sigma" abstract="true"/>
+  <xs:complexType name="A"><xs:complexContent><xs:restriction base="xs:anyType"><xs:choice>
+    <xs:element name="y1" type="t:Tau" minOccurs="0" fixed="1"/>
+    <xs:element name="y2" type="t:Tau" minOccurs="0" fixed="1"/>
+  </xs:choice></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="I"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="t"><xs:complexContent><xs:extension base="t:I"><xs:choice><xs:element ref="t:h1"/><xs:element ref="t:h2"/></xs:choice></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

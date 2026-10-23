@@ -14,12 +14,15 @@ import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import type {SemanticTypeDependency} from './semanticTypeReference.js';
+import {collectIdentityConstraintDependencies} from './schemaIdentityConstraints.js';
+import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js';
 
 export type ParticleExtensionResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-particle-extend'; contextId: string;
   obligations: readonly string[];
   scalarObligations: readonly ScalarObligation[];
   typeDependencies: readonly SemanticTypeDependency[];
+  identityConstraintDependencies: readonly IdentityConstraintDependency[];
 }> | RelationFailure | ScalarFailure | AttributeFailure | ResourceLimitFailure;
 
 export function checkRawParticleExtension(context: SemanticContext, derived: ParticleContentView, base: ParticleContentView): ParticleExtensionResult {
@@ -27,12 +30,14 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
   const budget = context.budget, charge = (n = 1) => budget.chargeWork(n);
   return budget.guard(() => {
     const typeDependencies = collectSemanticTypeDependencies(context);
+    const identityConstraintDependencies = collectIdentityConstraintDependencies(context);
     const obligations = ['component-validity'];
     const scalarObligations: ScalarObligation[] = [];
     const done = (value: boolean): ParticleExtensionResult => {
       charge(10); return Object.freeze({kind: 'checked', value, rule: 'cos-particle-extend', contextId: context.contextId,
         obligations: budget.freeze(budget.snapshot(obligations)),
-        scalarObligations: budget.freeze(budget.snapshot(scalarObligations)), typeDependencies: typeDependencies.snapshot()});
+        scalarObligations: budget.freeze(budget.snapshot(scalarObligations)), typeDependencies: typeDependencies.snapshot(),
+        identityConstraintDependencies: identityConstraintDependencies.snapshot()});
     };
     const unresolved = (rule: string, component: string, message: string): ParticleExtensionResult => {
       charge(10 + rule.length + component.length + message.length);
@@ -71,6 +76,7 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
             const same = compareComponentProperties(context, x.element, y.element);
             if (same.kind !== 'checked') return same;
             typeDependencies.add(same.typeDependencies);
+            identityConstraintDependencies.add(same.identityConstraintDependencies);
             if (!same.value) return done(false);
             charge(2 + same.obligations.length + same.scalarObligations.length);
             for (const item of same.scalarObligations) {charge(); scalarObligations.push(item);}

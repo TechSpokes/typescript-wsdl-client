@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:original-ic-no-owner"
+           targetNamespace="urn:re01:original-ic-no-owner" elementFormDefault="qualified">
+  <xs:complexType name="X"><xs:complexContent><xs:restriction base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="I"><xs:complexContent><xs:restriction base="t:X"/></xs:complexContent></xs:complexType>
+  <xs:element name="H" type="xs:anyType"/>
+  <xs:element name="pCarrier"><xs:complexType><xs:complexContent><xs:restriction base="t:X"/></xs:complexContent></xs:complexType></xs:element>
+  <xs:element name="qCarrier"><xs:complexType><xs:complexContent><xs:extension base="t:I">
+    <xs:sequence><xs:element ref="t:H"/></xs:sequence>
+  </xs:extension></xs:complexContent></xs:complexType>
+    <xs:keyref name="KR" refer="t:K"><xs:selector xpath="."/><xs:field xpath="."/></xs:keyref>
+    <xs:key name="K"><xs:selector xpath="."/><xs:field xpath="."/></xs:key>
+  </xs:element>
+</xs:schema>

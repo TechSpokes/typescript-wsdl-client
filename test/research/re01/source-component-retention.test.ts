@@ -150,10 +150,12 @@ describe('authentic current SOURCE component retention',()=>{
       expect(source.node.variety.facets.map(facet=>facet.lexical.value)).toEqual(['a','b','a']);
     }
     expect(s.actual.members).toHaveLength(46);expect(s.parent.members).toHaveLength(47);expect(s.child.members).toHaveLength(48);
-    const qualified=['literal','forged','integer','list','union','raw-ancestor','qname-forged','qname-raw-ancestor',
-      'ud-literal','ud-legacy','ud-binding','ud-forged','ud-raw-ancestor','ud-aliased','ud-nested','ud-many','ud-string'].includes(mode);
+    const qualified=['literal','forged','qname-forged','ud-literal','ud-legacy','ud-binding','ud-forged'].includes(mode);
+    // INTEGER ordinal0 keeps only fractionDigits, omitting its patterns.
+    // The unfaceted UNION constructor has a known empty component inventory.
     const failures:Partial<Record<Mode,string>>={'bad-endpoint':'maxInclusive-value','bad-enum':'enumeration-valid-restriction',
       omitted:'st-restrict-facets','bad-index':'raw-base-facet-component',historical:'raw-base-facet-component',
+      integer:'st-restrict-facets',union:'raw-base-facet-component',
       'qname-bad-enum':'enumeration-valid-restriction','qname-omitted':'st-restrict-facets',
       'ud-new-enum':'enumeration-valid-restriction','ud-omitted':'st-restrict-facets','ud-empty-table':'raw-base-facet-component'};
     if(qualified)expect(result).toMatchObject({kind:'unresolved',rule:'raw-simple-facet-restriction-validity',component:s.peer.id,contextId:s.child.contextId});
@@ -167,8 +169,8 @@ describe('authentic current SOURCE component retention',()=>{
         for(const fresh of [s.z.id,...(context===s.child?[s.peer.id]:[])])expect(proof.components.some(receipt=>receipt.component===fresh)).toBe(true);
         for(const receipt of proof.components)expect(receipt).toMatchObject({contextId:context.contextId,obligations:[]});
       }
-      const kernel=createSchemaScalarKernel(s.child),word=mode.startsWith('ud-')?'1':mode==='qname'?'p:item':mode==='qname-opaque'?'p:a'
-        :['pattern','distinct-pattern','combo'].includes(mode)?'a':mode==='current'||mode==='distinct-enum'||mode==='raw-direct'?'1':'2';
+      const kernel=createSchemaScalarKernel(s.child),word=mode.startsWith('ud-')?'1':mode==='qname'?'p:item':mode.startsWith('qname-')?'p:a'
+        :['pattern','distinct-pattern','combo'].includes(mode)?'a':['current','distinct-enum','raw-direct','raw-ancestor'].includes(mode)?'1':'2';
       expect(kernel.assess(local(s.peer.id),{value:word,context:s.lexicalContext},s.peer.id)).toMatchObject({kind:mode==='empty'?'invalid-schema':'checked'});
       if(mode==='keep'||mode==='pattern'||mode==='combo')expect(compareSchemaFacetProperties(s.child,s.base,s.peer.id,s.child,local(s.peer.id),s.peer.id))
         .toMatchObject({kind:'checked',value:true,annotationCorrespondence:'equal',obligations:[]});

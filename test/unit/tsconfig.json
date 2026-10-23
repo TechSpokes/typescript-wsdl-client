@@ -7,6 +7,7 @@
     "rootDir": "../.."
   },
   "include": [
+    "schema-identity-constraints-independent.test.ts",
     "wildcard-algebra.test.ts",
     "particle-wildcard-properties-independent.test.ts",
     "semantic-context-independent.test.ts",

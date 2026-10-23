@@ -8,6 +8,7 @@ import type {ResourceLimitFailure} from './semanticBudget.js';
 import {declaredType, resolveSemanticType} from './schemaTypeIdentity.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import type {SemanticTypeDependency} from './semanticTypeReference.js';
+import {originalUrWildcardSource} from './complexTypeContent.js';
 
 export type ElementConsistencyResult = Readonly<{
   kind: 'checked'; value: boolean; rule: 'cos-element-consistent'; contextId: string;
@@ -45,6 +46,10 @@ export function checkElementDeclarationsConsistent(context: SemanticContext, roo
       };
       const get = (id: NodeId): GraphNode => {
         const result = context.lookup(id);
+        if (result.kind === 'missing') {
+          const borrowed = context.originalUrWildcard(id);
+          if (borrowed) return originalUrWildcardSource(context.originalContext(), borrowed);
+        }
         return result.kind === 'found' ? result.node : unresolved(id, `Required component is ${result.kind}`);
       };
       const target = (ref: Reference, owner: NodeId): GraphNode => {

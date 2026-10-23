@@ -1,0 +1,14 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:scalar:retained-enum-item-family" xmlns="urn:scalar:qname-value"
+           targetNamespace="urn:scalar:retained-enum-item-family">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootR"><xs:complexContent><xs:restriction base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootD"><xs:complexContent><xs:extension base="t:RootR"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="ItemU"><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType>
+  <xs:simpleType name="L"><xs:list itemType="t:ItemU"/></xs:simpleType>
+  <xs:simpleType name="A"><xs:restriction base="t:L">
+    <xs:enumeration value="foo"><xs:annotation><xs:documentation>actual inherited component</xs:documentation></xs:annotation></xs:enumeration>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="DecimalList"><xs:list itemType="xs:decimal"/></xs:simpleType>
+</xs:schema>

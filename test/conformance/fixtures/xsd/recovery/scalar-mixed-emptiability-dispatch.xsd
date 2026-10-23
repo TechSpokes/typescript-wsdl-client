@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scalar:mixed-emptiability-dispatch" targetNamespace="urn:scalar:mixed-emptiability-dispatch" elementFormDefault="qualified">
+  <xs:simpleType name="T"><xs:union memberTypes="xs:QName xs:boolean"/></xs:simpleType>
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:element name="head" type="t:B" abstract="true"/>
+  <xs:complexType name="Z" mixed="true"><xs:complexContent mixed="true"><xs:restriction base="xs:anyType"><xs:sequence><xs:element ref="t:head" minOccurs="0"/></xs:sequence></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="Tau"><xs:simpleContent><xs:restriction base="t:Z"><xs:simpleType><xs:restriction base="t:T"/></xs:simpleType></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Sigma"><xs:simpleContent><xs:restriction base="t:Tau"><xs:pattern value="true"/></xs:restriction></xs:simpleContent></xs:complexType>
+</xs:schema>

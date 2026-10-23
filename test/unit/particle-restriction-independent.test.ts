@@ -4,9 +4,9 @@ import {describe, expect, it} from 'vitest';
 import {loadSchemaInput} from '../../src/loader/schemaInput.js';
 import {buildCanonicalGraph} from '../../src/compiler/buildCanonicalGraph.js';
 import {globalId, scopedId} from '../../src/compiler/canonicalGraph.js';
-import type {ComplexTypeNode, ElementNode, ParticleNode, Reference} from '../../src/compiler/canonicalGraph.js';
+import type {ComplexTypeNode, ElementNode, GraphNode, ParticleNode, Reference} from '../../src/compiler/canonicalGraph.js';
 import {resolveCanonicalGraph} from '../../src/compiler/resolveCanonicalGraph.js';
-import {prepareSemanticRequest} from '../../src/compiler/semanticContext.js';
+import {forkSemanticCandidate, prepareSemanticRequest} from '../../src/compiler/semanticContext.js';
 import type {SemanticContext} from '../../src/compiler/semanticContext.js';
 import {createSemanticBudget} from '../../src/compiler/semanticBudget.js';
 import {deriveActualComplexContent, deriveRawComplexContent, deriveOriginalComplexPropertyContent, deriveModelGroupContent} from '../../src/compiler/complexTypeContent.js';
@@ -151,7 +151,9 @@ async function fixedSubject() {
     assert.equal(content.kind, 'checked');
     const normalized = prepareSemanticParticleView(context, content.view, 'restriction'); assert.equal(normalized.kind, 'checked'); return normalized.view;
   };
-  const fresh = ({nonempty = false, simpleFacade = false}: Readonly<{nonempty?: boolean; simpleFacade?: boolean}> = {}) => {
+  const fresh = ({nonempty = false, simpleFacade = false, sharedDeclaration = false, wrapped = false}: Readonly<{
+    nonempty?: boolean; simpleFacade?: boolean; sharedDeclaration?: boolean; wrapped?: boolean;
+  }> = {}) => {
     const template = type('M'), id = fixedId('FreshMixed');
     const nodeId = (suffix: string, role: string) => scopedId(id, suffix, role);
     const left: ElementNode = {...declaration('Same'), id: nodeId('/left', 'element'),
@@ -163,7 +165,10 @@ async function fixedSubject() {
       declaredAttributes: [], annotations: [], retained: [], syntaxDetails: []});
     const required: ElementNode = {...left, id: nodeId('/required', 'element'), identity: {kind: 'scoped', owner: id, path: '/required', role: 'element'},
       name: {namespace: '', local: 'required'}, type: builtin('string'), value: undefined};
-    const requiredLeaf = leaf('/required-position', required), leftLeaf = leaf('/left-position', left), rightLeaf = leaf('/right-position', right);
+    const requiredLeaf = leaf('/required-position', required), leftLeaf = leaf('/left-position', left), rightLeaf = leaf('/right-position', sharedDeclaration ? left : right);
+    const wrapper = (suffix: string, particle: ParticleNode): ParticleNode => ({...particle, id: nodeId(suffix, 'particle'),
+      identity: {kind: 'scoped', owner: id, path: suffix, role: 'particle'}, term: {kind: 'sequence', children: [particle.id]}});
+    const leftWrapper = wrapper('/left-wrapper', leftLeaf), rightWrapper = wrapper('/right-wrapper', rightLeaf);
     const root: ParticleNode = {...leftLeaf, id: nodeId('/content', 'particle'), identity: {kind: 'scoped', owner: id, path: '/content', role: 'particle'},
       term: {kind: 'sequence', children: nonempty ? [requiredLeaf.id] : []}};
     const derivation = {kind: simpleFacade ? 'extension' as const : 'restriction' as const,
@@ -171,7 +176,7 @@ async function fixedSubject() {
       base: simpleFacade ? builtin('string') : nonempty ? builtin('anyType') : local(template.id), facets: []};
     const mixed: ComplexTypeNode = {...template, id, identity: {kind: 'global', role: 'type', name: {namespace: fixedNamespace, local: 'FreshMixed'}},
       mixed: !simpleFacade, derivation, content: simpleFacade ? undefined : root.id, attributes: []};
-    const additions = [mixed, root, left, right, leftLeaf, rightLeaf, ...(nonempty ? [required, requiredLeaf] : [])];
+    const additions = [mixed, root, left, right, leftLeaf, rightLeaf, ...(wrapped ? [leftWrapper, rightWrapper] : []), ...(nonempty ? [required, requiredLeaf] : [])];
     const built = request.candidate({key: 'fixed-candidate-' + nonempty + '-' + simpleFacade, active: [...actual.members, ...additions.map(node => node.id)], additions,
       rawTypes: [{type: id, targetNamespace: fixedNamespace, derivation: {method: derivation.kind, base: derivation.base},
         content: simpleFacade ? {kind: 'simple', type: builtin('string')} : {kind: 'mixed', particle: root.id},
@@ -182,9 +187,64 @@ async function fixedSubject() {
       const content = deriveModelGroupContent(built.context, id); assert.equal(content.kind, 'checked');
       const normalized = prepareSemanticParticleView(built.context, content.view, 'restriction'); assert.equal(normalized.kind, 'checked'); return normalized.view;
     };
-    return {context: built.context, mixed, left, right, derived: view(leftLeaf.id), base: view(rightLeaf.id)};
+    return {context: built.context, mixed, left, right,
+      derived: view(wrapped ? leftWrapper.id : leftLeaf.id), base: view(wrapped ? rightWrapper.id : rightLeaf.id)};
   };
   return {request, actual, type, declaration, particle, fresh};
+}
+
+/** Real fixed declarations and RAW SC owners, including unsuccessful reads. */
+function scalarFootprintSubject(f: ReturnType<Awaited<ReturnType<typeof fixedSubject>>['fresh']>,
+  mode: 'different' | 'alternate' | 'repeat' | 'opposite') {
+  const owner = f.mixed.id, additions: GraphNode[] = [], extraTypes: ComplexTypeNode[] = [];
+  const declaration = (name: string, global = false, type = owner, different = false): ElementNode => {
+    const node: ElementNode = {...f.left, id: global ? globalId('element', {namespace: fixedNamespace, local: name}) : scopedId(owner, '/' + name, 'element'),
+      identity: global ? {kind: 'global', role: 'element', name: {namespace: fixedNamespace, local: name}}
+        : {kind: 'scoped', owner, path: '/' + name, role: 'element'}, type: local(type),
+      name: mode === 'different' || mode === 'alternate' ? f.left.name : {namespace: fixedNamespace, local: name},
+      value: different && f.left.value ? {...f.left.value, lexical: {...f.left.value.lexical, value: 'different'}} : f.left.value};
+    additions.push(node); return node;
+  };
+  const particle = (name: string, term: ParticleNode['term'], min = '1', max = '1'): ParticleNode => {
+    const node: ParticleNode = {kind: 'particle', id: scopedId(owner, '/' + name, 'particle'),
+      identity: {kind: 'scoped', owner, path: '/' + name, role: 'particle'}, context: f.mixed.context,
+      occurs: {min, max}, term, declaredAttributes: [], annotations: [], retained: [], syntaxDetails: []};
+    additions.push(node); return node;
+  };
+  const leaf = (name: string, node: ElementNode, min = '1', max = '1') => particle(name, {kind: 'element', declaration: local(node.id)}, min, max);
+  let derived: string, base: string;
+  if (mode === 'different' || mode === 'alternate') {
+    // Bad is another real RAW SC owner. Its checked false comparison must
+    // remain in the footprint when the later, equal alternative wins.
+    const bad: ComplexTypeNode = {...f.mixed, id: fixedId('BadFacade'),
+      identity: {kind: 'global', role: 'type', name: {namespace: fixedNamespace, local: 'BadFacade'}}};
+    additions.push(bad); extraTypes.push(bad);
+    const wrong = leaf('wrong-value', declaration('wrong', false, bad.id, true));
+    derived = leaf('source-value', f.left).id;
+    base = mode === 'different' ? wrong.id
+      : particle('alternatives', {kind: 'choice', children: [wrong.id, leaf('equal-value', f.right).id]}).id;
+  } else {
+    const head = declaration('head', true), a = declaration('a', true), b = declaration('b', true);
+    // The head contributes only the two proper members. Source declarations
+    // are LOCAL, so GLOBAL identity shortcuts cannot skip fixed comparison.
+    additions[additions.indexOf(head)] = {...head, abstract: true, value: undefined};
+    for (const member of [a, b]) additions[additions.indexOf(member)] = {...member, substitutionGroup: local(head.id)};
+    const sourceA = declaration('a'), sourceB = declaration('b');
+    const choice = (name: string, reversed: boolean) => particle(name, {kind: 'choice', children:
+      (reversed ? [sourceB, sourceA] : [sourceA, sourceB]).map((node, i) => leaf(name + '-' + i, node).id)}, '0', '2');
+    derived = particle('repeated-uses', {kind: 'sequence', children: [choice('first-use', mode === 'repeat').id, choice('second-use', true).id]}).id;
+    base = particle('implicit-two', {kind: 'choice', children: [leaf('head-position', head, '0', '2').id]}, '2', '2').id;
+  }
+  const built = forkSemanticCandidate(f.context, {key: 'scalar-footprint-' + mode,
+    active: [...f.context.members, ...additions.map(node => node.id)], additions,
+    rawTypes: extraTypes.map(node => ({type: node.id, targetNamespace: fixedNamespace,
+      derivation: {method: 'extension', base: builtin('string')}, content: {kind: 'simple', type: builtin('string')},
+      abstract: false, final: [], block: [], attributeUses: [], provenance: {kind: 'hypothetical-abstract', originals: []}})),
+    rawElements: additions.flatMap(node => node.kind === 'element' ? [{element: node.id, type: node.type, final: [], block: []}] : [])});
+  assert.equal(built.kind, 'prepared');
+  const view = (id: string) => {const content = deriveModelGroupContent(built.context, id); assert.equal(content.kind, 'checked');
+    const result = prepareSemanticParticleView(built.context, content.view, 'restriction'); assert.equal(result.kind, 'checked'); return result.view;};
+  return {context: built.context, derived: view(derived), base: view(base), owners: [owner, ...extraTypes.map(node => node.id)]};
 }
 
 describe('fixed particle values use assessed declaration scalar types', () => {
@@ -244,5 +304,36 @@ describe('fixed particle values use assessed declaration scalar types', () => {
     const declaration = checkDeclaration(f.context, f.left.id); assert.equal(declaration.kind, 'checked');
     expect(declaration.scalarObligations).toContainEqual({rule: 'raw-simple-content-derivation-validity', component: f.mixed.id});
     expect(checkParticleRestriction(f.context, f.derived, f.base)).toMatchObject({kind: 'unresolved', rule: 'cos-particle-restrict'});
+  });
+
+  it('returns exact qualified scalar debts only when aggregate deferral is requested', async () => {
+    const s = await fixedSubject(), f = s.fresh({simpleFacade: true});
+    const result = checkParticleRestriction(f.context, f.derived, f.base, {deferScalarObligations: true}); assert.equal(result.kind, 'checked');
+    expect(result.value).toBe(true);
+    expect(result.scalarObligations).toEqual([{rule: 'raw-simple-content-derivation-validity', component: f.mixed.id, contextId: f.context.contextId}]);
+    expect(Object.isFrozen(result.scalarObligations)).toBe(true); expect(result.scalarObligations.every(Object.isFrozen)).toBe(true);
+    expect(checkParticleRestriction(f.context, f.derived, f.base)).toMatchObject({kind: 'unresolved', rule: 'cos-particle-restrict'});
+  });
+
+  it.each([['different', false], ['alternate', true], ['repeat', true], ['opposite', false]] as const)(
+    'retains completed scalar reads through %s mapping and order searches', async (mode, expected) => {
+      const s = await fixedSubject(), f = scalarFootprintSubject(s.fresh({simpleFacade: true}), mode);
+      const result = checkParticleRestriction(f.context, f.derived, f.base, {deferScalarObligations: true}); assert.equal(result.kind, 'checked');
+      expect(result.value).toBe(expected);
+      expect(result.scalarObligations).toEqual(f.owners.map(component => ({rule: 'raw-simple-content-derivation-validity', component, contextId: f.context.contextId})));
+      expect(new Set(result.scalarObligations.map(item => item.component)).size).toBe(f.owners.length);
+      expect(result.typeDependencies).toContainEqual({contextId: f.context.contextId, type: {kind: 'component', id: f.owners[0]}});
+    });
+
+  it.each([false, true])('compares one authentic fixed declaration through distinct particles, wrapped=%s', async wrapped => {
+    const s = await fixedSubject(), f = s.fresh({simpleFacade: true, sharedDeclaration: true, wrapped});
+    expect(f.derived.root.originalParticle).not.toBe(f.base.root.originalParticle);
+    expect(f.derived.root.element).toBe(f.base.root.element);
+    const declaration = checkDeclaration(f.context, f.left.id); assert.equal(declaration.kind, 'checked');
+    expect(declaration.scalarObligations).toContainEqual({rule: 'raw-simple-content-derivation-validity', component: f.mixed.id});
+    const result = checkParticleRestriction(f.context, f.derived, f.base); assert.equal(result.kind, 'checked');
+    expect(result.value).toBe(true);
+    expect(result.obligations).toEqual(['component-validity', 'particle-local-legality']);
+    expect(result.typeDependencies).toContainEqual({contextId: f.context.contextId, type: {kind: 'component', id: f.mixed.id}});
   });
 });

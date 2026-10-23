@@ -1,0 +1,22 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:recovery:property-source-sc-value-frontier" targetNamespace="urn:recovery:property-source-sc-value-frontier">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="X"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:element name="H" type="xs:string" abstract="true"/>
+  <xs:complexType name="Z" mixed="true"><xs:sequence>
+    <xs:element ref="t:H" minOccurs="0"/>
+    <xs:any namespace="##local" processContents="lax" minOccurs="0"/>
+  </xs:sequence></xs:complexType>
+  <xs:complexType name="F"><xs:simpleContent><xs:restriction base="t:Z">
+    <xs:simpleType><xs:restriction base="xs:string"><xs:pattern value="same"/></xs:restriction></xs:simpleType>
+  </xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:element name="Left"><xs:complexType>
+    <xs:sequence><xs:element name="inner" type="t:F" default="same"/></xs:sequence>
+    <xs:attribute name="a" type="xs:string"/>
+  </xs:complexType></xs:element>
+  <xs:element name="Right"><xs:complexType>
+    <xs:sequence><xs:element name="inner" type="t:F" default="same"/></xs:sequence>
+    <xs:attribute name="a" type="xs:string"/>
+  </xs:complexType></xs:element>
+</xs:schema>

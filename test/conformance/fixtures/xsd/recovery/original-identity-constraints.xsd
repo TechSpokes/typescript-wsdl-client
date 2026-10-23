@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:original-ic"
+           targetNamespace="urn:re01:original-ic" elementFormDefault="qualified">
+  <xs:complexType name="X"><xs:complexContent><xs:restriction base="xs:anyType"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="I"><xs:complexContent><xs:extension base="t:X"/></xs:complexContent></xs:complexType>
+  <xs:element name="plain" type="xs:string"/>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:I"><xs:sequence>
+    <xs:element name="item" type="xs:string">
+      <xs:keyref name="KR" refer="t:K"><xs:selector xpath="."/><xs:field xpath="."/></xs:keyref>
+      <xs:key name="K"><xs:annotation><xs:documentation>original key</xs:documentation></xs:annotation>
+        <xs:selector xpath="."><xs:annotation><xs:documentation>selector metadata</xs:documentation></xs:annotation></xs:selector>
+        <xs:field xpath="."/>
+      </xs:key>
+    </xs:element>
+    <xs:element name="other" type="xs:string"><xs:unique name="U"><xs:selector xpath="."/><xs:field xpath="."/></xs:unique></xs:element>
+    <xs:element name="erased" type="xs:string" minOccurs="0" maxOccurs="0">
+      <xs:key name="Zero"><xs:selector xpath="."/><xs:field xpath="."/></xs:key>
+    </xs:element>
+  </xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

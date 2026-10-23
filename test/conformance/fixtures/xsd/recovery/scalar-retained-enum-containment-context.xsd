@@ -1,0 +1,25 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:scalar:retained-enum-context" xmlns:v="urn:scalar:on"
+           xmlns="urn:scalar:off" targetNamespace="urn:scalar:retained-enum-context">
+  <xs:complexType name="RootA"/>
+  <xs:complexType name="RootB"><xs:complexContent><xs:extension base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootR"><xs:complexContent><xs:restriction base="t:RootA"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="RootD"><xs:complexContent><xs:extension base="t:RootR"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="StringReplace">
+    <xs:restriction base="xs:string"><xs:whiteSpace value="replace"/><xs:pattern value="INF"/></xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="GuardQ">
+    <xs:restriction base="xs:QName"><xs:enumeration value="v:INF"/><xs:pattern value="INF"/></xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Float">
+    <xs:restriction base="xs:float"><xs:pattern value="INF"/></xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Tau"><xs:union memberTypes="t:StringReplace t:GuardQ t:Float"/></xs:simpleType>
+  <xs:simpleType name="A">
+    <xs:restriction base="t:Tau">
+      <xs:pattern value="INF"/>
+      <xs:enumeration value=" INF "><xs:annotation><xs:documentation>first occurrence</xs:documentation></xs:annotation></xs:enumeration>
+      <xs:enumeration value=" INF "><xs:annotation><xs:documentation>second occurrence</xs:documentation></xs:annotation></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
