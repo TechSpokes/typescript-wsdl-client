@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:regular-binary-word-views" targetNamespace="urn:re01:regular-binary-word-views">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"/></xs:complexContent></xs:complexType>
+  <xs:simpleType name="Left"><xs:restriction base="xs:string"><xs:pattern value="QUJD|QQ=="/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Right"><xs:restriction base="xs:string"><xs:pattern value="Q Q=="/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="OnlyOther"><xs:restriction base="xs:string"><xs:pattern value="QUJD"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Empty"><xs:restriction base="xs:string"><xs:pattern value=""/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="InvalidLowBits"><xs:restriction base="xs:string"><xs:pattern value="QR=="/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="AllWhitespace"><xs:restriction base="xs:string"><xs:pattern value="&#x9; &#xA;&#xD;"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="QGuard"><xs:restriction base="xs:QName"><xs:enumeration value="AAAA"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="GuardedFirst"><xs:union memberTypes="t:QGuard xs:string"/></xs:simpleType>
+  <xs:simpleType name="QNameFirst"><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType>
+  <xs:simpleType name="List"><xs:list itemType="xs:string"/></xs:simpleType>
+  <xs:simpleType name="Float"><xs:restriction base="xs:float"><xs:minInclusive value="1"/></xs:restriction></xs:simpleType>
+  <xs:complexType name="MixedBase" mixed="true"/>
+  <xs:complexType name="MixedScalar"><xs:simpleContent><xs:restriction base="t:MixedBase"><xs:simpleType><xs:restriction base="xs:string"/></xs:simpleType><xs:pattern value="QUJD"/></xs:restriction></xs:simpleContent></xs:complexType>
+</xs:schema>

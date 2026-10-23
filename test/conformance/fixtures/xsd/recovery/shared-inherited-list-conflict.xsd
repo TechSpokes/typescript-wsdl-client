@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:re01:shared-inherited-list" xmlns="urn:scalar:on" targetNamespace="urn:re01:shared-inherited-list" elementFormDefault="qualified">
+  <xs:simpleType name="Item"><xs:union memberTypes="xs:QName xs:string"/></xs:simpleType>
+  <xs:simpleType name="Words"><xs:list itemType="t:Item"/></xs:simpleType>
+  <xs:complexType name="A"><xs:sequence><xs:element name="value" type="t:Words" minOccurs="0" fixed="foo"/></xs:sequence></xs:complexType>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="R"><xs:complexContent><xs:restriction base="t:A"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:R"><xs:sequence><xs:element xmlns="urn:scalar:off" name="value" type="t:Words" minOccurs="0" fixed="foo"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

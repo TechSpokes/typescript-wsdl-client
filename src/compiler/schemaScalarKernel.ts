@@ -7,7 +7,7 @@ import type {SemanticContext} from './semanticContext.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {schemaScalarContext, SchemaAssessmentError, SchemaOperandContextError} from './schemaScalarContext.js';
 import {scalarSchemaAssessment} from './scalarSchemaAssessment.js';
-import type {ScalarObligation, ScalarFacetAnnotationPresence, ScalarFacetEvidence, OriginalScalarFacetRecipe, ScalarContentProperties, ScalarSupportPlan} from './scalarSchemaAssessment.js';
+import type {ScalarObligation, ScalarFacetAnnotationPresence, ScalarFacetEvidence, OriginalScalarFacetRecipe, ScalarContentProperties, ScalarSupportPlan, RegularBinaryWordView} from './scalarSchemaAssessment.js';
 import type {SchemaOperand} from './schemaDatatypeValues.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import {resolveSemanticType} from './schemaTypeIdentity.js';
@@ -221,6 +221,19 @@ function makeKernel(context: SemanticContext) {
     });
   });
   return {
+    regularBinaryWordViews: (views: readonly RegularBinaryWordView[], owner: NodeId) => run(() => {
+      const safe = input(views);
+      for (const view of safe) {
+        capture(ownReference(view.type), owner);
+        if (view.root) capture(ownReference(view.root.type), owner);
+      }
+      return core.regularBinaryWordViews(safe, c.get(owner));
+    }),
+    // Unary CURRENT image only; empty admission does not exclude exclusive repeats.
+    privateAliasEndpointAdmission: (reference: Reference, owner: NodeId) => run(() => {
+      const safe = ownReference(reference); capture(safe, owner);
+      return core.privateAliasEndpointAdmission(safe, c.get(owner));
+    }),
     // Qualified word bound for the private alias sector's existing bound kinds.
     privateAliasEndpointWordCapacity: (reference: Reference, owner: NodeId) => run(() => {
       const safe = ownReference(reference); capture(safe, owner);
