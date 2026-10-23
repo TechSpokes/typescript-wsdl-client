@@ -1,6 +1,6 @@
-/** Input-derived, exact-ITEM first-enumeration LIST cohort; no general catalogue claim. */
+/** Input-derived first-enumeration LIST cohorts; no general catalogue claim. */
 import {globalId} from '../../../src/compiler/canonicalGraph.js';
-import type {ComplexTypeNode, ElementNode, GraphNode, NodeId, Reference, SimpleTypeNode} from '../../../src/compiler/canonicalGraph.js';
+import type {ComplexTypeNode, ElementNode, GraphContext, GraphNode, LexicalValue, NodeId, Reference, SimpleTypeNode} from '../../../src/compiler/canonicalGraph.js';
 import {assertSemanticContext, contextsShareRequest, forkSemanticCandidate, storedIdentityOccupant} from '../../../src/compiler/semanticContext.js';
 import type {ContextFailure, SemanticCandidateDelta, SemanticContext} from '../../../src/compiler/semanticContext.js';
 import {allocateHypotheticalScopedIdentity, semanticIdentityTuple} from '../../../src/compiler/hypotheticalScopedIdentity.js';
@@ -19,8 +19,9 @@ import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypePrope
 import type {RawSimpleTypeProperties} from '../../../src/compiler/schemaSimpleTypeProperties.js';
 import type {ResourceLimitFailure} from '../../../src/compiler/semanticBudget.js';
 
+export type FreeListFamily = 'exact-item-free-list-v1' | 'boolean-item-free-list-v1';
 export type FreeListAssignment = Readonly<{
-  family: 'exact-item-free-list-v1'; actual: SemanticContext; parent: SemanticContext; target: NodeId;
+  family: FreeListFamily; actual: SemanticContext; parent: SemanticContext; target: NodeId;
   intermediate: NodeId; delta: SemanticCandidateDelta; context: SemanticContext;
   cohorts: readonly Readonly<{head: NodeId; field: NodeId; item: Reference; preparation: NodeId; enumeration: NodeId; member: NodeId}>[];
   forest: FiniteRe01Evidence; receipt: FiniteCandidateReceipt;
@@ -28,7 +29,7 @@ export type FreeListAssignment = Readonly<{
   introducedStoredNonprimitive: number;
 }>;
 export type FreeListAssignments = Readonly<{kind: 'prepared-free-list-assignments'; assignments: readonly FreeListAssignment[];
-  scope: 'exact-item-free-list-v1'; universalCoverage: false}>;
+  scope: FreeListFamily; universalCoverage: false}>;
 export type FreeListPreparation = FreeListAssignments | CorrespondenceFailure | ContextFailure | RelationFailure | ResourceLimitFailure;
 const issued = new WeakSet<FreeListAssignment>();
 class Outside extends Error {constructor(readonly failure: CorrespondenceFailure) {super(failure.rule);}}
@@ -46,6 +47,20 @@ export function assertFreeListAssignment(assignment: FreeListAssignment): void {
  * Unsupported shapes and failed native candidates never prove nonexistence.
  */
 export function prepareFreeListAssignments(actual: SemanticContext, parent: SemanticContext, target: NodeId): FreeListPreparation {
+  return prepareFamily(actual, parent, target, 'exact-item-free-list-v1');
+}
+
+/**
+ * Derive a shared new ITEM from original [QName,boolean] and a retained
+ * HEAD LIST pattern true/false, with FIELDs demanding that Boolean value.
+ * This sufficient recipe does not claim new UNION functions are necessary:
+ * a native UNION-to-atomic Boolean ITEM drop can also satisfy this sector.
+ */
+export function prepareBooleanFreeListAssignments(actual: SemanticContext, parent: SemanticContext, target: NodeId): FreeListPreparation {
+  return prepareFamily(actual, parent, target, 'boolean-item-free-list-v1');
+}
+
+function prepareFamily(actual: SemanticContext, parent: SemanticContext, target: NodeId, family: FreeListFamily): FreeListPreparation {
   assertSemanticContext(actual); assertSemanticContext(parent);
   const b = parent.budget;
   return b.guard(() => {
@@ -108,6 +123,23 @@ export function prepareFreeListAssignments(actual: SemanticContext, parent: Sema
       const listId = resolvedId(declaredType(parent, fields[0]!)), list = get(listId);
       if (list.kind !== 'simpleType' || list.variety.kind !== 'list' || parent.rawSimpleTypeProperties(list.id)
         || declarationMethods(parent, list, 'final').length) return fail('free-list-sector', 'Expected one original direct enum-free LIST constructor');
+      const headList = get(resolvedId(declaredType(parent, heads[0]!)));
+      let booleanWord: 'true' | 'false' | undefined;
+      if (family === 'boolean-item-free-list-v1') {
+        if (headList.kind !== 'simpleType' || headList.variety.kind !== 'restriction' || resolvedId(headList.variety.base) !== list.id
+          || headList.variety.facets.length !== 1 || headList.variety.facets[0]!.name !== 'pattern'
+          || !['true', 'false'].includes(headList.variety.facets[0]!.lexical.value)
+          || headList.variety.facets[0]!.fixed || parent.rawSimpleTypeProperties(headList.id)
+          || declarationMethods(parent, headList, 'final').length)
+          return fail('free-list-sector', 'Boolean LIST heads require one original literal true/false pattern restriction');
+        booleanWord = headList.variety.facets[0]!.lexical.value as 'true' | 'false';
+        const item = get(resolvedId(list.variety.item));
+        const builtin = (name: string): Reference => ({kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: name}});
+        if (item.kind !== 'simpleType' || item.variety.kind !== 'union' || item.variety.members.length !== 2
+          || !sameType(item.variety.members[0]!, builtin('QName')) || !sameType(item.variety.members[1]!, builtin('boolean'))
+          || parent.rawSimpleTypeProperties(item.id) || declarationMethods(parent, item, 'final').length)
+          return fail('free-list-sector', 'Boolean LIST dispatch requires the exact original QName/boolean ITEM order');
+      } else if (headList.id !== list.id) return fail('free-list-sector', 'Exact-ITEM heads and fields require the same LIST');
       b.chargeWork(4); const names = new Set<string>(), headIds = new Set<string>();
       for (let i = 0; i < fields.length; i++) {
         b.chargeWork(16); const field = fields[i]!, head = heads[i]!;
@@ -116,7 +148,7 @@ export function prepareFreeListAssignments(actual: SemanticContext, parent: Sema
           || head.identity.kind !== 'global' || !head.abstract || head.nillable || head.value || head.substitutionGroup
           || parent.incomingAffiliates(head.id).length || names.has(name) || headIds.has(head.id)
           || storedIdentityOccupant(parent, {kind: 'global', role: 'element', name: field.name}) !== undefined
-          || resolvedId(declaredType(parent, field)) !== list.id || resolvedId(declaredType(parent, head)) !== list.id
+          || resolvedId(declaredType(parent, field)) !== list.id || resolvedId(declaredType(parent, head)) !== headList.id
           || declarationMethods(parent, field, 'block').length || declarationMethods(parent, head, 'block').length
           || declarationMethods(parent, head, 'final').length)
           return fail('free-list-sector', 'The retained FIELD/HEAD ports do not satisfy the exact-ITEM sector');
@@ -154,6 +186,9 @@ export function prepareFreeListAssignments(actual: SemanticContext, parent: Sema
         const value = kernel.assess(local(list.id), field.value!.lexical, field.id);
         if (value.kind === 'resource-limit') return value;
         if (value.kind !== 'checked') return fail('free-list-tuple-funding', 'A required complete tuple is not admitted by its retained LIST', field.id);
+        if (booleanWord !== undefined && (value.value.operand.family !== 'list' || value.value.operand.items?.length !== 1
+          || value.value.operand.items[0]!.family !== 'boolean' || value.value.operand.items[0]!.canonical !== booleanWord))
+          return fail('free-list-sector', 'Every FIELD must demand the one Boolean value named by the HEAD pattern', field.id);
       }
       // Exact direct LIST constructors have just their genuine fixed collapse
       // component. No public property equality is used to alias hidden programs.
@@ -172,24 +207,62 @@ export function prepareFreeListAssignments(actual: SemanticContext, parent: Sema
         derivation: {kind: 'extension', contentKind: 'complex', base: local(a.id), facets: []}};
       b.chargeWork(16 + fields.length * 6); const additions: GraphNode[] = [middle], rawSimpleTypes: RawSimpleTypeProperties[] = [],
         rawElements: NonNullable<SemanticCandidateDelta['rawElements']>[number][] = [], cohorts: FreeListAssignment['cohorts'][number][] = [];
-      const scalar = (base: Reference, owner: NodeId) => {
+      const scalar = (base: Reference, owner: NodeId, context: GraphContext = a.context) => {
         const allocated = allocate(owner); b.chargeWork(24);
-        const node: SimpleTypeNode = {...common, id: allocated.id, identity: allocated.identity, kind: 'simpleType', variety: {kind: 'restriction', base, facets: []}};
+        const node: SimpleTypeNode = {...common, context, id: allocated.id, identity: allocated.identity, kind: 'simpleType', variety: {kind: 'restriction', base, facets: []}};
         b.chargeWork(); additions.push(node); return node;
       };
+      let finalItem = list.variety.item;
+      if (booleanWord !== undefined) {
+        b.chargeWork(4); const namespaces = new Set<string>();
+        for (const field of fields) {
+          b.chargeWork(8); const maps = [field.context.namespaces, field.value!.lexical.context.namespaces];
+          for (const map of maps) {
+            b.chargeWork(4);
+            for (const prefix in map) {
+              b.chargeWork(4 + prefix.length); const uri = map[prefix]!;
+              b.chargeWork(2 + uri.length); namespaces.add(uri);
+            }
+          }
+        }
+        let fresh: string | undefined;
+        for (let ordinal = 0; ordinal <= namespaces.size; ordinal++) {
+          // Set.size bounds the index by a safe integer, hence at most 17
+          // decimal digits. Charge its conversion before constructing the URI.
+          b.chargeWork(96 + a.context.effectiveNamespace.length);
+          const proposed = a.context.effectiveNamespace + '/$boolean-list/' + ordinal.toString();
+          if (!namespaces.has(proposed)) {fresh = proposed; break;}
+        }
+        if (fresh === undefined) throw new TypeError('A finite namespace portfolio has a fresh URI');
+        b.chargeWork(48 + fresh.length);
+        for (const prefix in a.context.namespaces) b.chargeWork(4 + prefix.length + a.context.namespaces[prefix]!.length);
+        const own = b.freeze(b.snapshot({...a.context, namespaces: {...a.context.namespaces, '': fresh}}));
+        const qname: Reference = {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'QName'}};
+        const boolean: Reference = {kind: 'builtin', name: {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'boolean'}};
+        const guard = scalar(qname, middle.id, own), item = scalar(list.variety.item, middle.id, own);
+        b.chargeWork(64);
+        rawSimpleTypes.push({type: guard.id, targetNamespace: a.context.effectiveNamespace, base: qname, final: [], variety: {kind: 'atomic'},
+          facetComponentSet: [{annotation: 'absent', facets: [{name: 'enumeration', fixed: false, lexical: {value: booleanWord, context: own},
+            operand: {context: 'active', type: qname, owner: middle.id}}]}], provenance: {kind: 'hypothetical-abstract', originals: []}},
+        {type: item.id, targetNamespace: a.context.effectiveNamespace, base: list.variety.item, final: [],
+          variety: {kind: 'union', members: [local(guard.id), boolean]}, facetComponentSet: [], provenance: {kind: 'hypothetical-abstract', originals: []}});
+        finalItem = local(item.id);
+      }
       for (let i = 0; i < fields.length; i++) {
-        b.chargeWork(64); const field = fields[i]!, head = heads[i]!, l0 = scalar(local(list.id), middle.id), l1 = scalar(local(l0.id), middle.id);
-        rawSimpleTypes.push({type: l0.id, targetNamespace: a.context.effectiveNamespace, base: local(list.id), final: [],
-          variety: {kind: 'list', item: list.variety.item}, facetComponentSet: [{baseComponent: 0}], provenance: {kind: 'hypothetical-abstract', originals: []}},
-        {type: l1.id, targetNamespace: a.context.effectiveNamespace, base: local(l0.id), final: [], variety: {kind: 'list', item: list.variety.item},
-          facetComponentSet: [{baseComponent: 0}, {annotation: 'absent', facets: [{name: 'enumeration', fixed: false, lexical: field.value!.lexical,
+        b.chargeWork(64); const field = fields[i]!, head = heads[i]!, l0 = scalar(local(headList.id), middle.id), l1 = scalar(local(l0.id), middle.id);
+        const word: LexicalValue = booleanWord === undefined ? field.value!.lexical : {value: booleanWord, context: field.context};
+        const retained = booleanWord === undefined ? [{baseComponent: 0}] : [{baseComponent: 0}, {baseComponent: 1}];
+        rawSimpleTypes.push({type: l0.id, targetNamespace: a.context.effectiveNamespace, base: local(headList.id), final: [],
+          variety: {kind: 'list', item: finalItem}, facetComponentSet: retained, provenance: {kind: 'hypothetical-abstract', originals: []}},
+        {type: l1.id, targetNamespace: a.context.effectiveNamespace, base: local(l0.id), final: [], variety: {kind: 'list', item: finalItem},
+          facetComponentSet: [...retained, {annotation: 'absent', facets: [{name: 'enumeration', fixed: false, lexical: word,
             operand: {context: 'active', type: local(l0.id), owner: middle.id}}]}], provenance: {kind: 'hypothetical-abstract', originals: []}});
         const name = field.name;
         b.chargeWork(64 + 6 * (name.namespace.length + name.local.length)); const id = globalId('element', name);
         const member: ElementNode = {...common, context: field.context, kind: 'element', id, identity: {kind: 'global', role: 'element', name}, name,
-          type: local(l1.id), abstract: false, nillable: false, substitutionGroup: local(head.id), value: field.value};
+          type: local(l1.id), abstract: false, nillable: false, substitutionGroup: local(head.id), value: {kind: 'fixed', lexical: word}};
         additions.push(member); rawElements.push({element: id, type: member.type, final: [], block: []});
-        cohorts.push({head: head.id, field: field.id, item: list.variety.item, preparation: l0.id, enumeration: l1.id, member: id});
+        cohorts.push({head: head.id, field: field.id, item: finalItem, preparation: l0.id, enumeration: l1.id, member: id});
       }
       const raw = (node: ComplexTypeNode, content: RawComplexTypeProperties['content']): RawComplexTypeProperties => {
         b.chargeWork(24); return {type: node.id, targetNamespace: node.context.effectiveNamespace, derivation: {method: node.derivation!.kind, base: node.derivation!.base},
@@ -197,7 +270,7 @@ export function prepareFreeListAssignments(actual: SemanticContext, parent: Sema
       };
       b.chargeWork(24); const endpoint: ComplexTypeNode = {...endpointBefore, derivation: {kind: 'restriction', contentKind: 'complex', base: local(middle.id), facets: []}};
       b.chargeWork(32 + parent.members.length + additions.length * 2 + target.length);
-      const delta = b.freeze({key: 'free-list:' + target, active: [...parent.members, ...additions.map(node => node.id)], additions, endpoint,
+      const delta = b.freeze({key: family + ':' + target, active: [...parent.members, ...additions.map(node => node.id)], additions, endpoint,
         rawSimpleTypes, rawElements, rawTypes: [raw(a, bodyA.content), raw(r.node, inherited.view.content), raw(middle, bodyA.content), raw(endpoint, bodyD.content)]});
       const built = forkSemanticCandidate(parent, delta); if (built.kind !== 'prepared') return built;
       // A root with no nonprimitive descendants is complete only after the
@@ -213,10 +286,10 @@ export function prepareFreeListAssignments(actual: SemanticContext, parent: Sema
         if (!constructed?.re01?.primitive) introducedStoredNonprimitive++;
       }
       b.chargeWork(40 + cohorts.length * 8);
-      const assignment: FreeListAssignment = Object.freeze({family: 'exact-item-free-list-v1', actual, parent, target, intermediate: middle.id,
+      const assignment: FreeListAssignment = Object.freeze({family, actual, parent, target, intermediate: middle.id,
         delta, context: built.context, cohorts: b.freeze(b.snapshot(cohorts)), forest, receipt, introducedStoredNonprimitive});
       issued.add(assignment);
-      return Object.freeze({kind: 'prepared-free-list-assignments', assignments: Object.freeze([assignment]), scope: 'exact-item-free-list-v1', universalCoverage: false});
+      return Object.freeze({kind: 'prepared-free-list-assignments', assignments: Object.freeze([assignment]), scope: family, universalCoverage: false});
     } catch (error) {if (error instanceof Outside) return error.failure; throw error;}
   });
 }
