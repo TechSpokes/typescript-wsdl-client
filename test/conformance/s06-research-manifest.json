@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "0fc999a88035c1ebd15f4f02eb9a94ed150a2468f1483b9ac0a07ca674f0e18a"
+          "sha256": "bf52a0534af968c00e9ab44f790cac9e038fe4cacb886600291059550bdb9049"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",

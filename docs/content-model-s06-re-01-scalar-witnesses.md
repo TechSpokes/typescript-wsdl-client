@@ -9,6 +9,8 @@ It is not an implemented endpoint solver or a complete scalar/RE01 witness produ
 The existing [scalar owners and selected P1/F2 rules](content-model-s06-re-01-resolver-implementation.md#selected-scalar-comparison-policies) retain their contracts.
 General helper coverage, native/evidence adequacy, complete negatives, mathematical termination and dated correspondence remain open.
 
+The [grounded binary WORD construction](#grounded-binary-word-bounds) derives a finite encoding bound without a supplied TOKEN count. Its [joint-constructor prerequisites](#remaining-joint-constructor-and-evidence-gates) remain open; the construction is a reviewed mathematical ingredient, not an implemented general solver.
+
 The [enumeration-introduction correction](content-model-s06-re-01.md#enumeration-retention-and-new-introduction) separates equal value-set coverage from genuine component retention.
 An enum producer must either establish same component/equal complete annotation or prove every newly introduced value belongs to its immediate base.
 Unknown annotation equality cannot silently supply retention, and a failed new-introduction attempt cannot reject a still-possible retained component.
@@ -1189,3 +1191,100 @@ The [local type relation owner](../src/compiler/schemaTypeRelations.ts) uses the
 For SOURCE `X=UNION[STRING,BOOLEAN]`, `P=UNION[X]` and A restricting P, X is not itself an effective member of P or A. Both the original context and its authenticated first RAW P view therefore answer `[X derived from A, A derived from P, X derived from P]` as `[false,true,false]`. An inherited SOURCE restriction uses a current RAW view at its constructor stop rather than returning to the old declared member list.
 
 This repairs an adapter disagreement with the scalar component owner; it changes neither P1 nor F2 semantics. The [independent relation controls](../test/unit/schema-type-relations.test.ts) and [complete construction/correspondence controls](../test/research/re01/scalar-source-union-members.test.ts) retain effective order, SOURCE constraints, RAW authority, exclusions, generated scalar components and actual contextual prerequisites. It supplies no general SIMPLE transitivity theorem or global reconstruction bound.
+
+## Grounded binary WORD bounds
+
+There is a finite mathematical decision and reconstruction procedure for the following restricted interface. Supply finitely many physical WORD views of one common canonical BASE64 core, with their actual fixed parser programmes, lexical maps, whole-pattern constraints, fixed ROOT values and membership or nonmembership tests in fixed whole-value images. Conjoin all tests on one physical WORD before projecting its values.
+
+Every programme and image automaton is fixed encoded data. Its encoding may not conceal an unknown endpoint, private enumeration value or unbounded literal guard. SOURCE/GSC execution and foreign saved enum maps retain their actual formation and image authorities. A finite constructed programme can be used only after its genuine formation and encoding bound have been independently established.
+
+This interface excludes equality between unknown whole LIST values on distinct WORD views or distinct cores, and excludes an unknown endpoint shared with a numeric substring. It requires neither a supplied TOKEN-arity bound nor a supplied bound on the number of uppercase `P` characters. Independent review accepted this construction within exactly that interface.
+
+### Whole-value and lexical control
+
+The existing [token image owner](../src/compiler/schemaTokenImages.ts) represents a fixed LIST image as a finite symbolic sequence automaton. Its state retains whole-WORD pattern progress, TOKEN position where a fixed enum requires it, failed earlier LIST alternatives and actual FIRST selection. Its labels constrain complete tagged TOKEN values; they do not independently approximate tuple coordinates.
+
+Pull those labels back to each actual TOKEN before projecting the common core. The actual [symbolic value owner](../src/compiler/schemaSymbolicValueSets.ts) retains Boolean combinations, including negative labels. Complementing a fixed image automaton therefore preserves the same lexical and whole-tuple correlation. Genuine inverse WORDs are reconstructed only after an exact positive whole-image test.
+
+On the BASE64 alphabet, TOKENs contain no dot, minus, colon or XML whitespace. Non-duration fixed image-label tests have effective regular preimages on this alphabet. STRING/URI use text; QName/NOTATION use the actual unprefixed name and registry; DECIMAL removes only optional plus and leading zeroes; HEX and BASE64 retain their actual canonicalization. Positive `gYear` has only its local or `Z` case, with a fixed canonical suffix and the real year grammar.
+
+FLOAT/DOUBLE have finite semantic value alphabets. Separate their exact values mathematically and use the actual unsigned exponential inverse for each fixed value. This does not declare unrestricted signed scientific inverses regular, or propose materializing the IEEE alphabet in an engineering array. Existing numeric conditions must remain conjoined with the regular labels in their supported scope.
+
+### Arithmetic stays within a P block
+
+A duration TOKEN in this alphabet starts with `P`, contains no further `P`, and has whole maximal digit runs separated by its actual unit letters. Cut the core immediately before every `P`. There is an initial P-free segment, followed by P blocks ending before the next `P` or at the end of the core.
+
+Each WORD view has at most one duration TOKEN beginning in one block. Thus a block has at most as many duration roles as there are supplied views. No duration field crosses the block boundary. Overlapping roles beginning at the same `P` share the same complete digit runs, with the same integer place-value alignment.
+
+For each role retain its actual unit-presence and TOKEN-end choices and impose the fixed-coefficient equations:
+
+```text
+months = 12*years + monthsField
+seconds = 86400*days + 3600*hours + 60*minutes + secondsField
+```
+
+Absent fields are zero. Keep the actual canonical output grammar and whole-label automaton state across its month/second separator. The aligned arithmetic construction uses genuine field ends, distinguishing emitted zeroes from arithmetic padding. It does not identify an unknown integer spelling with the fraction `0.x`, or add a cross-token comparison endpoint.
+
+Enumerate the finite relative orders of the block's duration starts, unit boundaries, field ends and TOKEN ends. At these boundaries, factor all shared lexical automata by their actual states. The intervening pieces are regular and may contain arbitrarily many non-duration TOKENs. Solve the joint aligned field equations and their regular constraints before projecting any view's fields.
+
+### Finite block relation and reconstruction
+
+The boundary control contains every actual whole-WORD, FIRST, symbolic-image and partial non-duration TOKEN state. A non-duration TOKEN spanning several P blocks carries its parser and label state continuously. No unknown value, endpoint or arithmetic accumulator may cross a block boundary.
+
+Include canonical BASE64 length residue, padding and low-bit restrictions. Padding permits no later core character. Retain each view's independent XML-whitespace transitions, with gaps assigned consistently when adjoining blocks. Handle the initial P-free segment, a final P block and the completely P-free or empty core explicitly.
+
+For each pair of finite boundary states, the local arithmetic construction decides the existence of one joint block and reconstructs a block when one exists. It yields a finite Boolean relation, not independent choices of the views' arithmetic fields. Negative image labels remain tests on the same local canonical output tracks.
+
+Use those positive relations as edges of a finite outer graph. Every actual feasible WORD family yields an accepting walk. Conversely, adjoining local witnesses with matching complete boundary states reconstructs one common core and its actual WORD views, since no unknown arithmetic data crosses the cuts.
+
+A shortest accepting walk repeats no internal boundary state. Its length bounds the number of P blocks. The finitely many local arithmetic products and regular path languages provide a computable maximum local witness length. Together these bounds give a finite core length and actual WORD lengths, including their whitespace paths.
+
+Every resulting whole tuple now has bounded arity and encoded coordinates. Its positive fixed-image test has already established an inverse. Reconstruct that inverse with its complete owner; a positive-only enumeration may be used after existence is established. Enumerating the finite bounded core/WORD choices and taking the maximum of their proved positive inverse lengths gives a uniform inverse encoding bound.
+
+This proves the restricted mathematical procedure's termination. It supplies no runtime implementation or complete RE01 search. In particular, a common binary core can remain coupled to an unknown whole LIST point at another core. A lawful helper reconstruction must eliminate that relation, or an independently complete joint solver must handle it.
+
+## History and physical VALUE joins
+
+Independent review also accepted conditional prebinding LIST and UNION history bounds. They start from actual fixed constituent programmes, a finite authentic future pattern/enum palette, held identity and annotation ports, and a genuine common table/provider writer. They do not derive constructor width or the constituent graph from an arbitrary successful forest.
+
+For LIST, retain ITEM functions over the entire actual old joint-map family, using one physical map tuple `q` across all required context views `H`. If `K(i,H,q)` is the arity spectrum at physical copy `i`, the barrier is `B = intersection_q union_(i,H) K(i,H,q)`; release outside `B` requires one actual `q` excluding that arity in every required view of every copy. Disjoint intervals use a valid excluded singleton, never an invalid row whose minimum exceeds its maximum.
+
+Finite unary spectral forms and eventual periodicity bound the needed integers and rows without counting old maps, old worlds or later donor WORDs. A per-view choice of a different physical map would not establish the joint release.
+
+For UNION, fixed constituents select the same raw value and normalization while TOP predicates contract. A repeated complete table/authority state can be removed by executing the actual outgoing NEXT over the earlier table. CURRENT clones that earlier table's genuine cached value or literal/provider fields; it need not reproduce a deleted issuer's optional spelling. Each required context generates its own actual cache and debts.
+
+The state count must include actual engine, origin, annotation and shared-group labels. Counting public facet classes alone is insufficient. Keep separate component and annotation identities, complete held vectors and authentic retention generations. Recheck native containment when an identity-based shortcut disappears, using only the qualified RAW/OWN-equivalent frontend. Foreign saved maps and uncovered SOURCE execution remain protected boundaries.
+
+The [correspondence owner](../src/compiler/re01CandidateCorrespondence.ts) preserves an inherited complex type's effective scalar content identity, including at its own cut. Inherited SIMPLE, declaration and AU recipes cannot be replaced. After authentic first mapping, a physical VALUE slot therefore keeps its chosen scalar recipe, WORD and map through descendants where its genuine programme and support are formed.
+
+Usable NOTATION constituents need their actual enum-qualified registration support. A bare facet-only NOTATION parse is not a usable declaration TYPE. Reassess availability, formation, origin and every actual context's obligations; physical function persistence transfers no FULL receipt.
+
+Different PROPERTY peers may choose different inverse WORDs: declaration and AU VALUE equality compares kind and tagged value, not lexical spelling. Choose one inverse per physical writable slot and keep it through its descendants. Hard lexical ports remain literal. AU own VALUE uses its declaration's TYPE, and effective VALUE remains `own ?? declared`; exposing a fixed declaration fallback must preserve that fixed value.
+
+A common finite TOKEN mask has an additional cohort condition. For every TOKEN in the union of all positive portfolios, every copy's complete pre-mask mode must either reject it or admit the same tagged value in that copy's actual BASE. This includes TOKENs unobserved at that copy. Each copy's own positives must pass; its demanded in-mask negatives must fail. A legal first mode in isolation and checks only on demanded negatives do not prove this condition.
+
+## Remaining joint constructor and evidence gates
+
+The remaining theorem concerns one actual simultaneous construction. For every successful contextual judgment at authentic `(Gamma,P,target)`, derive a winning direct candidate with complete encoding bounded by a total computable function of that input. The input includes the entire exact inherited P, even historically fresh rows; it excludes arbitrary helper rows selected from an old successful witness.
+
+At a Gamma-fresh target, the same bounded winning candidate must introduce no newly stored nonprimitive identity. This must hold after scalar providers and ordinary owners have been added. Separate bounded-existence and no-new-identity witnesses do not imply their conjunction.
+
+The unresolved construction gates are:
+
+- Derive a finite realized ROLE/BASE/TYPE/SCOPE/SG graph with original-phase and HEAD replay.
+- Realize one shared BODY tuple, including common-arm TYPE, CODE, zero-origin and counted-UPA constraints.
+- Issue compatible private scalar first modes, caps and genuine first-BASE providers on that same graph.
+- Close SC/AU/AW/VALUE/IC assignments and bound any feedback from scalar helpers into ordinary owners.
+- Prove total native local decisions and complete receiving-context evidence frontiers.
+
+Finite response alphabets do not prove that their representatives can exist together. A support-only R-over-ur rewrite needs a closed client argument; imported affiliates can change an original HEAD's UPA. A scalar cap needs actual nominal, BASE, CODE, funding and coactivation preservation. The grounded WORD theorem cannot supply its own missing graph or fixed-programme inputs.
+
+Whole-future enum pooling is not a prerequisite. The required producer may use phase-specific points and genuine derived templates. It must not replace a first-BASE qualification by membership in a later image, or treat public PROPERTY equality as equality of hidden physical functions. Backward support counts apply only after the chronological role, height and width bounds have been established independently.
+
+The evidence frontier needs both directions of adequacy: every semantic duty is discharged in its actual context, and every additional native duty has a winning child or adequate local proof. This includes primitive, scalar, SOURCE, notation and IC obligations, all changed boundaries and all inherited fresh roots. Matching nonprimitive masks alone is insufficient.
+
+Once these joint premises hold, the existing [founded contextual relation](content-model-s06-re-01.md) admits a finite catalogue search. Count unretired original Gamma nonprimitive identities by `q` and all stored Gamma-fresh nonprimitive identities by `n`. An original cut decreases `q`; a fresh cut introduces no stored nonprimitive identity and decreases `n`. The lexicographic rank `(q,n)` then proves termination of the finite contextual AND/OR search.
+
+Gamma-owned backsupport remains in the complete original assessment; it is not a new callback that resets this rank. Evidence nodes retain their actual parent and target, and construction-proof cycles remain forbidden. Configurable budget exhaustion remains inconclusive.
+
+Independent review accepted this implication as a sufficient conditional theorem. The joint constructor and complete native frontier premises remain unproved. General coverage, native evidence adequacy, complete negative answers and mathematical termination over the entire accepted domain therefore remain open, without an impossibility or undecidability conclusion. Production activation and combined downstream qualification remain separate assignments.
