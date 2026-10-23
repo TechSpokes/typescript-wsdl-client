@@ -3474,7 +3474,12 @@ export function scalarSchemaAssessment(c: AssessmentContext, options: {schemaOpe
       // empty or partially unrealizable stock after native membership replay.
       let stock: ReadonlyMap<Facet, SchemaOperand> | undefined;
       for (const layer of image.plan.layers) {
-        c.step(owner); const candidate = enumerations.get(layer);
+        // layer() registers a bookkeeping map even without enum facets. Only
+        // an actual enum component bounds the image; later constraints may
+        // eliminate all its values, but an absent enum proves nothing finite.
+        c.step(owner, layer.facets.length + 1);
+        if (!layer.facets.some(facet => facet.name === 'enumeration')) continue;
+        const candidate = enumerations.get(layer);
         if (candidate && (!stock || candidate.size < stock.size)) stock = candidate;
       }
       if (!stock) return outside('finite-image-label-scope', 'A whole-value image label needs a genuine finite enumeration component');

@@ -67,6 +67,69 @@ it('rejects whole-tuple correlation although both token values occur separately 
   assert.equal(joint.kind, 'checked'); assert.equal(joint.value.kind, 'empty-word-views');
 });
 
+// Native SOURCE admission establishes the expectation independently of the
+// producer's finite stock. The fixed ROOT pins the entire tagged LIST value.
+it.each(['ImagePattern', 'ImageLength'])('retains inherited enum values through %s without a local enum', async image => {
+  const s = await setup(), lexical = {value: 'QU JD', context: s.context};
+  const native = s.kernel.assess(local(image), lexical, s.owner.id);
+  assert.equal(native.kind, 'checked');
+  assert.equal(native.value.operand.family, 'list');
+  assert.deepEqual(native.value.operand.items?.map(item => item.canonical), [
+    '["urn:re01:word:on","QU"]', '["urn:re01:word:on","JD"]',
+  ]);
+  const root = {type: local(image), lexical};
+  const positive = s.kernel.finiteImageBinaryWordViews([{...s.view('OnlySplit', image), root}, s.view('Core')], s.owner.id);
+  assert.equal(positive.kind, 'checked'); assert.equal(positive.value.kind, 'word-views');
+  assert.equal(positive.value.core, 'QUJD');
+  assert.deepEqual(positive.value.views[0]!.operand, native.value.operand);
+  const inverse = positive.value.views[0]!.labels[0]!.inverseWord; assert.ok(inverse);
+  const replay = s.kernel.assess(local(image), inverse, s.owner.id);
+  assert.equal(replay.kind, 'checked'); assert.deepEqual(replay.value.operand, native.value.operand);
+});
+
+it.each(['ImagePattern', 'ImageLength'])('excludes a natively admitted complete LIST from negative %s labels', async image => {
+  const s = await setup(), lexical = {value: 'QU JD', context: s.context};
+  const native = s.kernel.assess(local(image), lexical, s.owner.id);
+  assert.equal(native.kind, 'checked');
+  const words = s.kernel.assess(local('OnlySplit'), lexical, s.owner.id);
+  assert.equal(words.kind, 'checked'); assert.deepEqual(words.value.operand, native.value.operand);
+  const root = {type: local(image), lexical};
+  for (const fixed of [false, true]) {
+    const negative = s.kernel.finiteImageBinaryWordViews([
+      {...s.view('OnlySplit', image, false), ...(fixed ? {root} : {})}, s.view('Core'),
+    ], s.owner.id);
+    assert.equal(negative.kind, 'checked'); assert.equal(negative.value.kind, 'empty-word-views');
+  }
+  const alternative = s.kernel.finiteImageBinaryWordViews([s.view('Choices', image, false), s.view('Core')], s.owner.id);
+  assert.equal(alternative.kind, 'checked'); assert.equal(alternative.value.kind, 'word-views');
+  assert.equal(alternative.value.core, 'QUJD');
+  assert.notDeepEqual(alternative.value.views[0]!.operand, native.value.operand);
+  assert.deepEqual(alternative.value.views[0]!.operand.items?.map(item => item.canonical), [
+    '["urn:re01:word:on","Q"]', '["urn:re01:word:on","UJD"]',
+  ]);
+});
+
+it.each([true, false])('qualifies an image with only a pattern and no enum, positive=%s', async positive => {
+  const s = await setup();
+  assert.equal(s.kernel.assess(local('OnlySplit'), {value: 'QU JD', context: s.context}, s.owner.id).kind, 'checked');
+  const result = s.kernel.finiteImageBinaryWordViews([s.view('OnlySplit', 'OnlySplit', positive), s.view('Core')], s.owner.id);
+  assert.equal(result.kind, 'unsupported-capability'); assert.equal(result.rule, 'finite-image-label-scope');
+});
+
+it('filters a genuine enum through complete restrictions rather than treating its stock as admitted values', async () => {
+  const s = await setup(), lexical = {value: 'QU JD', context: s.context};
+  assert.equal(s.kernel.assess(local('Image'), lexical, s.owner.id).kind, 'checked');
+  assert.equal(s.kernel.assess(local('ImageEliminated'), lexical, s.owner.id).kind, 'invalid-schema');
+  const positive = s.kernel.finiteImageBinaryWordViews([s.view('OnlySplit', 'ImageEliminated'), s.view('Core')], s.owner.id);
+  assert.equal(positive.kind, 'checked'); assert.equal(positive.value.kind, 'empty-word-views');
+  const negative = s.kernel.finiteImageBinaryWordViews([s.view('OnlySplit', 'ImageEliminated', false), s.view('Core')], s.owner.id);
+  assert.equal(negative.kind, 'checked'); assert.equal(negative.value.kind, 'word-views');
+  assert.equal(negative.value.core, 'QUJD');
+  assert.deepEqual(negative.value.views[0]!.operand.items?.map(item => item.canonical), [
+    '["urn:re01:word:on","QU"]', '["urn:re01:word:on","JD"]',
+  ]);
+});
+
 it('keeps saved image maps and FIRST instead of treating identical words as identical tagged tuples', async () => {
   const s = await setup(), off = {...s.context, namespaces: {...s.context.namespaces, '': 'urn:re01:word:off'}};
   const mapped = s.kernel.finiteImageBinaryWordViews([{...s.view('OnlySplit', 'Image'), context: off}], s.owner.id);
@@ -84,6 +147,13 @@ it('conjoins a fixed complete LIST ROOT with its negative image label and preser
   const empty = s.kernel.finiteImageBinaryWordViews([s.view('Words', 'EmptyImage')], s.owner.id);
   assert.equal(empty.kind, 'checked'); assert.equal(empty.value.kind, 'word-views');
   assert.equal(empty.value.core, ''); assert.deepEqual(empty.value.views[0]!.operand.items, []);
+  const emptyLexical = {value: '', context: s.context};
+  const nativeEmpty = s.kernel.assess(local('EmptyImage'), emptyLexical, s.owner.id);
+  assert.equal(nativeEmpty.kind, 'checked'); assert.deepEqual(empty.value.views[0]!.operand, nativeEmpty.value.operand);
+  const excludedEmpty = s.kernel.finiteImageBinaryWordViews([
+    {...s.view('Words', 'EmptyImage', false), root: {type: local('EmptyImage'), lexical: emptyLexical}},
+  ], s.owner.id);
+  assert.equal(excludedEmpty.kind, 'checked'); assert.equal(excludedEmpty.value.kind, 'empty-word-views');
 });
 
 it.each([false, true])('retains every fixed ROOT formation duty even when the joint language is empty: %s', async empty => {
