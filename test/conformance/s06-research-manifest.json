@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "ce9a8c40af601d20185b10d585ebb9bf9ea436992f1c460141d3d774edee0ce3"
+          "sha256": "453167285135456920ee5395facf585c9f50560293698b1d8e79d6089320e904"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "aa8d7bc6aedc5aafab89e6f5485e2aa19daa4dbee53e103f68140e24755c5145"
+          "sha256": "eb268ce2428cf9381688407b92624331cab54620db98165bb1cfb7b479e8fa3b"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -3141,7 +3141,7 @@
         {
           "path": "test/research/re01/free-list-changed-item.test.ts",
           "role": "prototype",
-          "sha256": "46a20126a2fe73d414ffedce8f84328e3dd2afec3df77638819e7e9d0bb46b51"
+          "sha256": "aba8c324fca4b0634aebe66b457e85de4615da6c79ecfd151642a3b6a070361b"
         },
         {
           "path": "test/research/re01/private-alias-endpoint-tuples.test.ts",
@@ -3187,6 +3187,31 @@
           "path": "test/conformance/fixtures/xsd/recovery/free-list-boolean-assignment-false.xsd",
           "role": "fixture",
           "sha256": "78f9a8916892e16e0cffdbeaac48eac246c9d817007daf1954a92eb044dbc27d"
+        },
+        {
+          "path": "test/research/re01/anchored-list-assignment.ts",
+          "role": "prototype",
+          "sha256": "242d2b1ac8841a918eccbd098dfa3187aaae9ae3d2557e4c4a682a902f9f4ee1"
+        },
+        {
+          "path": "test/research/re01/anchored-list-assignment.test.ts",
+          "role": "prototype",
+          "sha256": "87a4d1db5775fea426b8fc7fe4c3aa8af9913763c301a461fe20d3d433f9cf05"
+        },
+        {
+          "path": "test/research/re01/anchored-inherited-list.test.ts",
+          "role": "prototype",
+          "sha256": "2fdaeed7bb8773e94394394c244e148ea0822e80a028ed299d9888e7ff2e17c5"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/anchored-inherited-list.xsd",
+          "role": "fixture",
+          "sha256": "fb28728cb821d7521d6cdb8dbd9c2a7db9e85ffad31dfed8846129c6ee06fd35"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/anchored-list-cross-copy.xsd",
+          "role": "fixture",
+          "sha256": "aaedd1cfc02eaf623c3e32f9e8b5f21c9948f9a6917a56018bb54d118cf3718a"
         }
       ]
     },

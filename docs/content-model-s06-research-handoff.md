@@ -4,6 +4,20 @@ Joint research evidence for #232 and its four leaves, with explicit decision and
 
 ## First-enumeration LIST implementation handoff
 
+The #349 anchored continuation adds research-only `prepareAnchoredListAssignments(Gamma,P,target)` in
+[`anchored-list-assignment.ts`](../test/research/re01/anchored-list-assignment.ts). It issues local preparations with
+explicit pending enclosing-forest duties. The [scoped proof and controls](content-model-s06-re-01-support-reconstruction.md#anchored-item-template-family-and-inherited-continuation)
+separate sound complete checked outputs, enumeration of the stated finite grammar, and still-unproved broader extraction.
+An authentic born target under `P != Gamma` now materially uses the selected ITEM/L0/L1/SG choices in a checked two-node
+actual-root forest. An inherited consumer can reject that same locally successful child; removing its child evidence
+is unresolved. Complete stored-universe native counts in this example decrease `(q,n)` from `(0,1)` to `(0,0)` after
+assembly, despite nonzero additions. This example does not establish arbitrary-parent coverage or complete negatives.
+
+Direct changed-ITEM controls establish that both retained decimal members succeed without the optional NEW serial
+provider. The retained float member funds float tuples but fails ordinary protected fixed-value equality. Serial
+selected-donor/no-donor, wrong-FIRST and one-token-versus-whole-tuple controls remain. A failed serial recipe therefore
+cannot exclude the direct atomic alternatives. Production #179, combined #153, runtime #184 and #351 remain gated.
+
 The continuation from PR #352 starts at main `81aa7f0e297fbee248c99378cddc0605c6cf7568`, tree
 `c32446d1fb50eb42770fc28209ea117b0611ec03`. Its overall research status remains blocked and incomplete. It now delivers
 input-only exact-ITEM and derived Boolean-ITEM LIST constructors, joint finite endpoint tuples and finite image WORD labels.
