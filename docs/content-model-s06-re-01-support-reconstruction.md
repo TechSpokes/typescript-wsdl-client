@@ -5091,6 +5091,7 @@ or both adequacy directions for a catalogue that has not yet been constructed.
 | --- | --- | --- | --- | --- | --- | --- |
 | Inherited-middle replay | Retained E-over-A middles | `shared-assignment.ts` | Native actual/child controls | Scoped accepted | Preserve receiving contexts | PR #352 review |
 | First-enum LIST cohort | Initial-parent exact/Boolean ITEM | `free-list-assignment.ts` | Derived shared ITEM; ordinary consumers | Scoped implemented | Recursive ITEM and fresh-parent forest | Constructor review agent |
+| Anchored ITEM continuation | Shared retained/atomic/native-slot-mask grammar | `anchored-list-assignment.ts` | Actual-root fresh-child and inherited-consumer controls | Scoped implemented | Arbitrary-parent extraction and evidence completion | Fresh-context COMMENTED assessment |
 | Joint endpoint tuples | Enum/singleton/empty CURRENT roles | Scalar assessment/kernel | Exhaustive finite product; exact inverses | Scoped implemented | General digit tracks and facet modes | Constructor review agent |
 | Whole-image binary WORD | Regularizable fixed LIST image labels | Scalar assessment/reconstruction | Complete tuple inverses; shared core | Scoped implemented | Shared duration P blocks | Coverage review agent |
 | Native frontier adequacy | Eventual complete B-v1 catalogue | #350 | Scoped supplied-forest checks | Open | Prove both adequacy directions and totality | Scope reviewed only |
@@ -5110,6 +5111,111 @@ ports, together with first-BASE providers and complete fresh-parent children. Ev
 actual BASE membership, on every positive token, including tokens unobserved locally. The grounded WORD producer cannot
 supply those missing programmes, eliminate unknown cross-core LIST equalities or solve unknown endpoints shared with
 substrings. These remain research gates; complete negatives and dated-XSD correspondence remain open.
+
+## Anchored ITEM template family and inherited continuation
+
+The research-only [anchored producer](../test/research/re01/anchored-list-assignment.ts) accepts authenticated
+`(Gamma,P,target)` from one request. Its separate issuer returns local evidence with `pending: enclosing-forest`;
+it never certifies a fresh target as an original root. Existing free-LIST and inherited-middle issuers retain their
+own contracts. No successful forest, chosen ITEM, helper inventory or executable bound is accepted as input.
+
+### Input qualification and exact grammar
+
+The recognizable ordinary frame is `A R anyType`, empty `R R A`, and `target E R`. A's nominal BODY has a flat unit
+CHOICE of at least two distinct optional LOCAL fixed-value FIELDs; target's nominal BODY has equally many abstract
+GLOBAL HEAD arms in corresponding order. All FIELDs share one retained LIST TYPE and all HEADs another, with the
+same retained ITEM. Names for the new GLOBAL affiliates are unoccupied. Mixed/AU/final/block ports in the complex
+frame require another template. Retained scalar overrides also require another template. Retained LISTs are direct
+constructors or one original non-enum single-facet restriction of a direct constructor.
+
+P may contain a genuinely born target with explicit RAW properties. Inherited RAW rows and opaque SOURCE handles
+remain authoritative. The authoritative FIELD/HEAD BODY selectors must match their nominal flat particle portfolios;
+a stale nominal portfolio with a different RAW BODY is unresolved. An unchanged
+original's SOURCE can reconstruct absent RAW properties. A fresh or changed inherited type without RAW properties
+is unresolved. Complete actual-plus-additions membership is required. Thus this family does not yet accept parents
+with inactive stored rows; collision allocation still consults the stored identity owner. This qualification does
+not narrow B-v1, and no arbitrary-parent extraction claim follows.
+
+For an ITEM with m declared UNION members, issue the retained ITEM, each atomic declared member directly, and every
+nonzero drop vector over eligible slots as a genuine new UNION restriction of that actual ITEM. Eligible slots are
+primitive builtins or one original one-facet restriction directly over a primitive builtin, without RAW overrides.
+Other slots remain unchanged. A dropped slot becomes a real fresh atomic restriction, retaining its exact inherited
+facet component when present and adding two separate native singleton-pattern components `a` and `b`. Under the
+accepted whole-string pattern owner their intersection is empty, as independently exercised by the existing
+`source-component-retention.test.ts` controls. Patterns in one component would instead be alternatives, so the two
+component identities matter. Native pattern/formation owners still qualify each recipe. These are constant grammar
+programs, not caller-provided literals or assumed response-vector datatypes. The all-dropped recipe is included and
+fails funding any nonempty positive tuple. The earlier proposed `[^\s\S]` program was unsupported by the qualified native subset;
+that failed technique did not establish mask nonexistence.
+
+A direct atomic choice does not pretend to be a proper UNION restriction. Every mask preserves full member arity,
+slot order and the resulting FIRST behavior, and must pass native formation and selected-image containment. Physically
+deleting slots was rejected by the native corresponding-member rule and is not the implemented grammar. For a
+non-UNION ITEM, this grammar retains it only.
+
+One physical ITEM choice is shared across all copies. Each copy independently chooses its original complete FIELD
+WORD/map or the native canonical Boolean tuple spelling, when every original selected item is Boolean. This is at
+most two spellings per copy. Canonical spellings retain the FIELD's saved lexical context. This rule derives `true`
+from a selected Boolean value of original `1`; it is not a fixture-name or literal-specific constructor branch.
+
+Every template creates a primitive `M E A`, each copy's `L0 R HEAD-LIST`, `L1 R L0`, and a GLOBAL affiliate using that
+same L1 and fixed WORD. L0 retains the genuine inherited facet components, including fixedness. L1 retains those
+components and adds one complete tuple enum with its actual L0 as operand BASE. No inherited scalar row is rewritten.
+The endpoint alone becomes a restriction of M while preserving its exact inherited BODY. All alternatives use
+isolated child contexts sharing the original precharged, inclusive, sticky request budget.
+
+### Native checks and behavioral controls
+
+Native formation checks the real mask, L0, L1, M, affiliates and endpoint. Complete L0 tuple funding is separate
+from ITEM admission. Across every copy, the producer compares each accepted token from every funded positive
+portfolio with that portfolio's L0-admitted tagged item through the native value owner. It retains the source map
+and uses the actual receiving L0 ITEM. It then compares the issued L1 fixed tuple with the original FIELD value.
+The shared-ITEM grammar preserves one parser identity; this does not prove compatibility for independently chosen
+recursive per-copy programs. Local component receipts can retain native duties, and the enclosing forest owns their
+complete discharge. Candidate rejection, unresolved authority, unsupported input and budget exhaustion remain distinct.
+
+| Obligation | Code/control | Established behavior |
+| --- | --- | --- |
+| Direct versus serial ITEM | `free-list-changed-item.test.ts` | Both decimal members succeed; float tagged mismatch fails |
+| Genuine selected donor | Existing serial donor/no-donor controls | `001` funds decimal restoration; mere member admission does not |
+| Actual immediate BASE | Changed-ITEM one-token control | ITEM admission cannot fund a length-two tuple enum |
+| Ordered native masks | `anchored-list-assignment.test.ts` | Real restrictions qualify; failed early recipes do not hide success |
+| Shared cross-copy mode | Cross-copy fixture and producer test | Individually feasible tagged demands can conflict jointly |
+| Inherited continuation | `anchored-inherited-list.test.ts` | Born nonprimitive child materially supplies ITEM/L0/L1/SG |
+| Complete obligations | Missing-child and inherited-consumer contrasts | Missing evidence is unresolved; locally checked child can fail globally |
+| Stored rank | Full stored-universe native census after forest verification | Nonzero additions, zero new NP; `(0,1)` becomes `(0,0)` |
+
+The inherited test constructs the authenticated parent history, without supplying a winning ITEM or answer forest
+to the producer. It checks a complete two-node forest rooted at original `RootD`, with the born anchored child as
+a required premise. Every inherited root is rechecked by the finite verifier. Native qualification and the complete
+stored census occur after assembly, including the verifier's mapping/materialization work. This supplies one concrete
+fresh-target continuation, not preservation under every future cut or every inherited parent.
+
+### Encoding, exhaustion and remaining premise
+
+Let S encode the authenticated finite input records, literal strings, namespace maps and identities, k count FIELD
+copies, and m count declared ITEM members. There are at most `(1 + m + 2^m) * 2^k` templates. For a non-UNION ITEM
+the ITEM factor is one. Iterative enumeration has no JavaScript recursion bound on input arity. No guessed WORD length
+or helper cap appears in the grammar. Each recipe creates at most `3k + m + 2` graph identities and bounded native RAW
+rows. Its facet entries retain input component indices; literals are input-derived complete WORDs, Boolean canonical
+tuples of at most the original token count, or the two constant singleton-pattern programs in the template grammar.
+Maps and SOURCE selectors come from the input.
+
+Fresh scoped allocation avoids all stored IDs and semantic tuples. Within one candidate at most the input occupied
+portfolio plus its own `3k + m + 2` issued identities can block successive allocations. Identifier suffix encodings are
+therefore input bounded. Every member reference is retained and each ordered mask has at most m references. A coarse
+polynomial bound in `S + k + m + 1` covers each candidate's records, literals, maps and one local evidence node with
+native local receipts; multiplying by the finite template count bounds the family encoding. This is a local output
+bound. It does not bound the missing arbitrary enclosing history or evidence forest. The demonstrated complete forest
+has two nodes and authentic SOURCE/body encodings derived from its stated finite fixture/history.
+
+`familyExhausted` means every enumerated template was locally prepared or rejected by a qualified native decision.
+An unresolved or unsupported outcome keeps it false. Resource exhaustion publishes no truncated family. Even true
+does not mean every locally prepared candidate has a complete enclosing proof, nor that RE01 is negative if none do.
+Soundness of each complete checked forest comes from the existing finite verifier, whose general flags remain false.
+Extraction of every successful broader-sector witness into this grammar, arbitrary-parent continuation, independent
+per-copy mask programs and complete evidence construction remain #234/#349 premises. Catalogue-wide native adequacy
+remains #350; #351 remains gated. No production #179/#153 activation or #184 payload claim changes.
 
 ## Input-derived exact-ITEM free-LIST construction
 

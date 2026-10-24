@@ -1265,6 +1265,12 @@ A common finite TOKEN mask has an additional cohort condition. For every TOKEN i
 
 ## Remaining joint constructor and evidence gates
 
+The [anchored ITEM continuation](content-model-s06-re-01-support-reconstruction.md#anchored-item-template-family-and-inherited-continuation)
+now supplies a finite research recipe family and a material born-child example inside a complete original-root forest.
+Its local preparations retain explicit enclosing-evidence duties. Full joint witness extraction, arbitrary inherited
+parents and complete native catalogue adequacy remain open; the finite verifier's general coverage and negative flags
+are unchanged. The single premise ledger records the precise boundary and independent controls.
+
 ### Executable CURRENT admission ingredient
 
 `createSchemaScalarKernel(H).privateAliasEndpointAdmission(reference, owner)` now constructs a genuine CURRENT-admitted
