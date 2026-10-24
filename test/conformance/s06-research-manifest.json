@@ -1086,7 +1086,7 @@
         {
           "path": "src/compiler/finiteRe01Verification.ts",
           "role": "semantic-source",
-          "sha256": "c59e2f05f566e41f37b659ca670a185f1817d8c120a5e4f86632c0efee854a20"
+          "sha256": "214d23fb40ea9b6e2b3876864aeb6a69cfe58018d6063b7812535d7daf8e2040"
         },
         {
           "path": "src/compiler/particleAttribution.ts",
@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "453167285135456920ee5395facf585c9f50560293698b1d8e79d6089320e904"
+          "sha256": "4ab6232622f91740ddd9ffdbd2aff733849685a9dc58229318721da9dad49e93"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -3212,6 +3212,31 @@
           "path": "test/conformance/fixtures/xsd/recovery/anchored-list-cross-copy.xsd",
           "role": "fixture",
           "sha256": "aaedd1cfc02eaf623c3e32f9e8b5f21c9948f9a6917a56018bb54d118cf3718a"
+        },
+        {
+          "path": "test/research/re01/evidence-builder.ts",
+          "role": "prototype",
+          "sha256": "5aad4c6b4ac0be9f195c6c6e2a87a21e4cab699c74b162c4f934b47610104c01"
+        },
+        {
+          "path": "test/research/re01/evidence-builder.test.ts",
+          "role": "prototype",
+          "sha256": "08aa99c195739d4464d9958bd485e72ea9e05552a08f3a071f77a00d3f83cf99"
+        },
+        {
+          "path": "test/research/re01/native-frontier.test.ts",
+          "role": "prototype",
+          "sha256": "f060b60bf69d79d9575c033dc69685a4358b1b4e4fa2990d075aa094fecaf50a"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/shared-inherited-list-multiple.xsd",
+          "role": "fixture",
+          "sha256": "20eed53ddadb3b7a8b53f7c7702320387a997cabaff50fe38cb2558030beb705"
+        },
+        {
+          "path": "test/conformance/reference/re01-automatic-evidence-sources.test.ts",
+          "role": "reference",
+          "sha256": "ae08ee1b3985f0e5899915c6b524aa83143c0e183fdcc844269059bf49461788"
         }
       ]
     },

@@ -5091,7 +5091,8 @@ or both adequacy directions for a catalogue that has not yet been constructed.
 | --- | --- | --- | --- | --- | --- | --- |
 | Inherited-middle replay | Retained E-over-A middles | `shared-assignment.ts` | Native actual/child controls | Scoped accepted | Preserve receiving contexts | PR #352 review |
 | First-enum LIST cohort | Initial-parent exact/Boolean ITEM | `free-list-assignment.ts` | Derived shared ITEM; ordinary consumers | Scoped implemented | Recursive ITEM and fresh-parent forest | Constructor review agent |
-| Anchored ITEM continuation | Shared retained/atomic/native-slot-mask grammar | `anchored-list-assignment.ts` | Actual-root fresh-child and inherited-consumer controls | Scoped implemented | Arbitrary-parent extraction and evidence completion | Fresh-context COMMENTED assessment |
+| Anchored ITEM continuation | Shared retained/atomic/native-slot-mask grammar | `anchored-list-assignment.ts` | Actual-root fresh-child and inherited-consumer controls | Scoped implemented | Arbitrary-parent extraction | Fresh-context COMMENTED assessment |
+| Automatic evidence completion | Ranked closure of delivered inherited/anchored grammars | `evidence-builder.ts` | Input-only and separately seeded native controls | Scoped implementation | Extract broader parent-visible graph/program/owner candidates | Independent delivery review |
 | Joint endpoint tuples | Enum/singleton/empty CURRENT roles | Scalar assessment/kernel | Exhaustive finite product; exact inverses | Scoped implemented | General digit tracks and facet modes | Constructor review agent |
 | Whole-image binary WORD | Regularizable fixed LIST image labels | Scalar assessment/reconstruction | Complete tuple inverses; shared core | Scoped implemented | Shared duration P blocks | Coverage review agent |
 | Native frontier adequacy | Eventual complete B-v1 catalogue | #350 | Scoped supplied-forest checks | Open | Prove both adequacy directions and totality | Scope reviewed only |
@@ -5111,6 +5112,95 @@ ports, together with first-BASE providers and complete fresh-parent children. Ev
 actual BASE membership, on every positive token, including tokens unobserved locally. The grounded WORD producer cannot
 supply those missing programmes, eliminate unknown cross-core LIST equalities or solve unknown endpoints shared with
 substrings. These remain research gates; complete negatives and dated-XSD correspondence remain open.
+
+## Native frontier and automatic evidence completion
+
+The research-only [evidence builder](../test/research/re01/evidence-builder.ts) consumes the internal native frontier
+in [finite verification](../src/compiler/finiteRe01Verification.ts). `buildRe01Evidence(Gamma,target)` discovers
+root candidates from authentic input. `completeSeededRe01Evidence(Gamma,target,hypothesis)` instead receives one
+concrete original-root hypothesis and discovers its complete continuation. The hypothesis contains its authentic
+parent, candidate context, target, intermediate and ancestor, with no child targets or premise links.
+Seeded success establishes completion of that hypothesis; it does not establish input-only root discovery.
+
+### Frontier correspondence and positive soundness
+
+The frontier is an inspection of native requirements, never a checked witness. One native owner performs original
+schema-document qualification, actual component closure and candidate correspondence. Its candidate roots are the
+endpoint, intermediate, every inherited or new Gamma-fresh component and their consumed dependencies. Availability
+of an unused original component does not make it a hypothetical FULL root. SOURCE property reads remain separate.
+
+The same owner retains primitive ancestry qualification, scalar-slot and typed dependencies, notation and IC
+formation, mixed-content facts and deferred originating-context debts. The verifier still checks aggregate discharge
+in exactly the contexts selected by the final forest. Rejected sibling contexts cannot discharge another branch.
+Original Gamma supporting evidence is assembled independently for every actual nonprimitive obligation, including
+those other than the requested target. This is global backsupport under the selected founded semantics, without
+an admission callback or a reset of a contextual child to Gamma.
+
+At each exact `(parent,target)` subject, candidate alternatives form an OR and their nonprimitive requirements form
+an AND. Iterative exploration retains branch-local choices, constructs the actual proof links and backtracks after
+native rejection. Equal targets in different parent contexts are different subjects. Repeated identical subjects
+share evidence; an active proof subject cannot certify itself. Component recursion remains the native owner's duty.
+Only the final complete forest's authenticated native receipt yields `checked-witness`.
+
+### Finite discipline and outcome qualification
+
+The fixed producers are the delivered inherited-middle and anchored LIST families, with their existing finite
+grammar and all-or-nothing publication contracts. The builder accepts no witness callback or compatible palette.
+It may stop at the first complete native success without claiming exhaustion of other alternatives.
+
+Rank classification is separate from legality closure. Within complete stored membership, count current nonprimitive
+complex extensions using their exact derivation and ancestor authority after native mapping and candidate inspection.
+Original identities contribute q; Gamma-fresh identities contribute n. Each accepted construction edge must strictly
+decrease `(q,n)`. A fresh cut also introduces no stored NP identity. No census is inferred from an additions array,
+and counting an unused original does not require its hypothetical FULL construction.
+
+Finite producer branching and the decreasing natural-number pair bound every supported path. Finite input and
+finite per-edge encodings then give a finite search tree for this qualified closure, including the finite conjunction
+of actual roots. Unjustified rank progress is unresolved. Structural subsets and inactive stored contexts remain
+outside this implementation's qualification; their records are neither erased nor automatically activated.
+There is no arbitrary semantic depth, helper or WORD limit.
+
+One request budget charges preparation, inspection, generation, copying, cache/traversal work, reconstruction and
+publication before the corresponding work or allocation. Inclusive limits and sticky exhaustion remain operational
+outcomes. Actual input preparation is reused within the request; exact context facts carry their real dependencies.
+Actual invalidity, rejected candidates, unresolved or unsupported branches, exhaustion and checked witnesses retain
+separate meanings. Exhausting these recipes without a proof is qualified `no-witness-found`, never general RE01
+nonexistence. Coverage, complete-negative and full-search termination claims remain false.
+
+### Independently specified control map
+
+| Obligation | Code owner | Executable evidence |
+| --- | --- | --- |
+| Actual and born NP frontiers | `prepareFiniteRe01Frontier` | `native-frontier.test.ts`: written extension chains |
+| Scalar slots and non-NP formation | Native frontier owner | Generated R/R2/ZeroR/U slots; bare NOTATION refusal |
+| Input-only discovery | `buildRe01Evidence` | Original LIST VALUE and ordinary QName agreement |
+| Seeded anchored completion | `completeSeededRe01Evidence` | Born child requires Boolean ITEM and actual LIST stages |
+| Exact contexts and Gamma support | Iterative AND/OR traversal | Two born duties, deeper continuation and independent D2 |
+| Rejected inherited consumer | Native candidate closure | Local child succeeds; affiliate loses required ancestry |
+| Full stored rank | `storedRe01Rank` and edge qualification | Retired original/fresh identities after native inspection |
+| Evidence authenticity and cycles | Existing finite verifier | `re01-candidate-independent.test.ts` refusals |
+| Qualified failure and resources | Builder outcomes and request budget | RAW mismatch, empty family, membership and sticky exhaustion |
+| Source/reference distinction | Reference source controls | Included D2 chain and independent source engine observations |
+
+The [builder controls](../test/research/re01/evidence-builder.test.ts) inspect semantic results, retained parents and
+the final native receipt. Manual forests in the earlier continuation controls are independent reference cases;
+they are never inputs to the builder. Existing SOURCE, mixed-content, scalar, notation and IC regression suites
+remain necessary after factoring, in addition to the independent expected-frontier controls.
+
+Complete-workload measurements on Node 24.19.0 and Vitest 5.0.3 use the unchanged 125,000,000-work default.
+These include source preparation, seeded hypothesis construction where applicable and the builder's final native
+verification, before any independent second verification. Input-only shared LIST uses 46 nodes and 2,302,481 work
+for one proof node; anchored seeded completion uses 516 nodes and 47,287,017 work for two proof nodes;
+the multi-context seeded case uses 166 nodes and 8,641,307 work for six proof nodes. These are engineering
+measurements of these inputs, not semantic limits or coverage bounds.
+
+### Remaining extraction premise
+
+The next generalization must supply parent-visible graph/program/owner recipes to this builder, with a proof that
+every successful selected judgment has a winning member and that the same fresh-target member adds zero stored NP.
+Arbitrary or inactive parents, independent recursive per-copy programs, unknown scalar joins and complete catalogue
+adequacy remain unproved. This slice does not supply #347/#348, dated-XSD correspondence, #351 complete negatives,
+#179/#153 activation or #184 runtime ownership.
 
 ## Anchored ITEM template family and inherited continuation
 
