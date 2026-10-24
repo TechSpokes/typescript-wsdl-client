@@ -2,6 +2,36 @@
 
 Joint research evidence for #232 and its four leaves, with explicit decision and production gates. See the root [README](../README.md).
 
+## Automatic native evidence completion handoff
+
+The next #349/#350 slice starts from verified PR #356 main
+`215517967c1f2dec35425d1a88500d4152a4d96b`, tree `f3994db16bd41bbfbb4c2e9642e8f9156db0a5b0`.
+The [research evidence builder](../test/research/re01/evidence-builder.ts) discovers exact-context duties through
+the same internal native frontier used by the supplied verifier. It explores the delivered inherited-middle and
+anchored LIST grammars, constructs every child link and independent actual-Gamma support, then obtains the native
+receipt for the complete actual-root forest. Consumers no longer hand-wire the supported continuations.
+
+`buildRe01Evidence(actual,target)` takes authentic input only. `completeSeededRe01Evidence(actual,target,hypothesis)`
+instead completes one concrete original-root hypothesis; the seed contains no child targets, child choices or premises.
+These modes are reported separately. A seeded positive does not prove input-only discovery of the root construction.
+Both modes return a checked witness only after native aggregate verification; inspected frontiers are pending duties.
+
+The [proof-to-code map](content-model-s06-re-01-support-reconstruction.md#native-frontier-and-automatic-evidence-completion)
+qualifies the finite ranked closure, exact contexts, SOURCE versus FULL, global Gamma backsupport and shared budget.
+Independent controls cover multiple original and born duties, deeper continuation, repeated targets in different
+contexts and an inherited consumer that rejects a locally feasible alternative before another candidate succeeds.
+The native missing/wrong-context/cyclic/unused-evidence refusals and scalar/SOURCE/notation/IC controls remain binding.
+
+This completes evidence construction only for the stated generator closure. Empty delivered families, unsupported
+geometry, unresolved rank premises and resource exhaustion cannot establish general negatives. The next extraction
+premise is a parent-visible joint graph/program/owner catalogue with success-preserving continuation and the same
+winning fresh candidate's zero-new-stored-NP property. General and inactive parents require their own representation
+and rank argument. The new builder is the consumer for that generalization; do not add more manually wired forests.
+
+#234's full catalogue, #350's catalogue-wide adequacy, #347/#348, #351 complete negatives and dated-XSD correspondence
+remain open. #179/#153 activation, draft #231 reconciliation and #184 payload ownership remain separate.
+Final revision, review findings and actual validation/delivery disposition belong to the linked PR and issue ledger.
+
 ## First-enumeration LIST implementation handoff
 
 The #349 anchored continuation adds research-only `prepareAnchoredListAssignments(Gamma,P,target)` in
