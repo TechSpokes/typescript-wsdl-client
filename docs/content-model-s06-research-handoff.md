@@ -2,6 +2,24 @@
 
 Joint research evidence for #232 and its four leaves, with explicit decision and production gates. See the root [README](../README.md).
 
+## RE01-A private scalar choices
+
+The [constructive sufficient-class theorem](content-model-s06-re-01-support-reconstruction.md#re01-a-private-scalar-construction-theorem)
+defines closed source S0 and exact inherited attachment S1 from actual syntax/history, with arbitrary FIELD arity.
+The cross-copy discriminator admits a complete native witness: Boolean ITEM for numeric Boolean FIELDs,
+retained ITEM for QName FIELDs, separate immediate L0 tuple funding and the same HEAD spelling.
+The old shared-family negative is preserved within its original grammar.
+
+`preparePrivateAnchoredListAssignments` shares the existing anchored constructor and derives one recipe from input.
+The existing builder explores this alternative without accepting child targets, winning ITEMs or answer forests.
+Input-only S0 and labeled seeded S1 controls complete automatically; a real incompatible inherited consumer
+still rejects the locally feasible child. Native formation, SOURCE/maps, stored rank and exhaustion guards remain.
+
+This is constructive sufficiency for S0/S1, not full-domain coverage. The next packet is RE01-B under #234:
+compose the proved classes and select one residual parent-visible reader/owner reduction with a concrete consumer.
+Arbitrary/inactive parents, unknown future readers, full catalogue adequacy and general negatives remain open.
+No production activation, package-version change, release, tag or publication is included.
+
 ## Automatic native evidence completion handoff
 
 The next #349/#350 slice starts from verified PR #356 main

@@ -22,9 +22,9 @@ import type {RawSimpleTypeProperties} from '../../../src/compiler/schemaSimpleTy
 import type {SemanticTypeReference} from '../../../src/compiler/semanticTypeReference.js';
 import type {ResourceLimitFailure} from '../../../src/compiler/semanticBudget.js';
 
-export type AnchoredItemChoice = Readonly<{kind: 'retained' | 'atomic' | 'member-mask'; members: readonly SemanticTypeReference[]; dropped?: readonly number[]}>;
+export type AnchoredItemChoice = Readonly<{kind: 'retained' | 'atomic' | 'member-mask' | 'per-cohort'; members: readonly SemanticTypeReference[]; dropped?: readonly number[]}>;
 export type AnchoredListAssignment = Readonly<{
-  family: 'anchored-item-list-v1'; actual: SemanticContext; parent: SemanticContext; target: NodeId;
+  family: 'anchored-item-list-v1' | 'private-anchored-item-list-v1'; actual: SemanticContext; parent: SemanticContext; target: NodeId;
   intermediate: NodeId; itemChoice: AnchoredItemChoice; delta: SemanticCandidateDelta; context: SemanticContext;
   cohorts: readonly Readonly<{field: NodeId; head: NodeId; item: SemanticTypeReference; preparation: NodeId; enumeration: NodeId; member: NodeId}>[];
   evidence: FiniteRe01EvidenceNode;
@@ -54,6 +54,20 @@ export function assertAnchoredListAssignment(assignment: AnchoredListAssignment)
  * claim extraction of arbitrary successful witnesses into this finite family.
  */
 export function prepareAnchoredListAssignments(actual: SemanticContext, parent: SemanticContext, target: NodeId): AnchoredListPreparation {
+  return prepare(actual, parent, target, false);
+}
+
+/**
+ * A second, input-only recipe: retain every inherited ITEM, but select a direct
+ * declared builtin Boolean for a cohort whose protected tuple is all Boolean.
+ * Only the newly issued L0/L1 ports vary. Native checks retain all real readers;
+ * this recipe does not assert arbitrary-parent independence or negative coverage.
+ */
+export function preparePrivateAnchoredListAssignments(actual: SemanticContext, parent: SemanticContext, target: NodeId): AnchoredListPreparation {
+  return prepare(actual, parent, target, true);
+}
+
+function prepare(actual: SemanticContext, parent: SemanticContext, target: NodeId, privateChoices: boolean): AnchoredListPreparation {
   assertSemanticContext(actual); assertSemanticContext(parent);
   const b = parent.budget;
   return b.guard(() => {
@@ -150,7 +164,7 @@ export function prepareAnchoredListAssignments(actual: SemanticContext, parent: 
       };
       retainedComponents(fieldRef); const componentCount = retainedComponents(headRef);
       b.chargeWork(fields.length * 8 + 8); const names = new Set<string>(), headIds = new Set<NodeId>();
-      const words: LexicalValue[][] = [];
+      const words: LexicalValue[][] = [], booleanTuples: boolean[] = [];
       for (let i = 0; i < fields.length; i++) {
         const field = fields[i]!, head = heads[i]!;
         b.chargeWork(32 + field.name.namespace.length + field.name.local.length); const member = globalId('element', field.name);
@@ -161,18 +175,30 @@ export function prepareAnchoredListAssignments(actual: SemanticContext, parent: 
           return fail('anchored-list-ports', 'Protected FIELD/HEAD ports do not match this template', field.id);
         names.add(member); headIds.add(head.id);
         const assessed = requireChecked(kernel.assess(fieldRef, field.value.lexical, field.id));
+        b.chargeWork(4 + (assessed.value.operand.items?.length ?? 0));
+        booleanTuples.push(assessed.value.operand.family === 'list' && assessed.value.operand.items !== undefined
+          && assessed.value.operand.items.every(at => at.family === 'boolean'));
         b.chargeWork(4); const alternatives: LexicalValue[] = [field.value.lexical];
         if (assessed.value.operand.family === 'list' && assessed.value.operand.items?.every(at => at.family === 'boolean')) {
           b.chargeWork(4 + assessed.value.operand.items.length * 8);
           const canonical = assessed.value.operand.items.map(at => at.canonical).join(' ');
           if (canonical !== field.value.lexical.value) alternatives.push({value: canonical, context: field.value.lexical.context});
         }
-        words.push(alternatives);
+        // The private recipe is constructive, not a partition/palette search.
+        // Boolean canonicalization is determined by the protected FIELD value.
+        words.push(privateChoices ? [alternatives[alternatives.length - 1]!] : alternatives);
       }
       b.chargeWork(4); const choices: AnchoredItemChoice[] = [{kind: 'retained', members: [itemRef]}];
       const unionMembers = itemPlan.value.declaredMembers ?? itemPlan.value.members ?? [];
+      b.chargeWork(4 + unionMembers.length);
+      const booleanMember = unionMembers.find(member => member.kind === 'builtin'
+        && member.name.namespace === 'http://www.w3.org/2001/XMLSchema' && member.name.local === 'boolean');
+      if (privateChoices) {
+        b.chargeWork(4 + fields.length);
+        choices[0] = {kind: 'per-cohort', members: fields.map((_field, index) => booleanTuples[index] && booleanMember ? booleanMember : itemRef)};
+      }
       b.chargeWork(4); const guardComponents = new Map<number, number>();
-      if (itemPlan.value.variety === 'union') {
+      if (!privateChoices && itemPlan.value.variety === 'union') {
         const members = unionMembers;
         for (let index = 0; index < members.length; index++) {
           const member = members[index]!;
@@ -220,7 +246,7 @@ export function prepareAnchoredListAssignments(actual: SemanticContext, parent: 
           const identity = allocate(); b.chargeWork(32); const node: SimpleTypeNode = {...common, ...identity, kind: 'simpleType', variety: {kind: 'restriction', base, facets: []}};
           additions.push(node); return node;
         };
-        let item = choice.members[0] ?? itemRef;
+        let item = privateChoices ? itemRef : choice.members[0] ?? itemRef;
         if (choice.kind === 'member-mask') {
           b.chargeWork(4 + unionMembers.length); const members: SemanticTypeReference[] = [];
           for (let index = 0; index < unionMembers.length; index++) {
@@ -245,21 +271,22 @@ export function prepareAnchoredListAssignments(actual: SemanticContext, parent: 
         }
         for (let i = 0; i < fields.length; i++) {
           b.chargeWork(80 + componentCount * 4); const field = fields[i]!, head = heads[i]!, word = selectedWords[i]!;
+          const cohortItem = privateChoices && booleanTuples[i] && booleanMember ? booleanMember : item;
           const l0 = scalar(headRef), l1 = scalar(local(l0.id)), retained = Array.from({length: componentCount}, (_, baseComponent) => ({baseComponent}));
-          rows.push({type: l0.id, targetNamespace: a.context.effectiveNamespace, base: headRef, final: [], variety: {kind: 'list', item}, facetComponentSet: retained,
+          rows.push({type: l0.id, targetNamespace: a.context.effectiveNamespace, base: headRef, final: [], variety: {kind: 'list', item: cohortItem}, facetComponentSet: retained,
             provenance: {kind: 'hypothetical-abstract', originals: []}},
-          {type: l1.id, targetNamespace: a.context.effectiveNamespace, base: local(l0.id), final: [], variety: {kind: 'list', item},
+          {type: l1.id, targetNamespace: a.context.effectiveNamespace, base: local(l0.id), final: [], variety: {kind: 'list', item: cohortItem},
             facetComponentSet: [...retained, {annotation: 'absent', facets: [{name: 'enumeration', fixed: false, lexical: word,
               operand: {context: 'active', type: local(l0.id), owner: middle.id}}]}], provenance: {kind: 'hypothetical-abstract', originals: []}});
           b.chargeWork(64 + 6 * (field.name.namespace.length + field.name.local.length)); const id = globalId('element', field.name);
           const member: ElementNode = {...common, context: field.context, id, identity: {kind: 'global', role: 'element', name: field.name}, kind: 'element',
             name: field.name, type: local(l1.id), abstract: false, nillable: false, substitutionGroup: local(head.id), value: {kind: 'fixed', lexical: word}};
           additions.push(member); rawElements.push({element: id, type: member.type, final: [], block: []});
-          cohorts.push({field: field.id, head: head.id, item, preparation: l0.id, enumeration: l1.id, member: id});
+          cohorts.push({field: field.id, head: head.id, item: cohortItem, preparation: l0.id, enumeration: l1.id, member: id});
         }
         b.chargeWork(80 + parent.members.length + additions.length * 2 + target.length);
         const endpoint: ComplexTypeNode = {...endpointBefore, derivation: {kind: 'restriction', contentKind: 'complex', base: local(middle.id), facets: []}};
-        const key = 'anchored-list:' + target + ':' + ordinal.toString();
+        const key = (privateChoices ? 'private-anchored-list:' : 'anchored-list:') + target + ':' + ordinal.toString();
         // Existing inherited rows remain inherited. SOURCE selections are kept
         // by identity instead of passed through a generic data snapshot.
         const rawTypes = [
@@ -305,7 +332,11 @@ export function prepareAnchoredListAssignments(actual: SemanticContext, parent: 
           // copy's complete funded tuple, independently of this token traversal.
           const owner = built.context.lookup(cohort.member);
           if (owner.kind !== 'found') return fail('anchored-list-stage', 'An issued ordinary consumer is unavailable');
-          for (const portfolio of funded) {
+          // Shared-family comparisons remain unchanged. Private cohorts carry
+          // distinct new L0/L1 WORD slots; only their own tuple is a local
+          // parser obligation. Cross-cohort ordinary/CODE/owner constraints
+          // remain with native construction and the complete evidence frontier.
+          for (const portfolio of privateChoices ? [funded[i]!] : funded) {
             b.chargeWork(8 + portfolio.word.value.length * 2);
             const normalized = normalizeWhitespace(portfolio.word.value, 'collapse');
             const tokens = normalized === '' ? [] : normalized.split(' ');
@@ -331,7 +362,7 @@ export function prepareAnchoredListAssignments(actual: SemanticContext, parent: 
         b.chargeWork(48 + cohorts.length * 8 + localComponents.length);
         const evidence: FiniteRe01EvidenceNode = Object.freeze({id: key, parent, context: built.context, target, intermediate: middle.id,
           ancestor: designated.ancestor, premises: Object.freeze([])});
-        const assignment: AnchoredListAssignment = Object.freeze({family: 'anchored-item-list-v1', actual, parent, target, intermediate: middle.id,
+        const assignment: AnchoredListAssignment = Object.freeze({family: privateChoices ? 'private-anchored-item-list-v1' : 'anchored-item-list-v1', actual, parent, target, intermediate: middle.id,
           itemChoice: b.freeze(b.snapshot(choice)), delta, context: built.context, cohorts: b.freeze(b.snapshot(cohorts)), evidence,
           localComponents: Object.freeze(localComponents), pending: 'enclosing-forest'});
         issued.add(assignment); assignments.push(assignment); outcomes.push({choice, result: 'prepared-local-evidence'});

@@ -5092,6 +5092,7 @@ or both adequacy directions for a catalogue that has not yet been constructed.
 | Inherited-middle replay | Retained E-over-A middles | `shared-assignment.ts` | Native actual/child controls | Scoped accepted | Preserve receiving contexts | PR #352 review |
 | First-enum LIST cohort | Initial-parent exact/Boolean ITEM | `free-list-assignment.ts` | Derived shared ITEM; ordinary consumers | Scoped implemented | Recursive ITEM and fresh-parent forest | Constructor review agent |
 | Anchored ITEM continuation | Shared retained/atomic/native-slot-mask grammar | `anchored-list-assignment.ts` | Actual-root fresh-child and inherited-consumer controls | Scoped implemented | Arbitrary-parent extraction | Fresh-context COMMENTED assessment |
+| Private scalar construction | Closed source S0 and exact attachment S1 below | Private anchored recipe | Heterogeneous native forests | Constructive sufficiency | Compose with residual classes | RE01-A nonauthor review |
 | Automatic evidence completion | Ranked closure of delivered inherited/anchored grammars | `evidence-builder.ts` | Input-only and separately seeded native controls | Scoped implementation | Extract broader parent-visible graph/program/owner candidates | Independent delivery review |
 | Joint endpoint tuples | Enum/singleton/empty CURRENT roles | Scalar assessment/kernel | Exhaustive finite product; exact inverses | Scoped implemented | General digit tracks and facet modes | Constructor review agent |
 | Whole-image binary WORD | Regularizable fixed LIST image labels | Scalar assessment/reconstruction | Complete tuple inverses; shared core | Scoped implemented | Shared duration P blocks | Coverage review agent |
@@ -5306,6 +5307,154 @@ Soundness of each complete checked forest comes from the existing finite verifie
 Extraction of every successful broader-sector witness into this grammar, arbitrary-parent continuation, independent
 per-copy mask programs and complete evidence construction remain #234/#349 premises. Catalogue-wide native adequacy
 remains #350; #351 remains gated. No production #179/#153 activation or #184 payload claim changes.
+
+## RE01-A private scalar construction theorem
+
+This section adds a sufficient positive class under the selected B-v1/Q_f and native P1/F2 authorities.
+It does not assert necessity, equivalence, arbitrary-parent normalization or complete negatives.
+The preceding shared-family negative remains valid within that grammar.
+
+### Mechanically recognizable input predicate
+
+Let `v` be either `true` or `false`, with corresponding numeric Boolean spelling `b` equal to `1` or `0`.
+Let `k >= 2` be arbitrary finite arity. Names below are roles found by structural matching, not literal strings.
+Define S0 by the following closed finite source grammar and `P = Gamma` with complete membership.
+
+The entire schema declares exactly three named scalar types: ordered `U = union(xs:QName,xs:boolean)`,
+`W = list(U)`, and `H = restriction(W)` with one original nonfixed pattern component whose literal is `v`.
+It declares `k` distinct abstract global HEAD elements of H, without values, affiliations, ICs or nillability.
+There are exactly three complex types: `A R anyType`, empty `R R A`, and selected `D E R`.
+A has a flat unit CHOICE of k distinct qualified local FIELD names, each W, optional `0..1`,
+and fixed spelling independently chosen from `{b,v}`. D has the matching flat unit CHOICE of the k HEADs,
+each arm `1..1`. FIELD names do not occupy global element identities and the HEAD names are distinct.
+
+There are no other declarations, includes/imports, RAW overrides, annotations, unrecognized retained syntax,
+attributes, wildcards, mixed content, derivation exclusions, additional facets or identity constraints.
+Type/element names, target namespace and lexical namespace bindings may vary consistently;
+an arbitrary saved default namespace is allowed. References must resolve to the stated roles.
+For heterogeneous output, require at least one FIELD of each spelling. The sufficiency theorem also holds
+when all fields have one spelling. No target RE01 success or generated witness is an input predicate.
+
+S1 is a second, precisely limited history predicate. Start with the same scalar/HEAD/A/R source grammar,
+omit D, and add a `Heads R anyType` carrier with the HEAD choice. Add empty `RootA R anyType`,
+`RootR R RootA`, `RootB E RootA`, and selected `RootD E RootR`.
+Optionally include one unused `OffA R anyType` with a flat optional W-valued FIELD choice whose fixed
+spellings are numeric Boolean words; its elements are scoped and its names need not be new globals.
+These are all declarations. P's history consists of exactly one fork of Gamma changing RootD to
+`RootD R RootB`, retaining the empty RAW properties, and adding one fresh scoped child `C E R`.
+C's nominal HEAD body and authoritative RAW content select the carrier's actual whole particle;
+its other properties are empty as above. P has complete membership, no other additions, overrides or readers,
+and retains all original rows/SOURCE handles. The parent root is RootD and the local target is C.
+
+S is the disjointly identified S0 or S1 input mode. Recognition is finite graph-role matching, comparison of
+the exact declaration roster, occurrences, references, facet components, saved maps, and (for S1) fork deltas.
+It does not execute the private generator or ask whether a candidate succeeds. No unknown future-reader
+closure premise is included in S. Arbitrary inherited parents lie outside S, even when the recipe finds a witness.
+
+### Constructive sufficiency and native reconstruction
+
+For every source-qualified input satisfying S0, a one-node complete native reordered witness exists.
+For every source-qualified input satisfying S1, the stated root hypothesis admits a complete two-node
+continuation through C. With sufficient resources the existing builder finds these witnesses.
+Here source qualification means syntax, component formation and primitive obligations under the existing owners,
+with the pending nonprimitive RE01 duties left pending; it does not assume those duties' truth.
+
+Choose per FIELD: numeric b selects the declared builtin Boolean ITEM; literal v retains U.
+Always issue the complete one-token word v in that FIELD's saved lexical map. This recipe is determined
+by the original assessed tagged tuple, not the names, a supplied palette, a winning child or a successful forest.
+The private producer makes one recipe, independently of k; it performs no partition or general constraint search.
+
+Preserve every original and inherited identity. Construct primitive `M E A`, retaining A's actual whole BODY.
+For each pair create distinct new `L0 R H` and `L1 R L0` and its fresh global FIELD-named affiliate of the HEAD.
+Both new LIST rows select that pair's chosen ITEM. Retain H's genuine inherited whitespace and pattern
+component identities and fixedness. L1 adds one enum whose operand names its own immediate L0 and M owner.
+Give the affiliate L1 and fixed word v, and change only the target endpoint to a restriction of M.
+
+The native RAW LIST rule checks derivation of the new ITEM from H's ITEM. Boolean is a declared atomic
+member of U; retained U is reflexive. This is a real variety/derivation relationship, not ITEM identity.
+The rule preserves inherited facet components; it does not require H and L0 to select the same tag at v.
+In fact H selects QName(v), while a Boolean L0 selects Boolean(v). Claiming Boolean(v) is selected by H
+would be false. L0 is formed before L1, and its own pattern admits v. Its complete tuple funds L1's new enum.
+An ITEM admission, another cohort's tuple, or a later image is not that funding premise.
+
+For numeric b, W selects Boolean(v), since b is not a QName. For literal v, W selects QName(v)
+through U's first member. Corresponding L1 values therefore equal their protected FIELD values exactly.
+QName expansion uses the same saved map, including the default namespace. Equal strings in distinct
+physical WORD slots need not have equal tags. U's original member order and every protected TYPE/BASE
+reference remain literal identities; no inherited scalar is split or rewritten.
+
+Each HEAD has exactly one new affiliate, with a distinct expanded name. Literal L1/L0/H ancestry supplies
+the HEAD TYPE relationship; L0/H/W ancestry supplies the FIELD TYPE relationship.
+The singleton HEAD pools match the respective FIELD names. Distinct names establish UPA and there are
+no repeated names requiring a cross-copy common-arm CODE equality. M's FIELD property is A's original
+SOURCE property; its extension adds no particle. The endpoint's HEAD property is retained exactly.
+Ordinary restriction compares each actual FIELD/affiliate fixed pair, rather than comparing every ITEM
+parser on unrelated foreign WORD slots. Native EDC, substitution, construction and RP owners still run.
+
+The closed roster accounts for readers and owners: no SC/AU/AW/IC, notation, wildcard or external VALUE
+consumer exists; scalar BASE/ITEM/enum and declaration VALUE readers are precisely those just constructed.
+Original scoped FIELDs stay with their original owners. New scoped types belong to the allocated target;
+enum operand authority stays with M. A shared ancestor or equal record does not require new ITEM identity.
+The complete native frontier checks all original, inherited and emitted roots in their receiving contexts.
+The source scalars are formed independently; A/R and all empty/helper types have primitive derivations.
+There is no additional nonprimitive duty in S0 after the endpoint cut, so its evidence node has no children.
+
+For S1, the parent RootD cut through the empty RootB is a primitive extension followed by empty restriction.
+Its sole born nonprimitive duty is C. Apply the same scalar/ordinary construction at C, preserving the
+RootD RAW rows and carrier SOURCE authority. The original Heads choice is a valid restriction of anyType
+before and after singleton affiliates are introduced; the optional unused OffA has no HEAD reader.
+The only born complex addition is primitive M; the LIST/element additions and flat SOURCE materialization
+introduce no stored nonprimitive complex type. Thus parent `(q,n)=(0,1)` becomes `(0,0)` after the child,
+including native materialization, and the two-node forest discharges the complete root frontier.
+No arbitrary subsequent cut or unknown owner is covered by this argument.
+
+### Full encoding bound and executable map
+
+Use a finite encoding of input records, namespace maps, strings, graph references, exact SOURCE selectors,
+context deltas and evidence links. Let N be its input byte length and k its FIELD arity.
+Each private candidate adds exactly `3k+1` graph nodes: M, two LISTs per FIELD, and one affiliate per FIELD.
+There are `2k` scalar RAW rows, k element RAW rows, and at most four complex RAW rows.
+Facet component indices refer to the two inherited H components; each L1 adds one enum with one token.
+No regex or UNION helper is generated. v has at most five ASCII bytes; all maps are saved input maps.
+All copied names, references, properties and SOURCE handles come from the input or the deterministic allocator.
+
+A total input-derived bound can be computed without running semantic success checks: execute the finite
+syntactic recipe above, allocate against the input's finite stored identity inventory, serialize its deltas,
+and include the original records plus all flat A/HEAD SOURCE particle positions and composition wrappers.
+The allocator encounters at most the input occupied identity count plus `2k+1` newly occupied scoped positions;
+its owner nesting depth is fixed. This bounds name suffixes and repeated owner/reference encodings.
+There is no hidden helper cap or unrestricted literal/program search.
+
+For S0 include exactly one context delta and one evidence node; for S1 include the input parent history,
+one child delta and two evidence nodes. Every evidence link, target, middle, ancestor and context selector
+is one of these bounded identities. Flat native SOURCE backing has at most the finite input particle positions
+plus the two k-arm portfolios per cut; no recursive component or extra nonprimitive evidence is introduced.
+Serialize retained records once and references explicitly; context handles denote these authenticated deltas,
+not an unbounded external forest. Counting this finite syntactic serialization bounds words/programs, maps,
+names, helpers, owners and complete evidence. The counting algorithm is independent of a successful witness
+and terminates on every syntactically matched input. It is not a claim about verifier caches or time budgets.
+
+| Claim | Code or control | Exact scope |
+| --- | --- | --- |
+| Input frame and exact inherited properties | `prepare` in anchored producer | Finite structural qualification, SOURCE authority |
+| Deterministic per-FIELD choice | `preparePrivateAnchoredListAssignments` | Boolean demand chooses declared builtin; otherwise retained |
+| S0 arbitrary-arity recipe | `private-anchored-list.test.ts` | Two true arms; three false arms with renamed ports/default map |
+| Mandatory relations | Inherited conflicting-reader control | Locally formed split still fails whole native judgment |
+| Complete continuation | Builder's private alternative; seeded S1 control | Automatic children, exact parent, post-assembly rank |
+| Donor and tuple stages | Existing changed-ITEM/Boolean funding controls | Union donor, actual L0, retained component identity |
+| Resource refusal | Private sticky-exhaustion control | No partial candidate or negative on exhaustion |
+
+The code accepts some inputs beyond S and returns local preparations there; only full native verification
+certifies those individual positives. The theorem removes the assumed need for one shared ITEM over all
+new cohorts in S. `buildRe01Evidence` and separately labeled `completeSeededRe01Evidence` consume the result.
+The old shared family remains available and exhausted within its original scope on the discriminator.
+No full-domain equivalence, general negative flag, rank guard or complete-membership guard changes.
+
+The residual quantified implication is still: every successful accepted input outside the proved classes
+has an input-bounded native graph/program/owner construction with sufficient exact-context continuation,
+and the same fresh candidate satisfies the current stored-NP hypothesis. RE01-B must compose the current
+classes, identify one residual reader/owner class, and prove or refute one concrete next reduction.
+General #347/#348 solvers, #351 complete negatives, dated-XSD correspondence and production activation remain open.
 
 ## Input-derived exact-ITEM free-LIST construction
 
