@@ -9,6 +9,12 @@ It is not an implemented endpoint solver or a complete scalar/RE01 witness produ
 The existing [scalar owners and selected P1/F2 rules](content-model-s06-re-01-resolver-implementation.md#selected-scalar-comparison-policies) retain their contracts.
 General helper coverage, native/evidence adequacy, complete negatives, mathematical termination and dated correspondence remain open.
 
+The [RE01-A sufficient-class construction](content-model-s06-re-01-support-reconstruction.md#re01-a-private-scalar-construction-theorem)
+now derives separate new Boolean/retained LIST choices for closed input classes S0/S1, with complete native evidence.
+It preserves inherited ITEM identity and funds each new enumeration through its own real immediate L0.
+Equal words in distinct ordinary consumers may select different tags; actual shared readers remain binding.
+This removes the global shared-ITEM assumption for those classes, not for arbitrary future owners or recursive programs.
+
 The [grounded binary WORD construction](#grounded-binary-word-bounds) derives a finite encoding bound without a supplied TOKEN count. Its [joint-constructor prerequisites](#remaining-joint-constructor-and-evidence-gates) remain open; the construction is a reviewed mathematical ingredient, not an implemented general solver.
 
 The [enumeration-introduction correction](content-model-s06-re-01.md#enumeration-retention-and-new-introduction) separates equal value-set coverage from genuine component retention.

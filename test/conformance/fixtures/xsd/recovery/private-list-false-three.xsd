@@ -1,0 +1,17 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:private:false:three" xmlns="urn:saved:QName" targetNamespace="urn:private:false:three" elementFormDefault="qualified">
+  <xs:simpleType name="Tokens"><xs:union memberTypes="xs:QName xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="Batch"><xs:list itemType="t:Tokens"/></xs:simpleType>
+  <xs:simpleType name="Allowed"><xs:restriction base="t:Batch"><xs:pattern value="false"/></xs:restriction></xs:simpleType>
+  <xs:element name="north" type="t:Allowed" abstract="true"/>
+  <xs:element name="east" type="t:Allowed" abstract="true"/>
+  <xs:element name="west" type="t:Allowed" abstract="true"/>
+  <xs:complexType name="Start"><xs:complexContent><xs:restriction base="xs:anyType"><xs:choice>
+    <xs:element name="alpha" type="t:Batch" minOccurs="0" fixed="0"/>
+    <xs:element name="beta" type="t:Batch" minOccurs="0" fixed="false"/>
+    <xs:element name="gamma" type="t:Batch" minOccurs="0" fixed="0"/>
+  </xs:choice></xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="Empty"><xs:complexContent><xs:restriction base="t:Start"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Finish"><xs:complexContent><xs:extension base="t:Empty"><xs:choice>
+    <xs:element ref="t:north"/><xs:element ref="t:east"/><xs:element ref="t:west"/>
+  </xs:choice></xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>

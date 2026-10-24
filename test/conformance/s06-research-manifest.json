@@ -2656,7 +2656,7 @@
         {
           "path": "docs/content-model-s06-re-01-support-reconstruction.md",
           "role": "decision",
-          "sha256": "4ab6232622f91740ddd9ffdbd2aff733849685a9dc58229318721da9dad49e93"
+          "sha256": "31a7e1d5024311c7d8e07aec0732ca2ef09a4662b76e3cce425dac662ccb45e6"
         },
         {
           "path": "test/research/re01/census-twin-cap-two.test.ts",
@@ -2706,7 +2706,7 @@
         {
           "path": "docs/content-model-s06-re-01-scalar-witnesses.md",
           "role": "decision",
-          "sha256": "eb268ce2428cf9381688407b92624331cab54620db98165bb1cfb7b479e8fa3b"
+          "sha256": "6a06f01d16b638017697d0949e6f3ae476ece22ce2d2c8903276c89077ee1d8d"
         },
         {
           "path": "test/research/re01/inherited-raw-facet-identity.test.ts",
@@ -3191,7 +3191,7 @@
         {
           "path": "test/research/re01/anchored-list-assignment.ts",
           "role": "prototype",
-          "sha256": "242d2b1ac8841a918eccbd098dfa3187aaae9ae3d2557e4c4a682a902f9f4ee1"
+          "sha256": "f57850aa67342f893268627f3759d3ff9ff069f75fe36d7549dc42529f17ab7b"
         },
         {
           "path": "test/research/re01/anchored-list-assignment.test.ts",
@@ -3216,7 +3216,7 @@
         {
           "path": "test/research/re01/evidence-builder.ts",
           "role": "prototype",
-          "sha256": "5aad4c6b4ac0be9f195c6c6e2a87a21e4cab699c74b162c4f934b47610104c01"
+          "sha256": "233fc487c277a5becae8a82ad6d1196591b5d49d6476c0ef9bc5e22b6e523b49"
         },
         {
           "path": "test/research/re01/evidence-builder.test.ts",
@@ -3237,6 +3237,26 @@
           "path": "test/conformance/reference/re01-automatic-evidence-sources.test.ts",
           "role": "reference",
           "sha256": "ae08ee1b3985f0e5899915c6b524aa83143c0e183fdcc844269059bf49461788"
+        },
+        {
+          "path": "test/research/re01/private-anchored-list.test.ts",
+          "role": "prototype",
+          "sha256": "23aa0fa4cb7089d90ac96fa8c6ebc8ed84b0a95e13c81ff91ac2384ed8f0c28a"
+        },
+        {
+          "path": "test/conformance/reference/re01-private-list-sources.test.ts",
+          "role": "reference",
+          "sha256": "e8bc393264fe935ed83d6cba8c93ceb035c14cbd8cde29b55f8d779cd4c4f2f7"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-list-false-three.xsd",
+          "role": "fixture",
+          "sha256": "9e2666a82e333a6e2acdb4d978f85cd2b2cc0b49726d39694df4769b01d695f0"
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/recovery/private-list-inherited.xsd",
+          "role": "fixture",
+          "sha256": "89f3b99fe8b3667d0da071c53f776c981e9dcbaa11c23001a16b16756e84d4c5"
         }
       ]
     },

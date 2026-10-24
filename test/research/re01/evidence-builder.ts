@@ -11,7 +11,7 @@ import type {FiniteRe01Evidence, FiniteRe01PrimitiveEvidence, FiniteRe01Evidence
   FiniteRe01Hypothesis, FiniteRe01Frontier, FiniteVerificationFailure,
   FiniteCandidateReceipt, FinitePrimitiveReceipt} from '../../../src/compiler/finiteRe01Verification.js';
 import {prepareInheritedMiddleAssignments, replaySharedAssignment} from './shared-assignment.js';
-import {prepareAnchoredListAssignments} from './anchored-list-assignment.js';
+import {prepareAnchoredListAssignments, preparePrivateAnchoredListAssignments} from './anchored-list-assignment.js';
 import type {AnchoredListFailure} from './anchored-list-assignment.js';
 
 export type EvidenceBuilderMode = 'input-only' | 'seeded-completion';
@@ -230,20 +230,23 @@ function build(actual: SemanticContext, target: NodeId, mode: EvidenceBuilderMod
             else record(subject.parent, subject.target, replay);
           }
         } else record(subject.parent, subject.target, inherited);
-        const anchored = prepareAnchoredListAssignments(actual, subject.parent, subject.target);
-        if (anchored.kind === 'resource-limit') return anchored;
-        if (anchored.kind === 'prepared-anchored-list-assignments') {
-          for (const outcome of anchored.outcomes) {
-            charge(2);
-            if (outcome.result !== 'prepared-local-evidence') {
-              if (outcome.result.kind === 'resource-limit') return outcome.result;
-              record(subject.parent, subject.target, outcome.result);
+        for (const producer of [prepareAnchoredListAssignments, preparePrivateAnchoredListAssignments]) {
+          charge(2);
+          const anchored = producer(actual, subject.parent, subject.target);
+          if (anchored.kind === 'resource-limit') return anchored;
+          if (anchored.kind === 'prepared-anchored-list-assignments') {
+            for (const outcome of anchored.outcomes) {
+              charge(2);
+              if (outcome.result !== 'prepared-local-evidence') {
+                if (outcome.result.kind === 'resource-limit') return outcome.result;
+                record(subject.parent, subject.target, outcome.result);
+              }
             }
-          }
-          for (const assignment of anchored.assignments) {
-            charge(2); const failure = add(assignment.evidence); if (failure) return failure;
-          }
-        } else record(subject.parent, subject.target, anchored);
+            for (const assignment of anchored.assignments) {
+              charge(2); const failure = add(assignment.evidence); if (failure) return failure;
+            }
+          } else record(subject.parent, subject.target, anchored);
+        }
       }
       if (!result.length) record(subject.parent, subject.target, Object.freeze({kind: 'unresolved',
         rule: 'builder-qualified-family-empty', message: 'No complete candidate was obtained in the delivered qualified families',
