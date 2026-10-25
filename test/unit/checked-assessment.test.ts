@@ -69,6 +69,19 @@ describe('checked source assessment', () => {
     expect(report.schemaEligible).toBe(true);
     expect(report.identity).toBe((await assess(source)).identity);
   });
+  it('publishes the same safe failed report for refused CLI and API sources', async () => {
+    for (const [index, source] of ['ftp://example.invalid/service.wsdl', 'https://user:private@example.invalid/service.wsdl'].entries()) {
+      const output = path.join(artifacts, 'refused-' + index + '.json');
+      const cli = spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'assess', '--wsdl-source', source, '--report', output], {encoding: 'utf8'});
+      expect(cli.status).toBe(1);
+      const text = await readFile(output, 'utf8');
+      const report = parseAssessmentReport(text);
+      expect(report.execution).toBe('failed');
+      expect(report.category).toBe((await assess(source)).category);
+      expect(text).not.toContain('user:private');
+      expect(cli.stderr).not.toContain('user:private');
+    }
+  });
   it('does not turn rejection of a hypothetical membership into original-schema invalidity', async () => {
     const source = path.join(root, 'direct.xsd');
     const input = await loadSemanticSchemaInput(source, {policy: {fileRoots: [root]}});

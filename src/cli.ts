@@ -103,8 +103,13 @@ if (rawArgs[0] === "assess") {
   process.on("SIGINT", cancel);
   try {
     const source = argv["wsdl-source"];
-    const uri = resolveResourceUri(source);
-    const localFile = uri.startsWith("file:") ? fileURLToPath(uri) : undefined;
+    let localFile: string | undefined;
+    try {
+      const uri = resolveResourceUri(source);
+      localFile = uri.startsWith("file:") ? fileURLToPath(uri) : undefined;
+    } catch {
+      // Root inference grants nothing on failure; the API still publishes its loading diagnostic.
+    }
     const report = await assessSchemaSource(source, {signal: controller.signal, loading: {policy: {
       fileRoots: argv["schema-root"] ?? (localFile ? [path.dirname(localFile)] : []),
       allowedOrigins: argv["schema-origin"] ?? [],
