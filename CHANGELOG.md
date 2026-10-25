@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): reconstruct a supplied private observer island and pin the remaining erasure and catalogue proof gates.
+
 - test(re01): distinguish isolated-reader pruning from globally observed TYPE dependencies in research.
 
 - feat(re01): qualify original named-group readers and normalize staged BODY observations in research.

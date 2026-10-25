@@ -6001,6 +6001,169 @@ complete membership and rank guards apply; sufficient resources are necessary fo
 Full #234 coverage, catalogue-wide #350 totality, termination, dated-XSD correspondence, #351 negatives and #179/#153
 production remain separate open gates. No package/version/default activation, release, tag or publication occurs.
 
+## RE01-E1 whole-forest interface investigation
+
+This packet starts at main `f84fb160351caba990fa0d330bdc5b5e75c97a03`, tree
+`196f29b9b6202afb1544e75bf420ca607e713214`, and investigates [#365](https://github.com/TechSpokes/typescript-wsdl-client/issues/365).
+The native controls below extend D2 without supplying a general erasure operation or changing completeness flags.
+
+### Quantified frame and two necessary exclusions
+
+Let J be the authentic finite current `(Gamma,P,target)`, F a complete successful original-root forest containing
+that selected cut, and D a finite set of candidate-born identities with their first-birth RAW rows.
+Protected data comprises immutable Gamma, fixed P at a fixed-parent cut, selected targets and all original and
+retained contextual obligations; it does not automatically include every private identity in F.
+
+Physical deletion from fixed P is unavailable if D intersects stored(P). The candidate owner copies its parent's
+stored maps before adding or replacing the endpoint; omission from active membership does not delete a stored row.
+This is a representation obstruction to that fixed-parent operation, not a semantic impossibility result.
+An alternative-root theorem may change genuine birth recipes above P, but then proves a different statement from
+success for the original fixed J. Every descendant must have its actual reconstructed parent.
+
+Preservation of every possible lookup is also too strong: if a deleted global d was present, lookup(d) changes
+from found to missing. Likewise its stored occupancy changes. Thus no nonempty globally named island can satisfy
+that proposed universal-query predicate. Restrict observation preservation to an explicit retained query domain;
+this repair creates a separate obligation to prove that domain exhaustive for retained assessment and replay.
+
+### A computable pre-erasure manifest predicate
+
+For this investigation M is an explicit finite manifest of observations for all retained duties and retained birth
+operations across F's original, parent and descendant contexts. An entry identifies its context occurrence, owning
+operation, operands and expected data answer; context IDs and receipts are not transported as semantic answers.
+M is proof-investigation data derived from F, never an input to a source-only or current-input catalogue generator.
+
+Define `Closed_M(F,D)` by the following finite structural tests. It does not invoke native verification of an erased
+candidate, require a successful replay or use a resource-limit outcome as a truth value.
+
+| Clause | Finite test on records, recipes and M |
+| --- | --- |
+| Protected roots | D misses Gamma, fixed P, selected targets and every explicitly retained required root |
+| Birth | Each deleted row is omitted only at its first birth, with all later occurrences consistently omitted |
+| Direct support | Retained TYPE/BASE/ITEM/BODY/CODE and scoped owner edges have no endpoint in D |
+| Native backing | Retained RAW/SOURCE selectors, groups, uses and shared order identities have no support in D |
+| Scalar support | Retained VALUE, FIRST, QName maps, funding tuples and scalar/IC/AU/AW operands avoid D |
+| Reverse queries | Each retained affiliate/HEAD query has the same complete ordered answer and nominal inputs |
+| Negative queries | Each recorded name/absence/collision answer is unchanged for its retained query tuple |
+| Storage | Retained birth tuples keep their reservations, including inactive rows and later reactivation |
+| Duties | Retained semantic and native context/target obligations have the same dependency operands |
+| Authority | Retained selectors have original request backing and unchanged first-issue inputs at real births |
+
+These are comparisons on finite record tables and the declared finite query domains. Reverse sets must include
+transitive affiliations and actual effective membership, rather than only forward references from the selected root.
+SOURCE comparisons retain definition identity, reference occurrence, saved maps and shared arms, not just BODY values.
+Closure against a retained owner also forbids deleting its dependencies merely because another BODY is equal.
+
+Test all stored retained rows, including inactive rows. For collision queries compare occupancy only at retained
+future birth tuples; requiring equality of the entire occupancy function would prohibit D itself.
+The duties clause compares structural operands and required root policy, not receipts or success of a new checker.
+Root-enumeration differences attributable exactly to omitted D are allowed only for unprotected private duties.
+
+This defines a decidable predicate relative to finite M and explicit structural support tables. It does not establish
+that emitted positive dependency lists constitute such an exhaustive M. An unlisted query or unaudited selector
+interpretation leaves the native erasure theorem unresolved, even when every listed comparison passes.
+
+### Conditional replay implication and its undischarged hypotheses
+
+The precise conditional implication is:
+
+```text
+For every finite valid F, finite D and finite manifest M:
+  exhaustive retained-observation coverage(M,F,D)
+  and local authority/reconstruction stability(M,F,D)
+  and Closed_M(F,D)
+  imply existence of a reconstructed complete F' preserving the selected judgment
+  and every protected obligation, with D omitted at its genuine births.
+```
+
+Coverage means every context access capable of changing a retained derivation or birth is included, including
+negative queries, membership enumeration and newly demanded children. Local stability means unchanged structural
+operands can be reconstructed with equivalent authentic SOURCE/scalar/particle authority in the receiving context.
+Neither hypothesis is defined by successful native verification of F'; both require owner-by-owner proof.
+
+Under those hypotheses, induct on the finite forest's birth order and on each retained finite local derivation.
+At a birth, unchanged retained inputs and reservations give the corresponding local record construction; omitted
+private roots supply no retained premise by closure. At a local derivation step, exhaustive query coverage and
+unchanged operands preserve the rule and its required premises, while local stability reissues its authority.
+Apply the induction to every retained child in its new actual parent and to every actual Gamma root; assemble new
+native evidence from those local derivations. This argument never copies a receipt into another context.
+
+This is an abstract conditional replay argument, not a proved locality theorem for all current native owners.
+The missing hypothesis is concrete: `dependencies`, typed dependencies and emitted contextual obligations have
+not been shown to enumerate all negative, global, storage and first-birth observations made by those owners.
+`semanticContext`'s stored index and `schemaTypeRelations`' reverse HEAD traversal already show why forward edges
+alone are insufficient. No generic eraser is justified by the current proof.
+
+The implication concerns mathematical derivability with sufficient resources. A successful F can consume almost
+all of its request budget; rebuilding F' on that same budget may exhaust. Each actual attempt must keep the one
+precharged sticky budget and report resource-limit separately, rather than promise another operational success.
+
+### Native discriminators and their exact scope
+
+The [ambient suite](../test/research/re01/private-ambient.test.ts) retains all three D2 name/group-arm contrasts.
+Each complete observed forest succeeds, deleting its exact reader alone fails `candidate-rejected/code=missing`,
+and jointly omitting that reader, the GLOBAL observer and their RAW rows at root birth yields a newly completed
+two-node forest. Every rebuilt proof step excludes both identities; the stored NP rank is unchanged because
+the removed reader is a restriction, not an NP extension. This is a genuine supplied-island positive, not a
+universal extraction theorem or a new source-input constructor.
+
+Replacing the old root context while keeping its old child fails `missing-nested-evidence`; the builder must
+reconstruct that child with the new root context as its real parent. Existing group-reuse controls retain distinct
+use occurrences and shared definition origins through Gamma, parent and child; wrong owner/SOURCE and foreign
+request handles remain independently rejected by their existing owners.
+
+The E1 structural contrasts separately establish that deactivating a RAW reader is rejected, while a stored private
+particle without a RAW owner can become inactive and still reserve its exact identity. Rebirth collides, reactivation
+restores the same row, and the complete-membership rank guard refuses the inactive context.
+An unrelated TYPE does not save a retained scoped declaration after its owner is deleted: preparation reports the
+missing exact owner. These owner/reservation cases test structural preparation, not complete forest acceptance.
+
+A fresh affiliate changes incoming affiliations, the effective HEAD pool and a previously missing global lookup
+while leaving the head's forward record unchanged. This is a native query contrast; no claim is made that this
+extra affiliate fits the staged complete-forest grammar. Existing SOURCE/group controls and these contrasts
+ground distinct observation classes independently of a proposed pruning algorithm.
+Exhausting the same request before rebuilding returns its sticky resource-limit failure with no further work.
+
+### Why this does not supply a finite current-input catalogue
+
+The requested local implication still quantifies over every successful J, independently of a previously supplied F:
+there must be a total computable finite C(J) containing a bounded winning candidate with a complete successful
+continuation. For a Gamma-fresh target, that same candidate must introduce zero newly stored NP after materialization.
+The current M and all omission choices above depend on F; no C(J) is obtained from them.
+
+Even perfect erasure can stop at an irreducible retained interface. There is no proof bounding its identities,
+names, WORDs, namespace maps, scalar programs, group/owner roles or native evidence bytes by J.
+Finite vocabulary does not bound instantiation count. Existence of a least encoded successful witness follows
+from well-ordering when J succeeds, but computing it by witness search gives no total bound on unsuccessful J.
+Thus neither that minimum nor bounded experiments establish a total computable catalogue.
+
+Deleting R readers also does not prove the joint fresh-cut property: these rows were never NP. The existing
+`(q,n)` theorem remains conditional on the same bounded winning candidate satisfying zero-new-stored-NP and
+on total adequate checking, Gamma-owned backsupport and complete required continuations.
+
+### Premise disposition and executable handoff
+
+| Claim | E1 disposition |
+| --- | --- |
+| Joint supplied reader/GLOBAL omission | Native controls delivered; no arbitrary-witness theorem |
+| Fixed-parent physical inherited deletion | Unavailable in the persistent candidate representation |
+| Preservation of all possible lookups | Refuted for a deleted global identity |
+| Manifest-relative replay implication | Conditional on exhaustive observation and authority stability proofs |
+| Whole-forest native erasure | Unresolved for the full native domain |
+| Input-only local catalogue completeness | Unresolved; no meaningful-sector extraction bound established |
+| Native authority adequacy | Consumed controls checked; catalogue-wide adequacy remains open |
+| Gamma-owned backsupport | Existing founded-contextual-Q-v1 retained; no new general proof |
+| Successful continuation | Rebuilt for the supplied controls only |
+| Rank decrease | Existing conditional theorem retained; no new general fresh-cut extraction |
+| Full-domain coverage and negatives | Open and disabled as before |
+
+Implementation is PARTIAL: test-only semantic discriminators and this premise ledger are delivered; a general
+normalizer/catalogue is BLOCKED ON PROOF. #362 remains blocked, and #234/#349/#350/#232 retain their broad gates.
+The next concrete operation is to audit the original-particle SOURCE reification path in `semanticContext`:
+enumerate its exact owner, backing-ID, stored-occupancy and membership queries, prove deletion-stability for those
+queries at a retained first birth, then challenge it with an inactive backing alias and two retained group uses.
+Only after this owner lemma is independently accepted should another owner be added to M; no general logging
+framework, speculative optimizer or negative decision implementation follows from this packet.
+
 ## Input-derived exact-ITEM free-LIST construction
 
 The research-only [free-LIST producer](../test/research/re01/free-list-assignment.ts) accepts only authentic
