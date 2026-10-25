@@ -37,6 +37,7 @@ describe('checked source assessment', () => {
     expect(cli.status).toBe(0);
     expect(parseAssessmentReport(await readFile(output, 'utf8'))).toEqual(api);
     expect(() => parseAssessmentReport(JSON.stringify({...api, reportVersion: 'future'}))).toThrow();
+    expect(() => parseAssessmentReport(JSON.stringify({...api, schema: 'disproved', schemaEligible: false}))).toThrow();
     expect(() => parseAssessmentReport(JSON.stringify({...api, admitted: true}))).toThrow();
     expect(() => parseAssessmentReport(JSON.stringify({...api, obligations: []}))).toThrow();
     expect(() => parseAssessmentReport(JSON.stringify({...api, operations: [null], resources: [null]}))).toThrow();

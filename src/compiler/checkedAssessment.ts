@@ -50,7 +50,7 @@ export interface CheckedAssessmentReport {
   readonly contexts: readonly Readonly<{id: string; resource: string; digest: string; namespace: string; base: string; kind: string}>[];
   readonly components: readonly Readonly<{id: string; digest: string; resource: string; path: string; contexts: readonly string[]}>[];
   readonly edges: readonly Readonly<{kind: string; from: string; to?: string; cycle: boolean}>[];
-  readonly limits: Readonly<{maxWork: number; maxNodes: number; loading?: SchemaInput['limits']}>;
+  readonly limits: Readonly<{maxWork: number; maxNodes: number; maxReportBytes: number; loading?: SchemaInput['limits']}>;
   readonly usage: ResolverUsage;
   readonly schemaEligible: boolean;
   readonly admitted: false;
@@ -329,6 +329,8 @@ export function parseAssessmentReport(text: string): CheckedAssessmentReport {
   if (!Array.isArray(r.obligations) || !r.obligations.length || !Array.isArray(r.operations) || !Array.isArray(r.resources) || !Array.isArray(r.contexts) || !Array.isArray(r.edges) || !Array.isArray(r.components) || !['complete', 'unassessed'].includes(String(r.operationInventory))) return bad();
   for (const o of r.obligations) if (!record(o) || !status(o.status) || !textField(o.rule) || !textField(o.component) || !textField(o.context) || !textField(o.reason) || ![ASSESSMENT_BASIS, 'dated-XSD-2004-direct-v1'].includes(String(o.basis))) return bad();
   const obligations = r.obligations as AssessmentObligation[];
+  const nativeDisproved = obligations.some(o => o.basis === ASSESSMENT_BASIS && o.status === 'disproved');
+  if ((r.schema === 'disproved') !== nativeDisproved) return bad();
   if (!obligations.some(o => ['whole-actual-closure', 'unfinished-assessment', 'unfinished-publication'].includes(o.rule))) return bad();
   if (r.schema === 'established' && (r.execution !== 'completed' || !obligations.some(o => o.rule === 'whole-actual-closure' && o.basis === ASSESSMENT_BASIS && o.status === 'established') || obligations.some(o => o.basis === ASSESSMENT_BASIS && o.status !== 'established'))) return bad();
   if (r.correspondence === 'established' && !obligations.some(o => o.rule === 'dated-XSD-correspondence' && o.basis === 'dated-XSD-2004-direct-v1' && o.status === 'established')) return bad();
