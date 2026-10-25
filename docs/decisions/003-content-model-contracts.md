@@ -228,3 +228,33 @@ Final #168/#149 acceptance requires both reviewed probes, reconciled register en
 - [XML Base, second edition](https://www.w3.org/TR/xmlbase/)
 - [OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html)
 - [ADR-002](002-streamable-responses.md): current dedicated streaming decision and shipped behavior
+
+## Checked product assessment amendment: P1-D01
+
+Issue [#367](https://github.com/TechSpokes/typescript-wsdl-client/issues/367) authorizes a separate checked-product track. Universal RE01 completeness remains a research goal, but is no longer an unconditional predecessor of qualified product delivery. This amendment supersedes historical blanket product gates only; the approved full profile and research completeness flags are unchanged.
+
+The additive `assessSchemaSource` API and `wsdl-tsc assess --wsdl-source <source> --report <path>` command perform diagnostics only. They use the controlled loader with explicit roots/origins, source-bound native contexts and existing semantic owners. They cannot generate artifacts, dispatch SOAP or authorize later generation by replaying a report.
+
+### Independent report dimensions
+
+Report version `checked-assessment-v1` names scope `whole-actual-native-direct-v1`, model `xsd10-faithful-v1`, and basis `native-direct-premises-v1`. Established means all required source-document, whole actual component, generated scalar, notation, identity-formation, dependency and aggregate obligations in that scope have accepted native evidence. It is not a claim of complete dated-XSD validation: the independent dated-XSD correspondence dimension must also be established before any standards-based checked schema eligibility.
+
+Each obligation records rule, component, origin context, evidence basis and an established/disproved/inconclusive result with evidence or an unresolved reason. Required work is inventoried before assessment; aggregate status is disproved if any sound actual failure exists, established only if every required duty is present and established, otherwise inconclusive. Interrupted or unenumerated work retains a required inventory/closure duty; empty arrays cannot imply success.
+
+The direct route checks actual source premises and primitive no-change derivation using the existing finite owner and its aggregate dependency discharge. A constructed B-v1/Q_f witness is never silently promoted to dated-XSD evidence. Constructed witnesses are excluded from this first product adapter; nonprimitive RE01 remains a named unresolved obligation, and lack of a witness is inconclusive, never original-schema invalidity.
+
+Execution independently records completed, resource-limit, cancelled or failed. A normally finished limited strategy may be inconclusive; sticky exhaustion may not become completed. Partial reports retain known facts and explicitly unassessed duties; invalid unrelated actual declarations remain relevant to whole-Gamma legality.
+
+Every discoverable WSDL portType operation has supported/unsupported/not-assessed capability entries for matching, projection, scalar payload validation, bundle, codec, buffered transport and structured generation. Schema legality does not establish runtime support. Checked admission requires completed execution, all required established schema and correspondence obligations, and all required implemented/tested runtime capabilities; this diagnostic milestone admits no generation.
+
+### Identity, budgets and diagnostics
+
+Reports include exact source resource digests, import/include edges and effective interpretation contexts, named limits, semantic contract/tool versions and request work/node usage. Ordering is deterministic by stable source/context/component/rule keys; ephemeral native request IDs are normalized to the report's actual context. URI identities use opaque request-local labels plus digests so credentials, query strings, absolute paths and source payloads are not published. Digests detect mismatches; they are neither authentication nor proof certificates.
+
+One inclusive sticky request budget covers loading, preparation, native checking, copying, caching and publication, with the existing loader's byte/depth/time and structural limits retained as additional bounds. Cancellation is cooperative at stage and component boundaries; it is never a schema failure. Terminal escape reports retain an explicit unassessed closure duty and cannot grant admission.
+
+The CLI writes only the requested JSON report and a concise status diagnostic. Exit codes are 0 for established required schema scope and correspondence, 2 for inconclusive, 3 for disproved, 4 for resource-limit, 5 for cancelled, and 1 for loading/operational/report-write failure. Runtime unavailability is separately reported and does not turn schema invalid; no existing command, shape or legacy default changes.
+
+### Required acceptance boundary
+
+Independent review must audit direct-route one-way soundness, whole-Gamma dependency closure, actual/candidate attribution, missing-duty aggregation and resource accounting. Comparison validators are corroboration only. No report establishes runtime payload matching, reversibility, binding/security support or end-to-end readiness; those remain the named downstream owners' acceptance duties.

@@ -71,3 +71,9 @@ Abstract construction plans plus a separately checked hypothetical graph overlay
 The [S02 handoff](content-model-s02-handoff.md) and #149 acceptance record pin reviewed draft/probe revisions and final delivery review/checks/merge. The SOAP source probe at `4d1d3972fbb0f8170232a3bd143f0fcf0adc842d` passed independent integration review; the gateway source probe at `d826ff506a80437bca1b747f40b772727643a506` passed independent semantic/gateway review.
 
 No foundational graph, projection, bundle/runtime, base transport or compatibility question remains open. The two open qualification entries block their affected transport/security consumers; their rejection and verification-order contracts are already resolved, so they do not change S03's input contract. Future shared scalar/particle, completion and compatibility implementations remain mandatory first-consumer gates, not already implemented features. S03 starts only after S02's joint gate closes.
+
+## Checked-product entry contract
+
+[P1-D01](decisions/003-content-model-contracts.md#checked-product-assessment-amendment-p1-d01) separates scoped, potentially inconclusive diagnostics from universal RE01 research acceptance. #367 owns the additive source API/report and assessment-only CLI; #368 measures that exact interface; #369 implements one later checked buffered client slice. #179/#153 retain full-profile ownership, and #234/#351/#362/#365 retain their unchanged research claims.
+
+The native-direct basis and dated-XSD correspondence are separate required dimensions. Unknown runtime capabilities remain unsupported or not-assessed, and whole-Gamma legality remains independent of operation reachability. Conditional admission #370 and public structured activation remain deferred.
