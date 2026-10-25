@@ -1,6 +1,6 @@
 /** Expectations follow direct XSD rules and observable diagnostic/admission guarantees. */
-import {describe, it, expect} from 'vitest';
-import {mkdtemp, readFile, writeFile} from 'node:fs/promises';
+import {describe, it, expect, beforeAll, afterAll} from 'vitest';
+import {mkdtemp, readFile, writeFile, mkdir, rm} from 'node:fs/promises';
 import path from 'node:path';
 import {createServer} from 'node:http';
 import {once} from 'node:events';
@@ -10,9 +10,16 @@ import {prepareSourceSchemaRequest} from '../../src/compiler/schemaDocumentSynta
 import {assessSchemaSource, serializeAssessmentReport, assessmentExitCode, aggregateAssessment, parseAssessmentReport} from '../../src/compiler/checkedAssessment.js';
 
 const root = path.resolve('test/conformance/fixtures/assessment');
+let artifacts: string;
+beforeAll(async () => {
+  const parent = path.resolve('tmp/conformance/assessment');
+  await mkdir(parent, {recursive: true});
+  artifacts = await mkdtemp(path.join(parent, 'suite-'));
+});
+afterAll(async () => {if (artifacts) await rm(artifacts, {recursive: true, force: true});});
 const assess = (source: string, extra: Partial<Parameters<typeof assessSchemaSource>[1]> = {}) => assessSchemaSource(source, {loading: {policy: {fileRoots: [root]}}, ...extra});
 async function altered(text: string) {
-  const directory = await mkdtemp(path.resolve('tmp/conformance/assessment/case-'));
+  const directory = await mkdtemp(path.join(artifacts, 'case-'));
   const source = path.join(directory, 'source.xsd');
   await writeFile(source, text);
   return assessSchemaSource(source, {loading: {policy: {fileRoots: [directory]}}});
@@ -31,7 +38,7 @@ describe('checked source assessment', () => {
   });
   it('matches CLI/API reports and validates diagnostic consistency', async () => {
     const source = path.join(root, 'direct.xsd');
-    const output = path.resolve('tmp/conformance/assessment/cli-report.json');
+    const output = path.join(artifacts, 'cli-report.json');
     const api = await assess(source);
     const cli = spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'assess', '--wsdl-source', source, '--report', output], {encoding: 'utf8'});
     expect(cli.status).toBe(0);
