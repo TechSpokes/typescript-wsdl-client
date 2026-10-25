@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(readiness): add a pinned WSDL inventory and measured checked-client entry packet.
+
 - feat(assessment): add source-only diagnostic API/CLI with qualified direct evidence and explicit inconclusive duties.
 
 - test(re01): reconstruct a supplied private observer island and pin the remaining erasure and catalogue proof gates.

@@ -114,7 +114,8 @@
     "typecheck:reference": "tsc -p test/conformance/reference/tsconfig.json",
     "test:research:ports": "vitest run test/research/s06-au01 test/research/re01 test/research/s06-pw01 test/research/dt01",
     "research:re01:measure": "tsx test/research/re01/measure.ts",
-    "research:re01:compare": "tsx test/research/re01/cli.ts"
+    "research:re01:compare": "tsx test/research/re01/cli.ts",
+    "assess:inventory": "tsx scripts/readiness-inventory.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

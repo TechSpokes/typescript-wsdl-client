@@ -1,0 +1,1 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="urn:checked:forecast"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Unknown city</faultstring><detail><t:ForecastFault><t:code>NOT_FOUND</t:code><t:message>Unknown city</t:message></t:ForecastFault></detail></soap:Fault></soap:Body></soap:Envelope>

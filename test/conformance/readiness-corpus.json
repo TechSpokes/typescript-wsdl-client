@@ -1,0 +1,135 @@
+{
+  "format": "readiness-corpus-v1",
+  "inputs": [
+    {
+      "id": "weather",
+      "tier": "synthetic",
+      "source": "examples/minimal/weather.wsdl",
+      "origin": "Repository fixture; provenance reused from #272 or current conformance suite",
+      "permission": "Repository MIT license; no private/customer source",
+      "rationale": "Complete repository Weather example; #272 corpus, not a production-service snapshot",
+      "files": [
+        {
+          "path": "examples/minimal/weather.wsdl",
+          "sha256": "ec2ee4d9c2dbf82b44012c4e726fbf21e4c56ec4da881cd783846ac466ac599c",
+          "bytes": 21204
+        }
+      ],
+      "originRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9"
+    },
+    {
+      "id": "import",
+      "tier": "reference",
+      "source": "test/conformance/fixtures/xsd/imports/import-relative-types.wsdl",
+      "origin": "Repository fixture; provenance reused from #272 or current conformance suite",
+      "permission": "Repository MIT license; no private/customer source",
+      "rationale": "Relative import and complete two-resource closure from #272",
+      "files": [
+        {
+          "path": "test/conformance/fixtures/xsd/imports/import-relative-types.wsdl",
+          "sha256": "033102fd584bf2473d676109e7a53ed3d2479932949798a7af8d137ac58fd1bc",
+          "bytes": 2243
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd",
+          "sha256": "7e6efee947f148c88cc252e257461d4075b17fcc39994f108da5cbfe3cab7ef9",
+          "bytes": 355
+        }
+      ],
+      "originRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9"
+    },
+    {
+      "id": "chameleon",
+      "tier": "reference",
+      "source": "test/conformance/fixtures/xsd/graph/chameleon.wsdl",
+      "origin": "Repository fixture; provenance reused from #272 or current conformance suite",
+      "permission": "Repository MIT license; no private/customer source",
+      "rationale": "One included source adopted into two namespace contexts from #272",
+      "files": [
+        {
+          "path": "test/conformance/fixtures/xsd/graph/chameleon.wsdl",
+          "sha256": "8aeea0032517742608a49e084dcf314106a9047166dc4aa5f879a6dc1add7ce8",
+          "bytes": 426
+        },
+        {
+          "path": "test/conformance/fixtures/xsd/graph/chameleon.xsd",
+          "sha256": "26111592b94438d216ffadda58b21a33762f9911839c3d9c43c7ad5ec3ed719e",
+          "bytes": 235
+        }
+      ],
+      "originRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9"
+    },
+    {
+      "id": "shared-recursive",
+      "tier": "reference",
+      "source": "test/conformance/fixtures/xsd/graph/shared-recursive.xsd",
+      "origin": "Repository fixture; provenance reused from #272 or current conformance suite",
+      "permission": "Repository MIT license; no private/customer source",
+      "rationale": "Shared recursive types, named groups, exact counts and scalar/attribute facets from #272",
+      "files": [
+        {
+          "path": "test/conformance/fixtures/xsd/graph/shared-recursive.xsd",
+          "sha256": "bca6b87cdcb0456db6ec9ebde2b5196a81898aee7307fb7c183355d6a8fdcb65",
+          "bytes": 3017
+        }
+      ],
+      "originRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9"
+    },
+    {
+      "id": "repeated-composite",
+      "tier": "reference",
+      "source": "test/conformance/fixtures/xsd/sequences/sequence-occurrence-wrappers.wsdl",
+      "origin": "Repository fixture; provenance reused from #272 or current conformance suite",
+      "permission": "Repository MIT license; no private/customer source",
+      "rationale": "Existing repeated/nested compositor conformance control",
+      "files": [
+        {
+          "path": "test/conformance/fixtures/xsd/sequences/sequence-occurrence-wrappers.wsdl",
+          "sha256": "99577bd477d85d9108d8ffc78827093e3f7d8a1d6cfde5dc2c5d465f84569175",
+          "bytes": 3234
+        }
+      ],
+      "originRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9"
+    },
+    {
+      "id": "deep-composition",
+      "tier": "reference",
+      "source": "test/conformance/fixtures/xsd/sequences/sequence-composition-deep.wsdl",
+      "origin": "Repository fixture; provenance reused from #272 or current conformance suite",
+      "permission": "Repository MIT license; no private/customer source",
+      "rationale": "Existing independently exercised complex composition conformance control",
+      "files": [
+        {
+          "path": "test/conformance/fixtures/xsd/sequences/sequence-composition-deep.wsdl",
+          "sha256": "ef41165e375881f4b81b54b81fb5c08359f7c6e3ae049a1211415943f2c903d6",
+          "bytes": 1920
+        }
+      ],
+      "originRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9"
+    },
+    {
+      "id": "checked-forecast",
+      "tier": "synthetic",
+      "source": "test/conformance/fixtures/assessment/forecast.wsdl",
+      "origin": "Repository-authored P2 synthetic acceptance service",
+      "permission": "Repository MIT license; no private/customer source",
+      "rationale": "P3 candidate: distinct ordered scalar fields, repeated response scalar values and declared fault, without full-profile blockers",
+      "files": [
+        {
+          "path": "test/conformance/fixtures/assessment/forecast.wsdl",
+          "sha256": "51ae02c9950c15530193231d9f1bfbd5605d00934581cc73336132fa489834ea",
+          "bytes": 2456
+        }
+      ],
+      "originRevision": "P2 runner commit recorded in inventory evidence"
+    }
+  ],
+  "unavailable": [
+    {
+      "tier": "real",
+      "reason": "No redistributable production-service snapshot with complete resource closure is present. Weather is a repository example, not evidence of real customer/market coverage."
+    }
+  ],
+  "reusedCorpusRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9",
+  "assessmentRevision": "2a362164e4ece1c840b53243074069c5fe89c4da"
+}

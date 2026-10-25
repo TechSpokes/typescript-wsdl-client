@@ -1,0 +1,1 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="urn:checked:forecast"><soap:Body><t:GetForecast><t:city>Paris</t:city><t:days>2</t:days></t:GetForecast></soap:Body></soap:Envelope>
