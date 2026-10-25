@@ -264,3 +264,9 @@ No include/import/chameleon, annotations, foreign attributes, defaults/fixed, id
 ### Required acceptance boundary
 
 Independent review must audit direct-route one-way soundness, whole-Gamma dependency closure, actual/candidate attribution, missing-duty aggregation and resource accounting. Comparison validators are corroboration only. No report establishes runtime payload matching, reversibility, binding/security support or end-to-end readiness; those remain the named downstream owners' acceptance duties.
+
+### P1 accounting implementation
+
+The report publisher reserves a fixed 1 MiB terminal envelope before source I/O, charges its copying/freezing/JSON escape bound to the same request, and checks conservative per-record byte bounds before retaining facts. Exhaustion publishes only already reserved facts plus an unassessed terminal duty; publication cannot restore completion or eligibility. Limits below the publication reservation fail before source work.
+
+Canonical preparation reserves graph nodes before node construction, passes the caller's node limit to the builder, charges text/namespace construction and deterministic sorting, and shares request work with reference resolution. Context indexing additionally counts its admitted nodes; the usage node counter is cumulative preparation/context allocation accounting, not unique canonical component count. Existing loader byte/depth/time and resolver step caps remain additional named safety limits.

@@ -2,6 +2,8 @@
 import {describe, it, expect} from 'vitest';
 import {mkdtemp, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {createServer} from 'node:http';
+import {once} from 'node:events';
 import {spawnSync} from 'node:child_process';
 import {loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
 import {prepareSourceSchemaRequest} from '../../src/compiler/schemaDocumentSyntax.js';
@@ -37,6 +39,8 @@ describe('checked source assessment', () => {
     expect(() => parseAssessmentReport(JSON.stringify({...api, reportVersion: 'future'}))).toThrow();
     expect(() => parseAssessmentReport(JSON.stringify({...api, admitted: true}))).toThrow();
     expect(() => parseAssessmentReport(JSON.stringify({...api, obligations: []}))).toThrow();
+    expect(() => parseAssessmentReport(JSON.stringify({...api, operations: [null], resources: [null]}))).toThrow();
+    expect(() => parseAssessmentReport(JSON.stringify({...api, obligations: [{rule: 'unfinished-assessment', component: 'actual', context: 'actual', basis: api.basis, status: 'established', reason: ''}]}))).toThrow();
     const mismatch = await assess(source, {expectedIdentity: 'foreign-source-context'});
     expect(mismatch.schema).toBe('inconclusive');
     expect(mismatch.obligations.some(o => o.rule === 'source-context-match')).toBe(true);
@@ -93,6 +97,24 @@ describe('checked source assessment', () => {
     expect(mismatch.schema).toBe('inconclusive');
     expect(mismatch.obligations.some(o => o.rule === 'semantic-basis-match')).toBe(true);
   });
+  it('preserves cancellation while controlled source bytes are arriving', async () => {
+    const bytes = await readFile(path.join(root, 'direct.xsd'));
+    const controller = new AbortController();
+    const server = createServer((_request, response) => {
+      response.writeHead(200, {'content-type': 'application/xml'});
+      response.write(bytes.subarray(0, 40));
+      setTimeout(() => {controller.abort(); response.end(bytes.subarray(40));}, 20);
+    });
+    server.listen(0, '127.0.0.1'); await once(server, 'listening');
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('missing local port');
+    const origin = 'http://127.0.0.1:' + address.port;
+    try {
+      const report = await assessSchemaSource(origin + '/source.xsd', {signal: controller.signal, loading: {policy: {allowedOrigins: [origin]}}});
+      expect(report.execution).toBe('cancelled');
+      expect(assessmentExitCode(report)).toBe(5);
+    } finally {server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));}
+  });
   it('keeps native cancellation and sticky inclusive request exhaustion distinct', async () => {
     const source = path.join(root, 'direct.xsd');
     const controller = new AbortController(); controller.abort();
@@ -102,7 +124,7 @@ describe('checked source assessment', () => {
     // Find this request's publication boundary, including the configured limit's own diagnostic text.
     // Warm native request IDs beyond their first decimal-width transition.
     for (let i = 0; i < 12; i++) await assess(source);
-    let low = 1, high = 5_000_000;
+    let low = 1, high = 64_000_000;
     while (low < high) {
       const middle = Math.floor((low + high) / 2);
       const result = await assess(source, {limits: {maxWork: middle}});
@@ -115,6 +137,9 @@ describe('checked source assessment', () => {
     expect(beyond.schemaEligible).toBe(false);
     expect(assessmentExitCode(beyond)).toBe(4);
     expect(beyond.obligations.some(o => o.status === 'inconclusive')).toBe(true);
+    const nodeLimit = await assess(source, {limits: {maxNodes: 1}});
+    expect(nodeLimit.execution).toBe('resource-limit');
+    expect(nodeLimit.usage.nodes).toBeLessThanOrEqual(1);
     const exhausted = await assess(source, {limits: {maxWork: 1}});
     expect(exhausted.execution).toBe('resource-limit');
   });

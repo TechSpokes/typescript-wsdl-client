@@ -13,6 +13,8 @@ const particleKinds = new Set(["sequence", "choice", "all", "element", "group", 
 const facetKinds = new Set(["enumeration", "pattern", "whiteSpace", "length", "minLength", "maxLength", "minInclusive", "minExclusive", "maxInclusive", "maxExclusive", "totalDigits", "fractionDigits"]);
 
 export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: number; requestBudget?: import("./semanticBudget.js").SemanticBudget} = {}): CanonicalGraph {
+  let allocated = 0;
+  const chargeText = (text: string) => options.requestBudget?.chargeWork(64 + text.length * 16);
   const maxNodes = options.maxNodes ?? DEFAULT_GRAPH_NODES;
   if (!Number.isSafeInteger(maxNodes) || maxNodes < 1) throw new RangeError("maxNodes must be a positive safe integer");
   // Precharge the source-sized reservation/indexing scans independently of source preparation.
@@ -29,10 +31,12 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
   };
   const context = (node: SyntaxElement, schema: SchemaInterpretation): GraphContext => {
     options.requestBudget?.freeze(node);
+    chargeText(node.source.uri); chargeText(node.source.path); chargeText(node.baseUri); chargeText(schema.targetNamespace);
+    for (const [prefix, namespace] of Object.entries(node.namespaces)) {chargeText(prefix); chargeText(namespace);}
     return ({namespaces: node.namespaces, baseUri: node.baseUri, source: node.source,
     effectiveNamespace: schema.targetNamespace, chameleon: schema.context.kind === "include" && !syntaxAttribute(schema.syntax, "targetNamespace"), schemaAttributes: schema.syntax.attributes});
   };
-  const lexical = (value: string, node: SyntaxElement, scope: Scope): LexicalValue => ({value, context: context(node, scope.schema)});
+  const lexical = (value: string, node: SyntaxElement, scope: Scope): LexicalValue => {chargeText(value); return {value, context: context(node, scope.schema)};};
   const required = (node: SyntaxElement, name: string): string => syntaxAttribute(node, name) ?? fail(node, `Missing ${name} attribute`);
   const bool = (node: SyntaxElement, name: string, fallback = false): boolean => {
     const v = syntaxAttribute(node, name); if (v === undefined) return fallback;
@@ -47,6 +51,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
   };
   const named = (node: SyntaxElement, namespace: string): ExpandedName => {
     const local = required(node, "name");
+    chargeText(local);
     // Validate NCName through the adapter without letting the default namespace define identity.
     const resolved = resolveLexicalQName(local, node);
     if (local.includes(":")) return fail(node, "Declaration name must be an NCName");
@@ -67,6 +72,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
     return {min, max};
   };
   const ref = (value: string, role: SymbolRole, node: SyntaxElement, scope: Scope): Reference => {
+    chargeText(value);
     const lexicalName = resolveLexicalQName(value, node);
     // XSD chameleon adoption changes component interpretation, never lexical namespace bindings.
     const name = !lexicalName.namespace && context(node, scope.schema).chameleon
@@ -76,10 +82,13 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
   };
   const builtin = (local: string): Reference => ({kind: "builtin", name: {namespace: XSD_NAMESPACE, local}});
   const idFor = (node: SyntaxElement, scope: Scope, role: string): NodeId => {
+    chargeText(node.source.path); chargeText(scope.owner); chargeText(scope.rootPath);
     const id = scopedId(scope.owner, node.source.path.slice(scope.rootPath.length) || "/", role); scopedRoles.set(id, role); return id;
   };
   const base = (node: SyntaxElement, scope: Scope, id: NodeId, identity?: Identity, consumed: readonly string[] = []) => {
-    // Retained syntax/namespaces and canonical text are charged before constructing the record.
+    if (allocated >= maxNodes) throw new GraphError("resource-limit", `Canonical graph exceeds ${maxNodes} nodes`, node.source);
+    options.requestBudget?.reserveNodes(1); allocated += 1;
+    // Retained syntax/namespaces are charged before constructing the record.
     options.requestBudget?.freeze(node);
     if (node.name.namespace === XSD_NAMESPACE) elementOnly(node);
     return {id,
@@ -259,7 +268,9 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
     }
   }
   const link = (r: Reference): Reference => {
+    options.requestBudget?.chargeWork(128);
     if (r.kind !== "symbol") return r;
+    chargeText(r.name.namespace); chargeText(r.name.local);
     const target = globalId(r.role, r.name);
     return {...r, ...(nodes.has(target) ? {target} : {})};
   };

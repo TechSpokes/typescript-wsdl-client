@@ -96,10 +96,13 @@ if (rawArgs[0] === "assess") {
     .option("assessment-max-work", {type: "number", desc: "Inclusive shared request work limit"})
     .option("assessment-max-nodes", {type: "number", desc: "Inclusive shared request node limit"})
     .strict().help().parse();
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  process.on("SIGINT", cancel);
   try {
     const source = argv["wsdl-source"];
     const local = !/^[a-z][a-z0-9+.-]*:/i.test(source);
-    const report = await assessSchemaSource(source, {loading: {policy: {
+    const report = await assessSchemaSource(source, {signal: controller.signal, loading: {policy: {
       fileRoots: argv["schema-root"] ?? (local ? [path.dirname(path.resolve(source))] : []),
       allowedOrigins: argv["schema-origin"] ?? [],
     }}, limits: {maxWork: argv["assessment-max-work"], maxNodes: argv["assessment-max-nodes"]}});
@@ -109,7 +112,7 @@ if (rawArgs[0] === "assess") {
   } catch {
     console.error("Assessment or report publication failed; source details redacted");
     process.exitCode = 1;
-  }
+  } finally {process.off("SIGINT", cancel);}
 }
 
 // ---------------------------------------------------------------------------

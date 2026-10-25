@@ -1,4 +1,5 @@
 /** Assessment-only source API. Reports are diagnostics, never reusable admission tokens. */
+import {deepFreeze} from './canonicalGraph.js';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 import {loadSemanticSchemaInput} from '../loader/schemaInput.js';
@@ -13,6 +14,7 @@ import {verifyDirectActualSchema} from './finiteRe01Verification.js';
 import type {SemanticContext} from './semanticContext.js';
 
 const packageVersion = (createRequire(import.meta.url)('../../package.json') as {version: string}).version;
+export const ASSESSMENT_REPORT_BYTES = 1024 * 1024;
 export const ASSESSMENT_VERSION = 'checked-assessment-v1' as const;
 export const ASSESSMENT_BASIS = 'native-direct-premises-v1' as const;
 export type AssessmentStatus = 'established' | 'disproved' | 'inconclusive';
@@ -148,7 +150,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
   expectedIdentity?: string;
 }>): Promise<CheckedAssessmentReport> {
   const budget = createSemanticBudget(options.limits);
-  const limits = {maxWork: options.limits?.maxWork ?? DEFAULT_MAX_WORK, maxNodes: options.limits?.maxNodes ?? DEFAULT_MAX_NODES};
+  const limits = {maxReportBytes: ASSESSMENT_REPORT_BYTES, maxWork: options.limits?.maxWork ?? DEFAULT_MAX_WORK, maxNodes: options.limits?.maxNodes ?? DEFAULT_MAX_NODES};
   const obligations: AssessmentObligation[] = [];
   const operations: AssessedOperation[] = [];
   let components: CheckedAssessmentReport['components'] = [];
@@ -159,6 +161,13 @@ export async function assessSchemaSource(source: string, options: Readonly<{
   let correspondence: AssessmentStatus = 'inconclusive';
   let knownFailure = false;
   let identity = 'unassessed';
+  // Reserve bounded terminal copying/freezing/JSON publication before retaining any input facts.
+  let publicationRemaining = ASSESSMENT_REPORT_BYTES - 16_384;
+  const reservePublication = (bytes: number) => {
+    budget.chargeWork(16);
+    if (!Number.isSafeInteger(bytes) || bytes < 0 || bytes > publicationRemaining) budget.chargeWork(limits.maxWork);
+    publicationRemaining -= bytes;
+  };
   // Reserved terminal result carries unassessed closure even if publication itself exhausts.
   const terminal = (state: CheckedAssessmentReport['execution']): CheckedAssessmentReport => ({
     tool: {version: packageVersion, node: process.version}, identity, reportVersion: ASSESSMENT_VERSION, scope: 'whole-actual-native-direct-v1', model: 'xsd10-faithful-v1', basis: ASSESSMENT_BASIS,
@@ -170,11 +179,13 @@ export async function assessSchemaSource(source: string, options: Readonly<{
   const check = () => {if (options.signal?.aborted) throw new CancelledAssessment(); budget.chargeWork(1);};
   const opaque = (value: string): string => {budget.chargeWork(128 + value.length * 4); return createHash('sha256').update(value).digest('hex');};
   const add = (rule: string, component: string, status: AssessmentStatus, reason: string, basis: AssessmentObligation['basis'] = ASSESSMENT_BASIS) => {
+    reservePublication(512 + 6 * (rule.length + component.length + reason.length));
     budget.chargeWork(4096 + rule.length * 32 + component.length * 32 + reason.length * 32);
     if (basis === ASSESSMENT_BASIS && status === 'disproved') knownFailure = true;
     obligations.push({rule, component, context: 'actual', basis, status, reason});
   };
   try {
+    budget.chargeWork(ASSESSMENT_REPORT_BYTES * 16 + 4096);
     check();
     if (options.expectedBasis !== undefined && options.expectedBasis !== ASSESSMENT_BASIS) {
       add('semantic-basis-match', 'actual', 'inconclusive', 'Requested semantic evidence basis is unavailable');
@@ -182,6 +193,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
       input = await loadSemanticSchemaInput(source, {...options.loading, chargeWork: amount => {check(); budget.chargeWork(amount);}});
       check();
       const result = budget.guard(() => {
+        reservePublication(input!.resources.length * 512 + input!.schemas.length * 1024 + input!.edges.length * 512);
         budget.chargeWork(128 + input!.resources.length * 256 + input!.schemas.length * 512 + input!.edges.length * 256);
         const resourceId = (uri: string) => opaque(uri);
         resources = budget.sorted(input!.resources.map(r => ({id: resourceId(r.uri), digest: r.digest, bytes: r.byteLength})), (a, b) => budget.compareText(a.id, b.id));
@@ -195,8 +207,10 @@ export async function assessSchemaSource(source: string, options: Readonly<{
             check(); const node = stack.pop()!; budget.chargeWork(128 + node.children.length * 4);
             if (node.name.namespace === WSDL_NAMESPACE && node.name.local === 'portType') {
               for (const operation of syntaxElements(node, WSDL_NAMESPACE, 'operation')) {
-                budget.chargeWork(1024);
-                operations.push({id: opaque(`${document.digest ?? document.root.source.digest}:${operation.source.path}`), name: syntaxAttribute(operation, 'name') ?? '(unnamed)', admitted: false,
+                const operationName = syntaxAttribute(operation, 'name') ?? '(unnamed)';
+                reservePublication(8192 + operationName.length * 6);
+                budget.chargeWork(1024 + operationName.length * 8);
+                operations.push({id: opaque(`${document.digest ?? document.root.source.digest}:${operation.source.path}`), name: operationName, admitted: false,
                   capabilities: ['matcher', 'projection', 'scalar-payload', 'bundle', 'codec', 'buffered-transport', 'structured-generation'].map(name => ({name, status: name === 'structured-generation' ? 'unsupported' as const : 'not-assessed' as const,
                     reason: name === 'structured-generation' ? 'Public structured generation is not activated' : 'This assessment does not qualify the downstream runtime owner'}))});
               }
@@ -208,7 +222,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
         budget.chargeWork(1024 + resources.length * 512 + contexts.length * 1024);
         identity = opaque(JSON.stringify({resources, contexts, basis: ASSESSMENT_BASIS}));
         if (options.expectedIdentity !== undefined && identity !== options.expectedIdentity) add('source-context-match', 'actual', 'inconclusive', 'Expected source/context identity differs from the loaded closure');
-        const prepared = prepareSourceSchemaRequest(input!, {budget});
+        const prepared = prepareSourceSchemaRequest(input!, {budget, sourceLimits: {maxNodes: limits.maxNodes}});
         if (prepared.kind !== 'prepared') {
           if (prepared.kind === 'resource-limit') return prepared;
           if (prepared.kind === 'source-preparation-failed') {
@@ -219,7 +233,9 @@ export async function assessSchemaSource(source: string, options: Readonly<{
         }
         actual = prepared.request.actual;
         budget.chargeWork(256 + prepared.request.graph.nodes.length * 1024);
-        components = prepared.request.graph.nodes.map(node => ({id: opaque(node.id), digest: node.context.source.digest, resource: resourceId(node.context.source.uri), path: node.context.source.path, contexts: (prepared.request.graph.origins[node.id] ?? []).map(origin => opaque(origin.interpretation))}));
+        components = prepared.request.graph.nodes.map(node => {
+          reservePublication(2048 + node.context.source.path.length * 6 + (prepared.request.graph.origins[node.id]?.length ?? 0) * 512);
+          return ({id: opaque(node.id), digest: node.context.source.digest, resource: resourceId(node.context.source.uri), path: node.context.source.path, contexts: (prepared.request.graph.origins[node.id] ?? []).map(origin => opaque(origin.interpretation))}); });
         // Continue independent local duties after ordinary uncertainty. Closure still has its own required sentinel.
         for (const id of actual.members) {
           check(); const found = actual.lookup(id);
@@ -254,7 +270,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
     }
   } catch (error) {
     if (budget.exhausted()) execution = 'resource-limit';
-    else if (error instanceof CancelledAssessment) execution = 'cancelled';
+    else if (options.signal?.aborted || error instanceof CancelledAssessment) execution = 'cancelled';
     else if (error instanceof SchemaLoadingError) {execution = error.category === 'resource-limit' ? 'resource-limit' : 'failed'; category = error.category;}
     else throw error;
   }
@@ -262,6 +278,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
   if (execution !== 'completed') {
     obligations.push({rule: 'unfinished-assessment', component: 'actual', context: 'actual', basis: ASSESSMENT_BASIS, status: 'inconclusive', reason: 'Required checking or publication work was not completed'});
     const report = terminal(execution);
+    deepFreeze(report);
     published.set(report, JSON.stringify(report, null, 2) + '\n');
     return report;
   }
@@ -294,17 +311,35 @@ class CancelledAssessment extends Error {}
 
 /** Validate diagnostic JSON without treating it as authenticated semantic evidence. */
 export function parseAssessmentReport(text: string): CheckedAssessmentReport {
-  const value: unknown = JSON.parse(text);
   const bad = (): never => {throw new TypeError('Malformed or incompatible assessment report');};
-  if (!value || typeof value !== 'object') return bad();
-  const r = value as CheckedAssessmentReport;
+  if (Buffer.byteLength(text) > ASSESSMENT_REPORT_BYTES) return bad();
+  const value: unknown = JSON.parse(text);
+  const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+  const textField = (v: unknown): v is string => typeof v === 'string';
+  const integer = (v: unknown): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v >= 0;
+  const digest = (v: unknown) => typeof v === 'string' && /^[a-f0-9]{64}$/.test(v);
   const status = (s: unknown) => s === 'established' || s === 'disproved' || s === 'inconclusive';
-  if (r.reportVersion !== ASSESSMENT_VERSION || r.scope !== 'whole-actual-native-direct-v1' || r.model !== 'xsd10-faithful-v1' || r.basis !== ASSESSMENT_BASIS || r.admitted !== false || !status(r.schema) || !status(r.correspondence) || !['completed', 'failed', 'cancelled', 'resource-limit'].includes(r.execution)) return bad();
-  if (!Array.isArray(r.obligations) || !r.obligations.length || !Array.isArray(r.operations) || !Array.isArray(r.resources) || !Array.isArray(r.contexts) || !Array.isArray(r.edges) || !Array.isArray(r.components)) return bad();
-  for (const obligation of r.obligations) if (!obligation || !status(obligation.status) || typeof obligation.rule !== 'string' || typeof obligation.component !== 'string' || typeof obligation.context !== 'string' || typeof obligation.reason !== 'string' || ![ASSESSMENT_BASIS, 'dated-XSD-2004-direct-v1'].includes(obligation.basis)) return bad();
-  if (!r.obligations.some(o => ['whole-actual-closure', 'unfinished-assessment', 'unfinished-publication'].includes(o.rule))) return bad();
-  if (r.schema === 'established' && (r.execution !== 'completed' || r.obligations.some(o => o.basis === ASSESSMENT_BASIS && o.status !== 'established'))) return bad();
+  if (!record(value)) return bad();
+  const r = value;
+  if (r.reportVersion !== ASSESSMENT_VERSION || r.scope !== 'whole-actual-native-direct-v1' || r.model !== 'xsd10-faithful-v1' || r.basis !== ASSESSMENT_BASIS || r.admitted !== false || !status(r.schema) || !status(r.correspondence) || !['completed', 'failed', 'cancelled', 'resource-limit'].includes(String(r.execution))) return bad();
+  if (!record(r.tool) || !textField(r.tool.version) || !textField(r.tool.node) || !(r.identity === 'unassessed' || digest(r.identity))) return bad();
+  if (!record(r.limits) || !integer(r.limits.maxWork) || r.limits.maxWork < 1 || !integer(r.limits.maxNodes) || r.limits.maxNodes < 1 || r.limits.maxReportBytes !== ASSESSMENT_REPORT_BYTES) return bad();
+  if (r.limits.loading !== undefined && (!record(r.limits.loading) || Object.values(r.limits.loading).some(v => !integer(v)))) return bad();
+  if (!record(r.usage) || !integer(r.usage.work) || !integer(r.usage.nodes) || r.usage.work > r.limits.maxWork || r.usage.nodes > r.limits.maxNodes) return bad();
+  if (!Array.isArray(r.obligations) || !r.obligations.length || !Array.isArray(r.operations) || !Array.isArray(r.resources) || !Array.isArray(r.contexts) || !Array.isArray(r.edges) || !Array.isArray(r.components) || !['complete', 'unassessed'].includes(String(r.operationInventory))) return bad();
+  for (const o of r.obligations) if (!record(o) || !status(o.status) || !textField(o.rule) || !textField(o.component) || !textField(o.context) || !textField(o.reason) || ![ASSESSMENT_BASIS, 'dated-XSD-2004-direct-v1'].includes(String(o.basis))) return bad();
+  const obligations = r.obligations as AssessmentObligation[];
+  if (!obligations.some(o => ['whole-actual-closure', 'unfinished-assessment', 'unfinished-publication'].includes(o.rule))) return bad();
+  if (r.schema === 'established' && (r.execution !== 'completed' || !obligations.some(o => o.rule === 'whole-actual-closure' && o.basis === ASSESSMENT_BASIS && o.status === 'established') || obligations.some(o => o.basis === ASSESSMENT_BASIS && o.status !== 'established'))) return bad();
+  if (r.correspondence === 'established' && !obligations.some(o => o.rule === 'dated-XSD-correspondence' && o.basis === 'dated-XSD-2004-direct-v1' && o.status === 'established')) return bad();
   if (r.schemaEligible !== (r.execution === 'completed' && r.schema === 'established' && r.correspondence === 'established')) return bad();
-  if (!r.usage || !Number.isSafeInteger(r.usage.work) || !Number.isSafeInteger(r.usage.nodes) || r.usage.work < 0 || r.usage.nodes < 0) return bad();
-  return r;
+  for (const o of r.operations) {
+    if (!record(o) || !digest(o.id) || !textField(o.name) || o.admitted !== false || !Array.isArray(o.capabilities)) return bad();
+    for (const c of o.capabilities) if (!record(c) || !textField(c.name) || !textField(c.reason) || !['supported', 'unsupported', 'not-assessed'].includes(String(c.status))) return bad();
+  }
+  for (const resource of r.resources) if (!record(resource) || !digest(resource.id) || !digest(resource.digest) || !integer(resource.bytes)) return bad();
+  for (const context of r.contexts) if (!record(context) || !digest(context.id) || !digest(context.resource) || !digest(context.digest) || !digest(context.namespace) || !digest(context.base) || !['root', 'inline', 'include', 'import'].includes(String(context.kind))) return bad();
+  for (const edge of r.edges) if (!record(edge) || !textField(edge.kind) || !digest(edge.from) || !(edge.to === undefined || digest(edge.to)) || typeof edge.cycle !== 'boolean') return bad();
+  for (const component of r.components) if (!record(component) || !digest(component.id) || !digest(component.digest) || !digest(component.resource) || !textField(component.path) || !Array.isArray(component.contexts) || component.contexts.some(c => !digest(c))) return bad();
+  return deepFreeze(r as unknown as CheckedAssessmentReport);
 }
