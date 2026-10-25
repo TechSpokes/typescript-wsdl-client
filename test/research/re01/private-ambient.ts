@@ -17,10 +17,29 @@ export type PrivateAmbientClass = Readonly<{
   qualification: 'source-formation-and-native-evidence-pending';
 }>;
 export type PrivateAmbientRecognition = PrivateAmbientClass | Readonly<{kind: 'outside-private-ambient'; reason: string}> | ResourceLimitFailure;
+export type PrivateStagingDemand = Readonly<Omit<PrivateAmbientClass, 'kind' | 'mode'> & {
+  kind: 'recognized-private-staging-demand'; mode: 'root-hypothesis-reconstruction';
+}>;
 class Outside extends Error {}
 
 /** No candidate, successful proof, declaration roster or child choices are inputs. */
 export function recognizePrivateAmbientEnvironment(actual: SemanticContext, parent: SemanticContext, target: NodeId): PrivateAmbientRecognition {
+  return recognize(actual, parent, target, false);
+}
+
+/** Structural demand only: a direct root fork with matching-A readers, before support exists. */
+export function recognizePrivateStagingDemand(actual: SemanticContext, parent: SemanticContext, target: NodeId):
+  PrivateStagingDemand | Exclude<PrivateAmbientRecognition, PrivateAmbientClass> {
+  assertSemanticContext(actual); assertSemanticContext(parent);
+  return actual.budget.guard(() => {
+    const result = recognize(actual, parent, target, true);
+    if (result.kind !== 'recognized-private-ambient') return result;
+    actual.budget.chargeWork(24);
+    return Object.freeze({...result, kind: 'recognized-private-staging-demand', mode: 'root-hypothesis-reconstruction'});
+  });
+}
+
+function recognize(actual: SemanticContext, parent: SemanticContext, target: NodeId, staging: boolean): PrivateAmbientRecognition {
   assertSemanticContext(actual); assertSemanticContext(parent);
   const b = parent.budget, charge = b.chargeWork;
   return b.guard(() => {
@@ -129,6 +148,7 @@ export function recognizePrivateAmbientEnvironment(actual: SemanticContext, pare
       }
       let root = target, rootMiddle: NodeId | undefined;
       const inherited = parent !== actual;
+      require(!staging || inherited, 'staging requires a structural root hypothesis');
       if (!inherited) {require(get(actual, target) === endpoint, 'original endpoint'); claim(endpoint);}
       else {
         require(isSemanticCandidateOf(actual, parent) && actual.lookup(target).kind === 'missing', 'one authenticated parent fork');
@@ -250,7 +270,7 @@ export function recognizePrivateAmbientEnvironment(actual: SemanticContext, pare
           const base = refId(parent, n.derivation!.base), portfolio = sourceCarrier?.[1], baseHeads = carriers.get(base);
           let subset = !!portfolio && !!baseHeads;
           for (const head of portfolio ?? []) {charge(3 + head.length + (baseHeads?.length ?? 0)); if (!baseHeads?.includes(head)) subset = false;}
-          require(subset
+          require((staging ? base === a.id : subset)
             && n.identity.kind === 'scoped' && n.identity.owner === base, 'reader HEAD subportfolio restriction and owner');
           readers.push(id);
         }
