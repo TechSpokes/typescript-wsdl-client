@@ -5093,6 +5093,7 @@ or both adequacy directions for a catalogue that has not yet been constructed.
 | First-enum LIST cohort | Initial-parent exact/Boolean ITEM | `free-list-assignment.ts` | Derived shared ITEM; ordinary consumers | Scoped implemented | Recursive ITEM and fresh-parent forest | Constructor review agent |
 | Anchored ITEM continuation | Shared retained/atomic/native-slot-mask grammar | `anchored-list-assignment.ts` | Actual-root fresh-child and inherited-consumer controls | Scoped implemented | Arbitrary-parent extraction | Fresh-context COMMENTED assessment |
 | Private scalar construction | Closed source S0 and exact attachment S1 below | Private anchored recipe | Heterogeneous native forests | Constructive sufficiency | Compose with residual classes | RE01-A nonauthor review |
+| Compatible ambient preservation | Input-derived E0/E1 and HEAD subportfolio readers | `private-ambient.ts`; existing private recipe/builder | Full larger-schema and reader frontiers | Constructive sufficiency | Staged reader over A | RE01-B fresh-context nonauthor review |
 | Automatic evidence completion | Ranked closure of delivered inherited/anchored grammars | `evidence-builder.ts` | Input-only and separately seeded native controls | Scoped implementation | Extract broader parent-visible graph/program/owner candidates | Independent delivery review |
 | Joint endpoint tuples | Enum/singleton/empty CURRENT roles | Scalar assessment/kernel | Exhaustive finite product; exact inverses | Scoped implemented | General digit tracks and facet modes | Constructor review agent |
 | Whole-image binary WORD | Regularizable fixed LIST image labels | Scalar assessment/reconstruction | Complete tuple inverses; shared core | Scoped implemented | Shared duration P blocks | Coverage review agent |
@@ -5455,6 +5456,207 @@ has an input-bounded native graph/program/owner construction with sufficient exa
 and the same fresh candidate satisfies the current stored-NP hypothesis. RE01-B must compose the current
 classes, identify one residual reader/owner class, and prove or refute one concrete next reduction.
 General #347/#348 solvers, #351 complete negatives, dated-XSD correspondence and production activation remain open.
+
+## RE01-B compatible ambient preservation
+
+This extends the preceding constructive-sufficiency theorem beyond its closed declaration roster.
+The input-only [recognizer](../test/research/re01/private-ambient.ts) has no candidate or evidence parameter.
+The existing private producer and automatic builder consume the full contexts; no core-only request is substituted.
+The classifier grants neither validity nor a negative answer, and is deliberately not a gate on existing search.
+
+### Input predicate and qualification
+
+Let I be authentic `(Gamma,P,target)` with complete actual-plus-additions membership in one source-bound request.
+Define E by the direct grammar checks in `recognizePrivateAmbientEnvironment`, with modes E0 (source) and E1
+(inherited). Component names below denote
+structurally identified roles, never required literal names. All counts are arbitrary finite counts.
+
+Retain S0's A/R/target FIELD/HEAD frame and exactly its three scalar programs U/W/H, Boolean literal v and numeric b.
+Every FIELD is qualified in A's effective namespace, optional, fixed b or v, with literal W TYPE and original owner.
+Every HEAD is abstract, nonnillable, valueless H, with no SG ancestor or incoming affiliate anywhere in P.
+All expanded FIELD names are distinct and absent from the complete stored global-element identity inventory.
+Every other complex auxiliary port is empty: no abstract/mixed flag, attributes, simple content, inline scalar,
+facets, final/block defaults or exclusions. Actual properties are SOURCE, with no RAW overrides.
+
+In source mode, `P = Gamma` and target is the original D. In addition to the core, the source grammar admits
+arbitrarily many nonabstract global elements typed exactly U/W/H, with optional fixed/default values;
+flat anyType restrictions containing distinct optional local elements typed U/W/H;
+and flat anyType restrictions whose unit choice refers to any nonempty subset of the core HEADs.
+Call the last form a HEAD carrier. Carrier portfolios may differ in order and size, including a single HEAD.
+The source grammar also admits empty anyType restrictions and empty primitive R/E types directly over them.
+All these are genuine declarations in Gamma, including unused declarations, rather than a caller-selected safe set.
+
+In inherited mode, remove D and retain the S1 root scaffold: empty RootA R anyType, RootR R RootA,
+RootB E RootA and the unique original nonprimitive RootD E RootR. P is one authenticated direct fork of Gamma.
+Only RootD's method/BASE change to restriction/RootB; its other original record data remain identical.
+Only RootD and RootB may carry original RAW rows, matching their exact empty properties with authenticated
+actual-mapped provenance naming themselves. The endpoint row is required. All other original records stay unchanged.
+
+P adds one fresh scoped C E R, owned by A, whose nominal content is an original full HEAD carrier particle.
+Its other nominal data are the carrier's data; its RAW BODY selects that carrier's genuine whole SOURCE handle.
+P may also add arbitrarily many scoped readers X R B, owned by B, where B is an original HEAD carrier and
+X selects a nonempty carrier subportfolio of B. Every fresh row has hypothetical provenance with empty originals,
+exact namespace/derivation, empty auxiliary ports and its authenticated SOURCE selector. P has no other additions,
+RAW changes, notation additions, scalar slots, borrowed wildcards or deeper history.
+
+E also checks all source membership and syntax, not only forward references. It excludes imports/loading edges,
+retained schema/component syntax, annotations, ICs, other scalar programs, wildcards and other declaration kinds.
+Schema attributes are limited to namespace/form settings; component/wrapper attributes and syntax are explicitly
+allowlisted and the typed shapes above further restrict them. Namespace maps and source names remain input data.
+Local values in ambient declarations need not be asserted valid by E.
+
+Source qualification is separate: the native actual frontier checks all syntax, formation, primitive and scalar
+premises of Gamma while leaving target/dependent RE01 obligations pending. An invalid ambient H-valued fixed `1`
+under pattern `true` satisfies the structural predicate but fails actual qualification. Thus neither E nor initial
+qualification assumes a generated candidate succeeds, that no new duties appear, or that a forest was supplied.
+The recognizer reports `source-formation-and-native-evidence-pending` even on a structurally recognized input.
+
+S0 is E's source zero-extension case. S1 is E's inherited zero-reader case, including its optional OffA;
+the stated owner/SOURCE/provenance representation is retained. E also admits genuine proper-subportfolio readers.
+Inputs outside E remain in B-v1; the old generators and native validity authority remain available there.
+
+### Boundary experiments and the exact reader claim
+
+Rebasing the old whole-HEAD reader from OffA to A does not give a lawful root hypothesis.
+Its local restriction succeeds after the private affiliates exist, but the parent frontier first rejects it by
+`derivation-ok-restriction.5.4`: the still-unaffiliated abstract HEAD names do not match A's FIELD names.
+Native RP does not infer that this restriction is lawful merely from an empty effective language.
+The existing OffA reader also rejects the completed child. These are candidate failures, not general negatives.
+
+A proper HEAD subportfolio reader R Heads is a lawful alternative in both contexts. Before the private cut its
+SOURCE HEADs map to those same declarations in the base choice. Afterwards each selected HEAD expands to its
+corresponding new singleton affiliate on both sides. The subset inclusion and unit occurrences still give an RP
+mapping; different SOURCE roots avoid assuming whole-particle identity. A full portfolio is also permitted.
+
+The claimed observer is FULL(X)'s native dependency closure, not an extra fixed-value comparison inside local RP.
+The concrete chain is reader, SOURCE choice/element particle, HEAD and reverse affiliate, member declaration,
+current L1 TYPE and fixed VALUE. `schemaConstructionAssessment` explicitly retains incoming-affiliate dependencies
+for a global element particle. RP's same-global-declaration case is reflexive; it need not compare that member
+against A's local FIELD. A bad member VALUE can leave local reader RP checked while failing FULL continuation.
+The executable controls assert this dependency chain and this distinction independently of builder traversal.
+
+### Preservation, reconstruction and all duties
+
+Fix any source-qualified I satisfying E. Apply exactly the S0 recipe at D, or the S1 recipe at C.
+For numeric b use builtin Boolean ITEM in its new private L0/L1; for literal v retain U. Emit complete one-token v
+with that FIELD's saved map. Preserve inherited identities, SOURCE selectors, scalar facet components and maps.
+L0 is formed before L1 and funds the latter's complete enum tuple in its actual immediate BASE with owner M.
+Nothing about ambient declarations changes this per-FIELD selected-donor, FIRST or tagged-value argument.
+
+Here is the observation inventory for every extra form. Scalar globals and local scalar FIELDs read only unchanged
+U/W/H, their own WORD/map, declaration names and original owners. Their independently qualified formation/value
+facts persist because no referenced scalar or declaration is rewritten. A flat primitive local portfolio has no
+HEAD reference; distinct local names retain UPA and anyType restriction. Empty scaffold declarations retain their
+primitive ancestry and empty content. These arguments do not transfer receipts: native owners check each required
+fact in its receiving context, including actual-context SOURCE dependencies.
+
+HEAD carriers and readers have a compatibly changed observation. Their HEAD records are unchanged, but their
+effective pools change from no concrete affiliate to one fresh concrete affiliate per HEAD. Reverse affiliation
+absence was checked globally before allocation. Each new member has literal ancestry L1/L0/H/W and its own funded
+VALUE. Different HEADs expand to distinct qualified FIELD names, so UPA and EDC introduce no cross-arm equality.
+For a reader, every derived HEAD belongs to the base portfolio, and the identical member on each side gives the
+post-expansion mapping. BASE/TYPE/ITEM identities, current component formation and genuine VALUE debts remain.
+
+The grammar admits no other observation of the changing target or the HEAD universe. In particular ambient element
+TYPEs cannot be complex, carriers contain only HEAD references, local portfolios contain only scalar FIELDs,
+and additional scalar programs/SG chains/ICs/wildcards are excluded. Lookup absence is a separate checked premise:
+all output global names are reserved against complete stored identities, and scoped allocation consults both IDs
+and identity tuples. An extra affiliate or occupied output name is outside E even when the HEAD record is identical.
+Forward reachability alone is never the independence argument.
+
+For E0 the actual frontier contains exactly D's nonprimitive RE01 duty, plus any primitive scaffold extensions.
+The generated middle M E A is primitive and the endpoint is a restriction of M. Every actual ambient declaration
+is still checked in Gamma. Candidate roots and consumed dependencies include all constructed scalar/element rows,
+SOURCE materialization, endpoint and middle, without promoting every untouched original to hypothetical FULL.
+All these duties are discharged by the core proof and the preceding ambient cases. No further NP child is born.
+
+For E1 the parent cut has C as its sole nonprimitive duty. Every fresh inherited reader remains a legality root
+both in P and in the child H, even if C does not reference it. The subset proof discharges those reader duties
+in both contexts. The private C cut has no further nonprimitive duty; it completes the genuine original-root seed
+with exactly one child evidence node. Native formation/TYPE/scalar/SOURCE dependencies are retained in their real
+contexts; no Gamma receipt is retagged as an H receipt. This establishes both native-duty adequacy directions
+for this grammar: every required duty is present and successful, and extra representation duties are also successful.
+
+Consequently every source-qualified E0 input has the stated complete one-cut native witness; every E1 input has
+the stated complete two-cut continuation. With sufficient request resources, the existing builder finds them.
+Recognition does not invoke this theorem as a validity oracle: final native evidence verification is mandatory.
+This is quantified constructive sufficiency, not extraction of every successful witness or unrestricted coverage.
+
+### Continuation, rank and full encoding bound
+
+Original ambient extensions, when present, are primitive. E0's only original NP is retired by the D cut.
+In E1 the parent retires the original root and stores exactly one fresh NP, C. Readers are restrictions.
+The child changes C to restriction and adds only primitive M plus scalar/element helpers and flat SOURCE backing.
+Thus the same fully materialized child has `(q,n)=(0,0)` from parent `(0,1)` and introduces zero stored NP.
+The current complete-membership, census and rank guards are retained. Allowed continuation is the entire stated
+one/two-node forest, including all actual-Gamma support, rather than an arbitrary unknown future cut.
+
+A finite full-encoding bound is obtained without semantic success by extending RE01-A's syntactic counting
+construction. Let N encode the full input records, strings, namespace maps, source syntax/positions and authentic
+parent delta, with shared SOURCE selections represented by their original owner/particle selectors. Let k be
+core arity, a the number of ambient source declarations and r the inherited reader count, all input-derived.
+Use indices for the at most three contexts rather than process-global diagnostic context IDs.
+
+First enumerate the original stored identity inventory and the fixed private recipe's `3k+1` helper positions.
+Allocate scoped IDs by the actual deterministic allocator, testing only occupied IDs/tuples; at most the stored
+inventory plus `2k+1` positions can block attempts. Reserve the k global names as E requires. The resulting names,
+owner strings and references are finite input-derived strings, including every escaping/suffix byte.
+
+Next serialize all inherited rows plus M/endpoint rows, `2k` LIST RAW rows and k element rows, with complete
+copied FIELD maps, inherited facet references, one-token v words and actual immediate-L0 enum operands.
+Include all original flat particle positions and native flat SOURCE/composition wrapper positions for the
+bounded endpoint/middle/carrier selections in each of the at most three contexts. A source portfolio has at most
+N positions, and only input portfolios or the two k-arm core portfolios are used; readers add no recursive program.
+
+Finally serialize one evidence node for E0, or the seed and child nodes for E1, plus their explicit bounded links,
+targets, ancestors, contexts, SOURCE selectors and all receiving-context duty references. Every required component
+is an input/helper/materialized flat position already counted. For each context and position, enumerate every fixed native rule
+certificate template applicable to this grammar, every pair of flat portfolio arms, every WORD token at each
+U/W/H/L0/L1 assessment stage, and every namespace-map entry, reference and name byte consumed by those templates.
+Use the input subset mapping for readers and corresponding core-arm mapping; include all potential pair entries
+rather than first asking which comparisons succeed. Fixed scalar depth and at most singleton HEAD pools bound
+every template expansion. Any successful local receipt selects a subset of this syntactic overapproximation.
+All scalar programs are input programs or the stated two-row LIST recipes; ambient VALUE templates use their
+original finite word/map data under unchanged U/W/H. No arbitrary program, helper cap or successful ambient forest enters
+this counting procedure. It bounds words/programs, maps/names, owners/rows, context deltas and complete evidence,
+not just graph node count. Native caches and exploratory failed branches are not part of the witness encoding.
+
+This defines a computable mathematical bound B(I): the byte length of that explicitly enumerated finite encoding,
+including the enumerated certificate templates and indices, before any success test. The finite grammar and
+fixed-depth construction justify termination of the counting procedure. It is not a claim that every arity/count
+fits the operational defaults, or a bound on builder work, time or memory. Measured complete controls are separate.
+The one shared precharged inclusive/sticky budget can refuse recognition, construction or evidence at any stage;
+refusal produces no partial witness and no negative conclusion.
+
+Measured complete controls on Linux Node 24.19.0/npm 11.9.0 used 25,321,743, 51,982,711 and 60,322,859
+work units for `(k,count)=(2,0),(3,4),(4,7)` respectively; count generates scalar globals and local portfolios
+plus two HEAD carriers. A 14-control focused run took 3.11 seconds. Current worker RSS samples after those
+complete cases were 208,252,928, 297,320,448 and 322,383,872 bytes; these include prior tests and are neither
+per-case allocation nor peak-memory bounds. These observations do not prove resource sufficiency for all E.
+
+### Executable map, dispositions and next implication
+
+| Claim | Consumer/control | Scope |
+| --- | --- | --- |
+| Input-only E recognition | `private-ambient.ts` | Authentic full contexts; formation/evidence pending |
+| Larger-schema complete evidence | `private-ambient.test.ts` | Variable arity/count/order/names/default maps |
+| Compatible inherited FULL reader | Subportfolio dependency and automatic seeded controls | Required parent/child roots and TYPE/VALUE closure |
+| Unsafe observations | Matching-A, OffA, affiliate and reserved-name controls | Distinct candidate failure and out-of-class outcomes |
+| Actual ambient legality | Structurally admitted bad H VALUE | Invalid actual schema still fails |
+| Complete continuation | Existing private producer and evidence builder | No supplied child/premise lists; exact contexts and rank |
+| Classifier authority | Extra-scalar positive outside E | Individual sound generators retain previous scope |
+
+The theorem removes the exact source-roster restriction and permits an arbitrary finite compatible reader class.
+It changes no constructor recipe, native frontier, rank guard or public/persisted contract. The reusable research
+recognizer states the proved boundary; the existing producer/builder already execute its construction on full inputs.
+S0/S1 and E compose as sufficient positive classes in the single premise ledger. Full-domain coverage, unrestricted
+negatives and dated-XSD correspondence remain unresolved, as do arbitrary/inactive parent histories.
+
+The next residual implication is specific: can a primitive reader R A whose BODY observes the changing HEADs be
+represented lawfully in the parent and preserved through the same private cut? The matching-A example proves only
+that this particular direct-parent hypothesis is rejected before the cut. Investigate a concrete staged parent
+construction or prove its precise additional compatibility predicate; do not infer impossibility or start general
+#347/#348 solvers. #351 and production remain gated on their full acceptance criteria.
 
 ## Input-derived exact-ITEM free-LIST construction
 

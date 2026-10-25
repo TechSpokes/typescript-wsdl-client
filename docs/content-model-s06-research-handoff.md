@@ -2,6 +2,22 @@
 
 Joint research evidence for #232 and its four leaves, with explicit decision and production gates. See the root [README](../README.md).
 
+## RE01-B ambient preservation
+
+The [compatible-environment theorem](content-model-s06-re-01-support-reconstruction.md#re01-b-compatible-ambient-preservation)
+extends S0/S1 to arbitrary finite ambient scalar globals, flat primitive local portfolios and HEAD carriers,
+plus required inherited readers restricting genuine HEAD subportfolios. The input-only research recognizer
+leaves source formation and native evidence pending; full Gamma/P still pass the existing producer/builder.
+
+A matching-A reader succeeds locally after affiliates but fails the initial parent RP obligation.
+The lawful subportfolio alternative completes automatically with receiving-context TYPE/VALUE dependencies,
+unchanged SOURCE authority and post-materialization rank. Conflicting readers, reverse affiliations, output-name
+collisions, invalid ambient actual values and exhaustion retain distinct outcomes. Fresh-context nonauthor review
+accepts the scoped theorem; exact delivery revisions and validation are recorded in the #234/#232 handoffs.
+
+The next residual is a lawful staged parent for a HEAD reader restricting A, or its exact additional compatibility
+predicate. Arbitrary history, full coverage/negatives and production remain open; do not start broad scalar solvers.
+
 ## RE01-A private scalar choices
 
 The [constructive sufficient-class theorem](content-model-s06-re-01-support-reconstruction.md#re01-a-private-scalar-construction-theorem)
