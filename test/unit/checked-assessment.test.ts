@@ -99,10 +99,18 @@ describe('checked source assessment', () => {
     const cancelled = await assess(source, {signal: controller.signal});
     expect(cancelled.execution).toBe('cancelled');
     expect(assessmentExitCode(cancelled)).toBe(5);
-    const successful = await assess(source);
-    const at = await assess(source, {limits: {maxWork: successful.usage.work}});
+    // Find this request's publication boundary, including the configured limit's own diagnostic text.
+    // Warm native request IDs beyond their first decimal-width transition.
+    for (let i = 0; i < 12; i++) await assess(source);
+    let low = 1, high = 5_000_000;
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      const result = await assess(source, {limits: {maxWork: middle}});
+      if (result.execution === 'completed') high = middle; else low = middle + 1;
+    }
+    const at = await assess(source, {limits: {maxWork: high}});
     expect(at.execution).toBe('completed');
-    const beyond = await assess(source, {limits: {maxWork: successful.usage.work - 1}});
+    const beyond = await assess(source, {limits: {maxWork: high - 1}});
     expect(beyond.execution).toBe('resource-limit');
     expect(beyond.schemaEligible).toBe(false);
     expect(assessmentExitCode(beyond)).toBe(4);

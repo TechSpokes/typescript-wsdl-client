@@ -46,6 +46,7 @@ export interface CheckedAssessmentReport {
   readonly operationInventory: 'complete' | 'unassessed';
   readonly resources: readonly Readonly<{id: string; digest: string; bytes: number}>[];
   readonly contexts: readonly Readonly<{id: string; resource: string; digest: string; namespace: string; base: string; kind: string}>[];
+  readonly components: readonly Readonly<{id: string; digest: string; resource: string; path: string; contexts: readonly string[]}>[];
   readonly edges: readonly Readonly<{kind: string; from: string; to?: string; cycle: boolean}>[];
   readonly limits: Readonly<{maxWork: number; maxNodes: number; loading?: SchemaInput['limits']}>;
   readonly usage: ResolverUsage;
@@ -150,6 +151,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
   const limits = {maxWork: options.limits?.maxWork ?? DEFAULT_MAX_WORK, maxNodes: options.limits?.maxNodes ?? DEFAULT_MAX_NODES};
   const obligations: AssessmentObligation[] = [];
   const operations: AssessedOperation[] = [];
+  let components: CheckedAssessmentReport['components'] = [];
   let resources: CheckedAssessmentReport['resources'] = [], contexts: CheckedAssessmentReport['contexts'] = [], edges: CheckedAssessmentReport['edges'] = [];
   let input: SchemaInput | undefined, actual: SemanticContext | undefined;
   let execution: CheckedAssessmentReport['execution'] = 'completed', category: string | undefined;
@@ -163,7 +165,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
     schema: knownFailure ? 'disproved' : 'inconclusive',
     correspondence: 'inconclusive', execution: state, category,
     obligations, 
-    operations, operationInventory: inventory, resources, contexts, edges, limits, usage: {...budget.usage()}, schemaEligible: false, admitted: false,
+    operations, operationInventory: inventory, resources, contexts, edges, components, limits, usage: {...budget.usage()}, schemaEligible: false, admitted: false,
   });
   const check = () => {if (options.signal?.aborted) throw new CancelledAssessment(); budget.chargeWork(1);};
   const opaque = (value: string): string => {budget.chargeWork(128 + value.length * 4); return createHash('sha256').update(value).digest('hex');};
@@ -216,6 +218,8 @@ export async function assessSchemaSource(source: string, options: Readonly<{
           return;
         }
         actual = prepared.request.actual;
+        budget.chargeWork(256 + prepared.request.graph.nodes.length * 1024);
+        components = prepared.request.graph.nodes.map(node => ({id: opaque(node.id), digest: node.context.source.digest, resource: resourceId(node.context.source.uri), path: node.context.source.path, contexts: (prepared.request.graph.origins[node.id] ?? []).map(origin => opaque(origin.interpretation))}));
         // Continue independent local duties after ordinary uncertainty. Closure still has its own required sentinel.
         for (const id of actual.members) {
           check(); const found = actual.lookup(id);
@@ -268,9 +272,9 @@ export async function assessSchemaSource(source: string, options: Readonly<{
     const facts = new Map<string, AssessmentStatus>();
     for (let index = 0; index < sorted.length; index++) {budget.chargeWork(8); if (sorted[index]!.basis === ASSESSMENT_BASIS) facts.set(String(index), sorted[index]!.status);}
     const schema = aggregateAssessment([...facts.keys()], facts);
-    const report: CheckedAssessmentReport = {reportVersion: ASSESSMENT_VERSION, scope: 'whole-actual-native-direct-v1', model: 'xsd10-faithful-v1', basis: ASSESSMENT_BASIS,
+    const report: CheckedAssessmentReport = {tool: {version: packageVersion, node: process.version}, identity, reportVersion: ASSESSMENT_VERSION, scope: 'whole-actual-native-direct-v1', model: 'xsd10-faithful-v1', basis: ASSESSMENT_BASIS,
       schema, correspondence, execution, category, obligations: sorted, operations: budget.sorted(operations, (a, b) => budget.compareText(a.id, b.id)), operationInventory: inventory,
-      resources, contexts, edges, limits: {...limits, ...(input ? {loading: input.limits} : {})}, usage: {work: 0, nodes: 0}, schemaEligible: schema === 'established' && correspondence === 'established', admitted: false};
+      resources, contexts, edges, components, limits: {...limits, ...(input ? {loading: input.limits} : {})}, usage: {work: 0, nodes: 0}, schemaEligible: schema === 'established' && correspondence === 'established', admitted: false};
     const owned = budget.snapshot(report) as {-readonly [K in keyof CheckedAssessmentReport]: CheckedAssessmentReport[K]};
     // Snapshot charges all text/fields. Reserve a conservative 12x JSON-escape and indentation envelope before serialization/publication.
     const start = budget.usage().work;
@@ -296,7 +300,7 @@ export function parseAssessmentReport(text: string): CheckedAssessmentReport {
   const r = value as CheckedAssessmentReport;
   const status = (s: unknown) => s === 'established' || s === 'disproved' || s === 'inconclusive';
   if (r.reportVersion !== ASSESSMENT_VERSION || r.scope !== 'whole-actual-native-direct-v1' || r.model !== 'xsd10-faithful-v1' || r.basis !== ASSESSMENT_BASIS || r.admitted !== false || !status(r.schema) || !status(r.correspondence) || !['completed', 'failed', 'cancelled', 'resource-limit'].includes(r.execution)) return bad();
-  if (!Array.isArray(r.obligations) || !r.obligations.length || !Array.isArray(r.operations) || !Array.isArray(r.resources) || !Array.isArray(r.contexts) || !Array.isArray(r.edges)) return bad();
+  if (!Array.isArray(r.obligations) || !r.obligations.length || !Array.isArray(r.operations) || !Array.isArray(r.resources) || !Array.isArray(r.contexts) || !Array.isArray(r.edges) || !Array.isArray(r.components)) return bad();
   for (const obligation of r.obligations) if (!obligation || !status(obligation.status) || typeof obligation.rule !== 'string' || typeof obligation.component !== 'string' || typeof obligation.context !== 'string' || typeof obligation.reason !== 'string' || ![ASSESSMENT_BASIS, 'dated-XSD-2004-direct-v1'].includes(obligation.basis)) return bad();
   if (!r.obligations.some(o => ['whole-actual-closure', 'unfinished-assessment', 'unfinished-publication'].includes(o.rule))) return bad();
   if (r.schema === 'established' && (r.execution !== 'completed' || r.obligations.some(o => o.basis === ASSESSMENT_BASIS && o.status !== 'established'))) return bad();
