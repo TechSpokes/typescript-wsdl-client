@@ -90,7 +90,7 @@ function recognize(actual: SemanticContext, parent: SemanticContext, target: Nod
       const endpoint = complex(parent, target), r = complex(actual, refId(parent, endpoint.derivation?.base));
       const a = complex(actual, refId(actual, r.derivation?.base));
       require(endpoint.derivation?.kind === 'extension' && r.derivation?.kind === 'restriction' && empty(r) && primitive(a), 'core A/R/target frame');
-      const arms = (n: ComplexTypeNode, optional: boolean, localFields: boolean): ElementNode[] => {
+      const arms = (n: Pick<ComplexTypeNode, 'id' | 'content'>, optional: boolean, localFields: boolean): ElementNode[] => {
         require(n.content, 'flat particle required'); const root = get(actual, n.content!); claim(root);
         require(root.kind === 'particle' && root.term.kind === 'choice' && root.occurs.min === '1' && root.occurs.max === '1', 'flat unit choice');
         if (root.kind !== 'particle' || root.term.kind !== 'choice') throw new Outside('choice');
@@ -167,6 +167,25 @@ function recognize(actual: SemanticContext, parent: SemanticContext, target: Nod
           && !changed.derivation.facets.length && !changed.derivation.inlineType && parent.rawTypeProperties(root), 'empty original root hypothesis');
         claim(sourceRoot);
       }
+      // G: original flat unit HEAD groups only. Definitions are inventoried even
+      // when unused; use particles retain their own identity and occurrence.
+      const groups = new Map<NodeId, readonly NodeId[]>();
+      const orderedHeads = (es: readonly ElementNode[]): void => {
+        let previous = -1;
+        for (const e of es) {
+          charge(4 + heads.length + e.id.length); const index = heads.findIndex(h => h.id === e.id);
+          require(index > previous, 'core HEAD subsequence order'); previous = index;
+        }
+      };
+      for (const id of actual.members) {
+        const n = get(actual, id);
+        if (n.kind !== 'group') continue;
+        require(staging && n.identity.kind === 'global', 'named groups only in staging grammar');
+        const es = arms(n, false, false);
+        for (const e of es) require(headIds.has(e.id), 'group HEAD subportfolio');
+        orderedHeads(es);
+        claim(n); charge(4 + es.length); groups.set(n.id, es.map(e => e.id));
+      }
       const carriers = new Map<NodeId, readonly NodeId[]>();
       const carrierForContent = (content: NodeId | undefined): readonly [NodeId, readonly NodeId[]] | undefined => {
         for (const entry of carriers) {charge(3); if (complex(actual, entry[0]).content === content) return entry;}
@@ -179,6 +198,13 @@ function recognize(actual: SemanticContext, parent: SemanticContext, target: Nod
           if (n.content) {
             // Inspect actual membership to distinguish local FIELDs from HEAD refs.
             const p = get(actual, n.content);
+            if (p.kind === 'particle' && p.term.kind === 'group') {
+              require(staging && p.occurs.min === '1' && p.occurs.max === '1', 'unit source group use');
+              const portfolio = groups.get(refId(actual, p.term.reference));
+              require(portfolio, 'original admitted group definition');
+              claim(p); charge(4); carriers.set(n.id, portfolio!);
+              claim(n); ambient.push(n.id); continue;
+            }
             require(p.kind === 'particle' && p.term.kind === 'choice' && p.term.children.length, 'ambient flat choice');
             if (p.kind !== 'particle' || p.term.kind !== 'choice') throw new Outside('choice');
             const arm = get(actual, p.term.children[0]!);
@@ -188,7 +214,7 @@ function recognize(actual: SemanticContext, parent: SemanticContext, target: Nod
             const locals = first.identity.kind === 'scoped', es = arms(n, locals, locals);
             for (const e of es) require(locals ? scalarIds.has(refId(actual, e.type)) && !e.abstract && !e.nillable && !e.substitutionGroup
               : headIds.has(e.id), 'ambient scalar fields or HEAD subportfolio');
-            if (!locals) carriers.set(n.id, es.map(e => e.id));
+            if (!locals) {if (staging) orderedHeads(es); carriers.set(n.id, es.map(e => e.id));}
           }
         } else {
           const base = complex(actual, refId(actual, n.derivation?.base));
@@ -203,7 +229,7 @@ function recognize(actual: SemanticContext, parent: SemanticContext, target: Nod
         for (const attr of attrs) require(attr.name.namespace === '' && (schema
           ? ['targetNamespace', 'elementFormDefault', 'attributeFormDefault'].includes(attr.name.local) : allowedAttributes.has(attr.name.local)), 'restricted source attributes');
       };
-      const syntaxTags = new Set('complexContent restriction extension choice element union list pattern'.split(' '));
+      const syntaxTags = new Set('complexContent restriction extension choice element union list pattern group'.split(' '));
       const inspectSyntax = (root: SyntaxElement): void => {
         const stack = [root];
         while (stack.length) {
