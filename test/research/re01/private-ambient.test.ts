@@ -7,7 +7,7 @@ import {loadSemanticSchemaInput} from '../../../src/loader/schemaInput.js';
 import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {globalId} from '../../../src/compiler/canonicalGraph.js';
 import type {ComplexTypeNode} from '../../../src/compiler/canonicalGraph.js';
-import {forkSemanticCandidate, isSemanticCandidateOf} from '../../../src/compiler/semanticContext.js';
+import {forkSemanticCandidate, isSemanticCandidateOf, storedIdentityOccupant} from '../../../src/compiler/semanticContext.js';
 import {hypotheticalScopedId} from '../../../src/compiler/hypotheticalScopedIdentity.js';
 import {deriveActualComplexContent, deriveOriginalComplexPropertyContent, deriveModelGroupContent, deriveOriginalComplexParticle} from '../../../src/compiler/complexTypeContent.js';
 import {prepareSemanticParticleView} from '../../../src/compiler/particleSemanticView.js';
@@ -610,6 +610,92 @@ it.each([['observer', 'h1'], ['observer_with_a_long_fresh_name', 'h2'], ['observ
   const pruned = forkSemanticCandidate(actual, {...delta, key: 'd2-invalid-local-prune', additions: prunedAdditions,
     active: [...actual.members, ...prunedAdditions.map(n => n.id)], rawTypes: delta.rawTypes!.filter(row => row.type !== readerId)});
   expect(pruned).toMatchObject({kind: 'candidate-rejected', code: 'missing', component: readerId});
+  // Joint omission is a different birth recipe, with new children and receipts.
+  // The GLOBAL and its RAW row disappear together with the private reader.
+  const jointAdditions = additions.filter(n => n.id !== readerId && n.id !== observerId);
+  const joint = forkSemanticCandidate(actual, {...delta, key: 'e1-joint-birth-omission', additions: jointAdditions,
+    active: [...actual.members, ...jointAdditions.map(n => n.id)], rawTypes: delta.rawTypes!.filter(row => row.type !== readerId),
+    rawElements: delta.rawElements!.filter(row => row.element !== observerId)});
+  assert.equal(joint.kind, 'prepared', json(joint));
+  const rebuilt = completeSeededRe01Evidence(actual, staged.target, {...rootHypothesis(staged), context: joint.context});
+  assert.equal(rebuilt.kind, 'checked-witness', json(rebuilt));
+  expect(rebuilt.evidence.nodes).toHaveLength(2);
+  for (const step of rebuilt.receipt.proof) {
+    expect(step.components.map(n => n.component)).not.toContain(readerId);
+    expect(step.components.map(n => n.component)).not.toContain(observerId);
+  }
+  expect(storedRe01Rank(actual, joint.context)).toEqual(storedRe01Rank(actual, observed.context));
+  // Replacing only the root context leaves the old child's genuine parent.
+  const transplanted = {...completed.evidence, nodes: completed.evidence.nodes.map(node =>
+    node.context === observed.context ? {...node, context: joint.context} : node)};
+  expect(verifyFiniteRe01Evidence(actual, staged.target, transplanted))
+    .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', component: target});
   // This rejects one fixed mutation. It is not a counterexample to existence of
   // some other bounded successful representative for the original source input.
+});
+
+it('E1 distinguishes stored inactivity, retained ownership and reverse affiliation from physical birth omission', async () => {
+  const {actual, target, readerId, hypothesis} = await inherited('A', '', 2, undefined, true, true);
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target);
+  assert.equal(prepared.kind, 'prepared-anchored-list-assignments'); const staged = prepared.assignments[0]; assert.ok(staged);
+  const full = completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged));
+  assert.equal(full.kind, 'checked-witness', json(full));
+  const reader = staged.context.lookup(readerId); assert.equal(reader.kind, 'found'); assert.equal(reader.node.kind, 'complexType');
+  expect(forkSemanticCandidate(staged.context, {key: 'e1-raw-owner-cannot-disappear', active: staged.context.members.filter(n => n !== readerId)}))
+    .toMatchObject({kind: 'candidate-rejected', code: 'outside-context', component: readerId});
+  const reservationId = hypotheticalScopedId(id('A'), '/inactive-reservation', 'particle');
+  const reservation = {...reader.node, kind: 'particle' as const, id: reservationId,
+    identity: {kind: 'scoped' as const, owner: id('A'), path: '/inactive-reservation', role: 'particle'},
+    occurs: {min: '1', max: '1'}, term: {kind: 'sequence' as const, children: []}};
+  const reserved = forkSemanticCandidate(staged.context, {key: 'e1-reservation-birth', active: [...staged.context.members, reservationId], additions: [reservation]});
+  assert.equal(reserved.kind, 'prepared', json(reserved));
+  const inactive = forkSemanticCandidate(reserved.context, {key: 'e1-inactive-is-stored', active: staged.context.members});
+  assert.equal(inactive.kind, 'prepared', json(inactive));
+  expect(inactive.context.lookup(reservationId).kind).toBe('outside-context');
+  expect(storedIdentityOccupant(inactive.context, reservation.identity)).toBe(reservationId);
+  expect(storedRe01Rank(actual, inactive.context)).toMatchObject({kind: 'unresolved', rule: 'builder-rank-membership'});
+  expect(forkSemanticCandidate(inactive.context, {key: 'e1-cannot-rebirth-stored', active: reserved.context.members,
+    additions: [reservation]})).toMatchObject({kind: 'candidate-rejected', code: 'identity', component: reservationId});
+  const reactivated = forkSemanticCandidate(inactive.context, {key: 'e1-reactivate', active: reserved.context.members});
+  assert.equal(reactivated.kind, 'prepared', json(reactivated));
+  expect(reactivated.context.lookup(reservationId)).toEqual(reserved.context.lookup(reservationId));
+  // A retained scoped declaration needs its owner even when TYPE is unrelated.
+  const template = actual.lookup(globalId('element', {namespace, local: 'h1'}));
+  assert.equal(template.kind, 'found'); assert.equal(template.node.kind, 'element');
+  const ownedId = hypotheticalScopedId(readerId, '/owned', 'element');
+  const owned = {...template.node, id: ownedId, identity: {kind: 'scoped' as const, owner: readerId, path: '/owned', role: 'element'}};
+  const ownedAdditions = [...staged.delta.additions!, owned];
+  const ownedDelta = {...staged.delta, key: 'e1-retained-owner', additions: ownedAdditions,
+    active: [...actual.members, ...ownedAdditions.map(n => n.id)], rawElements: [...staged.delta.rawElements!, {element: ownedId, final: [], block: []}]};
+  const withOwner = forkSemanticCandidate(actual, ownedDelta); assert.equal(withOwner.kind, 'prepared', json(withOwner));
+  expect(withOwner.context.owner(ownedId)).toBe(readerId);
+  const withoutOwner = ownedAdditions.filter(n => n.id !== readerId);
+  expect(forkSemanticCandidate(actual, {...ownedDelta, key: 'e1-dangling-owner', additions: withoutOwner,
+    active: [...actual.members, ...withoutOwner.map(n => n.id)], rawTypes: staged.delta.rawTypes!.filter(row => row.type !== readerId)}))
+    .toMatchObject({kind: 'candidate-rejected', code: 'missing', component: readerId});
+  // h1's forward record is unchanged; its reverse affiliate query changes.
+  const memberId = globalId('element', {namespace, local: 'reverseObserver'});
+  const member = {...template.node, id: memberId, identity: {kind: 'global' as const, role: 'element' as const,
+    name: {namespace, local: 'reverseObserver'}}, name: {namespace, local: 'reverseObserver'}, abstract: false,
+    substitutionGroup: local(template.node.id)};
+  const members = [...staged.delta.additions!, member];
+  const reverse = forkSemanticCandidate(actual, {...staged.delta, key: 'e1-reverse-observer', additions: members,
+    active: [...actual.members, ...members.map(n => n.id)], rawElements: [...staged.delta.rawElements!, {element: memberId, final: [], block: []}]});
+  assert.equal(reverse.kind, 'prepared', json(reverse));
+  expect(reverse.context.lookup(template.node.id)).toEqual(staged.context.lookup(template.node.id));
+  expect(reverse.context.incomingAffiliates(template.node.id)).toContain(memberId);
+  expect(staged.context.incomingAffiliates(template.node.id)).not.toContain(memberId);
+  const beforePool = effectiveSubstitutionMembers(staged.context, template.node.id);
+  const afterPool = effectiveSubstitutionMembers(reverse.context, template.node.id);
+  assert.equal(beforePool.kind, 'checked', json(beforePool)); assert.equal(afterPool.kind, 'checked', json(afterPool));
+  expect(beforePool.value).not.toContain(memberId); expect(afterPool.value).toContain(memberId);
+  expect(staged.context.lookup(memberId).kind).toBe('missing');
+  expect(reverse.context.lookup(memberId).kind).toBe('found');
+  // The same request's terminal budget failure prevents reconstruction success.
+  actual.budget.guard(() => actual.budget.chargeWork(DEFAULT_MAX_WORK));
+  const exhausted = completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged));
+  expect(exhausted).toBe(actual.budget.failure()); expect(exhausted?.kind).toBe('resource-limit');
+  const usage = actual.budget.usage().work;
+  expect(completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged))).toBe(exhausted);
+  expect(actual.budget.usage().work).toBe(usage);
 });
