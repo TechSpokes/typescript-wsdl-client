@@ -6,7 +6,7 @@ Generation paths are explicit. Examples use the git-ignored `.generated/` direct
 
 ## Commands Overview
 
-The tool provides six commands for different integration scenarios.
+The tool provides six generation commands and the assessment-only `assess` command.
 
 TypeScript outputs automatically receive [generated preambles](generated-code.md#generated-preambles-and-eslint), including app/test scaffolds when actually written. Command syntax is unchanged and there is no preamble flag. `compile` and `openapi` data outputs remain unchanged.
 
@@ -18,6 +18,7 @@ TypeScript outputs automatically receive [generated preambles](generated-code.md
 | gateway | Fastify gateway from OpenAPI spec | Production REST gateway with SOAP backend |
 | app | Runnable Fastify app from client + gateway + OpenAPI | Local testing, demos |
 | compile | Parse WSDL to catalog.json only | Debugging, multi-stage builds |
+| assess | Source schema diagnostic report | Checked evidence and unresolved duties |
 
 ## pipeline
 
@@ -635,3 +636,22 @@ cat ./debug/catalog.json | jq '.types'
 ```bash
 cat ./debug/catalog.json | jq '.operations'
 ```
+
+## assess
+
+Inspect source schema evidence without generating artifacts or dispatching SOAP. The [assurance contract](decisions/003-content-model-contracts.md#checked-product-assessment-amendment-p1-d01) defines the native scope and qualified correspondence route.
+
+```bash
+npx wsdl-tsc assess --wsdl-source examples/minimal/weather.wsdl --report .generated/assessment.json
+```
+
+| Flag | Purpose |
+|---|---|
+| `--wsdl-source` | Required local path or explicitly authorized URL |
+| `--report` | Required diagnostic JSON output file; directory must exist |
+| `--schema-root` | Repeated authorized local roots; defaults to the local source directory |
+| `--schema-origin` | Repeated exact authorized HTTP(S) origins; no implicit network access |
+| `--assessment-max-work` | Inclusive sticky request work limit, including report publication |
+| `--assessment-max-nodes` | Inclusive cumulative preparation/context node limit |
+
+Exit 0 requires established native scope and qualified dated-XSD correspondence. Exit 2 is inconclusive, 3 native scope disproved, 4 resource-limit, 5 cancellation and 1 operational failure; execution failure takes precedence over schema facts. SIGINT requests cooperative cancellation and a cancelled report. Runtime readiness and generation admission remain separate; no assessment report activates generation.

@@ -106,6 +106,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
   // Source byte/resource limits govern this phase, before semantic preparation.
   const xsdUri = (node: SyntaxElement, name: string): string | undefined => {
     const value = syntaxAttribute(node, name);
+    options.chargeWork?.(64 + (value?.length ?? 0) * 16);
     return value === undefined || !semanticValues ? value : normalizeWhitespace(value, 'collapse');
   };
   // Cached interpretations still consume resolution depth on a later, deeper route.
@@ -124,7 +125,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
     }
   };
   const interpret = async (node: SyntaxElement, context: SchemaContext, depth: number): Promise<string> => {
-    options.chargeWork?.(256 + node.source.path.length * 4);
+    options.chargeWork?.(4096 + (node.source.path.length + node.source.uri.length + node.baseUri.length + context.namespace.length) * 32 + node.children.length * 128);
     checkDepth(depth, node);
     if (!is(node, XSD_NAMESPACE, "schema")) throw new SchemaLoadingError("invalid-schema", "Expected an XSD schema root", node.source);
     const declaredValue = xsdUri(node, "targetNamespace");

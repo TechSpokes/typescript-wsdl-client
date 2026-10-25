@@ -35,7 +35,13 @@ describe('checked source assessment', () => {
     const api = await assess(source);
     const cli = spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'assess', '--wsdl-source', source, '--report', output], {encoding: 'utf8'});
     expect(cli.status).toBe(0);
-    expect(parseAssessmentReport(await readFile(output, 'utf8'))).toEqual(api);
+    const cliReport = parseAssessmentReport(await readFile(output, 'utf8'));
+    const apiReport = parseAssessmentReport(serializeAssessmentReport(api));
+    // Native request IDs are private process-local handles; their text contributes to logical work.
+    // Semantic results/provenance and node accounting agree across processes.
+    expect({...cliReport, usage: {...cliReport.usage, work: 0}}).toEqual({...apiReport, usage: {...apiReport.usage, work: 0}});
+    expect(cliReport.usage.work).toBeLessThanOrEqual(cliReport.limits.maxWork);
+    expect(apiReport.usage.work).toBeLessThanOrEqual(apiReport.limits.maxWork);
     expect(() => parseAssessmentReport(JSON.stringify({...api, reportVersion: 'future'}))).toThrow();
     expect(() => parseAssessmentReport(JSON.stringify({...api, schema: 'disproved', schemaEligible: false}))).toThrow();
     expect(() => parseAssessmentReport(JSON.stringify({...api, admitted: true}))).toThrow();

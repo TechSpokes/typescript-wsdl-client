@@ -3,6 +3,7 @@ import {deepFreeze} from './canonicalGraph.js';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 import {loadSemanticSchemaInput} from '../loader/schemaInput.js';
+import {DEFAULT_LOADING_LIMITS, loadingLimits} from '../loader/schemaResources.js';
 import type {SchemaInput, SchemaInputOptions} from '../loader/schemaInput.js';
 import {SchemaLoadingError, syntaxAttribute, syntaxElements, XSD_NAMESPACE, WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {SyntaxElement} from '../loader/orderedSyntax.js';
@@ -150,7 +151,8 @@ export async function assessSchemaSource(source: string, options: Readonly<{
   expectedIdentity?: string;
 }>): Promise<CheckedAssessmentReport> {
   const budget = createSemanticBudget(options.limits);
-  const limits = {maxReportBytes: ASSESSMENT_REPORT_BYTES, maxWork: options.limits?.maxWork ?? DEFAULT_MAX_WORK, maxNodes: options.limits?.maxNodes ?? DEFAULT_MAX_NODES};
+  const effectiveLoadingLimits = loadingLimits(options.loading.limits);
+  const limits = {loading: effectiveLoadingLimits, maxReportBytes: ASSESSMENT_REPORT_BYTES, maxWork: options.limits?.maxWork ?? DEFAULT_MAX_WORK, maxNodes: options.limits?.maxNodes ?? DEFAULT_MAX_NODES};
   const obligations: AssessmentObligation[] = [];
   const operations: AssessedOperation[] = [];
   let components: CheckedAssessmentReport['components'] = [];
@@ -222,7 +224,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
         budget.chargeWork(1024 + resources.length * 512 + contexts.length * 1024);
         identity = opaque(JSON.stringify({resources, contexts, basis: ASSESSMENT_BASIS}));
         if (options.expectedIdentity !== undefined && identity !== options.expectedIdentity) add('source-context-match', 'actual', 'inconclusive', 'Expected source/context identity differs from the loaded closure');
-        const prepared = prepareSourceSchemaRequest(input!, {budget, sourceLimits: {maxNodes: limits.maxNodes}});
+        const prepared = prepareSourceSchemaRequest(input!, {budget, accountPreparation: true, sourceLimits: {maxNodes: limits.maxNodes}});
         if (prepared.kind !== 'prepared') {
           if (prepared.kind === 'resource-limit') return prepared;
           if (prepared.kind === 'source-preparation-failed') {
@@ -324,7 +326,14 @@ export function parseAssessmentReport(text: string): CheckedAssessmentReport {
   if (r.reportVersion !== ASSESSMENT_VERSION || r.scope !== 'whole-actual-native-direct-v1' || r.model !== 'xsd10-faithful-v1' || r.basis !== ASSESSMENT_BASIS || r.admitted !== false || !status(r.schema) || !status(r.correspondence) || !['completed', 'failed', 'cancelled', 'resource-limit'].includes(String(r.execution))) return bad();
   if (!record(r.tool) || !textField(r.tool.version) || !textField(r.tool.node) || !(r.identity === 'unassessed' || digest(r.identity))) return bad();
   if (!record(r.limits) || !integer(r.limits.maxWork) || r.limits.maxWork < 1 || !integer(r.limits.maxNodes) || r.limits.maxNodes < 1 || r.limits.maxReportBytes !== ASSESSMENT_REPORT_BYTES) return bad();
-  if (r.limits.loading !== undefined && (!record(r.limits.loading) || Object.values(r.limits.loading).some(v => !integer(v)))) return bad();
+  if (r.category !== undefined && !textField(r.category)) return bad();
+  if (r.limits.loading !== undefined) {
+    if (!record(r.limits.loading)) return bad();
+    for (const key of Object.keys(DEFAULT_LOADING_LIMITS)) {
+      const v = r.limits.loading[key];
+      if (!integer(v) || (key !== 'redirects' && v < 1)) return bad();
+    }
+  }
   if (!record(r.usage) || !integer(r.usage.work) || !integer(r.usage.nodes) || r.usage.work > r.limits.maxWork || r.usage.nodes > r.limits.maxNodes) return bad();
   if (!Array.isArray(r.obligations) || !r.obligations.length || !Array.isArray(r.operations) || !Array.isArray(r.resources) || !Array.isArray(r.contexts) || !Array.isArray(r.edges) || !Array.isArray(r.components) || !['complete', 'unassessed'].includes(String(r.operationInventory))) return bad();
   for (const o of r.obligations) if (!record(o) || !status(o.status) || !textField(o.rule) || !textField(o.component) || !textField(o.context) || !textField(o.reason) || ![ASSESSMENT_BASIS, 'dated-XSD-2004-direct-v1'].includes(String(o.basis))) return bad();

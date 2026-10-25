@@ -1066,7 +1066,7 @@
         {
           "path": "src/loader/schemaInput.ts",
           "role": "semantic-source",
-          "sha256": "56c7f82aefd7447dbc3dd4c118ef01f2e23e98268caf355e89f8ae1cd312edf5"
+          "sha256": "c00974de19b07ffd2cfcbc1cbeabf62fb141937309097ffdb4bdad4a4c3ed3d3"
         },
         {
           "path": "test/research/re01/predicate-dependencies.test.ts",
@@ -1176,7 +1176,7 @@
         {
           "path": "src/compiler/schemaDocumentSyntax.ts",
           "role": "semantic-source",
-          "sha256": "547ae4d9275d387a93d20e540a0a06d2e735f5f1cd46194fa4cd8b45821e16b2"
+          "sha256": "65cbecef2e9f66cd94b0b78e32a61b392ce31f6864e769fc3299afd3c6900fca"
         },
         {
           "path": "src/compiler/schemaElementProperties.ts",
@@ -1561,7 +1561,7 @@
         {
           "path": "src/loader/schemaResources.ts",
           "role": "semantic-source",
-          "sha256": "cd572ca3b04278a38774af8b9266e3b2895183d1695d5ed37ac219016a7f7c71"
+          "sha256": "6ca4bfe71eac02e6db7b24434d6491c22619885df7d138ab5bfd9d3ca0ec7943"
         },
         {
           "path": "src/loader/resolutionDepth.ts",
@@ -1646,7 +1646,7 @@
         {
           "path": "src/compiler/sourceSchemaBinding.ts",
           "role": "semantic-source",
-          "sha256": "4e8770496c5612ecf7815abaf83f2db28ab53b17d3ba10e375491fd1e5beb88a"
+          "sha256": "4e1b5fd2e6820f43efbeced70df933860b7329b8181b7ebc1c3a1d9ec6a40377"
         },
         {
           "path": "src/util/xmlWhitespace.ts",
