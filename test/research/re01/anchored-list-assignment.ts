@@ -1,7 +1,7 @@
 /** Input-derived anchored ITEM templates. Local preparation is not an actual-root proof. */
 import {globalId} from '../../../src/compiler/canonicalGraph.js';
 import type {ComplexTypeNode, ElementNode, GraphNode, LexicalValue, NodeId, Reference, SimpleTypeNode} from '../../../src/compiler/canonicalGraph.js';
-import {assertSemanticContext, contextsShareRequest, forkSemanticCandidate, storedIdentityOccupant} from '../../../src/compiler/semanticContext.js';
+import {assertSemanticContext, contextsShareRequest, forkSemanticCandidate, isSemanticCandidateOf, storedIdentityOccupant} from '../../../src/compiler/semanticContext.js';
 import type {ContextFailure, SemanticCandidateDelta, SemanticContext} from '../../../src/compiler/semanticContext.js';
 import {allocateHypotheticalScopedIdentity, semanticIdentityTuple} from '../../../src/compiler/hypotheticalScopedIdentity.js';
 import {deriveActualComplexContent, deriveOriginalComplexParticle} from '../../../src/compiler/complexTypeContent.js';
@@ -21,6 +21,8 @@ import type {RawComplexTypeProperties} from '../../../src/compiler/re01TypePrope
 import type {RawSimpleTypeProperties} from '../../../src/compiler/schemaSimpleTypeProperties.js';
 import type {SemanticTypeReference} from '../../../src/compiler/semanticTypeReference.js';
 import type {ResourceLimitFailure} from '../../../src/compiler/semanticBudget.js';
+import type {FiniteRe01Hypothesis} from '../../../src/compiler/finiteRe01Verification.js';
+import {recognizePrivateStagingDemand} from './private-ambient.js';
 
 export type AnchoredItemChoice = Readonly<{kind: 'retained' | 'atomic' | 'member-mask' | 'per-cohort'; members: readonly SemanticTypeReference[]; dropped?: readonly number[]}>;
 export type AnchoredListAssignment = Readonly<{
@@ -30,6 +32,7 @@ export type AnchoredListAssignment = Readonly<{
   evidence: FiniteRe01EvidenceNode;
   localComponents: readonly ComponentConstructionReceipt[];
   pending: 'enclosing-forest';
+  mode?: 'root-hypothesis-reconstruction';
 }>;
 export type AnchoredListFailure = CorrespondenceFailure | ContextFailure | ResourceLimitFailure | Exclude<ContentViewResult, {kind: 'checked'}>;
 export type AnchoredListPreparation = Readonly<{
@@ -67,7 +70,81 @@ export function preparePrivateAnchoredListAssignments(actual: SemanticContext, p
   return prepare(actual, parent, target, true);
 }
 
-function prepare(actual: SemanticContext, parent: SemanticContext, target: NodeId, privateChoices: boolean): AnchoredListPreparation {
+/** Hypothesis-relative reconstruction, never completion of the supplied fixed parent. No child choices are accepted. */
+export function preparePrivateStagedRootAssignments(actual: SemanticContext, demand: SemanticContext, child: NodeId): AnchoredListPreparation {
+  return stagedRecipe(actual, demand, child, false);
+}
+
+function stagedRecipe(actual: SemanticContext, demand: SemanticContext, child: NodeId, shapeOnly: boolean): AnchoredListPreparation {
+  assertSemanticContext(actual); assertSemanticContext(demand);
+  return actual.budget.guard(() => {
+    const recognized = recognizePrivateStagingDemand(actual, demand, child);
+    if (recognized.kind === 'resource-limit') return recognized;
+    actual.budget.chargeWork(24);
+    const outside = (): AnchoredListFailure => ({kind: 'unresolved', rule: 'private-staging-demand', message: 'Expected an authentic structural root demand', component: child, contextId: demand.contextId});
+    if (recognized.kind !== 'recognized-private-staging-demand') return outside();
+    const root = demand.lookup(recognized.root);
+    if (root.kind !== 'found' || root.node.kind !== 'complexType' || !root.node.derivation) return outside();
+    const middle = demand.resolve(root.node.derivation.base), ancestor = re01Ancestor(actual, recognized.root);
+    if (ancestor.kind !== 'checked') return ancestor;
+    if (middle.kind !== 'found') return outside();
+    // Context handles describe only protected demands; root selectors are
+    // derived here, and no argument slot accepts child choices or evidence.
+    return prepare(actual, demand, child, true, {parent: actual, context: demand, target: recognized.root,
+      intermediate: middle.node.id, ancestor: ancestor.ancestor}, shapeOnly);
+  });
+}
+
+/** Exact syntactic recipe-image class; no frontier, generated formation or forest success is consulted. */
+export function recognizePrivateStagedRoot(actual: SemanticContext, demand: SemanticContext, child: NodeId, candidate: SemanticContext):
+  Readonly<{kind: 'recognized-private-staged-root'; mode: 'root-hypothesis-reconstruction'; qualification: 'native-evidence-pending'}>
+  | Readonly<{kind: 'outside-private-staged-root'}> | ResourceLimitFailure {
+  assertSemanticContext(actual); assertSemanticContext(demand); assertSemanticContext(candidate);
+  const b = actual.budget;
+  return b.guard(() => {
+    b.chargeWork(48);
+    const outside = {kind: 'outside-private-staged-root' as const};
+    if (!isSemanticCandidateOf(actual, candidate) || candidate.membership !== 'complete-actual-plus-additions'
+      || candidate.scalarSlotMembership !== 'complete-original' || candidate.scalarSlots.length
+      || candidate.notationMembership !== 'complete-original-plus-additions' || candidate.notationUniverse !== 'source-bound'
+      || candidate.notationMembers.length || candidate.originalUrWildcards().length
+      || candidate.originalIdentityConstraints().identities.length) return outside;
+    const expected = stagedRecipe(actual, demand, child, true);
+    if (expected.kind === 'resource-limit') return expected;
+    if (expected.kind !== 'prepared-anchored-list-assignments' || expected.assignments.length !== 1) return outside;
+    const model = expected.assignments[0]!.context;
+    const equal = (a: unknown, z: unknown): boolean => {
+      b.chargeWork(4);
+      if (typeof a === 'string' && typeof z === 'string') return b.compareText(a, z) === 0;
+      if (a === z) return true;
+      if (!a || !z || typeof a !== 'object' || typeof z !== 'object') return false;
+      for (const key in a) b.chargeWork(4 + key.length);
+      for (const key in z) b.chargeWork(4 + key.length);
+      const keys = Object.keys(a);
+      if (keys.length !== Object.keys(z).length) return false;
+      return keys.every(key => Object.hasOwn(z, key) && equal((a as Record<string, unknown>)[key], (z as Record<string, unknown>)[key]));
+    };
+    if (candidate.members.length !== model.members.length) return outside;
+    for (const id of model.members) {
+      b.chargeWork(8 + id.length);
+      const a = model.lookup(id), z = candidate.lookup(id);
+      if (z.kind !== 'found' || a.kind !== 'found' || !equal(a.node, z.node)) return outside;
+      for (const read of ['rawTypeProperties', 'rawSimpleTypeProperties', 'rawElementProperties', 'rawAttributeProperties',
+        'rawAttributeGroupProperties', 'rawParticleWildcardProperties'] as const) {
+        const left = model[read](id), right = candidate[read](id);
+        if (!equal(left, right)) return outside;
+        if (read === 'rawTypeProperties') {
+          const l = model.rawTypeProperties(id)?.content, r = candidate.rawTypeProperties(id)?.content;
+          if (l && r && 'original' in l && 'original' in r && l.original !== r.original) return outside;
+        }
+      }
+    }
+    b.chargeWork(12);
+    return Object.freeze({kind: 'recognized-private-staged-root', mode: 'root-hypothesis-reconstruction', qualification: 'native-evidence-pending'});
+  });
+}
+
+function prepare(actual: SemanticContext, parent: SemanticContext, target: NodeId, privateChoices: boolean, staging?: FiniteRe01Hypothesis, shapeOnly = false): AnchoredListPreparation {
   assertSemanticContext(actual); assertSemanticContext(parent);
   const b = parent.budget;
   return b.guard(() => {
@@ -285,17 +362,48 @@ function prepare(actual: SemanticContext, parent: SemanticContext, target: NodeI
           cohorts.push({field: field.id, head: head.id, item: cohortItem, preparation: l0.id, enumeration: l1.id, member: id});
         }
         b.chargeWork(80 + parent.members.length + additions.length * 2 + target.length);
-        const endpoint: ComplexTypeNode = {...endpointBefore, derivation: {kind: 'restriction', contentKind: 'complex', base: local(middle.id), facets: []}};
+        let endpoint: ComplexTypeNode = {...endpointBefore, derivation: {kind: 'restriction', contentKind: 'complex', base: local(middle.id), facets: []}};
         const key = (privateChoices ? 'private-anchored-list:' : 'anchored-list:') + target + ':' + ordinal.toString();
         // Existing inherited rows remain inherited. SOURCE selections are kept
         // by identity instead of passed through a generic data snapshot.
-        const rawTypes = [
+        let rawTypes = [
           ...(!parent.rawTypeProperties(a.id) ? [pa] : []), ...(!parent.rawTypeProperties(r.id) ? [pr] : []),
           {...pa, type: middle.id, derivation: {method: 'extension' as const, base: local(a.id)}, provenance: {kind: 'hypothetical-abstract' as const, originals: []}},
           {...endpointProperties, derivation: {method: 'restriction' as const, base: local(middle.id)}, provenance: {kind: 'hypothetical-abstract' as const, originals: []}}];
-        const delta = b.freeze({key, active: [...parent.members, ...additions.map(at => at.id)], additions, endpoint, rawTypes, rawSimpleTypes: rows, rawElements});
-        const built = forkSemanticCandidate(parent, delta);
+        let predecessor = parent;
+        if (staging) {
+          // Assemble the same recipe at its real first birth. No child candidate
+          // or receipt is created, and all active operands are first interpreted
+          // in the new root sibling. Only immutable SOURCE authorities transfer.
+          predecessor = actual;
+          const root = get(staging.target);
+          if (root.kind !== 'complexType') return fail('private-staging-root', 'Expected a complex root');
+          endpoint = root;
+          const inheritedRows: RawComplexTypeProperties[] = [];
+          for (const id of parent.members) {
+            b.chargeWork(4 + id.length);
+            if (actual.lookup(id).kind === 'missing') additions.push(get(id));
+            const row = parent.rawTypeProperties(id);
+            if (row) inheritedRows.push(row);
+          }
+          b.chargeWork(4 + inheritedRows.length + rawTypes.length);
+          rawTypes = [...inheritedRows, ...rawTypes.filter(row => row.type !== target
+            && (parent.lookup(row.type).kind === 'missing' || !parent.rawTypeProperties(row.type)))];
+        }
+        const delta = b.freeze({key, active: [...predecessor.members, ...additions.map(at => at.id)], additions, endpoint, rawTypes, rawSimpleTypes: rows, rawElements});
+        const built = forkSemanticCandidate(predecessor, delta);
         if (built.kind !== 'prepared') {b.chargeWork(); outcomes.push({choice, result: built}); return;}
+        const publish = (localComponents: readonly ComponentConstructionReceipt[]): void => {
+          b.chargeWork(48 + cohorts.length * 8 + localComponents.length);
+          const evidence: FiniteRe01EvidenceNode = Object.freeze({id: key, parent: predecessor, context: built.context, target: staging?.target ?? target, intermediate: staging?.intermediate ?? middle.id,
+            ancestor: staging?.ancestor ?? designated.ancestor, premises: Object.freeze([])});
+          const assignment: AnchoredListAssignment = Object.freeze({family: privateChoices ? 'private-anchored-item-list-v1' : 'anchored-item-list-v1', actual, parent: predecessor, target: staging?.target ?? target, intermediate: staging?.intermediate ?? middle.id,
+            mode: staging ? 'root-hypothesis-reconstruction' : undefined,
+            itemChoice: b.freeze(b.snapshot(choice)), delta, context: built.context, cohorts: b.freeze(b.snapshot(cohorts)), evidence,
+            localComponents: Object.freeze(localComponents), pending: 'enclosing-forest'});
+          issued.add(assignment); assignments.push(assignment); outcomes.push({choice, result: 'prepared-local-evidence'});
+        };
+        if (shapeOnly) {publish([]); return;}
         const recordFailure = (failure: AnchoredListFailure): void => {
           b.chargeWork(4);
           const origin = 'contextId' in failure ? failure.contextId ?? built.context.contextId : built.context.contextId;
@@ -303,7 +411,9 @@ function prepare(actual: SemanticContext, parent: SemanticContext, target: NodeI
             ? Object.freeze({...failure, kind: 'candidate-rejected', contextId: origin}) : failure});
         };
         b.chargeWork(4 + additions.length); const localComponents: ComponentConstructionReceipt[] = [];
-        for (const node of [...additions, endpoint]) {
+        // An original-root actual-mapped endpoint is authenticated by native
+        // correspondence at frontier inspection, never a standalone FULL call.
+        for (const node of staging ? additions : [...additions, endpoint]) {
           b.chargeWork(); const checked = checkComponentConstruction(built.context, node.id);
           if (checked.kind !== 'checked') {recordFailure(checked); return;}
           localComponents.push(checked);
@@ -359,13 +469,7 @@ function prepare(actual: SemanticContext, parent: SemanticContext, target: NodeI
           if (!equal.value) {b.chargeWork(48); outcomes.push({choice, result: {kind: 'candidate-rejected', rule: 'anchored-list-fixed-value',
             message: 'The issued LIST does not preserve its FIELD tagged value', component: cohort.member}}); return;}
         }
-        b.chargeWork(48 + cohorts.length * 8 + localComponents.length);
-        const evidence: FiniteRe01EvidenceNode = Object.freeze({id: key, parent, context: built.context, target, intermediate: middle.id,
-          ancestor: designated.ancestor, premises: Object.freeze([])});
-        const assignment: AnchoredListAssignment = Object.freeze({family: privateChoices ? 'private-anchored-item-list-v1' : 'anchored-item-list-v1', actual, parent, target, intermediate: middle.id,
-          itemChoice: b.freeze(b.snapshot(choice)), delta, context: built.context, cohorts: b.freeze(b.snapshot(cohorts)), evidence,
-          localComponents: Object.freeze(localComponents), pending: 'enclosing-forest'});
-        issued.add(assignment); assignments.push(assignment); outcomes.push({choice, result: 'prepared-local-evidence'});
+        publish(localComponents);
       };
       let ordinal = 0;
       for (const choice of choices) {

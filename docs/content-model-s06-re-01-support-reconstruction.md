@@ -5094,6 +5094,7 @@ or both adequacy directions for a catalogue that has not yet been constructed.
 | Anchored ITEM continuation | Shared retained/atomic/native-slot-mask grammar | `anchored-list-assignment.ts` | Actual-root fresh-child and inherited-consumer controls | Scoped implemented | Arbitrary-parent extraction | Fresh-context COMMENTED assessment |
 | Private scalar construction | Closed source S0 and exact attachment S1 below | Private anchored recipe | Heterogeneous native forests | Constructive sufficiency | Compose with residual classes | RE01-A nonauthor review |
 | Compatible ambient preservation | Input-derived E0/E1 and HEAD subportfolio readers | `private-ambient.ts`; existing private recipe/builder | Full larger-schema and reader frontiers | Constructive sufficiency | Staged reader over A | RE01-B fresh-context nonauthor review |
+| Staged parent support | Hypothesis-relative T and deterministic T* below | Private recipe; retained replay; native frontier/builder | Parent-first formation and exact continuation | Constructive sufficiency | Arbitrary parent-visible ordinary BODY support | RE01-C nonauthor review |
 | Automatic evidence completion | Ranked closure of delivered inherited/anchored grammars | `evidence-builder.ts` | Input-only and separately seeded native controls | Scoped implementation | Extract broader parent-visible graph/program/owner candidates | Independent delivery review |
 | Joint endpoint tuples | Enum/singleton/empty CURRENT roles | Scalar assessment/kernel | Exhaustive finite product; exact inverses | Scoped implemented | General digit tracks and facet modes | Constructor review agent |
 | Whole-image binary WORD | Regularizable fixed LIST image labels | Scalar assessment/reconstruction | Complete tuple inverses; shared core | Scoped implemented | Shared duration P blocks | Coverage review agent |
@@ -5657,6 +5658,151 @@ represented lawfully in the parent and preserved through the same private cut? T
 that this particular direct-parent hypothesis is rejected before the cut. Investigate a concrete staged parent
 construction or prove its precise additional compatibility predicate; do not infer impossibility or start general
 #347/#348 solvers. #351 and production remain gated on their full acceptance criteria.
+
+## RE01-C lawful staged parent and retained continuation
+
+This proves three sufficient-class results under the unchanged B-v1/Q_f, P1/F2 and native authorities.
+The mode is root-hypothesis reconstruction. The supplied fixed parent P remains rejected; the result P* is a
+different direct candidate of Gamma. This does not discover protected demand records from Gamma/target alone.
+
+### Demand T and staged-parent T* predicates
+
+The full authentic input is `(Gamma,P,C)`, where P is an authenticated direct root fork and C a component ID.
+The constructor accepts context handles and C only; there is no parameter for child middles, scalar choices,
+premise lists or evidence forests. Root target, middle and ancestor selectors are derived from the records.
+`recognizePrivateStagingDemand` checks the complete E1 source grammar, root scaffold, history, SOURCE/provenance,
+original records, global-name absence and membership, with one explicitly different reader rule: each fresh reader
+is a restriction of A, owned by A, whose BODY selects a genuine original HEAD-carrier portfolio.
+Any nonempty subportfolio is permitted, in its source order. C selects the full ordered core portfolio as before.
+All other original/auxiliary ports and exclusions are those of E1; no scalar/member support is present in P.
+The number r of readers and core arity k >= 2 are arbitrary finite numbers, including r = 0.
+This defines T independently of eventual candidate success. The returned label keeps source formation/evidence pending.
+
+T* is the exact deterministic syntactic recipe-image class relative to a T demand, recognized by
+`recognizePrivateStagedRoot`. The recognizer assembles the input-derived recipe in shape-only mode and compares
+all stored records and all RAW tables, with identical SOURCE handles, full membership, no scalar/notation additions,
+no borrowed UR wildcard or IC and direct Gamma ancestry. It compares record content rather than diagnostic context IDs.
+Only original FIELD/U/W/H scalar assessment is used to derive the recipe. Shape-only mode exits before generated
+formation, immediate-L0 funding, frontier inspection or evidence success. Thus T* is not defined by a winning candidate.
+Recognition may consume resources; it supplies no validity authority. A bad ambient actual VALUE is admitted
+structurally by T/T* and rejected by actual qualification, as its independent control demonstrates.
+
+T with no readers overlaps E1's zero-reader demand case; nonempty matching-A reader families are outside E1.
+T* contains support not allowed in the unstaged E1 parent. These sufficient classes are not an exhaustive
+decomposition of B-v1. S0/S1 and E0/E1 retain precisely their earlier claims.
+Source qualification means the actual native frontier's syntax, formation, primitive and scalar duties pass,
+leaving genuine nonprimitive RE01 obligations pending. It does not assume RootD or C has a successful witness.
+
+### Staged-root construction theorem
+
+For every source-qualified T input, the private recipe constructs P* directly from Gamma with parent-local
+formation discharged and C as its sole pending nonprimitive obligation. Preserve the root restriction to its
+input-derived empty original middle, the unchanged C extension, every reader and all protected original records.
+Allocate M E A with A's exact effective/SOURCE BODY and the same private per-FIELD L0/L1/affiliate recipe proved
+in RE01-A. Allocation checks the full demand store, including planned fresh child/readers, and reserves previously
+allocated identities. FIELD global names are distinct and absent from the full predecessor store; demand additions
+are scoped complex types and cannot occupy those globals. No existing identity is overwritten or reactivated.
+
+The shared recipe is assembled once at its actual root birth. It does not construct a successful child and then
+move its receipts. All mutually referenced support, C and readers are atomically available in P*.
+For numeric b choose builtin Boolean ITEM; for literal v retain ordered U. Emit v in the protected FIELD map.
+Each new L0 literally restricts H and retains its genuine facet components. Its own pattern admits the complete
+one-token v tuple. L1 literally restricts that immediate L0 and adds an enum naming active L0 and the real M owner.
+The complete tuple is assessed in P* through that L0. ITEM-only admission and future-child success supply no funding.
+Original SOURCE handles retain Gamma authority; original-root actual-mapped rows are authenticated by candidate
+correspondence at frontier inspection, not by an unauthenticated standalone FULL claim.
+
+For each reader, every selected HEAD now expands to its corresponding distinct qualified affiliate. That affiliate
+restricts the matching original FIELD type through L1/L0/H/W, has an equal tagged fixed VALUE by RE01-A's Boolean
+or retained-QName argument, and has occurrence 1 within FIELD's optional 0..1. Its selected portfolio is therefore
+a valid restriction of A's unit choice. Distinct expanded names preserve UPA; no duplicate-name CODE equality is
+introduced. The actual full reader closure additionally checks SOURCE particles, reverse affiliates, TYPE and VALUE.
+The unchanged C extension of empty R is locally formed, with its own nonprimitive RE01 duty still explicit.
+M is genuinely primitive: its immediate BASE is A, which is also its designated ancestor since A restricts anyType.
+
+All E ambient preservation arguments still apply: original scalar/local portfolios read unchanged U/W/H and maps;
+HEAD carriers expand to the same distinct affiliates; empty scaffolds retain their primitive derivations.
+Every original record and actual-context observation stays fixed. Hypothetical HEAD pools intentionally acquire
+the lawful new affiliates; record immutability is not a claim of unchanged reverse lookup. Gamma's complete duties
+remain assessed there. All born support/readers remain hypothetical legality roots; unused stored originals are
+not promoted indiscriminately to hypothetical FULL. There are no other observation forms in T's grammar.
+Consequently the shared native parent frontier discharges correspondence and all parent-local dependencies before
+recursive child completion, leaving exactly C pending. The original P still fails its matching-A reader when present.
+
+### Retained continuation and complete original-root evidence
+
+For every source-qualified T demand and P* in T*, the existing retained-middle producer enumerates M for C:
+it is an available E-over-designated-A middle, with exactly the required SOURCE BODY. Replay changes only C to
+restriction of M, retaining C's protected HEAD BODY and owner. In the resulting H the singleton HEAD pools match
+M's original FIELD choice with the same type, occurrence and tagged VALUE argument. Reader, scalar and affiliate
+properties, identities, owners, maps and provenance stay inherited exactly; no new support is generated.
+The fresh private producer's occupied-name/incoming-affiliate guards remain in force and refuse regeneration.
+
+The shared frontier checks every required fresh support/reader in P* and H, including dependencies in their actual
+receiving contexts. A parent receipt is not an H receipt; a sibling C proof cannot discharge P*'s contextual C duty.
+There is no new NP child after C-to-M. The automatic builder, given only the reconstructed original-root hypothesis,
+selects its own child middle and builds the complete two-node forest. The final native verifier checks that forest
+and every actual Gamma duty. This establishes constructive parent sufficiency, exact retained continuation and
+complete original-root evidence separately. It establishes neither success of the fixed P nor arbitrary restaging.
+
+The same fully materialized forest satisfies the current rank discipline. Gamma has one original NP root and no
+fresh NP, `(q,n)=(1,0)`. The root cut retires it and adds C, giving `(0,1)`; M and the original empty scaffold
+extensions are primitive, readers are restrictions and scalar/member rows are not complex extensions.
+The fresh cut adds no stored components and changes C to restriction, giving `(0,0)`. Native flat SOURCE backing
+adds no NP complex row. Thus original q decreases and fresh n decreases with zero new stored NP, including after
+the materialization consumed by the completed native proof. Existing census/membership/rank guards remain mandatory.
+
+### Full hypothesis-relative encoding bound
+
+Let I encode full Gamma, the structural demand P/C, lexical maps/words, SOURCE selectors and identities with
+explicit shared references; let N be its byte length. Run the finite syntactic recipe, without success checks,
+against the input stored identity inventory, reserving its `2k+1` new scoped identities and k global FIELD names.
+At most the finite input inventory plus previously reserved scoped positions can block allocator attempts.
+Count every resulting escaped owner/name/reference byte, not only the number of nodes.
+
+Serialize retained input, P*'s unchanged demanded C/readers and root replacement, its `3k+1` new support records,
+`2k` scalar RAW rows, k element RAW rows and at most four new core complex rows plus input scaffold/child/reader rows.
+Serialize H's C restriction and any source-mapping rows, and two proof nodes with one child edge. All WORDs/maps,
+facet programs and immediate-L0/M operands are input copies or the fixed one-token recipe; helper nesting depth
+above the input C identity is fixed. Retain the separate input P delta: it is not silently part of P*'s ancestry.
+
+For each of the three proof contexts Gamma/P*/H, enumerate the input flat SOURCE positions and the bounded
+flat composition-wrapper positions for selected A, C and reader portfolios. For every position enumerate all
+applicable fixed native certificate templates, all pairs of portfolio arms, every U/W/H/L0/L1 token stage,
+all lexical-map entries and dependency references, before testing success. Scalar depth is fixed, HEAD pools are
+singleton and portfolios are finite input subsets; no recursive scalar program or additional proof subtree appears.
+Any successful receipt selects a subset of these finite templates. Counting their full serialization together
+with deltas/forest defines a total computable B(I) independent of candidate success. It bounds complete encodings,
+names/maps/programs/owners and evidence, rather than only graph rows, and does not bound exploratory caches or work.
+
+This is a hypothesis-relative bound. Fixed Gamma alone cannot bound arbitrarily many supplied readers or their
+arbitrarily long fresh identities. No source-only discovery/bound for all T demands is claimed; S0/E0's separate
+source-only results remain. Sufficient mathematical resources do not imply every k/r fits operational defaults.
+Preparation, shape recognition, replay and checking use the one precharged inclusive/sticky request budget;
+exhaustion yields neither a partial witness nor a negative answer.
+
+### Controls, dispositions and remaining implication
+
+The [ambient controls](../test/research/re01/private-ambient.test.ts) retain the original parent failure and local
+post-cut success, and add 13 discovered cases covering staged parent-first success, automatic two-node evidence,
+k = 2/3/4, r = 0/1/2/3, full/subset readers, both polarities, names, ambient counts and saved default QName maps.
+They check exact M and inherited RAW support, all required fresh roots in both frontiers, full stored rank, and
+refusal to regenerate support. Independent contrasts cover collision/foreign affiliates, OffA, bad VALUE,
+QName map mismatch, ITEM admission without immediate-L0 tuple funding, missing/sibling evidence, structurally
+admitted invalid ambient input and inclusive/sticky exhaustion. Existing A/B and outside-class positives remain.
+Finite controls corroborate implementation and do not replace the quantified arguments above.
+
+Proof dispositions: staged-root sufficiency, retained continuation, complete evidence, full hypothesis-relative
+encoding bound and current post-materialization rank are proved for T/T*, accepted by fresh-context nonauthor review.
+The old fixed-parent matching-A hypothesis is refuted, not repaired. Full-domain coverage, arbitrary histories,
+unrestricted negatives and dated-XSD correspondence remain unresolved. Implementation delivery is recorded in
+the issue ledger separately from these mathematical dispositions; no coverage flags or public contracts change.
+
+The implication removed is the need to regenerate occupied private support at C or discharge matching-A parent
+formation retroactively: T reconstructs a distinct root with genuinely first-born support and reuses it unchanged.
+One remaining residual is a parent with ordinary BODY/owner observations outside the flat HEAD-reader grammar.
+Its next operation is a concrete native compatibility/restaging experiment with an input-defined preservation
+predicate, not a general #347/#348 solver, inactive-context redesign, #351 negatives or production integration.
 
 ## Input-derived exact-ITEM free-LIST construction
 

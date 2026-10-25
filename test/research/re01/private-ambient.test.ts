@@ -7,17 +7,20 @@ import {loadSemanticSchemaInput} from '../../../src/loader/schemaInput.js';
 import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {globalId} from '../../../src/compiler/canonicalGraph.js';
 import type {ComplexTypeNode} from '../../../src/compiler/canonicalGraph.js';
-import {forkSemanticCandidate} from '../../../src/compiler/semanticContext.js';
+import {forkSemanticCandidate, isSemanticCandidateOf} from '../../../src/compiler/semanticContext.js';
 import {hypotheticalScopedId} from '../../../src/compiler/hypotheticalScopedIdentity.js';
 import {deriveOriginalComplexParticle} from '../../../src/compiler/complexTypeContent.js';
 import {assertComponentConstruction, checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import {effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
 import {DEFAULT_MAX_WORK} from '../../../src/compiler/semanticBudget.js';
 import {prepareFiniteRe01Frontier, verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
-import {preparePrivateAnchoredListAssignments} from './anchored-list-assignment.js';
+import {preparePrivateAnchoredListAssignments, preparePrivateStagedRootAssignments, recognizePrivateStagedRoot} from './anchored-list-assignment.js';
 import {buildRe01Evidence, completeSeededRe01Evidence, storedRe01Rank} from './evidence-builder.js';
-import {recognizePrivateAmbientEnvironment} from './private-ambient.js';
+import {recognizePrivateAmbientEnvironment, recognizePrivateStagingDemand} from './private-ambient.js';
 import {prepareInheritedMiddleAssignments} from './shared-assignment.js';
+import {createSchemaScalarKernel} from '../../../src/compiler/schemaScalarKernel.js';
+import type {FiniteRe01Hypothesis} from '../../../src/compiler/finiteRe01Verification.js';
+import type {AnchoredListAssignment} from './anchored-list-assignment.js';
 
 const local = (target: string) => ({kind: 'local' as const, target});
 const namespace = 'urn:private:inherited';
@@ -34,8 +37,11 @@ async function source(extra = '', supplied?: string) {
     return prepared.request.actual;
   } finally {await rm(directory, {recursive: true, force: true});}
 }
-async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerCount = 1) {
-  const actual = await source(extra);
+async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerCount = 1,
+  family?: {xml: string; namespace: string; name: (name: string) => string}, subset = false) {
+  const actual = await source(extra, family?.xml);
+  const namespace = family?.namespace ?? 'urn:private:inherited';
+  const id = (name: string) => globalId('type', {namespace, local: family?.name(name === 'Heads' ? 'fullCarrier' : name === 'ReaderBody' ? 'subsetCarrier' : name) ?? name});
   const opening = prepareInheritedMiddleAssignments(actual, actual, id('RootD')); assert.equal(opening.kind, 'prepared-inherited-assignments');
   const plan = opening.assignments.find(at => at.intermediate === id('RootB')); assert.ok(plan);
   const carrier = actual.lookup(id('Heads')); assert.equal(carrier.kind, 'found'); assert.equal(carrier.node.kind, 'complexType');
@@ -46,7 +52,7 @@ async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerC
   const child: ComplexTypeNode = {...carrier.node, id: target, identity: {kind: 'scoped', owner: id('A'), path: '/ambient-child', role: 'type'},
     derivation: {kind: 'extension', contentKind: 'complex', base: local(id('R')), facets: []}};
   const readerId = hypotheticalScopedId(id(base), '/ambient-reader', 'type');
-  const reader: ComplexTypeNode = {...(base === 'Heads' ? readerCarrier.node : carrier.node), id: readerId, identity: {kind: 'scoped', owner: id(base), path: '/ambient-reader', role: 'type'},
+  const reader: ComplexTypeNode = {...(base === 'Heads' || subset ? readerCarrier.node : carrier.node), id: readerId, identity: {kind: 'scoped', owner: id(base), path: '/ambient-reader', role: 'type'},
     derivation: {kind: 'restriction', contentKind: 'complex', base: local(id(base)), facets: []}};
   const readers = Array.from({length: readerCount}, (_, i): ComplexTypeNode => i === 0 ? reader : {...reader,
     id: hypotheticalScopedId(id(base), '/ambient-reader-' + i, 'type'), identity: {kind: 'scoped', owner: id(base), path: '/ambient-reader-' + i, role: 'type'}});
@@ -54,10 +60,185 @@ async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerC
   const built = forkSemanticCandidate(actual, {...plan.delta, key: 'ambient-parent', additions, active: [...actual.members, ...additions.map(at => at.id)],
     rawTypes: [...plan.delta.rawTypes!, ...additions.map(node => ({type: node.id, targetNamespace: namespace,
       derivation: {method: node.derivation!.kind, base: node.derivation!.base}, abstract: false, final: [], block: [],
-      content: node !== child && base === 'Heads' ? readerBody.content : body.content, attributeUses: [], provenance: {kind: 'hypothetical-abstract' as const, originals: []}}))]});
+      content: node !== child && (base === 'Heads' || subset) ? readerBody.content : body.content, attributeUses: [], provenance: {kind: 'hypothetical-abstract' as const, originals: []}}))]});
   assert.equal(built.kind, 'prepared', json(built));
   return {actual, target, readerId, hypothesis: {parent: actual, context: built.context, target: id('RootD'), intermediate: plan.intermediate, ancestor: plan.ancestor}};
 }
+
+it('stages first-birth support at a new root and completes the retained child automatically', async () => {
+  const {actual, target, readerId, hypothesis} = await inherited('A');
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target);
+  assert.equal(prepared.kind, 'prepared-anchored-list-assignments', json(prepared));
+  assert.equal(prepared.assignments.length, 1, json(prepared));
+  const staged = prepared.assignments[0]!;
+  expect(staged.mode).toBe('root-hypothesis-reconstruction');
+  expect(recognizePrivateStagingDemand(actual, hypothesis.context, target).kind).toBe('recognized-private-staging-demand');
+  expect(recognizePrivateStagedRoot(actual, hypothesis.context, target, staged.context).kind).toBe('recognized-private-staged-root');
+  expect(recognizePrivateStagedRoot(actual, hypothesis.context, target, hypothesis.context).kind).toBe('outside-private-staged-root');
+  expect(isSemanticCandidateOf(actual, staged.context)).toBe(true);
+  const session = prepareFiniteRe01Frontier(actual); assert.equal(session.kind, 'native-frontier-session');
+  const frontier = session.inspectCandidate(staged.evidence);
+  assert.equal(frontier.kind, 'inspected-frontier', json(frontier));
+  expect(frontier.requirements.filter(at => !at.primitive).map(at => at.target)).toEqual([target]);
+  expect(checkComponentConstruction(staged.context, readerId).kind).toBe('checked');
+  const {parent, context, target: root, intermediate, ancestor} = staged.evidence;
+  const result = completeSeededRe01Evidence(actual, root, {parent, context, target: root, intermediate, ancestor});
+  assert.equal(result.kind, 'checked-witness', json(result));
+  expect(result.evidence.nodes).toHaveLength(2);
+  const child = result.evidence.nodes.find(at => at.target === target); assert.ok(child);
+  const scalar = staged.context.rawSimpleTypeProperties(staged.cohorts[0]!.enumeration)!;
+  const facet = scalar.facetComponentSet![2]!; assert.ok('facets' in facet);
+  expect(child.intermediate).toBe(facet.facets[0]!.operand!.owner);
+  expect(child.context.lookup(child.intermediate)).toEqual(staged.context.lookup(child.intermediate));
+  expect(child.context.rawTypeProperties(child.intermediate)).toBe(staged.context.rawTypeProperties(child.intermediate));
+  for (const cohort of staged.cohorts) for (const id of [cohort.preparation, cohort.enumeration, cohort.member]) {
+    expect(child.context.lookup(id)).toEqual(staged.context.lookup(id));
+    expect(child.context.rawSimpleTypeProperties(id)).toBe(staged.context.rawSimpleTypeProperties(id));
+  }
+  expect(child.context.lookup(readerId)).toEqual(staged.context.lookup(readerId));
+  expect(storedRe01Rank(actual, child.parent)).toEqual({q: 0, n: 1});
+  expect(storedRe01Rank(actual, child.context)).toEqual({q: 0, n: 0});
+});
+
+const rootHypothesis = (at: AnchoredListAssignment): FiniteRe01Hypothesis => ({parent: at.parent, context: at.context,
+  target: at.target, intermediate: at.intermediate, ancestor: at.evidence.ancestor});
+
+function stagedFamily(arity: number, count: number, reverse: boolean, v: 'true' | 'false', savedMap: string) {
+  const family = largerSchema(arity, count, reverse, v, savedMap), name = family.name;
+  const restriction = (n: string, base: string) => `<xs:complexType name="${name(n)}"><xs:complexContent><xs:restriction base="${base}"/></xs:complexContent></xs:complexType>`;
+  const extension = (n: string, base: string) => `<xs:complexType name="${name(n)}"><xs:complexContent><xs:extension base="${base}"/></xs:complexContent></xs:complexType>`;
+  const scaffold = restriction('RootA', 'xs:anyType') + restriction('RootR', `t:${name('RootA')}`)
+    + extension('RootB', `t:${name('RootA')}`) + extension('RootD', `t:${name('RootR')}`);
+  return {...family, xml: family.xml.replace(new RegExp(`<xs:complexType name="${name('D')}">.*?</xs:complexType>`), '')
+    .replace('</xs:schema>', scaffold + '</xs:schema>')};
+}
+
+it.each([
+  [2, 0, false, 'true', 'urn:staged:two', 0, false],
+  [3, 2, true, 'false', 'urn:staged:false', 2, true],
+  [4, 3, false, 'true', 'urn:staged:four', 3, false],
+] as const)('constructs the staged family k=%i ambient=%i reversed=%s v=%s map=%s readers=%i subset=%s', async (arity, count, reverse, v, map, readers, subset) => {
+  const family = stagedFamily(arity, count, reverse, v, map);
+  const {actual, target, hypothesis} = await inherited('A', '', readers, family, subset);
+  const demand = recognizePrivateStagingDemand(actual, hypothesis.context, target);
+  assert.equal(demand.kind, 'recognized-private-staging-demand', json(demand));
+  expect(demand.readers).toHaveLength(readers); expect(demand.arity).toBe(arity);
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target);
+  assert.equal(prepared.kind, 'prepared-anchored-list-assignments', json(prepared));
+  assert.equal(prepared.assignments.length, 1, json(prepared)); const staged = prepared.assignments[0]!;
+  expect(recognizePrivateStagedRoot(actual, hypothesis.context, target, staged.context).kind).toBe('recognized-private-staged-root');
+  const session = prepareFiniteRe01Frontier(actual); assert.equal(session.kind, 'native-frontier-session');
+  expect(session.actual.requirements.filter(at => !at.primitive).map(at => at.target)).toEqual([hypothesis.target]);
+  const parent = session.inspectCandidate(rootHypothesis(staged)); assert.equal(parent.kind, 'inspected-frontier', json(parent));
+  expect(parent.requirements.filter(at => !at.primitive).map(at => at.target)).toEqual([target]);
+  const result = completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged));
+  assert.equal(result.kind, 'checked-witness', json(result));
+  const child = result.evidence.nodes.find(at => at.target === target); assert.ok(child);
+  const firstEnum = staged.context.rawSimpleTypeProperties(staged.cohorts[0]!.enumeration)!;
+  const enumComponent = firstEnum.facetComponentSet!.at(-1)!; assert.ok('facets' in enumComponent);
+  const middle = enumComponent.facets[0]!.operand!.owner;
+  expect(child.intermediate).toBe(middle);
+  const born = staged.context.members.filter(id => actual.lookup(id).kind === 'missing' && id !== target);
+  for (const id of born) {
+    expect(child.context.lookup(id)).toEqual(staged.context.lookup(id));
+    expect(child.context.rawTypeProperties(id)).toBe(staged.context.rawTypeProperties(id));
+    expect(child.context.rawSimpleTypeProperties(id)).toBe(staged.context.rawSimpleTypeProperties(id));
+    expect(child.context.rawElementProperties(id)).toBe(staged.context.rawElementProperties(id));
+  }
+  for (const step of result.receipt.proof) {
+    expect(step.components.map(at => at.component)).toEqual(expect.arrayContaining(born));
+    expect(step.contextId).toBe(step.components[0]!.contextId);
+  }
+  expect(child.context.members).toEqual(staged.context.members);
+  expect(storedRe01Rank(actual, actual)).toEqual({q: 1, n: 0});
+  expect(storedRe01Rank(actual, child.parent)).toEqual({q: 0, n: 1});
+  expect(storedRe01Rank(actual, child.context)).toEqual({q: 0, n: 0});
+  for (const cohort of staged.cohorts) {
+    const member = staged.context.lookup(cohort.member); assert.equal(member.kind, 'found'); assert.equal(member.node.kind, 'element'); assert.ok(member.node.value);
+    const funded = createSchemaScalarKernel(staged.context).assess(local(cohort.preparation), member.node.value.lexical, middle);
+    assert.equal(funded.kind, 'checked', json(funded)); expect(funded.value.operand.items).toHaveLength(1);
+    expect(member.node.value.lexical.context.namespaces['']).toBe(map);
+    expect(staged.context.lookup(cohort.head)).toEqual(actual.lookup(cohort.head));
+  }
+  expect(preparePrivateAnchoredListAssignments(actual, child.parent, target).kind).toBe('unresolved');
+  expect(verifyFiniteRe01Evidence(actual, staged.target, result.evidence).kind).toBe('checked-candidate');
+  console.log('staged family complete', {arity, count, readers, subset, work: actual.budget.usage().work, rssBytes: process.memoryUsage().rss});
+});
+
+it.each(['OffA', 'collision', 'affiliate'] as const)('refuses a staged demand with %s without narrowing existing recipes', async fault => {
+  const extra = fault === 'collision' ? '<xs:element name="y1" type="t:Words"/>'
+    : fault === 'affiliate' ? '<xs:element name="foreign" type="t:HeadWords" substitutionGroup="t:h1"/>' : '';
+  const {actual, target, hypothesis} = await inherited(fault === 'OffA' ? 'OffA' : 'A', extra);
+  expect(recognizePrivateStagingDemand(actual, hypothesis.context, target).kind).toBe('outside-private-ambient');
+  expect(preparePrivateStagedRootAssignments(actual, hypothesis.context, target)).toMatchObject({kind: 'unresolved', rule: 'private-staging-demand'});
+  expect(prepareFiniteRe01Frontier(actual).kind).toBe('native-frontier-session');
+});
+
+it.each(['VALUE', 'map', 'funding'] as const)('rejects staged wrong %s in its real first-birth context', async fault => {
+  const {actual, target, hypothesis} = await inherited('A');
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); assert.equal(prepared.kind, 'prepared-anchored-list-assignments');
+  const staged = prepared.assignments[0]!, cohort = staged.cohorts[fault === 'map' ? 1 : 0]!;
+  const built = forkSemanticCandidate(actual, {...staged.delta, key: 'staged-bad-' + fault,
+    additions: staged.delta.additions!.map(n => n.id === cohort.member && n.kind === 'element' && n.value
+      ? {...n, value: {...n.value, lexical: {...n.value.lexical,
+        value: fault === 'VALUE' ? 'false' : n.value.lexical.value,
+        context: fault === 'map' ? {...n.value.lexical.context, namespaces: {...n.value.lexical.context.namespaces, '': 'urn:foreign:qname'}} : n.value.lexical.context}}} : n),
+    rawSimpleTypes: staged.delta.rawSimpleTypes!.map(row => fault === 'funding' && row.type === cohort.enumeration && row.facetComponentSet
+      ? {...row, facetComponentSet: row.facetComponentSet.map(component => 'facets' in component
+        ? {...component, facets: component.facets.map(facet => ({...facet, lexical: {...facet.lexical, value: 'false'}}))} : component)} : row),
+  });
+  assert.equal(built.kind, 'prepared');
+  expect(recognizePrivateStagedRoot(actual, hypothesis.context, target, built.context).kind).toBe('outside-private-staged-root');
+  const session = prepareFiniteRe01Frontier(actual); assert.equal(session.kind, 'native-frontier-session');
+  expect(session.inspectCandidate({...rootHypothesis(staged), context: built.context}).kind).toBe('candidate-rejected');
+  if (fault === 'funding') {
+    const member = built.context.lookup(cohort.member); assert.equal(member.kind, 'found');
+    const row = built.context.rawSimpleTypeProperties(cohort.enumeration)!;
+    const component = row.facetComponentSet!.at(-1)!; assert.ok('facets' in component);
+    // ITEM Boolean admits false, while the genuine immediate L0's pattern true does not.
+    expect(createSchemaScalarKernel(built.context).assess(cohort.item, component.facets[0]!.lexical, cohort.member).kind).toBe('checked');
+    expect(createSchemaScalarKernel(built.context).assess(local(cohort.preparation), component.facets[0]!.lexical, cohort.member).kind).toBe('invalid-schema');
+  }
+});
+
+it('keeps missing and sibling-context evidence unresolved or invalid at the original root', async () => {
+  const {actual, target, hypothesis} = await inherited('A');
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); assert.equal(prepared.kind, 'prepared-anchored-list-assignments');
+  const staged = prepared.assignments[0]!;
+  expect(verifyFiniteRe01Evidence(actual, staged.target, {root: 'root', nodes: [{...staged.evidence, id: 'root', premises: []}]}))
+    .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', component: target});
+  const sibling = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); assert.equal(sibling.kind, 'prepared-anchored-list-assignments');
+  const completed = completeSeededRe01Evidence(actual, staged.target, rootHypothesis(sibling.assignments[0]!)); assert.equal(completed.kind, 'checked-witness');
+  const foreignChild = completed.evidence.nodes.find(n => n.target === target); assert.ok(foreignChild);
+  expect(verifyFiniteRe01Evidence(actual, staged.target, {root: 'root', nodes: [
+    {...staged.evidence, id: 'root', premises: ['child']}, {...foreignChild, id: 'child'},
+  ]})).toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', component: target});
+});
+
+it('admits a structural staged demand while rejecting its invalid actual ambient VALUE', async () => {
+  const family = stagedFamily(2, 1, false, 'true', 'urn:staged:bad');
+  family.xml = family.xml.replace('name="ambient0_2_1" type="t:U_2_1" fixed="true"', 'name="ambient0_2_1" type="t:H_2_1" fixed="1"');
+  const {actual, target, hypothesis} = await inherited('A', '', 1, family);
+  expect(recognizePrivateStagingDemand(actual, hypothesis.context, target).kind).toBe('recognized-private-staging-demand');
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); assert.equal(prepared.kind, 'prepared-anchored-list-assignments');
+  const staged = prepared.assignments[0]!;
+  expect(recognizePrivateStagedRoot(actual, hypothesis.context, target, staged.context).kind).toBe('recognized-private-staged-root');
+  expect(completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged)).kind).toBe('invalid-schema');
+});
+
+it('precharges staged construction and recognition with inclusive sticky exhaustion', async () => {
+  const {actual, target, hypothesis} = await inherited('A');
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); assert.equal(prepared.kind, 'prepared-anchored-list-assignments');
+  const staged = prepared.assignments[0]!;
+  actual.budget.guard(() => actual.budget.chargeWork(DEFAULT_MAX_WORK - actual.budget.usage().work));
+  expect(actual.budget.exhausted()).toBe(false);
+  const result = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); expect(result.kind).toBe('resource-limit');
+  const usage = actual.budget.usage();
+  expect(recognizePrivateStagedRoot(actual, hypothesis.context, target, staged.context)).toBe(result);
+  expect(recognizePrivateStagingDemand(actual, hypothesis.context, target)).toBe(result);
+  expect(completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged))).toBe(result);
+  expect(actual.budget.usage()).toEqual(usage);
+});
 
 it.each(['A', 'OffA', 'Heads'] as const)('executes the inherited %s reader contrast without changing the private construction', async base => {
   const {actual, target, readerId, hypothesis} = await inherited(base);
