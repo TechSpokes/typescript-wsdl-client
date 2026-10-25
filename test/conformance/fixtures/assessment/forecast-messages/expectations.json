@@ -1,0 +1,54 @@
+{
+  "basis": "Independent ordinary sequence order and XSD 2004 string/boolean/int value rules; P3 acceptance fixtures, not an implemented codec",
+  "operation": "{urn:checked:forecast}ForecastPortType/GetForecast",
+  "request": {
+    "city": "Paris",
+    "days": 2
+  },
+  "response": {
+    "city": "Paris",
+    "temperature": [
+      18,
+      -2
+    ],
+    "complete": true
+  },
+  "fault": {
+    "name": "ForecastError",
+    "soap11": {
+      "httpStatus": 500,
+      "faultcode": "{http://schemas.xmlsoap.org/soap/envelope/}Server",
+      "faultstring": "Unknown city"
+    },
+    "detail": {
+      "element": "{urn:checked:forecast}ForecastFault",
+      "code": "NOT_FOUND",
+      "message": "Unknown city"
+    }
+  },
+  "requiredNegatives": [
+    "request days before city",
+    "response temperature after complete",
+    "request or response in the wrong element namespace",
+    "missing required city/days/complete",
+    "duplicate nonrepeated city/days/complete",
+    "int overflow 2147483648 and invalid int lexical 1.5",
+    "invalid boolean lexical yes",
+    "xsi:nil=true on nonnillable fields",
+    "undeclared attributes or child elements",
+    "SOAP Fault returned as successful ForecastResponse",
+    "truncated XML and forbidden DTD/entity input",
+    "mismatched source/context or runtime plan fingerprint"
+  ],
+  "positiveControls": [
+    "zero, one and many ordered temperature elements",
+    "int minimum -2147483648 and maximum 2147483647",
+    "boolean true/false/1/0 normalize consistently",
+    "equivalent namespace prefixes preserve expanded names",
+    "empty city string remains distinct from missing city",
+    "decode(encode(value)) on the admitted representation",
+    "normalizeXml(encode(decode(xml))) on admitted XML",
+    "real localhost SOAP 1.1 request/response/fault with SOAPAction urn:checked:GetForecast",
+    "installed generated consumer typecheck/runtime and deterministic regeneration"
+  ]
+}
