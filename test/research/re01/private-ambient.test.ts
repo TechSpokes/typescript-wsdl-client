@@ -1,0 +1,247 @@
+/** Full-environment controls; expected roots follow the written derivations. */
+import assert from 'node:assert/strict';
+import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
+import path from 'node:path';
+import {expect, it} from 'vitest';
+import {loadSemanticSchemaInput} from '../../../src/loader/schemaInput.js';
+import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
+import {globalId} from '../../../src/compiler/canonicalGraph.js';
+import type {ComplexTypeNode} from '../../../src/compiler/canonicalGraph.js';
+import {forkSemanticCandidate} from '../../../src/compiler/semanticContext.js';
+import {hypotheticalScopedId} from '../../../src/compiler/hypotheticalScopedIdentity.js';
+import {deriveOriginalComplexParticle} from '../../../src/compiler/complexTypeContent.js';
+import {assertComponentConstruction, checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
+import {effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
+import {DEFAULT_MAX_WORK} from '../../../src/compiler/semanticBudget.js';
+import {prepareFiniteRe01Frontier, verifyFiniteRe01Evidence} from '../../../src/compiler/finiteRe01Verification.js';
+import {preparePrivateAnchoredListAssignments} from './anchored-list-assignment.js';
+import {buildRe01Evidence, completeSeededRe01Evidence, storedRe01Rank} from './evidence-builder.js';
+import {recognizePrivateAmbientEnvironment} from './private-ambient.js';
+import {prepareInheritedMiddleAssignments} from './shared-assignment.js';
+
+const local = (target: string) => ({kind: 'local' as const, target});
+const namespace = 'urn:private:inherited';
+const id = (name: string) => globalId('type', {namespace, local: name});
+const json = (v: unknown) => JSON.stringify(v, (_key, at: unknown) => typeof at === 'bigint' ? String(at) : at);
+async function source(extra = '', supplied?: string) {
+  const xml = supplied ?? await readFile('test/conformance/fixtures/xsd/recovery/private-list-inherited.xsd', 'utf8');
+  const root = path.resolve('tmp/test-generation/re01-ambient'); await mkdir(root, {recursive: true});
+  const directory = await mkdtemp(path.join(root, 'case-'));
+  try {
+    const file = path.join(directory, 'schema.xsd'); await writeFile(file, xml.replace('</xs:schema>', (supplied ? '' : '<xs:complexType name="ReaderBody"><xs:complexContent><xs:restriction base="xs:anyType"><xs:choice><xs:element ref="t:h1"/></xs:choice></xs:restriction></xs:complexContent></xs:complexType>') + extra + '</xs:schema>'));
+    const loaded = await loadSemanticSchemaInput(file, {policy: {fileRoots: [root]}});
+    const prepared = prepareSourceSchemaRequest(loaded); assert.equal(prepared.kind, 'prepared', json(prepared));
+    return prepared.request.actual;
+  } finally {await rm(directory, {recursive: true, force: true});}
+}
+async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerCount = 1) {
+  const actual = await source(extra);
+  const opening = prepareInheritedMiddleAssignments(actual, actual, id('RootD')); assert.equal(opening.kind, 'prepared-inherited-assignments');
+  const plan = opening.assignments.find(at => at.intermediate === id('RootB')); assert.ok(plan);
+  const carrier = actual.lookup(id('Heads')); assert.equal(carrier.kind, 'found'); assert.equal(carrier.node.kind, 'complexType');
+  const body = deriveOriginalComplexParticle(actual, carrier.node.id); assert.equal(body.kind, 'checked');
+  const readerCarrier = actual.lookup(id('ReaderBody')); assert.equal(readerCarrier.kind, 'found'); assert.equal(readerCarrier.node.kind, 'complexType');
+  const readerBody = deriveOriginalComplexParticle(actual, readerCarrier.node.id); assert.equal(readerBody.kind, 'checked');
+  const target = hypotheticalScopedId(id('A'), '/ambient-child', 'type');
+  const child: ComplexTypeNode = {...carrier.node, id: target, identity: {kind: 'scoped', owner: id('A'), path: '/ambient-child', role: 'type'},
+    derivation: {kind: 'extension', contentKind: 'complex', base: local(id('R')), facets: []}};
+  const readerId = hypotheticalScopedId(id(base), '/ambient-reader', 'type');
+  const reader: ComplexTypeNode = {...(base === 'Heads' ? readerCarrier.node : carrier.node), id: readerId, identity: {kind: 'scoped', owner: id(base), path: '/ambient-reader', role: 'type'},
+    derivation: {kind: 'restriction', contentKind: 'complex', base: local(id(base)), facets: []}};
+  const readers = Array.from({length: readerCount}, (_, i): ComplexTypeNode => i === 0 ? reader : {...reader,
+    id: hypotheticalScopedId(id(base), '/ambient-reader-' + i, 'type'), identity: {kind: 'scoped', owner: id(base), path: '/ambient-reader-' + i, role: 'type'}});
+  const additions = [child, ...readers];
+  const built = forkSemanticCandidate(actual, {...plan.delta, key: 'ambient-parent', additions, active: [...actual.members, ...additions.map(at => at.id)],
+    rawTypes: [...plan.delta.rawTypes!, ...additions.map(node => ({type: node.id, targetNamespace: namespace,
+      derivation: {method: node.derivation!.kind, base: node.derivation!.base}, abstract: false, final: [], block: [],
+      content: node !== child && base === 'Heads' ? readerBody.content : body.content, attributeUses: [], provenance: {kind: 'hypothetical-abstract' as const, originals: []}}))]});
+  assert.equal(built.kind, 'prepared', json(built));
+  return {actual, target, readerId, hypothesis: {parent: actual, context: built.context, target: id('RootD'), intermediate: plan.intermediate, ancestor: plan.ancestor}};
+}
+
+it.each(['A', 'OffA', 'Heads'] as const)('executes the inherited %s reader contrast without changing the private construction', async base => {
+  const {actual, target, readerId, hypothesis} = await inherited(base);
+  expect(recognizePrivateAmbientEnvironment(actual, hypothesis.context, target).kind).toBe(base === 'Heads' ? 'recognized-private-ambient' : 'outside-private-ambient');
+  const prepared = preparePrivateAnchoredListAssignments(actual, hypothesis.context, target);
+  assert.equal(prepared.kind, 'prepared-anchored-list-assignments', json(prepared)); assert.equal(prepared.assignments.length, 1);
+  const candidate = prepared.assignments[0]!;
+  const reading = checkComponentConstruction(candidate.context, readerId);
+  expect(reading.kind).toBe(base !== 'OffA' ? 'checked' : 'candidate-rejected');
+  if (base === 'OffA') expect(reading).toMatchObject({rule: 'derivation-ok-restriction.5.4'});
+  const result = completeSeededRe01Evidence(actual, hypothesis.target, hypothesis);
+  console.log('ambient contrast', base, result.kind, actual.budget.usage().work);
+  if (base === 'Heads' && reading.kind === 'checked') {
+    for (const cohort of candidate.cohorts) expect(reading.typeDependencies).toContainEqual({contextId: candidate.context.contextId,
+      type: {kind: 'component', id: cohort.enumeration}});
+    const before = checkComponentConstruction(hypothesis.context, readerId); assert.equal(before.kind, 'checked');
+    const reader = hypothesis.context.lookup(readerId); assert.equal(reader.kind, 'found'); assert.equal(reader.node.kind, 'complexType');
+    const body = actual.lookup(reader.node.content!); assert.equal(body.kind, 'found'); assert.equal(body.node.kind, 'particle');
+    assert.equal(body.node.term.kind, 'choice'); const particle = body.node.term.children[0]!;
+    expect(reading.dependencies).toContain(body.node.id);
+    const leaf = checkComponentConstruction(candidate.context, particle); assert.equal(leaf.kind, 'checked');
+    expect(leaf.dependencies).toContain(candidate.cohorts[0]!.member);
+    const member = checkComponentConstruction(candidate.context, candidate.cohorts[0]!.member); assert.equal(member.kind, 'checked');
+    expect(member.typeDependencies).toContainEqual({contextId: candidate.context.contextId, type: {kind: 'component', id: candidate.cohorts[0]!.enumeration}});
+    expect(() => assertComponentConstruction(candidate.context, before)).toThrow('Unauthenticated or foreign');
+    const session = prepareFiniteRe01Frontier(actual); assert.equal(session.kind, 'native-frontier-session');
+    const frontier = session.inspectCandidate(hypothesis); assert.equal(frontier.kind, 'inspected-frontier');
+    expect(frontier.requirements.filter(at => !at.primitive).map(at => at.target)).toEqual([target]);
+    expect(frontier.components.map(at => at.component)).toContain(readerId);
+    expect(verifyFiniteRe01Evidence(actual, hypothesis.target, {root: 'missing', nodes: [{...hypothesis, id: 'missing', premises: []}]}))
+      .toMatchObject({kind: 'unresolved', rule: 'missing-nested-evidence', component: target});
+  }
+  assert.equal(result.kind, base === 'Heads' ? 'checked-witness' : 'no-witness-found', json(result));
+  if (base === 'A' && result.kind === 'no-witness-found') expect(result.outcomes.some(at => at.failure.kind === 'candidate-rejected'
+    && 'rule' in at.failure && at.failure.rule === 'derivation-ok-restriction.5.4' && at.failure.component === readerId
+    && 'contextId' in at.failure && at.failure.contextId === hypothesis.context.contextId)).toBe(true);
+  if (result.kind === 'checked-witness') {
+    const child = result.evidence.nodes.find(at => at.target === target); assert.ok(child);
+    const session = prepareFiniteRe01Frontier(actual); assert.equal(session.kind, 'native-frontier-session');
+    const frontier = session.inspectCandidate(child); assert.equal(frontier.kind, 'inspected-frontier');
+    expect(frontier.components.map(at => at.component)).toContain(readerId);
+    expect(frontier.requirements.filter(at => !at.primitive)).toEqual([]);
+    expect(storedRe01Rank(actual, child.parent)).toEqual({q: 0, n: 1});
+    expect(storedRe01Rank(actual, child.context)).toEqual({q: 0, n: 0});
+    expect(verifyFiniteRe01Evidence(actual, hypothesis.target, result.evidence).kind).toBe('checked-candidate');
+  }
+});
+
+it('keeps additional declarations sharing unchanged scalar dependencies in full actual qualification', async () => {
+  const extra = ['Item', 'Words', 'HeadWords'].map((type, i) => `<xs:element name="ambient${i}" type="t:${type}" fixed="true"/>`).join('');
+  const {actual, target, hypothesis} = await inherited('Heads', extra);
+  expect(recognizePrivateAmbientEnvironment(actual, hypothesis.context, target).kind).toBe('recognized-private-ambient');
+  expect(completeSeededRe01Evidence(actual, hypothesis.target, hypothesis).kind).toBe('checked-witness');
+});
+
+it('rejects an invalid ambient actual declaration independently of the pending target', async () => {
+  const family = largerSchema(2, 1, false, 'true', 'urn:bad:map');
+  const actual = await source('', family.xml.replace('name="ambient0_2_1" type="t:U_2_1" fixed="true"', 'name="ambient0_2_1" type="t:H_2_1" fixed="1"'));
+  expect(recognizePrivateAmbientEnvironment(actual, actual, family.target).kind).toBe('recognized-private-ambient');
+  expect(buildRe01Evidence(actual, family.target).kind).toBe('invalid-schema');
+});
+
+/** A grammar family, not an input-specific answer or successful candidate. */
+function largerSchema(arity: number, count: number, reverse: boolean, v: 'true' | 'false', savedMap: string) {
+  const ns = `urn:ambient:${arity}:${count}:${v}`, suffix = `_${arity}_${count}`, name = (s: string) => s + suffix;
+  const type = (s: string) => `t:${name(s)}`;
+  const restriction = (n: string, base: string, body = '') => `<xs:complexType name="${name(n)}"><xs:complexContent><xs:restriction base="${base}">${body}</xs:restriction></xs:complexContent></xs:complexType>`;
+  const choice = (body: string) => `<xs:choice>${body}</xs:choice>`;
+  const arms = Array.from({length: arity}, (_, i) => `<xs:element name="${name('field' + i)}" type="${type('W')}" minOccurs="0" fixed="${i % 2 ? v : v === 'true' ? '1' : '0'}"/>`).join('');
+  const headArms = Array.from({length: arity}, (_, i) => `<xs:element ref="${type('head' + i)}"/>`).join('');
+  const declarations = [
+    `<xs:simpleType name="${name('U')}"><xs:union memberTypes="xs:QName xs:boolean"/></xs:simpleType>`,
+    `<xs:simpleType name="${name('W')}"><xs:list itemType="${type('U')}"/></xs:simpleType>`,
+    `<xs:simpleType name="${name('H')}"><xs:restriction base="${type('W')}"><xs:pattern value="${v}"/></xs:restriction></xs:simpleType>`,
+    ...Array.from({length: arity}, (_, i) => `<xs:element name="${name('head' + i)}" type="${type('H')}" abstract="true"/>`),
+    restriction('A', 'xs:anyType', choice(arms)), restriction('R', type('A')),
+    `<xs:complexType name="${name('D')}"><xs:complexContent><xs:extension base="${type('R')}">${choice(headArms)}</xs:extension></xs:complexContent></xs:complexType>`,
+    ...Array.from({length: count}, (_, i) => `<xs:element name="${name('ambient' + i)}" type="${type(['U', 'W', 'H'][i % 3]!)}" fixed="${v}"/>`),
+    ...Array.from({length: count}, (_, i) => restriction('ordinary' + i, 'xs:anyType', choice(`<xs:element name="${name('local' + i)}" type="${type('W')}" minOccurs="0" fixed="${v}"/>`))),
+    restriction('fullCarrier', 'xs:anyType', choice(headArms)), restriction('subsetCarrier', 'xs:anyType', choice(`<xs:element ref="${type('head0')}"/>`)),
+  ];
+  if (reverse) declarations.reverse();
+  return {xml: `<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="${ns}" xmlns="${savedMap}" targetNamespace="${ns}" elementFormDefault="qualified">${declarations.join('')}</xs:schema>`,
+    target: globalId('type', {namespace: ns, local: name('D')}), namespace: ns, name};
+}
+
+it.each([
+  [2, 0, false, 'true', 'urn:saved:zero'],
+  [3, 4, true, 'false', 'urn:saved:false'],
+  [4, 7, false, 'true', 'urn:saved:many'],
+] as const)('recognizes and automatically proves the full larger family k=%i ambient=%i reversed=%s', async (arity, count, reverse, v, savedMap) => {
+  const family = largerSchema(arity, count, reverse, v, savedMap), actual = await source('', family.xml);
+  const recognized = recognizePrivateAmbientEnvironment(actual, actual, family.target);
+  assert.equal(recognized.kind, 'recognized-private-ambient', json(recognized));
+  expect(recognized.arity).toBe(arity); expect(recognized.readers).toEqual([]);
+  const session = prepareFiniteRe01Frontier(actual); assert.equal(session.kind, 'native-frontier-session');
+  // The written family has just D E R nonprimitive; every ambient type is R anyType.
+  expect(session.actual.requirements.map(at => ({target: at.target, primitive: at.primitive}))).toEqual([{target: family.target, primitive: false}]);
+  expect(new Set(session.actual.components.map(at => at.component))).toEqual(new Set(actual.members));
+  const result = buildRe01Evidence(actual, family.target); assert.equal(result.kind, 'checked-witness', json(result));
+  expect(result.mode).toBe('input-only'); expect(result.evidence.nodes).toHaveLength(1);
+  const node = result.evidence.nodes[0]!;
+  expect(storedRe01Rank(actual, node.context)).toEqual({q: 0, n: 0});
+  expect(result.receipt.actualComponents.map(at => at.component)).toEqual(expect.arrayContaining([...recognized.ambientDeclarations]));
+  for (const id of node.context.members) {
+    if (actual.lookup(id).kind === 'found') continue;
+    const found = node.context.lookup(id);
+    if (found.kind === 'found' && found.node.kind === 'element') expect(found.node.value?.lexical.context.namespaces['']).toBe(savedMap);
+  }
+  console.log('larger ambient complete', {arity, count, work: actual.budget.usage().work, rssBytes: process.memoryUsage().rss});
+});
+
+it('does not certify reverse affiliations or occupied output names as ambient independence', async () => {
+  for (const extra of [
+    '<xs:element name="affiliate" type="t:HeadWords" substitutionGroup="t:h1"/>',
+    '<xs:element name="y1" type="t:Words"/>',
+  ]) {
+    const {actual, target, hypothesis} = await inherited('Heads', extra);
+    expect(recognizePrivateAmbientEnvironment(actual, hypothesis.context, target).kind).toBe('outside-private-ambient');
+    // Out of the sufficient class is neither invalid actual input nor nonexistence.
+    expect(prepareFiniteRe01Frontier(actual).kind).toBe('native-frontier-session');
+    if (extra.includes('substitutionGroup')) {
+      const head = globalId('element', {namespace, local: 'h1'}), member = globalId('element', {namespace, local: 'affiliate'});
+      expect(hypothesis.context.lookup(head)).toEqual(actual.lookup(head));
+      expect(effectiveSubstitutionMembers(actual, head)).toMatchObject({kind: 'checked', value: [member]});
+    }
+    const attempted = preparePrivateAnchoredListAssignments(actual, hypothesis.context, target);
+    expect(attempted.kind).toBe('unresolved');
+  }
+});
+
+it('retains an arbitrary finite collection of required inherited subportfolio readers', async () => {
+  const {actual, target, hypothesis} = await inherited('Heads', '', 3);
+  const recognized = recognizePrivateAmbientEnvironment(actual, hypothesis.context, target);
+  assert.equal(recognized.kind, 'recognized-private-ambient'); expect(recognized.readers).toHaveLength(3);
+  const result = completeSeededRe01Evidence(actual, hypothesis.target, hypothesis); assert.equal(result.kind, 'checked-witness', json(result));
+  for (const proof of result.receipt.proof) expect(proof.components.map(at => at.component)).toEqual(expect.arrayContaining([...recognized.readers]));
+  expect(result.evidence.nodes).toHaveLength(2);
+});
+
+it('does not certify a forged fresh actual-mapping provenance or a second parent fork', async () => {
+  const {actual, target, readerId, hypothesis} = await inherited('Heads'), parent = hypothesis.context;
+  const nodes = parent.members.map(id => parent.lookup(id)).map(at => {assert.equal(at.kind, 'found'); return at.node;});
+  const endpoint = parent.lookup(hypothesis.target); assert.equal(endpoint.kind, 'found'); assert.equal(endpoint.node.kind, 'complexType');
+  const built = forkSemanticCandidate(actual, {key: 'bad-reader-provenance', active: parent.members,
+    endpoint: endpoint.node, additions: nodes.filter(n => actual.lookup(n.id).kind === 'missing'),
+    rawTypes: nodes.flatMap(n => {const row = parent.rawTypeProperties(n.id); return row ? [{...row,
+      provenance: n.id === readerId ? {kind: 'actual-mapped' as const, original: n.id} : row.provenance}] : [];})});
+  assert.equal(built.kind, 'prepared');
+  expect(recognizePrivateAmbientEnvironment(actual, built.context, target)).toMatchObject({kind: 'outside-private-ambient', reason: 'genuine inherited SOURCE row and provenance'});
+  const second = forkSemanticCandidate(parent, {key: 'second-fork', active: parent.members}); assert.equal(second.kind, 'prepared');
+  expect(recognizePrivateAmbientEnvironment(actual, second.context, target)).toMatchObject({kind: 'outside-private-ambient', reason: 'one authenticated parent fork'});
+});
+
+it('preserves individual checked positives outside the new sufficient class', async () => {
+  const family = largerSchema(2, 0, false, 'true', 'urn:outside'), actual = await source('<xs:simpleType name="extra"><xs:restriction base="xs:string"/></xs:simpleType>', family.xml);
+  expect(recognizePrivateAmbientEnvironment(actual, actual, family.target).kind).toBe('outside-private-ambient');
+  expect(buildRe01Evidence(actual, family.target).kind).toBe('checked-witness');
+});
+
+it('rejects an illegal VALUE in the reader dependency closure while preserving its local RP relation', async () => {
+  const {actual, target, readerId, hypothesis} = await inherited('Heads');
+  const prepared = preparePrivateAnchoredListAssignments(actual, hypothesis.context, target); assert.equal(prepared.kind, 'prepared-anchored-list-assignments');
+  const assignment = prepared.assignments[0]!;
+  const subject = assignment.cohorts[0]!.member;
+  const built = forkSemanticCandidate(hypothesis.context, {...assignment.delta, key: 'bad-reader-value',
+    additions: assignment.delta.additions!.map(n => n.id === subject && n.kind === 'element' && n.value
+      ? {...n, value: {...n.value, lexical: {...n.value.lexical, value: 'false'}}} : n)});
+  assert.equal(built.kind, 'prepared');
+  // Local RP compares the same global member on each side; FULL still owes its VALUE.
+  expect(checkComponentConstruction(built.context, readerId).kind).toBe('checked');
+  expect(checkComponentConstruction(built.context, subject).kind).toBe('candidate-rejected');
+  const result = verifyFiniteRe01Evidence(actual, hypothesis.target, {root: 'root', nodes: [
+    {...hypothesis, id: 'root', premises: ['child']}, {...assignment.evidence, context: built.context, id: 'child', premises: []},
+  ]});
+  expect(result.kind).toBe('candidate-rejected');
+});
+
+it('precharges recognition on the same sticky request budget as construction and evidence', async () => {
+  const family = largerSchema(2, 2, false, 'true', 'urn:budget'), actual = await source('', family.xml);
+  actual.budget.guard(() => actual.budget.chargeWork(DEFAULT_MAX_WORK - actual.budget.usage().work - 100));
+  const result = recognizePrivateAmbientEnvironment(actual, actual, family.target);
+  expect(result.kind).toBe('resource-limit'); expect(result).toBe(actual.budget.failure());
+  const usage = actual.budget.usage().work;
+  expect(recognizePrivateAmbientEnvironment(actual, actual, family.target)).toBe(result);
+  expect(buildRe01Evidence(actual, family.target)).toBe(result); expect(actual.budget.usage().work).toBe(usage);
+});

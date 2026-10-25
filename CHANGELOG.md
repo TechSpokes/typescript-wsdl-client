@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(re01): recognize compatible ambient schemas and prove private construction with inherited HEAD readers.
+
 - feat(re01): construct private Boolean and retained LIST choices with complete native research evidence.
 - feat(re01): discover native obligations and automatically complete qualified research evidence forests.
 - feat(re01): derive anchored ITEM templates and check their fresh-child continuation in complete native evidence.
