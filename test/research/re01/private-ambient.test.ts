@@ -9,8 +9,9 @@ import {globalId} from '../../../src/compiler/canonicalGraph.js';
 import type {ComplexTypeNode} from '../../../src/compiler/canonicalGraph.js';
 import {forkSemanticCandidate, isSemanticCandidateOf} from '../../../src/compiler/semanticContext.js';
 import {hypotheticalScopedId} from '../../../src/compiler/hypotheticalScopedIdentity.js';
-import {deriveActualComplexContent, deriveModelGroupContent, deriveOriginalComplexParticle} from '../../../src/compiler/complexTypeContent.js';
+import {deriveActualComplexContent, deriveOriginalComplexPropertyContent, deriveModelGroupContent, deriveOriginalComplexParticle} from '../../../src/compiler/complexTypeContent.js';
 import {prepareSemanticParticleView} from '../../../src/compiler/particleSemanticView.js';
+import {checkParticleRestriction} from '../../../src/compiler/particleRestriction.js';
 import {assertComponentConstruction, checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import {effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
 import {DEFAULT_MAX_WORK} from '../../../src/compiler/semanticBudget.js';
@@ -39,7 +40,7 @@ async function source(extra = '', supplied?: string) {
   } finally {await rm(directory, {recursive: true, force: true});}
 }
 async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerCount = 1,
-  family?: {xml: string; namespace: string; name: (name: string) => string}, subset = false, grouped = false) {
+  family?: {xml: string; namespace: string; name: (name: string) => string}, subset = false, grouped = false, alternate?: string) {
   if (grouped) {
     const xml = family?.xml ?? await readFile('test/conformance/fixtures/xsd/recovery/private-list-inherited.xsd', 'utf8');
     family = {namespace: 'urn:private:inherited', name: n => n === 'fullCarrier' ? 'Heads' : n === 'subsetCarrier' ? 'ReaderBody' : n, ...family, xml: xml.replace('</xs:schema>',
@@ -61,13 +62,21 @@ async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerC
   const readerId = hypotheticalScopedId(id(base), '/ambient-reader', 'type');
   const reader: ComplexTypeNode = {...(base === 'Heads' || subset ? readerCarrier.node : carrier.node), id: readerId, identity: {kind: 'scoped', owner: id(base), path: '/ambient-reader', role: 'type'},
     derivation: {kind: 'restriction', contentKind: 'complex', base: local(id(base)), facets: []}};
-  const readers = Array.from({length: readerCount}, (_, i): ComplexTypeNode => i === 0 ? reader : {...reader,
-    id: hypotheticalScopedId(id(base), '/ambient-reader-' + i, 'type'), identity: {kind: 'scoped', owner: id(base), path: '/ambient-reader-' + i, role: 'type'}});
+  const readers = Array.from({length: readerCount}, (_, i): ComplexTypeNode => {
+    if (i === 0) return reader;
+    const source = alternate ? actual.lookup(id(alternate)) : undefined;
+    if (source) {assert.equal(source.kind, 'found'); assert.equal(source.node.kind, 'complexType');}
+    return {...reader, ...(source?.kind === 'found' ? source.node : {}), derivation: reader.derivation,
+      id: hypotheticalScopedId(id(base), '/ambient-reader-' + i, 'type'), identity: {kind: 'scoped', owner: id(base), path: '/ambient-reader-' + i, role: 'type'}} as ComplexTypeNode;
+  });
+  const alternateBody = alternate ? deriveOriginalComplexParticle(actual, id(alternate)) : undefined;
+  if (alternateBody) assert.equal(alternateBody.kind, 'checked');
   const additions = [child, ...readers];
   const built = forkSemanticCandidate(actual, {...plan.delta, key: 'ambient-parent', additions, active: [...actual.members, ...additions.map(at => at.id)],
     rawTypes: [...plan.delta.rawTypes!, ...additions.map(node => ({type: node.id, targetNamespace: namespace,
       derivation: {method: node.derivation!.kind, base: node.derivation!.base}, abstract: false, final: [], block: [],
-      content: node !== child && (base === 'Heads' || subset) ? readerBody.content : body.content, attributeUses: [], provenance: {kind: 'hypothetical-abstract' as const, originals: []}}))]});
+      content: node !== child && alternateBody?.kind === 'checked' && node !== reader ? alternateBody.content
+        : node !== child && (base === 'Heads' || subset) ? readerBody.content : body.content, attributeUses: [], provenance: {kind: 'hypothetical-abstract' as const, originals: []}}))]});
   assert.equal(built.kind, 'prepared', json(built));
   return {actual, target, readerId, hypothesis: {parent: actual, context: built.context, target: id('RootD'), intermediate: plan.intermediate, ancestor: plan.ancestor}};
 }
@@ -181,7 +190,7 @@ it('keeps shared definitions and distinct original use sites while matching dire
   const extra = '<xs:complexType name="SecondUse"><xs:complexContent><xs:restriction base="xs:anyType"><xs:group ref="t:ReaderGroup"/></xs:restriction></xs:complexContent></xs:complexType>'
     + '<xs:complexType name="DirectUse"><xs:complexContent><xs:restriction base="xs:anyType"><xs:choice><xs:element ref="t:h1"/></xs:choice></xs:restriction></xs:complexContent></xs:complexType>'
     + '<xs:group name="UnusedGroup"><xs:choice><xs:element ref="t:h2"/></xs:choice></xs:group>';
-  const {actual, target, hypothesis} = await inherited('A', extra, 2, undefined, true, true);
+  const {actual, target, hypothesis} = await inherited('A', extra, 2, undefined, true, true, 'SecondUse');
   expect(recognizePrivateStagingDemand(actual, hypothesis.context, target).kind).toBe('recognized-private-staging-demand');
   const group = actual.lookup(globalId('group', {namespace, local: 'ReaderGroup'})); assert.equal(group.kind, 'found'); assert.equal(group.node.kind, 'group');
   const definition = deriveModelGroupContent(actual, group.node.id); assert.equal(definition.kind, 'checked');
@@ -196,6 +205,39 @@ it('keeps shared definitions and distinct original use sites while matching dire
   expect(views[2]!.root.origins).not.toContain(group.node.content);
   const foreign = await inherited('A', '', 1, undefined, true, true);
   expect(() => prepareSemanticParticleView(foreign.actual, definition.view, 'restriction')).toThrow();
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target);
+  assert.equal(prepared.kind, 'prepared-anchored-list-assignments'); const staged = prepared.assignments[0]; assert.ok(staged);
+  const completed = completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged));
+  assert.equal(completed.kind, 'checked-witness', json(completed));
+  const child = completed.evidence.nodes.find(n => n.target === target); assert.ok(child);
+  for (const ctx of [actual, staged.context, child.context]) {
+    const base = ctx === actual ? deriveActualComplexContent(ctx, id('A')) : deriveOriginalComplexPropertyContent(ctx, id('A')); assert.equal(base.kind, 'checked');
+    const bv = prepareSemanticParticleView(ctx, base.view, 'restriction'); assert.equal(bv.kind, 'checked');
+    for (const n of ['ReaderBody', 'SecondUse', 'DirectUse']) {
+      const content = ctx === actual ? deriveActualComplexContent(ctx, id(n)) : deriveOriginalComplexPropertyContent(ctx, id(n)); assert.equal(content.kind, 'checked');
+      const view = prepareSemanticParticleView(ctx, content.view, 'restriction'); assert.equal(view.kind, 'checked');
+      expect(checkParticleRestriction(ctx, view.view, bv.view)).toMatchObject({kind: 'checked', value: ctx !== actual});
+      expect(checkComponentConstruction(ctx, id(n)).kind).toBe('checked');
+    }
+  }
+});
+
+it.each(['owner', 'SOURCE'] as const)('refuses a grouped demand with a wrong reader %s', async fault => {
+  const {actual, target, readerId, hypothesis} = await inherited('A', '', 1, undefined, true, true);
+  const root = hypothesis.context.lookup(hypothesis.target); assert.equal(root.kind, 'found'); assert.equal(root.node.kind, 'complexType');
+  const badId = hypotheticalScopedId(id('OffA'), '/ambient-reader', 'type');
+  const additions = hypothesis.context.members.filter(id => actual.lookup(id).kind === 'missing').map(id => {
+    const at = hypothesis.context.lookup(id); assert.equal(at.kind, 'found');
+    return fault === 'owner' && id === readerId ? {...at.node, id: badId, identity: {kind: 'scoped' as const, owner: globalId('type', {namespace, local: 'OffA'}), path: '/ambient-reader', role: 'type'}} : at.node;
+  });
+  const wrong = deriveOriginalComplexParticle(actual, id('Heads')); assert.equal(wrong.kind, 'checked');
+  const rows = hypothesis.context.members.flatMap(id => {
+    const row = hypothesis.context.rawTypeProperties(id); if (!row) return [];
+    return [id !== readerId ? row : {...row, type: fault === 'owner' ? badId : row.type, content: fault === 'SOURCE' ? wrong.content : row.content}];
+  });
+  const built = forkSemanticCandidate(actual, {key: 'wrong-group-reader-' + fault, endpoint: root.node, additions, rawTypes: rows,
+    active: [...actual.members, ...additions.map(n => n.id)]}); assert.equal(built.kind, 'prepared', json(built));
+  expect(recognizePrivateStagingDemand(actual, built.context, target).kind).toBe('outside-private-ambient');
 });
 
 it.each(['optional', 'repeated', 'missing', 'duplicate-unused', 'nested', 'reversed'] as const)('refuses group %s without granting negative authority', async fault => {
