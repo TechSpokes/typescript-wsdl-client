@@ -5899,6 +5899,108 @@ these group observations, does every successful B-v1/Q_f witness admit an equiva
 entire structural demand and evidence encoding are bounded by a computable function of that original input?
 G normalization supplies an observation signature ingredient; it does not establish that implication.
 
+## RE01-D2 source-input demand reduction: blocked on extraction proof
+
+D1's reviewed result is the G/G* observation normalization above, accepted at head
+`83674c6de249ad7f5e7ed271ca71bf957b5ce69d`, tree `79f7adb1381c5fa3ac89dba7ba3cb1d3d1ada589`, in
+[PR #363](https://github.com/TechSpokes/typescript-wsdl-client/pull/363#pullrequestreview-5643540212).
+D2 consumes that result without promoting its hypothesis-relative encoding bound to a source-only bound.
+
+### Quantifiers and candidate input sector
+
+Write I for the original finite `(Gamma,originalTarget)`, W for any successful B-v1/Q_f witness, and E for a complete
+native forest with all actual Gamma and receiving-context obligations. The target is an input-recognizable K and a
+total computable B such that, for every I in K and every successful W for I, there exists an equivalent successful
+native E with full encoded candidate/support/evidence size at most B(I). Neither B nor its finite representative
+generator may take W, a supplied parent P, helper names/counts or a guessed exploration limit as a parameter.
+Equivalence here preserves the selected original judgment and every protected observation, not the old private graph.
+Protected observations originate in I and any retained required continuation interface; arbitrary private identities
+and names in W are not all declared immutable. Proving which private observers can be discarded jointly is the gap.
+
+The candidate syntactic sector K0 is G's original-source grammar with the original empty root scaffold as target,
+a nonempty original group inventory and at least one original carrier using such a group. Its predicate checks only
+finite original records, syntax, HEAD subsequence order and source handles, using the same explicit scalar/core and
+ambient restrictions as G. It has no supplied fresh child, reader roster or successful-candidate predicate.
+Source qualification separately retains actual Gamma legality. K0 is recognizable by finite enumeration of the
+original A/R/U/W/H/HEAD/scaffold roles and inventory matching; no helper enumeration is needed to recognize it.
+
+K0 alone does not force any hypothetical matching-A readers: its empty original scaffold already has its independent
+empty-middle root recipe. Treating that zero-reader positive as extraction of arbitrary structural demand would
+answer a weaker question. This packet does not claim a new coverage theorem for K0 or accept it as the final K;
+the missing source-defined interface that exercises protected group/owner continuations is part of the barrier.
+The stronger proposed implication is that every successful source witness exercising those observations can be
+reconstructed through a source-bounded, context-complete ordinary demand interface. That implication is unresolved.
+
+### Observation signature frozen before compression
+
+The observation vocabulary below is finite. Its complete instantiation is finite for a supplied finite forest;
+there is no proved bound on that instantiation from I alone. Calling the vocabulary a finite signature does not
+supply an input-finite table of future private observers.
+The table lists sensitivities of retained or required interfaces, not a requirement to retain every private row in W.
+
+| Observation | Information that a valid transformation must preserve or regenerate |
+| --- | --- |
+| Identity and sharing | Exact references, equal-valued distinct IDs, scoped owners, inactive stored reservations |
+| SOURCE and RAW | Authenticated original handles, backing particles, definition identity, use-site and shared arm IDs |
+| Group geometry | Definition compositor, individual use occurrence/count, HEAD order and shared implicit order keys |
+| TYPE and CODE | Nominal BASE paths, ordinary declaration TYPE, exact FULL roots, RP and UPA in each context |
+| Global and reverse | All global declarations, incoming affiliates, effective HEAD pools and later HEAD queries |
+| Negative lookup | Global name absence, occupied scoped names, missing references and complete membership |
+| Scalar and VALUE | Exact tagged values, saved QName maps, FIRST, whole-tuple funding and active owner operands |
+| Context and forest | Real birth/ancestry, child correspondence, pending duties and every inherited fresh root |
+| Rank and resources | Materialized stored NP, current rank guards, precharges and sticky shared-budget failure |
+
+In particular, a reader may be absent from the selected root's forward BODY/BASE graph while a distinct GLOBAL FULL
+root refers to it by TYPE. A SOURCE dependency is not an excuse to discard its separately required formation root.
+D1 also leaves a real sharing observation outside its empty/singleton pools: two uses of a definition retain common
+arm IDs, which can correlate implicit ordering choices in a later RP query. Current forward reachability sees neither
+future observers nor negative/global membership effects. An input-only interface must account for both.
+
+### Smallest native pruning discriminator
+
+The D2 controls in [the existing ambient suite](../test/research/re01/private-ambient.test.ts) start from the genuine
+source-group staged recipe with two distinct reader identities and identical borrowed BODY values. Deleting one
+reader, its active membership and RAW row from that isolated recipe still gives a complete native actual-root forest.
+This is a finite positive control for an unobserved supplied leaf, not arbitrary-witness extraction.
+
+Add one fresh GLOBAL declaration with that reader's exact TYPE, preserving source Gamma and every staged recipe
+record. The existing automatic builder and verifier accept a complete two-node actual-root forest, including the
+new declaration's required root. The declaration is absent from the original selected root's forward BODY/BASE graph.
+Now delete exactly that reader as before, retaining the new declaration and the other equal-BODY reader. Native
+candidate assembly rejects `candidate-rejected`, `code=missing`, with the deleted reader's exact component ID.
+Equal BODY values and another surviving reader do not repair the exact TYPE reference. Renaming the observer,
+including a longer fresh name, and switching the original selected group arm from h1 to h2 preserve these outcomes.
+
+This is a checked counterexample to the universal rule: deleting a fresh reader not forward-reachable from the
+selected root preserves every complete witness. It is not a counterexample to the existential B(I) target: a lawful
+transformation might delete or rewrite the observer too, provided every protected and later obligation is preserved.
+No finite fuzz domain, test enumeration or failed candidate is used as proof of unrestricted nonexistence.
+
+### Exact missing implication and next executable reduction
+
+A complete global census can distinguish the isolated control from its observed variant. It does not yet bound
+that census: additional GLOBAL/TYPE/SOURCE/owner observers and later contexts may be arbitrarily supplied by W.
+There is no proved extraction taking every successful W to G*, no source-derived bound on the number of retained
+observer roles, their names/maps/scalar programs, contextual children or complete evidence bytes. Thus G's finite
+portfolio and the local deletion control cannot discharge D2's hypothesis dependency.
+
+The next proposed proof experiment is a whole-forest leaf-erasure lemma with a closed observer interface: for an authentic successful
+forest, erase only post-parent restriction readers that have no incoming semantic, RAW/SOURCE, scalar-owner or scoped
+ownership reference from any retained record in any origin or descendant context, and whose removal preserves every global/negative
+lookup. Reconstruct candidate deltas at real births and regenerate every native context receipt; do not copy old
+receipts or erase inherited P. Include inactive stored rows and reservations in this census; active reachability alone
+does not establish the premise. Neither this interface predicate nor its erasure operation has been proved or implemented.
+Then prove that every successful source witness admits such a closed interface whose
+retained roles and complete encoding are bounded by a computable function of I. The first lemma alone is not that
+second quantified extraction. No executable pruning API is added before either consumed transformation is proved.
+
+Implementation disposition: no source-input normalization algorithm delivered; D2 is BLOCKED ON PROOF, with native
+counterexample controls delivered separately. Forward-only deletion is refuted; D1 remains proved within G; the
+source-bounded interface and arbitrary-witness representative implication remain unresolved. The same request budget,
+complete membership and rank guards apply; sufficient resources are necessary for all reported native successes.
+Full #234 coverage, catalogue-wide #350 totality, termination, dated-XSD correspondence, #351 negatives and #179/#153
+production remain separate open gates. No package/version/default activation, release, tag or publication occurs.
+
 ## Input-derived exact-ITEM free-LIST construction
 
 The research-only [free-LIST producer](../test/research/re01/free-list-assignment.ts) accepts only authentic

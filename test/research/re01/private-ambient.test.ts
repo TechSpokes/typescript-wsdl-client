@@ -578,3 +578,38 @@ it('precharges recognition on the same sticky request budget as construction and
   expect(recognizePrivateAmbientEnvironment(actual, actual, family.target)).toBe(result);
   expect(buildRe01Evidence(actual, family.target)).toBe(result); expect(actual.budget.usage().work).toBe(usage);
 });
+
+it.each([['observer', 'h1'], ['observer_with_a_long_fresh_name', 'h2'], ['observer_renamed', 'h1']] as const)('D2 refuses forward-only pruning of a group reader observed by %s TYPE using %s', async (name, head) => {
+  const xml = await readFile('test/conformance/fixtures/xsd/recovery/private-list-inherited.xsd', 'utf8');
+  const family = {namespace, name: (n: string) => n === 'fullCarrier' ? 'Heads' : n === 'subsetCarrier' ? 'ReaderBody' : n,
+    xml: xml.replace('</xs:schema>', `<xs:group name="ReaderGroup"><xs:choice><xs:element ref="t:${head}"/></xs:choice></xs:group>`
+      + '<xs:complexType name="ReaderBody"><xs:complexContent><xs:restriction base="xs:anyType"><xs:group ref="t:ReaderGroup"/></xs:restriction></xs:complexContent></xs:complexType></xs:schema>')};
+  const {actual, target, readerId, hypothesis} = await inherited('A', '', 2, family, true);
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target);
+  assert.equal(prepared.kind, 'prepared-anchored-list-assignments'); const staged = prepared.assignments[0]; assert.ok(staged);
+  const unobservedAdditions = staged.delta.additions!.filter(n => n.id !== readerId);
+  const unobservedPrune = forkSemanticCandidate(actual, {...staged.delta, key: 'd2-unobserved-prune', additions: unobservedAdditions,
+    active: [...actual.members, ...unobservedAdditions.map(n => n.id)], rawTypes: staged.delta.rawTypes!.filter(row => row.type !== readerId)});
+  assert.equal(unobservedPrune.kind, 'prepared', json(unobservedPrune));
+  expect(completeSeededRe01Evidence(actual, staged.target, {...rootHypothesis(staged), context: unobservedPrune.context}).kind).toBe('checked-witness');
+  const template = actual.lookup(globalId('element', {namespace, local: 'h1'}));
+  assert.equal(template.kind, 'found'); assert.equal(template.node.kind, 'element');
+  const observerId = globalId('element', {namespace, local: name});
+  const observer = {...template.node, id: observerId, identity: {kind: 'global' as const, role: 'element' as const, name: {namespace, local: name}},
+    name: {namespace, local: name}, abstract: false, type: local(readerId)};
+  const additions = [...staged.delta.additions!, observer];
+  const delta = {...staged.delta, key: 'd2-observed-reader', additions, active: [...actual.members, ...additions.map(n => n.id)],
+    rawElements: [...staged.delta.rawElements!, {element: observerId, type: local(readerId), final: [], block: []}]};
+  const observed = forkSemanticCandidate(actual, delta); assert.equal(observed.kind, 'prepared', json(observed));
+  // RootD's BODY/BASE have no edge to this reader. It is nevertheless a FULL
+  // root, and a separate fresh GLOBAL root now requires its exact TYPE identity.
+  const completed = completeSeededRe01Evidence(actual, staged.target, {...rootHypothesis(staged), context: observed.context});
+  assert.equal(completed.kind, 'checked-witness', json(completed)); expect(completed.evidence.nodes).toHaveLength(2);
+  expect(completed.receipt.proof[0]!.components.map(n => n.component)).toContain(observerId);
+  const prunedAdditions = additions.filter(n => n.id !== readerId);
+  const pruned = forkSemanticCandidate(actual, {...delta, key: 'd2-invalid-local-prune', additions: prunedAdditions,
+    active: [...actual.members, ...prunedAdditions.map(n => n.id)], rawTypes: delta.rawTypes!.filter(row => row.type !== readerId)});
+  expect(pruned).toMatchObject({kind: 'candidate-rejected', code: 'missing', component: readerId});
+  // This rejects one fixed mutation. It is not a counterexample to existence of
+  // some other bounded successful representative for the original source input.
+});

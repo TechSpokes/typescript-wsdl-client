@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(re01): distinguish isolated-reader pruning from globally observed TYPE dependencies in research.
+
 - feat(re01): qualify original named-group readers and normalize staged BODY observations in research.
 
 - feat(re01): reconstruct lawful staged research roots and retain private support through automatic child completion.
