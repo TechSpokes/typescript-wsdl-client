@@ -46,10 +46,10 @@ const sourceDocuments = new WeakMap<SemanticContext, readonly SchemaInterpretati
  * their named legacy limits; the snapshot/context/syntax share the supplied budget.
  */
 export function prepareSourceSchemaRequest(input: SchemaInput, options: Readonly<{
-  budget?: SemanticBudget; sourceLimits?: SemanticLimits;
+  budget?: SemanticBudget; sourceLimits?: SemanticLimits; accountPreparation?: true;
 }> = {}): SourceSchemaPreparation {
   const budget = options.budget ?? createSemanticBudget();
-  const source = prepareBoundSourceGraph(input, {budget, sourceLimits: options.sourceLimits});
+  const source = prepareBoundSourceGraph(input, {budget, sourceLimits: options.sourceLimits, accountPreparation: options.accountPreparation});
   if (source.kind !== 'prepared') return source;
   return budget.guard(() => {
     const prepared = prepareSemanticRequest(source.resolved, {budget});

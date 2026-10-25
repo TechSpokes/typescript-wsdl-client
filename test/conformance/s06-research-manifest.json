@@ -1066,7 +1066,7 @@
         {
           "path": "src/loader/schemaInput.ts",
           "role": "semantic-source",
-          "sha256": "2b3ce859e4d5ca313c3d0da67f9a0380cf54d8afcdbe5241556cb6240649192f"
+          "sha256": "c00974de19b07ffd2cfcbc1cbeabf62fb141937309097ffdb4bdad4a4c3ed3d3"
         },
         {
           "path": "test/research/re01/predicate-dependencies.test.ts",
@@ -1086,7 +1086,7 @@
         {
           "path": "src/compiler/finiteRe01Verification.ts",
           "role": "semantic-source",
-          "sha256": "214d23fb40ea9b6e2b3876864aeb6a69cfe58018d6063b7812535d7daf8e2040"
+          "sha256": "3fcd5643f34001dca1ba0558e156a5d0ff3a0012b0500d81e1e947abd598f96d"
         },
         {
           "path": "src/compiler/particleAttribution.ts",
@@ -1176,7 +1176,7 @@
         {
           "path": "src/compiler/schemaDocumentSyntax.ts",
           "role": "semantic-source",
-          "sha256": "547ae4d9275d387a93d20e540a0a06d2e735f5f1cd46194fa4cd8b45821e16b2"
+          "sha256": "65cbecef2e9f66cd94b0b78e32a61b392ce31f6864e769fc3299afd3c6900fca"
         },
         {
           "path": "src/compiler/schemaElementProperties.ts",
@@ -1516,7 +1516,7 @@
         {
           "path": "src/compiler/buildCanonicalGraph.ts",
           "role": "semantic-source",
-          "sha256": "1fd0ff3aa136fbe0ce464792ec4d09dfd4569a397ad5277008a8d11bfb1194e8"
+          "sha256": "9479e917f21c1625a1a1b5132b4498b885f44ae412085da9491b474b611f2658"
         },
         {
           "path": "src/compiler/semanticCatalog.ts",
@@ -1556,12 +1556,12 @@
         {
           "path": "src/compiler/resolveCanonicalGraph.ts",
           "role": "semantic-source",
-          "sha256": "d851e4b8f5598ee99b288d9c75e39435d46ca95d0799da8e8cbabfd85a39215a"
+          "sha256": "ea0d55bbe7630b406abaac39f305e75bd2da24974a8e39e4f75fc5cefbdc09f4"
         },
         {
           "path": "src/loader/schemaResources.ts",
           "role": "semantic-source",
-          "sha256": "8e9ff11d10f7ee2152f76dc516249ab28f8fbccb725353d7b0299fe8f11b9381"
+          "sha256": "6ca4bfe71eac02e6db7b24434d6491c22619885df7d138ab5bfd9d3ca0ec7943"
         },
         {
           "path": "src/loader/resolutionDepth.ts",
@@ -1646,7 +1646,7 @@
         {
           "path": "src/compiler/sourceSchemaBinding.ts",
           "role": "semantic-source",
-          "sha256": "16d9bdc1fa2ebca93fe43e465b98b72645e338b5cd23c66daf8aa24dceeac49e"
+          "sha256": "4e1b5fd2e6820f43efbeced70df933860b7329b8181b7ebc1c3a1d9ec6a40377"
         },
         {
           "path": "src/util/xmlWhitespace.ts",

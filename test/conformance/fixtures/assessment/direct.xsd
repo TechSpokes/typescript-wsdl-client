@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked" targetNamespace="urn:checked" elementFormDefault="qualified">
+  <xs:complexType name="Request"><xs:sequence><xs:element name="city" type="xs:string"/><xs:element name="days" type="xs:int" minOccurs="0" maxOccurs="unbounded"/></xs:sequence></xs:complexType>
+  <xs:element name="request" type="t:Request"/>
+</xs:schema>

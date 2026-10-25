@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(assessment): add source-only diagnostic API/CLI with qualified direct evidence and explicit inconclusive duties.
+
 - test(re01): reconstruct a supplied private observer island and pin the remaining erasure and catalogue proof gates.
 
 - test(re01): distinguish isolated-reader pruning from globally observed TYPE dependencies in research.

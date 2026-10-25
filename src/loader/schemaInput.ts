@@ -45,7 +45,9 @@ export function schemaInterpretationKey(node: SyntaxElement, targetNamespace: st
   return JSON.stringify([node.source.digest, node.source.uri, node.baseUri, targetNamespace, context.kind, context.namespace, node.source.path]);
 }
 
-type SchemaInputOptions = {
+export type SchemaInputOptions = {
+  /** Optional request accounting used by the additive assessment boundary. */
+  chargeWork?: (amount: number) => void;
   policy: SchemaResourcePolicy;
   limits?: Partial<LoadingLimits>;
   offlineResources?: ReadonlyMap<string, OfflineSchemaResource>;
@@ -62,7 +64,7 @@ export function loadSemanticSchemaInput(source: string, options: SchemaInputOpti
 }
 
 async function loadSchemaInputWithValues(source: string, options: SchemaInputOptions, semanticValues: boolean): Promise<SchemaInput> {
-  const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources);
+  const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources, options.chargeWork);
   const documents = new Map<string, SyntaxDocument>();
   const schemas = new Map<string, SchemaInterpretation>();
   const edges: ResolutionEdge[] = [];
@@ -81,6 +83,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
     depthGraph.set(from, arcs);
   };
   const recordEdge = (edge: ResolutionEdge) => {
+    options.chargeWork?.(256);
     const frozen = Object.freeze(edge);
     edges.push(frozen);
     if (edge.to) recordDepthArc(edge.from, edge.to, 1);
@@ -103,6 +106,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
   // Source byte/resource limits govern this phase, before semantic preparation.
   const xsdUri = (node: SyntaxElement, name: string): string | undefined => {
     const value = syntaxAttribute(node, name);
+    options.chargeWork?.(64 + (value?.length ?? 0) * 16);
     return value === undefined || !semanticValues ? value : normalizeWhitespace(value, 'collapse');
   };
   // Cached interpretations still consume resolution depth on a later, deeper route.
@@ -121,6 +125,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
     }
   };
   const interpret = async (node: SyntaxElement, context: SchemaContext, depth: number): Promise<string> => {
+    options.chargeWork?.(4096 + (node.source.path.length + node.source.uri.length + node.baseUri.length + context.namespace.length) * 32 + node.children.length * 128);
     checkDepth(depth, node);
     if (!is(node, XSD_NAMESPACE, "schema")) throw new SchemaLoadingError("invalid-schema", "Expected an XSD schema root", node.source);
     const declaredValue = xsdUri(node, "targetNamespace");

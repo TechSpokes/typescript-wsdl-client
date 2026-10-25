@@ -21,7 +21,7 @@ export function sourceSchemasForResolvedGraph(resolved: ResolvedGraph): readonly
 
 /** One issued source snapshot constructs both the immutable graph and its source universe. */
 export function prepareBoundSourceGraph(input: SchemaInput, options: Readonly<{
-  budget: SemanticBudget; sourceLimits?: SemanticLimits;
+  budget: SemanticBudget; sourceLimits?: SemanticLimits; accountPreparation?: true;
 }>): BoundSourcePreparation {
   assertLoadedSchemaInput(input);
   const budget = options.budget;
@@ -32,11 +32,11 @@ export function prepareBoundSourceGraph(input: SchemaInput, options: Readonly<{
     const owned = budget.freeze(input);
     let stage: SourcePreparationFailure['stage'] = 'canonical-build';
     try {
-      const graph = buildCanonicalGraph(owned, {maxNodes: options.sourceLimits?.maxNodes});
+      const graph = buildCanonicalGraph(owned, {maxNodes: options.sourceLimits?.maxNodes, requestBudget: options.accountPreparation ? budget : undefined});
       stage = 'reference-resolution';
       // The fixed resolver deep-freezes its complete result before returning it.
       // No caller code receives this exact handle before the private association.
-      const resolved = resolveCanonicalGraph(graph, options.sourceLimits);
+      const resolved = resolveCanonicalGraph(graph, {...options.sourceLimits, requestBudget: options.accountPreparation ? budget : undefined});
       budget.chargeWork(6);
       sourceBindings.set(resolved, owned.schemas);
       return Object.freeze({kind: 'prepared', resolved});

@@ -63,14 +63,16 @@ export class SchemaResourceLoader {
   private totalBytes = 0;
   private ioMs = 0;
   private constructor(private readonly roots: readonly string[], private readonly lexicalRoots: readonly string[], private readonly origins: ReadonlySet<string>,
-    limits: LoadingLimits, private readonly offline?: ReadonlyMap<string, OfflineSchemaResource>) { this.limits = limits; }
+    limits: LoadingLimits, private readonly offline?: ReadonlyMap<string, OfflineSchemaResource>, private readonly charge?: (amount: number) => void) { this.limits = limits; }
 
-  static async create(policy: SchemaResourcePolicy, overrides?: Partial<LoadingLimits>, offline?: ReadonlyMap<string, OfflineSchemaResource>): Promise<SchemaResourceLoader> {
-    const configuredRoots = (policy.fileRoots ?? []).map(root => path.resolve(root));
+  static async create(policy: SchemaResourcePolicy, overrides?: Partial<LoadingLimits>, offline?: ReadonlyMap<string, OfflineSchemaResource>, charge?: (amount: number) => void): Promise<SchemaResourceLoader> {
+    charge?.(1024 + (policy.fileRoots?.length ?? 0) * 128 + (policy.allowedOrigins?.length ?? 0) * 128 + (offline?.size ?? 0) * 256);
+    const configuredRoots = (policy.fileRoots ?? []).map(root => {charge?.(128 + root.length * 32); return path.resolve(root);});
     let roots: string[];
     try { roots = await Promise.all(configuredRoots.map(root => realpath(root))); }
     catch { throw new SchemaLoadingError("transport", "An authorized schema root is unavailable"); }
     const origins = new Set((policy.allowedOrigins ?? []).map(origin => {
+      charge?.(128 + origin.length * 32);
       const url = new URL(origin);
       if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
         throw new RangeError("allowedOrigins must contain HTTP(S) origins only");
@@ -78,11 +80,16 @@ export class SchemaResourceLoader {
       return url.origin;
     }));
     // Copy the manifest; byte copies occur only after per-resource/aggregate checks.
-    const snapshots = offline && new Map([...offline].map(([uri, value]) => [resolveResourceUri(uri), {bytes: value.bytes, digest: value.digest}]));
-    return new SchemaResourceLoader(roots, [...configuredRoots, ...roots], origins, loadingLimits(overrides), snapshots);
+    const snapshots = offline ? new Map<string, OfflineSchemaResource>() : undefined;
+    if (offline) for (const [uri, value] of offline) {
+      charge?.(256 + uri.length * 32);
+      snapshots!.set(resolveResourceUri(uri), {bytes: value.bytes, digest: value.digest});
+    }
+    return new SchemaResourceLoader(roots, [...configuredRoots, ...roots], origins, loadingLimits(overrides), snapshots, charge);
   }
 
   get metadata(): readonly ResourceMetadata[] {
+    this.charge?.(128 + this.resources.size * 256);
     return Object.freeze([...this.resources.values()].map(({uri, digest, byteLength}) => Object.freeze({uri, digest, byteLength})));
   }
   get metrics(): Readonly<{resources: number; totalBytes: number; ioMs: number}> {
@@ -90,6 +97,7 @@ export class SchemaResourceLoader {
   }
 
   private async authorize(uri: string): Promise<string> {
+    this.charge?.(1024 + uri.length * 32 + this.roots.length * 256);
     const url = new URL(resolveResourceUri(uri));
     if (url.protocol !== "file:") {
       if (!this.origins.has(url.origin)) throw new SchemaLoadingError("unsupported-capability", "Schema resource origin is not authorized");
@@ -104,6 +112,7 @@ export class SchemaResourceLoader {
   }
 
   async fetchResource(reference: string): Promise<FetchedSchemaResource> {
+    this.charge?.(256 + reference.length * 4);
     const requested = resolveResourceUri(reference);
     // A previously authorized alias returns the compilation's pinned bytes without new I/O.
     const pinned = this.resources.get(this.resourceKeys.get(this.aliases.get(requested) ?? requested) ?? "");
@@ -134,6 +143,8 @@ export class SchemaResourceLoader {
         let byteLength = 0;
         const accept = (chunk: Uint8Array) => {
           if (controller.signal.aborted || performance.now() - started > budget) throw new SchemaLoadingError("transport", "Schema I/O deadline exceeded");
+          // Reserve copying, hashing, decoding and bounded syntax preparation before retaining bytes.
+          this.charge?.(64 + chunk.byteLength * 32);
           byteLength += chunk.byteLength;
           if (byteLength > this.limits.resourceBytes || this.totalBytes + byteLength > this.limits.totalBytes) {
             throw new SchemaLoadingError("resource-limit", "Decompressed schema byte budget exceeded");

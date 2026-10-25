@@ -664,3 +664,25 @@ export function verifyFiniteRe01EvidenceWithFrontier(actual: SemanticContext, ta
     }
   });
 }
+
+/** Product direct strategy: no hypothetical candidates and no search-negative claim. */
+export function verifyDirectActualSchema(actual: SemanticContext): Readonly<{
+  kind: 'checked-direct' | 'inconclusive-direct'; frontier: FiniteRe01Frontier;
+  unresolved: readonly NodeId[];
+}> | FiniteVerificationFailure | ResourceLimitFailure {
+  assertSemanticContext(actual);
+  return actual.budget.guard(() => {
+    try {
+      const owner = createNativeFrontierOwner(actual);
+      actual.budget.chargeWork(8 + owner.actualFrontier.requirements.length * 2);
+      const unresolved = owner.actualFrontier.requirements.filter(item => !item.primitive).map(item => item.target);
+      // Aggregate discharge is mandatory even when this strategy cannot prove RE01.
+      owner.validateAggregate([]);
+      return Object.freeze({kind: unresolved.length ? 'inconclusive-direct' : 'checked-direct',
+        frontier: owner.actualFrontier, unresolved: Object.freeze(unresolved)});
+    } catch (error) {
+      if (error instanceof VerificationAbort) return error.result;
+      throw error;
+    }
+  });
+}
