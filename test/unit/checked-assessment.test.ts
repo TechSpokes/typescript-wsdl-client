@@ -2,6 +2,7 @@
 import {describe, it, expect, beforeAll, afterAll} from 'vitest';
 import {mkdtemp, readFile, writeFile, mkdir, rm} from 'node:fs/promises';
 import path from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {createServer} from 'node:http';
 import {once} from 'node:events';
 import {spawnSync} from 'node:child_process';
@@ -58,6 +59,28 @@ describe('checked source assessment', () => {
     const mismatch = await assess(source, {expectedIdentity: 'foreign-source-context'});
     expect(mismatch.schema).toBe('inconclusive');
     expect(mismatch.obligations.some(o => o.rule === 'source-context-match')).toBe(true);
+  });
+  it('uses the controlled URI resolver for local-file default authorization', async () => {
+    const source = path.join(root, 'direct.xsd');
+    const output = path.join(artifacts, 'file-uri-report.json');
+    const cli = spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'assess', '--wsdl-source', pathToFileURL(source).href, '--report', output], {encoding: 'utf8'});
+    expect(cli.status).toBe(0);
+    const report = parseAssessmentReport(await readFile(output, 'utf8'));
+    expect(report.schemaEligible).toBe(true);
+    expect(report.identity).toBe((await assess(source)).identity);
+  });
+  it('publishes the same safe failed report for refused CLI and API sources', async () => {
+    for (const [index, source] of ['ftp://example.invalid/service.wsdl', 'https://user:private@example.invalid/service.wsdl'].entries()) {
+      const output = path.join(artifacts, 'refused-' + index + '.json');
+      const cli = spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'assess', '--wsdl-source', source, '--report', output], {encoding: 'utf8'});
+      expect(cli.status).toBe(1);
+      const text = await readFile(output, 'utf8');
+      const report = parseAssessmentReport(text);
+      expect(report.execution).toBe('failed');
+      expect(report.category).toBe((await assess(source)).category);
+      expect(text).not.toContain('user:private');
+      expect(cli.stderr).not.toContain('user:private');
+    }
   });
   it('does not turn rejection of a hypothetical membership into original-schema invalidity', async () => {
     const source = path.join(root, 'direct.xsd');

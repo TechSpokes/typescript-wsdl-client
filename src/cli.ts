@@ -15,6 +15,8 @@ import yargs from "yargs/yargs";
 import {hideBin} from "yargs/helpers";
 import fs from "node:fs";
 import path from "node:path";
+import {fileURLToPath} from "node:url";
+import {resolveResourceUri} from "./loader/schemaResources.js";
 
 import {loadWsdl} from "./loader/wsdlLoader.js";
 import {compileCatalog} from "./compiler/schemaCompiler.js";
@@ -101,9 +103,15 @@ if (rawArgs[0] === "assess") {
   process.on("SIGINT", cancel);
   try {
     const source = argv["wsdl-source"];
-    const local = !/^[a-z][a-z0-9+.-]*:/i.test(source);
+    let localFile: string | undefined;
+    try {
+      const uri = resolveResourceUri(source);
+      localFile = uri.startsWith("file:") ? fileURLToPath(uri) : undefined;
+    } catch {
+      // Root inference grants nothing on failure; the API still publishes its loading diagnostic.
+    }
     const report = await assessSchemaSource(source, {signal: controller.signal, loading: {policy: {
-      fileRoots: argv["schema-root"] ?? (local ? [path.dirname(path.resolve(source))] : []),
+      fileRoots: argv["schema-root"] ?? (localFile ? [path.dirname(localFile)] : []),
       allowedOrigins: argv["schema-origin"] ?? [],
     }}, limits: {maxWork: argv["assessment-max-work"], maxNodes: argv["assessment-max-nodes"]}});
     fs.writeFileSync(argv.report, serializeAssessmentReport(report), {encoding: "utf8"});
