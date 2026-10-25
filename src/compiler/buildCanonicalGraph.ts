@@ -51,7 +51,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
   };
   const named = (node: SyntaxElement, namespace: string): ExpandedName => {
     const local = required(node, "name");
-    chargeText(local);
+    chargeText(local); chargeText(namespace);
     // Validate NCName through the adapter without letting the default namespace define identity.
     const resolved = resolveLexicalQName(local, node);
     if (local.includes(":")) return fail(node, "Declaration name must be an NCName");

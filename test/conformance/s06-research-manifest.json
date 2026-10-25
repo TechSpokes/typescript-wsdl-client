@@ -1516,7 +1516,7 @@
         {
           "path": "src/compiler/buildCanonicalGraph.ts",
           "role": "semantic-source",
-          "sha256": "b1d710e3e1c17d1b6bf42fc06a9709c10714bc3f851555153fb4ff9fb0d230ae"
+          "sha256": "9479e917f21c1625a1a1b5132b4498b885f44ae412085da9491b474b611f2658"
         },
         {
           "path": "src/compiler/semanticCatalog.ts",
