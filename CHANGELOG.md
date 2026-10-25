@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(re01): qualify original named-group readers and normalize staged BODY observations in research.
+
 - feat(re01): reconstruct lawful staged research roots and retain private support through automatic child completion.
 
 - feat(re01): recognize compatible ambient schemas and prove private construction with inherited HEAD readers.

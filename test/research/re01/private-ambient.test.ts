@@ -9,7 +9,8 @@ import {globalId} from '../../../src/compiler/canonicalGraph.js';
 import type {ComplexTypeNode} from '../../../src/compiler/canonicalGraph.js';
 import {forkSemanticCandidate, isSemanticCandidateOf} from '../../../src/compiler/semanticContext.js';
 import {hypotheticalScopedId} from '../../../src/compiler/hypotheticalScopedIdentity.js';
-import {deriveOriginalComplexParticle} from '../../../src/compiler/complexTypeContent.js';
+import {deriveActualComplexContent, deriveModelGroupContent, deriveOriginalComplexParticle} from '../../../src/compiler/complexTypeContent.js';
+import {prepareSemanticParticleView} from '../../../src/compiler/particleSemanticView.js';
 import {assertComponentConstruction, checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
 import {effectiveSubstitutionMembers} from '../../../src/compiler/schemaTypeRelations.js';
 import {DEFAULT_MAX_WORK} from '../../../src/compiler/semanticBudget.js';
@@ -38,7 +39,13 @@ async function source(extra = '', supplied?: string) {
   } finally {await rm(directory, {recursive: true, force: true});}
 }
 async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerCount = 1,
-  family?: {xml: string; namespace: string; name: (name: string) => string}, subset = false) {
+  family?: {xml: string; namespace: string; name: (name: string) => string}, subset = false, grouped = false) {
+  if (grouped) {
+    const xml = family?.xml ?? await readFile('test/conformance/fixtures/xsd/recovery/private-list-inherited.xsd', 'utf8');
+    family = {namespace: 'urn:private:inherited', name: n => n === 'fullCarrier' ? 'Heads' : n === 'subsetCarrier' ? 'ReaderBody' : n, ...family, xml: xml.replace('</xs:schema>',
+      '<xs:group name="ReaderGroup"><xs:choice><xs:element ref="t:h1"/></xs:choice></xs:group>'
+      + '<xs:complexType name="ReaderBody"><xs:complexContent><xs:restriction base="xs:anyType"><xs:group ref="t:ReaderGroup"/></xs:restriction></xs:complexContent></xs:complexType></xs:schema>')};
+  }
   const actual = await source(extra, family?.xml);
   const namespace = family?.namespace ?? 'urn:private:inherited';
   const id = (name: string) => globalId('type', {namespace, local: family?.name(name === 'Heads' ? 'fullCarrier' : name === 'ReaderBody' ? 'subsetCarrier' : name) ?? name});
@@ -64,6 +71,33 @@ async function inherited(base: 'A' | 'OffA' | 'Heads' = 'A', extra = '', readerC
   assert.equal(built.kind, 'prepared', json(built));
   return {actual, target, readerId, hypothesis: {parent: actual, context: built.context, target: id('RootD'), intermediate: plan.intermediate, ancestor: plan.ancestor}};
 }
+
+it('native discriminator retains a source group use through staged parent and complete child', async () => {
+  const {actual, target, readerId, hypothesis} = await inherited('A', '', 1, undefined, true, true);
+  // Before recognizer changes: assemble the already delivered recipe at root birth,
+  // preserving genuine source handles; do not substitute a flattened BODY.
+  const localPlan = preparePrivateAnchoredListAssignments(actual, hypothesis.context, target);
+  assert.equal(localPlan.kind, 'prepared-anchored-list-assignments', json(localPlan));
+  const plan = localPlan.assignments[0]; assert.ok(plan, json(localPlan));
+  const root = hypothesis.context.lookup(hypothesis.target); assert.equal(root.kind, 'found'); assert.equal(root.node.kind, 'complexType');
+  const additions = [...plan.delta.additions!, ...hypothesis.context.members.filter(id => actual.lookup(id).kind === 'missing').map(id => {
+    const at = hypothesis.context.lookup(id); assert.equal(at.kind, 'found'); return at.node;
+  })];
+  const rows = hypothesis.context.members.flatMap(id => {const row = hypothesis.context.rawTypeProperties(id); return row ? [row] : [];});
+  const built = forkSemanticCandidate(actual, {...plan.delta, key: 'native-group-first-birth', endpoint: root.node, additions,
+    active: [...actual.members, ...additions.map(n => n.id)], rawTypes: [...rows, ...plan.delta.rawTypes!.filter(row => row.type !== target && (hypothesis.context.lookup(row.type).kind === 'missing' || !hypothesis.context.rawTypeProperties(row.type)))]});
+  assert.equal(built.kind, 'prepared', json(built));
+  const group = globalId('group', {namespace, local: 'ReaderGroup'});
+  expect(checkComponentConstruction(actual, group).kind).toBe('checked');
+  expect(checkComponentConstruction(hypothesis.context, readerId)).toMatchObject({kind: 'candidate-rejected', rule: 'derivation-ok-restriction.5.4'});
+  expect(checkComponentConstruction(built.context, readerId).kind).toBe('checked');
+  const seed = {...hypothesis, context: built.context};
+  const frontier = prepareFiniteRe01Frontier(actual); assert.equal(frontier.kind, 'native-frontier-session', json(frontier));
+  const inspected = frontier.inspectCandidate(seed); assert.equal(inspected.kind, 'inspected-frontier', json(inspected));
+  expect(inspected.requirements.filter(r => !r.primitive).map(r => r.target)).toEqual([target]);
+  const result = completeSeededRe01Evidence(actual, hypothesis.target, seed);
+  assert.equal(result.kind, 'checked-witness', json(result)); expect(result.evidence.nodes).toHaveLength(2);
+});
 
 it('stages first-birth support at a new root and completes the retained child automatically', async () => {
   const {actual, target, readerId, hypothesis} = await inherited('A');
@@ -112,6 +146,81 @@ function stagedFamily(arity: number, count: number, reverse: boolean, v: 'true' 
   return {...family, xml: family.xml.replace(new RegExp(`<xs:complexType name="${name('D')}">.*?</xs:complexType>`), '')
     .replace('</xs:schema>', scaffold + '</xs:schema>')};
 }
+
+it.each([[2, 1], [3, 2], [4, 3]] as const)('normalizes original group portfolios at k=%i and r=%i through complete evidence', async (arity, readers) => {
+  const family = stagedFamily(arity, 1, false, 'true', 'urn:group:saved'), name = family.name;
+  const carrier = name('subsetCarrier'), groupName = name('group:escaped').replace(':', '_');
+  // Extract only original XML syntax, before semantic checking; no winning data.
+  const pattern = new RegExp(`(<xs:complexType name="${carrier}">.*?)<xs:choice>(.*?)</xs:choice>`);
+  const matched = family.xml.match(pattern); assert.ok(matched);
+  const portfolio = Array.from({length: arity - 1}, (_, i) => `<xs:element ref="t:${name('head' + i)}"/>`).join('');
+  family.xml = family.xml.replace(pattern, `$1<xs:group ref="t:${groupName}"/>`).replace('</xs:schema>',
+    `<xs:group name="${groupName}"><xs:choice>${portfolio}</xs:choice></xs:group></xs:schema>`);
+  const {actual, target, readerId, hypothesis} = await inherited('A', '', readers, family, true);
+  const recognized = recognizePrivateStagingDemand(actual, hypothesis.context, target);
+  assert.equal(recognized.kind, 'recognized-private-staging-demand', json(recognized)); expect(recognized.readers).toHaveLength(readers);
+  const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target);
+  assert.equal(prepared.kind, 'prepared-anchored-list-assignments', json(prepared));
+  const staged = prepared.assignments[0]; assert.ok(staged, json(prepared));
+  expect(recognizePrivateStagedRoot(actual, hypothesis.context, target, staged.context).kind).toBe('recognized-private-staged-root');
+  const session = prepareFiniteRe01Frontier(actual); assert.equal(session.kind, 'native-frontier-session');
+  const parent = session.inspectCandidate(rootHypothesis(staged)); assert.equal(parent.kind, 'inspected-frontier', json(parent));
+  expect(parent.requirements.filter(r => !r.primitive).map(r => r.target)).toEqual([target]);
+  const complete = completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged));
+  assert.equal(complete.kind, 'checked-witness', json(complete)); expect(complete.evidence.nodes).toHaveLength(2);
+  const child = complete.evidence.nodes.find(n => n.target === target); assert.ok(child);
+  const group = globalId('group', {namespace: family.namespace, local: groupName});
+  expect(complete.receipt.actualComponents.map(c => c.component)).toContain(group);
+  expect(child.context.lookup(group)).toEqual(actual.lookup(group));
+  expect(child.context.rawTypeProperties(readerId)).toBe(staged.context.rawTypeProperties(readerId));
+  expect(storedRe01Rank(actual, child.parent)).toEqual({q: 0, n: 1});
+  expect(storedRe01Rank(actual, child.context)).toEqual({q: 0, n: 0});
+});
+
+it('keeps shared definitions and distinct original use sites while matching direct observations', async () => {
+  const extra = '<xs:complexType name="SecondUse"><xs:complexContent><xs:restriction base="xs:anyType"><xs:group ref="t:ReaderGroup"/></xs:restriction></xs:complexContent></xs:complexType>'
+    + '<xs:complexType name="DirectUse"><xs:complexContent><xs:restriction base="xs:anyType"><xs:choice><xs:element ref="t:h1"/></xs:choice></xs:restriction></xs:complexContent></xs:complexType>'
+    + '<xs:group name="UnusedGroup"><xs:choice><xs:element ref="t:h2"/></xs:choice></xs:group>';
+  const {actual, target, hypothesis} = await inherited('A', extra, 2, undefined, true, true);
+  expect(recognizePrivateStagingDemand(actual, hypothesis.context, target).kind).toBe('recognized-private-staging-demand');
+  const group = actual.lookup(globalId('group', {namespace, local: 'ReaderGroup'})); assert.equal(group.kind, 'found'); assert.equal(group.node.kind, 'group');
+  const definition = deriveModelGroupContent(actual, group.node.id); assert.equal(definition.kind, 'checked');
+  const views = ['ReaderBody', 'SecondUse', 'DirectUse'].map(n => {
+    const content = deriveActualComplexContent(actual, id(n)); assert.equal(content.kind, 'checked');
+    const view = prepareSemanticParticleView(actual, content.view, 'restriction'); assert.equal(view.kind, 'checked'); return view.view;
+  });
+  for (const view of views) expect({kind: view.root.kind, occurs: view.root.occurs, head: view.root.element?.id})
+    .toEqual({kind: 'element', occurs: {min: '1', max: '1'}, head: globalId('element', {namespace, local: 'h1'})});
+  expect(views[0]!.root.originalParticle).not.toBe(views[1]!.root.originalParticle);
+  for (const view of views.slice(0, 2)) expect(view.root.origins).toContain(group.node.content);
+  expect(views[2]!.root.origins).not.toContain(group.node.content);
+  const foreign = await inherited('A', '', 1, undefined, true, true);
+  expect(() => prepareSemanticParticleView(foreign.actual, definition.view, 'restriction')).toThrow();
+});
+
+it.each(['optional', 'repeated', 'missing', 'duplicate-unused', 'nested', 'reversed'] as const)('refuses group %s without granting negative authority', async fault => {
+  const xml = await readFile('test/conformance/fixtures/xsd/recovery/private-list-inherited.xsd', 'utf8');
+  const definition = fault === 'duplicate-unused' ? '<xs:element name="bad" type="t:Words"/><xs:element name="bad" type="t:Words"/>'
+    : fault === 'nested' ? '<xs:group ref="t:ReaderGroup"/>' : fault === 'reversed' ? '<xs:element ref="t:h2"/><xs:element ref="t:h1"/>' : '<xs:element ref="t:h1"/>';
+  const group = `<xs:group name="ReaderGroup"><xs:choice>${definition}</xs:choice></xs:group>`;
+  const use = fault === 'duplicate-unused' ? '<xs:choice><xs:element ref="t:h1"/></xs:choice>'
+    : `<xs:group ref="t:${fault === 'missing' ? 'Absent' : 'ReaderGroup'}" ${fault === 'optional' ? 'minOccurs="0"' : fault === 'repeated' ? 'maxOccurs="2"' : ''}/>`;
+  const family = {namespace, name: (n: string) => n === 'fullCarrier' ? 'Heads' : n === 'subsetCarrier' ? 'ReaderBody' : n,
+    xml: xml.replace('</xs:schema>', group + `<xs:complexType name="ReaderBody"><xs:complexContent><xs:restriction base="xs:anyType">${use}</xs:restriction></xs:complexContent></xs:complexType></xs:schema>`)};
+  if (fault === 'missing' || fault === 'nested') {
+    const directory = await mkdtemp(path.resolve('tmp/test-generation/re01-ambient/case-'));
+    try {
+      const file = path.join(directory, 'schema.xsd'); await writeFile(file, family.xml);
+      const loaded = await loadSemanticSchemaInput(file, {policy: {fileRoots: [directory]}});
+      expect(prepareSourceSchemaRequest(loaded)).toMatchObject({kind: 'source-preparation-failed', stage: 'reference-resolution', category: 'invalid-schema'});
+    } finally {await rm(directory, {recursive: true, force: true});}
+    return;
+  }
+  const {actual, target, hypothesis} = await inherited('A', '', 1, family, true);
+  expect(recognizePrivateStagingDemand(actual, hypothesis.context, target).kind).toBe('outside-private-ambient');
+  expect(preparePrivateStagedRootAssignments(actual, hypothesis.context, target)).toMatchObject({kind: 'unresolved', rule: 'private-staging-demand'});
+  if (fault === 'duplicate-unused') expect(prepareFiniteRe01Frontier(actual).kind).toBe('invalid-schema');
+});
 
 it.each([
   [2, 0, false, 'true', 'urn:staged:two', 0, false],
@@ -165,22 +274,23 @@ it.each([
   console.log('staged family complete', {arity, count, readers, subset, work: actual.budget.usage().work, rssBytes: process.memoryUsage().rss});
 });
 
-it.each(['OffA', 'collision', 'affiliate'] as const)('refuses a staged demand with %s without narrowing existing recipes', async fault => {
+it.each([['OffA', false], ['collision', false], ['affiliate', false], ['OffA', true], ['collision', true], ['affiliate', true]] as const)('refuses a staged demand with %s grouped=%s without narrowing existing recipes', async (fault, grouped) => {
   const extra = fault === 'collision' ? '<xs:element name="y1" type="t:Words"/>'
     : fault === 'affiliate' ? '<xs:element name="foreign" type="t:HeadWords" substitutionGroup="t:h1"/>' : '';
-  const {actual, target, hypothesis} = await inherited(fault === 'OffA' ? 'OffA' : 'A', extra);
+  const {actual, target, hypothesis} = await inherited(fault === 'OffA' ? 'OffA' : 'A', extra, 1, undefined, grouped, grouped);
   expect(recognizePrivateStagingDemand(actual, hypothesis.context, target).kind).toBe('outside-private-ambient');
   expect(preparePrivateStagedRootAssignments(actual, hypothesis.context, target)).toMatchObject({kind: 'unresolved', rule: 'private-staging-demand'});
   expect(prepareFiniteRe01Frontier(actual).kind).toBe('native-frontier-session');
 });
 
-it.each(['VALUE', 'map', 'funding'] as const)('rejects staged wrong %s in its real first-birth context', async fault => {
-  const {actual, target, hypothesis} = await inherited('A');
+it.each([['VALUE', false], ['map', false], ['funding', false], ['VALUE', true], ['map', true], ['funding', true], ['TYPE', true]] as const)('rejects staged wrong %s grouped=%s in its real first-birth context', async (fault, grouped) => {
+  const {actual, target, hypothesis} = await inherited('A', '', 1, undefined, grouped, grouped);
   const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); assert.equal(prepared.kind, 'prepared-anchored-list-assignments');
   const staged = prepared.assignments[0]!, cohort = staged.cohorts[fault === 'map' ? 1 : 0]!;
   const built = forkSemanticCandidate(actual, {...staged.delta, key: 'staged-bad-' + fault,
+    rawElements: staged.delta.rawElements!.map(row => fault === 'TYPE' && row.element === cohort.member ? {...row, type: local(id('OffA'))} : row),
     additions: staged.delta.additions!.map(n => n.id === cohort.member && n.kind === 'element' && n.value
-      ? {...n, value: {...n.value, lexical: {...n.value.lexical,
+      ? {...n, type: fault === 'TYPE' ? local(id('OffA')) : n.type, value: {...n.value, lexical: {...n.value.lexical,
         value: fault === 'VALUE' ? 'false' : n.value.lexical.value,
         context: fault === 'map' ? {...n.value.lexical.context, namespaces: {...n.value.lexical.context.namespaces, '': 'urn:foreign:qname'}} : n.value.lexical.context}}} : n),
     rawSimpleTypes: staged.delta.rawSimpleTypes!.map(row => fault === 'funding' && row.type === cohort.enumeration && row.facetComponentSet
@@ -201,8 +311,8 @@ it.each(['VALUE', 'map', 'funding'] as const)('rejects staged wrong %s in its re
   }
 });
 
-it('keeps missing and sibling-context evidence unresolved or invalid at the original root', async () => {
-  const {actual, target, hypothesis} = await inherited('A');
+it.each([false, true])('keeps missing and sibling-context evidence unresolved or invalid at the original root grouped=%s', async grouped => {
+  const {actual, target, hypothesis} = await inherited('A', '', 1, undefined, grouped, grouped);
   const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); assert.equal(prepared.kind, 'prepared-anchored-list-assignments');
   const staged = prepared.assignments[0]!;
   expect(verifyFiniteRe01Evidence(actual, staged.target, {root: 'root', nodes: [{...staged.evidence, id: 'root', premises: []}]}))
@@ -226,8 +336,8 @@ it('admits a structural staged demand while rejecting its invalid actual ambient
   expect(completeSeededRe01Evidence(actual, staged.target, rootHypothesis(staged)).kind).toBe('invalid-schema');
 });
 
-it('precharges staged construction and recognition with inclusive sticky exhaustion', async () => {
-  const {actual, target, hypothesis} = await inherited('A');
+it.each([false, true])('precharges staged construction and recognition with inclusive sticky exhaustion grouped=%s', async grouped => {
+  const {actual, target, hypothesis} = await inherited('A', '', 1, undefined, grouped, grouped);
   const prepared = preparePrivateStagedRootAssignments(actual, hypothesis.context, target); assert.equal(prepared.kind, 'prepared-anchored-list-assignments');
   const staged = prepared.assignments[0]!;
   actual.budget.guard(() => actual.budget.chargeWork(DEFAULT_MAX_WORK - actual.budget.usage().work));
