@@ -85,6 +85,7 @@
     "../../scripts/validate-docs.d.mts",
     "../../scripts/lib/deps.d.mts",
     "../../scripts/lib/release-preflight-utils.d.mts",
-    "../../scripts/lib/release-state.d.mts"
+    "../../scripts/lib/release-state.d.mts",
+    "checked-assessment.test.ts"
   ]
 }

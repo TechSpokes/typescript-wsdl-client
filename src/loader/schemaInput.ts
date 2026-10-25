@@ -45,7 +45,9 @@ export function schemaInterpretationKey(node: SyntaxElement, targetNamespace: st
   return JSON.stringify([node.source.digest, node.source.uri, node.baseUri, targetNamespace, context.kind, context.namespace, node.source.path]);
 }
 
-type SchemaInputOptions = {
+export type SchemaInputOptions = {
+  /** Optional request accounting used by the additive assessment boundary. */
+  chargeWork?: (amount: number) => void;
   policy: SchemaResourcePolicy;
   limits?: Partial<LoadingLimits>;
   offlineResources?: ReadonlyMap<string, OfflineSchemaResource>;
@@ -62,7 +64,7 @@ export function loadSemanticSchemaInput(source: string, options: SchemaInputOpti
 }
 
 async function loadSchemaInputWithValues(source: string, options: SchemaInputOptions, semanticValues: boolean): Promise<SchemaInput> {
-  const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources);
+  const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources, options.chargeWork);
   const documents = new Map<string, SyntaxDocument>();
   const schemas = new Map<string, SchemaInterpretation>();
   const edges: ResolutionEdge[] = [];
@@ -81,6 +83,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
     depthGraph.set(from, arcs);
   };
   const recordEdge = (edge: ResolutionEdge) => {
+    options.chargeWork?.(256);
     const frozen = Object.freeze(edge);
     edges.push(frozen);
     if (edge.to) recordDepthArc(edge.from, edge.to, 1);
@@ -121,6 +124,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
     }
   };
   const interpret = async (node: SyntaxElement, context: SchemaContext, depth: number): Promise<string> => {
+    options.chargeWork?.(256 + node.source.path.length * 4);
     checkDepth(depth, node);
     if (!is(node, XSD_NAMESPACE, "schema")) throw new SchemaLoadingError("invalid-schema", "Expected an XSD schema root", node.source);
     const declaredValue = xsdUri(node, "targetNamespace");

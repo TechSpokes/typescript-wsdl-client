@@ -32,11 +32,11 @@ export function prepareBoundSourceGraph(input: SchemaInput, options: Readonly<{
     const owned = budget.freeze(input);
     let stage: SourcePreparationFailure['stage'] = 'canonical-build';
     try {
-      const graph = buildCanonicalGraph(owned, {maxNodes: options.sourceLimits?.maxNodes});
+      const graph = buildCanonicalGraph(owned, {maxNodes: options.sourceLimits?.maxNodes, requestBudget: budget});
       stage = 'reference-resolution';
       // The fixed resolver deep-freezes its complete result before returning it.
       // No caller code receives this exact handle before the private association.
-      const resolved = resolveCanonicalGraph(graph, options.sourceLimits);
+      const resolved = resolveCanonicalGraph(graph, {...options.sourceLimits, requestBudget: budget});
       budget.chargeWork(6);
       sourceBindings.set(resolved, owned.schemas);
       return Object.freeze({kind: 'prepared', resolved});

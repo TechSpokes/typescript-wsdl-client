@@ -10,6 +10,7 @@
  * invocation (no subcommand) is kept for backward compatibility and behaves like the client
  * command with legacy flags.
  */
+import {assessSchemaSource, serializeAssessmentReport, assessmentExitCode} from "./compiler/checkedAssessment.js";
 import yargs from "yargs/yargs";
 import {hideBin} from "yargs/helpers";
 import fs from "node:fs";
@@ -60,7 +61,7 @@ function loadStreamConfigOrExit(filePath: string | undefined): StreamConfig | un
 const rawArgs = hideBin(process.argv);
 
 // Available commands
-const COMMANDS = ["compile", "client", "openapi", "gateway", "app", "pipeline"] as const;
+const COMMANDS = ["compile", "client", "openapi", "gateway", "app", "pipeline", "assess"] as const;
 
 // ---------------------------------------------------------------------------
 // Show help if no subcommand provided
@@ -71,6 +72,7 @@ if (!rawArgs[0] || !COMMANDS.includes(rawArgs[0] as any)) {
     .version(false)
     .scriptName("wsdl-tsc")
     .usage("$0 <command> [options]")
+    .command("assess", "Assess schema obligations without generating artifacts")
     .command("compile", "Compile WSDL to catalog.json")
     .command("client", "Generate TypeScript SOAP client from WSDL or catalog")
     .command("openapi", "Generate OpenAPI specification from WSDL or catalog")
@@ -82,6 +84,32 @@ if (!rawArgs[0] || !COMMANDS.includes(rawArgs[0] as any)) {
     .help()
     .parse();
   process.exit(1);
+}
+
+// Assessment is deliberately independent of every generation command.
+if (rawArgs[0] === "assess") {
+  const argv = await yargs(rawArgs.slice(1)).version(false).scriptName("wsdl-tsc assess")
+    .option("wsdl-source", {type: "string", demandOption: true, desc: "Authorized local WSDL/XSD source"})
+    .option("report", {type: "string", demandOption: true, desc: "Diagnostic JSON report path"})
+    .option("schema-root", {type: "array", string: true, desc: "Authorized schema root; defaults to source directory"})
+    .option("schema-origin", {type: "array", string: true, desc: "Explicitly authorized HTTP(S) origin"})
+    .option("assessment-max-work", {type: "number", desc: "Inclusive shared request work limit"})
+    .option("assessment-max-nodes", {type: "number", desc: "Inclusive shared request node limit"})
+    .strict().help().parse();
+  try {
+    const source = argv["wsdl-source"];
+    const local = !/^[a-z][a-z0-9+.-]*:/i.test(source);
+    const report = await assessSchemaSource(source, {loading: {policy: {
+      fileRoots: argv["schema-root"] ?? (local ? [path.dirname(path.resolve(source))] : []),
+      allowedOrigins: argv["schema-origin"] ?? [],
+    }}, limits: {maxWork: argv["assessment-max-work"], maxNodes: argv["assessment-max-nodes"]}});
+    fs.writeFileSync(argv.report, serializeAssessmentReport(report), {encoding: "utf8"});
+    console.error(`Schema: ${report.schema}; correspondence: ${report.correspondence}; execution: ${report.execution}; generation: not admitted`);
+    process.exitCode = assessmentExitCode(report);
+  } catch {
+    console.error("Assessment or report publication failed; source details redacted");
+    process.exitCode = 1;
+  }
 }
 
 // ---------------------------------------------------------------------------

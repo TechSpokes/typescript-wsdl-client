@@ -301,3 +301,19 @@ Built and maintained by [TechSpokes](https://www.techspokes.com). Created by [Se
 - Community help: [GitHub Discussions](https://github.com/techspokes/typescript-wsdl-client/discussions)
 - Bug reports: [GitHub Issues](https://github.com/techspokes/typescript-wsdl-client/issues)
 - Commercial support and integration consulting: [techspokes.com/contact](https://www.techspokes.com/contact/)
+
+## Schema assessment diagnostics
+
+`assess` is an additive diagnostic command. It writes a versioned JSON report without generating artifacts or dispatching SOAP.
+
+```bash
+npx wsdl-tsc assess --wsdl-source examples/minimal/weather.wsdl --report .generated/assessment.json
+```
+
+Create the report directory first. Local loading defaults to the source directory; use repeated `--schema-root` values for additional authorized roots and `--schema-origin` for exact HTTP(S) origins. Network access has no implicit authorization. `--assessment-max-work` and `--assessment-max-nodes` configure the inclusive shared request limits.
+
+The programmatic `assessSchemaSource(source, {loading: {policy: {fileRoots: [...]}}})` entry returns the same report; `serializeAssessmentReport` publishes its precharged JSON. `parseAssessmentReport` checks diagnostic compatibility and consistency, but does not authenticate proof. Reports expose opaque source/context identifiers and exact resource digests rather than source URLs or payloads.
+
+The report separates native schema premises, dated-XSD correspondence, execution and per-operation runtime capabilities. Exit 0 requires established native scope and qualified correspondence; 2 means inconclusive, 3 native scope disproved, 4 resource-limit, 5 cancelled and 1 operational failure. Execution failure takes precedence over retained schema facts. An assessment never admits structured generation; legacy defaults and existing commands are unchanged.
+
+See the [checked-product assurance contract](docs/decisions/003-content-model-contracts.md#checked-product-assessment-amendment-p1-d01) for the sufficient direct correspondence route and remaining downstream obligations.

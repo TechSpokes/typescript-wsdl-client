@@ -12,12 +12,13 @@ export class SemanticError extends Error {
     super(message); this.name = "SemanticError";
   }
 }
-export type SemanticLimits = {maxNodes?: number; maxSteps?: number};
+export type SemanticLimits = {maxNodes?: number; maxSteps?: number; requestBudget?: import("./semanticBudget.js").SemanticBudget};
 export function semanticBudget(limits: SemanticLimits = {}) {
   const maxNodes = positiveLimit(limits.maxNodes, DEFAULT_GRAPH_NODES, "maxNodes");
   const maxSteps = positiveLimit(limits.maxSteps, 1_000_000, "maxSteps");
   let steps = 0;
   return {maxNodes, get steps() {return steps;}, step(node?: GraphNode) {
+    limits.requestBudget?.chargeWork(64);
     if (++steps > maxSteps) throw new SemanticError("resource-limit", `Semantic traversal exceeds ${maxSteps} steps`, node?.id, node?.context.source);
   }};
 }
@@ -64,6 +65,8 @@ function interpretation(key: string): Interpretation {
 export function resolveCanonicalGraph(graph: CanonicalGraph, limits: SemanticLimits = {}): ResolvedGraph {
   const budget = semanticBudget(limits);
   if (graph.nodes.length > budget.maxNodes) throw new SemanticError("resource-limit", `Resolution exceeds ${budget.maxNodes} graph nodes`);
+  // Separate precharged graph traversal covers initial index and retained-import table preparation.
+  limits.requestBudget?.freeze(graph);
   const nodes = new Map(graph.nodes.map(n => [n.id, n]));
   if (nodes.size !== graph.nodes.length) throw new SemanticError("invalid-schema", "Duplicate graph identities");
   // Imports authorize foreign namespaces in the declaring interpretation only.
@@ -103,6 +106,7 @@ export function resolveCanonicalGraph(graph: CanonicalGraph, limits: SemanticLim
   // Only expansion/base edges enter this DAG. Element -> type and particle -> element
   // are deliberately excluded: crossing an element admits complete recursive values.
   const forbidden = (n: GraphNode): NodeId[] => {
+    limits.requestBudget?.freeze(n);
     const result = [...containedNodes(n)];
     for (const slot of referenceSlots(n)) {
       const expansion = n.kind === "simpleType" || n.kind === "complexType" || n.kind === "attributeGroupUse" ||
@@ -128,5 +132,6 @@ export function resolveCanonicalGraph(graph: CanonicalGraph, limits: SemanticLim
       if (!done.has(id)) {active.add(id); stack.push({node: child, edges: forbidden(child), index: 0});}
     }
   }
-  return deepFreeze({graph, links, metrics: {steps: budget.steps}});
+  const result = {graph, links, metrics: {steps: budget.steps}};
+  return limits.requestBudget ? limits.requestBudget.freeze(result) : deepFreeze(result);
 }

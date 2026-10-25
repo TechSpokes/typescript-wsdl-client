@@ -12,9 +12,11 @@ const declarationRoles: Record<string, SymbolRole> = Object.assign(Object.create
 const particleKinds = new Set(["sequence", "choice", "all", "element", "group", "any"]);
 const facetKinds = new Set(["enumeration", "pattern", "whiteSpace", "length", "minLength", "maxLength", "minInclusive", "minExclusive", "maxInclusive", "maxExclusive", "totalDigits", "fractionDigits"]);
 
-export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: number} = {}): CanonicalGraph {
+export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: number; requestBudget?: import("./semanticBudget.js").SemanticBudget} = {}): CanonicalGraph {
   const maxNodes = options.maxNodes ?? DEFAULT_GRAPH_NODES;
   if (!Number.isSafeInteger(maxNodes) || maxNodes < 1) throw new RangeError("maxNodes must be a positive safe integer");
+  // Precharge the source-sized reservation/indexing scans independently of source preparation.
+  options.requestBudget?.freeze(input);
   const nodes = new Map<NodeId, GraphNode>();
   const scopedRoles = new Map<NodeId, string>();
   const reserved = new Map<NodeId, {node: SyntaxElement; schema: SchemaInterpretation}>();
@@ -25,8 +27,11 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
   const elementOnly = (node: SyntaxElement): void => {
     if (node.children.some(c => c.kind === "text" && /[^\t\r\n ]/.test(c.value))) fail(node, "Non-whitespace text in element-only schema content");
   };
-  const context = (node: SyntaxElement, schema: SchemaInterpretation): GraphContext => ({namespaces: node.namespaces, baseUri: node.baseUri, source: node.source,
+  const context = (node: SyntaxElement, schema: SchemaInterpretation): GraphContext => {
+    options.requestBudget?.freeze(node);
+    return ({namespaces: node.namespaces, baseUri: node.baseUri, source: node.source,
     effectiveNamespace: schema.targetNamespace, chameleon: schema.context.kind === "include" && !syntaxAttribute(schema.syntax, "targetNamespace"), schemaAttributes: schema.syntax.attributes});
+  };
   const lexical = (value: string, node: SyntaxElement, scope: Scope): LexicalValue => ({value, context: context(node, scope.schema)});
   const required = (node: SyntaxElement, name: string): string => syntaxAttribute(node, name) ?? fail(node, `Missing ${name} attribute`);
   const bool = (node: SyntaxElement, name: string, fallback = false): boolean => {
@@ -74,6 +79,8 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
     const id = scopedId(scope.owner, node.source.path.slice(scope.rootPath.length) || "/", role); scopedRoles.set(id, role); return id;
   };
   const base = (node: SyntaxElement, scope: Scope, id: NodeId, identity?: Identity, consumed: readonly string[] = []) => {
+    // Retained syntax/namespaces and canonical text are charged before constructing the record.
+    options.requestBudget?.freeze(node);
     if (node.name.namespace === XSD_NAMESPACE) elementOnly(node);
     return {id,
     identity: identity ?? {kind: "scoped" as const, owner: scope.owner, path: node.source.path.slice(scope.rootPath.length) || "/", role: scopedRoles.get(id)!},
@@ -82,6 +89,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
     retained: syntaxElements(node).filter(c => c.name.namespace !== XSD_NAMESPACE || (c.name.local !== "annotation" && !consumed.includes(c.name.local)))};
   };
   const put = (node: GraphNode, scope: Scope): NodeId => {
+    options.requestBudget?.chargeWork(1024);
     if (nodes.has(node.id)) throw new GraphError("invalid-schema", "Duplicate scoped graph identity", node.context.source);
     if (nodes.size >= maxNodes) throw new GraphError("resource-limit", `Canonical graph exceeds ${maxNodes} nodes`, node.context.source);
     nodes.set(node.id, node);
@@ -239,6 +247,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
       const scope: Scope = {schema, owner: id, rootPath: node.source.path};
       const references: {path: string; attribute: string; reference: Reference}[] = [];
       const visit = (n: SyntaxElement) => {
+        options.requestBudget?.freeze(n);
         const roles = wsdlReferenceRoles(n);
         for (const [attribute, targetRole] of Object.entries(roles)) {
           const value = syntaxAttribute(n, attribute); if (value !== undefined) references.push({path: n.source.path.slice(node.source.path.length) || "/", attribute, reference: ref(value, targetRole, n, scope)});
@@ -258,6 +267,7 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
   // All loading contexts remain provenance; they do not multiply global symbols or local bodies.
   const ownerCache = new Map<NodeId, NodeId>();
   const rootOwner = (n: GraphNode): NodeId => {
+    options.requestBudget?.chargeWork(64 + n.id.length * 4);
     if (n.identity.kind === "global") return n.id;
     const prior = ownerCache.get(n.id); if (prior) return prior;
     const owner = rootOwner(nodes.get(n.identity.owner)!); ownerCache.set(n.id, owner); return owner;
@@ -271,12 +281,15 @@ export function buildCanonicalGraph(input: SchemaInput, options: {maxNodes?: num
     const id = globalId(role, named(node, schema.targetNamespace));
     if (!origins[id].some(o => o.interpretation === schema.key)) {
       const paths = new Map<string, SyntaxElement>();
-      const visit = (n: SyntaxElement) => {paths.set(n.source.path, n); for (const c of syntaxElements(n)) visit(c);};
+      const visit = (n: SyntaxElement) => {options.requestBudget?.freeze(n); paths.set(n.source.path, n); for (const c of syntaxElements(n)) visit(c);};
       visit(node);
       for (const n of owned.get(id) ?? []) origins[n.id].push({interpretation: schema.key, context: context(paths.get(n.context.source.path)!, schema)});
     }
   }
-  return deepFreeze({model: GRAPH_MODEL, nodes: [...nodes.values()].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0).map(linkNode),
-    globals: [...nodes.values()].filter(n => n.identity.kind === "global").map(n => n.id).sort(), origins,
-    schemaAnnotations: annotations, schemaRetained, loading: {limits: input.limits, edges: input.edges}});
+  const data = [...nodes.values()];
+  const ordered = options.requestBudget ? options.requestBudget.sorted(data, (a, b) => options.requestBudget!.compareText(a.id, b.id)) : data.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const result = {model: GRAPH_MODEL, nodes: ordered.map(linkNode),
+    globals: ordered.filter(n => n.identity.kind === "global").map(n => n.id), origins,
+    schemaAnnotations: annotations, schemaRetained, loading: {limits: input.limits, edges: input.edges}};
+  return options.requestBudget ? options.requestBudget.freeze(result) : deepFreeze(result);
 }
