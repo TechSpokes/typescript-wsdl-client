@@ -57,11 +57,11 @@ The declared `ForecastError` uses `{urn:checked:forecast}ForecastFault` detail w
 
 The fixture address is a deliberately unusable localhost port. The later transport fixture must inject its actual local server address, retain SOAPAction and text/xml behavior, and exercise requests, responses and declared faults without production dispatch. The real-service validation requirement remains missing and must not be silently replaced by this synthetic target.
 
-## Exact next implementation packet
+## P3.1 entry packet
 
-[#372](https://github.com/TechSpokes/typescript-wsdl-client/issues/372) is the next bounded entry task for #179/#201: prepare an authenticated transient direct-operation source contract. P1 intentionally exposes diagnostic data; it does not supply an authenticated selector joining one operation's input/output/fault roots, source closure and binding/action for structured runtime consumers. Report JSON must not become that receipt by assertion.
+[#372](https://github.com/TechSpokes/typescript-wsdl-client/issues/372) supplies the bounded entry for #179/#201: an authenticated transient direct-operation source contract, described below. P1 intentionally exposes diagnostic data; the new internal selector joins one operation's input/output/fault roots, source closure and binding/action for structured runtime consumers. Report JSON cannot become that receipt by assertion.
 
-The entry task must reuse native loading, direct verification and aggregate discharge; resolve one unambiguous operation and its message/fault roots; preserve source/context/model identity; and report missing runtime capabilities without dispatch or generation. Independent negatives cover ambiguous selection, changed/missing source/message/binding context, diagnostic replay, cancellation and exhaustion. It is a concrete predecessor, not universal RE01 research or a full-profile feature demand.
+The entry reuses native loading, direct verification and aggregate discharge; resolves one unambiguous operation and its message/fault roots; preserves source/context/model identity; and reports missing runtime capabilities without dispatch or generation. Independent negatives cover ambiguous selection, changed/missing source/message/binding context, diagnostic replay, cancellation and exhaustion. It is a concrete predecessor to matching, with no universal RE01 or full-profile completion claim.
 
 | Component | Existing evidence | Remaining selected-slice owner |
 |---|---|---|
@@ -83,3 +83,58 @@ Acceptance must exercise order/group boundaries, namespace rebinding, zero/one/m
 P1 passed fresh dependency/reference setup, full CI with 3,853 tests/294 files and 73 installed-consumer artifacts, full reference with 245 tests/47 files and 14 schemas/40 instances, full conformance with 359 tests/48 files, strict TypeScript, documentation, provenance and toolchain checks. The two new P2 controls verify corpus integrity and execute the production inventory, including its selected direct-schema expectation.
 
 Final P2 nonauthor review, required gate results, merged revisions, actual-main checks and cleanup are recorded in [#368](https://github.com/TechSpokes/typescript-wsdl-client/issues/368). Legacy defaults, full-profile/research claims and package version remain unchanged. No conditional generation, public structured activation, release, tag or publication is part of P1/P2.
+
+## P3.1 internal operation selection
+
+The internal `selectDirectOperation` entry in [directOperation.ts](../src/compiler/directOperation.ts) takes a source, an explicit expanded-name `portType`, an explicit expanded-name `binding`, an exact case-sensitive `operation`, and controlled loading options. It refuses overloaded operation names rather than inferring input/output signatures or choosing a first match. Service addresses remain inert metadata.
+
+[qualifyDirectSource](../src/compiler/checkedSourcePreparation.ts) is shared with diagnostic assessment. One loaded immutable source, prepared native request and inclusive sticky budget cover local actual-component duties, aggregate direct closure, the unchanged P1 dated-direct correspondence route, selection and publication. An unrelated invalid actual declaration still prevents selection; missing correspondence remains inconclusive.
+
+The initial WSDL shape is request-response SOAP 1.1 over SOAP HTTP, effective document style, literal use, one global-element part per input/output/fault, and exact bound fault-name correspondence. An operation style may override a valid binding style; omitted binding style means document. Explicit body `parts` must select the sole part, and SOAPAction must be present, including an explicitly empty action.
+
+The primary binding rules are WSDL 1.1 [request-response](https://www.w3.org/TR/2001/NOTE-wsdl-20010315#_request-response), [SOAP binding](https://www.w3.org/TR/2001/NOTE-wsdl-20010315#_soap:binding), [SOAP operation](https://www.w3.org/TR/2001/NOTE-wsdl-20010315#_soap:operation), [SOAP body](https://www.w3.org/TR/2001/NOTE-wsdl-20010315#_soap:body) and [SOAP fault](https://www.w3.org/TR/2001/NOTE-wsdl-20010315#_soap:fault). Single-part bodies and refusing overloads are this entry's sufficient supported subset, not general WSDL validity rules.
+
+Headers, security, attachments, other SOAP versions/transports, rpc/encoded bodies, type-based/multipart bodies and foreign extensions are unsupported. The conservative extension policy refuses unfamiliar optional extensions too, including extensions outside the selected binding; it skips only WSDL documentation payload and separately qualified XSD syntax. This policy makes no claim that a legal unsupported WSDL is invalid.
+
+Results distinguish `selected`, `selection-refused`, `unsupported`, `invalid-schema`, `inconclusive`, `loading-refused`, `resource-limit` and `cancelled`. Every failure carries usage and a rule, and issues no contract. Loading limits remain additional bounds; cancellation is cooperative at loading, component, selection and publication boundaries.
+
+### Authenticated consumption
+
+`inspectDirectOperation(contract, expectedContext?)` accepts only the exact issued immutable contract object. It returns the exact native context, original loaded source and qualification evidence; every message root contains its actual global element, type reference, message/part identity and source provenance. Copies, JSON reports and foreign contexts fail authentication, even when their deterministic identities agree.
+
+Authority lasts for the retained in-memory snapshot. A later changed source needs fresh loading and qualification and may legitimately issue a different contract; it does not invalidate the old immutable snapshot. Neither a digest nor a context ID authenticates copied data, and no persisted format or package-root export is added.
+
+Run this repository-local example from the repository root with `node --import tsx --input-type=module`, supplying the following program on standard input:
+
+```typescript
+import path from 'node:path';
+import {selectDirectOperation, inspectDirectOperation} from './src/compiler/directOperation.ts';
+
+const namespace = 'urn:checked:forecast';
+const result = await selectDirectOperation(
+  'test/conformance/fixtures/assessment/forecast.wsdl',
+  {
+    portType: {namespace, local: 'ForecastPortType'},
+    binding: {namespace, local: 'ForecastBinding'},
+    operation: 'GetForecast',
+  },
+  {loading: {policy: {fileRoots: [path.resolve('test/conformance/fixtures/assessment')]}}},
+);
+if (result.kind !== 'selected') throw new Error(result.kind + ': ' + result.rule);
+const {contract, context} = inspectDirectOperation(result.contract);
+const root = context.lookup(contract.input.element.id);
+if (root.kind !== 'found' || root.node !== contract.input.element) throw new Error('Foreign root');
+console.log(contract.input.element.name, context.resolve(contract.input.type));
+```
+
+Selection establishes schema-qualified roots and binding metadata only. `admitted` remains false; matcher, projection, scalar payload validation, bundle, codec, buffered transport and structured generation are explicitly missing. Independent message fixtures remain expectations for later implementation, with no SOAP dispatch or generated artifacts in this entry.
+
+### Next matcher assignment
+
+Implement one internal payload matcher under [#154](https://github.com/TechSpokes/typescript-wsdl-client/issues/154), [#180](https://github.com/TechSpokes/typescript-wsdl-client/issues/180) and [#181](https://github.com/TechSpokes/typescript-wsdl-client/issues/181). Its input must be an authenticated operation contract, a selected input/output/declared-fault direction and an immutable ordered expanded-name element/value tree. Obtain the context and actual root through `inspectDirectOperation`; never accept an arbitrary node ID, copied root or assessment JSON as authority.
+
+Start with the independent Forecast request, response and fault XML/expectations already linked above. Use a test-only secure XML adapter to supply the ordered value tree, leaving production XML parsing and codecs to their owners. Native particle/type/occurrence rules are dependencies; scalar lexical validation remains a separately explicit downstream duty under #184.
+
+The first tests must accept ordered city/days request children, response temperature counts zero/one/many and ordered code/message fault children. They must reject swapped/missing/extra/wrong-namespace children, absent required complete, unexpected nesting, foreign root handles and copied contracts. Prefix aliases must preserve expanded-name matching, and changed authentic roots must be consumed without fixture-name dispatch.
+
+Return a bounded immutable match result preserving occurrence/group order and source-root provenance, or precise mismatch/unsupported/cancelled/resource-limit results. Share one inclusive sticky matching budget, and state which scalar duties remain unassessed. Completion requires independently reviewed structural matching and these tests; it does not authorize scalar validity, projection, codec, transport, generation, persisted metadata or runtime admission. Keep #369 and broader owners open.

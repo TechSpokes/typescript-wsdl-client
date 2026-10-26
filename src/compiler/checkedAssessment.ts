@@ -5,14 +5,10 @@ import {createHash} from 'node:crypto';
 import {loadSemanticSchemaInput} from '../loader/schemaInput.js';
 import {DEFAULT_LOADING_LIMITS, loadingLimits} from '../loader/schemaResources.js';
 import type {SchemaInput, SchemaInputOptions} from '../loader/schemaInput.js';
-import {SchemaLoadingError, syntaxAttribute, syntaxElements, XSD_NAMESPACE, WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
-import type {SyntaxElement} from '../loader/orderedSyntax.js';
+import {SchemaLoadingError, syntaxAttribute, syntaxElements, WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
 import {createSemanticBudget, DEFAULT_MAX_NODES, DEFAULT_MAX_WORK} from './semanticBudget.js';
 import type {SemanticBudgetLimits, ResolverUsage} from './semanticBudget.js';
-import {prepareSourceSchemaRequest} from './schemaDocumentSyntax.js';
-import {checkComponentConstruction} from './schemaConstructionAssessment.js';
-import {verifyDirectActualSchema} from './finiteRe01Verification.js';
-import type {SemanticContext} from './semanticContext.js';
+import {qualifyDirectSource} from './checkedSourcePreparation.js';
 
 const packageVersion = (createRequire(import.meta.url)('../../package.json') as {version: string}).version;
 export const ASSESSMENT_REPORT_BYTES = 1024 * 1024;
@@ -63,73 +59,6 @@ export function aggregateAssessment(required: readonly string[], facts: Readonly
   return required.length > 0 && required.every(key => facts.get(key) === 'established') ? 'established' : 'inconclusive';
 }
 
-/** A sufficient correspondence route, deliberately smaller than the eventual approved profile. */
-function datedDirect(input: SchemaInput, charge: (amount: number) => void): boolean {
-  const builtins = new Set(['xs:string', 'xs:boolean', 'xs:int']);
-  const complexTypes = new Map<string, Set<string>>();
-  for (const schema of input.schemas) {
-    charge(128 + schema.targetNamespace.length * 4);
-    const names = complexTypes.get(schema.targetNamespace) ?? new Set<string>();
-    for (const node of syntaxElements(schema.syntax)) {
-      charge(128 + node.attributes.length * 32);
-      if (node.name.namespace === XSD_NAMESPACE && node.name.local === 'complexType') {
-        const name = syntaxAttribute(node, 'name'); if (name) {charge(name.length * 4); names.add(name);}
-      }
-    }
-    complexTypes.set(schema.targetNamespace, names);
-  }
-  const allowed = (node: SyntaxElement, names: readonly string[]): boolean => {
-    for (const attr of node.attributes) {
-      charge(8 + attr.value.length + attr.name.local.length);
-      if (attr.name.namespace !== '' || !names.includes(attr.name.local)) return false;
-    }
-    return true;
-  };
-  const scalar = (node: SyntaxElement): boolean => {
-    const type = syntaxAttribute(node, 'type');
-    if (!type) return false;
-    const split = type.split(':');
-    charge(16 + type.length);
-    return split.length === 2 && node.namespaces[split[0]!] === XSD_NAMESPACE && builtins.has(`xs:${split[1]}`);
-  };
-  for (const schema of input.schemas) {
-    charge(128);
-    if (!['root', 'inline'].includes(schema.context.kind)) return false;
-    if (!allowed(schema.syntax, ['targetNamespace', 'elementFormDefault', 'attributeFormDefault'])) return false;
-    for (const declaration of syntaxElements(schema.syntax)) {
-      charge(64);
-      if (declaration.name.namespace !== XSD_NAMESPACE) return false;
-      if (declaration.name.local === 'element') {
-        if (!allowed(declaration, ['name', 'type']) || syntaxElements(declaration).length) return false;
-        if (!scalar(declaration)) {
-          const type = syntaxAttribute(declaration, 'type');
-          if (!type) return false;
-          const [prefix, local] = type.includes(':') ? type.split(':') : ['', type];
-          const ns = declaration.namespaces[prefix!] ?? '';
-          if (ns !== schema.targetNamespace || !complexTypes.get(ns)?.has(local!)) return false;
-        }
-      } else if (declaration.name.local === 'complexType') {
-        if (!allowed(declaration, ['name'])) return false;
-        const content = syntaxElements(declaration);
-        if (content.length !== 1) return false;
-        const sequence = content[0]!;
-        if (sequence.name.namespace !== XSD_NAMESPACE || sequence.name.local !== 'sequence' || !allowed(sequence, [])) return false;
-        const names = new Set<string>();
-        for (const element of syntaxElements(sequence)) {
-          charge(128);
-          if (element.name.namespace !== XSD_NAMESPACE || element.name.local !== 'element' || !allowed(element, ['name', 'type', 'minOccurs', 'maxOccurs', 'form']) || !scalar(element) || syntaxElements(element).length) return false;
-          if (!['0', '1'].includes(syntaxAttribute(element, 'minOccurs') ?? '1') || !['1', 'unbounded'].includes(syntaxAttribute(element, 'maxOccurs') ?? '1')) return false;
-          const name = syntaxAttribute(element, 'name');
-          // Distinct lexical local names are stronger than distinct expanded names.
-          if (!name || names.has(name)) return false;
-          names.add(name);
-        }
-      } else return false;
-    }
-  }
-  return input.schemas.length > 0;
-}
-
 const published = new WeakMap<CheckedAssessmentReport, string>();
 export function serializeAssessmentReport(report: CheckedAssessmentReport): string {
   const text = published.get(report);
@@ -157,7 +86,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
   const operations: AssessedOperation[] = [];
   let components: CheckedAssessmentReport['components'] = [];
   let resources: CheckedAssessmentReport['resources'] = [], contexts: CheckedAssessmentReport['contexts'] = [], edges: CheckedAssessmentReport['edges'] = [];
-  let input: SchemaInput | undefined, actual: SemanticContext | undefined;
+  let input: SchemaInput | undefined;
   let execution: CheckedAssessmentReport['execution'] = 'completed', category: string | undefined;
   let inventory: CheckedAssessmentReport['operationInventory'] = 'unassessed';
   let correspondence: AssessmentStatus = 'inconclusive';
@@ -224,8 +153,36 @@ export async function assessSchemaSource(source: string, options: Readonly<{
         budget.chargeWork(1024 + resources.length * 512 + contexts.length * 1024);
         identity = opaque(JSON.stringify({resources, contexts, basis: ASSESSMENT_BASIS}));
         if (options.expectedIdentity !== undefined && identity !== options.expectedIdentity) add('source-context-match', 'actual', 'inconclusive', 'Expected source/context identity differs from the loaded closure');
-        const prepared = prepareSourceSchemaRequest(input!, {budget, accountPreparation: true, sourceLimits: {maxNodes: limits.maxNodes}});
-        if (prepared.kind !== 'prepared') {
+        const prepared = qualifyDirectSource(input!, {budget, maxNodes: limits.maxNodes, check,
+          onPrepared: request => {
+            budget.chargeWork(256 + request.graph.nodes.length * 1024);
+            components = request.graph.nodes.map(node => {
+              reservePublication(2048 + node.context.source.path.length * 6 + (request.graph.origins[node.id]?.length ?? 0) * 512);
+              return ({id: opaque(node.id), digest: node.context.source.digest, resource: resourceId(node.context.source.uri), path: node.context.source.path, contexts: (request.graph.origins[node.id] ?? []).map(origin => opaque(origin.interpretation))}); });
+          },
+          onLocal: (id, checked) => {
+            const component = opaque(id);
+            if (checked.kind === 'checked') {
+              add('local-component-premises', component, 'established', 'Native local premises checked; dependencies remain in whole-actual-closure');
+              for (const debt of checked.obligations) add(debt.rule, component, 'inconclusive', 'Required native dependency is discharged only by aggregate closure');
+              if (checked.re01 && !checked.re01.primitive) add('RE01', component, 'inconclusive', 'Direct strategy supplies no nonprimitive construction; no negative search claim');
+            } else add(checked.rule, component, checked.kind === 'invalid-schema' ? 'disproved' : 'inconclusive', `Native ${checked.kind}; no dated-XSD invalidity claim`);
+          },
+          onClosure: closure => {
+            if (closure.kind === 'checked-direct' || closure.kind === 'inconclusive-direct') {
+              // Aggregate closure supersedes local dependency debts only after the native owner discharged them.
+              if (closure.kind === 'checked-direct') {
+                for (let i = 0; i < obligations.length; i++) {
+                  budget.chargeWork(256);
+                  const fact = obligations[i]!;
+                  if (fact.status === 'inconclusive' && fact.reason === 'Required native dependency is discharged only by aggregate closure') obligations[i] = {...fact, status: 'established', reason: 'Native aggregate dependency discharge checked'};
+                }
+              }
+              add('whole-actual-closure', 'actual', closure.kind === 'checked-direct' ? 'established' : 'inconclusive', closure.kind === 'checked-direct' ? 'All native direct obligations and aggregate dependencies checked' : 'RE01 nonprimitive actual obligation remains unproved');
+            } else add('whole-actual-closure', 'actual', closure.kind === 'invalid-schema' ? 'disproved' : 'inconclusive', `Native ${closure.kind}: ${"rule" in closure ? closure.rule : "aggregate-closure"}`);
+          },
+        });
+        if (prepared.kind !== 'qualified-source') {
           if (prepared.kind === 'resource-limit') return prepared;
           if (prepared.kind === 'source-preparation-failed') {
             if (prepared.category === 'resource-limit') execution = 'resource-limit';
@@ -233,39 +190,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
           } else add('source-preparation', 'actual', 'inconclusive', 'Native source context was not prepared');
           return;
         }
-        actual = prepared.request.actual;
-        budget.chargeWork(256 + prepared.request.graph.nodes.length * 1024);
-        components = prepared.request.graph.nodes.map(node => {
-          reservePublication(2048 + node.context.source.path.length * 6 + (prepared.request.graph.origins[node.id]?.length ?? 0) * 512);
-          return ({id: opaque(node.id), digest: node.context.source.digest, resource: resourceId(node.context.source.uri), path: node.context.source.path, contexts: (prepared.request.graph.origins[node.id] ?? []).map(origin => opaque(origin.interpretation))}); });
-        // Continue independent local duties after ordinary uncertainty. Closure still has its own required sentinel.
-        for (const id of actual.members) {
-          check(); const found = actual.lookup(id);
-          if (found.kind !== 'found' || found.node.kind === 'wsdl') continue;
-          const component = opaque(id);
-          const checked = checkComponentConstruction(actual, id);
-          if (checked.kind === 'resource-limit') return checked;
-          if (checked.kind === 'checked') {
-            add('local-component-premises', component, 'established', 'Native local premises checked; dependencies remain in whole-actual-closure');
-            for (const debt of checked.obligations) add(debt.rule, component, 'inconclusive', 'Required native dependency is discharged only by aggregate closure');
-            if (checked.re01 && !checked.re01.primitive) add('RE01', component, 'inconclusive', 'Direct strategy supplies no nonprimitive construction; no negative search claim');
-          } else add(checked.rule, component, checked.kind === 'invalid-schema' ? 'disproved' : 'inconclusive', `Native ${checked.kind}; no dated-XSD invalidity claim`);
-        }
-        check();
-        const closure = verifyDirectActualSchema(actual);
-        if (closure.kind === 'resource-limit') return closure;
-        if (closure.kind === 'checked-direct' || closure.kind === 'inconclusive-direct') {
-          // Aggregate closure supersedes local dependency debts only after the native owner discharged them.
-          if (closure.kind === 'checked-direct') {
-            for (let i = 0; i < obligations.length; i++) {
-              budget.chargeWork(256);
-              const fact = obligations[i]!;
-              if (fact.status === 'inconclusive' && fact.reason === 'Required native dependency is discharged only by aggregate closure') obligations[i] = {...fact, status: 'established', reason: 'Native aggregate dependency discharge checked'};
-            }
-          }
-          add('whole-actual-closure', 'actual', closure.kind === 'checked-direct' ? 'established' : 'inconclusive', closure.kind === 'checked-direct' ? 'All native direct obligations and aggregate dependencies checked' : 'RE01 nonprimitive actual obligation remains unproved');
-        } else add('whole-actual-closure', 'actual', closure.kind === 'invalid-schema' ? 'disproved' : 'inconclusive', `Native ${closure.kind}: ${"rule" in closure ? closure.rule : "aggregate-closure"}`);
-        correspondence = datedDirect(input!, amount => budget.chargeWork(amount)) ? 'established' : 'inconclusive';
+        correspondence = prepared.correspondence ? 'established' : 'inconclusive';
         add('dated-XSD-correspondence', 'actual', correspondence, correspondence === 'established' ? 'Qualified distinct-name builtin scalar sequence route; Structures/Datatypes 2004' : 'Outside the independently qualified direct correspondence route', 'dated-XSD-2004-direct-v1');
       });
       if (result?.kind === 'resource-limit') execution = 'resource-limit';
