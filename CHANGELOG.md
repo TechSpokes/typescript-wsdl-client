@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): validate direct payload scalars and reconstruct fresh application values through source-owned mappings.
+
 - fix(compiler): refuse callable payload metadata before inspecting its properties.
 - feat(compiler): match authenticated direct payload structure with ordered unassessed scalar duties.
 
