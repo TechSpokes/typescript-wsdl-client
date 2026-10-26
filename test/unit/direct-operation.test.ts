@@ -189,12 +189,15 @@ describe('authenticated direct operation source contract', () => {
   it('keeps exhaustion sticky before loading and near the completed selection budget', async () => {
     expect((await select(forecast, selector, {limits: {maxWork: 100}})).kind).toBe('resource-limit');
     expect((await select(forecast, selector, {limits: {maxNodes: 1}})).kind).toBe('resource-limit');
-    const complete = await select();
-    expect(complete.kind).toBe('selected');
-    // One unit less than the observed complete request cannot fund publication.
-    const limited = await select(forecast, selector, {limits: {maxWork: complete.usage.work - 1}});
-    expect(limited.kind).toBe('resource-limit');
-    expect('contract' in limited).toBe(false);
+    for (const [operation, expectedKind] of [[selector.operation, 'selected'], ['AbsentOperation', 'selection-refused']] as const) {
+      const explicit = {...selector, operation};
+      const complete = await select(forecast, explicit);
+      expect(complete.kind).toBe(expectedKind);
+      // One unit less than the observed selection/refusal or issuance boundary cannot fund completion.
+      const limited = await select(forecast, explicit, {limits: {maxWork: complete.usage.work - 1}});
+      expect(limited.kind).toBe('resource-limit');
+      expect('contract' in limited).toBe(false);
+    }
   });
   it('observes pre-aborted cancellation and cancellation at a loading cooperative boundary', async () => {
     const aborted = new AbortController(); aborted.abort();
