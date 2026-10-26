@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic MIT-licensed operation-selection control, authored for #372. -->
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:c="urn:direct:choices" targetNamespace="urn:direct:choices">
+  <w:types><x:schema targetNamespace="urn:direct:choices" elementFormDefault="qualified">
+    <x:element name="FirstInput" type="x:string"/><x:element name="FirstOutput" type="x:int"/>
+    <x:element name="SecondInput" type="x:int"/><x:element name="SecondOutput" type="x:boolean"/>
+  </x:schema></w:types>
+  <w:message name="FirstRequest"><w:part name="value" element="c:FirstInput"/></w:message>
+  <w:message name="FirstResponse"><w:part name="value" element="c:FirstOutput"/></w:message>
+  <w:message name="SecondRequest"><w:part name="value" element="c:SecondInput"/></w:message>
+  <w:message name="SecondResponse"><w:part name="value" element="c:SecondOutput"/></w:message>
+  <w:portType name="Choices">
+    <w:operation name="First"><w:input message="c:FirstRequest"/><w:output message="c:FirstResponse"/></w:operation>
+    <w:operation name="Second"><w:input message="c:SecondRequest"/><w:output message="c:SecondResponse"/></w:operation>
+  </w:portType>
+  <w:binding name="Primary" type="c:Choices"><s:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <w:operation name="First"><s:operation soapAction="urn:first"/><w:input><s:body use="literal" parts="value"/></w:input><w:output><s:body use="literal"/></w:output></w:operation>
+    <w:operation name="Second"><s:operation soapAction="urn:second"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output></w:operation>
+  </w:binding>
+  <w:binding name="Alternate" type="c:Choices"><s:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <w:operation name="First"><s:operation style="document" soapAction="urn:alternate:first"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output></w:operation>
+    <w:operation name="Second"><s:operation style="document" soapAction="urn:alternate:second"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output></w:operation>
+  </w:binding>
+</w:definitions>

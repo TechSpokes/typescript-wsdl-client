@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): select authenticated direct-operation schema roots with explicit binding semantics and no runtime admission.
+
 - feat(readiness): add a pinned WSDL inventory and measured checked-client entry packet.
 
 - feat(assessment): add source-only diagnostic API/CLI with qualified direct evidence and explicit inconclusive duties.

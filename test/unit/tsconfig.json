@@ -86,6 +86,7 @@
     "../../scripts/lib/deps.d.mts",
     "../../scripts/lib/release-preflight-utils.d.mts",
     "../../scripts/lib/release-state.d.mts",
-    "checked-assessment.test.ts"
+    "checked-assessment.test.ts",
+    "direct-operation.test.ts"
   ]
 }
