@@ -68,7 +68,7 @@ The entry reuses native loading, direct verification and aggregate discharge; re
 | Loading/graph/occurrence | Implemented native source and exact schema analysis | Preserve in #372 |
 | Schema assessment/correspondence | Qualified direct facts for this source | #179/#201 transient operation contract in #372 |
 | Payload matcher | Direct structure-only matching with unassessed scalar duties | Broader #154/#180/#181 remain |
-| Projection/scalar payload | Internal direct values and fresh inverse implemented; resource qualification pending | #382/#155/#182/#184 |
+| Projection/scalar payload | Internal direct values and fresh inverse; qualified logical resource model accepted | #382/#155/#182/#184 |
 | Bundle/compatibility | Format-2 graph persistence exists; runtime contract unqualified | #185/#186 |
 | XML/codec | Existing legacy templates; selected structured codec unqualified | #187/#188/#189 |
 | Buffered transport | Existing legacy SOAP path; selected structured exchange unqualified | #190 |
@@ -141,4 +141,4 @@ Delivery/review/check revisions are recorded in [#378](https://github.com/TechSp
 
 The internal [direct value chain](direct-values.md) now implements issued structural-result consumption, shared datatype scalar validation, complete native mapping and fresh-value inverse with structural/scalar revalidation. Its success remains admitted:false; historic assessment capability flags retain their original meanings. Production codec/transport/generation and broader owner criteria remain open.
 
-A fresh-context nonauthor review identified a literal resource guarantee that JavaScript cannot provide at this object boundary: intrinsic own-key enumeration allocates its temporary vector before its size is known. The documented model precharges controlled work and output, but cannot claim all-allocation precharging for arbitrary hidden/symbol keys. #382 is not closed and this checkpoint is not complete protected delivery; exact review and validation evidence belongs in #382/#379. The next minimal in-memory metadata and secure XML-value/codec packet is prepared in the direct-value contract, without starting it.
+Fresh-context nonauthor review identified the intrinsic key-enumeration boundary, and the user explicitly accepted the [qualified logical resource model](direct-values.md#accepted-resource-model) after codebase research and a valid-key-vector precharge improvement. Controlled work, every valid key vector and retained output are precharged; oversized malformed-object engine vectors are excluded, with no hard V8 memory ceiling claimed. Exact review, final validation and protected-delivery evidence is recorded in [#382](https://github.com/TechSpokes/typescript-wsdl-client/issues/382) and [#379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379). The next minimal in-memory metadata and secure XML-value/codec packet is prepared in the direct-value contract, without starting it.
