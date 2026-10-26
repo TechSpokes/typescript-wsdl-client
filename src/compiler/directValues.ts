@@ -163,12 +163,14 @@ export function expandDirectValue(contract: DirectOperationContract, suppliedMap
       if (!descriptor || !('value' in descriptor) || !descriptor.enumerable && !(Array.isArray(object) && key === 'length')) return invalid('own-data-property');
       return descriptor.value;
     };
-    const keys = (object: object): PropertyKey[] => {
-      check(); budget.chargeWork(64);
-      // Intrinsic enumeration is unavoidable for rejecting nonenumerable/symbol keys;
-      // all subsequent per-key inspection and retained copies are charged below.
+    const keys = (object: object, maximum: number): PropertyKey[] => {
+      // Source/array shape gives an upper bound for every valid key vector.
+      // Reserve it before invoking the intrinsic, then refuse excess keys without
+      // traversal. Malformed objects can still make the engine allocate a larger
+      // vector internally; the documented boundary cannot control that allocation.
+      check(); budget.chargeWork(64 + maximum * 64);
       const result = Reflect.ownKeys(object);
-      budget.chargeWork(64 + result.length * 64);
+      if (result.length > maximum) return invalid('unknown-key');
       return result;
     };
     const spelling = (value: unknown, builtin: ExpandedName): string => {
@@ -206,7 +208,7 @@ export function expandDirectValue(contract: DirectOperationContract, suppliedMap
       budget.chargeWork(64);
       const declared = new Set<string>();
       for (const slot of mapping.slots) {check(); budget.chargeWork(64 + slot.element.name.local.length * 4); declared.add(slot.element.name.local);}
-      for (const key of keys(application)) {
+      for (const key of keys(application, mapping.slots.length)) {
         check(); if (typeof key !== 'string') return invalid('unknown-key');
         budget.chargeWork(32 + key.length * 4);
         if (!declared.has(key)) return invalid('unknown-key');
@@ -229,7 +231,7 @@ export function expandDirectValue(contract: DirectOperationContract, suppliedMap
           if (slot.particle.occurs.min === '1' && length === 0) return invalid('required-repetition');
           // Charge the dense shape before iteration/allocation; sparse huge arrays stop here.
           budget.chargeWork(128 + length * 128);
-          const own = keys(value);
+          const own = keys(value, length + 1);
           if (own.length !== length + 1) return invalid('dense-array-required');
           for (let i = 0; i < length; i++) {check(); append(data(value, String(i)));}
         } else append(value);

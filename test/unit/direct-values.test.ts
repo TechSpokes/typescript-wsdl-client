@@ -269,6 +269,27 @@ describe('direct scalar and fresh value contract', () => {
     expect(result.kind).toBe('resource-limit'); expect(result).not.toHaveProperty('payload');
     expect(createDirectValueMapping(c, {kind: 'input'}).kind).toBe('resource-limit');
   });
+  it('funds the valid key-vector reservation before calling intrinsic enumeration', async () => {
+    const probe = await contract(), plan = mapping(probe), app = {city: '', days: 2};
+    const originalOwnKeys = Reflect.ownKeys;
+    let enumerationWork = 0;
+    try {
+      Reflect.ownKeys = object => {
+        if (object === app) enumerationWork = inspectDirectOperation(probe).context.budget.usage().work;
+        return originalOwnKeys(object);
+      };
+      expanded(probe, plan, app);
+    } finally {Reflect.ownKeys = originalOwnKeys;}
+    expect(enumerationWork).toBeGreaterThan(0);
+    const c = await contract(undefined, selector, enumerationWork - 1), m = mapping(c), fresh = {city: '', days: 2};
+    let called = false;
+    try {
+      Reflect.ownKeys = object => {if (object === fresh) called = true; return originalOwnKeys(object);};
+      const result = expandDirectValue(c, m, fresh);
+      expect(result.kind).toBe('resource-limit'); expect(result).not.toHaveProperty('payload');
+    } finally {Reflect.ownKeys = originalOwnKeys;}
+    expect(called).toBe(false);
+  });
   it('checks cooperative cancellation during work and immediately before inverse publication', async () => {
     const probe = await contract(), plan = mapping(probe);
     let count = 0;
