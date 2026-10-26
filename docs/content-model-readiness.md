@@ -67,14 +67,14 @@ The entry reuses native loading, direct verification and aggregate discharge; re
 |---|---|---|
 | Loading/graph/occurrence | Implemented native source and exact schema analysis | Preserve in #372 |
 | Schema assessment/correspondence | Qualified direct facts for this source | #179/#201 transient operation contract in #372 |
-| Payload matcher | Schema particle analysis exists; payload matching unqualified | #154/#180/#181 |
+| Payload matcher | Direct structure-only matching with unassessed scalar duties | Broader #154/#180/#181 remain |
 | Projection/scalar payload | Native schema scalar rules exist; runtime representation unqualified | #155/#182/#184 |
 | Bundle/compatibility | Format-2 graph persistence exists; runtime contract unqualified | #185/#186 |
 | XML/codec | Existing legacy templates; selected structured codec unqualified | #187/#188/#189 |
 | Buffered transport | Existing legacy SOAP path; selected structured exchange unqualified | #190 |
 | Generation/CLI | Legacy generator and P1 diagnostics exist; structured path inactive | #195/#201 |
 
-After #372, implement matching, reversible projection/scalars, minimal internal metadata/compatibility, secure XML/codec, buffered binding/transport, then internal generation/CLI integration in that order. Reuse existing owners and the same semantic core. Wildcards, imported/chameleon correspondence, recursive payloads, attributes, nil-enabled declarations, polymorphism, streaming, gateways and OpenAPI are unnecessary for this exact first slice; their broader owners remain open.
+After #378 structural matching, implement reversible projection/scalars, minimal internal metadata/compatibility, secure XML/codec, buffered binding/transport, then internal generation/CLI integration in that order. Reuse existing owners and the same semantic core. Wildcards, imported/chameleon correspondence, recursive payloads, attributes, nil-enabled declarations, polymorphism, streaming, gateways and OpenAPI are unnecessary for this exact first slice; their broader owners remain open.
 
 Acceptance must exercise order/group boundaries, namespace rebinding, zero/one/many repetitions, int32 edges and invalid values, boolean lexical forms, empty versus absent text, forbidden nil/attributes, round-trip laws, XML security/truncation, local HTTP/SOAP faults, installed consumers and deterministic regeneration. [#369](https://github.com/TechSpokes/typescript-wsdl-client/issues/369) remains blocked on this implemented evidence chain, rather than becoming ready from its schema report alone.
 
@@ -129,12 +129,10 @@ console.log(contract.input.element.name, context.resolve(contract.input.type));
 
 Selection establishes schema-qualified roots and binding metadata only. `admitted` remains false; matcher, projection, scalar payload validation, bundle, codec, buffered transport and structured generation are explicitly missing. Independent message fixtures remain expectations for later implementation, with no SOAP dispatch or generated artifacts in this entry.
 
-### Next matcher assignment
+### P3.2 structural matcher checkpoint
 
-Implement one internal payload matcher under [#154](https://github.com/TechSpokes/typescript-wsdl-client/issues/154), [#180](https://github.com/TechSpokes/typescript-wsdl-client/issues/180) and [#181](https://github.com/TechSpokes/typescript-wsdl-client/issues/181). Its input must be an authenticated operation contract, a selected input/output/declared-fault direction and an immutable ordered expanded-name element/value tree. Obtain the context and actual root through `inspectDirectOperation`; never accept an arbitrary node ID, copied root or assessment JSON as authority.
+The internal [direct structural matcher](content-model-matching.md) now consumes authenticated contracts and all three directions across the current qualified direct grammar. It checks root/order/count/namespace/text and complete consumption while retaining ordered unassessed scalar duties. The original selected contract remains unadmitted, including its historical missing-capability fields.
 
-Start with the independent Forecast request, response and fault XML/expectations already linked above. Use a test-only secure XML adapter to supply the ordered value tree, leaving production XML parsing and codecs to their owners. Native particle/type/occurrence rules are dependencies; scalar lexical validation remains a separately explicit downstream duty under #184.
+Independent literal tests and 1,444 finite-language comparisons cover the synthetic Forecast messages and genuinely qualified renamed/form/occurrence/scalar-root/empty-sequence sources. Ownership/resource controls exercise immutable copies, authority, malformed/cyclic/getter data, inclusive limits, cancellation and sticky repeated calls. This finite scope does not establish general S07 or scalar payload validity.
 
-The first tests must accept ordered city/days request children, response temperature counts zero/one/many and ordered code/message fault children. They must reject swapped/missing/extra/wrong-namespace children, absent required complete, unexpected nesting, foreign root handles and copied contracts. Prefix aliases must preserve expanded-name matching, and changed authentic roots must be consumed without fixture-name dispatch.
-
-Return a bounded immutable match result preserving occurrence/group order and source-root provenance, or precise mismatch/unsupported/cancelled/resource-limit results. Share one inclusive sticky matching budget, and state which scalar duties remain unassessed. Completion requires independently reviewed structural matching and these tests; it does not authorize scalar validity, projection, codec, transport, generation, persisted metadata or runtime admission. Keep #369 and broader owners open.
+Delivery/review/check revisions are recorded in [#378](https://github.com/TechSpokes/typescript-wsdl-client/issues/378) and the [durable roadmap #379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379). The concrete next [scalar/projection packet](content-model-matching.md#next-implementation-packet-direct-scalars-and-reversible-representation) belongs to #184/#182 under #155; it consumes actual lexical/type/context/map facts and must authenticate receipts before granting scalar authority. #154/#180/#181/#369 and broader owners remain open.
