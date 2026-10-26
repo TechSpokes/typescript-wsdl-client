@@ -129,4 +129,3 @@ function datedDirect(input: SchemaInput, charge: (amount: number) => void): bool
   }
   return input.schemas.length > 0;
 }
-

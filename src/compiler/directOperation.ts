@@ -85,6 +85,9 @@ export async function selectDirectOperation(source: string, selector: DirectOper
       const children = (node: SyntaxElement): SyntaxElement[] => {
         check(); budget.chargeWork(128 + node.children.length * 16 + node.attributes.length * 32);
         for (const a of node.attributes) budget.chargeWork(a.value.length * 8 + a.name.local.length * 8 + a.name.namespace.length * 8);
+        for (const child of node.children) {
+          if (child.kind === 'element') budget.chargeWork(16 + child.name.namespace.length * 8 + child.name.local.length * 8);
+        }
         return syntaxElements(node);
       };
       const attr = syntaxAttribute;
