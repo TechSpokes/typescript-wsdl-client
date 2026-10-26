@@ -238,6 +238,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | Guide | Description |
 |-------|-------------|
 | [Checked WSDL readiness](docs/content-model-readiness.md) | Measured assessment corpus and bounded P3 implementation packet |
+| [Direct Structural Matching](docs/content-model-matching.md) | Internal structure-only matcher, evidence and scalar handoff |
 | [CLI Reference](docs/cli-reference.md) | All commands with flags and examples |
 | [Working With Generated Code](docs/generated-code.md) | Using clients, types, and operations |
 | [Configuration](docs/configuration.md) | Gateway security, upstream SOAP security, tags, operation overrides |

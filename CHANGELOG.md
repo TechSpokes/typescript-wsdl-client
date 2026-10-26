@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): match authenticated direct payload structure with ordered unassessed scalar duties.
+
 - feat(compiler): select authenticated direct-operation schema roots with explicit binding semantics and no runtime admission.
 
 - feat(readiness): add a pinned WSDL inventory and measured checked-client entry packet.

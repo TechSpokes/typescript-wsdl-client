@@ -87,6 +87,8 @@
     "../../scripts/lib/release-preflight-utils.d.mts",
     "../../scripts/lib/release-state.d.mts",
     "checked-assessment.test.ts",
-    "direct-operation.test.ts"
+    "direct-operation.test.ts",
+    "direct-structure.test.ts",
+    "direct-structure-evidence.test.ts"
   ]
 }
