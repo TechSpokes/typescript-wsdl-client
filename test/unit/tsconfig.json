@@ -90,6 +90,8 @@
     "direct-operation.test.ts",
     "direct-structure.test.ts",
     "direct-structure-evidence.test.ts",
-    "direct-values.test.ts"
+    "direct-values.test.ts",
+    "direct-codec.test.ts",
+    "direct-codec-independent.test.ts"
   ]
 }

@@ -76,11 +76,12 @@ export function resolveLexicalQName(lexical: string, node: SyntaxElement): Expan
   return Object.freeze({namespace: namespace ?? "", local: parts.at(-1)!});
 }
 
-function decodeXml(bytes: Uint8Array): string {
+function decodeXml(bytes: Uint8Array, strictBom = false): string {
   const encoding = bytes[0] === 0xff && bytes[1] === 0xfe ? "utf-16le"
     : bytes[0] === 0xfe && bytes[1] === 0xff ? "utf-16be" : "utf-8";
   try {
     const text = new TextDecoder(encoding, {fatal: true}).decode(bytes);
+    if (strictBom && text.startsWith('\ufeff')) throw new SchemaLoadingError('invalid-schema', 'Multiple XML byte order marks');
     const declared = /^<\?xml\s[^?]*encoding\s*=\s*["']([^"']+)["']/i.exec(text)?.[1].toLowerCase();
     if (declared && !(encoding === "utf-8" ? ["utf-8", "utf8"] : ["utf-16", encoding]).includes(declared)) {
       throw new SchemaLoadingError("unsupported-capability", "Unsupported XML byte encoding");
@@ -93,12 +94,31 @@ function decodeXml(bytes: Uint8Array): string {
 }
 
 /** Positions are one-based lines/columns and zero-based UTF-16 offsets in decoded XML. */
-export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: {maxDepth?: number} = {}): SyntaxDocument {
+export interface OrderedSyntaxOptions {
+  maxDepth?: number;
+  /** Optional bounded runtime boundary; legacy schema callers retain their policy. */
+  maxBytes?: number;
+  maxNodes?: number;
+  maxText?: number;
+  xml10Only?: boolean;
+  chargeWork?: (amount: number) => void;
+  reserveNode?: () => void;
+}
+export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: OrderedSyntaxOptions = {}): SyntaxDocument {
   const maxDepth = options.maxDepth ?? DEFAULT_SYNTAX_DEPTH;
   if (!Number.isSafeInteger(maxDepth) || maxDepth < 1) throw new RangeError("maxDepth must be a positive safe integer");
+  for (const key of ['maxBytes', 'maxNodes', 'maxText'] as const) {
+    const value = options[key];
+    if (value !== undefined && (!Number.isSafeInteger(value) || value < 1)) throw new RangeError(`${key} must be a positive safe integer`);
+  }
   try { new URL(uri); } catch { throw new SchemaLoadingError("invalid-schema", "An absolute source URI is required"); }
+  if (options.maxBytes !== undefined && bytes.byteLength > options.maxBytes) throw new SchemaLoadingError('resource-limit', 'XML byte limit');
+  // Reserve decoding, hash, line index and SAX token buffers before their bulk
+  // intrinsics. Tokens (including ignored comments/PI/DTD) are bounded by bytes.
+  const charge = (amount: number) => options.chargeWork?.(amount);
+  charge(4096 + bytes.byteLength * 64);
   const digest = createHash("sha256").update(bytes).digest("hex");
-  const text = decodeXml(bytes);
+  const text = decodeXml(bytes, options.xml10Only);
   const lines = [0];
   for (let i = 0; i < text.length; i++) {
     if (text[i] === "\r") { if (text[i + 1] === "\n") i++; lines.push(i + 1); }
@@ -115,21 +135,38 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: {max
   let root: SyntaxElement | undefined;
   let tagStart = 0, cursor = 0;
   const parser = new SaxesParser({xmlns: true});
+  let nodes = 0, textUnits = 0;
   const fail = (category: LoadingErrorCategory, message: string): never => {
     throw new SchemaLoadingError(category, message, source(stack.at(-1)?.source.path ?? "/0", tagStart, parser.position));
   };
   parser.on("error", () => fail("invalid-schema", "Malformed XML or unresolved entity reference"));
   parser.on("doctype", () => fail("unsupported-capability", "DTDs and entity declarations are forbidden"));
+  parser.on('xmldecl', declaration => {
+    if (options.xml10Only && declaration.version !== '1.0') fail('unsupported-capability', 'Only XML 1.0 is supported');
+  });
+  const reserveNode = () => {
+    charge(512);
+    if (options.maxNodes !== undefined && nodes >= options.maxNodes) fail('resource-limit', 'XML node limit');
+    options.reserveNode?.(); nodes++;
+  };
   parser.on("opentagstart", () => { tagStart = text.lastIndexOf("<", parser.position - 1); });
   parser.on("opentag", tag => {
     if (stack.length >= maxDepth) fail("resource-limit", `XML syntax depth exceeds ${maxDepth} elements`);
     const parent = stack.at(-1);
+    reserveNode();
+    // Inherited maps/path copies can be larger than the current lexical tag.
+    charge(512 + (parent?.source.path.length ?? 0) * 4);
+    for (const prefix in parent?.namespaces) charge(128 + (prefix.length + parent!.namespaces[prefix].length) * 4);
+    for (const prefix in tag.ns) if (Object.hasOwn(tag.ns, prefix)) charge(128 + (prefix.length + tag.ns[prefix].length) * 4);
     const attributes = Object.values(tag.attributes).filter(a => a.uri !== "http://www.w3.org/2000/xmlns/")
       .map(a => Object.freeze({name: Object.freeze({namespace: a.uri, local: a.local}), lexicalName: a.name, value: a.value}));
     const namespaces = Object.freeze(Object.assign(Object.create(null), parent?.namespaces ?? {xml: XML_NAMESPACE, "": ""}, tag.ns));
     const base = attributes.find(a => a.name.namespace === XML_NAMESPACE && a.name.local === "base")?.value;
     let baseUri: string;
-    try { baseUri = new URL(base ?? "", parent?.baseUri ?? uri).href; }
+    // Relative xml:base resolution may copy an inherited URI much larger than
+    // this tag. Charge its input/output envelope before the URL intrinsic.
+    if (base !== undefined) charge(512 + (base.length + (parent?.baseUri ?? uri).length) * 16);
+    try { baseUri = base === undefined ? parent?.baseUri ?? uri : new URL(base, parent?.baseUri ?? uri).href; }
     catch { return fail("invalid-schema", "Invalid xml:base URI"); }
     const node: Building = {kind: "element", name: Object.freeze({namespace: tag.uri, local: tag.local}), lexicalName: tag.name,
       attributes: Object.freeze(attributes), namespaces, baseUri, children: [], source: source(parent ? `${parent.source.path}/${parent.children.length}` : "/0", tagStart, parser.position)};
@@ -140,7 +177,12 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: {max
   });
   const appendText = (value: string, start: number, end: number) => {
     const parent = stack.at(-1);
-    if (parent) parent.children.push(Object.freeze({kind: "text", value, source: source(`${parent.source.path}/${parent.children.length}`, start, end)}));
+    if (parent) {
+      if (options.maxText !== undefined && value.length > options.maxText - textUnits) fail('resource-limit', 'XML text limit');
+      textUnits += value.length;
+      reserveNode(); charge(512 + value.length * 4 + parent.source.path.length * 4);
+      parent.children.push(Object.freeze({kind: "text", value, source: source(`${parent.source.path}/${parent.children.length}`, start, end)}));
+    }
   };
   parser.on("text", value => { const end = text[parser.position - 1] === "<" ? parser.position - 1 : parser.position; appendText(value, cursor, end); cursor = end; });
   parser.on("cdata", value => { appendText(value, cursor + 9, parser.position - 3); cursor = parser.position; });
@@ -153,7 +195,9 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: {max
     Object.freeze(node);
     cursor = parser.position;
   });
-  parser.write(text).close();
+  // Bounded cooperative checkpoints even while a SAX token is buffered.
+  for (let offset = 0; offset < text.length; offset += 1024) {charge(1024); parser.write(text.slice(offset, offset + 1024));}
+  parser.close();
   if (!root) fail("invalid-schema", "Missing XML root element");
   return Object.freeze({uri, digest, root: root!});
 }
