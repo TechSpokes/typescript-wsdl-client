@@ -89,6 +89,7 @@
     "checked-assessment.test.ts",
     "direct-operation.test.ts",
     "direct-structure.test.ts",
-    "direct-structure-evidence.test.ts"
+    "direct-structure-evidence.test.ts",
+    "direct-values.test.ts"
   ]
 }

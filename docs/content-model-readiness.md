@@ -68,7 +68,7 @@ The entry reuses native loading, direct verification and aggregate discharge; re
 | Loading/graph/occurrence | Implemented native source and exact schema analysis | Preserve in #372 |
 | Schema assessment/correspondence | Qualified direct facts for this source | #179/#201 transient operation contract in #372 |
 | Payload matcher | Direct structure-only matching with unassessed scalar duties | Broader #154/#180/#181 remain |
-| Projection/scalar payload | Native schema scalar rules exist; runtime representation unqualified | #155/#182/#184 |
+| Projection/scalar payload | Internal direct values and fresh inverse implemented; resource qualification pending | #382/#155/#182/#184 |
 | Bundle/compatibility | Format-2 graph persistence exists; runtime contract unqualified | #185/#186 |
 | XML/codec | Existing legacy templates; selected structured codec unqualified | #187/#188/#189 |
 | Buffered transport | Existing legacy SOAP path; selected structured exchange unqualified | #190 |
@@ -135,4 +135,10 @@ The internal [direct structural matcher](content-model-matching.md) now consumes
 
 Independent literal tests and 1,444 finite-language comparisons cover the synthetic Forecast messages and genuinely qualified renamed/form/occurrence/scalar-root/empty-sequence sources. Ownership/resource controls exercise immutable copies, authority, malformed/cyclic/getter data, inclusive limits, cancellation and sticky repeated calls. This finite scope does not establish general S07 or scalar payload validity.
 
-Delivery/review/check revisions are recorded in [#378](https://github.com/TechSpokes/typescript-wsdl-client/issues/378) and the [durable roadmap #379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379). The concrete next [scalar/projection packet](content-model-matching.md#next-implementation-packet-direct-scalars-and-reversible-representation) belongs to #184/#182 under #155; it consumes actual lexical/type/context/map facts and must authenticate receipts before granting scalar authority. #154/#180/#181/#369 and broader owners remain open.
+Delivery/review/check revisions are recorded in [#378](https://github.com/TechSpokes/typescript-wsdl-client/issues/378) and the [durable roadmap #379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379). The [scalar/projection implementation](direct-values.md) belongs to #184/#182 under #155; it consumes actual lexical/type/context/map facts and must authenticate receipts before granting scalar authority. #154/#180/#181/#369 and broader owners remain open.
+
+## P3.3 implementation checkpoint
+
+The internal [direct value chain](direct-values.md) now implements issued structural-result consumption, shared datatype scalar validation, complete native mapping and fresh-value inverse with structural/scalar revalidation. Its success remains admitted:false; historic assessment capability flags retain their original meanings. Production codec/transport/generation and broader owner criteria remain open.
+
+A fresh-context nonauthor review identified a literal resource guarantee that JavaScript cannot provide at this object boundary: intrinsic own-key enumeration allocates its temporary vector before its size is known. The documented model precharges controlled work and output, but cannot claim all-allocation precharging for arbitrary hidden/symbol keys. #382 is not closed and this checkpoint is not complete protected delivery; exact review and validation evidence belongs in #382/#379. The next minimal in-memory metadata and secure XML-value/codec packet is prepared in the direct-value contract, without starting it.

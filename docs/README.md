@@ -65,3 +65,5 @@ The [S06 research handoff](content-model-s06-research-handoff.md) links the four
 
 - Generated code samples live in `examples/generated-output/`, not in `docs/`.
 - Installation and dev setup belong in the root README and CONTRIBUTING.md respectively.
+
+- [Direct scalar values](direct-values.md): internal source mapping, fresh inverse and codec handoff.

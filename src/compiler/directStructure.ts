@@ -1,10 +1,9 @@
 /** Internal direct case of the content-model matcher; never runtime admission. */
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract} from './directOperation.js';
-import type {ElementNode, GraphNode, ParticleNode, Reference} from './canonicalGraph.js';
+import type {ElementNode, Reference} from './canonicalGraph.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
-import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
-import {occurrenceAlgebra} from './occurrenceAnalysis.js';
+import {planDirectRoot} from './directStructurePlan.js';
 import type {ResolverUsage} from './semanticBudget.js';
 
 export type DirectDirection = Readonly<{kind: 'input' | 'output'} | {kind: 'fault'; name: string}>;
@@ -26,6 +25,14 @@ export type DirectStructuralResult = Readonly<{
   kind: 'mismatch' | 'unsupported' | 'cancelled' | 'resource-limit'; rule: string;
   schemaPath?: string; payloadPath?: string; usage: ResolverUsage;
 }>;
+export type DirectStructuralMatch = Extract<DirectStructuralResult, {kind: 'structural-match'}>;
+const issued = new WeakMap<object, DirectOperationContract>();
+/** Identity is checked before any receipt fields; no retrospective authentication. */
+export function inspectDirectStructuralMatch(match: unknown, expectedContract: DirectOperationContract): DirectStructuralMatch {
+  if (!match || typeof match !== 'object' || issued.get(match) !== expectedContract) throw new TypeError('Unauthenticated or foreign direct structural match');
+  inspectDirectOperation(expectedContract);
+  return match as DirectStructuralMatch;
+}
 class Stop extends Error {
   constructor(readonly kind: 'mismatch' | 'unsupported' | 'cancelled', readonly rule: string,
     readonly schemaPath?: string, readonly payloadPath?: string) {super(rule);}
@@ -79,46 +86,7 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
       } else root = contract[ownedDirection.kind];
       const schemaPath = root.element.context.source.path;
       const unsupported = (): never => fail('unsupported', 'native-direct-shape', schemaPath);
-      const lookup = (id: string): GraphNode => {
-        check(); const result = context.lookup(id);
-        if (result.kind !== 'found') return unsupported();
-        return result.node;
-      };
-      const scalar = (element: ElementNode): ExpandedName => {
-        check(); const type = context.resolve(element.type);
-        if (element.nillable || element.abstract || element.value || element.substitutionGroup || type.kind !== 'builtin' || type.name.namespace !== XSD_NAMESPACE || !['string', 'int', 'boolean'].includes(type.name.local)) return unsupported();
-        return type.name;
-      };
-      type Slot = {element: ElementNode; particle: ParticleNode; builtin: ExpandedName};
-      budget.chargeWork(128);
-      const slots: Slot[] = [];
-      const resolved = context.resolve(root.type);
-      let rootBuiltin: ExpandedName | undefined;
-      if (resolved.kind === 'builtin') rootBuiltin = scalar(root.element);
-      else {
-        if (resolved.kind !== 'found' || resolved.node.kind !== 'complexType') return unsupported();
-        const type = resolved.node;
-        if (type.mixed || type.abstract || type.derivation || type.attributes.length || !type.content) return unsupported();
-        const sequence = lookup(type.content);
-        if (sequence.kind !== 'particle' || sequence.term.kind !== 'sequence' || sequence.occurs.min !== '1' || sequence.occurs.max !== '1') return unsupported();
-        budget.chargeWork(64);
-        const names = new Set<string>();
-        const algebra = occurrenceAlgebra(check);
-        for (const id of sequence.term.children) {
-          check(); const particle = lookup(id);
-          if (particle.kind !== 'particle' || particle.term.kind !== 'element') return unsupported();
-          algebra.validate(particle.occurs);
-          if (!['0', '1'].includes(particle.occurs.min) || !['1', 'unbounded'].includes(particle.occurs.max)) return unsupported();
-          const declaration = context.resolve(particle.term.declaration);
-          if (declaration.kind !== 'found' || declaration.node.kind !== 'element') return unsupported();
-          const element = declaration.node;
-          budget.chargeWork(128 + element.name.local.length * 4);
-          if (names.has(element.name.local)) return unsupported();
-          names.add(element.name.local);
-          const builtin = scalar(element);
-          slots.push({element, particle, builtin});
-        }
-      }
+      const {slots, rootBuiltin} = planDirectRoot(context, root, check, unsupported);
       // Count syntax nodes before copying. Descriptor reads reject accessors without invoking
       // them. A tree may not reuse a node, including cyclic input; proxies are out of contract.
       budget.chargeWork(128);
@@ -218,7 +186,9 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
         root, contextId: context.contextId, direction: ownedDirection, occurrences, usage: {...budget.usage()}};
       budget.freeze(result); check();
       // Capture final accounting after publication traversal; the record is already reserved.
-      return Object.freeze({...result, usage: Object.freeze({...budget.usage()})});
+      const published = Object.freeze({...result, usage: Object.freeze({...budget.usage()})});
+      issued.set(published, contract);
+      return published;
     });
     return guarded.kind === 'resource-limit' ? Object.freeze({kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()}) : guarded;
   } catch (error) {

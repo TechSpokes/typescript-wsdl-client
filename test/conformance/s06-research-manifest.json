@@ -1164,9 +1164,14 @@
           "sha256": "48334552ba1e455ffc77a106806c98ab30f1c19416f2b861c710d1cfa54ea9c8"
         },
         {
+          "path": "src/compiler/datatypeValues.ts",
+          "role": "semantic-source",
+          "sha256": "22d71beea3fb906b1e0e0099f1f488f3e750fb997c7cd31c99f96c1605780734"
+        },
+        {
           "path": "src/compiler/schemaDatatypeValues.ts",
           "role": "semantic-source",
-          "sha256": "56dfed8de50b949c97bcdab54fe2e4c729088a4310ac7e47144727acf328d96c"
+          "sha256": "298047e1a479b66d0e70498e62ea7e3c7d2fab469b898ba623901c9f4548184f"
         },
         {
           "path": "src/compiler/schemaDeclarationPrimitives.ts",
@@ -1741,7 +1746,7 @@
         {
           "path": "src/compiler/schemaValueContext.ts",
           "role": "semantic-source",
-          "sha256": "8bd3fdfea3554f6dfdf786dbdaaed150aa990559bfaa3c91069cf3e7e8b28f15"
+          "sha256": "5aaa1d66ea83d0bf4d4614dad19e4ac00c818b27807c86ec8a36bfcf8ecb8229"
         },
         {
           "path": "src/compiler/schemaValueSequences.ts",
