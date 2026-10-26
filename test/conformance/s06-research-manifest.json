@@ -1061,7 +1061,7 @@
         {
           "path": "src/loader/orderedSyntax.ts",
           "role": "semantic-source",
-          "sha256": "ce8c3d03754f84ec2cac61d4a168c370927cc4f22cc1bd29cc50a1d02ef62038"
+          "sha256": "df111418be47d54403c08b684b2b710eb253d1488b3725f45da98d4c30c8d6c9"
         },
         {
           "path": "src/loader/schemaInput.ts",

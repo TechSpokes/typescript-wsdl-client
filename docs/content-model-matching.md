@@ -66,7 +66,7 @@ for (const example of cases) {
 }
 ```
 
-All three print `structural-match unassessed`, including the intentionally invalid int lexical witness. No SOAP endpoint is contacted. SOAP envelope/fault validity, production parsing security, scalar validity, projection round trips, codecs, transport and generation remain unassessed.
+All three print `structural-match unassessed`, including the intentionally invalid int lexical witness. No SOAP endpoint is contacted. This matching-only example does not assess SOAP envelopes/faults, parser security, scalars, projection/byte round trips, transport or generation; the separate value/codec consumer below supplies its own named checks.
 
 ## Independent evidence
 
@@ -78,8 +78,8 @@ Finite enumeration covers 1,444 words: 40 request words of length 0..3 over city
 
 The matcher now registers only its actual final successful returned object after final cancellation/resource checks. `inspectDirectStructuralMatch(match, expectedContract)` authenticates identity before reading receipt fields; copied/JSON/zero-duty and foreign-contract objects fail. Existing unregistered historical results cannot authenticate retrospectively. The registry binds exact operation, context, root and owned direction because those are immutable fields of the issued object.
 
-[Direct scalar values](direct-values.md) documents the implemented payload facade, complete source-derived mapping, fresh inverse, normalization laws, independent review and exact next metadata/XML-value/codec packet. The native slot helper is shared by matcher and mapping; absent optional and zero-count repeated fields cannot disappear from the plan. Scalar success is separate from this matcher's unchanged structure-only result and still grants no runtime admission.
+[Direct scalar values](direct-values.md) documents the implemented payload facade, complete source-derived mapping, fresh inverse, normalization laws, independent review and internal bounded XML codec. The native slot helper is shared by matcher and mapping; absent optional and zero-count repeated fields cannot disappear from the plan. Scalar success is separate from this matcher's unchanged structure-only result and still grants no runtime admission.
 
 The new direct value chain retains original lexical/map/source/type evidence, validates through neutral shared datatype calculations and revalidates generated lexical data through matching and scalar assessment. No schema operand receipt or provenance is fabricated. The [accepted resource model](direct-values.md#accepted-resource-model) precharges the source-known valid key vector and explicitly excludes oversized engine-internal vectors from malformed objects; it makes no all-V8-allocation or hard heap bound claim.
 
-Nil, attributes/type overrides, augmentation/defaults, arbitrary derivation and general conversion remain unsupported. No codec, transport, persisted bundle, public structured activation, generation, default/version change or publication is delivered. Broader matcher/evidence owners remain open beyond this direct slice.
+Nil, attributes/type overrides, augmentation/defaults, arbitrary derivation and general conversion remain unsupported. The internal [bare-root XML codec](direct-values.md#internal-bare-root-xml-codec) consumes this matcher without changing its receipts. Transport, persisted bundles, public structured activation and generation remain deferred; defaults/version and publication status are unchanged. Broader matcher/evidence owners remain open beyond this direct slice.
