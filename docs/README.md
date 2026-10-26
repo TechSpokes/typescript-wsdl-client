@@ -56,6 +56,8 @@ The [S06 research handoff](content-model-s06-research-handoff.md) links the four
 - [RE01 support reconstruction](content-model-s06-re-01-support-reconstruction.md): conditional copy/bundle reductions, value/name palettes and open bounds
 - [RE01 scalar witness construction](content-model-s06-re-01-scalar-witnesses.md): shared endpoint tuples and open materialization gates
 
+- [Direct scalar values](direct-values.md): internal source mapping, fresh inverse and codec handoff.
+
 - [Root README](../README.md): project overview, quick start, and authoritative Documentation section
 - [CONTRIBUTING.md](../CONTRIBUTING.md): development setup and workflow
 - [CHANGELOG.md](../CHANGELOG.md): version history
@@ -65,5 +67,3 @@ The [S06 research handoff](content-model-s06-research-handoff.md) links the four
 
 - Generated code samples live in `examples/generated-output/`, not in `docs/`.
 - Installation and dev setup belong in the root README and CONTRIBUTING.md respectively.
-
-- [Direct scalar values](direct-values.md): internal source mapping, fresh inverse and codec handoff.
