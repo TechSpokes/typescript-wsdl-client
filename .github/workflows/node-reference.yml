@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: node test/conformance/reference/qualification/platform-run.ts --container ${{ matrix.node }}
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: linux-node-${{ matrix.node }}-reference
@@ -57,7 +57,7 @@ jobs:
         if: always()
       - name: Checked source, operation and structural contracts
         run: npx vitest run test/unit/checked-assessment.test.ts test/unit/direct-operation.test.ts test/unit/direct-structure.test.ts test/unit/direct-structure-evidence.test.ts
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: windows-node-${{ matrix.node }}-reference
