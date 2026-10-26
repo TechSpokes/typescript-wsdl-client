@@ -146,6 +146,8 @@ describe('authenticated direct operation source contract', () => {
     ['multipart', (s: string) => s.replace('<wsdl:part name="parameters" element="t:GetForecast"/>', '<wsdl:part name="parameters" element="t:GetForecast"/><wsdl:part name="other" element="t:GetForecast"/>')],
     ['required extension', (s: string) => s.replace('<soap:binding ', '<unknown:policy xmlns:unknown="urn:policy" wsdl:required="true"/><soap:binding ')],
     ['optional extension', (s: string) => s.replace('<soap:binding ', '<unknown:policy xmlns:unknown="urn:policy" wsdl:required="false"/><soap:binding ')],
+    ['required misplaced schema extension', (s: string) => s.replace('</wsdl:definitions>', '<xs:schema wsdl:required="true"><foreign:policy xmlns:foreign="urn:foreign"/></xs:schema></wsdl:definitions>')],
+    ['optional misplaced schema extension', (s: string) => s.replace('</wsdl:definitions>', '<xs:schema wsdl:required="false"><foreign:policy xmlns:foreign="urn:foreign"/></xs:schema></wsdl:definitions>')],
     ['nested SOAP syntax', (s: string) => s.replace('<soap:body use="literal"/>', '<soap:body use="literal"><soap:address location="urn:misplaced"/></soap:body>')],
     ['message attribute on bound input', (s: string) => s.replace('<wsdl:input><soap:body', '<wsdl:input message="t:ForecastOutput"><soap:body')],
   ])('classifies legal or unknown unsupported %s separately from invalid XSD', async (_label, transform) => {

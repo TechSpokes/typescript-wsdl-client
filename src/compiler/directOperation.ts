@@ -1,7 +1,7 @@
 /** Transient source-owned schema selection. This module grants no runtime admission. */
 import {loadSemanticSchemaInput} from '../loader/schemaInput.js';
 import type {SchemaInput, SchemaInputOptions} from '../loader/schemaInput.js';
-import {SchemaLoadingError, WSDL_NAMESPACE, XSD_NAMESPACE, syntaxAttribute, syntaxElements, isXmlNCName} from '../loader/orderedSyntax.js';
+import {SchemaLoadingError, WSDL_NAMESPACE, syntaxAttribute, syntaxElements, isXmlNCName} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import {globalId} from './canonicalGraph.js';
 import type {ElementNode, GraphNode, Reference, WsdlNode} from './canonicalGraph.js';
@@ -112,6 +112,8 @@ export async function selectDirectOperation(source: string, selector: DirectOper
       };
       // Conservative extension policy: only known WSDL 1.1/SOAP 1.1 syntax, even when optional.
       // Documentation payload and XSD syntax are inert here and owned separately.
+      budget.chargeWork(64 + input.schemas.length * 32);
+      const qualifiedSchemas = new Set(input.schemas.map(schema => schema.syntax));
       const attributes: Record<string, readonly string[]> = {
         definitions: ['name', 'targetNamespace'], import: ['namespace', 'location'], types: [], message: ['name'], part: ['name', 'element', 'type'],
         portType: ['name'], operation: ['name', 'parameterOrder'], input: ['name', 'message'], output: ['name', 'message'], fault: ['name', 'message'],
@@ -123,7 +125,7 @@ export async function selectDirectOperation(source: string, selector: DirectOper
         while (stack.length) {
           const node = stack.pop()!;
           const nested = children(node);
-          if (node.name.namespace === XSD_NAMESPACE && node.name.local === 'schema') continue;
+          if (qualifiedSchemas.has(node)) continue;
           if (node.name.namespace === WSDL_NAMESPACE && node.name.local === 'documentation') continue;
           const allowed = node.name.namespace === WSDL_NAMESPACE ? attributes[node.name.local] : node.name.namespace === SOAP ? soapAttributes[node.name.local] : undefined;
           if (!allowed) return refuse('unsupported', 'wsdl-extension');
