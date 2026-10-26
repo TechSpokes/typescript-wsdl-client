@@ -82,19 +82,28 @@ describe('direct structure authority, ownership and request resources', () => {
     expect(() => match(c, sparse)).toThrow(TypeError);
   });
   it('rejects callable attribute entries and directions before inspecting their properties', async () => {
-    const c = await select(), tree = structuredClone(payload());
-    let calls = 0;
-    const attribute = () => {};
-    Object.defineProperty(attribute, 'name', {get() {calls++; throw new Error('attribute getter invoked');}});
-    (tree.attributes as unknown[]).push(attribute);
-    expect(() => match(c, tree)).toThrow(TypeError);
-    expect(calls).toBe(0);
-    const direction = () => {};
-    Object.defineProperty(direction, 'kind', {get() {calls++; throw new Error('direction getter invoked');}});
-    expect(() => matchDirectOperation(c, direction as never, payload())).toThrow(TypeError);
-    expect(calls).toBe(0);
-    expect(Object.isFrozen(attribute)).toBe(false);
-    expect(Object.isFrozen(direction)).toBe(false);
+    const c = await select();
+    for (const throwing of [false, true]) {
+      const tree = structuredClone(payload());
+      let calls = 0;
+      const attribute = Object.assign(() => {}, {lexicalName: 'ordinary', value: 'v'});
+      Object.defineProperty(attribute, 'name', {get() {
+        calls++; if (throwing) throw new Error('attribute getter invoked');
+        return {namespace: '', local: 'ordinary'};
+      }});
+      (tree.attributes as unknown[]).push(attribute);
+      expect(() => match(c, tree)).toThrow(TypeError);
+      expect(calls).toBe(0);
+      const direction = () => {};
+      Object.defineProperty(direction, 'kind', {get() {
+        calls++; if (throwing) throw new Error('direction getter invoked');
+        return 'input';
+      }});
+      expect(() => matchDirectOperation(c, direction as never, payload())).toThrow(TypeError);
+      expect(calls).toBe(0);
+      expect(Object.isFrozen(attribute)).toBe(false);
+      expect(Object.isFrozen(direction)).toBe(false);
+    }
   });
   it('cancels at the entry and cooperative visit boundaries without a receipt', async () => {
     const c = await select(), abort = new AbortController(); abort.abort();
