@@ -65,7 +65,8 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
       // Reserve fixed closures/state, diagnostics and terminal publication before input work.
       budget.chargeWork(4096); check();
       const suppliedDirection = budget.snapshot(direction);
-      if (!suppliedDirection || !['input', 'output', 'fault'].includes(suppliedDirection.kind)) return fail('unsupported', 'unknown-direction');
+      if (!record(suppliedDirection)) return malformed();
+      if (!['input', 'output', 'fault'].includes(suppliedDirection.kind)) return fail('unsupported', 'unknown-direction');
       const ownedDirection: DirectDirection = suppliedDirection.kind === 'fault'
         ? {kind: 'fault', name: suppliedDirection.name} : {kind: suppliedDirection.kind};
       let root: DirectMessageRoot;
@@ -148,7 +149,7 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
         if (!nameShape(node.name) || !string(node.lexicalName) || !string(node.baseUri) || !record(node.namespaces) || !Array.isArray(node.attributes)) return malformed();
         for (const key in node.namespaces) {check(); if (!string(node.namespaces[key])) return malformed();}
         for (const a of node.attributes) {
-          check(); if (!a || !nameShape(a.name) || !string(a.lexicalName) || !string(a.value)) return malformed();
+          check(); if (!record(a) || !nameShape(a.name) || !string(a.lexicalName) || !string(a.value)) return malformed();
         }
         for (const child of node.children) {check(); budget.chargeWork(32); visits.push(child);}
       }

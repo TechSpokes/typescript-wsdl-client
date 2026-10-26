@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(compiler): refuse callable payload metadata before inspecting its properties.
 - feat(compiler): match authenticated direct payload structure with ordered unassessed scalar duties.
 
 - feat(compiler): select authenticated direct-operation schema roots with explicit binding semantics and no runtime admission.
