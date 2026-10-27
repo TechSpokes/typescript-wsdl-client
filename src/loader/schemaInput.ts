@@ -37,6 +37,16 @@ export type SchemaInput = Readonly<{
 
 // Source-syntax evidence is issued only by this loader, never by a copied shape.
 const loadedInputs = new WeakSet<object>();
+// Private original authorized snapshot; never reconstructed from syntax/digests.
+const originalSources = new WeakMap<SchemaInput, ReadonlyMap<string, Uint8Array>>();
+/** Internal bridge for one retained-source invocation. Returned bytes are data, not authority. */
+export function copyOriginalSchemaResource(input: SchemaInput, uri: string, chargeWork: (amount: number) => void): Uint8Array {
+  assertLoadedSchemaInput(input);
+  const bytes = originalSources.get(input)?.get(uri);
+  if (!bytes) throw new TypeError('Original semantic source bytes unavailable');
+  chargeWork(512 + bytes.byteLength * 8);
+  return new Uint8Array(bytes);
+}
 export function assertLoadedSchemaInput(input: SchemaInput): void {
   if (!loadedInputs.has(input)) throw new TypeError("Unauthenticated loaded schema input");
 }
@@ -66,6 +76,7 @@ export function loadSemanticSchemaInput(source: string, options: SchemaInputOpti
 async function loadSchemaInputWithValues(source: string, options: SchemaInputOptions, semanticValues: boolean): Promise<SchemaInput> {
   const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources, options.chargeWork);
   const documents = new Map<string, SyntaxDocument>();
+  const originalBytes = new Map<string, Uint8Array>();
   const schemas = new Map<string, SchemaInterpretation>();
   const edges: ResolutionEdge[] = [];
   const active = new Set<string>();
@@ -96,6 +107,10 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
     let doc = documents.get(resource.uri);
     if (!doc) {
       doc = parseOrderedSyntax(resource.bytes, resource.uri, {maxDepth: loader.limits.syntaxDepth});
+      if (semanticValues) {
+        options.chargeWork?.(128);
+        originalBytes.set(resource.uri, resource.bytes);
+      }
       documents.set(resource.uri, doc);
     }
     return doc;
@@ -206,5 +221,6 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
   const input = Object.freeze({root, documents: Object.freeze([...documents.values()]), schemas: Object.freeze([...schemas.values()]),
     resources: loader.metadata, edges: Object.freeze(edges), limits: loader.limits, metrics: loader.metrics});
   loadedInputs.add(input);
+  if (semanticValues) originalSources.set(input, originalBytes);
   return input;
 }

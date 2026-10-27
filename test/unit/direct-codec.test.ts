@@ -45,6 +45,19 @@ function roundTrip(c: DirectOperationContract, m: DirectValueMapping, value: unk
   return {encoded, decoded};
 }
 describe('internal direct XML byte contract', () => {
+  it('allows protocol selection only from the actual observed parse, capturing selector getters once', async () => {
+    const c = await contract(), m = mapping(c);
+    const legitimate = decodeDirectXml(c, m, bytes(input()));
+    if (legitimate.kind !== 'direct-decoded') throw new Error(legitimate.kind);
+    const synthetic = legitimate.payload;
+    expect(() => decodeDirectXml(c, m, bytes(input()), {selectPayload: () => ({payload: synthetic, mapping: m})})).toThrow(TypeError);
+    let reads = 0;
+    const result = decodeDirectXml(c, m, bytes(input()), {selectPayload: root => ({get payload() {
+      return ++reads === 1 ? root : synthetic;
+    }, mapping: m})});
+    expect(result.kind).toBe('direct-decoded'); expect(reads).toBe(1);
+    if (result.kind === 'direct-decoded') expect(result.payload).not.toBe(synthetic);
+  });
   it('executes actual Forecast fixture payload bytes against independent expectations in all directions', async () => {
     const c = await contract(), directory = path.join(path.dirname(fixture), 'forecast-messages');
     const expected = JSON.parse(await readFile(path.join(directory, 'expectations.json'), 'utf8')) as {

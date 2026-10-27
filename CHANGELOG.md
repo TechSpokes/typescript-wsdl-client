@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(compiler): add bounded internal direct SOAP 1.1 loopback exchanges with original response bytes and typed declared faults.
+
 - feat(compiler): add authenticated direct XML codecs with bounded parsing and normalized byte round trips.
 
 - feat(compiler): validate direct payload scalars and reconstruct fresh application values through source-owned mappings.
