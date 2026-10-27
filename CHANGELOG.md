@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(client): add a versioned package-root runtime binding for checked direct clients.
+
 - refactor(runtime): keep profiling quotas out of normal direct-client execution.
 
 - feat(client): add an internal native-plan checked TypeScript SOAP client with isolated installed-consumer qualification.
