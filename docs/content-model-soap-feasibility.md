@@ -2,6 +2,44 @@
 
 Executed local SOAP evidence for S02, #169, and the adapter consumers #190/#192/#193. See the root [README](../README.md).
 
+## P3.5 original-byte qualification
+
+The historical buffered `response` event described below exposes decoded text, not original HTTP entity bytes. Its event ordering and namespace-content observations remain useful, but it supplies no original encoding, BOM or byte-digest provenance. P3.5 supersedes that byte-provenance inference with an executed request-local hook in the locked `soap` 1.13.3 HTTP client.
+
+The [seam probe](../test/integration/direct-soap-seams.test.ts) bootstraps the original Forecast WSDL text with its original source URI, explicitly selects `ForecastService.ForecastPort.GetForecast`, supplies one literal `_xml` body and sets SOAPAction in per-call extra headers. It uses the dependency's existing `HttpClient.request` with `responseType: arraybuffer`, `decompress: false`, `maxRedirects: 0` and a response-byte cap. The captured BOM-qualified UTF-16LE response equals independently supplied server bytes; a decoded UTF-8 reconstruction would fail this assertion. The production adapter separately validates fresh values and its final envelope before dispatch.
+
+The [internal adapter](../src/compiler/directSoap.ts) wraps only the existing dependency callback. A private completion error without response data prevents node-soap's name-keyed parser, including its error-response parser, from running. The normal dependency HTTP stack still owns dispatch and bounded native buffering; no replacement HTTP or SOAP stack is introduced. Captured bytes reach the existing ordered parser before any text conversion.
+
+### Source authority and exact dispatch
+
+The semantic source loader privately retains its original policy-authorized resource bytes by native `SchemaInput` identity. The adapter obtains a precharged owned copy from that snapshot through [the source bridge](../src/loader/schemaInput.ts), never through a digest, caller-supplied report, regenerated WSDL or source refetch. Tests delete a renamed original WSDL after operation selection and still complete the actual exchange.
+
+This first bootstrap accepts one original UTF-8 WSDL resource, matching the current dated direct schema grammar's absence of include/import. Resource graphs, import/include/redefine triggers even in foreign syntax, unsupported WSDL extensions, dependency-reserved names and unsafe namespace interpolation are refused before dependency bootstrap. An import-location hook also prohibits dependency fetching. Arbitrary resource-graph support is not claimed.
+
+The caller explicitly names the service expanded name and port. Source syntax must bind that exact port to the authentic operation binding; dispatch uses only the corresponding own dependency method and immutable per-call action. The adapter checks the final dependency envelope, body, action, content type and endpoint before HTTP I/O using the same codec/parser/matcher/scalar chain. It never mutates global SOAPAction or selects the first port.
+
+### Buffered protocol and capability scope
+
+`exchangeDirectSoap` is internal and accepts one authentic operation/input mapping, fresh application values and closed request-local configuration. Dispatch requires an explicit endpoint override and an allow callback for that exact endpoint. This packet accepts only explicitly owned ephemeral IPv4 loopback HTTP servers; the fixture's port 1 metadata grants no authority and is never contacted.
+
+Input validation precedes dependency bootstrap and network execution. Response success requires HTTP EOF, allowed status and content type, encoding agreement, a complete SOAP 1.1 Envelope with one Body payload and successful shared direct validation. An absent or empty Header is accepted; every populated SOAP Header and protocol attribute is refused before application normalization. The envelope has explicit prefixed namespace bindings, so unqualified application children retain their namespace.
+
+HTTP 200 and 500 declared Faults return `soap-fault` with typed detail, the observed expanded faultcode QName and its immutable original `codeNode` with namespace context and coordinates. The separate protocol layer checks Fault child order, cardinality, namespace, optional actor, textual code/string and exactly one declared detail. It resolves faultcode using the actual observed node's inherited bindings and the shared QName owner. Unknown/ambiguous detail, malformed protocol, unbound codes and HTTP 500 ordinary bodies fail without partial values.
+
+The adapter refuses requested SOAP 1.2, HTTPS/TLS/mTLS, authentication, WS-Security, signing, arbitrary HTTP/SOAP headers, attachments, redirects, compression and streaming. Response redirects are never followed; compression and populated SOAP headers cannot become successful application results. Legacy transport capabilities and defaults remain unchanged; this internal unauthenticated slice does not qualify those wider combinations.
+
+### Lifetime, accounting and evidence
+
+The original operation budget remains inclusive and sticky across source preparation, encoding, original-byte copies, dependency bootstrap, final-envelope validation, HTTP buffering, parsing, direct decoding and publication. Native bootstrap receives conservative source-size work and syntax-node reservations before entry. The complete configured response-buffer/copy capacity is reserved before dispatch; retained response bytes are copied only within that reservation. Default XML limits remain 1 MiB, depth 256, 100,000 syntax nodes and 1 MiB text, without raising semantic defaults.
+
+The work/node counters are the existing engineering accounting model, not a V8 heap ceiling or instruction-level preemption. Axios may receive one native incoming chunk before rejecting a response that exceeds its configured byte cap; no oversized response is parsed, published or returned. Native buffers and decoder/parser intrinsics retain their actual scope. The existing intrinsic bulk-key-vector qualification also applies to closed internal option records: valid option keys are reserved before enumeration, but a malformed record can cause a larger temporary key vector before its unknown fields are rejected. Exhaustion never becomes invalidity or usable partial success.
+
+The adapter owns one nonpersistent HTTP agent, AbortController and deadline per call. Cancellation and terminal failures abort pending I/O and destroy that agent in `finally`; listeners and deadline handlers are removed. Tests own and close their ephemeral servers and sockets. Transport, protocol, XML, value/scalar, unsupported, cancellation and exhaustion results remain distinct; diagnostics do not retain raw HTTP errors or payload text.
+
+The [real-wire acceptance suite](../test/integration/direct-soap.test.ts) consumes the actual Forecast fixtures and independently asserts captured outgoing expanded names, order, counts, headers and literal content, with external validation of the actual captured request subtree. It covers native receipts and byte digests, renamed source/operation/service/port/members/faults, namespace aliases, UTF-16 response bytes, HTTP 200/500 Faults, no-request controls, malformed envelopes/entities, limits, inclusive sticky work/node boundaries and cancellation. Independent nonauthor transport controls and exact delivery/check identities are recorded in [#388](https://github.com/TechSpokes/typescript-wsdl-client/issues/388).
+
+Admission remains `false`; package version remains 1.1.4. This packet adds no public API, generated client, persistent bundle, activation, release or production endpoint qualification. The subsequent generated-client/compatibility packet belongs to #185/#186/#195/#201 and requires a separate execution request.
+
 ## Decision and scope
 
 The SOAP 1.1 document/literal HTTP minimum in [ADR-003](decisions/003-content-model-contracts.md#soap-adapters-and-security-ordering-s02-d07) is feasible through bounded adapters. One pre-encoded body reaches both actual generated execution paths, and raw response bytes preserve the context that a shared decoder needs before name-keyed materialization. These tests activate no faithful production mode and make no new shipped support claim.

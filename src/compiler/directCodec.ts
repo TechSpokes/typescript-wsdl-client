@@ -18,6 +18,11 @@ export interface DirectXmlLimits {
 }
 export const DIRECT_XML_LIMITS = Object.freeze({maxBytes: 1024 * 1024, maxDepth: 256, maxNodes: 100_000, maxText: 1024 * 1024});
 type Options = Readonly<{signal?: AbortSignal; limits?: DirectXmlLimits}>;
+/** Internal protocol selection over the same parsed observed document. */
+export interface DirectPayloadSelection {
+  readonly payload: SyntaxElement;
+  readonly mapping: DirectValueMapping;
+}
 export interface DirectCodecFailure {
   readonly kind: DirectValueFailure['kind'] | 'xml-invalid' | 'mismatch';
   readonly rule: string;
@@ -147,7 +152,7 @@ export function encodeDirectXml(contract: DirectOperationContract, mapping: unkn
 
 /** Bounded observed bytes -> ordered syntax -> existing structural/scalar checks. */
 export function decodeDirectXml(contract: DirectOperationContract, mapping: unknown, bytes: Uint8Array,
-  options: Options & Readonly<{uri?: string}> = {}): DirectDecodedXml | DirectCodecFailure {
+  options: Options & Readonly<{uri?: string; selectPayload?: (root: SyntaxElement) => DirectPayloadSelection}> = {}): DirectDecodedXml | DirectCodecFailure {
   return run(contract, mapping, options, (owned, {budget, limits, check}) => {
     if (!types.isUint8Array(bytes) || types.isProxy(bytes)) throw new TypeError('XML requires Uint8Array bytes');
     // Use native internal-slot access, avoiding subclass/own length, buffer and
@@ -163,9 +168,19 @@ export function decodeDirectXml(contract: DirectOperationContract, mapping: unkn
     const uri = options.uri ?? 'urn:typescript-wsdl-client:observed-direct-xml';
     if (typeof uri !== 'string') throw new TypeError('XML source URI must be a string');
     check(); budget.chargeWork(256 + uri.length * 4);
-    const payload = parseOrderedSyntax(input, uri, {...limits, xml10Only: true,
+    const root = parseOrderedSyntax(input, uri, {...limits, xml10Only: true,
       chargeWork: amount => {check(); budget.chargeWork(amount);}, reserveNode: () => {check(); budget.reserveNodes(1);}}).root;
-    const structural = matchDirectOperation(contract, owned.direction, payload, options);
+    const selection = options.selectPayload?.(root) ?? {payload: root, mapping: owned};
+    const payload = selection.payload;
+    const selectedMapping = inspectDirectValueMapping(selection.mapping, contract);
+    // Protocol selection may only return an actual node from this parse, never
+    // a synthetic tree relabeled with the observed document's provenance.
+    const contains = (node: SyntaxElement): boolean => {
+      check(); budget.chargeWork(64 + node.children.length * 8);
+      return node === payload || node.children.some(child => child.kind === 'element' && contains(child));
+    };
+    if (!contains(root)) throw new TypeError('Protocol payload must belong to the observed document');
+    const structural = matchDirectOperation(contract, selectedMapping.direction, payload, options);
     if (structural.kind !== 'structural-match') return structural;
     const validated = assessDirectScalars(contract, structural, options);
     if (validated.kind !== 'direct-value') return validated;
