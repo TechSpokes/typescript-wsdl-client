@@ -132,8 +132,8 @@ describe('buffered direct SOAP 1.1 native real-wire integration', () => {
       expect(r.decoded.payload.source.path).toBe('/0/0/0/2/0');
     });
   });
-  it('preserves faultcode rebinding and default QName namespace from actual observed context', async () => {
-    const bytes = Buffer.from(fault.toString().replace('<faultcode>soap:Server</faultcode>', '<faultcode xmlns="urn:fault-codes">Problem</faultcode>').replace('<faultcode xmlns=', '<faultcode xmlns='));
+  it('preserves faultcode rebinding and rejects qualified SOAP protocol children', async () => {
+    const bytes = Buffer.from(fault.toString().replace('<faultcode>soap:Server</faultcode>', '<faultcode xmlns="urn:fault-codes">Problem</faultcode>'));
     // The protocol child must remain unqualified; QName default namespace can
     // instead be supplied on an ancestor while resetting the child explicitly.
     const rebound = Buffer.from(fault.toString().replace('<faultcode>', '<faultcode xmlns:c="urn:declared:codes">').replace('soap:Server', 'c:Failure'));
