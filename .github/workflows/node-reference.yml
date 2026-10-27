@@ -32,6 +32,11 @@ jobs:
           npm ci
           npm run build
           npm run test:conformance
+      - name: Generated internal installed client
+        run: |
+          npm ci
+          npm run build
+          npx vitest run test/unit/generated-direct-independent.test.ts test/integration/generated-direct-installed.test.ts
       - uses: actions/upload-artifact@v6
         if: always()
         with:
@@ -65,6 +70,8 @@ jobs:
         run: npm run build
       - name: Checked source, operation and structural contracts
         run: npx vitest run test/unit/checked-assessment.test.ts test/unit/direct-operation.test.ts test/unit/direct-structure.test.ts test/unit/direct-structure-evidence.test.ts test/unit/direct-values.test.ts test/unit/direct-codec.test.ts test/unit/direct-codec-independent.test.ts test/unit/direct-source-capsule.test.ts test/unit/direct-capsule-independent.test.ts test/integration/portable-installed.test.ts
+      - name: Generated internal installed client
+        run: npx vitest run test/unit/generated-direct-independent.test.ts test/integration/generated-direct-installed.test.ts
       - uses: actions/upload-artifact@v6
         if: always()
         with:

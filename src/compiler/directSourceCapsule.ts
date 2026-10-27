@@ -185,6 +185,12 @@ export async function reconstructDirectSourceCapsule(bytes: Uint8Array, localSou
   policy: SchemaResourcePolicy; limits?: SemanticBudgetLimits; signal?: AbortSignal;
 }>): Promise<ReconstructedDirectSource | DirectCapsuleFailure> {
   const budget = createSemanticBudget(options.limits);
+  return reconstructDirectSourceCapsuleInRequest(bytes, localSource, options, budget);
+}
+/** Internal consumer entry: decoding/emission and reconstruction share one sticky request. */
+export async function reconstructDirectSourceCapsuleInRequest(bytes: Uint8Array, localSource: string, options: Readonly<{
+  policy: SchemaResourcePolicy; limits?: SemanticBudgetLimits; signal?: AbortSignal;
+}>, budget: SemanticBudget): Promise<ReconstructedDirectSource | DirectCapsuleFailure> {
   try {
     const capsule = read(bytes, budget, options.signal);
     if (new URL(resolveResourceUri(localSource)).protocol !== 'file:') throw new Stop('missing-authority', 'new-local-file-required');

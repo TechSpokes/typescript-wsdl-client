@@ -94,6 +94,7 @@
     "direct-codec.test.ts",
     "direct-codec-independent.test.ts",
     "direct-source-capsule.test.ts",
-    "direct-capsule-independent.test.ts"
+    "direct-capsule-independent.test.ts",
+    "generated-direct-independent.test.ts"
   ]
 }

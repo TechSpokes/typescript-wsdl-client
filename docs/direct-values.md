@@ -173,4 +173,34 @@ Byte/depth/node limits, cancellation, schema inconclusive, incompatible artifact
 
 ### Next consumer boundary
 
-After #390 acceptance, prepare P3.7 under #195/#201: emit the smallest internal TypeScript request/response/declared-fault declarations for this exact direct grammar and bind its consumer to reconstructed capsule compatibility before using the existing SOAP adapter. Preserve explicit service/port/endpoint authorization and fresh per-invocation budgets. Public exports/CLI, general generated-client design, broader grammar/security and activation require later decisions; no P3.7 implementation starts with this packet.
+The P3.6 handoff to P3.7 under #195/#201 is implemented by the internal consumer below. It preserves explicit service/port/endpoint authorization and fresh per-invocation budgets. Public exports/CLI, general generated-client design, broader grammar/security and activation require later decisions.
+
+## P3.7 internal generated TypeScript consumer
+
+[The native-plan generator](../src/client/generateDirectClient.ts) accepts an identity-issued reconstructed source, authenticates compatibility and each mapping, and emits one deterministic strict NodeNext TypeScript file plus its exact capsule. It uses the shared preamble composer with a dedicated internal-artifact preamble. There is no public command or package export for this generator.
+
+### Typed internal binding
+
+The generated file has no imports. `createClient(runtime)` receives a trusted internal binding with one `execute` method; the generated operation has the exact source operation spelling as a computed quoted key. [The binding owner](../src/client/directClientRuntime.ts) delegates exclusively to the existing capsule, mapping and buffered SOAP owners. The test harness loads this binding by verified physical installed private-module path; that mechanism is not a supported package subpath or plugin interface.
+
+The generated capsule literal pins the static contract. Each invocation requires matching loaded capsule bytes, an explicitly authorized physical local source and file roots, and explicit SOAP service, port, endpoint and endpoint authorization. The binding copies options before asynchronous work, refuses accessors/proxies and unsupported options, creates one fresh budget, reconstructs native authority from the authorized file, checks native compatibility and calls `exchangeDirectSoap`. No handle, endpoint permission, budget or source authorization is cached between independent calls.
+
+Exact capsule pinning intentionally rejects mixed generated files and capsules, even where a different source might have a compatible semantic shape. Regenerate the matched internal file and capsule after source-byte changes; an authorized relocation of identical bytes remains valid. Capsule reading and checksums confer no permission. Failure results retain native categories and never contain a typed usable value.
+
+### Static shapes and naming
+
+`Request`, `Response` and indexed `Fault_0` declarations are direction-specific roles, not prettified schema names. Equal local names in different namespaces cannot merge these declarations; the capsule retains all expanded native identities. Source keys and operation spellings are JSON-quoted, and operation keys are computed to avoid prototype setters. The generated fault union retains exact declared fault names and value shapes, including scalar and empty roots.
+
+Optional singletons are omittable; zero-or-more slots are required readonly arrays; one-or-more slots are readonly nonempty tuples. Empty sequences use `Readonly<Record<string, never>>`. String, Boolean and int32 map to `string`, `boolean` and `number`; native validation enforces int32 range, exact keys, dense arrays, scalar semantics and occurrence rules that TypeScript alone cannot express. Consumers can enable `exactOptionalPropertyTypes` to reject explicit undefined statically; the runtime always enforces omission semantics.
+
+The inherited node-soap bootstrap refuses `__proto__`, `constructor`, `toString`, other `Object.prototype` names and `prototype` anywhere in source declaration names. These fail before generation and dispatch; this packet does not weaken that boundary or claim arbitrary XML-name execution. Accepted reserved JavaScript words and hyphenated XML names are emitted safely. Broader dependency-name support requires a separately reviewed transport-owner change.
+
+### Accounting and qualification
+
+Emission first bounds all variable source contributions, then reserves a 512 KiB output envelope covering escaping, concatenation, preamble composition and encoding before building source strings. The native budget covers qualification, mapping, capsule serialization and emission. `writeDirectClient` authenticates its artifact identity and charges each write against that same sticky budget. Generated code contains no source path, checkout dependency or private package import.
+
+Invocation accounting starts before byte copying and base64 comparison and continues through reconstruction, compatibility, the existing codec/transport and result publication without resetting. Separate calls get separate budgets; exhausted calls return no partial usable value. Existing source/capsule/XML caps, dependency-bootstrap reservation and cooperative cancellation remain unchanged. This is engineering accounting, not a hard heap or preemption guarantee; malformed own-key vector allocation has the same intrinsic qualification as the existing adapter.
+
+[Installed tests](../test/integration/generated-direct-installed.test.ts) generate bounded files for Forecast, renamed and prefix-aliased sources, optional/nonempty-array shapes, scalar and empty roots. They install the actual npm tarball in another directory, compile independently authored valid/invalid TypeScript and execute the emitted wrappers in a child with checkout reads denied. The harness permits only its consumer directory for file reads/writes and verifies real SOAP request namespace/order/scalars, response arrays and HTTP 200/500 declared faults, relocation, stale/mixed inputs, missing permissions, unsupported capabilities, cancellation and exhaustion. Node 24's permission model does not restrict sockets; endpoint restriction remains the native owned-loopback policy. Node versions exposing network permissions additionally receive the explicit loopback grant.
+
+[Independent controls](../test/unit/generated-direct-independent.test.ts) challenge getters/proxies, mutable option metadata, copied authority, sticky exhausted generation and preserved dependency-name refusals. Hosted Linux and Windows Node24/26 run the generated installed qualification explicitly. Public-interface readiness and any remaining blockers belong to a separate P3.8 task; public activation, legacy defaults, package 1.1.4, root-only exports and `admitted:false` remain unchanged.

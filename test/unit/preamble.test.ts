@@ -25,7 +25,7 @@ afterEach(() => {
 
 describe("packaged preambles", () => {
   it("validates every shipped resource and selects ownership", () => {
-    expect(validatePreambleDirectory(path.resolve("src/generation/preambles"))).toHaveLength(3);
+    expect(validatePreambleDirectory(path.resolve("src/generation/preambles"))).toHaveLength(4);
     expect(resolvePreamble("client")).toContain("Do not edit manually");
     expect(resolvePreamble("app")).toContain("Customize this file");
     expect(resolvePreamble("test/runtime")).toContain("Customize this file");
