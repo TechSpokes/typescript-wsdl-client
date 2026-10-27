@@ -221,7 +221,7 @@ it('fails malformed original UTF-8 without replacement decoding or partial publi
   });
 });
 
-it('returns resource-limit for an unreservable safe-integer byte capacity before HTTP dispatch', async () => {
+it('refuses a byte capacity above the fixed profile before HTTP dispatch', async () => {
   await owned(normal, async server => {
     const {contract, mapping} = await operation();
     const result = await exchangeDirectSoap(contract, mapping, value, {...server.options, limits: {maxBytes: Number.MAX_SAFE_INTEGER}});

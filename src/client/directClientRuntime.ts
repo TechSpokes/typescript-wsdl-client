@@ -1,4 +1,6 @@
 /** Private P3.7 binding. No public package entry or alternate SOAP implementation. */
+import {checkSemanticBudget} from '../compiler/semanticBudget.js';
+import {dataOwnership, DataOwnershipLimitError} from '../compiler/dataOwnership.js';
 import {types} from 'node:util';
 import {createSemanticBudget} from '../compiler/semanticBudget.js';
 import type {SemanticBudgetLimits, ResolverUsage} from '../compiler/semanticBudget.js';
@@ -61,27 +63,29 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
     const budget = createSemanticBudget(options.budget);
     const fail = (kind: DirectClientFailure['kind'], rule: string): DirectClientFailure => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
     try {
-      budget.chargeWork(4096);
-      const optionRule = directSoapOptionsShape(options.soap, budget, () => budget.chargeWork());
+      const optionRule = directSoapOptionsShape(options.soap, () => checkSemanticBudget(budget));
       if (optionRule) return fail('unsupported', optionRule);
-      budget.chargeWork(2048);
+      if (options.soap.signal !== undefined && !(options.soap.signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
+      if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
+      const signal = options.soap.signal;
+      const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Error('cancelled');};
+
       const soap: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
       for (const key of Reflect.ownKeys(options.soap)) soap[key as string] = Object.getOwnPropertyDescriptor(options.soap, key)!.value;
       for (const key of ['service', 'port', 'endpoint', 'timeoutMs', 'limits', 'capabilities']) {
-        if (Object.hasOwn(soap, key)) soap[key] = budget.freeze(budget.snapshot(soap[key]));
+        if (Object.hasOwn(soap, key)) soap[key] = dataOwnership.freeze(dataOwnership.snapshot(soap[key], check));
       }
-      options = Object.freeze({...options, fileRoots: budget.freeze(budget.snapshot(options.fileRoots)), soap: Object.freeze(soap) as unknown as DirectSoapOptions});
-      if (options.soap.signal !== undefined && !(options.soap.signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
+      options = Object.freeze({...options, fileRoots: dataOwnership.freeze(dataOwnership.snapshot(options.fileRoots, check)), soap: Object.freeze(soap) as unknown as DirectSoapOptions});
       if (typeof expectedBase64 !== 'string' || expectedBase64.length > Math.ceil(DIRECT_CAPSULE_LIMITS.maxBytes / 3) * 4) return fail('incompatible-artifact', 'generated-capsule-limit');
-      // The exact embedded artifact pins the emitted types. Reserve native byte copies
-      // and base64 encoding before allocation; do not invoke caller byte getters.
-      budget.chargeWork(1024 + expectedBase64.length * 16);
+      // The exact embedded artifact pins the emitted types. Check actual byte extent
+      // before copying; do not invoke caller byte getters.
+
       if (!types.isUint8Array(options.capsule) || types.isProxy(options.capsule)) return fail('incompatible-artifact', 'capsule-bytes-required');
       const typed = Object.getPrototypeOf(Uint8Array.prototype) as object;
       const backing: unknown = Object.getOwnPropertyDescriptor(typed, 'buffer')!.get!.call(options.capsule);
       const length = Object.getOwnPropertyDescriptor(typed, 'byteLength')!.get!.call(options.capsule) as number;
       if (types.isSharedArrayBuffer(backing) || length > DIRECT_CAPSULE_LIMITS.maxBytes) return fail('incompatible-artifact', 'capsule-bytes-required');
-      budget.chargeWork(1024 + length * 16);
+
       const bytes = new Uint8Array(length);
       Uint8Array.prototype.set.call(bytes, options.capsule);
       if (Buffer.from(bytes).toString('base64') !== expectedBase64) return fail('incompatible-artifact', 'generated-capsule-mismatch');
@@ -90,12 +94,12 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       if (fresh.kind !== 'reconstructed-direct') return fresh;
       const compatible = checkDirectSourceCompatibility(fresh, fresh.contract, {service: options.soap.service, port: options.soap.port}, options.soap.signal);
       if (compatible.kind !== 'compatible-direct') return compatible;
-      // Reserve result envelope before dispatch. Value and byte provenance stay owned
+      // Value and byte provenance stay owned
       // by the original adapter; no catch-and-cast turns a failure into typed success.
-      budget.chargeWork(2048);
+
       const result = await exchangeDirectSoap(fresh.contract, fresh.mappings[0], input, options.soap);
       if (!('decoded' in result)) return result;
-      budget.chargeWork(128);
+
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
       const common = {value: result.decoded.validated.value, status: result.status, admitted: false as const,
         responseBytes: result.responseBytes, usage: Object.freeze({...budget.usage()})};
@@ -106,6 +110,8 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       return Object.freeze({kind: 'soap-response', ...common});
     } catch (error) {
       if (budget.exhausted()) return fail('resource-limit', 'request-budget');
+      if (error instanceof DataOwnershipLimitError) return fail('resource-limit', error.message);
+      if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
       throw error;
     }
   },

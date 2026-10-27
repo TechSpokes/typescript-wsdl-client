@@ -38,6 +38,7 @@ let calls = 0, refusals = 0;
 try {
   for (const v of [
     {name: 'forecast', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'},
+    {name: 'padded', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'},
     {name: 'alias', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'},
     {name: 'renamed', ns: 'urn:renamed:climate', prefix: 'Climate', op: 'ReadClimate'},
     {name: 'shapes', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'createClient'},

@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticBudget.ts",
           "role": "semantic-source",
-          "sha256": "f1059e52d16ec42379186c0f7bd8e6bec3ba6a95dbea6ada13232e9b33065af3"
+          "sha256": "365a2da1d78e9600703dbd4a1fe2d17662275ea214e7d118af357709994e0b3a"
         },
         {
           "path": "src/compiler/semanticContext.ts",
@@ -3272,6 +3272,11 @@
           "path": "test/research/re01/private-ambient.test.ts",
           "role": "prototype",
           "sha256": "b22221c1a6faec854eaa7e4bff72ef652903117ca39a174d9604fff8193b9b97"
+        },
+        {
+          "path": "src/compiler/dataOwnership.ts",
+          "sha256": "759c40b68e701ec1f9f47439d1954c727731c965ab9d30dc0edb2472b04c5285",
+          "role": "semantic-source"
         }
       ]
     },

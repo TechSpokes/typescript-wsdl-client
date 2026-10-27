@@ -93,7 +93,8 @@ describe('portable direct data and native compatibility', () => {
       expect(read(bytes)).toMatchObject({kind: 'incompatible-artifact'});
     }
     expect(read(new Uint8Array(DIRECT_CAPSULE_LIMITS.maxBytes + 1))).toMatchObject({kind: 'resource-limit'});
-    expect(read(a.bytes, 4096)).toMatchObject({kind: 'resource-limit'});
+    // Bounded data reading does not consume the semantic algorithm allowance.
+    expect(read(a.bytes, 4096)).toHaveProperty('versions');
   });
   it('rejects tampered source/digest/compatibility and changed actual local bytes', async () => {
     const a = await capsule();

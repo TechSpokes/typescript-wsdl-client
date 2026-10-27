@@ -2,6 +2,53 @@
 
 Internal direct mapping, bare-root XML codec and portable source contract. See the root [README](../README.md) and [matching contract](content-model-matching.md).
 
+## Current direct-client resource policy
+
+This amendment implements the October 27, 2026 request to simplify the resource policy. It supersedes the earlier direct-path claims below that procedural copying, serialization, freezing and publication reserve hypothetical allocation costs. Existing source authority, semantic validation, payload validity and failure categories remain required.
+
+### Plan and implemented boundaries
+
+The implementation separates data ownership from semantic work accounting, removes synthetic procedural prices, replaces implicit protection with concrete input caps, and tests both useful execution and refusal. It reuses the existing copier and semantic engines rather than adding a second validator or an unlimited budget implementation.
+
+| Boundary | Actual limit or protection | Reason |
+| --- | --- | --- |
+| Local WSDL | 64 KiB UTF-8, one authorized source | Bound parser/bootstrap input and forbid implicit graph fetches |
+| Capsule | 256 KiB and JSON depth 16 | Bound portable data decoding |
+| XML | 1 MiB bytes/text, depth 256, 100,000 nodes | Bound buffering, nesting and traversal |
+| Fresh values | 1 MiB string content, 100,000 scalar items | Bound inverse construction before XML exists |
+| Option metadata copies | 100,000 entries, 1 MiB text, depth 256 | Refuse oversized graphs before copying them |
+| Generated file | 512 KiB conservative preassembly bound | Bound emission and file writes |
+| HTTP | 15-second default timeout and AbortSignal | Bound stalled I/O and support cancellation |
+| Native semantic engines | Existing work/node counters | Stop expensive qualification, matching and scalar algorithms |
+
+XML options can lower the fixed profile limits; values above the profile fail before dispatch. The optional internal `budget` controls the existing native semantic allowance; it is neither a byte limit nor a CPU/memory measurement. Its legacy default remains 125 million work units and 100,000 cumulative analysis nodes, and an exhausted semantic request stays failed throughout that invocation. Every independent generated call still starts fresh authority and counters.
+
+Routine base64/JSON handling, source copying, codec emission, SOAP envelope handling, generated-file construction and publication no longer receive fixed or byte-multiplied work prices. The node-soap bootstrap no longer charges `4 * sourceBytes²` or invented bootstrap node allocations. Actual parser/analysis node visits and the existing structural/scalar algorithms still enforce their counters; broad schema preparation/resolver accounting is intentionally unchanged.
+
+The bounded ownership copier preserves data-only records, safe prototype-sensitive keys, sharing and caller immutability. Configuration is copied before asynchronous use so later caller mutations cannot change an invocation's policy. Ownership does not require synthetic work pricing; copies of untrusted metadata have explicit entry/text/depth caps instead. Exceeded caps return a resource-limit failure with no usable result.
+
+### Justification and alternatives
+
+Bytes, depth, node and collection limits protect concrete buffers and traversals. A semantic work counter is useful for expensive algorithms where small inputs can cause substantial search or comparison work; charging every ordinary copy does not establish actual CPU or memory containment. The shared semantic engines retain their existing accounting and calibration in this change, including legacy copy charges internal to those engines.
+
+| Alternative | Decision in this change | Tradeoff |
+| --- | --- | --- |
+| Targeted counters plus concrete caps | Implemented for the private direct path | Cooperative execution only |
+| Same-thread timeout for synchronous work | Not a replacement for algorithm limits | Timer cannot run while JavaScript is blocked |
+| Worker/subprocess deadline | Deferred until hard interruption is required | Startup, communication and authority-context complexity |
+| Process/container CPU and memory limits | Deployment option for hard containment | Requires operational support; a V8 heap cap alone is insufficient |
+| Remove every semantic limit | Rejected | Would leave expensive native algorithms without their current stop condition |
+
+There is no hard heap, RSS, CPU-time or instantaneous-preemption guarantee. `Reflect.ownKeys` may allocate a temporary vector for a malformed object before JavaScript can inspect its size. Native dependency work is bounded by its accepted source/input profile rather than a claimed exact allocation model. Hardware-dependent wall-clock timings are diagnostic evidence, not semantic correctness tests.
+
+### Verification
+
+Focused tests run actual loopback SOAP and the separately installed generated wrapper using a WSDL larger than 10 KiB, which previously exhausted the default allowance from the quadratic reservation alone. They retain HTTP200/500 faults, wrong-source/authority/security refusals, getter/proxy and asynchronous-mutation controls, cancellation, exact actual limits and sticky semantic exhaustion. Pure capsule reading and ordinary ownership copying are checked to spend no semantic work units. Shared semantic-budget/reference suites verify that extracting the ownership implementation preserves the existing native accounting.
+
+
+The diagnostic probe in `test/helpers/directResourceProbe.ts` compares separately loaded builds against the same local server and 10,655-byte WSDL. The archived P3.7 tarball at `e908675` returned resource-limit with zero requests; the changed build returned soap-response with one request. A capsule-only reader allowance of 4,096 units was exhausted by the old build (80 units retained before a rejected reservation); the new reader returned data at its unchanged initial 79 units. These results demonstrate removal of an artificial rejection, not a latency speedup: the old build never completed equivalent SOAP work.
+
+
 ## Implementation checkpoint
 
 One integration owner implements the complete chain under #382, #155, #184 and #182. Inputs are an authentic operation, a newly issued successful structural match, or an authentic source-derived mapping plus fresh application data. Receipt identity, never digest or diagnostic JSON, supplies authority.
@@ -29,6 +76,8 @@ The identity-only inspectors are `inspectDirectStructuralMatch`, `inspectDirectV
 Payload lexical failures return `scalar-invalid` with schema and numeric payload paths. Application shape/type failures return `value-invalid`; native unavailability returns `unsupported`; interruption returns `cancelled` or sticky `resource-limit`. No failure publishes values, operands, mappings or partially reconstructed payloads. Malformed receipt authority throws `TypeError`; genuine internal errors propagate rather than becoming invalid caller data.
 
 ## Accepted resource model
+
+This section records the historical P3.3 accounting contract. The current direct-client resource policy above supersedes its procedural pricing requirements while retaining data/shape validation and the intrinsic-enumeration limitation.
 
 The user explicitly accepted the following scoped resource qualification for P3.3 on October 26, 2026, recorded in [#382](https://github.com/TechSpokes/typescript-wsdl-client/issues/382#issuecomment-6424153066): JavaScript `Reflect.ownKeys` constructs an intrinsic temporary key vector before its length can be known. Rejecting every symbol/nonenumerable extra field on an arbitrary plain data object requires this bulk intrinsic; a prior guessed cap cannot bound the allocation. The inverse precharges the maximum valid vector before the intrinsic: the source slot count for records, or length plus one for dense arrays. It immediately refuses any excess count before per-key traversal. This reserves every valid key vector before construction, but a malformed object can still cause the engine to allocate a larger temporary vector before control returns.
 
@@ -197,9 +246,9 @@ The inherited node-soap bootstrap refuses `__proto__`, `constructor`, `toString`
 
 ### Accounting and qualification
 
-Emission first bounds all variable source contributions, then reserves a 512 KiB output envelope covering escaping, concatenation, preamble composition and encoding before building source strings. The native budget covers qualification, mapping, capsule serialization and emission. `writeDirectClient` authenticates its artifact identity and charges each write against that same sticky budget. Generated code contains no source path, checkout dependency or private package import.
+Emission bounds variable source contributions against a 512 KiB output ceiling before building source strings. `writeDirectClient` authenticates the bounded artifact and refuses an already failed semantic request; procedural emission and writes have no synthetic allocation price. Generated code contains no source path, checkout dependency or private package import.
 
-Invocation accounting starts before byte copying and base64 comparison and continues through reconstruction, compatibility, the existing codec/transport and result publication without resetting. Separate calls get separate budgets; exhausted calls return no partial usable value. Existing source/capsule/XML caps, dependency-bootstrap reservation and cooperative cancellation remain unchanged. This is engineering accounting, not a hard heap or preemption guarantee; malformed own-key vector allocation has the same intrinsic qualification as the existing adapter.
+Native semantic accounting spans qualification and validation without resetting; routine byte copying, base64 comparison, serialization and publication use actual input/output caps. Separate calls get separate budgets; exhausted calls return no partial usable value. Existing source/capsule/XML caps and cooperative cancellation remain in force; the synthetic dependency-bootstrap reservation is removed by the current resource-policy amendment. This is engineering accounting, not a hard heap or preemption guarantee; malformed own-key vector allocation has the same intrinsic qualification as the existing adapter.
 
 [Installed tests](../test/integration/generated-direct-installed.test.ts) generate bounded files for Forecast, renamed and prefix-aliased sources, optional/nonempty-array shapes, scalar and empty roots. They install the actual npm tarball in another directory, compile independently authored valid/invalid TypeScript and execute the emitted wrappers in a child with checkout reads denied. The harness permits only its consumer directory for file reads/writes and verifies real SOAP request namespace/order/scalars, response arrays and HTTP 200/500 declared faults, relocation, stale/mixed inputs, missing permissions, unsupported capabilities, cancellation and exhaustion. Node 24's permission model does not restrict sockets; endpoint restriction remains the native owned-loopback policy. Node versions exposing network permissions additionally receive the explicit loopback grant.
 

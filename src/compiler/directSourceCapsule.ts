@@ -1,4 +1,6 @@
 /** Internal P3.6 data boundary. Reading data never grants source or dispatch authority. */
+import {checkSemanticBudget} from './semanticBudget.js';
+import {dataOwnership, DataOwnershipLimitError} from './dataOwnership.js';
 import {createHash} from 'node:crypto';
 import {types} from 'node:util';
 import {canonicalJson, parseCatalogJson, CatalogError} from './catalogErrors.js';
@@ -8,13 +10,13 @@ import {inspectDirectOperation, selectDirectOperationInRequest} from './directOp
 import type {DirectOperationContract, DirectOperationSelector} from './directOperation.js';
 import {createDirectValueMapping, DIRECT_VALUE_VERSION, DIRECT_SCALAR_POLICY} from './directValues.js';
 import type {DirectValueMapping} from './directValues.js';
-import {prepareDirectSoapSource, DirectSoapSourceError} from './directSoapSource.js';
+import {prepareDirectSoapSource, DirectSoapSourceError, DIRECT_SOAP_SOURCE_MAX_BYTES} from './directSoapSource.js';
 import {SchemaResourceLoader, resolveResourceUri} from '../loader/schemaResources.js';
 import type {SchemaResourcePolicy} from '../loader/schemaResources.js';
 import {parseOrderedSyntax, syntaxElements, isXmlNCName, SchemaLoadingError} from '../loader/orderedSyntax.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
 
-export const DIRECT_CAPSULE_LIMITS = Object.freeze({maxBytes: 256 * 1024, sourceBytes: 64 * 1024});
+export const DIRECT_CAPSULE_LIMITS = Object.freeze({maxBytes: 256 * 1024, sourceBytes: DIRECT_SOAP_SOURCE_MAX_BYTES});
 const versions = Object.freeze({capsuleFormat: 1, model: 'xsd10-faithful-v1', scope: 'direct-soap11-single-utf8-v1',
   mapping: DIRECT_VALUE_VERSION, scalarPolicy: DIRECT_SCALAR_POLICY, runtimePolicy: 'owned-loopback-http-no-extensions-v1'} as const);
 export interface DirectSourceSelection {readonly service: ExpandedName; readonly port: string}
@@ -47,33 +49,22 @@ const reject = (rule: string): never => {throw new Stop('incompatible-artifact',
 function failure(error: unknown, budget: SemanticBudget): DirectCapsuleFailure {
   let kind: DirectCapsuleFailure['kind'], rule: string;
   if (budget.exhausted()) {kind = 'resource-limit'; rule = 'request-budget';}
+  else if (error instanceof DataOwnershipLimitError) {kind = 'resource-limit'; rule = error.message;}
   else if (error instanceof Stop) {({kind, rule} = error);}
   else if (error instanceof CatalogError) {kind = error.category === 'resource-limit' ? 'resource-limit' : 'incompatible-artifact'; rule = 'capsule-json';}
-  else if (error instanceof DirectSoapSourceError) {kind = 'unsupported'; rule = error.message;}
+  else if (error instanceof DirectSoapSourceError) {kind = error.kind; rule = error.message;}
   else if (error instanceof SchemaLoadingError) {kind = error.category === 'resource-limit' ? 'resource-limit' : 'missing-authority'; rule = 'authorized-local-source-required';}
   else throw error;
   return Object.freeze({kind, rule, repair: 'Regenerate matched internal direct artifacts from explicitly authorized original WSDL; public generation remains unavailable.', usage: Object.freeze({...budget.usage()})});
 }
 function check(budget: SemanticBudget, signal?: AbortSignal): void {
-  budget.chargeWork(); if (signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');
+  checkSemanticBudget(budget); if (signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');
 }
 function hash(text: string | Uint8Array): string {return createHash('sha256').update(text).digest('hex');}
 function json(value: unknown, budget: SemanticBudget): string {
-  budget.freeze(value);
-  const pending: unknown[] = [value];
-  // Reserve worst-case JSON escaping and sorting before the existing canonical
-  // serializer allocates its copies. Only reader/native-owned acyclic data enters.
-  while (pending.length) {
-    const item = pending.pop(); budget.chargeWork(128);
-    if (typeof item === 'string') budget.chargeWork(item.length * 128);
-    else if (Array.isArray(item)) {budget.chargeWork(item.length * 128); pending.push(...item);}
-    else if (item && typeof item === 'object') {
-      const keys = Object.keys(item); budget.chargeWork(keys.length * keys.length * 128);
-      for (const key of keys) {budget.chargeWork(key.length * 128); pending.push((item as Record<string, unknown>)[key]);}
-    }
-  }
-  const text = canonicalJson(value);
-  return text;
+
+  dataOwnership.freeze(value);
+  return canonicalJson(value);
 }
 function record(value: unknown, fields: readonly string[]): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return reject('data-record-required');
@@ -110,9 +101,8 @@ function read(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): 
   const backing: unknown = Object.getOwnPropertyDescriptor(typed, 'buffer')!.get!.call(bytes);
   if (types.isSharedArrayBuffer(backing)) return reject('shared-bytes-unsupported');
   if (length > DIRECT_CAPSULE_LIMITS.maxBytes) throw new Stop('resource-limit', 'capsule-byte-limit');
-  // Inclusive bound reserves decoding, duplicate scan, parse, canonicalization,
-  // hashing, base64 copies, freeze and descriptor traversal before allocation.
-  budget.chargeWork(8192 + length * 256);
+  // The actual capsule byte/depth caps bound decoding, hashing and canonicalization.
+
   const input = new Uint8Array(length);
   Uint8Array.prototype.set.call(input, bytes);
   let decoded: string;
@@ -138,13 +128,13 @@ function read(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): 
   text(parsed.fingerprint);
   if (hash(json({versions: parsed.versions, compatibility: c}, budget)) !== parsed.fingerprint) reject('compatibility-fingerprint');
   check(budget, signal);
-  return budget.freeze(parsed) as unknown as Capsule;
+  return dataOwnership.freeze(parsed) as unknown as Capsule;
 }
 function descriptor(contract: DirectOperationContract, selection: DirectSourceSelection, signal?: AbortSignal): {compatibility: Compatibility; original: Uint8Array; mappings: DirectValueMapping[]} {
   const {context: {budget}, source} = inspectDirectOperation(contract);
   check(budget, signal);
   if (source.resources.some(r => r.byteLength > DIRECT_CAPSULE_LIMITS.sourceBytes)) throw new Stop('resource-limit', 'source-byte-limit');
-  const owned = budget.snapshot(selection); name(owned.service); ncname(owned.port);
+  const owned = dataOwnership.snapshot(selection, () => check(budget, signal)); name(owned.service); ncname(owned.port);
   record(owned, ['service', 'port']);
   const {original} = prepareDirectSoapSource(contract, owned, () => check(budget, signal));
   if (original.byteLength > DIRECT_CAPSULE_LIMITS.sourceBytes) throw new Stop('resource-limit', 'source-byte-limit');
@@ -152,7 +142,7 @@ function descriptor(contract: DirectOperationContract, selection: DirectSourceSe
   const make = (direction: Parameters<typeof createDirectValueMapping>[1]): Root => {
     const m = createDirectValueMapping(contract, direction, {signal});
     if (m.kind !== 'direct-mapping') throw new Stop(m.kind === 'resource-limit' || m.kind === 'cancelled' ? m.kind : 'unsupported', m.rule);
-    mappings.push(m); budget.chargeWork(512 + m.slots.length * 1024);
+    mappings.push(m);
     // Resolved schema type names and expanded slot identities are independent
     // of retrieval URI, source offsets, lexical prefixes and context IDs.
     const type = m.root.type;
@@ -162,7 +152,7 @@ function descriptor(contract: DirectOperationContract, selection: DirectSourceSe
   };
   const input = make({kind: 'input'}), output = make({kind: 'output'});
   const faults = contract.faults.map(f => ({name: f.name, root: make({kind: 'fault', name: f.name})}));
-  const compatibility = budget.freeze({selector: contract.selector, service: owned.service, port: owned.port, action: contract.binding.action, input, output, faults});
+  const compatibility = dataOwnership.freeze({selector: contract.selector, service: owned.service, port: owned.port, action: contract.binding.action, input, output, faults});
   return {compatibility, original, mappings};
 }
 /** Writer consumes native authority; produced bytes contain no handles or source paths. */
@@ -170,7 +160,7 @@ export function createDirectSourceCapsule(contract: DirectOperationContract, sel
   const {budget} = inspectDirectOperation(contract).context;
   try {
     const {compatibility, original} = descriptor(contract, selection, signal);
-    budget.chargeWork(8192 + original.byteLength * 256);
+
     const capsule: Capsule = {versions, source: {base64: Buffer.from(original).toString('base64'), digest: hash(original)}, compatibility,
       fingerprint: hash(json({versions, compatibility}, budget))};
     const serialized = json(capsule, budget) + '\n';
@@ -196,15 +186,15 @@ export async function reconstructDirectSourceCapsuleInRequest(bytes: Uint8Array,
     if (new URL(resolveResourceUri(localSource)).protocol !== 'file:') throw new Stop('missing-authority', 'new-local-file-required');
     // Pin the caller-authorized actual file, rather than substituting artifact
     // bytes for a modified file. No network origins are inherited or accepted.
-    const loader = await SchemaResourceLoader.create({fileRoots: options.policy.fileRoots}, {resources: 1, resourceBytes: DIRECT_CAPSULE_LIMITS.sourceBytes, totalBytes: DIRECT_CAPSULE_LIMITS.sourceBytes}, undefined, n => {check(budget, options.signal); budget.chargeWork(n);});
+    const loader = await SchemaResourceLoader.create({fileRoots: options.policy.fileRoots}, {resources: 1, resourceBytes: DIRECT_CAPSULE_LIMITS.sourceBytes, totalBytes: DIRECT_CAPSULE_LIMITS.sourceBytes}, undefined, () => check(budget, options.signal));
     const resource = await loader.fetchResource(localSource);
-    budget.chargeWork(1024 + resource.byteLength * 64);
+
     if (resource.digest !== capsule.source.digest || Buffer.from(resource.bytes).toString('base64') !== capsule.source.base64) reject('local-source-changed');
     // Existing syntax owner refuses DTD/entities; graph triggers are rejected
     // before semantic preparation, even if the caller authorized a wider root.
     let syntax;
     try {syntax = parseOrderedSyntax(resource.bytes, resource.uri, {maxNodes: options.limits?.maxNodes,
-      reserveNode: () => budget.reserveNodes(1), chargeWork: n => {check(budget, options.signal); budget.chargeWork(n);}});}
+      reserveNode: () => budget.reserveNodes(1), chargeWork: () => check(budget, options.signal)});}
     catch (error) {
       if (error instanceof SchemaLoadingError) throw new Stop(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'unsupported-capability' ? 'unsupported' : 'invalid-schema', 'source-syntax');
       throw error;
@@ -212,7 +202,7 @@ export async function reconstructDirectSourceCapsuleInRequest(bytes: Uint8Array,
     const stack = [syntax.root];
     while (stack.length) {
       check(budget, options.signal); const node = stack.pop()!;
-      budget.chargeWork(256 + node.children.length * 32);
+
       if (['import', 'include', 'redefine'].includes(node.name.local)) throw new Stop('unsupported', 'single-source-required');
       stack.push(...syntaxElements(node));
     }
@@ -222,7 +212,7 @@ export async function reconstructDirectSourceCapsuleInRequest(bytes: Uint8Array,
     if (selected.kind !== 'selected') throw new Stop(selected.kind === 'loading-refused' ? 'missing-authority' : selected.kind === 'selection-refused' ? 'incompatible-artifact' : selected.kind, selected.rule);
     const derived = descriptor(selected.contract, {service: capsule.compatibility.service, port: capsule.compatibility.port}, options.signal);
     if (json(derived.compatibility, budget) !== json(capsule.compatibility, budget)) reject('source-contract-changed');
-    check(budget, options.signal); budget.chargeWork(1024);
+    check(budget, options.signal);
     const result: ReconstructedDirectSource = Object.freeze({kind: 'reconstructed-direct', contract: selected.contract, mappings: Object.freeze(derived.mappings), selection: Object.freeze({service: capsule.compatibility.service, port: capsule.compatibility.port}), admitted: false, usage: Object.freeze({...budget.usage()})});
     reconstructed.set(result, capsule);
     return result;
@@ -239,7 +229,7 @@ export function checkDirectSourceCompatibility(expected: unknown, contract: Dire
     const capsule = reconstructed.get(expected)!;
     const fresh = descriptor(contract, selection, signal);
     if (json(capsule.compatibility, budget) !== json(fresh.compatibility, budget)) reject('operation-binding-root-fault-slot-or-datatype-changed');
-    budget.chargeWork(512 + fresh.original.byteLength * 8); check(budget, signal);
+     check(budget, signal);
     return Object.freeze({kind: 'compatible-direct', sourceIdentity: capsule.source.digest === hash(fresh.original) ? 'exact-bytes' : 'revised-bytes', admitted: false, usage: Object.freeze({...budget.usage()})});
   } catch (error) {return failure(error, budget);}
 }

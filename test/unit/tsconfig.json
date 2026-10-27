@@ -95,6 +95,8 @@
     "direct-codec-independent.test.ts",
     "direct-source-capsule.test.ts",
     "direct-capsule-independent.test.ts",
-    "generated-direct-independent.test.ts"
+    "generated-direct-independent.test.ts",
+    "direct-resource-limits.test.ts",
+    "direct-resource-limits-independent.test.ts"
   ]
 }

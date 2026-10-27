@@ -152,6 +152,10 @@ describe('independently asserted portable direct capsule boundary', () => {
   });
   it('keeps budget exhaustion sticky and distinguishes cancellation and byte limits', async () => {
     const budget = createSemanticBudget({maxWork: 100});
+    const before = budget.usage().work;
+    expect(readDirectSourceCapsule(baseline, budget)).toHaveProperty('versions');
+    expect(budget.usage().work).toBe(before);
+    budget.guard(() => budget.chargeWork(101));
     expect(readDirectSourceCapsule(baseline, budget)).toMatchObject({kind: 'resource-limit'});
     expect(readDirectSourceCapsule(baseline, budget)).toMatchObject({kind: 'resource-limit'});
     expect(budget.exhausted()).toBe(true);
