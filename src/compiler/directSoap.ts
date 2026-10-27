@@ -13,7 +13,7 @@ import type {DirectCodecFailure, DirectDecodedXml, DirectXmlLimits} from './dire
 import {prepareDirectSoapSource, DirectSoapSourceError} from './directSoapSource.js';
 import {isXmlNCName, resolveLexicalQName, SchemaLoadingError} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
-import type {ResolverUsage} from './semanticBudget.js';
+import type {ResolverUsage, SemanticBudget} from './semanticBudget.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/soap/envelope/';
 export interface DirectSoapOptions {
@@ -47,6 +47,20 @@ class Stop extends Error {
 }
 const same = (a: ExpandedName, b: ExpandedName) => a.namespace === b.namespace && a.local === b.local;
 
+/** Shared entry guard: consumers must call before reading any SOAP option. */
+export function directSoapOptionsShape(options: unknown, budget: SemanticBudget, check: () => void): string | undefined {
+  budget.chargeWork(2048);
+  if (!options || typeof options !== 'object' || types.isProxy(options)
+    || ![null, Object.prototype].includes(Object.getPrototypeOf(options) as object | null)) return 'data-only SOAP options required';
+  const allowed = new Set(['service', 'port', 'endpoint', 'allowEndpoint', 'signal', 'timeoutMs', 'limits', 'capabilities']);
+  for (const key of Reflect.ownKeys(options)) {
+    check();
+    const descriptor = Object.getOwnPropertyDescriptor(options, key);
+    if (typeof key !== 'string' || !allowed.has(key) || !descriptor || !('value' in descriptor)) return 'SOAP option or capability';
+  }
+  return undefined;
+}
+
 /** Authentication and fresh-value validation precede dependency bootstrap and all HTTP I/O. */
 export async function exchangeDirectSoap(contract: DirectOperationContract, inputMapping: unknown, application: unknown,
   options: DirectSoapOptions): Promise<DirectSoapResult> {
@@ -66,15 +80,8 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
     budget.chargeWork(8192); check();
     // Options are a closed capability surface. Never silently discard security,
     // headers, endpoint agents, redirects, streaming or other caller extensions.
-    budget.chargeWork(2048);
-    if (!options || typeof options !== 'object' || types.isProxy(options)
-      || ![null, Object.prototype].includes(Object.getPrototypeOf(options) as object | null)) return fail('unsupported', 'data-only SOAP options required');
-    const allowed = new Set(['service', 'port', 'endpoint', 'allowEndpoint', 'signal', 'timeoutMs', 'limits', 'capabilities']);
-    for (const key of Reflect.ownKeys(options)) {
-      check();
-      const descriptor = Object.getOwnPropertyDescriptor(options, key);
-      if (typeof key !== 'string' || !allowed.has(key) || !descriptor || !('value' in descriptor)) return fail('unsupported', 'SOAP option or capability');
-    }
+    const optionRule = directSoapOptionsShape(options, budget, check);
+    if (optionRule) return fail('unsupported', optionRule);
     signal = options.signal;
     if (signal !== undefined && !(signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
     const allowEndpoint = options.allowEndpoint;
