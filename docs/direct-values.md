@@ -173,7 +173,7 @@ Byte/depth/node limits, cancellation, schema inconclusive, incompatible artifact
 
 ### Next consumer boundary
 
-After #390 acceptance, prepare P3.7 under #195/#201: emit the smallest internal TypeScript request/response/declared-fault declarations for this exact direct grammar and bind its consumer to reconstructed capsule compatibility before using the existing SOAP adapter. Preserve explicit service/port/endpoint authorization and fresh per-invocation budgets. Public exports/CLI, general generated-client design, broader grammar/security and activation require later decisions; no P3.7 implementation starts with this packet.
+The P3.6 handoff to P3.7 under #195/#201 is implemented by the internal consumer below. It preserves explicit service/port/endpoint authorization and fresh per-invocation budgets. Public exports/CLI, general generated-client design, broader grammar/security and activation require later decisions.
 
 ## P3.7 internal generated TypeScript consumer
 

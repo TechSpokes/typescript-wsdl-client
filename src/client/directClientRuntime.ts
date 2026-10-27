@@ -45,6 +45,18 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       owned[key] = descriptor.value;
     }
     if (!['localSource', 'fileRoots', 'capsule', 'soap'].every(key => Object.hasOwn(owned, key))) return entryFailure();
+    if (owned.budget !== undefined) {
+      const limits = owned.budget;
+      if (!limits || typeof limits !== 'object' || types.isProxy(limits)
+        || ![null, Object.prototype].includes(Object.getPrototypeOf(limits) as object | null)) return entryFailure();
+      const copied: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
+      for (const key of Reflect.ownKeys(limits)) {
+        const descriptor = Object.getOwnPropertyDescriptor(limits, key);
+        if (typeof key !== 'string' || !['maxNodes', 'maxWork'].includes(key) || !descriptor || !('value' in descriptor)) return entryFailure();
+        copied[key] = descriptor.value;
+      }
+      owned.budget = Object.freeze(copied);
+    }
     options = owned as unknown as DirectClientOptions;
     const budget = createSemanticBudget(options.budget);
     const fail = (kind: DirectClientFailure['kind'], rule: string): DirectClientFailure => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});

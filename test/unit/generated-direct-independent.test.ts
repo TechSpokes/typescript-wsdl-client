@@ -79,6 +79,18 @@ describe('independent generated direct client boundaries', () => {
     expect(calls).toBe(0);
   });
 
+  it('does not revisit mutable caller budget limits after asynchronous reconstruction', async () => {
+    const {file, capsule} = await reconstructed();
+    let calls = 0;
+    const budget = {maxNodes: 100_000};
+    const pending = directClientRuntime.execute(Buffer.from(capsule).toString('base64'), {city: 'Oslo', days: 1},
+      {...options(Buffer.from(capsule)), localSource: file, fileRoots: [scratch], budget});
+    Object.defineProperty(budget, 'maxNodes', {get() {calls++; throw new Error('limits changed during reconstruction');}});
+    const result = await pending;
+    expect(result.kind).toBe('unsupported');
+    expect(calls).toBe(0);
+  });
+
   it('requires identity-issued reconstructed authority before emitting any source', async () => {
     const {native} = await reconstructed();
     expect(() => generateDirectClient({} as ReconstructedDirectSource)).toThrow(TypeError);
