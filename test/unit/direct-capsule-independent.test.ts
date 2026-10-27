@@ -24,7 +24,7 @@ async function source(text = original) {
 }
 async function contract(text = original, operationSelector = selector) {
   const {dir, file} = await source(text);
-  const selected = await selectDirectOperation(file, operationSelector, {loading: {policy: {fileRoots: [dir]}}});
+  const selected = await selectDirectOperation(file, operationSelector, {limits: {}, loading: {policy: {fileRoots: [dir]}}});
   expect(selected.kind).toBe('selected');
   if (selected.kind !== 'selected') throw new Error(selected.rule);
   return selected.contract;
@@ -46,7 +46,7 @@ beforeAll(async () => {
   original = await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8');
   baseline = capsule(await contract());
   const copied = await source();
-  const reconstructed = await reconstructDirectSourceCapsule(baseline, copied.file, {policy: {fileRoots: [copied.dir]}});
+  const reconstructed = await reconstructDirectSourceCapsule(baseline, copied.file, {limits: {}, policy: {fileRoots: [copied.dir]}});
   if (reconstructed.kind !== 'reconstructed-direct') throw new Error(reconstructed.rule);
   expected = reconstructed;
 });
@@ -67,7 +67,7 @@ describe('independently asserted portable direct capsule boundary', () => {
   });
   it('reconstructs new native identity and deterministically reproduces bytes after relocation', async () => {
     const {dir, file} = await source();
-    const result = await reconstructDirectSourceCapsule(baseline, file, {policy: {fileRoots: [dir]}});
+    const result = await reconstructDirectSourceCapsule(baseline, file, {limits: {}, policy: {fileRoots: [dir]}});
     expect(result.kind).toBe('reconstructed-direct');
     if (result.kind !== 'reconstructed-direct') throw new Error(result.rule);
     expect(inspectDirectOperation(result.contract).evidence.eligible).toBe(true);
@@ -114,7 +114,7 @@ describe('independently asserted portable direct capsule boundary', () => {
     const {dir, file} = await source(unsafeText);
     const bytes = Buffer.from(unsafeText);
     const artifact = edit(v => {v.source.base64 = bytes.toString('base64'); v.source.digest = hash(bytes);});
-    expect(await reconstructDirectSourceCapsule(artifact, file, {policy: {fileRoots: [dir]}})).toMatchObject({kind: 'unsupported'});
+    expect(await reconstructDirectSourceCapsule(artifact, file, {limits: {}, policy: {fileRoots: [dir]}})).toMatchObject({kind: 'unsupported'});
   });
   it.each([
     ['unknown outer field', (v: Record<string, any>) => {v.extra = true;}],
@@ -139,15 +139,15 @@ describe('independently asserted portable direct capsule boundary', () => {
   ] as const)('refuses %s artifacts', (_label, make) => {expect(read(make())).toMatchObject({kind: 'incompatible-artifact'});});
   it('does not authorize missing, modified, denied, symlink-escaping or network resources', async () => {
     const {dir, file} = await source();
-    expect(await reconstructDirectSourceCapsule(baseline, path.join(dir, 'missing.wsdl'), {policy: {fileRoots: [dir]}})).toMatchObject({kind: 'missing-authority'});
-    expect(await reconstructDirectSourceCapsule(baseline, file, {policy: {}})).toMatchObject({kind: 'missing-authority'});
+    expect(await reconstructDirectSourceCapsule(baseline, path.join(dir, 'missing.wsdl'), {limits: {}, policy: {fileRoots: [dir]}})).toMatchObject({kind: 'missing-authority'});
+    expect(await reconstructDirectSourceCapsule(baseline, file, {limits: {}, policy: {}})).toMatchObject({kind: 'missing-authority'});
     await writeFile(file, original.replace('urn:checked:GetForecast', 'urn:changed'));
-    expect(await reconstructDirectSourceCapsule(baseline, file, {policy: {fileRoots: [dir]}})).toMatchObject({kind: 'incompatible-artifact', rule: 'local-source-changed'});
-    expect(await reconstructDirectSourceCapsule(baseline, 'https://example.invalid/wsdl', {policy: {allowedOrigins: ['https://example.invalid']}})).toMatchObject({kind: 'missing-authority'});
+    expect(await reconstructDirectSourceCapsule(baseline, file, {limits: {}, policy: {fileRoots: [dir]}})).toMatchObject({kind: 'incompatible-artifact', rule: 'local-source-changed'});
+    expect(await reconstructDirectSourceCapsule(baseline, 'https://example.invalid/wsdl', {limits: {}, policy: {allowedOrigins: ['https://example.invalid']}})).toMatchObject({kind: 'missing-authority'});
     const other = await source();
     if (process.platform !== 'win32') {
       const link = path.join(dir, 'escape.wsdl'); await symlink(other.file, link);
-      expect(await reconstructDirectSourceCapsule(baseline, link, {policy: {fileRoots: [dir]}})).toMatchObject({kind: 'missing-authority'});
+      expect(await reconstructDirectSourceCapsule(baseline, link, {limits: {}, policy: {fileRoots: [dir]}})).toMatchObject({kind: 'missing-authority'});
     }
   });
   it('keeps budget exhaustion sticky and distinguishes cancellation and byte limits', async () => {
@@ -162,7 +162,7 @@ describe('independently asserted portable direct capsule boundary', () => {
     expect(read(Buffer.alloc(256 * 1024 + 1))).toMatchObject({kind: 'resource-limit'});
     const controller = new AbortController(); controller.abort();
     const {dir, file} = await source();
-    expect(await reconstructDirectSourceCapsule(baseline, file, {policy: {fileRoots: [dir]}, signal: controller.signal})).toMatchObject({kind: 'cancelled'});
+    expect(await reconstructDirectSourceCapsule(baseline, file, {limits: {}, policy: {fileRoots: [dir]}, signal: controller.signal})).toMatchObject({kind: 'cancelled'});
   });
   it('uses native byte extent rather than a user getter before decoding or reserving', () => {
     const bytes = new Uint8Array(baseline);
@@ -185,7 +185,7 @@ describe('independently asserted portable direct capsule boundary', () => {
   });
   it('charges preliminary syntax nodes inclusively under a fresh request budget', async () => {
     const {dir, file} = await source();
-    const full = await reconstructDirectSourceCapsule(baseline, file, {policy: {fileRoots: [dir]}});
+    const full = await reconstructDirectSourceCapsule(baseline, file, {limits: {}, policy: {fileRoots: [dir]}});
     if (full.kind !== 'reconstructed-direct') throw new Error(full.rule);
     const exact = await reconstructDirectSourceCapsule(baseline, file, {policy: {fileRoots: [dir]}, limits: {maxNodes: full.usage.nodes}});
     expect(exact.kind).toBe('reconstructed-direct');
@@ -201,7 +201,7 @@ describe('independently asserted portable direct capsule boundary', () => {
     const previous = globalThis.fetch;
     globalThis.fetch = async () => {fetches++; throw new Error('network forbidden');};
     try {
-      expect(await reconstructDirectSourceCapsule(artifact, file, {policy: {fileRoots: [dir], allowedOrigins: ['https://example.invalid']}})).toMatchObject({kind: 'unsupported', rule: 'single-source-required'});
+      expect(await reconstructDirectSourceCapsule(artifact, file, {limits: {}, policy: {fileRoots: [dir], allowedOrigins: ['https://example.invalid']}})).toMatchObject({kind: 'unsupported', rule: 'single-source-required'});
       expect(fetches).toBe(0);
     } finally {globalThis.fetch = previous;}
   });
@@ -213,7 +213,7 @@ describe('independently asserted portable direct capsule boundary', () => {
     // Reconstruction catches stale claimed contract even with a real new file
     // and honest source digest; the original descriptor may not rescue it.
     const changed = await source(original.replace('name="days" type="xs:int"', 'name="days" type="xs:string"'));
-    expect(await reconstructDirectSourceCapsule(forged, changed.file, {policy: {fileRoots: [changed.dir]}})).toMatchObject({kind: 'incompatible-artifact'});
+    expect(await reconstructDirectSourceCapsule(forged, changed.file, {limits: {}, policy: {fileRoots: [changed.dir]}})).toMatchObject({kind: 'incompatible-artifact'});
     // Only issued reconstructions may be used as expected contracts.
     const fresh = await contract();
     expect(() => checkDirectSourceCompatibility(forged, fresh, selection)).toThrow(TypeError);

@@ -1,6 +1,7 @@
+import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 /** Internal, buffered, bare-root XML codec. No SOAP envelope or dispatch. */
 import {checkSemanticBudget} from './semanticBudget.js';
-import {dataOwnership, DataOwnershipLimitError} from './dataOwnership.js';
+import {DataOwnershipLimitError} from './dataOwnership.js';
 import {types} from 'node:util';
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
@@ -68,18 +69,20 @@ function run<T extends {readonly usage: ResolverUsage}>(contract: DirectOperatio
        check(); return budget.compareText(f.name, direction.name) === 0;
       })?.root : contract[direction.kind];
       if (mapping.root !== root) throw new TypeError('Incompatible direct codec root');
-      const configured = options.limits === undefined ? {} : dataOwnership.snapshot(options.limits, check);
+      const configured = options.limits === undefined ? {} : directDataOwnership(budget).snapshot(options.limits, check);
       if (!configured || typeof configured !== 'object' || Array.isArray(configured)) throw new TypeError('Data-only XML limits required');
       for (const key of Reflect.ownKeys(configured)) {
         if (typeof key !== 'string' || !['maxBytes', 'maxDepth', 'maxNodes', 'maxText'].includes(key)) throw new TypeError('Unknown XML limit');
       }
 
-      const limits: {-readonly [K in keyof Required<DirectXmlLimits>]: number} = {...DIRECT_XML_LIMITS};
+      const limits: {-readonly [K in keyof Required<DirectXmlLimits>]: number} = {
+        maxBytes: directLimit(budget, DIRECT_XML_LIMITS.maxBytes), maxDepth: directLimit(budget, DIRECT_XML_LIMITS.maxDepth),
+        maxNodes: directLimit(budget, DIRECT_XML_LIMITS.maxNodes), maxText: directLimit(budget, DIRECT_XML_LIMITS.maxText),
+      };
       for (const key of ['maxBytes', 'maxDepth', 'maxNodes', 'maxText'] as const) {
         const value = configured[key];
         if (value !== undefined) {
           if (!Number.isSafeInteger(value) || value < 1) throw new RangeError('XML limits must be positive safe integers');
-          if (value > DIRECT_XML_LIMITS[key]) throw new Stop('resource-limit', 'XML profile limit');
           limits[key] = value;
         }
       }
@@ -103,7 +106,7 @@ function run<T extends {readonly usage: ResolverUsage}>(contract: DirectOperatio
 /** Validate fresh values using the delivered inverse, then emit deterministic UTF-8. */
 export function encodeDirectXml(contract: DirectOperationContract, mapping: unknown, application: unknown, options: Options = {}): DirectEncodedXml | DirectCodecFailure {
   return run(contract, mapping, options, (owned, {budget, limits, check}) => {
-    const expanded = expandDirectValue(contract, owned, application, options);
+    const expanded = expandDirectValue(contract, owned, application, {...options, maxText: Math.min(limits.maxText, limits.maxBytes), maxItems: Math.min(limits.maxNodes, limits.maxBytes)});
     if (expanded.kind !== 'direct-expanded') return expanded;
 
     const pieces: string[] = [];
@@ -190,7 +193,7 @@ export function decodeDirectXml(contract: DirectOperationContract, mapping: unkn
     if (structural.kind !== 'structural-match') return structural;
     const validated = assessDirectScalars(contract, structural, options);
     if (validated.kind !== 'direct-value') return validated;
-    check(); dataOwnership.freeze(payload); check();
+    check(); directDataOwnership(budget).freeze(payload); check();
     return Object.freeze({kind: 'direct-decoded' as const, admitted: false as const, payload, validated,
       usage: Object.freeze({...budget.usage()})});
   });

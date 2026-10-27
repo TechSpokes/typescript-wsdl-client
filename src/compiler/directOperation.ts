@@ -1,3 +1,4 @@
+import {directLimit} from './directExecutionPolicy.js';
 /** Transient source-owned schema selection. This module grants no runtime admission. */
 import {loadSemanticSchemaInput} from '../loader/schemaInput.js';
 import type {SchemaInput, SchemaInputOptions} from '../loader/schemaInput.js';
@@ -6,7 +7,7 @@ import type {ExpandedName, SyntaxElement, SyntaxSource} from '../loader/orderedS
 import {globalId} from './canonicalGraph.js';
 import type {ElementNode, GraphNode, Reference, WsdlNode} from './canonicalGraph.js';
 import type {SemanticContext} from './semanticContext.js';
-import {createSemanticBudget, DEFAULT_MAX_NODES} from './semanticBudget.js';
+import {createApplicationBudget, DEFAULT_MAX_NODES, isApplicationUnmetered} from './semanticBudget.js';
 import type {SemanticBudget, SemanticBudgetLimits, ResolverUsage} from './semanticBudget.js';
 import {qualifyDirectSource} from './checkedSourcePreparation.js';
 import type {DirectSourceQualification} from './checkedSourcePreparation.js';
@@ -62,7 +63,7 @@ class Cancelled extends Error {}
 export async function selectDirectOperation(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
 }>): Promise<DirectOperationResult> {
-  return selectDirectOperationInRequest(source, selector, options, createSemanticBudget(options.limits));
+  return selectDirectOperationInRequest(source, selector, options, createApplicationBudget(options.limits));
 }
 
 /** Private-module composition seam: portable reading and selection share one request. */
@@ -78,10 +79,10 @@ export async function selectDirectOperationInRequest(source: string, selector: D
     const ownedSelector = budget.freeze(budget.snapshot(selector));
     const name = (value: ExpandedName | undefined) => value && typeof value.namespace === 'string' && typeof value.local === 'string' && isXmlNCName(value.local);
     if (!name(ownedSelector.portType) || !name(ownedSelector.binding) || typeof ownedSelector.operation !== 'string' || !isXmlNCName(ownedSelector.operation)) return failure('selection-refused', 'explicit-selector');
-    const input = await loadSemanticSchemaInput(source, {...options.loading, chargeWork: amount => {check(); budget.chargeWork(amount);}});
+    const input = await loadSemanticSchemaInput(source, {...options.loading, limits: {resourceMs: isApplicationUnmetered(budget) ? 0 : 15000, totalIoMs: isApplicationUnmetered(budget) ? 0 : 120000, syntaxDepth: directLimit(budget, 256), resourceBytes: directLimit(budget, 8 * 1024 * 1024), totalBytes: directLimit(budget, 64 * 1024 * 1024), ...options.loading.limits}, chargeWork: amount => {check(); budget.chargeWork(amount);}});
     check();
     const result = budget.guard(() => {
-      const qualified = qualifyDirectSource(input, {budget, maxNodes: options.limits?.maxNodes ?? DEFAULT_MAX_NODES, check});
+      const qualified = qualifyDirectSource(input, {budget, maxNodes: options.limits?.maxNodes ?? directLimit(budget, DEFAULT_MAX_NODES), check});
       if (qualified.kind === 'resource-limit') return failure('resource-limit', 'source-qualification');
       if (qualified.kind === 'source-preparation-failed' && qualified.category === 'resource-limit') return failure('resource-limit', 'source-preparation');
       if (qualified.kind !== 'qualified-source') return failure(qualified.kind === 'source-preparation-failed' && qualified.category === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', 'source-preparation');

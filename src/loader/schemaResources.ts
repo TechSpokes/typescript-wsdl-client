@@ -23,7 +23,7 @@ export type FetchedSchemaResource = ResourceMetadata & Readonly<{bytes: Uint8Arr
 export function loadingLimits(overrides: Partial<LoadingLimits> = {}): LoadingLimits {
   const limits = {...DEFAULT_LOADING_LIMITS, ...overrides};
   for (const [key, value] of Object.entries(limits)) {
-    if (!Number.isSafeInteger(value) || value < (key === "redirects" ? 0 : 1)) {
+    if (!Number.isSafeInteger(value) || value < (['redirects', 'resourceMs', 'totalIoMs'].includes(key) ? 0 : 1)) {
       throw new RangeError(`Invalid schema loading limit: ${key}`);
     }
   }
@@ -118,15 +118,15 @@ export class SchemaResourceLoader {
     const pinned = this.resources.get(this.resourceKeys.get(this.aliases.get(requested) ?? requested) ?? "");
     if (pinned) return pinned;
     const started = performance.now();
-    const remaining = this.limits.totalIoMs - this.ioMs;
+    const remaining = this.limits.totalIoMs === 0 ? Infinity : this.limits.totalIoMs - this.ioMs;
     if (remaining < 0) throw new SchemaLoadingError("transport", "Total schema I/O deadline exhausted");
-    const budget = Math.min(this.limits.resourceMs, remaining);
+    const budget = Math.min(this.limits.resourceMs === 0 ? Infinity : this.limits.resourceMs, remaining);
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
     let performedIo = new URL(requested).protocol === "file:";
     const timeout = new Promise<never>((_, reject) => {
       // Limits are inclusive: an exactly-at-deadline completed resource is admitted.
-      timer = setTimeout(() => { controller.abort(); reject(new SchemaLoadingError("transport", "Schema resource or total I/O deadline exceeded")); }, budget + 1);
+      if (Number.isFinite(budget)) timer = setTimeout(() => { controller.abort(); reject(new SchemaLoadingError("transport", "Schema resource or total I/O deadline exceeded")); }, budget + 1);
     });
     try {
       const task = (async () => {

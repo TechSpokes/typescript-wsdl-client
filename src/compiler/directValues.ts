@@ -1,6 +1,7 @@
+import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 /** Internal direct value chain. No XML encoding, transport or runtime admission. */
 import {checkSemanticBudget} from './semanticBudget.js';
-import {dataOwnership, DataOwnershipLimitError} from './dataOwnership.js';
+import {DataOwnershipLimitError} from './dataOwnership.js';
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract, DirectMessageRoot} from './directOperation.js';
 import {inspectDirectStructuralMatch, matchDirectOperation} from './directStructure.js';
@@ -38,7 +39,7 @@ export interface DirectValueFailure {
   readonly kind: 'scalar-invalid' | 'value-invalid' | 'unsupported' | 'cancelled' | 'resource-limit';
   readonly rule: string; readonly schemaPath?: string; readonly payloadPath?: string; readonly usage: ResolverUsage;
 }
-type Options = Readonly<{signal?: AbortSignal}>;
+type Options = Readonly<{signal?: AbortSignal; maxText?: number; maxItems?: number}>;
 const mappings = new WeakMap<object, DirectOperationContract>();
 const values = new WeakMap<object, DirectOperationContract>();
 const expansions = new WeakMap<object, DirectOperationContract>();
@@ -68,7 +69,7 @@ function run<T>(contract: DirectOperationContract, options: Options, work: (s: S
     const result = budget.guard(() => {
       check();
       return work({budget, check, publish(value) {
-        dataOwnership.freeze(value); check();
+        directDataOwnership(budget).freeze(value); check();
         return Object.freeze({...value, usage: Object.freeze({...budget.usage()})});
       }});
     });
@@ -85,7 +86,7 @@ function run<T>(contract: DirectOperationContract, options: Options, work: (s: S
 function mappingFor(contract: DirectOperationContract, direction: DirectDirection, s: Session): DirectValueMapping {
   const {context} = inspectDirectOperation(contract);
   const {budget, check} = s;
-  const owned = dataOwnership.snapshot(direction, check);
+  const owned = directDataOwnership(budget).snapshot(direction, check);
   if (!owned || typeof owned !== 'object' || Array.isArray(owned)) throw new TypeError('Data-only direct direction required');
   let root: DirectMessageRoot;
   if (owned.kind === 'input' || owned.kind === 'output') root = contract[owned.kind];
@@ -183,7 +184,7 @@ export function expandDirectValue(contract: DirectOperationContract, suppliedMap
      check();
       if (builtin.local === 'string') {
         if (typeof value !== 'string') return invalid('string-required');
-        if (value.length > DIRECT_VALUE_LIMITS.maxText - textUnits) throw new Stop('resource-limit', 'application text limit');
+        if (value.length > (options.maxText ?? directLimit(budget, DIRECT_VALUE_LIMITS.maxText)) - textUnits) throw new Stop('resource-limit', 'application text limit');
         textUnits += value.length;
          return value;
       }
@@ -202,7 +203,7 @@ export function expandDirectValue(contract: DirectOperationContract, suppliedMap
     };
     const leaf = (name: ExpandedName, lexical: string, path: string): SyntaxElement => {
      check();
-      if (++items > DIRECT_VALUE_LIMITS.maxItems) throw new Stop('resource-limit', 'application item limit');
+      if (++items > (options.maxItems ?? directLimit(budget, DIRECT_VALUE_LIMITS.maxItems))) throw new Stop('resource-limit', 'application item limit');
       return {kind: 'element', name, lexicalName: name.local, namespaces: Object.create(null) as Record<string, string>,
         baseUri: 'urn:typescript-wsdl-client:generated-direct-value', attributes: [], source: source(path),
         children: [{kind: 'text', value: lexical, source: source(path + '/text')}]};
@@ -237,7 +238,7 @@ export function expandDirectValue(contract: DirectOperationContract, suppliedMap
         if (slot.particle.occurs.max === 'unbounded') {
           if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype) return invalid('dense-array-required');
           const length = data(value, 'length') as number;
-          if (length > DIRECT_VALUE_LIMITS.maxItems - items) throw new Stop('resource-limit', 'application item limit');
+          if (length > (options.maxItems ?? directLimit(budget, DIRECT_VALUE_LIMITS.maxItems)) - items) throw new Stop('resource-limit', 'application item limit');
           if (slot.particle.occurs.min === '1' && length === 0) return invalid('required-repetition');
           // Check actual repetition length before key enumeration or inverse construction.
 

@@ -1,10 +1,22 @@
 import {describe, expect, it} from 'vitest';
 import {dataOwnership, createDataOwnership, DataOwnershipLimitError} from '../../src/compiler/dataOwnership.js';
-import {createSemanticBudget} from '../../src/compiler/semanticBudget.js';
+import {createSemanticBudget, createApplicationBudget, isApplicationUnmetered} from '../../src/compiler/semanticBudget.js';
 import {DIRECT_VALUE_LIMITS} from '../../src/compiler/directValues.js';
 import {DIRECT_XML_LIMITS} from '../../src/compiler/directCodec.js';
 
 describe('data ownership without synthetic resource prices', () => {
+  it('does not apply profiling quotas or collect counters during normal execution', () => {
+    const normal = createApplicationBudget();
+    expect(isApplicationUnmetered(normal)).toBe(true);
+    normal.chargeWork(Number.MAX_SAFE_INTEGER); normal.chargeWork(Number.MAX_SAFE_INTEGER);
+    normal.reserveNodes(Number.MAX_SAFE_INTEGER);
+    expect(normal.exhausted()).toBe(false);
+    expect(normal.usage()).toEqual({nodes: 0, work: 0});
+    expect(normal.sorted(['b', 'a', 'a'], normal.compareText)).toEqual(['a', 'a', 'b']);
+    const profiling = createApplicationBudget({maxWork: 100});
+    expect(isApplicationUnmetered(profiling)).toBe(false);
+    expect(profiling.guard(() => profiling.chargeWork(101))).toMatchObject({kind: 'resource-limit'});
+  });
   it('bounds metadata entries, text and depth at inclusive actual limits', () => {
     const copier = createDataOwnership(() => {}, {maxEntries: 3, maxText: 4, maxDepth: 1});
     expect(copier.snapshot({x: 'abc'})).toEqual({x: 'abc'});

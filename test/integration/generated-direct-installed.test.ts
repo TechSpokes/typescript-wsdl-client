@@ -17,6 +17,7 @@ it('compiles and executes actual generated installed clients with checkout acces
   const variants = [
     {name: 'forecast', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast', source: original},
     {name: 'padded', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast', source: original.replace('<wsdl:types>', '<!--' + 'padding '.repeat(1024) + '--><wsdl:types>')},
+    {name: 'large', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast', source: original.replace('<wsdl:types>', '<!--' + 'padding '.repeat(10000) + '--><wsdl:types>')},
     {name: 'alias', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast', source: original.replaceAll('xmlns:t=', 'xmlns:q=').replaceAll('t:', 'q:').replaceAll('xmlns:xs=', 'xmlns:x=').replaceAll('xs:', 'x:')},
     {name: 'renamed', ns: 'urn:renamed:climate', prefix: 'Climate', op: 'ReadClimate', source: original.replaceAll('urn:checked:forecast', 'urn:renamed:climate').replaceAll('GetForecast', 'ReadClimate').replaceAll('Forecast', 'Climate').replaceAll('city', 'place-name').replaceAll('days', 'class').replaceAll('temperature', 'value-list').replaceAll('complete', 'default')},
     {name: 'shapes', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'createClient', source: original.replaceAll('GetForecast', 'createClient').replace('<xs:element name="city" type="xs:string"/><xs:element name="days" type="xs:int"/>', '<xs:element name="city" type="xs:string" minOccurs="0"/><xs:element name="days" type="xs:int" minOccurs="1" maxOccurs="unbounded"/>')},

@@ -1,3 +1,4 @@
+import {directLimit} from '../compiler/directExecutionPolicy.js';
 /** Internal native-plan generator. Deliberately absent from index.ts and the CLI. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {writeFileSync} from 'node:fs';
@@ -38,7 +39,7 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
     bound += 6 * (selector.operation.length * 2 + selector.portType.namespace.length + selector.portType.local.length
       + selector.binding.namespace.length + selector.binding.local.length + expected.selection.service.namespace.length
       + expected.selection.service.local.length + expected.selection.port.length);
-    if (bound > MAX_SOURCE_BYTES) return failure('resource-limit', 'generated-source-byte-limit');
+    if (bound > directLimit(budget, MAX_SOURCE_BYTES)) return failure('resource-limit', 'generated-source-byte-limit');
 
     const literal = (text: string): string => JSON.stringify(text).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     const primitive = (name: string): string => {
@@ -74,7 +75,6 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
       'export interface Name { readonly namespace: string; readonly local: string }',
       'export interface Options {',
       '  readonly localSource: string; readonly fileRoots: readonly string[]; readonly capsule: Uint8Array;',
-      '  readonly budget?: { readonly maxWork?: number; readonly maxNodes?: number };',
       '  readonly soap: { readonly service: Name; readonly port: string; readonly endpoint: string;',
       '    readonly allowEndpoint: (endpoint: URL) => boolean; readonly signal?: AbortSignal;',
       '    readonly timeoutMs?: number; readonly capabilities?: readonly string[];',
@@ -107,7 +107,7 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
       '',
     ];
     const source = composeGeneratedSource(lines.join('\n'), resolvePreamble('direct-client'));
-    if (Buffer.byteLength(source) > MAX_SOURCE_BYTES) return failure('resource-limit', 'generated-source-byte-limit');
+    if (Buffer.byteLength(source) > directLimit(budget, MAX_SOURCE_BYTES)) return failure('resource-limit', 'generated-source-byte-limit');
     if (signal?.aborted) return failure('cancelled', 'cooperative-cancellation');
 
     const result = Object.freeze({kind: 'generated-direct-client' as const, source, capsule: capsule.bytes, admitted: false as const, usage: Object.freeze({...budget.usage()})});

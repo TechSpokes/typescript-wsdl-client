@@ -8,7 +8,7 @@ import {DIRECT_METADATA_LIMITS} from '../../src/compiler/dataOwnership.js';
 function configured() {
   let endpointCalls = 0;
   const bytes = Buffer.from('{}');
-  const options: DirectClientOptions = {localSource: '/never-read.wsdl', fileRoots: [], capsule: bytes,
+  const options: DirectClientOptions = {budget: {}, localSource: '/never-read.wsdl', fileRoots: [], capsule: bytes,
     soap: {service: {namespace: 'urn:independent', local: 'Service'}, port: 'Port', endpoint: 'http://127.0.0.1:1/never',
       allowEndpoint: () => {endpointCalls++; return false;}}};
   return {options, execute: () => directClientRuntime.execute(bytes.toString('base64'), {}, options), endpointCalls: () => endpointCalls};

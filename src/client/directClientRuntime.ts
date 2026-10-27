@@ -1,8 +1,9 @@
+import {directDataOwnership, directLimit} from '../compiler/directExecutionPolicy.js';
 /** Private P3.7 binding. No public package entry or alternate SOAP implementation. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
-import {dataOwnership, DataOwnershipLimitError} from '../compiler/dataOwnership.js';
+import {DataOwnershipLimitError} from '../compiler/dataOwnership.js';
 import {types} from 'node:util';
-import {createSemanticBudget} from '../compiler/semanticBudget.js';
+import {createApplicationBudget} from '../compiler/semanticBudget.js';
 import type {SemanticBudgetLimits, ResolverUsage} from '../compiler/semanticBudget.js';
 import {reconstructDirectSourceCapsuleInRequest, checkDirectSourceCompatibility, DIRECT_CAPSULE_LIMITS} from '../compiler/directSourceCapsule.js';
 import type {DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
@@ -60,7 +61,7 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       owned.budget = Object.freeze(copied);
     }
     options = owned as unknown as DirectClientOptions;
-    const budget = createSemanticBudget(options.budget);
+    const budget = createApplicationBudget(options.budget);
     const fail = (kind: DirectClientFailure['kind'], rule: string): DirectClientFailure => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
     try {
       const optionRule = directSoapOptionsShape(options.soap, () => checkSemanticBudget(budget));
@@ -73,10 +74,10 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       const soap: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
       for (const key of Reflect.ownKeys(options.soap)) soap[key as string] = Object.getOwnPropertyDescriptor(options.soap, key)!.value;
       for (const key of ['service', 'port', 'endpoint', 'timeoutMs', 'limits', 'capabilities']) {
-        if (Object.hasOwn(soap, key)) soap[key] = dataOwnership.freeze(dataOwnership.snapshot(soap[key], check));
+        if (Object.hasOwn(soap, key)) soap[key] = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(soap[key], check));
       }
-      options = Object.freeze({...options, fileRoots: dataOwnership.freeze(dataOwnership.snapshot(options.fileRoots, check)), soap: Object.freeze(soap) as unknown as DirectSoapOptions});
-      if (typeof expectedBase64 !== 'string' || expectedBase64.length > Math.ceil(DIRECT_CAPSULE_LIMITS.maxBytes / 3) * 4) return fail('incompatible-artifact', 'generated-capsule-limit');
+      options = Object.freeze({...options, fileRoots: directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(options.fileRoots, check)), soap: Object.freeze(soap) as unknown as DirectSoapOptions});
+      if (typeof expectedBase64 !== 'string' || expectedBase64.length > Math.ceil(directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes) / 3) * 4) return fail('incompatible-artifact', 'generated-capsule-limit');
       // The exact embedded artifact pins the emitted types. Check actual byte extent
       // before copying; do not invoke caller byte getters.
 
@@ -84,7 +85,7 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       const typed = Object.getPrototypeOf(Uint8Array.prototype) as object;
       const backing: unknown = Object.getOwnPropertyDescriptor(typed, 'buffer')!.get!.call(options.capsule);
       const length = Object.getOwnPropertyDescriptor(typed, 'byteLength')!.get!.call(options.capsule) as number;
-      if (types.isSharedArrayBuffer(backing) || length > DIRECT_CAPSULE_LIMITS.maxBytes) return fail('incompatible-artifact', 'capsule-bytes-required');
+      if (types.isSharedArrayBuffer(backing) || length > directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes)) return fail('incompatible-artifact', 'capsule-bytes-required');
 
       const bytes = new Uint8Array(length);
       Uint8Array.prototype.set.call(bytes, options.capsule);

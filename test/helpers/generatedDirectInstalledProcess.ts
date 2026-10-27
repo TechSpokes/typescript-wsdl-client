@@ -39,6 +39,7 @@ try {
   for (const v of [
     {name: 'forecast', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'},
     {name: 'padded', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'},
+    {name: 'large', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'},
     {name: 'alias', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'GetForecast'},
     {name: 'renamed', ns: 'urn:renamed:climate', prefix: 'Climate', op: 'ReadClimate'},
     {name: 'shapes', ns: 'urn:checked:forecast', prefix: 'Forecast', op: 'createClient'},
@@ -56,14 +57,15 @@ try {
     const renamed = v.name === 'renamed', scalar = v.name === 'scalar', empty = v.name === 'empty';
     const city = renamed ? 'place-name' : 'city', days = renamed ? 'class' : 'days';
     const temperature = renamed ? 'value-list' : 'temperature', complete = renamed ? 'default' : 'complete';
-    const input = scalar ? true : empty ? {} : {[city]: 'Paris', [days]: v.name === 'shapes' ? [1, 2] : 2};
+    const cityValue = v.name === 'large' ? 'x'.repeat(1024 * 1024 + 128) : 'Paris';
+    const input = scalar ? true : empty ? {} : {[city]: cityValue, [days]: v.name === 'shapes' ? [1, 2] : 2};
     const responseRoot = v.op + 'Response';
-    for (const temperatures of [[], [18], [18, -2]]) {
-      reply = envelope(`<r:${responseRoot} xmlns:r="${v.ns}">${scalar ? '42' : empty ? '' : `<r:${city}>Paris</r:${city}>${temperatures.map(t => `<r:${temperature}>${t}</r:${temperature}>`).join('')}<r:${complete}>true</r:${complete}>`}</r:${responseRoot}>`);
+    for (const temperatures of v.name === 'large' ? [[]] : [[], [18], [18, -2]]) {
+      reply = envelope(`<r:${responseRoot} xmlns:r="${v.ns}">${scalar ? '42' : empty ? '' : `<r:${city}>${cityValue}</r:${city}>${temperatures.map(t => `<r:${temperature}>${t}</r:${temperature}>`).join('')}<r:${complete}>true</r:${complete}>`}</r:${responseRoot}>`);
       const result = await call(input, options); calls++;
       assert.equal(result.kind, 'soap-response', JSON.stringify(result));
       if (result.kind !== 'soap-response') throw new Error('response required');
-      assert.deepEqual(plain(result.value), scalar ? 42 : empty ? {} : JSON.parse(JSON.stringify({[city]: 'Paris', [temperature]: temperatures, [complete]: true})));
+      assert.deepEqual(plain(result.value), scalar ? 42 : empty ? {} : JSON.parse(JSON.stringify({[city]: cityValue, [temperature]: temperatures, [complete]: true})));
       assert.equal(Buffer.from(result.responseBytes).toString(), reply);
       const captured = requests.at(-1)!;
       assert.equal(captured.action, `"urn:checked:${v.op}"`);
@@ -73,7 +75,13 @@ try {
       parser.on('opentag', tag => names.push(`{${tag.uri}}${tag.local}`)); parser.on('text', value => texts.push(value));
       parser.write(captured.xml).close();
       assert.deepEqual(names, [`{${SOAP}}Envelope`, `{${SOAP}}Body`, `{${v.ns}}${v.op}`, ...(scalar || empty ? [] : [`{${v.ns}}${city}`, `{${v.ns}}${days}`, ...(v.name === 'shapes' ? [`{${v.ns}}${days}`] : [])])]);
-      assert.deepEqual(texts, scalar ? ['true'] : empty ? [] : v.name === 'shapes' ? ['Paris', '1', '2'] : ['Paris', '2']);
+      assert.deepEqual(texts, scalar ? ['true'] : empty ? [] : v.name === 'shapes' ? ['Paris', '1', '2'] : [cityValue, '2']);
+    }
+    if (v.name === 'large') {
+      const before = requests.length;
+      const limited = await call(input, {...options, soap: {...options.soap, limits: {maxBytes: 1024}}});
+      assert.equal(limited.kind, 'resource-limit'); assert.equal(requests.length, before); refusals++;
+      continue;
     }
     for (status of [200, 500]) {
       const detail = scalar ? 'fault text' : empty ? '' : '<r:code>NO_CITY</r:code><r:message>Unknown city</r:message>';

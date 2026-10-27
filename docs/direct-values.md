@@ -4,50 +4,52 @@ Internal direct mapping, bare-root XML codec and portable source contract. See t
 
 ## Current direct-client resource policy
 
-This amendment implements the October 27, 2026 request to simplify the resource policy. It supersedes the earlier direct-path claims below that procedural copying, serialization, freezing and publication reserve hypothetical allocation costs. Existing source authority, semantic validation, payload validity and failure categories remain required.
+Normal generated-client execution has no profiling work quota, payload-size quota or default SOAP deadline. The application hosting a client or REST gateway owns its resource capacity, timeout choices, logging and failure handling. This policy implements the October 27, 2026 clarification and supersedes older direct-path claims below that test budgets protect consumer applications.
 
-### Plan and implemented boundaries
+### Plan and implementation
 
-The implementation separates data ownership from semantic work accounting, removes synthetic procedural prices, replaces implicit protection with concrete input caps, and tests both useful execution and refusal. It reuses the existing copier and semantic engines rather than adding a second validator or an unlimited budget implementation.
+The implementation separates data ownership from profiling, removes artificial allocation reservations, makes normal execution unmetered, and keeps bounded profiles explicit in tests. It reuses the existing copier, validators, codec and transport. Source authorization, native contract identity, correct schema/protocol validation and rejection of unsupported features remain required; they are not resource quotas.
 
-| Boundary | Actual limit or protection | Reason |
+`createApplicationBudget()` supplies the semantic engine interface without collecting counters or rejecting work. Tests explicitly supply profiling limits to opt into the existing measured/bounded engine. The default 125-million-work/100,000-node research profile is unchanged for those tests and research tools; it is not silently installed into ordinary generated calls. Zero usage counters in normal mode mean metering is disabled, not that execution was free.
+
+The generated client options do not expose the internal profiling budget. A caller may still explicitly supply SOAP byte/depth/text/node limits or a timeout for its own application policy. Only supplied size/depth values are enforced in normal mode; an absent timeout or timeout zero creates no SOAP deadline. Configuration is owned before asynchronous use, preserving the earlier mutation fix independently of profiling.
+
+Portable capsule/source handling, generated-file emission, value inverse construction and metadata ownership likewise do not inherit the bounded test profile during normal execution. Existing low-level numeric interfaces use JavaScript's safe-integer representation ceiling to express the absence of a configured quota; this is not a supported maximum workload or a resource-safety promise. Actual process, runtime and operating-system limits can still fail, and those failures belong to the hosting application.
+
+### Testing and optimization profiles
+
+These numbers are selected only when a test opts into profiling. They are not normal client defaults or guarantees that all data below them fits memory.
+
+| Test boundary | Profile value | Purpose |
 | --- | --- | --- |
-| Local WSDL | 64 KiB UTF-8, one authorized source | Bound parser/bootstrap input and forbid implicit graph fetches |
-| Capsule | 256 KiB and JSON depth 16 | Bound portable data decoding |
-| XML | 1 MiB bytes/text, depth 256, 100,000 nodes | Bound buffering, nesting and traversal |
-| Fresh values | 1 MiB string content, 100,000 scalar items | Bound inverse construction before XML exists |
-| Option metadata copies | 100,000 entries, 1 MiB text, depth 256 | Refuse oversized graphs before copying them |
-| Generated file | 512 KiB conservative preassembly bound | Bound emission and file writes |
-| HTTP | 15-second default timeout and AbortSignal | Bound stalled I/O and support cancellation |
-| Native semantic engines | Existing work/node counters | Stop expensive qualification, matching and scalar algorithms |
+| Local WSDL | 64 KiB | Reproduce small-source qualification cases |
+| Capsule | 256 KiB | Exercise at/beyond byte-boundary behavior |
+| XML | 1 MiB bytes/text, depth 256, 100,000 nodes | Test concrete buffer and traversal boundaries |
+| Fresh values | 1 MiB string content, 100,000 scalar items | Test failure before inverse construction |
+| Metadata copies | 100,000 entries, 1 MiB text, depth 256 | Exercise malformed option-graph cases |
+| Generated file | 512 KiB conservative bound | Test emission refusal |
+| Native algorithms | Existing work/node counters | Compare optimization behavior and test exhaustion |
 
-XML options can lower the fixed profile limits; values above the profile fail before dispatch. The optional internal `budget` controls the existing native semantic allowance; it is neither a byte limit nor a CPU/memory measurement. Its legacy default remains 125 million work units and 100,000 cumulative analysis nodes, and an exhausted semantic request stays failed throughout that invocation. Every independent generated call still starts fresh authority and counters.
+Text counters use UTF-16 units; byte counters use encoded bytes. Work units remain an internal diagnostic model, not milliseconds, CPU time, heap allocation or RSS. Historical measurements and default research-engine accounting are not rewritten. The extracted ownership implementation preserves those counters when profiling is explicitly selected.
 
-Routine base64/JSON handling, source copying, codec emission, SOAP envelope handling, generated-file construction and publication no longer receive fixed or byte-multiplied work prices. The node-soap bootstrap no longer charges `4 * sourceBytes²` or invented bootstrap node allocations. Actual parser/analysis node visits and the existing structural/scalar algorithms still enforce their counters; broad schema preparation/resolver accounting is intentionally unchanged.
+Routine base64/JSON handling, copying, freezing, source bootstrap, codec emission and publication no longer assign artificial work prices. In particular, the node-soap bootstrap does not reserve `4 * sourceBytes²` or invented bootstrap node allocations. Profiling exhaustion stays sticky within a profiled test invocation; each independent invocation creates fresh state.
 
-The bounded ownership copier preserves data-only records, safe prototype-sensitive keys, sharing and caller immutability. Configuration is copied before asynchronous use so later caller mutations cannot change an invocation's policy. Ownership does not require synthetic work pricing; copies of untrusted metadata have explicit entry/text/depth caps instead. Exceeded caps return a resource-limit failure with no usable result.
+### Alternatives and product decision
 
-### Justification and alternatives
-
-Bytes, depth, node and collection limits protect concrete buffers and traversals. A semantic work counter is useful for expensive algorithms where small inputs can cause substantial search or comparison work; charging every ordinary copy does not establish actual CPU or memory containment. The shared semantic engines retain their existing accounting and calibration in this change, including legacy copy charges internal to those engines.
-
-| Alternative | Decision in this change | Tradeoff |
+| Approach | Decision | Consequence |
 | --- | --- | --- |
-| Targeted counters plus concrete caps | Implemented for the private direct path | Cooperative execution only |
-| Same-thread timeout for synchronous work | Not a replacement for algorithm limits | Timer cannot run while JavaScript is blocked |
-| Worker/subprocess deadline | Deferred until hard interruption is required | Startup, communication and authority-context complexity |
-| Process/container CPU and memory limits | Deployment option for hard containment | Requires operational support; a V8 heap cap alone is insufficient |
-| Remove every semantic limit | Rejected | Would leave expensive native algorithms without their current stop condition |
+| Mandatory library quotas | Removed from normal direct execution | Valid work is not rejected by a test allowance |
+| Explicit profiling limits | Retained in test/internal controls | Optimization and at/beyond-boundary evidence remain reproducible |
+| Application-selected timeout/size controls | Honored when supplied | The host chooses its own operational policy |
+| Worker/process or OS CPU/memory containment | Hosting-application option | Requires deployment and lifecycle decisions outside this library |
 
-There is no hard heap, RSS, CPU-time or instantaneous-preemption guarantee. `Reflect.ownKeys` may allocate a temporary vector for a malformed object before JavaScript can inspect its size. Native dependency work is bounded by its accepted source/input profile rather than a claimed exact allocation model. Hardware-dependent wall-clock timings are diagnostic evidence, not semantic correctness tests.
+The library makes no hard heap, RSS, CPU-time or preemption guarantee. A large workload can exhaust process resources; the hosting application observes and handles that failure. Same-thread timers cannot interrupt synchronous JavaScript. Format, schema and authorization checks remain separate from resource profiling, including the existing restriction to the supported direct grammar and owned-loopback adapter.
 
-### Verification
+### Verification and observed improvement
 
-Focused tests run actual loopback SOAP and the separately installed generated wrapper using a WSDL larger than 10 KiB, which previously exhausted the default allowance from the quadratic reservation alone. They retain HTTP200/500 faults, wrong-source/authority/security refusals, getter/proxy and asynchronous-mutation controls, cancellation, exact actual limits and sticky semantic exhaustion. Pure capsule reading and ordinary ownership copying are checked to spend no semantic work units. Shared semantic-budget/reference suites verify that extracting the ownership implementation preserves the existing native accounting.
+The diagnostic probe in `test/helpers/directResourceProbe.ts` compares separately loaded builds against the same local server and 10,655-byte WSDL. The archived P3.7 build returned resource-limit with zero requests; the changed build returned soap-response with one request. This demonstrates removal of an artificial rejection, not a latency speedup: the old build never completed equivalent work.
 
-
-The diagnostic probe in `test/helpers/directResourceProbe.ts` compares separately loaded builds against the same local server and 10,655-byte WSDL. The archived P3.7 tarball at `e908675` returned resource-limit with zero requests; the changed build returned soap-response with one request. A capsule-only reader allowance of 4,096 units was exhausted by the old build (80 units retained before a rejected reservation); the new reader returned data at its unchanged initial 79 units. These results demonstrate removal of an artificial rejection, not a latency speedup: the old build never completed equivalent SOAP work.
-
+Installed-consumer tests additionally generate and execute a client from a WSDL above 64 KiB with request and response values above 1 MiB using normal defaults. The same generated call explicitly given a 1 KiB application limit refuses before HTTP. Existing request/response/fault, authority, optional/array, mutation/getter/proxy and cancellation controls remain. Tests of profiling limits now opt in explicitly; normal-mode tests assert that no work quota or counters are activated.
 
 ## Implementation checkpoint
 
@@ -248,7 +250,7 @@ The inherited node-soap bootstrap refuses `__proto__`, `constructor`, `toString`
 
 Emission bounds variable source contributions against a 512 KiB output ceiling before building source strings. `writeDirectClient` authenticates the bounded artifact and refuses an already failed semantic request; procedural emission and writes have no synthetic allocation price. Generated code contains no source path, checkout dependency or private package import.
 
-Native semantic accounting spans qualification and validation without resetting; routine byte copying, base64 comparison, serialization and publication use actual input/output caps. Separate calls get separate budgets; exhausted calls return no partial usable value. Existing source/capsule/XML caps and cooperative cancellation remain in force; the synthetic dependency-bootstrap reservation is removed by the current resource-policy amendment. This is engineering accounting, not a hard heap or preemption guarantee; malformed own-key vector allocation has the same intrinsic qualification as the existing adapter.
+Native semantic accounting spans qualification and validation without resetting; routine byte copying, base64 comparison, serialization and publication use actual input/output caps. Separate calls get separate budgets; exhausted calls return no partial usable value. Normal calls no longer inherit the old source/capsule/XML test caps or semantic work allowance; cooperative cancellation and any explicit application-selected limits remain available. This is engineering accounting, not a hard heap or preemption guarantee; malformed own-key vector allocation has the same intrinsic qualification as the existing adapter.
 
 [Installed tests](../test/integration/generated-direct-installed.test.ts) generate bounded files for Forecast, renamed and prefix-aliased sources, optional/nonempty-array shapes, scalar and empty roots. They install the actual npm tarball in another directory, compile independently authored valid/invalid TypeScript and execute the emitted wrappers in a child with checkout reads denied. The harness permits only its consumer directory for file reads/writes and verifies real SOAP request namespace/order/scalars, response arrays and HTTP 200/500 declared faults, relocation, stale/mixed inputs, missing permissions, unsupported capabilities, cancellation and exhaustion. Node 24's permission model does not restrict sockets; endpoint restriction remains the native owned-loopback policy. Node versions exposing network permissions additionally receive the explicit loopback grant.
 

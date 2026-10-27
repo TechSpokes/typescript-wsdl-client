@@ -20,14 +20,14 @@ afterAll(async () => {await rm(scratch, {recursive: true, force: true});});
 async function fresh(source = original, choose = selector, limits?: {maxWork?: number; maxNodes?: number}) {
   const directory = await mkdtemp(path.join(scratch, 'local-'));
   const file = path.join(directory, 'source.wsdl'); await writeFile(file, source);
-  const result = await selectDirectOperation(file, choose, {loading: {policy: {fileRoots: [directory]}}, limits});
+  const result = await selectDirectOperation(file, choose, {loading: {policy: {fileRoots: [directory]}}, limits: limits ?? {}});
   if (result.kind !== 'selected') throw new Error(JSON.stringify(result));
   return {contract: result.contract, file, policy: {fileRoots: [directory]}};
 }
 async function capsule() {
   const local = await fresh(); const artifact = createDirectSourceCapsule(local.contract, selection);
   if (artifact.kind !== 'direct-capsule') throw new Error(JSON.stringify(artifact));
-  const issued = await reconstructDirectSourceCapsule(artifact.bytes, local.file, {policy: local.policy});
+  const issued = await reconstructDirectSourceCapsule(artifact.bytes, local.file, {limits: {}, policy: local.policy});
   if (issued.kind !== 'reconstructed-direct') throw new Error(JSON.stringify(issued));
   return {...local, bytes: artifact.bytes, issued};
 }
@@ -42,7 +42,7 @@ describe('portable direct data and native compatibility', () => {
     expect(Buffer.from(parsed.source.base64, 'base64').toString()).toBe(original);
     expect(Buffer.from(a.bytes).toString()).not.toContain(scratch);
     expect(Buffer.from(a.bytes).toString()).not.toContain('contextId');
-    const r = await reconstructDirectSourceCapsule(a.bytes, b.file, {policy: b.policy});
+    const r = await reconstructDirectSourceCapsule(a.bytes, b.file, {limits: {}, policy: b.policy});
     expect(r.kind).toBe('reconstructed-direct'); if (r.kind !== 'reconstructed-direct') return;
     expect(r.contract).not.toBe(a.contract); expect(r.contract.admitted).toBe(false);
     expect(r.mappings.map(m => m.direction)).toEqual([{kind: 'input'}, {kind: 'output'}, {kind: 'fault', name: 'ForecastError'}]);
@@ -101,22 +101,22 @@ describe('portable direct data and native compatibility', () => {
     expect(read(malformed(a.bytes, o => {(o.source as Record<string, unknown>).digest = '0'.repeat(64);}))).toMatchObject({kind: 'incompatible-artifact'});
     expect(read(malformed(a.bytes, o => {(o.compatibility as Record<string, unknown>).action = 'changed';}))).toMatchObject({kind: 'incompatible-artifact'});
     await writeFile(a.file, original + '\n');
-    expect(await reconstructDirectSourceCapsule(a.bytes, a.file, {policy: a.policy})).toMatchObject({kind: 'incompatible-artifact', rule: 'local-source-changed'});
+    expect(await reconstructDirectSourceCapsule(a.bytes, a.file, {limits: {}, policy: a.policy})).toMatchObject({kind: 'incompatible-artifact', rule: 'local-source-changed'});
   });
   it('rejects unpermitted roots, symlinks to outside roots and network sources without fetches', async () => {
     const a = await capsule();
-    expect(await reconstructDirectSourceCapsule(a.bytes, a.file, {policy: {}})).toMatchObject({kind: 'missing-authority'});
+    expect(await reconstructDirectSourceCapsule(a.bytes, a.file, {limits: {}, policy: {}})).toMatchObject({kind: 'missing-authority'});
     const b = await fresh(); const link = path.join(path.dirname(b.file), 'link.wsdl');
     await symlink(a.file, link);
-    expect(await reconstructDirectSourceCapsule(a.bytes, link, {policy: b.policy})).toMatchObject({kind: 'missing-authority'});
-    expect(await reconstructDirectSourceCapsule(a.bytes, 'https://example.invalid/source.wsdl', {policy: {allowedOrigins: ['https://example.invalid']}})).toMatchObject({kind: 'missing-authority'});
+    expect(await reconstructDirectSourceCapsule(a.bytes, link, {limits: {}, policy: b.policy})).toMatchObject({kind: 'missing-authority'});
+    expect(await reconstructDirectSourceCapsule(a.bytes, 'https://example.invalid/source.wsdl', {limits: {}, policy: {allowedOrigins: ['https://example.invalid']}})).toMatchObject({kind: 'missing-authority'});
   });
   it('shares inclusive sticky budget through reading, physical reading, qualification, mappings and comparison', async () => {
-    const a = await capsule(); const first = await reconstructDirectSourceCapsule(a.bytes, a.file, {policy: a.policy});
+    const a = await capsule(); const first = await reconstructDirectSourceCapsule(a.bytes, a.file, {limits: {}, policy: a.policy});
     expect(first.kind).toBe('reconstructed-direct'); if (first.kind !== 'reconstructed-direct') return;
     expect(await reconstructDirectSourceCapsule(a.bytes, a.file, {policy: a.policy, limits: {maxWork: first.usage.work}})).toMatchObject({kind: 'reconstructed-direct'});
     expect(await reconstructDirectSourceCapsule(a.bytes, a.file, {policy: a.policy, limits: {maxWork: first.usage.work - 1}})).toMatchObject({kind: 'resource-limit'});
     const controller = new AbortController(); controller.abort();
-    expect(await reconstructDirectSourceCapsule(a.bytes, a.file, {policy: a.policy, signal: controller.signal})).toMatchObject({kind: 'cancelled'});
+    expect(await reconstructDirectSourceCapsule(a.bytes, a.file, {limits: {}, policy: a.policy, signal: controller.signal})).toMatchObject({kind: 'cancelled'});
   });
 });

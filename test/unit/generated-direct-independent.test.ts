@@ -22,7 +22,7 @@ afterAll(async () => {await rm(scratch, {recursive: true, force: true});});
 async function selected(text = source) {
   const file = path.join(scratch, `source-${serial++}.wsdl`);
   await writeFile(file, text);
-  const result = await selectDirectOperation(file, selector, {loading: {policy: {fileRoots: [scratch]}}});
+  const result = await selectDirectOperation(file, selector, {limits: {}, loading: {policy: {fileRoots: [scratch]}}});
   if (result.kind !== 'selected') throw new Error(result.rule);
   return {file, contract: result.contract};
 }
@@ -30,7 +30,7 @@ async function reconstructed() {
   const {file, contract} = await selected();
   const capsule = createDirectSourceCapsule(contract, selection);
   if (capsule.kind !== 'direct-capsule') throw new Error(capsule.rule);
-  const native = await reconstructDirectSourceCapsule(capsule.bytes, file, {policy: {fileRoots: [scratch]}});
+  const native = await reconstructDirectSourceCapsule(capsule.bytes, file, {limits: {}, policy: {fileRoots: [scratch]}});
   if (native.kind !== 'reconstructed-direct') throw new Error(native.rule);
   return {file, native, capsule: capsule.bytes};
 }

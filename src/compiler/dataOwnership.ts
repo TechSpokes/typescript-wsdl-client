@@ -37,7 +37,7 @@ export function createDataOwnership(chargeWork: (amount?: number) => void, limit
         return current;
       }
       if (current === null || typeof current !== 'object') return current;
-      if (limits && types.isProxy(current)) throw new TypeError('Metadata requires data records and arrays');
+      if (types.isProxy(current)) throw new TypeError('Metadata requires data records and arrays');
       chargeWork(); // Identity-map read.
       const prior = copied.get(current);
       if (prior !== undefined) return prior;

@@ -25,12 +25,12 @@ beforeAll(async () => {
 });
 afterAll(async () => {await rm(scratch, {recursive: true, force: true});});
 const loading = {policy: {fileRoots: [fixtures]}};
-const select = (source = forecast, selected = selector, extra: Partial<Parameters<typeof selectDirectOperation>[2]> = {}) => selectDirectOperation(source, selected, {loading, ...extra});
+const select = (source = forecast, selected = selector, extra: Partial<Parameters<typeof selectDirectOperation>[2]> = {}) => selectDirectOperation(source, selected, {limits: {}, loading, ...extra});
 async function altered(text: string, selected = selector, extra: Partial<Parameters<typeof selectDirectOperation>[2]> = {}) {
   const directory = await mkdtemp(path.join(scratch, 'case-'));
   const source = path.join(directory, 'source.wsdl');
   await writeFile(source, text);
-  return selectDirectOperation(source, selected, {loading: {policy: {fileRoots: [directory]}}, ...extra});
+  return selectDirectOperation(source, selected, {limits: {}, loading: {policy: {fileRoots: [directory]}}, ...extra});
 }
 function selected(result: DirectOperationResult): DirectOperationContract {
   expect(result.kind).toBe('selected');
@@ -210,7 +210,7 @@ describe('authenticated direct operation source contract', () => {
     const address = server.address(); if (!address || typeof address === 'string') throw new Error('missing server address');
     const origin = `http://127.0.0.1:${address.port}`;
     try {
-      const result = await selectDirectOperation(origin + '/source.wsdl', selector, {loading: {policy: {allowedOrigins: [origin]}}, signal: during.signal});
+      const result = await selectDirectOperation(origin + '/source.wsdl', selector, {limits: {}, loading: {policy: {allowedOrigins: [origin]}}, signal: during.signal});
       expect(result.kind).toBe('cancelled');
       expect('contract' in result).toBe(false);
     } finally {server.close(); await once(server, 'close');}
@@ -224,7 +224,7 @@ describe('authenticated direct operation source contract', () => {
     const source = path.join(directory, 'source.wsdl');
     await writeFile(source, sourceText.replace('http://127.0.0.1:1/forecast', `http://127.0.0.1:${address.port}/forbidden`));
     try {
-      selected(await selectDirectOperation(source, selector, {loading: {policy: {fileRoots: [directory]}}}));
+      selected(await selectDirectOperation(source, selector, {limits: {}, loading: {policy: {fileRoots: [directory]}}}));
       expect(calls).toBe(0);
       expect(await readdir(directory)).toEqual(['source.wsdl']);
     } finally {server.close(); await once(server, 'close');}

@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticBudget.ts",
           "role": "semantic-source",
-          "sha256": "365a2da1d78e9600703dbd4a1fe2d17662275ea214e7d118af357709994e0b3a"
+          "sha256": "bfc028cdf170d19bad6ed2f9fda36f500c079b6e74e4dd953c29620d4ca40bb0"
         },
         {
           "path": "src/compiler/semanticContext.ts",
@@ -3275,7 +3275,7 @@
         },
         {
           "path": "src/compiler/dataOwnership.ts",
-          "sha256": "759c40b68e701ec1f9f47439d1954c727731c965ab9d30dc0edb2472b04c5285",
+          "sha256": "b184a55159b25724e3cfe672b1ba89b67d891ec7f744ba337b78b9cf8f48a91e",
           "role": "semantic-source"
         }
       ]

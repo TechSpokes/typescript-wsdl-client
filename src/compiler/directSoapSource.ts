@@ -1,3 +1,4 @@
+import {directLimit} from './directExecutionPolicy.js';
 /** Shared authenticated single-resource SOAP bootstrap policy; no transport. */
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
@@ -11,8 +12,8 @@ export class DirectSoapSourceError extends Error {
   constructor(message: string, readonly kind: 'unsupported' | 'resource-limit' = 'unsupported') {super(message);}
 }
 export function prepareDirectSoapSource(contract: DirectOperationContract, config: {service: ExpandedName; port: string}, check: () => void) {
-  const {source} = inspectDirectOperation(contract);
-  if (source.resources.some(r => r.byteLength > DIRECT_SOAP_SOURCE_MAX_BYTES)) {
+  const {source, context: {budget}} = inspectDirectOperation(contract);
+  if (source.resources.some(r => r.byteLength > directLimit(budget, DIRECT_SOAP_SOURCE_MAX_BYTES))) {
     throw new DirectSoapSourceError('SOAP source byte limit', 'resource-limit');
   }
   const refuse = (rule: string): never => {throw new DirectSoapSourceError(rule);};

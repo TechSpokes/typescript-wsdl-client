@@ -1,6 +1,8 @@
+import {isApplicationUnmetered} from './semanticBudget.js';
+import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 /** Internal, one-retained-operation, unauthenticated loopback SOAP 1.1 adapter. */
 import {checkSemanticBudget} from './semanticBudget.js';
-import {dataOwnership, DataOwnershipLimitError} from './dataOwnership.js';
+import {DataOwnershipLimitError} from './dataOwnership.js';
 import {Agent} from 'node:http';
 import {types} from 'node:util';
 import {WSDL} from 'soap/lib/wsdl/index.js';
@@ -88,14 +90,14 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
     if (signal !== undefined && !(signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
     const allowEndpoint = options.allowEndpoint;
     check();
-    const config = dataOwnership.freeze(dataOwnership.snapshot({service: options.service, port: options.port, endpoint: options.endpoint,
-      timeoutMs: options.timeoutMs ?? 15_000, limits: options.limits ?? {}, capabilities: options.capabilities ?? []}));
+    const config = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot({service: options.service, port: options.port, endpoint: options.endpoint,
+      timeoutMs: options.timeoutMs ?? (isApplicationUnmetered(budget) ? 0 : 15_000), limits: options.limits ?? {}, capabilities: options.capabilities ?? []}));
     if (!Array.isArray(config.capabilities) || config.capabilities.length) return fail('unsupported', 'SOAP capability');
-    if (!Number.isSafeInteger(config.timeoutMs) || config.timeoutMs < 1 || config.timeoutMs > 2_147_483_647) throw new RangeError('SOAP timeout must be a positive timer integer');
-    const limits = {...DIRECT_XML_LIMITS, ...config.limits};
+    if (!Number.isSafeInteger(config.timeoutMs) || config.timeoutMs < 0 || config.timeoutMs > 2_147_483_647) throw new RangeError('SOAP timeout must be a positive timer integer');
+    const limits = {maxBytes: directLimit(budget, DIRECT_XML_LIMITS.maxBytes), maxDepth: directLimit(budget, DIRECT_XML_LIMITS.maxDepth),
+      maxNodes: directLimit(budget, DIRECT_XML_LIMITS.maxNodes), maxText: directLimit(budget, DIRECT_XML_LIMITS.maxText), ...config.limits};
     for (const [key, value] of Object.entries(limits)) {
       if (!['maxBytes', 'maxDepth', 'maxNodes', 'maxText'].includes(key) || !Number.isSafeInteger(value) || value < 1) throw new RangeError('Invalid SOAP XML limit');
-      if (value > DIRECT_XML_LIMITS[key as keyof typeof DIRECT_XML_LIMITS]) return fail('resource-limit', 'SOAP XML profile limit');
     }
     if (typeof config.endpoint !== 'string' || typeof config.port !== 'string' || !isXmlNCName(config.port)
       || !config.service || typeof config.service.namespace !== 'string' || !isXmlNCName(config.service.local)) return fail('unsupported', 'explicit SOAP selection');
@@ -148,7 +150,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
     controller = new AbortController();
     signal?.addEventListener('abort', abort, {once: true});
     let timedOut = false;
-    deadline = setTimeout(() => {timedOut = true; controller!.abort();}, config.timeoutMs);
+    if (config.timeoutMs > 0) deadline = setTimeout(() => {timedOut = true; controller!.abort();}, config.timeoutMs);
     const complete = new Error('direct raw response captured');
     let response: {bytes: Buffer; status: number; contentType: string; encoding: string} | undefined;
     let hookFailure: unknown;
@@ -238,7 +240,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
         const matches = contract.faults.filter(f => same(f.root.element.name, detail[0]!.name));
         if (matches.length !== 1) stop('protocol', 'unknown or ambiguous SOAP Fault detail');
         faultInfo = {name: matches[0]!.name, code, codeNode: children[0]!, string, ...(actor === undefined ? {} : {actor})};
-       dataOwnership.freeze(faultInfo);
+       directDataOwnership(budget).freeze(faultInfo);
         return {payload: detail[0]!, mapping: faults.get(faultInfo.name)!};
       }});
     if (decoded.kind !== 'direct-decoded') return fail(decoded.kind, decoded.rule);

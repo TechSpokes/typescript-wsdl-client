@@ -190,3 +190,20 @@ export const createSemanticBudget = createResolverBudget;
 
 /** Observe sticky failure without charging routine procedural work. */
 export function checkSemanticBudget(budget: SemanticBudget): void {budget.chargeWork(0);}
+
+const unmetered = new WeakSet<object>();
+/** Application execution has no work quota unless the caller explicitly supplies one. */
+export function createApplicationBudget(limits?: SemanticBudgetLimits): SemanticBudget {
+  if (limits !== undefined) return createSemanticBudget(limits);
+  const ownership = createDataOwnership(() => {});
+  const budget: SemanticBudget = {
+    chargeWork() {}, reserveNodes() {}, usage: () => ({nodes: 0, work: 0}),
+    exhausted: () => false, failure: () => undefined, guard: operation => operation(),
+    compareText: (a, b) => a < b ? -1 : a > b ? 1 : 0,
+    sorted: (values, compare) => Array.from(values).sort(compare), ...ownership,
+  };
+  unmetered.add(budget);
+  return budget;
+}
+/** Internal identity marker, never source/transport authorization. */
+export function isApplicationUnmetered(budget: SemanticBudget): boolean {return unmetered.has(budget);}

@@ -190,11 +190,13 @@ These are selected defaults for the future faithful path, not measured maxima or
 
 Streaming has no global document-byte cap by default; it enforces depth, record, queue and operation aggregate constraints. Queue capacity pauses input; a single oversized record fails. User cancellation is `cancelled`, distinct from deadline exhaustion. S03 applies loading/depth budgets only, without implementing downstream codec budgets.
 
-### Direct-client procedural amendment, October 27, 2026
+### Direct-client application ownership amendment, October 27, 2026
 
-The private direct-client path uses concrete source/capsule/XML/value/metadata/output limits and transport timeouts instead of synthetic allocation reservations for routine copying, serialization, bootstrap and publication. In particular, the quadratic node-soap source reservation is removed. The [current direct-client policy](../direct-values.md#current-direct-client-resource-policy) records the implementation plan, exact limits, justifications, alternatives and verification.
+Normal generated-client execution does not inherit research/testing work or size quotas. Resource capacity, logs and operational failures belong to the application hosting the client or REST gateway. Callers may explicitly select their own timeout or size controls; no SOAP deadline is installed by default. Source/contract authorization, schema/protocol correctness and unsupported-feature refusals remain independent requirements.
 
-Existing native schema preparation, resolver, structural matching and scalar accounting remain authoritative and sticky; their internal legacy work prices are not globally redefined. Ownership across asynchronous stages remains required but is independent of work pricing. This scoped amendment supersedes the former inclusive-all-procedural-work claim for private direct clients, not the P1 diagnostic or research-engine contracts; it changes no schema validity, public exports, legacy defaults or admission.
+The [current direct-client policy](../direct-values.md#current-direct-client-resource-policy) records the plan, implementation, test-profile values, product tradeoffs and measured before/after behavior. The private direct path uses an unmetered semantic-engine interface by default; bounded profiling and the existing native accounting remain explicit in tests/research for optimization and exhaustion measurements. This replaces synthetic procedural allocation reservations, including the quadratic source bootstrap reservation, without creating a second semantic engine.
+
+The amendment supersedes prior mandatory per-invocation resource-accounting claims for normal direct clients. Existing research-tool defaults, historical measurements, public exports, legacy behavior and admission remain unchanged. No consumer CPU/memory protection or preemption guarantee is claimed.
 
 ## Compatibility and activation: S02-D10
 

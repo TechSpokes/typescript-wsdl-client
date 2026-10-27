@@ -25,7 +25,7 @@ async function operation(text?: string) {
   if (text !== undefined) await writeFile(file, text);
   const selected = await selectDirectOperation(file, {
     portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast',
-  }, {loading: {policy: {fileRoots: [directory]}}});
+  }, {limits: {}, loading: {policy: {fileRoots: [directory]}}});
   if (selected.kind !== 'selected') throw new Error(selected.kind + ':' + selected.rule);
   const mapping = createDirectValueMapping(selected.contract, {kind: 'input'});
   if (mapping.kind !== 'direct-mapping') throw new Error(mapping.kind);
@@ -221,12 +221,12 @@ it('fails malformed original UTF-8 without replacement decoding or partial publi
   });
 });
 
-it('refuses a byte capacity above the fixed profile before HTTP dispatch', async () => {
+it('honors an explicitly chosen byte capacity without an allocation reservation', async () => {
   await owned(normal, async server => {
     const {contract, mapping} = await operation();
     const result = await exchangeDirectSoap(contract, mapping, value, {...server.options, limits: {maxBytes: Number.MAX_SAFE_INTEGER}});
-    expect(result.kind).toBe('resource-limit');
-    expect(result).not.toHaveProperty('decoded'); expect(server.count()).toBe(0);
+    expect(result.kind).toBe('soap-response');
+    expect(result).toHaveProperty('decoded'); expect(server.count()).toBe(1);
   });
 });
 
