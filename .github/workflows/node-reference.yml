@@ -26,6 +26,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: node test/conformance/reference/qualification/platform-run.ts --container ${{ matrix.node }}
+      - name: Standalone conformance (Node 24)
+        if: matrix.node == 24
+        run: |
+          npm ci
+          npm run build
+          npm run test:conformance
       - uses: actions/upload-artifact@v6
         if: always()
         with:
