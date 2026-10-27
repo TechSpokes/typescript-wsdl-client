@@ -5,7 +5,10 @@
     "declarationMap": false,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "rootDir": "../.."
+    "rootDir": "../..",
+    "paths": {
+      "@techspokes/typescript-wsdl-client": ["../../src/index.ts"]
+    }
   },
   "include": [
     "*.test.ts",
