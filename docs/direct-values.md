@@ -49,7 +49,7 @@ The library makes no hard heap, RSS, CPU-time or preemption guarantee. A large w
 
 The diagnostic probe in `test/helpers/directResourceProbe.ts` compares separately loaded builds against the same local server and 10,655-byte WSDL. The archived P3.7 build returned resource-limit with zero requests; the changed build returned soap-response with one request. This demonstrates removal of an artificial rejection, not a latency speedup: the old build never completed equivalent work.
 
-Installed-consumer tests additionally generate and execute a client from a WSDL above 64 KiB with request and response values above 1 MiB using normal defaults. The same generated call explicitly given a 1 KiB application limit refuses before HTTP. Existing request/response/fault, authority, optional/array, mutation/getter/proxy and cancellation controls remain. Tests of profiling limits now opt in explicitly; normal-mode tests assert that no work quota or counters are activated.
+Installed-consumer tests additionally generate and execute a client from a WSDL above 64 KiB with request and response values above 1 MiB using normal defaults. The same generated call explicitly given a 1 KiB application limit refuses before HTTP. Normal loading also follows an authorized seven-redirect chain and caller cancellation interrupts a deliberately stalled WSDL fetch without relying on a deadline. Existing request/response/fault, authority, optional/array, mutation/getter/proxy and cancellation controls remain. Tests of profiling limits now opt in explicitly; normal-mode tests assert that no work quota or counters are activated.
 
 ## Implementation checkpoint
 

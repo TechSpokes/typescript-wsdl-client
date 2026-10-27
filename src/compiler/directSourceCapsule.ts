@@ -1,11 +1,11 @@
-import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
+import {directDataOwnership, directLimit, directLoadingLimits} from './directExecutionPolicy.js';
 /** Internal P3.6 data boundary. Reading data never grants source or dispatch authority. */
 import {checkSemanticBudget} from './semanticBudget.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
 import {createHash} from 'node:crypto';
 import {types} from 'node:util';
 import {canonicalJson, parseCatalogJson, CatalogError} from './catalogErrors.js';
-import {createApplicationBudget, isApplicationUnmetered} from './semanticBudget.js';
+import {createApplicationBudget} from './semanticBudget.js';
 import type {SemanticBudget, SemanticBudgetLimits, ResolverUsage} from './semanticBudget.js';
 import {inspectDirectOperation, selectDirectOperationInRequest} from './directOperation.js';
 import type {DirectOperationContract, DirectOperationSelector} from './directOperation.js';
@@ -187,7 +187,7 @@ export async function reconstructDirectSourceCapsuleInRequest(bytes: Uint8Array,
     if (new URL(resolveResourceUri(localSource)).protocol !== 'file:') throw new Stop('missing-authority', 'new-local-file-required');
     // Pin the caller-authorized actual file, rather than substituting artifact
     // bytes for a modified file. No network origins are inherited or accepted.
-    const loader = await SchemaResourceLoader.create({fileRoots: options.policy.fileRoots}, {resourceMs: isApplicationUnmetered(budget) ? 0 : 15000, totalIoMs: isApplicationUnmetered(budget) ? 0 : 120000, resources: 1, resourceBytes: directLimit(budget, DIRECT_CAPSULE_LIMITS.sourceBytes), totalBytes: directLimit(budget, DIRECT_CAPSULE_LIMITS.sourceBytes)}, undefined, () => check(budget, options.signal));
+    const loader = await SchemaResourceLoader.create({fileRoots: options.policy.fileRoots}, {...directLoadingLimits(budget), resources: 1, resourceBytes: directLimit(budget, DIRECT_CAPSULE_LIMITS.sourceBytes), totalBytes: directLimit(budget, DIRECT_CAPSULE_LIMITS.sourceBytes)}, undefined, () => check(budget, options.signal), options.signal);
     const resource = await loader.fetchResource(localSource);
 
     if (resource.digest !== capsule.source.digest || Buffer.from(resource.bytes).toString('base64') !== capsule.source.base64) reject('local-source-changed');
