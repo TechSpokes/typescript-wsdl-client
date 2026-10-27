@@ -19,6 +19,9 @@ Created from production integration work at [TechSpokes](https://www.techspokes.
 
 See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
+Unreleased checked direct artifacts can use the [versioned package-root runtime binding](docs/direct-values.md#package-root-binding-for-generated-direct-clients).
+Its restricted grammar and owned-loopback transport are separate from the existing generation commands.
+
 ## Why Choose This
 
 Most tools in this space stop at one layer: a SOAP runtime, type generation, or spec conversion. This package generates the full stack from a single WSDL source.

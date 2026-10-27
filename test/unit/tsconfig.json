@@ -97,6 +97,7 @@
     "direct-capsule-independent.test.ts",
     "generated-direct-independent.test.ts",
     "direct-resource-limits.test.ts",
-    "direct-resource-limits-independent.test.ts"
+    "direct-resource-limits-independent.test.ts",
+    "checked-direct-runtime.test.ts"
   ]
 }

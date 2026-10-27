@@ -2,6 +2,60 @@
 
 Internal direct mapping, bare-root XML codec and portable source contract. See the root [README](../README.md) and [matching contract](content-model-matching.md).
 
+## Package-root binding for generated direct clients
+
+The unreleased additive root export `checkedDirectRuntimeV1` runs an already generated checked direct client through the existing native source, capsule, schema/scalar, XML and buffered SOAP engines. Package metadata remains 1.1.4; published 1.x packages do not thereby gain structured generation support. Generation remains internal, and existing CLI commands and legacy defaults are unchanged.
+
+Use a matched generated client, capsule and explicitly authorized original local WSDL. The caller supplies its actual owned server endpoint; a WSDL service address never authorizes dispatch.
+
+```typescript
+import {readFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {checkedDirectRuntimeV1} from '@techspokes/typescript-wsdl-client';
+import {createClient} from '../.generated/checked-client.js';
+
+declare const endpoint: string; // Actual endpoint returned by the host's owned loopback server.
+const directory = new URL('../.generated/', import.meta.url);
+const controller = new AbortController();
+const client = createClient(checkedDirectRuntimeV1);
+const result = await client.GetForecast({city: 'Paris', days: 2}, {
+  localSource: fileURLToPath(new URL('forecast.wsdl', directory)),
+  fileRoots: [fileURLToPath(directory)],
+  capsule: await readFile(new URL('forecast.capsule.json', directory)),
+  soap: {
+    service: {namespace: 'urn:checked:forecast', local: 'ForecastService'},
+    port: 'ForecastPort', endpoint,
+    allowEndpoint: url => url.href === endpoint,
+    signal: controller.signal,
+    timeoutMs: 5000,
+    limits: {maxBytes: 8 * 1024 * 1024, maxDepth: 64, maxNodes: 100000, maxText: 8 * 1024 * 1024},
+  },
+});
+if (result.kind === 'soap-response') console.log(result.value.temperature);
+else if (result.kind === 'soap-fault') console.log(result.fault.name, result.value.message);
+else console.error(result.kind, result.rule);
+```
+
+The timeout, size/depth controls and signal above are explicit caller choices. Omitting them installs no normal work quota, source/XML size ceiling or SOAP deadline; timeout zero also disables the SOAP deadline. Limits cover the XML request and complete response, including the envelope; text counts UTF-16 units. The host owns capacity, logging and resource failure handling, including source-file size policy and worker/process/OS containment. Same-thread cancellation cannot preempt synchronous JavaScript; no hard heap/RSS/CPU guarantee is provided. Profiling budgets are private test/research hooks and are refused by this root entry.
+
+### Compatibility and repair
+
+The frozen binding's `version` and generated invocation protocol are exactly `checked-direct-runtime-v1`, independent of npm version. The generated wrapper checks the binding version before execution; the binding independently checks the invocation version before inspecting options or loading source. Missing, older or foreign protocol versions return `incompatible-artifact` with rule `generated-runtime-version`. P3.7 artifacts without this handshake require regeneration; no guessed upgrade is supported.
+
+Capsule format 1 requires model `xsd10-faithful-v1`, scope `direct-soap11-single-utf8-v1`, mapping `direct-values-v1`, scalar policy `direct-string-boolean-int-v1` and runtime policy `owned-loopback-http-no-extensions-v1`. Each invocation pins capsule bytes to the generated literal, reads the separately authorized local file and reissues fresh native authority. It compares selected service/port/binding/action, input/output/fault roots and types, ordered slots, occurrences and scalar identities before HTTP. Saved reports, fingerprints and old handles authorize no I/O.
+
+`generated-capsule-mismatch`, `local-source-changed` and version/contract incompatibility require regenerating the client and capsule together from the explicitly authorized original WSDL with the installed runtime. Exact byte changes require regeneration even when the semantic descriptor would remain compatible. Harmless file relocation preserves emitted source; location still needs fresh file-root authorization. Missing authority requires correcting the explicit file-root permission or endpoint selection/authorization, never enabling implicit source fetching.
+
+Failures retain `unsupported`, `missing-authority`, `incompatible-artifact`, `invalid-schema`, `inconclusive`, `scalar-invalid`, `value-invalid`, `xml-invalid`, `mismatch`, `protocol`, `transport`, `resource-limit` and `cancelled` categories. A configured size refusal is `resource-limit`, a SOAP deadline or early connection close is `transport`, and caller abort is `cancelled`; none becomes schema invalidity or partial successful output. Host/runtime capacity failures can still throw; malformed data-only options or invalid operational limit values can throw `TypeError`/`RangeError`. Normal usage counters `{nodes: 0, work: 0}` mean disabled profiling.
+
+### Restricted supported grammar
+
+This entry supports one safe UTF-8 local WSDL resource and SOAP 1.1 document/literal over explicitly authorized owned IPv4 loopback HTTP. Values are built-in string/int32/Boolean scalar roots, empty sequences or flat sequences of distinct scalar elements with minOccurs 0/1 and maxOccurs 1/unbounded, including declared faults. Source loading and native qualification retain the [direct correspondence restrictions](decisions/003-content-model-contracts.md#qualified-dated-xsd-direct-route).
+
+Nested complex/group content, attributes, nil, facets, import/include graphs and general XSD completeness are outside this slice. Dependency-reserved names such as `__proto__`, `constructor`, `toString`, inherited Object.prototype names and `prototype` refuse safely. Remote source loading, production endpoints, TLS/auth/WS-Security, arbitrary headers, SOAP 1.2, redirects, attachments, compression and streaming remain unsupported. `admitted:false` remains unchanged.
+
+TypeScript approximates the runtime contract: `number` does not enforce int32 range, and structural typing does not exclude every extra property or invalid occurrence. Fresh values always undergo native shape/scalar checks. The generated `Runtime` is a trusted injection interface; supply the documented root binding, since a replacement implementation can lie about its protocol or returned values. No source authorization handle, mutable transport object or native receipt is exported.
+
 ## Current direct-client resource policy
 
 Normal generated-client execution has no profiling work quota, payload-size quota or default SOAP deadline. The application hosting a client or REST gateway owns its resource capacity, timeout choices, logging and failure handling. This policy implements the October 27, 2026 clarification and supersedes older direct-path claims below that test budgets protect consumer applications.
