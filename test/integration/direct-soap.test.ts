@@ -91,6 +91,15 @@ function success(result: DirectSoapResult) {
 }
 
 describe('buffered direct SOAP 1.1 native real-wire integration', () => {
+  it('accepts a 10 KiB WSDL without a quadratic bootstrap reservation', async () => {
+    const padded = original.replace('<wsdl:types>', '<!--' + 'padding '.repeat(1024) + '--><wsdl:types>');
+    expect(Buffer.byteLength(padded)).toBeGreaterThan(10 * 1024);
+    await local({}, async server => {
+      const c = await selected(padded);
+      success(await exchangeDirectSoap(c, mapping(c), request, server.options));
+      expect(server.requests).toHaveLength(1);
+    });
+  });
   it('sends independently asserted Forecast wire bytes and validates original response bytes through native receipts', async () => {
     await local({}, async server => {
       const c = await selected(), result = success(await exchangeDirectSoap(c, mapping(c), request, server.options));

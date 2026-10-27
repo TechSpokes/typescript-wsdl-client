@@ -2,6 +2,55 @@
 
 Internal direct mapping, bare-root XML codec and portable source contract. See the root [README](../README.md) and [matching contract](content-model-matching.md).
 
+## Current direct-client resource policy
+
+Normal generated-client execution has no profiling work quota, payload-size quota or default SOAP deadline. The application hosting a client or REST gateway owns its resource capacity, timeout choices, logging and failure handling. This policy implements the October 27, 2026 clarification and supersedes older direct-path claims below that test budgets protect consumer applications.
+
+### Plan and implementation
+
+The implementation separates data ownership from profiling, removes artificial allocation reservations, makes normal execution unmetered, and keeps bounded profiles explicit in tests. It reuses the existing copier, validators, codec and transport. Source authorization, native contract identity, correct schema/protocol validation and rejection of unsupported features remain required; they are not resource quotas.
+
+`createApplicationBudget()` supplies the semantic engine interface without collecting counters or rejecting work. Tests explicitly supply profiling limits to opt into the existing measured/bounded engine. The default 125-million-work/100,000-node research profile is unchanged for those tests and research tools; it is not silently installed into ordinary generated calls. Zero usage counters in normal mode mean metering is disabled, not that execution was free.
+
+The generated client options do not expose the internal profiling budget. A caller may still explicitly supply SOAP byte/depth/text/node limits or a timeout for its own application policy. Only supplied size/depth values are enforced in normal mode; an absent timeout or timeout zero creates no SOAP deadline. Configuration is owned before asynchronous use, preserving the earlier mutation fix independently of profiling.
+
+Portable capsule/source handling, generated-file emission, value inverse construction and metadata ownership likewise do not inherit the bounded test profile during normal execution. Existing low-level numeric interfaces use JavaScript's safe-integer representation ceiling to express the absence of a configured quota; this is not a supported maximum workload or a resource-safety promise. Actual process, runtime and operating-system limits can still fail, and those failures belong to the hosting application.
+
+### Testing and optimization profiles
+
+These numbers are selected only when a test opts into profiling. They are not normal client defaults or guarantees that all data below them fits memory.
+
+| Test boundary | Profile value | Purpose |
+| --- | --- | --- |
+| Local WSDL | 64 KiB | Reproduce small-source qualification cases |
+| Capsule | 256 KiB | Exercise at/beyond byte-boundary behavior |
+| XML | 1 MiB bytes/text, depth 256, 100,000 nodes | Test concrete buffer and traversal boundaries |
+| Fresh values | 1 MiB string content, 100,000 scalar items | Test failure before inverse construction |
+| Metadata copies | 100,000 entries, 1 MiB text, depth 256 | Exercise malformed option-graph cases |
+| Generated file | 512 KiB conservative bound | Test emission refusal |
+| Native algorithms | Existing work/node counters | Compare optimization behavior and test exhaustion |
+
+Text counters use UTF-16 units; byte counters use encoded bytes. Work units remain an internal diagnostic model, not milliseconds, CPU time, heap allocation or RSS. Historical measurements and default research-engine accounting are not rewritten. The extracted ownership implementation preserves those counters when profiling is explicitly selected.
+
+Routine base64/JSON handling, copying, freezing, source bootstrap, codec emission and publication no longer assign artificial work prices. In particular, the node-soap bootstrap does not reserve `4 * sourceBytes²` or invented bootstrap node allocations. Profiling exhaustion stays sticky within a profiled test invocation; each independent invocation creates fresh state.
+
+### Alternatives and product decision
+
+| Approach | Decision | Consequence |
+| --- | --- | --- |
+| Mandatory library quotas | Removed from normal direct execution | Valid work is not rejected by a test allowance |
+| Explicit profiling limits | Retained in test/internal controls | Optimization and at/beyond-boundary evidence remain reproducible |
+| Application-selected timeout/size controls | Honored when supplied | The host chooses its own operational policy |
+| Worker/process or OS CPU/memory containment | Hosting-application option | Requires deployment and lifecycle decisions outside this library |
+
+The library makes no hard heap, RSS, CPU-time or preemption guarantee. A large workload can exhaust process resources; the hosting application observes and handles that failure. Same-thread timers cannot interrupt synchronous JavaScript. Format, schema and authorization checks remain separate from resource profiling, including the existing restriction to the supported direct grammar and owned-loopback adapter.
+
+### Verification and observed improvement
+
+The diagnostic probe in `test/helpers/directResourceProbe.ts` compares separately loaded builds against the same local server and 10,655-byte WSDL. The archived P3.7 build returned resource-limit with zero requests; the changed build returned soap-response with one request. This demonstrates removal of an artificial rejection, not a latency speedup: the old build never completed equivalent work.
+
+Installed-consumer tests additionally generate and execute a client from a WSDL above 64 KiB with request and response values above 1 MiB using normal defaults. The same generated call explicitly given a 1 KiB application limit refuses before HTTP. Normal loading also follows an authorized seven-redirect chain and caller cancellation interrupts a deliberately stalled WSDL fetch without relying on a deadline. Existing request/response/fault, authority, optional/array, mutation/getter/proxy and cancellation controls remain. Tests of profiling limits now opt in explicitly; normal-mode tests assert that no work quota or counters are activated.
+
 ## Implementation checkpoint
 
 One integration owner implements the complete chain under #382, #155, #184 and #182. Inputs are an authentic operation, a newly issued successful structural match, or an authentic source-derived mapping plus fresh application data. Receipt identity, never digest or diagnostic JSON, supplies authority.
@@ -29,6 +78,8 @@ The identity-only inspectors are `inspectDirectStructuralMatch`, `inspectDirectV
 Payload lexical failures return `scalar-invalid` with schema and numeric payload paths. Application shape/type failures return `value-invalid`; native unavailability returns `unsupported`; interruption returns `cancelled` or sticky `resource-limit`. No failure publishes values, operands, mappings or partially reconstructed payloads. Malformed receipt authority throws `TypeError`; genuine internal errors propagate rather than becoming invalid caller data.
 
 ## Accepted resource model
+
+This section records the historical P3.3 accounting contract. The current direct-client resource policy above supersedes its procedural pricing requirements while retaining data/shape validation and the intrinsic-enumeration limitation.
 
 The user explicitly accepted the following scoped resource qualification for P3.3 on October 26, 2026, recorded in [#382](https://github.com/TechSpokes/typescript-wsdl-client/issues/382#issuecomment-6424153066): JavaScript `Reflect.ownKeys` constructs an intrinsic temporary key vector before its length can be known. Rejecting every symbol/nonenumerable extra field on an arbitrary plain data object requires this bulk intrinsic; a prior guessed cap cannot bound the allocation. The inverse precharges the maximum valid vector before the intrinsic: the source slot count for records, or length plus one for dense arrays. It immediately refuses any excess count before per-key traversal. This reserves every valid key vector before construction, but a malformed object can still cause the engine to allocate a larger temporary vector before control returns.
 
@@ -197,9 +248,9 @@ The inherited node-soap bootstrap refuses `__proto__`, `constructor`, `toString`
 
 ### Accounting and qualification
 
-Emission first bounds all variable source contributions, then reserves a 512 KiB output envelope covering escaping, concatenation, preamble composition and encoding before building source strings. The native budget covers qualification, mapping, capsule serialization and emission. `writeDirectClient` authenticates its artifact identity and charges each write against that same sticky budget. Generated code contains no source path, checkout dependency or private package import.
+Emission bounds variable source contributions against a 512 KiB output ceiling before building source strings. `writeDirectClient` authenticates the bounded artifact and refuses an already failed semantic request; procedural emission and writes have no synthetic allocation price. Generated code contains no source path, checkout dependency or private package import.
 
-Invocation accounting starts before byte copying and base64 comparison and continues through reconstruction, compatibility, the existing codec/transport and result publication without resetting. Separate calls get separate budgets; exhausted calls return no partial usable value. Existing source/capsule/XML caps, dependency-bootstrap reservation and cooperative cancellation remain unchanged. This is engineering accounting, not a hard heap or preemption guarantee; malformed own-key vector allocation has the same intrinsic qualification as the existing adapter.
+Native semantic accounting spans qualification and validation without resetting; routine byte copying, base64 comparison, serialization and publication use actual input/output caps. Separate calls get separate budgets; exhausted calls return no partial usable value. Normal calls no longer inherit the old source/capsule/XML test caps or semantic work allowance; cooperative cancellation and any explicit application-selected limits remain available. This is engineering accounting, not a hard heap or preemption guarantee; malformed own-key vector allocation has the same intrinsic qualification as the existing adapter.
 
 [Installed tests](../test/integration/generated-direct-installed.test.ts) generate bounded files for Forecast, renamed and prefix-aliased sources, optional/nonempty-array shapes, scalar and empty roots. They install the actual npm tarball in another directory, compile independently authored valid/invalid TypeScript and execute the emitted wrappers in a child with checkout reads denied. The harness permits only its consumer directory for file reads/writes and verifies real SOAP request namespace/order/scalars, response arrays and HTTP 200/500 declared faults, relocation, stale/mixed inputs, missing permissions, unsupported capabilities, cancellation and exhaustion. Node 24's permission model does not restrict sockets; endpoint restriction remains the native owned-loopback policy. Node versions exposing network permissions additionally receive the explicit loopback grant.
 

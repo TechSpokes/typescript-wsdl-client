@@ -1,4 +1,6 @@
+import {directLimit} from '../compiler/directExecutionPolicy.js';
 /** Internal native-plan generator. Deliberately absent from index.ts and the CLI. */
+import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {writeFileSync} from 'node:fs';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
 import {inspectDirectValueMapping} from '../compiler/directValues.js';
@@ -29,7 +31,7 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
     let bound = 16_384 + Math.ceil(capsule.bytes.byteLength / 3) * 4;
     for (const mapping of expected.mappings) {
       inspectDirectValueMapping(mapping, expected.contract);
-      budget.chargeWork(256 + mapping.slots.length * 128);
+
       if (mapping.direction.kind === 'fault') bound += mapping.direction.name.length * 6 + 512;
       for (const slot of mapping.slots) bound += 256 + slot.element.name.local.length * 6;
     }
@@ -37,10 +39,8 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
     bound += 6 * (selector.operation.length * 2 + selector.portType.namespace.length + selector.portType.local.length
       + selector.binding.namespace.length + selector.binding.local.length + expected.selection.service.namespace.length
       + expected.selection.service.local.length + expected.selection.port.length);
-    if (bound > MAX_SOURCE_BYTES) return failure('resource-limit', 'generated-source-byte-limit');
-    // One conservative output reservation covers JSON escaping, concatenation,
-    // packaged preamble composition and UTF-8 encoding.
-    budget.chargeWork(MAX_SOURCE_BYTES * 16);
+    if (bound > directLimit(budget, MAX_SOURCE_BYTES)) return failure('resource-limit', 'generated-source-byte-limit');
+
     const literal = (text: string): string => JSON.stringify(text).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     const primitive = (name: string): string => {
       if (name === 'string') return 'string';
@@ -54,7 +54,7 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
       if (!mapping.slots.length) return 'Readonly<Record<string, never>>';
       return '{\n' + mapping.slots.map(slot => {
         if (signal?.aborted) throw new Error('cancelled');
-        budget.chargeWork(512 + slot.element.name.local.length * 32);
+
         const item = primitive(slot.builtin.local), {min, max} = slot.particle.occurs;
         const type = max === 'unbounded' ? min === '1' ? `readonly [${item}, ...${item}[]]` : `readonly ${item}[]` : item;
         return `  readonly ${literal(slot.element.name.local)}${max === '1' && min === '0' ? '?' : ''}: ${type};`;
@@ -75,7 +75,6 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
       'export interface Name { readonly namespace: string; readonly local: string }',
       'export interface Options {',
       '  readonly localSource: string; readonly fileRoots: readonly string[]; readonly capsule: Uint8Array;',
-      '  readonly budget?: { readonly maxWork?: number; readonly maxNodes?: number };',
       '  readonly soap: { readonly service: Name; readonly port: string; readonly endpoint: string;',
       '    readonly allowEndpoint: (endpoint: URL) => boolean; readonly signal?: AbortSignal;',
       '    readonly timeoutMs?: number; readonly capabilities?: readonly string[];',
@@ -108,9 +107,9 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
       '',
     ];
     const source = composeGeneratedSource(lines.join('\n'), resolvePreamble('direct-client'));
-    if (Buffer.byteLength(source) > MAX_SOURCE_BYTES) return failure('resource-limit', 'generated-source-byte-limit');
+    if (Buffer.byteLength(source) > directLimit(budget, MAX_SOURCE_BYTES)) return failure('resource-limit', 'generated-source-byte-limit');
     if (signal?.aborted) return failure('cancelled', 'cooperative-cancellation');
-    budget.chargeWork(1024);
+
     const result = Object.freeze({kind: 'generated-direct-client' as const, source, capsule: capsule.bytes, admitted: false as const, usage: Object.freeze({...budget.usage()})});
     generatedArtifacts.set(result, budget);
     return result;
@@ -120,10 +119,10 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
     throw error;
   }
 }
-/** Each write spends its issuing request; forged artifacts cannot claim reserved writes. */
+/** Only authentic bounded artifacts may be written; prior semantic failure remains terminal. */
 export function writeDirectClient(file: string, generated: GeneratedDirectClient): void {
   const budget = generatedArtifacts.get(generated);
   if (!budget) throw new TypeError('Authentic generated artifact required');
-  budget.chargeWork(1024 + generated.source.length * 16);
+  checkSemanticBudget(budget);
   writeFileSync(file, generated.source, 'utf8');
 }

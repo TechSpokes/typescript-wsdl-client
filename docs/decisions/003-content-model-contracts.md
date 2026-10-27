@@ -190,6 +190,14 @@ These are selected defaults for the future faithful path, not measured maxima or
 
 Streaming has no global document-byte cap by default; it enforces depth, record, queue and operation aggregate constraints. Queue capacity pauses input; a single oversized record fails. User cancellation is `cancelled`, distinct from deadline exhaustion. S03 applies loading/depth budgets only, without implementing downstream codec budgets.
 
+### Direct-client application ownership amendment, October 27, 2026
+
+Normal generated-client execution does not inherit research/testing work or size quotas. Resource capacity, logs and operational failures belong to the application hosting the client or REST gateway. Callers may explicitly select their own timeout or size controls; no SOAP deadline is installed by default. Source/contract authorization, schema/protocol correctness and unsupported-feature refusals remain independent requirements.
+
+The [current direct-client policy](../direct-values.md#current-direct-client-resource-policy) records the plan, implementation, test-profile values, product tradeoffs and measured before/after behavior. The private direct path uses an unmetered semantic-engine interface by default; bounded profiling and the existing native accounting remain explicit in tests/research for optimization and exhaustion measurements. This replaces synthetic procedural allocation reservations, including the quadratic source bootstrap reservation, without creating a second semantic engine.
+
+The amendment supersedes prior mandatory per-invocation resource-accounting claims for normal direct clients. Existing research-tool defaults, historical measurements, public exports, legacy behavior and admission remain unchanged. No consumer CPU/memory protection or preemption guarantee is claimed.
+
 ## Compatibility and activation: S02-D10
 
 Preserve the current legacy default for the 1.x line. The planned architecture release train is 2.0.0; earlier faithful evaluation is limited to unreleased opt-in development artifacts unless a reviewed ADR amendment authorizes an earlier supported release. A default public-shape switch requires that major release, integrated S17/S18 evidence and a separately approved activation PR. S02 merges docs/probes only; it neither announces a new release nor changes the default.

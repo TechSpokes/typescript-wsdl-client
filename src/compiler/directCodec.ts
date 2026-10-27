@@ -1,4 +1,7 @@
+import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 /** Internal, buffered, bare-root XML codec. No SOAP envelope or dispatch. */
+import {checkSemanticBudget} from './semanticBudget.js';
+import {DataOwnershipLimitError} from './dataOwnership.js';
 import {types} from 'node:util';
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
@@ -53,23 +56,29 @@ function run<T extends {readonly usage: ResolverUsage}>(contract: DirectOperatio
   // Identity before all property reads, including version checks.
   const mapping = inspectDirectValueMapping(supplied, contract);
   const {budget} = inspectDirectOperation(contract).context;
-  const check = () => {budget.chargeWork(); if (options.signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');};
+  const check = () => {checkSemanticBudget(budget); if (options.signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');};
   try {
     const result = budget.guard(() => {
-      budget.chargeWork(4096); check();
+      check();
       if (mapping.version !== 'direct-values-v1' || mapping.contextId !== contract.contextId
         || contract.basis !== 'native-direct-premises-v1' || contract.correspondence !== 'dated-XSD-2004-direct-v1'
         || contract.binding.version !== '1.1' || contract.binding.style !== 'document' || contract.binding.use !== 'literal'
         || contract.binding.transport !== 'http://schemas.xmlsoap.org/soap/http') throw new Stop('unsupported', 'direct-codec-version');
       const direction = mapping.direction;
       const root = direction.kind === 'fault' ? contract.faults.find(f => {
-        check(); return budget.compareText(f.name, direction.name) === 0;
+       check(); return budget.compareText(f.name, direction.name) === 0;
       })?.root : contract[direction.kind];
       if (mapping.root !== root) throw new TypeError('Incompatible direct codec root');
-      const configured = options.limits === undefined ? {} : budget.snapshot(options.limits);
+      const configured = options.limits === undefined ? {} : directDataOwnership(budget).snapshot(options.limits, check);
       if (!configured || typeof configured !== 'object' || Array.isArray(configured)) throw new TypeError('Data-only XML limits required');
-      budget.chargeWork(512);
-      const limits: {-readonly [K in keyof Required<DirectXmlLimits>]: number} = {...DIRECT_XML_LIMITS};
+      for (const key of Reflect.ownKeys(configured)) {
+        if (typeof key !== 'string' || !['maxBytes', 'maxDepth', 'maxNodes', 'maxText'].includes(key)) throw new TypeError('Unknown XML limit');
+      }
+
+      const limits: {-readonly [K in keyof Required<DirectXmlLimits>]: number} = {
+        maxBytes: directLimit(budget, DIRECT_XML_LIMITS.maxBytes), maxDepth: directLimit(budget, DIRECT_XML_LIMITS.maxDepth),
+        maxNodes: directLimit(budget, DIRECT_XML_LIMITS.maxNodes), maxText: directLimit(budget, DIRECT_XML_LIMITS.maxText),
+      };
       for (const key of ['maxBytes', 'maxDepth', 'maxNodes', 'maxText'] as const) {
         const value = configured[key];
         if (value !== undefined) {
@@ -78,13 +87,14 @@ function run<T extends {readonly usage: ResolverUsage}>(contract: DirectOperatio
         }
       }
       const result = work(mapping, {budget, limits, check});
-      // Fixed envelope/snapshot publication is reserved by the entry charge.
-      check(); return Object.freeze({...result, usage: Object.freeze({...budget.usage()})});
+      // Native failures remain terminal even though publication has no synthetic work price.
+     check(); return Object.freeze({...result, usage: Object.freeze({...budget.usage()})});
     });
     if (budget.exhausted()) return {kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()};
     return result as T;
   } catch (error) {
     if (budget.exhausted()) return {kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()};
+    if (error instanceof DataOwnershipLimitError) return {kind: 'resource-limit', rule: error.message, usage: budget.usage()};
     if (error instanceof Stop) return Object.freeze({kind: error.kind, rule: error.rule, usage: Object.freeze({...budget.usage()})});
     if (error instanceof SchemaLoadingError) return Object.freeze({kind: error.category === 'invalid-schema' ? 'xml-invalid'
       : error.category === 'resource-limit' ? 'resource-limit' : 'unsupported', rule: error.message, source: error.source,
@@ -96,26 +106,26 @@ function run<T extends {readonly usage: ResolverUsage}>(contract: DirectOperatio
 /** Validate fresh values using the delivered inverse, then emit deterministic UTF-8. */
 export function encodeDirectXml(contract: DirectOperationContract, mapping: unknown, application: unknown, options: Options = {}): DirectEncodedXml | DirectCodecFailure {
   return run(contract, mapping, options, (owned, {budget, limits, check}) => {
-    const expanded = expandDirectValue(contract, owned, application, options);
+    const expanded = expandDirectValue(contract, owned, application, {...options, maxText: Math.min(limits.maxText, limits.maxBytes), maxItems: Math.min(limits.maxNodes, limits.maxBytes)});
     if (expanded.kind !== 'direct-expanded') return expanded;
-    budget.chargeWork(256);
+
     const pieces: string[] = [];
     let byteLength = 0, nodes = 0, textUnits = 0, nextPrefix = 0;
     const prefixes = new Map<string, string>();
     const append = (text: string) => {
-      check(); budget.chargeWork(64 + text.length * 8);
+     check();
       const size = Buffer.byteLength(text, 'utf8');
       if (size > limits.maxBytes - byteLength) throw new Stop('resource-limit', 'XML byte limit');
       byteLength += size; pieces.push(text);
     };
     const escape = (text: string, attribute = false) => {
-      check(); budget.chargeWork(128 + text.length * 32);
+     check();
       return text.replace(/[&<>\r"\t\n]/g, c => c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;'
         : c === '\r' ? '&#13;' : attribute && c === '"' ? '&quot;' : attribute && c === '\t' ? '&#9;'
         : attribute && c === '\n' ? '&#10;' : c);
     };
     const emit = (node: SyntaxElement, depth: number) => {
-      check(); budget.reserveNodes(1); budget.chargeWork(1024 + (node.name.local.length + node.name.namespace.length) * 8);
+     check(); budget.reserveNodes(1);
       if (++nodes > limits.maxNodes || depth > limits.maxDepth) throw new Stop('resource-limit', 'XML node/depth limit');
       const namespace = node.name.namespace;
       let prefix = namespace === XML_NAMESPACE ? 'xml' : prefixes.get(namespace);
@@ -129,10 +139,10 @@ export function encodeDirectXml(contract: DirectOperationContract, mapping: unkn
       const name = prefix ? `${prefix}:${node.name.local}` : node.name.local;
       append(`<${name}${declaration}>`);
       for (const child of node.children) {
-        check();
+       check();
         if (child.kind === 'element') emit(child, depth + 1);
         else {
-          budget.reserveNodes(1); budget.chargeWork(128);
+          budget.reserveNodes(1);
           if (++nodes > limits.maxNodes || child.value.length > limits.maxText - textUnits) throw new Stop('resource-limit', 'XML node/text limit');
           textUnits += child.value.length; append(escape(child.value));
         }
@@ -140,9 +150,8 @@ export function encodeDirectXml(contract: DirectOperationContract, mapping: unkn
       append(`</${name}>`);
     };
     emit(expanded.payload, 1);
-    // Join, UTF-8 conversion, result envelope and usage are precharged; mutable
-    // bytes are caller-owned and never registered as downstream authority.
-    check(); budget.chargeWork(2048 + byteLength * 8);
+    // Actual output bytes were bounded by append; bytes are caller-owned data, not authority.
+    check();
     const bytes = Buffer.from(pieces.join(''), 'utf8');
     check();
     return Object.freeze({kind: 'direct-encoded' as const, admitted: false as const, encoding: 'utf-8' as const,
@@ -162,21 +171,21 @@ export function decodeDirectXml(contract: DirectOperationContract, mapping: unkn
     const backing: unknown = Object.getOwnPropertyDescriptor(typed, 'buffer')!.get!.call(bytes);
     if (types.isSharedArrayBuffer(backing)) throw new TypeError('Shared XML bytes are unsupported');
     if (length > limits.maxBytes) throw new Stop('resource-limit', 'XML byte limit');
-    check(); budget.chargeWork(512 + length * 4);
+    check();
     const input = new Uint8Array(length);
     Uint8Array.prototype.set.call(input, bytes);
     const uri = options.uri ?? 'urn:typescript-wsdl-client:observed-direct-xml';
     if (typeof uri !== 'string') throw new TypeError('XML source URI must be a string');
-    check(); budget.chargeWork(256 + uri.length * 4);
+    check();
     const root = parseOrderedSyntax(input, uri, {...limits, xml10Only: true,
-      chargeWork: amount => {check(); budget.chargeWork(amount);}, reserveNode: () => {check(); budget.reserveNodes(1);}}).root;
+      chargeWork: () => check(), reserveNode: () => {check(); budget.reserveNodes(1);}}).root;
     const selection = options.selectPayload?.(root) ?? {payload: root, mapping: owned};
     const payload = selection.payload;
     const selectedMapping = inspectDirectValueMapping(selection.mapping, contract);
     // Protocol selection may only return an actual node from this parse, never
     // a synthetic tree relabeled with the observed document's provenance.
     const contains = (node: SyntaxElement): boolean => {
-      check(); budget.chargeWork(64 + node.children.length * 8);
+     check();
       return node === payload || node.children.some(child => child.kind === 'element' && contains(child));
     };
     if (!contains(root)) throw new TypeError('Protocol payload must belong to the observed document');
@@ -184,7 +193,7 @@ export function decodeDirectXml(contract: DirectOperationContract, mapping: unkn
     if (structural.kind !== 'structural-match') return structural;
     const validated = assessDirectScalars(contract, structural, options);
     if (validated.kind !== 'direct-value') return validated;
-    check(); budget.chargeWork(2048); budget.freeze(payload); check();
+    check(); directDataOwnership(budget).freeze(payload); check();
     return Object.freeze({kind: 'direct-decoded' as const, admitted: false as const, payload, validated,
       usage: Object.freeze({...budget.usage()})});
   });

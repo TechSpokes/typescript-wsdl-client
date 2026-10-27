@@ -10,7 +10,7 @@ import type {SyntaxElement} from '../../src/loader/orderedSyntax.js';
 const namespace = 'urn:checked:forecast';
 const fixture = path.resolve('test/conformance/fixtures/assessment/forecast.wsdl');
 async function select(limits?: {maxWork?: number; maxNodes?: number}) {
-  const result = await selectDirectOperation(fixture, {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'}, {loading: {policy: {fileRoots: [path.dirname(fixture)]}}, limits});
+  const result = await selectDirectOperation(fixture, {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'}, {loading: {policy: {fileRoots: [path.dirname(fixture)]}}, limits: limits ?? {}});
   if (result.kind !== 'selected') throw new Error(JSON.stringify(result));
   return result.contract;
 }

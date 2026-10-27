@@ -23,7 +23,7 @@ async function contract(text?: string, choose = selector, maxWork?: number): Pro
   const directory = text === undefined ? path.dirname(fixture) : await mkdtemp(path.join(scratch, 'source-'));
   const source = text === undefined ? fixture : path.join(directory, 'source.wsdl');
   if (text !== undefined) await writeFile(source, text);
-  const selected = await selectDirectOperation(source, choose, {loading: {policy: {fileRoots: [directory]}}, limits: maxWork ? {maxWork} : undefined});
+  const selected = await selectDirectOperation(source, choose, {loading: {policy: {fileRoots: [directory]}}, limits: (maxWork ? {maxWork} : undefined) ?? {}});
   if (selected.kind !== 'selected') throw new Error(`${selected.kind}:${selected.rule}`);
   return selected.contract;
 }
@@ -269,26 +269,36 @@ describe('direct scalar and fresh value contract', () => {
     expect(result.kind).toBe('resource-limit'); expect(result).not.toHaveProperty('payload');
     expect(createDirectValueMapping(c, {kind: 'input'}).kind).toBe('resource-limit');
   });
-  it('funds the valid key-vector reservation before calling intrinsic enumeration', async () => {
-    const probe = await contract(), plan = mapping(probe), app = {city: '', days: 2};
-    const originalOwnKeys = Reflect.ownKeys;
-    let enumerationWork = 0;
+  it('checks key shape without charging a synthetic allocation reservation', async () => {
+    const c = await contract(), plan = mapping(c), app = {city: '', days: 2};
+    const budget = inspectDirectOperation(c).context.budget;
+    const before = budget.usage().work, originalOwnKeys = Reflect.ownKeys;
+    let enumerationWork = -1;
     try {
       Reflect.ownKeys = object => {
-        if (object === app) enumerationWork = inspectDirectOperation(probe).context.budget.usage().work;
+        if (object === app) enumerationWork = budget.usage().work;
         return originalOwnKeys(object);
       };
-      expanded(probe, plan, app);
+      expect(expandDirectValue(c, plan, app).kind).toBe('direct-expanded');
     } finally {Reflect.ownKeys = originalOwnKeys;}
-    expect(enumerationWork).toBeGreaterThan(0);
-    const c = await contract(undefined, selector, enumerationWork - 1), m = mapping(c), fresh = {city: '', days: 2};
-    let called = false;
+    expect(enumerationWork).toBe(before);
+    expect(budget.usage().work).toBeGreaterThan(before); // Actual matching/scalar validation still counts.
+  });
+  it('bounds oversized fresh strings and repetitions before inverse construction', async () => {
+    const c = await contract();
+    const input = mapping(c), output = mapping(c, {kind: 'output'});
+    const text = expandDirectValue(c, input, {city: 'x'.repeat(1024 * 1024 + 1), days: 1});
+    expect(text).toMatchObject({kind: 'resource-limit', rule: 'application text limit'});
+    expect(text).not.toHaveProperty('payload');
+    const large = new Array(100_001), originalOwnKeys = Reflect.ownKeys;
+    let enumerated = false;
     try {
-      Reflect.ownKeys = object => {if (object === fresh) called = true; return originalOwnKeys(object);};
-      const result = expandDirectValue(c, m, fresh);
-      expect(result.kind).toBe('resource-limit'); expect(result).not.toHaveProperty('payload');
+      Reflect.ownKeys = object => {if (object === large) enumerated = true; return originalOwnKeys(object);};
+      const result = expandDirectValue(c, output, {city: '', temperature: large, complete: true});
+      expect(result).toMatchObject({kind: 'resource-limit', rule: 'application item limit'});
+      expect(result).not.toHaveProperty('payload');
     } finally {Reflect.ownKeys = originalOwnKeys;}
-    expect(called).toBe(false);
+    expect(enumerated).toBe(false);
   });
   it('checks cooperative cancellation during work and immediately before inverse publication', async () => {
     const probe = await contract(), plan = mapping(probe);

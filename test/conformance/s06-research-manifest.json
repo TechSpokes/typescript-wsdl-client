@@ -1066,7 +1066,7 @@
         {
           "path": "src/loader/schemaInput.ts",
           "role": "semantic-source",
-          "sha256": "1913e9fc4e7fcde54050dbbc1f3447f45c1f4967a88fcc4d5e3eb09a2a815cf1"
+          "sha256": "4515c92a5359d31cd81415100522ad7b83a7ba5af5e7bdf13fbd9c3dc5c6bc31"
         },
         {
           "path": "test/research/re01/predicate-dependencies.test.ts",
@@ -1236,7 +1236,7 @@
         {
           "path": "src/compiler/semanticBudget.ts",
           "role": "semantic-source",
-          "sha256": "f1059e52d16ec42379186c0f7bd8e6bec3ba6a95dbea6ada13232e9b33065af3"
+          "sha256": "bfc028cdf170d19bad6ed2f9fda36f500c079b6e74e4dd953c29620d4ca40bb0"
         },
         {
           "path": "src/compiler/semanticContext.ts",
@@ -1566,7 +1566,7 @@
         {
           "path": "src/loader/schemaResources.ts",
           "role": "semantic-source",
-          "sha256": "6ca4bfe71eac02e6db7b24434d6491c22619885df7d138ab5bfd9d3ca0ec7943"
+          "sha256": "9496328cf98d51e182fce9d6bc81cf1023b1aaa5ae50f4bc94c3add3a7c2d52d"
         },
         {
           "path": "src/loader/resolutionDepth.ts",
@@ -3272,6 +3272,11 @@
           "path": "test/research/re01/private-ambient.test.ts",
           "role": "prototype",
           "sha256": "b22221c1a6faec854eaa7e4bff72ef652903117ca39a174d9604fff8193b9b97"
+        },
+        {
+          "path": "src/compiler/dataOwnership.ts",
+          "sha256": "b184a55159b25724e3cfe672b1ba89b67d891ec7f744ba337b78b9cf8f48a91e",
+          "role": "semantic-source"
         }
       ]
     },

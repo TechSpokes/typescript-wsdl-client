@@ -12,7 +12,7 @@ const directory = path.resolve('test/conformance/fixtures/assessment');
 async function setup() {
   const operation = await selectDirectOperation(path.join(directory, 'forecast.wsdl'), {
     portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast',
-  }, {loading: {policy: {fileRoots: [directory]}}});
+  }, {limits: {}, loading: {policy: {fileRoots: [directory]}}});
   if (operation.kind !== 'selected') throw new Error(operation.kind);
   const mapping = createDirectValueMapping(operation.contract, {kind: 'input'});
   if (mapping.kind !== 'direct-mapping') throw new Error(mapping.kind);

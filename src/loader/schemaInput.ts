@@ -56,6 +56,7 @@ export function schemaInterpretationKey(node: SyntaxElement, targetNamespace: st
 }
 
 export type SchemaInputOptions = {
+  signal?: AbortSignal;
   /** Optional request accounting used by the additive assessment boundary. */
   chargeWork?: (amount: number) => void;
   policy: SchemaResourcePolicy;
@@ -74,7 +75,7 @@ export function loadSemanticSchemaInput(source: string, options: SchemaInputOpti
 }
 
 async function loadSchemaInputWithValues(source: string, options: SchemaInputOptions, semanticValues: boolean): Promise<SchemaInput> {
-  const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources, options.chargeWork);
+  const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources, options.chargeWork, options.signal);
   const documents = new Map<string, SyntaxDocument>();
   const originalBytes = new Map<string, Uint8Array>();
   const schemas = new Map<string, SchemaInterpretation>();

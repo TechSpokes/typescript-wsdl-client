@@ -1,4 +1,8 @@
+import {isApplicationUnmetered} from './semanticBudget.js';
+import {directDataOwnership, directLimit} from './directExecutionPolicy.js';
 /** Internal, one-retained-operation, unauthenticated loopback SOAP 1.1 adapter. */
+import {checkSemanticBudget} from './semanticBudget.js';
+import {DataOwnershipLimitError} from './dataOwnership.js';
 import {Agent} from 'node:http';
 import {types} from 'node:util';
 import {WSDL} from 'soap/lib/wsdl/index.js';
@@ -13,7 +17,7 @@ import type {DirectCodecFailure, DirectDecodedXml, DirectXmlLimits} from './dire
 import {prepareDirectSoapSource, DirectSoapSourceError} from './directSoapSource.js';
 import {isXmlNCName, resolveLexicalQName, SchemaLoadingError} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
-import type {ResolverUsage, SemanticBudget} from './semanticBudget.js';
+import type {ResolverUsage} from './semanticBudget.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/soap/envelope/';
 export interface DirectSoapOptions {
@@ -48,8 +52,8 @@ class Stop extends Error {
 const same = (a: ExpandedName, b: ExpandedName) => a.namespace === b.namespace && a.local === b.local;
 
 /** Shared entry guard: consumers must call before reading any SOAP option. */
-export function directSoapOptionsShape(options: unknown, budget: SemanticBudget, check: () => void): string | undefined {
-  budget.chargeWork(2048);
+export function directSoapOptionsShape(options: unknown, check: () => void): string | undefined {
+
   if (!options || typeof options !== 'object' || types.isProxy(options)
     || ![null, Object.prototype].includes(Object.getPrototypeOf(options) as object | null)) return 'data-only SOAP options required';
   const allowed = new Set(['service', 'port', 'endpoint', 'allowEndpoint', 'signal', 'timeoutMs', 'limits', 'capabilities']);
@@ -70,33 +74,31 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
   const {budget} = context;
   const fail = (kind: DirectSoapFailure['kind'], rule: string): DirectSoapFailure => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
   let signal: AbortSignal | undefined;
-  const check = () => {budget.chargeWork(); if (signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');};
+  const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');};
   const stop = (kind: DirectSoapFailure['kind'], rule: string): never => {throw new Stop(kind, rule);};
   let agent: Agent | undefined;
   let controller: AbortController | undefined;
   let deadline: ReturnType<typeof setTimeout> | undefined;
   const abort = () => controller?.abort();
   try {
-    budget.chargeWork(8192); check();
+    check();
     // Options are a closed capability surface. Never silently discard security,
     // headers, endpoint agents, redirects, streaming or other caller extensions.
-    const optionRule = directSoapOptionsShape(options, budget, check);
+    const optionRule = directSoapOptionsShape(options, check);
     if (optionRule) return fail('unsupported', optionRule);
     signal = options.signal;
     if (signal !== undefined && !(signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
     const allowEndpoint = options.allowEndpoint;
     check();
-    const config = budget.freeze(budget.snapshot({service: options.service, port: options.port, endpoint: options.endpoint,
-      timeoutMs: options.timeoutMs ?? 15_000, limits: options.limits ?? {}, capabilities: options.capabilities ?? []}));
+    const config = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot({service: options.service, port: options.port, endpoint: options.endpoint,
+      timeoutMs: options.timeoutMs ?? (isApplicationUnmetered(budget) ? 0 : 15_000), limits: options.limits ?? {}, capabilities: options.capabilities ?? []}));
     if (!Array.isArray(config.capabilities) || config.capabilities.length) return fail('unsupported', 'SOAP capability');
-    if (!Number.isSafeInteger(config.timeoutMs) || config.timeoutMs < 1 || config.timeoutMs > 2_147_483_647) throw new RangeError('SOAP timeout must be a positive timer integer');
-    const limits = {...DIRECT_XML_LIMITS, ...config.limits};
+    if (!Number.isSafeInteger(config.timeoutMs) || config.timeoutMs < 0 || config.timeoutMs > 2_147_483_647) throw new RangeError('SOAP timeout must be a positive timer integer');
+    const limits = {maxBytes: directLimit(budget, DIRECT_XML_LIMITS.maxBytes), maxDepth: directLimit(budget, DIRECT_XML_LIMITS.maxDepth),
+      maxNodes: directLimit(budget, DIRECT_XML_LIMITS.maxNodes), maxText: directLimit(budget, DIRECT_XML_LIMITS.maxText), ...config.limits};
     for (const [key, value] of Object.entries(limits)) {
       if (!['maxBytes', 'maxDepth', 'maxNodes', 'maxText'].includes(key) || !Number.isSafeInteger(value) || value < 1) throw new RangeError('Invalid SOAP XML limit');
     }
-    // A capacity larger than representable reservation cannot fit the already
-    // nonempty request budget. Exhaust through its normal sticky failure path.
-    if (limits.maxBytes > Math.floor((Number.MAX_SAFE_INTEGER - 8192) / 16)) budget.chargeWork(Number.MAX_SAFE_INTEGER);
     if (typeof config.endpoint !== 'string' || typeof config.port !== 'string' || !isXmlNCName(config.port)
       || !config.service || typeof config.service.namespace !== 'string' || !isXmlNCName(config.service.local)) return fail('unsupported', 'explicit SOAP selection');
     const endpoint = new URL(config.endpoint);
@@ -104,11 +106,11 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
       || endpoint.username || endpoint.password || endpoint.hash || endpoint.search) return fail('unsupported', 'owned loopback HTTP endpoint required');
     if (typeof allowEndpoint !== 'function' || allowEndpoint(new URL(endpoint.href)) !== true) return fail('unsupported', 'endpoint authorization');
     const action = contract.binding.action;
-    budget.chargeWork(128 + action.length * 8);
+
     if (/[^\x20-\x21\x23-\x7e]|\\/.test(action)) return fail('unsupported', 'unsafe SOAPAction');
-    const {wsdlText, original, bootstrapNodes} = prepareDirectSoapSource(contract, config, check);
+    const {wsdlText} = prepareDirectSoapSource(contract, config, check);
     const elements = (node: SyntaxElement): SyntaxElement[] => {
-      check(); budget.chargeWork(128 + node.children.length * 16 + node.attributes.length * 16);
+     check();
       return node.children.filter((child): child is SyntaxElement => child.kind === 'element');
     };
 
@@ -118,7 +120,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
     if (output.kind !== 'direct-mapping') return fail(output.kind, output.rule);
     const faults = new Map<string, DirectValueMapping>();
     for (const fault of contract.faults) {
-      check(); const mapping = createDirectValueMapping(contract, {kind: 'fault', name: fault.name}, {signal});
+     check(); const mapping = createDirectValueMapping(contract, {kind: 'fault', name: fault.name}, {signal});
       if (mapping.kind !== 'direct-mapping') return fail(mapping.kind, mapping.rule);
       faults.set(fault.name, mapping);
     }
@@ -139,35 +141,30 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
       if (body.length !== 1) stop('protocol', 'one SOAP Body payload required');
       return body[0]!;
     };
-    // Reserve native dependency bootstrap's bounded retained source, maps and
-    // envelope work before entering its non-cooperative synchronous routines.
-    budget.chargeWork(8192 + original.byteLength * original.byteLength * 4);
-    budget.reserveNodes(bootstrapNodes);
+    // The native dependency receives only the explicitly byte-bounded source.
     const wsdl = new WSDL(wsdlText, source.root.uri, {wsdl_options: {overrideImportLocation: () => {throw new Stop('unsupported', 'dependency import forbidden');}}});
     await new Promise<void>((resolve, reject) => wsdl.onReady(error => error ? reject(error) : resolve()));
     check();
-    // Reserve full native buffering, concatenation, request conversion, outgoing
-    // syntax and publication copies before dispatch; no counter resets/retries.
-    budget.chargeWork(8192 + limits.maxBytes * 16);
+    // HTTP and codec byte limits bound buffering and output copies directly.
     agent = new Agent({keepAlive: false, maxSockets: 1});
     controller = new AbortController();
     signal?.addEventListener('abort', abort, {once: true});
     let timedOut = false;
-    deadline = setTimeout(() => {timedOut = true; controller!.abort();}, config.timeoutMs);
+    if (config.timeoutMs > 0) deadline = setTimeout(() => {timedOut = true; controller!.abort();}, config.timeoutMs);
     const complete = new Error('direct raw response captured');
     let response: {bytes: Buffer; status: number; contentType: string; encoding: string} | undefined;
     let hookFailure: unknown;
     class BufferedHttp extends HttpClient {
       override request(url: string, data: string, callback: (error: unknown) => void, headers: Record<string, string>, _options: Record<string, unknown>) {
         try {
-          check();
+         check();
           if (url !== endpoint.href || headers.SOAPAction !== `"${action}"` || headers['Content-Type'] !== 'text/xml; charset=utf-8') stop('protocol', 'dependency dispatch mismatch');
-          budget.chargeWork(512 + data.length * 8);
+
           if (Buffer.byteLength(data) > limits.maxBytes) stop('resource-limit', 'SOAP request byte limit');
           const outgoing = decodeDirectXml(contract, input, Buffer.from(data), {signal, limits,
             uri: 'urn:typescript-wsdl-client:outgoing-soap', selectPayload: root => ({payload: bodyRoot(root), mapping: input})});
           if (outgoing.kind !== 'direct-decoded') stop(outgoing.kind, outgoing.rule);
-          check();
+         check();
         } catch (error) {
           hookFailure = error; callback(complete);
           // The dependency ignores this return value; no HTTP request is made.
@@ -178,7 +175,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
         return super.request(url, data, (error: unknown, res: {status: number; headers: Record<string, unknown>} | undefined, bytes: unknown) => {
           // Never throw through HttpClient's detached then-handler.
           try {
-            check();
+           check();
             if (error) hookFailure = error;
             else if (!res || !Buffer.isBuffer(bytes)) stop('transport', 'raw response bytes unavailable');
             else response = {bytes, status: res.status, contentType: String(res.headers['content-type'] ?? ''), encoding: String(res.headers['content-encoding'] ?? '')};
@@ -227,7 +224,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
         if (names.join(',') !== 'faultcode,faultstring,detail' && names.join(',') !== 'faultcode,faultstring,faultactor,detail') stop('protocol', 'SOAP Fault children');
         const text = (node: SyntaxElement) => {
           if (node.attributes.some(a => !(node.name.local === 'faultstring' && a.name.namespace === 'http://www.w3.org/XML/1998/namespace' && a.name.local === 'lang')) || elements(node).length) stop('protocol', 'SOAP Fault scalar child');
-          budget.chargeWork(128 + node.children.reduce((sum, n) => sum + (n.kind === 'text' ? n.value.length * 8 : 0), 0));
+
           return node.children.map(n => n.kind === 'text' ? n.value : '').join('');
         };
         let code: ExpandedName;
@@ -243,17 +240,18 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
         const matches = contract.faults.filter(f => same(f.root.element.name, detail[0]!.name));
         if (matches.length !== 1) stop('protocol', 'unknown or ambiguous SOAP Fault detail');
         faultInfo = {name: matches[0]!.name, code, codeNode: children[0]!, string, ...(actor === undefined ? {} : {actor})};
-        budget.freeze(faultInfo);
+       directDataOwnership(budget).freeze(faultInfo);
         return {payload: detail[0]!, mapping: faults.get(faultInfo.name)!};
       }});
     if (decoded.kind !== 'direct-decoded') return fail(decoded.kind, decoded.rule);
-    check(); budget.chargeWork(4096); check();
+    check(); check();
     return Object.freeze({kind: faultInfo ? 'soap-fault' : 'soap-response', admitted: false, decoded,
       responseBytes: new Uint8Array(observed.bytes), status: observed.status, ...(faultInfo ? {fault: faultInfo} : {}), usage: Object.freeze({...budget.usage()})});
   } catch (error) {
     if (budget.exhausted()) return fail('resource-limit', 'request-budget');
+    if (error instanceof DataOwnershipLimitError) return fail('resource-limit', error.message);
     if (signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
-    if (error instanceof DirectSoapSourceError) return fail('unsupported', error.message);
+    if (error instanceof DirectSoapSourceError) return fail(error.kind, error.message);
     if (error instanceof Stop) return fail(error.kind, error.rule);
     if (error instanceof SchemaLoadingError) return fail(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'invalid-schema' ? 'protocol' : 'unsupported', 'SOAP protocol XML');
     if (error instanceof Error && 'code' in error) {

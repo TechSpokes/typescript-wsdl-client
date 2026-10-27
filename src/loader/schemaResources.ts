@@ -23,7 +23,7 @@ export type FetchedSchemaResource = ResourceMetadata & Readonly<{bytes: Uint8Arr
 export function loadingLimits(overrides: Partial<LoadingLimits> = {}): LoadingLimits {
   const limits = {...DEFAULT_LOADING_LIMITS, ...overrides};
   for (const [key, value] of Object.entries(limits)) {
-    if (!Number.isSafeInteger(value) || value < (key === "redirects" ? 0 : 1)) {
+    if (!Number.isSafeInteger(value) || value < (['redirects', 'resourceMs', 'totalIoMs'].includes(key) ? 0 : 1)) {
       throw new RangeError(`Invalid schema loading limit: ${key}`);
     }
   }
@@ -63,9 +63,10 @@ export class SchemaResourceLoader {
   private totalBytes = 0;
   private ioMs = 0;
   private constructor(private readonly roots: readonly string[], private readonly lexicalRoots: readonly string[], private readonly origins: ReadonlySet<string>,
-    limits: LoadingLimits, private readonly offline?: ReadonlyMap<string, OfflineSchemaResource>, private readonly charge?: (amount: number) => void) { this.limits = limits; }
+    limits: LoadingLimits, private readonly offline?: ReadonlyMap<string, OfflineSchemaResource>, private readonly charge?: (amount: number) => void,
+    private readonly signal?: AbortSignal) { this.limits = limits; }
 
-  static async create(policy: SchemaResourcePolicy, overrides?: Partial<LoadingLimits>, offline?: ReadonlyMap<string, OfflineSchemaResource>, charge?: (amount: number) => void): Promise<SchemaResourceLoader> {
+  static async create(policy: SchemaResourcePolicy, overrides?: Partial<LoadingLimits>, offline?: ReadonlyMap<string, OfflineSchemaResource>, charge?: (amount: number) => void, signal?: AbortSignal): Promise<SchemaResourceLoader> {
     charge?.(1024 + (policy.fileRoots?.length ?? 0) * 128 + (policy.allowedOrigins?.length ?? 0) * 128 + (offline?.size ?? 0) * 256);
     const configuredRoots = (policy.fileRoots ?? []).map(root => {charge?.(128 + root.length * 32); return path.resolve(root);});
     let roots: string[];
@@ -85,7 +86,7 @@ export class SchemaResourceLoader {
       charge?.(256 + uri.length * 32);
       snapshots!.set(resolveResourceUri(uri), {bytes: value.bytes, digest: value.digest});
     }
-    return new SchemaResourceLoader(roots, [...configuredRoots, ...roots], origins, loadingLimits(overrides), snapshots, charge);
+    return new SchemaResourceLoader(roots, [...configuredRoots, ...roots], origins, loadingLimits(overrides), snapshots, charge, signal);
   }
 
   get metadata(): readonly ResourceMetadata[] {
@@ -118,15 +119,18 @@ export class SchemaResourceLoader {
     const pinned = this.resources.get(this.resourceKeys.get(this.aliases.get(requested) ?? requested) ?? "");
     if (pinned) return pinned;
     const started = performance.now();
-    const remaining = this.limits.totalIoMs - this.ioMs;
+    const remaining = this.limits.totalIoMs === 0 ? Infinity : this.limits.totalIoMs - this.ioMs;
     if (remaining < 0) throw new SchemaLoadingError("transport", "Total schema I/O deadline exhausted");
-    const budget = Math.min(this.limits.resourceMs, remaining);
+    const budget = Math.min(this.limits.resourceMs === 0 ? Infinity : this.limits.resourceMs, remaining);
     const controller = new AbortController();
+    const abort = () => controller.abort(this.signal?.reason);
+    this.signal?.addEventListener('abort', abort, {once: true});
+    if (this.signal?.aborted) abort();
     let timer: ReturnType<typeof setTimeout> | undefined;
     let performedIo = new URL(requested).protocol === "file:";
     const timeout = new Promise<never>((_, reject) => {
       // Limits are inclusive: an exactly-at-deadline completed resource is admitted.
-      timer = setTimeout(() => { controller.abort(); reject(new SchemaLoadingError("transport", "Schema resource or total I/O deadline exceeded")); }, budget + 1);
+      if (Number.isFinite(budget)) timer = setTimeout(() => { controller.abort(); reject(new SchemaLoadingError("transport", "Schema resource or total I/O deadline exceeded")); }, budget + 1);
     });
     try {
       const task = (async () => {
@@ -227,6 +231,7 @@ export class SchemaResourceLoader {
       // Do not expose filesystem paths, response text or credential-bearing transport errors.
       throw new SchemaLoadingError("transport", "Unable to retrieve schema resource under the configured policy");
     } finally {
+      this.signal?.removeEventListener('abort', abort);
       clearTimeout(timer);
       if (performedIo) this.ioMs += performance.now() - started;
     }

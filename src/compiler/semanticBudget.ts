@@ -1,4 +1,5 @@
 /** Shared request-local semantic accounting; historical resolver names remain compatible. */
+import {createDataOwnership} from './dataOwnership.js';
 export interface ResolverLimits {
   readonly maxNodes?: number;
   readonly maxWork?: number;
@@ -105,16 +106,6 @@ export function createResolverBudget(limits: ResolverLimits = NO_LIMITS): Resolv
 
   function chargeWork(amount = 1): void { charge(amount, 'work'); }
 
-  function arrayIndex(index: number): string {
-    // Array positions are bounded by JavaScript's array length, so this is a
-    // constant-size numeric decision, followed by a precharged text conversion.
-    const digits = index < 10 ? 1 : index < 100 ? 2 : index < 1_000 ? 3 :
-      index < 10_000 ? 4 : index < 100_000 ? 5 : index < 1_000_000 ? 6 :
-      index < 10_000_000 ? 7 : index < 100_000_000 ? 8 : index < 1_000_000_000 ? 9 : 10;
-    chargeWork(1 + digits);
-    return String(index);
-  }
-
   function compareText(left: string, right: string): number {
     chargeWork(2); // Constant-time length reads.
     const leftLength = left.length;
@@ -164,120 +155,7 @@ export function createResolverBudget(limits: ResolverLimits = NO_LIMITS): Resolv
     return source;
   }
 
-  function snapshot<T>(value: T): T {
-    // Explicit stacks preserve sharing without recursive call-stack expansion.
-    chargeWork(3); // Identity map and source/target stacks.
-    const copied = new Map<object, object>();
-    const sources: object[] = [];
-    const targets: object[] = [];
-
-    function copy(current: unknown): unknown {
-      chargeWork(); // Value access.
-      if (typeof current === 'string') {
-        chargeWork(current.length); // Produced/inspected immutable text.
-        return current;
-      }
-      if (current === null || typeof current !== 'object') return current;
-      chargeWork(); // Identity-map read.
-      const prior = copied.get(current);
-      if (prior !== undefined) return prior;
-      chargeWork(); // Array classification.
-      const array = Array.isArray(current);
-      if (!array) chargeWork(); // Prototype introspection.
-      const prototype: unknown = array ? undefined : Object.getPrototypeOf(current);
-      if (!array && prototype !== Object.prototype && prototype !== null) {
-        throw new TypeError('RE01 snapshots require data records and arrays');
-      }
-      chargeWork(4); // Container, map insertion and two stack pushes.
-      const result: object = array ? [] : {};
-      copied.set(current, result);
-      sources.push(current);
-      targets.push(result);
-      return result;
-    }
-
-    const result = copy(value) as T;
-    while (sources.length > 0) {
-      chargeWork(2); // Both stack pops.
-      const source = sources.pop()!;
-      const target = targets.pop()!;
-      chargeWork(); // Array classification for the traversal.
-      if (Array.isArray(source)) {
-        chargeWork(); // Length read.
-        const length = source.length;
-        for (let index = 0; index < length; index += 1) {
-          // Introspection plus its descriptor (record/four fields/35 key units),
-          // followed by the input value read and output entry.
-          chargeWork(43);
-          const descriptor = Object.getOwnPropertyDescriptor(source, arrayIndex(index));
-          if (descriptor === undefined || !('value' in descriptor)) {
-            throw new TypeError('RE01 arrays require present data entries');
-          }
-          (target as unknown[])[index] = copy(descriptor.value);
-        }
-      } else {
-        for (const key in source) {
-          chargeWork(); // Own-field introspection.
-          if (!Object.hasOwn(source, key)) continue;
-          // The property descriptor is an allocated record with four fields
-          // and 35 field-name units, as well as the inspected/copied field.
-          chargeWork(83 + key.length);
-          const descriptor = Object.getOwnPropertyDescriptor(source, key);
-          if (descriptor === undefined || !('value' in descriptor)) {
-            throw new TypeError('RE01 records require data fields');
-          }
-          Object.defineProperty(target, key, {
-            value: copy(descriptor.value),
-            enumerable: true, configurable: true, writable: true,
-          });
-        }
-      }
-    }
-    return result;
-  }
-
-  function freeze<T>(value: T): Readonly<T> {
-    chargeWork(2); // Visited set and traversal stack.
-    const seen = new Set<object>();
-    const stack: unknown[] = [];
-    chargeWork();
-    stack.push(value);
-    while (stack.length > 0) {
-      chargeWork(); // Pop.
-      const current = stack.pop();
-      if (current === null || typeof current !== 'object') continue;
-      chargeWork(); // Set read.
-      if (seen.has(current)) continue;
-      chargeWork(2); // Visit-state insertion and freeze traversal.
-      seen.add(current);
-      chargeWork(); // Array classification.
-      if (Array.isArray(current)) {
-        chargeWork(); // Length read.
-        const length = current.length;
-        for (let index = 0; index < length; index += 1) {
-          chargeWork(43); // Descriptor inspection/allocation, value read and push.
-          const descriptor = Object.getOwnPropertyDescriptor(current, arrayIndex(index));
-          if (descriptor === undefined || !('value' in descriptor)) {
-            throw new TypeError('RE01 arrays require present data entries');
-          }
-          stack.push(descriptor.value);
-        }
-      } else {
-        for (const key in current) {
-          chargeWork(); // Own-field introspection.
-          if (!Object.hasOwn(current, key)) continue;
-          chargeWork(43 + key.length); // Descriptor, field access, name inspection and push.
-          const descriptor = Object.getOwnPropertyDescriptor(current, key);
-          if (descriptor === undefined || !('value' in descriptor)) {
-            throw new TypeError('RE01 records require data fields');
-          }
-          stack.push(descriptor.value);
-        }
-      }
-      Object.freeze(current);
-    }
-    return value;
-  }
+  const {snapshot, freeze} = createDataOwnership(chargeWork);
 
   // Budgets smaller than the reservation fail without performing graph work;
   // their one constant terminal envelope remains the reserved escape path.
@@ -309,3 +187,23 @@ export function createResolverBudget(limits: ResolverLimits = NO_LIMITS): Resolv
 export type SemanticBudget = ResolverBudget;
 export type SemanticBudgetLimits = ResolverLimits;
 export const createSemanticBudget = createResolverBudget;
+
+/** Observe sticky failure without charging routine procedural work. */
+export function checkSemanticBudget(budget: SemanticBudget): void {budget.chargeWork(0);}
+
+const unmetered = new WeakSet<object>();
+/** Application execution has no work quota unless the caller explicitly supplies one. */
+export function createApplicationBudget(limits?: SemanticBudgetLimits): SemanticBudget {
+  if (limits !== undefined) return createSemanticBudget(limits);
+  const ownership = createDataOwnership(() => {});
+  const budget: SemanticBudget = {
+    chargeWork() {}, reserveNodes() {}, usage: () => ({nodes: 0, work: 0}),
+    exhausted: () => false, failure: () => undefined, guard: operation => operation(),
+    compareText: (a, b) => a < b ? -1 : a > b ? 1 : 0,
+    sorted: (values, compare) => Array.from(values).sort(compare), ...ownership,
+  };
+  unmetered.add(budget);
+  return budget;
+}
+/** Internal identity marker, never source/transport authorization. */
+export function isApplicationUnmetered(budget: SemanticBudget): boolean {return unmetered.has(budget);}

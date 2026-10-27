@@ -31,7 +31,7 @@ async function contract(text?: string, choose = selector): Promise<DirectOperati
   const directory = text === undefined ? path.dirname(fixture) : await mkdtemp(path.join(scratch, 'source-'));
   const source = text === undefined ? fixture : path.join(directory, 'source.wsdl');
   if (text !== undefined) await writeFile(source, text);
-  const selected = await selectDirectOperation(source, choose, {loading: {policy: {fileRoots: [directory]}}});
+  const selected = await selectDirectOperation(source, choose, {limits: {}, loading: {policy: {fileRoots: [directory]}}});
   expect(selected.kind).toBe('selected');
   if (selected.kind !== 'selected') throw new Error(`${selected.kind}: ${selected.rule}`);
   return selected.contract;
