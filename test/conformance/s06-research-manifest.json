@@ -1566,7 +1566,7 @@
         {
           "path": "src/loader/schemaResources.ts",
           "role": "semantic-source",
-          "sha256": "6ca4bfe71eac02e6db7b24434d6491c22619885df7d138ab5bfd9d3ca0ec7943"
+          "sha256": "ca4be3a8da782ab81df7ed415108f755d6155febba8b8be7f9f9430333d15b8d"
         },
         {
           "path": "src/loader/resolutionDepth.ts",

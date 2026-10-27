@@ -9,7 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-- refactor(runtime): replace direct-client allocation estimates with explicit resource limits and targeted semantic accounting.
+- refactor(runtime): keep profiling quotas out of normal direct-client execution.
 
 - feat(client): add an internal native-plan checked TypeScript SOAP client with isolated installed-consumer qualification.
 
