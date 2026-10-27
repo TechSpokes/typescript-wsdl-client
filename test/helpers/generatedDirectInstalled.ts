@@ -76,8 +76,9 @@ import {createClient} from './forecast.js';
 createClient(checkedDirectRuntimeV1);
 // @ts-expect-error generated/runtime version mismatch
 createClient({...checkedDirectRuntimeV1, version: 'checked-direct-runtime-v0'});
+declare const callOptions: import('./forecast.js').Options;
 // @ts-expect-error profiling is not a supported caller option
-checkedDirectRuntimeV1.execute('', {}, {budget: {}}, 'checked-direct-runtime-v1');` : ''}
+checkedDirectRuntimeV1.execute('', {}, {...callOptions, budget: {}}, 'checked-direct-runtime-v1');` : ''}
 import type {Request as Shapes} from './shapes.js';
 import type {Request as Empty} from './empty.js';
 const request: Request = {city: 'Paris', days: 2};
