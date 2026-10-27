@@ -10,9 +10,11 @@ import type {SemanticBudget, ResolverUsage} from './semanticBudget.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
 
 export type DirectPrimitive = string | boolean | number;
+export const DIRECT_VALUE_VERSION = 'direct-values-v1';
+export const DIRECT_SCALAR_POLICY = 'direct-string-boolean-int-v1';
 export type DirectApplicationValue = DirectPrimitive | Readonly<Record<string, DirectPrimitive | readonly DirectPrimitive[]>>;
 export interface DirectValueMapping extends DirectRootPlan {
-  readonly kind: 'direct-mapping'; readonly version: 'direct-values-v1'; readonly admitted: false;
+  readonly kind: 'direct-mapping'; readonly version: typeof DIRECT_VALUE_VERSION; readonly admitted: false;
   readonly root: DirectMessageRoot; readonly direction: DirectDirection; readonly contextId: string;
   readonly usage: ResolverUsage;
 }
@@ -89,7 +91,7 @@ function mappingFor(contract: DirectOperationContract, direction: DirectDirectio
     root = fault.root;
   } else throw new Stop('unsupported', 'unknown-direction');
   const plan = planDirectRoot(context, root, check, () => {throw new Stop('unsupported', 'native-direct-shape', root.element.context.source.path);});
-  const mapping = s.publish({kind: 'direct-mapping' as const, version: 'direct-values-v1' as const, admitted: false as const,
+  const mapping = s.publish({kind: 'direct-mapping' as const, version: DIRECT_VALUE_VERSION as typeof DIRECT_VALUE_VERSION, admitted: false as const,
     root, direction: owned.kind === 'fault' ? {kind: 'fault' as const, name: owned.name} : {kind: owned.kind}, contextId: context.contextId, ...plan});
   mappings.set(mapping, contract);
   return mapping;
