@@ -10,6 +10,7 @@ import type {DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
 import {exchangeDirectSoap, directSoapOptionsShape} from '../compiler/directSoap.js';
 import type {DirectSoapOptions, DirectSoapFailure} from '../compiler/directSoap.js';
 import type {DirectApplicationValue} from '../compiler/directValues.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
 
 export interface DirectClientOptions {
   readonly localSource: string;
@@ -31,10 +32,12 @@ export type DirectClientResult = DirectClientFailure | Readonly<{
   responseBytes: Uint8Array; usage: ResolverUsage;
 }>;
 export interface DirectClientRuntime {
+  readonly version: typeof DIRECT_CLIENT_RUNTIME_VERSION;
   execute(expectedBase64: string, input: unknown, options: DirectClientOptions): Promise<DirectClientResult>;
 }
 /** The generated literal is the expected artifact; caller bytes never choose its static contract. */
 export const directClientRuntime: DirectClientRuntime = Object.freeze({
+  version: DIRECT_CLIENT_RUNTIME_VERSION,
   async execute(expectedBase64: string, input: unknown, options: DirectClientOptions): Promise<DirectClientResult> {
     // Constant-sized entry introspection precedes budget configuration and all reads.
     const entryFailure = (): DirectClientFailure => ({kind: 'unsupported', rule: 'data-only client options required', usage: {nodes: 0, work: 0}});

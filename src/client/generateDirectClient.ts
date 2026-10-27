@@ -1,4 +1,5 @@
 import {directLimit} from '../compiler/directExecutionPolicy.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR} from './directClientVersion.js';
 /** Internal native-plan generator. Deliberately absent from index.ts and the CLI. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {writeFileSync} from 'node:fs';
@@ -65,8 +66,8 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
     const output = mappings.find(m => m.direction.kind === 'output')!;
     const faults = mappings.filter(m => m.direction.kind === 'fault');
     const lines = [
-      '// Internal checked direct client; the injected binding is trusted test/internal code.',
-      '// No public CLI or package subpath can generate or run this artifact.',
+      '// Checked direct client; inject checkedDirectRuntimeV1 from the package root.',
+      '// Generation remains internal; this unreleased binding supports only the documented direct grammar.',
       '// Static number types require native int32 validation; native checks enforce exact shapes.',
       `export type Request = ${shape(input)};`,
       `export type Response = ${shape(output)};`,
@@ -82,12 +83,12 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
       '}',
       'export interface Failure {',
       '  readonly kind: "incompatible-artifact" | "unsupported" | "missing-authority" | "resource-limit" | "cancelled" | "inconclusive" | "invalid-schema" | "scalar-invalid" | "value-invalid" | "xml-invalid" | "mismatch" | "transport" | "protocol";',
-      '  readonly rule: string; readonly usage: Usage;',
+      '  readonly rule: string; readonly repair?: string; readonly usage: Usage;',
       '}',
       'export interface NativeSuccess { readonly kind: "soap-response" | "soap-fault"; readonly value: unknown;',
       '  readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array;',
       '  readonly fault?: { readonly name: string; readonly code: Name; readonly string: string; readonly actor?: string }; }',
-      'export interface Runtime { execute(expectedBase64: string, input: unknown, options: Options): Promise<Failure | NativeSuccess> }',
+      `export interface Runtime { readonly version: ${literal(DIRECT_CLIENT_RUNTIME_VERSION)}; execute(expectedBase64: string, input: unknown, options: Options, version: ${literal(DIRECT_CLIENT_RUNTIME_VERSION)}): Promise<Failure | NativeSuccess> }`,
       'type Common = { readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array };',
       'export type DeclaredFault = ' + (faults.length ? faults.map((m, i) => {
         if (m.direction.kind !== 'fault') throw new TypeError('fault direction');
@@ -99,8 +100,9 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
       'export function createClient(runtime: Runtime) {',
       '  return Object.freeze({',
       `    [${literal(expected.contract.selector.operation)}]: async (input: Request, options: Options): Promise<Result> => {`,
+      `      if (runtime.version !== ${literal(DIRECT_CLIENT_RUNTIME_VERSION)}) return {kind: "incompatible-artifact", rule: "generated-runtime-version", repair: ${literal(DIRECT_CLIENT_RUNTIME_REPAIR)}, usage: {nodes: 0, work: 0}};`,
       '      // The installed native binding pins the literal capsule before issuing fresh authority.',
-      '      return await runtime.execute(capsule, input, options) as Result;',
+      `      return await runtime.execute(capsule, input, options, ${literal(DIRECT_CLIENT_RUNTIME_VERSION)}) as Result;`,
       '    },',
       '  });',
       '}',
