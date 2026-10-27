@@ -1,7 +1,7 @@
 import {it, expect} from 'vitest';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
-import {mkdtemp, mkdir, copyFile, writeFile, rm} from 'node:fs/promises';
+import {mkdtemp, mkdir, copyFile, writeFile, rm, realpath} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {selectDirectOperation} from '../../src/compiler/directOperation.js';
@@ -10,7 +10,7 @@ import {createDirectSourceCapsule} from '../../src/compiler/directSourceCapsule.
 const exec = promisify(execFile);
 it('requalifies a separately authorized source in a real installed process with checkout access denied', async () => {
   const root = process.cwd();
-  const consumer = await mkdtemp(path.join(tmpdir(), 'wsdl-portable-'));
+  const consumer = await realpath(await mkdtemp(path.join(tmpdir(), 'wsdl-portable-')));
   const artifact = path.join(root, 'tmp/conformance/p36-evidence');
   const fixture = path.join(root, 'test/conformance/fixtures/assessment/forecast.wsdl');
   const namespace = 'urn:checked:forecast';

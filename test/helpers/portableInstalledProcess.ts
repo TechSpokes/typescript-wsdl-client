@@ -9,7 +9,7 @@ import type * as Values from '../../src/compiler/directValues.js';
 import type * as Codec from '../../src/compiler/directCodec.js';
 import type * as Capsules from '../../src/compiler/directSourceCapsule.js';
 
-const root = process.cwd();
+const root = await realpath(process.cwd());
 const installed = await realpath(path.join(root, 'node_modules/@techspokes/typescript-wsdl-client'));
 assert.equal(installed, path.join(root, 'node_modules/@techspokes/typescript-wsdl-client'));
 const privateModule = (name: string) => pathToFileURL(path.join(installed, 'dist/compiler', name + '.js')).href;
