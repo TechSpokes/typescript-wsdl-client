@@ -283,7 +283,24 @@ describe('direct scalar and fresh value contract', () => {
     } finally {Reflect.ownKeys = originalOwnKeys;}
     expect(enumerationWork).toBe(before);
     expect(budget.usage().work).toBeGreaterThan(before); // Actual matching/scalar validation still counts.
-  });  it('checks cooperative cancellation during work and immediately before inverse publication', async () => {
+  });
+  it('bounds oversized fresh strings and repetitions before inverse construction', async () => {
+    const c = await contract();
+    const input = mapping(c), output = mapping(c, {kind: 'output'});
+    const text = expandDirectValue(c, input, {city: 'x'.repeat(1024 * 1024 + 1), days: 1});
+    expect(text).toMatchObject({kind: 'resource-limit', rule: 'application text limit'});
+    expect(text).not.toHaveProperty('payload');
+    const large = new Array(100_001), originalOwnKeys = Reflect.ownKeys;
+    let enumerated = false;
+    try {
+      Reflect.ownKeys = object => {if (object === large) enumerated = true; return originalOwnKeys(object);};
+      const result = expandDirectValue(c, output, {city: '', temperature: large, complete: true});
+      expect(result).toMatchObject({kind: 'resource-limit', rule: 'application item limit'});
+      expect(result).not.toHaveProperty('payload');
+    } finally {Reflect.ownKeys = originalOwnKeys;}
+    expect(enumerated).toBe(false);
+  });
+  it('checks cooperative cancellation during work and immediately before inverse publication', async () => {
     const probe = await contract(), plan = mapping(probe);
     let count = 0;
     const observing = {get aborted() {count++; return false;}} as AbortSignal;
