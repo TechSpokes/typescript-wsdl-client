@@ -10,13 +10,12 @@ import {createDirectValueMapping, inspectDirectValueMapping} from './directValue
 import type {DirectValueMapping} from './directValues.js';
 import {decodeDirectXml, encodeDirectXml, DIRECT_XML_LIMITS} from './directCodec.js';
 import type {DirectCodecFailure, DirectDecodedXml, DirectXmlLimits} from './directCodec.js';
-import {copyOriginalSchemaResource} from '../loader/schemaInput.js';
-import {isXmlNCName, resolveLexicalQName, SchemaLoadingError, syntaxAttribute, WSDL_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import {prepareDirectSoapSource, DirectSoapSourceError} from './directSoapSource.js';
+import {isXmlNCName, resolveLexicalQName, SchemaLoadingError} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
 import type {ResolverUsage} from './semanticBudget.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/soap/envelope/';
-const WSDL_SOAP = 'http://schemas.xmlsoap.org/wsdl/soap/';
 export interface DirectSoapOptions {
   readonly service: ExpandedName;
   readonly port: string;
@@ -100,48 +99,11 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
     const action = contract.binding.action;
     budget.chargeWork(128 + action.length * 8);
     if (/[^\x20-\x21\x23-\x7e]|\\/.test(action)) return fail('unsupported', 'unsafe SOAPAction');
-    if (source.resources.length !== 1 || source.edges.length || source.documents.length !== 1) return fail('unsupported', 'single original WSDL resource required');
+    const {wsdlText, original, bootstrapNodes} = prepareDirectSoapSource(contract, config, check);
     const elements = (node: SyntaxElement): SyntaxElement[] => {
       check(); budget.chargeWork(128 + node.children.length * 16 + node.attributes.length * 16);
       return node.children.filter((child): child is SyntaxElement => child.kind === 'element');
     };
-    // node-soap uses local-name dispatch and ordinary object maps internally.
-    // Refuse fetch triggers even in foreign/otherwise ignored source syntax.
-    let bootstrapNodes = 0;
-    const inspectSource = (node: SyntaxElement) => {
-      check(); budget.chargeWork(256 + node.lexicalName.length * 8);
-      bootstrapNodes += 16 + node.attributes.length * 4 + node.children.length * 4;
-      if (['import', 'include', 'redefine'].includes(node.name.local)) stop('unsupported', 'dependency bootstrap imports');
-      const grammar: Record<string, readonly string[]> = {
-        [WSDL_NAMESPACE]: ['definitions', 'types', 'message', 'part', 'portType', 'operation', 'input', 'output', 'fault', 'binding', 'service', 'port', 'documentation'],
-        [WSDL_SOAP]: ['binding', 'operation', 'body', 'fault', 'address'],
-        ['http://schemas.xmlsoap.org/wsdl/soap12/']: ['binding', 'operation', 'body', 'fault', 'address'],
-        [XSD_NAMESPACE]: ['schema', 'complexType', 'sequence', 'element'],
-      };
-      if (!Object.hasOwn(grammar, node.name.namespace) || !grammar[node.name.namespace]!.includes(node.name.local)) stop('unsupported', 'WSDL bootstrap extension');
-      for (const a of node.attributes) {
-        budget.chargeWork(64 + a.value.length * 8);
-        if (a.name.local === 'name' && (a.value in Object.prototype || a.value === 'prototype')) stop('unsupported', 'dependency reserved name');
-      }
-      for (const prefix in node.namespaces) {
-        budget.chargeWork(64 + (prefix.length + node.namespaces[prefix]!.length) * 8);
-        if (['__proto__', 'prototype', 'constructor'].includes(prefix) || /["<&\r\n\t]/.test(node.namespaces[prefix]!)) stop('unsupported', 'dependency namespace interpolation');
-      }
-      for (const child of elements(node)) inspectSource(child);
-    };
-    inspectSource(source.root.root);
-    const definitions = source.root.root;
-    if (definitions.name.namespace !== WSDL_NAMESPACE || definitions.name.local !== 'definitions') return fail('unsupported', 'WSDL definitions required');
-    const services = elements(definitions).filter(n => n.name.namespace === WSDL_NAMESPACE && n.name.local === 'service'
-      && same({namespace: syntaxAttribute(definitions, 'targetNamespace') ?? '', local: syntaxAttribute(n, 'name') ?? ''}, config.service));
-    if (services.length !== 1) return fail('unsupported', 'SOAP service mismatch');
-    const ports = elements(services[0]!).filter(n => n.name.namespace === WSDL_NAMESPACE && n.name.local === 'port' && syntaxAttribute(n, 'name') === config.port);
-    if (ports.length !== 1) return fail('unsupported', 'SOAP port mismatch');
-    const binding = syntaxAttribute(ports[0]!, 'binding');
-    if (!binding || !same(resolveLexicalQName(binding, ports[0]!), contract.selector.binding)) return fail('unsupported', 'SOAP binding mismatch');
-    const addresses = elements(ports[0]!).filter(n => n.name.namespace === WSDL_SOAP && n.name.local === 'address');
-    if (addresses.length !== 1 || elements(ports[0]!).some(n => !(n.name.namespace === WSDL_SOAP && n.name.local === 'address')
-      && !(n.name.namespace === WSDL_NAMESPACE && n.name.local === 'documentation'))) return fail('unsupported', 'SOAP port extension');
 
     const encoded = encodeDirectXml(contract, input, application, {signal, limits});
     if (encoded.kind !== 'direct-encoded') return fail(encoded.kind, encoded.rule);
@@ -170,13 +132,6 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
       if (body.length !== 1) stop('protocol', 'one SOAP Body payload required');
       return body[0]!;
     };
-    const original = copyOriginalSchemaResource(source, source.root.uri, amount => {check(); budget.chargeWork(amount);});
-    // This packet admits UTF-8 source bootstrap only; response encoding remains
-    // owned by the existing strict XML byte decoder.
-    budget.chargeWork(4096 + original.byteLength * 32);
-    let wsdlText: string;
-    try {wsdlText = new TextDecoder('utf-8', {fatal: true}).decode(original);} catch {return fail('unsupported', 'UTF-8 WSDL bootstrap required');}
-    if (/^<\?xml\s[^?]*encoding\s*=\s*["'](?!utf-?8["'])/i.test(wsdlText)) return fail('unsupported', 'UTF-8 WSDL bootstrap required');
     // Reserve native dependency bootstrap's bounded retained source, maps and
     // envelope work before entering its non-cooperative synchronous routines.
     budget.chargeWork(8192 + original.byteLength * original.byteLength * 4);
@@ -291,6 +246,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
   } catch (error) {
     if (budget.exhausted()) return fail('resource-limit', 'request-budget');
     if (signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
+    if (error instanceof DirectSoapSourceError) return fail('unsupported', error.message);
     if (error instanceof Stop) return fail(error.kind, error.rule);
     if (error instanceof SchemaLoadingError) return fail(error.category === 'resource-limit' ? 'resource-limit' : error.category === 'invalid-schema' ? 'protocol' : 'unsupported', 'SOAP protocol XML');
     if (error instanceof Error && 'code' in error) {

@@ -7,7 +7,7 @@ import {globalId} from './canonicalGraph.js';
 import type {ElementNode, GraphNode, Reference, WsdlNode} from './canonicalGraph.js';
 import type {SemanticContext} from './semanticContext.js';
 import {createSemanticBudget, DEFAULT_MAX_NODES} from './semanticBudget.js';
-import type {SemanticBudgetLimits, ResolverUsage} from './semanticBudget.js';
+import type {SemanticBudget, SemanticBudgetLimits, ResolverUsage} from './semanticBudget.js';
 import {qualifyDirectSource} from './checkedSourcePreparation.js';
 import type {DirectSourceQualification} from './checkedSourcePreparation.js';
 
@@ -62,7 +62,13 @@ class Cancelled extends Error {}
 export async function selectDirectOperation(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
 }>): Promise<DirectOperationResult> {
-  const budget = createSemanticBudget(options.limits);
+  return selectDirectOperationInRequest(source, selector, options, createSemanticBudget(options.limits));
+}
+
+/** Private-module composition seam: portable reading and selection share one request. */
+export async function selectDirectOperationInRequest(source: string, selector: DirectOperationSelector, options: Readonly<{
+  loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
+}>, budget: SemanticBudget): Promise<DirectOperationResult> {
   const check = () => {if (options.signal?.aborted) throw new Cancelled(); budget.chargeWork();};
   const refuse = (kind: Refusal['kind'], rule: string): never => {throw new Refusal(kind, rule);};
   const failure = (kind: Refusal['kind'], rule: string): DirectOperationResult => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});

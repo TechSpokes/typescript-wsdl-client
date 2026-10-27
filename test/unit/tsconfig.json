@@ -92,6 +92,8 @@
     "direct-structure-evidence.test.ts",
     "direct-values.test.ts",
     "direct-codec.test.ts",
-    "direct-codec-independent.test.ts"
+    "direct-codec-independent.test.ts",
+    "direct-source-capsule.test.ts",
+    "direct-capsule-independent.test.ts"
   ]
 }

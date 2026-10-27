@@ -1,6 +1,6 @@
 # Direct scalar values
 
-Internal P3.3 mapping/inverse and P3.4 bare-root XML codec contract. See the root [README](../README.md) and [matching contract](content-model-matching.md).
+Internal direct mapping, bare-root XML codec and portable source contract. See the root [README](../README.md) and [matching contract](content-model-matching.md).
 
 ## Implementation checkpoint
 
@@ -135,6 +135,42 @@ console.log(decoded.validated.value);
 
 [Codec controls](../test/unit/direct-codec.test.ts) run the actual Forecast request/response/ForecastError fixture payload bytes against independent expectations, fresh-byte laws, renamed/form/prefix sources, scalar/empty roots, all counts, reserved names, Unicode/CR/escaping, encoding/security failures, authenticity, cancellation and inclusive limits. [Nonauthor controls](../test/unit/direct-codec-independent.test.ts) independently exercise BOM/URN repairs, native byte access, chunk boundaries and observed provenance. These are bare-root tests; their test-only SOAP extraction is not a production envelope parser.
 
-Exact P3.4 review, local/hosted checks and merged-main identities belong to #384 and [roadmap #379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379). The separately scoped P3.5 adapter under #388 now consumes this codec for an internal buffered SOAP 1.1 unauthenticated loopback exchange; its [transport contract and qualifications](content-model-soap-feasibility.md#p35-original-byte-qualification) cover source-byte bootstrap, original response bytes, envelopes, declared Faults and request lifetime. Persistence, public structured generation, security combinations and activation remain separate work.
+Exact P3.4 review, local/hosted checks and merged-main identities belong to #384 and [roadmap #379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379). The separately scoped P3.5 adapter under #388 now consumes this codec for an internal buffered SOAP 1.1 unauthenticated loopback exchange; its [transport contract and qualifications](content-model-soap-feasibility.md#p35-original-byte-qualification) cover source-byte bootstrap, original response bytes, envelopes, declared Faults and request lifetime. Broad portable bundles, public structured generation, security combinations and activation remain separate work.
 
 The internal decoder accepts a protocol payload selector over the single parsed observed document. Its selected mapping is authenticated against the same operation, and the payload must be an actual descendant by object identity. It reuses structural/scalar checks without subtree reserialization, preserving the complete original document digest, actual coordinates and inherited namespace bindings on the selected response or fault detail. A synthetic tree cannot acquire observed provenance through this seam.
+
+## P3.6 internal portable source capsule
+
+[The private capsule module](../src/compiler/directSourceCapsule.ts) consumes authentic operations and existing native mappings. It adds no package export, public CLI, generated client or admission; package 1.1.4 and legacy defaults remain unchanged. This narrow capsule is not the full ADR bundle format or completion of #185/#186.
+
+### Source authority and reconstruction
+
+An installed consumer must separately authorize a new physical local WSDL copy. `reconstructDirectSourceCapsule(bytes, localSource, {policy, limits?, signal?})` reads that file through the existing resource loader, checks its exact bytes against the capsule, then runs whole-source native qualification, explicit operation selection, the shared SOAP bootstrap guard and fresh native mapping issuance. The reader does not write the source file or choose a filesystem location.
+
+The original checkout URI is never retained, authorized or fetched. File-root and symlink policy remain enforced; resource graphs and network sources are refused. An artifact digest detects corruption and never supplies permission, source authority or signature verification.
+
+`readDirectSourceCapsule(bytes, budget, signal?)` reads bounded data without I/O. Its result is not a contract or a reconstructible handle. Serialized operation/mapping/report objects and copied reconstruction results cannot acquire WeakMap authority.
+
+`createDirectSourceCapsule(contract, {service, port}, signal?)` writes deterministic UTF-8 JSON bytes from a native operation. Its sole source payload is canonical base64 of the exact retained UTF-8 WSDL bytes, including any original BOM; it does not reconstruct WSDL from declarations.
+
+### Format and comparison
+
+The closed format records its capsule/model/scope versions, native mapping and scalar policy versions, and the owned-loopback HTTP runtime policy. Compatibility records the explicit expanded portType/binding, operation, service, port and action, plus request/response/declared-fault message parts, expanded root/type names and native ordered slots with exact bounds and builtins. No executable plan, source path, context identifier, endpoint permission or runtime handle is persisted.
+
+`checkDirectSourceCompatibility(expected, contract, selection, signal?)` requires an identity-issued reconstruction as `expected`, so its embedded source and claimed contract have already been checked together. The actual contract must also be a fresh native operation; raw artifact bytes or JSON copies are refused. A comparison checks complete native-derived descriptors and distinguishes `exact-bytes` from `revised-bytes` without calling either authenticated trust.
+
+Authorized retrieval relocation, harmless QName prefix changes and source formatting can preserve the checked contract. Changed action, service/port/binding/operation identity, expanded roots/faults/members, order, occurrence bounds or scalar meaning require regeneration. Unknown/mixed/legacy formats and unsupported version or policy identifiers fail closed with regeneration guidance.
+
+The reader accepts at most 256 KiB of artifact bytes, 64 KiB of source and JSON nesting depth 16. It rejects malformed UTF-8/JSON, duplicate escaped keys, missing/unknown fields, noncanonical base64, corruption, shared byte backing and unsupported versions before semantic preparation. A recomputed checksum cannot rescue a false source-derived descriptor: reconstruction compares it against the newly qualified source before publishing handles.
+
+### Request resources and installed evidence
+
+Reconstruction starts one fresh request-specific inclusive sticky budget for artifact decoding, duplicate/shape checks, canonical copies/hashes, physical source reading, preliminary syntax, native load/qualification, mappings and publication. Comparison spends the actual operation's existing budget; reading an already reconstructed expected descriptor does not revive or dispatch its operation. Each future independent invocation starts a new budget; there is no reusable-client lifetime counter.
+
+Byte/depth/node limits, cancellation, schema inconclusive, incompatible artifacts, unsupported scope and missing authority remain separate failures. These are engineering work/allocation reservations with cooperative checkpoints, not a hard heap limit or preemptive execution guarantee.
+
+[Installed qualification](../test/integration/portable-installed.test.ts) packs and installs the npm tarball in a separate temporary directory and process. The copied test-only TypeScript harness verifies physical private `dist` imports, denies checkout filesystem reads with Node permissions, blocks implicit fetches, requalifies an authorized copy, relocates it and issues fresh mappings and deterministic XML. Private-module testing establishes no supported package subpath; package exports remain root-only.
+
+### Next consumer boundary
+
+After #390 acceptance, prepare P3.7 under #195/#201: emit the smallest internal TypeScript request/response/declared-fault declarations for this exact direct grammar and bind its consumer to reconstructed capsule compatibility before using the existing SOAP adapter. Preserve explicit service/port/endpoint authorization and fresh per-invocation budgets. Public exports/CLI, general generated-client design, broader grammar/security and activation require later decisions; no P3.7 implementation starts with this packet.
