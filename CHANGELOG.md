@@ -9,6 +9,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-10-30
+
+- fix(deps): refresh transitive HTTP and URI dependencies to resolve current security advisories.
+
 - feat(client): add a versioned package-root runtime binding for checked direct clients.
 
 - refactor(runtime): keep profiling quotas out of normal direct-client execution.
