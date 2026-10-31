@@ -9,7 +9,7 @@ import {assessSchemaSource, serializeAssessmentReport} from '../../src/compiler/
 import {selectDirectOperation} from '../../src/compiler/directOperation.js';
 import {loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
 
-const root = path.resolve('test/conformance/fixtures/wsdl/real-services/noaa-ndfd');
+const root = path.resolve('test/fixtures/wsdl/real-services/noaa-ndfd');
 const source = path.join(root, 'ndfd-xml.wsdl');
 const namespace = 'http://localhost/xml/wsdl/ndfdXML.wsdl';
 const wsdl = 'http://schemas.xmlsoap.org/wsdl/';

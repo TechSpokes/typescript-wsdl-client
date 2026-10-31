@@ -14,13 +14,15 @@ The starting revision independently matched fetched and live remote main: `f7c93
 
 The provider is NOAA National Weather Service, National Digital Forecast Database XML Web Service. The [official service documentation](https://graphical.weather.gov/xml/) links the deployed SOAP metadata route and describes the NDFD operations. Provider documentation and retrieval origin establish service identity; the WSDL's literal `localhost` namespace and address remain as supplied.
 
-The [original WSDL](../test/conformance/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl) retains all 27,397 response bytes. Retrieval began at `2026-10-31T08:49:55.6646726Z` and completed at `2026-10-31T08:49:58.3079006Z`; original and final URL were both [the primary WSDL URL](https://digital.weather.gov/xml/SOAP_server/ndfdXMLserver.php?wsdl), with HTTP 200, `text/xml; charset=ISO-8859-1` and successful TLS verification. SHA-256 is `67197bd2c0def2c09a8f3a23b6dee3a9b297840b1e54ce5d56f42614ef3d3aa2`.
+The [original WSDL](../test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl) retains all 27,397 response bytes. Retrieval began at `2026-10-31T08:49:55.6646726Z` and completed at `2026-10-31T08:49:58.3079006Z`; original and final URL were both [the primary WSDL URL](https://digital.weather.gov/xml/SOAP_server/ndfdXMLserver.php?wsdl), with HTTP 200, `text/xml; charset=ISO-8859-1` and successful TLS verification. SHA-256 is `67197bd2c0def2c09a8f3a23b6dee3a9b297840b1e54ce5d56f42614ef3d3aa2`.
 
 The [NWS reuse policy](https://www.weather.gov/disclaimer) permits lawful reuse of NWS web information unless specifically restricted. Attribution, no implied NOAA/NWS endorsement and no modified content presented as official material are required; third-party material requires its own permission. No source-specific copyright, copying restriction or third-party notice occurs in the acquired WSDL or static request example.
 
 These unmodified NOAA/NWS artifacts are public-domain provider material outside the repository's MIT copyright claim. NOAA/NWS does not endorse this project. Encoding declarations, whitespace, documentation, unused declarations and endpoint remain intact; `.gitattributes` disables text conversion for both provider artifacts.
 
-The adjacent [provenance manifest](../test/conformance/fixtures/wsdl/real-services/noaa-ndfd/provenance.json) pins original/final URLs, retrieval times, bytes and SHA-256 for the source, official documentation, reuse policy and independent static request. HTML captures remain local acquisition evidence; they are not schema dependencies. Offline tests never re-fetch mutable provider pages. No VIES, private/customer evidence or credentials are included.
+The adjacent [provenance manifest](../test/fixtures/wsdl/real-services/noaa-ndfd/provenance.json) pins original/final URLs, retrieval times, bytes and SHA-256 for the source, official documentation, reuse policy and independent static request. HTML captures remain local acquisition evidence; they are not schema dependencies. Offline tests never re-fetch mutable provider pages. No VIES, private/customer evidence or credentials are included.
+
+The source-intake fixtures live under `test/fixtures/wsdl/real-services/`, separately from the native-parseable conformance graph corpus. Their original encoding intentionally refuses that parser; the focused source-intake tests verify metadata closure and the expected native refusal. The existing conformance graph parser and every existing conformance fixture remain unchanged.
 
 ## Resource closure
 
@@ -42,7 +44,7 @@ The WSDL declares SOAP 1.1 over SOAP HTTP, RPC style and encoded bodies, with en
 | Response | `LatLonListZipCodeResponse` | `listLatLonOut: xsd:string` |
 | Fault | None declared | No operation or binding fault |
 
-The [provider static request](https://digital.weather.gov/xml/docs/SOAP_Requests/LatLonListZipCode.xml), retained as [original XML](../test/conformance/fixtures/wsdl/real-services/noaa-ndfd/lat-lon-list-zip-code-request.xml), independently specifies `zipCodeList = "21045 20910"`, `XMLformat = "DWML"`, `listType = "zipCode"`, in that order with `xsi:type="xsd:string"`. The original is 654 bytes, SHA-256 `56c06c7044867970f028a5d3037dac6fae15dad137613b947dd952525099be9d`. Provider documentation separately lists the input semantics and DWML/TSML format choices.
+The [provider static request](https://digital.weather.gov/xml/docs/SOAP_Requests/LatLonListZipCode.xml), retained as [original XML](../test/fixtures/wsdl/real-services/noaa-ndfd/lat-lon-list-zip-code-request.xml), independently specifies `zipCodeList = "21045 20910"`, `XMLformat = "DWML"`, `listType = "zipCode"`, in that order with `xsi:type="xsd:string"`. The original is 654 bytes, SHA-256 `56c06c7044867970f028a5d3037dac6fae15dad137613b947dd952525099be9d`. Provider documentation separately lists the input semantics and DWML/TSML format choices.
 
 The static request uses wrapper namespace `uri:DWMLgen`, differing from the acquired binding. This discrepancy is retained, not repaired into a successful wire oracle. Response coordinates are not independently pinned and no service response was requested. No declared-fault behavior exists to qualify; undeclared SOAP faults remain possible.
 

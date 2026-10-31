@@ -4,13 +4,13 @@
     {
       "id": "noaa-ndfd",
       "tier": "real",
-      "source": "test/conformance/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
+      "source": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
       "origin": "NOAA/NWS primary NDFD WSDL; retrieved 2026-10-31; adjacent provenance.json records source, rights and namespace-only imports",
       "permission": "NWS public-domain reuse policy, no source-specific restriction; attribution and no endorsement; not repository MIT material",
       "rationale": "Unmodified deployed-service metadata; ISO-8859-1 source refusal, not real-service runtime support",
       "files": [
         {
-          "path": "test/conformance/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
+          "path": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
           "sha256": "67197bd2c0def2c09a8f3a23b6dee3a9b297840b1e54ce5d56f42614ef3d3aa2",
           "bytes": 27397
         }
