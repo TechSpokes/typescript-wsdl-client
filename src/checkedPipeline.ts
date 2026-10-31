@@ -106,6 +106,11 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
     if (outputs.some(p => {const relative = path.relative(appDir, p); return !relative || relative.startsWith('..') || path.isAbsolute(relative);})) {
       throw new Error('Checked project client, gateway, OpenAPI and tests must be within appDir');
     }
+    const reserved = new Set(['server.ts', 'package.json', 'tsconfig.json', 'README.md', '.gitignore',
+      'checked-gateway.example.json', 'checked-gateway.local.json', 'dist', 'node_modules', '.git']);
+    if (outputs.some(p => reserved.has(path.relative(appDir, p).split(path.sep)[0]!))) {
+      throw new Error('Checked artifact outputs must not occupy scaffold files or build/dependency directories');
+    }
   }
   for (const [i, output] of outputs.entries()) {
     for (const other of outputs.slice(i + 1)) {

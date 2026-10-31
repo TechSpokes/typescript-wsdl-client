@@ -57,7 +57,10 @@ export async function generateCheckedGateway(expected: ReconstructedDirectSource
   if (compatible.kind !== 'compatible-direct') throw new Error(`Checked gateway refused: ${compatible.kind}: ${compatible.rule}`);
   const capsule = createDirectSourceCapsule(expected.contract, expected.selection);
   if (capsule.kind !== 'direct-capsule') throw new Error(`Checked gateway refused: ${capsule.kind}: ${capsule.rule}`);
-  if (!/^\/(?:(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+\/?)+$/.test(options.routePath)) throw new TypeError('Checked routePath requires literal nonempty path segments');
+  if (!options.routePath.startsWith('/') || options.routePath.split('/').slice(1)
+    .some(segment => !segment || !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment))) {
+    throw new TypeError('Checked routePath requires literal nonempty path segments');
+  }
   const input = expected.mappings.find(mapping => mapping.direction.kind === 'input');
   const output = expected.mappings.find(mapping => mapping.direction.kind === 'output');
   if (!input || !output) throw new TypeError('Issued input and output mappings required');

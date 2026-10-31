@@ -10,7 +10,7 @@ import {once} from 'node:events';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {SaxesParser} from 'saxes';
-import Fastify from 'fastify';
+import Fastify, {type FastifyInstance} from 'fastify';
 
 const root = process.cwd();
 await assert.rejects(readFile(process.argv[2]!), {code: 'ERR_ACCESS_DENIED'});
@@ -171,6 +171,26 @@ try {
   } finally {clearTimeout(cancellationTimer);}
   hang = false;
   let before: number = upstream.length;
+  url = await start({capabilities: ['authentication']});
+  const unsupportedCapability = await post(expected.request);
+  assert.equal(unsupportedCapability.status, 502);
+  assert.deepEqual(unsupportedCapability.value, {kind: 'unsupported', rule: 'SOAP capability'});
+  assert.equal(upstream.length, before); refusals++;
+  await assert.rejects(start({authentication: true}), /Unsupported checked gateway configuration field/);
+  assert.equal(upstream.length, before); refusals++;
+  url = await start({limits: {maxBytes: 1}});
+  const explicitLimit = await post(expected.request);
+  assert.equal(explicitLimit.status, 502);
+  assert.equal((explicitLimit.value as {kind: string}).kind, 'resource-limit');
+  assert.equal(upstream.length, before); refusals++;
+  url = await start({timeoutMs: 1000});
+  hang = true;
+  const explicitTimeout = await post(expected.request);
+  assert.equal(explicitTimeout.status, 502);
+  assert.equal((explicitTimeout.value as {kind: string}).kind, 'transport');
+  assert.equal(upstream.length, before + 1, 'Explicit timeout must terminate the started SOAP request'); refusals++;
+  hang = false;
+  before = upstream.length;
   url = await start({allowedEndpoints: []});
   assert.ok((await post(expected.request)).status >= 400);
   assert.equal(upstream.length, before); refusals++;
@@ -197,11 +217,21 @@ try {
   assert.equal(upstream.length, before); refusals++;
   await writeFile(openapiFile, originalOpenapi);
   await stop();
+  const serverModule = await import(pathToFileURL(path.join(root, 'dist/server.js')).href) as {
+    buildServer(options: typeof config & {signal: AbortSignal}): Promise<FastifyInstance>;
+  };
+  const cancelledApp = await serverModule.buildServer({...config, signal: AbortSignal.abort()});
+  try {
+    const cancelled = await cancelledApp.inject({method: 'POST', url: route, payload: expected.request});
+    assert.equal(cancelled.statusCode, 499);
+    assert.equal(cancelled.json<{kind: string}>().kind, 'cancelled');
+    assert.equal(upstream.length, before); refusals++;
+  } finally {await cancelledApp.close();}
   // Fastify's host policy is a control; installing checked routes must not replace it.
   const host = Fastify();
   host.post('/host', {schema: {body: {type: 'object', additionalProperties: false,
     properties: {count: {type: 'integer'}, label: {type: 'string', default: 'host'}}, required: ['count']}}},
-  async request => request.body);
+  async (request, reply) => reply.type('application/json').send(request.body));
   const plugin = await import(pathToFileURL(path.join(root, 'dist/gateway/plugin.js')).href) as {default: Parameters<typeof host.register>[0]};
   const selectionModule = await import(pathToFileURL(path.join(root, 'dist/client/client.js')).href) as {selection: string};
   const selection = JSON.parse(selectionModule.selection) as {service: {namespace: string; local: string}; port: string};

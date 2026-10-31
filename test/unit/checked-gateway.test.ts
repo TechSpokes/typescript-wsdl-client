@@ -48,7 +48,7 @@ async function app() {
   // @constraints A host serializer strategy cannot replace checked response validation or remove members.
   server.setSerializerCompiler(() => () => '{"hostSerializer":"would lose values"}');
   server.post('/host', {schema: {body: {type: 'object', properties: {n: {type: 'integer'}, mode: {type: 'string', default: 'host'}}, additionalProperties: false}}},
-    request => request.body);
+    (request, reply) => reply.type('application/json').send(request.body));
   await server.register(plugin, {clientOptions: {localSource: 'not-used-by-the-dishonest-test-runtime', fileRoots: [], capsule: new Uint8Array(),
     soap: {...selection, endpoint: 'http://127.0.0.1:1/no-request', allowEndpoint: () => false}}});
   await server.ready();

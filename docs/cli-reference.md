@@ -24,6 +24,8 @@ TypeScript outputs automatically receive [generated preambles](generated-code.md
 
 ## pipeline
 
+The additive `--model` selector defaults to `legacy`; `checked-direct-v1` requires `--checked-config` with an explicit native operation, service, port and source roots. See [Installed Checked Gateway](checked-gateway.md) for its narrower supported flags and project workflow.
+
 Run the complete generation pipeline in one pass: WSDL parsing, TypeScript client, OpenAPI spec, Fastify gateway, and optional app. This is the recommended command for most use cases.
 
 ### Usage

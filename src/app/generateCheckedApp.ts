@@ -61,6 +61,7 @@ export interface CheckedGatewayConfig {
   readonly port?: number;
   readonly timeoutMs?: number;
   readonly limits?: Options['soap']['limits'];
+  readonly capabilities?: Options['soap']['capabilities'];
   readonly signal?: AbortSignal;
 }
 
@@ -69,6 +70,11 @@ const projectRoot = fs.existsSync(path.join(moduleDir, 'package.json')) ? module
 
 /** Builds an encapsulated gateway host; listening is a separate caller action. */
 export async function buildServer(config: CheckedGatewayConfig) {
+  const supportedKeys = ['localSource', 'fileRoots', 'endpoint', 'allowedEndpoints', 'capsuleFile', 'host', 'port',
+    'timeoutMs', 'limits', 'capabilities', 'signal'];
+  if (config && typeof config === 'object' && Reflect.ownKeys(config).some(key => typeof key !== 'string' || !supportedKeys.includes(key))) {
+    throw new Error('Unsupported checked gateway configuration field');
+  }
   if (!config || typeof config.localSource !== 'string' || !Array.isArray(config.fileRoots)
     || !config.fileRoots.length || !config.fileRoots.every(root => typeof root === 'string')
     || typeof config.endpoint !== 'string' || !Array.isArray(config.allowedEndpoints)
@@ -89,6 +95,7 @@ export async function buildServer(config: CheckedGatewayConfig) {
       ...(config.signal ? {signal: config.signal} : {}),
       ...(config.timeoutMs === undefined ? {} : {timeoutMs: config.timeoutMs}),
       ...(config.limits === undefined ? {} : {limits: config.limits}),
+      ...(config.capabilities === undefined ? {} : {capabilities: config.capabilities}),
     },
   };
   const app = Fastify({logger: false});
@@ -143,7 +150,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     'checked-gateway.example.json': JSON.stringify({localSource: source, fileRoots: [sourceRoot], endpoint: 'http://127.0.0.1:8081/soap',
       allowedEndpoints: [], host: options.host ?? '127.0.0.1', port: options.port ?? 3000}, null, 2) + '\n',
     '.gitignore': 'node_modules/\ndist/\nchecked-gateway.local.json\n',
-    'README.md': `# Checked direct gateway\n\nThis opt-in preview supports the qualified local UTF-8, flat string/int32/Boolean document/literal SOAP 1.1 grammar.\nOnly explicitly authorized owned IPv4-loopback SOAP endpoints are supported.\n\n## Install and run\n\nRun these commands from this project directory:\n\n\`\`\`bash\nnpm install\nnpm run typecheck\nnpm test\nnpm run build\n\`\`\`\n\nCopy \`checked-gateway.example.json\` to \`checked-gateway.local.json\` and explicitly configure the local source, allowed source roots, owned SOAP endpoint and exact \`allowedEndpoints\` list.\nPaths in this configuration resolve relative to the configuration file.\nThe empty example allowlist authorizes no SOAP endpoint.\n\n\`\`\`bash\nCHECKED_GATEWAY_CONFIG=checked-gateway.local.json npm start\n\`\`\`\n\nIn PowerShell, set \`$env:CHECKED_GATEWAY_CONFIG = 'checked-gateway.local.json'\`, then run \`npm start\`.\nHealth is served at \`GET /health\`; the generated contract documentation is served at \`GET /openapi.json\`.\nUse the POST route listed in OpenAPI for operation calls.\n\n## Ownership and assurance\n\nClient, capsule, copied WSDL, OpenAPI and gateway files are generator-owned.\nThis README, server, package/configuration and generated test scaffolds are preserved on regeneration unless force is explicitly selected.\nGenerated tests check scaffolding and invalid-input refusal; they do not supply business-value or SOAP wire oracles.\nIndependent HTTP/SOAP wire and declared-fault verification is separate qualification evidence.\nWSDL supplies neither credentials nor expected business values.\nCalls reauthorize the supplied local source and endpoint and validate native request, response and fault values before HTTP success.\n\n## Explicit caller controls\n\nConfiguration may set \`timeoutMs\`, XML \`limits\`, and \`capsuleFile\`; ordinary calls have no implicit execution deadline.\nProgrammatic hosts can pass an \`AbortSignal\` to \`buildServer\`.\nDo not enable arbitrary remote endpoints or infer broader XSD/provider support from this bounded preview.\n`,
+    'README.md': `# Checked direct gateway\n\nThis opt-in preview supports the qualified local UTF-8, flat string/int32/Boolean document/literal SOAP 1.1 grammar.\nOnly explicitly authorized owned IPv4-loopback SOAP endpoints are supported.\n\n## Install and run\n\nRun these commands from this project directory:\n\n\`\`\`bash\nnpm install\nnpm run typecheck\nnpm test\nnpm run build\n\`\`\`\n\nCopy \`checked-gateway.example.json\` to \`checked-gateway.local.json\` and explicitly configure the local source, allowed source roots, owned SOAP endpoint and exact \`allowedEndpoints\` list.\nPaths in this configuration resolve relative to the configuration file.\nThe empty example allowlist authorizes no SOAP endpoint.\n\n\`\`\`bash\nCHECKED_GATEWAY_CONFIG=checked-gateway.local.json npm start\n\`\`\`\n\nIn PowerShell, set \`$env:CHECKED_GATEWAY_CONFIG = 'checked-gateway.local.json'\`, then run \`npm start\`.\nHealth is served at \`GET /health\`; the generated contract documentation is served at \`GET /openapi.json\`.\nUse the POST route listed in OpenAPI for operation calls.\n\n## Ownership and assurance\n\nClient, capsule, copied WSDL, OpenAPI and gateway files are generator-owned.\nThis README, server, package/configuration and generated test scaffolds are preserved on regeneration unless force is explicitly selected.\nGenerated tests check scaffolding and invalid-input refusal; they do not supply business-value or SOAP wire oracles.\nIndependent HTTP/SOAP wire and declared-fault verification is separate qualification evidence.\nWSDL supplies neither credentials nor expected business values.\nCalls reauthorize the supplied local source and endpoint and validate native request, response and fault values before HTTP success.\n\n## Explicit caller controls\n\nConfiguration may set \`timeoutMs\`, XML \`limits\`, \`capabilities\`, and \`capsuleFile\`; ordinary calls have no implicit execution deadline.\nRequested capabilities pass unchanged to the checked runtime, which refuses unsupported transport/security requirements.\nUnknown configuration fields are refused rather than ignored.\nProgrammatic hosts can pass an \`AbortSignal\` to \`buildServer\`.\nDo not enable arbitrary remote endpoints or infer broader XSD/provider support from this bounded preview.\n`,
   };
   fs.mkdirSync(root, {recursive: true});
   if (options.force || !fs.existsSync(path.join(root, 'server.ts'))) {

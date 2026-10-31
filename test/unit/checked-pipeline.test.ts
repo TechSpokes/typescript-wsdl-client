@@ -79,4 +79,15 @@ describe('public checked pipeline selection', () => {
     await expect(runGenerationPipeline({...opts, openapi: {outFile: path.join(opts.clientOutDir!, 'openapi.json')}})).rejects.toThrow('not overlap');
     expect(fs.existsSync(opts.clientOutDir!)).toBe(false);
   });
+
+  it('refuses scaffold and build-directory collisions before artifact emission', async () => {
+    const opts = options();
+    for (const name of ['server.ts', 'package.json', 'tsconfig.json', 'checked-gateway.example.json', 'dist/openapi.json', 'node_modules/spec.json']) {
+      await expect(runGenerationPipeline({...opts, openapi: {outFile: path.join(opts.app!.appDir, name)}})).rejects.toThrow('scaffold files');
+      expect(fs.existsSync(opts.clientOutDir!)).toBe(false);
+    }
+    await expect(runGenerationPipeline({...opts, gateway: {...opts.gateway!, outDir: path.join(opts.app!.appDir, 'server.ts/nested')}}))
+      .rejects.toThrow('scaffold files');
+    expect(fs.existsSync(opts.clientOutDir!)).toBe(false);
+  });
 });
