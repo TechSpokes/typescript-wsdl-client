@@ -72,8 +72,7 @@ export async function runOwnedNode(args: readonly string[], options: Options): P
   child.once('exit', (code, signal) => {
     if (code !== 0) {
       const reason = error(`Owned command exited ${code ?? signal}: ${stderr}`);
-      if (options.childProcessesDenied) failure ??= reason;
-      else stop(reason);
+      if (!options.childProcessesDenied) stop(reason);
     }
     // @why An exited leader can leave inherited pipes open; never wait indefinitely for close.
     drainTimer = setTimeout(() => stop(error('Owned command pipes remained open after leader exit')), 5000);
