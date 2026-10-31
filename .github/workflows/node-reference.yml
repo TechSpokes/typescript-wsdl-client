@@ -39,6 +39,8 @@ jobs:
           npx vitest run test/unit/generated-direct-independent.test.ts test/unit/direct-resource-limits.test.ts test/unit/direct-resource-limits-independent.test.ts test/unit/checked-direct-runtime.test.ts test/integration/checked-direct-installed.test.ts test/integration/generated-direct-installed.test.ts test/integration/direct-normal-execution.test.ts
       - name: Real-service source qualification
         run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
+      - name: Installed checked gateway HTTP and SOAP
+        run: npm test -- test/integration/checked-gateway-installed.test.ts
       - uses: actions/upload-artifact@v6
         if: always()
         with:
@@ -76,6 +78,8 @@ jobs:
         run: npx vitest run test/unit/generated-direct-independent.test.ts test/unit/direct-resource-limits.test.ts test/unit/direct-resource-limits-independent.test.ts test/unit/checked-direct-runtime.test.ts test/integration/checked-direct-installed.test.ts test/integration/generated-direct-installed.test.ts test/integration/direct-normal-execution.test.ts
       - name: Real-service source qualification
         run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
+      - name: Installed checked gateway HTTP and SOAP
+        run: npm test -- test/integration/checked-gateway-installed.test.ts
       - uses: actions/upload-artifact@v6
         if: always()
         with:

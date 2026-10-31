@@ -41,8 +41,11 @@ import {applyShapeCatalogs} from "./compiler/shapeResolver.js";
  * @property {"copy"|"reference"} [app.openapiMode] - How to handle OpenAPI file (default: "copy")
  */
 export interface PipelineOptions {
+  /** Additive preview selection; omission preserves the legacy pipeline. */
+  model?: 'legacy' | 'checked-direct-v1';
+  checkedDirect?: import('./checkedPipeline.js').CheckedDirectOptions;
   wsdl: string;
-  catalogOut: string;
+  catalogOut?: string;
   clientOutDir?: string;
   compiler?: Partial<CompilerOptions>;
   openapi?: Omit<GenerateOpenAPIOptions, "wsdl" | "catalogFile" | "compiledCatalog"> & { outFile?: string };
@@ -94,7 +97,15 @@ export interface PipelineOptions {
  * @param {PipelineOptions} opts - Configuration options for the pipeline
  * @returns {Promise<{compiled: any; openapiDoc?: any}>} - The compiled catalog and optional OpenAPI document
  */
-export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ compiled: any; openapiDoc?: any; }> {
+export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ compiled: any; openapiDoc?: any; checked?: import('./checkedPipeline.js').CheckedInventory }> {
+  if (opts.model === 'checked-direct-v1') {
+    const {runCheckedPipeline} = await import('./checkedPipeline.js');
+    return runCheckedPipeline(opts);
+  }
+  if (opts.model !== undefined && opts.model !== 'legacy' || opts.checkedDirect !== undefined) {
+    throw new Error('Explicit model checked-direct-v1 is required for checked configuration');
+  }
+  if (!opts.catalogOut) throw new Error('Legacy pipeline requires catalogOut');
   // Determine a working directory for the compiler (used for relative path resolution)
   // Use the first available output location as the base
   const workingDir = opts.clientOutDir

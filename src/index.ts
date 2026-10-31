@@ -35,6 +35,8 @@ export {
 } from "./util/securityConfig.js";
 export {generateTests} from "./test/generateTests.js";
 export {runGenerationPipeline} from "./pipeline.js";
+export type {PipelineOptions} from './pipeline.js';
+export type {CheckedDirectOptions, CheckedInventory} from './checkedPipeline.js';
 export {
   loadStreamConfigFile,
   parseStreamConfig,

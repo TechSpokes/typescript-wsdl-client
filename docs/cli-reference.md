@@ -1,5 +1,7 @@
 # CLI Reference
 
+The default generation model remains legacy. The unreleased `pipeline --model checked-direct-v1 --checked-config <json>` opt-in uses explicit native operation/source selection; see [Installed Checked Gateway](checked-gateway.md) for supported flags, project commands and scope. It emits no legacy catalog and refuses unsupported compiler/streaming controls.
+
 The `wsdl-tsc` tool generates TypeScript SOAP clients, OpenAPI specifications, and Fastify gateways from WSDL files.
 
 Generation paths are explicit. Examples use the git-ignored `.generated/` directory for disposable consumer output, while this repository reserves `tmp/` for its own test and release automation.

@@ -4,7 +4,7 @@ Internal direct mapping, bare-root XML codec and portable source contract. See t
 
 ## Package-root binding for generated direct clients
 
-The unreleased additive root export `checkedDirectRuntimeV1` runs an already generated checked direct client through the existing native source, capsule, schema/scalar, XML and buffered SOAP engines. Package metadata remains 1.1.4; published 1.x packages do not thereby gain structured generation support. Generation remains internal, and existing CLI commands and legacy defaults are unchanged.
+The additive root export `checkedDirectRuntimeV1` runs a generated checked direct client through the existing native source, capsule, schema/scalar, XML and buffered SOAP engines. The unreleased [checked gateway preview](checked-gateway.md) now connects it to the opt-in public pipeline. Package metadata remains 1.1.5 and legacy defaults remain unchanged; the historical P3 sections below describe the earlier internal milestones rather than the current public generation entry.
 
 Use a matched generated client, capsule and explicitly authorized original local WSDL. The caller supplies its actual owned server endpoint; a WSDL service address never authorizes dispatch.
 
