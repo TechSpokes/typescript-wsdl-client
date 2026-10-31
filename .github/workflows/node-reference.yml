@@ -37,6 +37,8 @@ jobs:
           npm ci
           npm run build
           npx vitest run test/unit/generated-direct-independent.test.ts test/unit/direct-resource-limits.test.ts test/unit/direct-resource-limits-independent.test.ts test/unit/checked-direct-runtime.test.ts test/integration/checked-direct-installed.test.ts test/integration/generated-direct-installed.test.ts test/integration/direct-normal-execution.test.ts
+      - name: Real-service source qualification
+        run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
       - uses: actions/upload-artifact@v6
         if: always()
         with:
@@ -72,6 +74,8 @@ jobs:
         run: npx vitest run test/unit/checked-assessment.test.ts test/unit/direct-operation.test.ts test/unit/direct-structure.test.ts test/unit/direct-structure-evidence.test.ts test/unit/direct-values.test.ts test/unit/direct-codec.test.ts test/unit/direct-codec-independent.test.ts test/unit/direct-source-capsule.test.ts test/unit/direct-capsule-independent.test.ts test/integration/portable-installed.test.ts
       - name: Generated internal installed client
         run: npx vitest run test/unit/generated-direct-independent.test.ts test/unit/direct-resource-limits.test.ts test/unit/direct-resource-limits-independent.test.ts test/unit/checked-direct-runtime.test.ts test/integration/checked-direct-installed.test.ts test/integration/generated-direct-installed.test.ts test/integration/direct-normal-execution.test.ts
+      - name: Real-service source qualification
+        run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
       - uses: actions/upload-artifact@v6
         if: always()
         with:

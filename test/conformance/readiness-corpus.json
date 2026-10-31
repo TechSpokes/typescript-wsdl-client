@@ -2,6 +2,22 @@
   "format": "readiness-corpus-v1",
   "inputs": [
     {
+      "id": "noaa-ndfd",
+      "tier": "real",
+      "source": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
+      "origin": "NOAA/NWS primary NDFD WSDL; retrieved 2026-10-31; adjacent provenance.json records source, rights and namespace-only imports",
+      "permission": "NWS public-domain reuse policy, no source-specific restriction; attribution and no endorsement; not repository MIT material",
+      "rationale": "Unmodified deployed-service metadata; ISO-8859-1 source refusal, not real-service runtime support",
+      "files": [
+        {
+          "path": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
+          "sha256": "67197bd2c0def2c09a8f3a23b6dee3a9b297840b1e54ce5d56f42614ef3d3aa2",
+          "bytes": 27397
+        }
+      ],
+      "originRevision": "Primary provider metadata response 2026-10-31T08:49:58Z"
+    },
+    {
       "id": "weather",
       "tier": "synthetic",
       "source": "examples/minimal/weather.wsdl",
@@ -124,12 +140,7 @@
       "originRevision": "P2 runner commit recorded in inventory evidence"
     }
   ],
-  "unavailable": [
-    {
-      "tier": "real",
-      "reason": "No redistributable production-service snapshot with complete resource closure is present. Weather is a repository example, not evidence of real customer/market coverage."
-    }
-  ],
+  "unavailable": [],
   "reusedCorpusRevision": "628aedd4f0f73bb88929fe8cbe35a7591105dfc9",
   "assessmentRevision": "2a362164e4ece1c840b53243074069c5fe89c4da"
 }

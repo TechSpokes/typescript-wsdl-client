@@ -11,6 +11,10 @@
 *.yaml text eol=lf
 *.md text eol=lf
 
+# Provider evidence must retain its original byte encoding and line endings.
+test/fixtures/wsdl/real-services/noaa-ndfd/*.wsdl -text whitespace=cr-at-eol
+test/fixtures/wsdl/real-services/noaa-ndfd/*.xml -text whitespace=cr-at-eol
+
 # Keep PR diffs focused on source, not build artifacts
 /dist/* linguist-generated
 

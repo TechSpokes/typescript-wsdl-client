@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(readiness): pin authentic NOAA WSDL evidence and native encoding refusal.
+
 ## [1.1.5] - 2026-10-30
 
 - fix(deps): refresh transitive HTTP and URI dependencies to resolve current security advisories.

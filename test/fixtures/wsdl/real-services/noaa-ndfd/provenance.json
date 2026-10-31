@@ -1,0 +1,58 @@
+{
+  "provider": "NOAA National Weather Service, National Digital Forecast Database XML Web Service",
+  "retrievalStartedUtc": "2026-10-31T08:49:55.6646726Z",
+  "retrievalFinishedUtc": "2026-10-31T08:49:58.3079006Z",
+  "source": {
+    "path": "ndfd-xml.wsdl",
+    "originalUrl": "https://digital.weather.gov/xml/SOAP_server/ndfdXMLserver.php?wsdl",
+    "finalUrl": "https://digital.weather.gov/xml/SOAP_server/ndfdXMLserver.php?wsdl",
+    "httpStatus": 200,
+    "tlsVerification": true,
+    "contentType": "text/xml; charset=ISO-8859-1",
+    "bytes": 27397,
+    "sha256": "67197bd2c0def2c09a8f3a23b6dee3a9b297840b1e54ce5d56f42614ef3d3aa2"
+  },
+  "permission": {
+    "url": "https://www.weather.gov/disclaimer",
+    "finalUrl": "https://www.weather.gov/disclaimer",
+    "retrievedUtc": "2026-10-31T08:50:28.6438817Z",
+    "bytes": 41679,
+    "sha256": "c08c1597ebd52b31e3ba749f76d2217c290dcd16dc894cb4c109655566ecbbd1",
+    "basis": "NWS web information is public domain unless specifically noted otherwise; lawful reuse is permitted with attribution, no implied endorsement, and no modified content presented as official material.",
+    "specificNotices": "No copyright, copying restriction, license or third-party notice occurs in the acquired WSDL or static request example.",
+    "attribution": "Unmodified NOAA/NWS source evidence; not subject to the repository MIT copyright claim. NOAA/NWS does not endorse this project."
+  },
+  "documentation": {
+    "url": "https://graphical.weather.gov/xml/",
+    "finalUrl": "https://graphical.weather.gov/xml/",
+    "retrievedUtc": "2026-10-31T08:50:29.6173951Z",
+    "bytes": 113433,
+    "sha256": "1e9d4f0e1348571c0ced125153370da2a997ddc5adcdfe415e6cebc7156d8639"
+  },
+  "independentRequest": {
+    "path": "lat-lon-list-zip-code-request.xml",
+    "url": "https://digital.weather.gov/xml/docs/SOAP_Requests/LatLonListZipCode.xml",
+    "finalUrl": "https://digital.weather.gov/xml/docs/SOAP_Requests/LatLonListZipCode.xml",
+    "retrievedUtc": "2026-10-31T08:51:22.4664850Z",
+    "bytes": 654,
+    "sha256": "56c06c7044867970f028a5d3037dac6fae15dad137613b947dd952525099be9d"
+  },
+  "dependencies": [
+    {"kind": "xsd:import", "namespace": "http://schemas.xmlsoap.org/soap/encoding/", "schemaLocation": null},
+    {"kind": "xsd:import", "namespace": "http://schemas.xmlsoap.org/wsdl/", "schemaLocation": null}
+  ],
+  "closure": "One original resource with two locationless namespace imports, no includes or WSDL imports, and no component QName references into either imported namespace. Neither namespace URI is treated as a retrieval instruction; no external component source is needed for this snapshot. This is a byte/resource inventory, not a whole-schema validity verdict.",
+  "selector": {
+    "portType": {"namespace": "http://localhost/xml/wsdl/ndfdXML.wsdl", "local": "ndfdXMLPortType"},
+    "binding": {"namespace": "http://localhost/xml/wsdl/ndfdXML.wsdl", "local": "ndfdXMLBinding"},
+    "operation": "LatLonListZipCode"
+  },
+  "observedRefusal": {
+    "loaderCategory": "unsupported-capability",
+    "loaderMessage": "Unsupported XML byte encoding",
+    "assessmentExecution": "failed",
+    "assessmentSchema": "inconclusive",
+    "selectionKind": "loading-refused",
+    "selectionRule": "unsupported-capability"
+  }
+}
