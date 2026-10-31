@@ -40,7 +40,7 @@ jobs:
       - name: Real-service source qualification
         run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
       - name: Installed checked gateway HTTP and SOAP
-        run: npm test -- test/integration/checked-gateway-installed.test.ts test/integration/owned-node-process.test.ts
+        run: npm test -- test/integration/checked-gateway-installed.test.ts test/integration/owned-node-process.test.ts test/unit/schema-resource-cancellation.test.ts
       - uses: actions/upload-artifact@v6
         if: always()
         with:
@@ -79,7 +79,7 @@ jobs:
       - name: Real-service source qualification
         run: npx vitest run test/integration/noaa-ndfd-qualification.test.ts test/tooling/readiness-inventory.test.ts
       - name: Installed checked gateway HTTP and SOAP
-        run: npm test -- test/integration/checked-gateway-installed.test.ts test/integration/owned-node-process.test.ts
+        run: npm test -- test/integration/checked-gateway-installed.test.ts test/integration/owned-node-process.test.ts test/unit/schema-resource-cancellation.test.ts
       - uses: actions/upload-artifact@v6
         if: always()
         with:
