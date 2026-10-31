@@ -1,7 +1,7 @@
 /**
  * Runs bounded qualification commands and owns their process trees until cleanup.
  * @since 1.1.6
- * @constraints Test-only; never accepts a PID supplied by an artifact or caller.
+ * @constraints Test-only trusted commands must await their children on normal completion.
  */
 import {spawn, execFile, type ChildProcess} from 'node:child_process';
 import {promisify} from 'node:util';
@@ -13,11 +13,15 @@ interface Options {
   readonly signal?: AbortSignal;
   readonly timeoutMs: number;
   readonly maxBuffer?: number;
+  readonly childProcessesDenied?: boolean;
 }
 
 async function stopTree(child: ChildProcess): Promise<void> {
-  if (child.pid === undefined || child.exitCode !== null || child.signalCode !== null) return;
+  if (child.pid === undefined) return;
   if (process.platform === 'win32') {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw new Error('Command leader exited before Windows tree cleanup; descendants cannot be certified');
+    }
     await promisify(execFile)(path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32/taskkill.exe'),
       ['/PID', String(child.pid), '/T', '/F'], {windowsHide: true, timeout: 10_000});
   } else {
@@ -39,6 +43,11 @@ export async function runOwnedNode(args: readonly string[], options: Options): P
   const maxBuffer = options.maxBuffer ?? 8 * 1024 * 1024;
   if (!Number.isSafeInteger(options.timeoutMs) || options.timeoutMs <= 0
     || !Number.isSafeInteger(maxBuffer) || maxBuffer <= 0) throw new RangeError('Positive command limits required');
+  if (options.childProcessesDenied && (args[0] !== '--permission'
+    || args.some(arg => arg.startsWith('--allow-child-process'))
+    || /--allow-child-process/.test(options.env?.NODE_OPTIONS ?? process.env.NODE_OPTIONS ?? ''))) {
+    throw new Error('Leaf command requires Node permissions denying child processes');
+  }
   const child = spawn(process.execPath, [...args], {cwd: options.cwd, env: options.env,
     windowsHide: true, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe']});
   let stdout = '', stderr = '', stdoutBytes = 0, stderrBytes = 0;
@@ -59,6 +68,16 @@ export async function runOwnedNode(args: readonly string[], options: Options): P
     });
   };
   const abort = () => stop(error('Owned command cancelled: ' + String(options.signal?.reason), options.signal?.reason));
+  let drainTimer: ReturnType<typeof setTimeout> | undefined;
+  child.once('exit', (code, signal) => {
+    if (code !== 0) {
+      const reason = error(`Owned command exited ${code ?? signal}: ${stderr}`);
+      if (options.childProcessesDenied) failure ??= reason;
+      else stop(reason);
+    }
+    // @why An exited leader can leave inherited pipes open; never wait indefinitely for close.
+    drainTimer = setTimeout(() => stop(error('Owned command pipes remained open after leader exit')), 5000);
+  });
   child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
   child.stdout.on('data', (chunk: string) => {
     if (failure) return;
@@ -78,13 +97,15 @@ export async function runOwnedNode(args: readonly string[], options: Options): P
   try {
     const result = await closed;
     await stopping;
-    if (cleanupError) throw Object.assign(new AggregateError([failure, cleanupError], 'Owned command tree cleanup failed'), {stdout, stderr});
+    if (cleanupError) throw Object.assign(new AggregateError([failure, cleanupError],
+      'Owned command tree cleanup failed'), {stdout, stderr});
     if (failure) throw failure;
     options.signal?.throwIfAborted();
     if (result.code !== 0) throw error(`Owned command exited ${result.code ?? result.signal}: ${stderr}`);
     return {stdout, stderr};
   } finally {
     clearTimeout(timer);
+    clearTimeout(drainTimer);
     options.signal?.removeEventListener('abort', abort);
     await stopping;
   }

@@ -9,13 +9,16 @@ if (mode === 'success') {
 } else if (mode === 'overflow') {
   process.stdout.write('x'.repeat(4096));
   setInterval(() => undefined, 1000);
-} else if (mode === 'tree' && marker) {
-  spawn(process.execPath, [process.argv[1], 'server', marker], {stdio: 'ignore', windowsHide: true});
-  setInterval(() => undefined, 1000);
+} else if ((mode === 'tree' || mode === 'early-exit') && marker) {
+  const child = spawn(process.execPath, ['--import', new URL('./ownedParentGuard.ts', import.meta.url).href,
+    process.argv[1], 'server', marker], {stdio: ['ignore', 'ignore', 'ignore', 'ipc'], windowsHide: true});
+  if (mode === 'early-exit') child.once('message', () => setTimeout(() => process.exit(7), 250));
+  else setInterval(() => undefined, 1000);
 } else if (mode === 'server' && marker) {
   const server = createServer((_request, response) => {
     response.writeHead(200, {'content-type': 'application/json'});
     response.end(JSON.stringify({kind: 'owned-process-fixture', pid: process.pid, marker}));
+    if (process.connected) process.send?.('probed');
   });
   server.listen(0, '127.0.0.1', () => {
     const address = server.address();

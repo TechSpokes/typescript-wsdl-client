@@ -67,8 +67,9 @@ const start = async (overrides: Record<string, unknown> = {}): Promise<string> =
   await writeFile(configFile, JSON.stringify({...config, ...overrides}));
   const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net=127.0.0.1'] : [];
   child = spawn(process.execPath, ['--permission', ...networkPermission, '--allow-fs-read=' + root,
+    '--import', pathToFileURL(path.join(root, 'parent-guard.ts')).href,
     path.join(root, 'dist/server.js')], {cwd: root, env: {...process.env, CHECKED_GATEWAY_CONFIG: configFile},
-  stdio: ['ignore', 'pipe', 'pipe']});
+  stdio: ['ignore', 'pipe', 'pipe', 'ipc']});
   const current = child;
   return await new Promise<string>((resolve, reject) => {
     let output = '';

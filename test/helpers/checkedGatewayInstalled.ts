@@ -44,11 +44,12 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     await report('started');
     try {
       const result = await runOwnedNode(args, {cwd, env, signal, timeoutMs: CHECKED_GATEWAY_STAGE_TIMEOUT_MS,
+        childProcessesDenied: expectedError !== undefined,
         maxBuffer: 8 * 1024 * 1024});
       await report('completed');
       return result;
     } catch (error) {
-      await report(signal?.aborted ? 'cancelled' : expectedError && error instanceof Error && error.message.includes(expectedError)
+      await report(signal?.aborted ? 'cancelled' : expectedError && !(error instanceof AggregateError) && error instanceof Error && error.message.includes(expectedError)
         ? 'expected-refusal' : 'failed');
       throw error;
     }
@@ -116,6 +117,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
       await copyFile(path.join(messageDir, name), path.join(project, name));
     }
     await copyFile(path.join(root, 'test/helpers/checkedGatewayInstalledProcess.ts'), path.join(project, 'qualification.ts'));
+    await copyFile(path.join(root, 'test/helpers/ownedParentGuard.ts'), path.join(project, 'parent-guard.ts'));
     const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net=127.0.0.1'] : [];
     const executed = await run('independent HTTP/SOAP contract and controls', ['--permission', '--allow-child-process', ...networkPermission,
       '--allow-fs-read=' + project, '--allow-fs-write=' + project,

@@ -13,14 +13,14 @@ describe('qualification command ownership', () => {
       .rejects.toThrow('stdout limit');
   });
 
-  for (const reason of ['cancellation', 'deadline'] as const) {
+  for (const reason of ['cancellation', 'deadline', 'early-exit'] as const) {
     it(`closes an actual descendant HTTP listener after ${reason}`, async context => {
       await mkdir('tmp/test-generation', {recursive: true});
       const directory = await mkdtemp(path.resolve('tmp/test-generation/owned-node-'));
       const marker = path.join(directory, 'listener.json');
       const controller = new AbortController();
       const signal = AbortSignal.any([controller.signal, context.signal]);
-      const work = runOwnedNode([fixture, 'tree', marker], {cwd: process.cwd(), signal,
+      const work = runOwnedNode([fixture, reason === 'early-exit' ? 'early-exit' : 'tree', marker], {cwd: process.cwd(), signal,
         timeoutMs: reason === 'deadline' ? 8000 : 20_000});
       void work.catch(() => undefined);
       let listener: {pid: number; port: number} | undefined;
@@ -36,7 +36,9 @@ describe('qualification command ownership', () => {
         expect(await (await fetch(endpoint, {signal: AbortSignal.timeout(2000)})).json())
           .toMatchObject({kind: 'owned-process-fixture', pid: listener.pid, marker});
         if (reason === 'cancellation') controller.abort(new Error('explicit fixture cancellation'));
-        await expect(work).rejects.toThrow(reason === 'cancellation' ? 'explicit fixture cancellation' : 'exceeded 8000ms');
+        await expect(work).rejects.toThrow(reason === 'cancellation' ? 'explicit fixture cancellation'
+          : reason === 'deadline' ? 'exceeded 8000ms' : 'Owned command');
+        if (reason === 'early-exit') await delay(250);
         await expect(fetch(endpoint, {signal: AbortSignal.timeout(2000)})).rejects.toThrow();
       } finally {
         controller.abort(new Error('fixture cleanup'));

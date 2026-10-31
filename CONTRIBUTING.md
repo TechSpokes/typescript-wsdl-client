@@ -159,6 +159,8 @@ Installed checked-gateway qualification similarly retains each command's four-mi
 
 ### Shared workstations
 
+Qualification commands are trusted helpers that await their children on normal completion. The test-owned gateway also exits when its parent IPC connection closes. A failed command or lost Windows tree-cleanup authority remains a failure; inherited pipes cannot extend the wait indefinitely. This is not a sandbox for arbitrary detached programs.
+
 Vitest's [`maxWorkers`](https://vitest.dev/config/maxworkers) is a per-run concurrency ceiling, not a reservation of idle CPUs or a machine-wide scheduler. Choose it with other active builds/tests in mind; a CPU percentage alone cannot establish memory headroom. Keep failures and resource observations visible when adjusting it, and preserve the individual safety limits.
 
 ```bash
