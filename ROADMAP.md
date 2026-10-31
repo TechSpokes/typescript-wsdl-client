@@ -2,9 +2,13 @@
 
 Roadmap for the TypeScript WSDL/SOAP client generator, OpenAPI bridge, Fastify gateway generator, and runnable app scaffold.
 
-## Current: Stable 1.1.4
+## Current delivery and published baseline
 
-As of October 9, 2026, [v1.1.4](https://github.com/TechSpokes/typescript-wsdl-client/releases/tag/v1.1.4) is the latest published release. Both v1.1.3 and v1.1.4 are published; their earlier draft status is historical. See the [release notes](docs/releases/v1.1.4.md) and [changelog](CHANGELOG.md) for delivered behavior.
+The published baseline is [v1.1.5](docs/releases/v1.1.5.md). The unreleased [checked gateway preview](docs/checked-gateway.md) integrates one installed, process-started HTTP-to-checked-SOAP path under [#402](https://github.com/TechSpokes/typescript-wsdl-client/issues/402), with legacy defaults preserved.
+
+The qualified slice covers single safe local UTF-8 WSDL sources, direct string/int32/Boolean scalar and flat messages, optional/repeated scalar fields and document/literal SOAP 1.1 against explicitly authorized owned IPv4-loopback services. Synthetic installed/wire evidence does not qualify real providers or the general faithful profile; broader owners remain open. The next coherent delivery is representative rights-cleared real-service qualification and measured operation/family expansion through [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397), followed by endpoint/security combinations under #190/#191.
+
+The following session history retains its original broad-profile gates. ADR-003 P1-D01 permits independently qualified scoped product deliveries before universal research completion; [#379](https://github.com/TechSpokes/typescript-wsdl-client/issues/379) records the current execution checkpoint.
 
 Focus: preserve supported generated contracts while completing the evidence and architecture decisions for [content-model correctness, epic #147](https://github.com/TechSpokes/typescript-wsdl-client/issues/147). Its broader architecture remains planned work; merged changes and draft release preparation do not establish published availability.
 

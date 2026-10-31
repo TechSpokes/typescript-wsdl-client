@@ -2,6 +2,8 @@
 
 This document lists the WSDL and XSD features handled by the generator, along with current limitations. For modeling details, see [Core Concepts](concepts.md).
 
+The matrix describes the existing legacy generator. The unreleased opt-in [checked gateway preview](checked-gateway.md) has a separate, narrower source/value/binding contract and installed HTTP/SOAP evidence; these legacy rows do not imply checked-model support. Synthetic preview success establishes no real-provider or general-XSD coverage.
+
 ## Capability Evidence Matrix
 
 The rows below are backed by committed conformance fixtures under `test/conformance/fixtures/`. Status means the current product contract, not the full standards surface.

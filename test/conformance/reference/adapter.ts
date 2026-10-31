@@ -5,7 +5,7 @@ import { readFileSync, realpathSync, statSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { schemaText, schemaFeatures } from './xml-input.js';
-import { isolated } from './primary.js';
+import { isolated, PRIMARY_TIMEOUT_MS } from './primary.js';
 import type { Observation, Request } from './primary-worker.ts';
 import { parseXml, descendants } from './syntax.js';
 import { zeroElementAccepted } from './structural-selected.js';
@@ -30,6 +30,7 @@ export function localFixture(name: string, root = fixtures): string {
     return actual;
 }
 export interface Options {
+    readonly signal?: AbortSignal;
     readonly resources?: readonly string[];
     readonly maxBytes?: number;
     readonly timeoutMs?: number;
@@ -41,10 +42,11 @@ export interface Result extends Omit<Observation, 'outcome'> {
 }
 const digest = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
 export async function validateFixture(name: string, instances: readonly string[] = [], options: Options = {}): Promise<Result> {
+    options.signal?.throwIfAborted();
     const limit = options.maxBytes ?? 2000000;
     if (!Number.isSafeInteger(limit) || limit <= 0)
         throw new RangeError('positive safe-integer input byte limit required');
-    const timeout = options.timeoutMs ?? 5000;
+    const timeout = options.timeoutMs ?? PRIMARY_TIMEOUT_MS;
     if (!Number.isSafeInteger(timeout) || timeout <= 0)
         throw new RangeError('positive safe-integer elapsed limit required');
     const fixtureHashes: Record<string, string> = {};
@@ -84,7 +86,7 @@ export async function validateFixture(name: string, instances: readonly string[]
         return { phase: 'input', outcome: 'rejected', diagnostic: String(error), fixtureHashes };
     }
     const request: Request = { candidateRoot: repository, schema, uri: 'fixture:///' + name, instances, resources, maxBytes: limit };
-    return { ...await isolated(request, options.timeoutMs), fixtureHashes };
+    return { ...await isolated(request, timeout, options.signal), fixtureHashes };
 }
 export interface BaselineCase {
     id: string;

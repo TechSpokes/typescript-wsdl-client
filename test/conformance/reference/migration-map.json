@@ -991,7 +991,7 @@
       "command": "npx vitest run test/conformance/reference/s06-pw01-contract.test.ts",
       "status": "verified",
       "acceptedContract": "NT-CONT-01",
-      "targetSha256": "0f0c072ccf2d14f4da71b9f7ccab9df2428018b70f04d62fc615890d84d680ba"
+      "targetSha256": "2696d83cf72e567d26def316390cc8e8ecd2526e07ae816cc807d3b40ffd42a6"
     },
     {
       "id": "NT-s06_pw01_contract-fixed_payload_observations_separate_from_schema_validity",
@@ -1029,7 +1029,7 @@
       "command": "npx vitest run test/conformance/reference/s06-pw01-contract.test.ts",
       "status": "verified",
       "acceptedContract": "NT-CONT-01",
-      "targetSha256": "0f0c072ccf2d14f4da71b9f7ccab9df2428018b70f04d62fc615890d84d680ba"
+      "targetSha256": "2696d83cf72e567d26def316390cc8e8ecd2526e07ae816cc807d3b40ffd42a6"
     },
     {
       "id": "NT-s06_re01_contract-all_eleven_fixed_schema_observations_ran",
@@ -1541,7 +1541,7 @@
       "testName": "missing_fixture_is_input_failure",
       "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json",
       "acceptedContract": "NT-CONT-01",
-      "targetSha256": "23438a5baea81c72906a047b5f2097988ca0248a77dd1a3f19b172daf43df852"
+      "targetSha256": "043d12b6194d27b8af7265449d1320415c24e85cea5f25c566cdb370dbc1f60c"
     },
     {
       "id": "NT-validate-wrong_tool_version_is_setup_failure",
@@ -1565,7 +1565,7 @@
       "testName": "wrong_tool_version_is_setup_failure",
       "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json",
       "acceptedContract": "NT-CONT-01",
-      "targetSha256": "23438a5baea81c72906a047b5f2097988ca0248a77dd1a3f19b172daf43df852"
+      "targetSha256": "043d12b6194d27b8af7265449d1320415c24e85cea5f25c566cdb370dbc1f60c"
     },
     {
       "id": "NT-validate-schema_rejection_never_becomes_instance_rejection",
@@ -1589,7 +1589,7 @@
       "testName": "schema_rejection_never_becomes_instance_rejection",
       "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json",
       "acceptedContract": "NT-CONT-01",
-      "targetSha256": "23438a5baea81c72906a047b5f2097988ca0248a77dd1a3f19b172daf43df852"
+      "targetSha256": "043d12b6194d27b8af7265449d1320415c24e85cea5f25c566cdb370dbc1f60c"
     },
     {
       "id": "NT-validate-disagreement_fails_qualification",
@@ -1613,7 +1613,7 @@
       "testName": "disagreement_fails_qualification",
       "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json",
       "acceptedContract": "NT-CONT-01",
-      "targetSha256": "23438a5baea81c72906a047b5f2097988ca0248a77dd1a3f19b172daf43df852"
+      "targetSha256": "043d12b6194d27b8af7265449d1320415c24e85cea5f25c566cdb370dbc1f60c"
     },
     {
       "id": "NT-validate-network_schema_and_doctype_are_input_failures",
@@ -1637,7 +1637,7 @@
       "testName": "network_schema_and_doctype_are_input_failures",
       "typecheck": "npx tsc -p test/conformance/reference/tsconfig.json",
       "acceptedContract": "NT-CONT-01",
-      "targetSha256": "23438a5baea81c72906a047b5f2097988ca0248a77dd1a3f19b172daf43df852"
+      "targetSha256": "043d12b6194d27b8af7265449d1320415c24e85cea5f25c566cdb370dbc1f60c"
     }
   ],
   "baselineCases": [

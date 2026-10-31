@@ -56,7 +56,7 @@ function failure(error: unknown, budget: SemanticBudget): DirectCapsuleFailure {
   else if (error instanceof DirectSoapSourceError) {kind = error.kind; rule = error.message;}
   else if (error instanceof SchemaLoadingError) {kind = error.category === 'resource-limit' ? 'resource-limit' : 'missing-authority'; rule = 'authorized-local-source-required';}
   else throw error;
-  return Object.freeze({kind, rule, repair: 'Regenerate matched internal direct artifacts from explicitly authorized original WSDL; public generation remains unavailable.', usage: Object.freeze({...budget.usage()})});
+  return Object.freeze({kind, rule, repair: 'Regenerate matched checked direct artifacts from explicitly authorized original WSDL using the checked-direct-v1 pipeline.', usage: Object.freeze({...budget.usage()})});
 }
 function check(budget: SemanticBudget, signal?: AbortSignal): void {
   checkSemanticBudget(budget); if (signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');

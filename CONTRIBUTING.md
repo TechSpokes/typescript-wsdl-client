@@ -149,6 +149,32 @@ The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integrati
 
 Full conformance generates and validates several consumer-style projects, so it normally takes about three to four minutes on the maintained Windows environment. Allow at least six minutes, check the active process before treating a quiet nested TypeScript or Vitest run as stalled, and use the narrowest stage command while developing.
 
+### Qualification timeouts and progress
+
+Test watchdogs are harness safeguards, not performance assertions unless a test explicitly checks latency. A batch allowance must account for its sequential work; a shared workstation may also be compiling or testing other repositories.
+
+The PW01 schema batch retains its mapped method ID, 38 cases, individual five-second worker deadline, heap/input caps and all assertions. Its outer watchdog allows the sum of those worker budgets plus preparation/cleanup time. Each case reports start, completion and elapsed time; cancelled or incomplete observation reports are labelled accordingly. Worker cancellation is operational and waits for worker termination.
+
+Installed checked-gateway qualification similarly retains each command's four-minute deadline and output bound. Its batch watchdog covers the 18 bounded commands plus cleanup rather than imposing a five-minute deadline on the whole workflow. Stage records in `tmp/conformance/checked-gateway-installed/progress.ndjson` identify the candidate, current stage, elapsed time and outcome. Cancellation stops the owned command tree and waits for cleanup; failed attempts remain failed. The enclosing hosted job budget still applies.
+
+### Shared workstations
+
+Qualification commands are trusted helpers that await their children on normal completion. The test-owned gateway also exits when its parent IPC connection closes. A failed command or lost Windows tree-cleanup authority remains a failure; inherited pipes cannot extend the wait indefinitely. This is not a sandbox for arbitrary detached programs.
+
+Vitest's [`maxWorkers`](https://vitest.dev/config/maxworkers) is a per-run concurrency ceiling, not a reservation of idle CPUs or a machine-wide scheduler. Choose it with other active builds/tests in mind; a CPU percentage alone cannot establish memory headroom. Keep failures and resource observations visible when adjusting it, and preserve the individual safety limits.
+
+```bash
+npm test -- --maxWorkers=4
+```
+
+The installed Vitest version also accepts `VITEST_MAX_WORKERS` for the complete CI script and its nested test invocations. Set it only in the terminal running that job; repository defaults and hosted job policy need not change.
+
+```powershell
+$env:VITEST_MAX_WORKERS = '4'
+npm run ci
+Remove-Item Env:VITEST_MAX_WORKERS
+```
+
 ### Test Structure
 
 ```text

@@ -27,7 +27,7 @@ type Success = {
 } & ({readonly kind: 'soap-response'} | {readonly kind: 'soap-fault';
   readonly fault: {readonly name: string; readonly code: Name; readonly string: string; readonly actor?: string}});
 
-/** Unreleased direct-grammar binding. Generation and broader SOAP capabilities remain internal. */
+/** Scoped direct-grammar binding used by the opt-in checked gateway preview. */
 export const checkedDirectRuntimeV1: Readonly<{
   version: typeof DIRECT_CLIENT_RUNTIME_VERSION;
   execute(expectedBase64: string, input: unknown, options: Options, version: typeof DIRECT_CLIENT_RUNTIME_VERSION): Promise<Failure | Success>;

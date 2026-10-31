@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import {Worker} from 'node:worker_threads';
 import { readFileSync, mkdtempSync, symlinkSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { localFixture, validateFixture, qualifyPrimary } from './adapter.js';
@@ -9,6 +10,36 @@ const manifest = JSON.parse(readFileSync('test/conformance/semantic-baseline.jso
     cases: BaselineCase[];
 };
 describe('primary reference adapter staging', () => {
+    it('cancels operationally and waits for owned worker termination', async () => {
+        const reason = new Error('cancel reference qualification');
+        const beforeStart = new AbortController(); beforeStart.abort(reason);
+        await expect(validateFixture('does-not-exist.xml', [], {signal: beforeStart.signal})).rejects.toBe(reason);
+        let release!: () => void, terminated!: () => void;
+        const gate = new Promise<void>(resolve => {release = resolve;});
+        const closed = new Promise<void>(resolve => {terminated = resolve;});
+        const original = Worker.prototype.terminate;
+        const spy = vi.spyOn(Worker.prototype, 'terminate').mockImplementation(function (this: Worker) {
+            return original.call(this).then(async code => {terminated(); await gate; return code;});
+        });
+        const controller = new AbortController();
+        const work = isolated({candidateRoot: resolve('.'), uri: 'fixture:///cancel.xsd',
+            schema: '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="root" type="xs:string"/></xs:schema>',
+            resources: {}, instances: []}, 5000, controller.signal);
+        let settled = false;
+        void work.then(() => {settled = true;}, () => {settled = true;});
+        try {
+            controller.abort(reason);
+            await closed;
+            expect(settled, 'cancellation cannot finish before the termination promise').toBe(false);
+            release();
+            await expect(work).rejects.toBe(reason);
+            expect(spy).toHaveBeenCalledOnce();
+        } finally {
+            release(); controller.abort(reason);
+            await work.catch(() => undefined);
+            spy.mockRestore();
+        }
+    });
     it('guards exact legal occurrence spellings and ignores foreign annotation attributes', async () => {
         const wrap = (particle: string) => '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:f="urn:foreign"><xs:element name="root"><xs:complexType><xs:sequence>' + particle + '</xs:sequence></xs:complexType></xs:element></xs:schema>';
         for (const bound of ['2147483648', '+2147483648', '  +0002147483648  ', '900719925474099312345678901234567890']) {

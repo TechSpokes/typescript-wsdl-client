@@ -1,6 +1,6 @@
 import {directLimit} from '../compiler/directExecutionPolicy.js';
 import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR} from './directClientVersion.js';
-/** Internal native-plan generator. Deliberately absent from index.ts and the CLI. */
+/** Native-plan generator consumed by the opt-in checked pipeline. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {writeFileSync} from 'node:fs';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
@@ -67,7 +67,7 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
     const faults = mappings.filter(m => m.direction.kind === 'fault');
     const lines = [
       '// Checked direct client; inject checkedDirectRuntimeV1 from the package root.',
-      '// Generation remains internal; this unreleased binding supports only the documented direct grammar.',
+      '// Opt-in preview binding supports only the documented direct grammar.',
       '// Static number types require native int32 validation; native checks enforce exact shapes.',
       `export type Request = ${shape(input)};`,
       `export type Response = ${shape(output)};`,
@@ -96,6 +96,7 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
       }).join(' | ') : 'never') + ';',
       'export type Result = Failure | (Common & { readonly kind: "soap-response"; readonly value: Response }) | DeclaredFault;',
       `const capsule = ${literal(Buffer.from(capsule.bytes).toString('base64'))};`,
+      'export const expectedCapsuleBase64 = capsule;',
       `export const selection = ${literal(JSON.stringify({selector: expected.contract.selector, ...expected.selection}))};`,
       'export function createClient(runtime: Runtime) {',
       '  return Object.freeze({',

@@ -7,6 +7,7 @@ import { selected, type CurrentPrimary, type HistoricalObservation, type Unquali
 import { historicalSources } from './historical-source.js';
 import { captureProvenance, finishProvenance, type RunProvenance } from './qualification/provenance.js';
 import { pwCallbacks, pwInput, pwPayload } from './scoped-pw.js';
+import {PRIMARY_TIMEOUT_MS} from './primary.js';
 
 interface Payload { xml: string; primary: boolean; observed: Record<'xmlschema420' | 'libxml22146', boolean | 'unavailable-schema'> }
 interface Case {
@@ -31,6 +32,9 @@ const unqualified: UnqualifiedCapability = {
 };
 const schemaEvidence: unknown[] = [], payloadEvidence: unknown[] = [];
 let execution: RunProvenance;
+let schemaComplete = false, payloadComplete = false;
+let schemaSignal: AbortSignal | undefined, payloadSignal: AbortSignal | undefined;
+const cleanupMarginMs = 30_000;
 
 describe('PW01 accepted continuation contract', () => {
     beforeAll(() => {
@@ -67,11 +71,14 @@ describe('PW01 accepted continuation contract', () => {
             'node_modules/libxml2-wasm/lib/index.mjs', 'node_modules/libxml2-wasm/lib/libxml2raw.mjs']);
     });
 
-    it(schemaId, async () => {
-        for (const row of cases) {
+    const checkSchemas = async (signal: AbortSignal) => {
+        for (const [index, row] of cases.entries()) {
+            signal.throwIfAborted();
+            const started = performance.now();
+            console.info(`[PW01 schemas] ${index + 1}/${cases.length} start ${row.id}`);
             const input = pwInput(row.file), original = JSON.stringify(input.documents);
             expect(input.originalRange, row.id + ' independent exact source total').toEqual(row.effectiveTotalRange);
-            const current = await validateFixture(prefix + row.file, [], { resources: input.resources });
+            const current = await validateFixture(prefix + row.file, [], { resources: input.resources, signal });
             const primary: CurrentPrimary = { kind: 'current-primary-observation', result: current };
             expect(current.phase, row.id).toBe('schema');
             expect(current.outcome, row.id).toBe(row.id === 'huge-exact-repetition' ? 'unsupported-capability' : 'accepted');
@@ -91,15 +98,29 @@ describe('PW01 accepted continuation contract', () => {
             const old = Object.entries(row.observed).map(([name, answer]) => historical(name, answer, schemaContract));
             expect(old).toHaveLength(2);
             expect(JSON.stringify(input.documents), row.id + ' source identity retained').toBe(original);
+            signal.throwIfAborted();
             schemaEvidence.push({ id: row.id, methodId: schemaId, primary, selectedContracts: contracts, historical: old, unqualified });
+            console.info(`[PW01 schemas] ${index + 1}/${cases.length} complete ${row.id} ${Math.round(performance.now() - started)}ms`);
         }
         expect(schemaEvidence).toHaveLength(38);
-    });
+        schemaComplete = true;
+    };
+    // @why Each of the 38 workers has its own unchanged five-second safety limit; this is a batch watchdog, not a latency assertion.
+    it(schemaId, context => {
+        schemaSignal = context.signal;
+        const work = checkSchemas(context.signal);
+        context.onTestFinished(async () => {await work.catch(() => undefined);}, cleanupMarginMs);
+        return work;
+    }, cases.length * PRIMARY_TIMEOUT_MS + cleanupMarginMs);
 
-    it(payloadId, async () => {
-        for (const row of cases.filter(row => row.payloads.length)) {
+    const payloadCases = cases.filter(row => row.payloads.length);
+    const checkPayloads = async (signal: AbortSignal) => {
+        for (const [rowIndex, row] of payloadCases.entries()) {
+            signal.throwIfAborted();
+            const started = performance.now();
+            console.info(`[PW01 payloads] ${rowIndex + 1}/${payloadCases.length} start ${row.id}`);
             const input = pwInput(row.file);
-            const current = await validateFixture(prefix + row.file, row.payloads.map(payload => payload.xml), { resources: input.resources });
+            const current = await validateFixture(prefix + row.file, row.payloads.map(payload => payload.xml), { resources: input.resources, signal });
             expect(current, row.id + ' original schema must construct before instance assertions').toMatchObject({ phase: 'schema', outcome: 'accepted' });
             expect(current.instances).toHaveLength(row.payloads.length);
             expect(current.undisposed).toEqual({});
@@ -114,18 +135,27 @@ describe('PW01 accepted continuation contract', () => {
                     expect(old[0].value).toBe('unavailable-schema');
                     expect(current.outcome).toBe('accepted');
                 }
+                signal.throwIfAborted();
                 payloadEvidence.push({ id: row.id + ':' + index, methodId: payloadId, xml: payload.xml,
                     instanceSha256: digest(payload.xml), primary: { kind: 'current-primary-observation', validator: engine,
                         schema: { phase: current.phase, outcome: current.outcome }, instance: current.instances![index], fixtureHashes: current.fixtureHashes },
                     selectedContract: selected('PW01 five declared finite content grammars; no schema-legality inference', accepted),
                     historical: old, unqualified });
             }
+            console.info(`[PW01 payloads] ${rowIndex + 1}/${payloadCases.length} complete ${row.id} ${Math.round(performance.now() - started)}ms`);
         }
         expect(payloadEvidence).toHaveLength(8);
         // A count interval alone cannot admit the odd three-child pair payload.
         expect(payloadEvidence).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'count-gap:1',
             selectedContract: expect.objectContaining({ accepted: false }) })]));
-    });
+        payloadComplete = true;
+    };
+    it(payloadId, context => {
+        payloadSignal = context.signal;
+        const work = checkPayloads(context.signal);
+        context.onTestFinished(async () => {await work.catch(() => undefined);}, cleanupMarginMs);
+        return work;
+    }, payloadCases.length * PRIMARY_TIMEOUT_MS + cleanupMarginMs);
 
     it('keeps exact huge total, original group uses, namespace context and resource failures', () => {
         const huge = pwInput('huge-exact-repetition.xsd');
@@ -155,6 +185,8 @@ describe('PW01 accepted continuation contract', () => {
         if (!execution) return;
         mkdirSync('tmp/conformance/reference', { recursive: true });
         writeFileSync('tmp/conformance/reference/s06-pw01-observations.json', JSON.stringify({
+            completion: {schemas: schemaComplete ? 'completed' : schemaSignal?.aborted ? 'cancelled' : 'incomplete',
+                payloads: payloadComplete ? 'completed' : payloadSignal?.aborted ? 'cancelled' : 'incomplete'},
             contract: 'NT-CONT-01', provenance: finishProvenance(execution), validator: engine,
             schemas: schemaEvidence, payloads: payloadEvidence, unqualified,
         }, null, 2) + '\n');

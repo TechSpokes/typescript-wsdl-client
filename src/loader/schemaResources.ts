@@ -169,6 +169,8 @@ export class SchemaResourceLoader {
           const file = await open(localPath, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0) | (constants.O_NONBLOCK ?? 0));
           try {
             if (!(await file.stat()).isFile()) throw new SchemaLoadingError("unsupported-capability", "Schema resource must be a regular file");
+            // @why Cancellation during metadata I/O must not construct an already-aborted stream that can emit outside iterator handling.
+            if (controller.signal.aborted) throw new SchemaLoadingError("transport", "Schema resource I/O cancelled");
             const stream = file.createReadStream({autoClose: false, signal: controller.signal});
             try { for await (const chunk of stream) accept(chunk); }
             finally { stream.destroy(); }
