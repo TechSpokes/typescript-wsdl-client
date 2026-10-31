@@ -2,6 +2,8 @@ import {afterEach, describe, expect, it} from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
 import {generateCheckedApp} from '../../src/app/generateCheckedApp.js';
 import {generateCheckedTests} from '../../src/test/generateCheckedTests.js';
 import {runGenerationPipeline} from '../../src/pipeline.js';
@@ -20,6 +22,34 @@ function fixture() {
 }
 
 describe('checked app/test scaffold ownership', () => {
+  it('runs generated checks when a real member matches the old invalid-field sentinel and the operation contains a dot', async () => {
+    const options = fixture();
+    const wsdl = path.join(options.appDir, 'input.wsdl');
+    const source = fs.readFileSync('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8')
+      .replace('<xs:element name="city" type="xs:string"/><xs:element name="days" type="xs:int"/>', '<xs:element name="__invalidField" type="xs:boolean"/>')
+      .replaceAll('GetForecast', 'Get.Forecast');
+    fs.writeFileSync(wsdl, source);
+    const namespace = 'urn:checked:forecast';
+    await runGenerationPipeline({model: 'checked-direct-v1', wsdl,
+      checkedDirect: {selector: {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'Get.Forecast'},
+        service: {namespace, local: 'ForecastService'}, port: 'ForecastPort', fileRoots: [options.appDir]},
+      clientOutDir: options.clientDir, openapi: {outFile: options.openapiFile},
+      gateway: {outDir: options.gatewayDir, versionSlug: 'v1', serviceSlug: 'forecast'}, app: {appDir: options.appDir},
+      test: {testDir: path.join(options.appDir, 'test')}});
+    const runtimePackage = path.join(options.appDir, 'node_modules/@techspokes/typescript-wsdl-client');
+    fs.mkdirSync(runtimePackage, {recursive: true});
+    fs.writeFileSync(path.join(runtimePackage, 'package.json'), JSON.stringify({type: 'module', exports: './index.ts'}));
+    fs.writeFileSync(path.join(runtimePackage, 'index.ts'),
+      `export {checkedDirectRuntimeV1} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
+    try {
+      const result = await promisify(execFile)(process.execPath, [path.resolve('node_modules/vitest/vitest.mjs'), 'run'], {cwd: options.appDir});
+      expect(result.stdout).toContain('2 passed');
+    } catch (error) {
+      const result = error as Error & {stdout?: string; stderr?: string};
+      throw new Error(result.message + '\n' + result.stdout + '\n' + result.stderr);
+    }
+  }, 60_000);
+
   it('preserves every customized consumer file and only overwrites with explicit force', async () => {
     const options = fixture();
     await generateCheckedApp(options);

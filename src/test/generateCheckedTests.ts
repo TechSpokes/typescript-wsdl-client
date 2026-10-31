@@ -56,7 +56,9 @@ describe('generated scaffold checks (independent wire/business oracles are separ
   });
   it('rejects an invalid shape before upstream dispatch', async () => {
     const server = await host();
-    const response = await server.inject({method: 'POST', url: ${JSON.stringify(options.routePath)}, payload: {__invalidField: true}});
+    // @constraints Every supported checked root is non-nullable; no field spelling is reserved for test sentinels.
+    const response = await server.inject({method: 'POST', url: ${JSON.stringify(options.routePath)},
+      headers: {'content-type': 'application/json'}, payload: 'null'});
     expect(response.statusCode).toBe(400);
   });
 });
