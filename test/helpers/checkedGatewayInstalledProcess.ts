@@ -19,7 +19,7 @@ const normal = await readFile('response.xml', 'utf8');
 const fault = await readFile('fault.xml', 'utf8');
 const expected = JSON.parse(await readFile('expectations.json', 'utf8')) as {
   request: {city: string; days: number}; response: {city: string; temperature: number[]; complete: boolean};
-  fault: {name: string; detail: {code: string; message: string}};
+  fault: {name: string; soap11: {faultcode: string; faultstring: string}; detail: {code: string; message: string}};
 };
 const events = (xml: string) => {
   const names: string[] = [], texts: string[] = [];
@@ -140,6 +140,10 @@ try {
   assert.deepEqual((declared.value as {value: unknown}).value,
     {code: expected.fault.detail.code, message: expected.fault.detail.message}, JSON.stringify(declared));
   assert.equal((declared.value as {fault: {name: string}}).fault.name, expected.fault.name);
+  const publicFault = (declared.value as {fault: {name: string; code: {namespace: string; local: string}; string: string}}).fault;
+  assert.equal(`{${publicFault.code.namespace}}${publicFault.code.local}`, expected.fault.soap11.faultcode);
+  assert.equal(publicFault.string, expected.fault.soap11.faultstring);
+  assert.deepEqual(Object.keys(publicFault).sort(), ['code', 'name', 'string']);
   replyStatus = 200;
   for (const invalid of [normal.replace('>true<', '>yes<'), normal.replace('>18<', '>2147483648<'),
     normal.replace('>18<', '>1.5<'), normal.replace('<t:complete>true</t:complete>', ''),
