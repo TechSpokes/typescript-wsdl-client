@@ -7,13 +7,13 @@ import {describe, it, expect} from 'vitest';
 import {parseAssessmentReport} from '../../src/compiler/checkedAssessment.js';
 
 describe('readiness inventory', () => {
-  it('pins complete permitted closures and labels unavailable production evidence', () => {
+  it('pins permitted closures and separates real metadata from synthetic controls', () => {
     const corpus = JSON.parse(readFileSync('test/conformance/readiness-corpus.json', 'utf8')) as {inputs: {id: string; source: string; tier: string; permission: string; files: {path: string; bytes: number; sha256: string}[]}[]; unavailable: {tier: string}[]};
-    expect(corpus.inputs).toHaveLength(7);
-    expect(corpus.inputs.filter(input => input.tier === 'real')).toHaveLength(0);
-    expect(corpus.unavailable.some(tier => tier.tier === 'real')).toBe(true);
+    expect(corpus.inputs).toHaveLength(8);
+    expect(corpus.inputs.filter(input => input.tier === 'real').map(input => input.id)).toEqual(['noaa-ndfd']);
+    expect(corpus.unavailable).toEqual([]);
     for (const input of corpus.inputs) {
-      expect(input.permission).toContain('MIT');
+      expect(input.permission).toContain(input.tier === 'real' ? 'public-domain' : 'MIT');
       expect(input.files.some(file => file.path === input.source)).toBe(true);
       for (const file of input.files) {
         const bytes = readFileSync(file.path);
@@ -29,7 +29,7 @@ describe('readiness inventory', () => {
     try {
       execFileSync(process.execPath, ['--import', 'tsx', 'scripts/readiness-inventory.ts', '--profile', 'default', '--output', output], {cwd: process.cwd(), encoding: 'utf8'});
       const evidence = JSON.parse(readFileSync(output, 'utf8')) as {counts: {inputs: number; generationAdmitted: number}; rows: {input: string; closureVerified: boolean; report: unknown}[]};
-      expect(evidence.counts.inputs).toBe(7);
+      expect(evidence.counts.inputs).toBe(8);
       expect(evidence.counts.generationAdmitted).toBe(0);
       const selected = evidence.rows.find(row => row.input === 'checked-forecast');
       expect(selected?.closureVerified).toBe(true);
@@ -39,6 +39,12 @@ describe('readiness inventory', () => {
       expect(report.operations.map(operation => operation.name)).toEqual(['GetForecast']);
       expect(report.operations[0]?.admitted).toBe(false);
       expect(report.operations[0]?.capabilities.some(capability => capability.status === 'not-assessed')).toBe(true);
+      const real = evidence.rows.find(row => row.input === 'noaa-ndfd');
+      expect(real?.closureVerified).toBe(false);
+      expect(parseAssessmentReport(JSON.stringify(real?.report))).toMatchObject({
+        execution: 'failed', category: 'unsupported-capability', schema: 'inconclusive',
+        correspondence: 'inconclusive', operationInventory: 'unassessed', admitted: false,
+      });
     } finally {rmSync(directory, {recursive: true, force: true});}
   }, 60_000);
 });

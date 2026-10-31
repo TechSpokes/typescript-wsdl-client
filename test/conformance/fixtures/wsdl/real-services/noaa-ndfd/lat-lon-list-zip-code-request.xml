@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/">
+<SOAP-ENV:Body><ns5396:LatLonListZipCode xmlns:ns5396="uri:DWMLgen">
+<zipCodeList xsi:type="xsd:string">21045 20910</zipCodeList>
+<XMLformat xsi:type="xsd:string">DWML</XMLformat>
+<listType xsi:type="xsd:string">zipCode</listType>
+</ns5396:LatLonListZipCode>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

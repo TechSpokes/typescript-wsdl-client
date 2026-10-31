@@ -12,9 +12,9 @@ P1 contract review accepted `7e40478`; implementation review accepted final head
 
 ## Corpus and reproduction
 
-The [manifest](../test/conformance/readiness-corpus.json) pins seven inputs and nine resource entries with origin, permission, digest, bytes and selection rationale. Weather, import, chameleon and shared recursion reuse [#272](https://github.com/TechSpokes/typescript-wsdl-client/issues/272)'s provenance work; existing conformance sources add repeated/deep composition. New Forecast is authored in P2, separately from the reused-corpus baseline.
+The [manifest](../test/conformance/readiness-corpus.json) now pins eight inputs and ten resource entries with origin, permission, digest, bytes and selection rationale. Weather, import, chameleon and shared recursion reuse [#272](https://github.com/TechSpokes/typescript-wsdl-client/issues/272)'s provenance work; existing conformance sources add repeated/deep composition. Forecast is authored in P2, separately from the reused-corpus baseline.
 
-Two inputs are synthetic and five are reference controls. No real production-service or reduced tier is counted. The unavailable real tier contains no redistributable complete production-service snapshot; Weather is a repository example and does not establish customer or market coverage.
+Two inputs are synthetic, five are reference controls and one is authentic NOAA/NWS metadata. The [NOAA qualification report](noaa-ndfd-qualification.md) records permission, full byte/resource inventory and a native encoding refusal for one operation. This establishes source intake evidence, with no production SOAP compatibility or market coverage claim. No reduced tier is counted.
 
 ```bash
 npm run assess:inventory -- --profile default
@@ -25,7 +25,7 @@ The [strict TypeScript runner](../scripts/readiness-inventory.ts) calls only the
 
 Every report also records exact loading and publication limits. Complete runs verify the canonical URI identity, digest and byte count of every loaded resource against the pinned closure; partial runs retain `closureVerified: false`. Source/context identity, component origins, interpretation namespaces/bases and all unresolved report obligations remain in the evidence.
 
-## Measured results
+## Historical P2 measured results
 
 Measurements use runner revision `9314ae2bcffd1ce977a35f5da625500f8127ab36`, Node 24.19.0, package 1.1.4 and the pinned lockfile digest in each output. [Default evidence](../test/conformance/readiness-default.json) and [diagnostic evidence](../test/conformance/readiness-diagnostic.json) contain exact counters, contexts, operations, limits, reproduction commands, memory and timing observations.
 
@@ -55,7 +55,7 @@ The operation is `{urn:checked:forecast}ForecastPortType/GetForecast`, document/
 
 The declared `ForecastError` uses `{urn:checked:forecast}ForecastFault` detail with ordered `code` and `message` strings. Independent [request](../test/conformance/fixtures/assessment/forecast-messages/request.xml), [response](../test/conformance/fixtures/assessment/forecast-messages/response.xml), [fault](../test/conformance/fixtures/assessment/forecast-messages/fault.xml) and [expectations](../test/conformance/fixtures/assessment/forecast-messages/expectations.json) pin application values, SOAP faultcode/faultstring, HTTP 500 and detail separately. Their bare message roots now run through the internal [direct XML codec](direct-values.md#internal-bare-root-xml-codec); SOAP transport acceptance remains open.
 
-The fixture address is a deliberately unusable localhost port. The later transport fixture must inject its actual local server address, retain SOAPAction and text/xml behavior, and exercise requests, responses and declared faults without production dispatch. The real-service validation requirement remains missing and must not be silently replaced by this synthetic target.
+The fixture address is a deliberately unusable localhost port. The later transport fixture must inject its actual local server address, retain SOAPAction and text/xml behavior, and exercise requests, responses and declared faults without production dispatch. The [real-source refusal](noaa-ndfd-qualification.md) is separate from this synthetic target and establishes no successful real-service runtime execution.
 
 ## P3.1 entry packet
 

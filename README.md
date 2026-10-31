@@ -272,6 +272,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Core Concepts](docs/concepts.md) | Flattening, $value, primitives, determinism |
 | [Architecture](docs/architecture.md) | Internal pipeline for contributors |
 | [Reference Validation](docs/reference-validation.md) | Internal evidence contract and Node tooling migration inventory |
+| [NOAA NDFD Qualification](docs/noaa-ndfd-qualification.md) | Authentic source provenance and one-operation native refusal |
 | [File Naming And Path Organization](docs/file-naming-and-path-organization.md) | Contributor convention for taxonomy paths and fixture retrieval |
 | [Agent Skill Artifact](docs/agent-skill.md) | Release ZIP for consumer-project AI agents |
 | [Current Roadmap](ROADMAP.md) | Published baseline, active content-model backlog, and delivery milestones |
@@ -294,6 +295,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, project structure,
 ## License
 
 MIT. See [LICENSE](LICENSE) for full text. Generated artifacts are fully yours with no restrictions or attribution required.
+
+Unmodified NOAA/NWS qualification fixtures are public-domain provider material with separate [attribution and provenance](docs/noaa-ndfd-qualification.md#provenance-and-permission).
 
 ## Links
 
