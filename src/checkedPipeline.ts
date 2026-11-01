@@ -28,6 +28,7 @@ import {commonSourceDirectory, assertCanonicalSourceLayout} from './generation/s
 import {createComponentRecordProjection, inspectComponentRecordProjection} from './compiler/componentRecordProjection.js';
 import type {ComponentRecordProjectionSpec, ComponentRecordProjection} from './compiler/componentRecordProjection.js';
 import {acquireStandardSchemaLibrary, SCHEMA_ELEMENT_LIBRARY} from './compiler/standardSchemaComponents.js';
+import {prepareComponentSoapWsdl} from './compiler/directSoapSource.js';
 
 /**
  * Explicit selection and local source permission for the preview model.
@@ -45,7 +46,8 @@ export interface CheckedDirectOptions {
 /** Explicit service operations and independently authorized snapshot files for component generation. */
 export interface CheckedComponentOptions extends Omit<CheckedDirectOptions, 'selector'> {
   readonly selectors: readonly DirectOperationSelector[];
-  readonly sourceResources: readonly {readonly uri: string; readonly file: string}[];
+  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[];
+  readonly sourceUri?: string;
   readonly sourceOrigins: readonly string[];
   readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
   readonly basePath?: string;
@@ -131,12 +133,13 @@ export function parseCheckedComponentOptions(value: unknown): CheckedComponentOp
     if (ids.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(ids).size !== ids.length) throw new TypeError('Known unique standard libraries required');
     return ids.sort();
   };
-  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections'],
+  const data = record(value, ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'basePath', 'signal', 'standardLibraries', 'recordProjections'],
     ['selectors', 'service', 'port', 'fileRoots', 'sourceResources', 'sourceOrigins']);
   const selectors = array(data.selectors).map(selector);
   if (!selectors.length || new Set(selectors.map(selector => JSON.stringify(selector))).size !== selectors.length) throw new TypeError('Nonempty unique component selectors required');
-  const fileRoots = array(data.fileRoots).map(text); if (!fileRoots.length) throw new TypeError('Explicit source roots required');
-  const sourceResources = array(data.sourceResources).map(input => {const r = record(input, ['uri', 'file']); return {uri: text(r.uri), file: text(r.file)};});
+  const fileRoots = array(data.fileRoots).map(text);
+  const sourceResources = array(data.sourceResources).map(input => {const r = record(input, ['uri', 'file', 'canonicalUri'], ['uri', 'file']);
+    return {uri: text(r.uri), file: text(r.file), ...(r.canonicalUri === undefined ? {} : {canonicalUri: resolveResourceUri(text(r.canonicalUri))})};});
   const sourceOrigins = array(data.sourceOrigins).map(text);
   const standardLibraries = data.standardLibraries === undefined ? undefined : libraries(data.standardLibraries);
   const recordProjections = data.recordProjections === undefined ? undefined : array(data.recordProjections).map(input => {
@@ -167,6 +170,7 @@ export function parseCheckedComponentOptions(value: unknown): CheckedComponentOp
   if (basePath && (!basePath.startsWith('/') || basePath.endsWith('/') || basePath.split('/').slice(1).some(segment => !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment)))) throw new TypeError('Literal nonempty route prefix required');
   if (data.signal !== undefined && !(data.signal instanceof AbortSignal)) throw new TypeError('Native AbortSignal required');
   return {selectors, service: name(data.service), port: text(data.port), fileRoots, sourceResources, sourceOrigins,
+    ...(data.sourceUri === undefined ? {} : {sourceUri: resolveResourceUri(text(data.sourceUri))}),
     ...(standardLibraries ? {standardLibraries} : {}), ...(recordProjections ? {recordProjections} : {}),
     ...(namespaceLocations ? {namespaceLocations} : {}), ...(basePath ? {basePath} : {}), ...(data.signal ? {signal: data.signal as AbortSignal} : {})};
 }
@@ -269,15 +273,21 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
 }
 
 /** Prepare through native owners only; internal handles remain within this invocation. */
-export async function prepareComponentStages(wsdl: string, config: CheckedComponentOptions) {
+export async function prepareComponentStages(wsdl: string, config: CheckedComponentOptions, acquired?: SchemaInput) {
   const tick = () => {if (config.signal?.aborted) throw new Error('Checked component generation cancelled');};
   const namespaces = new Map(config.namespaceLocations?.map(location => [location.namespace, location.location]));
   if (namespaces.size !== (config.namespaceLocations?.length ?? 0)) throw new TypeError('Duplicate namespace location');
   const budget = createApplicationBudget();
-  const prepared = await prepareSchemaSnapshotFiles(wsdl, config.sourceResources, {policy: {
+  const loading = {policy: {
     fileRoots: config.fileRoots, allowedOrigins: config.sourceOrigins}, namespaceLocations: namespaces,
-    limits: directLoadingLimits(budget), signal: config.signal, chargeWork: amount => {tick(); budget.chargeWork(amount);}});
-  const selected = await selectComponentOperations(prepared.source, config.selectors, {loading: prepared.loading, signal: config.signal,
+    limits: directLoadingLimits(budget), signal: config.signal, chargeWork: (amount: number) => {tick(); budget.chargeWork(amount);}};
+  const offlineResources = acquired ? new Map([...acquired.resourceAliases].map(([alias, uri]) => {
+    const resource = acquired.resources.find(r => r.uri === uri)!;
+    return [alias, {bytes: copyOriginalSchemaResource(acquired, uri, loading.chargeWork), digest: resource.digest, canonicalUri: uri}] as const;
+  })) : undefined;
+  const prepared = acquired ? {source: resolveResourceUri(wsdl), loading: {...loading, offlineResources}}
+    : await prepareSchemaSnapshotFiles(wsdl, config.sourceResources, {...loading, sourceUri: config.sourceUri});
+  const selected = await selectComponentOperations(config.sourceUri ?? prepared.source, config.selectors, {loading: prepared.loading, signal: config.signal,
     standardLibraries: config.standardLibraries?.map(acquireStandardSchemaLibrary)});
   const refusals: {selector: DirectOperationSelector; kind: string; rule: string; dimension: 'qualification-and-correspondence' | 'mapping-and-artifact'}[] = selected.flatMap((result, index) => result.kind === 'selected' ? [] : [{selector: config.selectors[index]!, kind: result.kind, rule: result.rule, dimension: 'qualification-and-correspondence' as const}]);
   const expected: ReconstructedComponentSource[] = [];
@@ -315,6 +325,9 @@ export async function prepareComponentStages(wsdl: string, config: CheckedCompon
   }
   let layout: ReturnType<typeof prepareComponentLayout> | undefined;
   if (!refusals.length) {
+    try {await prepareComponentSoapWsdl(expected[0]!.contract, {service: config.service, port: config.port}, tick);}
+    catch (error) {refusals.push({selector: config.selectors[0]!, kind: config.signal?.aborted ? 'cancelled' : 'unsupported',
+      rule: `SOAP metadata bootstrap: ${error instanceof Error ? error.message : 'unsupported graph'}`, dimension: 'mapping-and-artifact'});}
     try {layout = prepareComponentLayout(expected, projections, tick);}
     catch (error) {refusals.push({selector: config.selectors[0]!, kind: config.signal?.aborted ? 'cancelled' : 'unsupported',
       rule: error instanceof Error ? error.message : 'source-relocation', dimension: 'mapping-and-artifact'});}
@@ -338,6 +351,7 @@ function prepareComponentLayout(expected: readonly ReconstructedComponentSource[
   for (const projection of projections.values()) inputs.add(inspectDirectOperation(inspectComponentRecordProjection(projection).companion).source);
   const resources = new Map<string, {input: SchemaInput; resource: SchemaInput['resources'][number]}>();
   for (const source of inputs) {
+    // @constraints Local symlink aliases still require explicit consumer configuration; HTTP aliases are recorded offline.
     assertCanonicalSourceLayout(source, tick);
     for (const resource of source.resources) {
       tick(); const previous = resources.get(resource.uri);
@@ -348,7 +362,7 @@ function prepareComponentLayout(expected: readonly ReconstructedComponentSource[
   }
   const allResources = [...resources.values()].map(entry => entry.resource).sort((a, b) => a.uri < b.uri ? -1 : a.uri > b.uri ? 1 : 0);
   const files = allResources.filter(resource => new URL(resource.uri).protocol === 'file:');
-  const common = commonSourceDirectory(fileURLToPath(input.root.uri), files.map(resource => fileURLToPath(resource.uri)), tick);
+  const common = files.length ? commonSourceDirectory(fileURLToPath(files[0]!.uri), files.map(resource => fileURLToPath(resource.uri)), tick) : '';
   return {inspection, input, resources, allResources, common};
 }
 
@@ -372,7 +386,13 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
   }
   const root = copied.get(input.root.uri)!;
   const relocated = (uri: string): string => new URL(uri).protocol === 'file:' && copied.has(uri) ? pathToFileURL(copied.get(uri)!).href : uri;
-  const sourceResources = allResources.filter(resource => resource.uri !== input.root.uri).map(resource => ({uri: relocated(resource.uri), file: copied.get(resource.uri)!}));
+  const sourceResources: {uri: string; file: string; canonicalUri?: string}[] = allResources
+    .filter(resource => resource.uri !== input.root.uri || new URL(resource.uri).protocol !== 'file:')
+    .map(resource => ({uri: relocated(resource.uri), file: copied.get(resource.uri)!}));
+  for (const {input: source} of resources.values()) for (const [alias, uri] of source.resourceAliases) {
+    if (alias !== uri && !sourceResources.some(r => r.uri === alias)) sourceResources.push({uri: alias, file: copied.get(uri)!, canonicalUri: relocated(uri)});
+  }
+  sourceResources.sort((a, b) => a.uri < b.uri ? -1 : a.uri > b.uri ? 1 : 0);
   const namespaceLocations = [...namespaces].map(([namespace, location]) => ({namespace,
     location: relocated(resolveResourceUri(location))}));
   tick();
@@ -382,7 +402,9 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
     fs.writeFileSync(file, copyOriginalSchemaResource(resources.get(resource.uri)!.input, resource.uri, amount => inspection.context.budget.chargeWork(amount)));
   }
   fs.writeFileSync(path.join(clientDir, 'source-resources.json'), JSON.stringify(allResources.map(resource => ({originalUri: resource.uri,
-    logicalUri: relocated(resource.uri), file: path.relative(clientDir, copied.get(resource.uri)!).replaceAll('\\', '/'), digest: resource.digest})), null, 2) + '\n');
+    logicalUri: relocated(resource.uri), file: path.relative(clientDir, copied.get(resource.uri)!).replaceAll('\\', '/'), digest: resource.digest,
+    aliases: [...new Set([...resources.values()].flatMap(({input: source}) => [...source.resourceAliases]
+      .filter(([alias, uri]) => uri === resource.uri && alias !== uri).map(([alias]) => alias)))].sort()})), null, 2) + '\n');
   const {doc, routes} = await generateComponentServiceGateway(expected, {clientDir, gatewayDir, openapiFile, basePath, signal: config.signal});
   const operations = [...config.selectors.flatMap(selector => report.operations.filter(o => o.binding && JSON.stringify(o.portType) === JSON.stringify(selector.portType)
     && JSON.stringify(o.binding) === JSON.stringify(selector.binding) && o.operation === selector.operation)), ...report.operations.filter(o => !o.selected)]
@@ -391,7 +413,8 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
     selection: {selector: config.selectors[0]!, selectors: config.selectors, service: config.service, port: config.port}, operations};
   fs.writeFileSync(path.join(clientDir, 'inventory.json'), JSON.stringify(inventory, null, 2) + '\n');
   const component = {source: root, capsules: Object.fromEntries(Object.entries(contracts).map(([name, file]) => [name, path.resolve(clientDir, file)])),
-    sourceResources, sourceOrigins: config.sourceOrigins, ...(namespaceLocations.length ? {namespaceLocations} : {}),
+    sourceResources, sourceOrigins: config.sourceOrigins, ...(new URL(input.root.uri).protocol === 'file:' ? {} : {sourceUri: input.root.uri}),
+    ...(namespaceLocations.length ? {namespaceLocations} : {}),
     ...(projections.size ? {recordSources: expected.filter(item => item.responseProjection).map(item => ({selector: item.contract.selector,
       source: copied.get(inspectDirectOperation(inspectComponentRecordProjection(item.responseProjection!).companion).source.root.uri)!}))} : {}),
     ...((config.standardLibraries?.length || config.recordProjections?.some(item => item.standardLibraries?.length))

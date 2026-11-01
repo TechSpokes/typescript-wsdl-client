@@ -267,7 +267,7 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
     '    result[key] = descriptor.value;', '  }', '  return result;', '}',
     'const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, options) => {',
     "  const outer = data(options, ['clientOptions', 'capsules', 'prefix']);",
-    "  const clientOptions = data(outer.clientOptions, ['localSource', 'fileRoots', 'sourceResources', 'sourceOrigins', 'namespaceLocations', 'standardLibraries', 'recordSources', 'soap']) as unknown as Options;",
+    "  const clientOptions = data(outer.clientOptions, ['localSource', 'fileRoots', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', 'soap']) as unknown as Options;",
     `  const capsules = data(outer.capsules, ${literal(names)});`,
     ...operations.map((operation, index) => `  if (!Object.hasOwn(capsules, ${literal(operation.contract.selector.operation)})) throw new TypeError('Missing operation capsule');
   await fastify.register(operation_${index}, {clientOptions: {...clientOptions, capsule: capsules[${literal(operation.contract.selector.operation)}] as Uint8Array}});`),

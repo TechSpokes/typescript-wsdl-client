@@ -43,7 +43,7 @@ export interface CheckedComponentPlan {
   readonly scope: 'native-component-source-and-mapping';
   readonly ready: boolean;
   readonly executed: false;
-  readonly runtime: 'not-assessed-requires-explicit-endpoint-permission';
+  readonly runtime: 'not-assessed-operation-invocation-required';
   readonly dimensions: {readonly sourceLegality: 'established' | 'disproved' | 'unassessed'; readonly correspondence: 'established' | 'unassessed';
     readonly mapping: 'established' | 'unassessed'; readonly runtime: 'unassessed'};
   readonly inventory: {readonly complete: boolean; readonly unassessed: readonly string[];
@@ -77,7 +77,7 @@ export function formatCheckedComponentPlan(report: CheckedComponentPlan): string
 }
 
 /** Inspect a WSDL using the same native preparation as generation, without writing or dispatching.
- * @param source Local WSDL path, subject to native canonical containment.
+ * @param source WSDL file or HTTP(S) root; declared dependencies remain subject to native policy.
  * @param choices Partial explicit configuration; only missing unambiguous selections are inferred.
  * @returns Diagnostic data; ready is generation readiness, never provider or runtime acceptance.
  * @throws Error Only for unexpected report construction failures.
@@ -158,7 +158,11 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     const root = resolveResourceUri(source);
     const placeholder = {namespace: '', local: 'Unresolved'};
     config = parseCheckedComponentOptions({selectors: [{portType: placeholder, binding: placeholder, operation: 'Unresolved'}], service: placeholder, port: 'Unresolved',
-      fileRoots: new URL(root).protocol === 'file:' ? [path.dirname(fileURLToPath(root))] : [], sourceResources: [], sourceOrigins: [], ...explicit});
+      fileRoots: new URL(root).protocol === 'file:' ? [path.dirname(fileURLToPath(root))] : [], sourceResources: [],
+      sourceOrigins: new URL(root).protocol === 'file:' ? [] : [new URL(root).origin], ...explicit});
+    if (!Object.hasOwn(explicit, 'sourceResources') && new URL(root).protocol !== 'file:' && config.sourceOrigins.length) {
+      config = {...config, sourceOrigins: [...new Set([new URL(root).origin, ...config.sourceOrigins])].sort()};
+    }
     if (config.namespaceLocations?.some(n => n.location === 'REQUIRED_SCHEMA_LOCATION')) throw new TypeError('Resolve REQUIRED_SCHEMA_LOCATION before loading');
     if (new Set(config.namespaceLocations?.map(n => n.namespace)).size !== (config.namespaceLocations?.length ?? 0)) throw new TypeError('Unique namespace locations required');
     const snapshotUris = [root, ...config.sourceResources.map(r => resolveResourceUri(r.uri))];
@@ -169,7 +173,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         namespaceLocations: new Map(config.namespaceLocations?.map(n => [n.namespace, n.location])),
         onDocument: (document: SyntaxDocument) => {documents.push(document);}};
       const prepared = Object.hasOwn(explicit, 'sourceResources') ? await prepareSchemaSnapshotFiles(source, config.sourceResources, loading) : undefined;
-      const input = await loadSemanticSchemaInput(prepared?.source ?? source, prepared?.loading ?? loading);
+      const input = await loadSemanticSchemaInput(config.sourceUri ?? prepared?.source ?? source, prepared?.loading ?? loading);
       complete = true;
       inventory();
       const possible = candidates.filter(c => (!Object.hasOwn(explicit, 'service') || same(c.service, config!.service))
@@ -191,17 +195,21 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         const namespace = syntaxAttribute(child, 'namespace') ?? '';
         if (syntaxAttribute(child, 'schemaLocation') === undefined && !loading.namespaceLocations.has(namespace)
           && !input.schemas.some(s => s.targetNamespace === namespace)
-          && !(namespace === XSD_NAMESPACE && config.standardLibraries?.length)) missing.set(namespace, child.source);
+          && namespace !== XSD_NAMESPACE) missing.set(namespace, child.source);
       }
       for (const [namespace, at] of missing) add('missing-dependency', 'loading', `locationless-import:${namespace}`, 'Supply an authorized schema path for this namespace.',
         `checkedComponents.namespaceLocations[${JSON.stringify(namespace)}].location`, selectors.length ? selectors : operations.flatMap(o => o.binding ? [{portType: o.portType, binding: o.binding, operation: o.operation}] : []), at);
       if (missing.size) config = {...config, namespaceLocations: [...(config.namespaceLocations ?? []), ...[...missing.keys()].sort().map(namespace => ({namespace, location: 'REQUIRED_SCHEMA_LOCATION'}))]};
       if (!blockers.length) {
+        if (!Object.hasOwn(explicit, 'standardLibraries') && input.schemas.some(s => syntaxElements(s.syntax, XSD_NAMESPACE, 'import')
+          .some(n => syntaxAttribute(n, 'namespace') === XSD_NAMESPACE && syntaxAttribute(n, 'schemaLocation') === undefined))) {
+          config = {...config, standardLibraries: ['w3c-xsd10-schema-element-2004-v1']};
+        }
         // @why Machine-derived snapshot bookkeeping is separate from authored schema semantics.
         const known = new Set(config.sourceResources.map(r => resolveResourceUri(r.uri)));
         config = {...config, sourceResources: [...config.sourceResources, ...input.resources.filter(r => r.uri !== input.root.uri && !known.has(r.uri) && new URL(r.uri).protocol === 'file:')
           .map(r => ({uri: r.uri, file: fileURLToPath(r.uri)}))]};
-        native = await prepareComponentStages(source, config);
+        native = await prepareComponentStages(source, config, !prepared && new URL(input.root.uri).protocol !== 'file:' ? input : undefined);
         if (native.expected.length) {
           const fresh = inspectDirectOperation(native.expected[0]!.contract).source;
           if (input.resources.length !== fresh.resources.length || input.resources.some(r => !fresh.resources.some(n => n.uri === r.uri && n.digest === r.digest))) {
@@ -223,17 +231,20 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     else if (error instanceof SchemaLoadingError && error.message === 'Duplicate logical schema snapshot') {
       add('configuration', 'configuration', 'duplicate-logical-snapshot', 'Supply unique logical snapshot identities.', 'checkedComponents.sourceResources');
     } else if (error instanceof SchemaLoadingError) {
+      const http = /^Schema retrieval returned HTTP (\d{3})$/.exec(error.message)?.[1];
       const permission = /authoriz|outside/.test(error.message);
       const category = permission ? 'permission' : error.category === 'invalid-schema' ? 'invalid-source'
         : error.category === 'resource-limit' ? 'resource-limit' : error.category === 'unsupported-capability' ? 'unsupported-capability' : 'missing-dependency';
-      add(category, 'loading', permission ? 'source-permission-required' : error.category, 'Check the source dependency and explicit roots/origins; rerun fresh checks.',
+      add(category, 'loading', permission ? 'source-permission-required' : http ? `metadata-http-${http}` : error.category,
+        http === '401' || http === '403' ? 'Metadata access was denied. Supply accessible independently authorized physical snapshots; SOAP credentials do not authorize metadata.'
+          : 'Check resource availability and explicit roots/origins; permit a declared second origin once in sourceOrigins or supply authorized snapshots, then rerun fresh checks.',
         'checkedComponents.fileRoots/sourceOrigins/sourceResources', selectors, error.source);
     } else add(error instanceof TypeError || error instanceof RangeError ? 'configuration' : 'operational-failure', complete ? 'native-preparation' : 'configuration',
       error instanceof TypeError || error instanceof RangeError ? `invalid-or-unresolved-configuration:${error.message}` : 'native-preparation-failed', 'Correct the configuration or inspect the local I/O failure and rerun.', 'checkedComponents');
     native = undefined;
   }
   const report: CheckedComponentPlan = {version: 'checked-component-plan-v1', model: 'checked-components-v1', scope: 'native-component-source-and-mapping',
-    ready: !!native && !blockers.length, executed: false, runtime: 'not-assessed-requires-explicit-endpoint-permission',
+    ready: !!native && !blockers.length, executed: false, runtime: 'not-assessed-operation-invocation-required',
     dimensions: {sourceLegality: native ? 'established' : blockers.some(b => b.category === 'invalid-source') ? 'disproved' : 'unassessed',
       correspondence: native ? 'established' : 'unassessed', mapping: native ? 'established' : 'unassessed', runtime: 'unassessed'},
     inventory: {complete, unassessed: complete ? [] : ['unloaded documents and their service/binding/operation identities; native whole-source prerequisites'], ...counts},

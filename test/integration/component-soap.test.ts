@@ -41,9 +41,10 @@ beforeAll(async () => {
   ]);
 });
 afterAll(async () => {await rm(directory, {recursive: true, force: true});});
-async function selected(assertion?: string): Promise<DirectOperationContract> {
+async function selected(assertion?: string, endpoint?: string): Promise<DirectOperationContract> {
   const root = await mkdtemp(path.join(directory, 'source-')), file = path.join(root, 'source.wsdl');
-  await writeFile(file, original.replace('<soap:binding style=', (assertion ?? '') + '<soap:binding style='));
+  const source = endpoint === undefined ? original : original.replace('location="http://example.com/import"', `location="${endpoint}"`);
+  await writeFile(file, source.replace('<soap:binding style=', (assertion ?? '') + '<soap:binding style='));
   await writeFile(path.join(root, 'import-relative-types-types.xsd'), schema);
   const result = await selectComponentOperation(file, {portType: {namespace: ns, local: 'ImportPortType'},
     binding: {namespace: ns, local: 'ImportBinding'}, operation: 'SubmitImported'}, {loading: {policy: {fileRoots: [root]}}});
@@ -84,6 +85,20 @@ async function owned<T>(secure: boolean, bytes: string | undefined, work: (state
 }
 
 describe('component SOAP exchange through the existing dependency and native checks', () => {
+  it('requests a missing address without dispatch, then accepts an explicit override without duplicate permission', async () => {
+    const contract = await selected(policy, ''), map = mapping(contract);
+    await owned(true, reply, async server => {
+      const {endpoint, allowEndpoint: _restriction, ...options} = server.options;
+      expect(await exchangeComponentSoap(contract, map, input, options)).toMatchObject({kind: 'unsupported',
+        rule: 'Select one SOAP service/port address or supply an endpoint override'});
+      expect(server.requests).toHaveLength(0);
+      expect(await exchangeComponentSoap(contract, map, input, {...options, endpoint})).toMatchObject({kind: 'soap-response', decoded: {validated: {value: {accepted: true}}}});
+      expect(server.requests).toHaveLength(1);
+      expect(await exchangeComponentSoap(contract, map, input, {...options, endpoint, allowEndpoint: () => false}))
+        .toMatchObject({kind: 'unsupported', rule: 'endpoint authorization'});
+      expect(server.requests).toHaveLength(1);
+    });
+  });
   it('uses the package-root checked runtime with physical imported sources and refuses artifact/source drift', async () => {
     const root = await mkdtemp(path.join(directory, 'runtime-')), file = path.join(root, 'source.wsdl');
     const dependency = path.join(root, 'import-relative-types-types.xsd');
@@ -164,7 +179,7 @@ describe('component SOAP exchange through the existing dependency and native che
       expect(JSON.stringify(invalid)).toBe(before);
       expect(await exchangeComponentSoap(contract, map, input, {...server.options, allowEndpoint: () => false})).toMatchObject({kind: 'unsupported', rule: 'endpoint authorization'});
       expect(await exchangeComponentSoap(contract, map, input, {...server.options, ca: undefined,
-        endpoint: server.options.endpoint.replace('https:', 'http:')})).toMatchObject({kind: 'unsupported', rule: 'policy requires HTTPS'});
+        endpoint: server.options.endpoint!.replace('https:', 'http:')})).toMatchObject({kind: 'unsupported', rule: 'policy requires HTTPS'});
       expect(server.requests).toHaveLength(0);
     });
   });

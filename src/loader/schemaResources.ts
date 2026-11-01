@@ -16,7 +16,7 @@ export type SchemaResourcePolicy = Readonly<{
   /** Exact HTTP(S) origins, including ports. No implicit host or scheme permission. */
   allowedOrigins?: readonly string[];
 }>;
-export type OfflineSchemaResource = Readonly<{bytes: Uint8Array; digest: string}>;
+export type OfflineSchemaResource = Readonly<{bytes: Uint8Array; digest: string; canonicalUri?: string}>;
 export type ResourceMetadata = Readonly<{uri: string; digest: string; byteLength: number}>;
 export type FetchedSchemaResource = ResourceMetadata & Readonly<{bytes: Uint8Array}>;
 
@@ -84,7 +84,7 @@ export class SchemaResourceLoader {
     const snapshots = offline ? new Map<string, OfflineSchemaResource>() : undefined;
     if (offline) for (const [uri, value] of offline) {
       charge?.(256 + uri.length * 32);
-      snapshots!.set(resolveResourceUri(uri), {bytes: value.bytes, digest: value.digest});
+      snapshots!.set(resolveResourceUri(uri), {bytes: value.bytes, digest: value.digest, canonicalUri: value.canonicalUri});
     }
     return new SchemaResourceLoader(roots, [...configuredRoots, ...roots], origins, loadingLimits(overrides), snapshots, charge, signal);
   }
@@ -96,6 +96,8 @@ export class SchemaResourceLoader {
   get metrics(): Readonly<{resources: number; totalBytes: number; ioMs: number}> {
     return Object.freeze({resources: this.resources.size, totalBytes: this.totalBytes, ioMs: this.ioMs});
   }
+
+  get resourceAliases(): ReadonlyMap<string, string> {return new Map(this.aliases);}
 
   private async authorize(uri: string): Promise<string> {
     this.charge?.(1024 + uri.length * 32 + this.roots.length * 256);
@@ -156,9 +158,37 @@ export class SchemaResourceLoader {
           chunks.push(Uint8Array.from(chunk));
         };
         if (this.offline) {
-          checkResourceCount();
           const snapshot = this.offline.get(uri);
           if (!snapshot) throw new SchemaLoadingError("transport", "Schema resource is absent from the offline snapshot");
+          if (snapshot.bytes.byteLength > this.limits.resourceBytes) throw new SchemaLoadingError('resource-limit', 'Decompressed schema byte budget exceeded');
+          const snapshotDigest = (value: OfflineSchemaResource) => {
+            if (controller.signal.aborted || performance.now() - started > budget) throw new SchemaLoadingError('transport', 'Schema I/O deadline exceeded');
+            this.charge?.(64 + value.bytes.byteLength * 8);
+            return createHash('sha256').update(value.bytes).digest('hex');
+          };
+          if (snapshot.canonicalUri) {
+            if (new URL(uri).protocol !== 'file:' && new URL(resolveResourceUri(snapshot.canonicalUri)).protocol === 'file:') throw new SchemaLoadingError('unsupported-capability', 'Remote metadata cannot select local resources');
+            const canonical = await this.authorize(snapshot.canonicalUri);
+            const target = this.offline.get(canonical);
+            if (target && (target.digest !== snapshot.digest || target.bytes.byteLength !== snapshot.bytes.byteLength)) {
+              throw new SchemaLoadingError('invalid-schema', 'Conflicting offline alias bytes');
+            }
+            if (target) {
+              if (target.bytes.byteLength > this.limits.resourceBytes) throw new SchemaLoadingError('resource-limit', 'Decompressed schema byte budget exceeded');
+              if (snapshotDigest(target) !== target.digest) throw new SchemaLoadingError('invalid-schema', 'Offline schema digest mismatch');
+              if (target.canonicalUri && resolveResourceUri(target.canonicalUri) !== canonical) throw new SchemaLoadingError('unsupported-capability', 'Offline aliases must name a canonical snapshot');
+            }
+            uri = canonical;
+            redirectAliases.push(uri);
+            const cached = this.resources.get(this.resourceKeys.get(uri) ?? '');
+            if (cached) {
+              if (snapshot.digest !== cached.digest || snapshotDigest(snapshot) !== snapshot.digest) {
+                throw new SchemaLoadingError('invalid-schema', 'Conflicting offline alias bytes');
+              }
+              for (const alias of redirectAliases) this.aliases.set(alias, uri); return cached;
+            }
+          }
+          checkResourceCount();
           accept(snapshot.bytes);
           const digest = createHash("sha256").update(snapshot.bytes).digest("hex");
           if (digest !== snapshot.digest) throw new SchemaLoadingError("invalid-schema", "Offline schema digest mismatch");
@@ -183,8 +213,9 @@ export class SchemaResourceLoader {
               if (redirects >= this.limits.redirects) throw new SchemaLoadingError("resource-limit", `Schema redirects exceed ${this.limits.redirects}`);
               const location = response.headers.get("location");
               if (!location) throw new SchemaLoadingError("transport", "Schema redirect has no location");
-              uri = await this.authorize(resolveResourceUri(location, uri));
-              if (new URL(uri).protocol === "file:") throw new SchemaLoadingError("unsupported-capability", "HTTP redirects cannot select file resources");
+              const redirected = resolveResourceUri(location, uri);
+              if (new URL(redirected).protocol === "file:") throw new SchemaLoadingError("unsupported-capability", "HTTP redirects cannot select file resources");
+              uri = await this.authorize(redirected);
               redirectAliases.push(uri);
               const redirectedCache = this.resources.get(this.resourceKeys.get(this.aliases.get(uri) ?? uri) ?? "");
               if (redirectedCache) {

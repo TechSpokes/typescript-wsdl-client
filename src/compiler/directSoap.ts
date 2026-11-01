@@ -16,7 +16,7 @@ import type {DirectValueMapping, ComponentValueMapping} from './directValues.js'
 import {decodeDirectXml, encodeDirectXml, decodeComponentXml, encodeComponentXml, DIRECT_XML_LIMITS} from './directCodec.js';
 import type {DirectCodecFailure, DirectDecodedXml, ComponentDecodedXml, DirectXmlLimits} from './directCodec.js';
 import {prepareDirectSoapSource, prepareComponentSoapWsdl, DirectSoapSourceError} from './directSoapSource.js';
-import {isXmlNCName, resolveLexicalQName, SchemaLoadingError} from '../loader/orderedSyntax.js';
+import {isXmlNCName, resolveLexicalQName, SchemaLoadingError, syntaxElements, syntaxAttribute, WSDL_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
 import type {ResolverUsage} from './semanticBudget.js';
 import {decodeComponentRecordXml, inspectComponentRecordProjection} from './componentRecordProjection.js';
@@ -56,7 +56,10 @@ type SoapResult<D> = DirectSoapFailure | Readonly<{
 export type DirectSoapResult = SoapResult<DirectDecodedXml>;
 export type ComponentSoapResult = SoapResult<ComponentDecodedXml>;
 export type ComponentRecordSoapResult = SoapResult<ComponentDecodedXml | ComponentRecordDecodedXml>;
-export interface ComponentSoapOptions extends DirectSoapOptions {
+export interface ComponentSoapOptions extends Omit<DirectSoapOptions, 'endpoint' | 'allowEndpoint'> {
+  readonly endpoint?: string;
+  /** Optional restriction; omission permits only the configured or selected address. */
+  readonly allowEndpoint?: (endpoint: URL) => boolean;
   /** Additional caller-owned PEM trust anchor; certificate and hostname verification remain enabled. */
   readonly ca?: string;
 }
@@ -99,7 +102,7 @@ export async function exchangeDirectSoap(contract: DirectOperationContract, inpu
  * @remarks HTTPS transport with verified server identity is supported. Client certificates, timestamps and
  *   timestamp layouts refuse before I/O. Algorithm suites constrain WS-Security cryptographic operations;
  *   this fragment has no supporting tokens, signature or encryption operations and emits no security header.
- *   Caller endpoint permission remains mandatory. No gateway or source admission is granted by this result.
+ *   Optional caller restrictions narrow the selected/configured endpoint. No gateway or source admission is granted here.
  * @returns A validated response/fault or explicit failure, with owned work and connections closed.
  * @throws TypeError For foreign native handles. Invalid explicit timer/XML capacities throw RangeError.
  */
@@ -174,7 +177,19 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     if (signal !== undefined && !(signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
     const allowEndpoint = options.allowEndpoint;
     check();
-    const config = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot({service: options.service, port: options.port, endpoint: options.endpoint,
+    let selectedEndpoint = options.endpoint;
+    if (profile.component && selectedEndpoint === undefined) {
+      const {source} = inspectDirectOperation(contract);
+      const services = source.documents.flatMap(d => syntaxElements(d.root, WSDL_NAMESPACE, 'service').filter(n =>
+        syntaxAttribute(d.root, 'targetNamespace') === options.service?.namespace && syntaxAttribute(n, 'name') === options.service?.local));
+      const ports = services.flatMap(n => syntaxElements(n, WSDL_NAMESPACE, 'port').filter(p => syntaxAttribute(p, 'name') === options.port));
+      const addresses = ports.flatMap(p => syntaxElements(p, 'http://schemas.xmlsoap.org/wsdl/soap/', 'address'));
+      if (services.length !== 1 || ports.length !== 1 || addresses.length !== 1 || !syntaxAttribute(addresses[0]!, 'location')) {
+        return fail('unsupported', 'Select one SOAP service/port address or supply an endpoint override');
+      }
+      selectedEndpoint = syntaxAttribute(addresses[0]!, 'location');
+    }
+    const config = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot({service: options.service, port: options.port, endpoint: selectedEndpoint,
       timeoutMs: options.timeoutMs ?? (profile.component || isApplicationUnmetered(budget) ? 0 : 15_000), limits: options.limits ?? {},
       ca: options.ca, capabilities: options.capabilities ?? []}));
     if (!Array.isArray(config.capabilities) || config.capabilities.length) return fail('unsupported', 'SOAP capability');
@@ -186,7 +201,8 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
     }
     if (typeof config.endpoint !== 'string' || typeof config.port !== 'string' || !isXmlNCName(config.port)
       || !config.service || typeof config.service.namespace !== 'string' || !isXmlNCName(config.service.local)) return fail('unsupported', 'explicit SOAP selection');
-    const endpoint = new URL(config.endpoint);
+    let endpoint: URL;
+    try {endpoint = new URL(config.endpoint);} catch {return fail('unsupported', 'explicit HTTP(S) endpoint required');}
     if (profile.component) {
       if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password || endpoint.hash || endpoint.search) return fail('unsupported', 'explicit HTTP(S) endpoint required');
       if (config.ca !== undefined && (typeof config.ca !== 'string' || endpoint.protocol !== 'https:')) return fail('unsupported', 'HTTPS PEM trust anchor required');
@@ -198,7 +214,8 @@ async function exchangeSoap<M extends DirectValueMapping | ComponentValueMapping
       }
     } else if (endpoint.protocol !== 'http:' || endpoint.hostname !== '127.0.0.1' || !endpoint.port || endpoint.port === '1'
       || endpoint.username || endpoint.password || endpoint.hash || endpoint.search) return fail('unsupported', 'owned loopback HTTP endpoint required');
-    if (typeof allowEndpoint !== 'function' || allowEndpoint(new URL(endpoint.href)) !== true) return fail('unsupported', 'endpoint authorization');
+    if (!(profile.component && allowEndpoint === undefined)
+      && (typeof allowEndpoint !== 'function' || allowEndpoint(new URL(endpoint.href)) !== true)) return fail('unsupported', 'endpoint authorization');
     const action = contract.binding.action;
 
     if (/[^\x20-\x21\x23-\x7e]|\\/.test(action)) return fail('unsupported', 'unsafe SOAPAction');

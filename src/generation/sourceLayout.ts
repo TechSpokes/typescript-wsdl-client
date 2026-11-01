@@ -23,9 +23,9 @@ export function commonSourceDirectory(root: string, files: readonly string[], ch
   return common;
 }
 
-/** Refuse retrieval aliases before copying rather than emitting an app whose unchanged imports cannot resolve.
- * @remarks Native loading may accept redirects and authorized symlinks. This copied-tree scaffold currently requires
- *   canonical dependency references; it does not invent filesystem links or rewrite original source bytes.
+/** Refuse local retrieval aliases that cannot be copied as a relocatable physical tree.
+ * @remarks HTTP aliases use generated offline URI records. Local symlink aliases remain unsupported;
+ *   this scaffold does not invent filesystem links or rewrite original source bytes.
  * @throws TypeError For unowned source input. Error For a nonrelocatable authenticated dependency or cancellation.
  */
 export function assertCanonicalSourceLayout(input: SchemaInput, check: () => void): void {
@@ -33,7 +33,7 @@ export function assertCanonicalSourceLayout(input: SchemaInput, check: () => voi
   const schemas = new Map(input.schemas.map(schema => [schema.key, schema.documentUri]));
   for (const edge of input.edges) {
     check();
-    if (edge.to && edge.referenceUri && edge.referenceUri !== (schemas.get(edge.to) ?? edge.to)) {
+    if (edge.to && edge.referenceUri && new URL(edge.referenceUri).protocol === 'file:' && edge.referenceUri !== (schemas.get(edge.to) ?? edge.to)) {
       throw new Error('Source relocation refuses import retrieval aliases; supply canonical source references or independently configured runtime inputs');
     }
   }

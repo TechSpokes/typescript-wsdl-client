@@ -30,6 +30,7 @@ export type SchemaInput = Readonly<{
   documents: readonly SyntaxDocument[];
   schemas: readonly SchemaInterpretation[];
   resources: readonly ResourceMetadata[];
+  resourceAliases: ReadonlyMap<string, string>;
   edges: readonly ResolutionEdge[];
   limits: LoadingLimits;
   metrics: Readonly<{resources: number; totalBytes: number; ioMs: number}>;
@@ -56,6 +57,8 @@ export function schemaInterpretationKey(node: SyntaxElement, targetNamespace: st
 }
 
 export type SchemaInputOptions = {
+  /** Generated logical root for independently authorized physical snapshots; confers no I/O authority. */
+  sourceUri?: string;
   /** Diagnostic observation only; partial documents never establish loading completeness or eligibility. */
   onDocument?: (document: SyntaxDocument) => void;
   signal?: AbortSignal;
@@ -81,7 +84,7 @@ export type SchemaInputOptions = {
  * @returns The actual physical root URI and complete offline loading configuration.
  * @throws SchemaLoadingError For non-file physical inputs, duplicates, denied roots or unavailable files.
  */
-export async function prepareSchemaSnapshotFiles(root: string, files: readonly {readonly uri: string; readonly file: string}[],
+export async function prepareSchemaSnapshotFiles(root: string, files: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[],
   options: Omit<SchemaInputOptions, 'offlineResources'>): Promise<{source: string; loading: SchemaInputOptions}> {
   const physical = async (reference: string) => {
     if (new URL(resolveResourceUri(reference)).protocol !== 'file:') throw new SchemaLoadingError('unsupported-capability', 'Physical schema snapshot file required');
@@ -93,7 +96,7 @@ export async function prepareSchemaSnapshotFiles(root: string, files: readonly {
     options.chargeWork?.(1);
     const uri = resolveResourceUri(entry.uri);
     if (offlineResources.has(uri)) throw new SchemaLoadingError('invalid-schema', 'Duplicate logical schema snapshot');
-    offlineResources.set(uri, await physical(entry.file));
+    offlineResources.set(uri, {...await physical(entry.file), canonicalUri: entry.canonicalUri});
   }
   return {source: source.uri, loading: {...options, offlineResources}};
 }
@@ -176,6 +179,9 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
   const referencedDocument = async (reference: string, node: SyntaxElement): Promise<{referenceUri: string; doc: SyntaxDocument}> => {
     try {
       const referenceUri = resolveResourceUri(reference, node.baseUri);
+      if (new URL(node.source.uri).protocol !== 'file:' && new URL(referenceUri).protocol === 'file:') {
+        throw new SchemaLoadingError('unsupported-capability', 'Remote metadata cannot select local resources');
+      }
       return {referenceUri, doc: await getDocument(referenceUri)};
     } catch (error) {
       if (error instanceof SchemaLoadingError && !error.source) throw new SchemaLoadingError(error.category, error.message, node.source);
@@ -263,7 +269,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
   else if (is(root.root, WSDL_NAMESPACE, "definitions")) await visitWsdl(root, 0);
   else throw new SchemaLoadingError("unsupported-capability", "Only WSDL 1.1 or XSD schema inputs are accepted; payload hints cannot resolve schemas", root.root.source);
   const input = Object.freeze({root, documents: Object.freeze([...documents.values()]), schemas: Object.freeze([...schemas.values()]),
-    resources: loader.metadata, edges: Object.freeze(edges), limits: loader.limits, metrics: loader.metrics});
+    resources: loader.metadata, resourceAliases: loader.resourceAliases, edges: Object.freeze(edges), limits: loader.limits, metrics: loader.metrics});
   loadedInputs.add(input);
   if (semanticValues) originalSources.set(input, originalBytes);
   return input;

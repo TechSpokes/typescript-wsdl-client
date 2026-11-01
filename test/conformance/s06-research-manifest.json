@@ -1066,7 +1066,7 @@
         {
           "path": "src/loader/schemaInput.ts",
           "role": "semantic-source",
-          "sha256": "9b31143f059057d1d475bec6ccd2352c23a718aa8a3e0c6c8d897526763d0604"
+          "sha256": "315f7cdefd31b50807a71dde740069fb5c0198d7f22b50a94349bbf77b3a7e2c"
         },
         {
           "path": "test/research/re01/predicate-dependencies.test.ts",
@@ -1566,7 +1566,7 @@
         {
           "path": "src/loader/schemaResources.ts",
           "role": "semantic-source",
-          "sha256": "3b7eb77a29c7d5e5607ff8ce3226007999718abbe080b6ab2b0c36c7247738f8"
+          "sha256": "e7039183fa5cf9f85ce6a0be63b53d1ab9950c56ed84425de6c4c32b1301cc58"
         },
         {
           "path": "src/loader/resolutionDepth.ts",

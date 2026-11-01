@@ -15,7 +15,7 @@ describe('bounded copied source layouts', () => {
     expect(() => commonSourceDirectory('C:\\models\\service.wsdl', ['C:\\shared\\types.xsd'], () => {throw new Error('cancelled');}, path.win32)).toThrow('cancelled');
   });
 
-  it('detects an authenticated retrieval alias before copying and refuses forged source reports', async () => {
+  it('retains authenticated HTTP aliases for offline copying and refuses forged source reports', async () => {
     await mkdir('tmp/conformance/source-layout', {recursive: true});
     const root = await mkdtemp(path.resolve('tmp/conformance/source-layout/case-'));
     const schema = await readFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd');
@@ -31,7 +31,8 @@ describe('bounded copied source layouts', () => {
       const original = await readFile('test/conformance/fixtures/xsd/imports/import-relative-types.wsdl', 'utf8');
       await writeFile(file, original.replace('schemaLocation="import-relative-types-types.xsd"', `schemaLocation="${origin}/alias.xsd"`));
       const aliased = await loadSemanticSchemaInput(file, {policy: {fileRoots: [root], allowedOrigins: [origin]}});
-      expect(() => assertCanonicalSourceLayout(aliased, () => {})).toThrow('retrieval aliases');
+      expect(() => assertCanonicalSourceLayout(aliased, () => {})).not.toThrow();
+      expect(aliased.resourceAliases.get(origin + '/alias.xsd')).toBe(origin + '/actual.xsd');
       expect(() => assertCanonicalSourceLayout({...aliased}, () => {})).toThrow(TypeError);
       await writeFile(file, original.replace('schemaLocation="import-relative-types-types.xsd"', `schemaLocation="${origin}/actual.xsd"`));
       const direct = await loadSemanticSchemaInput(file, {policy: {fileRoots: [root], allowedOrigins: [origin]}});

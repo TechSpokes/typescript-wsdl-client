@@ -12,6 +12,14 @@ These contracts define the intended `xsd10-faithful-v1` profile, not the shipped
 
 ## Input and canonical graph: S02-D01
 
+### W2 intake and endpoint amendment
+
+For opt-in `checked-components-v1`, the explicitly supplied HTTP(S) root expresses intent to acquire its declared same-origin graph through the existing loader. One nonempty `sourceOrigins` project decision adds exact additional origins; explicit empty permission and closed offline snapshots remain restrictive. Every redirect is checked, remote-to-local transitions refuse, and namespace names are not guessed as schema locations. Generated logical root/alias-to-physical records preserve original bytes and final bases; records and artifacts grant neither native legality nor later I/O permission. Regeneration acquires fresh metadata, while runtime independently rechecks authorized physical snapshots without downloading metadata.
+
+Component runtime protocol `checked-component-runtime-v2` derives the selected service/port address or uses an explicit override only on operation invocation. Optional endpoint restrictions narrow that destination, including empty deny-all; redirects do not widen it. TLS, source policy, source/artifact freshness, binding/action and native value checks remain unchanged. Generation, startup and scaffold tests execute no business operations. This supersedes the component fragment's mandatory duplicate endpoint permission below; the direct preview's loopback/permission contract and 1.x legacy defaults remain unchanged. See [checked gateway setup](../checked-gateway.md#url-intake-and-endpoint-intent) for controls, regeneration and scaffold ownership.
+
+### Source graph contract
+
 Preserve ordered element/text syntax, expanded names, every element's in-scope namespaces, source URI, line/column and source digest before compiling. The syntax adapter belongs to #171; controlled resolution belongs to #172. DTDs, external entities and payload-driven schema fetching are forbidden.
 
 Resolve relative references against the declaring node's effective base URI, initially the final retrieval URI after policy-checked redirects. #171 preserves inherited `xml:base`; #172 resolves it before each import/include, under the same scheme/host/root policy. Initially support local files and HTTP(S) through an explicit allow policy; reject other schemes. A user-authorized root does not authorize arbitrary imports: local imports stay within configured roots, and remote redirects and every import are rechecked against host/scheme policy.

@@ -22,8 +22,9 @@ export interface DirectClientOptions {
   readonly budget?: SemanticBudgetLimits;
   readonly soap: DirectSoapOptions;
 }
-export interface ComponentClientOptions extends DirectClientOptions {
-  readonly sourceResources: readonly {readonly uri: string; readonly file: string}[];
+export interface ComponentClientOptions extends Omit<DirectClientOptions, 'soap'> {
+  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[];
+  readonly sourceUri?: string;
   readonly sourceOrigins: readonly string[];
   readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
   readonly standardLibraries?: readonly string[];
@@ -63,7 +64,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
     const entryFailure = (): DirectClientFailure => ({kind: 'unsupported', rule: 'data-only client options required', usage: {nodes: 0, work: 0}});
     if (!options || typeof options !== 'object' || types.isProxy(options)
       || ![null, Object.prototype].includes(Object.getPrototypeOf(options) as object | null)) return entryFailure();
-    const allowed = ['localSource', 'fileRoots', 'capsule', 'budget', 'soap', ...(component ? ['sourceResources', 'sourceOrigins', 'namespaceLocations', 'standardLibraries', 'recordSources'] : [])];
+    const allowed = ['localSource', 'fileRoots', 'capsule', 'budget', 'soap', ...(component ? ['sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources'] : [])];
     const owned: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
     for (const key of Reflect.ownKeys(options)) {
       const descriptor = Object.getOwnPropertyDescriptor(options, key);
@@ -126,7 +127,8 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
         for (const resource of sources.resources) {
           check();
           if (!resource || typeof resource.uri !== 'string' || typeof resource.file !== 'string'
-            || Object.keys(resource).length !== 2) return fail('unsupported', 'explicit source resource required');
+            || Object.keys(resource).some(k => !['uri', 'file', 'canonicalUri'].includes(k))
+            || resource.canonicalUri !== undefined && typeof resource.canonicalUri !== 'string') return fail('unsupported', 'explicit source resource required');
         }
         const namespaceLocations = new Map<string, string>();
         for (const location of sources.locations) {
@@ -136,7 +138,7 @@ async function executeClient(expectedBase64: string, input: unknown, options: Di
           namespaceLocations.set(location.namespace, location.location);
         }
         const prepared = await prepareSchemaSnapshotFiles(options.localSource, sources.resources, {policy: {
-          fileRoots: options.fileRoots, allowedOrigins: sources.origins}, limits: directLoadingLimits(budget), namespaceLocations, signal,
+          fileRoots: options.fileRoots, allowedOrigins: sources.origins}, limits: directLoadingLimits(budget), namespaceLocations, signal, sourceUri: supplied.sourceUri,
           chargeWork: amount => {check(); budget.chargeWork(amount);}});
         const fresh = await reconstructComponentSourceCapsuleInRequest(bytes, prepared.source, {loading: prepared.loading, signal,
           standardLibraries: sources.standards, recordSources: sources.records}, budget);

@@ -29,12 +29,13 @@ type Success = {
   readonly fault: {readonly name: string; readonly code: Name; readonly string: string; readonly actor?: string}});
 
 type ComponentOptions = Omit<Options, 'soap'> & {
-  readonly sourceResources: readonly {readonly uri: string; readonly file: string}[];
+  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[];
+  readonly sourceUri?: string;
   readonly sourceOrigins: readonly string[];
   readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
   readonly standardLibraries?: readonly string[];
   readonly recordSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly source: string}[];
-  readonly soap: Options['soap'] & {readonly ca?: string};
+  readonly soap: Omit<Options['soap'], 'endpoint' | 'allowEndpoint'> & {readonly ca?: string; readonly endpoint?: string; readonly allowEndpoint?: (endpoint: URL) => boolean};
 };
 
 function dataOptions(options: unknown, allowed: readonly string[]): boolean {
@@ -65,7 +66,8 @@ export const checkedDirectRuntimeV1: Readonly<{
 
 /** Component injection protocol over the shared checked source, artifact and SOAP runtime.
  * @remarks Caller-authorized physical source resources are read independently of embedded artifact bytes.
- *   Endpoint permission and TLS trust are explicit; this entry accepts no diagnostic budget or deadline defaults.
+ *   Component runtime v2 derives endpoint intent; explicit restrictions and TLS trust still apply.
+ *   This entry accepts no diagnostic budget or deadline defaults.
  * @returns Native-validated normal/fault values or explicit refusal. No gateway admission is issued here.
  */
 export const checkedComponentRuntimeV1: Readonly<{
@@ -76,7 +78,7 @@ export const checkedComponentRuntimeV1: Readonly<{
   async execute(expectedBase64: string, input: unknown, options: ComponentOptions, version: typeof COMPONENT_CLIENT_RUNTIME_VERSION): Promise<Failure | Success> {
     if (version !== COMPONENT_CLIENT_RUNTIME_VERSION) return Object.freeze({kind: 'incompatible-artifact',
       rule: 'generated-runtime-version', repair: COMPONENT_CLIENT_RUNTIME_REPAIR, usage: Object.freeze({nodes: 0, work: 0})});
-    if (!dataOptions(options, ['localSource', 'fileRoots', 'capsule', 'soap', 'sourceResources', 'sourceOrigins', 'namespaceLocations', 'standardLibraries', 'recordSources'])) {
+    if (!dataOptions(options, ['localSource', 'fileRoots', 'capsule', 'soap', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources'])) {
       return Object.freeze({kind: 'unsupported', rule: 'data-only checked component options required', usage: Object.freeze({nodes: 0, work: 0})});
     }
     return componentClientRuntime.execute(expectedBase64, input, options);

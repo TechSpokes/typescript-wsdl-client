@@ -447,7 +447,8 @@ export async function reconstructComponentSourceCapsuleInRequest(bytes: Uint8Arr
     let responseProjection: ComponentRecordProjection | undefined;
     if (capsule.projection) {
       const source = capsule.projection.source;
-      const companion = await selectPinnedComponentSource(source.resources, source.selector, source.libraries, recordSource!, options, budget, allowed);
+      const companion = await selectPinnedComponentSource(source.resources, source.selector, source.libraries, recordSource!,
+        {...options, loading: {...options.loading, sourceUri: undefined}}, budget, allowed);
       const projection = createComponentRecordProjection(contract, companion, capsule.projection.spec, {signal: options.signal});
       if (projection.kind !== 'component-record-projection') throw new Stop(projection.kind === 'resource-limit' || projection.kind === 'cancelled'
         ? projection.kind : 'incompatible-artifact', projection.rule);
@@ -470,7 +471,7 @@ async function selectPinnedComponentSource(resources: readonly ComponentResource
   const offline = options.loading.offlineResources ? new Map(options.loading.offlineResources) : undefined;
   offline?.set(physical.uri, physical);
   const loading = {...options.loading, ...(offline ? {offlineResources: offline} : {})};
-  const selected = await selectComponentOperationInRequest(physical.uri, selector, {loading, signal: options.signal,
+  const selected = await selectComponentOperationInRequest(loading.sourceUri ?? physical.uri, selector, {loading, signal: options.signal,
     standardLibraries: libraries.map(acquireStandardSchemaLibrary)}, budget);
   if (selected.kind !== 'selected') throw new Stop(selected.kind === 'loading-refused' ? 'missing-authority'
     : selected.kind === 'selection-refused' ? 'incompatible-artifact' : selected.kind, selected.rule);

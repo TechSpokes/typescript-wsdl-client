@@ -1,4 +1,4 @@
-import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
+import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 import {mkdir, mkdtemp, readFile, rm, writeFile, symlink} from 'node:fs/promises';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -21,6 +21,7 @@ beforeAll(async () => {
     readFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd', 'utf8')]);
 });
 afterAll(async () => {await rm(directory, {recursive: true, force: true});});
+afterEach(() => {vi.restoreAllMocks();});
 
 async function setup() {
   const root = await mkdtemp(path.join(directory, 'case-')), sources = path.join(root, 'inputs'), project = path.join(root, 'project');
@@ -51,7 +52,7 @@ describe('public component service pipeline', () => {
     await expect(runGenerationPipeline({...options, checkedComponents: undefined})).rejects.toBeInstanceOf(CheckedPlanningError);
     await expect(readFile(path.join(project, 'client/client.ts'))).rejects.toMatchObject({code: 'ENOENT'});
   });
-  it('generates and runs an explicitly scoped record gateway without merging same-name source declarations', async () => {
+  it.each(['local', 'url'])('generates and runs a %s scoped record gateway without merging same-name source declarations', async sourceMode => {
     const {sources, project, options} = await setup(), namespace = 'urn:owned:wrapper';
     const name = (local: string) => ({namespace, local});
     const file = path.join(sources, 'wrapper.wsdl'), companion = path.join(sources, 'records.wsdl');
@@ -64,7 +65,14 @@ describe('public component service pipeline', () => {
           payloadPath: [name('Envelope')], recordPath: [name('Records'), name('Record')], opaqueExclusions: [
             {path: [{namespace: 'http://www.w3.org/2001/XMLSchema', local: 'schema'}], reason: 'standard-schema-metadata' as const},
             {path: [name('Envelope')], reason: 'wrapper-declaration-universe' as const}]}}]};
-    const pipeline = {...options, wsdl: file, checkedComponents: configuration};
+    const remote = 'https://metadata.invalid/wrapper.wsdl';
+    const {sourceResources: _snapshots, ...remoteConfiguration} = configuration;
+    if (sourceMode === 'url') {
+      const originalFetch = globalThis.fetch, bytes = await readFile(file, 'utf8');
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => String(input) === remote ? new Response(bytes) : originalFetch(input, init));
+    }
+    const pipeline = {...options, wsdl: sourceMode === 'url' ? remote : file,
+      checkedComponents: sourceMode === 'url' ? {...remoteConfiguration, sourceOrigins: [new URL(remote).origin]} : configuration};
     await runGenerationPipeline(pipeline);
     const document = JSON.parse(await readFile(path.join(project, 'openapi.json'), 'utf8')) as {paths: Record<string, {post: Record<string, unknown>}>};
     expect(document.paths['/api/v2/catalog/Fetch']!.post['x-response-projection']).toMatchObject({delivery: 'buffered', retainedValue: 'complete-companion-payload',
@@ -98,7 +106,7 @@ describe('public component service pipeline', () => {
       recordSources: {selector: typeof selector; source: string}[]; standardLibraries: string[]};
     const example = JSON.parse(before) as Config;
     const config = {...example, localSource: path.resolve(project, example.localSource), fileRoots: example.fileRoots.map(root => path.resolve(project, root)),
-      sourceResources: example.sourceResources.map(resource => ({uri: pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
+      sourceResources: example.sourceResources.map(resource => ({uri: /^https?:/.test(resource.uri) ? resource.uri : pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
       recordSources: example.recordSources.map(record => ({...record, source: path.resolve(project, record.source)})), endpoint, allowedEndpoints: [endpoint], caFile: ca};
     expect(config.standardLibraries).toEqual(['w3c-xsd10-schema-element-2004-v1']);
     const {buildServer} = await import(pathToFileURL(path.join(project, 'server.ts')).href) as {buildServer(config: object): Promise<import('fastify').FastifyInstance>};

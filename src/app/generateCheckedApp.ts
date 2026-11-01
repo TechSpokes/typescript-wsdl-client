@@ -1,7 +1,7 @@
 /**
- * Emits an editable standalone host for the opt-in checked direct gateway.
+ * Emits an editable standalone host for the opt-in checked gateways.
  * @since 1.1.6
- * @constraints Source and endpoint permission remain explicit runtime configuration.
+ * @constraints Physical source permission remains explicit; component endpoint restrictions are optional.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +20,8 @@ export interface GenerateCheckedAppOptions {
   readonly component?: {
     readonly source: string;
     readonly capsules: Readonly<Record<string, string>>;
-    readonly sourceResources: readonly {readonly uri: string; readonly file: string}[];
+    readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[];
+    readonly sourceUri?: string;
     readonly sourceOrigins: readonly string[];
     readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
     readonly standardLibraries?: readonly string[];
@@ -67,11 +68,12 @@ import {selection, type Options} from ${JSON.stringify(clientImport)};
 export interface CheckedGatewayConfig {
   readonly localSource: string;
   readonly fileRoots: readonly string[];
-  readonly endpoint: string;
-  readonly allowedEndpoints: readonly string[];
+  readonly endpoint${component ? '?' : ''}: string;
+  readonly allowedEndpoints${component ? '?' : ''}: readonly string[];
   ${component ? `readonly capsuleFiles?: Readonly<Record<string, string>>;
   readonly sourceResources: Options['sourceResources'];
   readonly sourceOrigins: Options['sourceOrigins'];
+  readonly sourceUri?: string;
   readonly namespaceLocations?: Options['namespaceLocations'];
   readonly standardLibraries?: Options['standardLibraries'];
   readonly recordSources?: Options['recordSources'];
@@ -89,18 +91,17 @@ const projectRoot = fs.existsSync(path.join(moduleDir, 'package.json')) ? module
 
 /** Builds an encapsulated gateway host; listening is a separate caller action. */
 export async function buildServer(config: CheckedGatewayConfig) {
-  const supportedKeys = ['localSource', 'fileRoots', 'endpoint', 'allowedEndpoints', ${component ? "'capsuleFiles', 'sourceResources', 'sourceOrigins', 'namespaceLocations', 'standardLibraries', 'recordSources', 'caFile'" : "'capsuleFile'"}, 'host', 'port',
+  const supportedKeys = ['localSource', 'fileRoots', 'endpoint', 'allowedEndpoints', ${component ? "'capsuleFiles', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', 'caFile'" : "'capsuleFile'"}, 'host', 'port',
     'timeoutMs', 'limits', 'capabilities', 'signal'];
   if (config && typeof config === 'object' && Reflect.ownKeys(config).some(key => typeof key !== 'string' || !supportedKeys.includes(key))) {
     throw new Error('Unsupported checked gateway configuration field');
   }
   if (!config || typeof config.localSource !== 'string' || !Array.isArray(config.fileRoots)
     || !config.fileRoots.length || !config.fileRoots.every(root => typeof root === 'string')
-    || typeof config.endpoint !== 'string' || !Array.isArray(config.allowedEndpoints)
-    || !config.allowedEndpoints.every(endpoint => typeof endpoint === 'string')) {
+    || ${component ? "config.endpoint !== undefined && typeof config.endpoint !== 'string' || config.allowedEndpoints !== undefined && (!Array.isArray(config.allowedEndpoints) || !config.allowedEndpoints.every(endpoint => typeof endpoint === 'string'))" : "typeof config.endpoint !== 'string' || !Array.isArray(config.allowedEndpoints) || !config.allowedEndpoints.every(endpoint => typeof endpoint === 'string')"}) {
     throw new Error('Explicit localSource, fileRoots, endpoint and allowedEndpoints configuration is required');
   }
-  const allowed = new Set(config.allowedEndpoints.map(endpoint => new URL(endpoint).href));
+  const allowed = ${component ? 'config.allowedEndpoints === undefined ? undefined : ' : ''}new Set(config.allowedEndpoints${component ? '?' : ''}.map(endpoint => new URL(endpoint).href));
 ${component ? `  if (!Array.isArray(config.sourceResources) || !Array.isArray(config.sourceOrigins)) throw new Error('Explicit source snapshots and origins required');
   const capsules = Object.fromEntries(Object.entries(config.capsuleFiles ?? ${JSON.stringify(capsuleFiles)}).map(([name, file]) => [name, fs.readFileSync(path.resolve(projectRoot, file))]));
 ` : ''}  const selected = JSON.parse(selection) as {service: {namespace: string; local: string}; port: string};
@@ -109,14 +110,15 @@ ${component ? `  if (!Array.isArray(config.sourceResources) || !Array.isArray(co
     fileRoots: config.fileRoots,
     ${component ? `sourceResources: config.sourceResources,
     sourceOrigins: config.sourceOrigins,
+    ...(config.sourceUri === undefined ? {} : {sourceUri: config.sourceUri}),
     ...(config.namespaceLocations ? {namespaceLocations: config.namespaceLocations} : {}),
     ...(config.standardLibraries ? {standardLibraries: config.standardLibraries} : {}),
     ...(config.recordSources ? {recordSources: config.recordSources} : {}),` : `capsule: fs.readFileSync(config.capsuleFile ?? path.resolve(projectRoot, ${JSON.stringify(capsule)})),`}
     soap: {
       service: selected.service,
       port: selected.port,
-      endpoint: config.endpoint,
-      allowEndpoint: endpoint => allowed.has(endpoint.href),
+      ${component ? '...(config.endpoint === undefined ? {} : {endpoint: config.endpoint}),' : 'endpoint: config.endpoint,'}
+      ${component ? '...(allowed === undefined ? {} : {allowEndpoint: (endpoint: URL) => allowed.has(endpoint.href)}),' : 'allowEndpoint: endpoint => allowed.has(endpoint.href),'}
       ...(config.signal ? {signal: config.signal} : {}),
       ...(config.timeoutMs === undefined ? {} : {timeoutMs: config.timeoutMs}),
       ...(config.limits === undefined ? {} : {limits: config.limits}),
@@ -150,6 +152,7 @@ async function start(): Promise<void> {
     ${component ? `sourceResources: Array.isArray(supplied.sourceResources) ? supplied.sourceResources.map(resource => ({
       uri: /^[A-Za-z][A-Za-z0-9+.-]*:/.test(resource.uri) ? resource.uri : pathToFileURL(path.resolve(base, resource.uri)).href,
       file: path.resolve(base, resource.file),
+      ...(resource.canonicalUri === undefined ? {} : {canonicalUri: resource.canonicalUri}),
     })) : supplied.sourceResources,
     ...(supplied.namespaceLocations ? {namespaceLocations: supplied.namespaceLocations.map(location => ({namespace: location.namespace,
       location: /^[A-Za-z][A-Za-z0-9+.-]*:/.test(location.location) ? location.location : pathToFileURL(path.resolve(base, location.location)).href}))} : {}),
@@ -181,13 +184,15 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       strict: true, esModuleInterop: true, skipLibCheck: true, rootDir: '.', outDir: 'dist', types: ['node']},
       include: ['**/*.ts'], exclude: ['dist', 'node_modules']}, null, 2) + '\n',
     'checked-gateway.example.json': JSON.stringify({localSource: source, fileRoots: [sourceRoot],
-      ...(component ? {sourceResources: component.sourceResources.map(resource => ({uri: new URL(resource.uri).protocol === 'file:' ? relative(root, fileURLToPath(resource.uri)) : resource.uri, file: relative(root, resource.file)})),
+      ...(component ? {sourceResources: component.sourceResources.map(resource => ({uri: new URL(resource.uri).protocol === 'file:' ? relative(root, fileURLToPath(resource.uri)) : resource.uri, file: relative(root, resource.file),
+        ...(resource.canonicalUri === undefined ? {} : {canonicalUri: resource.canonicalUri})})),
+        ...(component.sourceUri === undefined ? {} : {sourceUri: component.sourceUri}),
         sourceOrigins: component.sourceOrigins,
         ...(component.standardLibraries ? {standardLibraries: component.standardLibraries} : {}),
         ...(component.recordSources ? {recordSources: component.recordSources.map(record => ({selector: record.selector, source: relative(root, record.source)}))} : {}),
         ...(component.namespaceLocations ? {namespaceLocations: component.namespaceLocations.map(location => ({namespace: location.namespace,
-          location: new URL(location.location).protocol === 'file:' ? relative(root, fileURLToPath(location.location)) : location.location}))} : {})} : {}), endpoint: 'http://127.0.0.1:8081/soap',
-      allowedEndpoints: [], host: options.host ?? '127.0.0.1', port: options.port ?? 3000}, null, 2) + '\n',
+          location: new URL(location.location).protocol === 'file:' ? relative(root, fileURLToPath(location.location)) : location.location}))} : {})} : {endpoint: 'http://127.0.0.1:8081/soap', allowedEndpoints: []}),
+      host: options.host ?? '127.0.0.1', port: options.port ?? 3000}, null, 2) + '\n',
     '.gitignore': 'node_modules/\ndist/\nchecked-gateway.local.json\n',
     'README.md': `# Checked direct gateway\n\nThis opt-in preview supports the qualified local UTF-8, flat string/int32/Boolean document/literal SOAP 1.1 grammar.\nOnly explicitly authorized owned IPv4-loopback SOAP endpoints are supported.\n\n## Install and run\n\nRun these commands from this project directory:\n\n\`\`\`bash\nnpm install\nnpm run typecheck\nnpm test\nnpm run build\n\`\`\`\n\nCopy \`checked-gateway.example.json\` to \`checked-gateway.local.json\` and explicitly configure the local source, allowed source roots, owned SOAP endpoint and exact \`allowedEndpoints\` list.\nPaths in this configuration resolve relative to the configuration file.\nThe empty example allowlist authorizes no SOAP endpoint.\n\n\`\`\`bash\nCHECKED_GATEWAY_CONFIG=checked-gateway.local.json npm start\n\`\`\`\n\nIn PowerShell, set \`$env:CHECKED_GATEWAY_CONFIG = 'checked-gateway.local.json'\`, then run \`npm start\`.\nHealth is served at \`GET /health\`; the generated contract documentation is served at \`GET /openapi.json\`.\nUse the POST route listed in OpenAPI for operation calls.\n\n## Ownership and assurance\n\nClient, capsule, copied WSDL, OpenAPI and gateway files are generator-owned.\nThis README, server, package/configuration and generated test scaffolds are preserved on regeneration unless force is explicitly selected.\nGenerated tests check scaffolding and invalid-input refusal; they do not supply business-value or SOAP wire oracles.\nIndependent HTTP/SOAP wire and declared-fault verification is separate qualification evidence.\nWSDL supplies neither credentials nor expected business values.\nCalls reauthorize the supplied local source and endpoint and validate native request, response and fault values before HTTP success.\n\n## Explicit caller controls\n\nConfiguration may set \`timeoutMs\`, XML \`limits\`, \`capabilities\`, and \`capsuleFile\`; ordinary calls have no implicit execution deadline.\nRequested capabilities pass unchanged to the checked runtime, which refuses unsupported transport/security requirements.\nUnknown configuration fields are refused rather than ignored.\nProgrammatic hosts can pass an \`AbortSignal\` to \`buildServer\`.\nDo not enable arbitrary remote endpoints or infer broader XSD/provider support from this bounded preview.\n`,
   };
@@ -207,7 +212,7 @@ npm test
 npm run build
 \`\`\`
 
-Copy \`checked-gateway.example.json\` to \`checked-gateway.local.json\`. Configure the owned SOAP endpoint and exact \`allowedEndpoints\` list. The empty example list grants no endpoint permission. Then start in PowerShell:
+Copy \`checked-gateway.example.json\` to \`checked-gateway.local.json\`. Calls derive the selected WSDL address; optional \`endpoint\` overrides it. Optional \`allowedEndpoints\` restricts the destination, and an explicit empty list denies all. Then start in PowerShell:
 
 \`\`\`powershell
 $env:CHECKED_GATEWAY_CONFIG = 'checked-gateway.local.json'
@@ -220,7 +225,7 @@ Health is at \`GET /health\`; all generated routes are listed at \`GET /openapi.
 
 The configuration explicitly names \`localSource\`, \`fileRoots\`, \`sourceResources\` and \`sourceOrigins\`. Resource entries map original logical import URIs to actual snapshot files. Paths resolve relative to the configuration file; logical HTTP metadata origins still require permission. Missing snapshots refuse instead of fetching metadata or using capsule-embedded bytes. Optional \`namespaceLocations\` supplies locations for imports without schemaLocation.
 
-The runtime reads physical sources independently and validates native requests, responses and declared faults. WSDL addresses grant no endpoint permission. HTTPS policies require verified TLS; \`caFile\` can supply a test CA without disabling certificate or hostname checks. Unsupported security requirements and capabilities refuse before dispatch. Optional \`timeoutMs\` and XML \`limits\` are caller controls; there is no implicit execution deadline or diagnostic work quota. Programmatic hosts can supply an \`AbortSignal\`.
+The runtime reads physical sources independently and validates native requests, responses and declared faults. The selected address supplies routing intent on invocation; startup and generated tests make no business SOAP calls. HTTPS policies require verified TLS; \`caFile\` can supply a test CA without disabling certificate or hostname checks. Unsupported security requirements and capabilities refuse before dispatch. Optional \`timeoutMs\` and XML \`limits\` are caller controls; there is no implicit execution deadline or diagnostic work quota. Programmatic hosts can supply an \`AbortSignal\`.
 
 Optional \`standardLibraries\` explicitly permits fixed standard declarations. Scoped record responses also require \`recordSources\`, which pairs each outer operation's full selector with its independent physical companion WSDL. These contexts remain separate; the companion service is never invoked. Scoped responses retain the complete companion payload and validate required schema metadata before omitting it from JSON. OpenAPI records the projection's explicit exclusions and buffered delivery scope. Missing schema metadata is not defaulted, and no streaming behavior is implied.
 
