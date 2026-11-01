@@ -64,6 +64,12 @@ The gateway transforms JSON HTTP requests into SOAP calls and returns JSON respo
 
 Next: [Gateway Guide](gateway-guide.md) for integration details, then [Migration Playbook](migration-playbook.md) for the full modernization workflow
 
+### I want to try source-backed checked generation
+
+From version 1.1.6, `pipeline --model checked-components-v1` opts into the checked component preview. It derives unambiguous selections and supported structured mappings from a WSDL file or URL, acquires declared dependencies, and emits a client, OpenAPI, gateway, app and tests. The existing pipeline remains the default when `--model` is omitted.
+
+Start with [Try Opt-in Checked Generation](checked-generation.md) for a bundled installed trial, endpoint configuration, missing-schema recovery and feedback instructions. Supported contracts get native request/response/fault checks; unsupported capabilities refuse rather than bypassing validation. This preview is buffered and separate from the legacy streaming workflow below.
+
 ### I need to stream large SOAP responses
 
 Some SOAP services return payloads that are too large or too slow to buffer in memory. Opt selected operations into streaming with a small JSON config and the `--stream-config` flag. Operations not listed keep their buffered behavior, so existing output stays byte-for-byte unchanged.

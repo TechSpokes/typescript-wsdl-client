@@ -77,5 +77,7 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
   }
   const root = shape(projection.root);
   const id = 'urn:checked-component:shape:' + createHash('sha256').update(JSON.stringify({selector: contract.selector, role})).digest('hex');
-  return {type: root.type, declarations, schema: {$id: id, ...root.schema, definitions}};
+  // @why Nested identified fault schemas must not expose a root-only $ref that recurses during Ajv resource resolution.
+  const rootSchema = root.schema.$ref ? {allOf: [root.schema]} : root.schema;
+  return {type: root.type, declarations, schema: {$id: id, ...rootSchema, definitions}};
 }

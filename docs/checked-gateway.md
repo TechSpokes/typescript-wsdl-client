@@ -1,4 +1,6 @@
-# Installed checked gateway preview
+# Checked gateway reference
+
+The checked component and direct previews are opt-in from version 1.1.6. Start with [Try Opt-in Checked Generation](checked-generation.md) for an installed component trial and feedback instructions. This reference describes the separate configuration, compatibility and coverage boundaries; legacy defaults remain unchanged.
 
 ## Component service generation
 
@@ -119,7 +121,7 @@ Scoped artifacts use a distinct version from ordinary component artifacts. Gener
 
 ## Direct preview
 
-The unreleased opt-in `checked-direct-v1` pipeline generates a complete runnable project from an explicitly selected, qualified local WSDL operation. The default pipeline remains legacy. This preview reuses `checkedDirectRuntimeV1` from the package root and the existing native contract, mapping, XML codec and SOAP adapter; diagnostic JSON and OpenAPI never authorize execution.
+The opt-in `checked-direct-v1` pipeline generates a complete runnable project from an explicitly selected, qualified local WSDL operation. The default pipeline remains legacy. This narrower preview reuses `checkedDirectRuntimeV1` from the package root and the existing native contract, mapping, XML codec and SOAP adapter; diagnostic JSON and OpenAPI never authorize execution.
 
 ## Supported scope
 
@@ -129,18 +131,18 @@ Native source eligibility, dated-XSD correspondence, operation/service/port/bind
 
 ## Generate through the installed CLI
 
-Until publication is separately authorized, build and pack the candidate checkout, then install that tarball in an independent tooling directory:
-
-```bash
-npm run build
-npm pack --pack-destination /absolute/path/to/tooling
-```
-
-In the independent tooling directory:
+For the released version, install in an independent tooling directory:
 
 ```bash
 npm init -y
-npm install /absolute/path/to/tooling/techspokes-typescript-wsdl-client-1.1.5.tgz
+npm install --save-dev @techspokes/typescript-wsdl-client@1.1.6
+npm install soap
+```
+
+For development before publication, build and pack the candidate checkout, then install its tarball in that independent directory instead of requesting an unpublished npm version:
+
+```bash
+npm install /absolute/path/to/tooling/techspokes-typescript-wsdl-client-1.1.6.tgz
 ```
 
 Use the bundled [synthetic Forecast source](examples/checked-forecast.wsdl), installed at `node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl`. Its WSDL address authorizes no endpoint and must never be contacted. This is the unchanged Forecast seed used by the independent wire fixtures, not real-provider coverage.
@@ -170,14 +172,16 @@ The checked model accepts these output, scaffold and selection controls only; un
 
 ## Install and start the generated project
 
-Run from `.generated/forecast`. For an unreleased candidate, the first install must supply the candidate tarball so the runtime matches the generator:
+Run from `.generated/forecast`. Use the matched released runtime:
 
 ```bash
-npm install /absolute/path/to/tooling/techspokes-typescript-wsdl-client-1.1.5.tgz
+npm install
 npm run typecheck
 npm test
 npm run build
 ```
+
+When testing an unpublished candidate, supply its `1.1.6` tarball to the first `npm install` instead; generator, runtime and artifacts must match.
 
 Copy `checked-gateway.example.json` to `checked-gateway.local.json`. Set `endpoint` to your owned loopback SOAP test service and add that exact URL to `allowedEndpoints`; an empty list authorizes no requests. The generated copied WSDL is selected by `localSource`, and `fileRoots` must explicitly authorize its directory. Runtime paths resolve relative to this configuration file.
 

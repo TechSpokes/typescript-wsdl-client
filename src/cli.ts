@@ -680,11 +680,11 @@ if (rawArgs[0] === "pipeline") {
     .scriptName("wsdl-tsc pipeline")
     .usage("$0 --wsdl-source <file|url> [--client-dir <dir>] [--openapi-file <path>] [--gateway-dir <dir> --gateway-service-name <slug> --gateway-version-prefix <slug>] [--catalog-file <path>] [options]")
     .option("wsdl-source", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
-    .option("model", {type: "string", choices: ["legacy", "checked-direct-v1", "checked-components-v1"], default: "legacy", desc: "Generation model; components derive unambiguous local selections, direct requires configuration"})
+    .option("model", {type: "string", choices: ["legacy", "checked-direct-v1", "checked-components-v1"], default: "legacy", desc: "Generation model; components derive unambiguous WSDL selections, direct requires configuration"})
     .option("checked-config", {type: "string", desc: "Optional component choices, extra metadata origins or closed offline snapshots; required for checked-direct-v1"})
-    .option('checked-report', {type: 'string', desc: 'Write versioned component planning JSON on success or refusal'})
-    .option('checked-draft', {type: 'string', desc: 'Write minimal component missing-schema configuration when needed'})
-    .option('force-checked-files', {type: 'boolean', default: false, desc: 'Explicitly replace requested planning report/draft files'})
+    .option("checked-report", {type: "string", desc: "Write versioned component planning JSON on success or refusal"})
+    .option("checked-draft", {type: "string", desc: "Write minimal component missing-schema configuration when needed"})
+    .option("force-checked-files", {type: "boolean", default: false, desc: "Explicitly replace requested planning report/draft files"})
     // Per-artifact outputs
     .option("client-dir", {
       type: "string",

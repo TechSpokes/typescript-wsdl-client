@@ -1,6 +1,24 @@
 {
   "references": [
     {
+      "kind": "fluid",
+      "source": "docs/checked-generation.md",
+      "output": "references/checked-generation.md",
+      "sections": [
+        "## Install and try the bundled contract",
+        "## Check and start the generated project",
+        "## Try your WSDL file or URL",
+        "## Resolve a missing schema or ambiguous selection",
+        "## Configure and invoke an owned SOAP backend",
+        "## Programmatic planning and generation",
+        "## Supported scope and direction",
+        "## Send useful feedback",
+        "## Upgrade and regenerate"
+      ],
+      "linkPolicy": "rewrite",
+      "required": true
+    },
+    {
       "kind": "evergreen",
       "source": "agent-skill/evergreen/architecture.md",
       "output": "references/architecture.md",

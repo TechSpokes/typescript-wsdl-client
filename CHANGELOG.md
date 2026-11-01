@@ -9,6 +9,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.6] - 2026-11-01
+
+- docs(preview): explain opt-in checked generation, installed trials, endpoint setup, supported scope and feedback.
+
+- fix(client): preserve simple-content response shapes, decode boolean attributes and reject conversion failures.
+
+- fix(gateway): compile nested structured fault schemas without recursive reference resolution.
+
 - fix(deps): patch redirect header handling and override vulnerable development glob dependencies with compatibility coverage.
 
 - feat(pipeline): acquire checked WSDL URL dependencies automatically and derive component SOAP endpoint intent with optional restrictions.

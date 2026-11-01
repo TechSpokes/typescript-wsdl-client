@@ -210,6 +210,14 @@ The amendment supersedes prior mandatory per-invocation resource-accounting clai
 
 Preserve the current legacy default for the 1.x line. The planned architecture release train is 2.0.0; earlier faithful evaluation is limited to unreleased opt-in development artifacts unless a reviewed ADR amendment authorizes an earlier supported release. A default public-shape switch requires that major release, integrated S17/S18 evidence and a separately approved activation PR. S02 merges docs/probes only; it neither announces a new release nor changes the default.
 
+### Version 1.1.6 opt-in preview availability amendment
+
+The maintainer's November 1, 2026 release dispatch authorizes version 1.1.6 to distribute the bounded `checked-components-v1` and `checked-direct-v1` previews through the existing pipeline and package-root runtime. This reviewed amendment supplies the earlier-release exception above for their independently qualified scopes only. The [trial guide](../checked-generation.md) and [checked gateway reference](../checked-gateway.md) describe their distinct supported inputs, runtime permissions and compatibility requirements.
+
+Legacy remains the 1.x default, and `admitted:false` remains the full-profile marker. Preview availability does not admit the full faithful profile, establish universal research completeness, qualify production providers/security or activate checked streaming. Wider owners and full-profile S17/S18 evidence remain open; a default public-shape activation still requires the separately approved 2.0.0 major-release gate.
+
+### Legacy and faithful routing
+
 | Input / requested mode | Selected behavior | Diagnostic and first owner |
 |---|---|---|
 | Legacy unversioned flattened catalog / legacy | Supported through explicit legacy adapter | #174 route as legacy; preserve existing names/options |

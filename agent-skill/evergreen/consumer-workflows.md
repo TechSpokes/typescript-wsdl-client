@@ -19,9 +19,19 @@ Use `pipeline` when the project needs a typed SOAP client, OpenAPI contract, RES
 5. Run the consumer project's typecheck and tests.
 6. Commit the WSDL reference, configuration files, generated output policy, and tests according to the consumer project's conventions.
 
+## Opt-in Checked Component Trial
+
+Use `pipeline --model checked-components-v1` only when the consumer chooses the bounded checked preview. Start from WSDL sources, not a legacy catalog. Unambiguous sources need no authored selectors or resource maps; additional metadata origins and genuinely missing schema locations still require explicit input.
+
+Generate client, OpenAPI, gateway, app and tests together with explicit output paths. Inspect the component planning report and operation inventory, then install, typecheck and test the generated project. Runtime configuration keeps generated source snapshots; the selected WSDL endpoint or explicit override supplies routing intent, while optional restrictions narrow it, including empty deny-all.
+
+Generation, startup and scaffold tests do not execute business SOAP. Independently specified owned-service wire checks and provider acceptance remain separate work. Unsupported source, wildcard or required declaration cases must not be routed through legacy behavior to bypass checked validation. Preserve explicit companion configuration and buffered scope where used.
+
+Keep generator, runtime, sources and checked artifacts matched when regenerating; preserve consumer-owned scaffold customizations unless replacement is deliberate. Legacy streaming and `checked-direct-v1` retain their separate contracts. Load `references/checked-generation.md` for the installed trial, feedback path and boundaries.
+
 ## Typed SOAP Client Only
 
-Use `client` when the project only needs TypeScript access to SOAP operations.
+Use the legacy `client` command when the project only needs TypeScript access to SOAP operations. For the checked component path, use the full checked pipeline rather than a standalone legacy command.
 
 Generate the client into a stable directory and consume the exported operations interface in application code or tests. Keep wrapper code outside the generated client directory.
 

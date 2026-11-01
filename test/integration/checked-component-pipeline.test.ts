@@ -3,6 +3,8 @@ import {mkdir, mkdtemp, readFile, rm, writeFile, symlink} from 'node:fs/promises
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createServer} from 'node:https';
+import {createServer as createHttpServer} from 'node:http';
+import {Ajv} from 'ajv';
 import {once, EventEmitter} from 'node:events';
 import type {Socket} from 'node:net';
 import {runGenerationPipeline} from '../../src/index.js';
@@ -40,6 +42,55 @@ async function setup() {
 }
 
 describe('public component service pipeline', () => {
+  it('starts the bundled component trial and validates structured fault values without reference recursion', async () => {
+    const {project, options} = await setup();
+    await runGenerationPipeline({...options, checkedComponents: undefined, wsdl: path.resolve('docs/examples/checked-forecast.wsdl'),
+      gateway: {...options.gateway!, serviceSlug: 'forecast', versionSlug: 'v1'}});
+    const schemas = JSON.parse(await readFile(path.join(project, 'gateway/routes/0/schemas.json'), 'utf8')) as Record<string, object>;
+    const validate = new Ajv({strict: true, coerceTypes: false, useDefaults: false, removeAdditional: false}).compile(schemas.fault!);
+    const expected = {fault: {name: 'ForecastError', code: {namespace: soap, local: 'Server'}, string: 'Owned fault'},
+      value: {code: 'OWNED', message: 'Independent fault detail'}};
+    expect(validate(expected)).toBe(true);
+    expect(validate({...expected, value: {code: 7, message: 'Independent fault detail'}})).toBe(false);
+    expect(validate({...expected, value: {code: 'OWNED'}})).toBe(false);
+    expect(validate({...expected, value: {...expected.value, extra: 'undeclared'}})).toBe(false);
+    const scope = path.join(project, 'node_modules/@techspokes'); await mkdir(scope, {recursive: true});
+    await symlink(process.cwd(), path.join(scope, 'typescript-wsdl-client'), 'junction');
+    const example = JSON.parse(await readFile(path.join(project, 'checked-gateway.example.json'), 'utf8')) as {
+      localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string}[]; sourceOrigins: string[];
+    };
+    let calls = 0, malformed = false;
+    const failures: string[] = [], sockets = new Set<Socket>();
+    const upstream = createHttpServer(async (request, response) => {
+      let body = ''; for await (const chunk of request) body += String(chunk); calls++;
+      if (request.headers.soapaction !== '"urn:checked:GetForecast"' || !body.includes('Paris') || !body.includes('>2<')) failures.push('Owned Forecast request mismatch');
+      response.writeHead(500, {'Content-Type': 'text/xml'});
+      response.end(`<s:Envelope xmlns:s="${soap}"><s:Body><s:Fault><faultcode>s:Server</faultcode><faultstring>Owned fault</faultstring><detail>`
+        + `<f:ForecastFault xmlns:f="urn:checked:forecast"><f:code>OWNED</f:code>${malformed ? '' : '<f:message>Independent fault detail</f:message>'}`
+        + '</f:ForecastFault></detail></s:Fault></s:Body></s:Envelope>');
+    });
+    upstream.on('connection', socket => {sockets.add(socket); socket.once('close', () => sockets.delete(socket));});
+    upstream.listen(0, '127.0.0.1'); await once(upstream, 'listening');
+    const address = upstream.address(); if (!address || typeof address === 'string') throw new Error('Owned port required');
+    let app: import('fastify').FastifyInstance | undefined;
+    try {
+      const {buildServer} = await import(pathToFileURL(path.join(project, 'server.ts')).href) as {buildServer(config: object): Promise<import('fastify').FastifyInstance>};
+      app = await buildServer({...example, localSource: path.resolve(project, example.localSource), fileRoots: example.fileRoots.map(root => path.resolve(project, root)),
+        sourceResources: example.sourceResources.map(resource => ({...resource, uri: pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
+        endpoint: `http://127.0.0.1:${address.port}/forecast`});
+      expect((await app.inject({method: 'GET', url: '/health'})).json()).toEqual({status: 'ok'});
+      expect((await app.inject({method: 'GET', url: '/openapi.json'})).statusCode).toBe(200);
+      const post = (payload: unknown) => app!.inject({method: 'POST', url: '/v1/forecast/GetForecast', payload: payload as object});
+      expect((await post({city: 'Paris', days: 'invalid'})).statusCode).toBe(400); expect(calls).toBe(0);
+      const fault = await post({city: 'Paris', days: 2});
+      expect(fault.statusCode).toBe(502); expect(fault.json()).toEqual(expected); expect(calls).toBe(1);
+      malformed = true;
+      const refused = await post({city: 'Paris', days: 2});
+      expect(refused.statusCode).toBe(502); expect(refused.json()).not.toHaveProperty('value'); expect(calls).toBe(2);
+      expect(failures).toEqual([]);
+    } finally {await app?.close(); for (const socket of sockets) socket.destroy(); upstream.close(); await once(upstream, 'close');}
+  }, 60_000);
+
   it('reports authorized dependency aliases before planning readiness or artifact writes', async () => {
     const {sources, project, options} = await setup();
     const actual = path.join(sources, 'schemas'); await mkdir(actual);
