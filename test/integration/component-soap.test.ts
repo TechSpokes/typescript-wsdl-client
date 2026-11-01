@@ -129,7 +129,12 @@ describe('component SOAP exchange through the existing dependency and native che
       await runOwnedNode([path.resolve('node_modules/typescript/bin/tsc'), '-p', config], {cwd: process.cwd(), timeoutMs: 60_000});
       const plugin = (await import(pathToFileURL(path.join(gatewayDir, 'plugin.ts')).href)).default as FastifyPluginAsync<{clientOptions: typeof options}>;
       const gateway = Fastify();
-      gateway.post('/host', {schema: {body: {type: 'object', properties: {n: {type: 'integer'}, mode: {type: 'string', default: 'host'}}, additionalProperties: false}}}, request => request.body);
+      let observedHostBody: unknown;
+      gateway.post('/host', {schema: {body: {type: 'object', properties: {n: {type: 'integer'}, mode: {type: 'string', default: 'host'}}, additionalProperties: false}}},
+        (request, response) => {
+          observedHostBody = request.body;
+          return response.type('application/json').header('X-Content-Type-Options', 'nosniff').send({host: 'ok'});
+        });
       try {
         await gateway.register(plugin, {clientOptions: options});
         const url = await gateway.listen({host: '127.0.0.1', port: 0});
@@ -141,7 +146,11 @@ describe('component SOAP exchange through the existing dependency and native che
         server.setResponse(reply);
         expect((await post('/v1/import/submit', {payload: {name: 23}})).status).toBe(400);
         expect((await post('/v1/import/submit', [input])).status).toBe(400);
-        expect(await (await post('/host', {n: '7', extra: true})).json()).toEqual({n: 7, mode: 'host'});
+        const hostResponse = await post('/host', {n: '7', extra: true});
+        expect(hostResponse.headers.get('content-type')).toContain('application/json');
+        expect(hostResponse.headers.get('x-content-type-options')).toBe('nosniff');
+        expect(await hostResponse.json()).toEqual({host: 'ok'});
+        expect(observedHostBody).toEqual({n: 7, mode: 'host'});
       } finally {await gateway.close();}
       expect(server.requests).toHaveLength(3);
       expect(await execute(input, {...options, capsule: Buffer.from('different artifact')})).toMatchObject({kind: 'incompatible-artifact', rule: 'generated-capsule-mismatch'});

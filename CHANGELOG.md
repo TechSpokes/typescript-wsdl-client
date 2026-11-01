@@ -11,6 +11,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [1.1.6] - 2026-11-01
 
+- ci(reference): hand copied container evidence to the host runner without widening private file permissions.
+
+- test(gateway): observe host-policy normalization directly and return fixed JSON from its control fixture.
+
 - docs(preview): explain opt-in checked generation, installed trials, endpoint setup, supported scope and feedback.
 
 - fix(client): preserve simple-content response shapes, decode boolean attributes and reject conversion failures.
