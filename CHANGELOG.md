@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(deps): patch redirect header handling and override vulnerable development glob dependencies with compatibility coverage.
+
 - feat(pipeline): acquire checked WSDL URL dependencies automatically and derive component SOAP endpoint intent with optional restrictions.
 
 - feat(pipeline): derive checked WSDL selections and guide missing-schema recovery through fresh native planning.
