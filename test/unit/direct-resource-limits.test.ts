@@ -1,10 +1,61 @@
 import {describe, expect, it} from 'vitest';
 import {dataOwnership, createDataOwnership, DataOwnershipLimitError} from '../../src/compiler/dataOwnership.js';
-import {createSemanticBudget, createApplicationBudget, isApplicationUnmetered} from '../../src/compiler/semanticBudget.js';
+import {createSemanticBudget, createSemanticProfiler, createApplicationBudget, isApplicationUnmetered} from '../../src/compiler/semanticBudget.js';
 import {DIRECT_VALUE_LIMITS} from '../../src/compiler/directValues.js';
 import {DIRECT_XML_LIMITS} from '../../src/compiler/directCodec.js';
 
 describe('data ownership without synthetic resource prices', () => {
+  it('observes relative profiling targets while preserving explicit hard limits', () => {
+    const {budget, measurement} = createSemanticProfiler({maxWork: 100, maxNodes: 2});
+    budget.chargeWork(1000);
+    expect(budget.exhausted()).toBe(false);
+    expect(measurement()).toMatchObject({targetWork: 100, aboveTarget: true, usage: {work: 1079}});
+    expect(measurement().relativeWork).toBe(10.79);
+    budget.reserveNodes(2);
+    expect(budget.guard(() => budget.reserveNodes(1))).toMatchObject({kind: 'resource-limit', limit: 'nodes'});
+    const enforced = createSemanticBudget({maxWork: 100});
+    expect(enforced.guard(() => enforced.chargeWork(1000))).toMatchObject({kind: 'resource-limit', limit: 'work'});
+  });
+  it('reuses only completed deep freezes within the same owner', () => {
+    let work = 0;
+    const owner = createDataOwnership(amount => {work += amount ?? 1;});
+    const child = {text: 'x'.repeat(1000)};
+    const parent = Object.freeze({child});
+    owner.freeze(parent);
+    expect(Object.isFrozen(child)).toBe(true);
+    const initial = work;
+    owner.freeze(parent);
+    expect(work - initial).toBeLessThan(initial / 10);
+    const other = createDataOwnership(amount => {work += amount ?? 1;});
+    const beforeOther = work;
+    other.freeze(parent);
+    expect(work - beforeOther).toBe(initial);
+  });
+
+  it('does not cache a shallow-frozen parent after an interrupted descendant traversal', () => {
+    let interrupt = true;
+    let calls = 0;
+    const owner = createDataOwnership(() => {if (interrupt && ++calls === 70) throw new Error('cancelled');});
+    const leaf = {value: 1};
+    const root = {children: Array.from({length: 30}, () => ({leaf}))};
+    expect(() => owner.freeze(root)).toThrow('cancelled');
+    interrupt = false;
+    owner.freeze(root);
+    expect(Object.isFrozen(leaf)).toBe(true);
+    expect(Object.isFrozen(root.children)).toBe(true);
+  });
+
+  it('skips inherited getters and refuses own accessors without invoking either', () => {
+    let reads = 0;
+    const inherited = Object.create({get inherited() {reads++; return {};}}) as {child: object};
+    inherited.child = {};
+    const owner = createDataOwnership(() => {});
+    owner.freeze(inherited);
+    expect(Object.isFrozen(inherited.child)).toBe(true);
+    expect(() => owner.freeze({get own() {reads++; return {};}})).toThrow(TypeError);
+    expect(reads).toBe(0);
+  });
+
   it('does not apply profiling quotas or collect counters during normal execution', () => {
     const normal = createApplicationBudget();
     expect(isApplicationUnmetered(normal)).toBe(true);

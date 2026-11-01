@@ -26,6 +26,26 @@ async function altered(text: string) {
   return assessSchemaSource(source, {loading: {policy: {fileRoots: [directory]}}});
 }
 describe('checked source assessment', () => {
+  it('keeps an unsupplied locationless dependency inconclusive and checks explicitly supplied native sources', async () => {
+    const directory = path.resolve('test/conformance/fixtures/xsd/resolution/namespace-locations');
+    const source = path.join(directory, 'root.xsd');
+    const missing = await assessSchemaSource(source, {loading: {policy: {fileRoots: [directory]}}});
+    expect(missing.schema).toBe('inconclusive');
+    expect(missing.schemaEligible).toBe(false);
+    expect(missing.admitted).toBe(false);
+    expect(missing.obligations.some(value => value.rule === 'reference-resolution' && value.status === 'inconclusive')).toBe(true);
+    const supplied = await assessSchemaSource(source, {loading: {
+      policy: {fileRoots: [directory]},
+      namespaceLocations: new Map([['urn:library', path.join(directory, 'library.xsd')], ['urn:common', path.join(directory, 'common.xsd')]]),
+    }});
+    expect(supplied.resources).toHaveLength(3);
+    expect(supplied.schema).not.toBe('disproved');
+    expect(supplied.components.length).toBeGreaterThan(0);
+    expect(supplied.correspondence).toBe('inconclusive');
+    expect(supplied.schemaEligible).toBe(false);
+    expect(supplied.admitted).toBe(false);
+  });
+
   it('establishes a nontrivial ordered/repeated scalar schema while refusing generation admission', async () => {
     const report = await assess(path.join(root, 'direct.xsd'));
     expect(report.schema).toBe('established');

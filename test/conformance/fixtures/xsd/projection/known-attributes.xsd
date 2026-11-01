@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:known-attributes" targetNamespace="urn:known-attributes" elementFormDefault="qualified">
+  <xs:attribute name="enabled" type="xs:boolean"/>
+  <xs:complexType name="Record">
+    <xs:sequence><xs:element name="Text" type="xs:string"/></xs:sequence>
+    <xs:attribute name="count" type="xs:int" use="required"/>
+    <xs:attribute ref="t:enabled"/>
+  </xs:complexType>
+  <xs:complexType name="Envelope">
+    <xs:sequence><xs:element name="Item" type="t:Record" minOccurs="0" maxOccurs="unbounded"/></xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="AttributesOnly"><xs:attribute name="id" type="xs:string" use="required"/></xs:complexType>
+  <xs:complexType name="EmptySequence"><xs:sequence/></xs:complexType>
+  <xs:complexType name="Collision"><xs:sequence><xs:element name="id" type="xs:string"/></xs:sequence><xs:attribute name="id" type="xs:string"/></xs:complexType>
+  <xs:complexType name="Defaulted"><xs:attribute name="id" type="xs:string" default="default"/></xs:complexType>
+  <xs:complexType name="Fixed"><xs:attribute name="id" type="xs:string" fixed="fixed"/></xs:complexType>
+  <xs:complexType name="Wildcard"><xs:anyAttribute processContents="skip"/></xs:complexType>
+  <xs:complexType name="NamespaceCollision"><xs:attribute ref="t:enabled"/><xs:attribute name="enabled" type="xs:boolean"/></xs:complexType>
+  <xs:element name="Request" type="t:Envelope"/>
+  <xs:element name="AttributesOnly" type="t:AttributesOnly"/>
+  <xs:element name="EmptySequence" type="t:EmptySequence"/>
+  <xs:element name="Collision" type="t:Collision"/>
+  <xs:element name="Defaulted" type="t:Defaulted"/>
+  <xs:element name="Fixed" type="t:Fixed"/>
+  <xs:element name="Wildcard" type="t:Wildcard"/>
+  <xs:element name="NamespaceCollision" type="t:NamespaceCollision"/>
+</xs:schema>

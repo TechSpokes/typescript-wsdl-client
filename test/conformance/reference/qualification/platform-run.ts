@@ -4,6 +4,7 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync, existsSync } from 'node
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { release } from 'node:os';
+import { handOffQualificationOutput, qualificationOutputOwner } from './output-ownership.ts';
 const script = 'test/conformance/reference/qualification/platform-run.ts';
 const enforcement = 'test/conformance/reference/qualification/environment.ts';
 const git = (...args: string[]) => execFileSync('git', args, {encoding: 'utf8'}).trim();
@@ -84,12 +85,14 @@ function container(major: string): void {
     command('docker', ['pull', image]);
     writeFileSync(resolve(directory, 'image.json'), execFileSync('docker', ['image', 'inspect', image], {encoding: 'utf8'}));
     const args = ['run', '--rm', '--mount', `type=bind,src=${checkout},dst=/source,readonly`, '--mount', `type=bind,src=${directory},dst=/output`, '--workdir', '/work'];
+    if (process.getuid && process.getgid) args.push('-e', `QUALIFICATION_OUTPUT_UID=${process.getuid()}`, '-e', `QUALIFICATION_OUTPUT_GID=${process.getgid()}`);
     const certificate = process.env.CODEX_PROXY_CERT;
     if (certificate) args.push('--mount', `type=bind,src=${certificate},dst=/run/proxy-ca.pem,readonly`, '-e', 'NODE_EXTRA_CA_CERTS=/run/proxy-ca.pem');
     args.push(image, 'node', '/source/' + script, '--bootstrap');
     command('docker', args);
 }
 function bootstrap(): void {
+    const owner = qualificationOutputOwner(process.env.QUALIFICATION_OUTPUT_UID, process.env.QUALIFICATION_OUTPUT_GID);
     command('apt-get', ['update']);
     command('apt-get', ['install', '-y', '--no-install-recommends', 'git', 'ca-certificates']);
     cpSync('/source', '/work', {recursive: true});
@@ -97,7 +100,13 @@ function bootstrap(): void {
     command('git', ['config', '--global', '--add', 'safe.directory', '/work']);
     let failure: unknown;
     try { inside(); } catch (error) { failure = error; }
-    finally { cpSync('/work/tmp/conformance', '/output/results', {recursive: true}); }
+    finally {
+        cpSync('/work/tmp/conformance', '/output/results', {recursive: true});
+        if (owner) {
+            console.log('Handing copied qualification evidence to the host runner');
+            handOffQualificationOutput('/output/results', owner);
+        }
+    }
     if (failure) throw failure;
 }
 const mode = process.argv[2];

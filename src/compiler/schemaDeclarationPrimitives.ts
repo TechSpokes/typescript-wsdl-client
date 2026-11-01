@@ -1,6 +1,6 @@
 import type {SemanticTypeReference as Reference, SemanticTypeDependency, OriginalGeneratedScalarReference} from './semanticTypeReference.js';
 /** Declaration-local properties only. EDC and containing type validity are separate. */
-import type {ElementNode, AttributeNode, GraphNode, NodeId} from './canonicalGraph.js';
+import type {ElementNode, AttributeNode, GraphNode, NodeId, ValueConstraint} from './canonicalGraph.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import {isXmlNCName, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
@@ -26,6 +26,21 @@ export type DeclarationValuePropertyResult = DeclarationResult | Readonly<{kind:
   scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}>;
 const nameAttribute = (node: GraphNode, name: string): string | undefined =>
   node.declaredAttributes.find(a => a.name.namespace === '' && a.name.local === name)?.value;
+
+/** Map declaration VALUE separately from an attribute use's source default/fixed syntax.
+ * @remarks Under 2004 Structures 3.2.2 a local source attribute declaration has no value constraint;
+ *   the same syntax maps to the attribute use. Global source and explicit raw component values remain declared values.
+ * @throws TypeError For a copied or foreign declaration.
+ */
+export function declarationValueConstraint(context: SemanticContext, node: ElementNode | AttributeNode): ValueConstraint | undefined {
+  assertSemanticContext(context); context.budget.chargeWork(32);
+  const field = node && typeof node === 'object' ? Object.getOwnPropertyDescriptor(node, 'id') : undefined;
+  if (!field || !('value' in field) || typeof field.value !== 'string') throw new TypeError('Authentic declaration required');
+  const found = context.lookup(field.value);
+  if (found.kind !== 'found' || found.node !== node) throw new TypeError('Authentic declaration required');
+  const source = context.originalDeclarationSource(node.id);
+  return node.kind === 'attribute' && source?.kind === 'attribute' && source.identity.kind === 'scoped' ? undefined : node.value;
+}
 /** Shared actual VALUE assessment; selecting a mixed value's STRING is not FULL of its complex owner. */
 function constraintValue(context: SemanticContext, node: ElementNode | AttributeNode, reference: Reference): ConstraintResult {
   const constraint = node.value!;
@@ -142,7 +157,7 @@ export function checkDeclaration(context: SemanticContext, id: NodeId): Declarat
       remember(description.obligations);typed.add(description.typeDependencies);
     }
     let constraint: AssessedSchemaOperand | undefined;
-    if (node.value) {
+    if (declarationValueConstraint(context, node)) {
       let reference: Reference = type;
       if (selected.kind === 'builtin' && selected.name.local === 'anyType') reference = {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anySimpleType'}};
       else if (selected.kind === 'component' && selected.node.kind === 'complexType') {

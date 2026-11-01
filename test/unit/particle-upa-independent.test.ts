@@ -25,6 +25,15 @@ async function setup(file = 'upa-independent.xsd', budget = createSemanticBudget
 }
 
 describe('independent declared particle legality and attribution', () => {
+  it('checks disjoint leaf alphabets without enumerating nested counter configurations', async () => {
+    const budget = createSemanticBudget({maxWork: 1_000_000});
+    const request = await setup('upa-disjoint-independent.xsd', budget);
+    const content = deriveActualComplexContent(request.actual, named('Disjoint'));
+    if (content.kind !== 'checked') throw new Error('Expected effective content');
+    expect(checkComplexParticleContent(request.actual, content.view)).toMatchObject({kind: 'checked', value: true});
+    expect(budget.exhausted()).toBe(false);
+  });
+
   for (const maxWork of [1_000_000, 2_000_000]) {
     it.each([['HugeFixed', true], ['HugeOptional', false], ['HugeNarrow', false], ['HugeOuterRepeat', false], ['HugeFixedGroup', true], ['HugeNarrowGroup', false]] as const)
       (`keeps %s exact symbolic with explicit ${maxWork} shared work units`, async (name, expected) => {

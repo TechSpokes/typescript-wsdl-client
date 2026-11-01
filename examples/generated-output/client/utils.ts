@@ -9,6 +9,8 @@
 export interface WeatherDataTypes {
   /** Maps type names to lists of property names that should be treated as XML attributes */
   Attributes: Record<string, readonly string[]>;
+  /** Maps attributes to their projected scalar types for XML response conversion. */
+  AttributeTypes?: Record<string, Readonly<Record<string, string>>>;
   /** Maps type names to their child element types for recursive processing */
   ChildrenTypes: Record<string, Readonly<Record<string, string>>>;
   /** Maps type names to repeated child properties; optional for custom metadata compatibility. */
@@ -32,6 +34,7 @@ export const WEATHER_DATA_TYPES: WeatherDataTypes = {
     "GetCityWeatherByZIP": [],
     "GetCityWeatherByZIPResponse": []
   },
+  "AttributeTypes": {},
   "ChildrenTypes": {
     "WeatherDescription": {
       "WeatherID": "number",

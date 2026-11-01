@@ -163,7 +163,8 @@ describe('untouched SOURCE simple-content VALUE properties', () => {
     const s = await seed(), c = s.child(true, {consume: true});
     const full = checkDeclaration(c.context, c.required.id); assert.equal(full.kind, 'checked');
     assert.ok(full.typeDependencies.some(item => item.contextId === c.context.contextId && item.type.kind === 'component' && item.type.id === id('F')));
-    assert.equal(c.proof.kind, 'unresolved'); assert.equal(c.proof.rule, 'component-content-properties'); assert.equal(c.proof.component, id('F'));
+    assert.equal(c.proof.kind, 'candidate-rejected', JSON.stringify(c.proof));
+    assert.equal(c.proof.rule, 'cos-nonambig'); assert.equal(c.proof.component, id('Z'));
   });
 
   it.each([false, true])('rejects a VALUE violating the genuine scalar pattern with RAW facade %s', async rawFacade => {

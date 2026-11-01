@@ -31,6 +31,7 @@ export function resolveSemanticType(context: SemanticContext, reference: Semanti
     if (found.name.namespace !== XSD_NAMESPACE || !isBuiltinType(found.name.local)) throw new TypeError('Unknown builtin type');
     return Object.freeze({kind: 'builtin', name: found.name, identity: Object.freeze({kind: 'builtin', name: found.name})});
   }
+  if (found.kind === 'standard-element') return Object.freeze({kind: 'wrong-role', reference: budget.freeze(budget.snapshot(reference)), component: found.declaration.id});
   if (found.kind !== 'found') return Object.freeze({kind: found.kind, reference: budget.freeze(budget.snapshot(reference))});
   if (context.originalSourceComponentAbsent(found.node.id) || found.node.kind !== 'simpleType' && found.node.kind !== 'complexType')
     return Object.freeze({kind: 'wrong-role', reference: budget.freeze(budget.snapshot(reference)), component: found.node.id});

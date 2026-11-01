@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recovery:upa" elementFormDefault="qualified">
+  <xs:complexType name="Disjoint">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:sequence minOccurs="0" maxOccurs="9007199254740993">
+        <xs:element name="first" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="second" type="xs:string"/>
+          <xs:element name="third" type="xs:string"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:any namespace="urn:other" processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

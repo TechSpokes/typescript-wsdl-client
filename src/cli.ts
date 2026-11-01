@@ -680,8 +680,11 @@ if (rawArgs[0] === "pipeline") {
     .scriptName("wsdl-tsc pipeline")
     .usage("$0 --wsdl-source <file|url> [--client-dir <dir>] [--openapi-file <path>] [--gateway-dir <dir> --gateway-service-name <slug> --gateway-version-prefix <slug>] [--catalog-file <path>] [options]")
     .option("wsdl-source", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
-    .option("model", {type: "string", choices: ["legacy", "checked-direct-v1"], default: "legacy", desc: "Generation model; checked-direct-v1 is a scoped opt-in preview"})
-    .option("checked-config", {type: "string", desc: "Explicit native selection and source-root JSON for checked-direct-v1"})
+    .option("model", {type: "string", choices: ["legacy", "checked-direct-v1", "checked-components-v1"], default: "legacy", desc: "Generation model; components derive unambiguous WSDL selections, direct requires configuration"})
+    .option("checked-config", {type: "string", desc: "Optional component choices, extra metadata origins or closed offline snapshots; required for checked-direct-v1"})
+    .option("checked-report", {type: "string", desc: "Write versioned component planning JSON on success or refusal"})
+    .option("checked-draft", {type: "string", desc: "Write minimal component missing-schema configuration when needed"})
+    .option("force-checked-files", {type: "boolean", default: false, desc: "Explicitly replace requested planning report/draft files"})
     // Per-artifact outputs
     .option("client-dir", {
       type: "string",
@@ -839,24 +842,35 @@ if (rawArgs[0] === "pipeline") {
     .help()
     .parse();
 
-  if (pipelineArgv.model === 'checked-direct-v1') {
-    const allowed = new Set(['model', 'checked-config', 'wsdl-source', 'client-dir', 'gateway-dir', 'openapi-file',
+  if (pipelineArgv.model === 'checked-direct-v1' || pipelineArgv.model === 'checked-components-v1') {
+    const allowed = new Set(['model', 'checked-config', 'checked-report', 'checked-draft', 'force-checked-files', 'wsdl-source', 'client-dir', 'gateway-dir', 'openapi-file',
       'gateway-service-name', 'gateway-version-prefix', 'init-app', 'app-dir', 'app-host', 'app-port', 'force-init',
       'test-dir', 'force-test', 'help', 'openapi-format']);
     for (const arg of rawArgs.slice(1).filter(a => a.startsWith('--'))) {
       if (!allowed.has(arg.slice(2).split('=')[0]!)) handleCLIError(`Unsupported checked model option: ${arg.split('=')[0]}`);
     }
-    if (!pipelineArgv['checked-config']) handleCLIError('checked-direct-v1 requires --checked-config');
-    if (pipelineArgv['init-app'] && !pipelineArgv['app-dir']) handleCLIError('checked-direct-v1 requires explicit --app-dir with --init-app');
-    if (pipelineArgv['openapi-format'] && pipelineArgv['openapi-format'] !== 'json') handleCLIError('checked-direct-v1 emits JSON OpenAPI only');
+    if (pipelineArgv.model === 'checked-direct-v1' && !pipelineArgv['checked-config']) handleCLIError(`${pipelineArgv.model} requires --checked-config`);
+    if (pipelineArgv.model !== 'checked-components-v1' && (pipelineArgv['checked-report'] || pipelineArgv['checked-draft'] || pipelineArgv['force-checked-files'])) handleCLIError('Planning files require checked-components-v1');
+    if (pipelineArgv['init-app'] && !pipelineArgv['app-dir']) handleCLIError(`${pipelineArgv.model} requires explicit --app-dir with --init-app`);
+    if (pipelineArgv['openapi-format'] && pipelineArgv['openapi-format'] !== 'json') handleCLIError(`${pipelineArgv.model} emits JSON OpenAPI only`);
     const {parseCheckedDirectOptions} = await import('./checkedPipeline.js');
-    const checked = parseCheckedDirectOptions(JSON.parse(fs.readFileSync(pipelineArgv['checked-config']!, 'utf8')) as unknown);
+    const {CheckedPlanningError, writeCheckedPlanningFile, prepareCheckedComponentPlan} = await import('./checkedPlanning.js');
+    const supplied = pipelineArgv['checked-config'] ? JSON.parse(fs.readFileSync(pipelineArgv['checked-config'], 'utf8')) as Record<string, unknown> : {};
+    const writePlan = (report: import('./checkedPlanning.js').CheckedComponentPlan) => {
+      if (pipelineArgv['checked-report']) writeCheckedPlanningFile(pipelineArgv['checked-report'], report, pipelineArgv['force-checked-files']);
+      if (pipelineArgv['checked-draft'] && report.resolution) writeCheckedPlanningFile(pipelineArgv['checked-draft'], report.resolution.configuration, pipelineArgv['force-checked-files']);
+    };
     const controller = new AbortController();
     const cancel = () => controller.abort();
     process.on('SIGINT', cancel);
     try {
+      if (pipelineArgv.model === 'checked-components-v1' && (!supplied || typeof supplied !== 'object' || Array.isArray(supplied))) {
+        throw new CheckedPlanningError((await prepareCheckedComponentPlan(pipelineArgv['wsdl-source'], supplied)).report);
+      }
       const result = await runGenerationPipeline({
-        model: 'checked-direct-v1', checkedDirect: {...checked, signal: controller.signal},
+        model: pipelineArgv.model,
+        ...(pipelineArgv.model === 'checked-direct-v1' ? {checkedDirect: {...parseCheckedDirectOptions(supplied), signal: controller.signal}}
+          : {checkedComponents: {...supplied, signal: controller.signal}}),
         wsdl: pipelineArgv['wsdl-source'], catalogOut: '',
         clientOutDir: pipelineArgv['client-dir'],
         openapi: {outFile: pipelineArgv['openapi-file']},
@@ -866,11 +880,16 @@ if (rawArgs[0] === "pipeline") {
           host: pipelineArgv['app-host'], port: pipelineArgv['app-port']} : undefined,
         test: pipelineArgv['test-dir'] ? {testDir: pipelineArgv['test-dir'], force: pipelineArgv['force-test']} : undefined,
       });
+      if (result.planning) writePlan(result.planning);
       console.log(JSON.stringify((result as {checked?: unknown}).checked, null, 2));
+    } catch (error) {
+      if (error instanceof CheckedPlanningError) writePlan(error.report);
+      throw error;
     } finally {process.off('SIGINT', cancel);}
     process.exit(0);
   }
-  if (pipelineArgv['checked-config']) handleCLIError('--checked-config requires --model checked-direct-v1');
+  if (pipelineArgv['checked-config']) handleCLIError('--checked-config requires --model checked-direct-v1 or checked-components-v1');
+  if (pipelineArgv['checked-report'] || pipelineArgv['checked-draft'] || pipelineArgv['force-checked-files']) handleCLIError('Planning files require checked-components-v1');
 
   const format = (pipelineArgv["openapi-format"] as "json" | "yaml" | "both") ?? "json";
 

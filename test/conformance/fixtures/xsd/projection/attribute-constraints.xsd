@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:attribute-constraints" targetNamespace="urn:attribute-constraints" elementFormDefault="qualified">
+  <xs:attribute name="Global" type="xs:boolean" default="true"/>
+  <xs:complexType name="Base">
+    <xs:sequence><xs:element name="Name" type="xs:string"/></xs:sequence>
+    <xs:attribute name="Summary" type="xs:boolean" default="false"/>
+    <xs:attribute name="Amount" type="xs:decimal" default="01.2500"/>
+    <xs:attribute name="Enabled" type="xs:boolean" fixed="true"/>
+    <xs:attribute name="Instant" type="xs:dateTime" fixed="2026-10-31T18:00:00Z"/>
+    <xs:attribute name="Binary" type="xs:base64Binary" fixed="AQI="/>
+    <xs:attribute name="Required" type="xs:int" use="required" fixed="7"/>
+    <xs:attribute ref="t:Global"/>
+  </xs:complexType>
+  <xs:complexType name="Derived"><xs:complexContent><xs:extension base="t:Base"><xs:attribute name="Note" type="xs:string" default="kept"/></xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="Request" type="t:Derived"/>
+</xs:schema>

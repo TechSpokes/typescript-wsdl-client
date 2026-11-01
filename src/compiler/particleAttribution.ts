@@ -67,6 +67,10 @@ export function checkParticleAttribution(context: SemanticContext, view: Semanti
         if (p.wildcard) {
           wildcard = p.wildcard.namespace;
           for (const ns of wildcard.namespaces) {charge(2 + ns.length); namespaces.add(ns);}
+        } else if (p.standardElement) {
+          // Fixed acquired declarations block substitution; their dependency is
+          // checked separately by native standard-component construction.
+          charge(3); names.push(p.standardElement.name); addName(p.standardElement.name);
         } else {
           const element = p.element!;
           if (element.identity.kind === 'global') {
@@ -112,6 +116,16 @@ export function checkParticleAttribution(context: SemanticContext, view: Semanti
         charge(8); const counter = counters.length; counters.push({min, max, digits: Math.max(p.particle.occurs.min.length, max === undefined ? 1 : p.particle.occurs.max.length)});
         facts.set(p, {counter});
       }
+      // @why Disjoint full alphabet quotients admit at most one leaf incidence for any next QName, independently of counter reachability.
+      charge(2);
+      const attributedTokens = new Set<number>();
+      let disjoint = true;
+      for (const label of labels) for (const token of label.tokens) {
+        charge(3);
+        if (attributedTokens.has(token)) disjoint = false;
+        attributedTokens.add(token);
+      }
+      if (disjoint) return done(true);
       type Epsilon = {to: number; counter?: number; op?: 'reset' | 'enter' | 'advance' | 'exit'};
       type Edge = {to: number; label: Label};
       type State = {epsilon: Epsilon[]; consuming: Edge[]; leafCounter?: number};

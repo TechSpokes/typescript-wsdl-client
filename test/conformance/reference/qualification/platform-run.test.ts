@@ -43,6 +43,10 @@ describe.skipIf(process.platform === 'win32')('qualification bootstrap logging',
                 const argumentsReceived = JSON.parse(readFileSync(received, 'utf8')) as string[];
                 expect(argumentsReceived).toContain('type=bind,src=' + certificate + ',dst=/run/proxy-ca.pem,readonly');
                 expect(argumentsReceived).toContain('NODE_EXTRA_CA_CERTS=/run/proxy-ca.pem');
+                if (process.getuid && process.getgid) {
+                    expect(argumentsReceived).toContain('QUALIFICATION_OUTPUT_UID=' + process.getuid());
+                    expect(argumentsReceived).toContain('QUALIFICATION_OUTPUT_GID=' + process.getgid());
+                }
             }
             expect(result.stdout + result.stderr).not.toContain(certificate);
             expect(result.stdout).toContain('Qualification executable: docker');

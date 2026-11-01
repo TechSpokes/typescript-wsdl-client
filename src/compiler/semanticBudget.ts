@@ -72,6 +72,23 @@ function limit(limits: ResolverLimits, key: 'maxNodes' | 'maxWork', fallback: nu
 }
 
 export function createResolverBudget(limits: ResolverLimits = NO_LIMITS): ResolverBudget {
+  return createBudget(limits, false);
+}
+
+/**
+ * Measure diagnostic work relative to a target without treating that target as a cutoff.
+ * @param targets Comparative work target and an independently enforced node limit.
+ * @returns The same accounting owner plus an observational snapshot that grants no semantic authority.
+ * @constraints Explicit enforced budgets and ordinary application execution retain their existing policies.
+ */
+export function createSemanticProfiler(targets: ResolverLimits = NO_LIMITS) {
+  const targetWork = limit(targets, 'maxWork', DEFAULT_MAX_WORK);
+  const budget = createBudget(targets, true);
+  return {budget, measurement: () => ({targetWork, usage: {...budget.usage()},
+    relativeWork: budget.usage().work / targetWork, aboveTarget: budget.usage().work > targetWork})};
+}
+
+function createBudget(limits: ResolverLimits, observeWork: boolean): ResolverBudget {
   const maxNodes = limit(limits, 'maxNodes', DEFAULT_MAX_NODES);
   const maxWork = limit(limits, 'maxWork', DEFAULT_MAX_WORK);
   if (!validLimit(maxNodes) || !validLimit(maxWork)) throw new ResolverInvalidLimitsError();
@@ -94,7 +111,7 @@ export function createResolverBudget(limits: ResolverLimits = NO_LIMITS): Resolv
       throw new RangeError('RE01 charges must be nonnegative safe integers');
     }
     const used = limit === 'nodes' ? nodes : work;
-    const maximum = limit === 'nodes' ? maxNodes : maxWork;
+    const maximum = limit === 'nodes' ? maxNodes : observeWork ? Number.MAX_SAFE_INTEGER : maxWork;
     // Subtraction is checked before adding: no overflow and inclusive limits.
     if (amount > maximum - used) {
       failed = limit;
@@ -159,7 +176,7 @@ export function createResolverBudget(limits: ResolverLimits = NO_LIMITS): Resolv
 
   // Budgets smaller than the reservation fail without performing graph work;
   // their one constant terminal envelope remains the reserved escape path.
-  if (maxWork < TERMINAL_RESERVATION_WORK) failed = 'work';
+  if (!observeWork && maxWork < TERMINAL_RESERVATION_WORK) failed = 'work';
   else work = TERMINAL_RESERVATION_WORK;
 
   return {

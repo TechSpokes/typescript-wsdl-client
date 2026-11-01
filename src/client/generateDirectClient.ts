@@ -1,13 +1,15 @@
 import {directLimit} from '../compiler/directExecutionPolicy.js';
-import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR} from './directClientVersion.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION, DIRECT_CLIENT_RUNTIME_REPAIR, COMPONENT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_REPAIR} from './directClientVersion.js';
 /** Native-plan generator consumed by the opt-in checked pipeline. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
-import {writeFileSync} from 'node:fs';
+import {writeFileSync, mkdirSync} from 'node:fs';
+import path from 'node:path';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
 import {inspectDirectValueMapping} from '../compiler/directValues.js';
 import type {DirectValueMapping} from '../compiler/directValues.js';
-import {checkDirectSourceCompatibility, createDirectSourceCapsule} from '../compiler/directSourceCapsule.js';
-import type {ReconstructedDirectSource, DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
+import {checkDirectSourceCompatibility, createDirectSourceCapsule, createComponentSourceCapsule, inspectReconstructedComponentSource, inspectComponentSourceService} from '../compiler/directSourceCapsule.js';
+import type {ReconstructedDirectSource, ReconstructedComponentSource, DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
+import {lowerComponentShape} from '../generation/componentShape.js';
 import type {ResolverUsage, SemanticBudget} from '../compiler/semanticBudget.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
 
@@ -123,9 +125,127 @@ export function generateDirectClient(expected: ReconstructedDirectSource, signal
   }
 }
 /** Only authentic bounded artifacts may be written; prior semantic failure remains terminal. */
-export function writeDirectClient(file: string, generated: GeneratedDirectClient): void {
+export function writeDirectClient(file: string, generated: GeneratedDirectClient | GeneratedComponentClient): void {
   const budget = generatedArtifacts.get(generated);
   if (!budget) throw new TypeError('Authentic generated artifact required');
   checkSemanticBudget(budget);
   writeFileSync(file, generated.source, 'utf8');
+}
+
+export interface GeneratedComponentClient {
+  readonly kind: 'generated-component-client'; readonly source: string; readonly capsule: Uint8Array;
+  readonly admitted: false; readonly usage: ResolverUsage;
+}
+/** Emit recursive component types and the existing checked runtime injection protocol.
+ * @remarks Native reconstruction and mappings remain authoritative; generated TypeScript is a static description.
+ * @returns An authentic writable artifact, or explicit refusal. No legacy catalog or saved report is consumed.
+ * @throws TypeError For copied/foreign reconstruction handles. Caller cancellation returns a refusal.
+ */
+export async function generateComponentClient(expected: ReconstructedComponentSource, signal?: AbortSignal): Promise<GeneratedComponentClient | DirectCapsuleFailure> {
+  inspectReconstructedComponentSource(expected);
+  const {budget} = inspectDirectOperation(expected.contract).context;
+  const failure = (kind: DirectCapsuleFailure['kind'], rule: string): DirectCapsuleFailure => ({kind, rule,
+    repair: COMPONENT_CLIENT_RUNTIME_REPAIR, usage: Object.freeze({...budget.usage()})});
+  const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Error('cancelled');};
+  try {
+    check(); const capsule = await createComponentSourceCapsule(expected.contract, expected.selection, signal, expected.responseProjection);
+    if (capsule.kind !== 'component-capsule') return capsule;
+    const literal = (value: unknown): string => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    const mappings = expected.mappings;
+    const input = mappings.find(mapping => mapping.direction.kind === 'input')!;
+    const output = mappings.find(mapping => mapping.direction.kind === 'output')!;
+    const request = lowerComponentShape(expected.contract, input, 'Request', check);
+    const response = lowerComponentShape(expected.contract, output, 'Response', check);
+    const faults = mappings.filter(mapping => mapping.direction.kind === 'fault').map((mapping, index) => ({mapping,
+      shape: lowerComponentShape(expected.contract, mapping, `Fault_${index}`, check)}));
+    const lines = [
+      '// Checked component client; inject checkedComponentRuntimeV1 from the package root.',
+      '// Scalar facets, ordered occurrence correlation and wildcard membership remain native runtime duties.',
+      ...request.declarations, `export type Request = ${request.type};`,
+      ...response.declarations, `export type Response = ${response.type};`,
+      ...faults.flatMap(({shape}, index) => [...shape.declarations, `export type Fault_${index} = ${shape.type};`]),
+      'export interface Usage {readonly nodes: number; readonly work: number}',
+      'export interface Name {readonly namespace: string; readonly local: string}',
+      'export interface Options {',
+      '  readonly localSource: string; readonly fileRoots: readonly string[]; readonly capsule: Uint8Array;',
+      '  readonly sourceResources: readonly {readonly uri: string; readonly file: string; readonly canonicalUri?: string}[]; readonly sourceOrigins: readonly string[];',
+      '  readonly sourceUri?: string;',
+      '  readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];',
+      '  readonly standardLibraries?: readonly string[];',
+      '  readonly recordSources?: readonly {readonly selector: {readonly portType: Name; readonly binding: Name; readonly operation: string}; readonly source: string}[];',
+      '  readonly soap: {readonly service: Name; readonly port: string; readonly endpoint?: string;',
+      '    readonly allowEndpoint?: (endpoint: URL) => boolean; readonly signal?: AbortSignal; readonly timeoutMs?: number;',
+      '    readonly capabilities?: readonly string[]; readonly ca?: string;',
+      '    readonly limits?: {readonly maxBytes?: number; readonly maxDepth?: number; readonly maxNodes?: number; readonly maxText?: number}};',
+      '}',
+      'export interface Failure {readonly kind: "incompatible-artifact" | "unsupported" | "missing-authority" | "resource-limit" | "cancelled" | "inconclusive" | "invalid-schema" | "scalar-invalid" | "value-invalid" | "xml-invalid" | "mismatch" | "transport" | "protocol";',
+      '  readonly rule: string; readonly repair?: string; readonly phase?: "input" | "response"; readonly usage: Usage}',
+      'export interface NativeSuccess {readonly kind: "soap-response" | "soap-fault"; readonly value: unknown; readonly admitted: false;',
+      '  readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array;',
+      '  readonly fault?: {readonly name: string; readonly code: Name; readonly string: string; readonly actor?: string}}',
+      `export interface Runtime {readonly version: ${literal(COMPONENT_CLIENT_RUNTIME_VERSION)}; execute(expectedBase64: string, input: unknown, options: Options, version: ${literal(COMPONENT_CLIENT_RUNTIME_VERSION)}): Promise<Failure | NativeSuccess>}`,
+      'type Common = {readonly admitted: false; readonly status: number; readonly usage: Usage; readonly responseBytes: Uint8Array};',
+      'export type Result = Failure | (Common & {readonly kind: "soap-response"; readonly value: Response})',
+      ...faults.map(({mapping}, index) => {
+        if (mapping.direction.kind !== 'fault') throw new TypeError('Native fault mapping required');
+        return `  | (Common & {readonly kind: "soap-fault"; readonly value: Fault_${index}; readonly fault: {readonly name: ${literal(mapping.direction.name)}; readonly code: Name; readonly string: string; readonly actor?: string}})`;
+      }),
+      ...(faults.length ? [] : ['  | (Common & {readonly kind: "soap-fault"; readonly value: never; readonly fault: {readonly name: never; readonly code: Name; readonly string: string; readonly actor?: string}})']),
+      ';',
+      `export const expectedCapsuleBase64 = ${literal(Buffer.from(capsule.bytes).toString('base64'))};`,
+      `export const selection = ${literal(JSON.stringify({selector: expected.contract.selector, ...expected.selection}))};`,
+      'export function createClient(runtime: Runtime) {',
+      '  return Object.freeze({',
+      `    [${literal(expected.contract.selector.operation)}]: async (input: Request, options: Options): Promise<Result> => {`,
+      `      if (runtime.version !== ${literal(COMPONENT_CLIENT_RUNTIME_VERSION)}) return {kind: "incompatible-artifact", rule: "generated-runtime-version", repair: ${literal(COMPONENT_CLIENT_RUNTIME_REPAIR)}, usage: {nodes: 0, work: 0}};`,
+      `      return await runtime.execute(expectedCapsuleBase64, input, options, ${literal(COMPONENT_CLIENT_RUNTIME_VERSION)}) as Result;`,
+      '    },', '  });', '}', '',
+    ];
+    const source = composeGeneratedSource(lines.join('\n'), resolvePreamble('direct-client'));
+    if (Buffer.byteLength(source) > directLimit(budget, MAX_SOURCE_BYTES)) return failure('resource-limit', 'generated-source-byte-limit');
+    check();
+    const artifact: GeneratedComponentClient = Object.freeze({kind: 'generated-component-client', source, capsule: capsule.bytes,
+      admitted: false, usage: Object.freeze({...budget.usage()})});
+    generatedArtifacts.set(artifact, budget); return artifact;
+  } catch (error) {
+    if (budget.exhausted()) return failure('resource-limit', 'request-budget');
+    if (signal?.aborted) return failure('cancelled', 'cooperative-cancellation');
+    throw error;
+  }
+}
+
+/** Emit a service client index and per-operation native artifacts using the existing component emitter.
+ * @remarks All operation artifacts are prepared before writing. The index contains no source authority.
+ * @returns Generator-owned relative capsule paths, keyed by exact operation name.
+ * @throws For foreign/mixed native operations, refused generation, cancellation or filesystem failure.
+ */
+export async function writeComponentServiceClient(expected: readonly ReconstructedComponentSource[], directory: string, signal?: AbortSignal):
+  Promise<Readonly<Record<string, string>>> {
+  const operations = inspectComponentSourceService(expected);
+  const generated: GeneratedComponentClient[] = [];
+  for (const operation of operations) {
+    const artifact = await generateComponentClient(operation, signal);
+    if (artifact.kind !== 'generated-component-client') throw new Error(`Checked client refused: ${artifact.kind}: ${artifact.rule}`);
+    generated.push(artifact);
+  }
+  const files: Record<string, string> = Object.create(null) as Record<string, string>;
+  const lines = operations.flatMap((_, index) => [
+    `import {createClient as operation_${index}} from './operations/${index}/client.js';`,
+    `export * as Operation_${index} from './operations/${index}/client.js';`,
+  ]);
+  lines.push("import type {Runtime, Options as OperationOptions} from './operations/0/client.js';",
+    "export type Options = Omit<OperationOptions, 'capsule'>;",
+    `export const selection = ${JSON.stringify(JSON.stringify(operations[0]!.selection))};`,
+    'export function createClient(runtime: Runtime) {', '  return Object.freeze({',
+    ...operations.map((_, index) => `    ...operation_${index}(runtime),`), '  });', '}', '');
+  for (const [index, operation] of operations.entries()) {
+    const dir = path.join(directory, 'operations', String(index));
+    mkdirSync(dir, {recursive: true}); writeDirectClient(path.join(dir, 'client.ts'), generated[index]!);
+    writeFileSync(path.join(dir, 'contract.json'), generated[index]!.capsule);
+    files[operation.contract.selector.operation] = `operations/${index}/contract.json`;
+  }
+  const {budget} = inspectDirectOperation(operations[0]!.contract).context;
+  checkSemanticBudget(budget);
+  writeFileSync(path.join(directory, 'client.ts'), composeGeneratedSource(lines.join('\n'), resolvePreamble('direct-client')), 'utf8');
+  return Object.freeze(files);
 }

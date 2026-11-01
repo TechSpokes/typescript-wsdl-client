@@ -9,6 +9,26 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.6] - 2026-11-01
+
+- ci(reference): hand copied container evidence to the host runner without widening private file permissions.
+
+- test(gateway): observe host-policy normalization directly and return fixed JSON from its control fixture.
+
+- docs(preview): explain opt-in checked generation, installed trials, endpoint setup, supported scope and feedback.
+
+- fix(client): preserve simple-content response shapes, decode boolean attributes and reject conversion failures.
+
+- fix(gateway): compile nested structured fault schemas without recursive reference resolution.
+
+- fix(deps): patch redirect header handling and override vulnerable development glob dependencies with compatibility coverage.
+
+- feat(pipeline): acquire checked WSDL URL dependencies automatically and derive component SOAP endpoint intent with optional restrictions.
+
+- feat(pipeline): derive checked WSDL selections and guide missing-schema recovery through fresh native planning.
+
+- feat(gateway): generate checked component clients and gateways for imported structured contracts with explicit companion payload views.
+
 - feat(gateway): generate installable opt-in checked direct gateways with independent HTTP/SOAP validation.
 
 - test(readiness): pin authentic NOAA WSDL evidence and native encoding refusal.

@@ -19,8 +19,10 @@ Created from production integration work at [TechSpokes](https://www.techspokes.
 
 See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
-The unreleased [checked gateway preview](docs/checked-gateway.md) adds `pipeline --model checked-direct-v1` for a qualified local WSDL operation, generating an installable client, contract, OpenAPI, gateway, app and tests.
-It uses the [versioned package-root runtime](docs/direct-values.md#package-root-binding-for-generated-direct-clients) with explicit source permission and owned-loopback SOAP endpoint authorization; legacy defaults remain unchanged.
+Version 1.1.6 adds [opt-in checked generation](docs/checked-generation.md) for early testing and feedback. Start with `pipeline --model checked-components-v1`: supported WSDL files or URLs produce typed clients, contracts, OpenAPI, gateways, app scaffolding and tests without authored resource/selector JSON for unambiguous sources. The guide includes a bundled trial, endpoint setup, supported scope and feedback instructions. Omitting `--model` keeps legacy defaults.
+Component calls use the selected WSDL address or explicit endpoint override, with optional restrictions including empty deny-all. Generated snapshots support offline runtime; additional metadata origins need one reusable project decision. The direct preview keeps its [versioned runtime](docs/direct-values.md#package-root-binding-for-generated-direct-clients) and explicit owned-loopback endpoint authorization; legacy defaults remain unchanged.
+
+This preview does not establish universal WSDL/XSD or production-provider support. See the [checked gateway reference](docs/checked-gateway.md) for configuration and compatibility, and the [roadmap](ROADMAP.md) for the next coverage, JSON and security work.
 
 ## Why Choose This
 
@@ -242,7 +244,10 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 |-------|-------------|
 | [Checked WSDL readiness](docs/content-model-readiness.md) | Measured assessment corpus and bounded P3 implementation packet |
 | [Direct Scalar Values](docs/direct-values.md) | Internal scalar mapping, fresh inverse and bounded bare-root XML codec |
-| [Installed Checked Gateway](docs/checked-gateway.md) | Opt-in direct generation, project commands, HTTP/SOAP verification and bounded coverage |
+| [Try Opt-in Checked Generation](docs/checked-generation.md) | Installed component trial, URL intake, endpoint setup, scope, direction and feedback |
+| [Checked Gateway Reference](docs/checked-gateway.md) | Component/direct configuration, project commands, compatibility and bounded HTTP/SOAP evidence |
+| [Checked development checkpoint](docs/content-model-development-checkpoint.md) | Local structured-contract evidence, remaining coverage and safe override boundaries |
+| [WSDL-first workflow assessment](docs/content-model-wsdl-first-assessment.md) | Automatic generation, actionable diagnostics and minimal JSON reconciliation |
 | [Direct Structural Matching](docs/content-model-matching.md) | Internal structure-only matcher, evidence and scalar handoff |
 | [CLI Reference](docs/cli-reference.md) | All commands with flags and examples |
 | [Working With Generated Code](docs/generated-code.md) | Using clients, types, and operations |
@@ -258,6 +263,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Production Guide](docs/production.md) | CI/CD, validation, logging |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
 | [Release Notes](docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
+| [v1.1.6 Release Notes](docs/releases/v1.1.6.md) | Opt-in checked gateways, WSDL-first planning, automatic URL intake and dependency fixes |
 | [v1.1.5 Release Notes](docs/releases/v1.1.5.md) | Restricted checked-direct runtime binding, safe local SOAP evidence and explicit caller controls |
 | [v1.1.4 Release Notes](docs/releases/v1.1.4.md) | Named SOAP imports and compiled-client coverage on Node 24 and 26 |
 | [v1.1.3 Release Notes](docs/releases/v1.1.3.md) | Dependency security updates and Node 24 development alignment |

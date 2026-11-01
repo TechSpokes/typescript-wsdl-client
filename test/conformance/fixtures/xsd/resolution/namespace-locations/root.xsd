@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:lib="urn:library" targetNamespace="urn:consumer">
+  <xs:import namespace="urn:library"/>
+  <xs:element name="Request" type="lib:Record"/>
+</xs:schema>

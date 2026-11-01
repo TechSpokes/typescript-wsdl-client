@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:inherited-records" targetNamespace="urn:inherited-records" elementFormDefault="qualified">
+  <xs:complexType name="Record"><xs:sequence><xs:element name="Text" type="xs:string"/></xs:sequence><xs:attribute name="count" type="xs:int" use="required"/></xs:complexType>
+  <xs:complexType name="Base">
+    <xs:sequence><xs:element name="BaseValue" type="xs:int"/><xs:element name="Label" type="xs:string" minOccurs="0"/></xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="Middle"><xs:complexContent><xs:extension base="t:Base">
+    <xs:sequence><xs:element name="Flag" type="xs:boolean"/></xs:sequence><xs:attribute name="note" type="xs:string"/>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="Leaf"><xs:complexContent><xs:extension base="t:Middle">
+    <xs:sequence><xs:element name="Item" type="t:Record" minOccurs="0" maxOccurs="unbounded"/></xs:sequence>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="Restricted"><xs:complexContent><xs:restriction base="t:Leaf">
+    <xs:sequence><xs:element name="BaseValue" type="xs:int"/><xs:element name="Flag" type="xs:boolean"/><xs:element name="Item" type="t:Record" minOccurs="0"/></xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/><xs:attribute name="note" use="prohibited"/>
+  </xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="InheritedOnly"><xs:complexContent><xs:extension base="t:Middle"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="EmptyBase"/>
+  <xs:complexType name="EmptyLeaf"><xs:complexContent><xs:extension base="t:EmptyBase"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="Correlated"><xs:sequence minOccurs="0"><xs:element name="A" type="xs:string"/><xs:element name="B" type="xs:int"/></xs:sequence></xs:complexType>
+  <xs:element name="Request" type="t:Leaf"/>
+  <xs:element name="Restricted" type="t:Restricted"/>
+  <xs:element name="InheritedOnly" type="t:InheritedOnly"/>
+  <xs:element name="EmptyLeaf" type="t:EmptyLeaf"/>
+  <xs:element name="Correlated" type="t:Correlated"/>
+</xs:schema>

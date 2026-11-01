@@ -208,14 +208,18 @@ export class Weather {
         if (err) {
           reject(err);
         } else {
-          // Convert the SOAP response back to TypeScript object
-          const response = this.fromSoapResult(result, responseType);
-          resolve({
-            response,
-            headers: soapHeader || {},
-            responseRaw: rawResponse,
-            requestRaw: rawRequest
-          });
+          // @why Response conversion failures must reject the call rather than escape the asynchronous SOAP callback.
+          try {
+            const response = this.fromSoapResult(result, responseType);
+            resolve({
+              response,
+              headers: soapHeader || {},
+              responseRaw: rawResponse,
+              requestRaw: rawRequest
+            });
+          } catch (error) {
+            reject(error);
+          }
         }
       });
     });
@@ -315,9 +319,18 @@ export class Weather {
     if (node == null) {
       return node;
     }
-    // Pass through primitives unchanged
+    const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
+    const attributeTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.AttributeTypes?.[typeName]) || {};
+    // XML boolean attributes arrive as lexical strings even when element booleans are parsed by node-soap.
+    if (typeof node === "string" && typeName === "boolean") {
+      const lexical = node.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, "");
+      if (lexical === "true" || lexical === "1") return true;
+      if (lexical === "false" || lexical === "0") return false;
+      throw new TypeError("Invalid XML boolean response value");
+    }
+    // A simple-content complex type retains its object shape when no attributes are present on the wire.
     if (typeof node !== "object") {
-      return node;
+      return childrenTypes.$value ? {$value: this.fromSoapResult(node, childrenTypes.$value)} : node;
     }
     // Recursively process array elements
     if (Array.isArray(node)) {
@@ -325,7 +338,6 @@ export class Weather {
     }
 
     // Get child type mapping for recursive processing with correct types
-    const childrenTypes: Readonly<Record<string, string>> = (typeName && this.dataTypes?.ChildrenTypes?.[typeName]) || {};
     const repeatedElements: readonly string[] = (typeName && this.dataTypes?.RepeatedElements?.[typeName]) || [];
     const result: any = {};
 
@@ -339,7 +351,9 @@ export class Weather {
     const inAttrNode = (node as any)[this.attributesKeyOut] || (node as any)["attributes"] || (node as any)["$"];
     if (inAttrNode && typeof inAttrNode === "object") {
       // Promote all attributes to top-level properties for easier TS access
-      Object.assign(result, inAttrNode);
+      for (const [name, value] of Object.entries(inAttrNode)) {
+        result[name] = this.fromSoapResult(value, attributeTypes[name]);
+      }
     }
 
     // Process remaining properties as child elements

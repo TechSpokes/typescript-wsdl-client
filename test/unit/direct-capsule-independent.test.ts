@@ -70,7 +70,7 @@ describe('independently asserted portable direct capsule boundary', () => {
     const result = await reconstructDirectSourceCapsule(baseline, file, {limits: {}, policy: {fileRoots: [dir]}});
     expect(result.kind).toBe('reconstructed-direct');
     if (result.kind !== 'reconstructed-direct') throw new Error(result.rule);
-    expect(inspectDirectOperation(result.contract).evidence.eligible).toBe(true);
+    expect(inspectDirectOperation(result.contract).evidence).toMatchObject({kind: 'qualified-source', eligible: true});
     const input = result.mappings.find(m => m.direction.kind === 'input')!;
     expect(inspectDirectValueMapping(input, result.contract)).toBe(input);
     const first = encodeDirectXml(result.contract, input, {city: 'Rome', days: 3});

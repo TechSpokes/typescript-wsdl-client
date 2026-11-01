@@ -40,7 +40,7 @@ type Frame = {node: SyntaxElement; payload: boolean; role?: SourceGrammarRole; s
 type RootReference = SourceIdentityFact & Readonly<{category: SourceWildcardObligation['category']}>;
 
 /** Pure borrowed-syntax clauses. Only the authentic document owner issues aggregate authority. */
-export function assessSchemaSourceWildcards(root: SyntaxElement, budget: SemanticBudget): SourceWildcardResult {
+export function assessSchemaSourceWildcards(root: SyntaxElement, budget: SemanticBudget, check?: () => void): SourceWildcardResult {
   return budget.guard(() => {
     budget.chargeWork(30);
     const remaining: SourceWildcardObligation[] = [], ids: SourceTypedId[] = [], references: RootReference[] = [];
@@ -63,6 +63,7 @@ export function assessSchemaSourceWildcards(root: SyntaxElement, budget: Semanti
     };
     const assess = (node: SyntaxElement, type: FixedSimpleTypeHandle, lexical: string, name: ExpandedName,
       category: SourceWildcardObligation['category']): SchemaOperand | undefined => {
+      check?.();
       budget.chargeWork(6);
       const result = values.assess(type, {value: lexical, context: {namespaces: node.namespaces, source: node.source}}, node);
       if (result.kind === 'resource-limit') {budget.chargeWork(); throw new Error('Unreachable exhausted source budget');}
@@ -74,6 +75,7 @@ export function assessSchemaSourceWildcards(root: SyntaxElement, budget: Semanti
     };
     try {
       while (stack.length) {
+        check?.();
         budget.chargeWork(12);
         const frame = stack.pop()!, {node, payload} = frame;
         const category = payload ? 'annotation-payload-assessment' : 'foreign-attribute-assessment';

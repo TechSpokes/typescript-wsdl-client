@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:schema xmlns:s="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:conformance:schema-data" elementFormDefault="qualified">
+  <s:element name="Record" type="s:string"/>
+</s:schema>

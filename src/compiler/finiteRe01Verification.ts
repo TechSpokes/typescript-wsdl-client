@@ -4,10 +4,11 @@ import {assertSemanticContext, contextsShareRequest, isSemanticCandidateOf, Sema
 import type {SemanticContext} from './semanticContext.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {checkSchemaDocumentSyntax} from './schemaDocumentSyntax.js';
-import {checkComponentConstruction, assertComponentConstruction} from './schemaConstructionAssessment.js';
-import type {ComponentConstructionReceipt, ConstructionObligation} from './schemaConstructionAssessment.js';
-import {checkCandidateCorrespondence, assertCandidateCorrespondence, re01Ancestor} from './re01CandidateCorrespondence.js';
-import type {CorrespondenceReceipt, CorrespondenceFailure} from './re01CandidateCorrespondence.js';
+import {checkComponentConstruction, assertComponentConstruction, checkSimpleRestrictionPredicate, assertSimpleRestrictionPredicate} from './schemaConstructionAssessment.js';
+import {assertStandardElementConstruction} from './standardSchemaConstruction.js';
+import type {ComponentConstructionReceipt, ConstructionObligation, SimpleRestrictionPredicate} from './schemaConstructionAssessment.js';
+import {checkCandidateCorrespondence, assertCandidateCorrespondence, re01Ancestor, checkAdditiveSimpleProperties, assertAdditiveSimpleProperties} from './re01CandidateCorrespondence.js';
+import type {CorrespondenceReceipt, CorrespondenceFailure, AdditiveSimplePropertyReceipt} from './re01CandidateCorrespondence.js';
 import {immediateTypeBase} from './schemaTypeRelations.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import {RE01_DERIVATION_DOMAIN} from './re01TypeProperties.js';
@@ -22,6 +23,7 @@ import type {IdentityConstraintDependency, IdentityConstraintReceipt} from './sc
 import {deriveActualComplexContent, deriveOriginalComplexPropertyContent} from './complexTypeContent.js';
 import {assertSemanticParticleView, prepareSemanticParticleView} from './particleSemanticView.js';
 import type {SemanticParticleView} from './particleSemanticView.js';
+import {prepareAdditiveRestrictionRepresentative, prepareAdditiveExtensionMiddle} from './re01CandidateAssignments.js';
 
 export type FiniteScalarSlotReceipt = Extract<GeneratedScalarResult, {kind: 'checked'}>;
 
@@ -66,6 +68,7 @@ export type FinitePrimitiveReceipt = Omit<FiniteCandidateReceipt, 'kind' | 'scop
 export type FinitePrimitiveVerificationResult = FinitePrimitiveReceipt | FiniteVerificationFailure | ResourceLimitFailure;
 const issued = new WeakMap<object, SemanticContext>();
 const issuedPrimitive = new WeakMap<object, SemanticContext>();
+const proofContexts = new WeakMap<object, readonly SemanticContext[]>();
 class VerificationAbort extends Error {constructor(readonly result: FiniteVerificationFailure | ResourceLimitFailure) {super(result.kind);}}
 type Requirement = NonNullable<ComponentConstructionReceipt['re01']>;
 type Closure = Readonly<{components: readonly ComponentConstructionReceipt[]; requirements: readonly Requirement[];
@@ -281,6 +284,7 @@ function createNativeFrontierOwner(actual: SemanticContext) {
       if (result.kind !== 'checked') throw new VerificationAbort(result.kind === 'resource-limit' ? result
         : {...result, contextId: result.contextId ?? context.contextId});
       assertComponentConstruction(context, result);
+      for (const standard of result.standardDependencies) {charge(); assertStandardElementConstruction(context, standard);}
       for (const pending of result.obligations) rejectPending(context, pending, requireTypes);
       charge(4 + id.length); byComponent.set(id, result); components.push(result);
       requireTypes(result.typeDependencies);
@@ -361,12 +365,43 @@ function createNativeFrontierOwner(actual: SemanticContext) {
       throw error;
     }
   };
-  const validateAggregate = (proof: readonly FiniteProofStep[]): void => {
+  const inspectAdditive = (context: SemanticContext): FiniteRe01Frontier => {
+    assertSemanticContext(context);
+    if (!contextsShareRequest(actual, context) || !isSemanticCandidateOf(actual, context))
+      return fail('additive-context', 'An authenticated direct child of the actual request is required');
+    const deferredStart = deferred.length, typedStart = typedDependencies.length;
+    for (const id of actual.members) {
+      charge(16 + id.length);
+      const before = actual.lookup(id), after = context.lookup(id);
+      if (before.kind !== 'found' || after.kind !== 'found' || before.node !== after.node
+        || actual.rawTypeProperties(id) !== context.rawTypeProperties(id)
+        || actual.rawSimpleTypeProperties(id) !== context.rawSimpleTypeProperties(id)
+        || actual.rawElementProperties(id) !== context.rawElementProperties(id)
+        || actual.rawAttributeProperties(id) !== context.rawAttributeProperties(id)
+        || actual.rawAttributeGroupProperties(id) !== context.rawAttributeGroupProperties(id)
+        || actual.rawParticleWildcardProperties(id) !== context.rawParticleWildcardProperties(id)
+        || actual.owner(id) !== context.owner(id))
+        return fail('additive-original-preservation', 'An additive construction changed an original component or scope', 'invalid-evidence', context, id);
+    }
+    checkNotations(context);
+    charge(4); const roots: NodeId[] = [];
+    for (const id of context.members) {
+      charge(2 + id.length);
+      if (actual.lookup(id).kind !== 'found') {charge(); roots.push(id);}
+    }
+    return publish(close(context, roots), undefined, deferredStart, typedStart);
+  };
+  const validateAggregate = (proof: readonly FiniteProofStep[], additive: readonly SemanticContext[] = []): void => {
     // A research session can inspect rejected alternatives. Only the selected
     // forest contributes aggregate debts; context handles remain exact.
     charge(4 + proof.length * 3);
     const selected = new Set<string>([actual.contextId]);
     for (const step of proof) selected.add(step.contextId);
+    for (const context of additive) {
+      charge(4 + context.contextId.length);
+      if (closures.get(context.contextId)?.context !== context) return fail('additive-closure', 'Selected additive context lacks its native checked closure');
+      selected.add(context.contextId);
+    }
     const selectedClosure = (contextId: string): Closure | undefined => selected.has(contextId) ? closures.get(contextId) : undefined;
 
     // A late property-only fact cannot reopen a closed FULL frontier. Its
@@ -448,7 +483,13 @@ function createNativeFrontierOwner(actual: SemanticContext) {
     }
 
   };
-  return {actualClosure, actualNotations, actualFrontier, inspect, primitive, closures, notationReceipts, validateAggregate};
+  const retainActualDependencies = (dependencies: readonly SemanticTypeDependency[]): void => {
+    for (const dependency of dependencies) {
+      charge(4 + dependency.contextId.length);
+      typedDependencies.push(Object.freeze({from: actual, dependency}));
+    }
+  };
+  return {actualClosure, actualNotations, actualFrontier, inspect, inspectAdditive, primitive, closures, notationReceipts, validateAggregate, retainActualDependencies};
 }
 const frontierOwners = new WeakMap<FiniteRe01FrontierSession, ReturnType<typeof createNativeFrontierOwner>>();
 
@@ -478,6 +519,15 @@ export function assertFiniteCandidateReceipt(actual: SemanticContext, receipt: F
 export function assertFinitePrimitiveReceipt(actual: SemanticContext, receipt: FinitePrimitiveReceipt): void {
   assertSemanticContext(actual);
   if (issuedPrimitive.get(receipt) !== actual) throw new TypeError('Unauthenticated finite primitive receipt');
+}
+
+/** Inspect the exact checked contexts in proof order; diagnostic context IDs never reconstruct authority. */
+export function inspectFiniteProofContexts(actual: SemanticContext, receipt: FiniteCandidateReceipt | FinitePrimitiveReceipt): readonly SemanticContext[] {
+  assertSemanticContext(actual);
+  if (issued.get(receipt) !== actual && issuedPrimitive.get(receipt) !== actual) throw new TypeError('Unauthenticated finite proof contexts');
+  const contexts = proofContexts.get(receipt);
+  if (!contexts) throw new TypeError('Checked finite proof contexts unavailable');
+  return contexts;
 }
 
 export function verifyFiniteRe01Evidence(actual: SemanticContext, target: NodeId, supplied: FiniteRe01Evidence): FiniteVerificationResult;
@@ -646,18 +696,20 @@ export function verifyFiniteRe01EvidenceWithFrontier(actual: SemanticContext, ta
         actualComponents: actualClosure.components, actualPrimitiveNoChange: Object.freeze(actualPrimitiveNoChange), proof: Object.freeze(proof),
         actualScalarSlots: actualClosure.scalarSlots,
         actualNotations, actualIdentityConstraints: actualClosure.identityConstraints};
+      charge(32 + proof.length * 8);
+      const contexts = Object.freeze(proof.map(step => {charge(8); return nodes.get(step.evidence)!.context;}));
       if (primitiveRoot) {
         charge(12);
         const result: FinitePrimitiveReceipt = Object.freeze({...common, kind: 'checked-primitive',
           scope: 'primitive-no-change-and-finite-evidence', root: 'primitive-no-change',
           claims: Object.freeze({actualObligations: 'checked', primitiveTarget: 'checked', universalCoverage: false,
             completeNegativeAnswer: false, searchTermination: false})});
-        issuedPrimitive.set(result, actual); return result;
+        issuedPrimitive.set(result, actual); proofContexts.set(result, contexts); return result;
       }
       const result: FiniteCandidateReceipt = Object.freeze({...common, kind: 'checked-candidate',
         scope: 'supplied-construction-and-finite-evidence', root: root!.id,
         claims: Object.freeze({actualObligations: 'checked', suppliedCandidate: 'checked', universalCoverage: false, completeNegativeAnswer: false, searchTermination: false})});
-      issued.set(result, actual); return result;
+      issued.set(result, actual); proofContexts.set(result, contexts); return result;
     } catch (error) {
       if (error instanceof VerificationAbort) return error.result;
       throw error;
@@ -680,6 +732,305 @@ export function verifyDirectActualSchema(actual: SemanticContext): Readonly<{
       owner.validateAggregate([]);
       return Object.freeze({kind: unresolved.length ? 'inconclusive-direct' : 'checked-direct',
         frontier: owner.actualFrontier, unresolved: Object.freeze(unresolved)});
+    } catch (error) {
+      if (error instanceof VerificationAbort) return error.result;
+      throw error;
+    }
+  });
+}
+
+export type ExtensionChainReceipt = Readonly<{
+  kind: 'checked-extension-chain' | 'inconclusive-extension-chain';
+  basis: 'XSD-2004-extension-only-ancestry';
+  frontier: FiniteRe01Frontier;
+  extensionOnly: readonly NodeId[];
+  unresolved: readonly NodeId[];
+}>;
+const extensionChains = new WeakMap<ExtensionChainReceipt, SemanticContext>();
+
+/** Authenticate actual-only extension ancestry; saved or copied receipt fields grant no authority. */
+export function assertExtensionChainReceipt(actual: SemanticContext, receipt: ExtensionChainReceipt): void {
+  assertSemanticContext(actual);
+  if (extensionChains.get(receipt) !== actual) throw new TypeError('Fresh matching extension-chain receipt required');
+}
+
+/** Close actual RE01 duties whose ancestry has no restriction after the designated ancestor.
+ * @remarks The 2004 Structures cos-ct-extends.1.5 note identifies this sufficient case as trivial.
+ *   All component premises and aggregate dependencies are still checked by the existing native owner.
+ *   No candidate context, endpoint replacement or primitive relabelling is used. The existing direct preview is unchanged.
+ * @returns Authenticated actual-only closure, an unresolved duty inventory, or the native failure.
+ * @throws TypeError For a non-actual context. Explicit request exhaustion remains sticky.
+ * @see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends
+ */
+export function verifyExtensionChainActualSchema(actual: SemanticContext): ExtensionChainReceipt | FiniteVerificationFailure | ResourceLimitFailure {
+  assertSemanticContext(actual);
+  if (actual.kind !== 'actual') throw new TypeError('Actual source context required');
+  const {budget} = actual;
+  return budget.guard(() => {
+    try {
+      const owner = createNativeFrontierOwner(actual);
+      const extensionOnly: NodeId[] = [], unresolved: NodeId[] = [];
+      for (const requirement of owner.actualFrontier.requirements) {
+        budget.chargeWork(8);
+        if (requirement.primitive) continue;
+        let reference: SemanticTypeReference = {kind: 'local', target: requirement.target};
+        const seen = new Set<NodeId>();
+        let established = false;
+        while (true) {
+          budget.chargeWork(8);
+          const resolved = resolveSemanticType(actual, reference);
+          if (resolved.kind !== 'component' || resolved.node.kind !== 'complexType') break;
+          const node = resolved.node;
+          budget.chargeWork(4 + node.id.length);
+          if (seen.has(node.id)) break;
+          seen.add(node.id);
+          const next = immediateTypeBase(actual, reference);
+          if (next.kind === 'resource-limit') throw new VerificationAbort(next);
+          if (next.kind !== 'checked' || !next.value) break;
+          const base = resolveSemanticType(actual, next.value);
+          // @why The first derivation from anyType may be a restriction; every later edge must extend.
+          if (base.kind === 'builtin' && base.name.namespace === XSD_NAMESPACE && base.name.local === 'anyType') {
+            const designated = resolveSemanticType(actual, requirement.ancestor);
+            established = designated.kind === 'component' && designated.node === node;
+            break;
+          }
+          if (node.derivation?.kind !== 'extension') break;
+          reference = next.value;
+        }
+        budget.chargeWork(2 + requirement.target.length);
+        (established ? extensionOnly : unresolved).push(requirement.target);
+      }
+      owner.validateAggregate([]);
+      budget.chargeWork(64 + extensionOnly.length + unresolved.length);
+      const result: ExtensionChainReceipt = Object.freeze({kind: unresolved.length ? 'inconclusive-extension-chain' : 'checked-extension-chain',
+        basis: 'XSD-2004-extension-only-ancestry', frontier: owner.actualFrontier,
+        extensionOnly: Object.freeze(extensionOnly), unresolved: Object.freeze(unresolved)});
+      extensionChains.set(result, actual);
+      return result;
+    } catch (error) {
+      if (error instanceof VerificationAbort) return error.result;
+      throw error;
+    }
+  });
+}
+
+export type AdditiveLocalClosureReceipt = Readonly<{
+  kind: 'checked-additive-local-closure'; actual: FiniteRe01Frontier; frontier: FiniteRe01Frontier;
+  target: NodeId; intermediate: NodeId; representative: NodeId;
+  nativeProperties?: AdditiveSimplePropertyReceipt;
+  targetCorrespondence: 'unassessed'; actualRe01: 'unassessed'; admitted: false;
+}>;
+const additiveLocalClosures = new WeakMap<AdditiveLocalClosureReceipt, SemanticContext>();
+
+/** Authenticate the exact native local closure; neither target correspondence nor actual RE01 is asserted. */
+export function assertAdditiveLocalClosure(actual: SemanticContext, receipt: AdditiveLocalClosureReceipt): void {
+  assertSemanticContext(actual);
+  if (additiveLocalClosures.get(receipt) !== actual) throw new TypeError('Fresh matching additive local closure required');
+  if (receipt.nativeProperties) assertAdditiveSimpleProperties(actual, receipt.frontier.context, receipt.nativeProperties);
+}
+
+/** Check fresh extension/restriction representatives and their complete native dependencies without endpoint shadowing.
+ * @remarks Every original component and scope owner remains unchanged. This establishes local construction and
+ *   aggregate discharge only; the representative-to-target correspondence and actual RE01 remain unassessed.
+ * @returns An authenticated local closure or explicit native unavailability/resource failure; never admission.
+ */
+export function verifyAdditiveRestrictionLocalClosure(actual: SemanticContext, target: NodeId):
+  AdditiveLocalClosureReceipt | FiniteVerificationFailure | ResourceLimitFailure {
+  assertSemanticContext(actual);
+  const b = actual.budget;
+  return b.guard(() => {
+    try {
+      const owner = createNativeFrontierOwner(actual);
+      const prepared = prepareAdditiveRestrictionRepresentative(actual, target);
+      if (prepared.kind === 'resource-limit') return prepared;
+      if (prepared.kind !== 'prepared-additive-restriction') return Object.freeze({kind: 'unresolved', rule: 'additive-preparation',
+        component: target, contextId: actual.contextId, message: 'The limited additive construction was unavailable'});
+      const frontier = owner.inspectAdditive(prepared.context);
+      if (frontier.requirements.some(requirement => !requirement.primitive)) return Object.freeze({kind: 'unresolved',
+        rule: 'additive-nonprimitive-dependency', component: target, contextId: prepared.context.contextId,
+        message: 'The additive local closure still requires a nonprimitive derivation proof'});
+      // Preparation debts are additional obligations, never successful producer annotations.
+      if (prepared.scalarObligations.length) return Object.freeze({kind: 'unresolved', rule: 'additive-preparation-scalar-obligations',
+        component: target, contextId: actual.contextId, message: 'The proposal has scalar preparation obligations outside this local route'});
+      owner.retainActualDependencies(prepared.typeDependencies);
+      let nativeProperties: AdditiveSimplePropertyReceipt | undefined;
+      if (prepared.context.rawTypeProperties(prepared.representative)?.content.kind === 'simple') {
+        const properties = checkAdditiveSimpleProperties(actual, prepared.context, target, prepared.intermediate, prepared.representative);
+        if (properties.kind !== 'checked-additive-simple-properties') return properties;
+        assertAdditiveSimpleProperties(actual, prepared.context, properties);
+        if (properties.scalarObligations.length) return Object.freeze({kind: 'unresolved', rule: 'additive-property-scalar-obligations',
+          component: target, contextId: actual.contextId, message: 'Native property correspondence retains scalar obligations'});
+        owner.retainActualDependencies(properties.typeDependencies);
+        nativeProperties = properties;
+      }
+      owner.validateAggregate([], [prepared.context]);
+      b.chargeWork(128);
+      const result: AdditiveLocalClosureReceipt = Object.freeze({kind: 'checked-additive-local-closure',
+        actual: owner.actualFrontier, frontier, target, intermediate: prepared.intermediate, representative: prepared.representative,
+        ...(nativeProperties ? {nativeProperties} : {}),
+        targetCorrespondence: 'unassessed', actualRe01: 'unassessed', admitted: false});
+      additiveLocalClosures.set(result, actual);
+      return result;
+    } catch (error) {
+      if (error instanceof VerificationAbort) return error.result;
+      throw error;
+    }
+  });
+}
+
+export type AdditiveSimplePredicateReceipt = Readonly<{
+  kind: 'checked-additive-simple-predicate'; actual: FiniteRe01Frontier; frontier: FiniteRe01Frontier;
+  target: NodeId; intermediate: NodeId; predicate: SimpleRestrictionPredicate;
+  actualRe01: 'unassessed'; datedInterpretation: 'unassessed'; admitted: false;
+}>;
+const additiveSimplePredicates = new WeakMap<AdditiveSimplePredicateReceipt, SemanticContext>();
+
+export type SimpleExtensionConstructionReceipt = Readonly<{
+  kind: 'checked-simple-extension-construction' | 'inconclusive-simple-extension-construction';
+  basis: 'XSD-2004-simple-extension-spine';
+  complex: ExtensionChainReceipt;
+  simple: readonly AdditiveSimplePredicateReceipt[];
+  unresolved: readonly NodeId[];
+  datedInterpretation: 'unassessed'; admitted: false;
+}>;
+const simpleExtensionConstructions = new WeakMap<SimpleExtensionConstructionReceipt, SemanticContext>();
+
+/** Authenticate the complete native premises; saved fields grant neither source nor runtime admission. */
+export function assertSimpleExtensionConstruction(actual: SemanticContext, receipt: SimpleExtensionConstructionReceipt): void {
+  assertSemanticContext(actual);
+  if (simpleExtensionConstructions.get(receipt) !== actual) throw new TypeError('Fresh matching simple-extension construction required');
+  assertExtensionChainReceipt(actual, receipt.complex);
+  for (const predicate of receipt.simple) assertAdditiveSimplePredicate(actual, predicate);
+}
+
+/** Check the sufficient simple-content extension spine and its original-target alternative restriction.
+ * @remarks Complex ancestry must consist solely of simple-content extensions and terminate at a simple type.
+ *   The designated ancestor is exactly anySimpleType; its fresh extension is independently constructed and
+ *   all original target restriction predicates and aggregate dependencies pass without replacing original bindings.
+ *   This collects native premises; the dated in-principle interpretation remains a separate qualification duty.
+ * @returns Authenticated premises or unresolved targets/native failure, never admission or a general negative answer.
+ * @see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#cos-ct-extends
+ */
+export function verifySimpleExtensionConstruction(actual: SemanticContext):
+  SimpleExtensionConstructionReceipt | FiniteVerificationFailure | ResourceLimitFailure {
+  assertSemanticContext(actual);
+  const b = actual.budget;
+  return b.guard(() => {
+    const complex = verifyExtensionChainActualSchema(actual);
+    if (!('frontier' in complex)) return complex;
+    const simple: AdditiveSimplePredicateReceipt[] = [], unresolved: NodeId[] = [];
+    for (const target of complex.unresolved) {
+      b.chargeWork(16 + target.length);
+      const designated = re01Ancestor(actual, target);
+      if (designated.kind === 'resource-limit') return designated;
+      const ancestor = designated.kind === 'checked' ? resolveSemanticType(actual, designated.ancestor) : undefined;
+      let supported = ancestor?.kind === 'builtin' && ancestor.name.namespace === XSD_NAMESPACE && ancestor.name.local === 'anySimpleType';
+      let reference: SemanticTypeReference = {kind: 'local', target};
+      const seen = new Set<NodeId>();
+      while (supported) {
+        b.chargeWork(16);
+        const selected = resolveSemanticType(actual, reference);
+        if (selected.kind === 'builtin') {
+          supported = selected.name.namespace === XSD_NAMESPACE && selected.name.local !== 'anyType';
+          break;
+        }
+        if (selected.kind !== 'component') {supported = false; break;}
+        if (selected.node.kind === 'simpleType') break;
+        if (selected.node.kind !== 'complexType' || seen.has(selected.node.id)
+          || selected.node.derivation?.kind !== 'extension') {supported = false; break;}
+        b.chargeWork(4 + selected.node.id.length); seen.add(selected.node.id);
+        const content = deriveActualComplexContent(actual, selected.node.id);
+        if (content.kind === 'resource-limit') return content;
+        if (content.kind !== 'checked' || content.view.content.kind !== 'simple') {supported = false; break;}
+        const next = immediateTypeBase(actual, reference);
+        if (next.kind === 'resource-limit') return next;
+        if (next.kind !== 'checked' || !next.value) {supported = false; break;}
+        reference = next.value;
+      }
+      if (!supported) {unresolved.push(target); continue;}
+      const paired = verifyAdditiveSimplePredicate(actual, target);
+      if (paired.kind === 'resource-limit') return paired;
+      if (paired.kind !== 'checked-additive-simple-predicate') {unresolved.push(target); continue;}
+      assertAdditiveSimplePredicate(actual, paired);
+      const middle = paired.frontier.context.rawTypeProperties(paired.intermediate);
+      const base = middle ? resolveSemanticType(paired.frontier.context, middle.derivation.base) : undefined;
+      if (middle?.derivation.method !== 'extension' || base?.kind !== 'builtin'
+        || base.name.namespace !== XSD_NAMESPACE || base.name.local !== 'anySimpleType') {
+        unresolved.push(target); continue;
+      }
+      b.chargeWork(4); simple.push(paired);
+    }
+    b.chargeWork(64 + unresolved.length + simple.length);
+    const result: SimpleExtensionConstructionReceipt = Object.freeze({
+      kind: unresolved.length ? 'inconclusive-simple-extension-construction' : 'checked-simple-extension-construction',
+      basis: 'XSD-2004-simple-extension-spine', complex, simple: Object.freeze(simple), unresolved: Object.freeze(unresolved),
+      datedInterpretation: 'unassessed', admitted: false});
+    simpleExtensionConstructions.set(result, actual);
+    return result;
+  });
+}
+
+/** Authenticate the actual-target predicate and fresh-middle closure; this grants no dated or runtime admission. */
+export function assertAdditiveSimplePredicate(actual: SemanticContext, receipt: AdditiveSimplePredicateReceipt): void {
+  assertSemanticContext(actual);
+  if (additiveSimplePredicates.get(receipt) !== actual) throw new TypeError('Fresh matching additive simple predicate required');
+  assertSimpleRestrictionPredicate(receipt.frontier.context, receipt.predicate);
+}
+
+/** Close a fresh middle and evaluate the original target's simple restriction predicate without a renamed representative.
+ * @remarks All original bindings are preserved and all consumed native dependencies are aggregated. The standards
+ *   interpretation of the alternative derivation remains unassessed; this is not actual RE01 or source eligibility.
+ * @returns A fresh native paired predicate/closure or explicit unavailability/resource failure.
+ */
+export function verifyAdditiveSimplePredicate(actual: SemanticContext, target: NodeId):
+  AdditiveSimplePredicateReceipt | FiniteVerificationFailure | ResourceLimitFailure {
+  assertSemanticContext(actual);
+  const b = actual.budget;
+  return b.guard(() => {
+    try {
+      const owner = createNativeFrontierOwner(actual);
+      const prepared = prepareAdditiveExtensionMiddle(actual, target);
+      if (prepared.kind === 'resource-limit') return prepared;
+      if (prepared.kind !== 'prepared-additive-middle') return Object.freeze({kind: 'unresolved', rule: 'additive-middle-preparation',
+        component: target, contextId: actual.contextId, message: 'The limited additive middle was unavailable'});
+      for (const id of prepared.context.members) {
+        b.chargeWork(4 + id.length);
+        if (actual.lookup(id).kind === 'found') continue;
+        const found = prepared.context.lookup(id);
+        let valid = found.kind === 'found';
+        if (found.kind === 'found' && id === prepared.intermediate) valid = found.node.kind === 'complexType';
+        else if (found.kind === 'found' && (found.node.kind === 'attribute' || found.node.kind === 'attributeUse')) {
+          valid = prepared.context.owner(id) === prepared.intermediate;
+          if (found.node.kind === 'attribute') valid &&= found.node.value === undefined;
+          else {
+            const declaration = prepared.context.resolve(found.node.declaration);
+            valid &&= declaration.kind === 'found' && declaration.node.kind === 'attribute'
+              && (declaration.node.identity.kind === 'global' || prepared.context.owner(declaration.node.id) === prepared.intermediate);
+          }
+        } else valid = false;
+        if (!valid) return Object.freeze({kind: 'unresolved', rule: 'additive-owned-attribute-scope', component: id,
+          contextId: prepared.context.contextId, message: 'The simple middle family requires fresh-owned local declarations and uses'});
+      }
+      const frontier = owner.inspectAdditive(prepared.context);
+      if (frontier.requirements.some(requirement => !requirement.primitive)) return Object.freeze({kind: 'unresolved',
+        rule: 'additive-middle-nonprimitive-dependency', component: target, contextId: prepared.context.contextId,
+        message: 'The additive middle has an unresolved nonprimitive dependency'});
+      const predicate = checkSimpleRestrictionPredicate(prepared.context, target, prepared.intermediate);
+      if (predicate.kind === 'resource-limit') return predicate;
+      if (predicate.kind !== 'checked-simple-restriction-predicate') return Object.freeze({kind: 'unresolved', rule: predicate.rule,
+        component: target, contextId: prepared.context.contextId, message: 'The actual-target simple restriction predicate was unavailable'});
+      assertSimpleRestrictionPredicate(prepared.context, predicate);
+      if (prepared.scalarObligations.length || predicate.scalarObligations.length) return Object.freeze({kind: 'unresolved',
+        rule: 'additive-predicate-scalar-obligations', component: target, contextId: prepared.context.contextId,
+        message: 'The additive predicate retains scalar obligations outside this local strategy'});
+      owner.retainActualDependencies(prepared.typeDependencies); owner.retainActualDependencies(predicate.typeDependencies);
+      owner.validateAggregate([], [prepared.context]);
+      b.chargeWork(128);
+      const result: AdditiveSimplePredicateReceipt = Object.freeze({kind: 'checked-additive-simple-predicate',
+        actual: owner.actualFrontier, frontier, target, intermediate: prepared.intermediate, predicate,
+        actualRe01: 'unassessed', datedInterpretation: 'unassessed', admitted: false});
+      additiveSimplePredicates.set(result, actual);
+      return result;
     } catch (error) {
       if (error instanceof VerificationAbort) return error.result;
       throw error;

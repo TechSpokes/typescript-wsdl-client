@@ -4,11 +4,19 @@ This reference describes the stable model agents should use when applying `@tech
 
 ## Inputs
 
-The source of truth is a WSDL URL or file path. A compiled `catalog.json` can become the local source of truth for later stages when a project wants repeatable generation without reloading the WSDL.
+The source of truth is a WSDL URL or file path. In legacy generation, a compiled `catalog.json` can become the local source of truth for later stages when a project wants repeatable generation without reloading the WSDL.
 
 Configuration files refine generation behavior. Common examples include security configuration, tag configuration, operation overrides, and stream configuration.
 
+## Checked Generation
+
+`pipeline --model checked-components-v1` reuses native source, mapping, XML and SOAP owners for its qualified structured fragment. It loads declared dependencies, derives unambiguous selections and emits source snapshots, operation inventories, matched clients/contracts, OpenAPI, gateways and optional app/tests. Planning reports are diagnostics and grant no runtime authority; invocation rechecks authorized physical source files and artifact compatibility.
+
+The checked path is buffered and separate from legacy catalog generation and streaming. Native checks may exceed the JSON shape expressed by OpenAPI. Optional companion projections carry explicit validation scope, and unsupported requirements remain refusals. Do not infer universal support, production security or provider acceptance from successful generation.
+
 ## Catalog
+
+This catalog workflow describes the legacy model. Opt-in checked generation uses the source-backed workflow above.
 
 The catalog is the intermediate representation shared by generation stages. Use it to inspect services, operations, schema types, WSDL documentation, and stream metadata.
 

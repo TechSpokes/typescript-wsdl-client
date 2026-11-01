@@ -7,6 +7,49 @@ import {
 } from "../../src/test/mockData.js";
 import {createSearchChoiceCatalog} from "../helpers/choiceCatalog.js";
 
+describe("operation aliases", () => {
+  const catalog: CatalogForMocks = {
+    operations: [{name: "Submit", inputTypeName: "RequestAlias", outputTypeName: "ResponseAlias"}],
+    aliases: [
+      {name: "RequestAlias", tsType: "RequestChain"},
+      {name: "RequestChain", tsType: "Record"},
+      {name: "ResponseAlias", tsType: "Record"},
+      {name: "NestedAlias", tsType: "Child"},
+      {name: "Code", tsType: '"Primary" | "Secondary"'},
+    ],
+    types: [
+      {name: "Record", attrs: [], elems: [{name: "Children", max: "unbounded"}]},
+      {name: "Child", attrs: [], elems: [{name: "Code", max: 1}]},
+    ],
+    meta: {
+      childType: {Record: {Children: "NestedAlias"}, Child: {Code: "Code"}},
+      propMeta: {Record: {Children: {max: "unbounded"}}},
+    },
+  };
+
+  it("generates structured requests and responses through complex alias chains", () => {
+    expect(generateAllOperationMocks(catalog).get("Submit")).toEqual({
+      request: {Children: [{Code: "Primary"}]},
+      response: {Children: [{Code: "Primary"}]},
+    });
+  });
+
+  it("preserves scalar operation aliases", () => {
+    expect(generateAllOperationMocks({...catalog, operations: [
+      {name: "Code", inputTypeName: "Code", outputTypeName: "Code"},
+    ]}).get("Code")).toEqual({request: "Primary", response: "Primary"});
+  });
+
+  it("terminates cyclic aliases and recursive complex aliases", () => {
+    expect(generateAllOperationMocks({...catalog, aliases: [
+      ...catalog.aliases!, {name: "Loop", tsType: "LoopAgain"}, {name: "LoopAgain", tsType: "Loop"},
+    ], operations: [{name: "Loop", inputTypeName: "Loop"}]}).get("Loop")?.request).toEqual({});
+    expect(generateAllOperationMocks({...catalog,
+      meta: {childType: {Record: {Next: "ResponseAlias"}}},
+    }).get("Submit")?.request).toEqual({Next: {}});
+  });
+});
+
 describe("generateMockPrimitive", () => {
   it("returns boolean true for 'Success'", () => {
     expect(generateMockPrimitive("boolean", "Success")).toBe(true);

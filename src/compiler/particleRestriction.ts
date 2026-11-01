@@ -154,7 +154,7 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
           charge(1 + p.source.length); const source = (particleContentNode(context, derived.content, p.source) ?? particleContentNode(context, base.content, p.source))?.context.source;
           if (!source) return unresolved(p, 'Semantic particle provenance is unavailable');
           decisions.set(p, Object.freeze({owner: Object.freeze({id: p.source, context: Object.freeze({source})}), kind: p.kind, occurs: p.occurs,
-            total: p.summary.effectiveTotalRange, members: Object.freeze(p.children.map(child => decisions.get(child)!)), namespace: p.element?.name.namespace,
+            total: p.summary.effectiveTotalRange, members: Object.freeze(p.children.map(child => decisions.get(child)!)), namespace: p.element?.name.namespace ?? p.standardElement?.name.namespace,
             wildcard: p.wildcard ? Object.freeze({constraint: p.wildcard.namespace, processContents: p.wildcard.processContents,
               lexical: Object.freeze({value: p.wildcard.lexical.value, effectiveNamespace: p.wildcard.lexical.context.effectiveNamespace})}) : undefined}));
         }
@@ -165,6 +165,10 @@ export function checkParticleRestriction(context: SemanticContext, derived: Sema
         charge(8);
         if (r === b || r.originalParticle !== undefined && r.originalParticle === b.originalParticle) return true;
         if (r.kind === 'element' && b.kind === 'element') {
+          if (r.standardElement || b.standardElement) {
+            if (r.standardElement && r.standardElement === b.standardElement) return within(r.occurs, b.occurs);
+            return unresolved(r, 'Restriction between fixed standard and application declarations is not implemented');
+          }
           const x = r.element!, y = b.element!;
           charge(x.name.namespace.length + y.name.namespace.length + x.name.local.length + y.name.local.length);
           if (x.name.namespace !== y.name.namespace || x.name.local !== y.name.local || !within(r.occurs, b.occurs)) return false;

@@ -70,7 +70,10 @@ export function checkRawParticleExtension(context: SemanticContext, derived: Par
         charge(); row.add(y);
         charge(x.occurs.min.length + y.occurs.min.length + x.occurs.max.length + y.occurs.max.length);
         if (x.kind !== y.kind || x.occurs.min !== y.occurs.min || x.occurs.max !== y.occurs.max || x.children.length !== y.children.length) return done(false);
-        if (x.element && y.element) {
+        if (x.standardElement || y.standardElement) {
+          if (x.standardElement !== y.standardElement) return unresolved('fixed-standard-declaration-correspondence', x.source,
+            'Extension requires the same acquired standard declaration');
+        } else if (x.element && y.element) {
           charge(2 + x.element.id.length + y.element.id.length);
           if (x.element.id !== y.element.id) {
             const same = compareComponentProperties(context, x.element, y.element);

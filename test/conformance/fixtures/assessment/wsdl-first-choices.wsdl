@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic distinct full identities, including unsupported binding, for #405. -->
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:choices" targetNamespace="urn:checked:choices">
+  <w:types><x:schema targetNamespace="urn:checked:choices"><x:element name="Input" type="x:string"/><x:element name="Output" type="x:boolean"/></x:schema></w:types>
+  <w:message name="Input"><w:part name="parameters" element="t:Input"/></w:message>
+  <w:message name="Output"><w:part name="parameters" element="t:Output"/></w:message>
+  <w:portType name="First"><w:operation name="Fetch"><w:input message="t:Input"/><w:output message="t:Output"/></w:operation></w:portType>
+  <w:portType name="Second"><w:operation name="Fetch"><w:input message="t:Input"/><w:output message="t:Output"/></w:operation></w:portType>
+  <w:binding name="First" type="t:First"><s:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Fetch"><s:operation soapAction="urn:first"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output></w:operation></w:binding>
+  <w:binding name="Second" type="t:Second"><s:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/><w:operation name="Fetch"><s:operation soapAction="urn:second"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output></w:operation></w:binding>
+  <w:service name="First"><w:port name="First" binding="t:First"><s:address location="http://example.invalid/first"/></w:port></w:service>
+  <w:service name="Second"><w:port name="Second" binding="t:Second"><s:address location="http://example.invalid/second"/></w:port></w:service>
+</w:definitions>

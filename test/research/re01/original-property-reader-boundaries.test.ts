@@ -8,6 +8,10 @@ import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSy
 import {createSemanticBudget} from '../../../src/compiler/semanticBudget.js';
 import {deriveOriginalComplexPropertyContent} from '../../../src/compiler/complexTypeContent.js';
 import {assessCandidateAttributeUses, readOriginalAttributeProperties} from '../../../src/compiler/schemaAttributeUses.js';
+import {checkComponentConstruction} from '../../../src/compiler/schemaConstructionAssessment.js';
+import {deriveActualComplexContent} from '../../../src/compiler/complexTypeContent.js';
+import {resolveSemanticType} from '../../../src/compiler/schemaTypeIdentity.js';
+import {checkOriginalGeneratedScalar} from '../../../src/compiler/schemaScalarKernel.js';
 
 const fixtures = path.resolve('test/conformance/fixtures');
 const file = (name: string) => path.join(fixtures, 'xsd/recovery', name);
@@ -34,14 +38,49 @@ describe('original property reader qualification boundaries', () => {
     expect(readOriginalAttributeProperties(good.context, owner).kind).toBe('checked');
   });
 
-  it('supports empty retained content but leaves source simple content unresolved', async () => {
+  it('preserves empty and genuine retained simple-content identities without granting full validity', async () => {
     const input = await loadSchemaInput(file('scalar-premise-forwarding-independent.xsd'), {policy: {fileRoots: [fixtures]}});
     const prepared = prepareSourceSchemaRequest(input); assert.equal(prepared.kind, 'prepared');
     const request = prepared.request, candidate = request.candidate({key: 'partial-reader', active: request.actual.members}); assert.equal(candidate.kind, 'prepared');
     expect(deriveOriginalComplexPropertyContent(candidate.context, id('urn:recovery:scalar-premise-forwarding', 'A')))
       .toMatchObject({kind: 'checked', view: {scope: 'original-property-projection', content: {kind: 'empty'}}});
     const simple = request.graph.nodes.find(node => node.kind === 'complexType' && node.derivation?.contentKind === 'simple'); assert.ok(simple);
-    expect(deriveOriginalComplexPropertyContent(candidate.context, simple.id)).toMatchObject({kind: 'unresolved', rule: 'component-content-properties'});
+    expect(deriveOriginalComplexPropertyContent(candidate.context, simple.id)).toMatchObject({kind: 'checked', view: {
+      scope: 'original-property-projection', content: {kind: 'simple', type: builtin('string')},
+    }});
+  });
+
+  it('preserves named and generated source scalar identities and detects changed hypothetical base content', async () => {
+    const input = await loadSchemaInput(file('original-simple-content-properties.xsd'), {policy: {fileRoots: [fixtures]}});
+    const prepared = prepareSourceSchemaRequest(input); assert.equal(prepared.kind, 'prepared');
+    const {request} = prepared, actual = request.actual, ns = 'urn:original-simple-properties';
+    const type = (name: string) => id(ns, name);
+    const candidate = request.candidate({key: 'original-simple-properties', active: actual.members}); assert.equal(candidate.kind, 'prepared');
+    for (const name of ['Text', 'Restricted', 'Extended']) {
+      const source = deriveActualComplexContent(actual, type(name)); assert.equal(source.kind, 'checked');
+      const original = deriveOriginalComplexPropertyContent(candidate.context, type(name)); assert.equal(original.kind, 'checked');
+      expect(original.view.content).toBe(source.view.content);
+      assert.equal(original.view.content.kind, 'simple');
+      if (name === 'Text') expect(resolveSemanticType(candidate.context, original.view.content.type))
+        .toMatchObject({kind: 'component', identity: {kind: 'component', id: type('Named')}});
+      else expect(original.view.content.type).toEqual({kind: 'original-generated', owner: type('Restricted')});
+    }
+    expect(candidate.context.lookupScalarSlot({kind: 'original-generated', owner: type('Text')}).kind).toBe('missing');
+    expect(candidate.context.lookupScalarSlot({kind: 'original-generated', owner: type('Extended')}).kind).toBe('missing');
+    expect(checkOriginalGeneratedScalar(candidate.context, {kind: 'original-generated', owner: type('Restricted')}).kind).toBe('checked');
+    const text = checkComponentConstruction(candidate.context, type('Text')); assert.equal(text.kind, 'checked');
+    expect(text.receipts).toContainEqual(expect.objectContaining({authority: 'XSD10-original-complex-simple-input-v1',
+      scope: 'guarded-original-simple-input', remaining: ['actual-source-qualification', 'complete-type-validity']}));
+
+    const changed = request.candidate({key: 'changed-base-scalar', active: actual.members, rawTypes: [{
+      type: type('Restricted'), targetNamespace: ns, derivation: {method: 'restriction', base: {kind: 'local', target: type('Text')}},
+      abstract: false, final: [], block: [], content: {kind: 'simple', type: builtin('boolean')}, attributeUses: [],
+      provenance: {kind: 'actual-mapped', original: type('Restricted')},
+    }]}); assert.equal(changed.kind, 'prepared');
+    expect(deriveOriginalComplexPropertyContent(changed.context, type('Extended'))).toMatchObject({kind: 'checked', view: {
+      content: {kind: 'simple', type: {kind: 'original-generated', owner: type('Restricted')}},
+    }});
+    expect(checkComponentConstruction(changed.context, type('Extended'))).toMatchObject({kind: 'candidate-rejected', rule: 'cos-ct-extends.1.4.1'});
   });
 
   it('charges cached reads and keeps exact/one-below exhaustion sticky', async () => {

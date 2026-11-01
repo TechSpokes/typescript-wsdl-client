@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:list-scalars" targetNamespace="urn:list-scalars" elementFormDefault="qualified">
+  <xs:simpleType name="Strings"><xs:list itemType="xs:string"/></xs:simpleType>
+  <xs:simpleType name="Ints"><xs:list itemType="xs:int"/></xs:simpleType>
+  <xs:simpleType name="Bools"><xs:list itemType="xs:boolean"/></xs:simpleType>
+  <xs:simpleType name="Code"><xs:restriction base="xs:int"><xs:pattern value="[+]00[0-9]"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Codes"><xs:list itemType="t:Code"/></xs:simpleType>
+  <xs:simpleType name="Bounded"><xs:restriction base="t:Ints"><xs:minLength value="1"/><xs:maxLength value="3"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Patterned"><xs:restriction base="t:Ints"><xs:pattern value="01 02"/></xs:restriction></xs:simpleType>
+  <xs:complexType name="Record"><xs:sequence><xs:element name="Numbers" type="t:Bounded"/><xs:element name="Flags" type="t:Bools"/><xs:element name="Codes" type="t:Codes"/><xs:element name="Words" type="t:Strings"/></xs:sequence><xs:attribute name="Tags" type="t:Strings" default="one two"/></xs:complexType>
+  <xs:complexType name="Text"><xs:simpleContent><xs:extension base="t:Ints"><xs:attribute name="id" type="xs:string"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:element name="Request" type="t:Record"/>
+  <xs:element name="Strings" type="t:Strings"/>
+  <xs:element name="Ints" type="t:Ints"/>
+  <xs:element name="Bounded" type="t:Bounded"/>
+  <xs:element name="Patterned" type="t:Patterned"/>
+  <xs:element name="Tokens" type="xs:NMTOKENS"/>
+  <xs:element name="Text" type="t:Text"/>
+</xs:schema>

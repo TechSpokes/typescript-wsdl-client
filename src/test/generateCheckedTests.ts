@@ -13,6 +13,9 @@ export interface GenerateCheckedTestsOptions {
   readonly clientDir: string;
   readonly routePath: string;
   readonly force?: boolean;
+  readonly routePaths?: readonly string[];
+  readonly sourceFile?: string;
+  readonly component?: boolean;
 }
 
 /**
@@ -26,7 +29,7 @@ export async function generateCheckedTests(options: GenerateCheckedTestsOptions)
   const testDir = path.resolve(options.testDir);
   let serverImport = path.relative(testDir, path.join(options.appDir, 'server.js')).split(path.sep).join('/');
   if (!serverImport.startsWith('.')) serverImport = './' + serverImport;
-  const localSource = path.relative(testDir, path.join(options.clientDir, 'source.wsdl')).split(path.sep).join('/');
+  const localSource = path.relative(testDir, options.sourceFile ?? path.join(options.clientDir, 'source.wsdl')).split(path.sep).join('/');
   const fileRoot = path.relative(testDir, options.clientDir).split(path.sep).join('/');
   fs.mkdirSync(testDir, {recursive: true});
   const destination = path.join(testDir, 'checked-scaffold.test.ts');
@@ -44,7 +47,7 @@ describe('generated scaffold checks (independent wire/business oracles are separ
       fileRoots: [fileURLToPath(new URL(${JSON.stringify(fileRoot + '/')}, import.meta.url))],
       endpoint: 'http://127.0.0.1:1/soap',
       allowedEndpoints: [],
-    });
+${options.component ? '      sourceResources: [], sourceOrigins: [],\n' : ''}    });
     return app;
   }
   it('serves health and selected OpenAPI without upstream SOAP calls', async () => {
@@ -52,12 +55,12 @@ describe('generated scaffold checks (independent wire/business oracles are separ
     expect((await server.inject({method: 'GET', url: '/health'})).json()).toEqual({status: 'ok'});
     const spec = (await server.inject({method: 'GET', url: '/openapi.json'})).json();
     expect(spec.openapi).toBe('3.1.1');
-    expect(spec.paths).toHaveProperty(${JSON.stringify(options.routePath)});
+    for (const route of ${JSON.stringify(options.routePaths ?? [options.routePath])}) expect(spec.paths).toHaveProperty(route);
   });
-  it('rejects an invalid shape before upstream dispatch', async () => {
+  it.each(${JSON.stringify(options.routePaths ?? [options.routePath])})('rejects an invalid shape before upstream dispatch: %s', async route => {
     const server = await host();
     // @constraints Every supported checked root is non-nullable; no field spelling is reserved for test sentinels.
-    const response = await server.inject({method: 'POST', url: ${JSON.stringify(options.routePath)},
+    const response = await server.inject({method: 'POST', url: route,
       headers: {'content-type': 'application/json'}, payload: 'null'});
     expect(response.statusCode).toBe(400);
   });

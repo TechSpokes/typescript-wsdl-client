@@ -4,18 +4,25 @@ import {checkSemanticBudget} from './semanticBudget.js';
 import {DataOwnershipLimitError} from './dataOwnership.js';
 import {createHash} from 'node:crypto';
 import {types} from 'node:util';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {canonicalJson, parseCatalogJson, CatalogError} from './catalogErrors.js';
 import {createApplicationBudget} from './semanticBudget.js';
 import type {SemanticBudget, SemanticBudgetLimits, ResolverUsage} from './semanticBudget.js';
-import {inspectDirectOperation, selectDirectOperationInRequest} from './directOperation.js';
+import {inspectDirectOperation, selectDirectOperationInRequest, selectComponentOperationInRequest} from './directOperation.js';
 import type {DirectOperationContract, DirectOperationSelector} from './directOperation.js';
-import {createDirectValueMapping, DIRECT_VALUE_VERSION, DIRECT_SCALAR_POLICY} from './directValues.js';
-import type {DirectValueMapping} from './directValues.js';
-import {prepareDirectSoapSource, DirectSoapSourceError, DIRECT_SOAP_SOURCE_MAX_BYTES} from './directSoapSource.js';
+import {createDirectValueMapping, createComponentValueMapping, DIRECT_VALUE_VERSION, DIRECT_SCALAR_POLICY} from './directValues.js';
+import type {DirectValueMapping, ComponentValueMapping} from './directValues.js';
+import {prepareDirectSoapSource, prepareComponentSoapWsdl, DirectSoapSourceError, DIRECT_SOAP_SOURCE_MAX_BYTES} from './directSoapSource.js';
+import {copyOriginalSchemaResource} from '../loader/schemaInput.js';
+import type {SchemaInputOptions, SchemaInput} from '../loader/schemaInput.js';
 import {SchemaResourceLoader, resolveResourceUri} from '../loader/schemaResources.js';
 import type {SchemaResourcePolicy} from '../loader/schemaResources.js';
 import {parseOrderedSyntax, syntaxElements, isXmlNCName, SchemaLoadingError} from '../loader/orderedSyntax.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
+import {createComponentRecordProjection, inspectComponentRecordProjection} from './componentRecordProjection.js';
+import type {ComponentRecordProjection, ComponentRecordProjectionSpec} from './componentRecordProjection.js';
+import {acquireStandardSchemaLibrary, SCHEMA_ELEMENT_LIBRARY} from './standardSchemaComponents.js';
 
 export const DIRECT_CAPSULE_LIMITS = Object.freeze({maxBytes: 256 * 1024, sourceBytes: DIRECT_SOAP_SOURCE_MAX_BYTES});
 const versions = Object.freeze({capsuleFormat: 1, model: 'xsd10-faithful-v1', scope: 'direct-soap11-single-utf8-v1',
@@ -94,7 +101,7 @@ function root(value: unknown): void {
 export function readDirectSourceCapsule(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): Capsule | DirectCapsuleFailure {
   try {return read(bytes, budget, signal);} catch (error) {return failure(error, budget);}
 }
-function read(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): Capsule {
+function capsuleJson(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): unknown {
   check(budget, signal);
   if (!types.isUint8Array(bytes) || types.isProxy(bytes)) return reject('byte-input-required');
   const typed = Object.getPrototypeOf(Uint8Array.prototype) as object;
@@ -108,7 +115,10 @@ function read(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): 
   Uint8Array.prototype.set.call(input, bytes);
   let decoded: string;
   try {decoded = new TextDecoder('utf-8', {fatal: true, ignoreBOM: true}).decode(input);} catch {return reject('capsule-utf8');}
-  const parsed = record(parseCatalogJson(decoded, {maxBytes: directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes), maxDepth: 16}), ['versions', 'source', 'compatibility', 'fingerprint']);
+  return parseCatalogJson(decoded, {maxBytes: directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes), maxDepth: 16});
+}
+function read(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): Capsule {
+  const parsed = record(capsuleJson(bytes, budget, signal), ['versions', 'source', 'compatibility', 'fingerprint']);
   const actual = record(parsed.versions, Object.keys(versions));
   for (const key of Object.keys(versions) as (keyof typeof versions)[]) if (actual[key] !== versions[key]) reject('unsupported-version-mode-or-policy');
   const source = record(parsed.source, ['base64', 'digest']); text(source.base64); text(source.digest);
@@ -233,4 +243,296 @@ export function checkDirectSourceCompatibility(expected: unknown, contract: Dire
      check(budget, signal);
     return Object.freeze({kind: 'compatible-direct', sourceIdentity: capsule.source.digest === hash(fresh.original) ? 'exact-bytes' : 'revised-bytes', admitted: false, usage: Object.freeze({...budget.usage()})});
   } catch (error) {return failure(error, budget);}
+}
+
+const componentVersions = Object.freeze({...versions, scope: 'component-soap11-utf8-graph-v1', mapping: 'component-values-v1',
+  runtimePolicy: 'explicit-http-verified-https-transport-v1'} as const);
+const scopedComponentVersions = Object.freeze({...componentVersions, scope: 'component-soap11-utf8-graph-v2', mapping: 'component-values-and-record-scope-v1'} as const);
+interface ComponentRoot {readonly element: ExpandedName; readonly message: ExpandedName; readonly part: string}
+interface ComponentResource {readonly key: string; readonly base64: string; readonly digest: string}
+interface ComponentRecordSource {
+  readonly selector: DirectOperationSelector; readonly action: string; readonly output: ComponentRoot;
+  readonly libraries: readonly string[]; readonly resources: readonly ComponentResource[];
+}
+interface ComponentProjectionData {readonly spec: ComponentRecordProjectionSpec; readonly source: ComponentRecordSource}
+interface ComponentCompatibility extends DirectSourceSelection {
+  readonly selector: DirectOperationSelector; readonly action: string;
+  readonly input: ComponentRoot; readonly output: ComponentRoot; readonly faults: readonly {name: string; root: ComponentRoot}[];
+}
+interface ComponentCapsule {
+  readonly versions: typeof componentVersions | typeof scopedComponentVersions;
+  readonly resources: readonly ComponentResource[];
+  readonly libraries?: readonly string[]; readonly projection?: ComponentProjectionData | null;
+  readonly compatibility: ComponentCompatibility; readonly fingerprint: string;
+}
+export interface ReconstructedComponentSource {
+  readonly kind: 'reconstructed-component'; readonly contract: DirectOperationContract;
+  readonly mappings: readonly (ComponentValueMapping | ComponentRecordProjection)[]; readonly selection: DirectSourceSelection;
+  readonly responseProjection?: ComponentRecordProjection;
+  readonly admitted: false; readonly usage: ResolverUsage;
+}
+const componentReconstructions = new WeakMap<ReconstructedComponentSource, ComponentCapsule>();
+function componentFailure(error: unknown, budget: SemanticBudget): DirectCapsuleFailure {
+  return Object.freeze({...failure(error, budget), repair: 'Regenerate matched component artifacts from explicitly authorized original WSDL and dependencies.'});
+}
+// @constraints Retrieval keys are compared only; artifact paths never initiate I/O. Local relative imports can relocate together.
+function componentResourceKey(source: SchemaInput, uri: string): string {
+  if (uri === source.root.uri) return 'root';
+  if (new URL(uri).protocol !== 'file:') return 'uri:' + uri;
+  return 'file:' + path.relative(path.dirname(fileURLToPath(source.root.uri)), fileURLToPath(uri)).replaceAll('\\', '/');
+}
+function componentResources(contract: DirectOperationContract, signal?: AbortSignal): readonly ComponentResource[] {
+  const {source, context: {budget}} = inspectDirectOperation(contract);
+  const resources = source.resources.map(resource => {
+    check(budget, signal); const bytes = copyOriginalSchemaResource(source, resource.uri, amount => {check(budget, signal); budget.chargeWork(amount);});
+    return {key: componentResourceKey(source, resource.uri), base64: Buffer.from(bytes).toString('base64'), digest: resource.digest};
+  }).sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+  if (new Set(resources.map(resource => resource.key)).size !== resources.length) throw new Stop('unsupported', 'ambiguous-resource-key');
+  return resources;
+}
+async function componentDescriptor(contract: DirectOperationContract, selection: DirectSourceSelection, signal?: AbortSignal,
+  responseProjection?: ComponentRecordProjection) {
+  const {context: {budget}, source} = inspectDirectOperation(contract);
+  const tick = () => check(budget, signal);
+  tick();
+  if (contract.basis !== 'native-component-premises-v1' || contract.correspondence !== 'dated-XSD-2004-components-v1') throw new Stop('unsupported', 'component-capsule-version');
+  const owned = directDataOwnership(budget).snapshot(selection, tick);
+  record(owned, ['service', 'port']); name(owned.service); ncname(owned.port);
+  await prepareComponentSoapWsdl(contract, owned, tick);
+  if (responseProjection) inspectComponentRecordProjection(responseProjection, contract);
+  const mappings: (ComponentValueMapping | ComponentRecordProjection)[] = [];
+  const make = (direction: ComponentValueMapping['direction']): ComponentRoot => {
+    tick(); const mapping = direction.kind === 'output' && responseProjection ? responseProjection : createComponentValueMapping(contract, direction, {signal});
+    if (mapping.kind !== 'component-mapping' && mapping.kind !== 'component-record-projection') throw new Stop(mapping.kind === 'resource-limit' || mapping.kind === 'cancelled' ? mapping.kind : 'unsupported', mapping.rule);
+    mappings.push(mapping);
+    return {element: mapping.root.element.name, message: mapping.root.message, part: mapping.root.part};
+  };
+  const input = make({kind: 'input'}), output = make({kind: 'output'});
+  const faults = contract.faults.map(fault => ({name: fault.name, root: make({kind: 'fault', name: fault.name})}));
+  const compatibility: ComponentCompatibility = {selector: contract.selector, service: owned.service, port: owned.port,
+    action: contract.binding.action, input, output, faults};
+  let projection: ComponentProjectionData | null = null;
+  if (responseProjection) {
+    const {companion} = inspectComponentRecordProjection(responseProjection, contract);
+    const {context} = inspectDirectOperation(companion);
+    projection = {spec: responseProjection.spec, source: {selector: companion.selector, action: companion.binding.action,
+      output: {element: companion.output.element.name, message: companion.output.message, part: companion.output.part},
+      libraries: context.standardLibraryIds(), resources: componentResources(companion, signal)}};
+  }
+  tick(); return {compatibility, resources: componentResources(contract, signal), mappings, libraries: inspectDirectOperation(contract).context.standardLibraryIds(), projection};
+}
+/** Serialize native component provenance as data; no source, mapping or execution authority is serialized.
+ * @returns Deterministic original resource bytes and compatibility description, or explicit refusal.
+ * @throws TypeError For foreign operation handles. Caller cancellation is returned as a refusal.
+ */
+export async function createComponentSourceCapsule(contract: DirectOperationContract, selection: DirectSourceSelection, signal?: AbortSignal,
+  responseProjection?: ComponentRecordProjection):
+  Promise<Readonly<{kind: 'component-capsule'; bytes: Uint8Array; admitted: false; usage: ResolverUsage}> | DirectCapsuleFailure> {
+  const {budget} = inspectDirectOperation(contract).context;
+  try {
+    const {compatibility, resources, libraries, projection} = await componentDescriptor(contract, selection, signal, responseProjection);
+    const extended = libraries.length > 0 || projection !== null;
+    const value = {versions: extended ? scopedComponentVersions : componentVersions, resources, compatibility,
+      ...(extended ? {libraries, projection} : {})};
+    const capsule = {...value, fingerprint: hash(json(value, budget))};
+    const serialized = json(capsule, budget) + '\n';
+    if (Buffer.byteLength(serialized) > directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes)) throw new Stop('resource-limit', 'capsule-byte-limit');
+    check(budget, signal);
+    return Object.freeze({kind: 'component-capsule', bytes: Buffer.from(serialized), admitted: false, usage: Object.freeze({...budget.usage()})});
+  } catch (error) {
+    if (!budget.exhausted() && signal?.aborted) return componentFailure(new Stop('cancelled', 'cooperative-cancellation'), budget);
+    return componentFailure(error, budget);
+  }
+}
+function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): ComponentCapsule {
+  const value = capsuleJson(bytes, budget, signal);
+  const extended = !!value && typeof value === 'object' && (Object.hasOwn(value, 'libraries') || Object.hasOwn(value, 'projection'));
+  const parsed = record(value, extended ? ['versions', 'resources', 'compatibility', 'libraries', 'projection', 'fingerprint']
+    : ['versions', 'resources', 'compatibility', 'fingerprint']);
+  const expectedVersions = extended ? scopedComponentVersions : componentVersions;
+  const actual = record(parsed.versions, Object.keys(expectedVersions));
+  for (const key of Object.keys(expectedVersions) as (keyof typeof expectedVersions)[]) if (actual[key] !== expectedVersions[key]) reject('unsupported-version-mode-or-policy');
+  validateComponentResources(parsed.resources, budget, signal);
+  const root = (value: unknown) => {const r = record(value, ['element', 'message', 'part']); name(r.element); name(r.message); ncname(r.part);};
+  const selector = (value: unknown) => {const s = record(value, ['portType', 'binding', 'operation']); name(s.portType); name(s.binding); ncname(s.operation);};
+  if (extended) {
+    validateComponentLibraries(parsed.libraries);
+    if (parsed.projection !== null) {
+      const projection = record(parsed.projection, ['spec', 'source']);
+      const spec = record(projection.spec, ['version', 'scope', 'payloadPath', 'recordPath', 'opaqueExclusions']);
+      if (spec.version !== 'component-record-scope-v1' || spec.scope !== 'records-with-declared-wrapper-scope') reject('unsupported-record-projection');
+      const path = (value: unknown) => {if (!Array.isArray(value) || !value.length) reject('record-projection-path'); else for (const entry of value) {check(budget, signal); name(entry);}};
+      path(spec.payloadPath); path(spec.recordPath);
+      if (!Array.isArray(spec.opaqueExclusions)) return reject('record-projection-exclusions');
+      for (const item of spec.opaqueExclusions) {
+        check(budget, signal); const exclusion = record(item, ['path', 'reason']); path(exclusion.path);
+        if (!['standard-schema-metadata', 'wrapper-declaration-universe'].includes(exclusion.reason as string)) reject('record-projection-exclusion');
+      }
+      const source = record(projection.source, ['selector', 'action', 'output', 'libraries', 'resources']);
+      selector(source.selector); text(source.action); root(source.output);
+      validateComponentLibraries(source.libraries); validateComponentResources(source.resources, budget, signal);
+    }
+    if (!(parsed.libraries as string[]).length && parsed.projection === null) reject('empty-component-extension');
+  }
+  const c = record(parsed.compatibility, ['selector', 'service', 'port', 'action', 'input', 'output', 'faults']);
+  selector(c.selector); name(c.service); ncname(c.port); text(c.action);
+  root(c.input); root(c.output);
+  if (!Array.isArray(c.faults)) return reject('faults-required');
+  const names = new Set<string>();
+  for (const entry of c.faults as unknown[]) {
+    check(budget, signal); const fault = record(entry, ['name', 'root']); ncname(fault.name); root(fault.root);
+    if (names.has(fault.name)) reject('duplicate-fault'); names.add(fault.name);
+  }
+  text(parsed.fingerprint);
+  if (hash(json({versions: actual, resources: parsed.resources, compatibility: c,
+    ...(extended ? {libraries: parsed.libraries, projection: parsed.projection} : {})}, budget)) !== parsed.fingerprint) reject('compatibility-fingerprint');
+  check(budget, signal); return directDataOwnership(budget).freeze(parsed) as unknown as ComponentCapsule;
+}
+function validateComponentLibraries(value: unknown): void {
+  if (!Array.isArray(value)) return reject('component-libraries-required');
+  let previous = '';
+  for (const id of value) {
+    if (typeof id !== 'string' || id !== SCHEMA_ELEMENT_LIBRARY || id <= previous) reject('supported-sorted-unique-libraries-required');
+    previous = id;
+  }
+}
+function validateComponentResources(value: unknown, budget: SemanticBudget, signal?: AbortSignal): void {
+  if (!Array.isArray(value) || !value.length) return reject('resources-required');
+  let previous = '';
+  for (const entry of value as unknown[]) {
+    check(budget, signal); const resource = record(entry, ['key', 'base64', 'digest']); text(resource.key); text(resource.base64); text(resource.digest);
+    if (resource.key <= previous) reject('sorted-unique-resources-required'); previous = resource.key;
+    const original = Buffer.from(resource.base64, 'base64');
+    if (original.toString('base64') !== resource.base64 || hash(original) !== resource.digest) reject('corrupt-source');
+  }
+  if (!(value as {key: string}[]).some(resource => resource.key === 'root')) reject('root-resource-required');
+}
+/** Reconstruct from a physical root and caller-authorized dependencies; embedded bytes are comparison data only.
+ * @remarks Local imports may relocate together. All original resource bytes and explicit service/binding roots must match.
+ *   Loading policy, offline snapshots and namespace locations are supplied independently by the caller, never the capsule.
+ * @returns Fresh native operation/mapping authority with admitted=false, or explicit refusal.
+ */
+export interface ComponentSourceReconstructionOptions {
+  loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
+  /** Caller permission; artifact identifiers alone never acquire a standard library. */
+  standardLibraries?: readonly string[];
+  /** Explicit physical companion roots, associated with exact outer binding/operation selectors. */
+  recordSources?: readonly {readonly selector: DirectOperationSelector; readonly source: string}[];
+}
+export async function reconstructComponentSourceCapsule(bytes: Uint8Array, localSource: string, options: Readonly<ComponentSourceReconstructionOptions>): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
+  return reconstructComponentSourceCapsuleInRequest(bytes, localSource, options, createApplicationBudget(options.limits));
+}
+/** Private runtime seam retaining one sticky request for artifact reading, source qualification and exchange. */
+export async function reconstructComponentSourceCapsuleInRequest(bytes: Uint8Array, localSource: string, options: Readonly<ComponentSourceReconstructionOptions>,
+  budget: SemanticBudget): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
+  try {
+    const capsule = readComponent(bytes, budget, options.signal);
+    const allowed = directDataOwnership(budget).snapshot(options.standardLibraries ?? [], () => check(budget, options.signal));
+    if (!Array.isArray(allowed) || allowed.some(id => id !== SCHEMA_ELEMENT_LIBRARY) || new Set(allowed).size !== allowed.length)
+      throw new Stop('unsupported', 'explicit-standard-library-permissions');
+    const sources = directDataOwnership(budget).snapshot(options.recordSources ?? [], () => check(budget, options.signal));
+    if (!Array.isArray(sources)) throw new Stop('unsupported', 'explicit-record-source-permissions');
+    let recordSource: string | undefined;
+    const sourceKeys = new Set<string>();
+    for (const entry of sources) {
+      check(budget, options.signal); const supplied = record(entry, ['selector', 'source']); text(supplied.source);
+      const selector = record(supplied.selector, ['portType', 'binding', 'operation']); name(selector.portType); name(selector.binding); ncname(selector.operation);
+      const key = json(selector, budget);
+      if (sourceKeys.has(key)) throw new Stop('unsupported', 'duplicate-record-source-permission'); sourceKeys.add(key);
+      if (key === json(capsule.compatibility.selector, budget)) recordSource = supplied.source as string;
+    }
+    if (capsule.projection && !recordSource) throw new Stop('missing-authority', 'explicit-companion-source-required');
+    const contract = await selectPinnedComponentSource(capsule.resources, capsule.compatibility.selector, capsule.libraries ?? [], localSource,
+      options, budget, allowed);
+    let responseProjection: ComponentRecordProjection | undefined;
+    if (capsule.projection) {
+      const source = capsule.projection.source;
+      const companion = await selectPinnedComponentSource(source.resources, source.selector, source.libraries, recordSource!,
+        {...options, loading: {...options.loading, sourceUri: undefined}}, budget, allowed);
+      const projection = createComponentRecordProjection(contract, companion, capsule.projection.spec, {signal: options.signal});
+      if (projection.kind !== 'component-record-projection') throw new Stop(projection.kind === 'resource-limit' || projection.kind === 'cancelled'
+        ? projection.kind : 'incompatible-artifact', projection.rule);
+      responseProjection = projection;
+    }
+    return await reconstructComponentAgainst(capsule, contract, {service: capsule.compatibility.service, port: capsule.compatibility.port}, options.signal, responseProjection);
+  } catch (error) {
+    if (!budget.exhausted() && options.signal?.aborted) return componentFailure(new Stop('cancelled', 'cooperative-cancellation'), budget);
+    return componentFailure(error, budget);
+  }
+}
+async function selectPinnedComponentSource(resources: readonly ComponentResource[], selector: DirectOperationSelector, libraries: readonly string[],
+  localSource: string, options: Readonly<ComponentSourceReconstructionOptions>, budget: SemanticBudget, allowed: readonly string[]): Promise<DirectOperationContract> {
+  if (typeof localSource !== 'string' || new URL(resolveResourceUri(localSource)).protocol !== 'file:') throw new Stop('missing-authority', 'new-local-file-required');
+  if (libraries.some(id => !allowed.includes(id))) throw new Stop('missing-authority', 'explicit-standard-component-permission');
+  const loader = await SchemaResourceLoader.create({fileRoots: options.loading.policy.fileRoots}, directLoadingLimits(budget, options.loading.limits),
+    undefined, amount => {check(budget, options.signal); budget.chargeWork(amount);}, options.signal);
+  const physical = await loader.fetchResource(localSource), expectedRoot = resources.find(resource => resource.key === 'root')!;
+  if (physical.digest !== expectedRoot.digest || Buffer.from(physical.bytes).toString('base64') !== expectedRoot.base64) reject('local-source-changed');
+  const offline = options.loading.offlineResources ? new Map(options.loading.offlineResources) : undefined;
+  offline?.set(physical.uri, physical);
+  const loading = {...options.loading, ...(offline ? {offlineResources: offline} : {})};
+  const selected = await selectComponentOperationInRequest(loading.sourceUri ?? physical.uri, selector, {loading, signal: options.signal,
+    standardLibraries: libraries.map(acquireStandardSchemaLibrary)}, budget);
+  if (selected.kind !== 'selected') throw new Stop(selected.kind === 'loading-refused' ? 'missing-authority'
+    : selected.kind === 'selection-refused' ? 'incompatible-artifact' : selected.kind, selected.rule);
+  return selected.contract;
+}
+/** Generator seam: expected bytes are checked against an already fresh, source-owned native operation.
+ * @remarks This accepts transient native authority only. Runtime consumers still reconstruct from independently
+ *   authorized physical files. It permits service-wide generation to reuse one native whole-source qualification.
+ */
+export async function reconstructComponentSourceCapsuleForOperation(bytes: Uint8Array, contract: DirectOperationContract,
+  selection: DirectSourceSelection, signal?: AbortSignal, responseProjection?: ComponentRecordProjection): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
+  const {budget} = inspectDirectOperation(contract).context;
+  try {return await reconstructComponentAgainst(readComponent(bytes, budget, signal), contract, selection, signal, responseProjection);}
+  catch (error) {
+    if (!budget.exhausted() && signal?.aborted) return componentFailure(new Stop('cancelled', 'cooperative-cancellation'), budget);
+    return componentFailure(error, budget);
+  }
+}
+async function reconstructComponentAgainst(capsule: ComponentCapsule, contract: DirectOperationContract,
+  selection: DirectSourceSelection, signal?: AbortSignal, responseProjection?: ComponentRecordProjection): Promise<ReconstructedComponentSource> {
+  const {budget} = inspectDirectOperation(contract).context;
+  const derived = await componentDescriptor(contract, selection, signal, responseProjection);
+  if (json(derived.resources, budget) !== json(capsule.resources, budget)) reject('local-source-changed');
+  if (json(derived.compatibility, budget) !== json(capsule.compatibility, budget)) reject('source-contract-changed');
+  if (json(derived.libraries, budget) !== json(capsule.libraries ?? [], budget) || json(derived.projection, budget) !== json(capsule.projection ?? null, budget)) reject('source-projection-changed');
+  check(budget, signal);
+  const result: ReconstructedComponentSource = Object.freeze({kind: 'reconstructed-component', contract,
+    mappings: Object.freeze(derived.mappings), selection: Object.freeze({service: derived.compatibility.service, port: derived.compatibility.port}),
+    ...(responseProjection ? {responseProjection} : {}),
+    admitted: false, usage: Object.freeze({...budget.usage()})});
+  componentReconstructions.set(result, capsule); return result;
+}
+/** Authenticate transient reconstruction identity; saved/copy-shaped reports cannot be consumed by generators. */
+export function inspectReconstructedComponentSource(value: ReconstructedComponentSource): ReconstructedComponentSource {
+  if (!componentReconstructions.has(value)) throw new TypeError('Freshly reconstructed component source required');
+  inspectDirectOperation(value.contract); return value;
+}
+
+/** Group fresh operations for one service without merging source contexts or binding identities.
+ * @returns A deterministic operation order over the original native handles.
+ * @throws TypeError For foreign handles, duplicate operations, accessors or mixed sources/services/bindings.
+ */
+export function inspectComponentSourceService(values: readonly ReconstructedComponentSource[]): readonly ReconstructedComponentSource[] {
+  if (!Array.isArray(values) || types.isProxy(values) || !values.length) throw new TypeError('Nonempty native component operations required');
+  const keys = Reflect.ownKeys(values);
+  if (keys.length !== values.length + 1) throw new TypeError('Dense native operation array required');
+  const operations: ReconstructedComponentSource[] = [];
+  for (let index = 0; index < values.length; index++) {
+    const descriptor = Object.getOwnPropertyDescriptor(values, String(index));
+    if (!descriptor || !('value' in descriptor)) throw new TypeError('Data-only native operation array required');
+    operations.push(inspectReconstructedComponentSource(descriptor.value as ReconstructedComponentSource));
+  }
+  const first = operations[0]!, {source, context: {budget}} = inspectDirectOperation(first.contract), names = new Set<string>();
+  for (const operation of operations) {
+    check(budget);
+    const inspection = inspectDirectOperation(operation.contract);
+    if (inspection.source !== source || inspection.context.budget !== budget
+      || json(operation.selection, budget) !== json(first.selection, budget)
+      || json(operation.contract.selector.binding, budget) !== json(first.contract.selector.binding, budget)
+      || names.has(operation.contract.selector.operation)) throw new TypeError('One source/service/binding and unique operations required');
+    names.add(operation.contract.selector.operation);
+  }
+  return Object.freeze(operations.sort((a, b) => budget.compareText(a.contract.selector.operation, b.contract.selector.operation)));
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:fixture:lexical-response" targetNamespace="urn:fixture:lexical-response">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:fixture:lexical-response" elementFormDefault="qualified">
+      <xs:complexType name="LabelType">
+        <xs:simpleContent><xs:extension base="xs:string"><xs:attribute name="Code" type="xs:string"/></xs:extension></xs:simpleContent>
+      </xs:complexType>
+      <xs:element name="Request"><xs:complexType><xs:attribute name="Token" type="xs:string"/></xs:complexType></xs:element>
+      <xs:element name="Reply"><xs:complexType><xs:sequence><xs:element name="Label" type="tns:LabelType"/></xs:sequence><xs:attribute name="Enabled" type="xs:boolean" use="required"/></xs:complexType></xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="Input"><wsdl:part name="parameters" element="tns:Request"/></wsdl:message>
+  <wsdl:message name="Output"><wsdl:part name="parameters" element="tns:Reply"/></wsdl:message>
+  <wsdl:portType name="LexicalPort"><wsdl:operation name="Echo"><wsdl:input message="tns:Input"/><wsdl:output message="tns:Output"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="LexicalBinding" type="tns:LexicalPort"><soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/><wsdl:operation name="Echo"><soap:operation soapAction="urn:fixture:Echo"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation></wsdl:binding>
+  <wsdl:service name="LexicalService"><wsdl:port name="LexicalPort" binding="tns:LexicalBinding"><soap:address location="http://127.0.0.1:1/unused"/></wsdl:port></wsdl:service>
+</wsdl:definitions>
