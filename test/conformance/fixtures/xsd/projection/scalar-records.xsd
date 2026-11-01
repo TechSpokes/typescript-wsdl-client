@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scalar-records" targetNamespace="urn:scalar-records" elementFormDefault="qualified">
+  <xs:complexType name="Record">
+    <xs:sequence><xs:element name="Day" type="xs:date"/><xs:element name="Code" type="xs:NCName"/><xs:element name="Link" type="xs:anyURI"/></xs:sequence>
+    <xs:attribute name="Version" type="xs:decimal" use="required"/>
+    <xs:attribute name="TimeStamp" type="xs:dateTime" use="required"/>
+    <xs:attribute name="Offset" type="xs:duration" use="required"/>
+    <xs:attribute name="Counter" type="xs:long" use="required"/>
+    <xs:attribute name="Binary" type="xs:base64Binary" use="required"/>
+    <xs:attribute name="Hex" type="xs:hexBinary" use="required"/>
+    <xs:attribute name="Ratio" type="xs:double" use="required"/>
+    <xs:attribute name="Language" type="xs:language" use="required"/>
+  </xs:complexType>
+  <xs:element name="Request" type="t:Record"/>
+  <xs:element name="Decimal" type="xs:decimal"/>
+  <xs:element name="QName" type="xs:QName"/>
+  <xs:element name="ID" type="xs:ID"/>
+  <xs:element name="IDREF" type="xs:IDREF"/>
+  <xs:element name="ENTITY" type="xs:ENTITY"/>
+</xs:schema>

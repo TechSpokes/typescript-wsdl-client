@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:original-simple-properties" targetNamespace="urn:original-simple-properties">
+  <xs:simpleType name="Named"><xs:restriction base="xs:string"><xs:minLength value="2"/></xs:restriction></xs:simpleType>
+  <xs:complexType name="Text"><xs:simpleContent><xs:extension base="t:Named"><xs:attribute name="id" type="xs:int"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Restricted"><xs:simpleContent><xs:restriction base="t:Text"><xs:minLength value="3"/><xs:attribute name="id" type="xs:int"/></xs:restriction></xs:simpleContent></xs:complexType>
+  <xs:complexType name="Extended"><xs:simpleContent><xs:extension base="t:Restricted"><xs:attribute name="flag" type="xs:boolean"/></xs:extension></xs:simpleContent></xs:complexType>
+  <xs:element name="TextRecord" type="t:Text"/>
+  <xs:element name="RestrictedRecord" type="t:Restricted"/>
+  <xs:element name="ExtendedRecord" type="t:Extended"/>
+</xs:schema>

@@ -36,7 +36,8 @@ export {
 export {generateTests} from "./test/generateTests.js";
 export {runGenerationPipeline} from "./pipeline.js";
 export type {PipelineOptions} from './pipeline.js';
-export type {CheckedDirectOptions, CheckedInventory} from './checkedPipeline.js';
+export type {CheckedDirectOptions, CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
+export type {ComponentRecordProjectionSpec} from './compiler/componentRecordProjection.js';
 export {
   loadStreamConfigFile,
   parseStreamConfig,
@@ -46,7 +47,7 @@ export {
   type StreamConfig,
 } from "./util/streamConfig.js";
 export {applyShapeCatalogs, type ApplyShapeCatalogsOptions} from "./compiler/shapeResolver.js";
-export {checkedDirectRuntimeV1} from './client/checkedDirectRuntime.js';
+export {checkedDirectRuntimeV1, checkedComponentRuntimeV1} from './client/checkedDirectRuntime.js';
 
 // noinspection JSUnusedGlobalSymbols
 /**

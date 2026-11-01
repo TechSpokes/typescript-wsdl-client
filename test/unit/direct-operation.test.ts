@@ -5,11 +5,12 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createServer} from 'node:http';
 import {once} from 'node:events';
-import {selectDirectOperation, inspectDirectOperation} from '../../src/compiler/directOperation.js';
+import {selectDirectOperation, selectComponentOperation, inspectDirectOperation} from '../../src/compiler/directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract, DirectOperationResult, DirectOperationSelector} from '../../src/compiler/directOperation.js';
 import {assessSchemaSource, parseAssessmentReport, serializeAssessmentReport} from '../../src/compiler/checkedAssessment.js';
 import type {SemanticContext} from '../../src/compiler/semanticContext.js';
 import type {GraphNode} from '../../src/compiler/canonicalGraph.js';
+import {createDirectValueMapping, createComponentValueMapping, inspectComponentValueMapping, expandProjectionValue} from '../../src/compiler/directValues.js';
 
 const fixtures = path.resolve('test/conformance/fixtures');
 const forecast = path.join(fixtures, 'assessment/forecast.wsdl');
@@ -59,6 +60,61 @@ function sequence(context: SemanticContext, root: DirectMessageRoot) {
 }
 
 describe('authenticated direct operation source contract', () => {
+  it('keeps additive component source authority distinct from preview codec admission', async () => {
+    const contract = selected(await selectComponentOperation(forecast, selector, {loading}));
+    expect(contract).toMatchObject({basis: 'native-component-premises-v1', correspondence: 'dated-XSD-2004-components-v1', admitted: false});
+    expect(inspectDirectOperation(contract).evidence).toMatchObject({kind: 'component-source', schemaEligible: true, admitted: false});
+    expect(() => inspectDirectOperation({...contract})).toThrow(TypeError);
+    expect(createDirectValueMapping(contract, {kind: 'input'})).toMatchObject({kind: 'unsupported', rule: 'direct-mapping-version'});
+    const mapping = createComponentValueMapping(contract, {kind: 'input'});
+    if (mapping.kind !== 'component-mapping') throw new Error(mapping.kind);
+    expect(mapping).toMatchObject({version: 'component-values-v1', admitted: false});
+    inspectComponentValueMapping(mapping, contract);
+    expect(() => inspectComponentValueMapping({...mapping}, contract)).toThrow(TypeError);
+    const other = selected(await selectComponentOperation(forecast, selector, {loading}));
+    expect(() => inspectComponentValueMapping(mapping, other)).toThrow(TypeError);
+    expect(selected(await select())).toMatchObject({basis: 'native-direct-premises-v1', correspondence: 'dated-XSD-2004-direct-v1'});
+  });
+
+  it('uses the shared binding owner to select exact roots from an authorized imported component source', async () => {
+    const namespace = 'urn:conformance:import-relative-types';
+    const source = path.join(fixtures, 'xsd/imports/import-relative-types.wsdl');
+    const selection = {portType: {namespace, local: 'ImportPortType'}, binding: {namespace, local: 'ImportBinding'}, operation: 'SubmitImported'};
+    const contract = selected(await selectComponentOperation(source, selection, {loading}));
+    const inspection = inspectDirectOperation(contract);
+    expect(contract.binding.action).toBe('urn:SubmitImported');
+    expect(contract.input.element.name).toEqual({namespace, local: 'SubmitImported'});
+    expect(contract.output.element.name).toEqual({namespace, local: 'SubmitImportedResponse'});
+    expect(inspection.source.resources).toHaveLength(2);
+    expect(inspection.evidence).toMatchObject({kind: 'component-source', schemaEligible: true});
+    const mapping = createComponentValueMapping(contract, {kind: 'input'});
+    if (mapping.kind !== 'component-mapping') throw new Error(mapping.kind);
+    expect(mapping.root).toBe(contract.input);
+    expect(inspectComponentValueMapping(mapping, contract).projection.root).toMatchObject({kind: 'record'});
+    const expanded = expandProjectionValue(inspection.context, mapping.root.element, {payload: {name: 'Synthetic imported value'}});
+    expect(expanded).toMatchObject({kind: 'projection-expanded', validated: {value: {payload: {name: 'Synthetic imported value'}}}});
+    if (expanded.kind !== 'projection-expanded') throw new Error(expanded.kind);
+    const payload = expanded.payload.children.filter(child => child.kind === 'element');
+    expect(payload.map(child => child.name)).toEqual([{namespace, local: 'payload'}]);
+    expect(payload[0]!.children.filter(child => child.kind === 'element').map(child => child.name))
+      .toEqual([{namespace: namespace + ':types', local: 'name'}]);
+    const invalid = {payload: {name: 23}};
+    expect(expandProjectionValue(inspection.context, mapping.root.element, invalid)).toMatchObject({kind: 'value-invalid'});
+    expect(invalid).toEqual({payload: {name: 23}});
+    const refused = await selectComponentOperation(source, {...selection, binding: {namespace, local: 'OtherBinding'}}, {loading});
+    expect(refused).toMatchObject({kind: 'selection-refused'});
+    expect('contract' in refused).toBe(false);
+  });
+
+  it('keeps component-source permission, explicit budget and cancellation boundaries', async () => {
+    expect(await selectComponentOperation(forecast, selector, {loading: {policy: {fileRoots: [scratch]}}}))
+      .toMatchObject({kind: 'loading-refused'});
+    expect(await selectComponentOperation(forecast, selector, {loading, limits: {maxWork: 10}}))
+      .toMatchObject({kind: 'resource-limit'});
+    const controller = new AbortController(); controller.abort();
+    expect(await selectComponentOperation(forecast, selector, {loading, signal: controller.signal}))
+      .toMatchObject({kind: 'cancelled'});
+  });
   it('derives the exact Forecast roots, order and occurrence bounds without runtime admission', async () => {
     const contract = selected(await select());
     const {context} = inspectDirectOperation(contract);

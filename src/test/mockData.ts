@@ -182,13 +182,8 @@ export function generateMockData(
     if (propType === "string" || propType === "number" || propType === "boolean") {
       const value = generateMockPrimitive(propType, propName);
       result[propName] = isArray ? [value] : value;
-    } else if (catalog.aliases?.some(alias => alias.name === propType)) {
-      const alias = catalog.aliases.find(entry => entry.name === propType)!;
-      const value = generateMockPrimitive(alias.tsType, propName);
-      result[propName] = isArray ? [value] : value;
     } else {
-      // Complex type — recurse
-      const childData = generateMockData(propType, catalog, opts, newVisited, currentDepth + 1);
+      const childData = generateMockValue(propType, propName, catalog, opts, newVisited, currentDepth + 1);
       result[propName] = isArray ? [childData] : childData;
     }
   }
@@ -219,13 +214,32 @@ export function generateMockData(
   return result;
 }
 
-function generateOperationPayload(typeName: string | undefined, catalog: CatalogForMocks): unknown {
-  if (!typeName) return {};
-  const alias = catalog.aliases?.find(a => a.name === typeName);
-  if (alias) {
-    return generateMockPrimitive(alias.tsType, typeName);
+/** Resolve aliases before choosing scalar or structured mock generation; cycles terminate without inventing text. */
+function generateMockValue(
+  typeName: string,
+  propName: string,
+  catalog: CatalogForMocks,
+  opts?: MockDataOptions,
+  visited = new Set<string>(),
+  depth = 0,
+): unknown {
+  const aliasNames = new Set<string>();
+  let resolved = typeName;
+  while (true) {
+    const alias = catalog.aliases?.find(a => a.name === resolved);
+    if (!alias) break;
+    if (aliasNames.has(resolved) || visited.has(resolved)) return {};
+    aliasNames.add(resolved);
+    resolved = alias.tsType;
   }
-  return generateMockData(typeName, catalog);
+  if (resolved === 'string' || resolved === 'number' || resolved === 'boolean' || aliasNames.size && !catalog.types?.some(type => type.name === resolved) && !catalog.meta?.childType?.[resolved] && !catalog.meta?.attrType?.[resolved]) {
+    return generateMockPrimitive(resolved, propName);
+  }
+  return generateMockData(resolved, catalog, opts, visited, depth);
+}
+
+function generateOperationPayload(typeName: string | undefined, catalog: CatalogForMocks): unknown {
+  return typeName ? generateMockValue(typeName, typeName, catalog) : {};
 }
 
 /**

@@ -1,0 +1,6 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="urn:common" targetNamespace="urn:library">
+  <xs:import namespace="urn:common"/>
+  <xs:complexType name="Record">
+    <xs:sequence><xs:element name="Value" type="common:Text"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>

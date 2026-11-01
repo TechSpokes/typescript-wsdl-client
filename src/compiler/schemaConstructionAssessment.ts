@@ -6,8 +6,8 @@ import type {SemanticContext} from './semanticContext.js';
 import type {ResourceLimitFailure} from './semanticBudget.js';
 import {checkActualSchemaSyntax} from './schemaSyntaxAssessment.js';
 import {checkDeclaration} from './schemaDeclarationPrimitives.js';
-import {assessAttributeUse, assessRawAttributeUses, assessCandidateAttributeUses, assessSourceAttributeUses} from './schemaAttributeUses.js';
-import type {AttributeResult} from './schemaAttributeUses.js';
+import {assessAttributeUse, assessRawAttributeUses, assessCandidateAttributeUses, assessSourceAttributeUses, assessAttributeRestrictionPair, assertAttributeRestrictionPair} from './schemaAttributeUses.js';
+import type {AttributeResult, AttributeRestrictionPair} from './schemaAttributeUses.js';
 import {createSchemaScalarKernel} from './schemaScalarKernel.js';
 import type {ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
@@ -32,12 +32,16 @@ import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeId
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import {collectIdentityConstraintDependencies} from './schemaIdentityConstraints.js';
 import type {IdentityConstraintDependency} from './schemaIdentityConstraints.js';
+import {checkStandardElementConstruction} from './standardSchemaConstruction.js';
+import type {StandardElementConstruction} from './standardSchemaConstruction.js';
+import type {StandardSchemaElementDeclaration} from './standardSchemaComponents.js';
 
 export type ConstructionObligation = Readonly<{rule: string; component: NodeId; contextId: string}>;
 export type ComponentConstructionReceipt = Readonly<{
   kind: 'checked'; authority: 'XSD10-component-construction-v1'; contextId: string; component: NodeId;
   scope: 'local-component-premises' | 'original-source-syntax-only'; receipts: readonly object[];
   dependencies: readonly NodeId[]; builtinDependencies: readonly string[];
+  standardDependencies: readonly StandardElementConstruction[];
   typeDependencies: readonly SemanticTypeDependency[];
   identityConstraintDependencies: readonly IdentityConstraintDependency[];
   re01?: Readonly<{target: NodeId; ancestor: SemanticTypeReference; primitive: boolean}>;
@@ -87,6 +91,16 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       const found = context.lookup(id);
       if (found.kind !== 'found') return fail('component-membership', 'Component is unavailable in the selected context', 'unresolved');
       const node = found.node, receipts: object[] = [], dependencies = new Set<NodeId>(), builtins = new Set<string>();
+      const standards = new Map<NodeId, StandardElementConstruction>();
+      const standardDependency = (declaration: StandardSchemaElementDeclaration): StandardSchemaElementDeclaration => {
+        b.chargeWork(4 + declaration.id.length);
+        if (!standards.has(declaration.id)) {
+          const result = checkStandardElementConstruction(context, declaration);
+          if (result.kind === 'resource-limit') throw new ConstructionAbort(result);
+          standards.set(declaration.id, result);
+        }
+        return declaration;
+      };
       const typeDependencies = collectSemanticTypeDependencies(context);
       const identityConstraintDependencies = collectIdentityConstraintDependencies(context);
       const obligations: ConstructionObligation[] = [];
@@ -96,7 +110,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         if (lookup.kind !== 'found') return fail('component-dependency', 'A required component is unavailable', 'unresolved');
         dependencies.add(target); return lookup.node;
       };
-      const reference = (ref: SemanticTypeReference): GraphNode | undefined => {
+      const reference = (ref: SemanticTypeReference): GraphNode | StandardSchemaElementDeclaration | undefined => {
         if (ref.kind === 'original-generated') {
           const resolved = resolveSemanticType(context, ref);
           if (resolved.kind !== 'original-generated') return fail('scalar-slot-membership', 'A required scalar slot is unavailable', 'unresolved');
@@ -107,6 +121,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
         const lookup = context.resolve(ref);
         b.chargeWork(3);
         if (lookup.kind === 'builtin') {b.chargeWork(lookup.name.local.length); builtins.add(lookup.name.local); return undefined;}
+        if (lookup.kind === 'standard-element') return standardDependency(lookup.declaration);
         if (lookup.kind !== 'found') return fail('component-dependency', 'A required reference is unavailable', 'unresolved');
         b.chargeWork(lookup.node.id.length); dependencies.add(lookup.node.id); return lookup.node;
       };
@@ -200,12 +215,14 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           if (slot.reference.kind === 'original-generated') return fail('source-only-scalar-slot',
             'Suppressed original source cannot supply a semantic scalar slot', 'unresolved');
           b.chargeWork(); const target = context.resolve(slot.reference);
+          if (target.kind === 'standard-element') standardDependency(target.declaration);
           if (target.kind === 'found' && target.node.identity.kind === 'global') requireNode(target.node.id);
         }
         b.chargeWork(20 + receipts.length + dependencies.size);
         const receipt: ComponentConstructionReceipt = Object.freeze({kind: 'checked', authority: 'XSD10-component-construction-v1',
           scope: 'original-source-syntax-only', contextId: context.contextId, component: id, receipts: Object.freeze(receipts),
           dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([]), typeDependencies: typeDependencies.snapshot(),
+          standardDependencies: Object.freeze([...standards.values()]),
           identityConstraintDependencies: identityConstraintDependencies.snapshot(),
           obligations: Object.freeze([]), discharged: Object.freeze([])});
         b.chargeWork(); issued.set(receipt, context); return receipt;
@@ -255,9 +272,10 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       if (sourceContent) {
         if (originalComplex) {
           b.chargeWork(100 + context.contextId.length + context.originalContext().contextId.length + id.length);
-          receipts.push(Object.freeze({kind: 'checked-original-input', authority: 'XSD10-original-complex-input-v1',
+          const simpleInput = sourceContent.content.kind === 'simple';
+          receipts.push(Object.freeze({kind: 'checked-original-input', authority: simpleInput ? 'XSD10-original-complex-simple-input-v1' : 'XSD10-original-complex-input-v1',
             contextId: context.contextId, originalContextId: context.originalContext().contextId, component: id,
-            scope: 'guarded-original-particle-empty-input', remaining: Object.freeze(['actual-source-qualification', 'complete-type-validity'])}));
+            scope: simpleInput ? 'guarded-original-simple-input' : 'guarded-original-particle-empty-input', remaining: Object.freeze(['actual-source-qualification', 'complete-type-validity'])}));
           reference(originalComplex.derivation?.base ?? ANY);
         } else if (rawComplex) {
           reference(rawComplex.derivation.base);
@@ -299,7 +317,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
             b.chargeWork(); pending.push(group.id);
           } else if (item.term.kind === 'element') {
             const declaration = reference(item.term.declaration);
-            if (declaration?.kind !== 'element') return fail('particle-properties', 'Element use must reference a declaration');
+            if (declaration?.kind !== 'element' && declaration?.kind !== 'standard-element') return fail('particle-properties', 'Element use must reference a declaration');
           }
         }
       } else if (rawComplex) {
@@ -463,8 +481,8 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
           if (node.occurs.max === '0') return fail('p-props-correct', 'A particle component must have a positive maximum occurrence');
           if (node.term.kind === 'element') {
             const declaration = reference(node.term.declaration);
-            if (declaration?.kind !== 'element') return fail('particle-properties', 'Element particle must reference an element declaration');
-            if (declaration.identity.kind === 'global') {
+            if (declaration?.kind !== 'element' && declaration?.kind !== 'standard-element') return fail('particle-properties', 'Element particle must reference an element declaration');
+            if (declaration.kind === 'element' && declaration.identity.kind === 'global') {
               if (context.membership !== 'complete-actual-plus-additions') obligation('complete-substitution-universe');
               b.chargeWork(3); const pending = [declaration.id], seen = new Set<NodeId>();
               while (pending.length) {
@@ -507,6 +525,7 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       const receipt: ComponentConstructionReceipt = Object.freeze({kind: 'checked', authority: 'XSD10-component-construction-v1',
         scope: 'local-component-premises', contextId: context.contextId, component: id, receipts: Object.freeze(receipts),
         dependencies: Object.freeze([...dependencies]), builtinDependencies: Object.freeze([...builtins]), re01,
+        standardDependencies: Object.freeze([...standards.values()]),
         typeDependencies: typeDependencies.snapshot(), identityConstraintDependencies: identityConstraintDependencies.snapshot(),
         obligations: b.freeze(b.snapshot(pending)),
         discharged: ownRawSimpleContentChecked
@@ -523,5 +542,67 @@ export function checkComponentConstruction(context: SemanticContext, id: NodeId,
       }
       throw error;
     }
+  });
+}
+
+export type SimpleRestrictionPredicate = Readonly<{
+  kind: 'checked-simple-restriction-predicate'; contextId: string; target: NodeId; base: NodeId;
+  attributes: AttributeRestrictionPair; scalar: Extract<ScalarResult<boolean>, {kind: 'checked'}>;
+  typeDependencies: readonly SemanticTypeDependency[]; scalarObligations: readonly ScalarObligation[];
+  remaining: readonly ['source-and-base-construction', 'alternative-derivation-interpretation'];
+}>;
+export type SimpleRestrictionPredicateResult = SimpleRestrictionPredicate | ResourceLimitFailure |
+  Readonly<{kind: 'not-simple-restriction'; rule: string; component: NodeId; contextId: string; details?: object}>;
+const simpleRestrictionPredicates = new WeakMap<SimpleRestrictionPredicate, SemanticContext>();
+
+/** Authenticate the paired predicate; it never replaces the target's actual derivation. */
+export function assertSimpleRestrictionPredicate(context: SemanticContext, receipt: SimpleRestrictionPredicate): void {
+  assertSemanticContext(context);
+  if (simpleRestrictionPredicates.get(receipt) !== context) throw new TypeError('Fresh matching simple restriction predicate required');
+  assertAttributeRestrictionPair(context, receipt.attributes);
+}
+
+/** Evaluate simple-content restriction constraints for the actual target properties and an explicit alternative base.
+ * @remarks Reuses the AU derivation owner and scalar content-derivation kernel. No target node, raw property,
+ *   TYPE/SCOPE lookup or stored base edge is replaced. Whole construction and the in-principle derivation interpretation
+ *   remain separate duties; failure of an alternative never declares the source schema invalid.
+ * @returns An authenticated native predicate, an explicit predicate/unavailability diagnostic, or sticky resource failure.
+ */
+export function checkSimpleRestrictionPredicate(context: SemanticContext, target: NodeId, base: NodeId): SimpleRestrictionPredicateResult {
+  assertSemanticContext(context);
+  const b = context.budget;
+  return b.guard(() => {
+    const fail = (rule: string, details?: object): SimpleRestrictionPredicateResult => {
+      b.chargeWork(64 + rule.length + target.length);
+      return Object.freeze({kind: 'not-simple-restriction', rule, component: target, contextId: context.contextId, ...(details ? {details} : {})});
+    };
+    b.chargeWork(64 + target.length + base.length);
+    const targetNode = context.lookup(target), baseNode = context.lookup(base);
+    if (targetNode.kind !== 'found' || targetNode.node.kind !== 'complexType' || baseNode.kind !== 'found' || baseNode.node.kind !== 'complexType')
+      return fail('paired-complex-types');
+    const content = (id: NodeId) => context.kind === 'actual' ? deriveActualComplexContent(context, id) : deriveOriginalComplexPropertyContent(context, id);
+    const own = content(target), prior = content(base);
+    if (own.kind === 'resource-limit') return own;
+    if (prior.kind === 'resource-limit') return prior;
+    if (own.kind !== 'checked') return fail('paired-target-properties', own);
+    if (prior.kind !== 'checked') return fail('paired-base-properties', prior);
+    if (own.view.content.kind !== 'simple' || prior.view.content.kind !== 'simple') return fail('paired-simple-content');
+    const attributes = assessAttributeRestrictionPair(context, target, base);
+    if (attributes.kind === 'resource-limit') return attributes;
+    if (attributes.kind !== 'checked-attribute-restriction') return fail('paired-attribute-restriction', attributes);
+    assertAttributeRestrictionPair(context, attributes);
+    const scalar = createSchemaScalarKernel(context).contentDerivation(own.view.content.type, prior.view.content.type, target);
+    if (scalar.kind === 'resource-limit') return scalar;
+    if (scalar.kind !== 'checked') return fail('paired-scalar-derivation', scalar);
+    if (!scalar.value) return fail('derivation-ok-restriction.5.2');
+    const typeDependencies = collectSemanticTypeDependencies(context);
+    typeDependencies.add(attributes.assessment.typeDependencies); typeDependencies.add(scalar.typeDependencies);
+    b.chargeWork(128 + attributes.assessment.scalarObligations.length + scalar.obligations.length);
+    const result: SimpleRestrictionPredicate = Object.freeze({kind: 'checked-simple-restriction-predicate', contextId: context.contextId,
+      target, base, attributes, scalar, typeDependencies: typeDependencies.snapshot(),
+      scalarObligations: Object.freeze([...attributes.assessment.scalarObligations, ...scalar.obligations]),
+      remaining: Object.freeze(['source-and-base-construction', 'alternative-derivation-interpretation'] as const)});
+    simpleRestrictionPredicates.set(result, context);
+    return result;
   });
 }

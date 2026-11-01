@@ -1,5 +1,73 @@
 # Installed checked gateway preview
 
+## Component service generation
+
+The additive `checked-components-v1` mode uses the same command family and native owners for qualified structured operations, imported schema snapshots, attributes, recursive records, simple content and ordered values. It preserves the direct preview and legacy defaults. Source, mapping, artifact and transport checks remain authoritative; unsupported schema or security features refuse rather than disappearing from a successful service claim. This is a qualified component fragment, not universal XSD, streaming or provider acceptance.
+
+Use `selectors` to request every intended operation explicitly. Each operation retains its own client and capsule; the service index and gateway compose them without merging service/binding identities. `basePath` can separate services on a shared host. If omitted, it defaults to the supplied version/service route prefix. Paths append the exact, URI-encoded operation name.
+
+For the installed Forecast example below, a component configuration is:
+
+```json
+{
+  "selectors": [{
+    "portType": {"namespace": "urn:checked:forecast", "local": "ForecastPortType"},
+    "binding": {"namespace": "urn:checked:forecast", "local": "ForecastBinding"},
+    "operation": "GetForecast"
+  }],
+  "service": {"namespace": "urn:checked:forecast", "local": "ForecastService"},
+  "port": "ForecastPort",
+  "fileRoots": ["/absolute/path/to/tooling/node_modules/@techspokes/typescript-wsdl-client/docs/examples"],
+  "sourceResources": [],
+  "sourceOrigins": [],
+  "basePath": "/api/v1/forecast"
+}
+```
+
+Save it as `component-generation.json`, then use the same explicit outputs:
+
+```bash
+npx wsdl-tsc pipeline --model checked-components-v1 --checked-config component-generation.json --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test
+```
+
+For imports, each `sourceResources` entry has an original logical `uri` and an independently authorized physical snapshot `file`. HTTP metadata origins must be listed in `sourceOrigins` even though bytes are read from files. Missing snapshots refuse without network fallback. Optional `namespaceLocations` entries have `namespace` and `location` for imports without `schemaLocation`; explicit locations in source take precedence. Generation paths resolve from the invocation directory. Original source bytes are copied without modification and their provenance is recorded in `client/source-resources.json`.
+
+Install/typecheck/test/build/start as described below. Runtime configuration adds explicit `sourceResources`, `sourceOrigins`, optional `namespaceLocations`, per-operation `capsuleFiles` and optional `caFile`. Runtime paths resolve from the configuration file. The generated example points to copied input bytes; its empty endpoint allowlist still authorizes no business request. Physical sources are rechecked independently of embedded capsule bytes, and mismatched artifacts refuse. Cross-volume local source relocation is outside this scaffold; callers can supply independently authorized runtime inputs explicitly.
+
+The component transport requires explicit endpoint permission and verified HTTPS when required by source policy. An optional CA file does not disable verification. Client certificates, timestamps, required WS-Addressing, supporting tokens and security headers remain unsupported and refuse. Scalar facets, ordered particle languages and strict wildcard membership remain native supplemental checks, so OpenAPI marks JSON shape completeness false. `admitted:false` remains the full-profile marker. Generated scaffold tests are separate from independently specified HTTP/SOAP wire and provider/business evidence.
+
+For [SOAP 1.1 response headers](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/), qualified optional blocks for the default receiver may be ignored when `mustUnderstand` is absent or `0`. Unknown mandatory blocks and actor-directed processing refuse; malformed attributes and unqualified blocks fail protocol checks. This processing grants no header security semantics or outgoing header capability.
+
+The copied-source scaffold refuses dependency retrieval aliases, including redirected imports and symlink aliases, before emission. Native loading can authorize such aliases, but the scaffold currently requires canonical dependency references so unchanged imports resolve after relocation. Directory names beginning with two dots are ordinary names, not parent segments.
+
+### Explicit schema metadata and companion records
+
+`standardLibraries: ["w3c-xsd10-schema-element-2004-v1"]` explicitly supplies the dated XSD 1.0 global `xs:schema` declaration. The declaring schema must still import its namespace. A reference to this element requires an actual schema element in the response; it supplies neither a default payload nor a companion service's record declarations. Runtime callers must independently permit the same library.
+
+For a qualified schema-metadata-plus-strict-wildcard response, `recordProjections` can explicitly select a separate source contract for the payload. Each entry supplies the outer operation's full `selector`, physical companion `source`, companion `recordSelector`, and a closed `spec`:
+
+```json
+{
+  "version": "component-record-scope-v1",
+  "scope": "records-with-declared-wrapper-scope",
+  "payloadPath": [{"namespace": "urn:owned:wrapper", "local": "Envelope"}],
+  "recordPath": [
+    {"namespace": "urn:owned:wrapper", "local": "Records"},
+    {"namespace": "urn:owned:wrapper", "local": "Record"}
+  ],
+  "opaqueExclusions": [
+    {"path": [{"namespace": "http://www.w3.org/2001/XMLSchema", "local": "schema"}], "reason": "standard-schema-metadata"},
+    {"path": [{"namespace": "urn:owned:wrapper", "local": "Envelope"}], "reason": "wrapper-declaration-universe"}
+  ]
+}
+```
+
+The path is relative to the outer response element; `recordPath` is relative to the companion output element. Both contracts are qualified independently, including when their output QNames coincide. Configuration does not merge their declarations or contact the companion service. Native checks must establish the supported wrapper structure and unique repeated-record path. The response retains the complete companion payload, including nonrecord fields; schema metadata is validated and omitted from the HTTP value. The declared scope does not claim wildcard validity against the outer declaration universe.
+
+Scoped artifacts use a distinct version from ordinary component artifacts. Generated runtime configuration adds explicit `recordSources`, each containing the outer full `selector` and independently authorized physical `source`. Both sources and their imported bytes are freshly checked on execution; embedded artifact bytes confer no permission. These responses are buffered under caller XML limits. No incremental delivery or streaming capability is claimed.
+
+## Direct preview
+
 The unreleased opt-in `checked-direct-v1` pipeline generates a complete runnable project from an explicitly selected, qualified local WSDL operation. The default pipeline remains legacy. This preview reuses `checkedDirectRuntimeV1` from the package root and the existing native contract, mapping, XML codec and SOAP adapter; diagnostic JSON and OpenAPI never authorize execution.
 
 ## Supported scope

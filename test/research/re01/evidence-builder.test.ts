@@ -24,7 +24,11 @@ const anchoredNamespace = 'urn:re01:anchored-inherited-list';
 const sharedNamespace = 'urn:re01:shared-inherited-list';
 const type = (namespace: string, name: string) => globalId('type', {namespace, local: name});
 const local = (target: string) => ({kind: 'local' as const, target});
-const json = (value: unknown) => JSON.stringify(value, (_key, at: unknown) => typeof at === 'bigint' ? String(at) : at);
+const json = (value: unknown) => {
+  if (!value || typeof value !== 'object') return JSON.stringify(value);
+  const result = value as Record<string, unknown>;
+  return JSON.stringify({kind: result.kind, rule: result.rule, code: result.code, component: result.component});
+};
 
 // Independent final-universe census from native component duties, separate from the builder's ancestry-only rank classifier.
 function nativeStoredRank(actual: SemanticContext, context: SemanticContext, correspondence: CorrespondenceReceipt) {
@@ -149,7 +153,7 @@ it('completes two inherited duties in their distinct contexts and separate origi
   expect(verifyFiniteRe01Evidence(actual, hypothesis.target, result.evidence).kind).toBe('checked-candidate');
 });
 
-it('retains inherited-consumer rejection rather than publishing a merely locally feasible child', async () => {
+it('retains inherited-consumer rejection without replacing the supplied root hypothesis', async () => {
   const {actual, hypothesis, consumerId} = await seeded({anchored: true, conflict: true});
   const result = completeSeededRe01Evidence(actual, hypothesis.target, hypothesis);
   assert.equal(result.kind, 'no-witness-found', json(result));

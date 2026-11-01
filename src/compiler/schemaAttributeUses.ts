@@ -11,16 +11,16 @@ import type {ResourceLimitFailure} from './semanticBudget.js';
 import {createSchemaScalarKernel} from './schemaScalarKernel.js';
 import type {AssessedSchemaOperand, ScalarResult} from './schemaScalarKernel.js';
 import type {ScalarObligation} from './scalarSchemaAssessment.js';
-import {checkTypeDerivation, checkImmediateTypeFinal} from './schemaTypeRelations.js';
+import {checkTypeDerivation, checkImmediateTypeFinal, declarationMethods} from './schemaTypeRelations.js';
 import type {RelationResult} from './schemaTypeRelations.js';
-import {checkDeclaration} from './schemaDeclarationPrimitives.js';
+import {checkDeclaration, declarationValueConstraint} from './schemaDeclarationPrimitives.js';
 import type {DeclarationReceipt} from './schemaDeclarationPrimitives.js';
 import {namespaceAllows, namespaceExpressible, namespaceIntersection, namespaceSubset, namespaceUnion, processContentsRestricts, wildcardNamespaces} from './wildcardAlgebra.js';
 import type {NamespaceConstraint, WildcardProcess} from './wildcardAlgebra.js';
 import {declaredType, resolveSemanticType, semanticTypeKey} from './schemaTypeIdentity.js';
 import type {SemanticTypeDependency, SemanticTypeReference} from './semanticTypeReference.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
-import {deriveOriginalComplexPropertyContent} from './complexTypeContent.js';
+import {deriveOriginalComplexPropertyContent, deriveActualComplexContent} from './complexTypeContent.js';
 import type {RawComplexTypeProperties} from './re01TypeProperties.js';
 
 export type TypedAttributeConstraint = Readonly<{kind: 'fixed' | 'default'; origin: 'use' | 'declaration'; value: AssessedSchemaOperand}>;
@@ -41,11 +41,11 @@ export type SourceAttributePlan = Readonly<{
   declarations: readonly DeclarationReceipt[];
 }>;
 export type AttributeFailure = Readonly<{kind: 'invalid-schema' | 'candidate-rejected' | 'unsupported-capability' | 'unresolved'; rule: string; component: NodeId; source?: SyntaxSource; contextId?: string; message: string}>;
-export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2' | 'AU01-C1-original-construction-v1' | 'AU01-C1-raw-properties-v1' | 'AU01-C1-original-properties-v1'; value: SourceAttributePlan;
+export type AttributeResult = Readonly<{kind: 'checked'; contextId: string; authority: 'AU01-C1-source-v1' | 'AU01-C1-raw-v2' | 'AU01-C1-original-construction-v1' | 'AU01-C1-raw-properties-v1' | 'AU01-C1-original-properties-v1' | 'AU01-C1-restriction-pair-v1'; value: SourceAttributePlan;
   obligations: readonly string[]; scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[]}> | AttributeFailure | ResourceLimitFailure;
 type Container = ComplexTypeNode | Extract<GraphNode, {kind: 'attributeGroup'}>;
 type AttributeRole = 'source' | 'raw';
-type AttributeMode = 'container' | 'original-container' | 'standalone' | 'properties' | 'original-properties';
+type AttributeMode = 'container' | 'original-container' | 'standalone' | 'properties' | 'original-properties' | 'restriction-pair';
 type DeclarationFact = Readonly<{
   receipt: DeclarationReceipt; value: TypedAttributeConstraint | undefined;
   scalarObligations: readonly ScalarObligation[];
@@ -113,6 +113,50 @@ export function readOriginalAttributeProperties(context: SemanticContext, ownerI
   return rawResult(context, assessAttributeUses(context, ownerId, 'raw', 'original-properties'));
 }
 
+export type AttributeRestrictionPair = Readonly<{
+  kind: 'checked-attribute-restriction'; derived: NodeId; base: NodeId;
+  assessment: Extract<AttributeResult, {kind: 'checked'}>;
+  remaining: readonly ['source-and-base-construction', 'alternative-content-derivation'];
+}>;
+export type AttributeRestrictionPairResult = AttributeRestrictionPair | ResourceLimitFailure |
+  Readonly<{kind: 'not-attribute-restriction'; failure: AttributeFailure}>;
+const restrictionPairs = new WeakMap<AttributeRestrictionPair, SemanticContext>();
+
+/** Authenticate a paired AU predicate, not the containing type's actual derivation. */
+export function assertAttributeRestrictionPair(context: SemanticContext, receipt: AttributeRestrictionPair): void {
+  assertSemanticContext(context);
+  if (restrictionPairs.get(receipt) !== context) throw new TypeError('Fresh matching attribute restriction pair required');
+}
+
+/** Check the existing AU restriction rules against an explicit alternative complex base without changing bindings.
+ * @remarks Only the root predicate's base/method arguments differ; TYPE/SCOPE lookups and every original node remain intact.
+ *   Failed alternative relations never classify the original schema invalid. Construction and content remain separate duties.
+ * @returns An authenticated paired AU predicate, a non-restriction diagnostic or sticky resource failure.
+ */
+export function assessAttributeRestrictionPair(context: SemanticContext, derived: NodeId, base: NodeId): AttributeRestrictionPairResult {
+  assertSemanticContext(context);
+  return context.budget.guard(() => {
+    context.budget.chargeWork(64 + derived.length + base.length);
+    const baseNode = context.lookup(base), derivedNode = context.lookup(derived);
+    if (baseNode.kind !== 'found' || baseNode.node.kind !== 'complexType' || derivedNode.kind !== 'found' || derivedNode.node.kind !== 'complexType')
+      return Object.freeze({kind: 'not-attribute-restriction', failure: Object.freeze({kind: 'unresolved', rule: 'attribute-restriction-types',
+        component: derived, message: 'Available complex types are required for both relation arguments'})});
+    // @why The base is evaluated under its actual derivation before applying root-only relation arguments.
+    //   Reusing the proposed root's arguments while reading the base chain would shadow that component indirectly.
+    const baseAssessment = context.kind === 'actual' ? assessSourceAttributeUses(context, base) : assessCandidateAttributeUses(context, base);
+    if (baseAssessment.kind === 'resource-limit') return baseAssessment;
+    if (baseAssessment.kind !== 'checked') return Object.freeze({kind: 'not-attribute-restriction', failure: baseAssessment});
+    const result = assessAttributeUses(context, derived, 'raw', 'restriction-pair', base, baseAssessment);
+    if (result.kind === 'resource-limit') return result;
+    if (result.kind !== 'checked') return Object.freeze({kind: 'not-attribute-restriction', failure: result});
+    context.budget.chargeWork(64);
+    const receipt: AttributeRestrictionPair = Object.freeze({kind: 'checked-attribute-restriction', derived, base, assessment: result,
+      remaining: Object.freeze(['source-and-base-construction', 'alternative-content-derivation'] as const)});
+    restrictionPairs.set(receipt, context);
+    return receipt;
+  });
+}
+
 function rawResult(context: SemanticContext, result: AttributeResult): AttributeResult {
   return result.kind === 'invalid-schema' ? context.budget.guard(() => {
     if (result.contextId !== undefined && result.contextId === context.originalContext().contextId) return result;
@@ -120,7 +164,8 @@ function rawResult(context: SemanticContext, result: AttributeResult): Attribute
   }) : result;
 }
 
-function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: AttributeRole, mode: AttributeMode = 'container'): AttributeResult {
+function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: AttributeRole, mode: AttributeMode = 'container', restrictionBase?: NodeId,
+  restrictionBasePlan?: Extract<AttributeResult, {kind: 'checked'}>): AttributeResult {
   assertSemanticContext(context);
   const budget = context.budget, charge = budget.chargeWork;
   return budget.guard(() => {
@@ -202,7 +247,7 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         charge(); const obligations: ScalarObligation[] = [];
         const dependencies = collectSemanticTypeDependencies(context); dependencies.add(checked.typeDependencies);
         unwrap(scalar.describe(declaredType(context, node), node.id), node, obligations, dependencies);
-        const value = typed(node, node.value, node, 'declaration', obligations, dependencies);
+        const value = typed(node, declarationValueConstraint(context, node), node, 'declaration', obligations, dependencies);
         charge(10 + obligations.length + node.id.length);
         const fact = Object.freeze({receipt: checked, value, scalarObligations: Object.freeze(obligations), typeDependencies: dependencies.snapshot()});
         cached.declarations.set(node.id, fact); return fact;
@@ -380,8 +425,16 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
         let originalInput = false;
         const input = (node: ComplexTypeNode): Pick<RawComplexTypeProperties, 'derivation' | 'attributeUses' | 'wildcard'> | undefined => {
           const raw = context.rawTypeProperties(node.id);
-          if (raw || mode !== 'original-container' || !context.originalComplexPropertySource(node.id)) return raw;
-          const content = deriveOriginalComplexPropertyContent(context, node.id);
+          if (raw) {
+            if (mode !== 'restriction-pair' || node.id !== ownerId) return raw;
+            charge(16);
+            return {attributeUses: raw.attributeUses, wildcard: raw.wildcard,
+              derivation: {method: 'restriction', base: {kind: 'local', target: restrictionBase!}}};
+          }
+          if (mode !== 'original-container' && mode !== 'restriction-pair') return undefined;
+          const actualInput = mode === 'restriction-pair' && context.kind === 'actual' && context.originalComplexContentSource(node.id) !== undefined;
+          if (!actualInput && !context.originalComplexPropertySource(node.id)) return undefined;
+          const content = actualInput ? deriveActualComplexContent(context, node.id) : deriveOriginalComplexPropertyContent(context, node.id);
           if (content.kind === 'resource-limit') throw new AttributeAbort(content);
           if (content.kind !== 'checked') return problem(node, content.rule, content.message, 'unresolved');
           const actual = context.originalContext(), source = assessSourceAttributeUses(actual, node.id);
@@ -394,10 +447,21 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
             scalarObligations.push(Object.freeze({...item, contextId: item.contextId ?? actual.contextId}));
           }
           charge(5 + source.value.uses.length);
-          return {derivation: {method: node.derivation?.kind ?? 'restriction', base: node.derivation?.base
+          return {derivation: mode === 'restriction-pair' && node.id === ownerId
+            ? {method: 'restriction', base: {kind: 'local', target: restrictionBase!}}
+            : {method: node.derivation?.kind ?? 'restriction', base: node.derivation?.base
             ?? {kind: 'builtin', name: {namespace: XSD_NAMESPACE, local: 'anyType'}}},
           attributeUses: source.value.uses.map(use => use.id), wildcard: source.value.wildcard};
         };
+        if (mode === 'restriction-pair') {
+          if (!restrictionBasePlan || restrictionBasePlan.contextId !== context.contextId || restrictionBasePlan.value.owner !== restrictionBase)
+            return problem(root, 'attribute-restriction-base-plan', 'The alternative base needs its own checked attribute plan', 'unresolved');
+          charge(8 + restrictionBasePlan.scalarObligations.length + restrictionBasePlan.value.declarations.length);
+          typeDependencies.add(restrictionBasePlan.typeDependencies);
+          for (const obligation of restrictionBasePlan.scalarObligations) {charge(); scalarObligations.push(obligation);}
+          for (const receipt of restrictionBasePlan.value.declarations) {charge(2 + receipt.component.length); declarationEvidence.set(receipt.component, receipt);}
+          plans.set(restrictionBase!, restrictionBasePlan.value);
+        }
         charge(3); const stack: ComplexTypeNode[] = [root], active = new Set<NodeId>();
         while (stack.length) {
           charge(); const node = stack[stack.length - 1]!;
@@ -424,9 +488,12 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
             const mapped = use(item)!; charge(); local.push(mapped);
           }
           const uses = checkUses(local, node), wildcard = raw.wildcard;
-          if (mode === 'original-container' && wildcard) for (const id of wildcard.sources) {charge(); get(id);}
+          if ((mode === 'original-container' || mode === 'restriction-pair') && wildcard) for (const id of wildcard.sources) {charge(); get(id);}
           if (wildcard && (!['strict', 'lax', 'skip'].includes(wildcard.processContents) || !namespaceExpressible(wildcard.namespace, charge))) return problem(node, 'cos-aw-union/intersect', 'Literal wildcard has invalid component properties');
-          if (!unwrap(checkImmediateTypeFinal(context, {kind: 'local', target: node.id}), node)) return problem(node, 'cos-ct-extends/derivation-ok-restriction', 'Base final excludes derivation');
+          if (mode === 'restriction-pair' && node.id === ownerId) {
+            if (!baseNode || baseNode.kind !== 'complexType') return problem(node, 'attribute-restriction-base', 'Alternative base must be complex', 'unresolved');
+            if (declarationMethods(context, baseNode, 'final').includes('restriction')) return problem(node, 'derivation-ok-restriction.1', 'Alternative base prohibits restriction');
+          } else if (!unwrap(checkImmediateTypeFinal(context, {kind: 'local', target: node.id}), node)) return problem(node, 'cos-ct-extends/derivation-ok-restriction', 'Base final excludes derivation');
           if (raw.derivation.method === 'extension') {
             for (const original of base?.uses ?? []) {
               let matched = false;
@@ -484,7 +551,8 @@ function assessAttributeUses(context: SemanticContext, ownerId: NodeId, role: At
           plans.set(node.id, plan); active.delete(node.id); stack.pop();
         }
         charge(10 + scalarObligations.length); return Object.freeze({kind: 'checked' as const, contextId: context.contextId,
-          authority: originalInput ? 'AU01-C1-original-construction-v1' as const : 'AU01-C1-raw-v2' as const,
+          authority: mode === 'restriction-pair' ? 'AU01-C1-restriction-pair-v1' as const
+            : originalInput ? 'AU01-C1-original-construction-v1' as const : 'AU01-C1-raw-v2' as const,
           value: plans.get(root.id)!, obligations: Object.freeze(['aggregate-type-validity', 'raw-type-property-correspondence']), scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()});
       }
       const dependencies = (node: Container): Container[] => {

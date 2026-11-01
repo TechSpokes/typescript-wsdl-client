@@ -680,8 +680,8 @@ if (rawArgs[0] === "pipeline") {
     .scriptName("wsdl-tsc pipeline")
     .usage("$0 --wsdl-source <file|url> [--client-dir <dir>] [--openapi-file <path>] [--gateway-dir <dir> --gateway-service-name <slug> --gateway-version-prefix <slug>] [--catalog-file <path>] [options]")
     .option("wsdl-source", {type: "string", demandOption: true, desc: "Path or URL to the WSDL"})
-    .option("model", {type: "string", choices: ["legacy", "checked-direct-v1"], default: "legacy", desc: "Generation model; checked-direct-v1 is a scoped opt-in preview"})
-    .option("checked-config", {type: "string", desc: "Explicit native selection and source-root JSON for checked-direct-v1"})
+    .option("model", {type: "string", choices: ["legacy", "checked-direct-v1", "checked-components-v1"], default: "legacy", desc: "Generation model; checked models require explicit source and selection configuration"})
+    .option("checked-config", {type: "string", desc: "Explicit native selection and source-root/snapshot JSON for the checked model"})
     // Per-artifact outputs
     .option("client-dir", {
       type: "string",
@@ -839,24 +839,26 @@ if (rawArgs[0] === "pipeline") {
     .help()
     .parse();
 
-  if (pipelineArgv.model === 'checked-direct-v1') {
+  if (pipelineArgv.model === 'checked-direct-v1' || pipelineArgv.model === 'checked-components-v1') {
     const allowed = new Set(['model', 'checked-config', 'wsdl-source', 'client-dir', 'gateway-dir', 'openapi-file',
       'gateway-service-name', 'gateway-version-prefix', 'init-app', 'app-dir', 'app-host', 'app-port', 'force-init',
       'test-dir', 'force-test', 'help', 'openapi-format']);
     for (const arg of rawArgs.slice(1).filter(a => a.startsWith('--'))) {
       if (!allowed.has(arg.slice(2).split('=')[0]!)) handleCLIError(`Unsupported checked model option: ${arg.split('=')[0]}`);
     }
-    if (!pipelineArgv['checked-config']) handleCLIError('checked-direct-v1 requires --checked-config');
-    if (pipelineArgv['init-app'] && !pipelineArgv['app-dir']) handleCLIError('checked-direct-v1 requires explicit --app-dir with --init-app');
-    if (pipelineArgv['openapi-format'] && pipelineArgv['openapi-format'] !== 'json') handleCLIError('checked-direct-v1 emits JSON OpenAPI only');
-    const {parseCheckedDirectOptions} = await import('./checkedPipeline.js');
-    const checked = parseCheckedDirectOptions(JSON.parse(fs.readFileSync(pipelineArgv['checked-config']!, 'utf8')) as unknown);
+    if (!pipelineArgv['checked-config']) handleCLIError(`${pipelineArgv.model} requires --checked-config`);
+    if (pipelineArgv['init-app'] && !pipelineArgv['app-dir']) handleCLIError(`${pipelineArgv.model} requires explicit --app-dir with --init-app`);
+    if (pipelineArgv['openapi-format'] && pipelineArgv['openapi-format'] !== 'json') handleCLIError(`${pipelineArgv.model} emits JSON OpenAPI only`);
+    const {parseCheckedDirectOptions, parseCheckedComponentOptions} = await import('./checkedPipeline.js');
+    const supplied: unknown = JSON.parse(fs.readFileSync(pipelineArgv['checked-config']!, 'utf8'));
     const controller = new AbortController();
     const cancel = () => controller.abort();
     process.on('SIGINT', cancel);
     try {
       const result = await runGenerationPipeline({
-        model: 'checked-direct-v1', checkedDirect: {...checked, signal: controller.signal},
+        model: pipelineArgv.model,
+        ...(pipelineArgv.model === 'checked-direct-v1' ? {checkedDirect: {...parseCheckedDirectOptions(supplied), signal: controller.signal}}
+          : {checkedComponents: {...parseCheckedComponentOptions(supplied), signal: controller.signal}}),
         wsdl: pipelineArgv['wsdl-source'], catalogOut: '',
         clientOutDir: pipelineArgv['client-dir'],
         openapi: {outFile: pipelineArgv['openapi-file']},
@@ -870,7 +872,7 @@ if (rawArgs[0] === "pipeline") {
     } finally {process.off('SIGINT', cancel);}
     process.exit(0);
   }
-  if (pipelineArgv['checked-config']) handleCLIError('--checked-config requires --model checked-direct-v1');
+  if (pipelineArgv['checked-config']) handleCLIError('--checked-config requires --model checked-direct-v1 or checked-components-v1');
 
   const format = (pipelineArgv["openapi-format"] as "json" | "yaml" | "both") ?? "json";
 

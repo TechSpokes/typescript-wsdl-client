@@ -14,6 +14,7 @@ import type {ResourceLimitFailure} from './semanticBudget.js';
 import {SemanticError} from './resolveCanonicalGraph.js';
 import {collectSemanticTypeDependencies} from './semanticTypeDependencies.js';
 import type {SemanticTypeDependency} from './semanticTypeReference.js';
+import type {StandardSchemaElementDeclaration} from './standardSchemaComponents.js';
 
 type GroupKind = 'sequence' | 'choice' | 'all';
 /** Explicit positions survive flattening; only each implicit block is a set. */
@@ -26,6 +27,7 @@ export type SemanticParticle = Readonly<{
   id: NodeId; source: NodeId; originalParticle?: NodeId; origins: readonly NodeId[];
   kind: GroupKind | 'element' | 'any'; occurs: Occurs;
   children: readonly SemanticParticle[]; orderBlocks: readonly SemanticParticleOrderBlock[]; element?: ElementNode; wildcard?: SelectedParticleWildcard;
+  standardElement?: StandardSchemaElementDeclaration;
   summary: ParticleSummary; urTypeWildcard: boolean; orderUnspecified: boolean;
 }>;
 export type SemanticParticleView = Readonly<{
@@ -38,7 +40,8 @@ const cache = new WeakMap<object, Map<string, SemanticParticleView>>();
 const ONE = Object.freeze({min: '1', max: '1'});
 const EMPTY: readonly never[] = Object.freeze([]);
 type Shape = {id: NodeId; source: NodeId; originalParticle?: NodeId; origins: readonly NodeId[]; kind: SemanticParticle['kind']; occurs: Occurs;
-  children: readonly Shape[]; orderBlocks: readonly ShapeOrderBlock[]; element?: ElementNode; wildcard?: SelectedParticleWildcard; urTypeWildcard: boolean; orderUnspecified: boolean};
+  children: readonly Shape[]; orderBlocks: readonly ShapeOrderBlock[]; element?: ElementNode; standardElement?: StandardSchemaElementDeclaration;
+  wildcard?: SelectedParticleWildcard; urTypeWildcard: boolean; orderUnspecified: boolean};
 type ShapeOrderBlock = {kind: 'explicit'; children: readonly Shape[]} | {kind: 'implicit'; particle: NodeId; head: NodeId; children: readonly Shape[]};
 class Incomplete extends Error {constructor(readonly result: RelationFailure | ResourceLimitFailure) {super(result.kind);}}
 export function assertSemanticParticleView(context: SemanticContext, view: SemanticParticleView): void {
@@ -107,7 +110,12 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
         if (original.kind === 'found' && original.node === node && original.node.kind === 'particle'
           || content.synthetic.includes(node.id)) p.originalParticle = node.id;
         if (term.term.kind === 'element') {
-          const declaration = target(term.term.declaration, node.id);
+          const selected = context.resolve(term.term.declaration);
+          if (selected.kind === 'standard-element') {
+            p.standardElement = selected.declaration;
+            return p;
+          }
+          const declaration = selected.kind === 'found' ? selected.node : fail(node.id, 'Element target unavailable');
           if (declaration.kind !== 'element') return fail(node.id, 'Element particle requires an element declaration');
           p.element = declaration;
           if (purpose === 'restriction' && declaration.identity.kind === 'global') {
@@ -171,13 +179,17 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
         shapes.set(item.id, item); charge(item.children.length); pending.push(...item.children);
       }
       charge(3 + shapes.size * 2); const nodes: GraphNode[] = [], declarations = new Map<NodeId, ElementNode>();
+      const standardElements = new Map<NodeId, StandardSchemaElementDeclaration>();
       for (const p of shapes.values()) if (p.element) {charge(2 + p.element.id.length); declarations.set(p.element.id, p.element);}
+      for (const p of shapes.values()) if (p.standardElement) {charge(2 + p.standardElement.id.length); standardElements.set(p.standardElement.id, p.standardElement);}
       charge(declarations.size); nodes.push(...declarations.values());
       let wildcardRealization: Map<NodeId, boolean> | undefined;
       for (const p of shapes.values()) {
         const original = get(p.source);
         charge(20 + p.children.length);
-        const term: ParticleNode['term'] = p.kind === 'element' ? Object.freeze({kind: 'element', declaration: Object.freeze({kind: 'local', target: p.element!.id})})
+        const term: ParticleNode['term'] = p.kind === 'element' ? Object.freeze({kind: 'element', declaration: p.standardElement
+          ? original.kind === 'particle' && original.term.kind === 'element' ? original.term.declaration : fail(p.source, 'Standard element source unavailable')
+          : Object.freeze({kind: 'local', target: p.element!.id})})
           : p.kind === 'any' ? Object.freeze({kind: 'any', wildcard: Object.freeze({namespace: p.wildcard!.lexical,
             processContents: p.wildcard!.processContents})})
           : Object.freeze({kind: p.kind, children: Object.freeze(p.children.map(child => child.id))});
@@ -189,7 +201,7 @@ export function prepareSemanticParticleView(context: SemanticContext, content: P
       }
       charge(18); const graph = Object.freeze({...semanticContextGraphMetadata(context), nodes: Object.freeze(nodes), globals: EMPTY});
       const composed = Object.freeze({resolved: Object.freeze({graph, links: EMPTY, metrics: Object.freeze({steps: 0})}), types: EMPTY, metrics: Object.freeze({steps: 0})});
-      const analysis = analyzeOccurrences(composed, {maxNodes: Number.MAX_SAFE_INTEGER, maxSteps: Number.MAX_SAFE_INTEGER}, {budget, wildcardRealization});
+      const analysis = analyzeOccurrences(composed, {maxNodes: Number.MAX_SAFE_INTEGER, maxSteps: Number.MAX_SAFE_INTEGER}, {budget, wildcardRealization, standardElements});
       if (analysis.kind === 'resource-limit') return analysis;
       if (analysis.kind === 'failure') return fail(analysis.diagnostic.component ?? content.type, analysis.diagnostic.message);
       charge(4 + analysis.analysis.particles.length * 2);

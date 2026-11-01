@@ -1,16 +1,19 @@
-import {directDataOwnership, directLimit} from '../compiler/directExecutionPolicy.js';
+import {directDataOwnership, directLimit, directLoadingLimits} from '../compiler/directExecutionPolicy.js';
 /** Private P3.7 binding. No public package entry or alternate SOAP implementation. */
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {DataOwnershipLimitError} from '../compiler/dataOwnership.js';
 import {types} from 'node:util';
 import {createApplicationBudget} from '../compiler/semanticBudget.js';
 import type {SemanticBudgetLimits, ResolverUsage} from '../compiler/semanticBudget.js';
-import {reconstructDirectSourceCapsuleInRequest, checkDirectSourceCompatibility, DIRECT_CAPSULE_LIMITS} from '../compiler/directSourceCapsule.js';
+import {reconstructDirectSourceCapsuleInRequest, reconstructComponentSourceCapsuleInRequest, checkDirectSourceCompatibility, DIRECT_CAPSULE_LIMITS} from '../compiler/directSourceCapsule.js';
 import type {DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
-import {exchangeDirectSoap, directSoapOptionsShape} from '../compiler/directSoap.js';
-import type {DirectSoapOptions, DirectSoapFailure} from '../compiler/directSoap.js';
+import {exchangeDirectSoap, exchangeComponentSoap, directSoapOptionsShape} from '../compiler/directSoap.js';
+import type {DirectSoapOptions, ComponentSoapOptions, DirectSoapFailure, ComponentRecordSoapResult} from '../compiler/directSoap.js';
+import type {DirectOperationSelector} from '../compiler/directOperation.js';
 import type {DirectApplicationValue} from '../compiler/directValues.js';
-import {DIRECT_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
+import {DIRECT_CLIENT_RUNTIME_VERSION, COMPONENT_CLIENT_RUNTIME_VERSION} from './directClientVersion.js';
+import {prepareSchemaSnapshotFiles} from '../loader/schemaInput.js';
+import {SchemaLoadingError} from '../loader/orderedSyntax.js';
 
 export interface DirectClientOptions {
   readonly localSource: string;
@@ -19,9 +22,18 @@ export interface DirectClientOptions {
   readonly budget?: SemanticBudgetLimits;
   readonly soap: DirectSoapOptions;
 }
+export interface ComponentClientOptions extends DirectClientOptions {
+  readonly sourceResources: readonly {readonly uri: string; readonly file: string}[];
+  readonly sourceOrigins: readonly string[];
+  readonly namespaceLocations?: readonly {readonly namespace: string; readonly location: string}[];
+  readonly standardLibraries?: readonly string[];
+  readonly recordSources?: readonly {readonly selector: DirectOperationSelector; readonly source: string}[];
+  readonly soap: ComponentSoapOptions;
+}
 export interface DirectClientFailure {
   readonly kind: DirectCapsuleFailure['kind'] | DirectSoapFailure['kind'];
   readonly rule: string; readonly usage: ResolverUsage; readonly repair?: string;
+  readonly phase?: 'input' | 'response';
 }
 export type DirectClientResult = DirectClientFailure | Readonly<{
   kind: 'soap-response'; value: DirectApplicationValue; status: number; admitted: false;
@@ -38,19 +50,27 @@ export interface DirectClientRuntime {
 /** The generated literal is the expected artifact; caller bytes never choose its static contract. */
 export const directClientRuntime: DirectClientRuntime = Object.freeze({
   version: DIRECT_CLIENT_RUNTIME_VERSION,
-  async execute(expectedBase64: string, input: unknown, options: DirectClientOptions): Promise<DirectClientResult> {
+  execute: (expectedBase64: string, input: unknown, options: DirectClientOptions) => executeClient(expectedBase64, input, options, false),
+});
+/** Same artifact/execution chain, with explicit physical dependency snapshots and component-profile reconstruction. */
+export const componentClientRuntime = Object.freeze({
+  version: COMPONENT_CLIENT_RUNTIME_VERSION,
+  execute: (expectedBase64: string, input: unknown, options: ComponentClientOptions): Promise<DirectClientResult> => executeClient(expectedBase64, input, options, true),
+});
+async function executeClient(expectedBase64: string, input: unknown, options: DirectClientOptions | ComponentClientOptions,
+  component: boolean): Promise<DirectClientResult> {
     // Constant-sized entry introspection precedes budget configuration and all reads.
     const entryFailure = (): DirectClientFailure => ({kind: 'unsupported', rule: 'data-only client options required', usage: {nodes: 0, work: 0}});
     if (!options || typeof options !== 'object' || types.isProxy(options)
       || ![null, Object.prototype].includes(Object.getPrototypeOf(options) as object | null)) return entryFailure();
-    const allowed = ['localSource', 'fileRoots', 'capsule', 'budget', 'soap'];
+    const allowed = ['localSource', 'fileRoots', 'capsule', 'budget', 'soap', ...(component ? ['sourceResources', 'sourceOrigins', 'namespaceLocations', 'standardLibraries', 'recordSources'] : [])];
     const owned: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
     for (const key of Reflect.ownKeys(options)) {
       const descriptor = Object.getOwnPropertyDescriptor(options, key);
       if (typeof key !== 'string' || !allowed.includes(key) || !descriptor || !('value' in descriptor)) return entryFailure();
       owned[key] = descriptor.value;
     }
-    if (!['localSource', 'fileRoots', 'capsule', 'soap'].every(key => Object.hasOwn(owned, key))) return entryFailure();
+    if (!['localSource', 'fileRoots', 'capsule', 'soap', ...(component ? ['sourceResources', 'sourceOrigins'] : [])].every(key => Object.hasOwn(owned, key))) return entryFailure();
     if (owned.budget !== undefined) {
       const limits = owned.budget;
       if (!limits || typeof limits !== 'object' || types.isProxy(limits)
@@ -67,7 +87,7 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
     const budget = createApplicationBudget(options.budget);
     const fail = (kind: DirectClientFailure['kind'], rule: string): DirectClientFailure => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
     try {
-      const optionRule = directSoapOptionsShape(options.soap, () => checkSemanticBudget(budget));
+      const optionRule = directSoapOptionsShape(options.soap, () => checkSemanticBudget(budget), component ? ['ca'] : []);
       if (optionRule) return fail('unsupported', optionRule);
       if (options.soap.signal !== undefined && !(options.soap.signal instanceof AbortSignal)) return fail('unsupported', 'native AbortSignal required');
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
@@ -76,7 +96,7 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
 
       const soap: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
       for (const key of Reflect.ownKeys(options.soap)) soap[key as string] = Object.getOwnPropertyDescriptor(options.soap, key)!.value;
-      for (const key of ['service', 'port', 'endpoint', 'timeoutMs', 'limits', 'capabilities']) {
+      for (const key of ['service', 'port', 'endpoint', 'timeoutMs', 'limits', 'capabilities', ...(component ? ['ca'] : [])]) {
         if (Object.hasOwn(soap, key)) soap[key] = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(soap[key], check));
       }
       options = Object.freeze({...options, fileRoots: directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(options.fileRoots, check)), soap: Object.freeze(soap) as unknown as DirectSoapOptions});
@@ -93,7 +113,40 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       const bytes = new Uint8Array(length);
       Uint8Array.prototype.set.call(bytes, options.capsule);
       if (Buffer.from(bytes).toString('base64') !== expectedBase64) return fail('incompatible-artifact', 'generated-capsule-mismatch');
-      const fresh = await reconstructDirectSourceCapsuleInRequest(bytes, options.localSource,
+      let result: Awaited<ReturnType<typeof exchangeDirectSoap>> | ComponentRecordSoapResult;
+      if (component) {
+        if (typeof options.localSource !== 'string') return fail('unsupported', 'explicit local source required');
+        const supplied = options as ComponentClientOptions;
+        const sources = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot({resources: supplied.sourceResources,
+          origins: supplied.sourceOrigins, locations: supplied.namespaceLocations ?? [], standards: supplied.standardLibraries ?? [],
+          records: supplied.recordSources ?? []}, check));
+        if (!Array.isArray(sources.resources) || !Array.isArray(sources.origins) || !sources.origins.every(origin => typeof origin === 'string')
+          || !Array.isArray(sources.locations) || !Array.isArray(sources.standards) || !sources.standards.every(id => typeof id === 'string')
+          || !Array.isArray(sources.records)) return fail('unsupported', 'explicit source snapshots required');
+        for (const resource of sources.resources) {
+          check();
+          if (!resource || typeof resource.uri !== 'string' || typeof resource.file !== 'string'
+            || Object.keys(resource).length !== 2) return fail('unsupported', 'explicit source resource required');
+        }
+        const namespaceLocations = new Map<string, string>();
+        for (const location of sources.locations) {
+          check();
+          if (!location || typeof location.namespace !== 'string' || typeof location.location !== 'string'
+            || Object.keys(location).length !== 2 || namespaceLocations.has(location.namespace)) return fail('unsupported', 'explicit namespace location required');
+          namespaceLocations.set(location.namespace, location.location);
+        }
+        const prepared = await prepareSchemaSnapshotFiles(options.localSource, sources.resources, {policy: {
+          fileRoots: options.fileRoots, allowedOrigins: sources.origins}, limits: directLoadingLimits(budget), namespaceLocations, signal,
+          chargeWork: amount => {check(); budget.chargeWork(amount);}});
+        const fresh = await reconstructComponentSourceCapsuleInRequest(bytes, prepared.source, {loading: prepared.loading, signal,
+          standardLibraries: sources.standards, recordSources: sources.records}, budget);
+        if (fresh.kind !== 'reconstructed-component') return fresh;
+        if (fresh.selection.port !== options.soap.port || fresh.selection.service.namespace !== options.soap.service.namespace
+          || fresh.selection.service.local !== options.soap.service.local) return fail('incompatible-artifact', 'explicit source selection mismatch');
+        result = fresh.responseProjection ? await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, supplied.soap, fresh.responseProjection)
+          : await exchangeComponentSoap(fresh.contract, fresh.mappings[0], input, supplied.soap);
+      } else {
+        const fresh = await reconstructDirectSourceCapsuleInRequest(bytes, options.localSource,
         {policy: {fileRoots: options.fileRoots}, limits: options.budget, signal: options.soap.signal}, budget);
       if (fresh.kind !== 'reconstructed-direct') return fresh;
       const compatible = checkDirectSourceCompatibility(fresh, fresh.contract, {service: options.soap.service, port: options.soap.port}, options.soap.signal);
@@ -101,7 +154,8 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       // Value and byte provenance stay owned
       // by the original adapter; no catch-and-cast turns a failure into typed success.
 
-      const result = await exchangeDirectSoap(fresh.contract, fresh.mappings[0], input, options.soap);
+        result = await exchangeDirectSoap(fresh.contract, fresh.mappings[0], input, options.soap);
+      }
       if (!('decoded' in result)) return result;
 
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
@@ -116,7 +170,7 @@ export const directClientRuntime: DirectClientRuntime = Object.freeze({
       if (budget.exhausted()) return fail('resource-limit', 'request-budget');
       if (error instanceof DataOwnershipLimitError) return fail('resource-limit', error.message);
       if (options.soap.signal?.aborted) return fail('cancelled', 'cooperative-cancellation');
+      if (error instanceof SchemaLoadingError) return fail(error.category === 'resource-limit' ? 'resource-limit' : 'missing-authority', 'authorized-local-source-required');
       throw error;
     }
-  },
-});
+}

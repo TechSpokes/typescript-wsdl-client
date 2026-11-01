@@ -27,9 +27,9 @@ describe('independent selector request and output work ledger',()=>{
         // empty-array length access. Four object fields each consume hasOwn,
         // 83 descriptor/key allowance, and copied value (1+text length or array7).
         const diagnosticSnapshot = 3+8+3+keys.reduce((sum,key,index)=>sum+1+83+key.length+(index<3?1+textFields[index]!.length:7),0)+4;
-        // Freeze set/stack/root push, record and array visits, field descriptors/pushes,
-        // and three primitive pops.
-        const diagnosticFreeze = 3+5+keys.reduce((sum,key)=>sum+44+key.length,0)+6+3;
+        // Freeze set/stack/root push, record and empty-array visits including completed-cache reads,
+        // own descriptors/pushes, three primitive pops, and two completed-object cache insertions.
+        const diagnosticFreeze = 3+6+keys.reduce((sum,key)=>sum+43+key.length,0)+7+3+4;
         const reportFields = ['model','contractVersion','selection','scope','kind','semanticVerdict','existentialVerdict','actualSchemaVerdict','diagnostic','receipt','usage'];
         const reportAllocation = record(reportFields);
         const reportTextReservation = model.length+contract.length+'input-error'.length+201;
@@ -42,7 +42,7 @@ describe('independent selector request and output work ledger',()=>{
         const short = runModelExperiment(null,model,{maxWork:expected-1});
         assert.equal(short.kind,'resource-limit');
         assert.equal(short.receipt,undefined);
-        assert.equal(expected,3513);
+        assert.equal(expected,3515);
         assert.equal(report.usage.nodes,0);
 
     });
@@ -72,7 +72,7 @@ describe('independent selector request and output work ledger',()=>{
         // inspected Node 24 numeric record alone has14 fields/74name units (89 total).
         const input = 260+path.length+4+path.length+256+2+12*4+8+4;
         // Independent API null-input ledger: terminal79 plus all model wrapper work.
-        const apiWorkWithoutInitialTerminal = 3513-79;
+        const apiWorkWithoutInitialTerminal = 3515-79;
         const expected = 79+2048+8+input+apiWorkWithoutInitialTerminal+16+serializer;
         const args = ['--re01-model',model,'--candidate-file',path];
         const first=runResearchCli(args);
@@ -86,7 +86,7 @@ describe('independent selector request and output work ledger',()=>{
         const short=runResearchCli([...args,'--max-work',String(expected-1)]);
         assert.equal(short.exitCode,3);
         assert.equal('receipt' in JSON.parse(short.output),false);
-        assert.equal(expected,12426);
+        assert.equal(expected,12428);
 
         rmSync(path);
     });

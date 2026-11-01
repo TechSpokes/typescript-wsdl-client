@@ -192,7 +192,8 @@ describe('independent direct structural evidence', () => {
 
   it('supports a genuinely qualified empty sequence but still consumes all payload content', async () => {
     const selected = await contract(sourceText.replace('<xs:complexType name="ForecastRequest"><xs:sequence><xs:element name="city" type="xs:string"/><xs:element name="days" type="xs:int"/></xs:sequence></xs:complexType>', '<xs:complexType name="ForecastRequest"><xs:sequence/></xs:complexType>'));
-    expect(duties(matchDirectOperation(selected, {kind: 'input'}, payload('GetForecast', ' \t\n')))).toEqual([]);
+    expect(duties(matchDirectOperation(selected, {kind: 'input'}, payload('GetForecast', '')))).toEqual([]);
+    expect(matchDirectOperation(selected, {kind: 'input'}, payload('GetForecast', ' \t\n'))).toMatchObject({kind: 'mismatch', rule: 'empty-content'});
     expect(matchDirectOperation(selected, {kind: 'input'}, payload('GetForecast', '<t:alien/>')).kind).toBe('mismatch');
     expect(matchDirectOperation(selected, {kind: 'input'}, payload('GetForecast', 'x')).kind).toBe('mismatch');
   });

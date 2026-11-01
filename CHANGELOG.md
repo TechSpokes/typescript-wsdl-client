@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(gateway): generate checked component clients and gateways for imported structured contracts with explicit companion payload views.
+
 - feat(gateway): generate installable opt-in checked direct gateways with independent HTTP/SOAP validation.
 
 - test(readiness): pin authentic NOAA WSDL evidence and native encoding refusal.

@@ -6,6 +6,8 @@ import type {ComposedGraph} from "./composeCanonicalGraph.js";
 import {referenceTarget, SemanticError, semanticBudget} from "./resolveCanonicalGraph.js";
 import type {SemanticLimits} from "./resolveCanonicalGraph.js";
 import type {ResourceLimitFailure, SemanticBudget} from './semanticBudget.js';
+import {inspectStandardSchemaElement} from './standardSchemaComponents.js';
+import type {StandardSchemaElementDeclaration} from './standardSchemaComponents.js';
 
 export type Bound = Occurs["max"];
 export const ZERO_OCCURS: Occurs = Object.freeze({min: "0", max: "0"});
@@ -79,15 +81,17 @@ export function analyzeOccurrences(composed: ComposedGraph, limits?: SemanticLim
 export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits, accounting: Readonly<{
   /** Selected semantic projection data; omission preserves canonical analysis's qualified ANY default. */
   budget: SemanticBudget; wildcardRealization?: ReadonlyMap<NodeId, boolean>;
+  standardElements?: ReadonlyMap<NodeId, StandardSchemaElementDeclaration>;
 }>): AnalysisResult | ResourceLimitFailure;
 export function analyzeOccurrences(composed: ComposedGraph, limits: SemanticLimits = {}, accounting?: Readonly<{
   budget: SemanticBudget; wildcardRealization?: ReadonlyMap<NodeId, boolean>;
+  standardElements?: ReadonlyMap<NodeId, StandardSchemaElementDeclaration>;
 }>): AnalysisResult | ResourceLimitFailure {
-  return accounting ? accounting.budget.guard(() => analyzeOwnedOccurrences(composed, limits, accounting.budget, accounting.wildcardRealization)) : analyzeOwnedOccurrences(composed, limits);
+  return accounting ? accounting.budget.guard(() => analyzeOwnedOccurrences(composed, limits, accounting.budget, accounting.wildcardRealization, accounting.standardElements)) : analyzeOwnedOccurrences(composed, limits);
 }
 
 function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits, request?: SemanticBudget,
-  wildcardRealization?: ReadonlyMap<NodeId, boolean>): AnalysisResult {
+  wildcardRealization?: ReadonlyMap<NodeId, boolean>, standardElements?: ReadonlyMap<NodeId, StandardSchemaElementDeclaration>): AnalysisResult {
   let current: GraphNode | undefined;
   const allocate = (units: number) => request?.chargeWork(units);
   try {
@@ -100,6 +104,18 @@ function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits
     allocate(3);
     const nodes = new Map<NodeId, GraphNode>();
     for (const n of graph.nodes) {budget.step(n); allocate(2); nodes.set(n.id, n);}
+    for (const [id, declaration] of standardElements ?? []) {
+      budget.step(); allocate(4);
+      inspectStandardSchemaElement(declaration);
+      if (id !== declaration.id || nodes.has(id)) throw new SemanticError('unsupported-capability', 'Conflicting acquired standard occurrence declaration', id);
+    }
+    const element = (id: NodeId) => {
+      const node = nodes.get(id);
+      if (node?.kind === 'element') return node;
+      const declaration = standardElements?.get(id);
+      if (!declaration) throw new SemanticError('invalid-schema', 'Element particle requires an element declaration', id, current?.context.source);
+      return inspectStandardSchemaElement(declaration);
+    };
     const summaries = new Map<NodeId, ParticleSummary>(), active = new Set<NodeId>();
     const algebra = occurrenceAlgebra(() => budget.step(current));
     const get = (id: NodeId): GraphNode => nodes.get(id) ?? (() => {throw new SemanticError("invalid-schema", "Missing structural component", id, current?.context.source);})();
@@ -110,7 +126,7 @@ function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits
     };
     const target = (reference: Reference, owner: GraphNode) => {
       if (reference.kind === "symbol") for (const value of [reference.role, reference.name.namespace, reference.name.local]) for (let i = 0; i < value.length; i++) budget.step(owner);
-      return referenceTarget(reference, nodes, owner);
+      return referenceTarget(reference, nodes, owner, standardElements);
     };
     const copyIds = (a: readonly NodeId[], b: readonly NodeId[]): readonly NodeId[] => {
       allocate(1); const unique = new Set<NodeId>();
@@ -159,7 +175,8 @@ function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits
       }
       if (node.term.kind === "element") {
         const id = target(node.term.declaration, node);
-        if (!id || get(id).kind !== "element") throw new SemanticError("invalid-schema", "Element particle requires an element declaration", node.id, node.context.source);
+        if (!id) throw new SemanticError("invalid-schema", "Element particle requires an element declaration", node.id, node.context.source);
+        element(id);
       }
       allocate(1); return [];
     };
@@ -180,8 +197,7 @@ function analyzeOwnedOccurrences(composed: ComposedGraph, limits: SemanticLimits
         const node = f.node;
         let content: Content;
         if (node.term.kind === "element") {
-          const id = target(node.term.declaration, node)!, declaration = get(id);
-          if (declaration.kind !== "element") throw new Error("Checked element target changed");
+          const id = target(node.term.declaration, node)!, declaration = element(id);
           allocate(20); content = {nullable: false, hasRealization: true, elements: [{name: declaration.name, occurs: ONE_OCCURS, declarations: [id], particles: [node.id]}], wildcard: ZERO_OCCURS, effectiveTotalRange: ONE_OCCURS, schemaEmptiable: false};
         } else if (node.term.kind === "any") {
           let hasRealization = true;

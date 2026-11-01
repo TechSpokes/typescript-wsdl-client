@@ -21,10 +21,10 @@ import {
  *   read/write/key (3), input descriptor introspection/record/four fields/
  *   35 key units (41), output descriptor record/four fields/35 key units (40);
  *   string value/two units (3) = 102.
- * Freeze {x:ab}: two containers + initial push; record pop/set read/insertion/
- *   freeze (4); array classification (1), own-field introspection (1), field
- *   read/push/key (3), descriptor introspection/record/four fields/35 key units
- *   (41); scalar pop (1) = 54.
+ * Freeze {x:ab}: two containers + initial push (3); record pop/set read/
+ *   completed-cache read/insertion/freeze/classification (6); field read/push/
+ *   key (3) plus descriptor introspection/record/four fields/35 key units (41);
+ *   scalar pop (1); completed-object proxy/cache bookkeeping (2) = 56.
  */
 describe('RE01 budget foundation', () => {
   it('checks calibrated configurable defaults and inclusive terminal reservation', () => {
@@ -96,7 +96,8 @@ describe('RE01 budget foundation', () => {
     ['UTF-16 comparison', 8, (budget: ReturnType<typeof createResolverBudget>) => budget.compareText('A😀', 'A😁'), -1],
     ['deterministic sorting', 18, (budget: ReturnType<typeof createResolverBudget>) => budget.sorted(['b', 'a'], budget.compareText), ['a', 'b']],
     ['record snapshot', 102, (budget: ReturnType<typeof createResolverBudget>) => budget.snapshot({ x: 'ab' }), { x: 'ab' }],
-    ['record freezing', 54, (budget: ReturnType<typeof createResolverBudget>) => budget.freeze({ x: 'ab' }), { x: 'ab' }],
+    // Set/stack/push 3 + first record visit 6 + descriptor/key/push 44 + scalar pop 1 + completion bookkeeping 2.
+    ['record freezing', 56, (budget: ReturnType<typeof createResolverBudget>) => budget.freeze({ x: 'ab' }), { x: 'ab' }],
   ] as const)('matches the handwritten %s primitive ledger exactly and one below', (_name, work, operation, result) => {
     const exact = createResolverBudget({ maxWork: 79 + work });
     expect(exact.guard(() => operation(exact))).toEqual(result);

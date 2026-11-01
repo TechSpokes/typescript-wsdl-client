@@ -4,7 +4,8 @@ import path from "node:path";
 import {pathToFileURL} from "node:url";
 import {execFileSync} from "node:child_process";
 import {describe, expect, it, vi, afterEach} from "vitest";
-import {loadSchemaInput} from "../../src/loader/schemaInput.js";
+import {loadSchemaInput, loadSemanticSchemaInput} from "../../src/loader/schemaInput.js";
+import {prepareSourceSchemaRequest} from "../../src/compiler/schemaDocumentSyntax.js";
 import {resolveResourceUri} from "../../src/loader/schemaResources.js";
 import type {OfflineSchemaResource} from "../../src/loader/schemaResources.js";
 import {syntaxAttribute} from "../../src/loader/orderedSyntax.js";
@@ -20,6 +21,124 @@ const local = (name: string) => loadSchemaInput(path.join(root, name), {policy: 
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe("contextual schema inputs", () => {
+  it("assembles nested locationless imports from explicit locations through the native source owner", async () => {
+    const directory = path.join(root, 'namespace-locations');
+    const source = path.join(directory, 'root.xsd');
+    const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
+    const unresolved = await loadSemanticSchemaInput(source, {policy: {fileRoots: [directory]}});
+    expect(unresolved.resources).toHaveLength(1);
+    expect(unresolved.edges[0].to).toBeUndefined();
+    expect(prepareSourceSchemaRequest(unresolved)).toMatchObject({kind: 'source-preparation-failed', stage: 'reference-resolution', category: 'unsupported-capability'});
+    const namespaceLocations = new Map([
+      ['urn:library', path.relative(process.cwd(), path.join(directory, 'library.xsd'))],
+      ['urn:common', path.join(directory, 'common.xsd')],
+    ]);
+    const loading = loadSemanticSchemaInput(source, {policy: {fileRoots: [directory]}, namespaceLocations});
+    namespaceLocations.set('urn:common', 'https://forbidden.example/mutated.xsd');
+    const input = await loading;
+    expect(input.resources).toHaveLength(3);
+    expect(input.edges).toHaveLength(2);
+    expect(input.edges.every(edge => edge.to && edge.referenceUri?.startsWith('file:'))).toBe(true);
+    expect(input.schemas.map(value => value.targetNamespace)).toEqual(['urn:consumer', 'urn:library', 'urn:common']);
+    expect(prepareSourceSchemaRequest(input).kind).toBe('prepared');
+    expect(fetch).not.toHaveBeenCalled();
+    expect(readFileSync(source, 'utf8')).not.toContain('schemaLocation');
+  });
+
+  it("does not override an explicit location or fetch a namespace name", async () => {
+    const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
+    const input = await loadSemanticSchemaInput(uri('root.xsd'), {
+      policy: {allowedOrigins: [origin]},
+      namespaceLocations: new Map([['urn:other', 'https://forbidden.example/ignored.xsd']]),
+      offlineResources: offline([
+        ['root.xsd', schema('<import namespace="urn:other" schemaLocation="explicit.xsd"/>')],
+        ['explicit.xsd', schema('', 'urn:other')],
+      ]),
+    });
+    expect(input.resources.map(value => value.uri)).toEqual([uri('root.xsd'), uri('explicit.xsd')]);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("keeps namespace matching, permissions, limits and pinned bytes authoritative for supplied imports", async () => {
+    const fetch = vi.fn(); vi.stubGlobal('fetch', fetch);
+    const resources = offline([
+      ['root.xsd', schema('<import namespace="urn:other"/>')],
+      ['other.xsd', schema('', 'urn:other')],
+    ]);
+    const options = {policy: {allowedOrigins: [origin]}, offlineResources: resources,
+      namespaceLocations: new Map([['urn:other', uri('other.xsd')]])};
+    await expect(loadSemanticSchemaInput(uri('root.xsd'), {...options, limits: {resources: 1}})).rejects.toMatchObject({category: 'resource-limit'});
+    await expect(loadSemanticSchemaInput(uri('root.xsd'), {...options,
+      namespaceLocations: new Map([['urn:other', 'https://forbidden.example/other.xsd']])})).rejects.toMatchObject({category: 'unsupported-capability'});
+    resources.set(uri('other.xsd'), pinned(schema('', 'urn:wrong')));
+    await expect(loadSemanticSchemaInput(uri('root.xsd'), options)).rejects.toMatchObject({category: 'invalid-schema', source: {uri: uri('other.xsd')}});
+    resources.get(uri('other.xsd'))!.bytes[0] = 0;
+    await expect(loadSemanticSchemaInput(uri('root.xsd'), options)).rejects.toMatchObject({category: 'invalid-schema'});
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("handles no-namespace imports, mapped cycles and their ordinary depth limit", async () => {
+    const resources = offline([
+      ['root.xsd', schema('<import namespace="urn:other"/>')],
+      ['other.xsd', schema('<import namespace="urn:test"/><import/>', 'urn:other')],
+      ['empty.xsd', schema('', '')],
+    ]);
+    const options = {policy: {allowedOrigins: [origin]}, offlineResources: resources,
+      namespaceLocations: new Map([['urn:other', uri('other.xsd')], ['urn:test', uri('root.xsd')], ['', uri('empty.xsd')]])};
+    const input = await loadSemanticSchemaInput(uri('root.xsd'), options);
+    expect(input.resources).toHaveLength(3);
+    expect(input.edges.some(edge => edge.cycle)).toBe(true);
+    expect(input.schemas.some(value => value.targetNamespace === '' && value.context.kind === 'import')).toBe(true);
+    await expect(loadSemanticSchemaInput(uri('root.xsd'), {...options, limits: {resolutionDepth: 1}})).rejects.toMatchObject({category: 'resource-limit'});
+  });
+
+  it("does not grant filesystem permission through namespace configuration", async () => {
+    const directory = path.join(root, 'namespace-locations');
+    await expect(loadSemanticSchemaInput(path.join(directory, 'root.xsd'), {
+      policy: {fileRoots: [directory]},
+      namespaceLocations: new Map([['urn:library', path.join(root, 'common.xsd')]]),
+    })).rejects.toMatchObject({category: 'unsupported-capability'});
+  });
+
+  it("does not excuse missing declarations after supplying the imported resource", async () => {
+    const input = await loadSemanticSchemaInput(uri('root.xsd'), {
+      policy: {allowedOrigins: [origin]},
+      namespaceLocations: new Map([['urn:other', uri('other.xsd')]]),
+      offlineResources: offline([
+        ['root.xsd', schema('<import namespace="urn:other"/><element xmlns:o="urn:other" name="Root" type="o:Missing"/>')],
+        ['other.xsd', schema('', 'urn:other')],
+      ]),
+    });
+    expect(prepareSourceSchemaRequest(input)).toMatchObject({kind: 'source-preparation-failed', category: 'invalid-schema'});
+    const unrelated = await loadSemanticSchemaInput(uri('root.xsd'), {
+      policy: {allowedOrigins: [origin]},
+      offlineResources: offline([['root.xsd', schema('<import namespace="urn:other"/><element xmlns:t="urn:test" name="Root" type="t:Missing"/>')]]),
+    });
+    expect(prepareSourceSchemaRequest(unrelated)).toMatchObject({kind: 'source-preparation-failed', category: 'invalid-schema'});
+  });
+
+  it("uses the XSD anyURI whitespace value for import permissions and missing-dependency classification", async () => {
+    const resources = offline([
+      ['root.xsd', schema('<import namespace="  urn:other &#x9; "/><element xmlns:o="urn:other" name="Root" type="o:Record"/>')],
+      ['other.xsd', schema('<complexType name="Record"><sequence/></complexType>', 'urn:other')],
+    ]);
+    const options = {policy: {allowedOrigins: [origin]}, offlineResources: resources};
+    const missing = await loadSemanticSchemaInput(uri('root.xsd'), options);
+    expect(prepareSourceSchemaRequest(missing)).toMatchObject({kind: 'source-preparation-failed', category: 'unsupported-capability'});
+    const mapped = await loadSemanticSchemaInput(uri('root.xsd'), {...options, namespaceLocations: new Map([['urn:other', uri('other.xsd')]])});
+    expect(prepareSourceSchemaRequest(mapped).kind).toBe('prepared');
+  });
+
+  it.each([['AForeign', 'ZLocal'], ['ZForeign', 'ALocal']])("finds an independent invalid local reference despite an unavailable import (%s, %s)", async (foreign, local) => {
+    const input = await loadSemanticSchemaInput(uri('root.xsd'), {
+      policy: {allowedOrigins: [origin]},
+      offlineResources: offline([['root.xsd', schema(`<import namespace="urn:other"/>
+        <element xmlns:o="urn:other" name="${foreign}" type="o:Missing"/>
+        <element xmlns:t="urn:test" name="${local}" type="t:MissingLocal"/>`)]]),
+    });
+    expect(prepareSourceSchemaRequest(input)).toMatchObject({kind: 'source-preparation-failed', category: 'invalid-schema', message: expect.stringContaining('MissingLocal')});
+  });
+
   it("interprets one chameleon resource in two namespaces and reuses repeated includes", async () => {
     const input = await local("chameleon.wsdl");
     expect(input.resources).toHaveLength(3);

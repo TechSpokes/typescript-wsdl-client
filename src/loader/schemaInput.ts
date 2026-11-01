@@ -62,7 +62,39 @@ export type SchemaInputOptions = {
   policy: SchemaResourcePolicy;
   limits?: Partial<LoadingLimits>;
   offlineResources?: ReadonlyMap<string, OfflineSchemaResource>;
+  /**
+   * Explicit resource locations for XSD imports without schemaLocation.
+   * @remarks Keys are exact namespace names (including the empty namespace).
+   *   Locations resolve against the caller's working directory, never the importing
+   *   document. Explicit schemaLocation attributes take precedence. Resource policy,
+   *   digests, namespace matching and loading limits still apply; no namespace is fetched implicitly.
+   * @see https://www.w3.org/TR/2004/REC-xmlschema-1-20041028/#composition-schemaImport
+   */
+  namespaceLocations?: ReadonlyMap<string, string>;
 };
+
+/** Prepare a closed input set from independently authorized physical metadata snapshots.
+ * @remarks Logical import URIs never initiate I/O here. The later native loader still checks their explicit origin/root
+ *   permissions. Missing snapshots refuse rather than falling back to network or to artifact-embedded bytes.
+ * @returns The actual physical root URI and complete offline loading configuration.
+ * @throws SchemaLoadingError For non-file physical inputs, duplicates, denied roots or unavailable files.
+ */
+export async function prepareSchemaSnapshotFiles(root: string, files: readonly {readonly uri: string; readonly file: string}[],
+  options: Omit<SchemaInputOptions, 'offlineResources'>): Promise<{source: string; loading: SchemaInputOptions}> {
+  const physical = async (reference: string) => {
+    if (new URL(resolveResourceUri(reference)).protocol !== 'file:') throw new SchemaLoadingError('unsupported-capability', 'Physical schema snapshot file required');
+    return loader.fetchResource(reference);
+  };
+  const loader = await SchemaResourceLoader.create({fileRoots: options.policy.fileRoots}, options.limits, undefined, options.chargeWork, options.signal);
+  const source = await physical(root), offlineResources = new Map<string, OfflineSchemaResource>([[source.uri, source]]);
+  for (const entry of files) {
+    options.chargeWork?.(1);
+    const uri = resolveResourceUri(entry.uri);
+    if (offlineResources.has(uri)) throw new SchemaLoadingError('invalid-schema', 'Duplicate logical schema snapshot');
+    offlineResources.set(uri, await physical(entry.file));
+  }
+  return {source: source.uri, loading: {...options, offlineResources}};
+}
 
 /** A fresh compilation-scoped snapshot, with no implicit network or filesystem permission. */
 export function loadSchemaInput(source: string, options: SchemaInputOptions): Promise<SchemaInput> {
@@ -75,6 +107,13 @@ export function loadSemanticSchemaInput(source: string, options: SchemaInputOpti
 }
 
 async function loadSchemaInputWithValues(source: string, options: SchemaInputOptions, semanticValues: boolean): Promise<SchemaInput> {
+  // @why Snapshot caller configuration before the first asynchronous resource read.
+  const namespaceLocations = new Map<string, string>();
+  if (options.namespaceLocations) for (const [namespace, location] of options.namespaceLocations) {
+    if (typeof namespace !== 'string' || typeof location !== 'string' || !location) throw new TypeError('Namespace locations require string namespace names and nonempty resource locations');
+    options.chargeWork?.(256 + (namespace.length + location.length) * 32);
+    namespaceLocations.set(namespace, resolveResourceUri(location));
+  }
   const loader = await SchemaResourceLoader.create(options.policy, options.limits, options.offlineResources, options.chargeWork, options.signal);
   const documents = new Map<string, SyntaxDocument>();
   const originalBytes = new Map<string, Uint8Array>();
@@ -166,11 +205,12 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
       const importedNamespace = xsdUri(child, "namespace");
       const missingLocation = semanticValues ? location === undefined : !location;
       if (missingLocation && kind === "include") throw new SchemaLoadingError("invalid-schema", "Schema include requires schemaLocation", child.source);
-      if (missingLocation) { recordEdge({kind, from: key, source: child.source, cycle: false}); continue; }
+      const suppliedLocation = missingLocation && kind === 'import' ? namespaceLocations.get(importedNamespace ?? '') : undefined;
+      if (missingLocation && suppliedLocation === undefined) { recordEdge({kind, from: key, source: child.source, cycle: false}); continue; }
       checkDepth(depth + 1, child);
       const namespace = kind === "include" ? targetNamespace : importedNamespace ?? "";
       if (kind === "import" && namespace === targetNamespace) throw new SchemaLoadingError("invalid-schema", "Schema import must name a different namespace", child.source);
-      const {referenceUri, doc} = await referencedDocument(location!, child);
+      const {referenceUri, doc} = await referencedDocument(suppliedLocation ?? location!, child);
       const childDeclaredNamespace = xsdUri(doc.root, "targetNamespace");
       // A successfully supplied import referent must match both presence and
       // value. An explicit empty import namespace without a referent is not

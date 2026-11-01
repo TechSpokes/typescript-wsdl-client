@@ -4,6 +4,8 @@ export class DataOwnershipLimitError extends RangeError {}
 export interface DataOwnershipLimits {readonly maxEntries: number; readonly maxText: number; readonly maxDepth: number}
 export const DIRECT_METADATA_LIMITS = Object.freeze({maxEntries: 100_000, maxText: 1024 * 1024, maxDepth: 256});
 export function createDataOwnership(chargeWork: (amount?: number) => void, limits?: DataOwnershipLimits) {
+  // @why Canonical preparation revisits shared immutable source subtrees; only this owner's completed traversals are reusable.
+  const frozen = new WeakSet<object>();
   function arrayIndex(index: number): string {
     // Array positions are bounded by JavaScript's array length, so this is a
     // constant-size numeric decision, followed by a precharged text conversion.
@@ -112,6 +114,8 @@ export function createDataOwnership(chargeWork: (amount?: number) => void, limit
       if (current === null || typeof current !== 'object') continue;
       chargeWork(); // Set read.
       if (seen.has(current)) continue;
+      chargeWork();
+      if (frozen.has(current)) continue;
       chargeWork(2); // Visit-state insertion and freeze traversal.
       seen.add(current);
       chargeWork(); // Array classification.
@@ -128,17 +132,21 @@ export function createDataOwnership(chargeWork: (amount?: number) => void, limit
         }
       } else {
         for (const key in current) {
-          chargeWork(); // Own-field introspection.
-          if (!Object.hasOwn(current, key)) continue;
           chargeWork(43 + key.length); // Descriptor, field access, name inspection and push.
           const descriptor = Object.getOwnPropertyDescriptor(current, key);
-          if (descriptor === undefined || !('value' in descriptor)) {
+          if (descriptor === undefined) continue;
+          if (!('value' in descriptor)) {
             throw new TypeError('RE01 records require data fields');
           }
           stack.push(descriptor.value);
         }
       }
       Object.freeze(current);
+    }
+    // @constraints A shallow external freeze or interrupted traversal supplies no reusable deep-freeze evidence.
+    for (const current of seen) {
+      chargeWork(2);
+      if (!types.isProxy(current)) frozen.add(current);
     }
     return value;
   }

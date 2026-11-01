@@ -1,0 +1,31 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:scoped-records" targetNamespace="urn:scoped-records" elementFormDefault="qualified">
+  <xs:element name="Request" type="t:Envelope"/>
+  <xs:complexType name="Envelope">
+    <xs:sequence>
+      <xs:element name="Left" type="t:Alpha"/>
+      <xs:element name="Right" type="t:Beta"/>
+      <xs:element name="Again" type="t:Alpha"/>
+      <xs:element name="Tree" type="t:Node"/>
+      <xs:element name="Global" type="t:Service"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Alpha">
+    <xs:sequence><xs:element name="Service"><xs:complexType>
+      <xs:sequence><xs:element name="Label" type="xs:string"/></xs:sequence>
+    </xs:complexType></xs:element></xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Beta">
+    <xs:sequence><xs:element name="Service"><xs:complexType>
+      <xs:sequence><xs:element name="Code" type="xs:int"/></xs:sequence>
+    </xs:complexType></xs:element></xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Node">
+    <xs:sequence>
+      <xs:element name="Name" type="xs:string"/>
+      <xs:element name="Child" type="t:Node" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Service">
+    <xs:sequence><xs:element name="Flag" type="xs:boolean"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>

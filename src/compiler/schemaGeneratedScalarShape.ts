@@ -45,6 +45,7 @@ function sourceShape(context: SemanticContext, input: SemanticTypeReference): Sh
       if (found.name.namespace !== XSD_NAMESPACE || !isBuiltinType(found.name.local)) throw new ShapeProblem('original-scalar-builtin', 'Unknown original builtin');
       b.chargeWork(found.name.local.length + 2); return {key: `builtin:${found.name.local}`, builtin: found.name.local};
     }
+    if (found.kind === 'standard-element') throw new ShapeProblem('original-scalar-role', 'An element declaration has no scalar type identity', found.declaration.id);
     if (found.kind !== 'found') throw new ShapeProblem('original-scalar-reference', 'Original scalar reference is unavailable', found.id);
     if(context.originalSourceComponentAbsent(found.node.id))throw new ShapeProblem('original-scalar-absent','Source projection does not map a component',found.node.id);
     const node = context.sourceNode(found.node.id);

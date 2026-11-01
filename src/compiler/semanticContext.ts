@@ -5,6 +5,9 @@ import type {CanonicalGraph, ComplexTypeNode, GraphNode, Identity, NodeId, Refer
 import {containedNodes, referenceSlots} from './graphTraversal.js';
 import type {ReferenceSlot} from './graphTraversal.js';
 import type {ResolvedGraph} from './resolveCanonicalGraph.js';
+import {standardSchemaLibrariesForResolved} from './resolveCanonicalGraph.js';
+import {standardSchemaElement} from './standardSchemaComponents.js';
+import type {StandardSchemaElementDeclaration} from './standardSchemaComponents.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {createSemanticBudget} from './semanticBudget.js';
@@ -34,7 +37,8 @@ import type {OriginalIdentityConstraintRegistry} from './schemaIdentityConstrain
 
 export const SEMANTIC_CONTEXT_CONTRACT = 'RE01-domain-boundary-v1' as const;
 export type ContextLookup = Readonly<{kind: 'found'; node: GraphNode} | {kind: 'missing' | 'outside-context'; id: NodeId}>;
-export type ContextResolution = ContextLookup | Readonly<{kind: 'builtin'; name: ExpandedName}>;
+export type ContextResolution = ContextLookup | Readonly<{kind: 'builtin'; name: ExpandedName}>
+  | Readonly<{kind: 'standard-element'; declaration: StandardSchemaElementDeclaration}>;
 export type SemanticReferenceSlot = Readonly<{path: string; reference: SemanticTypeReference}>;
 export type ContextScalarSlotLookup = Readonly<{kind: 'found'; slot: OriginalGeneratedScalarReference} |
   {kind: 'missing' | 'outside-context'; slot: OriginalGeneratedScalarReference}>;
@@ -63,10 +67,16 @@ export type SemanticContext = Readonly<{
   /** Private SOURCE universe, distinct from graph/TYPE membership and FULL owners. */
   originalIdentityConstraints(): OriginalIdentityConstraintRegistry;
   lookup(id: NodeId): ContextLookup;
+  /** Explicit acquired universe, separate from application nodes and their source/component validity. */
+  standardElement(id: NodeId): StandardSchemaElementDeclaration | undefined;
+  /** Descriptive identifiers of the exact native acquired universe; never a component-validity receipt. */
+  standardLibraryIds(): readonly string[];
   /** Owns immutable selector data only; every resolution still checks current membership. */
   ownTypeReference(reference: SemanticTypeReference): SemanticTypeReference;
   resolve(reference: Reference): ContextResolution;
   sourceNode(id: NodeId): GraphNode | undefined;
+  /** Original declaration SOURCE input only; unbound graph records and fresh components supply no source mapping. */
+  originalDeclarationSource(id: NodeId): Extract<GraphNode, {kind: 'element' | 'attribute'}> | undefined;
   originalSourceComponentAbsent(id: NodeId): boolean;
   /** Eligibility for reading retained original properties, never a validity receipt. */
   originalComplexPropertySource(id: NodeId): ComplexTypeNode | undefined;
@@ -211,6 +221,14 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       // Private exact-handle binding is read before snapshotting loses that identity.
       // Availability of all source roots is distinct from source/component validity.
       const sourceSchemas = sourceSchemasForResolvedGraph(resolved);
+      const standardElements = new Map<NodeId, StandardSchemaElementDeclaration>();
+      for (const library of standardSchemaLibrariesForResolved(resolved) ?? []) {
+        budget.chargeWork(8);
+        const declaration = standardSchemaElement(library, {namespace: XSD_NAMESPACE, local: 'schema'});
+        if (!declaration || standardElements.has(declaration.id)) throw new InvalidContext('representation');
+        standardElements.set(declaration.id, declaration);
+      }
+      const standardLibraryIds = Object.freeze((standardSchemaLibrariesForResolved(resolved) ?? []).map(library => library.id).sort());
       let identityConstraints: OriginalIdentityConstraintRegistry | undefined;
       const originalIdentityConstraints = (): OriginalIdentityConstraintRegistry =>
         identityConstraints ??= createOriginalIdentityConstraintRegistry(sourceSchemas, budget);
@@ -331,6 +349,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
       };
       for (const node of graph.nodes) {
         key(node.id);
+        if (standardElements.has(node.id)) throw new InvalidContext('identity', node.id);
         if (originals.has(node.id) || node.id !== identityId(node)) throw new InvalidContext('identity', node.id);
         budget.chargeWork(2);
         originals.set(node.id, node);
@@ -364,6 +383,7 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
         const rawGroupProperties = new Map<NodeId, RawAttributeGroupProperties>();
         let expectedMembers = originals.size, hasEncodedIdentity = false;
         for (const [id, node] of changes) {
+          if (standardElements.has(id)) throw new InvalidContext('identity', id);
           key(id); if (!originals.has(id)) expectedMembers++;
           // Every stored change has already passed the exact legacy/new ID gate.
           // Inactive inherited changes still participate in this scan.
@@ -599,6 +619,13 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             if (slot.reference.kind === 'original-generated') {requireScalarSlot(slot.reference); continue;}
             const refId = target(slot.reference);
             if (refId !== undefined) {
+              if (standardElements.has(refId)) {
+                // Fixed acquired definitions are outside the application graph. This
+                // closes references only; their native clauses remain separate duties.
+                if (slot.reference.kind !== 'symbol' || slot.reference.role !== 'element'
+                  || node.kind === 'element' && slot.path === 'substitutionGroup') throw new InvalidContext('reference', id);
+                continue;
+              }
               const referred = requireMember(refId);
               if (slot.reference.kind === 'symbol' && (referred.identity.kind !== 'global' || referred.identity.role !== slot.reference.role)) throw new InvalidContext('reference', id);
               if (node.kind === 'element' && slot.path === 'substitutionGroup') {
@@ -713,6 +740,8 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             return Object.freeze({kind: 'missing', name});
           },
           lookup,
+          standardElement(id: NodeId): StandardSchemaElementDeclaration | undefined {authenticate(); key(id); return standardElements.get(id);},
+          standardLibraryIds(): readonly string[] {authenticate(); return standardLibraryIds;},
           ownTypeReference,
           resolve(reference: Reference): ContextResolution {
             authenticate();
@@ -721,6 +750,11 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
               const safe = knownReferences.has(reference) || ownedTypeReferences.has(reference) ? reference : budget.freeze(budget.snapshot(reference));
               const id = target(safe);
               if (id !== undefined) {
+                const declaration = standardElements.get(id);
+                if (declaration) {
+                  if (safe.kind !== 'symbol' || safe.role !== 'element') throw new InvalidContext('reference', id);
+                  return Object.freeze({kind: 'standard-element', declaration});
+                }
                 const result = lookup(id);
                 if (result.kind === 'found' && safe.kind === 'symbol'
                   && (result.node.identity.kind !== 'global' || result.node.identity.role !== safe.role)) throw new InvalidContext('reference', id);
@@ -737,6 +771,12 @@ export function prepareSemanticRequest(resolved: ResolvedGraph, options: Readonl
             }
           },
           sourceNode(id: NodeId): GraphNode | undefined {authenticate(); key(id); return originals.get(id);},
+          originalDeclarationSource(id: NodeId): Extract<GraphNode, {kind: 'element' | 'attribute'}> | undefined {
+            authenticate(); key(id); budget.chargeWork(7);
+            const original = originals.get(id);
+            return sourceSchemas !== undefined && membership.has(id) && !absentOriginals.has(id)
+              && (original?.kind === 'element' || original?.kind === 'attribute') ? original : undefined;
+          },
           originalSourceComponentAbsent(id: NodeId): boolean {authenticate(); key(id); return absentOriginals.has(id);},
           originalComplexPropertySource(id: NodeId): ComplexTypeNode | undefined {
             authenticate(); key(id); budget.chargeWork(7);

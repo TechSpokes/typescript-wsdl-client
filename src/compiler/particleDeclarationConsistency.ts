@@ -87,6 +87,15 @@ export function checkElementDeclarationsConsistent(context: SemanticContext, roo
       };
       const declared = (particle: ParticleNode): Summary => {
         if (particle.term.kind !== 'element') return new Map();
+        const selected = context.resolve(particle.term.declaration);
+        if (selected.kind === 'standard-element') {
+          const declaration = selected.declaration;
+          budget.chargeWork(48 + 6 * (declaration.name.namespace.length + declaration.name.local.length));
+          const name = JSON.stringify([declaration.name.namespace, declaration.name.local]);
+          // The fixed schema element's type is anonymous. Repeated positions
+          // still require the dated EDC top-level named-type premise.
+          return new Map([[name, {declaration: declaration.id, count: 1}]]);
+        }
         const declaration = target(particle.term.declaration, particle.id);
         if (declaration.kind !== 'element') return unresolved(particle.id, 'Element particle does not reference an element declaration');
         budget.chargeWork(4);

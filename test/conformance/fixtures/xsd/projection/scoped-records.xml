@@ -1,0 +1,11 @@
+<t:Request xmlns:t="urn:scoped-records">
+  <t:Left><t:Service><t:Label>left</t:Label></t:Service></t:Left>
+  <t:Right><t:Service><t:Code>7</t:Code></t:Service></t:Right>
+  <t:Again><t:Service><t:Label>again</t:Label></t:Service></t:Again>
+  <t:Tree>
+    <t:Name>parent</t:Name>
+    <t:Child><t:Name>first</t:Name><t:Child><t:Name>leaf</t:Name></t:Child></t:Child>
+    <t:Child><t:Name>second</t:Name></t:Child>
+  </t:Tree>
+  <t:Global><t:Flag>true</t:Flag></t:Global>
+</t:Request>

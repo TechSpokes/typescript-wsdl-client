@@ -19,7 +19,7 @@ Created from production integration work at [TechSpokes](https://www.techspokes.
 
 See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
-The unreleased [checked gateway preview](docs/checked-gateway.md) adds `pipeline --model checked-direct-v1` for a qualified local WSDL operation, generating an installable client, contract, OpenAPI, gateway, app and tests.
+The unreleased [checked gateway modes](docs/checked-gateway.md) add explicit native generation: `checked-direct-v1` retains the narrow single-operation preview, while `checked-components-v1` supports qualified structured service operations and configured schema snapshots. Both generate clients, contracts, OpenAPI, gateways, app scaffolding and tests through `pipeline`.
 It uses the [versioned package-root runtime](docs/direct-values.md#package-root-binding-for-generated-direct-clients) with explicit source permission and owned-loopback SOAP endpoint authorization; legacy defaults remain unchanged.
 
 ## Why Choose This
@@ -243,6 +243,8 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Checked WSDL readiness](docs/content-model-readiness.md) | Measured assessment corpus and bounded P3 implementation packet |
 | [Direct Scalar Values](docs/direct-values.md) | Internal scalar mapping, fresh inverse and bounded bare-root XML codec |
 | [Installed Checked Gateway](docs/checked-gateway.md) | Opt-in direct generation, project commands, HTTP/SOAP verification and bounded coverage |
+| [Checked development checkpoint](docs/content-model-development-checkpoint.md) | Local structured-contract evidence, remaining coverage and safe override boundaries |
+| [WSDL-first workflow assessment](docs/content-model-wsdl-first-assessment.md) | Automatic generation, actionable diagnostics and minimal JSON reconciliation |
 | [Direct Structural Matching](docs/content-model-matching.md) | Internal structure-only matcher, evidence and scalar handoff |
 | [CLI Reference](docs/cli-reference.md) | All commands with flags and examples |
 | [Working With Generated Code](docs/generated-code.md) | Using clients, types, and operations |

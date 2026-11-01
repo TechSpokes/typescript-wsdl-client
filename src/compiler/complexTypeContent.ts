@@ -11,10 +11,10 @@ export type ParticleContentView = Readonly<{
   contextId: string;
   type: NodeId;
   scope: 'actual-source-mapping' | 'candidate-raw-properties' | 'original-property-projection' | 'builtin-type' | 'model-group';
-  /** Actual simple content can reference a diagnostic projection node, not an active scalar component.
-   * Semantic scalar properties and the GSC1 identity come from the scalar owner's
-   * contentProperties({kind: 'local', target: type}, type), including its obligations.
-   * Candidate simple content instead carries its supplied raw scalar reference.
+  /** Effective scalar reference, not a scalar/component-validity receipt.
+   * @remarks Actual and retained-source views preserve the source mapper's scalar reference;
+   *   restrictions retain their registered GSC1 slot and extensions may inherit a named/builtin type.
+   *   The scalar owner establishes properties, identity and remaining obligations. RAW views carry the supplied reference.
    */
   content: RawComplexContent;
   /** Optional diagnostic materialization, charged on first access; semantic consumers use particleContentNode. */
@@ -329,7 +329,7 @@ export function deriveRawComplexContent(context: SemanticContext, type: NodeId):
   });
 }
 
-/** Retained source properties interpreted in H; never full hypothetical type validity. */
+/** Retained source properties interpreted in H; scalar identities remain unchanged and full hypothetical validity stays separate. */
 export function deriveOriginalComplexPropertyContent(context: SemanticContext, type: NodeId): ContentViewResult {
   assertSemanticContext(context);
   const budget = context.budget;
@@ -349,7 +349,7 @@ export function deriveOriginalComplexPropertyContent(context: SemanticContext, t
     if (prior) {budget.chargeWork(3); return Object.freeze({kind: 'checked', view: prior});}
     const source = deriveActualComplexContent(context.originalContext(), type);
     if (source.kind !== 'checked') return source;
-    if (source.view.content.kind === 'simple' || source.view.content.kind === 'opaque-builtin') return fail('component-content-properties');
+    if (source.view.content.kind === 'opaque-builtin') return fail('component-content-properties');
     const additions: GraphNode[] = [];
     for (const id of source.view.synthetic) {
       budget.chargeWork(3 + id.length);

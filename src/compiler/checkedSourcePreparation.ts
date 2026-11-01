@@ -9,8 +9,84 @@ import type {ComponentConstructionResult} from './schemaConstructionAssessment.j
 import {verifyDirectActualSchema} from './finiteRe01Verification.js';
 import type {SemanticRequest} from './semanticContext.js';
 import type {SemanticBudget, ResourceLimitFailure} from './semanticBudget.js';
+import {buildRe01Evidence} from './finiteRe01Construction.js';
+import {assertFiniteCandidateReceipt, assertFinitePrimitiveReceipt, assertExtensionChainReceipt, verifyExtensionChainActualSchema} from './finiteRe01Verification.js';
+import type {FiniteCandidateReceipt, FinitePrimitiveReceipt, ExtensionChainReceipt} from './finiteRe01Verification.js';
+import {verifySimpleExtensionConstruction, assertSimpleExtensionConstruction} from './finiteRe01Verification.js';
+import type {SimpleExtensionConstructionReceipt} from './finiteRe01Verification.js';
+import type {StandardSchemaLibrary} from './standardSchemaComponents.js';
 
 type Closure = Exclude<ReturnType<typeof verifyDirectActualSchema>, ResourceLimitFailure>;
+type ConstructedClosure = Closure | FiniteCandidateReceipt | FinitePrimitiveReceipt | ExtensionChainReceipt | SimpleExtensionConstructionReceipt | Readonly<{kind: 'inconclusive-construction'; reason: string}>;
+export interface NativeSourceConstruction {
+  readonly kind: 'constructed-source'; readonly request: SemanticRequest; readonly closure: ConstructedClosure;
+  readonly localEstablished: boolean; readonly localDisproved: boolean; readonly nativeEstablished: boolean;
+  readonly correspondence: 'unassessed'; readonly eligible: false;
+}
+const constructed = new WeakMap<NativeSourceConstruction, SchemaInput>();
+/** Authenticate fresh source construction; neither fields nor saved reports grant this identity. */
+export function inspectNativeSourceConstruction(value: NativeSourceConstruction, expectedSource?: SchemaInput): NativeSourceConstruction {
+  const source = constructed.get(value);
+  if (!source || expectedSource !== undefined && source !== expectedSource) throw new TypeError('Fresh native source construction required');
+  if (value.closure.kind === 'checked-candidate') assertFiniteCandidateReceipt(value.request.actual, value.closure);
+  if (value.closure.kind === 'checked-primitive') assertFinitePrimitiveReceipt(value.request.actual, value.closure);
+  if (value.closure.kind === 'checked-extension-chain' || value.closure.kind === 'inconclusive-extension-chain') assertExtensionChainReceipt(value.request.actual, value.closure);
+  if ('simple' in value.closure) assertSimpleExtensionConstruction(value.request.actual, value.closure);
+  return value;
+}
+
+/** Construct and natively verify whole-source obligations without granting dated-XSD correspondence or generation.
+ * @remarks This additive route may propose finite constructions. The existing direct preview remains unchanged.
+ *   Missing constructions are inconclusive, and unrelated actual failures are still checked.
+ * @returns Fresh native construction or preparation/resource failure; eligibility always remains false.
+ */
+export function constructNativeSource(input: SchemaInput, options: Readonly<{
+  budget: SemanticBudget; maxNodes: number; check?: () => void;
+  /** Explicit processor-acquired components; selection never substitutes for native application-source checks. */
+  standardLibraries?: readonly StandardSchemaLibrary[];
+  /** Try actual-only extension ancestry before finite construction; the legacy direct preview never sets this. */
+  extensionChains?: boolean;
+  /** Collect fresh-owned simple-extension premises; dated qualification remains a separate owner. */
+  simpleExtensions?: boolean;
+  onLocal?: (id: string, result: Exclude<ComponentConstructionResult, ResourceLimitFailure>) => void;
+}>): Exclude<SourceSchemaPreparation, {kind: 'prepared'}> | NativeSourceConstruction {
+  const {budget} = options;
+  return budget.guard(() => {
+    options.check?.();
+    const prepared = prepareSourceSchemaRequest(input, {budget, accountPreparation: true,
+      sourceLimits: {maxNodes: options.maxNodes, standardLibraries: options.standardLibraries}});
+    if (prepared.kind !== 'prepared') return prepared;
+    const {request} = prepared;
+    let localEstablished = true, localDisproved = false;
+    for (const id of request.actual.members) {
+      options.check?.();
+      const found = request.actual.lookup(id);
+      if (found.kind !== 'found' || found.node.kind === 'wsdl') continue;
+      const checked = checkComponentConstruction(request.actual, id);
+      if (checked.kind === 'resource-limit') return checked;
+      if (checked.kind !== 'checked') localEstablished = false;
+      if (checked.kind === 'invalid-schema') localDisproved = true;
+      options.onLocal?.(id, checked);
+    }
+    options.check?.();
+    let closure: ConstructedClosure | ResourceLimitFailure = options.simpleExtensions ? verifySimpleExtensionConstruction(request.actual)
+      : options.extensionChains ? verifyExtensionChainActualSchema(request.actual) : verifyDirectActualSchema(request.actual);
+    if (closure.kind === 'resource-limit') return closure;
+    if ('simple' in closure && closure.simple.length === 0 && closure.unresolved.length === 0) closure = closure.complex;
+    if ((closure.kind === 'inconclusive-direct' || closure.kind === 'inconclusive-extension-chain') && closure.unresolved.length) {
+      const result = buildRe01Evidence(request.actual, closure.unresolved[0]!);
+      if (result.kind === 'resource-limit') return result;
+      closure = result.kind === 'checked-witness' ? result.receipt : Object.freeze({kind: 'inconclusive-construction',
+        reason: 'rule' in result ? result.rule : 'no-witness-in-delivered-families'});
+    }
+    options.check?.(); budget.chargeWork(128);
+    const value: NativeSourceConstruction = Object.freeze({kind: 'constructed-source', request, closure, localEstablished, localDisproved,
+      nativeEstablished: localEstablished && ['checked-direct', 'checked-extension-chain', 'checked-simple-extension-construction', 'checked-candidate', 'checked-primitive'].includes(closure.kind),
+      correspondence: 'unassessed', eligible: false});
+    constructed.set(value, input);
+    return value;
+  });
+}
 export type DirectSourceQualification = Exclude<SourceSchemaPreparation, {kind: 'prepared'}> | Readonly<{
   kind: 'qualified-source';
   request: SemanticRequest;

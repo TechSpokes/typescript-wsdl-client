@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:ordered-particles" targetNamespace="urn:ordered-particles" elementFormDefault="qualified">
+  <xs:complexType name="Record"><xs:sequence><xs:element name="Flag" type="xs:boolean"/></xs:sequence></xs:complexType>
+  <xs:group name="Pair"><xs:sequence><xs:element name="Label" type="xs:string"/><xs:element name="Count" type="xs:int"/></xs:sequence></xs:group>
+  <xs:complexType name="Choice"><xs:sequence>
+    <xs:element name="Header" type="xs:string"/>
+    <xs:choice minOccurs="1" maxOccurs="3"><xs:element name="Item" type="t:Record"/><xs:group ref="t:Pair"/></xs:choice>
+    <xs:element name="Tail" type="xs:int" minOccurs="0"/>
+  </xs:sequence><xs:attribute name="id" type="xs:string" use="required"/></xs:complexType>
+  <xs:element name="Request" type="t:Choice"/>
+  <xs:element name="All"><xs:complexType><xs:all><xs:element name="A" type="xs:int"/><xs:element name="B" type="xs:boolean" minOccurs="0"/></xs:all></xs:complexType></xs:element>
+  <xs:element name="Nullable"><xs:complexType><xs:sequence minOccurs="3" maxOccurs="4"><xs:element name="A" type="xs:int" minOccurs="0"/><xs:element name="B" type="xs:int" minOccurs="0"/></xs:sequence></xs:complexType></xs:element>
+  <xs:element name="Overlap"><xs:complexType><xs:choice><xs:element name="A" type="xs:int"/><xs:sequence><xs:element name="B" type="xs:int"/><xs:element name="A" type="xs:int"/></xs:sequence></xs:choice></xs:complexType></xs:element>
+</xs:schema>

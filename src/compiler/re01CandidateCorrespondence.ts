@@ -48,6 +48,34 @@ const ANY_TYPE: Reference = Object.freeze({kind: 'builtin', name: Object.freeze(
 class CorrespondenceAbort extends Error {
   constructor(readonly result: CorrespondenceFailure | ResourceLimitFailure) {super(result.kind);}
 }
+
+/** Read effective original properties through the existing native source owners; cached data grants no validity. */
+function mapActualComplexProperties(actual: SemanticContext, id: NodeId): Mapped {
+  const b = actual.budget, charge = b.chargeWork;
+  let cache = actualMappings.get(actual);
+  if (!cache) {charge(2); cache = new Map(); actualMappings.set(actual, cache);}
+  const cached = cache.get(id);
+  if (cached) return cached;
+  const found = actual.lookup(id);
+  if (found.kind !== 'found' || found.node.kind !== 'complexType') throw new CorrespondenceAbort(Object.freeze({kind: 'invalid-evidence',
+    rule: 'original-property-correspondence', component: id, message: 'Expected an original complex type'}));
+  const original = found.node;
+  const content = deriveActualComplexContent(actual, id), attrs = assessSourceAttributeUses(actual, id);
+  if (content.kind !== 'checked') throw new CorrespondenceAbort(content.kind === 'resource-limit' ? content
+    : {...content, kind: content.kind === 'invalid-input' ? 'invalid-evidence' : 'unresolved'});
+  if (attrs.kind !== 'checked') throw new CorrespondenceAbort(attrs);
+  charge(20 + attrs.value.uses.length);
+  const properties: RawComplexTypeProperties = {
+    type: id, derivation: {method: original.derivation?.kind ?? 'restriction', base: original.derivation?.base ?? ANY_TYPE},
+    targetNamespace: original.context.effectiveNamespace,
+    abstract: original.abstract, final: declarationMethods(actual, original, 'final') as RawComplexTypeProperties['final'],
+    block: declarationMethods(actual, original, 'block') as RawComplexTypeProperties['block'], content: content.view.content,
+    attributeUses: attrs.value.uses.map(use => use.id), wildcard: attrs.value.wildcard, provenance: {kind: 'actual-mapped', original: id},
+  };
+  charge(9); const result = Object.freeze({properties: b.freeze(b.snapshot(properties)), context: actual,
+    view: content.view, synthetic: content.view.synthetic, scalarObligations: attrs.scalarObligations, typeDependencies: attrs.typeDependencies});
+  cache.set(id, result); return result;
+}
 export function assertCandidateCorrespondence(context: SemanticContext, receipt: CorrespondenceReceipt): void {
   assertSemanticContext(context);
   if (issued.get(receipt) !== context) throw new TypeError('Unauthenticated candidate correspondence');
@@ -286,33 +314,10 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
         }
         return {properties: prior, context: parent, synthetic: [], scalarObligations: [], typeDependencies: []};
       }
-      let cache = actualMappings.get(actual);
-      if (!cache) {charge(2); cache = new Map(); actualMappings.set(actual, cache);}
-      const cached = cache.get(id);
-      if (cached) {
-        typeDependencies.add(cached.typeDependencies);
-        for (const obligation of cached.scalarObligations) {charge(3); scalarObligations.push({contextId: obligation.contextId ?? actual.contextId, obligation});}
-        return cached;
-      }
-      const original = node(actual, id);
-      if (original.kind !== 'complexType') return fail('original-property-correspondence', id, 'Expected an original complex type', 'invalid-evidence');
-      const content = deriveActualComplexContent(actual, id), attrs = assessSourceAttributeUses(actual, id);
-      if (content.kind !== 'checked') throw new CorrespondenceAbort(content.kind === 'resource-limit' ? content
-        : {...content, kind: content.kind === 'invalid-input' ? 'invalid-evidence' : 'unresolved'});
-      if (attrs.kind !== 'checked') throw new CorrespondenceAbort(attrs);
-      typeDependencies.add(attrs.typeDependencies);
-      for (const obligation of attrs.scalarObligations) {charge(3); scalarObligations.push({contextId: obligation.contextId ?? actual.contextId, obligation});}
-      charge(20 + attrs.value.uses.length);
-      const properties: RawComplexTypeProperties = {
-        type: id, derivation: {method: original.derivation?.kind ?? 'restriction', base: original.derivation?.base ?? ANY_TYPE},
-        targetNamespace: original.context.effectiveNamespace,
-        abstract: original.abstract, final: declarationMethods(actual, original, 'final') as RawComplexTypeProperties['final'],
-        block: declarationMethods(actual, original, 'block') as RawComplexTypeProperties['block'], content: content.view.content,
-        attributeUses: attrs.value.uses.map(use => use.id), wildcard: attrs.value.wildcard, provenance: {kind: 'actual-mapped', original: id},
-      };
-      charge(9); const result = Object.freeze({properties: b.freeze(b.snapshot(properties)), context: actual,
-        view: content.view, synthetic: content.view.synthetic, scalarObligations: attrs.scalarObligations, typeDependencies: attrs.typeDependencies});
-      cache.set(id, result); return result;
+      const result = mapActualComplexProperties(actual, id);
+      typeDependencies.add(result.typeDependencies);
+      for (const obligation of result.scalarObligations) {charge(3); scalarObligations.push({contextId: obligation.contextId ?? actual.contextId, obligation});}
+      return result;
     };
     const typeNamespace = (context: SemanticContext, id: NodeId, properties: RawComplexTypeProperties): string => {
       const definition = node(context, id);
@@ -448,6 +453,117 @@ export function checkCandidateCorrespondence(actual: SemanticContext, parent: Se
         parentContext: parent.contextId, contextId: candidate.contextId, target, intermediate, ancestor: computed.ancestor,
         originalProperties: Object.freeze(originalProperties), fresh: Object.freeze(fresh), scalarObligations: Object.freeze(scalarObligations), typeDependencies: typeDependencies.snapshot()}));
       issued.set(receipt, candidate); return receipt;
+    } catch (error) {
+      if (error instanceof CorrespondenceAbort) return error.result;
+      if (error instanceof RelationProblem) return Object.freeze({kind: 'unresolved', rule: error.result.rule, component: error.result.component, message: error.message});
+      throw error;
+    }
+  });
+}
+
+export type AdditiveSimplePropertyReceipt = Readonly<{
+  kind: 'checked-additive-simple-properties'; actualContextId: string; contextId: string;
+  target: NodeId; intermediate: NodeId; representative: NodeId;
+  scalarObligations: readonly ScalarObligation[]; typeDependencies: readonly SemanticTypeDependency[];
+  datedInterpretation: 'unassessed';
+}>;
+const additiveProperties = new WeakMap<AdditiveSimplePropertyReceipt, Readonly<{actual: SemanticContext; context: SemanticContext}>>();
+
+/** Authenticate simple-content property correspondence independently of construction and dated interpretation. */
+export function assertAdditiveSimpleProperties(actual: SemanticContext, context: SemanticContext, receipt: AdditiveSimplePropertyReceipt): void {
+  assertSemanticContext(actual); assertSemanticContext(context);
+  const issued = additiveProperties.get(receipt);
+  if (!issued || issued.actual !== actual || issued.context !== context) throw new TypeError('Fresh matching additive property correspondence required');
+}
+
+/** Compare fresh simple-content representatives with native effective source properties, preserving every original binding.
+ * @remarks Identity/name and derivation are deliberately distinct for the fresh restriction representative.
+ *   Its other effective complex properties must match the original target. The middle carries the same attributes
+ *   and extends the exact designated simple ancestor. Local legality, aggregate closure and dated interpretation
+ *   remain separate obligations; producer provenance labels grant none of them.
+ * @returns Authenticated native property correspondence or an explicit mismatch/unavailable/resource result.
+ * @throws TypeError For unauthenticated or unrelated contexts.
+ */
+export function checkAdditiveSimpleProperties(actual: SemanticContext, candidate: SemanticContext,
+  target: NodeId, intermediate: NodeId, representative: NodeId): AdditiveSimplePropertyReceipt | CorrespondenceFailure | ResourceLimitFailure {
+  assertSemanticContext(actual); assertSemanticContext(candidate);
+  if (!contextsShareRequest(actual, candidate) || !isSemanticCandidateOf(actual, candidate)) throw new TypeError('Expected a direct child of this actual request');
+  const b = actual.budget, charge = b.chargeWork;
+  return b.guard(() => {
+    const fail = (rule: string, message: string, kind: CorrespondenceFailure['kind'] = 'candidate-rejected'): never => {
+      charge(32 + rule.length + message.length + target.length);
+      throw new CorrespondenceAbort(Object.freeze({kind, rule, component: target, contextId: candidate.contextId, message}));
+    };
+    try {
+      if (actual.kind !== 'actual' || actual.membership !== 'complete-actual-plus-additions' || candidate.membership !== 'complete-actual-plus-additions')
+        return fail('additive-source-context', 'Complete actual source membership is required', 'unresolved');
+      if (intermediate === representative || actual.lookup(intermediate).kind !== 'missing' || actual.lookup(representative).kind !== 'missing'
+        || candidate.members.length !== actual.members.length + 2) return fail('additive-fresh-types', 'Exactly two fresh type components are required');
+      for (const id of actual.members) {
+        charge(16 + id.length);
+        const before = actual.lookup(id), after = candidate.lookup(id);
+        if (before.kind !== 'found' || after.kind !== 'found' || before.node !== after.node
+          || actual.rawTypeProperties(id) !== candidate.rawTypeProperties(id)
+          || actual.rawSimpleTypeProperties(id) !== candidate.rawSimpleTypeProperties(id)
+          || actual.rawElementProperties(id) !== candidate.rawElementProperties(id)
+          || actual.rawAttributeProperties(id) !== candidate.rawAttributeProperties(id)
+          || actual.rawAttributeGroupProperties(id) !== candidate.rawAttributeGroupProperties(id)
+          || actual.rawParticleWildcardProperties(id) !== candidate.rawParticleWildcardProperties(id)
+          || actual.owner(id) !== candidate.owner(id)) return fail('additive-original-preservation', 'An original component or scope binding changed');
+      }
+      const e = candidate.lookup(intermediate), c = candidate.lookup(representative);
+      if (e.kind !== 'found' || c.kind !== 'found' || e.node.kind !== 'complexType' || c.node.kind !== 'complexType')
+        return fail('additive-fresh-types', 'Fresh extension and restriction complex types are required');
+      const original = mapActualComplexProperties(actual, target), middle = candidate.rawTypeProperties(intermediate), end = candidate.rawTypeProperties(representative);
+      if (!middle || !end) return fail('additive-raw-properties', 'Complete fresh complex properties are required', 'unresolved');
+      if (original.properties.content.kind !== 'simple' || middle.content.kind !== 'simple' || end.content.kind !== 'simple')
+        return fail('additive-simple-content-family', 'This property route supports only simple content', 'unresolved');
+      const designated = re01Ancestor(actual, target);
+      if (designated.kind !== 'checked') throw new CorrespondenceAbort(designated);
+      const typeDependencies = collectSemanticTypeDependencies(candidate);
+      typeDependencies.add(original.typeDependencies); typeDependencies.add(designated.typeDependencies);
+      const key = (context: SemanticContext, reference: SemanticTypeReference): string => {
+        const resolved = resolveSemanticType(context, reference);
+        if (!('identity' in resolved)) return fail('additive-type-reference', 'A property type is unavailable', 'unresolved');
+        typeDependencies.add([{contextId: context.contextId, type: resolved.identity}]);
+        return semanticTypeKey(context, resolved.identity);
+      };
+      const sameSet = (left: readonly string[], right: readonly string[]): boolean => {
+        charge(4); const a = new Set<string>(), z = new Set<string>();
+        for (const value of left) {charge(2 + value.length); a.add(value);}
+        for (const value of right) {charge(2 + value.length); z.add(value);}
+        if (a.size !== z.size) return false;
+        for (const value of a) {charge(2 + value.length); if (!z.has(value)) return false;}
+        return true;
+      };
+      const sameWildcard = (left: RawComplexTypeProperties, right: RawComplexTypeProperties): boolean => {
+        charge(4);
+        if (!left.wildcard || !right.wildcard) return left.wildcard === right.wildcard;
+        return left.wildcard.processContents === right.wildcard.processContents
+          && namespaceSetSubset(left.wildcard.namespace, right.wildcard.namespace, charge)
+          && namespaceSetSubset(right.wildcard.namespace, left.wildcard.namespace, charge);
+      };
+      if (middle.derivation.method !== 'extension' || end.derivation.method !== 'restriction'
+        || key(candidate, middle.derivation.base) !== key(actual, designated.ancestor)
+        || key(candidate, end.derivation.base) !== key(candidate, {kind: 'local', target: intermediate}))
+        return fail('additive-derivation-chain', 'The representatives do not have the required extension/restriction chain');
+      if (key(candidate, middle.content.type) !== key(actual, designated.ancestor)
+        || key(candidate, end.content.type) !== key(actual, original.properties.content.type))
+        return fail('additive-content-correspondence', 'Representative scalar content differs from its native source property');
+      const prior = original.properties;
+      if (end.targetNamespace !== prior.targetNamespace || end.abstract !== prior.abstract
+        || !sameSet(end.final, prior.final) || !sameSet(end.block, prior.block)
+        || !sameSet(end.attributeUses, prior.attributeUses) || !sameWildcard(end, prior))
+        return fail('additive-target-properties', 'The restriction representative changed an effective target property');
+      if (middle.targetNamespace !== prior.targetNamespace || middle.abstract || middle.final.length || middle.block.length
+        || !sameSet(middle.attributeUses, prior.attributeUses) || !sameWildcard(middle, prior))
+        return fail('additive-middle-properties', 'The extension representative changed the selected middle properties');
+      charge(128);
+      const result: AdditiveSimplePropertyReceipt = Object.freeze({kind: 'checked-additive-simple-properties', actualContextId: actual.contextId,
+        contextId: candidate.contextId, target, intermediate, representative, scalarObligations: original.scalarObligations,
+        typeDependencies: typeDependencies.snapshot(), datedInterpretation: 'unassessed'});
+      additiveProperties.set(result, Object.freeze({actual, context: candidate}));
+      return result;
     } catch (error) {
       if (error instanceof CorrespondenceAbort) return error.result;
       if (error instanceof RelationProblem) return Object.freeze({kind: 'unresolved', rule: error.result.rule, component: error.result.component, message: error.message});

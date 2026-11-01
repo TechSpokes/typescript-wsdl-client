@@ -1,14 +1,18 @@
 /** Internal direct case of the content-model matcher; never runtime admission. */
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract} from './directOperation.js';
-import type {ElementNode, Reference} from './canonicalGraph.js';
+import type {AttributeNode, ElementNode, Reference} from './canonicalGraph.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
-import {planDirectRoot} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, matchOrderedProjection} from './directStructurePlan.js';
+import type {DirectProjectionSlot, DirectProjectionValue} from './directStructurePlan.js';
+import {assertSemanticContext} from './semanticContext.js';
+import type {SemanticContext} from './semanticContext.js';
 import type {ResolverUsage} from './semanticBudget.js';
+import type {ProjectionScalarList} from './projectionScalar.js';
 
 export type DirectDirection = Readonly<{kind: 'input' | 'output'} | {kind: 'fault'; name: string}>;
 export interface DirectScalarDuty {
-  readonly declaration: ElementNode;
+  readonly declaration: ElementNode | AttributeNode;
   readonly type: Reference;
   readonly builtin: ExpandedName;
   readonly lexical: string;
@@ -16,11 +20,39 @@ export interface DirectScalarDuty {
   readonly payloadSource: SyntaxSource;
   readonly payloadPath: string;
   readonly schemaPath: string;
+  readonly fixedCanonical?: string;
+  readonly retainLexical?: true;
+  readonly list?: ProjectionScalarList;
+}
+export type DirectMatchedNode = Readonly<{
+  kind: 'scalar'; declaration: ElementNode; payloadPath: string; operand: number;
+} | {
+  kind: 'record'; declaration: ElementNode; payloadPath: string;
+  attributes: readonly Readonly<{declaration: AttributeNode; operand: number; payloadPath: string; origin: 'present' | 'schema-default' | 'schema-fixed'}>[];
+  text?: Extract<DirectMatchedNode, {kind: 'scalar'}>;
+  content?: readonly DirectMatchedNode[];
+  slots: readonly Readonly<{slot: DirectProjectionSlot; items: readonly DirectMatchedNode[]}>[];
+}>;
+export type ProjectionStructuralResult = Readonly<{
+  kind: 'projection-match'; scope: 'structure-only'; scalarValidity: 'unassessed'; admitted: false;
+  root: ElementNode; contextId: string; tree: DirectMatchedNode;
+  occurrences: readonly DirectScalarDuty[]; usage: ResolverUsage;
+}> | Readonly<{
+  kind: 'mismatch' | 'unsupported' | 'cancelled' | 'resource-limit'; rule: string;
+  schemaPath?: string; payloadPath?: string; usage: ResolverUsage;
+}>;
+export type ProjectionStructuralMatch = Extract<ProjectionStructuralResult, {kind: 'projection-match'}>;
+const projectionIssued = new WeakMap<object, SemanticContext>();
+/** Native context identity authenticates structure only, never source validity or operation admission. */
+export function inspectProjectionStructuralMatch(match: unknown, context: SemanticContext): ProjectionStructuralMatch {
+  assertSemanticContext(context);
+  if (!match || typeof match !== 'object' || projectionIssued.get(match) !== context) throw new TypeError('Unauthenticated or foreign projection structural match');
+  return match as ProjectionStructuralMatch;
 }
 export type DirectStructuralResult = Readonly<{
   kind: 'structural-match'; scope: 'structure-only'; scalarValidity: 'unassessed'; admitted: false;
   root: DirectMessageRoot; contextId: string; direction: DirectDirection;
-  occurrences: readonly DirectScalarDuty[]; usage: ResolverUsage;
+  occurrences: readonly DirectScalarDuty[]; tree: DirectMatchedNode; usage: ResolverUsage;
 }> | Readonly<{
   kind: 'mismatch' | 'unsupported' | 'cancelled' | 'resource-limit'; rule: string;
   schemaPath?: string; payloadPath?: string; usage: ResolverUsage;
@@ -39,13 +71,15 @@ class Stop extends Error {
 }
 
 /**
- * Data-only SyntaxElement input (plain records/arrays, no proxies/accessors). Malformed
- * input throws TypeError; XML structure differences return mismatch. No caller is frozen.
- * Cancellation is synchronous/cooperative, checked at visits and before publication.
+ * Match a data-only ordered XML tree against an actual native projection.
+ * @remarks The issued receipt establishes structure only, not source validity, scalar validity or operation admission.
+ * @constraints Plain records/arrays only; proxies and accessors are unsupported. No caller payload is frozen.
+ * @throws TypeError For malformed data-only trees or unauthenticated contexts.
+ * @returns A context-owned structural match or a mismatch, unsupported, cancellation or resource failure.
  */
-export function matchDirectOperation(contract: DirectOperationContract, direction: DirectDirection, payload: SyntaxElement,
-  options: Readonly<{signal?: AbortSignal}> = {}): DirectStructuralResult {
-  const {context} = inspectDirectOperation(contract);
+export function matchDirectProjection(context: SemanticContext, root: ElementNode, payload: SyntaxElement,
+  options: Readonly<{signal?: AbortSignal; flatOnly?: boolean}> = {}): ProjectionStructuralResult {
+  assertSemanticContext(context);
   const {budget} = context;
   const check = () => {budget.chargeWork(); if (options.signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');};
   const fail = (kind: Stop['kind'], rule: string, schemaPath?: string, payloadPath?: string): never => {throw new Stop(kind, rule, schemaPath, payloadPath);};
@@ -68,25 +102,25 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
   };
   const nameShape = (value: unknown): value is ExpandedName => record(value) && string(value.namespace) && string(value.local) && value.local.length > 0;
   try {
-    const guarded = budget.guard((): DirectStructuralResult => {
+    const guarded = budget.guard((): ProjectionStructuralResult => {
       // Reserve fixed closures/state, diagnostics and terminal publication before input work.
       budget.chargeWork(4096); check();
-      const suppliedDirection = budget.snapshot(direction);
-      if (!record(suppliedDirection)) return malformed();
-      if (!['input', 'output', 'fault'].includes(suppliedDirection.kind)) return fail('unsupported', 'unknown-direction');
-      const ownedDirection: DirectDirection = suppliedDirection.kind === 'fault'
-        ? {kind: 'fault', name: suppliedDirection.name} : {kind: suppliedDirection.kind};
-      let root: DirectMessageRoot;
-      if (ownedDirection.kind === 'fault') {
-        budget.chargeWork(64 + contract.faults.length * 32);
-        if (typeof ownedDirection.name !== 'string') return fail('unsupported', 'unknown-fault');
-        const selected = contract.faults.find(f => budget.compareText(f.name, ownedDirection.name) === 0);
-        if (!selected) return fail('unsupported', 'unknown-fault');
-        root = selected.root;
-      } else root = contract[ownedDirection.kind];
-      const schemaPath = root.element.context.source.path;
+      const schemaPath = root.context.source.path;
       const unsupported = (): never => fail('unsupported', 'native-direct-shape', schemaPath);
-      const {slots, rootBuiltin} = planDirectRoot(context, root, check, unsupported);
+      const plan = planDirectProjection(context, root, check, unsupported);
+      if (options.flatOnly) flatDirectProjection(plan, check, unsupported);
+      const records = new Map(plan.records.map(record => [record.type.id, record]));
+      const wildcardPlans = new Map([[root, plan]]);
+      const wildcardValue = (element: ElementNode): DirectProjectionValue => {
+        let selected = wildcardPlans.get(element);
+        if (!selected) {
+          selected = planDirectProjection(context, element, check, unsupported);
+          budget.chargeWork(64 + selected.records.length * 64);
+          for (const record of selected.records) {check(); if (!records.has(record.type.id)) records.set(record.type.id, record);}
+          wildcardPlans.set(element, selected);
+        }
+        return selected.root;
+      };
       // Count syntax nodes before copying. Descriptor reads reject accessors without invoking
       // them. A tree may not reuse a node, including cyclic input; proxies are out of contract.
       budget.chargeWork(128);
@@ -126,19 +160,12 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
       const attributes = (node: SyntaxElement, declaration: ElementNode, path: string) => {
         check(); if (node.attributes.length) fail('unsupported', 'payload-attributes', declaration.context.source.path, path);
       };
-      attributes(owned, root.element, '/0');
-      if (!same(owned.name, root.element.name)) return mismatch('root-name', root.element, '/0');
+      if (!same(owned.name, root.name)) return mismatch('root-name', root, '/0');
       budget.chargeWork(64);
       const occurrences: DirectScalarDuty[] = [];
-      const leaf = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string) => {
-        attributes(node, declaration, path);
-        budget.chargeWork(64);
-        const parts: string[] = []; let length = 0;
-        for (const child of node.children) {
-          check(); if (child.kind !== 'text') return mismatch('scalar-child', declaration, path);
-          budget.chargeWork(32 + child.value.length * 4); parts.push(child.value); length += child.value.length;
-        }
-        budget.chargeWork(256 + length * 4 + path.length * 4);
+      const operand = (node: SyntaxElement, declaration: ElementNode | AttributeNode, builtin: ExpandedName, lexical: string, path: string,
+        fixedCanonical?: string, retainLexical?: true, list?: ProjectionScalarList) => {
+        budget.chargeWork(256 + lexical.length * 4 + path.length * 4);
         // Project only typed retained facts. Generic snapshots deliberately preserve
         // unknown values; caller extension fields must not become receipt authority.
         const namespaces: Record<string, string> = Object.create(null) as Record<string, string>;
@@ -151,19 +178,111 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
         const payloadSource = budget.snapshot({uri: s.uri, digest: s.digest, path: s.path,
           start: {offset: s.start.offset, line: s.start.line, column: s.start.column},
           end: {offset: s.end.offset, line: s.end.line, column: s.end.column}});
-        occurrences.push({declaration, type: declaration.type, builtin, lexical: parts.join(''), namespaces,
-          payloadSource, payloadPath: path, schemaPath: declaration.context.source.path});
+        occurrences.push({declaration, type: declaration.type, builtin, lexical, namespaces,
+          payloadSource, payloadPath: path, schemaPath: declaration.context.source.path,
+          ...(fixedCanonical === undefined ? {} : {fixedCanonical}), ...(retainLexical ? {retainLexical} : {}), ...(list ? {list} : {})});
       };
-      if (rootBuiltin) leaf(owned, root.element, rootBuiltin, '/0');
-      else {
+      const text = (node: SyntaxElement, declaration: ElementNode, path: string): string => {
+        budget.chargeWork(64);
+        const parts: string[] = [];
+        for (const child of node.children) {
+          check(); if (child.kind !== 'text') return mismatch('scalar-child', declaration, path);
+          budget.chargeWork(32 + child.value.length * 4); parts.push(child.value);
+        }
+        return parts.join('');
+      };
+      const leaf = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string, retainLexical?: true, list?: ProjectionScalarList) => {
+        attributes(node, declaration, path);
+        operand(node, declaration, builtin, text(node, declaration, path), path, undefined, retainLexical, list);
+      };
+      type Frame = {node: SyntaxElement; declaration: ElementNode; value: DirectProjectionValue; path: string; into: DirectMatchedNode[]};
+      const roots: DirectMatchedNode[] = [];
+      const frames: Frame[] = [{node: owned, declaration: root, value: plan.root, path: '/0', into: roots}];
+      while (frames.length) {
+        check(); const frame = frames.pop()!;
+        const {node, declaration, path: parentPath} = frame;
+        budget.chargeWork(128 + parentPath.length * 4);
+        if (frame.value.kind === 'scalar') {
+          const operand = occurrences.length;
+          leaf(node, declaration, frame.value.builtin, parentPath, frame.value.retainLexical, frame.value.list);
+          frame.into.push({kind: 'scalar', declaration, payloadPath: parentPath, operand});
+          continue;
+        }
+        const record = records.get(frame.value.type);
+        if (!record) return unsupported();
+        // @why XSD 1.0 cvc-complex-type.2.1 forbids even whitespace character children for empty content.
+        if (record.content === 'empty' && node.children.length) return mismatch('empty-content', declaration, parentPath);
+        const matchedAttributes: {declaration: AttributeNode; operand: number; payloadPath: string; origin: 'present' | 'schema-default' | 'schema-fixed'}[] = [];
+        if (!record.attributes.length) attributes(node, declaration, parentPath);
+        else {
+          const present = new Set<string>();
+          for (let index = 0; index < node.attributes.length; index++) {
+            check(); const attribute = node.attributes[index]!;
+            const path = `${parentPath}/attributes/${index}`;
+            const expected = record.attributes.find(item => {check(); return same(item.declaration.name, attribute.name);});
+            if (!expected) return mismatch('unknown-attribute', declaration, path);
+            if (present.has(expected.declaration.id)) return mismatch('duplicate-attribute', declaration, path);
+            budget.chargeWork(128 + expected.declaration.id.length);
+            present.add(expected.declaration.id);
+            matchedAttributes.push({declaration: expected.declaration, operand: occurrences.length, payloadPath: path, origin: 'present'});
+            operand(node, expected.declaration, expected.builtin, attribute.value, path,
+              expected.constraint?.kind === 'fixed' ? expected.constraint.canonical : undefined, expected.retainLexical, expected.list);
+          }
+          for (const expected of record.attributes) {
+            check();
+            if (expected.required && !present.has(expected.declaration.id)) return mismatch('missing-required-attribute', declaration, parentPath);
+            if (!present.has(expected.declaration.id) && expected.constraint) {
+              budget.chargeWork(128 + expected.declaration.id.length * 4);
+              const path = `${parentPath}/@schema-${expected.constraint.kind}/${encodeURIComponent(expected.declaration.id)}`;
+              matchedAttributes.push({declaration: expected.declaration, operand: occurrences.length, payloadPath: path,
+                origin: expected.constraint.kind === 'fixed' ? 'schema-fixed' : 'schema-default'});
+              operand(node, expected.declaration, expected.builtin, expected.constraint.lexical, path,
+                expected.constraint.kind === 'fixed' ? expected.constraint.canonical : undefined, expected.retainLexical, expected.list);
+            }
+          }
+        }
+        if (record.content === 'simple') {
+          if (!record.text) throw new TypeError('Missing native simple content plan');
+          const path = `${parentPath}/text`, index = occurrences.length;
+          operand(node, declaration, record.text.builtin, text(node, declaration, path), path, undefined, record.text.retainLexical, record.text.list);
+          frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes,
+            text: {kind: 'scalar', declaration, payloadPath: path, operand: index}});
+          continue;
+        }
+        const slots = record.slots;
+        if (record.ordered) {
+          const elements: {node: SyntaxElement; path: string}[] = [];
+          for (let index = 0; index < node.children.length; index++) {
+            check(); const child = node.children[index]!, path = `${parentPath}/children/${index}`;
+            budget.chargeWork(64);
+            if (child.kind === 'text') {
+              budget.chargeWork(child.value.length * 2);
+              if (/[^\t\r\n ]/.test(child.value)) return mismatch('complex-text', declaration, path);
+            } else elements.push({node: child, path});
+          }
+          const selected = matchOrderedProjection(context, record, elements.map(item => {check(); return item.node.name;}), check);
+          if (!selected) return mismatch('ordered-particle-language', declaration, parentPath);
+          const content: DirectMatchedNode[] = [];
+          frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes, content});
+          for (let index = elements.length - 1; index >= 0; index--) {
+            check(); const item = elements[index]!, slot = selected[index]!;
+            frames.push({node: item.node, path: item.path, declaration: slot.element,
+              value: 'value' in slot ? slot.value : wildcardValue(slot.element), into: content});
+          }
+          continue;
+        }
+        budget.chargeWork(64 + slots.length * 128);
+        const matchedSlots = slots.map(slot => {check(); return {slot, items: [] as DirectMatchedNode[]};});
+        frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: matchedSlots, attributes: matchedAttributes});
+        const children: Frame[] = [];
         let cursor = 0, count = 0;
-        for (let index = 0; index < owned.children.length; index++) {
-          check(); const child = owned.children[index]!;
+        for (let index = 0; index < node.children.length; index++) {
+          check(); const child = node.children[index]!;
           budget.chargeWork(64);
-          const path = `/0/children/${index}`;
+          const path = `${parentPath}/children/${index}`;
           if (child.kind === 'text') {
             budget.chargeWork(child.value.length * 2);
-            if (/[^\t\r\n ]/.test(child.value)) return mismatch('complex-text', root.element, path);
+            if (/[^\t\r\n ]/.test(child.value)) return mismatch('complex-text', declaration, path);
             continue;
           }
           while (cursor < slots.length && !same(child.name, slots[cursor]!.element.name)) {
@@ -172,20 +291,62 @@ export function matchDirectOperation(contract: DirectOperationContract, directio
             cursor++; count = 0;
           }
           const slot = slots[cursor];
-          if (!slot) return mismatch('unexpected-child', root.element, path);
+          if (!slot) return mismatch('unexpected-child', declaration, path);
           if (slot.particle.occurs.max === '1' && count === 1) return mismatch('duplicate-singleton', slot.element, path);
-          leaf(child, slot.element, slot.builtin, path); count++;
+          children.push({node: child, declaration: slot.element, value: slot.value, path, into: matchedSlots[cursor]!.items}); count++;
         }
         for (; cursor < slots.length; cursor++, count = 0) {
           check(); const slot = slots[cursor]!;
-          if (slot.particle.occurs.min === '1' && count === 0) return mismatch('missing-required', slot.element, '/0/end');
+          if (slot.particle.occurs.min === '1' && count === 0) return mismatch('missing-required', slot.element, `${parentPath}/end`);
         }
+        // @why Preserve document order and record boundaries without recursive JS calls.
+        for (let i = children.length - 1; i >= 0; i--) {check(); frames.push(children[i]!);}
       }
       check(); budget.chargeWork(512);
-      const result = {kind: 'structural-match' as const, scope: 'structure-only' as const, scalarValidity: 'unassessed' as const, admitted: false as const,
-        root, contextId: context.contextId, direction: ownedDirection, occurrences, usage: {...budget.usage()}};
+      const result = {kind: 'projection-match' as const, scope: 'structure-only' as const, scalarValidity: 'unassessed' as const, admitted: false as const,
+        root, contextId: context.contextId, tree: roots[0]!, occurrences, usage: {...budget.usage()}};
       budget.freeze(result); check();
       // Capture final accounting after publication traversal; the record is already reserved.
+      const published = Object.freeze({...result, usage: Object.freeze({...budget.usage()})});
+      projectionIssued.set(published, context);
+      return published;
+    });
+    return guarded.kind === 'resource-limit' ? Object.freeze({kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()}) : guarded;
+  } catch (error) {
+    if (budget.exhausted()) return Object.freeze({kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()});
+    if (error instanceof Stop) return Object.freeze({kind: error.kind, rule: error.rule, schemaPath: error.schemaPath, payloadPath: error.payloadPath, usage: Object.freeze({...budget.usage()})});
+    throw error;
+  }
+}
+
+/** Operation-owned flat preview wrapper; structured projection matches cannot bypass this gate. */
+export function matchDirectOperation(contract: DirectOperationContract, direction: DirectDirection, payload: SyntaxElement,
+  options: Readonly<{signal?: AbortSignal}> = {}): DirectStructuralResult {
+  const {context} = inspectDirectOperation(contract);
+  const {budget} = context;
+  try {
+    const guarded = budget.guard((): DirectStructuralResult => {
+      const supplied = budget.snapshot(direction);
+      if (!supplied || typeof supplied !== 'object' || Array.isArray(supplied)) throw new TypeError('Direct direction requires a data-only record');
+      if (!['input', 'output', 'fault'].includes(supplied.kind)) throw new Stop('unsupported', 'unknown-direction');
+      const ownedDirection: DirectDirection = supplied.kind === 'fault' ? {kind: 'fault', name: supplied.name} : {kind: supplied.kind};
+      let root: DirectMessageRoot;
+      if (ownedDirection.kind === 'fault') {
+        budget.chargeWork(64 + contract.faults.length * 32);
+        if (typeof ownedDirection.name !== 'string') throw new Stop('unsupported', 'unknown-fault');
+        const selected = contract.faults.find(fault => budget.compareText(fault.name, ownedDirection.name) === 0);
+        if (!selected) throw new Stop('unsupported', 'unknown-fault');
+        root = selected.root;
+      } else root = contract[ownedDirection.kind];
+      const matched = matchDirectProjection(context, root.element, payload, {...options, flatOnly: true});
+      if (matched.kind !== 'projection-match') return matched;
+      inspectProjectionStructuralMatch(matched, context);
+      budget.chargeWork(512);
+      const result = {kind: 'structural-match' as const, scope: matched.scope, scalarValidity: matched.scalarValidity, admitted: false as const,
+        root, contextId: context.contextId, direction: ownedDirection, occurrences: matched.occurrences, tree: matched.tree, usage: {...budget.usage()}};
+      budget.freeze(result);
+      budget.chargeWork();
+      if (options.signal?.aborted) throw new Stop('cancelled', 'cooperative-cancellation');
       const published = Object.freeze({...result, usage: Object.freeze({...budget.usage()})});
       issued.set(published, contract);
       return published;

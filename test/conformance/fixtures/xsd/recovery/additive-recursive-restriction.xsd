@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:additive-recursive" targetNamespace="urn:additive-recursive">
+  <xs:complexType name="A"/>
+  <xs:complexType name="B"><xs:complexContent><xs:extension base="t:A">
+    <xs:sequence><xs:element name="child" type="t:D" minOccurs="0"/></xs:sequence>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="D"><xs:complexContent><xs:extension base="t:B">
+    <xs:attribute name="label" type="xs:string"/>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="Record" type="t:D"/>
+</xs:schema>

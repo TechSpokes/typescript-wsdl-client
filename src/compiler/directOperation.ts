@@ -11,9 +11,15 @@ import {createApplicationBudget, DEFAULT_MAX_NODES} from './semanticBudget.js';
 import type {SemanticBudget, SemanticBudgetLimits, ResolverUsage} from './semanticBudget.js';
 import {qualifyDirectSource} from './checkedSourcePreparation.js';
 import type {DirectSourceQualification} from './checkedSourcePreparation.js';
+import {qualifyComponentSource, inspectComponentSourceQualification} from './checkedComponentSource.js';
+import type {ComponentSourceQualification} from './checkedComponentSource.js';
+import {prepareWsdlPolicyRequirements, assertWsdlPolicyRequirements} from './wsdlPolicyRequirements.js';
+import type {WsdlPolicyRequirements, BindingPolicyRequirements} from './wsdlPolicyRequirements.js';
+import type {StandardSchemaLibrary} from './standardSchemaComponents.js';
 
 const SOAP = 'http://schemas.xmlsoap.org/wsdl/soap/';
 const HTTP = 'http://schemas.xmlsoap.org/soap/http';
+const ADDRESSING_WSDL = 'http://www.w3.org/2006/05/addressing/wsdl';
 export interface DirectOperationSelector {
   readonly portType: ExpandedName;
   readonly binding: ExpandedName;
@@ -29,12 +35,15 @@ export interface DirectMessageRoot {
 export interface DirectOperationContract {
   readonly selector: DirectOperationSelector;
   readonly contextId: string;
-  readonly basis: 'native-direct-premises-v1';
-  readonly correspondence: 'dated-XSD-2004-direct-v1';
+  readonly basis: 'native-direct-premises-v1' | 'native-component-premises-v1';
+  readonly correspondence: 'dated-XSD-2004-direct-v1' | 'dated-XSD-2004-components-v1';
   readonly binding: Readonly<{version: '1.1'; style: 'document'; use: 'literal'; transport: string; action: string; source: SyntaxSource}>;
   readonly input: DirectMessageRoot;
   readonly output: DirectMessageRoot;
   readonly faults: readonly Readonly<{name: string; root: DirectMessageRoot}>[];
+  readonly policy?: BindingPolicyRequirements;
+  readonly addressingActions?: Readonly<{required: false; input?: string; output?: string;
+    faults: readonly Readonly<{name: string; action: string}>[]}>;
   readonly missingCapabilities: readonly string[];
   readonly admitted: false;
 }
@@ -44,7 +53,8 @@ export interface DirectOperationInspection {
   readonly contract: DirectOperationContract;
   readonly context: SemanticContext;
   readonly source: SchemaInput;
-  readonly evidence: Extract<DirectSourceQualification, {kind: 'qualified-source'}>;
+  readonly evidence: Extract<DirectSourceQualification, {kind: 'qualified-source'}> | ComponentSourceQualification;
+  readonly policyOwner?: WsdlPolicyRequirements;
 }
 const issued = new WeakMap<DirectOperationContract, DirectOperationInspection>();
 
@@ -52,6 +62,7 @@ const issued = new WeakMap<DirectOperationContract, DirectOperationInspection>()
 export function inspectDirectOperation(contract: DirectOperationContract, expectedContext?: SemanticContext): DirectOperationInspection {
   const owned = issued.get(contract);
   if (!owned || expectedContext !== undefined && owned.context !== expectedContext) throw new TypeError('Unauthenticated or foreign direct operation');
+  if (owned.policyOwner) assertWsdlPolicyRequirements(owned.source, owned.policyOwner);
   return owned;
 }
 class Refusal extends Error {
@@ -70,25 +81,94 @@ export async function selectDirectOperation(source: string, selector: DirectOper
 export async function selectDirectOperationInRequest(source: string, selector: DirectOperationSelector, options: Readonly<{
   loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
 }>, budget: SemanticBudget): Promise<DirectOperationResult> {
+  return selectOperationInRequest(source, selector, options, budget, 'direct');
+}
+
+/** Select through additive native component qualification without granting codec, transport or runtime admission.
+ * @remarks The same WSDL binding/message owner is used by the existing preview. New contracts carry a distinct
+ *   basis and correspondence; preview codecs and source capsules continue to refuse them until independently extended.
+ * @returns Fresh source-bound operation roots or an explicit qualification/selection failure.
+ */
+export async function selectComponentOperation(source: string, selector: DirectOperationSelector, options: Readonly<{
+  loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
+  standardLibraries?: readonly StandardSchemaLibrary[];
+}>): Promise<DirectOperationResult> {
+  return selectComponentOperationInRequest(source, selector, options, createApplicationBudget(options.limits));
+}
+
+/** Private composition seam: artifact reading and fresh component selection share the same sticky request. */
+export async function selectComponentOperationInRequest(source: string, selector: DirectOperationSelector, options: Readonly<{
+  loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
+  standardLibraries?: readonly StandardSchemaLibrary[];
+}>, budget: SemanticBudget): Promise<DirectOperationResult> {
+  return selectOperationInRequest(source, selector, {...options, standardLibraries: Object.freeze([...(options.standardLibraries ?? [])])}, budget, 'components');
+}
+
+interface ComponentSelectionCache {
+  input?: SchemaInput; qualified?: ComponentSourceQualification; policy?: WsdlPolicyRequirements;
+  failure?: Exclude<DirectOperationResult, {kind: 'selected'}>;
+}
+
+/** Select requested service operations against one fresh native source snapshot and sticky request.
+ * @remarks Native whole-source qualification is reused by identity within this batch only. Every binding/message
+ *   selection still runs through the same owner; no source flags, saved reports or operation-name guesses are consumed.
+ * @returns One result in each requested position, including explicit refusals. No requested operation is omitted.
+ */
+export async function selectComponentOperations(source: string, selectors: readonly DirectOperationSelector[], options: Readonly<{
+  loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
+  standardLibraries?: readonly StandardSchemaLibrary[];
+}>): Promise<readonly DirectOperationResult[]> {
+  const budget = createApplicationBudget(options.limits), cache: ComponentSelectionCache = {};
+  const owned = budget.snapshot(selectors);
+  if (!Array.isArray(owned) || Object.keys(owned).length !== owned.length) throw new TypeError('Dense operation selectors required');
+  const results: DirectOperationResult[] = [];
+  const captured = {...options, standardLibraries: Object.freeze([...(options.standardLibraries ?? [])])};
+  for (const selector of owned) results.push(await selectOperationInRequest(source, selector, captured, budget, 'components', cache));
+  return Object.freeze(results);
+}
+
+async function selectOperationInRequest(source: string, selector: DirectOperationSelector, options: Readonly<{
+  loading: SchemaInputOptions; limits?: SemanticBudgetLimits; signal?: AbortSignal;
+  standardLibraries?: readonly StandardSchemaLibrary[];
+}>, budget: SemanticBudget, profile: 'direct' | 'components', cache?: ComponentSelectionCache): Promise<DirectOperationResult> {
   const check = () => {if (options.signal?.aborted) throw new Cancelled(); budget.chargeWork();};
   const refuse = (kind: Refusal['kind'], rule: string): never => {throw new Refusal(kind, rule);};
   const failure = (kind: Refusal['kind'], rule: string): DirectOperationResult => Object.freeze({kind, rule, usage: Object.freeze({...budget.usage()})});
+  const sourceFailure = (kind: Refusal['kind'], rule: string): DirectOperationResult => {
+    const result = failure(kind, rule);
+    if (cache && result.kind !== 'selected') cache.failure = result;
+    return result;
+  };
   try {
     // Fixed terminal envelope and issuance bookkeeping, before any source work.
     budget.chargeWork(4096); check();
     const ownedSelector = budget.freeze(budget.snapshot(selector));
     const name = (value: ExpandedName | undefined) => value && typeof value.namespace === 'string' && typeof value.local === 'string' && isXmlNCName(value.local);
     if (!name(ownedSelector.portType) || !name(ownedSelector.binding) || typeof ownedSelector.operation !== 'string' || !isXmlNCName(ownedSelector.operation)) return failure('selection-refused', 'explicit-selector');
-    const input = await loadSemanticSchemaInput(source, {...options.loading, limits: directLoadingLimits(budget, options.loading.limits), signal: options.signal, chargeWork: amount => {check(); budget.chargeWork(amount);}});
+    if (cache?.failure) return failure(cache.failure.kind, cache.failure.rule);
+    const input = cache?.input ?? await loadSemanticSchemaInput(source, {...options.loading, limits: directLoadingLimits(budget, options.loading.limits), signal: options.signal, chargeWork: amount => {check(); budget.chargeWork(amount);}});
+    if (cache) cache.input = input;
     check();
     const result = budget.guard(() => {
-      const qualified = qualifyDirectSource(input, {budget, maxNodes: options.limits?.maxNodes ?? directLimit(budget, DEFAULT_MAX_NODES), check});
-      if (qualified.kind === 'resource-limit') return failure('resource-limit', 'source-qualification');
-      if (qualified.kind === 'source-preparation-failed' && qualified.category === 'resource-limit') return failure('resource-limit', 'source-preparation');
-      if (qualified.kind !== 'qualified-source') return failure(qualified.kind === 'source-preparation-failed' && qualified.category === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', 'source-preparation');
-      if (!qualified.eligible) return failure(qualified.localDisproved || qualified.closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', 'whole-source-qualification');
-      const {request} = qualified;
+      const qualificationOptions = {budget, maxNodes: options.limits?.maxNodes ?? directLimit(budget, DEFAULT_MAX_NODES), check};
+      const qualified = cache?.qualified ?? (profile === 'direct' ? qualifyDirectSource(input, qualificationOptions)
+        : qualifyComponentSource(input, {...qualificationOptions, standardLibraries: options.standardLibraries}));
+      if (qualified.kind === 'resource-limit') return sourceFailure('resource-limit', 'source-qualification');
+      if (qualified.kind === 'source-preparation-failed' && qualified.category === 'resource-limit') return sourceFailure('resource-limit', 'source-preparation');
+      if (qualified.kind !== 'qualified-source' && qualified.kind !== 'component-source') return sourceFailure(qualified.kind === 'source-preparation-failed' && qualified.category === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', 'source-preparation');
+      if (qualified.kind === 'component-source') inspectComponentSourceQualification(qualified, input);
+      const construction = qualified.kind === 'component-source' ? qualified.construction : qualified;
+      const eligible = qualified.kind === 'component-source' ? qualified.schemaEligible : qualified.eligible;
+      if (!eligible) return sourceFailure(construction.localDisproved || construction.closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', 'whole-source-qualification');
+      const {request} = construction;
       const context = request.actual;
+      let policyOwner: WsdlPolicyRequirements | undefined;
+      if (profile === 'components') {
+        const policies = cache?.policy ?? prepareWsdlPolicyRequirements(input, budget, check);
+        if (policies.kind !== 'wsdl-policy-requirements') return sourceFailure(policies.kind, 'rule' in policies ? policies.rule : 'policy-budget');
+        assertWsdlPolicyRequirements(input, policies); policyOwner = policies;
+        if (cache && qualified.kind === 'component-source') {cache.qualified = qualified; cache.policy = policies;}
+      }
       const children = (node: SyntaxElement): SyntaxElement[] => {
         check(); budget.chargeWork(128 + node.children.length * 16 + node.attributes.length * 32);
         for (const a of node.attributes) budget.chargeWork(a.value.length * 8 + a.name.local.length * 8 + a.name.namespace.length * 8);
@@ -98,13 +178,23 @@ export async function selectDirectOperationInRequest(source: string, selector: D
         return syntaxElements(node);
       };
       const attr = syntaxAttribute;
+      const addressingMessages = new Set<SyntaxElement>();
+      if (profile === 'components') for (const document of input.documents) {
+        for (const portType of children(document.root).filter(node => node.name.namespace === WSDL_NAMESPACE && node.name.local === 'portType'))
+          for (const operation of children(portType).filter(node => node.name.namespace === WSDL_NAMESPACE && node.name.local === 'operation'))
+            for (const message of children(operation).filter(node => node.name.namespace === WSDL_NAMESPACE && ['input', 'output', 'fault'].includes(node.name.local)))
+              addressingMessages.add(message);
+      }
+      const addressingAttribute = (node: SyntaxElement, namespace: string, local: string) =>
+        addressingMessages.has(node) && namespace === ADDRESSING_WSDL && local === 'Action';
       const exactly = (node: SyntaxElement, namespace: string, local: string): SyntaxElement => {
         const found = children(node).filter(c => c.name.namespace === namespace && c.name.local === local);
         if (found.length !== 1) return refuse('selection-refused', `expected-one-${local}`);
         return found[0]!;
       };
       const shape = (node: SyntaxElement, allowed: readonly string[]) => {
-        for (const child of children(node)) if (!allowed.includes(`${child.name.namespace}#${child.name.local}`)) refuse('unsupported', 'binding-child-shape');
+        for (const child of children(node)) if (!allowed.includes(`${child.name.namespace}#${child.name.local}`)
+          && !policyOwner?.isPolicyMetadata(child)) refuse('unsupported', 'binding-child-shape');
         for (const child of node.children) {
           if (child.kind !== 'text') continue;
           budget.chargeWork(8 + child.value.length * 4);
@@ -115,7 +205,8 @@ export async function selectDirectOperationInRequest(source: string, selector: D
       const soap = (local: string) => `${SOAP}#${local}`;
       const attrs = (node: SyntaxElement, allowed: readonly string[]) => {
         children(node);
-        for (const a of node.attributes) if (a.name.namespace !== '' || !allowed.includes(a.name.local)) refuse('unsupported', 'binding-attribute-shape');
+        for (const a of node.attributes) if (!addressingAttribute(node, a.name.namespace, a.name.local)
+          && (a.name.namespace !== '' || !allowed.includes(a.name.local))) refuse('unsupported', 'binding-attribute-shape');
       };
       // Conservative extension policy: only known WSDL 1.1/SOAP 1.1 syntax, even when optional.
       // Documentation payload and XSD syntax are inert here and owned separately.
@@ -133,10 +224,14 @@ export async function selectDirectOperationInRequest(source: string, selector: D
           const node = stack.pop()!;
           const nested = children(node);
           if (qualifiedSchemas.has(node)) continue;
+          if (policyOwner?.isPolicyMetadata(node)) continue;
           if (node.name.namespace === WSDL_NAMESPACE && node.name.local === 'documentation') continue;
           const allowed = node.name.namespace === WSDL_NAMESPACE ? attributes[node.name.local] : node.name.namespace === SOAP ? soapAttributes[node.name.local] : undefined;
           if (!allowed) return refuse('unsupported', 'wsdl-extension');
           for (const a of node.attributes) {
+            // @why The May 2006 WSDL binding assigns no normative intent to Action without UsingAddressing.
+            //   UsingAddressing remains unsupported, so these attributes are retained metadata, never SOAP header instructions.
+            if (addressingAttribute(node, a.name.namespace, a.name.local)) continue;
             if (a.name.namespace === WSDL_NAMESPACE && a.name.local === 'required' && node.name.namespace === SOAP && ['true', '1', 'false', '0'].includes(a.value)) continue;
             if (a.name.namespace !== '' || !allowed.includes(a.name.local)) refuse('unsupported', 'wsdl-attribute');
             if (a.name.local === 'name' && !isXmlNCName(a.value)) refuse('selection-refused', 'wsdl-name');
@@ -240,13 +335,20 @@ export async function selectDirectOperationInRequest(source: string, selector: D
       });
       check();
       // Charge publication traversal before retaining authority. Roots stay exact context objects.
-      const contract: DirectOperationContract = {selector: ownedSelector, contextId: context.contextId, basis: 'native-direct-premises-v1', correspondence: 'dated-XSD-2004-direct-v1',
+      const contract: DirectOperationContract = {selector: ownedSelector, contextId: context.contextId,
+        basis: profile === 'direct' ? 'native-direct-premises-v1' : 'native-component-premises-v1',
+        correspondence: profile === 'direct' ? 'dated-XSD-2004-direct-v1' : 'dated-XSD-2004-components-v1',
         binding: {version: '1.1', style: 'document', use: 'literal', transport: HTTP, action, source: binding.context.source},
         input: requestRoot, output: responseRoot, faults,
-        missingCapabilities: ['matcher', 'projection', 'scalar-payload', 'bundle', 'codec', 'buffered-transport', 'structured-generation'], admitted: false};
+        ...(policyOwner ? {policy: policyOwner.forBinding(binding.syntax), addressingActions: {required: false as const,
+          input: attr(abstractInput, 'Action', ADDRESSING_WSDL), output: attr(abstractOutput, 'Action', ADDRESSING_WSDL),
+          faults: declaredFaults.flatMap(fault => {const action = attr(fault, 'Action', ADDRESSING_WSDL);
+            return action === undefined ? [] : [{name: attr(fault, 'name')!, action}];})}} : {}),
+        missingCapabilities: ['matcher', 'projection', 'scalar-payload', 'bundle', 'codec', 'buffered-transport', 'structured-generation',
+          ...(policyOwner?.forBinding(binding.syntax).kind === 'https-transport' ? ['policy-enforcement'] : [])], admitted: false};
       budget.freeze(contract); check(); budget.chargeWork(256);
       const selected = Object.freeze({kind: 'selected' as const, contract, usage: Object.freeze({...budget.usage()})});
-      issued.set(contract, Object.freeze({contract, context, source: input, evidence: qualified}));
+      issued.set(contract, Object.freeze({contract, context, source: input, evidence: qualified, ...(policyOwner ? {policyOwner} : {})}));
       return selected;
     });
     return result.kind === 'resource-limit' ? failure('resource-limit', 'request-budget') : result;

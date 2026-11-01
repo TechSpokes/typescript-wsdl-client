@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:owned:wrapper" targetNamespace="urn:owned:wrapper">
+  <wsdl:types><xs:schema targetNamespace="urn:owned:wrapper" elementFormDefault="qualified">
+    <xs:import namespace="http://www.w3.org/2001/XMLSchema"/>
+    <xs:element name="Request"><xs:complexType><xs:sequence><xs:element name="Code" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Envelope"><xs:complexType><xs:sequence><xs:element ref="xs:schema"/><xs:any/></xs:sequence></xs:complexType></xs:element>
+    <xs:element name="Problem" type="xs:string"/>
+  </xs:schema></wsdl:types>
+  <wsdl:message name="Input"><wsdl:part name="parameters" element="tns:Request"/></wsdl:message>
+  <wsdl:message name="Output"><wsdl:part name="parameters" element="tns:Envelope"/></wsdl:message>
+  <wsdl:message name="ProblemMessage"><wsdl:part name="detail" element="tns:Problem"/></wsdl:message>
+  <wsdl:portType name="WrapperPortType"><wsdl:operation name="Fetch"><wsdl:input message="tns:Input"/><wsdl:output message="tns:Output"/><wsdl:fault name="Problem" message="tns:ProblemMessage"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="WrapperBinding" type="tns:WrapperPortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Fetch"><soap:operation soapAction="urn:owned:wrapper:fetch"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="Problem"><soap:fault name="Problem" use="literal"/></wsdl:fault></wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="WrapperService"><wsdl:port name="WrapperPort" binding="tns:WrapperBinding"><soap:address location="http://127.0.0.1:1/owned-wrapper"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

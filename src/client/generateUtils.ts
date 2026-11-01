@@ -53,7 +53,7 @@ export function generateUtils(outFile: string, compiled: CompiledCatalog) {
     ]),
   );
   const metas = JSON.stringify(
-    {Attributes: attrSpec, ChildrenTypes: childType, RepeatedElements: repeatedElements},
+    {Attributes: attrSpec, AttributeTypes: compiled.meta.attrType ?? {}, ChildrenTypes: childType, RepeatedElements: repeatedElements},
     null,
     2
   );
@@ -64,6 +64,8 @@ export function generateUtils(outFile: string, compiled: CompiledCatalog) {
 export interface ${clientName}DataTypes {
   /** Maps type names to lists of property names that should be treated as XML attributes */
   Attributes: Record<string, readonly string[]>;
+  /** Maps attributes to their projected scalar types for XML response conversion. */
+  AttributeTypes?: Record<string, Readonly<Record<string, string>>>;
   /** Maps type names to their child element types for recursive processing */
   ChildrenTypes: Record<string, Readonly<Record<string, string>>>;
   /** Maps type names to repeated child properties; optional for custom metadata compatibility. */
