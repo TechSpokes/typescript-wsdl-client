@@ -17,6 +17,8 @@ import type {DirectValueMapping} from '../compiler/directValues.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
 
 interface CheckedGatewayOptions {
+  /** Internal non-writing preparation; native qualification and lowering still run. */
+  readonly emit?: boolean;
   readonly clientDir: string;
   readonly gatewayDir: string;
   readonly openapiFile: string;
@@ -208,6 +210,7 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
 export default plugin;
 `;
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
+  if (options.emit === false) return {doc};
   await mkdir(options.gatewayDir, {recursive: true});
   await mkdir(path.dirname(options.openapiFile), {recursive: true});
   await writeFile(path.join(options.gatewayDir, 'plugin.ts'), composeGeneratedSource(body, resolvePreamble('gateway')), 'utf8');
@@ -221,7 +224,7 @@ export default plugin;
  * @throws For mixed native handles, invalid/colliding paths, cancellation or filesystem failures.
  */
 export async function generateComponentServiceGateway(expected: readonly ReconstructedComponentSource[], options: {
-  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string; signal?: AbortSignal;
+  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string; signal?: AbortSignal; emit?: boolean;
 }): Promise<{doc: unknown; routes: Readonly<Record<string, string>>}> {
   const operations = inspectComponentSourceService(expected), routes: Record<string, string> = Object.create(null) as Record<string, string>;
   const paths: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
@@ -233,7 +236,7 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   for (const [index, operation] of operations.entries()) {
     tick(); const name = operation.contract.selector.operation, routePath = `${options.basePath}/${encodeURIComponent(name)}`;
     const result = await generateComponentGateway(operation, {clientDir: path.join(options.clientDir, 'operations', String(index)),
-      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, signal: options.signal});
+      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, signal: options.signal, emit: options.emit});
     const doc = result.doc as Record<string, unknown>;
     documents.push(doc); routes[name] = routePath;
     for (const [route, value] of Object.entries(doc.paths as Record<string, unknown>)) {
@@ -270,7 +273,9 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   await fastify.register(operation_${index}, {clientOptions: {...clientOptions, capsule: capsules[${literal(operation.contract.selector.operation)}] as Uint8Array}});`),
     '};', 'export default plugin;', '',
   ];
-  tick(); await mkdir(options.gatewayDir, {recursive: true}); await mkdir(path.dirname(options.openapiFile), {recursive: true});
+  tick();
+  if (options.emit === false) return {doc, routes: Object.freeze(routes)};
+  await mkdir(options.gatewayDir, {recursive: true}); await mkdir(path.dirname(options.openapiFile), {recursive: true});
   await writeFile(path.join(options.gatewayDir, 'plugin.ts'), composeGeneratedSource(lines.join('\n'), resolvePreamble('gateway')), 'utf8');
   await writeFile(options.openapiFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
   return {doc, routes: Object.freeze(routes)};

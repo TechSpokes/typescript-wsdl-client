@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic locationless-import recovery fixture for #405. -->
+<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:conformance:import-relative-types" xmlns:d="urn:conformance:import-relative-types:types" targetNamespace="urn:conformance:import-relative-types">
+  <w:types><x:schema targetNamespace="urn:conformance:import-relative-types" elementFormDefault="qualified">
+    <x:import namespace="urn:conformance:import-relative-types:types"/>
+    <x:element name="SubmitImported"><x:complexType><x:sequence><x:element name="payload" type="d:ImportedPayload"/></x:sequence></x:complexType></x:element>
+    <x:element name="SubmitImportedResponse"><x:complexType><x:sequence><x:element name="accepted" type="x:boolean"/></x:sequence></x:complexType></x:element>
+  </x:schema></w:types>
+  <w:message name="Input"><w:part name="parameters" element="t:SubmitImported"/></w:message>
+  <w:message name="Output"><w:part name="parameters" element="t:SubmitImportedResponse"/></w:message>
+  <w:portType name="ImportPortType"><w:operation name="SubmitImported"><w:input message="t:Input"/><w:output message="t:Output"/></w:operation></w:portType>
+  <w:binding name="ImportBinding" type="t:ImportPortType"><s:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <w:operation name="SubmitImported"><s:operation soapAction="urn:SubmitImported"/><w:input><s:body use="literal"/></w:input><w:output><s:body use="literal"/></w:output></w:operation>
+  </w:binding>
+  <w:service name="ImportService"><w:port name="ImportPort" binding="t:ImportBinding"><s:address location="http://example.invalid/never-contact"/></w:port></w:service>
+</w:definitions>

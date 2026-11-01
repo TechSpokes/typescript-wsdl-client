@@ -1066,7 +1066,7 @@
         {
           "path": "src/loader/schemaInput.ts",
           "role": "semantic-source",
-          "sha256": "327ef07b7561e14fc12c686d17c5ba4068d6f2032b9e4f2b84439d0cad63e59e"
+          "sha256": "9b31143f059057d1d475bec6ccd2352c23a718aa8a3e0c6c8d897526763d0604"
         },
         {
           "path": "test/research/re01/predicate-dependencies.test.ts",

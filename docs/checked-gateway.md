@@ -4,7 +4,44 @@
 
 The additive `checked-components-v1` mode uses the same command family and native owners for qualified structured operations, imported schema snapshots, attributes, recursive records, simple content and ordered values. It preserves the direct preview and legacy defaults. Source, mapping, artifact and transport checks remain authoritative; unsupported schema or security features refuse rather than disappearing from a successful service claim. This is a qualified component fragment, not universal XSD, streaming or provider acceptance.
 
-Use `selectors` to request every intended operation explicitly. Each operation retains its own client and capsule; the service index and gateway compose them without merging service/binding identities. `basePath` can separate services on a shared host. If omitted, it defaults to the supplied version/service route prefix. Paths append the exact, URI-encoded operation name.
+For a supported local WSDL with one service/port/binding candidate, omit `--checked-config`. The planner selects all operations of that binding and derives supported mappings through the existing native owners. The containing directory is the default authorized file root; canonical containment and symlink checks still apply. Dependencies outside that root, HTTP metadata origins, standard libraries and runtime endpoints require explicit permission.
+
+```bash
+npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source source.wsdl --client-dir .generated/service/client --openapi-file .generated/service/openapi.json --gateway-dir .generated/service/gateway --gateway-version-prefix v1 --gateway-service-name service --init-app --app-dir .generated/service --test-dir .generated/service/test --checked-report .generated/planning.json --checked-draft resolution.json
+```
+
+Partial configuration may supply `service`, `port`, `selectors` or permissions. Only missing unambiguous facts are inferred. Multiple candidates require a choice, including unsupported bindings; conflicting choices refuse. Explicit `selectors` still request a subset, while shared whole-source prerequisites remain mandatory. Reports retain the complete discovered inventory and mark other operations unselected and unassessed.
+
+Each operation retains its own client and capsule; the service index and gateway compose them without merging service/binding identities. `basePath` can separate services on a shared host. If omitted, it defaults to the supplied version/service route prefix. Paths append the exact, URI-encoded operation name.
+
+### Planning and missing-schema recovery
+
+`--checked-report` writes versioned `checked-component-plan-v1` JSON on native success or refusal. Human refusals identify the native reason, stage, dimension, affected full operation identities and configuration pointer. Source legality, correspondence, mapping/artifact readiness and runtime remain separate dimensions. Unsupported or inconclusive qualification does not establish invalid vendor schemas. Loading interruptions retain discovered counts plus explicit incomplete inventory; independent operation refusals are collected before generation writes project artifacts.
+
+For an unresolved locationless import, `--checked-draft` writes the known selection/permission configuration with `namespaceLocations: [{"namespace":"the-imported-namespace","location":"REQUIRED_SCHEMA_LOCATION"}]`. Replace that one value with an authorized schema path, then rerun the same pipeline with `--checked-config resolution.json`. Empty values and the unresolved placeholder refuse before source reads. Paths in generation configuration resolve from the invocation working directory. The user supplies missing source information, not a replacement type graph.
+
+Report and draft files use exclusive creation by default. `--force-checked-files` explicitly permits replacing those requested files; it is independent of scaffold `--force-init` and test `--force-test`. A draft is written only when a missing-schema resolution is available. Planning does not create a misleading partial project on semantic refusal. Filesystem write failures after emission starts remain operational failures; output is not claimed to be atomic.
+
+The package-root API shares that preparation:
+
+```typescript
+import {planCheckedComponents, runGenerationPipeline} from '@techspokes/typescript-wsdl-client';
+
+const report = await planCheckedComponents('/authorized/source.wsdl');
+console.log(report.ready, report.blockers);
+await runGenerationPipeline({
+  model: 'checked-components-v1', wsdl: '/authorized/source.wsdl',
+  clientOutDir: '.generated/service/client', openapi: {outFile: '.generated/service/openapi.json'},
+  gateway: {outDir: '.generated/service/gateway', versionSlug: 'v1', serviceSlug: 'service'},
+  app: {appDir: '.generated/service'}, test: {testDir: '.generated/service/test'},
+});
+```
+
+`planCheckedComponents` accepts the same partial component choices as `runGenerationPipeline.checkedComponents`. `CheckedPlanningError.report` exposes refusals from generation. `formatCheckedComponentPlan` formats human diagnostics, and `writeCheckedPlanningFile(path, data, force)` writes explicit report/draft data with ownership protection. Reports use opaque resource labels, digests and XML declaration positions; they omit source bytes and transport error details. The editable resolution configuration necessarily retains supplied filesystem permissions.
+
+Saved reports and copied plans grant no authority. Every separate invocation reloads physical sources and reruns native qualification, selection, mapping and compatibility checks. Planning never dispatches SOAP, and generation readiness leaves runtime endpoint permission, credentials and provider acceptance unassessed. The old `checked-assessment-v1` and direct-preview scope are unchanged.
+
+### Explicit component configuration
 
 For the installed Forecast example below, a component configuration is:
 
@@ -30,7 +67,7 @@ Save it as `component-generation.json`, then use the same explicit outputs:
 npx wsdl-tsc pipeline --model checked-components-v1 --checked-config component-generation.json --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test
 ```
 
-For imports, each `sourceResources` entry has an original logical `uri` and an independently authorized physical snapshot `file`. HTTP metadata origins must be listed in `sourceOrigins` even though bytes are read from files. Missing snapshots refuse without network fallback. Optional `namespaceLocations` entries have `namespace` and `location` for imports without `schemaLocation`; explicit locations in source take precedence. Generation paths resolve from the invocation directory. Original source bytes are copied without modification and their provenance is recorded in `client/source-resources.json`.
+Local dependencies are discovered under authorized roots; callers need not author snapshot bookkeeping. With explicit `sourceResources`, each entry has an original logical `uri` and an independently authorized physical snapshot `file`; the supplied snapshot set remains closed. HTTP metadata origins must be listed in `sourceOrigins` even though bytes are read from files. Missing snapshots refuse without network fallback. Optional `namespaceLocations` entries have `namespace` and `location` for imports without `schemaLocation`; explicit locations in source take precedence. Generation paths resolve from the invocation directory. Original source bytes are copied without modification and their provenance is recorded in `client/source-resources.json`.
 
 Install/typecheck/test/build/start as described below. Runtime configuration adds explicit `sourceResources`, `sourceOrigins`, optional `namespaceLocations`, per-operation `capsuleFiles` and optional `caFile`. Runtime paths resolve from the configuration file. The generated example points to copied input bytes; its empty endpoint allowlist still authorizes no business request. Physical sources are rechecked independently of embedded capsule bytes, and mismatched artifacts refuse. Cross-volume local source relocation is outside this scaffold; callers can supply independently authorized runtime inputs explicitly.
 

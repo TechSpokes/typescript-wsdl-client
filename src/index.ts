@@ -37,6 +37,8 @@ export {generateTests} from "./test/generateTests.js";
 export {runGenerationPipeline} from "./pipeline.js";
 export type {PipelineOptions} from './pipeline.js';
 export type {CheckedDirectOptions, CheckedComponentOptions, CheckedInventory} from './checkedPipeline.js';
+export {planCheckedComponents, formatCheckedComponentPlan, writeCheckedPlanningFile, CheckedPlanningError} from './checkedPlanning.js';
+export type {CheckedComponentPlan, ComponentPlanBlocker} from './checkedPlanning.js';
 export type {ComponentRecordProjectionSpec} from './compiler/componentRecordProjection.js';
 export {
   loadStreamConfigFile,

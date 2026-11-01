@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(pipeline): derive checked WSDL selections and guide missing-schema recovery through fresh native planning.
+
 - feat(gateway): generate checked component clients and gateways for imported structured contracts with explicit companion payload views.
 
 - feat(gateway): generate installable opt-in checked direct gateways with independent HTTP/SOAP validation.

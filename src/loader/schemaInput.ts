@@ -56,6 +56,8 @@ export function schemaInterpretationKey(node: SyntaxElement, targetNamespace: st
 }
 
 export type SchemaInputOptions = {
+  /** Diagnostic observation only; partial documents never establish loading completeness or eligibility. */
+  onDocument?: (document: SyntaxDocument) => void;
   signal?: AbortSignal;
   /** Optional request accounting used by the additive assessment boundary. */
   chargeWork?: (amount: number) => void;
@@ -152,6 +154,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
         originalBytes.set(resource.uri, resource.bytes);
       }
       documents.set(resource.uri, doc);
+      options.onDocument?.(doc);
     }
     return doc;
   };

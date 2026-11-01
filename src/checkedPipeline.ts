@@ -15,7 +15,7 @@ import {selectDirectOperation, selectComponentOperations, inspectDirectOperation
 import type {DirectOperationSelector} from './compiler/directOperation.js';
 import {createDirectSourceCapsule, reconstructDirectSourceCapsule, createComponentSourceCapsule, reconstructComponentSourceCapsuleForOperation} from './compiler/directSourceCapsule.js';
 import type {ReconstructedComponentSource} from './compiler/directSourceCapsule.js';
-import {generateDirectClient, writeDirectClient, writeComponentServiceClient} from './client/generateDirectClient.js';
+import {generateDirectClient, generateComponentClient, writeDirectClient, writeComponentServiceClient} from './client/generateDirectClient.js';
 import {copyOriginalSchemaResource, prepareSchemaSnapshotFiles} from './loader/schemaInput.js';
 import type {SchemaInput} from './loader/schemaInput.js';
 import {createApplicationBudget} from './compiler/semanticBudget.js';
@@ -179,7 +179,10 @@ export function parseCheckedComponentOptions(value: unknown): CheckedComponentOp
  * @sideEffects Writes generator-owned artifacts and preserves existing scaffolds unless forced.
  */
 export async function runCheckedPipeline(opts: PipelineOptions) {
-  const components = opts.model === 'checked-components-v1' ? parseCheckedComponentOptions(opts.checkedComponents) : undefined;
+  const planning = opts.model === 'checked-components-v1'
+    ? await (await import('./checkedPlanning.js')).prepareCheckedComponentPlan(opts.wsdl, opts.checkedComponents) : undefined;
+  if (planning && !planning.native) throw new (await import('./checkedPlanning.js')).CheckedPlanningError(planning.report);
+  const components = planning?.config;
   const config = components ? undefined : parseCheckedDirectOptions(opts.checkedDirect);
   const model = components ? 'checked-components-v1' : 'checked-direct-v1';
   if (opts.test && !opts.app) throw new Error('Checked scaffold tests require app generation');
@@ -222,7 +225,7 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
       }
     }
   }
-  if (components) return runComponentStages(opts, components, {clientDir, gatewayDir, openapiFile, basePath: components.basePath ?? `/${versionSlug}/${serviceSlug}`});
+  if (components && planning?.native) return runComponentStages(opts, components, {clientDir, gatewayDir, openapiFile, basePath: components.basePath ?? `/${versionSlug}/${serviceSlug}`}, planning.native, planning.report);
   if (!config) throw new TypeError('Checked configuration required');
   const selected = await selectDirectOperation(opts.wsdl, config.selector, {
     loading: {policy: {fileRoots: config.fileRoots}}, signal: config.signal,
@@ -265,21 +268,18 @@ export async function runCheckedPipeline(opts: PipelineOptions) {
   return {compiled: undefined, openapiDoc: doc, checked: inventory};
 }
 
-async function runComponentStages(opts: PipelineOptions, config: CheckedComponentOptions, outputs: {
-  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string;
-}) {
+/** Prepare through native owners only; internal handles remain within this invocation. */
+export async function prepareComponentStages(wsdl: string, config: CheckedComponentOptions) {
   const tick = () => {if (config.signal?.aborted) throw new Error('Checked component generation cancelled');};
   const namespaces = new Map(config.namespaceLocations?.map(location => [location.namespace, location.location]));
   if (namespaces.size !== (config.namespaceLocations?.length ?? 0)) throw new TypeError('Duplicate namespace location');
   const budget = createApplicationBudget();
-  const prepared = await prepareSchemaSnapshotFiles(opts.wsdl, config.sourceResources, {policy: {
+  const prepared = await prepareSchemaSnapshotFiles(wsdl, config.sourceResources, {policy: {
     fileRoots: config.fileRoots, allowedOrigins: config.sourceOrigins}, namespaceLocations: namespaces,
     limits: directLoadingLimits(budget), signal: config.signal, chargeWork: amount => {tick(); budget.chargeWork(amount);}});
   const selected = await selectComponentOperations(prepared.source, config.selectors, {loading: prepared.loading, signal: config.signal,
     standardLibraries: config.standardLibraries?.map(acquireStandardSchemaLibrary)});
-  if (selected.some(result => result.kind !== 'selected')) throw new Error('Requested component operations refused; generated=0, executed=0: ' + JSON.stringify(selected.map((result, index) => ({
-    service: config.service, selector: config.selectors[index], result: result.kind, ...(result.kind === 'selected' ? {} : {rule: result.rule}),
-  }))));
+  const refusals: {selector: DirectOperationSelector; kind: string; rule: string; dimension: 'qualification-and-correspondence' | 'mapping-and-artifact'}[] = selected.flatMap((result, index) => result.kind === 'selected' ? [] : [{selector: config.selectors[index]!, kind: result.kind, rule: result.rule, dimension: 'qualification-and-correspondence' as const}]);
   const expected: ReconstructedComponentSource[] = [];
   const projections = new Map<string, ComponentRecordProjection>();
   const groups = new Map<string, NonNullable<CheckedComponentOptions['recordProjections']>[number][]>();
@@ -296,22 +296,43 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
       signal: config.signal, standardLibraries: first.standardLibraries?.map(acquireStandardSchemaLibrary)});
     for (const [index, entry] of group.entries()) {
       tick(); const companion = companions[index]!, outer = selected[config.selectors.findIndex(selector => JSON.stringify(selector) === JSON.stringify(entry.selector))]!;
-      if (companion.kind !== 'selected' || outer.kind !== 'selected') throw new Error('Requested record source operation refused; generated=0, executed=0: ' + JSON.stringify({selector: entry.selector, recordSelector: entry.recordSelector, result: companion.kind}));
+      if (outer.kind !== 'selected') continue;
+      if (companion.kind !== 'selected') {refusals.push({selector: entry.selector, kind: companion.kind, rule: `record-source:${companion.rule}`, dimension: 'mapping-and-artifact'}); continue;}
       const native = createComponentRecordProjection(outer.contract, companion.contract, entry.spec, {signal: config.signal});
-      if (native.kind !== 'component-record-projection') throw new Error(`Checked record projection refused: ${native.kind}: ${native.rule}`);
+      if (native.kind !== 'component-record-projection') {refusals.push({selector: entry.selector, kind: native.kind, rule: native.rule, dimension: 'mapping-and-artifact'}); continue;}
       projections.set(JSON.stringify(entry.selector), native);
     }
   }
   for (const result of selected) {
-    tick(); if (result.kind !== 'selected') throw new Error('Unselected component operation');
+    tick(); if (result.kind !== 'selected') continue;
     const projection = projections.get(JSON.stringify(result.contract.selector));
+    if (!projection && config.recordProjections?.some(entry => JSON.stringify(entry.selector) === JSON.stringify(result.contract.selector))) continue;
     const capsule = await createComponentSourceCapsule(result.contract, {service: config.service, port: config.port}, config.signal, projection);
-    if (capsule.kind !== 'component-capsule') throw new Error(`Checked component artifact refused: ${capsule.kind}: ${capsule.rule}`);
+    if (capsule.kind !== 'component-capsule') {refusals.push({selector: result.contract.selector, kind: capsule.kind, rule: capsule.rule, dimension: 'mapping-and-artifact'}); continue;}
     const native = await reconstructComponentSourceCapsuleForOperation(capsule.bytes, result.contract, {service: config.service, port: config.port}, config.signal, projection);
-    if (native.kind !== 'reconstructed-component') throw new Error(`Checked component reconstruction refused: ${native.kind}: ${native.rule}`);
+    if (native.kind !== 'reconstructed-component') {refusals.push({selector: result.contract.selector, kind: native.kind, rule: native.rule, dimension: 'mapping-and-artifact'}); continue;}
     expected.push(native);
   }
-  const {clientDir, gatewayDir, openapiFile, basePath} = outputs;
+  let layout: ReturnType<typeof prepareComponentLayout> | undefined;
+  if (!refusals.length) {
+    try {layout = prepareComponentLayout(expected, projections, tick);}
+    catch (error) {refusals.push({selector: config.selectors[0]!, kind: config.signal?.aborted ? 'cancelled' : 'unsupported',
+      rule: error instanceof Error ? error.message : 'source-relocation', dimension: 'mapping-and-artifact'});}
+    for (const operation of expected) {
+      tick(); const generated = await generateComponentClient(operation, config.signal);
+      if (generated.kind !== 'generated-component-client') refusals.push({selector: operation.contract.selector, kind: generated.kind, rule: generated.rule, dimension: 'mapping-and-artifact'});
+      try {
+        await generateComponentServiceGateway([operation], {clientDir: 'client', gatewayDir: 'gateway', openapiFile: 'openapi.json',
+          basePath: config.basePath ?? '/v1/service', signal: config.signal, emit: false});
+      } catch {
+        refusals.push({selector: operation.contract.selector, kind: config.signal?.aborted ? 'cancelled' : 'unsupported', rule: 'checked-gateway-lowering', dimension: 'mapping-and-artifact'});
+      }
+    }
+  }
+  return {expected, projections, namespaces, refusals, layout};
+}
+
+function prepareComponentLayout(expected: readonly ReconstructedComponentSource[], projections: ReadonlyMap<string, ComponentRecordProjection>, tick: () => void) {
   const inspection = inspectDirectOperation(expected[0]!.contract), input = inspection.source;
   const inputs = new Set<SchemaInput>([input]);
   for (const projection of projections.values()) inputs.add(inspectDirectOperation(inspectComponentRecordProjection(projection).companion).source);
@@ -328,6 +349,17 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
   const allResources = [...resources.values()].map(entry => entry.resource).sort((a, b) => a.uri < b.uri ? -1 : a.uri > b.uri ? 1 : 0);
   const files = allResources.filter(resource => new URL(resource.uri).protocol === 'file:');
   const common = commonSourceDirectory(fileURLToPath(input.root.uri), files.map(resource => fileURLToPath(resource.uri)), tick);
+  return {inspection, input, resources, allResources, common};
+}
+
+async function runComponentStages(opts: PipelineOptions, config: CheckedComponentOptions, outputs: {
+  clientDir: string; gatewayDir: string; openapiFile: string; basePath: string;
+}, native: Awaited<ReturnType<typeof prepareComponentStages>>, report: import('./checkedPlanning.js').CheckedComponentPlan) {
+  const {expected, projections, namespaces} = native;
+  const tick = () => {if (config.signal?.aborted) throw new Error('Checked component generation cancelled');};
+  const {clientDir, gatewayDir, openapiFile, basePath} = outputs;
+  if (!native.layout) throw new TypeError('Prepared source layout required');
+  const {inspection, input, resources, allResources, common} = native.layout;
   const copied = new Map<string, string>();
   const destinations = new Set<string>();
   for (const resource of allResources) {
@@ -352,8 +384,9 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
   fs.writeFileSync(path.join(clientDir, 'source-resources.json'), JSON.stringify(allResources.map(resource => ({originalUri: resource.uri,
     logicalUri: relocated(resource.uri), file: path.relative(clientDir, copied.get(resource.uri)!).replaceAll('\\', '/'), digest: resource.digest})), null, 2) + '\n');
   const {doc, routes} = await generateComponentServiceGateway(expected, {clientDir, gatewayDir, openapiFile, basePath, signal: config.signal});
-  const operations = expected.map(operation => ({portType: operation.contract.selector.portType, binding: operation.contract.selector.binding,
-    operation: operation.contract.selector.operation, requested: true, selected: true, generated: true, executed: false, status: 'generated'}));
+  const operations = [...config.selectors.flatMap(selector => report.operations.filter(o => o.binding && JSON.stringify(o.portType) === JSON.stringify(selector.portType)
+    && JSON.stringify(o.binding) === JSON.stringify(selector.binding) && o.operation === selector.operation)), ...report.operations.filter(o => !o.selected)]
+    .map(operation => ({...operation, generated: operation.selected, executed: false, status: operation.selected ? 'generated' : 'unselected-not-assessed'}));
   const inventory: CheckedInventory = {model: 'checked-components-v1', assurance: 'native-component-source-and-mapping', admitted: false,
     selection: {selector: config.selectors[0]!, selectors: config.selectors, service: config.service, port: config.port}, operations};
   fs.writeFileSync(path.join(clientDir, 'inventory.json'), JSON.stringify(inventory, null, 2) + '\n');
@@ -366,5 +399,5 @@ async function runComponentStages(opts: PipelineOptions, config: CheckedComponen
   if (opts.app) await generateCheckedApp({clientDir, gatewayDir, openapiFile, ...opts.app, component});
   if (opts.test && opts.app) await generateCheckedTests({clientDir, appDir: opts.app.appDir, routePath: Object.values(routes)[0]!,
     ...opts.test, routePaths: Object.values(routes), sourceFile: root, component: true});
-  return {compiled: undefined, openapiDoc: doc, checked: inventory};
+  return {compiled: undefined, openapiDoc: doc, checked: inventory, planning: report};
 }

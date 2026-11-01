@@ -159,7 +159,9 @@ async function selectOperationInRequest(source: string, selector: DirectOperatio
       if (qualified.kind === 'component-source') inspectComponentSourceQualification(qualified, input);
       const construction = qualified.kind === 'component-source' ? qualified.construction : qualified;
       const eligible = qualified.kind === 'component-source' ? qualified.schemaEligible : qualified.eligible;
-      if (!eligible) return sourceFailure(construction.localDisproved || construction.closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive', 'whole-source-qualification');
+      if (!eligible) return sourceFailure(construction.localDisproved || construction.closure.kind === 'invalid-schema' ? 'invalid-schema' : 'inconclusive',
+        qualified.kind === 'component-source' && qualified.correspondence.kind === 'inconclusive-correspondence'
+          ? `whole-source-qualification:${qualified.correspondence.rule}${qualified.correspondence.path ? ':' + qualified.correspondence.path : ''}` : 'whole-source-qualification');
       const {request} = construction;
       const context = request.actual;
       let policyOwner: WsdlPolicyRequirements | undefined;

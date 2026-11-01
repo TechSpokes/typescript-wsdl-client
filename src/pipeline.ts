@@ -44,7 +44,7 @@ export interface PipelineOptions {
   /** Additive preview selection; omission preserves the legacy pipeline. */
   model?: 'legacy' | 'checked-direct-v1' | 'checked-components-v1';
   checkedDirect?: import('./checkedPipeline.js').CheckedDirectOptions;
-  checkedComponents?: import('./checkedPipeline.js').CheckedComponentOptions;
+  checkedComponents?: Partial<import('./checkedPipeline.js').CheckedComponentOptions>;
   wsdl: string;
   catalogOut?: string;
   clientOutDir?: string;
@@ -98,7 +98,7 @@ export interface PipelineOptions {
  * @param {PipelineOptions} opts - Configuration options for the pipeline
  * @returns {Promise<{compiled: any; openapiDoc?: any}>} - The compiled catalog and optional OpenAPI document
  */
-export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ compiled: any; openapiDoc?: any; checked?: import('./checkedPipeline.js').CheckedInventory }> {
+export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ compiled: any; openapiDoc?: any; checked?: import('./checkedPipeline.js').CheckedInventory; planning?: import('./checkedPlanning.js').CheckedComponentPlan }> {
   if (opts.model === 'checked-direct-v1' || opts.model === 'checked-components-v1') {
     if (opts.model === 'checked-direct-v1' && opts.checkedComponents !== undefined
       || opts.model === 'checked-components-v1' && opts.checkedDirect !== undefined) throw new Error('Mixed checked model configurations are unsupported');

@@ -19,7 +19,7 @@ Created from production integration work at [TechSpokes](https://www.techspokes.
 
 See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
-The unreleased [checked gateway modes](docs/checked-gateway.md) add explicit native generation: `checked-direct-v1` retains the narrow single-operation preview, while `checked-components-v1` supports qualified structured service operations and configured schema snapshots. Both generate clients, contracts, OpenAPI, gateways, app scaffolding and tests through `pipeline`.
+The unreleased [checked gateway modes](docs/checked-gateway.md) add opt-in native generation: `checked-direct-v1` retains the narrow single-operation preview, while `checked-components-v1` derives unambiguous local service selections and qualified structured mappings without authored semantic JSON. Both generate clients, contracts, OpenAPI, gateways, app scaffolding and tests through `pipeline`. Component planning can report blockers with `--checked-report` and draft a missing-schema configuration with `--checked-draft`; the package-root `planCheckedComponents` API uses the same native preparation.
 It uses the [versioned package-root runtime](docs/direct-values.md#package-root-binding-for-generated-direct-clients) with explicit source permission and owned-loopback SOAP endpoint authorization; legacy defaults remain unchanged.
 
 ## Why Choose This

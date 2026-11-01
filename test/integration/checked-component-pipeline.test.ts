@@ -39,6 +39,18 @@ async function setup() {
 }
 
 describe('public component service pipeline', () => {
+  it('reports authorized dependency aliases before planning readiness or artifact writes', async () => {
+    const {sources, project, options} = await setup();
+    const actual = path.join(sources, 'schemas'); await mkdir(actual);
+    await writeFile(path.join(actual, 'types.xsd'), schema);
+    await symlink(actual, path.join(sources, 'alias'), 'junction');
+    await writeFile(options.wsdl, fixture.replace('schemaLocation="import-relative-types-types.xsd"', 'schemaLocation="alias/types.xsd"'));
+    const {planCheckedComponents, CheckedPlanningError} = await import('../../src/index.js');
+    const report = await planCheckedComponents(options.wsdl);
+    expect(report.ready).toBe(false); expect(report.blockers).toMatchObject([{category: 'unsupported-capability', reason: expect.stringContaining('retrieval aliases')}]);
+    await expect(runGenerationPipeline({...options, checkedComponents: undefined})).rejects.toBeInstanceOf(CheckedPlanningError);
+    await expect(readFile(path.join(project, 'client/client.ts'))).rejects.toMatchObject({code: 'ENOENT'});
+  });
   it('generates and runs an explicitly scoped record gateway without merging same-name source declarations', async () => {
     const {sources, project, options} = await setup(), namespace = 'urn:owned:wrapper';
     const name = (local: string) => ({namespace, local});
@@ -118,7 +130,7 @@ describe('public component service pipeline', () => {
   }, 120_000);
 
   it('refuses unknown/accessor configuration and duplicate operation selection without reading getters', async () => {
-    const {options} = await setup(), config = options.checkedComponents!;
+    const {options} = await setup(), config = parseCheckedComponentOptions(options.checkedComponents);
     expect(() => parseCheckedComponentOptions({...config, maxWork: 1})).toThrow(TypeError);
     expect(() => parseCheckedComponentOptions({...config, selectors: [config.selectors[0], config.selectors[0]]})).toThrow(TypeError);
     let reads = 0;
