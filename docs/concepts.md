@@ -122,7 +122,7 @@ The inventory distinguishes existing behavior from the [provisional mapping rese
 | `$attributes` | Attribute bag; legacy wildcard bag values are strings and the configured key may differ | Existing legacy/client/streaming default; proposed component bag layout remains provisional |
 | `$content` | Ordered content; existing component entries use their established element-entry format | Existing component convention; mixed/open entry syntax remains provisional |
 | `$choice` | Complete source-derived choice group; object or array according to source bounds | Implemented singleton/repeated research example only |
-| `$nil` | Explicit assessed nil marker when the selected representation needs an object | Research-only proposal; plain-null policy is not finalized |
+| `$nil` | Explicit assessed nil marker, exactly `true`, alongside applicable source-mapped attributes | Selected next-slice contract; no null shorthand, production implementation remains #421 |
 | `$type` | Explicit assessed XML type selection | Research-only proposal; not a caller-selected validation policy |
 | `$namespaces` | Namespace bindings needed by contextual/unassessed values | Research-only proposal; full maps versus inherited deltas is unresolved |
 
