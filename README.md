@@ -216,6 +216,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Content Model Baseline](docs/content-model-baseline.md) | Reproducible S01 reference evidence and current semantic limits |
 | [Shipped Fix Reconciliation](docs/content-model-shipped-fix.md) | Contributor attribution, delivered occurrence behavior and S02 handoff |
 | [Content Model Contracts (ADR-003)](docs/decisions/003-content-model-contracts.md) | Fidelity, profile, compatibility and integration contracts for S02 |
+| [XML/JSON Mapping Decision](docs/roadmap/v1.0-xml-json-mapping.md) | Compatible metadata selection and research-only fresh inverse evidence |
 | [Content Model Decision Register](docs/content-model-decisions.md) | Stable S02 decisions, evidence, owners and prerequisite gates |
 | [SOAP Feasibility Evidence](docs/content-model-soap-feasibility.md) | Local ordered SOAP exchanges, raw transport seams and capability limits |
 | [Gateway Feasibility Evidence](docs/content-model-gateway-feasibility.md) | Non-mutating route validation, dialect boundaries and serialized HTTP bytes |

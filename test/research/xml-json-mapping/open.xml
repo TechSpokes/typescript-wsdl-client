@@ -1,0 +1,1 @@
+<r xmlns="urn:open" xmlns:p="urn:one" xmlns:a="urn:attrs" id="plain" a:id="qualified">p:literal<a:id xmlns:p="urn:two" p:constructor="p:T"> p:T </a:id><__proto__>safe</__proto__><constructor/></r>

@@ -1,0 +1,21 @@
+{
+  "$namespaces":{"":"urn:open","p":"urn:one","a":"urn:attrs"},
+  "$attributes":[
+    {"name":{"namespace":"","local":"id"},"value":"plain"},
+    {"name":{"namespace":"urn:attrs","local":"id"},"value":"qualified"}
+  ],
+  "$content":[
+    "p:literal",
+    {"name":{"namespace":"urn:attrs","local":"id"},"value":{
+      "$namespaces":{"":"urn:open","p":"urn:two","a":"urn:attrs"},
+      "$attributes":[{"name":{"namespace":"urn:two","local":"constructor"},"value":"p:T"}],
+      "$content":[" p:T "]
+    }},
+    {"name":{"namespace":"urn:open","local":"__proto__"},"value":{
+      "$namespaces":{"":"urn:open","p":"urn:one","a":"urn:attrs"},"$content":["safe"]
+    }},
+    {"name":{"namespace":"urn:open","local":"constructor"},"value":{
+      "$namespaces":{"":"urn:open","p":"urn:one","a":"urn:attrs"},"$content":[]
+    }}
+  ]
+}
