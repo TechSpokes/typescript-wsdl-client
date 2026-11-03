@@ -1,0 +1,238 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generates explicit nil alternatives at the source-selected item and wrapper positions 1`] = `
+{
+  "declarations": [
+    "export type NilInput_Record_0 = {
+  readonly "item": readonly ((string | {readonly "$nil": true}))[];
+};",
+    "export type NilInput_Record_1 = {
+  readonly "code": number;
+  readonly "note"?: string;
+  readonly "enabled"?: boolean;
+  readonly "$value": string;
+};",
+    "export type NilInput_Record_2 = {
+  readonly "id": string;
+  readonly "note"?: string;
+  readonly "city"?: (string | {readonly "$nil": true});
+  readonly "days": number;
+  readonly "label"?: (NilInput_Record_1 | {readonly "$nil": true; readonly "code": number; readonly "note"?: string; readonly "enabled"?: boolean});
+  readonly "batch"?: (NilInput_Record_0 | {readonly "$nil": true});
+  readonly "defaulted"?: (number | {readonly "$nil": true});
+  readonly "fixed"?: number;
+};",
+  ],
+  "schema": {
+    "$id": "urn:checked-component:shape:ca25ba5cf4623770806518d75e0c403ec150997ea26d10062797866dff3e726d",
+    "anyOf": [
+      {
+        "$ref": "#/definitions/NilInput_Record_2",
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "$nil": {
+            "const": true,
+          },
+          "id": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+          "note": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "$nil",
+          "id",
+        ],
+        "type": "object",
+      },
+    ],
+    "definitions": {
+      "NilInput_Record_0": {
+        "additionalProperties": false,
+        "properties": {
+          "item": {
+            "items": {
+              "anyOf": [
+                {
+                  "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                  "type": "string",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "$nil": {
+                      "const": true,
+                    },
+                  },
+                  "required": [
+                    "$nil",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "minItems": 0,
+            "type": "array",
+          },
+        },
+        "required": [
+          "item",
+        ],
+        "type": "object",
+      },
+      "NilInput_Record_1": {
+        "additionalProperties": false,
+        "properties": {
+          "$value": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+          "code": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+          "enabled": {
+            "type": "boolean",
+          },
+          "note": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "code",
+          "$value",
+        ],
+        "type": "object",
+      },
+      "NilInput_Record_2": {
+        "additionalProperties": false,
+        "properties": {
+          "batch": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/NilInput_Record_0",
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "$nil": {
+                    "const": true,
+                  },
+                },
+                "required": [
+                  "$nil",
+                ],
+                "type": "object",
+              },
+            ],
+          },
+          "city": {
+            "anyOf": [
+              {
+                "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                "type": "string",
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "$nil": {
+                    "const": true,
+                  },
+                },
+                "required": [
+                  "$nil",
+                ],
+                "type": "object",
+              },
+            ],
+          },
+          "days": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+          "defaulted": {
+            "anyOf": [
+              {
+                "maximum": 2147483647,
+                "minimum": -2147483648,
+                "type": "integer",
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "$nil": {
+                    "const": true,
+                  },
+                },
+                "required": [
+                  "$nil",
+                ],
+                "type": "object",
+              },
+            ],
+          },
+          "fixed": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+          "id": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+          "label": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/NilInput_Record_1",
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "$nil": {
+                    "const": true,
+                  },
+                  "code": {
+                    "maximum": 2147483647,
+                    "minimum": -2147483648,
+                    "type": "integer",
+                  },
+                  "enabled": {
+                    "type": "boolean",
+                  },
+                  "note": {
+                    "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "$nil",
+                  "code",
+                ],
+                "type": "object",
+              },
+            ],
+          },
+          "note": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "days",
+        ],
+        "type": "object",
+      },
+    },
+  },
+  "type": "(NilInput_Record_2 | {readonly "$nil": true; readonly "id": string; readonly "note"?: string})",
+}
+`;

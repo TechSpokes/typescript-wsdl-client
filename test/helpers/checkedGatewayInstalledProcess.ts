@@ -95,7 +95,68 @@ try {
     return {status: response.status, value: await response.json() as unknown};
   };
   const mode = process.argv[3];
-  if (mode === 'optional' || mode === 'scalar') {
+  if (mode === 'nil') {
+    const namespace = 'urn:checked:forecast', xsi = 'http://www.w3.org/2001/XMLSchema-instance';
+    const envelope = (body: string) => `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="${namespace}" xmlns:xsi="${xsi}"><s:Body>${body}</s:Body></s:Envelope>`;
+    const attributed = {$nil: true, id: '7', note: ''};
+    const nilReply = envelope('<t:GetForecastResponse xsi:nil="1" id="7" note=""/>');
+    const wireEvents = (xml: string) => {
+      const result: {name: string; attributes: [string, string][]; text?: string}[] = [];
+      const parser = new SaxesParser({xmlns: true});
+      parser.on('opentag', tag => result.push({name: `{${tag.uri}}${tag.local}`,
+        attributes: Object.values(tag.attributes).filter(a => a.uri !== 'http://www.w3.org/2000/xmlns/')
+          .map(a => [`{${a.uri}}${a.local}`, a.value] as [string, string]).sort((a, b) => a[0].localeCompare(b[0]))}));
+      parser.on('text', text => {if (text.trim()) result.push({name: '#text', attributes: [], text});});
+      parser.write(xml).close(); return result;
+    };
+    reply = nilReply;
+    assert.deepEqual(await post(attributed), {status: 200, value: attributed});
+    assert.deepEqual(wireEvents(upstream.at(-1)!.xml), wireEvents(envelope('<t:GetForecast xsi:nil="true" id="7" note=""/>')));
+    assert.equal(upstream.at(-1)!.action, '"urn:checked:GetForecast"');
+    const nested = {id: '7', city: {$nil: true}, days: 2,
+      label: {$nil: true, code: 7, note: '', enabled: true}, batch: {item: ['', {$nil: true}, 'last']}, defaulted: {$nil: true}};
+    const nestedContent = '<t:city xsi:nil="true"/><t:days>2</t:days><t:label xsi:nil="true" code="7" note="" enabled="true"/><t:batch><t:item/><t:item xsi:nil="true"/><t:item>last</t:item></t:batch><t:defaulted xsi:nil="true"/>';
+    reply = envelope(`<t:GetForecastResponse id="7">${nestedContent}</t:GetForecastResponse>`);
+    assert.deepEqual(await post(nested), {status: 200, value: nested});
+    assert.deepEqual(wireEvents(upstream.at(-1)!.xml), wireEvents(envelope(`<t:GetForecast id="7">${nestedContent}</t:GetForecast>`)));
+    for (const [input, content] of [
+      [{id: '7', days: 2}, '<t:days>2</t:days>'],
+      [{id: '7', city: '', days: 2, batch: {$nil: true}}, '<t:city/><t:days>2</t:days><t:batch xsi:nil="true"/>'],
+    ] as const) {
+      reply = envelope(`<t:GetForecastResponse id="7">${content}</t:GetForecastResponse>`);
+      assert.deepEqual(await post(input), {status: 200, value: input});
+      assert.deepEqual(wireEvents(upstream.at(-1)!.xml), wireEvents(envelope(`<t:GetForecast id="7">${content}</t:GetForecast>`)));
+    }
+    reply = envelope('<s:Fault><faultcode>s:Server</faultcode><faultstring>nil fault</faultstring><detail><t:ForecastFault xsi:nil="true" id="7" note=""/></detail></s:Fault>');
+    replyStatus = 500;
+    const declared = await post(attributed);
+    assert.equal(declared.status, 502);
+    assert.deepEqual((declared.value as {value: unknown}).value, attributed);
+    assert.equal((declared.value as {fault: {name: string}}).fault.name, 'ForecastError');
+    replyStatus = 200; reply = nilReply;
+    for (const invalid of [null, {$nil: true}, {$nil: false, id: '7'}, {$nil: 'true', id: '7'},
+      {$nil: true, id: '7', days: 2}, {$nil: true, id: '7', $content: []}, {$nil: true, id: '7', $namespaces: {}},
+      {id: '7', days: {$nil: true}}, {id: '7', days: 2, city: null}, {id: '7', days: 2, batch: {$nil: true, item: []}},
+      {id: '7', days: 2, batch: {item: [null]}}, {id: '7', days: 2, label: {$nil: true}},
+      {id: '7', days: 2, label: {$nil: true, code: 7, enabled: false}}, {id: '7', days: 2, fixed: {$nil: true}}]) {
+      const before = upstream.length;
+      assert.equal((await post(invalid)).status, 400); assert.equal(upstream.length, before); refusals++;
+    }
+    for (const invalid of [nilReply.replace('id="7" ', ''), nilReply.replace('/>', '> </t:GetForecastResponse>'),
+      nilReply.replace('xsi:nil="1"', 'xsi:nil="wrong"'), nilReply.replace('note=""', 'unknown="x"'),
+      envelope('<t:GetForecastResponse id="7"><t:days xsi:nil="true"/></t:GetForecastResponse>'),
+      envelope('<t:GetForecastResponse id="7"><t:days>2</t:days><t:label xsi:nil="true" code="bad"/></t:GetForecastResponse>')]) {
+      reply = invalid; assert.equal((await post(attributed)).status, 502); refusals++;
+    }
+    replyStatus = 500;
+    reply = envelope('<s:Fault><faultcode>s:Server</faultcode><faultstring>bad nil fault</faultstring><detail><t:ForecastFault xsi:nil="true"/></detail></s:Fault>');
+    const rejectedFault = await post(attributed);
+    assert.equal(rejectedFault.status, 502);
+    assert.equal(Object.hasOwn(rejectedFault.value as object, 'value'), false); refusals++;
+    process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false,
+      variant: mode, calls, refusals, upstreamRequests: upstream.length,
+      scope: 'explicit nil request/response/fault, attributes, absent/empty/item/wrapper, native negative controls'}) + '\n');
+  } else if (mode === 'optional' || mode === 'scalar') {
     const input = mode === 'scalar' ? true : {days: [2, 3]};
     reply = mode === 'scalar' ? normal.replace(/<t:city>.*?<\/t:complete>/, '42') : normal;
     assert.deepEqual(await post(input), {status: 200, value: mode === 'scalar' ? 42 : expected.response});
