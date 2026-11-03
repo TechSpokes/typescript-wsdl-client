@@ -9,7 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-- docs(mapping): select compatible XML/JSON metadata with strict TypeScript fresh-inverse research evidence.
+- docs(mapping): investigate XML/JSON constraints and provisional metadata with strict TypeScript fresh-inverse evidence.
 
 ## [1.1.7] - 2026-11-03
 
