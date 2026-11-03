@@ -13,10 +13,11 @@ import {matchDirectProjection} from '../../../src/compiler/directStructure.js';
 import {assessProjectionScalars, expandProjectionValue} from '../../../src/compiler/directValues.js';
 import {traceBackwardConstraints} from './backward-constraints.js';
 
-type Request = {selections: ({a: number; b: string} | {c: boolean; d: string})[]};
+type Request = {selections?: string; $selections: ({a: number; b: string} | {c: boolean; d: string})[]};
 const namespace = 'urn:application-groups';
-const schema = {type: 'object', required: ['selections'], additionalProperties: false, properties: {
-  selections: {type: 'array', minItems: 1, maxItems: 3, items: {oneOf: [
+const schema = {type: 'object', required: ['$selections'], additionalProperties: false, properties: {
+  selections: {type: 'string'},
+  $selections: {type: 'array', minItems: 1, maxItems: 3, items: {oneOf: [
     {type: 'object', required: ['a', 'b'], additionalProperties: false, properties: {a: {type: 'integer', minimum: -2147483648, maximum: 2147483647}, b: {type: 'string'}}},
     {type: 'object', required: ['c', 'd'], additionalProperties: false, properties: {c: {type: 'boolean'}, d: {type: 'string'}}},
   ]}},
@@ -28,23 +29,28 @@ const entry = (local: string, value: unknown) => ({name: {namespace, local}, val
 
 function nativeValue(input: unknown) {
   if (!validate(input)) throw new TypeError('Invalid application group structure');
-  return {$content: input.selections.flatMap(selection => 'a' in selection
+  return {$content: [...(input.selections === undefined ? [] : [entry('selections', input.selections)]), ...input.$selections.flatMap(selection => 'a' in selection
     ? [entry('A', selection.a), entry('B', selection.b)]
-    : [entry('C', selection.c), entry('D', selection.d)])};
+    : [entry('C', selection.c), entry('D', selection.d)])]};
 }
 function applicationValue(input: unknown): Request {
   const {$content} = input as {readonly $content: readonly {name: {namespace: string; local: string}; value: unknown}[]};
-  const selections: Request['selections'] = [];
-  for (let index = 0; index < $content.length; index += 2) {
+  const groups: Request['$selections'] = [];
+  let selections: string | undefined;
+  if ($content[0]?.name.local === 'selections') {
+    if ($content[0].name.namespace !== namespace || typeof $content[0].value !== 'string') throw new TypeError('Unexpected XML selections value');
+    selections = $content[0].value;
+  }
+  for (let index = selections === undefined ? 0 : 1; index < $content.length; index += 2) {
     const first = $content[index]!, second = $content[index + 1];
     if (!second || first.name.namespace !== namespace || second.name.namespace !== namespace) throw new TypeError('Unexpected native group');
     if (first.name.local === 'A' && second.name.local === 'B' && typeof first.value === 'number' && typeof second.value === 'string') {
-      selections.push({a: first.value, b: second.value});
+      groups.push({a: first.value, b: second.value});
     } else if (first.name.local === 'C' && second.name.local === 'D' && typeof first.value === 'boolean' && typeof second.value === 'string') {
-      selections.push({c: first.value, d: second.value});
+      groups.push({c: first.value, d: second.value});
     } else throw new TypeError('Unexpected native group');
   }
-  const value = {selections};
+  const value: Request = {$selections: groups, ...(selections === undefined ? {} : {selections})};
   if (!validate(value)) throw new TypeError('Native value outside application grammar');
   return value;
 }
@@ -61,12 +67,16 @@ describe('source-derived grouped application JSON', () => {
   it('keeps the source choice and sequence caps and exposes ordinary grouped objects', async () => {
     const {context, root} = await source();
     const trace = traceBackwardConstraints(context, globalId('type', {namespace, local: 'RequestType'}));
-    expect(trace.groups[0]!.root).toMatchObject({occurs: {min: '1', max: '3'}, term: {kind: 'choice'}});
+    const sequence = trace.groups[0]!.root;
+    if (sequence.term.kind !== 'sequence') throw new Error('source sequence missing');
+    const choice = context.lookup(sequence.term.children[1]!);
+    if (choice.kind !== 'found') throw new Error('source choice missing');
+    expect(choice.node).toMatchObject({occurs: {min: '1', max: '3'}, term: {kind: 'choice'}});
     const match = matchDirectProjection(context, root, xml(text));
     if (match.kind !== 'projection-match') throw new Error(match.rule);
     const assessed = assessProjectionScalars(context, match);
     if (assessed.kind !== 'projection-value') throw new Error(assessed.rule);
-    expect(applicationValue(assessed.value)).toEqual({selections: [{a: 1, b: 'first'}, {c: true, d: 'last'}]});
+    expect(applicationValue(assessed.value)).toEqual({$selections: [{a: 1, b: 'first'}, {c: true, d: 'last'}]});
     const fresh: unknown = JSON.parse(JSON.stringify(applicationValue(assessed.value)));
     const reconstructed = expandProjectionValue(context, root, nativeValue(fresh));
     if (reconstructed.kind !== 'projection-expanded') throw new Error(reconstructed.rule);
@@ -75,7 +85,7 @@ describe('source-derived grouped application JSON', () => {
 
   it('constructs independent hand JSON in source order regardless of JSON property order, without XML group wrappers', async () => {
     const {context, root} = await source();
-    const hand: unknown = JSON.parse('{"selections":[{"d":"last","c":true},{"b":"first","a":1}]}');
+    const hand: unknown = JSON.parse('{"$selections":[{"d":"last","c":true},{"b":"first","a":1}]}');
     const before = JSON.stringify(hand);
     const reconstructed = expandProjectionValue(context, root, nativeValue(hand));
     if (reconstructed.kind !== 'projection-expanded') throw new Error(reconstructed.rule);
@@ -87,11 +97,26 @@ describe('source-derived grouped application JSON', () => {
     expect(JSON.stringify(hand)).toBe(before);
   });
 
+  it('keeps a real XML selections field distinct from the synthetic group and rejects unknown metadata', async () => {
+    const {context, root} = await source();
+    const hand: unknown = JSON.parse('{"selections":"XML data","$selections":[{"a":1,"b":"first"}]}');
+    const expanded = expandProjectionValue(context, root, nativeValue(hand));
+    if (expanded.kind !== 'projection-expanded') throw new Error(expanded.rule);
+    expect(expanded.payload.children.filter(child => child.kind === 'element').map(child => child.name.local)).toEqual(['selections', 'A', 'B']);
+    const match = matchDirectProjection(context, root, expanded.payload);
+    if (match.kind !== 'projection-match') throw new Error(match.rule);
+    const assessed = assessProjectionScalars(context, match);
+    if (assessed.kind !== 'projection-value') throw new Error(assessed.rule);
+    expect(applicationValue(assessed.value)).toEqual(hand);
+    expect(() => nativeValue({selections: [{a: 1, b: 'first'}]})).toThrow(TypeError);
+    expect(() => nativeValue({$selections: [{a: 1, b: 'first'}], $unknown: true})).toThrow(TypeError);
+  });
+
   it.each([
-    {selections: [{a: 1, d: 'crossed'}]}, {selections: [{a: 1}]},
-    {selections: [{a: 1, b: 'x', c: true, d: 'y'}]}, {selections: []},
-    {selections: Array.from({length: 4}, () => ({c: true, d: 'x'}))},
-    {selections: [{c: 'true', d: 'x'}]}, {selections: [{a: 2147483648, b: 'x'}]},
+    {$selections: [{a: 1, d: 'crossed'}]}, {$selections: [{a: 1}]},
+    {$selections: [{a: 1, b: 'x', c: true, d: 'y'}]}, {$selections: []},
+    {$selections: Array.from({length: 4}, () => ({c: true, d: 'x'}))},
+    {$selections: [{c: 'true', d: 'x'}]}, {$selections: [{a: 2147483648, b: 'x'}]},
   ])('rejects broken group constraints without mutating input %#', input => {
     const before = JSON.stringify(input);
     expect(() => nativeValue(input)).toThrow(TypeError);

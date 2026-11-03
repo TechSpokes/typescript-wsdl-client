@@ -29,6 +29,54 @@ interface Price {
 }
 ```
 
+## Reserved mapping keys
+
+Keys introduced by the mapper into XML-derived application objects must start with `$`. XML element and attribute names remain source-derived data keys; generated grouping objects, text slots and interpretation metadata must not occupy that same unprefixed namespace. The XML name grammar excludes `$`, so an actual XML child `selections` and the synthetic `$selections` container remain distinct.
+
+This convention applies recursively to synthetic mapping properties, including metadata descriptors if retained. It does not rename private TypeScript variables, source graph fields, artifact/configuration schemas or actual XML data keys. Entries inside data dictionaries, such as prefixes in `$namespaces` and XML names in an attribute bag, are data rather than additional synthetic property names.
+
+### Mapping-key inventory and status
+
+The inventory distinguishes existing behavior from the [provisional mapping research](roadmap/v1.0-xml-json-mapping.md). A listed research key is not a production capability claim or a new public mode.
+
+| Key | Meaning and scope | Status |
+|---|---|---|
+| `$value` | Scalar text/simple content alongside attributes; exact scalar policy belongs to the selected mapping | Existing legacy/component convention |
+| `$attributes` | Attribute bag; legacy wildcard bag values are strings and the configured key may differ | Existing legacy/client/streaming default; proposed component bag layout remains provisional |
+| `$content` | Ordered content; existing component entries use their established element-entry format | Existing component convention; mixed/open entry syntax remains provisional |
+| `$selections` | Synthetic array of complete source-derived choice groups, with bounds from the source | Implemented research example only |
+| `$selection` | Synthetic single-choice grouping used in the explanatory object example | Illustrative only; not an emitted/general-generator contract |
+| `$nil` | Explicit assessed nil marker when the selected representation needs an object | Research-only proposal; plain-null policy is not finalized |
+| `$type` | Explicit assessed XML type selection | Research-only proposal; not a caller-selected validation policy |
+| `$namespaces` | Namespace bindings needed by contextual/unassessed values | Research-only proposal; full maps versus inherited deltas is unresolved |
+
+No other synthetic application-mapping keys are allocated by this inventory. `$text` and `$element` occur in comparison alternatives only; they are not additional accepted spellings. A future source-named group key must also start with `$`, have deterministic collision handling among generated keys, and be documented before emission; this inventory does not invent a generic naming algorithm.
+
+### Existing unprefixed descriptors requiring a deliberate correction
+
+Existing checked ordered entries contain `name` and `value`, with `namespace` and `local` inside their identity descriptor. Those describe the mapping rather than XML business properties; their existing implementation is recorded compatibility work, not justification for using unprefixed metadata in new mappings.
+
+| Existing descriptor property | Prefixed spelling if that descriptor is retained | Disposition |
+|---|---|---|
+| `name` | `$name` | Candidate spelling only; source-derived groups may remove the wrapper |
+| `value` | `$value` | Reuse the existing reserved word where its role is explicitly defined |
+| `namespace` | `$namespace` | Candidate spelling only if an explicit identity descriptor remains necessary |
+| `local` | `$localName` | Candidate spelling only if an explicit identity descriptor remains necessary |
+
+These candidate spellings are not implemented or allocated aliases. Current accepted component/QName shapes and the shipped direct-runtime protocol are not silently renamed by a documentation change; a correction needs an explicit mapping, compatibility disposition and fresh inverse/serializer tests. Ordinary XML properties actually named `name`, `value`, `namespace` or `local` remain ordinary data keys.
+
+### Transport, schema and implementation namespaces
+
+| Name | Actual role | Application-mapping disposition |
+|---|---|---|
+| `$xml`, `_xml` | Dependency-owned SOAP/XML serialization hooks | Not generic fields accepted by the application mapping |
+| `attributes`, `$` | Existing configurable/dependency attribute containers and aliases | Existing adapter behavior, not new canonical metadata keys |
+| `$schema`, `$id`, `$ref` | JSON Schema dialect/identity/reference keywords | Schema documents, not XML-derived payload properties |
+| `$raw/...`, `/$hypothetical/...`, `$semantic-content/...`, `$semantic-builtin-anyType/...` | Internal source/candidate reference paths and generated component paths | Path strings, not public JSON mapping keys |
+| `$env`, `$_` | Shell/documentation syntax encountered during the inventory | Not mapping keys |
+
+A `$` prefix identifies a reserved namespace, not permission to submit arbitrary metadata. The selected mapping and HTTP schema must declare every accepted key, reject unknown/conflicting metadata without mutation, preserve accepted fields during serialization, and consume synthetic groups without inventing XML wrapper elements. Legacy configurable attribute-key overrides remain their existing separate contract.
+
 ## Primitive Mapping
 
 All XSD numeric and date-time types map to `string` by default. This prevents

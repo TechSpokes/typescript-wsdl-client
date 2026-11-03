@@ -9,7 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-- docs(mapping): investigate XML/JSON constraints and provisional metadata with strict TypeScript fresh-inverse evidence.
+- docs(mapping): investigate XML/JSON constraints, reserved keys and backward-derived application groups.
 
 ## [1.1.7] - 2026-11-03
 

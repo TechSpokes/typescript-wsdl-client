@@ -36,6 +36,8 @@ References retain their roles and identities; recursion remains a reference. #17
 
 The bounded [XML/JSON mapping research](../roadmap/v1.0-xml-json-mapping.md) records provisional metadata and research-only fresh inverse examples for #409/#421; its public syntax is under constraints-first reassessment and it does not activate production support or replace these contracts.
 
+Synthetic keys introduced into XML-derived application objects use the repository's `$` prefix; the [reserved mapping-key inventory](../concepts.md#reserved-mapping-keys) distinguishes existing keys, research proposals and descriptor compatibility work. Source-derived XML data names remain data names.
+
 The graph describes allowed values; an XML value describes one value. #187 owns ordered XML values/events, with expanded element/attribute names, ordered children/text, namespace context for QName lexical values, nil state and scalar lexical/value context. Namespace declarations supply context and interpreted `xsi:nil` supplies nil state, rather than becoming ordinary application attributes; the lexical boundary retains their raw forms for security processing. Comments, processing instructions, prefix spelling, attribute order, entity spellings and transport chunk boundaries are outside fidelity; significant mixed text and child order are inside it.
 
 Boundary shapes below are illustrative data contracts, not prescribed class or function APIs.
