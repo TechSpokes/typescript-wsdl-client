@@ -13,11 +13,13 @@ import {matchDirectProjection} from '../../../src/compiler/directStructure.js';
 import {assessProjectionScalars, expandProjectionValue} from '../../../src/compiler/directValues.js';
 import {traceBackwardConstraints} from './backward-constraints.js';
 
-type Request = {selections?: string; $selections: ({a: number; b: string} | {c: boolean; d: string})[]};
+// @why This fixture spelling is provisional; one name drives the type, schema and adapter while hand inputs stay independent.
+const groupKey = '$selections';
+type Request = {selections?: string; [groupKey]: ({a: number; b: string} | {c: boolean; d: string})[]};
 const namespace = 'urn:application-groups';
-const schema = {type: 'object', required: ['$selections'], additionalProperties: false, properties: {
+const schema = {type: 'object', required: [groupKey], additionalProperties: false, properties: {
   selections: {type: 'string'},
-  $selections: {type: 'array', minItems: 1, maxItems: 3, items: {oneOf: [
+  [groupKey]: {type: 'array', minItems: 1, maxItems: 3, items: {oneOf: [
     {type: 'object', required: ['a', 'b'], additionalProperties: false, properties: {a: {type: 'integer', minimum: -2147483648, maximum: 2147483647}, b: {type: 'string'}}},
     {type: 'object', required: ['c', 'd'], additionalProperties: false, properties: {c: {type: 'boolean'}, d: {type: 'string'}}},
   ]}},
@@ -29,13 +31,13 @@ const entry = (local: string, value: unknown) => ({name: {namespace, local}, val
 
 function nativeValue(input: unknown) {
   if (!validate(input)) throw new TypeError('Invalid application group structure');
-  return {$content: [...(input.selections === undefined ? [] : [entry('selections', input.selections)]), ...input.$selections.flatMap(selection => 'a' in selection
+  return {$content: [...(input.selections === undefined ? [] : [entry('selections', input.selections)]), ...input[groupKey].flatMap(selection => 'a' in selection
     ? [entry('A', selection.a), entry('B', selection.b)]
     : [entry('C', selection.c), entry('D', selection.d)])]};
 }
 function applicationValue(input: unknown): Request {
   const {$content} = input as {readonly $content: readonly {name: {namespace: string; local: string}; value: unknown}[]};
-  const groups: Request['$selections'] = [];
+  const groups: Request[typeof groupKey] = [];
   let selections: string | undefined;
   if ($content[0]?.name.local === 'selections') {
     if ($content[0].name.namespace !== namespace || typeof $content[0].value !== 'string') throw new TypeError('Unexpected XML selections value');
@@ -50,7 +52,7 @@ function applicationValue(input: unknown): Request {
       groups.push({c: first.value, d: second.value});
     } else throw new TypeError('Unexpected native group');
   }
-  const value: Request = {$selections: groups, ...(selections === undefined ? {} : {selections})};
+  const value: Request = {[groupKey]: groups, ...(selections === undefined ? {} : {selections})};
   if (!validate(value)) throw new TypeError('Native value outside application grammar');
   return value;
 }

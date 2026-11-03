@@ -29,6 +29,39 @@ interface Price {
 }
 ```
 
+## Mapping terminology and naming
+
+Use one term for one concept across source analysis, internal code, generated types, application JSON, OpenAPI descriptions and documentation. Different concepts must not share a convenient label merely because their current representations look alike. This section owns the conceptual vocabulary; the reserved-key inventory below owns mapping-property spellings and their implementation status.
+
+| Term | Meaning |
+|---|---|
+| Element | An XML element declaration or instance, distinguished explicitly by context |
+| Attribute | An XML attribute; its identity and rules are distinct from a child element |
+| Sequence | A source constraint requiring its members in order |
+| Choice | A source constraint permitting alternatives |
+| Alternative | One permitted member of a choice; it can itself contain several fields |
+| All group | The XSD `all` compositor, with its own rules; not a synonym for sequence |
+| Application group | A generated object keeping related values and constraints together; it need not be an XML wrapper |
+| Occurrence bounds | The allowed minimum and maximum repetitions of the particular source particle |
+| Content | An element's ordered text and child elements; attributes are separate |
+| Value | Data assessed under the selected type; use text, scalar value or structured value when specificity matters |
+| Projection | The mapping between source-defined XML values and application values |
+| Expanded name | Namespace URI plus local name, independently of the chosen prefix |
+| Namespace binding | A prefix-to-namespace association in the applicable scope |
+| Nil | Explicit absence of content on a present element, distinct from a missing element or empty non-nil value |
+
+A choice is a rule, an alternative is a permitted branch, and a selection is an instance's use of a branch. They are not interchangeable glossary terms. The research property names `$selection` and `$selections` are provisional examples, not a decision that those words will name every generated application group.
+
+Keep the canonical word stem when deriving related names: normal TypeScript casing for internal identifiers and type names, and `$` plus lower camel case for mapper-owned application properties. Source-derived XML data names and established profile mappings retain their declared spellings. Exact group stems, singular/plural policy and collision suffixes remain one coherent naming decision to resolve before general generation; do not infer new keys or aliases from this casing rule.
+
+Private source-graph and configuration objects do not need `$` prefixes merely to follow the payload namespace rule, but their names and descriptions must use the same concepts. Standards-owned names such as XSD `minOccurs`, existing graph `occurs`, and JSON Schema `oneOf` have explicit semantic mappings rather than mechanical renames. Choose `oneOf`, `anyOf` or other schema operators for their actual validation meaning, not because their names resemble a source term.
+
+An OpenAPI property must use the exact JSON key accepted by the mapper, validator and serializer; titles and descriptions must explain that same concept. Schema definition and TypeScript type names derive deterministically from the source identity and role, with collision handling; human-readable names alone are not component identity.
+
+Reuse a shared name constant or source-owned mapping description where code and schemas need the same key. Keep independently authored test inputs literal so they can expose drift instead of reproducing the implementation's mistake. When terminology or a key changes, update its inventory entry, code, schemas, examples, errors and tests together; record any compatibility handling explicitly rather than silently accepting a synonym.
+
+This convention does not create another architecture layer, public mode or mandatory vocabulary migration. Existing mismatches remain visible review work, not templates for introducing more synonyms. File and directory names continue to follow [file naming and path organization](file-naming-and-path-organization.md).
+
 ## Reserved mapping keys
 
 Keys introduced by the mapper into XML-derived application objects must start with `$`. XML element and attribute names remain source-derived data keys; generated grouping objects, text slots and interpretation metadata must not occupy that same unprefixed namespace. The XML name grammar excludes `$`, so an actual XML child `selections` and the synthetic `$selections` container remain distinct.
@@ -37,7 +70,7 @@ This convention applies recursively to synthetic mapping properties, including m
 
 ### Mapping-key inventory and status
 
-The inventory distinguishes existing behavior from the [provisional mapping research](roadmap/v1.0-xml-json-mapping.md). A listed research key is not a production capability claim or a new public mode.
+The inventory distinguishes existing behavior from the [provisional mapping research](roadmap/v1.0-xml-json-mapping.md). A listed research key is not a production capability claim or a new public mode; its provisional spelling remains subject to the terminology review above.
 
 | Key | Meaning and scope | Status |
 |---|---|---|

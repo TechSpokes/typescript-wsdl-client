@@ -4,6 +4,8 @@ Internal architecture of the wsdl-tsc code generator for contributors.
 
 See [CONTRIBUTING](../CONTRIBUTING.md) for development setup and [README](../README.md) for user documentation.
 
+Internal semantic owners, generated types and OpenAPI lowerings share the [mapping terminology and naming convention](concepts.md#mapping-terminology-and-naming); the same source defines the reserved mapping-key inventory. Keep source semantics and emitted property names connected explicitly rather than introducing competing glossaries.
+
 ## Planned Content Model Contracts
 
 [Ordered schema loading](content-model-loading.md) documents S03's internal input adapter and its migration boundary.
