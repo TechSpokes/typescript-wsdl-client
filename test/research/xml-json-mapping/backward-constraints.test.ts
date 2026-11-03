@@ -3,6 +3,7 @@ import {describe, expect, it} from 'vitest';
 import {loadSemanticSchemaInput} from '../../../src/loader/schemaInput.js';
 import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
 import {globalId} from '../../../src/compiler/canonicalGraph.js';
+import {prepareSemanticParticleView} from '../../../src/compiler/particleSemanticView.js';
 import type {ParticleNode} from '../../../src/compiler/canonicalGraph.js';
 import {inspectActualSource, traceBackwardConstraints} from './backward-constraints.js';
 
@@ -55,6 +56,15 @@ describe('backward source constraints remain grouped and contextual', () => {
     expect(emptyChoice.groups[0]!.root).toMatchObject({occurs: {min: '1', max: '1'}, term: {kind: 'choice', children: []}});
     const own = await source('test/research/xml-json-mapping/derivation-chain.xsd');
     expect(traceBackwardConstraints(own, type('urn:backward', 'Empty')).groups).toEqual([]);
+    const emptySequence = traceBackwardConstraints(own, type('urn:backward', 'EmptySequence'));
+    expect(emptySequence.groups[0]!.root).toMatchObject({term: {kind: 'sequence', children: []}});
+    for (const [trace, current, nullable] of [[emptyChoice, context, false], [emptySequence, own, true]] as const) {
+      if (trace.effective?.kind !== 'checked') throw new Error(trace.effective?.kind);
+      const particles = prepareSemanticParticleView(current, trace.effective.view, 'declared');
+      if (particles.kind !== 'checked') throw new Error(particles.kind);
+      expect(particles.view.root.summary.nullable).toBe(nullable);
+      expect(particles.view.root.summary.hasRealization).toBe(nullable);
+    }
   });
 
   it('preserves raw all groups and recursive declaration targets without expanding recursive values', async () => {
