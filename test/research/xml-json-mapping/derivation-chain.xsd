@@ -1,0 +1,23 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:backward" targetNamespace="urn:backward" elementFormDefault="qualified">
+  <xs:complexType name="Customer">
+    <xs:sequence><xs:element name="Name" type="xs:string"/><xs:element name="Phone" type="xs:string" minOccurs="0"/></xs:sequence>
+    <xs:attribute name="id" type="xs:string"/>
+    <xs:attribute name="region" type="xs:string" default="EU"/>
+  </xs:complexType>
+  <xs:complexType name="NoPhone"><xs:complexContent><xs:restriction base="t:Customer">
+    <xs:sequence><xs:element name="Name" type="xs:string"/></xs:sequence>
+    <xs:attribute name="id" use="prohibited"/>
+  </xs:restriction></xs:complexContent></xs:complexType>
+  <xs:complexType name="WithEmail"><xs:complexContent><xs:extension base="t:NoPhone">
+    <xs:sequence><xs:element name="Email" type="xs:string"/></xs:sequence>
+    <xs:attribute name="active" type="xs:boolean"/>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="Sibling"><xs:complexContent><xs:extension base="t:Customer">
+    <xs:sequence><xs:element name="Address" type="xs:string"/></xs:sequence>
+  </xs:extension></xs:complexContent></xs:complexType>
+  <xs:complexType name="OptionalNote"><xs:sequence><xs:element name="Note" type="xs:string" minOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:complexType name="Empty"><xs:complexContent><xs:restriction base="t:OptionalNote"/></xs:complexContent></xs:complexType>
+  <xs:complexType name="AfterEmpty"><xs:complexContent><xs:extension base="t:Empty">
+    <xs:sequence><xs:element name="Added" type="xs:int"/></xs:sequence>
+  </xs:extension></xs:complexContent></xs:complexType>
+</xs:schema>
