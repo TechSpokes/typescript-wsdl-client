@@ -85,6 +85,27 @@ Retain the full parent/source name when it ends in `Choice` or `Choices`; do not
 
 Several occurrences of one choice site use one array. Several independent choice sites need distinct reserved properties and distinct contextual schemas; merging them into one array would lose their separate rules. The source identity and structural position distinguish such sites even when the alternatives have identical field names; display names do not establish identity.
 
+### Configured application names
+
+The planned naming configuration must let developers override the synthetic group property, its union type/schema name, and each structured alternative type/schema name independently. Defaults follow the contextual convention above; explicit names let the generated API use the application's terminology. This is a requirement for future integration, not an implemented configuration option or a new CLI flag.
+
+| Naming target | Prototype default | Example configured name |
+|---|---|---|
+| Synthetic group property | `$choice` | `$payment` |
+| Union type and schema | `RequestChoice` | `PaymentMethod` |
+| First alternative type and schema | `RequestChoiceAlternative1` | `CardPayment` |
+| Second alternative type and schema | `RequestChoiceAlternative2` | `BankPayment` |
+
+Such names change presentation, not the source definition: `$payment` can reference `PaymentMethod` or `PaymentMethod[]`, and the union references `CardPayment` and `BankPayment`. Group bounds, required fields, alternative membership, source XML names/namespaces and native validation remain governed by the same selected source contract. Renaming an alternative's schema does not add a discriminator or an XML wrapper.
+
+Target overrides by exact scoped source identity and structural role, including the choice site and alternative, rather than only by a generated display name, field spelling or an occurrence in one value. Source order provides the prototype's alternative numbers but is not by itself a stable configuration selector across source revisions. Provide discoverable source selectors; unknown or ambiguous targets fail rather than silently doing nothing, and an alias never becomes another selector for an alias chain.
+
+Resolve default and configured names before emission and use that one mapping for TypeScript declarations, OpenAPI components and references, JSON validation, adapters, serializers, diagnostics and examples. A synthetic property keeps the `$` prefix after renaming; type/schema aliases must be valid for their generated targets. Reject conflicting aliases in the relevant property/type/schema scopes, including collisions with other configured names, source-derived names and reserved mapping keys; do not silently overwrite or suffix an explicitly requested name.
+
+A configured alias selects the emitted/accepted name for that generated contract, not additional runtime synonyms. For example, a contract configured with `$payment` does not also accept `$choice` by default. Changing published keys or type names needs an explicit compatibility disposition and regenerated matching artifacts; runtime callers cannot submit naming configuration or change the native source binding through the payload.
+
+The exact configuration field names, selector syntax, override scope and interaction with schema reuse remain to be designed alongside the general name allocator. Required future evidence includes fresh JSON inverses using configured names, nested and repeated choices, independently renamed alternatives, consistent OpenAPI references, unchanged XML identities and rejection of ambiguous targets, invalid names, collisions and superseded keys. The current prototype does not implement these overrides.
+
 ## Reserved mapping keys
 
 Keys introduced by the mapper into XML-derived application objects must start with `$`. XML element and attribute names remain source-derived data keys; generated grouping objects, text slots and interpretation metadata must not occupy that same unprefixed namespace. The XML name grammar excludes `$`, so an actual XML child `choice` and the synthetic `$choice` container remain distinct.
