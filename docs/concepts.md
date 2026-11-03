@@ -29,6 +29,130 @@ interface Price {
 }
 ```
 
+## Mapping terminology and naming
+
+Use one term for one concept across source analysis, internal code, generated types, application JSON, OpenAPI descriptions and documentation. Different concepts must not share a convenient label merely because their current representations look alike. This section owns the conceptual vocabulary; the reserved-key inventory below owns mapping-property spellings and their implementation status.
+
+| Term | Meaning |
+|---|---|
+| Element | An XML element declaration or instance, distinguished explicitly by context |
+| Attribute | An XML attribute; its identity and rules are distinct from a child element |
+| Sequence | A source constraint requiring its members in order |
+| Choice | A source constraint permitting alternatives |
+| Alternative | One permitted member of a choice; it can itself contain several fields |
+| All group | The XSD `all` compositor, with its own rules; not a synonym for sequence |
+| Application group | A generated object keeping related values and constraints together; it need not be an XML wrapper |
+| Occurrence bounds | The allowed minimum and maximum repetitions of the particular source particle |
+| Content | An element's ordered text and child elements; attributes are separate |
+| Value | Data assessed under the selected type; use text, scalar value or structured value when specificity matters |
+| Projection | The mapping between source-defined XML values and application values |
+| Expanded name | Namespace URI plus local name, independently of the chosen prefix |
+| Namespace binding | A prefix-to-namespace association in the applicable scope |
+| Nil | Explicit absence of content on a present element, distinct from a missing element or empty non-nil value |
+
+A choice is a rule, an alternative is a permitted branch, and a selection is an instance's use of a branch. They are not interchangeable glossary terms. The research now uses `$choice` for a choice site; source occurrence bounds determine whether its value is one object or an array, just as they do for other items.
+
+Keep the canonical word stem when deriving related names: normal TypeScript casing for internal identifiers and type names, and `$` plus lower camel case for mapper-owned application properties. Source-derived XML data names and established profile mappings retain their declared spellings. Contextual group stems and collision suffixes remain one coherent naming decision to resolve before general generation; do not infer new keys or aliases from this casing rule.
+
+Private source-graph and configuration objects do not need `$` prefixes merely to follow the payload namespace rule, but their names and descriptions must use the same concepts. Standards-owned names such as XSD `minOccurs`, existing graph `occurs`, and JSON Schema `oneOf` have explicit semantic mappings rather than mechanical renames. Choose `oneOf`, `anyOf` or other schema operators for their actual validation meaning, not because their names resemble a source term.
+
+An OpenAPI property must use the exact JSON key accepted by the mapper, validator and serializer; titles and descriptions must explain that same concept. Schema definition and TypeScript type names derive deterministically from the source identity and role, with collision handling; human-readable names alone are not component identity.
+
+Reuse a shared name constant or source-owned mapping description where code and schemas need the same key. Keep independently authored test inputs literal so they can expose drift instead of reproducing the implementation's mistake. When terminology or a key changes, update its inventory entry, code, schemas, examples, errors and tests together; record any compatibility handling explicitly rather than silently accepting a synonym.
+
+This convention does not create another architecture layer, public mode or mandatory vocabulary migration. Existing mismatches remain visible review work, not templates for introducing more synonyms. File and directory names continue to follow [file naming and path organization](file-naming-and-path-organization.md).
+
+### Choice groups and named alternatives
+
+Use one spelling, `$choice`, in the bounded research example for both singleton and repeatable occurrences of the same source choice site. A contract permits one shape at that site: callers cannot interchange an object and an array. Repeating a group does not pluralize its key or its item type.
+
+| Source bounds | Application value | Schema |
+|---|---|---|
+| `1..1` | One alternative object | Required property referencing the choice union |
+| `0..1` | Omitted or one alternative object | Optional property referencing the choice union |
+| `1..3` | Array, including for one occurrence | Required array with `minItems: 1`, `maxItems: 3` |
+| `0..unbounded` | Optional array | Array with no finite maximum |
+
+Optional repeated groups follow the selected mapping's omission/empty-array normalization rather than inventing an additional spelling. The executable example covers required singleton and bounded repetition through the native inverse; optional singleton presence is a schema-only control, not a general optional/empty-group reconstruction proof. Nullable alternatives and invisible empty occurrences still require the existing ADR-003 normalization decision.
+
+Every structured alternative needs a named object schema and TypeScript type, including when the group occurs only once. The prototype manually names its two objects `RequestChoiceAlternative1` and `RequestChoiceAlternative2`; `RequestChoice` is their union. Its `SingleRequest` deliberately reuses that common schema; this demonstrates named references and schema reuse, not execution of a contextual name allocator.
+
+A single property references the union directly; an array references the same union in `items`, and TypeScript uses `RequestChoice[]`. Sharing application schema structure does not merge the distinct native source declarations used for reconstruction.
+
+The proposed contextual pattern is `<ParentName><ParentObjectKey>Choice`, followed by `Alternative1`, `Alternative2` and so on for its object alternatives in source order. For parent `Order` and object key `payment`, that gives `OrderPaymentChoice`, `OrderPaymentChoiceAlternative1` and `OrderPaymentChoiceAlternative2`. The prototype's reserved `$choice` role contributes `Choice` once, giving `RequestChoice`, not `RequestChoiceChoice`.
+
+Retain the full parent/source name when it ends in `Choice` or `Choices`; do not trim a business name by spelling alone. For parent `OrderChoice` and key `payment`, the candidate is `OrderChoicePaymentChoice`. Reusing an already-generated terminal role, resolving clashes with existing source type names, and naming several independent choice sites in one object still need one deterministic source-identity-based rule before general emission; the prototype does not implement that allocator.
+
+Several occurrences of one choice site use one array. Several independent choice sites need distinct reserved properties and distinct contextual schemas; merging them into one array would lose their separate rules. The source identity and structural position distinguish such sites even when the alternatives have identical field names; display names do not establish identity.
+
+### Configured application names
+
+The planned naming configuration must let developers override the synthetic group property, its union type/schema name, and each structured alternative type/schema name independently. Defaults follow the contextual convention above; explicit names let the generated API use the application's terminology. This is a requirement for future integration, not an implemented configuration option or a new CLI flag.
+
+| Naming target | Prototype default | Example configured name |
+|---|---|---|
+| Synthetic group property | `$choice` | `$payment` |
+| Union type and schema | `RequestChoice` | `PaymentMethod` |
+| First alternative type and schema | `RequestChoiceAlternative1` | `CardPayment` |
+| Second alternative type and schema | `RequestChoiceAlternative2` | `BankPayment` |
+
+Such names change presentation, not the source definition: `$payment` can reference `PaymentMethod` or `PaymentMethod[]`, and the union references `CardPayment` and `BankPayment`. Group bounds, required fields, alternative membership, source XML names/namespaces and native validation remain governed by the same selected source contract. Renaming an alternative's schema does not add a discriminator or an XML wrapper.
+
+Target overrides by exact scoped source identity and structural role, including the choice site and alternative, rather than only by a generated display name, field spelling or an occurrence in one value. Source order provides the prototype's alternative numbers but is not by itself a stable configuration selector across source revisions. Provide discoverable source selectors; unknown or ambiguous targets fail rather than silently doing nothing, and an alias never becomes another selector for an alias chain.
+
+Resolve default and configured names before emission and use that one mapping for TypeScript declarations, OpenAPI components and references, JSON validation, adapters, serializers, diagnostics and examples. A synthetic property keeps the `$` prefix after renaming; type/schema aliases must be valid for their generated targets. Reject conflicting aliases in the relevant property/type/schema scopes, including collisions with other configured names, source-derived names and reserved mapping keys; do not silently overwrite or suffix an explicitly requested name.
+
+A configured alias selects the emitted/accepted name for that generated contract, not additional runtime synonyms. For example, a contract configured with `$payment` does not also accept `$choice` by default. Changing published keys or type names needs an explicit compatibility disposition and regenerated matching artifacts; runtime callers cannot submit naming configuration or change the native source binding through the payload.
+
+The exact configuration field names, selector syntax, override scope and interaction with schema reuse remain to be designed alongside the general name allocator. Required future evidence includes fresh JSON inverses using configured names, nested and repeated choices, independently renamed alternatives, consistent OpenAPI references, unchanged XML identities and rejection of ambiguous targets, invalid names, collisions and superseded keys. The current prototype does not implement these overrides.
+
+## Reserved mapping keys
+
+Keys introduced by the mapper into XML-derived application objects must start with `$`. XML element and attribute names remain source-derived data keys; generated grouping objects, text slots and interpretation metadata must not occupy that same unprefixed namespace. The XML name grammar excludes `$`, so an actual XML child `choice` and the synthetic `$choice` container remain distinct.
+
+This convention applies recursively to synthetic mapping properties, including metadata descriptors if retained. It does not rename private TypeScript variables, source graph fields, artifact/configuration schemas or actual XML data keys. Entries inside data dictionaries, such as prefixes in `$namespaces` and XML names in an attribute bag, are data rather than additional synthetic property names.
+
+### Mapping-key inventory and status
+
+The inventory distinguishes existing behavior from the [provisional mapping research](roadmap/v1.0-xml-json-mapping.md). A listed research key is not a production capability claim or a new public mode; its provisional spelling remains subject to the terminology review above.
+
+| Key | Meaning and scope | Status |
+|---|---|---|
+| `$value` | Scalar text/simple content alongside attributes; exact scalar policy belongs to the selected mapping | Existing legacy/component convention |
+| `$attributes` | Attribute bag; legacy wildcard bag values are strings and the configured key may differ | Existing legacy/client/streaming default; proposed component bag layout remains provisional |
+| `$content` | Ordered content; existing component entries use their established element-entry format | Existing component convention; mixed/open entry syntax remains provisional |
+| `$choice` | Complete source-derived choice group; object or array according to source bounds | Implemented singleton/repeated research example only |
+| `$nil` | Explicit assessed nil marker when the selected representation needs an object | Research-only proposal; plain-null policy is not finalized |
+| `$type` | Explicit assessed XML type selection | Research-only proposal; not a caller-selected validation policy |
+| `$namespaces` | Namespace bindings needed by contextual/unassessed values | Research-only proposal; full maps versus inherited deltas is unresolved |
+
+No other synthetic application-mapping keys are allocated by this inventory. `$selection` and `$selections` were superseded research spellings; `$choices` is not a plural alias. `$text` and `$element` occur in comparison alternatives only; they are not additional accepted spellings. A future source-named group key must also start with `$`, have deterministic collision handling among generated keys, and be documented before emission; this inventory does not invent a generic naming algorithm.
+
+### Existing unprefixed descriptors requiring a deliberate correction
+
+Existing checked ordered entries contain `name` and `value`, with `namespace` and `local` inside their identity descriptor. Those describe the mapping rather than XML business properties; their existing implementation is recorded compatibility work, not justification for using unprefixed metadata in new mappings.
+
+| Existing descriptor property | Prefixed spelling if that descriptor is retained | Disposition |
+|---|---|---|
+| `name` | `$name` | Candidate spelling only; source-derived groups may remove the wrapper |
+| `value` | `$value` | Reuse the existing reserved word where its role is explicitly defined |
+| `namespace` | `$namespace` | Candidate spelling only if an explicit identity descriptor remains necessary |
+| `local` | `$localName` | Candidate spelling only if an explicit identity descriptor remains necessary |
+
+These candidate spellings are not implemented or allocated aliases. Current accepted component/QName shapes and the shipped direct-runtime protocol are not silently renamed by a documentation change; a correction needs an explicit mapping, compatibility disposition and fresh inverse/serializer tests. Ordinary XML properties actually named `name`, `value`, `namespace` or `local` remain ordinary data keys.
+
+### Transport, schema and implementation namespaces
+
+| Name | Actual role | Application-mapping disposition |
+|---|---|---|
+| `$xml`, `_xml` | Dependency-owned SOAP/XML serialization hooks | Not generic fields accepted by the application mapping |
+| `attributes`, `$` | Existing configurable/dependency attribute containers and aliases | Existing adapter behavior, not new canonical metadata keys |
+| `$schema`, `$id`, `$ref` | JSON Schema dialect/identity/reference keywords | Schema documents, not XML-derived payload properties |
+| `$raw/...`, `/$hypothetical/...`, `$semantic-content/...`, `$semantic-builtin-anyType/...` | Internal source/candidate reference paths and generated component paths | Path strings, not public JSON mapping keys |
+| `$env`, `$_` | Shell/documentation syntax encountered during the inventory | Not mapping keys |
+
+A `$` prefix identifies a reserved namespace, not permission to submit arbitrary metadata. The selected mapping and HTTP schema must declare every accepted key, reject unknown/conflicting metadata without mutation, preserve accepted fields during serialization, and consume synthetic groups without inventing XML wrapper elements. Legacy configurable attribute-key overrides remain their existing separate contract.
+
 ## Primitive Mapping
 
 All XSD numeric and date-time types map to `string` by default. This prevents

@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- docs(mapping): investigate XML/JSON constraints, backward-derived choice groups and configurable application naming requirements.
+
 ## [1.1.7] - 2026-11-03
 
 - refactor(pipeline): consolidate legacy and checked component generation while preserving shipped direct-runtime clients.

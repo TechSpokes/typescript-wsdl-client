@@ -4,6 +4,10 @@ Optional JSON configuration files for customizing OpenAPI generation. Pass these
 
 See [CLI Reference](cli-reference.md) for flag details and [README](../README.md) for quick start.
 
+## Planned application naming overrides
+
+Choice-group property names, union type/schema names and individual alternative type/schema names must support developer-configured aliases in the planned application mapping. The [configured application names contract](concepts.md#configured-application-names) defines the naming targets, reserved `$` prefix, source identity, collision and consistency requirements. This is a design requirement under #420; no corresponding configuration fields or CLI options are implemented yet.
+
 ## Security Configuration
 
 Pass via `--openapi-security-config-file`.

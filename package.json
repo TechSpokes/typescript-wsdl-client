@@ -110,7 +110,7 @@
     "test:reference:full": "tsx scripts/semantic-reference.ts --full",
     "check:toolchain": "tsx scripts/check-toolchain.ts",
     "typecheck:tooling": "tsc -p test/tooling/tsconfig.json",
-    "typecheck:research": "tsc -p test/research/s06-au01/tsconfig.json && tsc -p test/research/re01/tsconfig.json && tsc -p test/research/s06-pw01/tsconfig.json && tsc -p test/research/dt01/tsconfig.json",
+    "typecheck:research": "tsc -p test/research/s06-au01/tsconfig.json && tsc -p test/research/re01/tsconfig.json && tsc -p test/research/s06-pw01/tsconfig.json && tsc -p test/research/dt01/tsconfig.json && tsc -p test/research/xml-json-mapping/tsconfig.json",
     "typecheck:reference": "tsc -p test/conformance/reference/tsconfig.json",
     "test:research:ports": "vitest run test/research/s06-au01 test/research/re01 test/research/s06-pw01 test/research/dt01",
     "research:re01:measure": "tsx test/research/re01/measure.ts",

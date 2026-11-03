@@ -432,6 +432,8 @@ Keep `CHANGELOG.md` as the canonical version history. Write release notes as a c
 
 ## Documentation Conventions
 
+- Use `docs/concepts.md#mapping-terminology-and-naming` for shared mapping terminology and its reserved-key inventory for JSON spellings.
+- Keep internal names, generated types, JSON keys, OpenAPI descriptions and independent examples aligned; provisional names are not aliases.
 - Prefer pointers to the authoritative source over duplicating indexes across files.
 - The root README.md Documentation table is the single source of truth for the docs/ directory listing.
 - When adding, removing, or renaming documentation files, update only the root README.md Documentation table; other files should reference it rather than maintaining their own copies.

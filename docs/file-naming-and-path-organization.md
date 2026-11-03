@@ -2,6 +2,8 @@
 
 Contributor guide for naming files and organizing fixture paths. See the root [README.md](../README.md) for the authoritative documentation index.
 
+For conceptual names, internal identifiers, mapping keys and OpenAPI terminology, use [mapping terminology and naming](concepts.md#mapping-terminology-and-naming). This document governs filesystem organization, not alternative JSON key spellings.
+
 ## Preamble Resources
 
 Raw comment-only headers live under `src/generation/preambles/` with the filename `typescript.preamble`. Subdirectories express logical artifact scopes rather than consumer output paths. See [generated source policy](architecture.md#generated-source-policy) for fallback and packaging rules.
