@@ -2,6 +2,11 @@ import {describe, expect, it} from 'vitest';
 import {parseOrderedSyntax, resolveLexicalQName} from '../../../src/loader/orderedSyntax.js';
 import type {SyntaxElement} from '../../../src/loader/orderedSyntax.js';
 import {projectKeyed, reconstructKeyed} from './keyed-mapping.js';
+import path from 'node:path';
+import {loadSemanticSchemaInput} from '../../../src/loader/schemaInput.js';
+import {prepareSourceSchemaRequest} from '../../../src/compiler/schemaDocumentSyntax.js';
+import {globalId} from '../../../src/compiler/canonicalGraph.js';
+import {assessSourceAttributeUses} from '../../../src/compiler/schemaAttributeUses.js';
 
 const root = {namespace: 'urn:msg', local: 'p'};
 const xml = (value: string) => parseOrderedSyntax(Buffer.from(value), 'urn:research:keyed').root;
@@ -12,6 +17,38 @@ function observe(node: SyntaxElement): unknown {
 }
 
 describe('selected keyed research grammar', () => {
+  it('derives a fixed qualified attribute identity independently from a same-name child', async () => {
+    const name = {namespace: 'urn:vendor', local: 'fixedAttributes'};
+    const directory = path.resolve('test/research/xml-json-mapping');
+    const prepared = prepareSourceSchemaRequest(await loadSemanticSchemaInput(path.join(directory, 'keyed-attributes.xsd'), {policy: {fileRoots: [directory]}}));
+    if (prepared.kind !== 'prepared') throw new Error(prepared.kind);
+    const context = prepared.request.actual, element = context.lookup(globalId('element', name));
+    if (element.kind !== 'found' || element.node.kind !== 'element') throw new Error('Element missing');
+    const type = context.resolve(element.node.type);
+    if (type.kind !== 'found' || type.node.kind !== 'complexType') throw new Error('Type missing');
+    const attributes = assessSourceAttributeUses(context, type.node.id);
+    if (attributes.kind !== 'checked') throw new Error(attributes.kind);
+    expect(attributes.value.attributes.map(a => a.name)).toEqual([{namespace: 'urn:vendor', local: 'code'}]);
+    expect(attributes.value.wildcard).toBeUndefined();
+    const source = xml('<v:fixedAttributes xmlns:v="urn:vendor" v:code="attribute"><v:code>child</v:code></v:fixedAttributes>');
+    const hand: unknown = JSON.parse('{"$attributes":[{"code":"attribute"}],"code":"child"}');
+    expect(projectKeyed(source)).toEqual(hand);
+    const fresh = reconstructKeyed(name, hand);
+    expect(observe(fresh)).toEqual({name, attributes: [{name: {namespace: 'urn:vendor', local: 'code'}, value: 'attribute'}],
+      children: [{name: {namespace: 'urn:vendor', local: 'code'}, attributes: [], children: ['child']}]});
+    expect(projectKeyed(fresh)).toEqual(hand);
+    expect(() => reconstructKeyed(name, {$attributes: [{code: {$namespace: 'urn:vendor', $value: 'attribute'}}], code: 'child'})).toThrow();
+  });
+  it('does not promote unassessed data merely because its root matches a known fixture', () => {
+    const name = {namespace: 'urn:vendor', local: 'fixedAttributes'};
+    const source = xml('<fixedAttributes xmlns="urn:vendor" code="raw"><code>child</code></fixedAttributes>');
+    const hand: unknown = JSON.parse('{"$namespaces":{"":"urn:vendor"},"$attributes":[{"code":"raw"}],"$content":[{"code":{"$namespace":"urn:vendor","$content":[{"$value":"child"}]}}]}');
+    expect(projectKeyed(source, true)).toEqual(hand);
+    const fresh = reconstructKeyed(name, hand, true);
+    expect(fresh.attributes[0]!.name).toEqual({namespace: '', local: 'code'});
+    expect(observe(fresh)).toEqual(observe(source));
+    expect(projectKeyed(fresh, true)).toEqual(hand);
+  });
   it('preserves independent mixed text, nesting and significant spaces', () => {
     const source = xml('<p xmlns="urn:msg" id="7">Hello <b>world</b>!</p>');
     const hand: unknown = JSON.parse('{"id":"7","$content":[{"$value":"Hello "},{"b":"world"},{"$value":"!"}]}');

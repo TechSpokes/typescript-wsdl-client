@@ -119,7 +119,7 @@ The inventory distinguishes existing behavior from the [selected mapping contrac
 | Key | Meaning and scope | Status |
 |---|---|---|
 | `$value` | Scalar text/simple content alongside attributes; exact scalar policy belongs to the selected mapping | Existing legacy/component convention |
-| `$attributes` | Attribute channel; new fallback uses named entries, unqualified scalar or namespaced holder | Existing legacy bags unchanged; selected keyed research fallback |
+| `$attributes` | Attribute channel; named entries derive unique source identities, otherwise distinguish unqualified scalars and namespaced holders | Existing legacy bags unchanged; selected keyed research fallback |
 | `$content` | Ordered content; new entries are text objects or one named child occurrence | Existing ordered shapes unchanged; selected keyed mixed/open research grammar |
 | `$choice` | Complete source-derived choice group; object or array according to source bounds | Implemented singleton/repeated research example only |
 | `$nil` | Explicit assessed nil marker, exactly `true`, alongside applicable source-mapped attributes | Selected next-slice contract; no null shorthand, production implementation remains #421 |

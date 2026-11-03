@@ -36,6 +36,8 @@ const one = (value: unknown): [string, unknown] => {
 };
 const delta = (scope: JsonObject, inherited: JsonObject): JsonObject => Object.fromEntries(Object.entries(scope)
   .filter(([prefix, uri]) => prefix !== 'xml' && uri !== (inherited[prefix] ?? (prefix === '' ? '' : undefined))));
+// @constraints Source facts for keyed-attributes.xsd, not a global QName-based projection engine.
+const fixedAttributes = (name: ExpandedName) => name.namespace === 'urn:vendor' && name.local === 'fixedAttributes';
 
 function keyed(candidate: unknown, name: ExpandedName, inherited: JsonObject, unassessed: boolean, boundary = false): unknown {
   if (candidate === null) return {$nil: true};
@@ -53,10 +55,21 @@ function keyed(candidate: unknown, name: ExpandedName, inherited: JsonObject, un
     } else if (key === '$attributes') {
       own(result, key, list(value).map(entry => {
         const attribute = object(entry), identity = object(attribute.name), item: JsonObject = {};
+        if (!unassessed && fixedAttributes(name)) {
+          if (identity.local !== 'code' || identity.namespace !== 'urn:vendor') throw new TypeError('Undeclared fixture attribute');
+          own(item, 'code', attribute.value); return item;
+        }
         own(item, string(identity.local), identity.namespace === '' ? attribute.value : {$namespace: identity.namespace, $value: attribute.value});
         return item;
       }));
     } else if (key === '$content') {
+      if (!unassessed && fixedAttributes(name)) {
+        const children = list(value);
+        if (children.length !== 1) throw new TypeError('Fixed fixture child required');
+        const child = object(children[0]), identity = object(child.name);
+        if (identity.local !== 'code' || identity.namespace !== 'urn:vendor') throw new TypeError('Fixed fixture child identity');
+        own(result, 'code', string(child.value)); continue;
+      }
       own(result, key, list(value).map(entry => {
         if (typeof entry === 'string') return {$value: entry};
         const child = object(entry), identity = object(child.name);
@@ -96,6 +109,10 @@ function candidate(value: unknown, name: ExpandedName, inherited: JsonObject, un
     } else if (key === '$attributes') {
       own(result, key, list(item).map(entry => {
         const [local, raw] = one(entry);
+        if (!unassessed && fixedAttributes(name)) {
+          if (local !== 'code' || typeof raw !== 'string') throw new TypeError('Fixed attribute identity is source-derived');
+          return {name: {namespace: 'urn:vendor', local}, value: raw};
+        }
         if (typeof raw === 'string') return {name: {namespace: '', local}, value: raw};
         const holder = object(raw);
         if (Object.keys(holder).length !== 2 || !Object.hasOwn(holder, '$namespace') || !Object.hasOwn(holder, '$value')) throw new TypeError('Attribute holder required');
@@ -103,7 +120,10 @@ function candidate(value: unknown, name: ExpandedName, inherited: JsonObject, un
         if (!namespace) throw new TypeError('Unqualified attributes use their value directly');
         return {name: {namespace, local}, value: string(holder.$value)};
       }));
+    } else if (key === 'code' && !unassessed && fixedAttributes(name)) {
+      own(result, '$content', [{name: {namespace: 'urn:vendor', local: 'code'}, value: string(item)}]);
     } else if (key === '$content') {
+      if (!unassessed && fixedAttributes(name)) throw new TypeError('Fixed fixture uses its compact child slot');
       own(result, key, list(item).map(entry => {
         const row = object(entry);
         if (Object.hasOwn(row, '$value')) {

@@ -40,6 +40,17 @@ it('describes recursive open entry/attribute fields without stripping or coercin
   expect(validate({$namespaces: {'': 'urn:other'}, $content: [{x: {$namespace: '', $content: []}}]})).toBe(true);
 });
 
+it('describes source-fixed qualified attributes without redundant identity holders', () => {
+  const validateFixed = ajv.compile({type: 'object', required: ['$attributes', 'code'], additionalProperties: false,
+    properties: {code: {type: 'string'}, $attributes: {type: 'array', minItems: 1, maxItems: 1,
+      items: {type: 'object', required: ['code'], additionalProperties: false, properties: {code: {type: 'string'}}}}}});
+  const hand: unknown = JSON.parse('{"$attributes":[{"code":"attribute"}],"code":"child"}');
+  const before = JSON.stringify(hand);
+  expect(validateFixed(hand)).toBe(true);
+  expect(JSON.stringify(hand)).toBe(before);
+  expect(validateFixed({$attributes: [{code: {$namespace: 'urn:vendor', $value: 'attribute'}}], code: 'child'})).toBe(false);
+});
+
 it('describes the assessed mixed/nil alternatives and flat type identity separately', () => {
   const type = {type: 'object', required: ['$name', '$namespace'], additionalProperties: false,
     properties: {$name: {type: 'string'}, $namespace: {type: 'string'}}};
