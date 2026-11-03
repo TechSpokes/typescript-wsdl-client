@@ -51,10 +51,13 @@ describe('research XML/JSON contract, without native admission', () => {
     const parsed = xml('<r xmlns="urn:msg"><a>1</a>  <b>x<i>y</i>z</b><a>2</a></r>');
     expect(forward(parsed)).toEqual(input);
     expect(observe(inverse(n('r'), fresh(forward(parsed))))).toEqual(expected);
+    const colliding = {$content: [{name: n('a', 'urn:one'), value: '1'}, {name: n('a', 'urn:two'), value: '2'}]};
+    expect(forward(xml('<r xmlns="urn:msg"><a xmlns="urn:one">1</a><a xmlns="urn:two">2</a></r>'))).toEqual(colliding);
+    expect(observe(inverse(n('r'), fresh(colliding)))).toEqual(leaf('r', [leaf('a', ['1'], 'urn:one'), leaf('a', ['2'], 'urn:two')]));
   });
 
   it('keeps absent, empty, nil attributes, nil items and nil wrappers distinct', () => {
-    expect(observe(inverse(n('x'), ''))).toEqual(leaf('x'));
+    expect(observe(inverse(n('x'), {$value: ''}))).toEqual(leaf('x'));
     const expectedNil = {...leaf('x'), nil: true};
     expect(observe(inverse(n('x'), null))).toEqual(expectedNil);
     const hand = {$nil: true, id: '7', $attributes: [{name: n('id', 'urn:attr'), value: 'qualified'}]};
@@ -62,14 +65,14 @@ describe('research XML/JSON contract, without native admission', () => {
       {name: n('id', ''), value: '7'}, {name: n('id', 'urn:attr'), value: 'qualified'},
     ]});
     expect(forward(xml('<x xmlns="urn:msg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:a="urn:attr" xsi:nil="1" id="7" a:id="qualified"/>'))).toEqual(hand);
-    const items = inverse(n('items'), {$content: [entry('x', null), entry('x', ''), entry('x', hand)]});
+    const items = inverse(n('items'), {$content: [entry('x', null), entry('x', {$value: ''}), entry('x', hand)]});
     expect(items.children).toHaveLength(3);
     expect(observe(items)).toEqual(leaf('items', [expectedNil, leaf('x'), {...expectedNil, attributes: [
       {name: n('id', ''), value: '7'}, {name: n('id', 'urn:attr'), value: 'qualified'},
     ]}]));
     expect(observe(inverse(n('items'), null))).toEqual({...leaf('items'), nil: true});
     expect(inverse(n('r'), {$content: []}).children).toEqual([]);
-    expect(forward(xml('<x xmlns="urn:msg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="false"/>'))).toBe('');
+    expect(forward(xml('<x xmlns="urn:msg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="false"/>'))).toEqual({$value: ''});
   });
 
   it('preserves open names, child/attribute collisions and complete per-node rebinding from hand JSON', async () => {
@@ -95,7 +98,7 @@ describe('research XML/JSON contract, without native admission', () => {
     }
     const typed = inverse(n('q', 'urn:typed'), fresh(n('T', 'urn:meaning')));
     expect(resolveLexicalQName((typed.children[0] as {value: string}).value, typed)).toEqual(n('T', 'urn:meaning'));
-    const rebound = xml('<r xmlns:p="urn:one"><q xmlns="urn:typed" xmlns:p="urn:two">p:T</q></r>');
+    const rebound = xml('<r xmlns="urn:msg" xmlns:p="urn:one"><q xmlns="urn:typed" xmlns:p="urn:two">p:T</q></r>');
     expect(forward(rebound)).toEqual({$content: [{name: n('q', 'urn:typed'), value: n('T', 'urn:two')}]});
     expect(forward(xml('<s>unbound:T</s>'))).toBe('unbound:T');
     const hand = {$type: n('Special', 'urn:types'), $content: []};
@@ -112,13 +115,18 @@ describe('research XML/JSON contract, without native admission', () => {
 
   it('retains default undeclaration, prototype-like scope keys and avoids retained prefixes for typed values', () => {
     const hand: unknown = JSON.parse('{"$namespaces":{"":"","__proto__":"urn:opaque","q1":"urn:retained"},"$type":{"namespace":"urn:type","local":"T"},"$content":[]}');
-    const rebuilt = inverse(n('r', ''), hand, true);
+    const rebuilt = inverse(n('r'), hand, true, true);
     expect(Object.hasOwn(rebuilt.namespaces, '__proto__')).toBe(true);
     expect(rebuilt.namespaces.__proto__).toBe('urn:opaque');
     expect(rebuilt.namespaces.q1).toBe('urn:retained');
     expect(rebuilt.namespaces.q2).toBe('urn:type');
     const type = rebuilt.attributes.find(a => a.name.local === 'type')!;
     expect(resolveLexicalQName(type.value, rebuilt)).toEqual(n('T', 'urn:type'));
+    const once = forward(rebuilt, true, true);
+    const twice = forward(inverse(n('r'), fresh(once), true, true), true, true);
+    expect(twice).toEqual(once);
+    const existing = {$namespaces: {p: 'urn:type'}, $type: n('T', 'urn:type'), $content: []};
+    expect(forward(inverse(n('r'), fresh(existing), true, true), true, true)).toEqual(existing);
     const sourceValue = xml('<r xmlns="urn:outer"><s xmlns=""/></r>');
     const observed = inverse(n('r', 'urn:outer'), fresh(forward(sourceValue, true)), true);
     expect((observed.children[0] as SyntaxElement).namespaces['']).toBe('');
@@ -133,7 +141,7 @@ describe('research XML/JSON contract, without native admission', () => {
     {$content: [], $attributes: [{name: n('nil', XSI), value: 'true'}]},
     {$content: [], $attributes: [{name: n('xmlns', ''), value: 'urn:bad'}]},
     {$content: [], $attributes: [{name: n('a'), value: '1'}, {name: n('a'), value: '2'}]},
-    {$value: 'not QName'}, {$content: [42]}, {$content: [], $type: {namespace: 'urn:t'}},
+    {$value: 42}, {$content: [42]}, {$content: [], $type: {namespace: 'urn:t'}},
     {$content: [], $namespaces: {}},
     ];
     for (const input of malformed) {
@@ -141,6 +149,36 @@ describe('research XML/JSON contract, without native admission', () => {
       expect(() => inverse(n('x'), input)).toThrow(TypeError);
       expect(JSON.stringify(input)).toBe(before);
     }
+  });
+
+  it('selects empty/text-only ordered content from source facts and refuses conflicting scalar forms', () => {
+    for (const $content of [[], ['text']]) {
+      const hand = {$content};
+      expect(forward(inverse(n('r'), fresh(hand)))).toEqual(hand);
+    }
+    expect(forward(xml('<r xmlns="urn:msg"/>'))).toEqual({$content: []});
+    expect(forward(xml('<p xmlns="urn:msg" id="7">only text</p>'))).toEqual({id: '7', $content: ['only text']});
+    expect(() => inverse(n('r'), '')).toThrow();
+    expect(() => inverse(n('r'), {$value: 'wrong form'})).toThrow();
+    expect(() => inverse(n('a'), {$content: []})).toThrow();
+  });
+
+  it('preserves unassessed xsi attributes and QName-looking names as lexical open data', () => {
+    const input = '<q xmlns="urn:typed" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true" xsi:type="unbound:T">unbound:literal</q>';
+    const hand = {$namespaces: {'': 'urn:typed', xsi: XSI}, $attributes: [
+      {name: n('nil', XSI), value: 'true'}, {name: n('type', XSI), value: 'unbound:T'},
+    ], $content: ['unbound:literal']};
+    const parsed = xml(input);
+    expect(forward(parsed, true)).toEqual(hand);
+    const rebuilt = inverse(n('q', 'urn:typed'), fresh(hand), true);
+    expect(rebuilt.attributes.map(a => [a.name, a.value])).toEqual(hand.$attributes.map(a => [a.name, a.value]));
+    expect(rebuilt.children.map(child => child.kind === 'text' ? child.value : child.name)).toEqual(['unbound:literal']);
+    expect(forward(rebuilt, true)).toEqual(hand);
+    expect(forward(xml(input.replace('nil="true"', 'nil="false"')), true)).toEqual({...hand,
+      $attributes: [{name: n('nil', XSI), value: 'false'}, hand.$attributes[1]]});
+    expect(forward(xml('<p xmlns="urn:msg" id="7"/>'), true)).toEqual({$namespaces: {'': 'urn:msg'},
+      $attributes: [{name: n('id', ''), value: '7'}], $content: []});
+    expect(() => inverse(n('q', 'urn:typed'), {...hand, $nil: true}, true)).toThrow();
   });
 
   it('rejects missing/illegal open scopes and data hooks without executing them', () => {
@@ -169,6 +207,22 @@ async function nativeSource(file: string, namespace: string, local: string) {
 }
 
 describe('accepted component controls use existing native owners', () => {
+  it('reconstructs distinct fixed child order independently of JSON property insertion order', async () => {
+    const {context, root} = await nativeSource('scalar-records.xsd', 'urn:scalar-records', 'Request');
+    const hand = {Link: 'relative/path', Code: 'synthetic', Day: '2026-10-31', Language: 'en-US', Ratio: 'INF',
+      Hex: '0AFF', Binary: 'AQI=', Counter: '9007199254740993', Offset: 'P2DT3H',
+      TimeStamp: '2026-10-31T18:00:00Z', Version: '1.25'};
+    const expanded = expandProjectionValue(context, root, fresh(hand));
+    if (expanded.kind !== 'projection-expanded') throw new Error(expanded.rule);
+    const elements = expanded.payload.children.filter(child => child.kind === 'element');
+    expect(elements.map(child => child.name)).toEqual(['Day', 'Code', 'Link'].map(local => n(local, 'urn:scalar-records')));
+    expect(elements.map(child => child.children.map(part => part.kind === 'text' ? part.value : part.name)))
+      .toEqual([['2026-10-31'], ['synthetic'], ['relative/path']]);
+    const match = matchDirectProjection(context, root, expanded.payload);
+    if (match.kind !== 'projection-match') throw new Error(match.rule);
+    expect(assessProjectionScalars(context, match)).toMatchObject({kind: 'projection-value', value: hand});
+    expect(Object.keys(hand).slice(0, 3)).toEqual(['Link', 'Code', 'Day']);
+  });
   it('preserves fixed-order records, repeated items, typed peer attributes and Boolean/int32 values', async () => {
     const {context, root} = await nativeSource('known-attributes.xsd', 'urn:known-attributes', 'Request');
     const hand = {id: '7', Item: [{count: 2, enabled: true, Text: 'a'}, {count: -1, Text: 'b'}]};
