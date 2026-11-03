@@ -100,6 +100,8 @@
     "direct-structure.test.ts",
     "direct-structure-evidence.test.ts",
     "direct-projection-plan.test.ts",
+    "direct-projection-nil.test.ts",
+    "../snapshot/component-nil.test.ts",
     "direct-projection-values.test.ts",
     "direct-projection-attributes.test.ts",
     "direct-projection-inheritance.test.ts",

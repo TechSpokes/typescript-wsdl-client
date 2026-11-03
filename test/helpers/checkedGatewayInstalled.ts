@@ -11,8 +11,8 @@ import {runOwnedNode} from './ownedNodeProcess.js';
 
 export const CHECKED_GATEWAY_STAGE_TIMEOUT_MS = 240_000;
 export const CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS = 60_000;
-// @why Ten base commands and four commands for each of two variants already have individual four-minute limits.
-export const CHECKED_GATEWAY_WORKFLOW_TIMEOUT_MS = (10 + 4 * 2) * CHECKED_GATEWAY_STAGE_TIMEOUT_MS + CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS;
+// @why Ten base commands and four commands for each of three variants have individual four-minute limits.
+export const CHECKED_GATEWAY_WORKFLOW_TIMEOUT_MS = (10 + 4 * 3) * CHECKED_GATEWAY_STAGE_TIMEOUT_MS + CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS;
 /**
  * Packs the candidate and exercises only installed public generation and runtime entry points.
  * @param signal Caller cancellation; active owned command trees close before cleanup resolves.
@@ -127,8 +127,8 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     expect(result).toMatchObject({kind: 'checked-gateway-installed', originalCheckoutReadable: false});
     await writeFile(path.join(evidence, 'wire.log'), executed.stdout + executed.stderr);
     const original = await readFile(source, 'utf8');
-    for (const mode of ['optional', 'scalar'] as const) {
-      const variant = mode === 'optional'
+    for (const mode of ['optional', 'scalar', 'nil'] as const) {
+      const variant = mode === 'nil' ? await readFile(path.join(root, 'test/conformance/fixtures/assessment/nil.wsdl'), 'utf8') : mode === 'optional'
         ? original.replace('<xs:element name="city" type="xs:string"/><xs:element name="days" type="xs:int"/>',
           '<xs:element name="city" type="xs:string" minOccurs="0"/><xs:element name="days" type="xs:int" minOccurs="1" maxOccurs="unbounded"/>')
         : original.replace('type="t:ForecastRequest"', 'type="xs:boolean"')

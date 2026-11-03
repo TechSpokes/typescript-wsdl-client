@@ -16,6 +16,16 @@ Partial configuration may supply `service`, `port`, `selectors` or permissions. 
 
 Each operation retains its own client and capsule; the service index and gateway compose them without merging service/binding identities. `basePath` can separate services on a shared host. If omitted, it defaults to the supplied version/service route prefix. Paths append the exact, URI-encoded operation name.
 
+### Nil values
+
+Checked component generation represents a present nil element as `{"$nil":true}`, with its existing source-mapped attribute properties. Required attributes remain required: a nillable element with required string `id` uses `{"$nil":true,"id":"7"}`. Optional attributes retain their scalar encodings, including empty strings and qualified attribute identities derived from the source.
+
+Omit an optional element to express absence. Empty non-nil content retains its ordinary representation; nil items occupy their own array positions, while a nil wrapper contains no items. Plain `null`, false/string nil markers, unknown metadata and all content fields on nil objects are rejected without coercion or field removal.
+
+The native matcher checks nillability, no character/element content on nil, declared/required attributes and scalar/fixed constraints. Optional attribute defaults/fixed values are assessed explicitly even on nil; element defaults apply only to empty non-nil content, and an element fixed value prohibits nil. Generated TypeScript and closed HTTP schemas describe the same nil alternatives; native checks retain XML-only duties.
+
+The [nil fixture](../test/conformance/fixtures/assessment/nil.wsdl), [codec controls](../test/unit/direct-projection-nil.test.ts) and [installed gateway qualification](../test/helpers/checkedGatewayInstalledProcess.ts) cover independently expected requests, responses and fault details through serialized HTTP JSON and an owned SOAP 1.1 service. This extends the existing qualified component domain; contextual scalar families, attribute collisions/wildcards, dynamic types and general mixed/open integration retain their existing capability refusals and owners. Legacy and shipped `checkedDirectRuntimeV1` contracts are unchanged.
+
 ### URL intake and endpoint intent
 
 Use the same command above with `--wsdl-source https://provider.example/service.wsdl`. Declared WSDL imports and XSD imports/includes are acquired recursively; users supply no resource records or selectors. Relative references resolve against the actual final referring URI. Query strings remain distinct, shared resources are pinned once, and authorized HTTP redirect aliases are saved without rewriting original bytes. Cycles retain discovery identity; unsupported native or SOAP bootstrap graphs refuse during preparation.

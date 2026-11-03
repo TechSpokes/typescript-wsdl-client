@@ -213,7 +213,7 @@ function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): D
     result = assessed.operand;
   }
   if (duty.fixedCanonical !== undefined && budget.compareText(result.canonical, duty.fixedCanonical) !== 0)
-    throw new Stop('scalar-invalid', 'fixed-attribute-value', duty.schemaPath, duty.payloadPath);
+    throw new Stop('scalar-invalid', duty.declaration.kind === 'attribute' ? 'fixed-attribute-value' : 'fixed-element-value', duty.schemaPath, duty.payloadPath);
 
   const normalized = result.normalized ?? normalizeWhitespace(duty.lexical, whitespaceFor(duty.builtin.local));
   const present = (operand: DatatypeOperand, builtin: ExpandedName, lexical: string, retainLexical?: true): DirectPrimitive => {
@@ -273,6 +273,7 @@ function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessed
     }
     const record: Record<string, DirectApplicationValue | DirectApplicationValue[]> = Object.create(null) as Record<string, DirectApplicationValue | DirectApplicationValue[]>;
     set(record);
+    if (node.nil) record.$nil = true;
     for (const attribute of node.attributes) {
       check(); const operand = operands[attribute.operand];
       if (!operand || operand.declaration !== attribute.declaration || operand.payloadPath !== attribute.payloadPath) throw new TypeError('Foreign projection attribute operand');
@@ -428,7 +429,9 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       check(); const frame = frames.pop()!;
       if (frame.kind === 'leave') {active.delete(frame.value); continue;}
       const {element, shape, value, xmlPath, valuePath, into} = frame;
-      if (shape.kind === 'scalar') {
+      const nil = !!value && typeof value === 'object' && !types.isProxy(value) && Object.hasOwn(value, '$nil');
+      if (nil && (!shape.nillable || shape.constraint?.kind === 'fixed')) return invalid('nil-not-permitted', valuePath, element);
+      if (shape.kind === 'scalar' && !nil) {
         into.push(leaf(element.name, spelling(value, shape.builtin, valuePath, element, shape.retainLexical, shape.list), xmlPath));
         continue;
       }
@@ -440,15 +443,18 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       if (proto !== Object.prototype && proto !== null) return invalid('plain-record-required', valuePath, element);
       if (active.has(value)) return invalid('cyclic-value', valuePath, element);
       active.add(value);
-      const record = records.get(shape.type);
+      const record = shape.kind === 'record' ? records.get(shape.type) : {attributes: [], slots: [], text: undefined, ordered: undefined};
       if (!record) throw new TypeError('Missing native projection record');
 
       const declared = new Set<string>();
-      if (record.ordered) declared.add('$content');
+      if (nil) {
+        if (data(value, '$nil', valuePath + '/$nil', element) !== true) return invalid('nil-marker-true-required', valuePath, element);
+        declared.add('$nil');
+      } else if (record.ordered) declared.add('$content');
       else for (const slot of record.slots) {check(); declared.add(slot.element.name.local);}
       for (const attribute of record.attributes) {check(); declared.add(attribute.declaration.name.local);}
-      if (record.text) declared.add('$value');
-      for (const key of keys(value, (record.ordered ? 1 : record.slots.length) + record.attributes.length + (record.text ? 1 : 0), valuePath, element)) {
+      if (record.text && !nil) declared.add('$value');
+      for (const key of keys(value, declared.size, valuePath, element)) {
        check(); if (typeof key !== 'string') return invalid('unknown-key', valuePath, element);
 
         if (!declared.has(key)) return invalid('unknown-key', valuePath, element);
@@ -456,12 +462,13 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       }
 
       const children: SyntaxNode[] = [];
-      if (record.text) {
+      if (record.text && !nil) {
         const path = valuePath + '/$value';
         if (!Object.hasOwn(value, '$value')) return invalid('missing-simple-content', path, element);
         children.push({kind: 'text', value: spelling(data(value, '$value', path, element), record.text.builtin, path, element, record.text.retainLexical, record.text.list), source: source(xmlPath + '/text')});
       }
       const attributes: SyntaxAttribute[] = [];
+      if (nil) attributes.push({name: {namespace: 'http://www.w3.org/2001/XMLSchema-instance', local: 'nil'}, lexicalName: 'xsi:nil', value: 'true'});
       for (const attribute of record.attributes) {
         check(); const name = attribute.declaration.name;
         const path = `${valuePath}/${name.local.replaceAll('~', '~0').replaceAll('/', '~1')}`;
@@ -476,6 +483,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       into.push({kind: 'element', name: element.name, lexicalName: element.name.local,
         namespaces: Object.create(null) as Record<string, string>, baseUri: 'urn:typescript-wsdl-client:generated-direct-value',
         attributes, source: source(xmlPath), children});
+      if (nil) {active.delete(value); continue;}
       const pending: Frame[] = [];
       if (record.ordered) {
         const path = `${valuePath}/$content`;

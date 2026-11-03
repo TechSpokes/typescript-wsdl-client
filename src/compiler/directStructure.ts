@@ -27,7 +27,7 @@ export interface DirectScalarDuty {
 export type DirectMatchedNode = Readonly<{
   kind: 'scalar'; declaration: ElementNode; payloadPath: string; operand: number;
 } | {
-  kind: 'record'; declaration: ElementNode; payloadPath: string;
+  kind: 'record'; declaration: ElementNode; payloadPath: string; nil?: true;
   attributes: readonly Readonly<{declaration: AttributeNode; operand: number; payloadPath: string; origin: 'present' | 'schema-default' | 'schema-fixed'}>[];
   text?: Extract<DirectMatchedNode, {kind: 'scalar'}>;
   content?: readonly DirectMatchedNode[];
@@ -191,20 +191,46 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         }
         return parts.join('');
       };
-      const leaf = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string, retainLexical?: true, list?: ProjectionScalarList) => {
+      const elementOperand = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string, shape: DirectProjectionValue, retainLexical?: true, list?: ProjectionScalarList) => {
+        const lexical = text(node, declaration, path);
+        operand(node, declaration, builtin, lexical === '' && shape.constraint ? shape.constraint.lexical : lexical,
+          path, shape.constraint?.kind === 'fixed' ? shape.constraint.canonical : undefined, retainLexical, list);
+      };
+      const leaf = (node: SyntaxElement, declaration: ElementNode, builtin: ExpandedName, path: string, shape: DirectProjectionValue, retainLexical?: true, list?: ProjectionScalarList) => {
         attributes(node, declaration, path);
-        operand(node, declaration, builtin, text(node, declaration, path), path, undefined, retainLexical, list);
+        elementOperand(node, declaration, builtin, path, shape, retainLexical, list);
       };
       type Frame = {node: SyntaxElement; declaration: ElementNode; value: DirectProjectionValue; path: string; into: DirectMatchedNode[]};
       const roots: DirectMatchedNode[] = [];
       const frames: Frame[] = [{node: owned, declaration: root, value: plan.root, path: '/0', into: roots}];
       while (frames.length) {
         check(); const frame = frames.pop()!;
-        const {node, declaration, path: parentPath} = frame;
+        const {declaration, path: parentPath} = frame;
+        let node = frame.node;
         budget.chargeWork(128 + parentPath.length * 4);
+        let nil = false;
+        const nilAttributes = node.attributes.filter(attribute => {
+          check(); return attribute.name.namespace === 'http://www.w3.org/2001/XMLSchema-instance' && attribute.name.local === 'nil';
+        });
+        if (nilAttributes.length) {
+          if (options.flatOnly) return fail('unsupported', 'payload-attributes', declaration.context.source.path, parentPath);
+          if (nilAttributes.length !== 1) return mismatch('duplicate-nil', declaration, parentPath);
+          const lexical = nilAttributes[0]!.value.replace(/^[\t\r\n ]+|[\t\r\n ]+$/g, '');
+          if (!['true', '1', 'false', '0'].includes(lexical)) return mismatch('nil-lexical', declaration, parentPath);
+          nil = lexical === 'true' || lexical === '1';
+          if (nil && !frame.value.nillable) return mismatch('non-nillable', declaration, parentPath);
+          if (nil && frame.value.constraint?.kind === 'fixed') return mismatch('nil-fixed-value', declaration, parentPath);
+          if (nil && node.children.length) return mismatch('nil-content', declaration, parentPath);
+          node = {...node, attributes: node.attributes.filter(attribute => {check(); return !nilAttributes.includes(attribute);})};
+        }
         if (frame.value.kind === 'scalar') {
+          if (nil) {
+            attributes(node, declaration, parentPath);
+            frame.into.push({kind: 'record', nil: true, declaration, payloadPath: parentPath, attributes: [], slots: []});
+            continue;
+          }
           const operand = occurrences.length;
-          leaf(node, declaration, frame.value.builtin, parentPath, frame.value.retainLexical, frame.value.list);
+          leaf(node, declaration, frame.value.builtin, parentPath, frame.value, frame.value.retainLexical, frame.value.list);
           frame.into.push({kind: 'scalar', declaration, payloadPath: parentPath, operand});
           continue;
         }
@@ -241,10 +267,14 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
             }
           }
         }
+        if (nil) {
+          frame.into.push({kind: 'record', nil: true, declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes});
+          continue;
+        }
         if (record.content === 'simple') {
           if (!record.text) throw new TypeError('Missing native simple content plan');
           const path = `${parentPath}/text`, index = occurrences.length;
-          operand(node, declaration, record.text.builtin, text(node, declaration, path), path, undefined, record.text.retainLexical, record.text.list);
+          elementOperand(node, declaration, record.text.builtin, path, frame.value, record.text.retainLexical, record.text.list);
           frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes,
             text: {kind: 'scalar', declaration, payloadPath: path, operand: index}});
           continue;

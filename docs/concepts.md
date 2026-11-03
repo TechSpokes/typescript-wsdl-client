@@ -122,7 +122,7 @@ The inventory distinguishes existing behavior from the [selected mapping contrac
 | `$attributes` | Attribute channel; named entries derive unique source identities, otherwise distinguish unqualified scalars and namespaced holders | Existing legacy bags unchanged; selected keyed research fallback |
 | `$content` | Ordered content; new entries are text objects or one named child occurrence | Existing ordered shapes unchanged; selected keyed mixed/open research grammar |
 | `$choice` | Complete source-derived choice group; object or array according to source bounds | Implemented singleton/repeated research example only |
-| `$nil` | Explicit assessed nil marker, exactly `true`, alongside applicable source-mapped attributes | Selected next-slice contract; no null shorthand, production implementation remains #421 |
+| `$nil` | Explicit assessed nil marker, exactly `true`, alongside applicable source-mapped attributes | [Checked component nil values](checked-gateway.md#nil-values); no null shorthand |
 | `$namespace` | Actual namespace URI of the element/attribute/type identity at this location | Selected keyed research metadata; does not declare bindings or inherit element identity |
 | `$namespaces` | Prefix bindings introduced/rebound here, inherited by descendants | Selected snapshot-at-boundary plus local-delta contract |
 | `$type` | Explicit assessed type identity with flat `$name`/`$namespace` strings | Selected research shape; native type checks remain required |

@@ -8,7 +8,7 @@ import {deriveActualComplexContent, particleContentNode} from './complexTypeCont
 import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import {occurrenceAlgebra} from './occurrenceAnalysis.js';
-import {describeProjectionScalar} from './projectionScalar.js';
+import {describeProjectionScalar, assessProjectionScalarOperand} from './projectionScalar.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
 import {builtinListItem} from './datatypeValues.js';
 import {prepareSemanticParticleView, assertSemanticParticleView} from './particleSemanticView.js';
@@ -19,7 +19,9 @@ import {globalId} from './canonicalGraph.js';
 import type {SelectedParticleWildcard} from './schemaParticleWildcardProperties.js';
 export interface DirectSlot {readonly element: ElementNode; readonly particle: ParticleNode; readonly builtin: ExpandedName}
 export interface DirectRootPlan {readonly rootBuiltin?: ExpandedName; readonly slots: readonly DirectSlot[]}
-export type DirectProjectionValue = Readonly<{kind: 'scalar'; builtin: ExpandedName; declared?: true; retainLexical?: true; list?: ProjectionScalarList} | {kind: 'record'; type: NodeId}>;
+export type DirectProjectionValue = Readonly<({kind: 'scalar'; builtin: ExpandedName; declared?: true; retainLexical?: true; list?: ProjectionScalarList} | {kind: 'record'; type: NodeId}) & {
+  nillable?: true; constraint?: Readonly<{kind: 'fixed' | 'default'; lexical: string; canonical: string}>;
+}>;
 export interface DirectProjectionSlot {readonly element: ElementNode; readonly particle: ParticleNode; readonly value: DirectProjectionValue}
 export interface DirectProjectionAttribute {
   readonly declaration: AttributeNode; readonly required: boolean; readonly builtin: ExpandedName;
@@ -181,17 +183,23 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
   const value = (element: ElementNode): DirectProjectionValue => {
     if (lookup(element.id) !== element) return unsupported();
     check(); const type = context.resolve(element.type);
-    if (element.nillable || element.abstract || element.value || element.substitutionGroup) return unsupported();
+    if (element.abstract || element.substitutionGroup) return unsupported();
+    const facts = {...(element.nillable ? {nillable: true as const} : {}), ...(() => {
+      if (!element.value) return {};
+      const assessed = assessProjectionScalarOperand(context, element, element.value.lexical, check);
+      if (assessed.kind !== 'projection-scalar-operand') return unavailable(element, 'element-value-constraint');
+      return {constraint: Object.freeze({kind: element.value.kind, lexical: element.value.lexical.value, canonical: assessed.operand.canonical})};
+    })()};
     if (type.kind === 'builtin' && !builtinListItem(type.name.local)) {
       if (!projectionScalarRepresentation(type.name)) return unavailable(element, 'builtin-scalar-context-or-representation');
-      return Object.freeze({kind: 'scalar', builtin: type.name});
+      return Object.freeze({kind: 'scalar', builtin: type.name, ...facts});
     }
     if (type.kind === 'builtin' || type.kind === 'found' && type.node.kind === 'simpleType') {
       const scalar = describeProjectionScalar(context, element, check);
       check();
       if (scalar.kind !== 'projection-scalar-type') return unavailable(element, 'rule' in scalar ? scalar.rule : 'scalar-source-definition');
       if (!projectionScalarRepresentation(scalar.builtin)) return unavailable(element, 'scalar-context-or-representation');
-      return Object.freeze({kind: 'scalar', builtin: scalar.builtin, declared: true,
+      return Object.freeze({kind: 'scalar', builtin: scalar.builtin, declared: true, ...facts,
         ...(scalar.retainLexical ? {retainLexical: true as const} : {}), ...(scalar.list ? {list: scalar.list} : {})});
     }
     if (type.kind !== 'found' || type.node.kind !== 'complexType') return unavailable(element, 'unavailable-complex-type');
@@ -200,7 +208,7 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
       records.set(type.node.id, {type: type.node, declaration: element, slots: [], attributes: [], content: 'element-only'});
       pending.push(type.node);
     }
-    return Object.freeze({kind: 'record', type: type.node.id});
+    return Object.freeze({kind: 'record', type: type.node.id, ...facts});
   };
 
   budget.chargeWork(128);
@@ -394,6 +402,7 @@ export function planDirectRoot(context: SemanticContext, root: DirectMessageRoot
 
 /** Flat-only projection adapter; its input is derived data, never native admission. */
 export function flatDirectProjection(plan: DirectProjectionPlan, check: () => void, unsupported: () => never): DirectRootPlan {
+  if (plan.root.nillable || plan.root.constraint) return unsupported();
   const scalar = (name: ExpandedName): ExpandedName => {
     check(); if (name.namespace !== XSD_NAMESPACE || !['string', 'boolean', 'int'].includes(name.local)) return unsupported();
     return name;
@@ -406,7 +415,7 @@ export function flatDirectProjection(plan: DirectProjectionPlan, check: () => vo
   const record = plan.records.find(item => item.type.id === rootType);
   if (!record || record.ordered || record.attributes.length || record.type.derivation || record.text || !record.type.content) return unsupported();
   const slots = record.slots.map(slot => {
-    check(); if (slot.value.kind !== 'scalar' || slot.value.declared || slot.value.list) return unsupported();
+    check(); if (slot.value.kind !== 'scalar' || slot.value.declared || slot.value.list || slot.value.nillable || slot.value.constraint) return unsupported();
     return {element: slot.element, particle: slot.particle, builtin: scalar(slot.value.builtin)};
   });
   return {slots};

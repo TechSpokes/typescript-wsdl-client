@@ -38,9 +38,26 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     return value.list ? {type: `readonly ${type}[]`, schema: {type: 'array', items: schema}} : {type, schema};
   };
   const shape = (value: DirectProjectionValue): {type: string; schema: Schema} => {
-    check(); if (value.kind === 'scalar') return scalar(value);
-    const name = names.get(value.type); if (!name) throw new TypeError('Missing native projection record');
-    return {type: name, schema: {$ref: '#/definitions/' + name}};
+    check();
+    const ordinary = (() => {
+      if (value.kind === 'scalar') return scalar(value);
+      const name = names.get(value.type); if (!name) throw new TypeError('Missing native projection record');
+      return {type: name, schema: {$ref: '#/definitions/' + name}};
+    })();
+    if (!value.nillable || value.constraint?.kind === 'fixed') return ordinary;
+    const attributes = value.kind === 'record' ? projection.records.find(record => record.type.id === value.type)!.attributes : [];
+    const properties: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
+    properties.$nil = {const: true};
+    const required = ['$nil'], members = ['readonly "$nil": true'];
+    for (const attribute of attributes) {
+      check(); const key = attribute.declaration.name.local, description = scalar(attribute);
+      properties[key] = description.schema;
+      if (attribute.required) required.push(key);
+      members.push(`readonly ${literal(key)}${attribute.required ? '' : '?'}: ${description.type}`);
+    }
+    // @why Nil and ordinary values are disjoint: source data cannot use reserved $nil, and nil has no content fields.
+    return {type: `(${ordinary.type} | {${members.join('; ')}})`, schema: {anyOf: [ordinary.schema,
+      {type: 'object', additionalProperties: false, properties, required}]}};
   };
   for (const record of projection.records) {
     check(); const name = names.get(record.type.id)!;
