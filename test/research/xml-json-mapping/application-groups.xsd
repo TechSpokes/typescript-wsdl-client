@@ -1,7 +1,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:application-groups" targetNamespace="urn:application-groups" elementFormDefault="qualified">
   <xs:complexType name="RequestType">
     <xs:sequence>
-    <xs:element name="selections" type="xs:string" minOccurs="0"/>
+    <xs:element name="choice" type="xs:string" minOccurs="0"/>
     <xs:choice minOccurs="1" maxOccurs="3">
       <xs:sequence><xs:element name="A" type="xs:int"/><xs:element name="B" type="xs:string"/></xs:sequence>
       <xs:sequence><xs:element name="C" type="xs:boolean"/><xs:element name="D" type="xs:string"/></xs:sequence>
@@ -9,4 +9,11 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="Request" type="t:RequestType"/>
+  <xs:complexType name="SingleRequestType">
+    <xs:choice>
+      <xs:sequence><xs:element name="A" type="xs:int"/><xs:element name="B" type="xs:string"/></xs:sequence>
+      <xs:sequence><xs:element name="C" type="xs:boolean"/><xs:element name="D" type="xs:string"/></xs:sequence>
+    </xs:choice>
+  </xs:complexType>
+  <xs:element name="SingleRequest" type="t:SingleRequestType"/>
 </xs:schema>

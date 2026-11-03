@@ -50,9 +50,9 @@ Use one term for one concept across source analysis, internal code, generated ty
 | Namespace binding | A prefix-to-namespace association in the applicable scope |
 | Nil | Explicit absence of content on a present element, distinct from a missing element or empty non-nil value |
 
-A choice is a rule, an alternative is a permitted branch, and a selection is an instance's use of a branch. They are not interchangeable glossary terms. The research property names `$selection` and `$selections` are provisional examples, not a decision that those words will name every generated application group.
+A choice is a rule, an alternative is a permitted branch, and a selection is an instance's use of a branch. They are not interchangeable glossary terms. The research now uses `$choice` for a choice site; source occurrence bounds determine whether its value is one object or an array, just as they do for other items.
 
-Keep the canonical word stem when deriving related names: normal TypeScript casing for internal identifiers and type names, and `$` plus lower camel case for mapper-owned application properties. Source-derived XML data names and established profile mappings retain their declared spellings. Exact group stems, singular/plural policy and collision suffixes remain one coherent naming decision to resolve before general generation; do not infer new keys or aliases from this casing rule.
+Keep the canonical word stem when deriving related names: normal TypeScript casing for internal identifiers and type names, and `$` plus lower camel case for mapper-owned application properties. Source-derived XML data names and established profile mappings retain their declared spellings. Contextual group stems and collision suffixes remain one coherent naming decision to resolve before general generation; do not infer new keys or aliases from this casing rule.
 
 Private source-graph and configuration objects do not need `$` prefixes merely to follow the payload namespace rule, but their names and descriptions must use the same concepts. Standards-owned names such as XSD `minOccurs`, existing graph `occurs`, and JSON Schema `oneOf` have explicit semantic mappings rather than mechanical renames. Choose `oneOf`, `anyOf` or other schema operators for their actual validation meaning, not because their names resemble a source term.
 
@@ -62,9 +62,32 @@ Reuse a shared name constant or source-owned mapping description where code and 
 
 This convention does not create another architecture layer, public mode or mandatory vocabulary migration. Existing mismatches remain visible review work, not templates for introducing more synonyms. File and directory names continue to follow [file naming and path organization](file-naming-and-path-organization.md).
 
+### Choice groups and named alternatives
+
+Use one spelling, `$choice`, in the bounded research example for both singleton and repeatable occurrences of the same source choice site. A contract permits one shape at that site: callers cannot interchange an object and an array. Repeating a group does not pluralize its key or its item type.
+
+| Source bounds | Application value | Schema |
+|---|---|---|
+| `1..1` | One alternative object | Required property referencing the choice union |
+| `0..1` | Omitted or one alternative object | Optional property referencing the choice union |
+| `1..3` | Array, including for one occurrence | Required array with `minItems: 1`, `maxItems: 3` |
+| `0..unbounded` | Optional array | Array with no finite maximum |
+
+Optional repeated groups follow the selected mapping's omission/empty-array normalization rather than inventing an additional spelling. The executable example covers required singleton and bounded repetition through the native inverse; optional singleton presence is a schema-only control, not a general optional/empty-group reconstruction proof. Nullable alternatives and invisible empty occurrences still require the existing ADR-003 normalization decision.
+
+Every structured alternative needs a named object schema and TypeScript type, including when the group occurs only once. The prototype manually names its two objects `RequestChoiceAlternative1` and `RequestChoiceAlternative2`; `RequestChoice` is their union. Its `SingleRequest` deliberately reuses that common schema; this demonstrates named references and schema reuse, not execution of a contextual name allocator.
+
+A single property references the union directly; an array references the same union in `items`, and TypeScript uses `RequestChoice[]`. Sharing application schema structure does not merge the distinct native source declarations used for reconstruction.
+
+The proposed contextual pattern is `<ParentName><ParentObjectKey>Choice`, followed by `Alternative1`, `Alternative2` and so on for its object alternatives in source order. For parent `Order` and object key `payment`, that gives `OrderPaymentChoice`, `OrderPaymentChoiceAlternative1` and `OrderPaymentChoiceAlternative2`. The prototype's reserved `$choice` role contributes `Choice` once, giving `RequestChoice`, not `RequestChoiceChoice`.
+
+Retain the full parent/source name when it ends in `Choice` or `Choices`; do not trim a business name by spelling alone. For parent `OrderChoice` and key `payment`, the candidate is `OrderChoicePaymentChoice`. Reusing an already-generated terminal role, resolving clashes with existing source type names, and naming several independent choice sites in one object still need one deterministic source-identity-based rule before general emission; the prototype does not implement that allocator.
+
+Several occurrences of one choice site use one array. Several independent choice sites need distinct reserved properties and distinct contextual schemas; merging them into one array would lose their separate rules. The source identity and structural position distinguish such sites even when the alternatives have identical field names; display names do not establish identity.
+
 ## Reserved mapping keys
 
-Keys introduced by the mapper into XML-derived application objects must start with `$`. XML element and attribute names remain source-derived data keys; generated grouping objects, text slots and interpretation metadata must not occupy that same unprefixed namespace. The XML name grammar excludes `$`, so an actual XML child `selections` and the synthetic `$selections` container remain distinct.
+Keys introduced by the mapper into XML-derived application objects must start with `$`. XML element and attribute names remain source-derived data keys; generated grouping objects, text slots and interpretation metadata must not occupy that same unprefixed namespace. The XML name grammar excludes `$`, so an actual XML child `choice` and the synthetic `$choice` container remain distinct.
 
 This convention applies recursively to synthetic mapping properties, including metadata descriptors if retained. It does not rename private TypeScript variables, source graph fields, artifact/configuration schemas or actual XML data keys. Entries inside data dictionaries, such as prefixes in `$namespaces` and XML names in an attribute bag, are data rather than additional synthetic property names.
 
@@ -77,13 +100,12 @@ The inventory distinguishes existing behavior from the [provisional mapping rese
 | `$value` | Scalar text/simple content alongside attributes; exact scalar policy belongs to the selected mapping | Existing legacy/component convention |
 | `$attributes` | Attribute bag; legacy wildcard bag values are strings and the configured key may differ | Existing legacy/client/streaming default; proposed component bag layout remains provisional |
 | `$content` | Ordered content; existing component entries use their established element-entry format | Existing component convention; mixed/open entry syntax remains provisional |
-| `$selections` | Synthetic array of complete source-derived choice groups, with bounds from the source | Implemented research example only |
-| `$selection` | Synthetic single-choice grouping used in the explanatory object example | Illustrative only; not an emitted/general-generator contract |
+| `$choice` | Complete source-derived choice group; object or array according to source bounds | Implemented singleton/repeated research example only |
 | `$nil` | Explicit assessed nil marker when the selected representation needs an object | Research-only proposal; plain-null policy is not finalized |
 | `$type` | Explicit assessed XML type selection | Research-only proposal; not a caller-selected validation policy |
 | `$namespaces` | Namespace bindings needed by contextual/unassessed values | Research-only proposal; full maps versus inherited deltas is unresolved |
 
-No other synthetic application-mapping keys are allocated by this inventory. `$text` and `$element` occur in comparison alternatives only; they are not additional accepted spellings. A future source-named group key must also start with `$`, have deterministic collision handling among generated keys, and be documented before emission; this inventory does not invent a generic naming algorithm.
+No other synthetic application-mapping keys are allocated by this inventory. `$selection` and `$selections` were superseded research spellings; `$choices` is not a plural alias. `$text` and `$element` occur in comparison alternatives only; they are not additional accepted spellings. A future source-named group key must also start with `$`, have deterministic collision handling among generated keys, and be documented before emission; this inventory does not invent a generic naming algorithm.
 
 ### Existing unprefixed descriptors requiring a deliberate correction
 
