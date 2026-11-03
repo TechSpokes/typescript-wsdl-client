@@ -1,10 +1,10 @@
 # Checked gateway reference
 
-The checked component and direct previews are opt-in from version 1.1.6. Start with [Try Opt-in Checked Generation](checked-generation.md) for an installed component trial and feedback instructions. This reference describes the separate configuration, compatibility and coverage boundaries; legacy defaults remain unchanged.
+Generation offers legacy, the default, and opt-in checked components. Start with [Try Opt-in Checked Generation](checked-generation.md) for an installed trial and feedback instructions. This reference describes configuration, shipped direct-runtime compatibility and coverage boundaries.
 
 ## Component service generation
 
-The additive `checked-components-v1` mode uses the same command family and native owners for qualified structured operations, imported schema snapshots, attributes, recursive records, simple content and ordered values. It preserves the direct preview and legacy defaults. Source, mapping, artifact and transport checks remain authoritative; unsupported schema or security features refuse rather than disappearing from a successful service claim. This is a qualified component fragment, not universal XSD, streaming or provider acceptance.
+The additive `checked-components-v1` mode uses the same command family and native owners for qualified structured operations, imported schema snapshots, attributes, recursive records, simple content and ordered values. It preserves the shipped direct runtime and legacy defaults. Source, mapping, artifact and transport checks remain authoritative; unsupported schema or security features refuse rather than disappearing from a successful service claim. This is a qualified component fragment, not universal XSD, streaming or provider acceptance.
 
 For a supported local WSDL or HTTP(S) root URL with one service/port/binding candidate, omit `--checked-config`. The planner selects all operations of that binding and derives supported mappings through the existing native owners. Local sources default to their containing directory; remote sources authorize their same-origin declared dependency graph. Canonical containment, redirect permission checks and native qualification still apply.
 
@@ -28,7 +28,7 @@ The component client and gateway use the selected WSDL service/port address when
 
 Previously, ordinary setup authored `sourceResources`, selectors, `endpoint` and a duplicate `allowedEndpoints` entry. Now supported URL intake needs only WSDL/model/output options, plus one `sourceOrigins` decision for each additional origin; ordinary runtime configuration uses generated source records and the selected address. Optional overrides and restrictions remain explicit. Generation, startup and scaffold tests make no business SOAP calls.
 
-This component injection change uses `checked-component-runtime-v2`; regenerate clients, capsules, gateways and server scaffolds together when upgrading. The exported binding name remains `checkedComponentRuntimeV1` for existing imports, and existing explicit endpoint callbacks remain valid after regeneration. Consumer server/config/test files retain skip/force ownership rules; use existing force options deliberately to refresh those scaffolds. `checked-direct-v1`, its runtime protocol and legacy defaults are unchanged.
+This component injection change uses `checked-component-runtime-v2`; regenerate clients, capsules, gateways and server scaffolds together when upgrading. The exported binding name remains `checkedComponentRuntimeV1` for existing imports, and existing explicit endpoint callbacks remain valid after regeneration. Consumer server/config/test files retain skip/force ownership rules; use existing force options deliberately to refresh those scaffolds. The v1.1.5 direct runtime protocol and legacy defaults are unchanged.
 
 ### Planning and missing-schema recovery
 
@@ -85,7 +85,9 @@ npx wsdl-tsc pipeline --model checked-components-v1 --checked-config component-g
 
 Local dependencies are discovered under authorized roots; callers need not author snapshot bookkeeping. With explicit `sourceResources`, each entry has an original logical `uri` and an independently authorized physical snapshot `file`; the supplied snapshot set remains closed. HTTP metadata origins must be listed in `sourceOrigins` even though bytes are read from files. Missing snapshots refuse without network fallback. Optional `namespaceLocations` entries have `namespace` and `location` for imports without `schemaLocation`; explicit locations in source take precedence. Generation paths resolve from the invocation directory. Original source bytes are copied without modification and their provenance is recorded in `client/source-resources.json`.
 
-Install/typecheck/test/build/start as described below. Runtime configuration adds generated `sourceResources`, `sourceOrigins`, optional `sourceUri`/`namespaceLocations`, per-operation `capsuleFiles` and optional `caFile`. Runtime paths resolve from the configuration file. The component example points to copied input bytes and derives its endpoint on invocation; it emits no empty deny-all restriction. Physical sources are rechecked independently of embedded capsule bytes, and mismatched artifacts refuse. Cross-volume local source relocation is outside this scaffold; callers can supply independently authorized runtime inputs explicitly.
+Install, typecheck, test, build and start using the trial guide. Generated `client/source-resources.json` uses `checked-source-resources-v2`: it retains the resource inventory and source/capsule defaults relative to its client-directory owner. Ordinary startup needs no authored graph configuration. The optional runtime JSON file contains endpoint, destination restrictions, host, port and trust choices; paths resolve relative to that file. Programmatic hosts can call `buildServer()` or pass equivalent overrides.
+
+Complete explicit source configurations remain advanced inputs, including older hosts that use them. An explicit `localSource`, `sourceUri`, `namespaceLocations`, `recordSources` or `capsuleFiles` requires `localSource`, `fileRoots`, `sourceResources` and `sourceOrigins` together; incomplete combinations refuse. Omitted restrictions preserve generated decisions, while explicit empty origins, snapshots, libraries and endpoint lists retain denial semantics. Generated defaults resolve canonically within their owner and verify snapshot digests; native physical-source and artifact checks still run independently on invocation. Runtime metadata stays offline. Cross-volume source layouts remain outside this scaffold.
 
 The component transport applies optional endpoint restrictions and requires verified HTTPS when required by source policy. An optional CA file does not disable verification. Client certificates, timestamps, required WS-Addressing, supporting tokens and security headers remain unsupported and refuse. Scalar facets, ordered particle languages and strict wildcard membership remain native supplemental checks, so OpenAPI marks JSON shape completeness false. `admitted:false` remains the full-profile marker. Generated scaffold tests are separate from independently specified HTTP/SOAP wire and provider/business evidence.
 
@@ -97,7 +99,9 @@ The copied-source scaffold records authorized HTTP redirect aliases for offline 
 
 `standardLibraries: ["w3c-xsd10-schema-element-2004-v1"]` explicitly supplies the dated XSD 1.0 global `xs:schema` declaration. The declaring schema must still import its namespace. A reference to this element requires an actual schema element in the response; it supplies neither a default payload nor a companion service's record declarations. Runtime callers must independently permit the same library.
 
-For a qualified schema-metadata-plus-strict-wildcard response, `recordProjections` can explicitly select a separate source contract for the payload. Each entry supplies the outer operation's full `selector`, physical companion `source`, companion `recordSelector`, and a closed `spec`:
+For a qualified schema-metadata-plus-strict-wildcard response, `recordProjections` can explicitly select a separate source contract for the payload. Each entry supplies the outer operation's full `selector`, physical companion `source`, companion `recordSelector` and the existing `scope: "records-with-declared-wrapper-scope"`. Native mappings derive the payload path, wrapper exclusions and a unique repeated complex-record path. If several paths exist, supply `recordPath` explicitly; the planner identifies the missing choice. No source or companion is discovered automatically.
+
+The complete older form remains supported. Instead of the concise `scope`/optional `recordPath`, supply a closed `spec`:
 
 ```json
 {
@@ -119,118 +123,13 @@ The path is relative to the outer response element; `recordPath` is relative to 
 
 Scoped artifacts use a distinct version from ordinary component artifacts. Generated runtime configuration adds explicit `recordSources`, each containing the outer full `selector` and independently authorized physical `source`. Both sources and their imported bytes are freshly checked on execution; embedded artifact bytes confer no permission. These responses are buffered under caller XML limits. No incremental delivery or streaming capability is claimed.
 
-## Direct preview
+## Existing direct-runtime clients
 
-The opt-in `checked-direct-v1` pipeline generates a complete runnable project from an explicitly selected, qualified local WSDL operation. The default pipeline remains legacy. This narrower preview reuses `checkedDirectRuntimeV1` from the package root and the existing native contract, mapping, XML codec and SOAP adapter; diagnostic JSON and OpenAPI never authorize execution.
+Generation supports legacy and `checked-components-v1`. The unpublished intermediate `checked-direct-v1` pipeline and `checkedDirect` option have been removed. For its former Forecast examples, select `checked-components-v1`, omit the old configuration or change `selector` to `selectors: [selector]`, and regenerate the complete project.
 
-## Supported scope
+The shipped `checkedDirectRuntimeV1` binding remains available for clients issued by v1.1.5. Its protocol, flat string/int32/Boolean grammar, physical-source checks and explicit owned IPv4-loopback endpoint authorization remain unchanged. This compatibility binding does not provide another generation workflow. Frozen published-producer client/capsule fixtures exercise it against the installed candidate runtime.
 
-Source must be a single safe UTF-8 local WSDL with a qualified whole-source direct schema. The supported value grammar comprises string, int32 and Boolean scalar roots or flat sequence messages, optional scalar fields and required arrays for repeated scalar fields. The binding must be document/literal SOAP 1.1; execution requires an explicitly authorized owned IPv4-loopback HTTP SOAP endpoint.
-
-Native source eligibility, dated-XSD correspondence, operation/service/port/binding selection, capsule/runtime compatibility and request/response/fault validation remain mandatory. Reserved dependency names, imports, nested records, attributes, nil, general derivation, RPC/encoded, SOAP 1.2, streaming, arbitrary remote endpoints, authentication and TLS are outside this preview. `admitted:false` remains the full-profile admission marker; this bounded preview does not claim the whole faithful profile.
-
-## Generate through the installed CLI
-
-For the released version, install in an independent tooling directory:
-
-```bash
-npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.1.6
-npm install soap
-```
-
-For development before publication, build and pack the candidate checkout, then install its tarball in that independent directory instead of requesting an unpublished npm version:
-
-```bash
-npm install /absolute/path/to/tooling/techspokes-typescript-wsdl-client-1.1.6.tgz
-```
-
-Use the bundled [synthetic Forecast source](examples/checked-forecast.wsdl), installed at `node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl`. Its WSDL address authorizes no endpoint and must never be contacted. This is the unchanged Forecast seed used by the independent wire fixtures, not real-provider coverage.
-
-Create `generation.json` in the tooling directory; `fileRoots` resolve from the invocation working directory. Replace the example root with the absolute directory containing the supplied WSDL:
-
-```json
-{
-  "selector": {
-    "portType": {"namespace": "urn:checked:forecast", "local": "ForecastPortType"},
-    "binding": {"namespace": "urn:checked:forecast", "local": "ForecastBinding"},
-    "operation": "GetForecast"
-  },
-  "service": {"namespace": "urn:checked:forecast", "local": "ForecastService"},
-  "port": "ForecastPort",
-  "fileRoots": ["/absolute/path/to/tooling/node_modules/@techspokes/typescript-wsdl-client/docs/examples"]
-}
-```
-
-Run the existing pipeline with explicit project paths:
-
-```bash
-npx wsdl-tsc pipeline --model checked-direct-v1 --checked-config generation.json --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test
-```
-
-The checked model accepts these output, scaffold and selection controls only; unsupported legacy compiler, catalog, security, serializer or streaming flags refuse explicitly. Exactly one operation is requested through `selector`. A requested unsupported operation fails generation rather than disappearing from a successful whole-WSDL claim.
-
-## Install and start the generated project
-
-Run from `.generated/forecast`. Use the matched released runtime:
-
-```bash
-npm install
-npm run typecheck
-npm test
-npm run build
-```
-
-When testing an unpublished candidate, supply its `1.1.6` tarball to the first `npm install` instead; generator, runtime and artifacts must match.
-
-Copy `checked-gateway.example.json` to `checked-gateway.local.json`. Set `endpoint` to your owned loopback SOAP test service and add that exact URL to `allowedEndpoints`; an empty list authorizes no requests. The generated copied WSDL is selected by `localSource`, and `fileRoots` must explicitly authorize its directory. Runtime paths resolve relative to this configuration file.
-
-```json
-{
-  "localSource": "./client/source.wsdl",
-  "fileRoots": ["./client"],
-  "endpoint": "http://127.0.0.1:8081/soap",
-  "allowedEndpoints": ["http://127.0.0.1:8081/soap"],
-  "host": "127.0.0.1",
-  "port": 3000
-}
-```
-
-Start in POSIX shells:
-
-```bash
-CHECKED_GATEWAY_CONFIG=checked-gateway.local.json npm start
-```
-
-Start in PowerShell:
-
-```powershell
-$env:CHECKED_GATEWAY_CONFIG = 'checked-gateway.local.json'
-npm start
-```
-
-The separate process serves `GET /health`, `GET /openapi.json` and `POST /v1/forecast/GetForecast`. A normal request is `{"city":"Paris","days":2}`; a response is `{"city":"Paris","temperature":[18,-2],"complete":true}`. These are independent synthetic fixture values, not business values implied by WSDL. A validated declared SOAP fault returns HTTP 502 with `{fault,value}`; invalid upstream data cannot produce HTTP success.
-
-## Public API and controls
-
-The equivalent package-root API uses the same pipeline model:
-
-```typescript
-import {runGenerationPipeline, type CheckedDirectOptions} from '@techspokes/typescript-wsdl-client';
-
-declare const checkedDirect: CheckedDirectOptions;
-await runGenerationPipeline({
-  model: 'checked-direct-v1', wsdl: '/authorized/forecast.wsdl', checkedDirect,
-  clientOutDir: '.generated/forecast/client',
-  openapi: {outFile: '.generated/forecast/openapi.json'},
-  gateway: {outDir: '.generated/forecast/gateway', versionSlug: 'v1', serviceSlug: 'forecast'},
-  app: {appDir: '.generated/forecast'}, test: {testDir: '.generated/forecast/test'},
-});
-```
-
-`checkedDirect.signal` supports generation cancellation. Generated `buildServer` accepts an explicit runtime `AbortSignal`, `timeoutMs` and XML `limits`; disconnects also cancel the operation. Ordinary execution has no implicit profiling quota or execution deadline. Generated client callers retain explicit endpoint, source-root, capability, cancellation and XML-limit controls through their `Options` contract.
-
-All project outputs must be within `appDir`, with nonoverlapping artifact directories. Generator-owned client, copied source, capsule, inventory, OpenAPI and gateway are replaced on regeneration. Consumer server, package/configuration, README and test scaffolds remain unchanged unless `--force-init` or `--force-test` is explicitly selected.
+Generated `buildServer` accepts runtime cancellation, timeout and XML limits. Ordinary execution has no implicit profiling quota or deadline. Project artifacts must be within `appDir` and nonoverlapping; generator-owned files regenerate together, while consumer scaffolds retain their skip/force rules.
 
 ## Validation and coverage evidence
 

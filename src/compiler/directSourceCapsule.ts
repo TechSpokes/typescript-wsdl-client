@@ -14,6 +14,7 @@ import type {DirectOperationContract, DirectOperationSelector} from './directOpe
 import {createDirectValueMapping, createComponentValueMapping, DIRECT_VALUE_VERSION, DIRECT_SCALAR_POLICY} from './directValues.js';
 import type {DirectValueMapping, ComponentValueMapping} from './directValues.js';
 import {prepareDirectSoapSource, prepareComponentSoapWsdl, DirectSoapSourceError, DIRECT_SOAP_SOURCE_MAX_BYTES} from './directSoapSource.js';
+import {ComponentSoapPreparation} from './componentSoapPreparation.js';
 import {copyOriginalSchemaResource} from '../loader/schemaInput.js';
 import type {SchemaInputOptions, SchemaInput} from '../loader/schemaInput.js';
 import {SchemaResourceLoader, resolveResourceUri} from '../loader/schemaResources.js';
@@ -291,14 +292,15 @@ function componentResources(contract: DirectOperationContract, signal?: AbortSig
   return resources;
 }
 async function componentDescriptor(contract: DirectOperationContract, selection: DirectSourceSelection, signal?: AbortSignal,
-  responseProjection?: ComponentRecordProjection) {
+  responseProjection?: ComponentRecordProjection, preparation?: ComponentSoapPreparation) {
   const {context: {budget}, source} = inspectDirectOperation(contract);
   const tick = () => check(budget, signal);
   tick();
   if (contract.basis !== 'native-component-premises-v1' || contract.correspondence !== 'dated-XSD-2004-components-v1') throw new Stop('unsupported', 'component-capsule-version');
   const owned = directDataOwnership(budget).snapshot(selection, tick);
   record(owned, ['service', 'port']); name(owned.service); ncname(owned.port);
-  await prepareComponentSoapWsdl(contract, owned, tick);
+  if (preparation) await ComponentSoapPreparation.prototype.prepare.call(preparation, contract, owned, tick);
+  else await prepareComponentSoapWsdl(contract, owned, tick);
   if (responseProjection) inspectComponentRecordProjection(responseProjection, contract);
   const mappings: (ComponentValueMapping | ComponentRecordProjection)[] = [];
   const make = (direction: ComponentValueMapping['direction']): ComponentRoot => {
@@ -331,10 +333,7 @@ export async function createComponentSourceCapsule(contract: DirectOperationCont
   const {budget} = inspectDirectOperation(contract).context;
   try {
     const {compatibility, resources, libraries, projection} = await componentDescriptor(contract, selection, signal, responseProjection);
-    const extended = libraries.length > 0 || projection !== null;
-    const value = {versions: extended ? scopedComponentVersions : componentVersions, resources, compatibility,
-      ...(extended ? {libraries, projection} : {})};
-    const capsule = {...value, fingerprint: hash(json(value, budget))};
+    const capsule = componentCapsule({compatibility, resources, libraries, projection}, budget);
     const serialized = json(capsule, budget) + '\n';
     if (Buffer.byteLength(serialized) > directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes)) throw new Stop('resource-limit', 'capsule-byte-limit');
     check(budget, signal);
@@ -343,6 +342,51 @@ export async function createComponentSourceCapsule(contract: DirectOperationCont
     if (!budget.exhausted() && signal?.aborted) return componentFailure(new Stop('cancelled', 'cooperative-cancellation'), budget);
     return componentFailure(error, budget);
   }
+}
+function componentCapsule(derived: Pick<Awaited<ReturnType<typeof componentDescriptor>>, 'compatibility' | 'resources' | 'libraries' | 'projection'>,
+  budget: SemanticBudget): ComponentCapsule {
+  const {compatibility, resources, libraries, projection} = derived;
+  const extended = libraries.length > 0 || projection !== null;
+  const value = {versions: extended ? scopedComponentVersions : componentVersions, resources, compatibility,
+    ...(extended ? {libraries, projection} : {})};
+  return {...value, fingerprint: hash(json(value, budget))};
+}
+
+/** Prepare a generator-owned operation once through the same native descriptor used by runtime reconstruction.
+ * @param contract Fresh source-owned operation, never a report or copied handle.
+ * @param selection Explicit resolved service and port.
+ * @param preparation Invocation-owned SOAP metadata reuse.
+ * @param signal Caller cancellation.
+ * @param responseProjection Optional native companion projection.
+ * @returns An authentic reconstruction retaining its exact issued capsule and mappings, or native refusal.
+ * @throws TypeError For foreign native operation identities.
+ * @constraints Runtime physical-source reconstruction is independent and unchanged.
+ */
+export async function prepareComponentSourceForOperation(contract: DirectOperationContract, selection: DirectSourceSelection,
+  preparation: ComponentSoapPreparation, signal?: AbortSignal, responseProjection?: ComponentRecordProjection): Promise<ReconstructedComponentSource | DirectCapsuleFailure> {
+  const {budget} = inspectDirectOperation(contract).context;
+  try {
+    const derived = await componentDescriptor(contract, selection, signal, responseProjection, preparation);
+    const capsule = componentCapsule(derived, budget);
+    if (Buffer.byteLength(json(capsule, budget) + '\n') > directLimit(budget, DIRECT_CAPSULE_LIMITS.maxBytes)) throw new Stop('resource-limit', 'capsule-byte-limit');
+    return issueComponentReconstruction(capsule, contract, derived, signal, responseProjection);
+  } catch (error) {
+    if (!budget.exhausted() && signal?.aborted) return componentFailure(new Stop('cancelled', 'cooperative-cancellation'), budget);
+    return componentFailure(error, budget);
+  }
+}
+
+/** Copy capsule data retained by an authentic reconstruction without repeating preparation.
+ * @param expected Fresh owned reconstruction.
+ * @param signal Caller cancellation.
+ * @returns Deterministic capsule bytes; the data grants no runtime authority.
+ * @throws TypeError For copied or foreign reconstruction identities; cancellation/resource failures propagate.
+ */
+export function componentSourceCapsuleBytes(expected: ReconstructedComponentSource, signal?: AbortSignal): Uint8Array {
+  inspectReconstructedComponentSource(expected);
+  const {budget} = inspectDirectOperation(expected.contract).context;
+  check(budget, signal);
+  return Buffer.from(json(componentReconstructions.get(expected)!, budget) + '\n');
 }
 function readComponent(bytes: Uint8Array, budget: SemanticBudget, signal?: AbortSignal): ComponentCapsule {
   const value = capsuleJson(bytes, budget, signal);
@@ -497,6 +541,11 @@ async function reconstructComponentAgainst(capsule: ComponentCapsule, contract: 
   if (json(derived.resources, budget) !== json(capsule.resources, budget)) reject('local-source-changed');
   if (json(derived.compatibility, budget) !== json(capsule.compatibility, budget)) reject('source-contract-changed');
   if (json(derived.libraries, budget) !== json(capsule.libraries ?? [], budget) || json(derived.projection, budget) !== json(capsule.projection ?? null, budget)) reject('source-projection-changed');
+  return issueComponentReconstruction(capsule, contract, derived, signal, responseProjection);
+}
+function issueComponentReconstruction(capsule: ComponentCapsule, contract: DirectOperationContract,
+  derived: Awaited<ReturnType<typeof componentDescriptor>>, signal?: AbortSignal, responseProjection?: ComponentRecordProjection): ReconstructedComponentSource {
+  const {budget} = inspectDirectOperation(contract).context;
   check(budget, signal);
   const result: ReconstructedComponentSource = Object.freeze({kind: 'reconstructed-component', contract,
     mappings: Object.freeze(derived.mappings), selection: Object.freeze({service: derived.compatibility.service, port: derived.compatibility.port}),

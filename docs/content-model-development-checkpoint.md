@@ -1,12 +1,18 @@
 # Checked WSDL development checkpoint
 
-## Branch and delivery state
+## Current checkpoint, November 3, 2026
 
-This checkpoint preserves the implementation and WSDL-first analysis on `agent/wsdl-first-coverage`, based on `6ece8713d0ddfc1af648cb861206222328802737`. W2 continues the clean local prerequisite at `9adac1da3d8a5884064291ee76c6d696318ca363`; the former `src/util/errors.ts` marker was stale metadata. This is a development checkpoint, not a release or general WSDL support claim. Package versions and legacy defaults remain unchanged.
+The approved [#412 consolidation](https://github.com/TechSpokes/typescript-wsdl-client/issues/412) continues `agent/wsdl-first-coverage` from required ancestor `84a932927cb9620264d686b79825c73b8ac760dc`. Startup verified clean local/remote branch identity and main `a37ba1a90c5606a3d0f2b42a5753f73f3f176b33`, with the same tree. Main already contains the prerequisite implementation. Retained original inputs and draft PR #231 remain preserved.
 
-The [WSDL-first assessment](content-model-wsdl-first-assessment.md) records the original consumer workflow gaps, JSON configuration direction and roadmap alignment. Issue #405 adds the bounded local WSDL-first slice described in the [checked gateway documentation](checked-gateway.md): unambiguous selection, shared native planning and minimal missing-import recovery. This does not complete arbitrary source repair or broad WSDL coverage.
+The v1.1.7 candidate offers legacy and checked component generation, invocation-local preparation reuse, generated source bookkeeping, concise optional host overrides and explicit scoped companion associations. Frozen v1.1.5-issued artifacts preserve shipped direct-runtime compatibility. The [acceptance report](checked-consolidation-acceptance.md) maps all six children, coverage transfers, configuration changes, measurements and final delivery gates. The [trial guide](checked-generation.md) is the current consumer entry point.
 
-## Implemented and locally verified
+At startup, v1.1.5 was published and v1.1.6 remained an unpublished draft with an immutable consumed tag. Publication must be rechecked before merge and tagging. Final nonauthor review, release preflight, hosted checks and draft/artifact verification belong to the exact candidate's PR record; this checkpoint alone establishes no publication or provider acceptance.
+
+## Historical implementation evidence, October 31 to November 1, 2026
+
+The remaining sections retain their original dated development and qualification evidence. W1/W2 name historical deliveries, not current configuration concepts or a new implementation dispatch. Their package/branch/publication statements describe those earlier snapshots and are superseded by the current checkpoint above.
+
+The original branch record began at `6ece8713d0ddfc1af648cb861206222328802737`, with W2 continuing local prerequisite `9adac1da3d8a5884064291ee76c6d696318ca363`; the former `src/util/errors.ts` marker was stale metadata. The [November 1 assessment](content-model-wsdl-first-assessment.md) records the original workflow gaps and roadmap alignment. Later #405/#406 deliveries supplied the bounded automatic selection and intake behavior described in the current guides.
 
 The additive `checked-components-v1` pipeline reuses the native source, contract, mapping, XML codec and SOAP transport owners. It supports the qualified imported/structured fragment, inherited and repeated records, attributes, ordered content and supported scalar restrictions. Fixed standard schema acquisition and explicit companion-payload projections are reusable capabilities; the engine contains no Escapia-specific dispatch branches.
 

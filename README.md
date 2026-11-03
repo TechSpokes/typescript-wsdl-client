@@ -19,8 +19,8 @@ Created from production integration work at [TechSpokes](https://www.techspokes.
 
 See [Start Here](docs/start-here.md) for detailed guidance on choosing a path.
 
-Version 1.1.6 adds [opt-in checked generation](docs/checked-generation.md) for early testing and feedback. Start with `pipeline --model checked-components-v1`: supported WSDL files or URLs produce typed clients, contracts, OpenAPI, gateways, app scaffolding and tests without authored resource/selector JSON for unambiguous sources. The guide includes a bundled trial, endpoint setup, supported scope and feedback instructions. Omitting `--model` keeps legacy defaults.
-Component calls use the selected WSDL address or explicit endpoint override, with optional restrictions including empty deny-all. Generated snapshots support offline runtime; additional metadata origins need one reusable project decision. The direct preview keeps its [versioned runtime](docs/direct-values.md#package-root-binding-for-generated-direct-clients) and explicit owned-loopback endpoint authorization; legacy defaults remain unchanged.
+Version 1.1.7 offers [opt-in checked generation](docs/checked-generation.md) for early testing and feedback. Choose legacy generation, the default, or `pipeline --model checked-components-v1`: supported WSDL files or URLs produce typed clients, contracts, OpenAPI, gateways, app scaffolding and tests without authored resource/selector JSON for unambiguous sources. The guide includes a bundled trial, endpoint setup, supported scope and feedback instructions.
+Component calls use the selected WSDL address or explicit endpoint override, with optional restrictions including empty deny-all. Generated snapshots supply offline runtime bookkeeping; host configuration contains optional overrides instead of copied graph records. The shipped v1.1.5 [direct runtime](docs/direct-values.md#package-root-binding-for-generated-direct-clients) remains compatible with existing clients and retains explicit owned-loopback authorization.
 
 This preview does not establish universal WSDL/XSD or production-provider support. See the [checked gateway reference](docs/checked-gateway.md) for configuration and compatibility, and the [roadmap](ROADMAP.md) for the next coverage, JSON and security work.
 
@@ -247,6 +247,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Try Opt-in Checked Generation](docs/checked-generation.md) | Installed component trial, URL intake, endpoint setup, scope, direction and feedback |
 | [Checked Gateway Reference](docs/checked-gateway.md) | Component/direct configuration, project commands, compatibility and bounded HTTP/SOAP evidence |
 | [Checked development checkpoint](docs/content-model-development-checkpoint.md) | Local structured-contract evidence, remaining coverage and safe override boundaries |
+| [Checked consolidation acceptance](docs/checked-consolidation-acceptance.md) | Six-child scope, frozen compatibility, retained coverage and configuration changes |
 | [WSDL-first workflow assessment](docs/content-model-wsdl-first-assessment.md) | Automatic generation, actionable diagnostics and minimal JSON reconciliation |
 | [Direct Structural Matching](docs/content-model-matching.md) | Internal structure-only matcher, evidence and scalar handoff |
 | [CLI Reference](docs/cli-reference.md) | All commands with flags and examples |
@@ -264,6 +265,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
 | [Release Notes](docs/releases/README.md) | Per-version GitHub release notes used by the draft release workflow |
 | [v1.1.6 Release Notes](docs/releases/v1.1.6.md) | Opt-in checked gateways, WSDL-first planning, automatic URL intake and dependency fixes |
+| [v1.1.7 Release Notes](docs/releases/v1.1.7.md) | Two generation paths, preparation reuse, concise host setup and shipped runtime compatibility |
 | [v1.1.5 Release Notes](docs/releases/v1.1.5.md) | Restricted checked-direct runtime binding, safe local SOAP evidence and explicit caller controls |
 | [v1.1.4 Release Notes](docs/releases/v1.1.4.md) | Named SOAP imports and compiled-client coverage on Node 24 and 26 |
 | [v1.1.3 Release Notes](docs/releases/v1.1.3.md) | Dependency security updates and Node 24 development alignment |

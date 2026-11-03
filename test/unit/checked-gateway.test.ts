@@ -3,38 +3,38 @@ import {mkdir, mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import Fastify, {type FastifyPluginAsync} from 'fastify';
-import {selectDirectOperation} from '../../src/compiler/directOperation.js';
-import {createDirectSourceCapsule, reconstructDirectSourceCapsule} from '../../src/compiler/directSourceCapsule.js';
-import type {ReconstructedDirectSource} from '../../src/compiler/directSourceCapsule.js';
-import {generateDirectClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
-import {generateCheckedGateway} from '../../src/gateway/generateCheckedGateway.js';
+import {selectComponentOperation} from '../../src/compiler/directOperation.js';
+import {createComponentSourceCapsule, reconstructComponentSourceCapsule} from '../../src/compiler/directSourceCapsule.js';
+import type {ReconstructedComponentSource} from '../../src/compiler/directSourceCapsule.js';
+import {generateComponentClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
+import {generateComponentGateway} from '../../src/gateway/generateCheckedGateway.js';
 
 // @constraints Deliberately dishonest runtime checks the HTTP response defense independently of SOAP validation.
-const runtime = vi.hoisted(() => ({version: 'checked-direct-runtime-v1', execute: vi.fn()}));
-vi.mock('@techspokes/typescript-wsdl-client', () => ({checkedDirectRuntimeV1: runtime}));
+const runtime = vi.hoisted(() => ({version: 'checked-component-runtime-v2', execute: vi.fn()}));
+vi.mock('@techspokes/typescript-wsdl-client', () => ({checkedComponentRuntimeV1: runtime}));
 
 const namespace = 'urn:checked:forecast';
 const selection = {service: {namespace, local: 'ForecastService'}, port: 'ForecastPort'};
-let scratch: string, expected: ReconstructedDirectSource;
+let scratch: string, expected: ReconstructedComponentSource;
 let plugin: FastifyPluginAsync<{clientOptions: unknown}>;
 beforeAll(async () => {
   await mkdir('tmp/test-generation', {recursive: true});
   scratch = await mkdtemp(path.resolve('tmp/test-generation/checked-gateway-'));
   const file = path.resolve('test/conformance/fixtures/assessment/forecast.wsdl');
-  const selected = await selectDirectOperation(file, {
+  const selected = await selectComponentOperation(file, {
     portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast',
   }, {limits: {}, loading: {policy: {fileRoots: [path.dirname(file)]}}});
   if (selected.kind !== 'selected') throw new Error(selected.rule);
-  const capsule = createDirectSourceCapsule(selected.contract, selection);
-  if (capsule.kind !== 'direct-capsule') throw new Error(capsule.rule);
-  const native = await reconstructDirectSourceCapsule(capsule.bytes, file, {limits: {}, policy: {fileRoots: [path.dirname(file)]}});
-  if (native.kind !== 'reconstructed-direct') throw new Error(native.rule);
+  const capsule = await createComponentSourceCapsule(selected.contract, selection);
+  if (capsule.kind !== 'component-capsule') throw new Error(capsule.rule);
+  const native = await reconstructComponentSourceCapsule(capsule.bytes, file, {limits: {}, loading: {policy: {fileRoots: [path.dirname(file)]}}});
+  if (native.kind !== 'reconstructed-component') throw new Error(native.rule);
   expected = native;
-  const client = generateDirectClient(expected);
-  if (client.kind !== 'generated-direct-client') throw new Error(client.rule);
+  const client = await generateComponentClient(expected);
+  if (client.kind !== 'generated-component-client') throw new Error(client.rule);
   await mkdir(path.join(scratch, 'client'));
   writeDirectClient(path.join(scratch, 'client/client.ts'), client);
-  await generateCheckedGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'gateway'),
+  await generateComponentGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'gateway'),
     openapiFile: path.join(scratch, 'openapi.json'), routePath: '/v1/forecast/GetForecast'});
   plugin = (await import(pathToFileURL(path.join(scratch, 'gateway/plugin.ts')).href)).default;
 });
@@ -58,7 +58,7 @@ async function app() {
 describe('native checked gateway lowering', () => {
   it('emits deterministic OAS3.1.1 and separate draft07 exact scalar schemas', async () => {
     const before = await readFile(path.join(scratch, 'gateway/plugin.ts'), 'utf8');
-    await generateCheckedGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'gateway'),
+    await generateComponentGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'gateway'),
       openapiFile: path.join(scratch, 'openapi.json'), routePath: '/v1/forecast/GetForecast'});
     expect(await readFile(path.join(scratch, 'gateway/plugin.ts'), 'utf8')).toBe(before);
     const doc = JSON.parse(await readFile(path.join(scratch, 'openapi.json'), 'utf8'));
@@ -66,25 +66,25 @@ describe('native checked gateway lowering', () => {
     expect(doc['x-checked-model'].selection).toEqual({selector: expected.contract.selector, ...selection});
     const schemas = JSON.parse(await readFile(path.join(scratch, 'gateway/schemas.json'), 'utf8'));
     expect(schemas.request.$schema).toBe('http://json-schema.org/draft-07/schema#');
-    expect(schemas.request.properties.days).toEqual({type: 'integer', minimum: -2147483648, maximum: 2147483647});
-    expect(schemas.response.required).toEqual(['city', 'temperature', 'complete']);
-    expect(schemas.response.properties.temperature).toEqual({type: 'array', items: {type: 'integer', minimum: -2147483648, maximum: 2147483647}, minItems: 0});
+    expect(schemas.request.definitions.Request_Record_0.properties.days).toEqual({type: 'integer', minimum: -2147483648, maximum: 2147483647});
+    expect(schemas.response.definitions.Response_Record_0.required).toEqual(['city', 'temperature', 'complete']);
+    expect(schemas.response.definitions.Response_Record_0.properties.temperature).toEqual({type: 'array', items: {type: 'integer', minimum: -2147483648, maximum: 2147483647}, minItems: 0});
   });
 
   it('refuses serialized or copied native authority', async () => {
     const opts = {clientDir: scratch, gatewayDir: scratch, openapiFile: path.join(scratch, 'never.json'), routePath: '/forecast'};
-    await expect(generateCheckedGateway({...expected}, opts)).rejects.toThrow(TypeError);
-    await expect(generateCheckedGateway(JSON.parse(JSON.stringify(expected)) as ReconstructedDirectSource, opts)).rejects.toThrow(TypeError);
+    await expect(generateComponentGateway({...expected}, opts)).rejects.toThrow(TypeError);
+    await expect(generateComponentGateway(JSON.parse(JSON.stringify(expected)) as ReconstructedComponentSource, opts)).rejects.toThrow(TypeError);
   });
 
   it('retains native reserved-name refusals and accepts percent-encoded route segments', async () => {
     const file = path.join(scratch, 'prototype.wsdl');
     await writeFile(file, (await readFile('test/conformance/fixtures/assessment/forecast.wsdl', 'utf8')).replaceAll('name="city"', 'name="__proto__"'));
-    const selected = await selectDirectOperation(file, expected.contract.selector, {limits: {}, loading: {policy: {fileRoots: [scratch]}}});
+    const selected = await selectComponentOperation(file, expected.contract.selector, {limits: {}, loading: {policy: {fileRoots: [scratch]}}});
     if (selected.kind !== 'selected') throw new Error(selected.rule);
-    const capsule = createDirectSourceCapsule(selected.contract, selection);
+    const capsule = await createComponentSourceCapsule(selected.contract, selection);
     expect(capsule).toMatchObject({kind: 'unsupported', rule: 'dependency reserved name'});
-    const result = await generateCheckedGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'prototype/gateway'),
+    const result = await generateComponentGateway(expected, {clientDir: path.join(scratch, 'client'), gatewayDir: path.join(scratch, 'prototype/gateway'),
       openapiFile: path.join(scratch, 'prototype/openapi.json'), routePath: '/v1/forecast/%CE%A9'});
     expect(result.doc).toHaveProperty(['paths', '/v1/forecast/%CE%A9']);
     expect(await readFile(path.join(scratch, 'prototype/gateway/plugin.ts'), 'utf8')).toContain('export const schemas = JSON.parse(');

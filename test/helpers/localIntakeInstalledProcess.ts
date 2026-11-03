@@ -1,4 +1,4 @@
-/** Independent imported-contract wire oracle, executed outside the checkout.
+/** Independent local-intake wire oracle, executed outside the checkout.
  * @since Unreleased
  */
 import assert from 'node:assert/strict';

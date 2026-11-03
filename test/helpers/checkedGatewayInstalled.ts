@@ -66,11 +66,12 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     const source = path.join(consumer, 'forecast.wsdl');
     await copyFile(fixture, source);
     const namespace = 'urn:checked:forecast';
-    const checkedDirect = {selector: {portType: {namespace, local: 'ForecastPortType'},
-      binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'},
+    const selector = {portType: {namespace, local: 'ForecastPortType'},
+      binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'};
+    const checkedComponents = {selectors: [selector], sourceResources: [], sourceOrigins: [],
     service: {namespace, local: 'ForecastService'}, port: 'ForecastPort', fileRoots: [consumer]};
     const config = path.join(consumer, 'generation.json');
-    await writeFile(config, JSON.stringify(checkedDirect));
+    await writeFile(config, JSON.stringify(checkedComponents));
     const packed = await run('pack candidate', [npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', evidence], root);
     const filename = (JSON.parse(packed.stdout) as {filename: string}[])[0]!.filename;
     expect(path.basename(filename)).toBe(filename);
@@ -78,7 +79,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     await writeFile(path.join(tooling, 'package.json'), JSON.stringify({private: true, type: 'module'}));
     await run('install generator', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], tooling);
     const cli = path.join(tooling, 'node_modules/@techspokes/typescript-wsdl-client/dist/cli.js');
-    const generation = [cli, 'pipeline', '--model', 'checked-direct-v1', '--checked-config', config,
+    const generation = [cli, 'pipeline', '--model', 'checked-components-v1', '--checked-config', config,
       '--wsdl-source', source, '--client-dir', path.join(project, 'client'),
       '--openapi-file', path.join(project, 'openapi.json'), '--gateway-dir', path.join(project, 'gateway'),
       '--gateway-version-prefix', 'v1', '--gateway-service-name', 'forecast', '--init-app',
@@ -96,16 +97,16 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     const inventory = JSON.parse(await readFile(path.join(project, 'client/inventory.json'), 'utf8')) as {
       selection: unknown; operations: {requested: boolean; selected: boolean; generated: boolean; executed: boolean}[];
     };
-    expect(inventory.selection).toMatchObject({service: checkedDirect.service, port: checkedDirect.port,
-      selector: checkedDirect.selector});
+    expect(inventory.selection).toMatchObject({service: checkedComponents.service, port: checkedComponents.port,
+      selector: checkedComponents.selectors[0]!});
     expect(inventory.operations).toHaveLength(1);
     expect(inventory.operations[0]).toMatchObject({requested: true, selected: true, generated: true, executed: false});
-    await writeFile(config, JSON.stringify({...checkedDirect,
-      selector: {...checkedDirect.selector, operation: 'UnimplementedRequestedOperation'}}));
+    await writeFile(config, JSON.stringify({...checkedComponents,
+      selectors: [{...checkedComponents.selectors[0]!, operation: 'UnimplementedRequestedOperation'}]}));
     await expect(run('refuse requested unsupported operation', installedGenerate, tooling, 'UnimplementedRequestedOperation'))
       .rejects.toThrow('UnimplementedRequestedOperation');
     expect(await readFile(path.join(project, 'client/client.ts'), 'utf8')).toBe(clientBefore);
-    await writeFile(config, JSON.stringify(checkedDirect));
+    await writeFile(config, JSON.stringify(checkedComponents));
     // Candidate installation uses the ordinary consumer dependency installation command.
     await run('install consumer', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], project);
     for (const command of ['typecheck', 'test', 'build']) {
@@ -134,7 +135,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
           .replace('type="t:ForecastResponse"', 'type="xs:int"').replace('name="ForecastFault" type="t:ForecastFault"', 'name="ForecastFault" type="xs:string"');
       const variantSource = path.join(consumer, mode + '.wsdl');
       await writeFile(variantSource, variant);
-      const opts = {wsdl: variantSource, model: 'checked-direct-v1', checkedDirect,
+      const opts = {wsdl: variantSource, model: 'checked-components-v1', checkedComponents,
         clientOutDir: path.join(project, 'client'), openapi: {outFile: path.join(project, 'openapi.json')},
         gateway: {outDir: path.join(project, 'gateway'), versionSlug: 'v1', serviceSlug: 'forecast'},
         app: {appDir: project}, test: {testDir: path.join(project, 'test')}};

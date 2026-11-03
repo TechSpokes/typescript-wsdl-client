@@ -7,7 +7,7 @@ import path from 'node:path';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
 import {inspectDirectValueMapping} from '../compiler/directValues.js';
 import type {DirectValueMapping} from '../compiler/directValues.js';
-import {checkDirectSourceCompatibility, createDirectSourceCapsule, createComponentSourceCapsule, inspectReconstructedComponentSource, inspectComponentSourceService} from '../compiler/directSourceCapsule.js';
+import {checkDirectSourceCompatibility, createDirectSourceCapsule, componentSourceCapsuleBytes, inspectReconstructedComponentSource, inspectComponentSourceService} from '../compiler/directSourceCapsule.js';
 import type {ReconstructedDirectSource, ReconstructedComponentSource, DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
 import {lowerComponentShape} from '../generation/componentShape.js';
 import type {ResolverUsage, SemanticBudget} from '../compiler/semanticBudget.js';
@@ -15,6 +15,7 @@ import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js
 
 const MAX_SOURCE_BYTES = 512 * 1024;
 const generatedArtifacts = new WeakMap<object, SemanticBudget>();
+const componentArtifactOwners = new WeakMap<GeneratedComponentClient, ReconstructedComponentSource>();
 export interface GeneratedDirectClient {
   readonly kind: 'generated-direct-client'; readonly source: string; readonly capsule: Uint8Array;
   readonly admitted: false; readonly usage: ResolverUsage;
@@ -148,8 +149,7 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
     repair: COMPONENT_CLIENT_RUNTIME_REPAIR, usage: Object.freeze({...budget.usage()})});
   const check = () => {checkSemanticBudget(budget); if (signal?.aborted) throw new Error('cancelled');};
   try {
-    check(); const capsule = await createComponentSourceCapsule(expected.contract, expected.selection, signal, expected.responseProjection);
-    if (capsule.kind !== 'component-capsule') return capsule;
+    check(); const capsule = {bytes: componentSourceCapsuleBytes(expected, signal)};
     const literal = (value: unknown): string => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     const mappings = expected.mappings;
     const input = mappings.find(mapping => mapping.direction.kind === 'input')!;
@@ -206,7 +206,7 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
     check();
     const artifact: GeneratedComponentClient = Object.freeze({kind: 'generated-component-client', source, capsule: capsule.bytes,
       admitted: false, usage: Object.freeze({...budget.usage()})});
-    generatedArtifacts.set(artifact, budget); return artifact;
+    generatedArtifacts.set(artifact, budget); componentArtifactOwners.set(artifact, expected); return artifact;
   } catch (error) {
     if (budget.exhausted()) return failure('resource-limit', 'request-budget');
     if (signal?.aborted) return failure('cancelled', 'cooperative-cancellation');
@@ -219,13 +219,16 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
  * @returns Generator-owned relative capsule paths, keyed by exact operation name.
  * @throws For foreign/mixed native operations, refused generation, cancellation or filesystem failure.
  */
-export async function writeComponentServiceClient(expected: readonly ReconstructedComponentSource[], directory: string, signal?: AbortSignal):
+export async function writeComponentServiceClient(expected: readonly ReconstructedComponentSource[], directory: string, signal?: AbortSignal,
+  prepared?: readonly GeneratedComponentClient[]):
   Promise<Readonly<Record<string, string>>> {
   const operations = inspectComponentSourceService(expected);
   const generated: GeneratedComponentClient[] = [];
-  for (const operation of operations) {
-    const artifact = await generateComponentClient(operation, signal);
+  if (prepared && prepared.length !== operations.length) throw new TypeError('Prepared operation artifacts must match the service');
+  for (const [index, operation] of operations.entries()) {
+    const artifact = prepared?.[index] ?? await generateComponentClient(operation, signal);
     if (artifact.kind !== 'generated-component-client') throw new Error(`Checked client refused: ${artifact.kind}: ${artifact.rule}`);
+    if (componentArtifactOwners.get(artifact) !== operation) throw new TypeError('Prepared client belongs to another native operation');
     generated.push(artifact);
   }
   const files: Record<string, string> = Object.create(null) as Record<string, string>;

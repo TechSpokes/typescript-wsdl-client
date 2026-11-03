@@ -9,7 +9,20 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.1.7] - 2026-11-03
+
+- refactor(pipeline): consolidate legacy and checked component generation while preserving shipped direct-runtime clients.
+- perf(pipeline): validate outputs before acquisition and reuse native metadata, mappings and lowerings within each invocation.
+- feat(app): load generated source bookkeeping and accept concise optional host overrides with restrictive empty controls.
+- feat(pipeline): derive explicit companion-association details through native owners while retaining declared validation scope.
+- fix(assessment): distinguish component readiness from the published narrow direct-schema diagnostic contract.
+- test(intake): share installed tooling while preserving independent wire, fault, offline, relocation and refusal evidence.
+- docs(preview): carry forward the complete unpublished checked-generation preview with current trials and compatibility guidance.
+- chore(deps): refresh Fastify and Vitest minimums and generated application pins.
+
 ## [1.1.6] - 2026-11-01
+
+This consumed candidate remains unpublished as of the November 3 execution startup check; v1.1.7 carries its preview forward.
 
 - ci(reference): hand copied container evidence to the host runner without widening private file permissions.
 

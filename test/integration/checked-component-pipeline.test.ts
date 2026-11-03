@@ -11,6 +11,7 @@ import {runGenerationPipeline} from '../../src/index.js';
 import {parseCheckedComponentOptions} from '../../src/checkedPipeline.js';
 import type {PipelineOptions} from '../../src/pipeline.js';
 import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
+import {readGeneratedSourceConfiguration} from '../helpers/generatedSourceConfiguration.js';
 
 // @constraints Source integration resolves the actual public runtime; installed acceptance uses a separately packed consumer.
 vi.mock('@techspokes/typescript-wsdl-client', () => import('../../src/index.js'));
@@ -42,6 +43,34 @@ async function setup() {
 }
 
 describe('public component service pipeline', () => {
+  it('owns default snapshots canonically and preserves explicit empty restrictions', async () => {
+    const {project, options} = await setup();
+    await runGenerationPipeline(options);
+    const scope = path.join(project, 'node_modules/@techspokes'); await mkdir(scope, {recursive: true});
+    await symlink(process.cwd(), path.join(scope, 'typescript-wsdl-client'), 'junction');
+    const {buildServer} = await import(pathToFileURL(path.join(project, 'server.ts')).href) as {
+      buildServer(config?: object): Promise<import('fastify').FastifyInstance>;
+    };
+    const normal = await buildServer(); await normal.close();
+    const restricted = await buildServer({sourceResources: [], endpoint: 'http://127.0.0.1:1/never', allowedEndpoints: []});
+    try {
+      const reply = await restricted.inject({method: 'POST', url: '/api/v2/catalog/SubmitImported', payload: {payload: {name: 'owned'}}});
+      expect(reply.statusCode).toBeGreaterThanOrEqual(400); expect(reply.json()).not.toHaveProperty('value');
+    } finally {await restricted.close();}
+    const recordFile = path.join(project, 'client/source-resources.json'), original = await readFile(recordFile, 'utf8');
+    type RecordData = {resources: {file: string; digest: string}[]; runtime: {localSource: string; endpoint?: string}};
+    for (const change of [
+      (record: RecordData) => {record.resources[0]!.digest = 'stale';},
+      (record: RecordData) => {record.runtime.localSource = path.relative(path.dirname(recordFile), options.wsdl);},
+      (record: RecordData) => {record.runtime.endpoint = 'https://unauthorized.invalid';},
+    ]) {
+      const altered = JSON.parse(original) as RecordData; change(altered);
+      await writeFile(recordFile, JSON.stringify(altered));
+      await expect(buildServer()).rejects.toThrow(/stale|escapes|only source/);
+    }
+    await writeFile(recordFile, original);
+    const restored = await buildServer(); await restored.close();
+  });
   it('starts the bundled component trial and validates structured fault values without reference recursion', async () => {
     const {project, options} = await setup();
     await runGenerationPipeline({...options, checkedComponents: undefined, wsdl: path.resolve('docs/examples/checked-forecast.wsdl'),
@@ -56,9 +85,8 @@ describe('public component service pipeline', () => {
     expect(validate({...expected, value: {...expected.value, extra: 'undeclared'}})).toBe(false);
     const scope = path.join(project, 'node_modules/@techspokes'); await mkdir(scope, {recursive: true});
     await symlink(process.cwd(), path.join(scope, 'typescript-wsdl-client'), 'junction');
-    const example = JSON.parse(await readFile(path.join(project, 'checked-gateway.example.json'), 'utf8')) as {
-      localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string}[]; sourceOrigins: string[];
-    };
+    const example = JSON.parse(await readFile(path.join(project, 'checked-gateway.example.json'), 'utf8')) as object;
+    expect(example).not.toHaveProperty('localSource');
     let calls = 0, malformed = false;
     const failures: string[] = [], sockets = new Set<Socket>();
     const upstream = createHttpServer(async (request, response) => {
@@ -75,8 +103,7 @@ describe('public component service pipeline', () => {
     let app: import('fastify').FastifyInstance | undefined;
     try {
       const {buildServer} = await import(pathToFileURL(path.join(project, 'server.ts')).href) as {buildServer(config: object): Promise<import('fastify').FastifyInstance>};
-      app = await buildServer({...example, localSource: path.resolve(project, example.localSource), fileRoots: example.fileRoots.map(root => path.resolve(project, root)),
-        sourceResources: example.sourceResources.map(resource => ({...resource, uri: pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
+      app = await buildServer({...example,
         endpoint: `http://127.0.0.1:${address.port}/forecast`});
       expect((await app.inject({method: 'GET', url: '/health'})).json()).toEqual({status: 'ok'});
       expect((await app.inject({method: 'GET', url: '/openapi.json'})).statusCode).toBe(200);
@@ -103,7 +130,10 @@ describe('public component service pipeline', () => {
     await expect(runGenerationPipeline({...options, checkedComponents: undefined})).rejects.toBeInstanceOf(CheckedPlanningError);
     await expect(readFile(path.join(project, 'client/client.ts'))).rejects.toMatchObject({code: 'ENOENT'});
   });
-  it.each(['local', 'url'])('generates and runs a %s scoped record gateway without merging same-name source declarations', async sourceMode => {
+  it.each([
+    {sourceMode: 'local', form: 'complete'}, {sourceMode: 'local', form: 'concise'},
+    {sourceMode: 'url', form: 'complete'}, {sourceMode: 'url', form: 'concise'},
+  ])('generates and runs a $sourceMode $form scoped record gateway without merging source declarations', async ({sourceMode, form}) => {
     const {sources, project, options} = await setup(), namespace = 'urn:owned:wrapper';
     const name = (local: string) => ({namespace, local});
     const file = path.join(sources, 'wrapper.wsdl'), companion = path.join(sources, 'records.wsdl');
@@ -117,13 +147,14 @@ describe('public component service pipeline', () => {
             {path: [{namespace: 'http://www.w3.org/2001/XMLSchema', local: 'schema'}], reason: 'standard-schema-metadata' as const},
             {path: [name('Envelope')], reason: 'wrapper-declaration-universe' as const}]}}]};
     const remote = 'https://metadata.invalid/wrapper.wsdl';
-    const {sourceResources: _snapshots, ...remoteConfiguration} = configuration;
+    const chosen = form === 'concise' ? {...configuration, recordProjections: configuration.recordProjections.map(({spec, ...entry}) => ({...entry, scope: spec.scope}))} : configuration;
+    const {sourceResources: _snapshots, ...remoteConfiguration} = chosen;
     if (sourceMode === 'url') {
       const originalFetch = globalThis.fetch, bytes = await readFile(file, 'utf8');
       vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => String(input) === remote ? new Response(bytes) : originalFetch(input, init));
     }
     const pipeline = {...options, wsdl: sourceMode === 'url' ? remote : file,
-      checkedComponents: sourceMode === 'url' ? {...remoteConfiguration, sourceOrigins: [new URL(remote).origin]} : configuration};
+      checkedComponents: sourceMode === 'url' ? {...remoteConfiguration, sourceOrigins: [new URL(remote).origin]} : chosen};
     await runGenerationPipeline(pipeline);
     const document = JSON.parse(await readFile(path.join(project, 'openapi.json'), 'utf8')) as {paths: Record<string, {post: Record<string, unknown>}>};
     expect(document.paths['/api/v2/catalog/Fetch']!.post['x-response-projection']).toMatchObject({delivery: 'buffered', retainedValue: 'complete-companion-payload',
@@ -155,7 +186,7 @@ describe('public component service pipeline', () => {
     const endpoint = `https://127.0.0.1:${address.port}/owned`;
     type Config = {localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string}[]; sourceOrigins: string[];
       recordSources: {selector: typeof selector; source: string}[]; standardLibraries: string[]};
-    const example = JSON.parse(before) as Config;
+    const example = await readGeneratedSourceConfiguration(project) as Config;
     const config = {...example, localSource: path.resolve(project, example.localSource), fileRoots: example.fileRoots.map(root => path.resolve(project, root)),
       sourceResources: example.sourceResources.map(resource => ({uri: /^https?:/.test(resource.uri) ? resource.uri : pathToFileURL(path.resolve(project, resource.uri)).href, file: path.resolve(project, resource.file)})),
       recordSources: example.recordSources.map(record => ({...record, source: path.resolve(project, record.source)})), endpoint, allowedEndpoints: [endpoint], caFile: ca};
@@ -233,7 +264,7 @@ describe('public component service pipeline', () => {
     const address = upstream.address(); if (!address || typeof address === 'string') throw new Error('Owned port required');
     const endpoint = `https://127.0.0.1:${address.port}/owned`;
     type Config = {localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string}[]; sourceOrigins: string[]};
-    const example = JSON.parse(await readFile(path.join(project, 'checked-gateway.example.json'), 'utf8')) as Config;
+    const example = await readGeneratedSourceConfiguration(project) as Config;
     const {buildServer} = await import(pathToFileURL(scaffold).href) as {buildServer(config: object): Promise<import('fastify').FastifyInstance>};
     let app: import('fastify').FastifyInstance | undefined;
     try {

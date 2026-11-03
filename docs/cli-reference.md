@@ -1,6 +1,6 @@
 # CLI Reference
 
-The default generation model remains legacy. Version 1.1.6 adds opt-in checked generation through `pipeline --model checked-components-v1` and the narrower `checked-direct-v1`. Start with [Try Opt-in Checked Generation](checked-generation.md); the [checked gateway reference](checked-gateway.md) covers exact configuration and compatibility. Checked modes emit source-backed contracts rather than a legacy catalog and refuse unsupported compiler/streaming controls.
+Generation offers legacy, the default, and opt-in `pipeline --model checked-components-v1`. Start with [Try Opt-in Checked Generation](checked-generation.md); the [checked gateway reference](checked-gateway.md) covers exact configuration and v1.1.5 runtime compatibility. Checked generation emits source-backed contracts rather than a legacy catalog and refuses unsupported compiler/streaming controls.
 
 The `wsdl-tsc` tool generates TypeScript SOAP clients, OpenAPI specifications, and Fastify gateways from WSDL files.
 
@@ -24,20 +24,19 @@ TypeScript outputs automatically receive [generated preambles](generated-code.md
 
 ## pipeline
 
-The additive `--model` selector defaults to `legacy`. `checked-components-v1` derives unambiguous service/port/binding selections and supported mappings from local WSDL or HTTP(S) input. `checked-direct-v1` retains its narrower grammar and requires `--checked-config` with an explicit operation, service, port and source roots. Use the checked gateway reference for each mode's supported options; the catalog/compiler/streaming tables below describe legacy behavior unless stated otherwise.
+The `--model` selector defaults to `legacy`. `checked-components-v1` derives unambiguous service/port/binding selections and supported mappings from local WSDL or HTTP(S) input. Optional `--checked-config` supplies actual choices or permissions. The catalog/compiler/streaming tables below describe legacy behavior unless stated otherwise.
 
 ### Checked generation flags
 
 | Flag | Purpose |
 | --- | --- |
 | `--model checked-components-v1` | Opt into qualified structured component generation |
-| `--model checked-direct-v1` | Opt into the narrower explicitly selected direct preview |
-| `--checked-config` | JSON path for partial component choices/permissions or required direct selection |
+| `--checked-config` | JSON path for partial component choices and permissions |
 | `--checked-report` | JSON output path for a component planning report on readiness or refusal |
 | `--checked-draft` | JSON output path for an available component missing-schema recovery draft |
 | `--force-checked-files` | Deliberately replace requested component report/draft files |
 
-Component URL intake follows declared same-origin dependencies automatically. Extra origins need a reusable `sourceOrigins` decision in the checked configuration. Generated runtime snapshots support offline metadata use; endpoint overrides and optional restrictions belong to runtime configuration, not HTTP request data. The [trial guide](checked-generation.md) shows complete commands and preserves the distinct direct-preview permission contract.
+Component URL intake follows declared same-origin dependencies automatically. Extra origins need a reusable `sourceOrigins` decision in the checked configuration. Generated snapshots supply offline runtime bookkeeping; optional host/endpoint/trust overrides belong to the runtime configuration. The [trial guide](checked-generation.md) shows complete commands and explains the unchanged direct-runtime compatibility binding.
 
 Checked modes require all three explicit outputs: `--client-dir`, `--openapi-file` and `--gateway-dir`, plus `--gateway-service-name` and `--gateway-version-prefix`. For a runnable checked app, supply `--init-app` and an explicit `--app-dir` containing those outputs; scaffold tests use `--test-dir` with app generation. The legacy one-output minimum below does not apply to checked generation.
 

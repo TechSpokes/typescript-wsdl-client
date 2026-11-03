@@ -7,6 +7,10 @@
     "rootDir": "../.."
   },
   "include": [
+    "checked-preparation.test.ts",
+    "checked-pipeline.test.ts",
+    "checked-scaffold.test.ts",
+    "checked-gateway.test.ts",
     "w2-intake.test.ts",
     "checked-planning.test.ts",
     "component-soap-source.test.ts",

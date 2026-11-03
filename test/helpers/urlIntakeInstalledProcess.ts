@@ -1,4 +1,4 @@
-/** Installed offline runtime and separate gateway proof against parent-owned SOAP listeners. */
+/** Installed URL-intake runtime and separate gateway proof against parent-owned SOAP listeners. */
 import assert from 'node:assert/strict';
 import {readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -7,15 +7,17 @@ import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 
 const root = process.cwd(), override = process.argv[2]!;
+await assert.rejects(readFile(process.argv[3]!), {code: 'ERR_ACCESS_DENIED'});
 const example = JSON.parse(await readFile('checked-gateway.example.json', 'utf8')) as Record<string, unknown>;
 assert.equal(example.endpoint, undefined); assert.equal(example.allowedEndpoints, undefined);
 const input = {payload: {name: 'owned & independent'}};
 let exchanges = 0;
-for (const scenario of ['declared', 'override', 'allowed', 'empty', 'denied']) {
+for (const scenario of ['declared', 'override', 'allowed', 'empty', 'denied', 'offline-origins', 'offline-snapshots']) {
   const config = {...example, caFile: './test-cert.pem', port: 0,
     ...(scenario === 'declared' ? {} : {endpoint: override}),
     ...(scenario === 'allowed' ? {allowedEndpoints: [override]} : scenario === 'empty' ? {allowedEndpoints: []}
-      : scenario === 'denied' ? {allowedEndpoints: [override + '/never']} : {})};
+      : scenario === 'denied' ? {allowedEndpoints: [override + '/never']} : {}),
+    ...(scenario === 'offline-origins' ? {sourceOrigins: []} : scenario === 'offline-snapshots' ? {sourceResources: []} : {})};
   await writeFile('runtime.json', JSON.stringify(config));
   const child = spawn(process.execPath, ['--permission', '--allow-fs-read=' + root, '--import',
     pathToFileURL(path.join(root, 'parent-guard.ts')).href, path.join(root, 'dist/server.js')], {
@@ -36,6 +38,7 @@ for (const scenario of ['declared', 'override', 'allowed', 'empty', 'denied']) {
     const post = (body: unknown) => fetch(url + '/v1/import/SubmitImported', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
     const response = await post(input);
     if (scenario === 'empty' || scenario === 'denied') {assert.equal(response.status, 502);}
+    else if (scenario.startsWith('offline-')) {assert.ok(response.status >= 400);}
     else {assert.equal(response.status, 200, await response.clone().text()); assert.deepEqual(await response.json(), {accepted: true}); exchanges++;}
     assert.equal((await post({payload: {name: 7}})).status, 400);
   } finally {
@@ -47,13 +50,21 @@ const {checkedComponentRuntimeV1} = await import('@techspokes/typescript-wsdl-cl
 const {createClient} = await import(pathToFileURL(path.join(root, 'dist/client/client.js')).href) as {
   createClient(runtime: unknown): {SubmitImported(input: unknown, options: unknown): Promise<{kind: string; value?: unknown}>};
 };
-const resources = example.sourceResources as {uri: string; file: string; canonicalUri?: string}[];
+const record = JSON.parse(await readFile('client/source-resources.json', 'utf8')) as {version: string; runtime: {
+  localSource: string; fileRoots: string[]; sourceResources: {uri: string; file: string; canonicalUri?: string}[];
+  namespaceLocations?: {namespace: string; location: string}[]; sourceOrigins: string[]; sourceUri?: string;
+}};
+assert.equal(record.version, 'checked-source-resources-v2');
+const sourceBase = path.join(root, 'client');
+const uri = (value: string) => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value) ? value : pathToFileURL(path.resolve(sourceBase, value)).href;
+const resources = record.runtime.sourceResources;
 const capsules = {SubmitImported: await readFile('client/operations/0/contract.json')};
-const options = {...example, localSource: path.resolve(example.localSource as string), fileRoots: (example.fileRoots as string[]).map(r => path.resolve(r)),
-  sourceResources: resources.map(r => ({...r, file: path.resolve(r.file)})),
+const options = {...record.runtime, localSource: path.resolve(sourceBase, record.runtime.localSource), fileRoots: record.runtime.fileRoots.map(r => path.resolve(sourceBase, r)),
+  sourceResources: resources.map(r => ({uri: uri(r.uri), file: path.resolve(sourceBase, r.file), ...(r.canonicalUri === undefined ? {} : {canonicalUri: uri(r.canonicalUri)})})),
+  ...(record.runtime.namespaceLocations ? {namespaceLocations: record.runtime.namespaceLocations.map(location => ({...location, location: uri(location.location)}))} : {}),
   soap: {service: {namespace: 'urn:owned:w2', local: 'Entry'}, port: 'Port', ca: await readFile('test-cert.pem', 'utf8')}};
 for (const key of ['host', 'port', 'capsuleFiles']) delete (options as Record<string, unknown>)[key];
 const result = await createClient(checkedComponentRuntimeV1).SubmitImported(input, {...options, capsule: capsules.SubmitImported});
 assert.equal(result.kind, 'soap-response', JSON.stringify(result));
 assert.deepEqual(Object.entries(result.value as Record<string, unknown>), [['accepted', true]]); exchanges++;
-console.log(JSON.stringify({kind: 'w2-installed-wire', exchanges, scenarios: 5, invalidHttpRejected: true, offlineMetadata: true}));
+console.log(JSON.stringify({kind: 'w2-installed-wire', exchanges, scenarios: 7, checkoutReadable: false, invalidHttpRejected: true, offlineMetadata: true}));

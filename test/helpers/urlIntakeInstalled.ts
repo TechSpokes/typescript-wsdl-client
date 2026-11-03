@@ -1,30 +1,30 @@
-import {it, expect} from 'vitest';
-import {mkdtemp, mkdir, readFile, writeFile, appendFile, copyFile, rm, realpath, readdir, rename} from 'node:fs/promises';
-import {tmpdir} from 'node:os';
+import {expect} from 'vitest';
+import {mkdtemp, mkdir, readFile, writeFile, appendFile, copyFile, rm, readdir, rename} from 'node:fs/promises';
 import path from 'node:path';
 import {createServer} from 'node:https';
 import type {Server} from 'node:https';
 import {once} from 'node:events';
 import {SaxesParser} from 'saxes';
-import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
+import {runOwnedNode} from './ownedNodeProcess.js';
+import type {InstalledIntakeTooling} from './installedIntakeTooling.js';
 import type {CheckedComponentPlan} from '../../src/index.js';
 
-it('acquires installed URL graphs and executes relocated separate gateways with metadata offline', async context => {
+export async function qualifyUrlIntakeInstalled(shared: InstalledIntakeTooling, signal: AbortSignal): Promise<void> {
   const npm = process.env.npm_execpath; if (!npm) throw new Error('Run installed qualification through npm');
   const checkout = process.cwd(), evidence = path.resolve('tmp/conformance/w2-intake'); await mkdir(evidence, {recursive: true});
-  const logs = await mkdtemp(path.join(evidence, 'run-')), consumer = await realpath(await mkdtemp(path.join(tmpdir(), 'w2-intake-')));
+  const logs = await mkdtemp(path.join(evidence, 'run-')), consumer = path.join(shared.root, 'url'); await mkdir(consumer);
   const certFile = path.resolve('test/conformance/fixtures/soap/content-model/test-cert.pem');
   const cert = await readFile(certFile), key = await readFile('test/conformance/fixtures/soap/content-model/test-key.pem');
   const env = {...process.env, NODE_OPTIONS: '--use-system-ca', NODE_EXTRA_CA_CERTS: certFile, npm_config_cache: path.resolve('tmp/cache/npm'), VITEST_MAX_WORKERS: '1'};
   const run = async (label: string, args: string[], cwd: string) => {
     const start = performance.now();
     try {
-      const result = await runOwnedNode(args, {cwd, env, signal: context.signal, timeoutMs: 240_000, maxBuffer: 8 * 1024 * 1024});
+      const result = await runOwnedNode(args, {cwd, env, signal: signal, timeoutMs: 240_000, maxBuffer: 8 * 1024 * 1024});
       await writeFile(path.join(logs, label + '.log'), result.stdout + result.stderr);
       await appendFile(path.join(logs, 'timing.ndjson'), JSON.stringify({label, ms: Math.round(performance.now() - start), result: 'passed'}) + '\n'); return result;
     } catch (error) {
-      const failure = error as {stdout?: string; stderr?: string};
-      await writeFile(path.join(logs, label + '-failure.log'), (failure.stdout ?? '') + (failure.stderr ?? ''));
+      const failure = error as Error & {stdout?: string; stderr?: string};
+      await writeFile(path.join(logs, label + '-failure.log'), failure.message + '\n' + (failure.stdout ?? '') + (failure.stderr ?? ''));
       await appendFile(path.join(logs, 'timing.ndjson'), JSON.stringify({label, ms: Math.round(performance.now() - start), result: 'refused-or-failed'}) + '\n'); throw error;
     }
   };
@@ -65,16 +65,18 @@ it('acquires installed URL graphs and executes relocated separate gateways with 
     const definitions = fixture.replace(/<wsdl:service[\s\S]*?<\/wsdl:service>/, '').replace('import-relative-types-types.xsd', 'schemas/types?xsd=0');
     documents.set('/entry/defs.wsdl', definitions);
     documents.set('/entry/root.wsdl', `<w:definitions xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:s="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:p="urn:conformance:import-relative-types" targetNamespace="urn:owned:w2"><w:import namespace="urn:conformance:import-relative-types" location="defs.wsdl"/><w:service name="Entry"><w:port name="Port" binding="p:ImportBinding"><s:address location="${endpoint}/declared"/></w:port></w:service></w:definitions>`);
-    documents.set('/model/types?xsd=0', schema.replace('<xs:complexType', '<xs:include schemaLocation="nested/leaf?xsd=1"/><xs:complexType'));
-    documents.set('/model/nested/leaf?xsd=1', '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:conformance:import-relative-types:types"><xs:simpleType name="Unused"><xs:restriction base="xs:string"/></xs:simpleType></xs:schema>');
-    const tooling = path.join(consumer, 'tooling'); await mkdir(tooling); await writeFile(path.join(tooling, 'package.json'), '{"private":true,"type":"module"}');
-    const pack = await run('pack', [npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', logs], checkout);
-    const tarball = path.join(logs, (JSON.parse(pack.stdout) as {filename: string}[])[0]!.filename);
-    await run('install-tooling', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], tooling);
-    const cli = path.join(tooling, 'node_modules/@techspokes/typescript-wsdl-client/dist/cli.js');
+    documents.set('/model/types?xsd=0', schema.replace('<xs:complexType', '<xs:include schemaLocation="nested/leaf?xsd=1"/><xs:include schemaLocation="nested/leaf?xsd=2"/><xs:complexType'));
+    for (const query of [1, 2]) documents.set('/model/nested/leaf?xsd=' + query,
+      `<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:conformance:import-relative-types:types"><xs:include schemaLocation="common?shared=1"/><xs:simpleType name="Unused${query}"><xs:restriction base="xs:string"/></xs:simpleType></xs:schema>`);
+    documents.set('/model/nested/common?shared=1', '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:conformance:import-relative-types:types"><xs:simpleType name="Shared"><xs:restriction base="xs:string"/></xs:simpleType></xs:schema>');
+    const {tooling, tarball, cli} = shared;
     const api = ['--input-type=module', '-e', 'import {planCheckedComponents} from "@techspokes/typescript-wsdl-client"; console.log(JSON.stringify(await planCheckedComponents(process.argv[1],JSON.parse(process.argv[2]))));'];
     const plan = async (label: string, choices = {}, source = origin + '/start') => JSON.parse((await run(label, [...api, source, JSON.stringify(choices)], tooling)).stdout) as CheckedComponentPlan;
+    const metadataBefore = metadata.length;
     expect((await plan('same-origin')).ready).toBe(true);
+    const acquired = metadata.slice(metadataBefore);
+    for (const resource of ['/model/nested/leaf?xsd=1', '/model/nested/leaf?xsd=2', '/model/nested/common?shared=1'])
+      expect(acquired.filter(request => request === 'first:' + resource)).toHaveLength(1);
     cross = true;
     const secondBefore = metadata.filter(m => m.startsWith('second:')).length;
     expect((await plan('denied-cross')).blockers[0]?.category).toBe('permission');
@@ -107,7 +109,7 @@ it('acquires installed URL graphs and executes relocated separate gateways with 
       for (const command of ['typecheck', 'test', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
       expect(calls).toHaveLength(0);
       await copyFile(certFile, path.join(project, 'test-cert.pem'));
-      await copyFile('test/helpers/w2InstalledProcess.ts', path.join(project, 'wire.ts'));
+      await copyFile('test/helpers/urlIntakeInstalledProcess.ts', path.join(project, 'wire.ts'));
       await copyFile('test/helpers/ownedParentGuard.ts', path.join(project, 'parent-guard.ts'));
     }
     await stop(first); await stop(second);
@@ -115,11 +117,11 @@ it('acquires installed URL graphs and executes relocated separate gateways with 
       const project = path.join(consumer, mode + '-relocated'); await rename(path.join(consumer, mode), project);
       const before = calls.length;
       const result = await run(mode + '-offline-wire', ['--permission', '--allow-child-process', '--allow-fs-read=' + project, '--allow-fs-write=' + project,
-        path.join(project, 'wire.ts'), endpoint + '/override'], project);
+        path.join(project, 'wire.ts'), endpoint + '/override', path.join(checkout, 'package.json')], project);
       expect(JSON.parse(result.stdout)).toMatchObject({exchanges: 4, offlineMetadata: true});
       expect(calls.slice(before)).toEqual(['/declared', '/override', '/override', '/declared']);
     }
     expect(failures).toEqual([]);
-    await writeFile(path.join(logs, 'result.json'), JSON.stringify({status: 'passed', projects: 3, resourcesPerProject: 4, operationsPerProject: 1, exchanges: calls, metadata, failures}, null, 2));
+    await writeFile(path.join(logs, 'result.json'), JSON.stringify({status: 'passed', projects: 3, resourcesPerProject: 6, operationsPerProject: 1, exchanges: calls, metadata, failures}, null, 2));
   } finally {await stop(first); await stop(second); await stop(soap); await rm(consumer, {recursive: true, force: true, maxRetries: 10, retryDelay: 200});}
-}, 1_200_000);
+}

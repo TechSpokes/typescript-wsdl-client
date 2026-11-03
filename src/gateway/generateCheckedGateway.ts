@@ -5,15 +5,11 @@
  */
 import {mkdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
-import {checkDirectSourceCompatibility} from '../compiler/directSourceCapsule.js';
-import {createDirectSourceCapsule} from '../compiler/directSourceCapsule.js';
-import {createComponentSourceCapsule, inspectReconstructedComponentSource, inspectComponentSourceService} from '../compiler/directSourceCapsule.js';
-import type {ReconstructedDirectSource, ReconstructedComponentSource} from '../compiler/directSourceCapsule.js';
+import {componentSourceCapsuleBytes, inspectReconstructedComponentSource, inspectComponentSourceService} from '../compiler/directSourceCapsule.js';
+import type {ReconstructedComponentSource} from '../compiler/directSourceCapsule.js';
 import {lowerComponentShape} from '../generation/componentShape.js';
 import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
-import {inspectDirectValueMapping} from '../compiler/directValues.js';
-import type {DirectValueMapping} from '../compiler/directValues.js';
 import {composeGeneratedSource, resolvePreamble} from '../generation/preamble.js';
 
 interface CheckedGatewayOptions {
@@ -28,59 +24,17 @@ interface CheckedGatewayOptions {
 type Schema = Readonly<Record<string, unknown>>;
 const draft07 = 'http://json-schema.org/draft-07/schema#';
 
-function primitive(local: string): Schema {
-  if (local === 'int') return {type: 'integer', minimum: -2147483648, maximum: 2147483647};
-  if (local === 'string') return {type: 'string', pattern: '^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$'};
-  if (local === 'boolean') return {type: 'boolean'};
-  throw new TypeError('Unsupported issued direct scalar');
-}
-
-function schemaFor(expected: ReconstructedDirectSource, supplied: DirectValueMapping): Schema {
-  const mapping = inspectDirectValueMapping(supplied, expected.contract);
-  if (mapping.rootBuiltin) return primitive(mapping.rootBuiltin.local);
-  const properties: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
-  const required: string[] = [];
-  for (const slot of mapping.slots) {
-    const {min, max} = slot.particle.occurs;
-    const scalar = primitive(slot.builtin.local);
-    properties[slot.element.name.local] = max === 'unbounded'
-      ? {type: 'array', items: scalar, minItems: Number(min)} : scalar;
-    // @constraints Native repeated slots are always arrays, including zero-count occurrences.
-    if (max === 'unbounded' || min === '1') required.push(slot.element.name.local);
-  }
-  return {type: 'object', properties, required, additionalProperties: false};
-}
-
-/**
- * Emits a route and separate OAS 3.1.1/draft-07 lowerings from authentic mappings.
- * @param expected - Fresh native reconstruction; reports and parsed JSON are refused.
- * @param options - Explicit generator-owned output locations and POST route path.
- * @returns The documentation document also written to openapiFile.
- * @throws If authority, compatibility, path syntax or filesystem writes fail.
- * @sideEffects Replaces generator-owned plugin, schema and OpenAPI files.
- */
-export async function generateCheckedGateway(expected: ReconstructedDirectSource, options: CheckedGatewayOptions): Promise<{doc: unknown}> {
-  if (expected.kind !== 'reconstructed-direct') throw new TypeError('Direct preview reconstruction required');
-  return generateGatewayFromReconstruction(expected, options);
-}
-
 /** Lower component mappings through the existing checked gateway emitter, retaining native supplemental validation. */
-export async function generateComponentGateway(expected: ReconstructedComponentSource, options: CheckedGatewayOptions): Promise<{doc: unknown}> {
+export async function generateComponentGateway(expected: ReconstructedComponentSource, options: CheckedGatewayOptions): Promise<{doc: unknown; emit: () => Promise<void>}> {
   inspectReconstructedComponentSource(expected);
   return generateGatewayFromReconstruction(expected, options);
 }
 
-async function generateGatewayFromReconstruction(expected: ReconstructedDirectSource | ReconstructedComponentSource, options: CheckedGatewayOptions): Promise<{doc: unknown}> {
+async function generateGatewayFromReconstruction(expected: ReconstructedComponentSource, options: CheckedGatewayOptions): Promise<{doc: unknown; emit: () => Promise<void>}> {
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
-  const component = expected.kind === 'reconstructed-component';
-  if (expected.kind === 'reconstructed-direct') {
-    const compatible = checkDirectSourceCompatibility(expected, expected.contract, expected.selection);
-    if (compatible.kind !== 'compatible-direct') throw new Error(`Checked gateway refused: ${compatible.kind}: ${compatible.rule}`);
-  } else inspectReconstructedComponentSource(expected);
-  const capsule = component ? await createComponentSourceCapsule(expected.contract, expected.selection, options.signal,
-    expected.kind === 'reconstructed-component' ? expected.responseProjection : undefined) : createDirectSourceCapsule(expected.contract, expected.selection, options.signal);
-  if (capsule.kind !== 'direct-capsule' && capsule.kind !== 'component-capsule') throw new Error(`Checked gateway refused: ${capsule.kind}: ${capsule.rule}`);
-  const runtime = component ? 'checkedComponentRuntimeV1' : 'checkedDirectRuntimeV1';
+  inspectReconstructedComponentSource(expected);
+  const capsule = {bytes: componentSourceCapsuleBytes(expected, options.signal)};
+  const runtime = 'checkedComponentRuntimeV1';
   if (!options.routePath.startsWith('/') || options.routePath.split('/').slice(1)
     .some(segment => !segment || !/^(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/.test(segment))) {
     throw new TypeError('Checked routePath requires literal nonempty path segments');
@@ -89,7 +43,6 @@ async function generateGatewayFromReconstruction(expected: ReconstructedDirectSo
   const output = expected.mappings.find(mapping => mapping.direction.kind === 'output');
   if (!input || !output) throw new TypeError('Issued input and output mappings required');
   const schema = (mapping: typeof input, role: string): Schema => {
-    if (expected.kind === 'reconstructed-direct' && mapping.kind === 'direct-mapping') return schemaFor(expected, mapping);
     const {budget} = inspectDirectOperation(expected.contract).context;
     return lowerComponentShape(expected.contract, mapping, role, () => {
       checkSemanticBudget(budget); if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
@@ -119,14 +72,14 @@ async function generateGatewayFromReconstruction(expected: ReconstructedDirectSo
   const doc = {
     openapi: '3.1.1', jsonSchemaDialect: 'https://json-schema.org/draft/2020-12/schema',
     info: {title: expected.selection.service.local, version: '1.0.0'},
-    'x-checked-model': {model: component ? 'checked-components-v1' : 'checked-direct-v1', scope: component ? 'native-component-structured-soap11' : 'direct-string-boolean-int-flat-soap11',
-      ...(expected.kind === 'reconstructed-component' && expected.responseProjection
+    'x-checked-model': {model: 'checked-components-v1', scope: 'native-component-structured-soap11',
+      ...(expected.responseProjection
         ? {responseProjection: {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
-      documentationDialect: '2020-12', runtimeDialect: 'draft-07', jsonShapeComplete: !component,
+      documentationDialect: '2020-12', runtimeDialect: 'draft-07', jsonShapeComplete: false,
       supplementalValidation: ['native-source-compatibility', 'native-xml-scalar-and-particle'], admitted: false,
       selection: {selector: expected.contract.selector, ...expected.selection}},
     paths: {[options.routePath]: {post: {operationId: expected.contract.selector.operation,
-      ...(expected.kind === 'reconstructed-component' && expected.responseProjection
+      ...(expected.responseProjection
         ? {'x-response-projection': {spec: expected.responseProjection.spec, delivery: 'buffered', retainedValue: 'complete-companion-payload'}} : {}),
       requestBody: {required: true, content: {'application/json': {schema: request}}},
       responses: {'200': {description: 'Independently validated SOAP response', content: {'application/json': {schema: response}}},
@@ -199,7 +152,7 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
         return reply.code(502).type('application/json').serializer(value => JSON.stringify(value)).send(value);
       }
       const status = result.kind === 'incompatible-artifact' || result.kind === 'missing-authority' ? 500
-        : result.kind === 'cancelled' ? 499 : ${component ? 'result.phase === \'input\' ? 400 : ' : ''}502;
+        : result.kind === 'cancelled' ? 499 : result.phase === 'input' ? 400 : 502;
       return reply.code(status).send({kind: result.kind, rule: result.rule});
     } finally {
       request.raw.removeListener('aborted', disconnected);
@@ -210,13 +163,19 @@ const plugin: FastifyPluginAsync<CheckedGatewayOptions> = async (fastify, option
 export default plugin;
 `;
   if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
-  if (options.emit === false) return {doc};
-  await mkdir(options.gatewayDir, {recursive: true});
-  await mkdir(path.dirname(options.openapiFile), {recursive: true});
-  await writeFile(path.join(options.gatewayDir, 'plugin.ts'), composeGeneratedSource(body, resolvePreamble('gateway')), 'utf8');
-  await writeFile(path.join(options.gatewayDir, 'schemas.json'), JSON.stringify(schemas, null, 2) + '\n', 'utf8');
-  await writeFile(options.openapiFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
-  return {doc};
+  const source = composeGeneratedSource(body, resolvePreamble('gateway'));
+  const emit = async () => {
+    inspectReconstructedComponentSource(expected);
+    checkSemanticBudget(inspectDirectOperation(expected.contract).context.budget);
+    if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
+    await mkdir(options.gatewayDir, {recursive: true});
+    await mkdir(path.dirname(options.openapiFile), {recursive: true});
+    await writeFile(path.join(options.gatewayDir, 'plugin.ts'), source, 'utf8');
+    await writeFile(path.join(options.gatewayDir, 'schemas.json'), JSON.stringify(schemas, null, 2) + '\n', 'utf8');
+    await writeFile(options.openapiFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+  };
+  if (options.emit !== false) await emit();
+  return {doc, emit};
 }
 
 /** Compose per-operation checked routers without merging native source, service or binding identities.
@@ -225,10 +184,11 @@ export default plugin;
  */
 export async function generateComponentServiceGateway(expected: readonly ReconstructedComponentSource[], options: {
   clientDir: string; gatewayDir: string; openapiFile: string; basePath: string; signal?: AbortSignal; emit?: boolean;
-}): Promise<{doc: unknown; routes: Readonly<Record<string, string>>}> {
+}): Promise<{doc: unknown; routes: Readonly<Record<string, string>>; emit: () => Promise<void>}> {
   const operations = inspectComponentSourceService(expected), routes: Record<string, string> = Object.create(null) as Record<string, string>;
   const paths: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
   const documents: Record<string, unknown>[] = [];
+  const emissions: (() => Promise<void>)[] = [];
   const tick = () => {
     checkSemanticBudget(inspectDirectOperation(operations[0]!.contract).context.budget);
     if (options.signal?.aborted) throw new Error('Checked gateway generation cancelled');
@@ -236,7 +196,8 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   for (const [index, operation] of operations.entries()) {
     tick(); const name = operation.contract.selector.operation, routePath = `${options.basePath}/${encodeURIComponent(name)}`;
     const result = await generateComponentGateway(operation, {clientDir: path.join(options.clientDir, 'operations', String(index)),
-      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, signal: options.signal, emit: options.emit});
+      gatewayDir: path.join(options.gatewayDir, 'routes', String(index)), openapiFile: path.join(options.gatewayDir, 'routes', String(index), 'openapi.json'), routePath, signal: options.signal, emit: false});
+    emissions.push(result.emit);
     const doc = result.doc as Record<string, unknown>;
     documents.push(doc); routes[name] = routePath;
     for (const [route, value] of Object.entries(doc.paths as Record<string, unknown>)) {
@@ -274,9 +235,14 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
     '};', 'export default plugin;', '',
   ];
   tick();
-  if (options.emit === false) return {doc, routes: Object.freeze(routes)};
-  await mkdir(options.gatewayDir, {recursive: true}); await mkdir(path.dirname(options.openapiFile), {recursive: true});
-  await writeFile(path.join(options.gatewayDir, 'plugin.ts'), composeGeneratedSource(lines.join('\n'), resolvePreamble('gateway')), 'utf8');
-  await writeFile(options.openapiFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
-  return {doc, routes: Object.freeze(routes)};
+  const source = composeGeneratedSource(lines.join('\n'), resolvePreamble('gateway'));
+  const emit = async () => {
+    tick();
+    for (const write of emissions) {tick(); await write();}
+    await mkdir(options.gatewayDir, {recursive: true}); await mkdir(path.dirname(options.openapiFile), {recursive: true});
+    await writeFile(path.join(options.gatewayDir, 'plugin.ts'), source, 'utf8');
+    await writeFile(options.openapiFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+  };
+  if (options.emit !== false) await emit();
+  return {doc, routes: Object.freeze(routes), emit};
 }

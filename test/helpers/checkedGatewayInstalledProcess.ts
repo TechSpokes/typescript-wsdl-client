@@ -49,8 +49,8 @@ const soap = createServer((req, res) => {
 soap.listen(0, '127.0.0.1'); await once(soap, 'listening');
 const address = soap.address(); assert.ok(address && typeof address !== 'string');
 const endpoint = `http://127.0.0.1:${address.port}/owned-forecast`;
-const source = path.join(root, 'client/source.wsdl');
-const config = {localSource: source, fileRoots: [path.dirname(source)], endpoint, allowedEndpoints: [endpoint],
+const source = path.join(root, 'client/source/files/' + (process.argv[3] ? process.argv[3] + '.wsdl' : 'forecast.wsdl'));
+const config = {localSource: source, fileRoots: [path.join(root, 'client')], sourceResources: [], sourceOrigins: [], endpoint, allowedEndpoints: [endpoint],
   host: '127.0.0.1', port: 0};
 let child: ChildProcess | undefined;
 let runtimeLog = '';
@@ -185,7 +185,7 @@ try {
   assert.equal(upstream.length, before); refusals++;
   url = await start({limits: {maxBytes: 1}});
   const explicitLimit = await post(expected.request);
-  assert.equal(explicitLimit.status, 502);
+  assert.equal(explicitLimit.status, 400);
   assert.equal((explicitLimit.value as {kind: string}).kind, 'resource-limit');
   assert.equal(upstream.length, before); refusals++;
   url = await start({timeoutMs: 1000});
@@ -208,7 +208,7 @@ try {
   assert.ok((await post(expected.request)).status >= 400);
   assert.equal(upstream.length, before); refusals++;
   await writeFile(source, originalSource);
-  const capsuleFile = path.join(root, 'client/contract.json');
+  const capsuleFile = path.join(root, 'client/operations/0/contract.json');
   const originalCapsule = await readFile(capsuleFile);
   await writeFile(capsuleFile, '{}');
   url = await start();
@@ -240,8 +240,8 @@ try {
   const plugin = await import(pathToFileURL(path.join(root, 'dist/gateway/plugin.js')).href) as {default: Parameters<typeof host.register>[0]};
   const selectionModule = await import(pathToFileURL(path.join(root, 'dist/client/client.js')).href) as {selection: string};
   const selection = JSON.parse(selectionModule.selection) as {service: {namespace: string; local: string}; port: string};
-  await host.register(plugin.default, {clientOptions: {localSource: source, fileRoots: config.fileRoots,
-    capsule: originalCapsule, soap: {service: selection.service, port: selection.port,
+  await host.register(plugin.default, {capsules: {GetForecast: originalCapsule}, clientOptions: {localSource: source, fileRoots: config.fileRoots,
+    sourceResources: [], sourceOrigins: [], soap: {service: selection.service, port: selection.port,
       endpoint, allowEndpoint: (candidate: URL) => candidate.href === endpoint}}});
   const control = await host.inject({method: 'POST', url: '/host', payload: {count: '3', extra: true}});
   assert.equal(control.statusCode, 200); assert.deepEqual(control.json(), {count: 3, label: 'host'});
@@ -252,7 +252,7 @@ try {
   await writeFile('server.log', runtimeLog);
   process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false,
     calls, refusals, upstreamRequests: upstream.length, selected: 'ForecastService/ForecastPort/ForecastBinding/GetForecast',
-    scope: 'synthetic direct string/int32/Boolean flat SOAP 1.1 owned loopback only'}) + '\n');
+    scope: 'synthetic component string/int32/Boolean flat SOAP 1.1 owned loopback'}) + '\n');
   }
 } finally {
   await stop(); soap.closeAllConnections();

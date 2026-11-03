@@ -6,7 +6,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {types} from 'node:util';
-import {parseCheckedComponentOptions, prepareComponentStages} from './checkedPipeline.js';
+import {parseCheckedComponentOptions, parseCheckedComponentChoices, prepareComponentStages} from './checkedPipeline.js';
 import type {CheckedComponentOptions} from './checkedPipeline.js';
 import type {DirectOperationSelector} from './compiler/directOperation.js';
 import {inspectDirectOperation} from './compiler/directOperation.js';
@@ -51,6 +51,9 @@ export interface CheckedComponentPlan {
   readonly candidates: readonly Candidate[];
   readonly resources: readonly {readonly resource: string; readonly digest: string}[];
   readonly selection?: {readonly service: ExpandedName; readonly port: string; readonly selectors: readonly DirectOperationSelector[]};
+  readonly responseProjections?: readonly {readonly selector: DirectOperationSelector;
+    readonly spec: import('./compiler/componentRecordProjection.js').ComponentRecordProjectionSpec;
+    readonly delivery: 'buffered'; readonly retainedValue: 'complete-companion-payload'}[];
   readonly operations: readonly {readonly portType: ExpandedName; readonly binding?: ExpandedName; readonly operation: string;
     readonly requested: boolean; readonly selected: boolean; readonly generated: false; readonly executed: false}[];
   readonly blockers: readonly ComponentPlanBlocker[];
@@ -101,11 +104,14 @@ export function writeCheckedPlanningFile(file: string, value: unknown, force = f
 }
 
 // @constraints Internal composition only. Native handles are never attached to the public report.
-export async function prepareCheckedComponentPlan(source: string, choices: unknown = {}): Promise<{
+export async function prepareCheckedComponentPlan(source: string, choices: unknown = {},
+  outputs?: {clientDir: string; gatewayDir: string; openapiFile: string; basePath: string}): Promise<{
   report: CheckedComponentPlan; config?: CheckedComponentOptions; native?: Awaited<ReturnType<typeof prepareComponentStages>>;
 }> {
   const documents: SyntaxDocument[] = [], blockers: ComponentPlanBlocker[] = [];
   let complete = false, config: CheckedComponentOptions | undefined;
+  let intake: Partial<CheckedComponentOptions> & Pick<CheckedComponentOptions, 'fileRoots' | 'sourceResources' | 'sourceOrigins'> | undefined;
+  let unresolved: readonly {namespace: string; location: string}[] = [];
   const explicit: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
   let selectors: DirectOperationSelector[] = [];
   let candidates: Candidate[] = [], operations: CheckedComponentPlan['operations'][number][] = [];
@@ -148,6 +154,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     order(candidates); order(operations);
   };
   let native: Awaited<ReturnType<typeof prepareComponentStages>> | undefined;
+  let preparingNative = false;
   try {
     if (!choices || typeof choices !== 'object' || types.isProxy(choices) || ![null, Object.prototype].includes(Object.getPrototypeOf(choices) as object | null)) throw new TypeError('Data-only choices required');
     for (const key of Reflect.ownKeys(choices)) {
@@ -156,37 +163,36 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
       explicit[key] = d.value;
     }
     const root = resolveResourceUri(source);
-    const placeholder = {namespace: '', local: 'Unresolved'};
-    config = parseCheckedComponentOptions({selectors: [{portType: placeholder, binding: placeholder, operation: 'Unresolved'}], service: placeholder, port: 'Unresolved',
-      fileRoots: new URL(root).protocol === 'file:' ? [path.dirname(fileURLToPath(root))] : [], sourceResources: [],
-      sourceOrigins: new URL(root).protocol === 'file:' ? [] : [new URL(root).origin], ...explicit});
-    if (!Object.hasOwn(explicit, 'sourceResources') && new URL(root).protocol !== 'file:' && config.sourceOrigins.length) {
-      config = {...config, sourceOrigins: [...new Set([new URL(root).origin, ...config.sourceOrigins])].sort()};
+    intake = {fileRoots: new URL(root).protocol === 'file:' ? [path.dirname(fileURLToPath(root))] : [],
+      sourceResources: [], sourceOrigins: new URL(root).protocol === 'file:' ? [] : [new URL(root).origin],
+      ...parseCheckedComponentChoices(explicit)};
+    if (!Object.hasOwn(explicit, 'sourceResources') && new URL(root).protocol !== 'file:' && intake.sourceOrigins.length) {
+      intake = {...intake, sourceOrigins: [...new Set([new URL(root).origin, ...intake.sourceOrigins])].sort()};
     }
-    if (config.namespaceLocations?.some(n => n.location === 'REQUIRED_SCHEMA_LOCATION')) throw new TypeError('Resolve REQUIRED_SCHEMA_LOCATION before loading');
-    if (new Set(config.namespaceLocations?.map(n => n.namespace)).size !== (config.namespaceLocations?.length ?? 0)) throw new TypeError('Unique namespace locations required');
-    const snapshotUris = [root, ...config.sourceResources.map(r => resolveResourceUri(r.uri))];
+    if (intake.namespaceLocations?.some(n => n.location === 'REQUIRED_SCHEMA_LOCATION')) throw new TypeError('Resolve REQUIRED_SCHEMA_LOCATION before loading');
+    if (new Set(intake.namespaceLocations?.map(n => n.namespace)).size !== (intake.namespaceLocations?.length ?? 0)) throw new TypeError('Unique namespace locations required');
+    const snapshotUris = [root, ...intake.sourceResources.map(r => resolveResourceUri(r.uri))];
     if (new Set(snapshotUris).size !== snapshotUris.length) throw new TypeError('Duplicate logical schema snapshot');
-    if (config.signal?.aborted) {add('cancelled', 'loading', 'caller-cancelled', 'Rerun with an active signal.', 'signal');}
+    if (intake.signal?.aborted) {add('cancelled', 'loading', 'caller-cancelled', 'Rerun with an active signal.', 'signal');}
     else {
-      const loading = {policy: {fileRoots: config.fileRoots, allowedOrigins: config.sourceOrigins}, signal: config.signal,
-        namespaceLocations: new Map(config.namespaceLocations?.map(n => [n.namespace, n.location])),
+      const loading = {policy: {fileRoots: intake.fileRoots, allowedOrigins: intake.sourceOrigins}, signal: intake.signal,
+        namespaceLocations: new Map(intake.namespaceLocations?.map(n => [n.namespace, n.location])),
         onDocument: (document: SyntaxDocument) => {documents.push(document);}};
-      const prepared = Object.hasOwn(explicit, 'sourceResources') ? await prepareSchemaSnapshotFiles(source, config.sourceResources, loading) : undefined;
-      const input = await loadSemanticSchemaInput(config.sourceUri ?? prepared?.source ?? source, prepared?.loading ?? loading);
+      const prepared = Object.hasOwn(explicit, 'sourceResources') ? await prepareSchemaSnapshotFiles(source, intake.sourceResources, loading) : undefined;
+      const input = await loadSemanticSchemaInput(intake.sourceUri ?? prepared?.source ?? source, prepared?.loading ?? loading);
       complete = true;
       inventory();
-      const possible = candidates.filter(c => (!Object.hasOwn(explicit, 'service') || same(c.service, config!.service))
-        && (!Object.hasOwn(explicit, 'port') || c.port === config!.port)
-        && (!Object.hasOwn(explicit, 'selectors') || config!.selectors.every(s => same(s.binding, c.binding) && c.portType && same(s.portType, c.portType))));
+      const possible = candidates.filter(c => (!Object.hasOwn(explicit, 'service') || intake!.service !== undefined && same(c.service, intake!.service))
+        && (!Object.hasOwn(explicit, 'port') || c.port === intake!.port)
+        && (!Object.hasOwn(explicit, 'selectors') || intake!.selectors !== undefined && intake!.selectors.every(s => same(s.binding, c.binding) && c.portType && same(s.portType, c.portType))));
       if (possible.length !== 1) add('ambiguous-selection', 'selection', possible.length ? 'multiple-service-port-binding-candidates' : 'no-matching-service-port-binding',
         'Choose service, port and selectors from candidates; conflicting choices must be corrected.', 'checkedComponents.service/port/selectors', [], undefined, 'selection');
       else {
         const chosen = possible[0]!;
-        selectors = Object.hasOwn(explicit, 'selectors') ? [...config.selectors] : operations.filter(o => o.binding && same(o.binding, chosen.binding))
+        selectors = Object.hasOwn(explicit, 'selectors') ? [...intake.selectors!] : operations.filter(o => o.binding && same(o.binding, chosen.binding))
           .map(o => ({portType: o.portType, binding: o.binding!, operation: o.operation}));
         if (!selectors.length) add('configuration', 'selection', 'no-operations-for-candidate', 'Correct the binding/portType declarations.', 'checkedComponents.selectors', [], undefined, 'selection');
-        else config = {...config, selectors, service: chosen.service, port: chosen.port};
+        else config = parseCheckedComponentOptions({...intake, selectors, service: chosen.service, port: chosen.port});
       }
       operations = operations.map(o => {const selected = selectors.some(s => same(s.portType, o.portType) && o.binding && same(s.binding, o.binding) && s.operation === o.operation);
         return {...o, requested: selected, selected};});
@@ -199,8 +205,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
       }
       for (const [namespace, at] of missing) add('missing-dependency', 'loading', `locationless-import:${namespace}`, 'Supply an authorized schema path for this namespace.',
         `checkedComponents.namespaceLocations[${JSON.stringify(namespace)}].location`, selectors.length ? selectors : operations.flatMap(o => o.binding ? [{portType: o.portType, binding: o.binding, operation: o.operation}] : []), at);
-      if (missing.size) config = {...config, namespaceLocations: [...(config.namespaceLocations ?? []), ...[...missing.keys()].sort().map(namespace => ({namespace, location: 'REQUIRED_SCHEMA_LOCATION'}))]};
-      if (!blockers.length) {
+      if (missing.size) unresolved = [...(intake.namespaceLocations ?? []), ...[...missing.keys()].sort().map(namespace => ({namespace, location: 'REQUIRED_SCHEMA_LOCATION'}))];
+      if (!blockers.length && config) {
         if (!Object.hasOwn(explicit, 'standardLibraries') && input.schemas.some(s => syntaxElements(s.syntax, XSD_NAMESPACE, 'import')
           .some(n => syntaxAttribute(n, 'namespace') === XSD_NAMESPACE && syntaxAttribute(n, 'schemaLocation') === undefined))) {
           config = {...config, standardLibraries: ['w3c-xsd10-schema-element-2004-v1']};
@@ -209,7 +215,8 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         const known = new Set(config.sourceResources.map(r => resolveResourceUri(r.uri)));
         config = {...config, sourceResources: [...config.sourceResources, ...input.resources.filter(r => r.uri !== input.root.uri && !known.has(r.uri) && new URL(r.uri).protocol === 'file:')
           .map(r => ({uri: r.uri, file: fileURLToPath(r.uri)}))]};
-        native = await prepareComponentStages(source, config, !prepared && new URL(input.root.uri).protocol !== 'file:' ? input : undefined);
+        preparingNative = true;
+        native = await prepareComponentStages(source, config, !prepared && new URL(input.root.uri).protocol !== 'file:' ? input : undefined, outputs);
         if (native.expected.length) {
           const fresh = inspectDirectOperation(native.expected[0]!.contract).source;
           if (input.resources.length !== fresh.resources.length || input.resources.some(r => !fresh.resources.some(n => n.uri === r.uri && n.digest === r.digest))) {
@@ -217,6 +224,12 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
           }
         }
         for (const refusal of native.refusals) {
+          if (refusal.rule.startsWith('ambiguous-record-path:')) {
+            add('ambiguous-selection', 'native-preparation', refusal.rule,
+              'Supply recordPath using expanded names to select one declared repeated complex record in this companion source.',
+              'checkedComponents.recordProjections[].recordPath', [refusal.selector], undefined, 'mapping-and-artifact');
+            continue;
+          }
           const category: Category = refusal.kind === 'invalid-schema' && refusal.dimension === 'qualification-and-correspondence' ? 'invalid-source' : refusal.kind === 'unsupported' ? 'unsupported-capability'
             : refusal.kind === 'cancelled' || refusal.kind === 'resource-limit' ? refusal.kind : refusal.kind === 'selection-refused' ? 'configuration' : 'inconclusive';
           add(category, 'native-preparation', refusal.rule, 'Resolve the native rule or extend the qualified capability; no validity override is available.',
@@ -227,7 +240,7 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
     }
   } catch (error) {
     if (!complete) {try {inventory();} catch { /* Partial malformed identities remain unassessed. */ }}
-    if (config?.signal?.aborted) add('cancelled', complete ? 'native-preparation' : 'loading', 'caller-cancelled', 'Rerun with an active signal.', 'signal');
+    if (intake?.signal?.aborted) add('cancelled', complete ? 'native-preparation' : 'loading', 'caller-cancelled', 'Rerun with an active signal.', 'signal');
     else if (error instanceof SchemaLoadingError && error.message === 'Duplicate logical schema snapshot') {
       add('configuration', 'configuration', 'duplicate-logical-snapshot', 'Supply unique logical snapshot identities.', 'checkedComponents.sourceResources');
     } else if (error instanceof SchemaLoadingError) {
@@ -239,8 +252,12 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
         http === '401' || http === '403' ? 'Metadata access was denied. Supply accessible independently authorized physical snapshots; SOAP credentials do not authorize metadata.'
           : 'Check resource availability and explicit roots/origins; permit a declared second origin once in sourceOrigins or supply authorized snapshots, then rerun fresh checks.',
         'checkedComponents.fileRoots/sourceOrigins/sourceResources', selectors, error.source);
-    } else add(error instanceof TypeError || error instanceof RangeError ? 'configuration' : 'operational-failure', complete ? 'native-preparation' : 'configuration',
-      error instanceof TypeError || error instanceof RangeError ? `invalid-or-unresolved-configuration:${error.message}` : 'native-preparation-failed', 'Correct the configuration or inspect the local I/O failure and rerun.', 'checkedComponents');
+    } else {
+      const configurationError = !preparingNative && (error instanceof TypeError || error instanceof RangeError);
+      add(configurationError ? 'configuration' : 'operational-failure', complete ? 'native-preparation' : 'configuration',
+        configurationError ? `invalid-or-unresolved-configuration:${error.message}` : 'native-preparation-failed',
+        'Correct the configuration or inspect the local I/O failure and rerun.', 'checkedComponents');
+    }
     native = undefined;
   }
   const report: CheckedComponentPlan = {version: 'checked-component-plan-v1', model: 'checked-components-v1', scope: 'native-component-source-and-mapping',
@@ -249,10 +266,12 @@ export async function prepareCheckedComponentPlan(source: string, choices: unkno
       correspondence: native ? 'established' : 'unassessed', mapping: native ? 'established' : 'unassessed', runtime: 'unassessed'},
     inventory: {complete, unassessed: complete ? [] : ['unloaded documents and their service/binding/operation identities; native whole-source prerequisites'], ...counts},
     candidates, resources: documents.map((d, i) => ({resource: `resource-${i + 1}`, digest: d.digest})), operations,
+    ...(native && native.projections.size ? {responseProjections: native.expected.flatMap(operation => operation.responseProjection
+      ? [{selector: operation.contract.selector, spec: operation.responseProjection.spec,
+        delivery: 'buffered' as const, retainedValue: 'complete-companion-payload' as const}] : [])} : {}),
     ...(config && selectors.length ? {selection: {service: config.service, port: config.port, selectors}} : {}), blockers: order(blockers),
-    ...(config && blockers.some(b => b.category === 'missing-dependency' && b.reason.startsWith('locationless-import:')) ? {resolution: {
+    ...(intake && blockers.some(b => b.category === 'missing-dependency' && b.reason.startsWith('locationless-import:')) ? {resolution: {
       instructions: 'Save configuration as checked JSON. Replace REQUIRED_SCHEMA_LOCATION with an authorized schema path; paths resolve from the invocation working directory. Rerun the same pipeline with --checked-config. Reports never authorize generation.',
-      configuration: Object.fromEntries(Object.entries(config).filter(([key]) => key !== 'signal'
-        && (key !== 'sourceResources' || Object.hasOwn(explicit, 'sourceResources'))))}} : {})};
+      configuration: {...Object.fromEntries(Object.entries(explicit).filter(([key]) => key !== 'signal')), namespaceLocations: unresolved}}} : {})};
   return {report, ...(config ? {config} : {}), ...(native ? {native} : {})};
 }

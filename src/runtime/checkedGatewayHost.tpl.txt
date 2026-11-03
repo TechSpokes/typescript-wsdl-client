@@ -1,0 +1,157 @@
+import Fastify from 'fastify';
+import fs from 'node:fs';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {types} from 'node:util';
+import {fileURLToPath, pathToFileURL} from 'node:url';
+import gateway, {expectedOpenApiJson} from __GATEWAY_IMPORT__;
+import {selection, type Options} from __CLIENT_IMPORT__;
+
+export interface CheckedGatewayConfig {
+  readonly localSource?: string;
+  readonly fileRoots?: readonly string[];
+  readonly endpoint?: string;
+  readonly allowedEndpoints?: readonly string[];
+  readonly capsuleFiles?: Readonly<Record<string, string>>;
+  readonly sourceResources?: Options['sourceResources'];
+  readonly sourceOrigins?: Options['sourceOrigins'];
+  readonly sourceUri?: string;
+  readonly namespaceLocations?: Options['namespaceLocations'];
+  readonly standardLibraries?: Options['standardLibraries'];
+  readonly recordSources?: Options['recordSources'];
+  readonly caFile?: string;
+  readonly host?: string;
+  readonly port?: number;
+  readonly timeoutMs?: number;
+  readonly limits?: Options['soap']['limits'];
+  readonly capabilities?: Options['soap']['capabilities'];
+  readonly signal?: AbortSignal;
+}
+type SourceConfig = CheckedGatewayConfig & Required<Pick<CheckedGatewayConfig,
+  'localSource' | 'fileRoots' | 'sourceResources' | 'sourceOrigins'>>;
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = fs.existsSync(path.join(moduleDir, 'package.json')) ? moduleDir : path.resolve(moduleDir, '..');
+const defaultCapsules = __CAPSULE_FILES__;
+
+function generatedSources(): SourceConfig {
+  const recordFile = path.resolve(projectRoot, __SOURCE_RECORD__);
+  const owner = fs.realpathSync(path.dirname(recordFile));
+  const record = JSON.parse(fs.readFileSync(recordFile, 'utf8')) as {
+    version?: unknown; resources?: readonly {file: string; digest: string}[]; runtime?: SourceConfig;
+  };
+  if (record.version !== 'checked-source-resources-v2' || !Array.isArray(record.resources) || !record.runtime)
+    throw new Error('incompatible-artifact: regenerate the host and source records together, or supply complete explicit source configuration');
+  const ownedFile = (value: string): string => {
+    if (typeof value !== 'string' || !value || path.isAbsolute(value)) throw new Error('Generated source path must be relative to its owner');
+    const file = fs.realpathSync(path.resolve(owner, value));
+    const relative = path.relative(owner, file);
+    if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative))
+      throw new Error('Generated source path escapes its owner');
+    return file;
+  };
+  const resources = new Set<string>();
+  for (const resource of record.resources) {
+    const file = ownedFile(resource.file);
+    if (resources.has(file) || createHash('sha256').update(fs.readFileSync(file)).digest('hex') !== resource.digest)
+      throw new Error('incompatible-artifact: stale or mixed generated source records');
+    resources.add(file);
+  }
+  const sourceFile = (value: string): string => {
+    const file = ownedFile(value);
+    if (!resources.has(file)) throw new Error('Generated source is absent from its owned snapshot inventory');
+    return file;
+  };
+  const logical = (value: string): string => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value)
+    ? value : pathToFileURL(sourceFile(value)).href;
+  const supplied = record.runtime;
+  const sourceKeys = ['localSource', 'fileRoots', 'capsuleFiles', 'sourceResources', 'sourceOrigins', 'sourceUri', 'namespaceLocations', 'recordSources', 'standardLibraries'];
+  if (Object.keys(supplied).some(key => !sourceKeys.includes(key))) throw new Error('Generated bookkeeping may contain only source and artifact records');
+  if (JSON.stringify(supplied.fileRoots) !== '["."]' || !Array.isArray(supplied.sourceResources) || !Array.isArray(supplied.sourceOrigins))
+    throw new Error('Generated source permissions require the owned closed snapshots');
+  return {...supplied, localSource: sourceFile(supplied.localSource), fileRoots: [owner],
+    capsuleFiles: Object.fromEntries(Object.entries(supplied.capsuleFiles ?? {}).map(([name, file]) => [name, ownedFile(file)])),
+    sourceResources: supplied.sourceResources.map(resource => ({uri: logical(resource.uri), file: sourceFile(resource.file),
+      ...(resource.canonicalUri === undefined ? {} : {canonicalUri: logical(resource.canonicalUri)})})),
+    ...(supplied.namespaceLocations ? {namespaceLocations: supplied.namespaceLocations.map(location => ({...location, location: logical(location.location)}))} : {}),
+    ...(supplied.recordSources ? {recordSources: supplied.recordSources.map(record => ({...record, source: sourceFile(record.source)}))} : {}),
+  };
+}
+
+/** Builds the host without listening or dispatching SOAP.
+ * @param supplied Optional overrides, restrictions, or complete advanced source configuration.
+ * @returns A ready Fastify host; physical native qualification remains an invocation duty.
+ * @throws For unknown controls, conflicting/incomplete source configuration or mismatched artifacts.
+ */
+export async function buildServer(supplied: CheckedGatewayConfig = {}) {
+  const supported = ['localSource', 'fileRoots', 'endpoint', 'allowedEndpoints', 'capsuleFiles', 'sourceResources', 'sourceOrigins',
+    'sourceUri', 'namespaceLocations', 'standardLibraries', 'recordSources', 'caFile', 'host', 'port', 'timeoutMs', 'limits', 'capabilities', 'signal'];
+  if (!supplied || typeof supplied !== 'object' || types.isProxy(supplied)
+    || ![null, Object.prototype].includes(Object.getPrototypeOf(supplied) as object | null)
+    || Reflect.ownKeys(supplied).some(key => typeof key !== 'string' || !supported.includes(key)
+      || !Object.hasOwn(Object.getOwnPropertyDescriptor(supplied, key)!, 'value')))
+    throw new Error('Unsupported checked gateway configuration field');
+  const advanced = ['localSource', 'sourceUri', 'namespaceLocations', 'recordSources', 'capsuleFiles'].some(key => Object.hasOwn(supplied, key));
+  if (advanced && ['localSource', 'fileRoots', 'sourceResources', 'sourceOrigins'].some(key => !Object.hasOwn(supplied, key)))
+    throw new Error('Conflicting or incomplete advanced source configuration; supply localSource, fileRoots, sourceResources and sourceOrigins together');
+  const config = (advanced ? {...supplied} : {...generatedSources(), ...supplied}) as SourceConfig;
+  if (typeof config.localSource !== 'string' || !Array.isArray(config.fileRoots) || !config.fileRoots.length
+    || !config.fileRoots.every(root => typeof root === 'string') || !Array.isArray(config.sourceResources) || !Array.isArray(config.sourceOrigins)
+    || config.endpoint !== undefined && typeof config.endpoint !== 'string'
+    || config.allowedEndpoints !== undefined && (!Array.isArray(config.allowedEndpoints) || !config.allowedEndpoints.every(endpoint => typeof endpoint === 'string')))
+    throw new Error('Explicit source configuration and valid endpoint restrictions are required');
+  const allowed = config.allowedEndpoints === undefined ? undefined : new Set(config.allowedEndpoints.map(endpoint => new URL(endpoint).href));
+  const capsules = Object.fromEntries(Object.entries(config.capsuleFiles ?? defaultCapsules)
+    .map(([name, file]) => [name, fs.readFileSync(path.resolve(projectRoot, file))]));
+  const selected = JSON.parse(selection) as {service: {namespace: string; local: string}; port: string};
+  const clientOptions: Options = {
+    localSource: config.localSource, fileRoots: config.fileRoots, sourceResources: config.sourceResources, sourceOrigins: config.sourceOrigins,
+    ...(config.sourceUri === undefined ? {} : {sourceUri: config.sourceUri}),
+    ...(config.namespaceLocations ? {namespaceLocations: config.namespaceLocations} : {}),
+    ...(config.standardLibraries ? {standardLibraries: config.standardLibraries} : {}),
+    ...(config.recordSources ? {recordSources: config.recordSources} : {}),
+    soap: {service: selected.service, port: selected.port,
+      ...(config.endpoint === undefined ? {} : {endpoint: config.endpoint}),
+      ...(allowed === undefined ? {} : {allowEndpoint: (endpoint: URL) => allowed.has(endpoint.href)}),
+      ...(config.signal ? {signal: config.signal} : {}), ...(config.timeoutMs === undefined ? {} : {timeoutMs: config.timeoutMs}),
+      ...(config.limits === undefined ? {} : {limits: config.limits}), ...(config.capabilities === undefined ? {} : {capabilities: config.capabilities}),
+      ...(config.caFile === undefined ? {} : {ca: fs.readFileSync(config.caFile, 'utf8')}),
+    },
+  };
+  const app = Fastify({logger: false});
+  try {
+    const openapi: unknown = JSON.parse(fs.readFileSync(path.resolve(projectRoot, __OPENAPI_FILE__), 'utf8'));
+    if (JSON.stringify(openapi) !== expectedOpenApiJson) throw new Error('incompatible-artifact: mixed checked OpenAPI and gateway; regenerate together');
+    app.get('/health', async () => ({status: 'ok'}));
+    app.get('/openapi.json', async () => openapi);
+    await app.register(gateway, {clientOptions, capsules});
+    await app.ready(); return app;
+  } catch (error) {await app.close(); throw error;}
+}
+
+async function start(): Promise<void> {
+  const file = process.env.CHECKED_GATEWAY_CONFIG;
+  const absolute = file === undefined ? undefined : path.resolve(file);
+  const supplied = absolute === undefined ? {} : JSON.parse(fs.readFileSync(absolute, 'utf8')) as CheckedGatewayConfig;
+  const base = absolute === undefined ? projectRoot : path.dirname(absolute);
+  const uri = (value: string) => /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value) ? value : pathToFileURL(path.resolve(base, value)).href;
+  const config: CheckedGatewayConfig = {...supplied,
+    ...(supplied.localSource === undefined ? {} : {localSource: path.resolve(base, supplied.localSource)}),
+    ...(supplied.fileRoots === undefined ? {} : {fileRoots: supplied.fileRoots.map(root => path.resolve(base, root))}),
+    ...(supplied.sourceResources === undefined ? {} : {sourceResources: supplied.sourceResources.map(resource => ({uri: uri(resource.uri),
+      file: path.resolve(base, resource.file), ...(resource.canonicalUri === undefined ? {} : {canonicalUri: uri(resource.canonicalUri)})}))}),
+    ...(supplied.namespaceLocations ? {namespaceLocations: supplied.namespaceLocations.map(location => ({...location, location: uri(location.location)}))} : {}),
+    ...(supplied.recordSources ? {recordSources: supplied.recordSources.map(record => ({...record, source: path.resolve(base, record.source)}))} : {}),
+    ...(supplied.caFile ? {caFile: path.resolve(base, supplied.caFile)} : {}),
+    ...(supplied.capsuleFiles ? {capsuleFiles: Object.fromEntries(Object.entries(supplied.capsuleFiles).map(([name, file]) => [name, path.resolve(base, file)]))} : {}),
+  };
+  const app = await buildServer(config);
+  process.once('SIGINT', () => {void app.close();});
+  process.once('SIGTERM', () => {void app.close();});
+  const address = await app.listen({host: config.host ?? __DEFAULT_HOST__, port: config.port ?? __DEFAULT_PORT__});
+  console.log('CHECKED_GATEWAY_LISTENING ' + address);
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  start().catch(error => {console.error(error); process.exitCode = 1;});
+}
