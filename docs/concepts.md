@@ -114,17 +114,19 @@ This convention applies recursively to synthetic mapping properties, including m
 
 ### Mapping-key inventory and status
 
-The inventory distinguishes existing behavior from the [provisional mapping research](roadmap/v1.0-xml-json-mapping.md). A listed research key is not a production capability claim or a new public mode; its provisional spelling remains subject to the terminology review above.
+The inventory distinguishes existing behavior from the [selected mapping contract](roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract). Selected research forms are implementation handoffs, not production capability claims or a new public mode.
 
 | Key | Meaning and scope | Status |
 |---|---|---|
 | `$value` | Scalar text/simple content alongside attributes; exact scalar policy belongs to the selected mapping | Existing legacy/component convention |
-| `$attributes` | Attribute bag; legacy wildcard bag values are strings and the configured key may differ | Existing legacy/client/streaming default; proposed component bag layout remains provisional |
-| `$content` | Ordered content; existing component entries use their established element-entry format | Existing component convention; mixed/open entry syntax remains provisional |
+| `$attributes` | Attribute channel; named entries derive unique source identities, otherwise distinguish unqualified scalars and namespaced holders | Existing legacy bags unchanged; selected keyed research fallback |
+| `$content` | Ordered content; new entries are text objects or one named child occurrence | Existing ordered shapes unchanged; selected keyed mixed/open research grammar |
 | `$choice` | Complete source-derived choice group; object or array according to source bounds | Implemented singleton/repeated research example only |
-| `$nil` | Explicit assessed nil marker when the selected representation needs an object | Research-only proposal; plain-null policy is not finalized |
-| `$type` | Explicit assessed XML type selection | Research-only proposal; not a caller-selected validation policy |
-| `$namespaces` | Namespace bindings needed by contextual/unassessed values | Research-only proposal; full maps versus inherited deltas is unresolved |
+| `$nil` | Explicit assessed nil marker, exactly `true`, alongside applicable source-mapped attributes | Selected next-slice contract; no null shorthand, production implementation remains #421 |
+| `$namespace` | Actual namespace URI of the element/attribute/type identity at this location | Selected keyed research metadata; does not declare bindings or inherit element identity |
+| `$namespaces` | Prefix bindings introduced/rebound here, inherited by descendants | Selected snapshot-at-boundary plus local-delta contract |
+| `$type` | Explicit assessed type identity with flat `$name`/`$namespace` strings | Selected research shape; native type checks remain required |
+| `$name` | XML type name string within `$type` | Selected research shape; never a nested name object or child-name duplicate |
 
 No other synthetic application-mapping keys are allocated by this inventory. `$selection` and `$selections` were superseded research spellings; `$choices` is not a plural alias. `$text` and `$element` occur in comparison alternatives only; they are not additional accepted spellings. A future source-named group key must also start with `$`, have deterministic collision handling among generated keys, and be documented before emission; this inventory does not invent a generic naming algorithm.
 
@@ -134,12 +136,12 @@ Existing checked ordered entries contain `name` and `value`, with `namespace` an
 
 | Existing descriptor property | Prefixed spelling if that descriptor is retained | Disposition |
 |---|---|---|
-| `name` | `$name` | Candidate spelling only; source-derived groups may remove the wrapper |
+| `name` | Named child entry key | New keyed entries remove the descriptor wrapper |
 | `value` | `$value` | Reuse the existing reserved word where its role is explicitly defined |
-| `namespace` | `$namespace` | Candidate spelling only if an explicit identity descriptor remains necessary |
-| `local` | `$localName` | Candidate spelling only if an explicit identity descriptor remains necessary |
+| `namespace` | `$namespace` where needed | URI supplied only when source mapping cannot determine identity |
+| `local` | Named entry key, or `$name` inside `$type` | No `$localName` alias is allocated |
 
-These candidate spellings are not implemented or allocated aliases. Current accepted component/QName shapes and the shipped direct-runtime protocol are not silently renamed by a documentation change; a correction needs an explicit mapping, compatibility disposition and fresh inverse/serializer tests. Ordinary XML properties actually named `name`, `value`, `namespace` or `local` remain ordinary data keys.
+This table describes the new research grammar, not aliases accepted by existing runtimes. Current accepted component/QName shapes and the shipped direct-runtime protocol retain their contracts, including reused descendants inside new mappings. A migration requires an explicit compatibility decision and fresh inverse/serializer tests. Ordinary XML properties actually named `name`, `value`, `namespace` or `local` remain ordinary data keys.
 
 ### Transport, schema and implementation namespaces
 

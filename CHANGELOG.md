@@ -9,7 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-- docs(mapping): investigate XML/JSON constraints, backward-derived choice groups and configurable application naming requirements.
+- docs(mapping): select keyed XML/JSON research contracts with scoped namespaces, attributes and explicit nil.
 
 ## [1.1.7] - 2026-11-03
 

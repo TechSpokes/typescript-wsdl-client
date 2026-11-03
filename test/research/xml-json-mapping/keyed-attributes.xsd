@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:vendor" elementFormDefault="qualified" attributeFormDefault="qualified">
+  <xs:element name="fixedAttributes">
+    <xs:complexType>
+      <xs:sequence><xs:element name="code" type="xs:string"/></xs:sequence>
+      <xs:attribute name="code" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

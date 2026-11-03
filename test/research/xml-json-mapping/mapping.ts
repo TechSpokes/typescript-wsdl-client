@@ -19,7 +19,7 @@ export type Candidate = null | string | ExpandedName | {
 const knownId = (name: ExpandedName) => name.namespace === 'urn:msg' && ['p', 'x'].includes(name.local);
 const qnameText = (name: ExpandedName) => name.namespace === 'urn:typed' && name.local === 'q';
 const simpleContent = (name: ExpandedName) => name.namespace === 'urn:msg' && name.local === 'x';
-const orderedContent = (name: ExpandedName, parent?: ExpandedName) => name.namespace === 'urn:msg'
+const orderedContent = (name: ExpandedName, parent?: ExpandedName) => (name.namespace === 'urn:vendor' && name.local === 'fixedAttributes') || name.namespace === 'urn:msg'
   && (['r', 'p', 'items'].includes(name.local) || (name.local === 'b' && parent?.namespace === 'urn:msg' && parent.local === 'r'));
 const key = (name: ExpandedName) => JSON.stringify([name.namespace, name.local]);
 const same = (a: ExpandedName, b: ExpandedName) => key(a) === key(b);
