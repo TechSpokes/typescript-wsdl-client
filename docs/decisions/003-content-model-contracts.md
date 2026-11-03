@@ -34,7 +34,7 @@ References retain their roles and identities; recursion remains a reference. #17
 
 ## Runtime values and projections: S02-D02
 
-The bounded [XML/JSON mapping research](../roadmap/v1.0-xml-json-mapping.md) records provisional metadata and research-only fresh inverse examples for #409/#421; its public syntax is under constraints-first reassessment and it does not activate production support or replace these contracts.
+The bounded [XML/JSON mapping contract](../roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract) selects keyed mixed/open entries, separate namespace identity/context, attribute carriers and explicit nil, with research-only fresh inverse examples for #409/#421. This handoff does not activate production support or replace these ADR guarantees; existing accepted mappings remain compatible.
 
 Synthetic keys introduced into XML-derived application objects use the repository's `$` prefix; the [reserved mapping-key inventory](../concepts.md#reserved-mapping-keys) distinguishes existing keys, research proposals and descriptor compatibility work. Source-derived XML data names remain data names.
 
