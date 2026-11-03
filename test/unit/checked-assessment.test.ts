@@ -9,6 +9,7 @@ import {spawnSync} from 'node:child_process';
 import {loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
 import {prepareSourceSchemaRequest} from '../../src/compiler/schemaDocumentSyntax.js';
 import {assessSchemaSource, serializeAssessmentReport, assessmentExitCode, aggregateAssessment, parseAssessmentReport} from '../../src/compiler/checkedAssessment.js';
+import {planCheckedComponents} from '../../src/checkedPlanning.js';
 
 const root = path.resolve('test/conformance/fixtures/assessment');
 let artifacts: string;
@@ -26,6 +27,16 @@ async function altered(text: string) {
   return assessSchemaSource(source, {loading: {policy: {fileRoots: [directory]}}});
 }
 describe('checked source assessment', () => {
+  it('keeps the published narrow report contract while directing component readiness to its actual planner', async () => {
+    const source = path.join(root, 'forecast.wsdl');
+    const report = await assess(source), plan = await planCheckedComponents(source);
+    expect(plan).toMatchObject({ready: true, executed: false, selection: {selectors: [{operation: 'GetForecast'}]}});
+    expect(report).toMatchObject({reportVersion: 'checked-assessment-v1', scope: 'whole-actual-native-direct-v1', admitted: false});
+    expect(report.operations.flatMap(o => o.capabilities.filter(c => c.name === 'structured-generation')))
+      .toEqual([expect.objectContaining({status: 'unsupported', reason: expect.stringContaining('narrow direct assessment')})]);
+    expect(serializeAssessmentReport(report)).not.toContain('Public structured generation is not activated');
+    expect(assessmentExitCode(report)).toBe(report.schemaEligible ? 0 : 2);
+  });
   it('keeps an unsupplied locationless dependency inconclusive and checks explicitly supplied native sources', async () => {
     const directory = path.resolve('test/conformance/fixtures/xsd/resolution/namespace-locations');
     const source = path.join(directory, 'root.xsd');

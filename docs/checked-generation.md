@@ -1,8 +1,8 @@
 # Try opt-in checked generation
 
-Version 1.1.6 adds an opt-in WSDL-to-checked-gateway workflow for early testing and feedback. Choose `pipeline --model checked-components-v1` to generate a typed SOAP client, OpenAPI, Fastify gateway, runnable app and scaffold tests for supported document/literal SOAP 1.1 contracts. Omitting `--model` keeps the existing legacy behavior.
+Version 1.1.7 offers an opt-in WSDL-to-checked-gateway workflow for early testing and feedback. Choose `pipeline --model checked-components-v1` to generate a typed SOAP client, OpenAPI, Fastify gateway, runnable app and scaffold tests for supported document/literal SOAP 1.1 contracts. Omitting `--model` keeps the existing legacy behavior.
 
-This is a bounded preview, not general WSDL/XSD or production-provider qualification. It adds source-backed request, response, fault and artifact checks for the supported fragment. The narrower `checked-direct-v1` preview remains available with its own explicit selection and loopback endpoint requirements; see the [checked gateway reference](checked-gateway.md).
+This is a bounded preview, not general WSDL/XSD or production-provider qualification. It adds source-backed request, response, fault and artifact checks for the supported fragment. Generation exposes legacy and components only; the shipped v1.1.5 direct runtime remains a compatibility binding for existing clients. See the [checked gateway reference](checked-gateway.md).
 
 ## Install and try the bundled contract
 
@@ -10,7 +10,7 @@ Use Node.js 24 or newer. Run these commands in a new trial directory:
 
 ```powershell
 npm init -y
-npm install --save-dev @techspokes/typescript-wsdl-client@1.1.6
+npm install --save-dev @techspokes/typescript-wsdl-client@1.1.7
 npm install soap
 npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-version-prefix v1 --gateway-service-name forecast --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test --checked-report .generated/forecast-plan.json
 ```
@@ -27,19 +27,17 @@ npm install
 npm run typecheck
 npm test
 npm run build
-Copy-Item checked-gateway.example.json checked-gateway.local.json
-$env:CHECKED_GATEWAY_CONFIG = 'checked-gateway.local.json'
 npm start
 ```
 
-Generation, installation, startup and scaffold tests do not execute business SOAP operations. Startup loads configuration/artifacts and checks gateway/OpenAPI identity; physical source qualification and source/contract compatibility run when an operation is invoked. A healthy server alone does not prove SOAP readiness. In a second terminal, inspect the running gateway:
+Generation, installation, startup and scaffold tests do not execute business SOAP operations. Startup loads generated bookkeeping, verifies its owned snapshot digests and checks gateway/OpenAPI identity. Native source qualification and source/contract compatibility run independently when an operation is invoked; a healthy server alone does not prove SOAP readiness. In a second terminal, inspect the running gateway:
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:3000/health
 Invoke-RestMethod http://127.0.0.1:3000/openapi.json
 ```
 
-Stop the foreground server with Ctrl+C when finished. The npm and generation commands also work in POSIX shells; use `cp` for the configuration copy and `CHECKED_GATEWAY_CONFIG=checked-gateway.local.json npm start` to start there.
+Stop the foreground server with Ctrl+C when finished. The npm and generation commands also work in POSIX shells. No runtime configuration file is required for ordinary startup.
 
 ## Try your WSDL file or URL
 
@@ -73,7 +71,7 @@ Multiple service/port/binding candidates require an explicit choice. Partial con
 
 ## Configure and invoke an owned SOAP backend
 
-The component gateway normally uses the selected WSDL service/port address when a route is invoked. To use an owned test service, add an `endpoint` property to the copied `checked-gateway.local.json` (or change it if already present), preserving every generated source and artifact setting. For example, add the property shown here to the existing object; this excerpt is not a replacement configuration:
+The component gateway normally uses the selected WSDL service/port address when a route is invoked. To use an owned test service, create `checked-gateway.local.json` with this complete concise override:
 
 ```json
 {
@@ -82,6 +80,15 @@ The component gateway normally uses the selected WSDL service/port address when 
 ```
 
 An optional `allowedEndpoints` list narrows the permitted destinations; omitting it permits the selected/configured endpoint, and `[]` denies every call.
+
+Select the optional file and start in PowerShell:
+
+```powershell
+$env:CHECKED_GATEWAY_CONFIG = 'checked-gateway.local.json'
+npm start
+```
+
+In a POSIX shell, use `CHECKED_GATEWAY_CONFIG=checked-gateway.local.json npm start`. Optional `host`, `port` and `caFile` are separate caller choices. Generated `client/source-resources.json` owns source and capsule records; do not copy them into this file.
 
 Restart the gateway after changing runtime configuration. Only after an owned SOAP backend implements the bundled Forecast contract, invoke its JSON route:
 
@@ -114,13 +121,15 @@ await runGenerationPipeline({
 
 Partial choices and permissions go in `checkedComponents` for generation or the second argument to `planCheckedComponents`. Planning never invokes SOAP. Generation performs fresh checks even when an earlier planning report was ready.
 
+The older `assessSchemaSource` API and `assess` command retain the narrow `checked-assessment-v1` direct-schema scope and exit codes. They do not assess component generation or provider readiness. Use the component planner and `--checked-report` for this workflow; saved reports are diagnostic data.
+
 ## Supported scope and direction
 
 The qualified component fragment includes imported schemas, nested/repeated and inherited records, attributes, simple content, ordered values and supported scalar restrictions. Escapia qualification retains 15 Main operations and two Content operations against owned services. Content uses explicit companion configuration with scoped validation and buffered delivery; it is not automatic companion discovery or checked streaming.
 
 General XSD, SOAP 1.2/RPC-encoded, broader authentication/security, arbitrary wildcard conversion and checked incremental streaming remain outside this preview. OpenAPI describes the JSON shape but does not express every native scalar/order/wildcard rule. Required declarations and strict wildcard failures cannot become successful unchecked replies.
 
-The next work is representative unrelated contract qualification under [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397), characterization of existing opaque JSON and simpler optional companion associations under [#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409), and concrete JSON/OpenAPI documentation or translation fixes under [#410](https://github.com/TechSpokes/typescript-wsdl-client/issues/410). Broader security and streaming keep their existing owners; none of this changes the legacy default or activates the full profile. See the [roadmap](../ROADMAP.md) for direction and [development checkpoint](content-model-development-checkpoint.md) for detailed evidence.
+The next work is representative unrelated contract qualification under [#397](https://github.com/TechSpokes/typescript-wsdl-client/issues/397), characterization of existing opaque JSON under [#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409), and concrete JSON/OpenAPI documentation or translation fixes under [#410](https://github.com/TechSpokes/typescript-wsdl-client/issues/410). This consolidation implements only #409's concise explicit-association subset. Broader security and streaming keep their existing owners; none of this changes the legacy default or activates the full profile. See the [roadmap](../ROADMAP.md) for direction and [development checkpoint](content-model-development-checkpoint.md) for detailed evidence.
 
 ## Send useful feedback
 
@@ -137,6 +146,10 @@ Remove credentials and private data from configurations, source URLs, reports an
 
 ## Upgrade and regenerate
 
-Regenerate checked clients, contracts, copied sources, gateways and server scaffolds together with the matching installed runtime. Component runtime compatibility changed in this release, so do not mix older experimental artifacts with newly generated files. Consumer-owned server/config/test files are preserved unless their existing `--force-init` or `--force-test` option is selected; review customizations before deliberately refreshing them.
+Regenerate checked clients, contracts, copied sources, gateways and server scaffolds together with the matching installed runtime. The generated source record now uses the explicit `checked-source-resources-v2` format; it is separate from the component runtime protocol. Complete older runtime configurations remain supported as advanced inputs. Supplying `localSource`, `sourceUri`, `namespaceLocations`, `recordSources` or `capsuleFiles` selects that advanced form and requires all four source fields: `localSource`, `fileRoots`, `sourceResources` and `sourceOrigins`.
+
+With generated defaults, omitted restrictions retain the generated choices; explicit `sourceOrigins: []`, `sourceResources: []`, `standardLibraries: []` and `allowedEndpoints: []` remain restrictive. Incomplete advanced configurations refuse instead of mixing incompatible sources with generated defaults. Runtime paths in the optional JSON file resolve relative to that file; programmatic paths remain caller-owned.
+
+Consumer-owned server/config/test files are preserved unless their existing `--force-init` or `--force-test` option is selected. Review customizations before deliberately refreshing older host scaffolds. Existing v1.1.5-issued direct clients continue using `checkedDirectRuntimeV1` unchanged; new generation uses components.
 
 Legacy users need no model change. Refresh existing consumer dependency lockfiles separately to pick up transitive security fixes.

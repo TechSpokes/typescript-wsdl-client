@@ -42,8 +42,7 @@ import {applyShapeCatalogs} from "./compiler/shapeResolver.js";
  */
 export interface PipelineOptions {
   /** Additive preview selection; omission preserves the legacy pipeline. */
-  model?: 'legacy' | 'checked-direct-v1' | 'checked-components-v1';
-  checkedDirect?: import('./checkedPipeline.js').CheckedDirectOptions;
+  model?: 'legacy' | 'checked-components-v1';
   checkedComponents?: Partial<import('./checkedPipeline.js').CheckedComponentOptions>;
   wsdl: string;
   catalogOut?: string;
@@ -99,14 +98,13 @@ export interface PipelineOptions {
  * @returns {Promise<{compiled: any; openapiDoc?: any}>} - The compiled catalog and optional OpenAPI document
  */
 export async function runGenerationPipeline(opts: PipelineOptions): Promise<{ compiled: any; openapiDoc?: any; checked?: import('./checkedPipeline.js').CheckedInventory; planning?: import('./checkedPlanning.js').CheckedComponentPlan }> {
-  if (opts.model === 'checked-direct-v1' || opts.model === 'checked-components-v1') {
-    if (opts.model === 'checked-direct-v1' && opts.checkedComponents !== undefined
-      || opts.model === 'checked-components-v1' && opts.checkedDirect !== undefined) throw new Error('Mixed checked model configurations are unsupported');
+  if (Object.hasOwn(opts, 'checkedDirect')) throw new Error('The unpublished checkedDirect generation option has been removed; use checked-components-v1');
+  if (opts.model === 'checked-components-v1') {
     const {runCheckedPipeline} = await import('./checkedPipeline.js');
     return runCheckedPipeline(opts);
   }
-  if (opts.model !== undefined && opts.model !== 'legacy' || opts.checkedDirect !== undefined) {
-    throw new Error('Explicit model checked-direct-v1 is required for checked configuration');
+  if (opts.model !== undefined && opts.model !== 'legacy') {
+    throw new Error('Supported generation models are legacy and checked-components-v1');
   }
   if (opts.checkedComponents !== undefined) throw new Error('Explicit model checked-components-v1 is required for component configuration');
   if (!opts.catalogOut) throw new Error('Legacy pipeline requires catalogOut');

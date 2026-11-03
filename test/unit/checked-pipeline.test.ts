@@ -2,7 +2,7 @@ import {afterEach, describe, expect, it} from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import {runGenerationPipeline, type PipelineOptions} from '../../src/index.js';
-import {parseCheckedDirectOptions} from '../../src/checkedPipeline.js';
+import {parseCheckedComponentOptions} from '../../src/checkedPipeline.js';
 
 const namespace = 'urn:checked:forecast';
 const roots: string[] = [];
@@ -13,8 +13,8 @@ function options(): PipelineOptions {
   roots.push(root);
   const wsdl = path.join(root, 'input.wsdl');
   fs.copyFileSync('test/conformance/fixtures/assessment/forecast.wsdl', wsdl);
-  return {model: 'checked-direct-v1', wsdl,
-    checkedDirect: {selector: {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'},
+  return {model: 'checked-components-v1', wsdl,
+    checkedComponents: {selectors: [{portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'}], sourceResources: [], sourceOrigins: [],
       service: {namespace, local: 'ForecastService'}, port: 'ForecastPort', fileRoots: [root]},
     clientOutDir: path.join(root, 'project/client'), openapi: {outFile: path.join(root, 'project/openapi.json')},
     gateway: {outDir: path.join(root, 'project/gateway'), versionSlug: 'v1', serviceSlug: 'forecast'},
@@ -36,7 +36,7 @@ describe('public checked pipeline selection', () => {
       expect.objectContaining({operation: 'GetForecast', requested: true, generated: true, executed: false, status: 'generated'}),
       expect.objectContaining({operation: 'Other', requested: false, generated: false, executed: false, status: 'unselected-not-assessed'}),
     ]);
-    expect(fs.readFileSync(path.join(opts.clientOutDir!, 'source.wsdl'), 'utf8')).toBe(source);
+    expect(fs.readFileSync(path.join(opts.clientOutDir!, 'source/files/input.wsdl'), 'utf8')).toBe(source);
     expect(fs.existsSync(path.join(opts.clientOutDir!, 'catalog.json'))).toBe(false);
     const client = fs.readFileSync(path.join(opts.clientOutDir!, 'client.ts'), 'utf8');
     const gateway = fs.readFileSync(path.join(opts.gateway!.outDir, 'plugin.ts'), 'utf8');
@@ -48,24 +48,24 @@ describe('public checked pipeline selection', () => {
   it('refuses an unsupported requested operation without emitting a partial success', async () => {
     const opts = options();
     fs.writeFileSync(opts.wsdl, fs.readFileSync(opts.wsdl, 'utf8').replace('style="document"', 'style="rpc"'));
-    await expect(runGenerationPipeline(opts)).rejects.toThrow(/GetForecast refused: unsupported/);
+    await expect(runGenerationPipeline(opts)).rejects.toThrow(/unsupported/);
     expect(fs.existsSync(opts.clientOutDir!)).toBe(false);
   });
 
   it('retains source permission and cancellation before output', async () => {
     const opts = options();
-    await expect(runGenerationPipeline({...opts, checkedDirect: {...opts.checkedDirect!, fileRoots: [path.join(roots.at(-1)!, 'unrelated')]}}))
-      .rejects.toThrow(/refused/);
+    await expect(runGenerationPipeline({...opts, checkedComponents: {...opts.checkedComponents!, fileRoots: [path.join(roots.at(-1)!, 'unrelated')]}}))
+      .rejects.toThrow(/permission/);
     const controller = new AbortController(); controller.abort();
-    await expect(runGenerationPipeline({...opts, checkedDirect: {...opts.checkedDirect!, signal: controller.signal}}))
+    await expect(runGenerationPipeline({...opts, checkedComponents: {...opts.checkedComponents!, signal: controller.signal}}))
       .rejects.toThrow(/cancelled/);
     expect(fs.existsSync(opts.clientOutDir!)).toBe(false);
   });
 
   it('requires explicit selection and rejects unknown or unsupported controls', async () => {
     const opts = options();
-    expect(() => parseCheckedDirectOptions({...opts.checkedDirect, operations: ['GetForecast', 'Other']})).toThrow('unsupported fields');
-    expect(() => parseCheckedDirectOptions({...opts.checkedDirect, fileRoots: []})).toThrow('source roots');
+    expect(() => parseCheckedComponentOptions({...opts.checkedComponents, operations: ['GetForecast', 'Other']})).toThrow('accessor');
+    await expect(runGenerationPipeline({...opts, checkedComponents: {...opts.checkedComponents, fileRoots: []}})).rejects.toThrow('permission');
     await expect(runGenerationPipeline({...opts, model: 'legacy'})).rejects.toThrow('Explicit model');
     await expect(runGenerationPipeline({...opts, compiler: {choice: 'union'}})).rejects.toThrow('legacy compiler');
     await expect(runGenerationPipeline({...opts, openapi: {...opts.openapi!, flattenArrayWrappers: false}})).rejects.toThrow('stage control');

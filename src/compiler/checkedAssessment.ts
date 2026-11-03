@@ -143,7 +143,7 @@ export async function assessSchemaSource(source: string, options: Readonly<{
                 budget.chargeWork(1024 + operationName.length * 8);
                 operations.push({id: opaque(`${document.digest ?? document.root.source.digest}:${operation.source.path}`), name: operationName, admitted: false,
                   capabilities: ['matcher', 'projection', 'scalar-payload', 'bundle', 'codec', 'buffered-transport', 'structured-generation'].map(name => ({name, status: name === 'structured-generation' ? 'unsupported' as const : 'not-assessed' as const,
-                    reason: name === 'structured-generation' ? 'Public structured generation is not activated' : 'This assessment does not qualify the downstream runtime owner'}))});
+                    reason: name === 'structured-generation' ? 'This narrow direct assessment does not assess component generation; use planCheckedComponents or pipeline --checked-report for component readiness' : 'This assessment does not qualify the downstream runtime owner'}))});
               }
             }
             stack.push(...syntaxElements(node));

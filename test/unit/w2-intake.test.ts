@@ -35,11 +35,18 @@ it('preserves final bases, shared and query-distinct resources and remote redire
     gateway: {outDir: path.join(app, 'gateway'), serviceSlug: 'import', versionSlug: 'v1'}, app: {appDir: app}};
   expect((await runGenerationPipeline(options)).planning?.ready).toBe(true);
   expect(calls).toHaveLength(6); expect(new Set(calls).size).toBe(6);
-  const example = JSON.parse(fs.readFileSync(path.join(app, 'checked-gateway.example.json'), 'utf8')) as {sourceUri: string; sourceResources: {uri: string; canonicalUri?: string}[]; allowedEndpoints?: string[]};
-  expect(example.sourceUri).toBe(origin + '/dir/root.wsdl');
-  expect(example.sourceResources).toContainEqual(expect.objectContaining({uri: origin + '/start', canonicalUri: example.sourceUri}));
-  expect(example.sourceResources).toContainEqual(expect.objectContaining({uri: origin + '/dir/types?xsd=0', canonicalUri: origin + '/model/types?xsd=0'}));
-  expect(example.allowedEndpoints).toBeUndefined();
+  const bookkeeping = JSON.parse(fs.readFileSync(path.join(app, 'client/source-resources.json'), 'utf8')) as {
+    version: string; runtime: {sourceUri: string; sourceResources: {uri: string; file: string; canonicalUri?: string}[]};
+  };
+  expect(bookkeeping.version).toBe('checked-source-resources-v2');
+  expect(bookkeeping.runtime.sourceUri).toBe(origin + '/dir/root.wsdl');
+  expect(bookkeeping.runtime.sourceResources).toContainEqual(expect.objectContaining({uri: origin + '/start', canonicalUri: bookkeeping.runtime.sourceUri}));
+  expect(bookkeeping.runtime.sourceResources).toContainEqual(expect.objectContaining({uri: origin + '/dir/types?xsd=0', canonicalUri: origin + '/model/types?xsd=0'}));
+  const leaves = [1, 2].map(query => bookkeeping.runtime.sourceResources.find(resource => resource.uri === origin + '/model/leaf?xsd=' + query));
+  for (const leaf of leaves) expect(leaf).toEqual(expect.objectContaining({file: expect.any(String)}));
+  expect(new Set(leaves.map(leaf => leaf!.file)).size).toBe(2);
+  const example = JSON.parse(fs.readFileSync(path.join(app, 'checked-gateway.example.json'), 'utf8')) as Record<string, unknown>;
+  expect(Object.keys(example).sort()).toEqual(['host', 'port']);
   const before = fs.readFileSync(path.join(app, 'client/client.ts'));
   await runGenerationPipeline(options); expect(calls).toHaveLength(12);
   expect(fs.readFileSync(path.join(app, 'client/client.ts'))).toEqual(before);

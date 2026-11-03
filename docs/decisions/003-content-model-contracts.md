@@ -212,7 +212,15 @@ Preserve the current legacy default for the 1.x line. The planned architecture r
 
 ### Version 1.1.6 opt-in preview availability amendment
 
-The maintainer's November 1, 2026 release dispatch authorizes version 1.1.6 to distribute the bounded `checked-components-v1` and `checked-direct-v1` previews through the existing pipeline and package-root runtime. This reviewed amendment supplies the earlier-release exception above for their independently qualified scopes only. The [trial guide](../checked-generation.md) and [checked gateway reference](../checked-gateway.md) describe their distinct supported inputs, runtime permissions and compatibility requirements.
+This historical November 1, 2026 dispatch authorized the v1.1.6 candidate's bounded `checked-components-v1` and `checked-direct-v1` previews through the existing pipeline and package-root runtime. It supplied the earlier-release exception above for their independently qualified scopes only. The November 3 amendment below supersedes its generation-mode decision; the [trial guide](../checked-generation.md) and [checked gateway reference](../checked-gateway.md) describe the current workflow and compatibility requirements.
+
+### November 3, 2026 consolidation amendment
+
+The approved #412 execution consolidates public generation into legacy and `checked-components-v1`, targeting v1.1.7 while v1.1.6 remains an unpublished, consumed candidate. The already-shipped `checkedDirectRuntimeV1` protocol and restrictions remain compatible with frozen v1.1.5-issued artifacts. If v1.1.6 is published before delivery, the removal premise must be reconsidered before merge or tagging. Its existing tag and draft remain untouched.
+
+One generation invocation may reuse its source-owned native handles, closed SOAP metadata, mappings and prepared lowerings. Those transient results never become saved authority; separate plans and runtime calls still qualify fresh physical sources. Generated `checked-source-resources-v2` records contain only project-owned snapshots, aliases, artifact locations and acquisition choices. Optional host overrides preserve explicit restrictions, including empty denial; complete older source configurations remain advanced inputs.
+
+Concise companion associations explicitly acknowledge `records-with-declared-wrapper-scope`. Native mapping owners derive unique paths and fixed exclusions, retain `recordPath` when ambiguous and pass through `createComponentRecordProjection` as the final gate. The companion interpretation does not establish full response validity in the outer strict-wildcard universe. Required schema metadata and invalid scalar/wildcard refusals remain mandatory; no automatic companion discovery or new response mode is introduced.
 
 Legacy remains the 1.x default, and `admitted:false` remains the full-profile marker. Preview availability does not admit the full faithful profile, establish universal research completeness, qualify production providers/security or activate checked streaming. Wider owners and full-profile S17/S18 evidence remain open; a default public-shape activation still requires the separately approved 2.0.0 major-release gate.
 

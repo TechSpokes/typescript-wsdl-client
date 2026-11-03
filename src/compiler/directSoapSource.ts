@@ -79,6 +79,22 @@ export function prepareDirectSoapSource(contract: DirectOperationContract, confi
   return {original, wsdlText};
 }
 
+/** Check each native operation before sharing its source metadata.
+ * @param contract Authentic component operation.
+ * @param config Exact service and port.
+ * @param check Invocation cancellation/resource checks.
+ * @returns No metadata or portable authority.
+ * @throws For foreign handles, unsupported source profile, action or selection.
+ */
+export function validateComponentSoapSelection(contract: DirectOperationContract, config: {service: ExpandedName; port: string}, check: () => void): void {
+  const {source} = inspectDirectOperation(contract);
+  check();
+  if (contract.basis !== 'native-component-premises-v1' || contract.correspondence !== 'dated-XSD-2004-components-v1')
+    throw new DirectSoapSourceError('Component source profile required');
+  if (/[^\x20-\x21\x23-\x7e]|\\/.test(contract.binding.action)) throw new DirectSoapSourceError('unsafe SOAPAction');
+  validateSoapSelection(source, contract, config, check);
+}
+
 /** Build the existing SOAP dependency from the exact authorized snapshot, with no file/network import fallback.
  * @remarks This first closed bootstrap supports UTF-8 acyclic resource dependencies. Original bytes and native semantics
  *   are unchanged. The dependency receives private aliases and a fresh prefilled cache; its import hook accepts only
@@ -89,10 +105,7 @@ export function prepareDirectSoapSource(contract: DirectOperationContract, confi
  */
 export async function prepareComponentSoapWsdl(contract: DirectOperationContract, config: {service: ExpandedName; port: string}, check: () => void): Promise<WSDL> {
   const {source, context: {budget}} = inspectDirectOperation(contract);
-  if (contract.basis !== 'native-component-premises-v1' || contract.correspondence !== 'dated-XSD-2004-components-v1')
-    throw new DirectSoapSourceError('Component source profile required');
-  if (/[^\x20-\x21\x23-\x7e]|\\/.test(contract.binding.action)) throw new DirectSoapSourceError('unsafe SOAPAction');
-  validateSoapSelection(source, contract, config, check);
+  validateComponentSoapSelection(contract, config, check);
   const refuse = (rule: string): never => {throw new DirectSoapSourceError(rule);};
   const nodes = new Map<string, SyntaxElement>(), dependencySyntax = new Set<string>();
   const key = (uri: string, path: string) => JSON.stringify([uri, path]);

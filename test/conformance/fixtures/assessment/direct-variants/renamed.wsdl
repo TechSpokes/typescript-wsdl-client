@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:renamed:climate" targetNamespace="urn:renamed:climate">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:renamed:climate" elementFormDefault="qualified">
+      <xs:complexType name="ClimateRequest"><xs:sequence><xs:element name="place-name" type="xs:string"/><xs:element name="class" type="xs:int"/></xs:sequence></xs:complexType>
+      <xs:complexType name="ClimateResponse"><xs:sequence><xs:element name="place-name" type="xs:string"/><xs:element name="value-list" type="xs:int" minOccurs="0" maxOccurs="unbounded"/><xs:element name="default" type="xs:boolean"/></xs:sequence></xs:complexType>
+      <xs:complexType name="ClimateFault"><xs:sequence><xs:element name="code" type="xs:string"/><xs:element name="message" type="xs:string"/></xs:sequence></xs:complexType>
+      <xs:element name="ReadClimate" type="t:ClimateRequest"/>
+      <xs:element name="ReadClimateResponse" type="t:ClimateResponse"/>
+      <xs:element name="ClimateFault" type="t:ClimateFault"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ClimateInput"><wsdl:part name="parameters" element="t:ReadClimate"/></wsdl:message>
+  <wsdl:message name="ClimateOutput"><wsdl:part name="parameters" element="t:ReadClimateResponse"/></wsdl:message>
+  <wsdl:message name="ClimateError"><wsdl:part name="detail" element="t:ClimateFault"/></wsdl:message>
+  <wsdl:portType name="ClimatePortType"><wsdl:operation name="ReadClimate"><wsdl:input message="t:ClimateInput"/><wsdl:output message="t:ClimateOutput"/><wsdl:fault name="ClimateError" message="t:ClimateError"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="ClimateBinding" type="t:ClimatePortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="ReadClimate"><soap:operation soapAction="urn:checked:ReadClimate"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="ClimateError"><soap:fault name="ClimateError" use="literal"/></wsdl:fault></wsdl:operation></wsdl:binding>
+  <wsdl:service name="ClimateService"><wsdl:port name="ClimatePort" binding="t:ClimateBinding"><soap:address location="http://127.0.0.1:1/forecast"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

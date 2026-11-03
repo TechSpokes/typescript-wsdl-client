@@ -17,7 +17,7 @@ function fixture() {
   fs.mkdirSync(parent, {recursive: true});
   const appDir = fs.mkdtempSync(path.join(parent, 'checked-scaffold-'));
   disposable.push(appDir);
-  return {appDir, clientDir: path.join(appDir, 'client'), gatewayDir: path.join(appDir, 'gateway'),
+  return {appDir, component: {source: path.join(appDir, 'client/source.wsdl'), capsules: {}, sourceResources: [], sourceOrigins: []}, clientDir: path.join(appDir, 'client'), gatewayDir: path.join(appDir, 'gateway'),
     openapiFile: path.join(appDir, 'openapi.json')};
 }
 
@@ -30,8 +30,8 @@ describe('checked app/test scaffold ownership', () => {
       .replaceAll('GetForecast', 'Get.Forecast');
     fs.writeFileSync(wsdl, source);
     const namespace = 'urn:checked:forecast';
-    await runGenerationPipeline({model: 'checked-direct-v1', wsdl,
-      checkedDirect: {selector: {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'Get.Forecast'},
+    await runGenerationPipeline({model: 'checked-components-v1', wsdl,
+      checkedComponents: {selectors: [{portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'Get.Forecast'}], sourceResources: [], sourceOrigins: [],
         service: {namespace, local: 'ForecastService'}, port: 'ForecastPort', fileRoots: [options.appDir]},
       clientOutDir: options.clientDir, openapi: {outFile: options.openapiFile},
       gateway: {outDir: options.gatewayDir, versionSlug: 'v1', serviceSlug: 'forecast'}, app: {appDir: options.appDir},
@@ -40,7 +40,7 @@ describe('checked app/test scaffold ownership', () => {
     fs.mkdirSync(runtimePackage, {recursive: true});
     fs.writeFileSync(path.join(runtimePackage, 'package.json'), JSON.stringify({type: 'module', exports: './index.ts'}));
     fs.writeFileSync(path.join(runtimePackage, 'index.ts'),
-      `export {checkedDirectRuntimeV1} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
+      `export {checkedComponentRuntimeV1} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
     try {
       const result = await promisify(execFile)(process.execPath, [path.resolve('node_modules/vitest/vitest.mjs'), 'run'], {cwd: options.appDir});
       expect(result.stdout).toContain('2 passed');
@@ -63,13 +63,13 @@ describe('checked app/test scaffold ownership', () => {
     expect(manifest.scripts).toMatchObject({typecheck: 'tsc --noEmit', test: 'vitest run', build: 'tsc', start: 'node dist/server.js'});
     expect(manifest.dependencies).toHaveProperty('@techspokes/typescript-wsdl-client');
     const config = JSON.parse(fs.readFileSync(path.join(options.appDir, 'checked-gateway.example.json'), 'utf8'));
-    expect(config.allowedEndpoints).toEqual([]);
-    expect(config.fileRoots).toEqual(['./client']);
+    expect(config.allowedEndpoints).toBeUndefined();
+    expect(config.fileRoots).toBeUndefined();
   });
 
   it('preserves test customizations and distinguishes scaffold checks from independent oracles', async () => {
     const options = fixture();
-    const testOptions = {...options, testDir: path.join(options.appDir, 'test'), routePath: '/v1/forecast/GetForecast'};
+    const testOptions = {...options, sourceFile: options.component.source, testDir: path.join(options.appDir, 'test'), routePath: '/v1/forecast/GetForecast'};
     await generateCheckedTests(testOptions);
     const file = path.join(testOptions.testDir, 'checked-scaffold.test.ts');
     const original = fs.readFileSync(file, 'utf8');
@@ -92,8 +92,8 @@ describe('checked app/test scaffold ownership', () => {
     const options = fixture();
     const namespace = 'urn:checked:forecast';
     const wsdl = path.resolve('test/conformance/fixtures/assessment/forecast.wsdl');
-    await runGenerationPipeline({model: 'checked-direct-v1', wsdl,
-      checkedDirect: {selector: {portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'},
+    await runGenerationPipeline({model: 'checked-components-v1', wsdl,
+      checkedComponents: {selectors: [{portType: {namespace, local: 'ForecastPortType'}, binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'}], sourceResources: [], sourceOrigins: [],
         service: {namespace, local: 'ForecastService'}, port: 'ForecastPort', fileRoots: [path.dirname(wsdl)]},
       clientOutDir: options.clientDir, openapi: {outFile: options.openapiFile},
       gateway: {outDir: options.gatewayDir, versionSlug: 'v1', serviceSlug: 'forecast'}, app: {appDir: options.appDir}});
@@ -102,9 +102,18 @@ describe('checked app/test scaffold ownership', () => {
     fs.mkdirSync(runtimePackage, {recursive: true});
     fs.writeFileSync(path.join(runtimePackage, 'package.json'), JSON.stringify({type: 'module', exports: './index.ts'}));
     fs.writeFileSync(path.join(runtimePackage, 'index.ts'),
-      `export {checkedDirectRuntimeV1} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
+      `export {checkedComponentRuntimeV1} from ${JSON.stringify(pathToFileURL(path.resolve('src/client/checkedDirectRuntime.ts')).href)};\n`);
     const {buildServer} = await import(pathToFileURL(path.join(options.appDir, 'server.ts')).href);
-    const config = {localSource: path.join(options.clientDir, 'source.wsdl'), fileRoots: [options.clientDir],
+    const defaultHost = await buildServer();
+    try {expect((await defaultHost.inject({method: 'GET', url: '/health'})).json()).toEqual({status: 'ok'});}
+    finally {await defaultHost.close();}
+    const concise = await buildServer({endpoint: 'http://127.0.0.1:1/soap', allowedEndpoints: []});
+    try {
+      const denied = await concise.inject({method: 'POST', url: '/v1/forecast/GetForecast', payload: {city: 'Oslo', days: 1}});
+      expect(denied.statusCode).not.toBe(200);
+    } finally {await concise.close();}
+    await expect(buildServer({localSource: 'incomplete.wsdl'})).rejects.toThrow('incomplete advanced');
+    const config = {localSource: path.join(options.clientDir, 'source/files/forecast.wsdl'), fileRoots: [options.clientDir], sourceResources: [], sourceOrigins: [],
       endpoint: 'http://127.0.0.1:1/soap', allowedEndpoints: ['http://127.0.0.1:1/soap']};
     await expect(buildServer({...config, authentication: true})).rejects.toThrow('Unsupported checked gateway configuration field');
     const server = await buildServer({...config, capabilities: ['authentication']});

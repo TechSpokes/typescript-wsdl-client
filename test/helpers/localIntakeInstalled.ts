@@ -1,42 +1,40 @@
-import {it, expect} from 'vitest';
-import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, realpath, appendFile, readdir} from 'node:fs/promises';
-import {tmpdir} from 'node:os';
+import {expect} from 'vitest';
+import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, appendFile, readdir} from 'node:fs/promises';
 import path from 'node:path';
-import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
+import {runOwnedNode} from './ownedNodeProcess.js';
+import type {InstalledIntakeTooling} from './installedIntakeTooling.js';
 import type {CheckedComponentPlan} from '../../src/index.js';
 
-it('installs CLI/API automatic generation and one-value recovery, then starts independent gateways', async context => {
+export async function qualifyLocalIntakeInstalled(shared: InstalledIntakeTooling, signal: AbortSignal): Promise<void> {
   const root = process.cwd(), npm = process.env.npm_execpath;
   if (!npm) throw new Error('Run installed qualification through npm');
   const evidence = path.resolve('tmp/conformance/wsdl-first-installed'); await mkdir(evidence, {recursive: true});
   const runEvidence = await mkdtemp(path.join(evidence, 'run-'));
-  const consumer = await realpath(await mkdtemp(path.join(tmpdir(), 'wsdl-first-')));
+  const consumer = path.join(shared.root, 'local'); await mkdir(consumer);
   const env: NodeJS.ProcessEnv = {...process.env, NODE_OPTIONS: '--use-system-ca', npm_config_cache: path.resolve('tmp/cache/npm'), VITEST_MAX_WORKERS: '1'};
   delete env.NODE_PATH;
   const run = async (label: string, args: string[], cwd: string) => {
     const start = performance.now();
     try {
-      const result = await runOwnedNode(args, {cwd, env, signal: context.signal, timeoutMs: 240_000, maxBuffer: 8 * 1024 * 1024,
+      const result = await runOwnedNode(args, {cwd, env, signal: signal, timeoutMs: 240_000, maxBuffer: 8 * 1024 * 1024,
         childProcessesDenied: label === 'missing-import' || label === 'unresolved-draft' || label.startsWith('refuse-')});
       await appendFile(path.join(runEvidence, 'timing.ndjson'), JSON.stringify({label, elapsedMs: Math.round(performance.now() - start), result: 'passed'}) + '\n');
       return result;
     } catch (error) {
+      const failure = error as Error & {stdout?: string; stderr?: string};
+      await writeFile(path.join(runEvidence, label + '-refusal-or-failure.log'), failure.message + '\n' + (failure.stdout ?? '') + (failure.stderr ?? ''));
       await appendFile(path.join(runEvidence, 'timing.ndjson'), JSON.stringify({label, elapsedMs: Math.round(performance.now() - start), result: 'refused-or-failed'}) + '\n');
       throw error;
     }
   };
   try {
-    const tooling = path.join(consumer, 'tooling'), inputs = path.join(consumer, 'inputs'); await mkdir(tooling); await mkdir(inputs);
+    const {tooling, tarball, cli} = shared;
+    const inputs = path.join(consumer, 'inputs'); await mkdir(inputs);
     const source = path.join(inputs, 'source.wsdl'), missing = path.join(inputs, 'missing.wsdl'), dependency = path.join(inputs, 'import-relative-types-types.xsd');
     await copyFile('test/conformance/fixtures/xsd/imports/import-relative-types.wsdl', source);
     await copyFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd', dependency);
     await copyFile('test/conformance/fixtures/assessment/wsdl-first-missing.wsdl', missing);
-    const pack = await run('pack', [npm, 'pack', '--ignore-scripts', '--json', '--pack-destination', runEvidence], root);
-    const tarball = path.join(runEvidence, (JSON.parse(pack.stdout) as {filename: string}[])[0]!.filename);
-    await writeFile(path.join(tooling, 'package.json'), JSON.stringify({private: true, type: 'module'}));
-    await run('install-tooling', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], tooling);
-    const cli = path.join(tooling, 'node_modules/@techspokes/typescript-wsdl-client/dist/cli.js');
-    const permissions = ['--permission', '--allow-fs-read=' + consumer, '--allow-fs-write=' + consumer];
+    const permissions = ['--permission', '--allow-fs-read=' + consumer, '--allow-fs-read=' + tooling, '--allow-fs-write=' + consumer];
     for (const mode of ['cli', 'api', 'recovery']) {
       const project = path.join(consumer, mode), wsdl = mode === 'recovery' ? missing : source;
       const opts = {model: 'checked-components-v1', wsdl, clientOutDir: path.join(project, 'client'),
@@ -78,7 +76,7 @@ it('installs CLI/API automatic generation and one-value recovery, then starts in
         await writeFile(path.join(runEvidence, mode + '-' + command + '.log'), result.stdout + result.stderr);
       }
       for (const name of ['test-cert.pem', 'test-key.pem']) await copyFile('test/conformance/fixtures/soap/content-model/' + name, path.join(project, name));
-      await copyFile('test/helpers/wsdlFirstInstalledProcess.ts', path.join(project, 'wire.ts'));
+      await copyFile('test/helpers/localIntakeInstalledProcess.ts', path.join(project, 'wire.ts'));
       await copyFile('test/helpers/ownedParentGuard.ts', path.join(project, 'parent-guard.ts'));
       const result = await run(mode + '-wire', ['--permission', '--allow-child-process', '--allow-fs-read=' + project, '--allow-fs-write=' + project,
         path.join(project, 'wire.ts'), path.join(root, 'package.json')], project);
@@ -88,4 +86,4 @@ it('installs CLI/API automatic generation and one-value recovery, then starts in
     await writeFile(path.join(runEvidence, 'result.json'), JSON.stringify({status: 'passed', projects: 3, operations: 3, exchanges: 3, humanResolutionValues: 1,
       harnessStageWatchdogMs: 240_000, productLatencyRequirement: false}));
   } finally {await rm(consumer, {recursive: true, force: true, maxRetries: 10, retryDelay: 200});}
-}, 1_200_000);
+}

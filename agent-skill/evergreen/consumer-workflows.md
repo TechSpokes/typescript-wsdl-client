@@ -27,7 +27,7 @@ Generate client, OpenAPI, gateway, app and tests together with explicit output p
 
 Generation, startup and scaffold tests do not execute business SOAP. Independently specified owned-service wire checks and provider acceptance remain separate work. Unsupported source, wildcard or required declaration cases must not be routed through legacy behavior to bypass checked validation. Preserve explicit companion configuration and buffered scope where used.
 
-Keep generator, runtime, sources and checked artifacts matched when regenerating; preserve consumer-owned scaffold customizations unless replacement is deliberate. Legacy streaming and `checked-direct-v1` retain their separate contracts. Load `references/checked-generation.md` for the installed trial, feedback path and boundaries.
+Keep generator, runtime, sources and checked artifacts matched when regenerating; preserve consumer-owned scaffold customizations unless replacement is deliberate. Generation offers legacy and `checked-components-v1`; v1.1.5 direct clients retain their shipped runtime contract. Generated source records supply ordinary host defaults, and an optional runtime file contains concise overrides. Load `references/checked-generation.md` for the installed trial, feedback path and boundaries.
 
 ## Typed SOAP Client Only
 

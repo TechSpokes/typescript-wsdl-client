@@ -31,6 +31,13 @@ export interface ComponentRecordProjectionSpec {
   readonly opaqueExclusions: readonly Readonly<{path: readonly ExpandedName[];
     reason: 'standard-schema-metadata' | 'wrapper-declaration-universe'}>[];
 }
+/** Explicit acknowledgement of the existing scope, with a record path only when it is a real choice.
+ * @since 1.1.7
+ */
+export interface ComponentRecordProjectionAssociation {
+  readonly scope: 'records-with-declared-wrapper-scope';
+  readonly recordPath?: readonly ExpandedName[];
+}
 export interface ComponentRecordProjection {
   readonly kind: 'component-record-projection'; readonly version: 'component-record-scope-v1';
   readonly direction: Readonly<{kind: 'output'}>; readonly root: DirectMessageRoot;
@@ -69,7 +76,7 @@ const ownKeys = (value: object, keys: readonly string[]) => Object.keys(value).l
  * @returns An exact native projection or a specific unsupported/value/resource/cancellation result.
  */
 export function createComponentRecordProjection(outer: DirectOperationContract, companion: DirectOperationContract,
-  supplied: ComponentRecordProjectionSpec, options: Readonly<{signal?: AbortSignal}> = {}): ComponentRecordProjection | DirectCodecFailure {
+  supplied: ComponentRecordProjectionSpec | ComponentRecordProjectionAssociation, options: Readonly<{signal?: AbortSignal}> = {}): ComponentRecordProjection | DirectCodecFailure {
   const {context} = inspectDirectOperation(outer); inspectDirectOperation(companion);
   const {budget} = context;
   const check = () => {budget.chargeWork(); if (options.signal?.aborted) throw new ScopeStop('cancelled', 'cooperative-cancellation');};
@@ -80,13 +87,19 @@ export function createComponentRecordProjection(outer: DirectOperationContract, 
       check();
       if (outer.basis !== 'native-component-premises-v1' || companion.basis !== 'native-component-premises-v1'
         || outer.correspondence !== 'dated-XSD-2004-components-v1' || companion.correspondence !== 'dated-XSD-2004-components-v1') stop('component-record-source-authority');
-      const spec = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(supplied, check));
+      const requested = directDataOwnership(budget).freeze(directDataOwnership(budget).snapshot(supplied, check));
+      const association = requested && typeof requested === 'object' && !Object.hasOwn(requested, 'version');
+      if (association && (requested.scope !== 'records-with-declared-wrapper-scope'
+        || !ownKeys(requested, Object.hasOwn(requested, 'recordPath') ? ['scope', 'recordPath'] : ['scope'])))
+        throw new ScopeStop('value-invalid', 'explicit-component-record-scope');
+      let spec: ComponentRecordProjectionSpec = association ? {version: 'component-record-scope-v1', scope: requested.scope,
+        payloadPath: [companion.output.element.name], recordPath: requested.recordPath ?? [], opaqueExclusions: []} : requested as ComponentRecordProjectionSpec;
       const validName = (name: ExpandedName) => name && typeof name === 'object' && ownKeys(name, ['namespace', 'local'])
         && typeof name.namespace === 'string' && typeof name.local === 'string' && isXmlNCName(name.local);
       const path = (names: readonly ExpandedName[]) => Array.isArray(names) && names.length > 0 && names.every(validName);
       if (!spec || typeof spec !== 'object' || !ownKeys(spec, ['version', 'scope', 'payloadPath', 'recordPath', 'opaqueExclusions'])
         || spec.version !== 'component-record-scope-v1' || spec.scope !== 'records-with-declared-wrapper-scope'
-        || !path(spec.payloadPath) || spec.payloadPath.length !== 1 || !path(spec.recordPath)
+        || !path(spec.payloadPath) || spec.payloadPath.length !== 1 || !(association && !Object.hasOwn(requested, 'recordPath') || path(spec.recordPath))
         || !Array.isArray(spec.opaqueExclusions) || !spec.opaqueExclusions.every(item => item && typeof item === 'object'
           && ownKeys(item, ['path', 'reason']) && path(item.path) && item.path.length === 1
           && ['standard-schema-metadata', 'wrapper-declaration-universe'].includes(item.reason)))
@@ -98,6 +111,28 @@ export function createComponentRecordProjection(outer: DirectOperationContract, 
       if (mapping.kind !== 'component-mapping') return mapping;
       const projection = inspectComponentValueMapping(mapping, companion).projection;
       const records = new Map(projection.records.map(record => [record.type.id, record]));
+      if (association && !Object.hasOwn(requested, 'recordPath')) {
+        const candidates: (readonly ExpandedName[])[] = [];
+        let recursive = false;
+        const pending: {value: DirectProjectionValue; prefix: readonly ExpandedName[]; ancestors: ReadonlySet<string>}[] = [
+          {value: projection.root, prefix: [], ancestors: new Set()},
+        ];
+        while (pending.length) {
+          check(); const {value, prefix, ancestors} = pending.pop()!;
+          if (value.kind !== 'record') continue;
+          if (ancestors.has(value.type)) {recursive = true; continue;}
+          const record = records.get(value.type); if (!record) stop('record-path-native-record');
+          const next = new Set(ancestors); next.add(value.type);
+          for (const slot of record.slots) {
+            check(); const path = [...prefix, slot.element.name];
+            if (slot.value.kind === 'record' && slot.particle.occurs.max !== '1') candidates.push(path);
+            pending.push({value: slot.value, prefix: path, ancestors: next});
+          }
+        }
+        if (!recursive && !candidates.length) stop('record-path-complex-repeated-declaration');
+        if (recursive || candidates.length !== 1) stop(`ambiguous-record-path: supply recordPath selecting one repeated complex declaration; candidates=${JSON.stringify(candidates)}; recursive=${recursive}`);
+        spec = {...spec, recordPath: candidates[0]!};
+      }
       let value: DirectProjectionValue = projection.root;
       for (let index = 0; index < spec.recordPath.length; index++) {
         check();
@@ -140,6 +175,10 @@ export function createComponentRecordProjection(outer: DirectOperationContract, 
       }
       if (boundaries !== 1) stop('record-wrapper-one-boundary');
       const metadata = leaves.filter((leaf): leaf is Extract<Leaf, {kind: 'standard'}> => leaf.kind === 'standard');
+      if (association) spec = {...spec, opaqueExclusions: [
+        ...metadata.map(leaf => ({path: [leaf.declaration.name], reason: 'standard-schema-metadata' as const})),
+        {path: spec.payloadPath, reason: 'wrapper-declaration-universe'},
+      ]};
       const exclusions = spec.opaqueExclusions.filter(item => item.reason === 'standard-schema-metadata');
       const universes = spec.opaqueExclusions.filter(item => item.reason === 'wrapper-declaration-universe');
       if (metadata.length !== exclusions.length || metadata.some(leaf =>
@@ -147,7 +186,7 @@ export function createComponentRecordProjection(outer: DirectOperationContract, 
         || universes.length !== 1 || !same(universes[0]!.path[0]!, spec.payloadPath[0]!)) stop('record-wrapper-explicit-exclusions');
       check();
       const result: ComponentRecordProjection = Object.freeze({kind: 'component-record-projection', version: 'component-record-scope-v1',
-        direction: Object.freeze({kind: 'output'}), root: outer.output, contextId: outer.contextId, admitted: false, spec,
+        direction: Object.freeze({kind: 'output'}), root: outer.output, contextId: outer.contextId, admitted: false, spec: directDataOwnership(budget).freeze(spec),
         usage: Object.freeze({...budget.usage()})});
       issued.set(result, Object.freeze({outer, companion, parser, mapping, leaves: Object.freeze(leaves)}));
       return result;

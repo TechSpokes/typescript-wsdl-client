@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:forecast" targetNamespace="urn:checked:forecast">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:checked:forecast" elementFormDefault="qualified">
+      <xs:complexType name="ForecastRequest"><xs:sequence><xs:element name="city" type="xs:string"/><xs:element name="days" type="xs:int"/></xs:sequence></xs:complexType>
+      <xs:complexType name="ForecastResponse"><xs:sequence><xs:element name="city" type="xs:string"/><xs:element name="temperature" type="xs:int" minOccurs="0" maxOccurs="unbounded"/><xs:element name="complete" type="xs:boolean"/></xs:sequence></xs:complexType>
+      <xs:complexType name="ForecastFault"><xs:sequence><xs:element name="code" type="xs:string"/><xs:element name="message" type="xs:string"/></xs:sequence></xs:complexType>
+      <xs:element name="GetForecast" type="t:ForecastRequest"/>
+      <xs:element name="GetForecastResponse" type="t:ForecastResponse"/>
+      <xs:element name="ForecastFault" type="t:ForecastFault"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ForecastInput"><wsdl:part name="parameters" element="t:GetForecast"/></wsdl:message>
+  <wsdl:message name="ForecastOutput"><wsdl:part name="parameters" element="t:GetForecastResponse"/></wsdl:message>
+  <wsdl:message name="ForecastError"><wsdl:part name="detail" element="t:ForecastFault"/></wsdl:message>
+  <wsdl:portType name="ForecastPortType"><wsdl:operation name="GetForecast"><wsdl:input message="t:ForecastInput"/><wsdl:output message="t:ForecastOutput"/><wsdl:fault name="ForecastError" message="t:ForecastError"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="ForecastBinding" type="t:ForecastPortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="GetForecast"><soap:operation soapAction="urn:checked:GetForecast"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="ForecastError"><soap:fault name="ForecastError" use="literal"/></wsdl:fault></wsdl:operation></wsdl:binding>
+  <wsdl:service name="ForecastService"><wsdl:port name="ForecastPort" binding="t:ForecastBinding"><soap:address location="http://127.0.0.1:1/forecast"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

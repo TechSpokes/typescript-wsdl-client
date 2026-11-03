@@ -14,8 +14,7 @@ export interface GenerateCheckedTestsOptions {
   readonly routePath: string;
   readonly force?: boolean;
   readonly routePaths?: readonly string[];
-  readonly sourceFile?: string;
-  readonly component?: boolean;
+  readonly sourceFile: string;
 }
 
 /**
@@ -29,7 +28,7 @@ export async function generateCheckedTests(options: GenerateCheckedTestsOptions)
   const testDir = path.resolve(options.testDir);
   let serverImport = path.relative(testDir, path.join(options.appDir, 'server.js')).split(path.sep).join('/');
   if (!serverImport.startsWith('.')) serverImport = './' + serverImport;
-  const localSource = path.relative(testDir, options.sourceFile ?? path.join(options.clientDir, 'source.wsdl')).split(path.sep).join('/');
+  const localSource = path.relative(testDir, options.sourceFile).split(path.sep).join('/');
   const fileRoot = path.relative(testDir, options.clientDir).split(path.sep).join('/');
   fs.mkdirSync(testDir, {recursive: true});
   const destination = path.join(testDir, 'checked-scaffold.test.ts');
@@ -47,7 +46,8 @@ describe('generated scaffold checks (independent wire/business oracles are separ
       fileRoots: [fileURLToPath(new URL(${JSON.stringify(fileRoot + '/')}, import.meta.url))],
       endpoint: 'http://127.0.0.1:1/soap',
       allowedEndpoints: [],
-${options.component ? '      sourceResources: [], sourceOrigins: [],\n' : ''}    });
+      sourceResources: [], sourceOrigins: [],
+    });
     return app;
   }
   it('serves health and selected OpenAPI without upstream SOAP calls', async () => {

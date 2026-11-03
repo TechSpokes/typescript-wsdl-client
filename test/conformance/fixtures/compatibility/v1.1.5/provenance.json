@@ -1,0 +1,11 @@
+{
+  "producer": "@techspokes/typescript-wsdl-client",
+  "version": "1.1.5",
+  "gitHead": "f7c93f9f3ba720995df47b79ef93e832c0ebcf3d",
+  "integrity": "sha512-PjQ1icQfm5dITjjesFRjrfw5B3SAyYaTPDylRVX5bJqXJG9gbpqry4grf2K5shGAvM4jbZvB1zw5gkYiv0pOMg==",
+  "files": {
+    "forecast.wsdl": "51ae02c9950c15530193231d9f1bfbd5605d00934581cc73336132fa489834ea",
+    "forecast.ts": "a561ed5b2903c3cbfb801c963832446f163d65f08e95aaa927c22d5234d0a22b",
+    "forecast.json": "21c71bee537a1ad9f62b657d10ceaaef815330186066960e488572a3dd16ed90"
+  }
+}

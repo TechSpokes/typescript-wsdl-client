@@ -33,7 +33,8 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     const item = value.list ?? value;
     const type = item.retainLexical ? 'string' : projectionScalarRepresentation(item.builtin);
     if (!type) throw new TypeError('Unsupported native scalar representation');
-    const schema: Schema = type === 'number' ? {type: 'integer', minimum: -2147483648, maximum: 2147483647} : {type};
+    const schema: Schema = type === 'number' ? {type: 'integer', minimum: -2147483648, maximum: 2147483647}
+      : type === 'string' ? {type, pattern: '^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$'} : {type};
     return value.list ? {type: `readonly ${type}[]`, schema: {type: 'array', items: schema}} : {type, schema};
   };
   const shape = (value: DirectProjectionValue): {type: string; schema: Schema} => {
@@ -69,7 +70,8 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
         schema: {type: 'array', items: entries.length ? {anyOf: entries.map(entry => entry.schema)} : {not: {}}}}, true);
     } else for (const slot of record.slots) {
       check(); const value = shape(slot.value), repeated = slot.particle.occurs.max !== '1';
-      member(slot.element.name.local, repeated ? {type: `readonly (${value.type})[]`, schema: {type: 'array', items: value.schema,
+      member(slot.element.name.local, repeated ? {type: slot.particle.occurs.min === '1'
+        ? `readonly [${value.type}, ...(${value.type})[]]` : `readonly (${value.type})[]`, schema: {type: 'array', items: value.schema,
         minItems: Number(slot.particle.occurs.min)}} : value, repeated || slot.particle.occurs.min === '1');
     }
     declarations.push(`export type ${name} = ${members.length ? '{\n' + members.join('\n') + '\n}' : 'Readonly<Record<string, never>>'};`);

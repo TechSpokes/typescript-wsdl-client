@@ -11,7 +11,7 @@ import type {checkedDirectRuntimeV1} from '@techspokes/typescript-wsdl-client';
 type DirectClientRuntime = typeof checkedDirectRuntimeV1;
 type DirectClientOptions = Parameters<DirectClientRuntime['execute']>[2];
 type DirectClientResult = Awaited<ReturnType<DirectClientRuntime['execute']>>;
-export async function exerciseGenerated(directClientRuntime: DirectClientRuntime, privateProfiling = false): Promise<void> {
+export async function exerciseGenerated(directClientRuntime: DirectClientRuntime, privateProfiling = false, component = false): Promise<void> {
   const root = await realpath(process.cwd());
   await assert.rejects(readFile(process.argv[2]!), {code: 'ERR_ACCESS_DENIED'});
   let implicitFetches = 0;
@@ -56,6 +56,7 @@ export async function exerciseGenerated(directClientRuntime: DirectClientRuntime
       const source = path.join(root, 'authorized', v.name + '.wsdl');
       const capsule = await readFile(path.join(root, v.name + '.json'));
       const options: DirectClientOptions = {localSource: source, fileRoots: [path.dirname(source)], capsule,
+        ...(component ? {sourceResources: [], sourceOrigins: []} : {}),
         soap: {service: {namespace: v.ns, local: v.prefix + 'Service'}, port: v.prefix + 'Port', endpoint,
           allowEndpoint: url => url.href === endpoint, ...(privateProfiling ? {timeoutMs: 1000} : {})}};
       const renamed = v.name === 'renamed', scalar = v.name === 'scalar', empty = v.name === 'empty';
@@ -86,7 +87,7 @@ export async function exerciseGenerated(directClientRuntime: DirectClientRuntime
         const before = requests.length;
         const limited = await call(input, {...options, soap: {...options.soap, limits: {maxBytes: 1024}}});
         assert.equal(limited.kind, 'resource-limit'); assert.equal(requests.length, before); refusals++;
-        continue;
+        if (!component) continue;
       }
       for (status of [200, 500]) {
         const detail = scalar ? 'fault text' : empty ? '' : '<r:code>NO_CITY</r:code><r:message>Unknown city</r:message>';
@@ -120,7 +121,7 @@ export async function exerciseGenerated(directClientRuntime: DirectClientRuntime
         if (kind) assert.equal(result.kind, kind, JSON.stringify(result));
         assert.equal(requests.length, before); refusals++;
       };
-      if (!privateProfiling) {
+      if (!privateProfiling && !component) {
       const beforeVersions = requests.length;
       const mismatched = module.createClient({...directClientRuntime, version: 'old'} as unknown as DirectClientRuntime);
       assert.equal((await mismatched[v.op]!(input, options)).kind, 'incompatible-artifact');
@@ -167,7 +168,7 @@ export async function exerciseGenerated(directClientRuntime: DirectClientRuntime
         (o: Record<string, any>) => {o.compatibility.input.element.local = 'Wrong';},
         (o: Record<string, any>) => {o.compatibility.faults[0].name = 'Wrong';},
       ];
-      for (const change of corruptions) {
+      for (const change of component ? [] : corruptions) {
         const data: Record<string, any> = JSON.parse(capsule.toString()); change(data);
         await refuse(input, {...options, capsule: Buffer.from(JSON.stringify(data))}, 'incompatible-artifact');
       }

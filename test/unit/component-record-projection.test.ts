@@ -32,6 +32,36 @@ beforeAll(async () => {
 });
 
 describe('explicit native companion record scope', () => {
+  it('requests a recordPath for multiple declared associations and respects the supplied choice', async () => {
+    const result = await selectComponentOperation(path.join(directory, 'records-ambiguous.wsdl'), {
+      portType: name('RecordPortType'), binding: name('RecordBinding'), operation: 'Fetch'}, {loading: {policy: {fileRoots: [directory]}}});
+    if (result.kind !== 'selected') throw new Error(JSON.stringify(result));
+    expect(createComponentRecordProjection(outer, result.contract, {scope: 'records-with-declared-wrapper-scope'}))
+      .toMatchObject({kind: 'unsupported', rule: expect.stringContaining('supply recordPath')});
+    const chosen = createComponentRecordProjection(outer, result.contract, {scope: 'records-with-declared-wrapper-scope', recordPath: recordScopeSpec.recordPath});
+    expect(chosen.kind).toBe('component-record-projection');
+  });
+  it('does not invent a missing choice when the companion has no repeated complex record', async () => {
+    const file = path.resolve('test/conformance/fixtures/assessment/forecast.wsdl'), namespace = 'urn:checked:forecast';
+    const result = await selectComponentOperation(file, {portType: {namespace, local: 'ForecastPortType'},
+      binding: {namespace, local: 'ForecastBinding'}, operation: 'GetForecast'}, {loading: {policy: {fileRoots: [path.dirname(file)]}}});
+    if (result.kind !== 'selected') throw new Error(JSON.stringify(result));
+    expect(createComponentRecordProjection(outer, result.contract, {scope: 'records-with-declared-wrapper-scope'}))
+      .toMatchObject({kind: 'unsupported', rule: 'record-path-complex-repeated-declaration'});
+  });
+  it('derives the concise association through the same final gate and preserves positive and negative values', () => {
+    const concise = createComponentRecordProjection(outer, companion, {scope: 'records-with-declared-wrapper-scope'});
+    if (concise.kind !== 'component-record-projection') throw new Error(JSON.stringify(concise));
+    expect(concise.spec).toEqual(recordScopeSpec);
+    for (const bytes of [xml(), xml(recordXml, ''), xml(recordXml.replace('<Active>true</Active>', '<Active>invalid</Active>')),
+      xml(recordXml.replace('<Quantity>2</Quantity>', '<Quantity>2147483648</Quantity>'))]) {
+      const complete = decodeComponentRecordXml(outer, projection, bytes), associated = decodeComponentRecordXml(outer, concise, bytes);
+      expect(associated.kind).toBe(complete.kind);
+      if (associated.kind === 'component-record-decoded' && complete.kind === 'component-record-decoded')
+        expect(associated.validated.value).toEqual(complete.validated.value);
+      else if ('rule' in associated && 'rule' in complete) expect(associated.rule).toBe(complete.rule);
+    }
+  });
   it('preserves typed records across a same-QName boundary using separate native contexts', () => {
     expect(outer.output.element.name).toEqual(companion.output.element.name);
     expect(outer.contextId).not.toBe(companion.contextId);
