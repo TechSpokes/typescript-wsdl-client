@@ -100,9 +100,9 @@ try {
     const bindings = {'': '', s: 'http://schemas.xmlsoap.org/soap/envelope/', t: namespace, e: 'urn:extra', p: 'urn:first', k: known, xsi};
     const envelope = (body: string) => `<s:Envelope xmlns:s="${bindings.s}"><s:Body>${body}</s:Body></s:Envelope>`;
     const scope = `xmlns:t="${namespace}" xmlns:e="urn:extra" xmlns:p="urn:first" xmlns:k="${known}" xmlns:xsi="${xsi}"`;
-    const content = '<t:count>2</t:count><t:p id="7">Hello <t:b>world</t:b>!<t:p> nested </t:p><t:p/><t:p xsi:nil="true" id="N"/>'
+    const content = '<t:count>2</t:count><t:p id="7">Hello <t:b>world</t:b>!<t:p> nested </t:p><t:p/><t:b>again</t:b><t:p xsi:nil="true" id="N"/>'
       + '<t:ordered><t:a>A</t:a><t:b>3</t:b><t:a>B</t:a></t:ordered></t:p>'
-      + '<t:open rating="6" k:number="5"><t:count>4</t:count><e:extra rating="not-an-int" xsi:nil="not-a-boolean" xsi:type="unbound:Type">p:Thing'
+      + '<t:open rating="6" k:number="5"><t:count>4</t:count><e:extra rating="not-an-int" e:rating="qualified" xsi:nil="not-a-boolean" xsi:type="unbound:Type">p:Thing'
       + '<e:inner xmlns:p="urn:second">p:Other</e:inner><e:inner>p:Sibling</e:inner><e:code>A</e:code><k:code>B</k:code><e:rating>child</e:rating></e:extra><k:number>7</k:number>'
       + '<k:ordered><k:a>A</k:a><k:b>9</k:b></k:ordered><k:number xsi:nil="true"/></t:open>'
       + '<t:skip><k:number xsi:nil="raw">not-an-int</k:number></t:skip>'
@@ -111,10 +111,10 @@ try {
       + '<t:fixedNames><t:code>first</t:code> <k:code>second</k:code></t:fixedNames>';
     const ordered = (local: string, value: unknown) => ({name: {namespace, local}, value});
     const value = {$namespaces: bindings, count: 2, p: {id: '7', $content: [{$value: 'Hello '}, {b: 'world'}, {$value: '!'},
-      {p: {$content: [{$value: ' nested '}]}}, {p: {$content: []}}, {p: {$nil: true, id: 'N'}},
+      {p: {$content: [{$value: ' nested '}]}}, {p: {$content: []}}, {b: 'again'}, {p: {$nil: true, id: 'N'}},
       {ordered: {$content: [ordered('a', 'A'), ordered('b', 3), ordered('a', 'B')]}}]},
     open: {$attributes: [{rating: 6}, {number: {$namespace: known, $value: 5}}], $content: [{count: 4},
-      {extra: {$namespace: 'urn:extra', $attributes: [{rating: 'not-an-int'}, {nil: {$namespace: xsi, $value: 'not-a-boolean'}}, {type: {$namespace: xsi, $value: 'unbound:Type'}}],
+      {extra: {$namespace: 'urn:extra', $attributes: [{rating: 'not-an-int'}, {nil: {$namespace: xsi, $value: 'not-a-boolean'}}, {type: {$namespace: xsi, $value: 'unbound:Type'}}, {rating: {$namespace: 'urn:extra', $value: 'qualified'}}],
         $content: [{$value: 'p:Thing'}, {inner: {$namespace: 'urn:extra', $namespaces: {p: 'urn:second'}, $content: [{$value: 'p:Other'}]}},
           {inner: {$namespace: 'urn:extra', $content: [{$value: 'p:Sibling'}]}},
           {code: {$namespace: 'urn:extra', $content: [{$value: 'A'}]}}, {code: {$namespace: known, $content: [{$value: 'B'}]}},

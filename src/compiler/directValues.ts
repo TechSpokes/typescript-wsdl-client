@@ -282,7 +282,7 @@ function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessed
       value.$namespace = payload.name.namespace;
       retain(value, payload.namespaces);
       if (payload.attributes.length) {
-        value.$attributes = budget.sorted([...payload.attributes], (a, b) => budget.compareText(JSON.stringify(a.name), JSON.stringify(b.name))).map(attribute => {
+        value.$attributes = budget.sorted([...payload.attributes], (a, b) => budget.compareText(JSON.stringify([a.name.namespace, a.name.local]), JSON.stringify([b.name.namespace, b.name.local]))).map(attribute => {
           const entry = Object.create(null) as Record<string, DirectApplicationValue>;
           entry[attribute.name.local] = attribute.name.namespace ? {$namespace: attribute.name.namespace, $value: attribute.value} : attribute.value;
           return entry;
@@ -465,7 +465,6 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       }
       if (retainLexical || projectionScalarRepresentation(builtin) === 'string') {
         if (typeof value !== 'string') return invalid('string-required', path, element);
-        if (!isXmlCharacters(value)) return invalid('xml-characters', path, element);
         if (value.length > maxText - textUnits) throw new Stop('resource-limit', 'application text limit');
         textUnits += value.length;
          return value;
@@ -477,6 +476,11 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       if (typeof value !== 'number' || !Number.isInteger(value)) return invalid('integer-number-required', path, element);
       // Range and XML lexical validity are checked by the same neutral core below.
        return String(value === 0 ? 0 : value);
+    };
+    const lexical = (value: unknown, path: string, element: ElementNode): string => {
+      const text = spelling(value, {namespace: XSD_NAMESPACE, local: 'string'}, path, element);
+      if (!isXmlCharacters(text)) return invalid('xml-characters', path, element);
+      return text;
     };
     const source = (path: string): SyntaxSource => {
 
@@ -510,7 +514,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       if (!raw || typeof raw !== 'object' || types.isProxy(raw) || Array.isArray(raw) || ![null, Object.prototype].includes(Object.getPrototypeOf(raw))) return invalid('namespace-map-required', path, element);
       for (const key of keys(raw, maxItems, path, element)) {
         if (typeof key !== 'string') return invalid('namespace-binding', path, element);
-        const namespace = spelling(data(raw, key, path, element), {namespace: XSD_NAMESPACE, local: 'string'}, path, element);
+        const namespace = lexical(data(raw, key, path, element), path, element);
         if (!isXmlNamespaceBinding(key, namespace)) return invalid('namespace-binding', path, element);
         budget.chargeWork(64 + key.length * 4 + namespace.length * 4); result[key] = namespace;
       }
@@ -575,7 +579,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
             if (!namespace && key === 'xmlns') return invalid('attribute-name', valuePath, element);
             if (seen.has(identity)) return invalid('duplicate-attribute', valuePath, element);
             seen.add(identity);
-            attributes.push({name: {namespace, local: key}, lexicalName: key, value: spelling(member, {namespace: XSD_NAMESPACE, local: 'string'}, valuePath, element)});
+            attributes.push({name: {namespace, local: key}, lexicalName: key, value: lexical(member, valuePath, element)});
           }
         }
         const children: SyntaxNode[] = [];
@@ -585,7 +589,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
           check(); const entry = object(data(content, String(index), valuePath, element), 1);
           if (entry.keys.length !== 1) return invalid('ordered-entry-shape', valuePath, element);
           const key = entry.keys[0]!, member = data(entry.value, key, valuePath, element), at = `${valuePath}/$content/${index}`;
-          if (key === '$value') pending.push({kind: 'text', text: spelling(member, {namespace: XSD_NAMESPACE, local: 'string'}, at, element), xmlPath: `${xmlPath}/children/${index}`, into: children});
+          if (key === '$value') pending.push({kind: 'text', text: lexical(member, at, element), xmlPath: `${xmlPath}/children/${index}`, into: children});
           else {
             const child = object(member, 4), namespace = data(child.value, '$namespace', at, element);
             if (typeof namespace !== 'string') return invalid('element-namespace-required', at, element);
@@ -685,8 +689,8 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
               () => {throw new Stop('unsupported', 'native-wildcard-attribute-scalar', element.context.source.path, at);});
             if (!selection) return invalid('unknown-attribute', at, element);
             const descriptor = selection.attribute;
-            attributes.push({name: {namespace, local: key}, lexicalName: key, value: spelling(member,
-              descriptor?.builtin ?? {namespace: XSD_NAMESPACE, local: 'string'}, at, element, descriptor?.retainLexical, descriptor?.list)});
+            attributes.push({name: {namespace, local: key}, lexicalName: key, value: descriptor
+              ? spelling(member, descriptor.builtin, at, element, descriptor.retainLexical, descriptor.list) : lexical(member, at, element)});
             continue;
           }
           if (!selected) return invalid('unknown-attribute', at, element);
@@ -739,7 +743,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
             const member = data(entry, key, at, element);
             if (key === '$value') {
               if (record.content !== 'mixed') return invalid('complex-text', at, element);
-              const text = spelling(member, {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'string'}, at, element);
+              const text = lexical(member, at, element);
               if (++items > maxItems) throw new Stop('resource-limit', 'application item limit');
               // @why Schedule text with elements so mixed positions survive the iterative construction order.
               pending.push({kind: 'text', text, xmlPath: `${xmlPath}/children/${index}`, into: children});

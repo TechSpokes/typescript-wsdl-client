@@ -157,17 +157,11 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         check(); const node = visits.pop()!;
         budget.chargeWork(128);
         if (!sourceShape(node.source)) return malformed();
-        if (node.kind === 'text') {if (!string(node.value) || !isXmlCharacters(node.value)) return malformed(); continue;}
+        if (node.kind === 'text') {if (!string(node.value)) return malformed(); continue;}
         if (!nameShape(node.name) || !string(node.lexicalName) || !string(node.baseUri) || !record(node.namespaces) || !Array.isArray(node.attributes)) return malformed();
-        if (!isXmlNCName(node.name.local) || !isXmlCharacters(node.name.namespace) || node.name.namespace === 'http://www.w3.org/2000/xmlns/') return malformed();
-        for (const key in node.namespaces) {check(); if (!string(node.namespaces[key]) || !isXmlNamespaceBinding(key, node.namespaces[key]!)) return malformed();}
-        const attributeNames = new Set<string>();
+        for (const key in node.namespaces) {check(); if (!string(node.namespaces[key])) return malformed();}
         for (const a of node.attributes) {
           check(); if (!record(a) || !nameShape(a.name) || !string(a.lexicalName) || !string(a.value)) return malformed();
-          if (!isXmlNCName(a.name.local) || a.name.local === 'xmlns' && a.name.namespace === '' || a.name.namespace === 'http://www.w3.org/2000/xmlns/' || !isXmlCharacters(a.name.namespace) || !isXmlCharacters(a.value)) return malformed();
-          const key = JSON.stringify(a.name);
-          if (attributeNames.has(key)) return fail('mismatch', 'duplicate-attribute', schemaPath, node.source.path);
-          attributeNames.add(key);
         }
         for (const child of node.children) {check(); budget.chargeWork(32); visits.push(child);}
       }
@@ -225,10 +219,30 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         let node = frame.node;
         budget.chargeWork(128 + parentPath.length * 4);
         if (node.kind === 'text') {
+          if (!isXmlCharacters(node.value)) return mismatch('xml-characters', declaration, parentPath);
           frame.into.push({kind: 'mixed-text', declaration, payloadPath: parentPath, value: node.value});
           continue;
         }
         if (frame.unassessed) {
+          const pending: SyntaxNode[] = [node];
+          while (pending.length) {
+            check(); const value = pending.pop()!; budget.chargeWork(64);
+            if (value.kind === 'text') {
+              if (!isXmlCharacters(value.value)) return mismatch('xml-characters', declaration, value.source.path);
+              continue;
+            }
+            if (!isXmlNCName(value.name.local) || !isXmlCharacters(value.name.namespace) || value.name.namespace === 'http://www.w3.org/2000/xmlns/') return mismatch('expanded-name-required', declaration, value.source.path);
+            for (const prefix in value.namespaces) {check(); if (!isXmlNamespaceBinding(prefix, value.namespaces[prefix]!)) return mismatch('namespace-binding', declaration, value.source.path);}
+            const identities = new Set<string>();
+            for (const attribute of value.attributes) {
+              check(); const key = JSON.stringify([attribute.name.namespace, attribute.name.local]); budget.chargeWork(64 + key.length * 4 + attribute.value.length);
+              if (!isXmlNCName(attribute.name.local) || attribute.name.local === 'xmlns' && attribute.name.namespace === '' || attribute.name.namespace === 'http://www.w3.org/2000/xmlns/' || !isXmlCharacters(attribute.name.namespace)) return mismatch('attribute-name', declaration, value.source.path);
+              if (!isXmlCharacters(attribute.value)) return mismatch('xml-characters', declaration, value.source.path);
+              if (identities.has(key)) return mismatch('duplicate-attribute', declaration, value.source.path);
+              identities.add(key);
+            }
+            for (const child of value.children) {check(); pending.push(child);}
+          }
           frame.into.push({kind: 'unassessed', declaration, payloadPath: parentPath, payload: node});
           continue;
         }
@@ -260,6 +274,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         }
         const record = records.get(frame.value.type);
         if (!record) return unsupported();
+        if (record.contextual) for (const prefix in node.namespaces) {check(); if (!isXmlNamespaceBinding(prefix, node.namespaces[prefix]!)) return mismatch('namespace-binding', declaration, parentPath);}
         // @why XSD 1.0 cvc-complex-type.2.1 forbids even whitespace character children for empty content.
         if (record.content === 'empty' && node.children.length) return mismatch('empty-content', declaration, parentPath);
         const matchedAttributes: {declaration: AttributeNode; operand: number; payloadPath: string; bag?: true; namespaceChoice?: true; origin: 'present' | 'schema-default' | 'schema-fixed'}[] = [];
@@ -279,7 +294,8 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
               const selected = selectProjectionAttribute(context, record, attribute.name, check, unsupported);
               if (!selected) return mismatch('unknown-attribute', declaration, path);
               if (!selected.attribute) {
-                const key = JSON.stringify(attribute.name);
+                if (!isXmlCharacters(attribute.value)) return mismatch('xml-characters', declaration, path);
+                const key = JSON.stringify([attribute.name.namespace, attribute.name.local]);
                 if (present.has(key)) return mismatch('duplicate-attribute', declaration, path);
                 present.add(key); openAttributes.push(attribute); continue;
               }

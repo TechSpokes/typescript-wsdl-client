@@ -72,6 +72,15 @@ describe('source-selected keyed mixed values', () => {
     expect(matchDirectProjection(context, root, parse('<k:unknown>lexical</k:unknown>')).kind).toBe(local === 'strict' ? 'mismatch' : 'projection-match');
     expect(matchDirectProjection(context, root, parse('')).kind).toBe('mismatch');
   });
+  it('rejects duplicate expanded raw attributes independently of object property insertion order', async () => {
+    const {context, root} = await source('skip');
+    const payload = structuredClone(parseOrderedSyntax(Buffer.from('<m:skip xmlns:m="urn:keyed-values" xmlns:e="urn:extra"><e:extra id="first"/></m:skip>'), 'urn:hand-duplicate').root);
+    const child = payload.children[0];
+    if (!child || child.kind !== 'element') throw new Error('Missing raw child');
+    (child.attributes as {name: {namespace: string; local: string}; lexicalName: string; value: string}[]).push({
+      name: {local: 'id', namespace: ''}, lexicalName: 'id', value: 'second'});
+    expect(matchDirectProjection(context, root, payload)).toMatchObject({kind: 'mismatch', rule: 'duplicate-attribute'});
+  });
 
   it('retains assessed complex wildcard fields and rejects extra scalar-holder metadata before construction', async () => {
     const {context, root} = await source('open');
@@ -113,9 +122,9 @@ describe('source-selected keyed mixed values', () => {
   });
   it('preserves recursive mixed text and fresh hand JSON without changing its grammar for empty instances', async () => {
     const {context, root} = await source();
-    const xml = '<p xmlns="urn:keyed-values" id="7">Hello <b>world</b>!<p> nested <b>B</b> </p><p/></p>';
+    const xml = '<p xmlns="urn:keyed-values" id="7">Hello <b>world</b>!<p> nested <b>B</b> </p><p/><b>again</b></p>';
     const value = {id: '7', $content: [{$value: 'Hello '}, {b: 'world'}, {$value: '!'},
-      {p: {$content: [{$value: ' nested '}, {b: 'B'}, {$value: ' '}]}}, {p: {$content: []}}]};
+      {p: {$content: [{$value: ' nested '}, {b: 'B'}, {$value: ' '}]}}, {p: {$content: []}}, {b: 'again'}]};
     const matched = matchDirectProjection(context, root, parseOrderedSyntax(Buffer.from(xml), 'urn:hand-mixed').root);
     expect(matched.kind).toBe('projection-match');
     if (matched.kind !== 'projection-match') throw new Error(matched.rule);
