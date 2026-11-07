@@ -243,7 +243,8 @@ function scalar(duty: DirectScalarDuty, s: Session, context: SemanticContext): D
       items.push(present(item, duty.list.builtin, item.normalized, duty.list.retainLexical));
     }
     value = items;
-  } else value = present(result, duty.builtin, normalized, duty.retainLexical);
+  // @why #422 primitive-string unions re-assess the complete pre-member lexical input on every inverse.
+  } else value = present(result, duty.builtin, result.selectedMembers ? duty.lexical : normalized, duty.retainLexical);
   return {...duty, normalized, canonical: result.canonical, value};
 }
 function assessed(contract: DirectOperationContract, structural: DirectStructuralMatch, mapping: DirectValueMapping, s: Session): DirectValueReceipt {

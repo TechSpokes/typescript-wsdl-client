@@ -95,7 +95,87 @@ try {
     return {status: response.status, value: await response.json() as unknown};
   };
   const mode = process.argv[3];
-  if (mode === 'keyed') {
+  if (mode === 'facets') {
+    const ns = 'urn:checked:forecast', soapNs = 'http://schemas.xmlsoap.org/soap/envelope/', xsi = 'http://www.w3.org/2001/XMLSchema-instance';
+    const envelope = (content: string) => `<s:Envelope xmlns:s="${soapNs}" xmlns:t="${ns}" xmlns:xsi="${xsi}"><s:Body>${content}</s:Body></s:Envelope>`;
+    const content = '<t:code>AB12</t:code><t:money>9007199254740993.02</t:money><t:unicode>😀A</t:unicode><t:replace>A B</t:replace>'
+      + '<t:count>2</t:count><t:exact>9007199254740993</t:exact><t:digits>12.3</t:digits><t:integerDigits>999</t:integerDigits><t:intWord>+007</t:intWord><t:integerWord>+009007199254740993</t:integerWord>'
+      + '<t:decimalWord>+01.20</t:decimalWord><t:codes>AB12 AB34</t:codes><t:counts>2 3</t:counts><t:exacts>9007199254740993</t:exacts>'
+      + '<t:monies>9007199254740993.02</t:monies><t:intWords>+007 +008</t:intWords><t:listWord>+007 +008</t:listWord>'
+      + '<t:choice> AB12 </t:choice><t:choices>AB12 Z9</t:choices><t:choiceWord>AB12 Z9</t:choiceWord><t:repeated>2</t:repeated><t:repeated>3</t:repeated>'
+      + '<t:strict><t:known>AB12</t:known></t:strict><t:lax><t:known>AB12</t:known></t:lax><t:skip><t:known>invalid</t:known></t:skip>';
+    const value = {$namespaces: {'': '', s: soapNs, t: ns, xsi}, fixed: '+007', seed: 'AB12', tags: ['AB12', 'Z9'], code: 'AB12', money: '9007199254740993.02', unicode: '😀A', replace: 'A B', count: 2,
+      exact: '9007199254740993', digits: '12.3', integerDigits: '999', intWord: '+007', integerWord: '+009007199254740993', decimalWord: '+01.20', codes: ['AB12', 'AB34'],
+      counts: [2, 3], exacts: ['9007199254740993'], monies: ['9007199254740993.02'], intWords: ['+007', '+008'], listWord: '+007 +008',
+      choice: ' AB12 ', choices: ['AB12', 'Z9'], choiceWord: 'AB12 Z9', repeated: [2, 3],
+      strict: {$content: [{name: {namespace: ns, local: 'known'}, value: 'AB12'}]},
+      lax: {$content: [{known: {$namespace: ns, $value: 'AB12'}}]}, skip: {$content: [{known: {$namespace: ns, $content: [{$value: 'invalid'}]}}]}};
+    const responseXml = envelope(`<t:GetForecastResponse>${content}</t:GetForecastResponse>`);
+    reply = responseXml;
+    const submitted = structuredClone(value);
+    assert.deepEqual(await post(submitted), {status: 200, value});
+    assert.deepEqual(submitted, value);
+    // @why Handwritten SAX events prove namespace-aware inverse encoding independently of the generator and decoder.
+    assert.deepEqual(events(upstream.at(-1)!.xml), events(envelope(`<t:GetForecast fixed="+007" seed="AB12" tags="AB12 Z9">${content}</t:GetForecast>`)));
+    const attributes: {namespace: string; local: string; value: string}[] = [];
+    const parser = new SaxesParser({xmlns: true});
+    parser.on('opentag', tag => {
+      for (const attribute of Object.values(tag.attributes)) if (attribute.uri !== 'http://www.w3.org/2000/xmlns/')
+        attributes.push({namespace: attribute.uri, local: attribute.local, value: attribute.value});
+    });
+    parser.write(upstream.at(-1)!.xml).close();
+    assert.deepEqual(attributes.sort((a, b) => a.local.localeCompare(b.local)), [
+      {namespace: '', local: 'fixed', value: '+007'}, {namespace: '', local: 'seed', value: 'AB12'},
+      {namespace: '', local: 'tags', value: 'AB12 Z9'},
+    ]);
+    assert.equal(upstream.at(-1)!.action, '"urn:checked:GetForecast"');
+    const aliases = {...value, money: '+09007199254740993.020', exact: '+09007199254740993', replace: 'A\tB'};
+    assert.deepEqual(await post(aliases), {status: 200, value});
+    assert.deepEqual(await post({...value, money: '9007199254740993.99', count: 3, exact: '9007199254740995', digits: '-12.3', integerDigits: '-999'}), {status: 200, value});
+    replyStatus = 500;
+    const faultXml = envelope(`<s:Fault><faultcode>s:Server</faultcode><faultstring>facet fault</faultstring><detail><t:ForecastFault>${content}</t:ForecastFault></detail></s:Fault>`);
+    reply = faultXml;
+    assert.deepEqual(await post(value), {status: 502, value: {fault: {name: 'ForecastError', code: {namespace: soapNs, local: 'Server'}, string: 'facet fault'}, value}});
+    const before = upstream.length;
+    for (const invalid of [
+      {...value, code: 'AC12'}, {...value, code: 'AB123'}, {...value, unicode: '😀'}, {...value, money: '9007199254740993.01'},
+      {...value, money: '9007199254740994'}, {...value, money: '9007199254740993.021'}, {...value, money: 9007199254740994},
+      {...value, count: 1}, {...value, count: 4}, {...value, exact: '9007199254740996'}, {...value, intWord: 7}, {...value, intWord: '7'},
+      {...value, digits: '123.4'}, {...value, digits: '1.23'}, {...value, integerDigits: '1000'},
+      {...value, integerWord: '9007199254740993'}, {...value, decimalWord: '1.2'}, {...value, codes: ['AB12']},
+      {...value, codes: ['AB12', 'AB56']}, {...value, counts: [2, 4]}, {...value, exacts: ['9007199254740996']},
+      {...value, monies: ['9007199254740993.01']}, {...value, intWords: ['7']}, {...value, listWord: ['+007', '+008']},
+      {...value, listWord: '+007'}, {...value, choice: 'no'}, {...value, choice: {member: 'Code', value: 'AB12'}},
+      {...value, choices: [' AB12 ']}, {...value, choices: ['no']}, {...value, choiceWord: ['AB12', 'Z9']},
+      {...value, choiceWord: 'AB12 AB34'}, {...value, strict: {$content: [{name: {namespace: ns, local: 'known'}, value: 'no'}]}},
+      {...value, lax: {$content: [{known: {$namespace: ns, $value: 'no'}}]}},
+      {...value, fixed: '+008'}, {...value, tags: ['no']}, {...value, unknown: 'field'}, {...value, counts: '2 3'}, {...value, repeated: 2},
+    ]) {
+      const result = await post(invalid); assert.equal(result.status, 400); assert.ok(!Object.hasOwn(result.value as object, 'value')); refusals++;
+    }
+    assert.equal(upstream.length, before);
+    for (const [from, to] of [
+      ['AB12</t:code>', 'AC12</t:code>'], ['9007199254740993.02</t:money>', '9007199254740993.01</t:money>'],
+      ['😀A', '😀'], ['>2</t:count>', '>4</t:count>'], ['>9007199254740993</t:exact>', '>9007199254740996</t:exact>'],
+      ['12.3</t:digits>', '123.4</t:digits>'], ['12.3</t:digits>', '1.23</t:digits>'], ['999</t:integerDigits>', '1000</t:integerDigits>'],
+      ['+007</t:intWord>', '7</t:intWord>'], ['+009007199254740993', '9007199254740993'], ['+01.20', '1.2'],
+      ['AB12 AB34', 'AB12 AB56'], ['2 3</t:counts>', '2 4</t:counts>'], ['>9007199254740993</t:exacts>', '>9007199254740996</t:exacts>'],
+      ['9007199254740993.02</t:monies>', '9007199254740993.01</t:monies>'], ['+007 +008</t:intWords>', '7 8</t:intWords>'],
+      ['+007 +008</t:listWord>', '+007</t:listWord>'], [' AB12 </t:choice>', 'no</t:choice>'],
+      ['AB12 Z9</t:choices>', 'no</t:choices>'], ['AB12 Z9</t:choiceWord>', 'AB12 AB34</t:choiceWord>'],
+      ['<t:strict><t:known>AB12', '<t:strict><t:known>no'], ['<t:lax><t:known>AB12', '<t:lax><t:known>no'],
+    ]) {
+      for (const fault of [false, true]) {
+        replyStatus = fault ? 500 : 200; reply = (fault ? faultXml : responseXml).replace(from!, to!);
+        const result = await post(value); assert.equal(result.status, 502); assert.ok(!Object.hasOwn(result.value as object, 'value')); refusals++;
+      }
+    }
+    replyStatus = 200;
+    reply = responseXml.replace('<t:code>AB12</t:code>', '<t:code xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>');
+    assert.deepEqual(await post({...value, code: {$nil: true}}), {status: 200, value: {...value, code: {$nil: true}}});
+    process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false, variant: mode,
+      calls, refusals, upstreamRequests: upstream.length, scope: 'native facets, exact numbers, lexical witnesses, lists, primitive-string unions; installed request/response/fault and strict/lax/skip controls'}) + '\n');
+  } else if (mode === 'keyed') {
     const namespace = 'urn:checked:forecast', known = 'urn:keyed-known', xsi = 'http://www.w3.org/2001/XMLSchema-instance';
     const bindings = {'': '', s: 'http://schemas.xmlsoap.org/soap/envelope/', t: namespace, e: 'urn:extra', p: 'urn:first', k: known, xsi};
     const envelope = (body: string) => `<s:Envelope xmlns:s="${bindings.s}"><s:Body>${body}</s:Body></s:Envelope>`;

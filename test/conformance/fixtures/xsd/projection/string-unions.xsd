@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:string-unions" targetNamespace="urn:string-unions" elementFormDefault="qualified">
+  <xs:simpleType name="Collapsed"><xs:restriction base="xs:token"><xs:enumeration value="AB12"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Preserved"><xs:restriction base="xs:string"><xs:enumeration value=" AB12 "/><xs:enumeration value="Z9"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Inner"><xs:union memberTypes="t:Collapsed t:Preserved"/></xs:simpleType>
+  <xs:simpleType name="Restricted"><xs:restriction base="t:Inner"><xs:enumeration value="Z9"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="Outer"><xs:union xmlns:a="urn:string-unions" memberTypes="a:Restricted"><xs:simpleType><xs:restriction base="xs:string"><xs:enumeration value="X"/></xs:restriction></xs:simpleType></xs:union></xs:simpleType>
+  <xs:simpleType name="Items"><xs:list itemType="t:Outer"/></xs:simpleType>
+  <xs:simpleType name="Pair"><xs:restriction base="t:Items"><xs:length value="2"/></xs:restriction></xs:simpleType>
+  <xs:element name="Value" type="t:Outer"/>
+  <xs:element name="RestrictedValue" type="t:Restricted"/>
+  <xs:element name="Items" type="t:Pair"/>
+</xs:schema>
