@@ -93,6 +93,11 @@ describe('native strict wildcard projection', () => {
 
   it('preserves explicit limits, cancellation and cycle refusal in dynamically selected records', async () => {
     const lax = await source('Lax');
+    const unknown = () => ({Unknown: {$namespace: 'urn:unknown', $content: []}});
+    const branch = () => ({Lax: {$namespace: namespace, $content: [unknown(), unknown()]}});
+    const aggregate = {$namespaces: {t: namespace}, $content: [branch(), branch()]};
+    expect(expandProjectionValue(lax.context, lax.root, aggregate, {maxItems: 6})).toMatchObject({kind: 'projection-expanded'});
+    expect(expandProjectionValue(lax.context, lax.root, aggregate, {maxItems: 5})).toMatchObject({kind: 'resource-limit'});
     const child: {$namespace: string; $content: unknown[]} = {$namespace: namespace, $content: []};
     child.$content.push({Lax: child});
     expect(expandProjectionValue(lax.context, lax.root, {$namespaces: {t: namespace}, $content: [{Lax: child}]}, {maxItems: 8}))

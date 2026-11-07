@@ -72,7 +72,7 @@ describe('keyed production XML conformance', () => {
       const input = {$namespaces: scope, count: 2, p: {$content: []}, skip: {$content: [{extra: {$namespace: 'urn:extra',
         ...(unqualified ? {} : {$attributes: [{id: {$namespace: 'urn:attributes', $value: 'needs-prefix'}}]}),
         $content: unqualified ? [{plain: {$namespace: '', $content: []}}] : []}}]}};
-      expect(encodeComponentXml(contract, mapping, input)).toMatchObject({kind: 'value-invalid', rule: unqualified ? 'no-namespace-element-default-conflict' : 'attribute-namespace-prefix-required'});
+      expect(encodeComponentXml(contract, mapping, input)).toMatchObject({kind: 'value-invalid', rule: unqualified ? 'no-namespace-element-default-conflict' : 'attribute-namespace-prefix-required', payloadPath: expect.stringMatching(/^\/0/)});
     }
     for (const $namespaces of [{bad: ''}, {xmlns: 'urn:bad'}, {xml: 'urn:wrong'}, {a: 'http://www.w3.org/2000/xmlns/'}]) {
       expect(encodeComponentXml(contract, mapping, {...value, $namespaces})).toMatchObject({kind: 'value-invalid', rule: 'namespace-binding'});

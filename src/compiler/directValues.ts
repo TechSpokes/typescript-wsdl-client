@@ -7,7 +7,7 @@ import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract, DirectMessageRoot} from './directOperation.js';
 import {inspectDirectStructuralMatch, matchDirectOperation} from './directStructure.js';
 import type {DirectDirection, DirectScalarDuty, DirectStructuralMatch} from './directStructure.js';
-import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard, selectProjectionWildcard, selectProjectionAttribute} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard, selectProjectionWildcard, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding} from './directStructurePlan.js';
 import type {DirectRootPlan, DirectProjectionPlan, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
@@ -20,7 +20,7 @@ import type {ExpandedName, SyntaxAttribute, SyntaxElement, SyntaxNode, SyntaxSou
 import {assessProjectionScalarOperand} from './projectionScalar.js';
 import type {DatatypeOperand} from './datatypeValues.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
-import {isXmlNCName, isXmlCharacters, isXmlNamespaceBinding, XML_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import {isXmlNCName, XML_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 
 export type DirectPrimitive = string | boolean | number;
 /** Inverse construction caps; XML encoding may impose smaller byte/text/node limits. */
@@ -775,7 +775,11 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
               if (typeof namespace !== 'string') return invalid('element-namespace-required', at, element);
               const selected = selectProjectionWildcard(context, record, {namespace, local: key}, check);
               if (!selected) return invalid('unknown-ordered-element', at, element);
-              if (!selected.element) pending.push({kind: 'open', name: {namespace, local: key}, value: member, element, scope, xmlPath: `${xmlPath}/children/${index}`, valuePath: at, into: children});
+              if (!selected.element) {
+                // @why Nested open entries count through their parent array; this assessed-to-open boundary has no such parent charge.
+                if (++items > maxItems) throw new Stop('resource-limit', 'application item limit');
+                pending.push({kind: 'open', name: {namespace, local: key}, value: member, element, scope, xmlPath: `${xmlPath}/children/${index}`, valuePath: at, into: children});
+              }
               else {
                 const shape = wildcardValue(selected.element);
                 const selectedValue = shape.kind === 'scalar' ? (() => {

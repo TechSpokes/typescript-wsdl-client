@@ -61,13 +61,6 @@ export const XML_NAME_RANGES = Object.freeze({start: ncStart + ':',
 const ncName = new RegExp(`^[${ncStart}][${ncStart}\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$`, "u");
 /** Shared XML name grammar for loader QNames and schema-declared operands. */
 export const isXmlNCName = (value: string): boolean => ncName.test(value);
-/** Test XML 1.0 character data without interpreting lexical application strings. */
-export const isXmlCharacters = (value: string): boolean => /^[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]*$/u.test(value);
-/** Check a retained Namespaces 1.0 binding; the empty key denotes the default namespace. */
-export const isXmlNamespaceBinding = (prefix: string, namespace: string): boolean =>
-  (prefix === '' || isXmlNCName(prefix)) && prefix !== 'xmlns' && isXmlCharacters(namespace)
-  && namespace !== 'http://www.w3.org/2000/xmlns/' && (prefix === 'xml' ? namespace === XML_NAMESPACE : namespace !== XML_NAMESPACE)
-  && (!prefix || !!namespace);
 const xmlName = new RegExp(`^[${XML_NAME_RANGES.start}][${XML_NAME_RANGES.character}]*$`, "u");
 const xmlNmtoken = new RegExp(`^[${XML_NAME_RANGES.character}]+$`, "u");
 export const isXmlName = (value: string): boolean => xmlName.test(value);

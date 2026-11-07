@@ -6,7 +6,7 @@ import type {AttributeNode, ComplexTypeNode, ElementNode, GraphNode, NodeId, Par
 import {assessSourceAttributeUses} from './schemaAttributeUses.js';
 import {deriveActualComplexContent, particleContentNode} from './complexTypeContent.js';
 import type {ExpandedName} from '../loader/orderedSyntax.js';
-import {XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import {XSD_NAMESPACE, XML_NAMESPACE, isXmlNCName} from '../loader/orderedSyntax.js';
 import {occurrenceAlgebra} from './occurrenceAnalysis.js';
 import {describeProjectionScalar, assessProjectionScalarOperand} from './projectionScalar.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
@@ -179,6 +179,13 @@ export function projectionScalarRepresentation(name: ExpandedName): 'string' | '
   if (name.local === 'boolean') return 'boolean';
   return lexicalBuiltins.has(name.local) ? 'string' : undefined;
 }
+/** Test projected XML 1.0 character data without interpreting lexical application strings. */
+export const isXmlCharacters = (value: string): boolean => /^[\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]*$/u.test(value);
+/** Check a projected Namespaces 1.0 binding; the empty key denotes the default namespace. */
+export const isXmlNamespaceBinding = (prefix: string, namespace: string): boolean =>
+  (prefix === '' || isXmlNCName(prefix)) && prefix !== 'xmlns' && isXmlCharacters(namespace)
+  && namespace !== 'http://www.w3.org/2000/xmlns/' && (prefix === 'xml' ? namespace === XML_NAMESPACE : namespace !== XML_NAMESPACE)
+  && (!prefix || !!namespace);
 
 /** Resolve and plan an application attribute permitted by the source wildcard.
  * @param context Exact source context.

@@ -3,13 +3,13 @@ import {inspectDirectOperation} from './directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract} from './directOperation.js';
 import type {AttributeNode, ElementNode, Reference} from './canonicalGraph.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
-import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute, isXmlCharacters, isXmlNamespaceBinding} from './directStructurePlan.js';
 import type {DirectProjectionSlot, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import type {ResolverUsage} from './semanticBudget.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
-import {isXmlNCName, isXmlCharacters, isXmlNamespaceBinding} from '../loader/orderedSyntax.js';
+import {isXmlNCName} from '../loader/orderedSyntax.js';
 
 export type DirectDirection = Readonly<{kind: 'input' | 'output'} | {kind: 'fault'; name: string}>;
 export interface DirectScalarDuty {

@@ -10,7 +10,8 @@ import {inspectDirectValueMapping, expandDirectValue, assessDirectScalars, inspe
 import type {DirectValueMapping, DirectValueReceipt, DirectValueFailure, DirectExpandedValue,
   ComponentValueMapping, ProjectionExpandedValue, ProjectionValueReceipt} from './directValues.js';
 import {matchDirectOperation, matchDirectProjection} from './directStructure.js';
-import {parseOrderedSyntax, SchemaLoadingError, XML_NAMESPACE, isXmlNamespaceBinding} from '../loader/orderedSyntax.js';
+import {parseOrderedSyntax, SchemaLoadingError, XML_NAMESPACE} from '../loader/orderedSyntax.js';
+import {isXmlNamespaceBinding} from './directStructurePlan.js';
 import type {SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import type {SemanticBudget, ResolverUsage} from './semanticBudget.js';
 
@@ -65,7 +66,7 @@ export interface ComponentXmlObservation {
 }
 const componentObservations = new WeakSet<object>();
 class Stop extends Error {
-  constructor(readonly kind: DirectCodecFailure['kind'], readonly rule: string) {super(rule);}
+  constructor(readonly kind: DirectCodecFailure['kind'], readonly rule: string, readonly source?: SyntaxSource) {super(rule);}
 }
 interface Session {
   budget: SemanticBudget; limits: Required<DirectXmlLimits>; check(): void;
@@ -122,7 +123,8 @@ function runMapping<M extends CodecMapping, T extends {readonly usage: ResolverU
   } catch (error) {
     if (budget.exhausted()) return {kind: 'resource-limit', rule: 'request-budget', usage: budget.usage()};
     if (error instanceof DataOwnershipLimitError) return {kind: 'resource-limit', rule: error.message, usage: budget.usage()};
-    if (error instanceof Stop) return Object.freeze({kind: error.kind, rule: error.rule, usage: Object.freeze({...budget.usage()})});
+    if (error instanceof Stop) return Object.freeze({kind: error.kind, rule: error.rule,
+      ...(error.source ? {source: error.source, payloadPath: error.source.path} : {}), usage: Object.freeze({...budget.usage()})});
     if (error instanceof SchemaLoadingError) return Object.freeze({kind: error.category === 'invalid-schema' ? 'xml-invalid'
       : error.category === 'resource-limit' ? 'resource-limit' : 'unsupported', rule: error.message, source: error.source,
       usage: Object.freeze({...budget.usage()})} satisfies DirectCodecFailure);
@@ -183,7 +185,7 @@ function emitObservedXml(payload: SyntaxElement, {budget, limits, check}: Sessio
       if (protectedScope) {
         for (const prefix of budget.sorted(Object.keys(node.namespaces), (a, b) => budget.compareText(a, b))) {
           check(); const namespace = node.namespaces[prefix]!;
-          if (!isXmlNamespaceBinding(prefix, namespace)) throw new Stop('value-invalid', 'namespace-binding');
+          if (!isXmlNamespaceBinding(prefix, namespace)) throw new Stop('value-invalid', 'namespace-binding', node.source);
           if (prefix !== 'xml' && scope[prefix] !== namespace) declarations.set(prefix, namespace);
           scope[prefix] = namespace;
         }
@@ -191,12 +193,12 @@ function emitObservedXml(payload: SyntaxElement, {budget, limits, check}: Sessio
       const qualified = (namespace: string, local: string, attribute = false): string => {
         if (protectedScope) {
           if (!namespace) {
-            if (!attribute && scope['']) throw new Stop('value-invalid', 'no-namespace-element-default-conflict');
+            if (!attribute && scope['']) throw new Stop('value-invalid', 'no-namespace-element-default-conflict', node.source);
             return local;
           }
           const prefix = budget.sorted(Object.keys(scope), (a, b) => budget.compareText(a, b))
             .find(prefix => (!attribute || prefix !== '') && scope[prefix] === namespace);
-          if (prefix === undefined) throw new Stop('value-invalid', attribute ? 'attribute-namespace-prefix-required' : 'element-namespace-prefix-required');
+          if (prefix === undefined) throw new Stop('value-invalid', attribute ? 'attribute-namespace-prefix-required' : 'element-namespace-prefix-required', node.source);
           return prefix ? `${prefix}:${local}` : local;
         }
         if (!namespace) {
