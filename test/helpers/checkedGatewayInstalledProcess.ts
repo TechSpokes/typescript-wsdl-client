@@ -110,6 +110,14 @@ try {
     reply=normalReply;
     assert.deepEqual(await post(value),{status:200,value});
     assert.deepEqual(events(upstream.at(-1)!.xml),events(envelope(`<t:GetForecast id="wire">${content}</t:GetForecast>`)));
+    const attributeEvents=(xml:string)=>{
+      const entries:{element:string;attributes:string[]}[]=[],parser=new SaxesParser({xmlns:true});
+      parser.on('opentag',tag=>entries.push({element:`{${tag.uri}}${tag.local}`,attributes:Object.values(tag.attributes)
+        .filter(attribute=>attribute.uri!=='http://www.w3.org/2000/xmlns/')
+        .map(attribute=>`{${attribute.uri}}${attribute.local}=${attribute.value}`).sort()}));
+      parser.write(xml).close();return entries;
+    };
+    assert.deepEqual(attributeEvents(upstream.at(-1)!.xml),attributeEvents(envelope(`<t:GetForecast id="wire">${content}</t:GetForecast>`)));
     assert.ok(!upstream.at(-1)!.xml.includes('$payment')); assert.equal(upstream.at(-1)!.action,'"urn:checked:GetForecast"');
     const spec=await (await fetch(url+'/openapi.json')).json() as {components:{schemas:Record<string,unknown>}};
     assert.ok(spec.components.schemas[mode==='groups-configured'?'PaymentMethod':'PaymentChoiceChoice']);
