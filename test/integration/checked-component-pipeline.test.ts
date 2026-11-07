@@ -43,6 +43,17 @@ async function setup() {
 }
 
 describe('public component service pipeline', () => {
+  it('generates the source-selected mixed and open HTTP contract without stripping metadata', async () => {
+    const {project, options} = await setup();
+    await runGenerationPipeline({...options, checkedComponents: undefined, wsdl: path.resolve('test/conformance/fixtures/assessment/keyed.wsdl'),
+      gateway: {...options.gateway!, serviceSlug: 'forecast', versionSlug: 'v1'}});
+    const schemas = JSON.parse(await readFile(path.join(project, 'gateway/routes/0/schemas.json'), 'utf8')) as Record<string, object>;
+    const validate = new Ajv({strict: true, coerceTypes: false, useDefaults: false, removeAdditional: false}).compile(schemas.request!);
+    const value = {$namespaces: {'': '', t: 'urn:checked:forecast'}, count: 2, p: {id: '7', $content: [{$value: 'Hello '}, {b: 'world'}, {$value: '!'}]}};
+    expect(validate(value)).toBe(true);
+    expect(validate({...value, p: {$content: [{b: 'world', $value: 'bad'}]}})).toBe(false);
+    expect(value.p.$content).toEqual([{$value: 'Hello '}, {b: 'world'}, {$value: '!'}]);
+  });
   it('owns default snapshots canonically and preserves explicit empty restrictions', async () => {
     const {project, options} = await setup();
     await runGenerationPipeline(options);

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:keyed-known">
+  <xs:element name="number" type="xs:int" nillable="true"/>
+  <xs:element name="count" type="xs:int"/>
+  <xs:element name="code" type="xs:string"/>
+  <xs:element name="box"><xs:complexType><xs:sequence><xs:element name="item" type="xs:string" form="qualified"/></xs:sequence></xs:complexType></xs:element>
+</xs:schema>

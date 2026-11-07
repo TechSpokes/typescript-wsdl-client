@@ -1,6 +1,12 @@
 # Checked WSDL development checkpoint
 
-## Current checkpoint, November 3, 2026
+## Current mapping checkpoint, November 7, 2026
+
+[#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409) implements the selected keyed mixed/namespace/open slice through the existing native planner, matcher, scalar/inverse, XML codec and generated HTTP owners. It follows merged nil PR #434 at main `b337f04`. [Checked mapping behavior](checked-gateway.md#mixed-namespaced-and-open-values) and committed production conformance/installed controls describe the scoped guarantee, including native wildcard policy and retained lexical contexts.
+
+Independent hand JSON and handwritten SOAP expectations exercise generated requests, serialized successes and declared fault details. The PR records final-candidate commands/results, exact nonauthor review and hosted Node 24/26 plus Linux/Windows qualification. These are delivery gates, not a release or provider-acceptance claim. General groups/default names #431, configured aliases #432, contextual scalar families #422/#184, assessed dynamic types, wider source/protocol support, security and streaming remain with their existing owners; broad #183/#187/#188/#189/#397/#401/#379 and the remainder of #410 stay open.
+
+## Previous consolidation checkpoint, November 3, 2026
 
 The approved [#412 consolidation](https://github.com/TechSpokes/typescript-wsdl-client/issues/412) continues `agent/wsdl-first-coverage` from required ancestor `84a932927cb9620264d686b79825c73b8ac760dc`. Startup verified clean local/remote branch identity and main `a37ba1a90c5606a3d0f2b42a5753f73f3f176b33`, with the same tree. Main already contains the prerequisite implementation. Retained original inputs and draft PR #231 remain preserved.
 

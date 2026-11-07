@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- feat(components): preserve keyed mixed, namespaced and source-permitted open values through checked gateways.
 - feat(components): preserve explicit nil and attributes through checked clients, HTTP schemas and gateway request/response/fault paths.
 - docs(mapping): select keyed XML/JSON research contracts with scoped namespaces, attributes and explicit nil.
 

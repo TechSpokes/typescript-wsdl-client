@@ -81,13 +81,27 @@ describe('native strict wildcard projection', () => {
     expect(() => resolveProjectionWildcard(context, {...record}, {namespace, local: 'Payload'}, () => {})).toThrow(TypeError);
     const other = await source();
     expect(() => resolveProjectionWildcard(other.context, record, {namespace, local: 'Payload'}, () => {})).toThrow(TypeError);
-    for (const name of ['Lax', 'Skip', 'Overlap']) {
+    for (const name of ['Overlap']) {
       const selected = await source(name);
       expect(expandProjectionValue(selected.context, selected.root, {$content: []})).toMatchObject({kind: 'unsupported'});
+    }
+    for (const name of ['Lax', 'Skip']) {
+      const selected = await source(name);
+      expect(expandProjectionValue(selected.context, selected.root, {$namespaces: {}, $content: []})).toMatchObject({kind: 'projection-expanded'});
     }
   });
 
   it('preserves explicit limits, cancellation and cycle refusal in dynamically selected records', async () => {
+    const lax = await source('Lax');
+    const unknown = () => ({Unknown: {$namespace: 'urn:unknown', $content: []}});
+    const branch = () => ({Lax: {$namespace: namespace, $content: [unknown(), unknown()]}});
+    const aggregate = {$namespaces: {t: namespace}, $content: [branch(), branch()]};
+    expect(expandProjectionValue(lax.context, lax.root, aggregate, {maxItems: 6})).toMatchObject({kind: 'projection-expanded'});
+    expect(expandProjectionValue(lax.context, lax.root, aggregate, {maxItems: 5})).toMatchObject({kind: 'resource-limit'});
+    const child: {$namespace: string; $content: unknown[]} = {$namespace: namespace, $content: []};
+    child.$content.push({Lax: child});
+    expect(expandProjectionValue(lax.context, lax.root, {$namespaces: {t: namespace}, $content: [{Lax: child}]}, {maxItems: 8}))
+      .toMatchObject({kind: 'value-invalid', rule: 'cyclic-value'});
     const {context, root} = await source();
     expect(expandProjectionValue(context, root, value, {maxItems: 2})).toMatchObject({kind: 'resource-limit'});
     expect(expandProjectionValue(context, root, value, {maxText: 2})).toMatchObject({kind: 'resource-limit'});

@@ -95,7 +95,83 @@ try {
     return {status: response.status, value: await response.json() as unknown};
   };
   const mode = process.argv[3];
-  if (mode === 'nil') {
+  if (mode === 'keyed') {
+    const namespace = 'urn:checked:forecast', known = 'urn:keyed-known', xsi = 'http://www.w3.org/2001/XMLSchema-instance';
+    const bindings = {'': '', s: 'http://schemas.xmlsoap.org/soap/envelope/', t: namespace, e: 'urn:extra', p: 'urn:first', k: known, xsi};
+    const envelope = (body: string) => `<s:Envelope xmlns:s="${bindings.s}"><s:Body>${body}</s:Body></s:Envelope>`;
+    const scope = `xmlns:t="${namespace}" xmlns:e="urn:extra" xmlns:p="urn:first" xmlns:k="${known}" xmlns:xsi="${xsi}"`;
+    const content = '<t:count>2</t:count><t:p id="7">Hello <t:b>world</t:b>!<t:p> nested </t:p><t:p/><t:b>again</t:b><t:p xsi:nil="true" id="N"/>'
+      + '<t:ordered><t:a>A</t:a><t:b>3</t:b><t:a>B</t:a></t:ordered></t:p>'
+      + '<t:open rating="6" k:number="5"><t:count>4</t:count><e:extra rating="not-an-int" e:rating="qualified" xsi:nil="not-a-boolean" xsi:type="unbound:Type">p:Thing'
+      + '<e:inner xmlns:p="urn:second">p:Other</e:inner><e:inner>p:Sibling</e:inner><e:code>A</e:code><k:code>B</k:code><e:rating>child</e:rating></e:extra><k:number>7</k:number>'
+      + '<k:ordered><k:a>A</k:a><k:b>9</k:b></k:ordered><k:number xsi:nil="true"/></t:open>'
+      + '<t:skip><k:number xsi:nil="raw">not-an-int</k:number></t:skip>'
+      + '<t:strict><k:number>8</k:number></t:strict><t:collision t:code="attribute"><t:code>child</t:code></t:collision>'
+      + '<t:names><t:code>local</t:code><k:code>foreign</k:code><t:code xsi:nil="true"/></t:names>'
+      + '<t:fixedNames><t:code>first</t:code> <k:code>second</k:code></t:fixedNames>';
+    const ordered = (local: string, value: unknown) => ({name: {namespace, local}, value});
+    const value = {$namespaces: bindings, count: 2, p: {id: '7', $content: [{$value: 'Hello '}, {b: 'world'}, {$value: '!'},
+      {p: {$content: [{$value: ' nested '}]}}, {p: {$content: []}}, {b: 'again'}, {p: {$nil: true, id: 'N'}},
+      {ordered: {$content: [ordered('a', 'A'), ordered('b', 3), ordered('a', 'B')]}}]},
+    open: {$attributes: [{rating: 6}, {number: {$namespace: known, $value: 5}}], $content: [{count: 4},
+      {extra: {$namespace: 'urn:extra', $attributes: [{rating: 'not-an-int'}, {nil: {$namespace: xsi, $value: 'not-a-boolean'}}, {type: {$namespace: xsi, $value: 'unbound:Type'}}, {rating: {$namespace: 'urn:extra', $value: 'qualified'}}],
+        $content: [{$value: 'p:Thing'}, {inner: {$namespace: 'urn:extra', $namespaces: {p: 'urn:second'}, $content: [{$value: 'p:Other'}]}},
+          {inner: {$namespace: 'urn:extra', $content: [{$value: 'p:Sibling'}]}},
+          {code: {$namespace: 'urn:extra', $content: [{$value: 'A'}]}}, {code: {$namespace: known, $content: [{$value: 'B'}]}},
+          {rating: {$namespace: 'urn:extra', $content: [{$value: 'child'}]}}]}}, {number: {$namespace: known, $value: 7}},
+      {ordered: {$namespace: known, $content: [{name: {namespace: known, local: 'a'}, value: 'A'}, {name: {namespace: known, local: 'b'}, value: 9}]}},
+      {number: {$namespace: known, $nil: true}}]},
+    skip: {$content: [{number: {$namespace: known, $attributes: [{nil: {$namespace: xsi, $value: 'raw'}}], $content: [{$value: 'not-an-int'}]}}]},
+    strict: {$content: [{name: {namespace: known, local: 'number'}, value: 8}]}, collision: {$attributes: [{code: 'attribute'}], code: 'child'},
+    names: {$content: [{code: {$namespace: namespace, $value: 'local'}}, {code: {$namespace: known, $value: 'foreign'}}, {code: {$namespace: namespace, $nil: true}}]},
+    fixedNames: {$content: [{code: 'first'}, {$value: ' '}, {code: 'second'}]}};
+    const wire = (xml: string) => {
+      const result: unknown[] = [], scopes: Record<string, string>[] = [], parser = new SaxesParser({xmlns: true});
+      parser.on('opentag', tag => {
+        const effective = {...scopes.at(-1), ...tag.ns}; scopes.push(effective);
+        result.push({name: `{${tag.uri}}${tag.local}`, lexicalScope: {default: effective[''] ?? '', p: effective.p}, attributes: Object.values(tag.attributes)
+        .filter(attribute => attribute.uri !== 'http://www.w3.org/2000/xmlns/')
+        .map(attribute => [`{${attribute.uri}}${attribute.local}`, attribute.value]).sort((a, b) => a[0]!.localeCompare(b[0]!))});
+      });
+      parser.on('text', text => result.push(text));
+      parser.on('closetag', tag => {result.push('/' + `{${tag.uri}}${tag.local}`); scopes.pop();});
+      parser.write(xml).close(); return result;
+    };
+    const normalReply = envelope(`<t:GetForecastResponse ${scope}>${content}</t:GetForecastResponse>`);
+    reply = normalReply;
+    assert.deepEqual(await post(value), {status: 200, value});
+    assert.deepEqual(wire(upstream.at(-1)!.xml), wire(envelope(`<t:GetForecast ${scope}>${content}</t:GetForecast>`)));
+    assert.equal(upstream.at(-1)!.action, '"urn:checked:GetForecast"');
+    replyStatus = 500;
+    reply = envelope(`<s:Fault><faultcode>s:Server</faultcode><faultstring>keyed fault</faultstring><detail><t:ForecastFault ${scope}>${content}</t:ForecastFault></detail></s:Fault>`);
+    assert.deepEqual(await post(value), {status: 502, value: {fault: {name: 'ForecastError', code: {namespace: bindings.s, local: 'Server'}, string: 'keyed fault'}, value}});
+    replyStatus = 200; reply = normalReply;
+    for (const invalid of [
+      {...value, count: '2'}, {...value, p: {$content: [{b: 'world', $value: 'bad'}]}},
+      {...value, p: {$content: [{$value: 7}]}}, {...value, p: {$content: [{p: {$nil: true, $content: []}}]}},
+      {...value, open: {$content: [{count: 4}, {number: {$namespace: known, $value: 'invalid-known'}}]}},
+      {...value, open: {$content: [{extra: {$namespace: 'urn:extra', $content: []}}]}},
+      {...value, open: {$content: [{count: 4}]}},
+      {...value, open: {...value.open, $attributes: [{rating: 'invalid-known'}]}},
+      {...value, strict: {$content: [{name: {namespace: 'urn:extra', local: 'missing'}, value: {}}]}},
+      {...value, collision: {$attributes: [{code: {$namespace: namespace, $value: 'redundant'}}], code: 'child'}},
+      {...value, names: {$content: [{code: 'ambiguous'}]}},
+      {...value, fixedNames: {$content: [{code: {$namespace: namespace, $value: 'redundant'}}, {code: 'second'}]}},
+      {...value, skip: {$content: [{number: {$namespace: known, $nil: true, $content: []}}]}},
+      {...value, $namespaces: {...bindings, p: ''}}, {...value, $namespaces: {...bindings, xmlns: 'urn:bad'}},
+    ]) {
+      const before = upstream.length;
+      assert.equal((await post(invalid)).status, 400); assert.equal(upstream.length, before); refusals++;
+    }
+    for (const invalid of [normalReply.replace('<t:count>2</t:count>', ''), normalReply.replace('<k:number>7', '<k:number>invalid-known'),
+      normalReply.replace('k:number="5"', 'k:number="invalid-known"'), normalReply.replace('rating="6"', 'rating="invalid-known"'), normalReply.replace('<t:p id="7">', '<t:p id="7" surprise="x">'),
+      normalReply.replace('<t:p xsi:nil="true" id="N"/>', '<t:p xsi:nil="true" id="N">bad</t:p>')]) {
+      reply = invalid;
+      const rejected = await post(value); assert.equal(rejected.status, 502); assert.equal(Object.hasOwn(rejected.value as object, 'value'), false); refusals++;
+    }
+    process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false, variant: mode, calls, refusals,
+      upstreamRequests: upstream.length, scope: 'keyed mixed/open namespaces and attributes, native lax/skip/strict, typed siblings and accepted ordered descendants, request/response/fault HTTP/SOAP'}) + '\n');
+  } else if (mode === 'nil') {
     const namespace = 'urn:checked:forecast', xsi = 'http://www.w3.org/2001/XMLSchema-instance';
     const envelope = (body: string) => `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="${namespace}" xmlns:xsi="${xsi}"><s:Body>${body}</s:Body></s:Envelope>`;
     const attributed = {$nil: true, id: '7', note: ''};
