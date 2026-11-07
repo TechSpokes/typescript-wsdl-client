@@ -40,7 +40,9 @@ The configured contract accepts only `$payment`; `$choice`, simultaneous spellin
 
 Targets survive physical relocation, unrelated global declaration reorder and alias changes. Relevant particle edits require generating defaults again and copying new tokens; stale or unknown targets, invalid names, duplicate targets and scoped collisions refuse before artifacts are written. Targets and inventory confer no source or runtime authority; generated capsules reconstruct the presentation from authorized source and reject incompatible contracts.
 
-The inventory's `applicationGroups.records` classifies each record as grouped, compact or retained-ordered with its reason. Empty-capable bodies, zero-width history and ambiguous partitions retain typed ordered values and ADR-003 normalization; `(N{1,2})*` cannot claim recoverable group boundaries for three `N` children. Optional repeated nonempty groups accept `[]` and normalize to omission without input mutation. Mixed/open/keyed records keep their existing owner, and same-record overlapping alphabets retain the native refusal; this slice does not add a general ambiguity matcher or a combined mixed/group grammar.
+The inventory's `applicationGroups.records` classifies each record as grouped, compact or retained-ordered with its reason. Empty-capable bodies, zero-width history and ambiguous partitions retain typed ordered values and ADR-003 normalization; `(N{1,2})*` cannot claim recoverable group boundaries for three `N` children. Optional repeated nonempty groups accept `[]` and normalize to omission without input mutation.
+
+Mixed/open/keyed records keep their existing owner, and same-record overlapping alphabets retain the native refusal; this slice does not add a general ambiguity matcher or a combined mixed/group grammar.
 
 ### Nil values
 

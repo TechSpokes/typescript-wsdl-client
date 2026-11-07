@@ -81,7 +81,9 @@ Every structured alternative has a named object schema and TypeScript type, incl
 
 A single property references the union directly; an array references the same union in `items`, and TypeScript uses `RequestChoice[]`. Sharing application schema structure does not merge the distinct native source declarations used for reconstruction.
 
-Default type stems use the owning named type's local name, or the anonymous type's containing element and scoped path digest, followed by `Choice` or `Sequence`. Nonalphanumeric source characters use injective `_u<hex>_` escaping; anonymous stems use `___Anonymous_<digest>`. Nested generated roles use `___` boundaries, which cannot occur in escaped source stems, and contribute once; alternatives append `Alternative1`, `Alternative2` and subsequent numbers in source order. Several source type namespaces with the same local name receive a namespace digest suffix.
+Default type stems use the owning named type's local name, or the anonymous type's containing element and scoped path digest, followed by `Choice` or `Sequence`. Nonalphanumeric source characters use injective `_u<hex>_` escaping; anonymous stems use `___Anonymous_<digest>`. Nested generated roles use `___` boundaries, which cannot occur in escaped source stems, and contribute once; alternatives append `Alternative1`, `Alternative2` and subsequent numbers in source order.
+
+Several source type namespaces with the same local name receive a namespace digest suffix.
 
 Retain complete business names ending in `Choice`, `Choices` or `Sequence`; source type `PaymentChoice` therefore produces `PaymentChoiceChoice`. Default collisions append an underscore and the first twelve hexadecimal digits of the source-target digest. Ordinary fields and unrelated distinct declarations keep their names; explicit names never receive silent collision suffixes.
 
