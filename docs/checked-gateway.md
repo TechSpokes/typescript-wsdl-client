@@ -16,6 +16,32 @@ Partial configuration may supply `service`, `port`, `selectors` or permissions. 
 
 Each operation retains its own client and capsule; the service index and gateway compose them without merging service/binding identities. `basePath` can separate services on a shared host. If omitted, it defaults to the supplied version/service route prefix. Paths append the exact, URI-encoded operation name.
 
+### Application groups and configured names
+
+Add `{"applicationGroups":{}}` to the existing `--checked-config` file, or set `checkedComponents: {applicationGroups: {}}` through the package-root API. This opts the generated contract into [source-derived groups](concepts.md#choice-groups-and-named-alternatives); leaving the option absent preserves existing component output and the frozen direct/legacy contracts.
+
+For a reconstructible source choice between `(A:int,B:string)` and `(C:boolean,D:string)`, a repeated group accepts `{"$choice":[{"A":7,"B":"card"},{"C":true,"D":"bank"}]}`. A singleton takes one alternative object; optional groups can be omitted. Repeated sequences use arrays under `$sequence`, and nested, independent and recursive definitions retain their own source rules.
+
+First generate defaults and copy the opaque `target` tokens from the client's `inventory.json`, under `applicationGroups.targets`. Each entry reports role, source owner/site, defaults and resolved names; the returned checked inventory exposes the same data. Then regenerate with this fragment inside the existing configuration:
+
+```json
+{
+  "applicationGroups": {
+    "names": [
+      {"target":"<choice-site token>","propertyName":"$payment","typeName":"PaymentMethod"},
+      {"target":"<first alternative token>","typeName":"CardPayment"},
+      {"target":"<second alternative token>","typeName":"BankPayment"}
+    ]
+  }
+}
+```
+
+The configured contract accepts only `$payment`; `$choice`, simultaneous spellings and payload-supplied configuration fail. Renaming the union does not rename alternatives. Defaults/configuration resolve once per authenticated definition; TypeScript, named OpenAPI components, HTTP validation and native forward/inverse mapping share that description across requests, success responses and declared faults.
+
+Targets survive physical relocation, unrelated global declaration reorder and alias changes. Relevant particle edits require generating defaults again and copying new tokens; stale or unknown targets, invalid names, duplicate targets and scoped collisions refuse before artifacts are written. Targets and inventory confer no source or runtime authority; generated capsules reconstruct the presentation from authorized source and reject incompatible contracts.
+
+The inventory's `applicationGroups.records` classifies each record as grouped, compact or retained-ordered with its reason. Empty-capable bodies, zero-width history and ambiguous partitions retain typed ordered values and ADR-003 normalization; `(N{1,2})*` cannot claim recoverable group boundaries for three `N` children. Optional repeated nonempty groups accept `[]` and normalize to omission without input mutation. Mixed/open/keyed records keep their existing owner, and same-record overlapping alphabets retain the native refusal; this slice does not add a general ambiguity matcher or a combined mixed/group grammar.
+
 ### Nil values
 
 Checked component generation represents a present nil element as `{"$nil":true}`, with its existing source-mapped attribute properties. Required attributes remain required: a nillable element with required string `id` uses `{"$nil":true,"id":"7"}`. Optional attributes retain their scalar encodings, including empty strings and qualified attribute identities derived from the source.

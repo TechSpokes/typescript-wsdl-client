@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:groups" targetNamespace="urn:checked:groups">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:checked:groups" elementFormDefault="qualified">
+      <xs:complexType name="PaymentChoice">
+        <xs:sequence>
+          <xs:element name="choice" type="xs:string" minOccurs="0"/>
+          <xs:choice minOccurs="1" maxOccurs="3">
+            <xs:sequence><xs:element name="A" type="xs:int"/><xs:element name="B" type="xs:string" nillable="true"/></xs:sequence>
+            <xs:sequence><xs:element name="C" type="xs:boolean"/><xs:element name="D" type="xs:string"/></xs:sequence>
+          </xs:choice>
+          <xs:element name="nested" type="t:Nested" minOccurs="0"/>
+          <xs:element name="multiple" type="t:MultipleChoices" minOccurs="0"/>
+          <xs:element name="one" type="t:OneSequence" minOccurs="0"/>
+          <xs:element name="two" type="t:TwoSequence" minOccurs="0"/>
+          <xs:element name="tree" type="t:TreeChoices" minOccurs="0"/>
+          <xs:element name="ambiguous" type="t:Ambiguous" minOccurs="0"/>
+          <xs:element name="empty" type="t:EmptyChoice" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+      </xs:complexType>
+      <xs:complexType name="Nested"><xs:sequence minOccurs="0" maxOccurs="3"><xs:element name="E" type="xs:string"/><xs:choice><xs:element name="F" type="xs:int"/><xs:element name="G" type="xs:boolean"/></xs:choice></xs:sequence></xs:complexType>
+      <xs:complexType name="MultipleChoices"><xs:sequence><xs:choice><xs:element name="H" type="xs:string"/><xs:element name="I" type="xs:int"/></xs:choice><xs:choice minOccurs="0"><xs:element name="J" type="xs:boolean"/><xs:element name="M" type="xs:string"/></xs:choice></xs:sequence></xs:complexType>
+      <xs:group name="Pair"><xs:sequence><xs:element name="K" type="xs:int"/><xs:element name="L" type="xs:string"/></xs:sequence></xs:group>
+      <xs:complexType name="OneSequence"><xs:group ref="t:Pair" minOccurs="1" maxOccurs="2"/></xs:complexType>
+      <xs:complexType name="TwoSequence"><xs:group ref="t:Pair" minOccurs="0" maxOccurs="4"/></xs:complexType>
+      <xs:complexType name="TreeChoices"><xs:choice><xs:element name="leaf" type="xs:string"/><xs:element name="branch" type="t:TreeChoices"/></xs:choice></xs:complexType>
+      <xs:complexType name="Ambiguous"><xs:sequence minOccurs="0" maxOccurs="unbounded"><xs:element name="N" type="xs:int" minOccurs="1" maxOccurs="2"/></xs:sequence></xs:complexType>
+      <xs:complexType name="EmptyChoice"><xs:choice><xs:sequence><xs:element name="O" type="xs:string" minOccurs="0"/></xs:sequence><xs:element name="P" type="xs:boolean"/></xs:choice></xs:complexType>
+      <xs:element name="Submit" type="t:PaymentChoice"/>
+      <xs:element name="SubmitResponse" type="t:PaymentChoice"/>
+      <xs:element name="PaymentFault" type="t:PaymentChoice"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="Input"><wsdl:part name="parameters" element="t:Submit"/></wsdl:message>
+  <wsdl:message name="Output"><wsdl:part name="parameters" element="t:SubmitResponse"/></wsdl:message>
+  <wsdl:message name="Error"><wsdl:part name="detail" element="t:PaymentFault"/></wsdl:message>
+  <wsdl:portType name="PaymentPortType"><wsdl:operation name="Submit"><wsdl:input message="t:Input"/><wsdl:output message="t:Output"/><wsdl:fault name="PaymentError" message="t:Error"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="PaymentBinding" type="t:PaymentPortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="Submit"><soap:operation soapAction="urn:checked:Submit"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="PaymentError"><soap:fault name="PaymentError" use="literal"/></wsdl:fault></wsdl:operation></wsdl:binding>
+  <wsdl:service name="PaymentService"><wsdl:port name="PaymentPort" binding="t:PaymentBinding"><soap:address location="http://127.0.0.1:1/payment"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

@@ -24,6 +24,8 @@ Component calls use the selected WSDL address or explicit endpoint override, wit
 
 This preview does not establish universal WSDL/XSD or production-provider support. See the [checked gateway reference](docs/checked-gateway.md) for configuration and compatibility, and the [roadmap](ROADMAP.md) for the next coverage, JSON and security work.
 
+Checked generation can opt into [application groups and configured names](docs/checked-gateway.md#application-groups-and-configured-names) with `{"applicationGroups":{}}` in the existing `--checked-config` file, or `checkedComponents: {applicationGroups: {}}` in the package-root API. Reconstructible choices become named alternative objects, repeated sequences become group-item arrays, and the generated inventory supplies exact targets for naming overrides. Omit the option to preserve existing checked value shapes.
+
 ## Why Choose This
 
 Most tools in this space stop at one layer: a SOAP runtime, type generation, or spec conversion. This package generates the full stack from a single WSDL source.

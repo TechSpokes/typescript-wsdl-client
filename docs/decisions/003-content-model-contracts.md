@@ -34,6 +34,12 @@ References retain their roles and identities; recursion remains a reference. #17
 
 ## Runtime values and projections: S02-D02
 
+The bounded #431/#432 delivery adds generation-time `applicationGroups` to the existing checked-component contract. Absence preserves previous artifacts and values; `{}` selects source-derived groups and optional `names` selects definition-scoped presentation aliases. The [checked gateway reference](../checked-gateway.md#application-groups-and-configured-names) specifies the inventory-copy workflow and compatibility boundaries.
+
+Grouping requires observable nonempty boundaries; local optional bounds do not make a nonempty body nullable. Empty-capable bodies, zero-width realizations and ambiguous partitions retain the record's existing ordered representation, including required empty-capable choices governed by native language acceptance. Mixed/open/keyed records retain their existing presentation; overlapping native leaf alphabets still refuse.
+
+One authenticated source-derived description drives inverse/forward mapping, named TypeScript alternatives and OpenAPI references. Optional repeated empty arrays normalize to omission without mutation. Capsules persist the presentation choice and rederive it from authorized sources; mismatched presentations fail artifact checks. This is a bounded opt-in disposition, not an automatic migration, new runtime payload switch or general ambiguity solver.
+
 The bounded [XML/JSON mapping contract](../roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract) selects keyed mixed/open entries, separate namespace identity/context, attribute carriers and explicit nil, with research-only fresh inverse examples for #409/#421. This handoff does not activate production support or replace these ADR guarantees; existing accepted mappings remain compatible.
 
 Synthetic keys introduced into XML-derived application objects use the repository's `$` prefix; the [reserved mapping-key inventory](../concepts.md#reserved-mapping-keys) distinguishes existing keys, research proposals and descriptor compatibility work. Source-derived XML data names remain data names.

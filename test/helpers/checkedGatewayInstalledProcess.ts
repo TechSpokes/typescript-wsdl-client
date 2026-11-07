@@ -95,7 +95,45 @@ try {
     return {status: response.status, value: await response.json() as unknown};
   };
   const mode = process.argv[3];
-  if (mode === 'facets') {
+  if (mode?.startsWith('groups-')) {
+    const namespace='urn:checked:forecast',soapNs='http://schemas.xmlsoap.org/soap/envelope/';
+    const envelope=(content:string)=>`<s:Envelope xmlns:s="${soapNs}" xmlns:t="${namespace}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><s:Body>${content}</s:Body></s:Envelope>`;
+    const key=mode==='groups-configured'?'$payment':'$choice';
+    const value={id:'wire',choice:'real XML choice',[key]:[{B:{$nil:true},A:7},{D:'bank',C:true}],
+      nested:{$sequence:[{E:'nested',$choice:{G:false}}]},multiple:{$choice:{H:'h'},$choice2:{J:true}},
+      one:{$sequence:[{K:1,L:'one'}]},two:{$sequence:[{K:2,L:'two'},{K:3,L:'three'}]},tree:{$choice:{branch:{$choice:{leaf:'end'}}}}};
+    const content='<t:choice>real XML choice</t:choice><t:A>7</t:A><t:B xsi:nil="true"/><t:C>true</t:C><t:D>bank</t:D>'
+      +'<t:nested><t:E>nested</t:E><t:G>false</t:G></t:nested><t:multiple><t:H>h</t:H><t:J>true</t:J></t:multiple>'
+      +'<t:one><t:K>1</t:K><t:L>one</t:L></t:one><t:two><t:K>2</t:K><t:L>two</t:L><t:K>3</t:K><t:L>three</t:L></t:two>'
+      +'<t:tree><t:branch><t:leaf>end</t:leaf></t:branch></t:tree>';
+    const normalReply=envelope(`<t:GetForecastResponse id="wire">${content}</t:GetForecastResponse>`);
+    reply=normalReply;
+    assert.deepEqual(await post(value),{status:200,value});
+    assert.deepEqual(events(upstream.at(-1)!.xml),events(envelope(`<t:GetForecast id="wire">${content}</t:GetForecast>`)));
+    assert.ok(!upstream.at(-1)!.xml.includes('$payment')); assert.equal(upstream.at(-1)!.action,'"urn:checked:GetForecast"');
+    const spec=await (await fetch(url+'/openapi.json')).json() as {components:{schemas:Record<string,unknown>}};
+    assert.ok(spec.components.schemas[mode==='groups-configured'?'PaymentMethod':'PaymentChoiceChoice']);
+    replyStatus=500;
+    reply=envelope(`<s:Fault><faultcode>s:Server</faultcode><faultstring>group fault</faultstring><detail><t:ForecastFault id="wire">${content}</t:ForecastFault></detail></s:Fault>`);
+    assert.deepEqual(await post(value),{status:502,value:{fault:{name:'ForecastError',code:{namespace:soapNs,local:'Server'},string:'group fault'},value}});
+    replyStatus=200;reply=normalReply;
+    const before=upstream.length;
+    for (const invalid of [{...value,[key]:[]},{...value,[key]:[{A:7}]},{...value,[key]:[{A:7,B:'b',C:true,D:'d'}]},
+      {...value,[key]:[{A:'7',B:'b'}]},{...value,[key]:[{A:7,B:'b',extra:true}]},
+      {...value,[key]:Array.from({length:4},()=>({A:7,B:'b'}))},
+      {...value,[key==='\u0024choice'?'$payment':'$choice']:value[key]}]) {
+      assert.equal((await post(invalid)).status,400);refusals++;
+    }
+    assert.equal(upstream.length,before);
+    for (const invalid of [normalReply.replace('<t:A>7</t:A>','<t:A>bad</t:A>'),normalReply.replace('<t:D>bank</t:D>',''),
+      normalReply.replace('id="wire"','unknown="wire"'),normalReply.replace('<t:G>false</t:G>','<t:G>invalid</t:G>')]) {
+      reply=invalid; const result=await post(value);assert.equal(result.status,502);assert.ok(!Object.hasOwn(result.value as object,key));refusals++;
+    }
+    replyStatus=500;reply=envelope('<s:Fault><faultcode>s:Server</faultcode><faultstring>bad group fault</faultstring><detail><t:ForecastFault id="wire"><t:A>7</t:A></t:ForecastFault></detail></s:Fault>');
+    const refused=await post(value);assert.equal(refused.status,502);assert.ok(!Object.hasOwn(refused.value as object,'value'));refusals++;
+    process.stdout.write(JSON.stringify({kind:'checked-gateway-installed',originalCheckoutReadable:false,variant:mode,calls,refusals,upstreamRequests:upstream.length,
+      scope:'default/configured groups; fresh independent XML order, nil, attributes, nested/multiple/reused/recursive definitions and installed request/response/fault HTTP serialization'})+'\n');
+  } else if (mode === 'facets') {
     const ns = 'urn:checked:forecast', soapNs = 'http://schemas.xmlsoap.org/soap/envelope/', xsi = 'http://www.w3.org/2001/XMLSchema-instance';
     const envelope = (content: string) => `<s:Envelope xmlns:s="${soapNs}" xmlns:t="${ns}" xmlns:xsi="${xsi}"><s:Body>${content}</s:Body></s:Envelope>`;
     const content = '<t:code>AB12</t:code><t:money>9007199254740993.02</t:money><t:unicode>😀A</t:unicode><t:replace>A B</t:replace>'

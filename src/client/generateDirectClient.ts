@@ -5,7 +5,7 @@ import {checkSemanticBudget} from '../compiler/semanticBudget.js';
 import {writeFileSync, mkdirSync} from 'node:fs';
 import path from 'node:path';
 import {inspectDirectOperation} from '../compiler/directOperation.js';
-import {inspectDirectValueMapping} from '../compiler/directValues.js';
+import {inspectDirectValueMapping, inspectComponentValueMapping} from '../compiler/directValues.js';
 import type {DirectValueMapping} from '../compiler/directValues.js';
 import {checkDirectSourceCompatibility, createDirectSourceCapsule, componentSourceCapsuleBytes, inspectReconstructedComponentSource, inspectComponentSourceService} from '../compiler/directSourceCapsule.js';
 import type {ReconstructedDirectSource, ReconstructedComponentSource, DirectCapsuleFailure} from '../compiler/directSourceCapsule.js';
@@ -158,12 +158,18 @@ export async function generateComponentClient(expected: ReconstructedComponentSo
     const response = lowerComponentShape(expected.contract, output, 'Response', check);
     const faults = mappings.filter(mapping => mapping.direction.kind === 'fault').map((mapping, index) => ({mapping,
       shape: lowerComponentShape(expected.contract, mapping, `Fault_${index}`, check)}));
+    const grouped = mappings.some(mapping => mapping.kind === 'component-mapping'
+      && inspectComponentValueMapping(mapping,expected.contract).applicationGroups);
+    const declarations = grouped ? [...new Set([...request.declarations,...response.declarations,...faults.flatMap(({shape})=>shape.declarations)]),
+      `export type Request = ${request.type};`, `export type Response = ${response.type};`,
+      ...faults.map(({shape},index)=>`export type Fault_${index} = ${shape.type};`)] : [
+      ...request.declarations, `export type Request = ${request.type};`,
+      ...response.declarations, `export type Response = ${response.type};`,
+      ...faults.flatMap(({shape}, index) => [...shape.declarations, `export type Fault_${index} = ${shape.type};`])];
     const lines = [
       '// Checked component client; inject checkedComponentRuntimeV1 from the package root.',
       '// Scalar facets, ordered occurrence correlation and wildcard membership remain native runtime duties.',
-      ...request.declarations, `export type Request = ${request.type};`,
-      ...response.declarations, `export type Response = ${response.type};`,
-      ...faults.flatMap(({shape}, index) => [...shape.declarations, `export type Fault_${index} = ${shape.type};`]),
+      ...declarations,
       'export interface Usage {readonly nodes: number; readonly work: number}',
       'export interface Name {readonly namespace: string; readonly local: string}',
       'export interface Options {',

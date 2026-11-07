@@ -7,6 +7,8 @@ import type {DirectProjectionValue, DirectProjectionAttribute} from '../compiler
 import type {ExpandedName} from '../loader/orderedSyntax.js';
 import {createHash} from 'node:crypto';
 import {isComponentRecordProjection, inspectComponentRecordProjection} from '../compiler/componentRecordProjection.js';
+import type {GroupNode} from '../compiler/applicationGroups.js';
+import {applicationRecordName} from '../compiler/applicationGroups.js';
 
 type Schema = Record<string, unknown>;
 const literal = (value: unknown): string => JSON.stringify(value).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
@@ -24,8 +26,9 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     const owned = inspectComponentRecordProjection(supplied, contract);
     return lowerComponentShape(owned.companion, owned.mapping, role, check);
   }
-  const {projection} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
-  const names = new Map(projection.records.map((record, index) => [record.type.id, `${role}_Record_${index}`]));
+  const {projection, applicationGroups} = inspectComponentValueMapping(supplied, contract), {context} = inspectDirectOperation(contract);
+  const names = new Map(projection.records.map((record, index) => [record.type.id, applicationGroups
+    ? applicationRecordName(record.type.id) : `${role}_Record_${index}`]));
   const definitions: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
   const declarations: string[] = [];
   const lexicalAttribute = {type: 'object', minProperties: 1, maxProperties: 1, additionalProperties: {anyOf: [
@@ -33,7 +36,7 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     {type: 'object', additionalProperties: false, required: ['$namespace', '$value'], properties: {
       $namespace: {type: 'string', minLength: 1}, $value: {}}}]}};
   const lexicalAttributeType = 'Readonly<Record<string, string | number | boolean | readonly (string | number | boolean)[] | {readonly "$namespace": string; readonly "$value": unknown}>>';
-  const openName = `${role}_OpenValue`;
+  const openName = applicationGroups ? 'ApplicationOpenValue' : `${role}_OpenValue`;
   let openDeclared = false;
   const openShape = () => {
     if (!openDeclared) {
@@ -105,6 +108,41 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     return entries.length ? {type: `readonly (${entries.map(entry => entry.type).join(' | ')})[]`,
       schema: {type: 'array', items: {anyOf: entries.map(entry => entry.schema)}}, required: attributes.some(attribute => attribute.bag && attribute.required)} : undefined;
   };
+  const groupObject = (nodes: readonly GroupNode[]): {type: string; schema: Schema} => {
+    const properties: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
+    const required: string[] = [], members: string[] = [];
+    const visit = (node: GroupNode): void => {
+      check();
+      if (!node.slot && !node.target) {for (const child of node.children) visit(child); return;}
+      const key = node.slot?.element.name.local ?? node.target!.resolved.propertyName!;
+      let description: {type: string; schema: Schema};
+      if (node.slot) description = shape(node.slot.value);
+      else {
+        const name = node.target!.resolved.typeName;
+        if (node.alternatives) {
+          const alternatives = node.children.map((child,index) => {
+            const alternative = node.alternatives![index]!.resolved.typeName, body = groupObject(child.children);
+            definitions[alternative] = body.schema;
+            declarations.push(`export type ${alternative} = ${body.type};`);
+            return {type: alternative, schema: {$ref: '#/definitions/' + alternative}};
+          });
+          definitions[name] = {anyOf: alternatives.map(a=>a.schema)};
+          declarations.push(`export type ${name} = ${alternatives.map(a=>a.type).join(' | ')};`);
+        } else {
+          const body = groupObject(node.children); definitions[name] = body.schema;
+          declarations.push(`export type ${name} = ${body.type};`);
+        }
+        description = {type:name,schema:{$ref:'#/definitions/'+name}};
+      }
+      const repeated = node.particle.occurs.max !== '1', mandatory = node.particle.occurs.min !== '0';
+      if (repeated) description = {type:`readonly (${description.type})[]`,schema:{type:'array',items:description.schema,
+        minItems:Number(node.particle.occurs.min), ...(node.particle.occurs.max === 'unbounded' ? {} : {maxItems:Number(node.particle.occurs.max)})}};
+      properties[key] = description.schema; if (mandatory) required.push(key);
+      members.push(`readonly ${literal(key)}${mandatory?'':'?'}: ${description.type}`);
+    };
+    for (const node of nodes) visit(node);
+    return {type:`{${members.join('; ')}}`,schema:{type:'object',properties,required,additionalProperties:false}};
+  };
   for (const record of projection.records) {
     check(); const name = names.get(record.type.id)!;
     const properties: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
@@ -118,7 +156,13 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
     if (bag) member('$attributes', bag, bag.required);
     if (record.contextual) member('$namespaces', {type: 'Readonly<Record<string, string>>', schema: {type: 'object', additionalProperties: {type: 'string'}}}, false);
     if (record.text) member('$value', scalar(record.text), true);
-    if (record.ordered) {
+    const group = applicationGroups?.records[record.type.id];
+    if (group) {
+      const description = groupObject(group.children);
+      const schema = description.schema as {properties: Record<string,Schema>; required:string[]};
+      Object.assign(properties,schema.properties); required.push(...schema.required);
+      members.push(description.type.slice(1,-1));
+    } else if (record.ordered) {
       const variants = new Map<string, {type: string; schema: Schema}>();
       for (const slot of record.slots) {
         check(); const value = shape(slot.value), expanded = slot.element.name, key = literal(expanded);

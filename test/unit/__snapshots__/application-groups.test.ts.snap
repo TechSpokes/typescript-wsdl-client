@@ -1,0 +1,565 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`source-owned application groups > reconstructs fresh repeated alternatives, nil and attributes in native XML order 1`] = `
+{
+  "declarations": [
+    "export type ApplicationRecord_fd15cdd79facd6c2 = {
+  readonly "$content": readonly ({readonly name: {readonly namespace: "urn:checked:groups"; readonly local: "N"}; readonly value: number})[];
+};",
+    "export type ApplicationRecord_63012f847e0d7695 = {
+  readonly "$content": readonly ({readonly name: {readonly namespace: "urn:checked:groups"; readonly local: "O"}; readonly value: string} | {readonly name: {readonly namespace: "urn:checked:groups"; readonly local: "P"}; readonly value: boolean})[];
+};",
+    "export type MultipleChoicesChoiceAlternative1 = {readonly "H": string};",
+    "export type MultipleChoicesChoiceAlternative2 = {readonly "I": number};",
+    "export type MultipleChoicesChoice = MultipleChoicesChoiceAlternative1 | MultipleChoicesChoiceAlternative2;",
+    "export type MultipleChoicesChoice2Alternative1 = {readonly "J": boolean};",
+    "export type MultipleChoicesChoice2Alternative2 = {readonly "M": string};",
+    "export type MultipleChoicesChoice2 = MultipleChoicesChoice2Alternative1 | MultipleChoicesChoice2Alternative2;",
+    "export type ApplicationRecord_84d01386f3d2f403 = {
+readonly "$choice": MultipleChoicesChoice; readonly "$choice2"?: MultipleChoicesChoice2
+};",
+    "export type NestedSequence___ChoiceAlternative1 = {readonly "F": number};",
+    "export type NestedSequence___ChoiceAlternative2 = {readonly "G": boolean};",
+    "export type NestedSequence___Choice = NestedSequence___ChoiceAlternative1 | NestedSequence___ChoiceAlternative2;",
+    "export type NestedSequence = {readonly "E": string; readonly "$choice": NestedSequence___Choice};",
+    "export type ApplicationRecord_2d68be8c5860f876 = {
+readonly "$sequence"?: readonly (NestedSequence)[]
+};",
+    "export type OneSequenceSequence = {readonly "K": number; readonly "L": string};",
+    "export type ApplicationRecord_3f746d0243aca325 = {
+readonly "$sequence": readonly (OneSequenceSequence)[]
+};",
+    "export type PaymentChoiceChoiceAlternative1 = {readonly "A": number; readonly "B": (string | {readonly "$nil": true})};",
+    "export type PaymentChoiceChoiceAlternative2 = {readonly "C": boolean; readonly "D": string};",
+    "export type PaymentChoiceChoice = PaymentChoiceChoiceAlternative1 | PaymentChoiceChoiceAlternative2;",
+    "export type ApplicationRecord_65e85d249624bf90 = {
+  readonly "id": string;
+readonly "choice"?: string; readonly "$choice": readonly (PaymentChoiceChoice)[]; readonly "nested"?: ApplicationRecord_2d68be8c5860f876; readonly "multiple"?: ApplicationRecord_84d01386f3d2f403; readonly "one"?: ApplicationRecord_3f746d0243aca325; readonly "two"?: ApplicationRecord_e788ede639b3fef4; readonly "tree"?: ApplicationRecord_b442b49ece6e5816; readonly "ambiguous"?: ApplicationRecord_fd15cdd79facd6c2; readonly "empty"?: ApplicationRecord_63012f847e0d7695
+};",
+    "export type TreeChoicesChoiceAlternative1 = {readonly "leaf": string};",
+    "export type TreeChoicesChoiceAlternative2 = {readonly "branch": ApplicationRecord_b442b49ece6e5816};",
+    "export type TreeChoicesChoice = TreeChoicesChoiceAlternative1 | TreeChoicesChoiceAlternative2;",
+    "export type ApplicationRecord_b442b49ece6e5816 = {
+readonly "$choice": TreeChoicesChoice
+};",
+    "export type TwoSequenceSequence = {readonly "K": number; readonly "L": string};",
+    "export type ApplicationRecord_e788ede639b3fef4 = {
+readonly "$sequence"?: readonly (TwoSequenceSequence)[]
+};",
+  ],
+  "schema": {
+    "$id": "urn:checked-component:shape:8efaf8610c4bae366757991ef182b13d9c23508b44cae11b72ad8c9dd3c4aa34",
+    "allOf": [
+      {
+        "$ref": "#/definitions/ApplicationRecord_65e85d249624bf90",
+      },
+    ],
+    "definitions": {
+      "ApplicationRecord_2d68be8c5860f876": {
+        "additionalProperties": false,
+        "properties": {
+          "$sequence": {
+            "items": {
+              "$ref": "#/definitions/NestedSequence",
+            },
+            "maxItems": 3,
+            "minItems": 0,
+            "type": "array",
+          },
+        },
+        "required": [],
+        "type": "object",
+      },
+      "ApplicationRecord_3f746d0243aca325": {
+        "additionalProperties": false,
+        "properties": {
+          "$sequence": {
+            "items": {
+              "$ref": "#/definitions/OneSequenceSequence",
+            },
+            "maxItems": 2,
+            "minItems": 1,
+            "type": "array",
+          },
+        },
+        "required": [
+          "$sequence",
+        ],
+        "type": "object",
+      },
+      "ApplicationRecord_63012f847e0d7695": {
+        "additionalProperties": false,
+        "properties": {
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "local": {
+                          "const": "O",
+                        },
+                        "namespace": {
+                          "const": "urn:checked:groups",
+                        },
+                      },
+                      "required": [
+                        "namespace",
+                        "local",
+                      ],
+                      "type": "object",
+                    },
+                    "value": {
+                      "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "name",
+                    "value",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "local": {
+                          "const": "P",
+                        },
+                        "namespace": {
+                          "const": "urn:checked:groups",
+                        },
+                      },
+                      "required": [
+                        "namespace",
+                        "local",
+                      ],
+                      "type": "object",
+                    },
+                    "value": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "name",
+                    "value",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+      "ApplicationRecord_65e85d249624bf90": {
+        "additionalProperties": false,
+        "properties": {
+          "$choice": {
+            "items": {
+              "$ref": "#/definitions/PaymentChoiceChoice",
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "type": "array",
+          },
+          "ambiguous": {
+            "$ref": "#/definitions/ApplicationRecord_fd15cdd79facd6c2",
+          },
+          "choice": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+          "empty": {
+            "$ref": "#/definitions/ApplicationRecord_63012f847e0d7695",
+          },
+          "id": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+          "multiple": {
+            "$ref": "#/definitions/ApplicationRecord_84d01386f3d2f403",
+          },
+          "nested": {
+            "$ref": "#/definitions/ApplicationRecord_2d68be8c5860f876",
+          },
+          "one": {
+            "$ref": "#/definitions/ApplicationRecord_3f746d0243aca325",
+          },
+          "tree": {
+            "$ref": "#/definitions/ApplicationRecord_b442b49ece6e5816",
+          },
+          "two": {
+            "$ref": "#/definitions/ApplicationRecord_e788ede639b3fef4",
+          },
+        },
+        "required": [
+          "id",
+          "$choice",
+        ],
+        "type": "object",
+      },
+      "ApplicationRecord_84d01386f3d2f403": {
+        "additionalProperties": false,
+        "properties": {
+          "$choice": {
+            "$ref": "#/definitions/MultipleChoicesChoice",
+          },
+          "$choice2": {
+            "$ref": "#/definitions/MultipleChoicesChoice2",
+          },
+        },
+        "required": [
+          "$choice",
+        ],
+        "type": "object",
+      },
+      "ApplicationRecord_b442b49ece6e5816": {
+        "additionalProperties": false,
+        "properties": {
+          "$choice": {
+            "$ref": "#/definitions/TreeChoicesChoice",
+          },
+        },
+        "required": [
+          "$choice",
+        ],
+        "type": "object",
+      },
+      "ApplicationRecord_e788ede639b3fef4": {
+        "additionalProperties": false,
+        "properties": {
+          "$sequence": {
+            "items": {
+              "$ref": "#/definitions/TwoSequenceSequence",
+            },
+            "maxItems": 4,
+            "minItems": 0,
+            "type": "array",
+          },
+        },
+        "required": [],
+        "type": "object",
+      },
+      "ApplicationRecord_fd15cdd79facd6c2": {
+        "additionalProperties": false,
+        "properties": {
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "local": {
+                          "const": "N",
+                        },
+                        "namespace": {
+                          "const": "urn:checked:groups",
+                        },
+                      },
+                      "required": [
+                        "namespace",
+                        "local",
+                      ],
+                      "type": "object",
+                    },
+                    "value": {
+                      "maximum": 2147483647,
+                      "minimum": -2147483648,
+                      "type": "integer",
+                    },
+                  },
+                  "required": [
+                    "name",
+                    "value",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+      "MultipleChoicesChoice": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/MultipleChoicesChoiceAlternative1",
+          },
+          {
+            "$ref": "#/definitions/MultipleChoicesChoiceAlternative2",
+          },
+        ],
+      },
+      "MultipleChoicesChoice2": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/MultipleChoicesChoice2Alternative1",
+          },
+          {
+            "$ref": "#/definitions/MultipleChoicesChoice2Alternative2",
+          },
+        ],
+      },
+      "MultipleChoicesChoice2Alternative1": {
+        "additionalProperties": false,
+        "properties": {
+          "J": {
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "J",
+        ],
+        "type": "object",
+      },
+      "MultipleChoicesChoice2Alternative2": {
+        "additionalProperties": false,
+        "properties": {
+          "M": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "M",
+        ],
+        "type": "object",
+      },
+      "MultipleChoicesChoiceAlternative1": {
+        "additionalProperties": false,
+        "properties": {
+          "H": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "H",
+        ],
+        "type": "object",
+      },
+      "MultipleChoicesChoiceAlternative2": {
+        "additionalProperties": false,
+        "properties": {
+          "I": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "I",
+        ],
+        "type": "object",
+      },
+      "NestedSequence": {
+        "additionalProperties": false,
+        "properties": {
+          "$choice": {
+            "$ref": "#/definitions/NestedSequence___Choice",
+          },
+          "E": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "E",
+          "$choice",
+        ],
+        "type": "object",
+      },
+      "NestedSequence___Choice": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/NestedSequence___ChoiceAlternative1",
+          },
+          {
+            "$ref": "#/definitions/NestedSequence___ChoiceAlternative2",
+          },
+        ],
+      },
+      "NestedSequence___ChoiceAlternative1": {
+        "additionalProperties": false,
+        "properties": {
+          "F": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "F",
+        ],
+        "type": "object",
+      },
+      "NestedSequence___ChoiceAlternative2": {
+        "additionalProperties": false,
+        "properties": {
+          "G": {
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "G",
+        ],
+        "type": "object",
+      },
+      "OneSequenceSequence": {
+        "additionalProperties": false,
+        "properties": {
+          "K": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+          "L": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "K",
+          "L",
+        ],
+        "type": "object",
+      },
+      "PaymentChoiceChoice": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/PaymentChoiceChoiceAlternative1",
+          },
+          {
+            "$ref": "#/definitions/PaymentChoiceChoiceAlternative2",
+          },
+        ],
+      },
+      "PaymentChoiceChoiceAlternative1": {
+        "additionalProperties": false,
+        "properties": {
+          "A": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+          "B": {
+            "anyOf": [
+              {
+                "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                "type": "string",
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "$nil": {
+                    "const": true,
+                  },
+                },
+                "required": [
+                  "$nil",
+                ],
+                "type": "object",
+              },
+            ],
+          },
+        },
+        "required": [
+          "A",
+          "B",
+        ],
+        "type": "object",
+      },
+      "PaymentChoiceChoiceAlternative2": {
+        "additionalProperties": false,
+        "properties": {
+          "C": {
+            "type": "boolean",
+          },
+          "D": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "C",
+          "D",
+        ],
+        "type": "object",
+      },
+      "TreeChoicesChoice": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/TreeChoicesChoiceAlternative1",
+          },
+          {
+            "$ref": "#/definitions/TreeChoicesChoiceAlternative2",
+          },
+        ],
+      },
+      "TreeChoicesChoiceAlternative1": {
+        "additionalProperties": false,
+        "properties": {
+          "leaf": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "leaf",
+        ],
+        "type": "object",
+      },
+      "TreeChoicesChoiceAlternative2": {
+        "additionalProperties": false,
+        "properties": {
+          "branch": {
+            "$ref": "#/definitions/ApplicationRecord_b442b49ece6e5816",
+          },
+        },
+        "required": [
+          "branch",
+        ],
+        "type": "object",
+      },
+      "TwoSequenceSequence": {
+        "additionalProperties": false,
+        "properties": {
+          "K": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+          "L": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "K",
+          "L",
+        ],
+        "type": "object",
+      },
+    },
+  },
+  "type": "ApplicationRecord_65e85d249624bf90",
+}
+`;

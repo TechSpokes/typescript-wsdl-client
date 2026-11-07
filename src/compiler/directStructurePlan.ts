@@ -46,6 +46,17 @@ type OrderedGrammar = {context: SemanticContext; view: SemanticParticleView; fir
   wildcardLeaves: ReadonlyMap<SemanticParticle, Readonly<{particle: ParticleNode; wildcard: SelectedParticleWildcard}>>};
 export type DirectProjectionSelection = DirectProjectionSlot | Readonly<{kind: 'wildcard'; element?: ElementNode; particle: ParticleNode}>;
 const orderedGrammars = new WeakMap<DirectProjectionRecord, OrderedGrammar>();
+/** Inspect source particles only after authenticating their projection owner. */
+export function inspectProjectionGrammar(context: SemanticContext, record: DirectProjectionRecord): Readonly<{
+  view: SemanticParticleView; first(particle: SemanticParticle): readonly string[];
+  bodyNullable(particle: SemanticParticle): boolean; slot(key: string): DirectProjectionSlot | undefined;
+}> | undefined {
+  if (projectionRecords.get(record) !== context) throw new TypeError('Authenticated projection record required');
+  const grammar=orderedGrammars.get(record);
+  return grammar ? Object.freeze({view:grammar.view,
+    first(particle:SemanticParticle) {const keys=grammar.first.get(particle);context.budget.chargeWork(32+(keys?.size ?? 0));return Object.freeze([...(keys ?? [])]);},
+    bodyNullable:(particle:SemanticParticle)=>grammar.bodyNullable.get(particle)!,slot:(key:string)=>grammar.slots.get(key)}) : undefined;
+}
 const projectionRecords = new WeakMap<DirectProjectionRecord, SemanticContext>();
 const nameKey = (name: ExpandedName, charge: (amount: number) => void): string => {
   charge(64 + (name.namespace.length + name.local.length) * 8);
