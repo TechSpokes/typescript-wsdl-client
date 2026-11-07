@@ -10,7 +10,7 @@ import {inspectDirectValueMapping, expandDirectValue, assessDirectScalars, inspe
 import type {DirectValueMapping, DirectValueReceipt, DirectValueFailure, DirectExpandedValue,
   ComponentValueMapping, ProjectionExpandedValue, ProjectionValueReceipt} from './directValues.js';
 import {matchDirectOperation, matchDirectProjection} from './directStructure.js';
-import {parseOrderedSyntax, SchemaLoadingError, XML_NAMESPACE} from '../loader/orderedSyntax.js';
+import {parseOrderedSyntax, SchemaLoadingError, XML_NAMESPACE, isXmlNamespaceBinding} from '../loader/orderedSyntax.js';
 import type {SyntaxElement, SyntaxSource} from '../loader/orderedSyntax.js';
 import type {SemanticBudget, ResolverUsage} from './semanticBudget.js';
 
@@ -165,7 +165,7 @@ function emitObservedXml(payload: SyntaxElement, {budget, limits, check}: Sessio
       }
       return prefix!;
     };
-    type Task = {kind: 'element'; node: SyntaxElement; depth: number} | {kind: 'close'; name: string} | {kind: 'text'; value: string};
+    type Task = {kind: 'element'; node: SyntaxElement; depth: number; scope?: Readonly<Record<string, string>>} | {kind: 'close'; name: string} | {kind: 'text'; value: string};
     const tasks: Task[] = [{kind: 'element', node: payload, depth: 1}];
     while (tasks.length) {
       check(); const task = tasks.pop()!;
@@ -178,25 +178,51 @@ function emitObservedXml(payload: SyntaxElement, {budget, limits, check}: Sessio
       const {node, depth} = task;
       if (++nodes > limits.maxNodes || depth > limits.maxDepth) throw new Stop('resource-limit', 'XML node/depth limit');
       const declarations = new Map<string, string>();
-      const qualified = (namespace: string, local: string): string => {
+      const protectedScope = Object.hasOwn(node.namespaces, 'xml');
+      const scope = Object.assign(Object.create(null) as Record<string, string>, task.scope ?? {xml: XML_NAMESPACE, '': ''});
+      if (protectedScope) {
+        for (const prefix of budget.sorted(Object.keys(node.namespaces), (a, b) => budget.compareText(a, b))) {
+          check(); const namespace = node.namespaces[prefix]!;
+          if (!isXmlNamespaceBinding(prefix, namespace)) throw new Stop('value-invalid', 'namespace-binding');
+          if (prefix !== 'xml' && scope[prefix] !== namespace) declarations.set(prefix, namespace);
+          scope[prefix] = namespace;
+        }
+      }
+      const qualified = (namespace: string, local: string, attribute = false): string => {
+        if (protectedScope) {
+          if (!namespace) {
+            if (!attribute && scope['']) throw new Stop('value-invalid', 'no-namespace-element-default-conflict');
+            return local;
+          }
+          const prefix = budget.sorted(Object.keys(scope), (a, b) => budget.compareText(a, b))
+            .find(prefix => (!attribute || prefix !== '') && scope[prefix] === namespace);
+          if (prefix === undefined) throw new Stop('value-invalid', attribute ? 'attribute-namespace-prefix-required' : 'element-namespace-prefix-required');
+          return prefix ? `${prefix}:${local}` : local;
+        }
+        if (!namespace) {
+          if (!attribute && scope['']) {declarations.set('', ''); scope[''] = '';}
+          return local;
+        }
         const prefix = prefixFor(namespace);
-        if (prefix && prefix !== 'xml') declarations.set(prefix, namespace);
-        return prefix ? `${prefix}:${local}` : local;
+        let selected = prefix;
+        while (scope[selected] !== undefined && scope[selected] !== namespace) selected = `n${nextPrefix++}`;
+        if (selected && selected !== 'xml') {declarations.set(selected, namespace); scope[selected] = namespace;}
+        return selected ? `${selected}:${local}` : local;
       };
       const name = qualified(node.name.namespace, node.name.local), attributes: string[] = [];
       for (const attribute of node.attributes) {
         check();
         if (attribute.name.namespace === '' && attribute.name.local === 'xmlns') throw new Stop('unsupported', 'namespace-declaration-as-data');
-        attributes.push(` ${qualified(attribute.name.namespace, attribute.name.local)}="${escape(attribute.value, true)}"`);
+        attributes.push(` ${qualified(attribute.name.namespace, attribute.name.local, true)}="${escape(attribute.value, true)}"`);
       }
       // @why Bind each used prefix at this element; sibling discovery never makes a prefix in scope elsewhere.
       append(`<${name}`);
-      for (const [prefix, namespace] of declarations) append(` xmlns:${prefix}="${escape(namespace, true)}"`);
+      for (const [prefix, namespace] of declarations) append(` xmlns${prefix ? ':' + prefix : ''}="${escape(namespace, true)}"`);
       for (const attribute of attributes) append(attribute);
       append('>'); tasks.push({kind: 'close', name});
       for (let i = node.children.length - 1; i >= 0; i--) {
         check(); const child = node.children[i]!;
-        tasks.push(child.kind === 'element' ? {kind: 'element', node: child, depth: depth + 1} : {kind: 'text', value: child.value});
+        tasks.push(child.kind === 'element' ? {kind: 'element', node: child, depth: depth + 1, scope} : {kind: 'text', value: child.value});
       }
     }
     // Actual output bytes were bounded by append; bytes are caller-owned data, not authority.

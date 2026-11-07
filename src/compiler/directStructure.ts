@@ -3,12 +3,13 @@ import {inspectDirectOperation} from './directOperation.js';
 import type {DirectMessageRoot, DirectOperationContract} from './directOperation.js';
 import type {AttributeNode, ElementNode, Reference} from './canonicalGraph.js';
 import type {ExpandedName, SyntaxElement, SyntaxNode, SyntaxSource} from '../loader/orderedSyntax.js';
-import {planDirectProjection, flatDirectProjection, matchOrderedProjection} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, matchOrderedProjection, selectProjectionAttribute} from './directStructurePlan.js';
 import type {DirectProjectionSlot, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
 import type {ResolverUsage} from './semanticBudget.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
+import {isXmlNCName, isXmlCharacters, isXmlNamespaceBinding} from '../loader/orderedSyntax.js';
 
 export type DirectDirection = Readonly<{kind: 'input' | 'output'} | {kind: 'fault'; name: string}>;
 export interface DirectScalarDuty {
@@ -25,10 +26,19 @@ export interface DirectScalarDuty {
   readonly list?: ProjectionScalarList;
 }
 export type DirectMatchedNode = Readonly<{
+  kind: 'unassessed'; declaration: ElementNode; payloadPath: string; payload: SyntaxElement;
+} | {
+  kind: 'mixed-text'; declaration: ElementNode; payloadPath: string; value: string;
+} | {
   kind: 'scalar'; declaration: ElementNode; payloadPath: string; operand: number;
 } | {
   kind: 'record'; declaration: ElementNode; payloadPath: string; nil?: true;
-  attributes: readonly Readonly<{declaration: AttributeNode; operand: number; payloadPath: string; origin: 'present' | 'schema-default' | 'schema-fixed'}>[];
+  keyed?: true;
+  namespaceChoices?: readonly string[];
+  dynamicDeclarations?: readonly ElementNode[];
+  namespaces?: Readonly<Record<string, string>>;
+  openAttributes?: readonly import('../loader/orderedSyntax.js').SyntaxAttribute[];
+  attributes: readonly Readonly<{declaration: AttributeNode; operand: number; payloadPath: string; bag?: true; namespaceChoice?: true; origin: 'present' | 'schema-default' | 'schema-fixed'}>[];
   text?: Extract<DirectMatchedNode, {kind: 'scalar'}>;
   content?: readonly DirectMatchedNode[];
   slots: readonly Readonly<{slot: DirectProjectionSlot; items: readonly DirectMatchedNode[]}>[];
@@ -147,11 +157,17 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         check(); const node = visits.pop()!;
         budget.chargeWork(128);
         if (!sourceShape(node.source)) return malformed();
-        if (node.kind === 'text') {if (!string(node.value)) return malformed(); continue;}
+        if (node.kind === 'text') {if (!string(node.value) || !isXmlCharacters(node.value)) return malformed(); continue;}
         if (!nameShape(node.name) || !string(node.lexicalName) || !string(node.baseUri) || !record(node.namespaces) || !Array.isArray(node.attributes)) return malformed();
-        for (const key in node.namespaces) {check(); if (!string(node.namespaces[key])) return malformed();}
+        if (!isXmlNCName(node.name.local) || !isXmlCharacters(node.name.namespace) || node.name.namespace === 'http://www.w3.org/2000/xmlns/') return malformed();
+        for (const key in node.namespaces) {check(); if (!string(node.namespaces[key]) || !isXmlNamespaceBinding(key, node.namespaces[key]!)) return malformed();}
+        const attributeNames = new Set<string>();
         for (const a of node.attributes) {
           check(); if (!record(a) || !nameShape(a.name) || !string(a.lexicalName) || !string(a.value)) return malformed();
+          if (!isXmlNCName(a.name.local) || a.name.local === 'xmlns' && a.name.namespace === '' || a.name.namespace === 'http://www.w3.org/2000/xmlns/' || !isXmlCharacters(a.name.namespace) || !isXmlCharacters(a.value)) return malformed();
+          const key = JSON.stringify(a.name);
+          if (attributeNames.has(key)) return fail('mismatch', 'duplicate-attribute', schemaPath, node.source.path);
+          attributeNames.add(key);
         }
         for (const child of node.children) {check(); budget.chargeWork(32); visits.push(child);}
       }
@@ -200,7 +216,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         attributes(node, declaration, path);
         elementOperand(node, declaration, builtin, path, shape, retainLexical, list);
       };
-      type Frame = {node: SyntaxElement; declaration: ElementNode; value: DirectProjectionValue; path: string; into: DirectMatchedNode[]};
+      type Frame = {node: SyntaxNode; declaration: ElementNode; value: DirectProjectionValue; unassessed?: true; path: string; into: DirectMatchedNode[]};
       const roots: DirectMatchedNode[] = [];
       const frames: Frame[] = [{node: owned, declaration: root, value: plan.root, path: '/0', into: roots}];
       while (frames.length) {
@@ -208,6 +224,14 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         const {declaration, path: parentPath} = frame;
         let node = frame.node;
         budget.chargeWork(128 + parentPath.length * 4);
+        if (node.kind === 'text') {
+          frame.into.push({kind: 'mixed-text', declaration, payloadPath: parentPath, value: node.value});
+          continue;
+        }
+        if (frame.unassessed) {
+          frame.into.push({kind: 'unassessed', declaration, payloadPath: parentPath, payload: node});
+          continue;
+        }
         let nil = false;
         const nilAttributes = node.attributes.filter(attribute => {
           check(); return attribute.name.namespace === 'http://www.w3.org/2001/XMLSchema-instance' && attribute.name.local === 'nil';
@@ -238,19 +262,34 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         if (!record) return unsupported();
         // @why XSD 1.0 cvc-complex-type.2.1 forbids even whitespace character children for empty content.
         if (record.content === 'empty' && node.children.length) return mismatch('empty-content', declaration, parentPath);
-        const matchedAttributes: {declaration: AttributeNode; operand: number; payloadPath: string; origin: 'present' | 'schema-default' | 'schema-fixed'}[] = [];
-        if (!record.attributes.length) attributes(node, declaration, parentPath);
+        const matchedAttributes: {declaration: AttributeNode; operand: number; payloadPath: string; bag?: true; namespaceChoice?: true; origin: 'present' | 'schema-default' | 'schema-fixed'}[] = [];
+        const openAttributes: import('../loader/orderedSyntax.js').SyntaxAttribute[] = [];
+        const attributeChannel = (expected: typeof record.attributes[number]) => ({...(expected.bag ? {bag: true as const} : {}),
+          ...(expected.bag && expected.declaration.name.namespace && (record.attributeWildcard
+            || record.attributes.some(other => other !== expected && other.declaration.name.local === expected.declaration.name.local)) ? {namespaceChoice: true as const} : {})});
+        if (!record.attributes.length && !record.attributeWildcard) attributes(node, declaration, parentPath);
         else {
           const present = new Set<string>();
           for (let index = 0; index < node.attributes.length; index++) {
             check(); const attribute = node.attributes[index]!;
             const path = `${parentPath}/attributes/${index}`;
-            const expected = record.attributes.find(item => {check(); return same(item.declaration.name, attribute.name);});
-            if (!expected) return mismatch('unknown-attribute', declaration, path);
+            let expected = record.attributes.find(item => {check(); return same(item.declaration.name, attribute.name);});
+            let dynamic = false;
+            if (!expected) {
+              const selected = selectProjectionAttribute(context, record, attribute.name, check, unsupported);
+              if (!selected) return mismatch('unknown-attribute', declaration, path);
+              if (!selected.attribute) {
+                const key = JSON.stringify(attribute.name);
+                if (present.has(key)) return mismatch('duplicate-attribute', declaration, path);
+                present.add(key); openAttributes.push(attribute); continue;
+              }
+              expected = selected.attribute; dynamic = true;
+            }
             if (present.has(expected.declaration.id)) return mismatch('duplicate-attribute', declaration, path);
             budget.chargeWork(128 + expected.declaration.id.length);
             present.add(expected.declaration.id);
-            matchedAttributes.push({declaration: expected.declaration, operand: occurrences.length, payloadPath: path, origin: 'present'});
+            matchedAttributes.push({declaration: expected.declaration, operand: occurrences.length, payloadPath: path, origin: 'present',
+              ...(dynamic ? {bag: true as const, ...(attribute.name.namespace ? {namespaceChoice: true as const} : {})} : attributeChannel(expected))});
             operand(node, expected.declaration, expected.builtin, attribute.value, path,
               expected.constraint?.kind === 'fixed' ? expected.constraint.canonical : undefined, expected.retainLexical, expected.list);
           }
@@ -261,6 +300,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
               budget.chargeWork(128 + expected.declaration.id.length * 4);
               const path = `${parentPath}/@schema-${expected.constraint.kind}/${encodeURIComponent(expected.declaration.id)}`;
               matchedAttributes.push({declaration: expected.declaration, operand: occurrences.length, payloadPath: path,
+                ...attributeChannel(expected),
                 origin: expected.constraint.kind === 'fixed' ? 'schema-fixed' : 'schema-default'});
               operand(node, expected.declaration, expected.builtin, expected.constraint.lexical, path,
                 expected.constraint.kind === 'fixed' ? expected.constraint.canonical : undefined, expected.retainLexical, expected.list);
@@ -268,7 +308,9 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
           }
         }
         if (nil) {
-          frame.into.push({kind: 'record', nil: true, declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes});
+          frame.into.push({kind: 'record', nil: true, declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes,
+            openAttributes,
+            ...(record.contextual ? {namespaces: node.namespaces} : {})});
           continue;
         }
         if (record.content === 'simple') {
@@ -276,6 +318,7 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
           const path = `${parentPath}/text`, index = occurrences.length;
           elementOperand(node, declaration, record.text.builtin, path, frame.value, record.text.retainLexical, record.text.list);
           frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes,
+            openAttributes, ...(record.contextual ? {namespaces: node.namespaces} : {}),
             text: {kind: 'scalar', declaration, payloadPath: path, operand: index}});
           continue;
         }
@@ -287,15 +330,30 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
             budget.chargeWork(64);
             if (child.kind === 'text') {
               budget.chargeWork(child.value.length * 2);
-              if (/[^\t\r\n ]/.test(child.value)) return mismatch('complex-text', declaration, path);
+              if (record.content !== 'mixed' && /[^\t\r\n ]/.test(child.value)) return mismatch('complex-text', declaration, path);
             } else elements.push({node: child, path});
           }
           const selected = matchOrderedProjection(context, record, elements.map(item => {check(); return item.node.name;}), check);
           if (!selected) return mismatch('ordered-particle-language', declaration, parentPath);
           const content: DirectMatchedNode[] = [];
-          frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes, content});
-          for (let index = elements.length - 1; index >= 0; index--) {
-            check(); const item = elements[index]!, slot = selected[index]!;
+          frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: [], attributes: matchedAttributes, content,
+            openAttributes,
+            ...(record.contextual ? {namespaces: node.namespaces} : {}),
+            namespaceChoices: slots.filter(slot => !record.fixedOrder && slots.some(other => other !== slot && other.element.name.local === slot.element.name.local)).map(slot => slot.element.name.local),
+            dynamicDeclarations: selected.filter(slot => !('value' in slot) && slot.element).map(slot => slot.element!),
+            ...(record.keyed ? {keyed: true} : {})});
+          let selectedIndex = elements.length - 1;
+          for (let index = node.children.length - 1; index >= 0; index--) {
+            check(); const child = node.children[index]!;
+            if (child.kind === 'text') {
+              if (record.content === 'mixed') frames.push({node: child, path: `${parentPath}/children/${index}`, declaration, value: frame.value, into: content});
+              continue;
+            }
+            const item = elements[selectedIndex]!, slot = selected[selectedIndex--]!;
+            if (!slot.element) {
+              frames.push({node: item.node, path: item.path, declaration, value: frame.value, unassessed: true, into: content});
+              continue;
+            }
             frames.push({node: item.node, path: item.path, declaration: slot.element,
               value: 'value' in slot ? slot.value : wildcardValue(slot.element), into: content});
           }
@@ -303,7 +361,9 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
         }
         budget.chargeWork(64 + slots.length * 128);
         const matchedSlots = slots.map(slot => {check(); return {slot, items: [] as DirectMatchedNode[]};});
-        frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: matchedSlots, attributes: matchedAttributes});
+        frame.into.push({kind: 'record', declaration, payloadPath: parentPath, slots: matchedSlots, attributes: matchedAttributes,
+          openAttributes,
+          ...(record.contextual ? {namespaces: node.namespaces} : {})});
         const children: Frame[] = [];
         let cursor = 0, count = 0;
         for (let index = 0; index < node.children.length; index++) {

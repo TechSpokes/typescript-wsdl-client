@@ -114,8 +114,12 @@ describe('native known-attribute projection', () => {
     else expect(expandProjectionValue(context, root, {id: ''})).toMatchObject({kind: 'projection-expanded', validated: {value: {id: ''}}});
   });
 
-  it.each(['Collision', 'NamespaceCollision', 'Wildcard'])('refuses unsupported %s without flattening or augmentation', async name => {
+  it.each([
+    ['Collision', {$attributes: [{id: 'attribute'}], id: 'child'}],
+    ['NamespaceCollision', {$attributes: [{enabled: false}, {enabled: {$namespace: namespace, $value: true}}]}],
+    ['Wildcard', {$namespaces: {}, $attributes: [{extra: 'lexical'}]}],
+  ])('preserves source-permitted %s with its selected attribute channel', async (name, application) => {
     const {context, root} = await source(name);
-    expect(expandProjectionValue(context, root, {})).toMatchObject({kind: 'unsupported', rule: 'native-direct-shape'});
+    expect(expandProjectionValue(context, root, application)).toMatchObject({kind: 'projection-expanded', validated: {value: application}});
   });
 });

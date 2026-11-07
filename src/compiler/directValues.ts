@@ -7,7 +7,7 @@ import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract, DirectMessageRoot} from './directOperation.js';
 import {inspectDirectStructuralMatch, matchDirectOperation} from './directStructure.js';
 import type {DirectDirection, DirectScalarDuty, DirectStructuralMatch} from './directStructure.js';
-import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard} from './directStructurePlan.js';
+import {planDirectProjection, flatDirectProjection, projectionScalarRepresentation, resolveProjectionWildcard, selectProjectionWildcard, selectProjectionAttribute} from './directStructurePlan.js';
 import type {DirectRootPlan, DirectProjectionPlan, DirectProjectionValue} from './directStructurePlan.js';
 import {assertSemanticContext} from './semanticContext.js';
 import type {SemanticContext} from './semanticContext.js';
@@ -20,6 +20,7 @@ import type {ExpandedName, SyntaxAttribute, SyntaxElement, SyntaxNode, SyntaxSou
 import {assessProjectionScalarOperand} from './projectionScalar.js';
 import type {DatatypeOperand} from './datatypeValues.js';
 import type {ProjectionScalarList} from './projectionScalar.js';
+import {isXmlNCName, isXmlCharacters, isXmlNamespaceBinding, XML_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 
 export type DirectPrimitive = string | boolean | number;
 /** Inverse construction caps; XML encoding may impose smaller byte/text/node limits. */
@@ -261,11 +262,51 @@ function assessed(contract: DirectOperationContract, structural: DirectStructura
 function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessedScalar[], s: Session): DirectApplicationValue {
   const {budget, check} = s;
   let result: DirectApplicationValue | undefined;
-  type Frame = {node: DirectMatchedNode; set(value: DirectApplicationValue): void};
+  type Frame = {node: DirectMatchedNode; scope?: Readonly<Record<string, string>>; set(value: DirectApplicationValue): void};
   const frames: Frame[] = [{node: tree, set: value => {result = value;}}];
   while (frames.length) {
-    check(); const {node, set} = frames.pop()!;
+    check(); const {node, set, scope} = frames.pop()!;
     budget.chargeWork(128);
+    if (node.kind === 'mixed-text') {set(node.value); continue;}
+    const retain = (target: Record<string, DirectApplicationValue>, effective: Readonly<Record<string, string>>) => {
+      const delta = Object.create(null) as Record<string, string>;
+      for (const key of budget.sorted(Object.keys(effective), (a, b) => budget.compareText(a, b))) {
+        check(); budget.chargeWork(32 + key.length + effective[key]!.length);
+        if (key !== 'xml' && (!scope || scope[key] !== effective[key])) delta[key] = effective[key]!;
+      }
+      if (!scope || Object.keys(delta).length) target.$namespaces = delta;
+    };
+    if (node.kind === 'unassessed') {
+      const payload = node.payload;
+      const value = Object.create(null) as Record<string, DirectApplicationValue>;
+      value.$namespace = payload.name.namespace;
+      retain(value, payload.namespaces);
+      if (payload.attributes.length) {
+        value.$attributes = budget.sorted([...payload.attributes], (a, b) => budget.compareText(JSON.stringify(a.name), JSON.stringify(b.name))).map(attribute => {
+          const entry = Object.create(null) as Record<string, DirectApplicationValue>;
+          entry[attribute.name.local] = attribute.name.namespace ? {$namespace: attribute.name.namespace, $value: attribute.value} : attribute.value;
+          return entry;
+        });
+      }
+      const content: DirectApplicationValue[] = []; value.$content = content; set(value);
+      const children: Frame[] = [];
+      for (const child of payload.children) {
+        check(); budget.chargeWork(128);
+        if (child.kind === 'text') {
+          children.push({node: {kind: 'mixed-text', declaration: node.declaration, payloadPath: node.payloadPath, value: child.value}, set(text) {
+            if (!text) return;
+            const last = content.at(-1) as Record<string, DirectApplicationValue> | undefined;
+            if (last && Object.hasOwn(last, '$value')) last.$value = String(last.$value) + String(text);
+            else content.push({$value: text});
+          }});
+        } else children.push({node: {...node, payload: child}, scope: payload.namespaces, set(value) {
+          const entry = Object.create(null) as Record<string, DirectApplicationValue>;
+          entry[child.name.local] = value; content.push(entry);
+        }});
+      }
+      for (let index = children.length - 1; index >= 0; index--) frames.push(children[index]!);
+      continue;
+    }
     if (node.kind === 'scalar') {
       const operand = operands[node.operand];
       if (!operand || operand.declaration !== node.declaration || operand.payloadPath !== node.payloadPath) throw new TypeError('Foreign projection scalar operand');
@@ -273,13 +314,38 @@ function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessed
     }
     const record: Record<string, DirectApplicationValue | DirectApplicationValue[]> = Object.create(null) as Record<string, DirectApplicationValue | DirectApplicationValue[]>;
     set(record);
+    if (node.namespaces) retain(record, node.namespaces);
     if (node.nil) record.$nil = true;
+    const attributeIdentities = new Map<DirectApplicationValue, ExpandedName>();
     for (const attribute of node.attributes) {
       check(); const operand = operands[attribute.operand];
       if (!operand || operand.declaration !== attribute.declaration || operand.payloadPath !== attribute.payloadPath) throw new TypeError('Foreign projection attribute operand');
       const key = attribute.declaration.name.local;
       budget.chargeWork(64 + key.length * 4);
-      record[key] = operand.value;
+      if (attribute.bag) {
+        const bag = (record.$attributes ??= []) as DirectApplicationValue[];
+        const entry = Object.create(null) as Record<string, DirectApplicationValue>;
+        entry[key] = attribute.namespaceChoice ? {$namespace: attribute.declaration.name.namespace, $value: operand.value} : operand.value;
+        bag.push(entry);
+        attributeIdentities.set(entry, attribute.declaration.name);
+      } else record[key] = operand.value;
+    }
+    if (node.openAttributes?.length) {
+      const bag = (record.$attributes ??= []) as DirectApplicationValue[];
+      for (const attribute of node.openAttributes) {
+        check(); budget.chargeWork(128 + attribute.value.length * 4);
+        const entry = Object.create(null) as Record<string, DirectApplicationValue>;
+        entry[attribute.name.local] = attribute.name.namespace ? {$namespace: attribute.name.namespace, $value: attribute.value} : attribute.value;
+        bag.push(entry);
+        attributeIdentities.set(entry, attribute.name);
+      }
+    }
+    if (Array.isArray(record.$attributes)) {
+      const identity = (entry: DirectApplicationValue): string => {
+        const name = attributeIdentities.get(entry)!;
+        return JSON.stringify([name.namespace, name.local]);
+      };
+      record.$attributes = budget.sorted([...record.$attributes], (a, b) => budget.compareText(identity(a), identity(b)));
     }
     const children: Frame[] = [];
     if (node.text) children.push({node: node.text, set: value => {record.$value = value;}});
@@ -287,7 +353,26 @@ function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessed
       const content: DirectApplicationValue[] = []; record.$content = content;
       for (const item of node.content) {
         check(); budget.chargeWork(128 + item.declaration.name.local.length * 4 + item.declaration.name.namespace.length * 4);
-        children.push({node: item, set: value => {content.push({name: {...item.declaration.name}, value});}});
+        children.push({node: item, scope: node.namespaces ?? scope, set: value => {
+          if (item.kind === 'mixed-text') {
+            const text = value as string;
+            if (!text) return;
+            const last = content.at(-1);
+            if (last && typeof last === 'object' && !Array.isArray(last) && Object.hasOwn(last, '$value')) {
+              (last as Record<string, DirectApplicationValue>).$value = String((last as Record<string, DirectApplicationValue>).$value) + text;
+            } else content.push({$value: text});
+          } else if (node.keyed) {
+            const entry = Object.create(null) as Record<string, DirectApplicationValue>;
+            if (item.kind === 'unassessed') {entry[item.payload.name.local] = value; content.push(entry); return;}
+            if (node.namespaceChoices?.includes(item.declaration.name.local) || node.dynamicDeclarations?.includes(item.declaration)) {
+              if (item.kind === 'scalar') value = {$namespace: item.declaration.name.namespace, $value: value};
+              // @why Records publish their owned container before child frames fill it; preserve that reference.
+              else (value as Record<string, DirectApplicationValue>).$namespace = item.declaration.name.namespace;
+            }
+            entry[item.declaration.name.local] = value;
+            content.push(entry);
+          } else content.push({name: {...item.declaration.name}, value});
+        }});
       }
     }
     for (const {slot, items} of node.slots) {
@@ -295,11 +380,11 @@ function projectValue(tree: DirectMatchedNode, operands: readonly DirectAssessed
       budget.chargeWork(64 + key.length * 4);
       if (slot.particle.occurs.max === 'unbounded') {
         const values: DirectApplicationValue[] = []; record[key] = values;
-        for (const item of items) {check(); budget.chargeWork(128); children.push({node: item, set: value => {values.push(value);}});}
+        for (const item of items) {check(); budget.chargeWork(128); children.push({node: item, scope: node.namespaces ?? scope, set: value => {values.push(value);}});}
       } else if (items.length) {
         if (items.length !== 1) throw new TypeError('Invalid projection singleton boundary');
         budget.chargeWork(128);
-        children.push({node: items[0]!, set: value => {record[key] = value;}});
+        children.push({node: items[0]!, scope: node.namespaces ?? scope, set: value => {record[key] = value;}});
       }
     }
     for (let i = children.length - 1; i >= 0; i--) {check(); frames.push(children[i]!);}
@@ -380,6 +465,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       }
       if (retainLexical || projectionScalarRepresentation(builtin) === 'string') {
         if (typeof value !== 'string') return invalid('string-required', path, element);
+        if (!isXmlCharacters(value)) return invalid('xml-characters', path, element);
         if (value.length > maxText - textUnits) throw new Stop('resource-limit', 'application text limit');
         textUnits += value.length;
          return value;
@@ -416,18 +502,100 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       return selected.root;
     };
     const active = new WeakSet<object>();
-    type Frame = {kind: 'node'; element: ElementNode; shape: DirectProjectionValue; value: unknown; xmlPath: string; valuePath: string; into: SyntaxNode[]} | {kind: 'leave'; value: object};
+    const scopeFor = (value: object, inherited: Readonly<Record<string, string>> | undefined, required: boolean, path: string, element: ElementNode) => {
+      if (!Object.hasOwn(value, '$namespaces') && required && !inherited) return invalid('namespace-boundary-required', path, element);
+      const result = Object.assign(Object.create(null) as Record<string, string>, inherited ?? {xml: XML_NAMESPACE, '': ''});
+      if (!Object.hasOwn(value, '$namespaces')) return result;
+      const raw = data(value, '$namespaces', path, element);
+      if (!raw || typeof raw !== 'object' || types.isProxy(raw) || Array.isArray(raw) || ![null, Object.prototype].includes(Object.getPrototypeOf(raw))) return invalid('namespace-map-required', path, element);
+      for (const key of keys(raw, maxItems, path, element)) {
+        if (typeof key !== 'string') return invalid('namespace-binding', path, element);
+        const namespace = spelling(data(raw, key, path, element), {namespace: XSD_NAMESPACE, local: 'string'}, path, element);
+        if (!isXmlNamespaceBinding(key, namespace)) return invalid('namespace-binding', path, element);
+        budget.chargeWork(64 + key.length * 4 + namespace.length * 4); result[key] = namespace;
+      }
+      return result;
+    };
+    type Frame = {kind: 'node'; element: ElementNode; shape: DirectProjectionValue; value: unknown; xmlPath: string; valuePath: string; into: SyntaxNode[]}
+      & {scope?: Readonly<Record<string, string>>; identity?: string}
+      | {kind: 'open'; name: ExpandedName; element: ElementNode; value: unknown; scope?: Readonly<Record<string, string>>; xmlPath: string; valuePath: string; into: SyntaxNode[]}
+      | {kind: 'text'; text: string; xmlPath: string; into: SyntaxNode[]} | {kind: 'leave'; value: object};
     const frames: Frame[] = [];
     const roots: SyntaxNode[] = [];
-    const schedule = (pending: Frame[], element: ElementNode, shape: DirectProjectionValue, value: unknown, xmlPath: string, valuePath: string, into: SyntaxNode[]) => {
+    const schedule = (pending: Frame[], element: ElementNode, shape: DirectProjectionValue, value: unknown, xmlPath: string, valuePath: string, into: SyntaxNode[], scope?: Readonly<Record<string, string>>, identity?: string) => {
       check();
       if ((shape.kind === 'scalar' || xmlPath !== '/0' || records.get(shape.type)?.content === 'simple') && ++items > maxItems) throw new Stop('resource-limit', 'application item limit');
-      pending.push({kind: 'node', element, shape, value, xmlPath, valuePath, into});
+      pending.push({kind: 'node', element, shape, value, xmlPath, valuePath, into, scope, identity});
     };
     schedule(frames, root, plan.root, application, '/0', '/value', roots);
     while (frames.length) {
       check(); const frame = frames.pop()!;
       if (frame.kind === 'leave') {active.delete(frame.value); continue;}
+      if (frame.kind === 'text') {frame.into.push({kind: 'text', value: frame.text, source: source(frame.xmlPath)}); continue;}
+      if (frame.kind === 'open') {
+        const {element, name, value, valuePath, xmlPath, into} = frame;
+        const object = (raw: unknown, maximum: number): {value: object; keys: string[]} => {
+          if (!raw || typeof raw !== 'object' || types.isProxy(raw) || Array.isArray(raw) || ![null, Object.prototype].includes(Object.getPrototypeOf(raw))) return invalid('plain-record-required', valuePath, element);
+          const own = keys(raw, maximum, valuePath, element);
+          if (own.some(key => typeof key !== 'string')) return invalid('unknown-key', valuePath, element);
+          return {value: raw, keys: own as string[]};
+        };
+        const holder = object(value, 4);
+        if (holder.keys.some(key => !['$namespace', '$namespaces', '$attributes', '$content'].includes(key))) return invalid('unknown-key', valuePath, element);
+        if (!isXmlNCName(name.local) || !isXmlCharacters(name.namespace) || name.namespace === 'http://www.w3.org/2000/xmlns/') return invalid('expanded-name-required', valuePath, element);
+        if (data(holder.value, '$namespace', valuePath, element) !== name.namespace) return invalid('element-namespace-required', valuePath, element);
+        if (active.has(holder.value)) return invalid('cyclic-value', valuePath, element);
+        active.add(holder.value);
+        const scope = scopeFor(holder.value, frame.scope, true, valuePath, element);
+        const array = (raw: unknown): unknown[] => {
+          if (!raw || typeof raw !== 'object' || types.isProxy(raw) || !Array.isArray(raw) || Object.getPrototypeOf(raw) !== Array.prototype) return invalid('dense-array-required', valuePath, element);
+          const length = data(raw, 'length', valuePath, element) as number;
+          if (length > maxItems - items) throw new Stop('resource-limit', 'application item limit');
+          if (keys(raw, length + 1, valuePath, element).length !== length + 1) return invalid('dense-array-required', valuePath, element);
+          items += length;
+          return raw;
+        };
+        const attributes: SyntaxAttribute[] = [], seen = new Set<string>();
+        if (Object.hasOwn(holder.value, '$attributes')) {
+          const bag = array(data(holder.value, '$attributes', valuePath, element));
+          for (let index = 0; index < bag.length; index++) {
+            check(); const entry = object(data(bag, String(index), valuePath, element), 1);
+            if (entry.keys.length !== 1) return invalid('attribute-entry-shape', valuePath, element);
+            const key = entry.keys[0]!;
+            if (!isXmlNCName(key)) return invalid('attribute-name', valuePath, element);
+            let member = data(entry.value, key, valuePath, element), namespace = '';
+            if (typeof member !== 'string') {
+              const identity = object(member, 2);
+              if (identity.keys.length !== 2 || !identity.keys.includes('$namespace') || !identity.keys.includes('$value')) return invalid('attribute-holder-shape', valuePath, element);
+              const uri = data(identity.value, '$namespace', valuePath, element);
+              if (typeof uri !== 'string' || !uri || !isXmlCharacters(uri) || uri === 'http://www.w3.org/2000/xmlns/') return invalid('attribute-namespace', valuePath, element);
+              namespace = uri; member = data(identity.value, '$value', valuePath, element);
+            }
+            const identity = JSON.stringify([namespace, key]);
+            if (!namespace && key === 'xmlns') return invalid('attribute-name', valuePath, element);
+            if (seen.has(identity)) return invalid('duplicate-attribute', valuePath, element);
+            seen.add(identity);
+            attributes.push({name: {namespace, local: key}, lexicalName: key, value: spelling(member, {namespace: XSD_NAMESPACE, local: 'string'}, valuePath, element)});
+          }
+        }
+        const children: SyntaxNode[] = [];
+        into.push({kind: 'element', name, lexicalName: name.local, namespaces: scope, attributes, children, baseUri: 'urn:typescript-wsdl-client:generated-direct-value', source: source(xmlPath)});
+        const content = array(data(holder.value, '$content', valuePath, element)), pending: Frame[] = [];
+        for (let index = 0; index < content.length; index++) {
+          check(); const entry = object(data(content, String(index), valuePath, element), 1);
+          if (entry.keys.length !== 1) return invalid('ordered-entry-shape', valuePath, element);
+          const key = entry.keys[0]!, member = data(entry.value, key, valuePath, element), at = `${valuePath}/$content/${index}`;
+          if (key === '$value') pending.push({kind: 'text', text: spelling(member, {namespace: XSD_NAMESPACE, local: 'string'}, at, element), xmlPath: `${xmlPath}/children/${index}`, into: children});
+          else {
+            const child = object(member, 4), namespace = data(child.value, '$namespace', at, element);
+            if (typeof namespace !== 'string') return invalid('element-namespace-required', at, element);
+            pending.push({kind: 'open', name: {namespace, local: key}, element, value: member, scope, xmlPath: `${xmlPath}/children/${index}`, valuePath: at, into: children});
+          }
+        }
+        frames.push({kind: 'leave', value: holder.value});
+        for (let index = pending.length - 1; index >= 0; index--) frames.push(pending[index]!);
+        continue;
+      }
       const {element, shape, value, xmlPath, valuePath, into} = frame;
       const nil = !!value && typeof value === 'object' && !types.isProxy(value) && Object.hasOwn(value, '$nil');
       if (nil && (!shape.nillable || shape.constraint?.kind === 'fixed')) return invalid('nil-not-permitted', valuePath, element);
@@ -443,16 +611,22 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       if (proto !== Object.prototype && proto !== null) return invalid('plain-record-required', valuePath, element);
       if (active.has(value)) return invalid('cyclic-value', valuePath, element);
       active.add(value);
-      const record = shape.kind === 'record' ? records.get(shape.type) : {attributes: [], slots: [], text: undefined, ordered: undefined};
+      const record = shape.kind === 'record' ? records.get(shape.type) : {attributes: [], slots: [], text: undefined, ordered: undefined, keyed: undefined, fixedOrder: undefined, contextual: undefined, attributeWildcard: undefined, content: 'empty'};
       if (!record) throw new TypeError('Missing native projection record');
 
       const declared = new Set<string>();
+      if (frame.identity !== undefined) {
+        if (data(value, '$namespace', valuePath, element) !== frame.identity) return invalid('element-namespace-required', valuePath, element);
+        declared.add('$namespace');
+      }
+      if (record.contextual) declared.add('$namespaces');
+      if (record.attributeWildcard) declared.add('$attributes');
       if (nil) {
         if (data(value, '$nil', valuePath + '/$nil', element) !== true) return invalid('nil-marker-true-required', valuePath, element);
         declared.add('$nil');
       } else if (record.ordered) declared.add('$content');
       else for (const slot of record.slots) {check(); declared.add(slot.element.name.local);}
-      for (const attribute of record.attributes) {check(); declared.add(attribute.declaration.name.local);}
+      for (const attribute of record.attributes) {check(); declared.add(attribute.bag ? '$attributes' : attribute.declaration.name.local);}
       if (record.text && !nil) declared.add('$value');
       for (const key of keys(value, declared.size, valuePath, element)) {
        check(); if (typeof key !== 'string') return invalid('unknown-key', valuePath, element);
@@ -469,19 +643,71 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
       }
       const attributes: SyntaxAttribute[] = [];
       if (nil) attributes.push({name: {namespace: 'http://www.w3.org/2001/XMLSchema-instance', local: 'nil'}, lexicalName: 'xsi:nil', value: 'true'});
+      const bagValues = new Map<string, unknown>();
+      const bagIdentities = new Set<string>();
+      if (Object.hasOwn(value, '$attributes')) {
+        const path = valuePath + '/$attributes', bag = data(value, '$attributes', path, element);
+        if (!bag || typeof bag !== 'object' || types.isProxy(bag) || !Array.isArray(bag) || Object.getPrototypeOf(bag) !== Array.prototype) return invalid('dense-array-required', path, element);
+        const length = data(bag, 'length', path, element) as number;
+        if (length > maxItems - items) throw new Stop('resource-limit', 'application item limit');
+        if (keys(bag, length + 1, path, element).length !== length + 1) return invalid('dense-array-required', path, element);
+        items += length;
+        for (let index = 0; index < length; index++) {
+          const at = `${path}/${index}`, entry = data(bag, String(index), at, element);
+          if (!entry || typeof entry !== 'object' || types.isProxy(entry) || Array.isArray(entry)) return invalid('attribute-entry-shape', at, element);
+          const own = keys(entry, 1, at, element);
+          if (own.length !== 1 || typeof own[0] !== 'string') return invalid('attribute-entry-shape', at, element);
+          const key = own[0], candidates = record.attributes.filter(attribute => attribute.bag && attribute.declaration.name.local === key);
+          if (!isXmlNCName(key)) return invalid('attribute-name', at, element);
+          let member = data(entry, key, at, element);
+          let selected = candidates.length === 1 ? candidates[0] : undefined;
+          let namespace = selected?.declaration.name.namespace ?? '';
+          if (candidates.length > 1 || record.attributeWildcard) {
+            namespace = '';
+            if (member && typeof member === 'object' && !Array.isArray(member)) {
+            if (!member || typeof member !== 'object' || types.isProxy(member) || Array.isArray(member)) return invalid('attribute-namespace-required', at, element);
+            const own = keys(member, 2, at, element);
+            if (own.length !== 2 || !own.includes('$namespace') || !own.includes('$value')) return invalid('attribute-holder-shape', at, element);
+            const uri = data(member, '$namespace', at, element);
+            if (typeof uri !== 'string' || !uri || !isXmlCharacters(uri) || uri === 'http://www.w3.org/2000/xmlns/') return invalid('attribute-namespace-required', at, element);
+            namespace = uri;
+            member = data(member, '$value', at, element);
+            }
+            selected = candidates.find(candidate => candidate.declaration.name.namespace === namespace);
+          }
+          const identity = JSON.stringify([namespace, key]);
+          if (!namespace && key === 'xmlns') return invalid('attribute-name', at, element);
+          if (bagIdentities.has(identity)) return invalid('duplicate-attribute', at, element);
+          bagIdentities.add(identity);
+          if (!selected && record.attributeWildcard) {
+            if (record.attributes.some(attribute => attribute.declaration.name.local === key && attribute.declaration.name.namespace === namespace)) return invalid('duplicate-attribute-channel', at, element);
+            const selection = selectProjectionAttribute(context, record, {namespace, local: key}, check,
+              () => {throw new Stop('unsupported', 'native-wildcard-attribute-scalar', element.context.source.path, at);});
+            if (!selection) return invalid('unknown-attribute', at, element);
+            const descriptor = selection.attribute;
+            attributes.push({name: {namespace, local: key}, lexicalName: key, value: spelling(member,
+              descriptor?.builtin ?? {namespace: XSD_NAMESPACE, local: 'string'}, at, element, descriptor?.retainLexical, descriptor?.list)});
+            continue;
+          }
+          if (!selected) return invalid('unknown-attribute', at, element);
+          if (bagValues.has(selected.declaration.id)) return invalid('duplicate-attribute', at, element);
+          bagValues.set(selected.declaration.id, member);
+        }
+      }
       for (const attribute of record.attributes) {
         check(); const name = attribute.declaration.name;
         const path = `${valuePath}/${name.local.replaceAll('~', '~0').replaceAll('/', '~1')}`;
-        if (!Object.hasOwn(value, name.local)) {
+        if (attribute.bag ? !bagValues.has(attribute.declaration.id) : !Object.hasOwn(value, name.local)) {
           if (attribute.required) return invalid('missing-attribute', path, element);
           continue;
         }
         if (++items > maxItems) throw new Stop('resource-limit', 'application item limit');
         budget.chargeWork(128 + name.local.length * 4);
-        attributes.push({name, lexicalName: name.local, value: spelling(data(value, name.local, path, element), attribute.builtin, path, element, attribute.retainLexical, attribute.list)});
+        attributes.push({name, lexicalName: name.local, value: spelling(attribute.bag ? bagValues.get(attribute.declaration.id) : data(value, name.local, path, element), attribute.builtin, path, element, attribute.retainLexical, attribute.list)});
       }
+      const scope = record.contextual ? scopeFor(value, frame.scope, true, valuePath, element) : frame.scope;
       into.push({kind: 'element', name: element.name, lexicalName: element.name.local,
-        namespaces: Object.create(null) as Record<string, string>, baseUri: 'urn:typescript-wsdl-client:generated-direct-value',
+        namespaces: scope ?? Object.create(null) as Record<string, string>, baseUri: 'urn:typescript-wsdl-client:generated-direct-value',
         attributes, source: source(xmlPath), children});
       if (nil) {active.delete(value); continue;}
       const pending: Frame[] = [];
@@ -501,8 +727,72 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
           if (own.length !== fields.length || own.some(key => {check(); return typeof key !== 'string' || !fields.includes(key);})) return invalid('ordered-entry-shape', at, element);
           return input;
         };
+        let fixedIndex = 0;
         for (let index = 0; index < length; index++) {
           check(); const at = `${path}/${index}`;
+          if (record.keyed) {
+            const raw = data(content, String(index), at, element);
+            if (!raw || typeof raw !== 'object' || types.isProxy(raw) || Array.isArray(raw)) return invalid('ordered-entry-shape', at, element);
+            const own = keys(raw, 1, at, element);
+            if (own.length !== 1 || typeof own[0] !== 'string') return invalid('ordered-entry-shape', at, element);
+            const key = own[0], entry = object(raw, at, [key]);
+            const member = data(entry, key, at, element);
+            if (key === '$value') {
+              if (record.content !== 'mixed') return invalid('complex-text', at, element);
+              const text = spelling(member, {namespace: 'http://www.w3.org/2001/XMLSchema', local: 'string'}, at, element);
+              if (++items > maxItems) throw new Stop('resource-limit', 'application item limit');
+              // @why Schedule text with elements so mixed positions survive the iterative construction order.
+              pending.push({kind: 'text', text, xmlPath: `${xmlPath}/children/${index}`, into: children});
+              continue;
+            }
+            const slots = record.slots.filter(slot => slot.element.name.local === key);
+            let selectedValue = member;
+            let selectedIdentity: string | undefined;
+            let slot = record.fixedOrder ? record.slots[fixedIndex++] : slots.length === 1 ? slots[0] : undefined;
+            if (record.fixedOrder && slot?.element.name.local !== key) return invalid('ordered-particle-language', at, element);
+            if (!record.fixedOrder && slot && member && typeof member === 'object' && !types.isProxy(member) && !Array.isArray(member) && Object.hasOwn(member, '$namespace')
+              && data(member, '$namespace', at, element) !== slot.element.name.namespace) slot = undefined;
+            if (!record.fixedOrder && slots.length > 1) {
+              if (!member || typeof member !== 'object' || types.isProxy(member) || Array.isArray(member)) return invalid('element-namespace-required', at, element);
+              const namespace = data(member, '$namespace', at, element);
+              slot = slots.find(candidate => candidate.element.name.namespace === namespace);
+              if (!slot) return invalid('unknown-ordered-element', at, element);
+              if (slot.value.kind === 'scalar') {
+                if (Object.hasOwn(member, '$nil')) {
+                  object(member, at, ['$namespace', '$nil']);
+                  selectedValue = {$nil: data(member, '$nil', at, element)};
+                } else {
+                  object(member, at, ['$namespace', '$value']);
+                  selectedValue = data(member, '$value', at, element);
+                }
+              } else {
+                selectedIdentity = namespace as string;
+              }
+            }
+            if (!slot) {
+              if (!isXmlNCName(key) || !member || typeof member !== 'object' || types.isProxy(member) || Array.isArray(member)) return invalid('unknown-ordered-element', at, element);
+              const namespace = data(member, '$namespace', at, element);
+              if (typeof namespace !== 'string') return invalid('element-namespace-required', at, element);
+              const selected = selectProjectionWildcard(context, record, {namespace, local: key}, check);
+              if (!selected) return invalid('unknown-ordered-element', at, element);
+              if (!selected.element) pending.push({kind: 'open', name: {namespace, local: key}, value: member, element, scope, xmlPath: `${xmlPath}/children/${index}`, valuePath: at, into: children});
+              else {
+                const shape = wildcardValue(selected.element);
+                const selectedValue = shape.kind === 'scalar' ? (() => {
+                  if (Object.hasOwn(member, '$nil')) {
+                    object(member, at, ['$namespace', '$nil']);
+                    return {$nil: data(member, '$nil', at, element)};
+                  }
+                  object(member, at, ['$namespace', '$value']);
+                  return data(member, '$value', at, element);
+                })() : member;
+                schedule(pending, selected.element, shape, selectedValue, `${xmlPath}/children/${index}`, at, children, scope, shape.kind === 'record' ? namespace : undefined);
+              }
+              continue;
+            }
+            schedule(pending, slot.element, slot.value, selectedValue, `${xmlPath}/children/${index}`, at + '/' + key, children, scope, selectedIdentity);
+            continue;
+          }
           const entry = object(data(content, String(index), at, element), at, ['name', 'value']);
           const name = object(data(entry, 'name', at + '/name', element), at + '/name', ['namespace', 'local']);
           const namespace = data(name, 'namespace', at + '/name/namespace', element), local = data(name, 'local', at + '/name/local', element);
@@ -511,7 +801,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
           const slot = record.slots.find(item => {check(); return item.element.name.namespace === namespace && item.element.name.local === local;});
           const selected = slot?.element ?? resolveProjectionWildcard(context, record, {namespace, local}, check);
           if (!selected) return invalid('unknown-ordered-element', at, element);
-          schedule(pending, selected, slot?.value ?? wildcardValue(selected), data(entry, 'value', at + '/value', element), `${xmlPath}/children/${index}`, at + '/value', children);
+          schedule(pending, selected, slot?.value ?? wildcardValue(selected), data(entry, 'value', at + '/value', element), `${xmlPath}/children/${index}`, at + '/value', children, scope);
         }
       } else for (const slot of record.slots) {
        check();
@@ -523,7 +813,7 @@ function buildProjectionPayload(context: SemanticContext, root: ElementNode, pla
         }
         const member = data(value, key, memberPath, slot.element);
         const append = (item: unknown, path: string) => {
-          check(); schedule(pending, slot.element, slot.value, item, `${xmlPath}/children/${pending.length}`, path, children);
+          check(); schedule(pending, slot.element, slot.value, item, `${xmlPath}/children/${pending.length}`, path, children, scope);
         };
         if (slot.particle.occurs.max === 'unbounded') {
           if (types.isProxy(member) || !Array.isArray(member) || Object.getPrototypeOf(member) !== Array.prototype) return invalid('dense-array-required', memberPath, slot.element);

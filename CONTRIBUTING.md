@@ -155,7 +155,7 @@ Test watchdogs are harness safeguards, not performance assertions unless a test 
 
 The PW01 schema batch retains its mapped method ID, 38 cases, individual five-second worker deadline, heap/input caps and all assertions. Its outer watchdog allows the sum of those worker budgets plus preparation/cleanup time. Each case reports start, completion and elapsed time; cancelled or incomplete observation reports are labelled accordingly. Worker cancellation is operational and waits for worker termination.
 
-Installed checked-gateway qualification similarly retains each command's four-minute deadline and output bound. Its batch watchdog covers the 22 bounded commands plus cleanup rather than imposing a five-minute deadline on the whole workflow. Stage records in `tmp/conformance/checked-gateway-installed/progress.ndjson` identify the candidate, current stage, elapsed time and outcome. Cancellation stops the owned command tree and waits for cleanup; failed attempts remain failed. The enclosing hosted job budget still applies.
+Installed checked-gateway qualification similarly retains each command's four-minute deadline and output bound. Its batch watchdog covers the 26 bounded commands plus cleanup rather than imposing a five-minute deadline on the whole workflow. Stage records in `tmp/conformance/checked-gateway-installed/progress.ndjson` identify the candidate, current stage, elapsed time and outcome. Cancellation stops the owned command tree and waits for cleanup; failed attempts remain failed. The enclosing hosted job budget still applies.
 
 ### Shared workstations
 

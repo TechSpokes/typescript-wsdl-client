@@ -114,17 +114,17 @@ This convention applies recursively to synthetic mapping properties, including m
 
 ### Mapping-key inventory and status
 
-The inventory distinguishes existing behavior from the [selected mapping contract](roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract). Selected research forms are implementation handoffs, not production capability claims or a new public mode.
+The inventory distinguishes existing behavior from the [selected mapping contract](roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract). [Checked mixed/namespace/open mappings](checked-gateway.md#mixed-namespaced-and-open-values) implement the qualified keyed slice; research-only type/group forms remain handoffs, not production capability claims or a new public mode.
 
 | Key | Meaning and scope | Status |
 |---|---|---|
 | `$value` | Scalar text/simple content alongside attributes; exact scalar policy belongs to the selected mapping | Existing legacy/component convention |
-| `$attributes` | Attribute channel; named entries derive unique source identities, otherwise distinguish unqualified scalars and namespaced holders | Existing legacy bags unchanged; selected keyed research fallback |
-| `$content` | Ordered content; new entries are text objects or one named child occurrence | Existing ordered shapes unchanged; selected keyed mixed/open research grammar |
+| `$attributes` | Attribute channel; named entries derive unique source identities, otherwise distinguish unqualified scalars and namespaced holders | Existing legacy bags unchanged; qualified checked keyed fallback |
+| `$content` | Ordered content; new entries are text objects or one named child occurrence | Existing ordered shapes unchanged; qualified checked keyed mixed/open grammar |
 | `$choice` | Complete source-derived choice group; object or array according to source bounds | Implemented singleton/repeated research example only |
 | `$nil` | Explicit assessed nil marker, exactly `true`, alongside applicable source-mapped attributes | [Checked component nil values](checked-gateway.md#nil-values); no null shorthand |
-| `$namespace` | Actual namespace URI of the element/attribute/type identity at this location | Selected keyed research metadata; does not declare bindings or inherit element identity |
-| `$namespaces` | Prefix bindings introduced/rebound here, inherited by descendants | Selected snapshot-at-boundary plus local-delta contract |
+| `$namespace` | Actual namespace URI of the element/attribute/type identity at this location | Qualified checked element/attribute metadata; type execution remains separate |
+| `$namespaces` | Prefix bindings introduced/rebound here, inherited by descendants | Qualified checked snapshot-at-boundary plus local-delta contract |
 | `$type` | Explicit assessed type identity with flat `$name`/`$namespace` strings | Selected research shape; native type checks remain required |
 | `$name` | XML type name string within `$type` | Selected research shape; never a nested name object or child-name duplicate |
 

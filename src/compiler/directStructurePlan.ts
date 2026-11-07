@@ -17,6 +17,7 @@ import {effectiveSubstitutionMembers} from './schemaTypeRelations.js';
 import {namespaceAllows, namespaceIntersection} from './wildcardAlgebra.js';
 import {globalId} from './canonicalGraph.js';
 import type {SelectedParticleWildcard} from './schemaParticleWildcardProperties.js';
+import type {AttributeWildcard} from './schemaAttributeUses.js';
 export interface DirectSlot {readonly element: ElementNode; readonly particle: ParticleNode; readonly builtin: ExpandedName}
 export interface DirectRootPlan {readonly rootBuiltin?: ExpandedName; readonly slots: readonly DirectSlot[]}
 export type DirectProjectionValue = Readonly<({kind: 'scalar'; builtin: ExpandedName; declared?: true; retainLexical?: true; list?: ProjectionScalarList} | {kind: 'record'; type: NodeId}) & {
@@ -24,6 +25,7 @@ export type DirectProjectionValue = Readonly<({kind: 'scalar'; builtin: Expanded
 }>;
 export interface DirectProjectionSlot {readonly element: ElementNode; readonly particle: ParticleNode; readonly value: DirectProjectionValue}
 export interface DirectProjectionAttribute {
+  readonly bag?: true;
   readonly declaration: AttributeNode; readonly required: boolean; readonly builtin: ExpandedName;
   readonly constraint?: Readonly<{kind: 'fixed' | 'default'; lexical: string; canonical: string}>;
   readonly retainLexical?: true;
@@ -31,22 +33,27 @@ export interface DirectProjectionAttribute {
 }
 export interface DirectProjectionRecord {
   readonly type: ComplexTypeNode; readonly slots: readonly DirectProjectionSlot[]; readonly attributes: readonly DirectProjectionAttribute[];
-  readonly content: 'empty' | 'element-only' | 'simple'; readonly text?: Extract<DirectProjectionValue, {kind: 'scalar'}>;
+  readonly content: 'empty' | 'element-only' | 'simple' | 'mixed'; readonly text?: Extract<DirectProjectionValue, {kind: 'scalar'}>;
+  readonly keyed?: true;
+  readonly fixedOrder?: true;
+  readonly contextual?: true;
+  readonly attributeWildcard?: AttributeWildcard;
   readonly ordered?: true;
 }
 type OrderedGrammar = {context: SemanticContext; view: SemanticParticleView; first: ReadonlyMap<SemanticParticle, ReadonlySet<string>>;
   bodyNullable: ReadonlyMap<SemanticParticle, boolean>; slots: ReadonlyMap<string, DirectProjectionSlot>; leafKeys: ReadonlyMap<SemanticParticle, string>;
   firstWildcards: ReadonlyMap<SemanticParticle, readonly SelectedParticleWildcard[]>;
   wildcardLeaves: ReadonlyMap<SemanticParticle, Readonly<{particle: ParticleNode; wildcard: SelectedParticleWildcard}>>};
-export type DirectProjectionSelection = DirectProjectionSlot | Readonly<{kind: 'wildcard'; element: ElementNode; particle: ParticleNode}>;
+export type DirectProjectionSelection = DirectProjectionSlot | Readonly<{kind: 'wildcard'; element?: ElementNode; particle: ParticleNode}>;
 const orderedGrammars = new WeakMap<DirectProjectionRecord, OrderedGrammar>();
+const projectionRecords = new WeakMap<DirectProjectionRecord, SemanticContext>();
 const nameKey = (name: ExpandedName, charge: (amount: number) => void): string => {
   charge(64 + (name.namespace.length + name.local.length) * 8);
   return JSON.stringify([name.namespace, name.local]);
 };
 
 /** Match ordered children using authenticated native particles, without granting source or operation admission.
- * @constraints Leaf alphabets must be disjoint. Strict wildcards resolve declarations in the same native context; lax/skip are unavailable.
+ * @constraints Leaf alphabets must be disjoint; native strict/lax/skip policy selects declaration assessment or unassessed preservation.
  * @returns Source-owned slots in document order, or undefined when the child sequence is outside the particle language.
  * @throws TypeError For an unauthenticated record or foreign context.
  */
@@ -82,9 +89,9 @@ export function matchOrderedProjection(context: SemanticContext, record: DirectP
     }
     if (p.kind === 'any') {
       const leaf = grammar.wildcardLeaves.get(p)!;
-      const element = resolveProjectionWildcard(context, record, names[cursor]!, check);
-      if (!element) return undefined;
-      result.push({kind: 'wildcard', element, particle: leaf.particle}); cursor++; continue;
+      const selected = selectProjectionWildcard(context, record, names[cursor]!, check);
+      if (!selected) return undefined;
+      result.push({kind: 'wildcard', ...(selected.element ? {element: selected.element} : {}), particle: leaf.particle}); cursor++; continue;
     }
     if (p.kind === 'choice') {
       const selected = p.children.find(child => starts(child));
@@ -112,24 +119,39 @@ export function matchOrderedProjection(context: SemanticContext, record: DirectP
   return cursor === names.length ? result : undefined;
 }
 
-/** Resolve a strict wildcard from native global element membership, never from a caller-supplied type or companion-name guess.
+/** Resolve a policy-assessed wildcard declaration, never from a caller-supplied type or companion-name guess.
  * @returns The source declaration, or undefined for an excluded namespace, missing declaration or incomplete universe.
  * @throws TypeError For copied/foreign projection records.
  */
 export function resolveProjectionWildcard(context: SemanticContext, record: DirectProjectionRecord, name: ExpandedName, check: () => void): ElementNode | undefined {
+  return selectProjectionWildcard(context, record, name, check)?.element;
+}
+
+/** Select native application wildcard policy from the authenticated particle, without payload-driven schema acquisition.
+ * @param context Exact source context owning the record.
+ * @param record Authenticated projection record.
+ * @param name Actual expanded payload identity.
+ * @param check Budget and cancellation checkpoint.
+ * @returns Declaration assessment, an unassessed native policy selection, or no match.
+ * @throws TypeError For a foreign or copied record.
+ */
+export function selectProjectionWildcard(context: SemanticContext, record: DirectProjectionRecord, name: ExpandedName, check: () => void):
+  Readonly<{element?: ElementNode}> | undefined {
   const grammar = orderedGrammars.get(record);
   if (!grammar || grammar.context !== context) throw new TypeError('Unauthenticated wildcard projection record');
   assertSemanticParticleView(context, grammar.view);
   if (context.membership !== 'complete-actual-plus-additions') return undefined;
-  let allowed = false;
+  let policy: SelectedParticleWildcard['processContents'] | undefined;
   for (const leaf of grammar.wildcardLeaves.values()) {
     check();
-    if (namespaceAllows(leaf.wildcard.namespace, name.namespace, context.budget.chargeWork)) {allowed = true; break;}
+    if (namespaceAllows(leaf.wildcard.namespace, name.namespace, context.budget.chargeWork)) {policy = leaf.wildcard.processContents; break;}
   }
-  if (!allowed) return undefined;
+  if (!policy) return undefined;
+  if (policy === 'skip') return {};
   context.budget.chargeWork(128 + (name.namespace.length + name.local.length) * 8);
   const declaration = context.lookup(globalId('element', name));
-  return declaration.kind === 'found' && declaration.node.kind === 'element' && declaration.node.identity.kind === 'global' ? declaration.node : undefined;
+  if (declaration.kind === 'found' && declaration.node.kind === 'element' && declaration.node.identity.kind === 'global') return {element: declaration.node};
+  return policy === 'lax' ? {} : undefined;
 }
 export interface DirectProjectionPlan {readonly root: DirectProjectionValue; readonly records: readonly DirectProjectionRecord[]}
 /** Inspect wildcard presence on an exact ordered plan; this describes existing grammar, never adds admission. */
@@ -137,6 +159,12 @@ export function inspectOrderedProjectionWildcards(context: SemanticContext, reco
   const grammar = orderedGrammars.get(record);
   if (!grammar || grammar.context !== context) throw new TypeError('Authentic ordered projection required');
   return grammar.wildcardLeaves.size > 0;
+}
+/** Inspect whether every wildcard on an authenticated ordered record requires unassessed preservation. */
+export function inspectUnassessedProjectionWildcards(context: SemanticContext, record: DirectProjectionRecord): boolean {
+  const grammar = orderedGrammars.get(record);
+  if (!grammar || grammar.context !== context) throw new TypeError('Authentic ordered projection required');
+  return grammar.wildcardLeaves.size > 0 && [...grammar.wildcardLeaves.values()].every(leaf => leaf.wildcard.processContents === 'skip');
 }
 /** Capability diagnostic only; this record neither proves schema invalidity nor grants admission. */
 export interface DirectProjectionUnavailable {readonly rule: string; readonly component: NodeId; readonly schemaPath: string}
@@ -152,6 +180,37 @@ export function projectionScalarRepresentation(name: ExpandedName): 'string' | '
   return lexicalBuiltins.has(name.local) ? 'string' : undefined;
 }
 
+/** Resolve and plan an application attribute permitted by the source wildcard.
+ * @param context Exact source context.
+ * @param record Source-derived record containing the native attribute policy.
+ * @param name Expanded payload attribute identity.
+ * @param check Budget and cancellation checkpoint.
+ * @param unsupported Existing diagnostic owner for unavailable native scalar duties.
+ * @returns A typed declaration, unassessed lexical selection, or no policy match.
+ * @throws TypeError For a non-actual context.
+ */
+export function selectProjectionAttribute(context: SemanticContext, record: DirectProjectionRecord, name: ExpandedName, check: () => void,
+  unsupported: () => never): Readonly<{attribute?: DirectProjectionAttribute}> | undefined {
+  assertSemanticContext(context);
+  if (projectionRecords.get(record) !== context) throw new TypeError('Authenticated attribute projection required');
+  const policy = record.attributeWildcard;
+  check();
+  if (!policy || !namespaceAllows(policy.namespace, name.namespace, context.budget.chargeWork)) return undefined;
+  if (name.namespace === 'http://www.w3.org/2001/XMLSchema-instance' && ['type', 'nil'].includes(name.local)) return unsupported();
+  if (policy.processContents === 'skip') return {};
+  const found = context.lookup(globalId('attribute', name));
+  if (found.kind !== 'found' || found.node.kind !== 'attribute' || found.node.identity.kind !== 'global') return policy.processContents === 'lax' ? {} : undefined;
+  const declaration = found.node;
+  const scalar = describeProjectionScalar(context, declaration, check);
+  if (scalar.kind !== 'projection-scalar-type' || !projectionScalarRepresentation(scalar.builtin)) return unsupported();
+  const constraint = declaration.value ? assessProjectionScalarOperand(context, declaration, declaration.value.lexical, check) : undefined;
+  if (constraint && constraint.kind !== 'projection-scalar-operand') return unsupported();
+  return {attribute: Object.freeze({declaration, required: false, bag: true, builtin: scalar.builtin,
+    ...(scalar.retainLexical ? {retainLexical: true as const} : {}), ...(scalar.list ? {list: scalar.list} : {}),
+    ...(declaration.value && constraint?.kind === 'projection-scalar-operand' ? {constraint: Object.freeze({kind: declaration.value.kind,
+      lexical: declaration.value.lexical.value, canonical: constraint.operand.canonical})} : {})})};
+}
+
 /**
  * Derive record structure using native component identity, including anonymous scopes and recursion.
  * @remarks This is a projection plan, not source validity, correspondence or runtime admission.
@@ -159,8 +218,9 @@ export function projectionScalarRepresentation(name: ExpandedName): 'string' | '
  *   Exact numeric families and temporal/binary values use strings; QName and document-wide ID/ENTITY duties are outside this plan.
  *   Inheritance is read from native content and attribute owners; only unit sequence groups flatten into peer properties.
  *   Other represented particles retain ordered children in $content; disjoint element/wildcard alphabets are required.
- *   Attribute names must be unambiguous peer properties. Native default/fixed values are explicit XML-assessment augmentation;
- *   they never satisfy a missing required application field. Wildcard attributes remain outside this plan.
+ *   Source-selected keyed content and attribute fallback preserve mixed text and local-name collisions.
+ *   Native wildcard policies select known declaration duties or lexical preservation; retained scopes propagate through known intermediates.
+ *   Native default/fixed values are explicit XML-assessment augmentation, never a missing required application field.
  *   The checked-direct preview adapter below retains its flat-only grammar.
  */
 export function planDirectProjection(context: SemanticContext, root: ElementNode, check: () => void,
@@ -178,7 +238,7 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
     return result.node;
   };
   const records = new Map<NodeId, {type: ComplexTypeNode; declaration: ElementNode; slots: DirectProjectionSlot[]; attributes: DirectProjectionAttribute[];
-    content: 'empty' | 'element-only' | 'simple'; text?: Extract<DirectProjectionValue, {kind: 'scalar'}>; ordered?: true; grammar?: OrderedGrammar} >();
+    content: 'empty' | 'element-only' | 'simple' | 'mixed'; keyed?: true; fixedOrder?: true; contextual?: true; attributeWildcard?: AttributeWildcard; text?: Extract<DirectProjectionValue, {kind: 'scalar'}>; ordered?: true; grammar?: OrderedGrammar} >();
   const pending: ComplexTypeNode[] = [];
   const value = (element: ElementNode): DirectProjectionValue => {
     if (lookup(element.id) !== element) return unsupported();
@@ -217,13 +277,15 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
     check(); const type = pending.pop()!;
     const record = records.get(type.id)!;
     const {slots, attributes} = record;
-    if (type.mixed || type.abstract) return unavailable(type, type.abstract ? 'abstract-type' : 'mixed-content');
-    const names = new Set<string>();
+    if (type.abstract) return unavailable(type, 'abstract-type');
     if (type.attributes.length || type.derivation) {
       const assessed = assessSourceAttributeUses(context, type.id);
       check();
       if (assessed.kind !== 'checked') return unavailable(type, 'native-attribute-properties');
-      if (assessed.value.wildcard) return unavailable(type, 'attribute-wildcard');
+      if (assessed.value.wildcard) {
+        record.attributeWildcard = assessed.value.wildcard;
+        if (record.attributeWildcard.processContents !== 'strict') record.contextual = true;
+      }
       for (const presence of assessed.value.attributes) {
         check();
         if (presence.uses.length !== 1) return unavailable(type, 'attribute-presence-constraints');
@@ -245,8 +307,6 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
         if (!projectionScalarRepresentation(builtin)) return unavailable(use.declaration, 'declared-attribute-scalar');
         const key = use.declaration.name.local;
         budget.chargeWork(128 + key.length * 4);
-        if (names.has(key)) return unavailable(use.declaration, 'property-local-name-collision');
-        names.add(key);
         const effective = use.effective;
         if (effective?.kind === 'default' && presence.required) return unavailable(use.declaration, 'required-attribute-default');
         attributes.push(Object.freeze({declaration: use.declaration, required: presence.required, builtin,
@@ -255,7 +315,6 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
           ...(effective ? {constraint: Object.freeze({kind: effective.kind, lexical: effective.value.lexical.value, canonical: effective.value.operand.canonical})} : {})}));
       }
     }
-    Object.freeze(attributes);
     const content = deriveActualComplexContent(context, type.id);
     check();
     if (content.kind !== 'checked') return unavailable(type, 'native-content-properties');
@@ -270,22 +329,32 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
       Object.freeze(slots);
       continue;
     }
-    if (!['empty', 'element-only'].includes(content.view.content.kind)) return unavailable(type, content.view.content.kind + '-content');
-    record.content = content.view.content.kind as 'empty' | 'element-only';
+    if (!['empty', 'element-only', 'mixed'].includes(content.view.content.kind)) return unavailable(type, content.view.content.kind + '-content');
+    record.content = content.view.content.kind as 'empty' | 'element-only' | 'mixed';
+    if (record.content === 'mixed') record.keyed = true;
     if (content.view.content.kind === 'empty') {
       Object.freeze(slots);
       continue;
     }
-    if (content.view.content.kind !== 'element-only') return unsupported();
+    if (content.view.content.kind !== 'element-only' && content.view.content.kind !== 'mixed') return unsupported();
     const prepared = prepareSemanticParticleView(context, content.view, 'declared');
     check();
     if (prepared.kind !== 'checked') return unavailable(type, 'native-particle-properties');
     const nodes: SemanticParticle[] = [], todo = [prepared.view.root];
-    let compact = true;
+    let compact = !record.keyed;
+    let fixedOrder = true;
+    const childLocals = new Set<string>();
     while (todo.length) {
       check(); const p = todo.pop()!; budget.chargeWork(64); nodes.push(p);
+      fixedOrder &&= (p.kind === 'sequence' || p.kind === 'element') && p.occurs.min === '1' && p.occurs.max === '1';
       if (p.kind === 'sequence') compact &&= p.occurs.min === '1' && p.occurs.max === '1';
-      else if (p.kind === 'element') compact &&= ['0', '1'].includes(p.occurs.min) && ['1', 'unbounded'].includes(p.occurs.max);
+      else if (p.kind === 'element') {
+        compact &&= ['0', '1'].includes(p.occurs.min) && ['1', 'unbounded'].includes(p.occurs.max);
+        if (p.element) {
+          if (childLocals.has(p.element.name.local)) {compact = false; record.keyed = true;}
+          childLocals.add(p.element.name.local);
+        }
+      }
       else compact = false;
       for (const child of p.children) {check(); todo.push(child);}
     }
@@ -304,7 +373,7 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
           if (!p.originalParticle || !p.wildcard) return unavailable(type, 'ordered-wildcard-source');
           const particle = particleContentNode(context, content.view, p.originalParticle);
           if (!particle || particle.kind !== 'particle') return unavailable(type, 'ordered-wildcard-source');
-          if (p.wildcard.processContents !== 'strict') return unavailable(particle, 'ordered-wildcard-' + p.wildcard.processContents);
+          if (p.wildcard.processContents !== 'strict') {record.keyed = true; record.contextual = true;}
           // @why Named-group memoization shares nodes; distinct leaf incidences must not disappear before alphabet-overlap checks.
           if (wildcardLeaves.has(p)) return unavailable(particle, 'ordered-wildcard-incidence-overlap');
           wildcardLeaves.set(p, Object.freeze({particle, wildcard: p.wildcard}));
@@ -354,8 +423,14 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
         }
       }
       record.ordered = true;
+      if (record.keyed && fixedOrder) record.fixedOrder = true;
       // @why Slots are metadata only here; the native grammar, rather than per-property cardinality, owns their occurrence correlation.
-      for (const p of nodes) {check(); if (p.kind === 'element') slots.push(leafSlots.get(leafKeys.get(p)!)!);}
+      const orderedNodes = [prepared.view.root];
+      while (orderedNodes.length) {
+        check(); const p = orderedNodes.pop()!; budget.chargeWork(32);
+        if (p.kind === 'element') slots.push(leafSlots.get(leafKeys.get(p)!)!);
+        for (let index = p.children.length - 1; index >= 0; index--) orderedNodes.push(p.children[index]!);
+      }
       record.grammar = {context, view: prepared.view, first, bodyNullable, slots: leafSlots, leafKeys, firstWildcards, wildcardLeaves};
       Object.freeze(slots);
       continue;
@@ -379,16 +454,32 @@ export function planDirectProjection(context: SemanticContext, root: ElementNode
       if (declaration.kind !== 'found' || declaration.node.kind !== 'element') return unsupported();
       const element = declaration.node;
       budget.chargeWork(128 + element.name.local.length * 4);
-      if (names.has(element.name.local)) return unavailable(element, 'property-local-name-collision');
-      names.add(element.name.local);
       slots.push(Object.freeze({element, particle, value: value(element)}));
     }
     Object.freeze(slots);
   }
   const ordered = budget.sorted([...records.values()], (a, b) => budget.compareText(a.type.id, b.type.id));
+  // @why Known intermediates carry scope changes required by unassessed descendants; each source type selects this duty.
+  let changed = true;
+  while (changed) {
+    check(); changed = false;
+    for (const record of ordered) {
+      check(); budget.chargeWork(32 + record.slots.length);
+      if (!record.contextual && record.slots.some(slot => slot.value.kind === 'record' && records.get(slot.value.type)?.contextual)) {
+        record.contextual = true; changed = true;
+      }
+    }
+  }
   budget.chargeWork(32 + ordered.length * 64);
   return Object.freeze({root: rootValue, records: Object.freeze(ordered.map(({declaration: _declaration, grammar, ...record}) => {
-    const published = Object.freeze(record);
+    const attributes = Object.freeze(record.attributes.map(attribute => {
+      const local = attribute.declaration.name.local;
+      const collision = record.slots.some(slot => slot.element.name.local === local)
+        || record.attributes.some(other => other !== attribute && other.declaration.name.local === local);
+      return collision ? Object.freeze({...attribute, bag: true as const}) : attribute;
+    }));
+    const published = Object.freeze({...record, attributes});
+    projectionRecords.set(published, context);
     if (grammar) orderedGrammars.set(published, grammar);
     return published;
   }))});
@@ -413,7 +504,7 @@ export function flatDirectProjection(plan: DirectProjectionPlan, check: () => vo
   }
   const rootType = plan.root.type;
   const record = plan.records.find(item => item.type.id === rootType);
-  if (!record || record.ordered || record.attributes.length || record.type.derivation || record.text || !record.type.content) return unsupported();
+  if (!record || record.ordered || record.keyed || record.contextual || record.attributeWildcard || record.attributes.length || record.type.derivation || record.text || !record.type.content) return unsupported();
   const slots = record.slots.map(slot => {
     check(); if (slot.value.kind !== 'scalar' || slot.value.declared || slot.value.list || slot.value.nillable || slot.value.constraint) return unsupported();
     return {element: slot.element, particle: slot.particle, builtin: scalar(slot.value.builtin)};

@@ -24,7 +24,25 @@ Omit an optional element to express absence. Empty non-nil content retains its o
 
 The native matcher checks nillability, no character/element content on nil, declared/required attributes and scalar/fixed constraints. Optional attribute defaults/fixed values are assessed explicitly even on nil; element defaults apply only to empty non-nil content, and an element fixed value prohibits nil. Generated TypeScript and closed HTTP schemas describe the same nil alternatives; native checks retain XML-only duties.
 
-The [nil fixture](../test/conformance/fixtures/assessment/nil.wsdl), [codec controls](../test/unit/direct-projection-nil.test.ts) and [installed gateway qualification](../test/helpers/checkedGatewayInstalledProcess.ts) cover independently expected requests, responses and fault details through serialized HTTP JSON and an owned SOAP 1.1 service. This extends the existing qualified component domain; contextual scalar families, attribute collisions/wildcards, dynamic types and general mixed/open integration retain their existing capability refusals and owners. Legacy and shipped `checkedDirectRuntimeV1` contracts are unchanged.
+The [nil fixture](../test/conformance/fixtures/assessment/nil.wsdl), [codec controls](../test/unit/direct-projection-nil.test.ts) and [installed gateway qualification](../test/helpers/checkedGatewayInstalledProcess.ts) cover independently expected requests, responses and fault details through serialized HTTP JSON and an owned SOAP 1.1 service. This extends the existing qualified component domain; contextual scalar families and assessed dynamic types retain their existing capability refusals and owners. Legacy and shipped `checkedDirectRuntimeV1` contracts are unchanged.
+
+### Mixed, namespaced and open values
+
+Qualified component mappings use the [selected keyed contract](roadmap/v1.0-xml-json-mapping.md#selected-keyed-mapping-contract) for newly supported mixed and open content. Mixed records always have ordered `$content`, including empty and text-only instances. Entries contain one text `$value` or one child name; recursive children follow their own source-selected mapping.
+
+```json
+{"id":"7","$content":[{"$value":"Hello "},{"b":"world"},{"$value":"!"}]}
+```
+
+Adjacent text coalesces and empty text disappears; significant spaces, nesting and element order survive. Ordinary fixed records and already accepted ordered descendants retain their existing shapes. A same-name namespace choice needs `$namespace`; source-fixed positions derive identity and reject redundant holders. Metadata around a scalar retains its complete existing encoding under `$value`.
+
+Unambiguous peer attributes stay peers. Attribute/child collisions use `$attributes` one-name entries, deriving fixed qualified identities from the source. Open or ambiguous identities use an unqualified scalar or a qualified `{"$namespace":"urn:attributes","$value":"lexical"}` holder. Duplicate expanded identities, duplicate channels and undeclared fields fail without mutation.
+
+Strict wildcards require declarations and validation; lax validates available declarations and otherwise preserves unassessed data; skip preserves unassessed data. Unassessed elements always have `$namespace` and `$content`, with lexical attributes in `$attributes`. Raw xsi:type/xsi:nil remain lexical there, including unfamiliar values; assessed nil still uses `$nil`. Known invalid values and missing required children never become opaque success. Payload hints and namespace URIs acquire no schemas.
+
+`$namespaces` records effective bindings at a source-selected retained-context boundary, then local deltas on known intermediates and open descendants. Default bindings, resets, rebinding and sibling isolation survive fresh encoding. `$namespace` identifies a node independently of the default binding. Protected scopes cannot be rebound to satisfy encoding; impossible default/identity combinations and missing attribute prefixes fail. Original prefix spelling, bytes and arbitrary extracted-subtree portability are outside the guarantee.
+
+Generated TypeScript, OpenAPI and runtime schemas describe the actual fields and useful structural constraints; wildcard schemas can be structural supersets narrowed by native owners. Serialized success and fault values preserve all accepted metadata. The [production fixture](../test/conformance/fixtures/assessment/keyed.wsdl), [namespace conformance](../test/conformance/keyed-values.test.ts), [native controls](../test/unit/direct-projection-keyed.test.ts) and installed gateway qualification cover fresh hand JSON and independent SOAP expectations. General group/naming, contextual scalar families, assessed dynamic types, wider source/protocol families and streaming remain separate work.
 
 ### URL intake and endpoint intent
 

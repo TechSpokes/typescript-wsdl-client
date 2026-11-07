@@ -1,0 +1,769 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generates source-selected keyed mixed/open shapes alongside accepted ordered descendants 1`] = `
+{
+  "declarations": [
+    "export type KeyedInput_Record_0 = {
+  readonly "$attributes": readonly ({readonly "code": string})[];
+  readonly "code": string;
+};",
+    "export type KeyedInput_Record_1 = {
+  readonly "$content": readonly ({readonly "code": string} | {readonly "code": string} | {readonly "$value": string})[];
+};",
+    "export type KeyedInput_Record_2 = {
+  readonly "$content": readonly ({readonly "code": ({readonly "$namespace": "urn:checked:forecast"; readonly "$value": string} | {readonly "$namespace": "urn:checked:forecast"; readonly "$nil": true})} | {readonly "code": {readonly "$namespace": "urn:keyed-known"; readonly "$value": string}})[];
+};",
+    "export type KeyedInput_Record_3 = {
+  readonly "$attributes"?: readonly (Readonly<Record<string, string | number | boolean | readonly (string | number | boolean)[] | {readonly "$namespace": string; readonly "$value": unknown}>>)[];
+  readonly "$namespaces"?: Readonly<Record<string, string>>;
+  readonly "$content": readonly ({readonly "count": number} | Readonly<Record<string, Readonly<{"$namespace": string; [key: string]: unknown}>>>)[];
+};",
+    "export type KeyedInput_Record_4 = {
+  readonly "$content": readonly ({readonly name: {readonly namespace: "urn:checked:forecast"; readonly local: "a"}; readonly value: string} | {readonly name: {readonly namespace: "urn:checked:forecast"; readonly local: "b"}; readonly value: number})[];
+};",
+    "export type KeyedInput_Record_5 = {
+  readonly "id"?: string;
+  readonly "$content": readonly ({readonly "b": string} | {readonly "p": (KeyedInput_Record_5 | {readonly "$nil": true; readonly "id"?: string})} | {readonly "ordered": KeyedInput_Record_4} | {readonly "$value": string})[];
+};",
+    "export type KeyedInput_Record_6 = {
+  readonly "$namespaces"?: Readonly<Record<string, string>>;
+  readonly "count": number;
+  readonly "p": KeyedInput_Record_5;
+  readonly "open"?: KeyedInput_Record_3;
+  readonly "skip"?: KeyedInput_Record_7;
+  readonly "strict"?: KeyedInput_Record_8;
+  readonly "collision"?: KeyedInput_Record_0;
+  readonly "names"?: KeyedInput_Record_2;
+  readonly "fixedNames"?: KeyedInput_Record_1;
+};",
+    "export type KeyedInput_OpenValue = {readonly "$namespace": string; readonly "$namespaces"?: Readonly<Record<string, string>>; readonly "$attributes"?: readonly Readonly<Record<string, string | {readonly "$namespace": string; readonly "$value": string}>>[]; readonly "$content": readonly ({readonly "$value": string} | Readonly<Record<string, KeyedInput_OpenValue>>)[]};",
+    "export type KeyedInput_Record_7 = {
+  readonly "$namespaces"?: Readonly<Record<string, string>>;
+  readonly "$content": readonly (Readonly<Record<string, KeyedInput_OpenValue>>)[];
+};",
+    "export type KeyedInput_Record_8 = {
+  readonly "$content": readonly ({readonly name: {readonly namespace: string; readonly local: string}; readonly value: unknown})[];
+};",
+  ],
+  "schema": {
+    "$id": "urn:checked-component:shape:8c8968c8dc06920ef3f07ed7762b1c194e7db1835a7b6fd929689f84cf127aae",
+    "allOf": [
+      {
+        "$ref": "#/definitions/KeyedInput_Record_6",
+      },
+    ],
+    "definitions": {
+      "KeyedInput_OpenValue": {
+        "additionalProperties": false,
+        "properties": {
+          "$attributes": {
+            "items": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "$namespace": {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "$value": {
+                        "type": "string",
+                      },
+                    },
+                    "required": [
+                      "$namespace",
+                      "$value",
+                    ],
+                    "type": "object",
+                  },
+                ],
+              },
+              "maxProperties": 1,
+              "minProperties": 1,
+              "type": "object",
+            },
+            "type": "array",
+          },
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "$value": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "$value",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": {
+                    "$ref": "#/definitions/KeyedInput_OpenValue",
+                  },
+                  "maxProperties": 1,
+                  "minProperties": 1,
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+          "$namespace": {
+            "type": "string",
+          },
+          "$namespaces": {
+            "additionalProperties": {
+              "type": "string",
+            },
+            "type": "object",
+          },
+        },
+        "required": [
+          "$namespace",
+          "$content",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_0": {
+        "additionalProperties": false,
+        "properties": {
+          "$attributes": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+          "code": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "$attributes",
+          "code",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_1": {
+        "additionalProperties": false,
+        "properties": {
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "code",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "code",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "$value": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "$value",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_2": {
+        "additionalProperties": false,
+        "properties": {
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "$namespace": {
+                              "const": "urn:checked:forecast",
+                            },
+                            "$value": {
+                              "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "$namespace",
+                            "$value",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "$namespace": {
+                              "const": "urn:checked:forecast",
+                            },
+                            "$nil": {
+                              "const": true,
+                            },
+                          },
+                          "required": [
+                            "$namespace",
+                            "$nil",
+                          ],
+                          "type": "object",
+                        },
+                      ],
+                    },
+                  },
+                  "required": [
+                    "code",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "$namespace": {
+                          "const": "urn:keyed-known",
+                        },
+                        "$value": {
+                          "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "$namespace",
+                        "$value",
+                      ],
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "code",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_3": {
+        "additionalProperties": false,
+        "properties": {
+          "$attributes": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                      },
+                      {
+                        "type": "number",
+                      },
+                      {
+                        "type": "boolean",
+                      },
+                      {
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                            },
+                            {
+                              "type": "number",
+                            },
+                            {
+                              "type": "boolean",
+                            },
+                          ],
+                        },
+                        "type": "array",
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "$namespace": {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          "$value": {},
+                        },
+                        "required": [
+                          "$namespace",
+                          "$value",
+                        ],
+                        "type": "object",
+                      },
+                    ],
+                  },
+                  "maxProperties": 1,
+                  "minProperties": 1,
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "count": {
+                      "maximum": 2147483647,
+                      "minimum": -2147483648,
+                      "type": "integer",
+                    },
+                  },
+                  "required": [
+                    "count",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": {
+                    "additionalProperties": true,
+                    "properties": {
+                      "$attributes": {
+                        "items": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                              },
+                              {
+                                "type": "number",
+                              },
+                              {
+                                "type": "boolean",
+                              },
+                              {
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                    },
+                                    {
+                                      "type": "number",
+                                    },
+                                    {
+                                      "type": "boolean",
+                                    },
+                                  ],
+                                },
+                                "type": "array",
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "$namespace": {
+                                    "minLength": 1,
+                                    "type": "string",
+                                  },
+                                  "$value": {},
+                                },
+                                "required": [
+                                  "$namespace",
+                                  "$value",
+                                ],
+                                "type": "object",
+                              },
+                            ],
+                          },
+                          "maxProperties": 1,
+                          "minProperties": 1,
+                          "type": "object",
+                        },
+                        "type": "array",
+                      },
+                      "$content": {
+                        "items": {
+                          "type": "object",
+                        },
+                        "type": "array",
+                      },
+                      "$namespace": {
+                        "type": "string",
+                      },
+                      "$namespaces": {
+                        "additionalProperties": {
+                          "type": "string",
+                        },
+                        "type": "object",
+                      },
+                      "$value": {},
+                    },
+                    "required": [
+                      "$namespace",
+                    ],
+                    "type": "object",
+                  },
+                  "maxProperties": 1,
+                  "minProperties": 1,
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+          "$namespaces": {
+            "additionalProperties": {
+              "type": "string",
+            },
+            "type": "object",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_4": {
+        "additionalProperties": false,
+        "properties": {
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "local": {
+                          "const": "a",
+                        },
+                        "namespace": {
+                          "const": "urn:checked:forecast",
+                        },
+                      },
+                      "required": [
+                        "namespace",
+                        "local",
+                      ],
+                      "type": "object",
+                    },
+                    "value": {
+                      "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "name",
+                    "value",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "local": {
+                          "const": "b",
+                        },
+                        "namespace": {
+                          "const": "urn:checked:forecast",
+                        },
+                      },
+                      "required": [
+                        "namespace",
+                        "local",
+                      ],
+                      "type": "object",
+                    },
+                    "value": {
+                      "maximum": 2147483647,
+                      "minimum": -2147483648,
+                      "type": "integer",
+                    },
+                  },
+                  "required": [
+                    "name",
+                    "value",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_5": {
+        "additionalProperties": false,
+        "properties": {
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "b": {
+                      "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "b",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "p": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/definitions/KeyedInput_Record_5",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "$nil": {
+                              "const": true,
+                            },
+                            "id": {
+                              "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "$nil",
+                          ],
+                          "type": "object",
+                        },
+                      ],
+                    },
+                  },
+                  "required": [
+                    "p",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ordered": {
+                      "$ref": "#/definitions/KeyedInput_Record_4",
+                    },
+                  },
+                  "required": [
+                    "ordered",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "$value": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "$value",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+          "id": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_6": {
+        "additionalProperties": false,
+        "properties": {
+          "$namespaces": {
+            "additionalProperties": {
+              "type": "string",
+            },
+            "type": "object",
+          },
+          "collision": {
+            "$ref": "#/definitions/KeyedInput_Record_0",
+          },
+          "count": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+          "fixedNames": {
+            "$ref": "#/definitions/KeyedInput_Record_1",
+          },
+          "names": {
+            "$ref": "#/definitions/KeyedInput_Record_2",
+          },
+          "open": {
+            "$ref": "#/definitions/KeyedInput_Record_3",
+          },
+          "p": {
+            "$ref": "#/definitions/KeyedInput_Record_5",
+          },
+          "skip": {
+            "$ref": "#/definitions/KeyedInput_Record_7",
+          },
+          "strict": {
+            "$ref": "#/definitions/KeyedInput_Record_8",
+          },
+        },
+        "required": [
+          "count",
+          "p",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_7": {
+        "additionalProperties": false,
+        "properties": {
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": {
+                    "$ref": "#/definitions/KeyedInput_OpenValue",
+                  },
+                  "maxProperties": 1,
+                  "minProperties": 1,
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+          "$namespaces": {
+            "additionalProperties": {
+              "type": "string",
+            },
+            "type": "object",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+      "KeyedInput_Record_8": {
+        "additionalProperties": false,
+        "properties": {
+          "$content": {
+            "items": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "local": {
+                          "type": "string",
+                        },
+                        "namespace": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "namespace",
+                        "local",
+                      ],
+                      "type": "object",
+                    },
+                    "value": {},
+                  },
+                  "required": [
+                    "name",
+                    "value",
+                  ],
+                  "type": "object",
+                },
+              ],
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "$content",
+        ],
+        "type": "object",
+      },
+    },
+  },
+  "type": "KeyedInput_Record_6",
+}
+`;

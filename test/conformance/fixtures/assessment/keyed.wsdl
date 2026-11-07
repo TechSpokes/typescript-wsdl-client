@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:forecast" targetNamespace="urn:checked:forecast">
+  <wsdl:types>
+    <xs:schema><xs:attribute name="rating" type="xs:int"/></xs:schema>
+    <xs:schema targetNamespace="urn:keyed-known"><xs:element name="number" type="xs:int" nillable="true"/><xs:attribute name="number" type="xs:int"/>
+      <xs:element name="code" type="xs:string"/>
+      <xs:element name="ordered"><xs:complexType><xs:choice maxOccurs="unbounded"><xs:element name="a" type="xs:string" form="qualified"/><xs:element name="b" type="xs:int" form="qualified"/></xs:choice></xs:complexType></xs:element>
+    </xs:schema>
+    <xs:schema xmlns:k="urn:keyed-known" targetNamespace="urn:checked:forecast" elementFormDefault="qualified">
+      <xs:import namespace="urn:keyed-known"/>
+      <xs:import/>
+      <xs:complexType name="Ordered"><xs:choice maxOccurs="unbounded"><xs:element name="a" type="xs:string"/><xs:element name="b" type="xs:int"/></xs:choice></xs:complexType>
+      <xs:complexType name="Paragraph" mixed="true"><xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="b" type="xs:string"/><xs:element name="p" type="t:Paragraph" nillable="true"/>
+        <xs:element name="ordered" type="t:Ordered"/>
+      </xs:choice><xs:attribute name="id" type="xs:string"/></xs:complexType>
+      <xs:complexType name="Open"><xs:sequence><xs:element name="count" type="xs:int"/>
+        <xs:any namespace="##other" processContents="lax" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence><xs:anyAttribute processContents="lax"/></xs:complexType>
+      <xs:complexType name="Skip"><xs:sequence><xs:any namespace="##other" processContents="skip" maxOccurs="unbounded"/></xs:sequence></xs:complexType>
+      <xs:complexType name="Strict"><xs:sequence><xs:any namespace="##other" processContents="strict" maxOccurs="unbounded"/></xs:sequence></xs:complexType>
+      <xs:complexType name="Collision"><xs:sequence><xs:element name="code" type="xs:string"/></xs:sequence>
+        <xs:attribute name="code" type="xs:string" form="qualified" use="required"/>
+      </xs:complexType>
+      <xs:complexType name="Names"><xs:choice maxOccurs="unbounded"><xs:element name="code" type="xs:string" nillable="true"/><xs:element ref="k:code"/></xs:choice></xs:complexType>
+      <xs:complexType name="FixedNames" mixed="true"><xs:sequence><xs:element name="code" type="xs:string"/><xs:element ref="k:code"/></xs:sequence></xs:complexType>
+      <xs:complexType name="Record"><xs:sequence>
+        <xs:element name="count" type="xs:int"/><xs:element name="p" type="t:Paragraph"/>
+        <xs:element name="open" type="t:Open" minOccurs="0"/><xs:element name="skip" type="t:Skip" minOccurs="0"/>
+        <xs:element name="strict" type="t:Strict" minOccurs="0"/><xs:element name="collision" type="t:Collision" minOccurs="0"/>
+        <xs:element name="names" type="t:Names" minOccurs="0"/><xs:element name="fixedNames" type="t:FixedNames" minOccurs="0"/>
+      </xs:sequence></xs:complexType>
+      <xs:element name="GetForecast" type="t:Record"/>
+      <xs:element name="GetForecastResponse" type="t:Record"/>
+      <xs:element name="ForecastFault" type="t:Record"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ForecastInput"><wsdl:part name="parameters" element="t:GetForecast"/></wsdl:message>
+  <wsdl:message name="ForecastOutput"><wsdl:part name="parameters" element="t:GetForecastResponse"/></wsdl:message>
+  <wsdl:message name="ForecastError"><wsdl:part name="detail" element="t:ForecastFault"/></wsdl:message>
+  <wsdl:portType name="ForecastPortType"><wsdl:operation name="GetForecast"><wsdl:input message="t:ForecastInput"/><wsdl:output message="t:ForecastOutput"/><wsdl:fault name="ForecastError" message="t:ForecastError"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="ForecastBinding" type="t:ForecastPortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="GetForecast"><soap:operation soapAction="urn:checked:GetForecast"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="ForecastError"><soap:fault name="ForecastError" use="literal"/></wsdl:fault></wsdl:operation></wsdl:binding>
+  <wsdl:service name="ForecastService"><wsdl:port name="ForecastPort" binding="t:ForecastBinding"><soap:address location="http://127.0.0.1:1/forecast"/></wsdl:port></wsdl:service>
+</wsdl:definitions>
