@@ -294,6 +294,8 @@ export function matchDirectProjection(context: SemanticContext, root: ElementNod
               const selected = selectProjectionAttribute(context, record, attribute.name, check, unsupported);
               if (!selected) return mismatch('unknown-attribute', declaration, path);
               if (!selected.attribute) {
+                if (!isXmlNCName(attribute.name.local) || attribute.name.local === 'xmlns' && attribute.name.namespace === ''
+                  || attribute.name.namespace === 'http://www.w3.org/2000/xmlns/' || !isXmlCharacters(attribute.name.namespace)) return mismatch('attribute-name', declaration, path);
                 if (!isXmlCharacters(attribute.value)) return mismatch('xml-characters', declaration, path);
                 const key = JSON.stringify([attribute.name.namespace, attribute.name.local]);
                 if (present.has(key)) return mismatch('duplicate-attribute', declaration, path);

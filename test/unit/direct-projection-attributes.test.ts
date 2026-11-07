@@ -24,6 +24,15 @@ async function source(name = 'Request') {
 }
 
 describe('native known-attribute projection', () => {
+  it('checks unassessed wildcard attribute identities on an assessed parent without bypassing native guards', async () => {
+    const {context, root} = await source('Wildcard');
+    for (const name of [{namespace: 'urn:e', local: 'bad:name'}, {namespace: 'http://www.w3.org/2000/xmlns/', local: 'id'},
+      {namespace: '\u0000', local: 'id'}, {namespace: '', local: 'xmlns'}]) {
+      const payload = structuredClone(xml('<t:Wildcard xmlns:t="urn:known-attributes"/>'));
+      (payload.attributes as {name: typeof name; lexicalName: string; value: string}[]).push({name, lexicalName: name.local, value: 'lexical'});
+      expect(matchDirectProjection(context, root, payload)).toMatchObject({kind: 'mismatch', rule: 'attribute-name'});
+    }
+  });
   it('preserves typed qualified/unqualified attributes in repeated records through JSON serialization', async () => {
     const {context, root} = await source();
     const matched = matchDirectProjection(context, root, xml(text));
