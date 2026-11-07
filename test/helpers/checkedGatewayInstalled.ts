@@ -152,8 +152,10 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
       if (mode === 'groups-configured') {
         const inventory = JSON.parse(await readFile(path.join(project,'client/inventory.json'),'utf8')) as {
           applicationGroups:{targets:{target:string;role:string;defaults:{typeName:string}}[]}};
-        groupOptions={names:inventory.applicationGroups.targets.filter(t=>t.defaults.typeName.startsWith('PaymentChoiceChoice')).map(t=>({target:t.target,
-          ...(t.role==='choice'?{propertyName:'$payment',typeName:'PaymentMethod'}:{typeName:t.defaults.typeName.endsWith('1')?'CardPayment':'BankPayment'})}))};
+        groupOptions={names:[...inventory.applicationGroups.targets.filter(t=>t.defaults.typeName.startsWith('PaymentChoiceChoice')).map(t=>({target:t.target,
+          ...(t.role==='choice'?{propertyName:'$payment',typeName:'PaymentMethod'}:{typeName:t.defaults.typeName.endsWith('1')?'CardPayment':'BankPayment'})})),
+          ...inventory.applicationGroups.targets.filter(t=>t.role==='choice' && t.defaults.typeName.startsWith('NestedAlternativesChoiceAlternative')).map(t=>({
+            target:t.target,propertyName:'$method',typeName:t.defaults.typeName.includes('Alternative1')?'CardChannel':'BankChannel'}))]};
         await writeFile(config,JSON.stringify({...checkedComponents,applicationGroups:groupOptions}));
         const args=[...installedGenerate];
         args[args.indexOf('--wsdl-source')+1]=variantSource;

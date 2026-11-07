@@ -264,7 +264,7 @@ export function mapApplicationGroups(plan: ApplicationGroupPlan, projection: Dir
             const body = object(item);
             if (n.particle.kind === 'choice') {
               // @why Disjoint native leaf alphabets select one branch; full body validation still rejects partial or mixed branches.
-              const candidates = n.children.filter(c=>[...bodyKeys(c)].some(k=>Object.hasOwn(body,k)));
+              const candidates = n.children.filter(c=>hasSelection(c,body));
               if (candidates.length !== 1) fail('group-choice-branch');
               encodeObject(candidates[0]!.children,body);
             } else encodeObject(n.children,body);
@@ -274,7 +274,17 @@ export function mapApplicationGroups(plan: ApplicationGroupPlan, projection: Dir
       for (const n of nodes) encode(n);
       if (Object.keys(data).some(k=>!keys.has(k))) fail('unknown-application-group-key');
     };
-    const bodyKeys = (n: GroupNode): Set<string> => n.slot ? new Set([n.slot.element.name.local]) : n.target ? new Set([n.target.resolved.propertyName!]) : new Set(n.children.flatMap(c=>[...bodyKeys(c)]));
+    const hasSelection = (node: GroupNode, data: Data): boolean => {
+      check();
+      if (node.slot) return Object.hasOwn(data,node.slot.element.name.local);
+      if (!node.target) return node.children.some(child=>hasSelection(child,data));
+      const key=node.target.resolved.propertyName!;
+      if (!Object.hasOwn(data,key)) return false;
+      const member=data[key],items=node.particle.occurs.max==='1'?[member]:Array.isArray(member)?member:[];
+      // @why Synthetic keys may be equal in different alternatives; only disjoint native leaf sites identify a branch.
+      return items.some(item=>!!item && typeof item==='object' && !Array.isArray(item)
+        && node.children.some(child=>hasSelection(child,item as Data)));
+    };
     const decodeObject = (nodes: readonly GroupNode[]): Data => {
       const out: Data = Object.create(null) as Data;
       const decode = (n: GroupNode): void => {

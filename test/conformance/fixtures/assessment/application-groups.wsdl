@@ -14,6 +14,7 @@
           <xs:element name="one" type="t:OneSequence" minOccurs="0"/>
           <xs:element name="two" type="t:TwoSequence" minOccurs="0"/>
           <xs:element name="tree" type="t:TreeChoices" minOccurs="0"/>
+          <xs:element name="deep" type="t:NestedAlternatives" minOccurs="0"/>
           <xs:element name="ambiguous" type="t:Ambiguous" minOccurs="0"/>
           <xs:element name="empty" type="t:EmptyChoice" minOccurs="0"/>
         </xs:sequence>
@@ -25,6 +26,7 @@
       <xs:complexType name="OneSequence"><xs:group ref="t:Pair" minOccurs="1" maxOccurs="2"/></xs:complexType>
       <xs:complexType name="TwoSequence"><xs:group ref="t:Pair" minOccurs="0" maxOccurs="4"/></xs:complexType>
       <xs:complexType name="TreeChoices"><xs:choice><xs:element name="leaf" type="xs:string"/><xs:element name="branch" type="t:TreeChoices"/></xs:choice></xs:complexType>
+      <xs:complexType name="NestedAlternatives"><xs:choice maxOccurs="3"><xs:sequence><xs:choice><xs:element name="cardNumber" type="xs:string"/><xs:element name="cardToken" type="xs:string"/></xs:choice></xs:sequence><xs:sequence><xs:choice><xs:element name="bankCode" type="xs:int"/><xs:element name="bankLabel" type="xs:string"/></xs:choice></xs:sequence></xs:choice></xs:complexType>
       <xs:complexType name="Ambiguous"><xs:sequence minOccurs="0" maxOccurs="unbounded"><xs:element name="N" type="xs:int" minOccurs="1" maxOccurs="2"/></xs:sequence></xs:complexType>
       <xs:complexType name="EmptyChoice"><xs:choice><xs:sequence><xs:element name="O" type="xs:string" minOccurs="0"/></xs:sequence><xs:element name="P" type="xs:boolean"/></xs:choice></xs:complexType>
       <xs:element name="Submit" type="t:PaymentChoice"/>

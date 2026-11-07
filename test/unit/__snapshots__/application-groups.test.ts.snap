@@ -25,6 +25,18 @@ readonly "$choice": MultipleChoicesChoice; readonly "$choice2"?: MultipleChoices
     "export type ApplicationRecord_2d68be8c5860f876 = {
 readonly "$sequence"?: readonly (NestedSequence)[]
 };",
+    "export type NestedAlternativesChoiceAlternative1___ChoiceAlternative1 = {readonly "cardNumber": string};",
+    "export type NestedAlternativesChoiceAlternative1___ChoiceAlternative2 = {readonly "cardToken": string};",
+    "export type NestedAlternativesChoiceAlternative1___Choice = NestedAlternativesChoiceAlternative1___ChoiceAlternative1 | NestedAlternativesChoiceAlternative1___ChoiceAlternative2;",
+    "export type NestedAlternativesChoiceAlternative1 = {readonly "$choice": NestedAlternativesChoiceAlternative1___Choice};",
+    "export type NestedAlternativesChoiceAlternative2___ChoiceAlternative1 = {readonly "bankCode": number};",
+    "export type NestedAlternativesChoiceAlternative2___ChoiceAlternative2 = {readonly "bankLabel": string};",
+    "export type NestedAlternativesChoiceAlternative2___Choice = NestedAlternativesChoiceAlternative2___ChoiceAlternative1 | NestedAlternativesChoiceAlternative2___ChoiceAlternative2;",
+    "export type NestedAlternativesChoiceAlternative2 = {readonly "$choice": NestedAlternativesChoiceAlternative2___Choice};",
+    "export type NestedAlternativesChoice = NestedAlternativesChoiceAlternative1 | NestedAlternativesChoiceAlternative2;",
+    "export type ApplicationRecord_13d5b4da5f629444 = {
+readonly "$choice": readonly (NestedAlternativesChoice)[]
+};",
     "export type OneSequenceSequence = {readonly "K": number; readonly "L": string};",
     "export type ApplicationRecord_3f746d0243aca325 = {
 readonly "$sequence": readonly (OneSequenceSequence)[]
@@ -34,7 +46,7 @@ readonly "$sequence": readonly (OneSequenceSequence)[]
     "export type PaymentChoiceChoice = PaymentChoiceChoiceAlternative1 | PaymentChoiceChoiceAlternative2;",
     "export type ApplicationRecord_65e85d249624bf90 = {
   readonly "id": string;
-readonly "choice"?: string; readonly "$choice": readonly (PaymentChoiceChoice)[]; readonly "nested"?: ApplicationRecord_2d68be8c5860f876; readonly "multiple"?: ApplicationRecord_84d01386f3d2f403; readonly "one"?: ApplicationRecord_3f746d0243aca325; readonly "two"?: ApplicationRecord_e788ede639b3fef4; readonly "tree"?: ApplicationRecord_b442b49ece6e5816; readonly "ambiguous"?: ApplicationRecord_fd15cdd79facd6c2; readonly "empty"?: ApplicationRecord_63012f847e0d7695
+readonly "choice"?: string; readonly "$choice": readonly (PaymentChoiceChoice)[]; readonly "nested"?: ApplicationRecord_2d68be8c5860f876; readonly "multiple"?: ApplicationRecord_84d01386f3d2f403; readonly "one"?: ApplicationRecord_3f746d0243aca325; readonly "two"?: ApplicationRecord_e788ede639b3fef4; readonly "tree"?: ApplicationRecord_b442b49ece6e5816; readonly "deep"?: ApplicationRecord_13d5b4da5f629444; readonly "ambiguous"?: ApplicationRecord_fd15cdd79facd6c2; readonly "empty"?: ApplicationRecord_63012f847e0d7695
 };",
     "export type TreeChoicesChoiceAlternative1 = {readonly "leaf": string};",
     "export type TreeChoicesChoiceAlternative2 = {readonly "branch": ApplicationRecord_b442b49ece6e5816};",
@@ -55,6 +67,23 @@ readonly "$sequence"?: readonly (TwoSequenceSequence)[]
       },
     ],
     "definitions": {
+      "ApplicationRecord_13d5b4da5f629444": {
+        "additionalProperties": false,
+        "properties": {
+          "$choice": {
+            "items": {
+              "$ref": "#/definitions/NestedAlternativesChoice",
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "type": "array",
+          },
+        },
+        "required": [
+          "$choice",
+        ],
+        "type": "object",
+      },
       "ApplicationRecord_2d68be8c5860f876": {
         "additionalProperties": false,
         "properties": {
@@ -179,6 +208,9 @@ readonly "$sequence"?: readonly (TwoSequenceSequence)[]
           "choice": {
             "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
             "type": "string",
+          },
+          "deep": {
+            "$ref": "#/definitions/ApplicationRecord_13d5b4da5f629444",
           },
           "empty": {
             "$ref": "#/definitions/ApplicationRecord_63012f847e0d7695",
@@ -367,6 +399,113 @@ readonly "$sequence"?: readonly (TwoSequenceSequence)[]
         },
         "required": [
           "I",
+        ],
+        "type": "object",
+      },
+      "NestedAlternativesChoice": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/NestedAlternativesChoiceAlternative1",
+          },
+          {
+            "$ref": "#/definitions/NestedAlternativesChoiceAlternative2",
+          },
+        ],
+      },
+      "NestedAlternativesChoiceAlternative1": {
+        "additionalProperties": false,
+        "properties": {
+          "$choice": {
+            "$ref": "#/definitions/NestedAlternativesChoiceAlternative1___Choice",
+          },
+        },
+        "required": [
+          "$choice",
+        ],
+        "type": "object",
+      },
+      "NestedAlternativesChoiceAlternative1___Choice": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/NestedAlternativesChoiceAlternative1___ChoiceAlternative1",
+          },
+          {
+            "$ref": "#/definitions/NestedAlternativesChoiceAlternative1___ChoiceAlternative2",
+          },
+        ],
+      },
+      "NestedAlternativesChoiceAlternative1___ChoiceAlternative1": {
+        "additionalProperties": false,
+        "properties": {
+          "cardNumber": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "cardNumber",
+        ],
+        "type": "object",
+      },
+      "NestedAlternativesChoiceAlternative1___ChoiceAlternative2": {
+        "additionalProperties": false,
+        "properties": {
+          "cardToken": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "cardToken",
+        ],
+        "type": "object",
+      },
+      "NestedAlternativesChoiceAlternative2": {
+        "additionalProperties": false,
+        "properties": {
+          "$choice": {
+            "$ref": "#/definitions/NestedAlternativesChoiceAlternative2___Choice",
+          },
+        },
+        "required": [
+          "$choice",
+        ],
+        "type": "object",
+      },
+      "NestedAlternativesChoiceAlternative2___Choice": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/NestedAlternativesChoiceAlternative2___ChoiceAlternative1",
+          },
+          {
+            "$ref": "#/definitions/NestedAlternativesChoiceAlternative2___ChoiceAlternative2",
+          },
+        ],
+      },
+      "NestedAlternativesChoiceAlternative2___ChoiceAlternative1": {
+        "additionalProperties": false,
+        "properties": {
+          "bankCode": {
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "bankCode",
+        ],
+        "type": "object",
+      },
+      "NestedAlternativesChoiceAlternative2___ChoiceAlternative2": {
+        "additionalProperties": false,
+        "properties": {
+          "bankLabel": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "bankLabel",
         ],
         "type": "object",
       },

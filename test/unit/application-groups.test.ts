@@ -170,6 +170,23 @@ describe('source-owned application groups',()=>{
     if (decoded.kind!=='component-decoded') throw new Error(JSON.stringify(decoded));
     expect(decoded.validated.value).toEqual(value);
   });
+  it.each([false,true])('selects nested alternatives from source leaves rather than shared wrapper names (configured=%s)',async(configured)=>{
+    const initial=await prepare(),sites=inspectComponentValueMapping(initial.mapping,initial.contract).applicationGroups!.targets
+      .filter(t=>t.role==='choice' && t.defaults.typeName.startsWith('NestedAlternativesChoiceAlternative'));
+    expect(sites).toHaveLength(2);
+    const {contract,mapping}=configured?await prepare({names:sites.map(t=>({target:t.target,propertyName:'$method'}))}):initial;
+    const key=configured?'$method':'$choice';
+    const value={id:'nested-alternatives',$choice:[{A:7,B:'ordinary'}],
+      deep:{$choice:[{[key]:{bankCode:9}},{[key]:{cardNumber:'card'}},{[key]:{bankLabel:'last'}}]}};
+    const encoded=encodeComponentXml(contract,mapping,value);
+    if (encoded.kind!=='component-encoded') throw new Error(JSON.stringify(encoded));
+    const decoded=decodeComponentXml(contract,mapping,encoded.bytes);
+    if (decoded.kind!=='component-decoded') throw new Error(JSON.stringify(decoded));
+    expect(decoded.validated.value).toEqual(value);
+    const invalid={...value,deep:{$choice:[{[key]:{cardNumber:'mixed',bankCode:9}}]}},before=JSON.stringify(invalid);
+    expect(encodeComponentXml(contract,mapping,invalid).kind).toBe('value-invalid');
+    expect(JSON.stringify(invalid)).toBe(before);
+  });
   it('keeps distinct direction-scoped source stems and reserves record symbols across the selected source',async()=>{
     await mkdir('tmp/conformance/application-groups',{recursive:true});
     const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/directions-')),original=await readFile(file,'utf8');
