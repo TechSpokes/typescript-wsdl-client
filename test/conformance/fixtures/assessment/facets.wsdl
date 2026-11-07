@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:forecast" targetNamespace="urn:checked:forecast">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:checked:forecast" elementFormDefault="qualified">
+      <xs:simpleType name="Word"><xs:restriction base="xs:string"><xs:whiteSpace value="collapse"/><xs:minLength value="2"/><xs:pattern value="[A-Z]+[0-9]+"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Code"><xs:restriction base="t:Word"><xs:maxLength value="4"/><xs:pattern value="AB[0-9]{2}"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Money"><xs:restriction base="xs:decimal"><xs:minExclusive value="9007199254740993.01"/><xs:maxInclusive value="9007199254740993.99"/><xs:totalDigits value="18"/><xs:fractionDigits value="2"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Count"><xs:restriction base="xs:int"><xs:minInclusive value="2"/><xs:maxExclusive value="4"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Exact"><xs:restriction base="xs:integer"><xs:minInclusive value="9007199254740993"/><xs:maxExclusive value="9007199254740996"/><xs:totalDigits value="16"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="IntWord"><xs:restriction base="xs:int"><xs:pattern value="[+]00[0-9]"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="IntegerWord"><xs:restriction base="xs:integer"><xs:pattern value="[+]009[0-9]+"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="DecimalWord"><xs:restriction base="xs:decimal"><xs:pattern value="[+]0[0-9][.][0-9]{2}"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Codes"><xs:list itemType="t:Code"/></xs:simpleType>
+      <xs:simpleType name="Pair"><xs:restriction base="t:Codes"><xs:length value="2"/><xs:enumeration value="AB12 AB34"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Counts"><xs:list itemType="t:Count"/></xs:simpleType>
+      <xs:simpleType name="Exacts"><xs:list itemType="t:Exact"/></xs:simpleType>
+      <xs:simpleType name="Monies"><xs:list itemType="t:Money"/></xs:simpleType>
+      <xs:simpleType name="IntWords"><xs:list itemType="t:IntWord"/></xs:simpleType>
+      <xs:simpleType name="ListWord"><xs:restriction base="t:IntWords"><xs:minLength value="1"/><xs:maxLength value="2"/><xs:pattern value="[+]007 [+]008"/></xs:restriction></xs:simpleType>
+      <xs:simpleType name="Nested"><xs:union xmlns:a="urn:checked:forecast" memberTypes="a:Code"><xs:simpleType><xs:restriction base="xs:string"><xs:pattern value="Z[0-9]+"/></xs:restriction></xs:simpleType></xs:union></xs:simpleType>
+      <xs:simpleType name="Choice"><xs:union xmlns:b="urn:checked:forecast" memberTypes="b:Nested b:Word"/></xs:simpleType>
+      <xs:simpleType name="Choices"><xs:list itemType="t:Choice"/></xs:simpleType>
+      <xs:simpleType name="ChoiceWord"><xs:restriction base="t:Choices"><xs:pattern value="AB12 Z9"/></xs:restriction></xs:simpleType>
+      <xs:element name="known" type="t:Code"/>
+      <xs:complexType name="Record"><xs:sequence>
+        <xs:element name="code" type="t:Code" nillable="true"/>
+        <xs:element name="money" type="t:Money"/>
+        <xs:element name="unicode"><xs:simpleType><xs:restriction base="xs:string"><xs:length value="2"/></xs:restriction></xs:simpleType></xs:element>
+        <xs:element name="replace"><xs:simpleType><xs:restriction base="xs:string"><xs:whiteSpace value="replace"/><xs:length value="3"/></xs:restriction></xs:simpleType></xs:element>
+        <xs:element name="count" type="t:Count"/>
+        <xs:element name="exact" type="t:Exact"/>
+        <xs:element name="digits"><xs:simpleType><xs:restriction base="xs:decimal"><xs:totalDigits value="3"/><xs:fractionDigits value="1"/></xs:restriction></xs:simpleType></xs:element>
+        <xs:element name="integerDigits"><xs:simpleType><xs:restriction base="xs:integer"><xs:totalDigits value="3"/></xs:restriction></xs:simpleType></xs:element>
+        <xs:element name="intWord" type="t:IntWord"/>
+        <xs:element name="integerWord" type="t:IntegerWord"/>
+        <xs:element name="decimalWord" type="t:DecimalWord"/>
+        <xs:element name="codes" type="t:Pair"/>
+        <xs:element name="counts" type="t:Counts"/>
+        <xs:element name="exacts" type="t:Exacts"/>
+        <xs:element name="monies" type="t:Monies"/>
+        <xs:element name="intWords" type="t:IntWords"/>
+        <xs:element name="listWord" type="t:ListWord"/>
+        <xs:element name="choice" type="t:Choice"/>
+        <xs:element name="choices" type="t:Choices"/>
+        <xs:element name="choiceWord" type="t:ChoiceWord"/>
+        <xs:element name="repeated" type="t:Count" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="optional" type="t:Code" minOccurs="0" default="AB12"/>
+        <xs:element name="strict"><xs:complexType><xs:sequence><xs:any processContents="strict"/></xs:sequence></xs:complexType></xs:element>
+        <xs:element name="lax"><xs:complexType><xs:sequence><xs:any processContents="lax"/></xs:sequence></xs:complexType></xs:element>
+        <xs:element name="skip"><xs:complexType><xs:sequence><xs:any processContents="skip"/></xs:sequence></xs:complexType></xs:element>
+      </xs:sequence><xs:attribute name="fixed" type="t:IntWord" fixed="+007"/><xs:attribute name="seed" type="t:Code" default="AB12"/><xs:attribute name="tags" type="t:Choices" default="AB12 Z9"/></xs:complexType>
+      <xs:element name="GetForecast" type="t:Record"/>
+      <xs:element name="GetForecastResponse" type="t:Record"/>
+      <xs:element name="ForecastFault" type="t:Record"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ForecastInput"><wsdl:part name="parameters" element="t:GetForecast"/></wsdl:message>
+  <wsdl:message name="ForecastOutput"><wsdl:part name="parameters" element="t:GetForecastResponse"/></wsdl:message>
+  <wsdl:message name="ForecastError"><wsdl:part name="detail" element="t:ForecastFault"/></wsdl:message>
+  <wsdl:portType name="ForecastPortType"><wsdl:operation name="GetForecast"><wsdl:input message="t:ForecastInput"/><wsdl:output message="t:ForecastOutput"/><wsdl:fault name="ForecastError" message="t:ForecastError"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="ForecastBinding" type="t:ForecastPortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="GetForecast"><soap:operation soapAction="urn:checked:GetForecast"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="ForecastError"><soap:fault name="ForecastError" use="literal"/></wsdl:fault></wsdl:operation></wsdl:binding>
+  <wsdl:service name="ForecastService"><wsdl:port name="ForecastPort" binding="t:ForecastBinding"><soap:address location="http://127.0.0.1:1/forecast"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

@@ -2,9 +2,11 @@
 
 ## Current mapping checkpoint, November 7, 2026
 
+[#422](https://github.com/TechSpokes/typescript-wsdl-client/issues/422) extends the native source/scalar and HTTP owners with bounded facets, restricted lists and primitive-string atomic unions. [Checked scalar mappings](checked-gateway.md#native-facets-lists-and-primitive-string-unions) and [ADR-003](decisions/003-content-model-contracts.md#xsd-10-profile-and-enforcement-s02-d04) specify the lexical union specialization. Whole-source construction, correspondence and payload membership remain distinct gates. The implementation PR records final-candidate checks, installed evidence and independent review; broader #179/#184/#410/#397/#401/#379 remain open.
+
 [#409](https://github.com/TechSpokes/typescript-wsdl-client/issues/409) implements the selected keyed mixed/namespace/open slice through the existing native planner, matcher, scalar/inverse, XML codec and generated HTTP owners. It follows merged nil PR #434 at main `b337f04`. [Checked mapping behavior](checked-gateway.md#mixed-namespaced-and-open-values) and committed production conformance/installed controls describe the scoped guarantee, including native wildcard policy and retained lexical contexts.
 
-Independent hand JSON and handwritten SOAP expectations exercise generated requests, serialized successes and declared fault details. The PR records final-candidate commands/results, exact nonauthor review and hosted Node 24/26 plus Linux/Windows qualification. These are delivery gates, not a release or provider-acceptance claim. General groups/default names #431, configured aliases #432, contextual scalar families #422/#184, assessed dynamic types, wider source/protocol support, security and streaming remain with their existing owners; broad #183/#187/#188/#189/#397/#401/#379 and the remainder of #410 stay open.
+Independent hand JSON and handwritten SOAP expectations exercise generated requests, serialized successes and declared fault details. The PR records final-candidate commands/results, exact nonauthor review and hosted Node 24/26 plus Linux/Windows qualification. These are delivery gates, not a release or provider-acceptance claim. General groups/default names #431, configured aliases #432, contextual scalar families #184, assessed dynamic types, wider source/protocol support, security and streaming remain with their existing owners; broad #183/#187/#188/#189/#397/#401/#379 and the remainder of #410 stay open.
 
 ## Previous consolidation checkpoint, November 3, 2026
 

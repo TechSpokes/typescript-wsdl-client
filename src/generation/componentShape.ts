@@ -56,12 +56,13 @@ export function lowerComponentShape(contract: DirectOperationContract, supplied:
   };
   const scalar = (value: {builtin: ExpandedName; retainLexical?: true; list?: DirectProjectionAttribute['list']}): {type: string; schema: Schema} => {
     check();
-    const item = value.list ?? value;
+    // @why A list-level pattern retains one lexical witness; its HTTP value is a string rather than an item array.
+    const item = value.retainLexical ? value : value.list ?? value;
     const type = item.retainLexical ? 'string' : projectionScalarRepresentation(item.builtin);
     if (!type) throw new TypeError('Unsupported native scalar representation');
     const schema: Schema = type === 'number' ? {type: 'integer', minimum: -2147483648, maximum: 2147483647}
       : type === 'string' ? {type, pattern: '^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$'} : {type};
-    return value.list ? {type: `readonly ${type}[]`, schema: {type: 'array', items: schema}} : {type, schema};
+    return value.list && !value.retainLexical ? {type: `readonly ${type}[]`, schema: {type: 'array', items: schema}} : {type, schema};
   };
   const shape = (value: DirectProjectionValue): {type: string; schema: Schema} => {
     check();

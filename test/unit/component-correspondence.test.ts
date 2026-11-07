@@ -73,7 +73,7 @@ describe('dated ordinary component correspondence', () => {
     }
   });
 
-  it('leaves non-enumeration facets and actual complex restrictions inconclusive', async () => {
+  it('leaves heterogeneous unions and actual complex restrictions inconclusive', async () => {
     for (const file of ['projection/restricted-scalars.xsd', 'projection/inherited-records.xsd']) {
       const result = qualifyComponentSource(await load(file), options());
       expect(result, file).toMatchObject({kind: 'component-source', schemaEligible: false, correspondence: {kind: 'inconclusive-correspondence'}});

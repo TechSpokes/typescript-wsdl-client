@@ -151,6 +151,18 @@ The path is relative to the outer response element; `recordPath` is relative to 
 
 Scoped artifacts use a distinct version from ordinary component artifacts. Generated runtime configuration adds explicit `recordSources`, each containing the outer full `selector` and independently authorized physical `source`. Both sources and their imported bytes are freshly checked on execution; embedded artifact bytes confer no permission. These responses are buffered under caller XML limits. No incremental delivery or streaming capability is claimed.
 
+## Native facets, lists and primitive-string unions
+
+Checked component requests, responses and declared faults support named, inline and inherited string length/whitespace restrictions, native-supported XSD patterns on strings and numeric families, and exact bounds/digit constraints on int32 and string-encoded integer/decimal values. Native scalar formation and membership remain authoritative, including Unicode character counts, inherited pattern layers, enumeration and default/fixed assessment. JSON schemas describe the actual representation; they do not translate XSD regex or put numeric keywords on exact decimal strings.
+
+Ordinary lists remain ordered arrays of selected item values. Patterned int items such as `+007` retain item strings; list-level patterns can require a single whole-list lexical string. Repeated XML elements remain distinct from one list-valued scalar. A list in a scalar identity holder or attribute entry keeps its complete encoding under `$value`.
+
+The bounded union subset has only effective atomic members with XSD primitive string and no contextual/document-wide obligations. JSON carries one complete lexical string before member-specific whitespace normalization. The native owner chooses the first successful effective member on every fresh inverse, including nested XSD 1.0 flattening; callers supply no branch tag. Lists of these unions contain lexical item strings, except when an existing whole-list witness is required. Whitespace-containing application items cannot be trimmed into legal tokens.
+
+Invalid input refuses before SOAP dispatch; invalid upstream responses and declared faults return non-success without a value. Strict and lax known declarations retain their scalar constraints; skip data remains lexical even when a name resembles a declared constrained type. Existing nil, attribute, namespace, mixed/open and companion mappings retain their separate native duties.
+
+`test/conformance/fixtures/assessment/facets.wsdl` and the installed gateway harness exercise these families through independent hand JSON and namespace-aware SOAP. `test/unit/direct-projection-string-unions.test.ts` checks native member order, pre-member witnesses, normalization, ownership, cancellation and limits. Heterogeneous unions, unions containing lists, contextual names/identity, dynamic types and wider source/protocol/security/streaming families remain outside this slice; their broad owners stay open.
+
 ## Existing direct-runtime clients
 
 Generation supports legacy and `checked-components-v1`. The unpublished intermediate `checked-direct-v1` pipeline and `checkedDirect` option have been removed. For its former Forecast examples, select `checked-components-v1`, omit the old configuration or change `selector` to `selectors: [selector]`, and regenerate the complete project.

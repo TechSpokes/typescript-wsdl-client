@@ -61,24 +61,35 @@ function kernel(context: SemanticContext) {
       reference = content.view.content.type;
     }
     const plan = core.ensure(reference, declaration);
-    if (plan.variety === 'union') return Object.freeze({kind: 'unavailable', rule: 'declared-scalar-union'});
+    const stringUnion = (candidate: typeof plan): boolean => {
+      if (candidate.variety !== 'union' || !candidate.members?.length || candidate.obligations?.length) return false;
+      for (const reference of candidate.members) {
+        check(); c.step(declaration);
+        const member = core.ensure(reference, declaration);
+        if (member.variety !== 'atomic' || member.primitive !== 'string' || member.obligations?.length) return false;
+      }
+      return true;
+    };
+    const union = plan.variety === 'union';
+    if (union && !stringUnion(plan)) return Object.freeze({kind: 'unavailable', rule: 'declared-scalar-union'});
     if (plan.obligations?.length) return Object.freeze({kind: 'unavailable', rule: 'scalar-source-obligations'});
     let item: ProjectionScalarList | undefined;
     if (plan.variety === 'list') {
       if (!plan.item) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item'});
       const member = core.ensure(plan.item, declaration);
-      if (member.variety !== 'atomic') return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-' + member.variety});
-      if (member.obligations?.length || member.whitespace === 'member') return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-source-obligations'});
-      const local = member.builtin ?? member.primitive;
+      const unionItem = stringUnion(member);
+      if (member.variety !== 'atomic' && !unionItem) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-' + member.variety});
+      if (member.obligations?.length || member.whitespace === 'member' && !unionItem) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-source-obligations'});
+      const local = unionItem ? 'string' : member.builtin ?? member.primitive;
       if (!local) return Object.freeze({kind: 'unavailable', rule: 'scalar-list-item-representation'});
       context.budget.chargeWork(64);
-      item = Object.freeze({builtin: Object.freeze({namespace: XSD_NAMESPACE, local}), whitespace: member.whitespace,
-        ...(member.layers.some(layer => layer.patterns.length > 0) ? {retainLexical: true as const} : {})});
+      item = Object.freeze({builtin: Object.freeze({namespace: XSD_NAMESPACE, local}), whitespace: unionItem ? 'preserve' : member.whitespace as ProjectionScalarList['whitespace'],
+        ...(unionItem || member.layers.some(layer => layer.patterns.length > 0) ? {retainLexical: true as const} : {})});
     }
-    const local = item?.builtin.local ?? plan.builtin ?? plan.primitive;
+    const local = union ? 'string' : item?.builtin.local ?? plan.builtin ?? plan.primitive;
     if (!local) return Object.freeze({kind: 'unavailable', rule: 'scalar-representation'});
     context.budget.chargeWork(64 + declaration.id.length);
-    const retainLexical = plan.layers.some(layer => layer.patterns.length > 0);
+    const retainLexical = union || plan.layers.some(layer => layer.patterns.length > 0);
     const result: ProjectionScalarDescription = Object.freeze({kind: 'projection-scalar-type', builtin: Object.freeze({namespace: XSD_NAMESPACE, local}),
       ...(retainLexical ? {retainLexical: true as const} : {}), ...(item ? {list: item} : {})});
     descriptions.set(declaration.id, result);
