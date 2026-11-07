@@ -4,6 +4,7 @@
     <xs:schema targetNamespace="urn:checked:groups" elementFormDefault="qualified">
       <xs:complexType name="PaymentChoice">
         <xs:sequence>
+          <xs:element name="definitions" type="xs:string" minOccurs="0"/>
           <xs:element name="choice" type="xs:string" minOccurs="0"/>
           <xs:choice minOccurs="1" maxOccurs="3">
             <xs:sequence><xs:element name="A" type="xs:int"/><xs:element name="B" type="xs:string" nillable="true"/></xs:sequence>

@@ -100,11 +100,12 @@ try {
     const envelope=(content:string)=>`<s:Envelope xmlns:s="${soapNs}" xmlns:t="${namespace}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><s:Body>${content}</s:Body></s:Envelope>`;
     const key=mode==='groups-configured'?'$payment':'$choice';
     const innerKey=mode==='groups-configured'?'$method':'$choice';
-    const value={id:'wire',choice:'real XML choice',[key]:[{B:{$nil:true},A:7},{D:'bank',C:true}],
+    const sequenceKey=mode==='groups-configured'?'$id':'$sequence';
+    const value={id:'wire',definitions:'business definitions',choice:'real XML choice',[key]:[{B:{$nil:true},A:7},{D:'bank',C:true}],
       nested:{$sequence:[{E:'nested',$choice:{G:false}}]},multiple:{$choice:{H:'h'},$choice2:{J:true}},
-      one:{$sequence:[{K:1,L:'one'}]},two:{$sequence:[{K:2,L:'two'},{K:3,L:'three'}]},tree:{$choice:{branch:{$choice:{leaf:'end'}}}},
+      one:{[sequenceKey]:[{K:1,L:'one'}]},two:{$sequence:[{K:2,L:'two'},{K:3,L:'three'}]},tree:{$choice:{branch:{$choice:{leaf:'end'}}}},
       deep:{$choice:[{[innerKey]:{bankCode:9}},{[innerKey]:{cardNumber:'card'}},{[innerKey]:{bankLabel:'last'}}]}};
-    const content='<t:choice>real XML choice</t:choice><t:A>7</t:A><t:B xsi:nil="true"/><t:C>true</t:C><t:D>bank</t:D>'
+    const content='<t:definitions>business definitions</t:definitions><t:choice>real XML choice</t:choice><t:A>7</t:A><t:B xsi:nil="true"/><t:C>true</t:C><t:D>bank</t:D>'
       +'<t:nested><t:E>nested</t:E><t:G>false</t:G></t:nested><t:multiple><t:H>h</t:H><t:J>true</t:J></t:multiple>'
       +'<t:one><t:K>1</t:K><t:L>one</t:L></t:one><t:two><t:K>2</t:K><t:L>two</t:L><t:K>3</t:K><t:L>three</t:L></t:two>'
       +'<t:tree><t:branch><t:leaf>end</t:leaf></t:branch></t:tree>'
@@ -122,10 +123,16 @@ try {
     };
     assert.deepEqual(attributeEvents(upstream.at(-1)!.xml),attributeEvents(envelope(`<t:GetForecast id="wire">${content}</t:GetForecast>`)));
     assert.ok(!upstream.at(-1)!.xml.includes('$payment')); assert.equal(upstream.at(-1)!.action,'"urn:checked:GetForecast"');
-    const spec=await (await fetch(url+'/openapi.json')).json() as {components:{schemas:Record<string,unknown>}};
+    const spec=await (await fetch(url+'/openapi.json')).json() as {components:{schemas:Record<string,{properties?:Record<string,unknown>}>}};
     assert.ok(spec.components.schemas[mode==='groups-configured'?'PaymentMethod':'PaymentChoiceChoice']);
     assert.ok(spec.components.schemas[mode==='groups-configured'?'CardChannel':'NestedAlternativesChoiceAlternative1___Choice']);
     assert.ok(spec.components.schemas[mode==='groups-configured'?'BankChannel':'NestedAlternativesChoiceAlternative2___Choice']);
+    const rootSchema=Object.values(spec.components.schemas).find(schema=>schema.properties && Object.hasOwn(schema.properties,'choice'))!;
+    assert.ok(Object.hasOwn(rootSchema.properties!,'definitions'));
+    if(mode==='groups-configured') {
+      assert.ok(Object.hasOwn(spec.components.schemas,'__proto__'));assert.ok(Object.hasOwn(spec.components.schemas,'toString'));
+      assert.ok(Object.values(spec.components.schemas).some(schema=>schema.properties && Object.hasOwn(schema.properties,'$id')));
+    }
     replyStatus=500;
     reply=envelope(`<s:Fault><faultcode>s:Server</faultcode><faultstring>group fault</faultstring><detail><t:ForecastFault id="wire">${content}</t:ForecastFault></detail></s:Fault>`);
     assert.deepEqual(await post(value),{status:502,value:{fault:{name:'ForecastError',code:{namespace:soapNs,local:'Server'},string:'group fault'},value}});

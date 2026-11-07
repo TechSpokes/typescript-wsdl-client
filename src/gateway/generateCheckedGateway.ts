@@ -73,18 +73,22 @@ async function generateGatewayFromReconstruction(expected: ReconstructedComponen
   const grouped = expected.mappings.some(mapping => mapping.kind === 'component-mapping'
     && inspectComponentValueMapping(mapping, expected.contract).applicationGroups);
   const components: Record<string, Schema> = Object.create(null) as Record<string, Schema>;
-  const documented = (value: unknown): unknown => {
-    if (Array.isArray(value)) return value.map(documented);
+  const documented = (value: unknown, dictionary = false): unknown => {
+    if (Array.isArray(value)) return value.map(item=>documented(item));
     if (!value || typeof value !== 'object') return value;
-    const record = value as Record<string,unknown>, result: Record<string,unknown> = {};
-    if (record.definitions) for (const [key,definition] of Object.entries(record.definitions as Record<string,Schema>)) {
+    const record = value as Record<string,unknown>, result: Record<string,unknown> = Object.create(null) as Record<string,unknown>;
+    // @why Property names belong to the application; definitions and $id are keywords only at schema nodes.
+    if (dictionary) {for (const [key,item] of Object.entries(record)) result[key]=documented(item);return result;}
+    if (Object.hasOwn(record,'definitions')) for (const [key,definition] of Object.entries(record.definitions as Record<string,Schema>)) {
       const resolved = documented(definition) as Schema;
       if (components[key] && JSON.stringify(components[key])!==JSON.stringify(resolved)) throw new TypeError(`applicationGroups OpenAPI component collision ${key}`);
       components[key] = resolved;
     }
     for (const [key,item] of Object.entries(record)) {
       if (key==='definitions' || key==='$id') continue;
-      result[key] = key==='$ref' && typeof item==='string' && item.startsWith('#/definitions/') ? item.replace('#/definitions/','#/components/schemas/') : documented(item);
+      result[key] = ['const','enum','default','examples'].includes(key) ? item
+        : key==='$ref' && typeof item==='string' && item.startsWith('#/definitions/') ? item.replace('#/definitions/','#/components/schemas/')
+        : documented(item,['properties','patternProperties','dependencies','dependentSchemas'].includes(key));
     }
     return result;
   };
@@ -228,7 +232,7 @@ export async function generateComponentServiceGateway(expected: readonly Reconst
   }
   const {responseProjection: firstProjection, ...serviceModel} = documents[0]!['x-checked-model'] as Record<string, unknown>;
   void firstProjection;
-  const componentSchemas: Record<string,unknown> = {};
+  const componentSchemas: Record<string,unknown> = Object.create(null) as Record<string,unknown>;
   for (const document of documents) {
     const schemas = (document.components as {schemas?:Record<string,unknown>} | undefined)?.schemas ?? {};
     for (const [name,schema] of Object.entries(schemas)) {

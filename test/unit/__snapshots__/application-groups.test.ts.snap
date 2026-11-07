@@ -46,7 +46,7 @@ readonly "$sequence": readonly (OneSequenceSequence)[]
     "export type PaymentChoiceChoice = PaymentChoiceChoiceAlternative1 | PaymentChoiceChoiceAlternative2;",
     "export type ApplicationRecord_65e85d249624bf90 = {
   readonly "id": string;
-readonly "choice"?: string; readonly "$choice": readonly (PaymentChoiceChoice)[]; readonly "nested"?: ApplicationRecord_2d68be8c5860f876; readonly "multiple"?: ApplicationRecord_84d01386f3d2f403; readonly "one"?: ApplicationRecord_3f746d0243aca325; readonly "two"?: ApplicationRecord_e788ede639b3fef4; readonly "tree"?: ApplicationRecord_b442b49ece6e5816; readonly "deep"?: ApplicationRecord_13d5b4da5f629444; readonly "ambiguous"?: ApplicationRecord_fd15cdd79facd6c2; readonly "empty"?: ApplicationRecord_63012f847e0d7695
+readonly "definitions"?: string; readonly "choice"?: string; readonly "$choice": readonly (PaymentChoiceChoice)[]; readonly "nested"?: ApplicationRecord_2d68be8c5860f876; readonly "multiple"?: ApplicationRecord_84d01386f3d2f403; readonly "one"?: ApplicationRecord_3f746d0243aca325; readonly "two"?: ApplicationRecord_e788ede639b3fef4; readonly "tree"?: ApplicationRecord_b442b49ece6e5816; readonly "deep"?: ApplicationRecord_13d5b4da5f629444; readonly "ambiguous"?: ApplicationRecord_fd15cdd79facd6c2; readonly "empty"?: ApplicationRecord_63012f847e0d7695
 };",
     "export type TreeChoicesChoiceAlternative1 = {readonly "leaf": string};",
     "export type TreeChoicesChoiceAlternative2 = {readonly "branch": ApplicationRecord_b442b49ece6e5816};",
@@ -211,6 +211,10 @@ readonly "$sequence"?: readonly (TwoSequenceSequence)[]
           },
           "deep": {
             "$ref": "#/definitions/ApplicationRecord_13d5b4da5f629444",
+          },
+          "definitions": {
+            "pattern": "^[\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD\\u{10000}-\\u{10FFFF}]*$",
+            "type": "string",
           },
           "empty": {
             "$ref": "#/definitions/ApplicationRecord_63012f847e0d7695",

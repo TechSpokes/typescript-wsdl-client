@@ -94,6 +94,20 @@ describe('combined application-group generation',()=>{
   it('rejects unknown configured targets before creating outputs',async()=>{
     await expect(generate({names:[{target:'unknown',typeName:'Payment'}]})).rejects.toThrow(/unknown|stale/);
   });
+  it.each(['__proto__','toString','definitions'])('keeps schema dictionaries distinct from data and configured names (%s)',async(typeName)=>{
+    const initial=await generate({}),inventory=JSON.parse(await readFile(path.join(initial.project,'client/inventory.json'),'utf8')) as {applicationGroups:{targets:ApplicationGroupTarget[]}};
+    const target=inventory.applicationGroups.targets.find(t=>t.defaults.typeName==='PaymentChoiceChoice')!.target;
+    const {project}=await generate({names:[{target,propertyName:'$id',typeName}]});
+    const spec=JSON.parse(await readFile(path.join(project,'openapi.json'),'utf8')) as {components:{schemas:Record<string,{properties?:Record<string,unknown>}>}};
+    expect(Object.hasOwn(spec.components.schemas,typeName)).toBe(true);
+    const root=Object.values(spec.components.schemas).find(schema=>schema.properties && Object.hasOwn(schema.properties,'choice'))!;
+    expect(Object.hasOwn(root.properties!,'definitions')).toBe(true);
+    expect(Object.hasOwn(root.properties!,'$id')).toBe(true);
+    expect(Object.values(spec.components.schemas).every(schema=>!!schema && typeof schema==='object')).toBe(true);
+    const runtime=JSON.parse(await readFile(path.join(project,'gateway/routes/0/schemas.json'),'utf8')) as {request:object};
+    const validate=new Ajv({strict:true,ownProperties:true,coerceTypes:false,useDefaults:false,removeAdditional:false}).compile(runtime.request);
+    expect(validate({id:'wire',definitions:'business definitions',$id:[{A:1,B:'b'}]})).toBe(true);
+  });
   it('keeps keyed/open helper definitions consistent when the option is enabled',async()=>{
     await mkdir('tmp/conformance/application-groups',{recursive:true});
     const project=await mkdtemp(path.resolve('tmp/conformance/application-groups/keyed-'));

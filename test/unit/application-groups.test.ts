@@ -187,6 +187,20 @@ describe('source-owned application groups',()=>{
     expect(encodeComponentXml(contract,mapping,invalid).kind).toBe('value-invalid');
     expect(JSON.stringify(invalid)).toBe(before);
   });
+  it.each(['__proto__','definitions','toString'])('preserves the source-owned %s data key alongside groups',async(key)=>{
+    await mkdir('tmp/conformance/application-groups',{recursive:true});
+    const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/data-key-')),original=await readFile(file,'utf8');
+    const source=path.join(dir,'data-key.wsdl');
+    await writeFile(source,key==='definitions'?original:original.replace('name="choice" type="xs:string"','name="'+key+'" type="xs:string"'));
+    const {contract,mapping}=await prepare({},source),value={id:'data-key',[key]:'business data',$choice:[{A:1,B:'b'}]};
+    const encoded=encodeComponentXml(contract,mapping,value);
+    if(encoded.kind!=='component-encoded')throw new Error(JSON.stringify(encoded));
+    const decoded=decodeComponentXml(contract,mapping,encoded.bytes);
+    if(decoded.kind!=='component-decoded')throw new Error(JSON.stringify(decoded));
+    expect(Object.hasOwn(decoded.validated.value as object,key)).toBe(true);
+    expect(decoded.validated.value).toEqual(value);
+    expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
+  });
   it('keeps distinct direction-scoped source stems and reserves record symbols across the selected source',async()=>{
     await mkdir('tmp/conformance/application-groups',{recursive:true});
     const dir=await mkdtemp(path.resolve('tmp/conformance/application-groups/directions-')),original=await readFile(file,'utf8');

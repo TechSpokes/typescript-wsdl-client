@@ -313,7 +313,12 @@ export function mapApplicationGroups(plan: ApplicationGroupPlan, projection: Dir
     const extras = [...record.attributes.filter(a=>!a.bag).map(a=>a.declaration.name.local), ...(record.attributes.some(a=>a.bag)?['$attributes']:[]),
       ...(record.contextual?['$namespaces']:[]), ...(Object.hasOwn(data,'$namespace')?['$namespace']:[])];
     if (direction === 'to-native') {encodeObject(group.children,data,extras); for (const key of Object.keys(result)) if (!extras.includes(key)) delete result[key]; result.$content=entries;}
-    else {delete result.$content; Object.assign(result,decodeObject(group.children)); if (cursor!==entries.length) fail('group-particle-language');}
+    else {
+      delete result.$content;
+      // @why Source fields are own data: assignment to __proto__ would invoke an inherited setter and discard the field.
+      Object.defineProperties(result,Object.getOwnPropertyDescriptors(decodeObject(group.children)));
+      if (cursor!==entries.length) fail('group-particle-language');
+    }
     return result;
   };
   return value(input,projection.root,0);
