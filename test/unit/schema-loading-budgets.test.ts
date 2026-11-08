@@ -47,12 +47,16 @@ describe("provisional schema loading budgets", () => {
     }
   });
 
-  it("measures 64 MiB aggregate and one decompressed byte beyond", async () => {
+  // @why These are separate byte-boundary duties; each keeps the ordinary test allowance rather than sharing it.
+  it("measures successful loading of 64 MiB aggregate", async () => {
     const resources = new Map(Array.from({length: 8}, (_, n) => [uri(n), pinned(padded(DEFAULT_LOADING_LIMITS.resourceBytes, n === 0 ? Array.from({length: 7}, (_, i) => include(i + 1)).join("") : ""))]));
     await measure("aggregate-at", DEFAULT_LOADING_LIMITS.totalBytes, "decompressed bytes", async () => {
       const input = await loadSchemaInput(uri(0), {policy: {allowedOrigins: [origin]}, offlineResources: resources});
       expect(input.metrics.totalBytes).toBe(DEFAULT_LOADING_LIMITS.totalBytes);
     }, "pass");
+  });
+
+  it("rejects one decompressed byte beyond 64 MiB aggregate", async () => {
     // One more byte is checked on streamed bytes, without requiring a valid next XML document.
     const fetch = vi.fn(async (url: string) => {
       const n = Number(new URL(url).pathname.slice(1).split(".")[0]);

@@ -163,6 +163,28 @@ Local `ci` runs the reference launcher once and excludes reference files only fr
 
 Full conformance generates consumer-style projects and launches nested TypeScript and Vitest processes. Allow at least six minutes on Windows; a normal run currently takes about three to four minutes and can be quiet during a nested process. Use the narrowest stage script while developing, inspect the active process before diagnosing a stall, and keep `test:conformance` as the complete release-relevant command.
 
+### Verification orchestration
+
+Before starting final gates, inspect their current `package.json` scripts and assign one owner to the candidate, command sequence and evidence paths. `ci` already includes broad Vitest discovery of conformance and installed tests; `test:installed` and `test:corpus` also overlap those tests.
+
+Run required standalone conformance and final CI sequentially, preserving both requirements, and do not add a concurrent installed run for evidence already covered by CI. Release preflight retains its existing ownership of the final release gate.
+
+Parallelize checks only when their outputs, process ownership and machine capacity are independent. Separate worktrees protect files, not CPU or memory; fixed progress/report paths still have one writer per checkout. Await owned children and cleanup before reusing outputs or starting a replacement run.
+
+Independent reviewers should reuse candidate evidence and coordinate additional expensive checks with its verification owner; review independence does not require simultaneous duplicate execution.
+
+Distinguish an outer command allowance, a test or batch watchdog, a child-stage deadline, cancellation/cleanup and product resource limits. A watchdog expiry is a failed verification attempt even if recorded product assertions passed; retain that evidence and inspect active work, contention and deadline composition before classifying a product regression.
+
+Do not compensate with automatic retries, weaker assertions, larger global timeouts or altered product budgets. After a concrete correction, rerun affected checks and any unfinished required gates, reuse unchanged evidence and state whether the full gate passed uninterrupted. See [the testing guide](../docs/testing.md#verification-orchestration) for operational details.
+
+Report concrete events and their consequences in plain language. Explain what was checked, what happened compared with the expected behavior, how that affects delivery and what action is needed; include only details that help the user understand a change or decision.
+
+For example: "The test loaded 64 MiB and rejected one extra byte. Both checks passed, but together took about 32 seconds, so the test runner's 30-second limit marked the test failed. Full CI has not passed; finish the overlapping runs, then repeat the affected checks."
+
+Do not replace this context with unexplained labels such as "resource-limit assertions versus wall-clock watchdog". If you cannot explain the result plainly, investigate until you understand it, then explain the necessary facts and what they mean for the user's task.
+
+Avoid redundant status messages without withholding an explanation the user needs; use technical terms only when they clarify the result, defining unfamiliar terms where needed. This is guidance, not a mandatory report template.
+
 ## Key Conventions
 
 - String-first primitive mapping: `xs:long` and `xs:decimal` default to `string` to prevent precision loss.

@@ -14,7 +14,7 @@ The project uses three layers of testing:
 2. Snapshot tests: Baseline comparisons for all generated pipeline output
 3. Integration tests: End-to-end gateway tests using Fastify's `inject()` with mock clients
 
-All tests use [Vitest](https://vitest.dev/) and run in under 3 seconds.
+Tests use [Vitest](https://vitest.dev/). Full conformance and installed-consumer qualification launch nested builds and processes and can take several minutes.
 
 ## Running Tests
 
@@ -32,6 +32,28 @@ For the full CI pipeline including smoke tests:
 ```bash
 npm run ci
 ```
+
+### Verification orchestration
+
+Inspect the current scripts before choosing commands. `ci` runs the reference launcher, build/typechecks, package/docs validation, broad Vitest including conformance and installed tests, smoke generation and installed package smoke. `test:installed`, `test:corpus` and standalone conformance overlap parts of that coverage; hosted quick and compatibility jobs are narrower signals.
+
+Use focused tests during development, then give one owner responsibility for final candidate verification and its evidence. When standalone conformance is required, finish it and its cleanup before starting final CI, or run the two in the opposite order. Preserve both required commands; an overlapping standalone installed run adds contention rather than independent evidence for work already running inside CI.
+
+Read-only inspection and genuinely independent bounded checks may run in parallel when capacity permits. Coordinate expensive builds, package installs and qualification across agents and worktrees because they share CPU and memory. A worktree isolates its files but does not reserve machine resources.
+
+Each evidence directory needs one active writer. For example, installed gateway qualification replaces `tmp/conformance/checked-gateway-installed/progress.ndjson`, and schema loading writes `tmp/conformance/schema-loading/measurements.json`. Preserve failed-run logs before another run reuses those paths; wait for owned process termination and cleanup before replacement, and remove only task-owned outputs after delivery.
+
+#### Deadlines and failures
+
+Keep the outer tool allowance long enough for the command and cleanup; polling a quiet command is not a new test attempt. The enclosing test or batch watchdog must account for its sequential work, while each child-stage deadline bounds that child. Cancellation must reach owned work and await cleanup; product byte, node, work and transport budgets enforce separate runtime contracts.
+
+A test runner can mark a test failed even when the behavior it checked was correct. For example, loading 64 MiB successfully and rejecting one extra byte can both pass but take about 32 seconds together, exceeding a test runner's 30-second allowance. The verification attempt still failed; retain the command, candidate, competing work and measurements before deciding whether product behavior, test composition or orchestration needs correction.
+
+Inspect active processes and progress before diagnosing a quiet run as stalled; incomplete execution establishes no passing gate. Explain failures using the concrete checks, expected and observed outcomes, delivery impact and next necessary action. If the explanation is unclear, investigate until you understand the result, then explain the facts and their meaning for the user's task; avoid redundant status messages while providing every necessary explanation.
+
+Review how expensive tests group work, not just their subprocesses. Independent acceptance and refusal checks should have separate test cases when combining them makes one ordinary allowance cover two complete workloads. Preserve both checks, their expected outcomes and the product limits; a passing isolated run alone does not establish that every similar test has been audited or that shared-machine contention has been resolved.
+
+Correct the identified cause before a deliberate rerun. Keep the failed attempt visible, rerun affected checks and any unfinished required gates after cleanup, and reuse unchanged evidence without claiming an uninterrupted full-gate pass. Avoid automatic retries, global timeout increases, assertion weakening or product-budget changes to obtain a pass. An independent reviewer assesses the candidate and its evidence; coordinate any additional expensive reproduction with the verification owner rather than duplicating a running gate.
 
 ## Node Support Policy
 
