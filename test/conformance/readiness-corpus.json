@@ -7,7 +7,7 @@
       "source": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
       "origin": "NOAA/NWS primary NDFD WSDL; retrieved 2026-10-31; adjacent provenance.json records source, rights and namespace-only imports",
       "permission": "NWS public-domain reuse policy, no source-specific restriction; attribution and no endorsement; not repository MIT material",
-      "rationale": "Unmodified deployed-service metadata; ISO-8859-1 source refusal, not real-service runtime support",
+      "rationale": "Unmodified deployed-service Latin1 metadata loads; locationless imports block component planning, not real-service runtime support",
       "files": [
         {
           "path": "test/fixtures/wsdl/real-services/noaa-ndfd/ndfd-xml.wsdl",
@@ -21,7 +21,8 @@
           "mode": "checked",
           "outcome": "refused",
           "stages": [
-            "original source encoding refusal",
+            "original source decoding and 12-operation inventory",
+            "locationless-import planning refusal",
             "zero SOAP dispatch"
           ],
           "tests": [

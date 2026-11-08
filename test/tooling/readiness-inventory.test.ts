@@ -40,11 +40,12 @@ describe('readiness inventory', () => {
       expect(report.operations[0]?.admitted).toBe(false);
       expect(report.operations[0]?.capabilities.some(capability => capability.status === 'not-assessed')).toBe(true);
       const real = evidence.rows.find(row => row.input === 'noaa-ndfd');
-      expect(real?.closureVerified).toBe(false);
+      expect(real?.closureVerified).toBe(true);
       expect(parseAssessmentReport(JSON.stringify(real?.report))).toMatchObject({
-        execution: 'failed', category: 'unsupported-capability', schema: 'inconclusive',
-        correspondence: 'inconclusive', operationInventory: 'unassessed', admitted: false,
+        execution: 'completed', schema: 'established',
+        correspondence: 'inconclusive', operationInventory: 'complete', admitted: false,
       });
+      expect(parseAssessmentReport(JSON.stringify(real?.report)).operations).toHaveLength(12);
     } finally {rmSync(directory, {recursive: true, force: true});}
   }, 60_000);
 });

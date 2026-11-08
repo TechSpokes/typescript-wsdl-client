@@ -48,11 +48,17 @@
     "operation": "LatLonListZipCode"
   },
   "observedRefusal": {
-    "loaderCategory": "unsupported-capability",
-    "loaderMessage": "Unsupported XML byte encoding",
-    "assessmentExecution": "failed",
-    "assessmentSchema": "inconclusive",
-    "selectionKind": "loading-refused",
-    "selectionRule": "unsupported-capability"
+    "loaderResult": "loaded-original-bytes",
+    "assessmentExecution": "completed",
+    "assessmentSchema": "established",
+    "assessmentCorrespondence": "inconclusive",
+    "operationInventory": 12,
+    "selectionKind": "inconclusive",
+    "selectionRule": "whole-source-qualification",
+    "componentPlanCategory": "missing-dependency",
+    "componentPlanReasons": [
+      "locationless-import:http://schemas.xmlsoap.org/soap/encoding/",
+      "locationless-import:http://schemas.xmlsoap.org/wsdl/"
+    ]
   }
 }

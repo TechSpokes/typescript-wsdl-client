@@ -8,6 +8,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {assessSchemaSource, serializeAssessmentReport} from '../../src/compiler/checkedAssessment.js';
 import {selectDirectOperation} from '../../src/compiler/directOperation.js';
 import {loadSemanticSchemaInput} from '../../src/loader/schemaInput.js';
+import {planCheckedComponents} from '../../src/checkedPlanning.js';
 
 const root = path.resolve('test/fixtures/wsdl/real-services/noaa-ndfd');
 const source = path.join(root, 'ndfd-xml.wsdl');
@@ -21,6 +22,9 @@ const selector = {
   operation: 'LatLonListZipCode',
 };
 const loading = {policy: {fileRoots: [root]}};
+const operationNames = ['CornerPoints', 'GmlLatLonList', 'GmlTimeSeries', 'LatLonListCityNames', 'LatLonListLine',
+  'LatLonListSquare', 'LatLonListSubgrid', 'LatLonListZipCode', 'NDFDgen', 'NDFDgenByDay',
+  'NDFDgenByDayLatLonList', 'NDFDgenLatLonList'];
 
 /** Independent metadata inspection only; never supplies a native plan or validity decision.
  * @why #398 requires the original provider source and an oracle independent of generator output.
@@ -82,6 +86,8 @@ describe('NOAA NDFD original-source one-operation qualification', () => {
   it('records RPC/encoded typed parts, no declared faults, and the independent request discrepancy', async () => {
     const nodes = tags(await readFile(source));
     const binding = nodes.findIndex(node => node.uri === wsdl && node.local === 'binding');
+    expect(nodes.slice(0, binding).filter(node => node.uri === wsdl && node.local === 'operation')
+      .map(node => node.attributes.name?.value).sort()).toEqual(operationNames);
     expect(nodes[binding]?.attributes).toMatchObject({name: {value: 'ndfdXMLBinding'}, type: {value: 'tns:ndfdXMLPortType'}});
     expect(nodes[binding + 1]).toMatchObject({uri: soap, local: 'binding', attributes: {style: {value: 'rpc'}}});
     const request = nodes.findIndex(node => node.uri === wsdl && node.local === 'message' && node.attributes.name?.value === 'LatLonListZipCodeRequest');
@@ -105,22 +111,37 @@ describe('NOAA NDFD original-source one-operation qualification', () => {
       .toEqual(['zipCodeList', 'XMLformat', 'listType']);
   });
 
-  it('reproduces the native loading refusal, leaves schema and correspondence inconclusive, and opens zero sockets', async () => {
+  it('loads original bytes, inventories operations, records the next native blockers, and opens zero sockets', async () => {
     const sockets = vi.spyOn(Socket.prototype, 'connect').mockImplementation(() => {throw new Error('Network forbidden in offline qualification');});
     const fetches = vi.fn(() => {throw new Error('HTTP forbidden in offline qualification');});
     vi.stubGlobal('fetch', fetches);
     try {
-      await expect(loadSemanticSchemaInput(source, loading)).rejects.toMatchObject({
-        category: 'unsupported-capability', message: 'Unsupported XML byte encoding',
-      });
+      const input = await loadSemanticSchemaInput(source, loading);
+      expect(input.documents).toHaveLength(1);
+      expect(input.resources).toMatchObject([{digest: '67197bd2c0def2c09a8f3a23b6dee3a9b297840b1e54ce5d56f42614ef3d3aa2', byteLength: 27397}]);
+      expect(input.edges.map(edge => ({kind: edge.kind, to: edge.to}))).toEqual([
+        {kind: 'import', to: undefined}, {kind: 'import', to: undefined},
+      ]);
       const reports = await Promise.all([1, 2].map(() => assessSchemaSource(source, {loading})));
       expect(serializeAssessmentReport(reports[0]!)).toBe(serializeAssessmentReport(reports[1]!));
-      expect(reports[0]).toMatchObject({execution: 'failed', category: 'unsupported-capability', schema: 'inconclusive',
-        correspondence: 'inconclusive', schemaEligible: false, admitted: false, operations: [], operationInventory: 'unassessed'});
+      expect(reports[0]).toMatchObject({execution: 'completed', schema: 'established',
+        correspondence: 'inconclusive', schemaEligible: false, admitted: false, operationInventory: 'complete'});
+      expect(reports[0]!.operations.map(operation => operation.name).sort()).toEqual(operationNames);
+      expect(reports[0]!.obligations).toContainEqual(expect.objectContaining({rule: 'dated-XSD-correspondence', status: 'inconclusive'}));
       const selections = await Promise.all([1, 2].map(() => selectDirectOperation(source, selector, {loading})));
       expect(selections[0]).toEqual(selections[1]);
-      expect(selections[0]).toMatchObject({kind: 'loading-refused', rule: 'unsupported-capability'});
+      expect(selections[0]).toMatchObject({kind: 'inconclusive', rule: 'whole-source-qualification'});
       expect(selections[0]).not.toHaveProperty('contract');
+      const plans = await Promise.all([1, 2].map(() => planCheckedComponents(source, {fileRoots: [root]})));
+      expect(plans[0]).toEqual(plans[1]);
+      expect(plans[0]).toMatchObject({ready: false, executed: false, inventory: {complete: true, operations: 12}});
+      expect(plans[0]!.operations.map(({portType, binding, operation}) => ({portType, binding, operation})))
+        .toEqual(operationNames.map(operation => ({portType: selector.portType, binding: selector.binding, operation})));
+      expect(plans[0]!.operations.every(operation => !operation.generated && !operation.executed)).toBe(true);
+      expect(plans[0]!.blockers.map(({category, stage, reason}) => ({category, stage, reason}))).toEqual([
+        {category: 'missing-dependency', stage: 'loading', reason: 'locationless-import:http://schemas.xmlsoap.org/soap/encoding/'},
+        {category: 'missing-dependency', stage: 'loading', reason: 'locationless-import:http://schemas.xmlsoap.org/wsdl/'},
+      ]);
     } finally {
       expect(fetches).not.toHaveBeenCalled();
       expect(sockets).not.toHaveBeenCalled();

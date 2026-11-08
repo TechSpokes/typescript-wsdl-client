@@ -3,7 +3,7 @@ import {directLimit} from './directExecutionPolicy.js';
 import {inspectDirectOperation} from './directOperation.js';
 import type {DirectOperationContract} from './directOperation.js';
 import {copyOriginalSchemaResource} from '../loader/schemaInput.js';
-import {resolveLexicalQName, syntaxAttribute, WSDL_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
+import {decodeMetadataXml, resolveLexicalQName, syntaxAttribute, WSDL_NAMESPACE, XSD_NAMESPACE} from '../loader/orderedSyntax.js';
 import type {ExpandedName, SyntaxElement} from '../loader/orderedSyntax.js';
 import type {SchemaInput} from '../loader/schemaInput.js';
 import {WSDL} from 'soap/lib/wsdl/index.js';
@@ -96,7 +96,7 @@ export function validateComponentSoapSelection(contract: DirectOperationContract
 }
 
 /** Build the existing SOAP dependency from the exact authorized snapshot, with no file/network import fallback.
- * @remarks This first closed bootstrap supports UTF-8 acyclic resource dependencies. Original bytes and native semantics
+ * @remarks Acyclic metadata resources are decoded independently under the native metadata policy. Original bytes and native semantics
  *   are unchanged. The dependency receives private aliases and a fresh prefilled cache; its import hook accepts only
  *   unambiguous native source edges to already prepared resources. This grants no endpoint or policy enforcement.
  * @returns A prepared node-soap WSDL for the exact original service/port/binding.
@@ -158,10 +158,8 @@ export async function prepareComponentSoapWsdl(contract: DirectOperationContract
       const uri = ready[cursor]!;
       check();
       const bytes = copyOriginalSchemaResource(source, uri, amount => {check(); budget.chargeWork(amount);});
-      let text: string;
-      try {text = new TextDecoder('utf-8', {fatal: true}).decode(bytes);} catch {return refuse('UTF-8 SOAP metadata required');}
-      if (/^<\?xml\s[^?]*encoding\s*=\s*["'](?!utf-?8["'])/i.test(text)) refuse('UTF-8 SOAP metadata required');
       budget.chargeWork(4096 + bytes.byteLength * 64);
+      const text = decodeMetadataXml(bytes);
       const options = {WSDL_CACHE: cache, wsdl_options: {overrideImportLocation: (_path: string, parentAlias: string, location: string): string => {
         check(); const parent = originals.get(parentAlias);
         const target = parent === undefined ? undefined : imports.get(key(parent, normalizeWhitespace(location, 'collapse')));

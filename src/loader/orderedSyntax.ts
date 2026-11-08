@@ -76,14 +76,35 @@ export function resolveLexicalQName(lexical: string, node: SyntaxElement): Expan
   return Object.freeze({namespace: namespace ?? "", local: parts.at(-1)!});
 }
 
-function decodeXml(bytes: Uint8Array, strictBom = false): string {
-  const encoding = bytes[0] === 0xff && bytes[1] === 0xfe ? "utf-16le"
+const xmlEncodingDeclaration = /^<\?xml\s[^?]*encoding\s*=\s*["']([^"']+)["']/i;
+
+/** Decode private metadata text; original bytes remain the digest and snapshot authority.
+ * @remarks ISO-8859-1 maps every byte to the same code point, including C1 controls.
+ *   HTTP charset headers are not encoding authority here. Runtime XML uses its existing policy.
+ * @throws SchemaLoadingError For malformed bytes or incompatible/unsupported declarations.
+ */
+export function decodeMetadataXml(bytes: Uint8Array): string {
+  return decodeXml(bytes, true, true);
+}
+
+function decodeXml(bytes: Uint8Array, strictBom = false, metadata = false): string {
+  let encoding = bytes[0] === 0xff && bytes[1] === 0xfe ? "utf-16le"
     : bytes[0] === 0xfe && bytes[1] === 0xff ? "utf-16be" : "utf-8";
   try {
-    const text = new TextDecoder(encoding, {fatal: true}).decode(bytes);
+    const buffer = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    // @why Sniff only an ASCII declaration, never guess Latin1 after UTF-8 failure.
+    //   A BOM fixes the encoding and must agree with the decoded declaration.
+    if (metadata && encoding === 'utf-8' && !(bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf)) {
+      const end = buffer.indexOf('>');
+      const declaration = xmlEncodingDeclaration.exec(buffer.toString('latin1', 0, end < 0 ? 0 : end + 1))?.[1].toLowerCase();
+      if (declaration === 'iso-8859-1') encoding = 'iso-8859-1';
+    }
+    // TextDecoder's ISO label aliases Windows-1252; Buffer supplies actual ISO byte identity.
+    const text = encoding === 'iso-8859-1' ? buffer.toString('latin1') : new TextDecoder(encoding, {fatal: true}).decode(bytes);
     if (strictBom && text.startsWith('\ufeff')) throw new SchemaLoadingError('invalid-schema', 'Multiple XML byte order marks');
-    const declared = /^<\?xml\s[^?]*encoding\s*=\s*["']([^"']+)["']/i.exec(text)?.[1].toLowerCase();
-    if (declared && !(encoding === "utf-8" ? ["utf-8", "utf8"] : ["utf-16", encoding]).includes(declared)) {
+    const declared = xmlEncodingDeclaration.exec(text)?.[1].toLowerCase();
+    const allowed = encoding === 'iso-8859-1' ? [encoding] : encoding === 'utf-8' ? ['utf-8', 'utf8'] : ['utf-16', encoding];
+    if (declared && !allowed.includes(declared)) {
       throw new SchemaLoadingError("unsupported-capability", "Unsupported XML byte encoding");
     }
     return text;
@@ -95,6 +116,8 @@ function decodeXml(bytes: Uint8Array, strictBom = false): string {
 
 /** Positions are one-based lines/columns and zero-based UTF-16 offsets in decoded XML. */
 export interface OrderedSyntaxOptions {
+  /** Internal metadata boundary; payload/capsule callers retain the existing encoding policy. */
+  metadataEncoding?: boolean;
   maxDepth?: number;
   /** Optional bounded runtime boundary; legacy schema callers retain their policy. */
   maxBytes?: number;
@@ -118,7 +141,7 @@ export function parseOrderedSyntax(bytes: Uint8Array, uri: string, options: Orde
   const charge = (amount: number) => options.chargeWork?.(amount);
   charge(4096 + bytes.byteLength * 64);
   const digest = createHash("sha256").update(bytes).digest("hex");
-  const text = decodeXml(bytes, options.xml10Only);
+  const text = options.metadataEncoding ? decodeMetadataXml(bytes) : decodeXml(bytes, options.xml10Only);
   const lines = [0];
   for (let i = 0; i < text.length; i++) {
     if (text[i] === "\r") { if (text[i + 1] === "\n") i++; lines.push(i + 1); }

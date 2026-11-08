@@ -151,7 +151,7 @@ async function loadSchemaInputWithValues(source: string, options: SchemaInputOpt
     const resource = await loader.fetchResource(uri);
     let doc = documents.get(resource.uri);
     if (!doc) {
-      doc = parseOrderedSyntax(resource.bytes, resource.uri, {maxDepth: loader.limits.syntaxDepth});
+      doc = parseOrderedSyntax(resource.bytes, resource.uri, {maxDepth: loader.limits.syntaxDepth, metadataEncoding: true});
       if (semanticValues) {
         options.chargeWork?.(128);
         originalBytes.set(resource.uri, resource.bytes);
