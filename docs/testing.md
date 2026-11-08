@@ -8,13 +8,19 @@ Generated test files receive an [editable scaffold preamble](generated-code.md#g
 
 ## Test Architecture
 
-The project uses three layers of testing:
+Tests protect behavior at several scopes; their execution cost also determines how they run:
 
 1. Unit tests: Pure function tests for utilities, parsers, and type mapping
 2. Snapshot tests: Baseline comparisons for all generated pipeline output
 3. Integration tests: End-to-end gateway tests using Fastify's `inject()` with mock clients
 
 Tests use [Vitest](https://vitest.dev/). Full conformance and installed-consumer qualification launch nested builds and processes and can take several minutes.
+
+The main Vitest configuration runs the fast project first with half the available workers and a 30-second safety allowance. The workflows project then runs integration, conformance and named expensive unit files with two workers and a two-minute default allowance; existing longer workflow allowances remain effective. Standalone capability stages use the same two-worker, two-minute policy. These are safety allowances, not product performance requirements.
+
+Split independent behaviors when doing so improves diagnosis without duplicating expensive setup. Give irreducible workflows headroom for machine load and report slow execution separately from correctness. For interactive investigation use `npm test -- <file> --test-timeout=0 --no-file-parallelism`; normal verification retains bounded execution.
+
+`npm test`, `npm run ci`, `npm run test:unit`, `npm run test:integration`, `npm run test:corpus`, `npm run test:installed` and `npm run test:conformance` refuse overlapping owners across worktrees of this repository. Their `:run` scripts are internal unguarded targets. Each guarded attempt records context, output and outcome below `tmp/conformance/verification/`; gateway and schema-loading reports use that attempt directory. A stopped owner leaves a diagnostic lock which must be inspected before removal.
 
 ## Running Tests
 
@@ -234,7 +240,7 @@ When `--openapi-flatten-array-wrappers false` is used, ArrayOf* types are emitte
 
 ### Error Details Serialization
 
-The `classifyError()` function puts `err.message` (a string) in the `details` field for connection and timeout errors, but the error JSON schema defines `details` as `object | null`. This causes Fastify serialization failures for 503/504 error responses. Test error classification directly via `classifyError()` rather than through Fastify's `inject()` for these error types.
+Connection and timeout errors carry an object in `details`, matching the error schema. Generated gateway tests exercise the serialized 503/504 responses through Fastify; direct `classifyError()` tests additionally check classification. Keep both responsibilities covered rather than bypassing HTTP serialization when it exposes a mismatch.
 
 ## Generated Test Suite
 

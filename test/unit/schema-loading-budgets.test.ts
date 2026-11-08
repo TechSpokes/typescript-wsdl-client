@@ -1,4 +1,5 @@
 import {createHash} from "node:crypto";
+import path from 'node:path';
 import {mkdirSync, writeFileSync} from "node:fs";
 import {describe, expect, it, vi, afterAll, afterEach} from "vitest";
 import {loadSchemaInput} from "../../src/loader/schemaInput.js";
@@ -22,8 +23,9 @@ async function measure(name: string, limit: number, unit: string, operation: () 
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 afterAll(() => {
-  mkdirSync("tmp/conformance/schema-loading", {recursive: true});
-  writeFileSync("tmp/conformance/schema-loading/measurements.json", JSON.stringify({node: process.version, limits: DEFAULT_LOADING_LIMITS, measurements}, null, 2) + "\n");
+  const directory = path.join(process.env.WSDL_TEST_RUN_DIR ?? 'tmp/conformance', 'schema-loading');
+  mkdirSync(directory, {recursive: true});
+  writeFileSync(path.join(directory, 'measurements.json'), JSON.stringify({node: process.version, limits: DEFAULT_LOADING_LIMITS, measurements}, null, 2) + "\n");
 });
 
 describe("provisional schema loading budgets", () => {

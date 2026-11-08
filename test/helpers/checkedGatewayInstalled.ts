@@ -25,7 +25,7 @@ export const CHECKED_GATEWAY_WORKFLOW_TIMEOUT_MS = 20 * 60_000;
 export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Promise<void> {
   signal?.throwIfAborted();
   const root = process.cwd();
-  const evidence = path.join(root, 'tmp/conformance/checked-gateway-installed');
+  const evidence = path.join(process.env.WSDL_TEST_RUN_DIR ?? path.join(root, 'tmp/conformance'), 'checked-gateway-installed');
   const npm = process.env.npm_execpath;
   if (!npm) throw new Error('Run this installed qualification through npm test');
   const consumer = await realpath(await mkdtemp(path.join(tmpdir(), 'wsdl-gateway-')));

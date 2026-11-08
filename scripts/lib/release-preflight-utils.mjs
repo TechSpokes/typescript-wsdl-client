@@ -31,9 +31,13 @@ function ciRunsBroadTests(script) {
 
 export function verifyConformanceGateScripts(scripts) {
   const errors = [];
-  const focusedConformance = scripts["test:conformance"] ?? "";
-  const allTests = scripts.test ?? "";
-  const ci = scripts.ci ?? "";
+  const resolve = name => {
+    const command = scripts[name] ?? "";
+    return command === `tsx scripts/run-verification.ts ${name}:run` ? scripts[`${name}:run`] ?? "" : command;
+  };
+  const focusedConformance = resolve("test:conformance");
+  const allTests = resolve("test");
+  const ci = resolve("ci");
 
   if (!hasFocusedConformanceRun(focusedConformance)) {
     errors.push("package.json scripts.test:conformance must run vitest against test/conformance.");

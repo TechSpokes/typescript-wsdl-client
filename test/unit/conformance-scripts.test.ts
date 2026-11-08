@@ -6,7 +6,8 @@ const stageNames = ["contracts", "compile", "client", "openapi", "gateway", "gen
 
 describe("conformance package scripts", () => {
   it("keeps one verbose full-suite command for release coverage", () => {
-    expect(packageJson.scripts["test:conformance"]).toBe("vitest run test/conformance --reporter=verbose");
+    expect(packageJson.scripts["test:conformance"]).toBe("tsx scripts/run-verification.ts test:conformance:run");
+    expect(packageJson.scripts["test:conformance:run"]).toBe("vitest run test/conformance --reporter=verbose");
   });
 
   it.each(stageNames)("runs the %s stage through the stage-only config", stage => {
