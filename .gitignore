@@ -5,6 +5,7 @@ scratches/
 
 # AI Tools
 /.claude/settings.local.json
+.codex-attachments/
 
 # Logs
 logs
