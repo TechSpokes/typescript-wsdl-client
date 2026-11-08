@@ -1,6 +1,4 @@
 import {expect} from 'vitest';
-import {execFile} from 'node:child_process';
-import {promisify} from 'node:util';
 import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, realpath, symlink} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
@@ -8,9 +6,22 @@ import {createHash} from 'node:crypto';
 import {selectDirectOperation, selectComponentOperations} from '../../src/compiler/directOperation.js';
 import {createDirectSourceCapsule, reconstructDirectSourceCapsule, createComponentSourceCapsule, reconstructComponentSourceCapsuleForOperation} from '../../src/compiler/directSourceCapsule.js';
 import {generateDirectClient, generateComponentClient, writeDirectClient} from '../../src/client/generateDirectClient.js';
+import {runOwnedNode} from './ownedNodeProcess.js';
 
-const exec = promisify(execFile);
-export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'component'): Promise<void> {
+const COMMAND_TIMEOUT_MS = 180_000;
+export const GENERATED_INSTALLED_CLEANUP_TIMEOUT_MS = 60_000;
+// @why Pack, install, typecheck and runtime each retain their three-minute command deadline.
+export const GENERATED_INSTALLED_WORKFLOW_TIMEOUT_MS = 4 * COMMAND_TIMEOUT_MS + GENERATED_INSTALLED_CLEANUP_TIMEOUT_MS;
+
+/** Qualify generated clients through an isolated installed package and independent wire oracle.
+ * @param binding Runtime binding whose compatibility and generated variants are exercised.
+ * @param signal Caller cancellation, including a Vitest deadline.
+ * @returns Resolves after generation, consumer compilation and wire assertions pass.
+ * @throws For failed assertions, command limits, cancellation or incomplete cleanup.
+ * @sideEffects Creates disposable consumers and retains evidence under tmp/conformance.
+ */
+export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'component', signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   const root = process.cwd(), evidence = path.join(root, 'tmp/conformance/' + (binding === 'component' ? 'component-transferred' : binding === 'root' ? 'p38-evidence' : 'p37-evidence'));
   const consumer = await realpath(await mkdtemp(path.join(tmpdir(), 'wsdl-generated-')));
   const fixture = path.join(root, 'test/conformance/fixtures/assessment/forecast.wsdl');
@@ -30,13 +41,15 @@ export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'c
   if (!npm) throw new Error('Use npm test');
   const env: NodeJS.ProcessEnv = {...process.env, NODE_OPTIONS: '--use-system-ca', npm_config_cache: path.join(root, 'tmp/cache/npm')};
   delete env.NODE_PATH;
-  const run = (args: string[], cwd = consumer) => exec(process.execPath, args, {cwd, env, timeout: 180_000, maxBuffer: 4 * 1024 * 1024});
+  const run = (args: string[], cwd = consumer) => runOwnedNode(args, {cwd, env, signal, timeoutMs: COMMAND_TIMEOUT_MS,
+    maxBuffer: 4 * 1024 * 1024, childProcessesDenied: args[0] === '--permission'});
   try {
     await mkdir(evidence, {recursive: true});
     await mkdir(path.join(consumer, 'authorized'));
     try {await symlink(fixture, path.join(consumer, 'authorized/link.wsdl'), 'file');}
     catch (error) {if ((error as NodeJS.ErrnoException).code !== 'EPERM') throw error;}
     for (const v of variants) {
+      signal?.throwIfAborted();
       const file = path.join(consumer, 'authorized', v.name + '.wsdl'); await writeFile(file, v.source);
       if (binding === 'root' && v.name === 'forecast') {
         const frozen = path.join(root, 'test/conformance/fixtures/compatibility/v1.1.5');
@@ -60,8 +73,10 @@ export async function qualifyGeneratedInstalled(binding: 'private' | 'root' | 'c
       const capsule = binding === 'component' ? await createComponentSourceCapsule(selected.contract, selection) : createDirectSourceCapsule(selected.contract, selection);
       if (capsule.kind !== 'direct-capsule' && capsule.kind !== 'component-capsule') throw new Error(JSON.stringify(capsule));
       const generate = async () => {
+        signal?.throwIfAborted();
         const native = binding === 'component' ? await reconstructComponentSourceCapsuleForOperation(capsule.bytes, selected.contract, selection)
           : await reconstructDirectSourceCapsule(capsule.bytes, file, {policy: {fileRoots: [path.dirname(file)]}});
+        signal?.throwIfAborted();
         if (native.kind === 'reconstructed-component') return generateComponentClient(native);
         if (native.kind !== 'reconstructed-direct') throw new Error(JSON.stringify(native));
         return generateDirectClient(native);
@@ -137,5 +152,5 @@ void [request, shape, empty, exact, message];
     const failure = error as Error & {stdout?: string; stderr?: string};
     await writeFile(path.join(evidence, 'failure.log'), failure.message + '\n' + (failure.stdout ?? '') + (failure.stderr ?? ''));
     throw new Error(failure.message + '\n' + (failure.stdout ?? '') + (failure.stderr ?? ''), {cause: error});
-  } finally {await rm(consumer, {recursive: true, force: true});}
+  } finally {await rm(consumer, {recursive: true, force: true, maxRetries: 10, retryDelay: 200});}
 }
