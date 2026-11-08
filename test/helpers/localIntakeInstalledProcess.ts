@@ -35,7 +35,7 @@ try {
   const endpoint = `https://127.0.0.1:${address.port}/owned-import`;
   const example = JSON.parse(await readFile('checked-gateway.example.json', 'utf8')) as Record<string, unknown>;
   await writeFile('runtime.json', JSON.stringify({...example, endpoint, allowedEndpoints: [endpoint], caFile: './test-cert.pem', host: '127.0.0.1', port: 0}));
-  const network = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net=127.0.0.1'] : [];
+  const network = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
   child = spawn(process.execPath, ['--permission', ...network, '--allow-fs-read=' + root,
     '--import', pathToFileURL(path.join(root, 'parent-guard.ts')).href, path.join(root, 'dist/server.js')],
   {cwd: root, env: {...process.env, CHECKED_GATEWAY_CONFIG: path.join(root, 'runtime.json')}, windowsHide: true,

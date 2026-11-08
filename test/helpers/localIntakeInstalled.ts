@@ -78,7 +78,8 @@ export async function qualifyLocalIntakeInstalled(shared: InstalledIntakeTooling
       for (const name of ['test-cert.pem', 'test-key.pem']) await copyFile('test/conformance/fixtures/soap/content-model/' + name, path.join(project, name));
       await copyFile('test/helpers/localIntakeInstalledProcess.ts', path.join(project, 'wire.ts'));
       await copyFile('test/helpers/ownedParentGuard.ts', path.join(project, 'parent-guard.ts'));
-      const result = await run(mode + '-wire', ['--permission', '--allow-child-process', '--allow-fs-read=' + project, '--allow-fs-write=' + project,
+      const network = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
+      const result = await run(mode + '-wire', ['--permission', '--allow-child-process', ...network, '--allow-fs-read=' + project, '--allow-fs-write=' + project,
         path.join(project, 'wire.ts'), path.join(root, 'package.json')], project);
       expect(JSON.parse(result.stdout)).toMatchObject({kind: 'wsdl-first-installed-wire', checkoutReadable: false, exchanges: 1, invalidHttpRejected: true, verifiedTls: true});
       await writeFile(path.join(runEvidence, mode + '-wire.json'), result.stdout);
