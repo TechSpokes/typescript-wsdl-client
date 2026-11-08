@@ -11,10 +11,10 @@
  * Uses a project-local tmp/ directory so that Node ESM module resolution
  * can find fastify, vitest, and other dependencies from node_modules.
  */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, type TestContext } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { execFileSync } from "node:child_process";
+import {runOwnedNode} from '../helpers/ownedNodeProcess.js';
 import {buildChoiceWsdl, buildSearchChoiceSchema, SEARCH_CHOICE_SCHEMA} from "../helpers/choiceWsdl.js";
 import {parseStreamConfig, runGenerationPipeline} from "../../src/index.js";
 
@@ -22,19 +22,20 @@ const PROJECT_ROOT = join(import.meta.dirname, "..", "..");
 const TEST_GENERATION_TMP = join(PROJECT_ROOT, "tmp", "test-generation");
 const WSDL = join(PROJECT_ROOT, "examples", "minimal", "weather.wsdl");
 
-function runGeneratedVitest(configPath: string): any {
+async function runGeneratedVitest(configPath: string, context: TestContext): Promise<any> {
   const reportPath = join(dirname(configPath), ".vitest-report.json");
   rmSync(reportPath, {force: true});
-  execFileSync(
-    process.execPath,
+  const work = runOwnedNode(
     [join(PROJECT_ROOT, "node_modules", "vitest", "vitest.mjs"), "run", "--config", configPath, "--reporter=json", "--outputFile", reportPath],
     {
       cwd: PROJECT_ROOT,
-      encoding: "utf-8",
-      timeout: 60_000,
+      timeoutMs: 60_000,
+      signal: context.signal,
       env: {...process.env, NODE_ENV: "test"},
     }
   );
+  context.onTestFinished(async () => {await work.catch(() => undefined);}, 60_000);
+  await work;
   const parsed = JSON.parse(readFileSync(reportPath, "utf-8"));
   expect(parsed.success).toBe(true);
   expect(parsed.numFailedTests).toBe(0);
@@ -154,12 +155,12 @@ describe("test generation pipeline", () => {
 
   // --- Generated tests actually pass ---
 
-  it("generated tests pass when run with vitest", () => {
+  it("generated tests pass when run with vitest", async context => {
     const configPath = join(testDir, "vitest.config.ts");
 
-    const parsed = runGeneratedVitest(configPath);
+    const parsed = await runGeneratedVitest(configPath, context);
     expect(parsed.numPassedTests).toBeGreaterThan(0);
-  }, 60_000);
+  }, 120_000);
 
   // --- Skip-if-exists ---
 
@@ -212,7 +213,7 @@ describe("test generation pipeline", () => {
 });
 
 describe("choice union test generation", () => {
-  it("emits valid choice fixtures and invalid multi-branch validation coverage", async () => {
+  it("emits valid choice fixtures and invalid multi-branch validation coverage", async context => {
     mkdirSync(TEST_GENERATION_TMP, {recursive: true});
     const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "choice-testgen-"));
     const testDir = join(outDir, "tests");
@@ -255,10 +256,10 @@ describe("choice union test generation", () => {
     expect(validationContent).toContain('"email": "sample"');
     expect(validationContent).toContain('"phone": 0');
 
-    runGeneratedVitest(join(testDir, "vitest.config.ts"));
-  }, 60_000);
+    await runGeneratedVitest(join(testDir, "vitest.config.ts"), context);
+  }, 120_000);
 
-  it("emits missing-branch validation coverage for required choices", async () => {
+  it("emits missing-branch validation coverage for required choices", async context => {
     mkdirSync(TEST_GENERATION_TMP, {recursive: true});
     const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "required-choice-testgen-"));
     const testDir = join(outDir, "tests");
@@ -296,12 +297,12 @@ describe("choice union test generation", () => {
     expect(validationContent).toContain("rejects invalid SearchRequest choice payload");
     expect(validationContent).toContain("rejects missing SearchRequest choice payload");
 
-    runGeneratedVitest(join(testDir, "vitest.config.ts"));
-  }, 60_000);
+    await runGeneratedVitest(join(testDir, "vitest.config.ts"), context);
+  }, 120_000);
 });
 
 describe("JSON array stream test generation", () => {
-  it("emits JSON array route handlers and generated route tests", async () => {
+  it("emits JSON array route handlers and generated route tests", async context => {
     mkdirSync(TEST_GENERATION_TMP, {recursive: true});
     const outDir = mkdtempSync(join(TEST_GENERATION_TMP, "json-array-stream-testgen-"));
     const testDir = join(outDir, "tests");
@@ -353,6 +354,6 @@ describe("JSON array stream test generation", () => {
     expect(routesTestContent).toContain("expect(Array.isArray(records)).toBe(true);");
     expect(routesTestContent).toContain("expect(records.length).toBeGreaterThan(0);");
 
-    runGeneratedVitest(join(testDir, "vitest.config.ts"));
-  }, 60_000);
+    await runGeneratedVitest(join(testDir, "vitest.config.ts"), context);
+  }, 120_000);
 });

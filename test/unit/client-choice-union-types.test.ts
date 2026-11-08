@@ -1,5 +1,5 @@
 import {afterAll, describe, expect, it} from "vitest";
-import {execFileSync} from "node:child_process";
+import {runOwnedNode} from "../helpers/ownedNodeProcess.js";
 import {mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
@@ -67,7 +67,7 @@ describe("client types: choice union mode", () => {
     expect(source).toContain("email?: never;");
   });
 
-  it("makes multi-branch choice payloads fail TypeScript compilation in union mode", async () => {
+  it("makes multi-branch choice payloads fail TypeScript compilation in union mode", async context => {
     const source = await generateTypesSource("union", "types.ts");
     writeFileSync(join(tmpRoot, "types.ts"), source, "utf8");
     writeFileSync(
@@ -108,10 +108,9 @@ void invalid;
       "utf8",
     );
 
-    execFileSync(
-      process.execPath,
-      [require.resolve("typescript/bin/tsc"), "-p", join(tmpRoot, "tsconfig.choice.json")],
-      {cwd: tmpRoot, stdio: "pipe"},
-    );
+    const work = runOwnedNode([require.resolve("typescript/bin/tsc"), "-p", join(tmpRoot, "tsconfig.choice.json")],
+      {cwd: tmpRoot, timeoutMs: 60_000, signal: context.signal});
+    context.onTestFinished(async () => {await work.catch(() => undefined);}, 60_000);
+    await work;
   });
 });

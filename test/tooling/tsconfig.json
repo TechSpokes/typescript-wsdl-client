@@ -13,6 +13,7 @@
     "../../scripts/semantic-reference.ts",
     "../../scripts/readiness-inventory.ts",
     "../../scripts/validate-npm-package.ts",
-    "../../scripts/product-corpus.ts"
+    "../../scripts/product-corpus.ts",
+    "../../scripts/run-verification.ts"
   ]
 }

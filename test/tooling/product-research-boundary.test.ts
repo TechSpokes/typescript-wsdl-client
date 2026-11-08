@@ -47,6 +47,7 @@ describe('product and research boundary', () => {
       const command = scripts[name];
       expect(command, name).toBeDefined();
       expect(command, name).not.toMatch(/(?:test\/research|research\/|vitest\.research)/);
+      if (command === `tsx scripts/run-verification.ts ${name}:run`) inspect(`${name}:run`, visited);
       for (const match of command!.matchAll(/npm run ([\w:-]+)/g)) inspect(match[1]!, visited);
     }
     for (const name of ['ci', 'ci:github', 'ci:github:node26', 'release:publish-check']) inspect(name);
@@ -73,8 +74,10 @@ describe('product and research boundary', () => {
     for (const stage of ['Contract', 'Compile', 'Client', 'OpenApi', 'Gateway', 'GeneratedTest', 'App'])
       expect(suite).toContain(`register${stage}Cases();`);
     const scripts = (JSON.parse(readFileSync('package.json', 'utf8')) as {scripts: Record<string, string>}).scripts;
-    expect(scripts['test']).toBe('vitest run');
-    expect(scripts['test:conformance']).toBe('vitest run test/conformance --reporter=verbose');
+    expect(scripts['test']).toBe('tsx scripts/run-verification.ts test:run');
+    expect(scripts['test:run']).toBe('vitest run');
+    expect(scripts['test:conformance']).toBe('tsx scripts/run-verification.ts test:conformance:run');
+    expect(scripts['test:conformance:run']).toBe('vitest run test/conformance --reporter=verbose');
     expect(scripts['ci:github']).toContain('npm run test:reference');
   });
 });

@@ -14,6 +14,7 @@ interface Options {
   readonly timeoutMs: number;
   readonly maxBuffer?: number;
   readonly childProcessesDenied?: boolean;
+  readonly onOutput?: (text: string) => void;
 }
 
 async function stopTree(child: ChildProcess): Promise<void> {
@@ -82,13 +83,13 @@ export async function runOwnedNode(args: readonly string[], options: Options): P
     if (failure) return;
     stdoutBytes += Buffer.byteLength(chunk);
     if (stdoutBytes > maxBuffer) stop(error('Owned command stdout limit'));
-    else stdout += chunk;
+    else {stdout += chunk; options.onOutput?.(chunk);}
   });
   child.stderr.on('data', (chunk: string) => {
     if (failure) return;
     stderrBytes += Buffer.byteLength(chunk);
     if (stderrBytes > maxBuffer) stop(error('Owned command stderr limit'));
-    else stderr += chunk;
+    else {stderr += chunk; options.onOutput?.(chunk);}
   });
   const timer = setTimeout(() => stop(error(`Owned command exceeded ${options.timeoutMs}ms`)), options.timeoutMs);
   options.signal?.addEventListener('abort', abort, {once: true});

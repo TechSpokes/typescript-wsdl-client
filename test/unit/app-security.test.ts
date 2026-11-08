@@ -1,7 +1,7 @@
 import {mkdirSync, mkdtempSync, readFileSync, writeFileSync} from "node:fs";
 import os from "node:os";
 import {resolve} from "node:path";
-import {execFileSync} from "node:child_process";
+import {runOwnedNode} from "../helpers/ownedNodeProcess.js";
 import {createRequire} from "node:module";
 import {describe, expect, it} from "vitest";
 import {generateApp} from "../../src/app/generateApp.js";
@@ -87,7 +87,7 @@ describe("generateApp security scaffold", () => {
     expect(envSource).toContain("SOAP_USERNAME=");
   });
 
-  it("emits a tsconfig that type-checks sibling client and gateway artifacts", async () => {
+  it("emits a tsconfig that type-checks sibling client and gateway artifacts", async context => {
     const tmpBase = `${projectRoot}/tmp`;
     mkdirSync(tmpBase, {recursive: true});
     const root = makeTempDir(`${tmpBase}/app-tsconfig-`);
@@ -103,10 +103,9 @@ describe("generateApp security scaffold", () => {
       force: true,
     });
 
-    execFileSync(
-      process.execPath,
-      [require.resolve("typescript/bin/tsc"), "-p", `${fixture.appDir}/tsconfig.json`, "--noEmit"],
-      {cwd: root, encoding: "utf8", stdio: "pipe"},
-    );
+    const work = runOwnedNode([require.resolve("typescript/bin/tsc"), "-p", `${fixture.appDir}/tsconfig.json`, "--noEmit"],
+      {cwd: root, timeoutMs: 60_000, signal: context.signal});
+    context.onTestFinished(async () => {await work.catch(() => undefined);}, 60_000);
+    await work;
   });
 });

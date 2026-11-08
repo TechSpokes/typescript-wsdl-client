@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test: separate fast checks from bounded workflows and prevent competing verification runs with retained attempt logs.
 - fix(components): decode declared Latin1 and BOM-marked UTF-16 metadata per resource while preserving original source bytes.
 
 - test(verification): separate aggregate byte checks and coordinate expensive validation with concrete agent explanations.

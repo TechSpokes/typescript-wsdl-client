@@ -4,6 +4,8 @@ export default defineConfig({
   test: {
     include: ["test/conformance/stages/*.stage.ts"],
     globals: false,
-    testTimeout: 30_000,
+    testTimeout: 120_000,
+    hookTimeout: 120_000,
+    maxWorkers: 2,
   },
 });
