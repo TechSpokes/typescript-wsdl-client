@@ -183,13 +183,15 @@ import type { WeatherOperations } from "./.generated/client/operations.js";
 
 const mockClient: WeatherOperations = {
   GetCityWeatherByZIP: async (args) => ({
-    response: { GetCityWeatherByZIPResult: { Success: true, City: "Test" } },
+    response: { GetCityWeatherByZIPResult: { Success: true, WeatherID: 0, City: "Test" } },
     headers: {},
   }),
+  GetCityForecastByZIP: async () => ({ response: {}, headers: {} }),
+  GetWeatherInformation: async () => ({ response: {}, headers: {} }),
 };
 
 import Fastify from "fastify";
-import { weatherGateway } from "./.generated/gateway/plugin.js";
+import weatherGateway from "./.generated/gateway/plugin.js";
 
 const app = Fastify();
 await app.register(weatherGateway, { client: mockClient, prefix: "/v1/weather" });

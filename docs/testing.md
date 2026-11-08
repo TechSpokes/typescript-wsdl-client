@@ -173,6 +173,7 @@ function createMockClient(): WeatherOperations {
       response: {
         GetCityWeatherByZIPResult: {
           Success: true,
+          WeatherID: 0,
           ResponseText: "City Found",
           State: "NY",
           City: "New York",
@@ -337,7 +338,7 @@ import { createMockClient } from "./helpers/mock-client.js";
 
 const client = createMockClient({
   GetCityWeatherByZIP: async () => ({
-    response: { GetCityWeatherByZIPResult: { Success: false, ResponseText: "Not found" } },
+    response: { GetCityWeatherByZIPResult: { Success: false, WeatherID: 0, ResponseText: "Not found" } },
     headers: {},
   }),
 });

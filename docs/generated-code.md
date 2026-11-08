@@ -297,10 +297,11 @@ import type { WeatherOperations } from "./client/operations.js";
 
 const mock: WeatherOperations = {
   GetCityWeatherByZIP: async (args) => ({
-    response: { GetCityWeatherByZIPResult: { Success: true } },
+    response: { GetCityWeatherByZIPResult: { Success: true, WeatherID: 0 } },
     headers: {},
   }),
-  // ...other operations
+  GetCityForecastByZIP: async () => ({ response: {}, headers: {} }),
+  GetWeatherInformation: async () => ({ response: {}, headers: {} }),
 };
 ```
 
