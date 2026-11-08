@@ -15,7 +15,7 @@ Use this skill in a consumer project that depends on `@techspokes/typescript-wsd
 3. Install `soap` as a runtime dependency.
 4. Prefer `npx wsdl-tsc pipeline` for full SOAP-to-REST adoption.
 5. Use `client`, `openapi`, `gateway`, `app`, or `compile` only when the task needs that narrower stage.
-6. Regenerate generated output from the WSDL source or `catalog.json` instead of editing generated files by hand.
+6. Regenerate generator-owned artifacts from the WSDL source or applicable legacy `catalog.json` instead of editing them by hand.
 7. Validate generated output with the consumer project's TypeScript build and tests.
 
 For testing setup, load `references/testing.md` and choose legacy mock-route tests or checked app scaffold checks. Use consumer scripts and configuration; this package does not install the generator repository's test commands, Vitest projects or verification lock. Generated checks do not replace independent SOAP wire and provider/business acceptance.

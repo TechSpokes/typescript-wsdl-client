@@ -30,7 +30,7 @@
         "SKILL.md"
       ],
       "required": [
-        "Regenerate generated output from the WSDL source or `catalog.json` instead of editing generated files by hand.",
+        "Regenerate generator-owned artifacts from the WSDL source or applicable legacy `catalog.json` instead of editing them by hand.",
         "Treat generator-owned client, gateway, OpenAPI and checked source/capsule artifacts as replaceable output",
         "App and test scaffolds are consumer-owned starting points",
         "do not discard the whole directory to regenerate its artifacts."
