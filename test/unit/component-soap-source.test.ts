@@ -20,7 +20,7 @@ beforeAll(async () => {
   schema = await readFile('test/conformance/fixtures/xsd/imports/import-relative-types-types.xsd', 'utf8');
 });
 afterAll(async () => {await rm(directory, {recursive: true, force: true});});
-async function source(text = root, xsd = schema, extra: Partial<SchemaInputOptions> = {}) {
+async function source(text: string | Uint8Array = root, xsd: string | Uint8Array = schema, extra: Partial<SchemaInputOptions> = {}) {
   const child = await mkdtemp(path.join(directory, 'case-'));
   const wsdl = path.join(child, 'source.wsdl'), dependency = path.join(child, 'import-relative-types-types.xsd');
   await writeFile(wsdl, text); await writeFile(dependency, xsd);
@@ -36,6 +36,24 @@ async function source(text = root, xsd = schema, extra: Partial<SchemaInputOptio
 }
 
 describe('closed original snapshot bootstrap for the existing SOAP dependency', () => {
+  it.each(['latin1', 'utf16le', 'utf16be'] as const)('prepares independently decoded %s metadata without changing original bytes', async encoding => {
+    const encode = (xml: string, kind: typeof encoding): Buffer => {
+      if (kind === 'latin1') return Buffer.from(xml.replace('encoding="utf-8"', 'encoding="ISO-8859-1"'), 'latin1');
+      const le = Buffer.concat([Buffer.from([255, 254]), Buffer.from(xml.replace('encoding="utf-8"', 'encoding="UTF-16"'), 'utf16le')]);
+      return kind === 'utf16be' ? le.swap16() : le;
+    };
+    const rootBytes = encode(root.replace('name="payload"', 'name="données"').replaceAll('ImportedPayload', 'ChargeÉ'), encoding);
+    const schemaBytes = encode(schema.replaceAll('ImportedPayload', 'ChargeÉ').replace('name="name"', 'name="prénom"'), encoding === 'latin1' ? 'utf16be' : 'latin1');
+    const input = await source(rootBytes, schemaBytes);
+    const wsdl = await prepareComponentSoapWsdl(input.contract, selection, () => {});
+    const operation = wsdl.describeServices().ImportService.ImportPort.SubmitImported;
+    expect(operation.input).toHaveProperty('données.prénom', 'xs:string');
+    expect(await readFile(input.wsdl)).toEqual(rootBytes);
+    expect(await readFile(input.dependency)).toEqual(schemaBytes);
+    expect(inspectDirectOperation(input.contract).source.resources.map(resource => resource.digest).sort()).toEqual(
+      [rootBytes, schemaBytes].map(bytes => createHash('sha256').update(bytes).digest('hex')).sort());
+  });
+
   it('prepares imported definitions from native retained bytes after original input files are removed', async () => {
     const input = await source(), before = inspectDirectOperation(input.contract).source;
     await rm(input.wsdl); await rm(input.dependency);

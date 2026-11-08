@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn:checked:forecast" xmlns:v="urn:encoding:values" targetNamespace="urn:checked:forecast">
+  <wsdl:types>
+    <xs:schema targetNamespace="urn:checked:forecast" elementFormDefault="qualified">
+      <xs:import namespace="urn:encoding:values" schemaLocation="values.xsd"/>
+      <xs:complexType name="ForecastRequest"><xs:sequence><xs:element name="city" type="v:City"/></xs:sequence><xs:attribute name="language" type="xs:string" use="required" fixed="français"/></xs:complexType>
+      <xs:element name="GetForecast" type="t:ForecastRequest"/>
+      <xs:element name="GetForecastResponse" type="t:ForecastRequest"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="ForecastInput"><wsdl:part name="parameters" element="t:GetForecast"/></wsdl:message>
+  <wsdl:message name="ForecastOutput"><wsdl:part name="parameters" element="t:GetForecastResponse"/></wsdl:message>
+  <wsdl:portType name="ForecastPortType"><wsdl:operation name="GetForecast"><wsdl:input message="t:ForecastInput"/><wsdl:output message="t:ForecastOutput"/></wsdl:operation></wsdl:portType>
+  <wsdl:binding name="ForecastBinding" type="t:ForecastPortType"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="GetForecast"><soap:operation soapAction="urn:checked:GetForecast"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation></wsdl:binding>
+  <wsdl:service name="ForecastService"><wsdl:port name="ForecastPort" binding="t:ForecastBinding"><soap:address location="http://127.0.0.1:1/forecast"/></wsdl:port></wsdl:service>
+</wsdl:definitions>

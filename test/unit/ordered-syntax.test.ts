@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {pathToFileURL} from "node:url";
 import path from "node:path";
 import {describe, expect, it} from "vitest";
-import {parseOrderedSyntax, resolveLexicalQName, syntaxAttribute, syntaxElements, XSD_NAMESPACE, XML_NAMESPACE} from "../../src/loader/orderedSyntax.js";
+import {decodeMetadataXml, parseOrderedSyntax, resolveLexicalQName, syntaxAttribute, syntaxElements, XSD_NAMESPACE, XML_NAMESPACE} from "../../src/loader/orderedSyntax.js";
 import type {SyntaxElement} from "../../src/loader/orderedSyntax.js";
 import {loadWsdl} from "../../src/loader/wsdlLoader.js";
 
@@ -13,6 +13,38 @@ const parse = (text: string, maxDepth?: number) => parseOrderedSyntax(Buffer.fro
 const descendants = (root: SyntaxElement): SyntaxElement[] => [root, ...syntaxElements(root).flatMap(descendants)];
 
 describe("ordered syntax boundary", () => {
+  it('decodes declared ISO metadata with exact Latin1 byte mapping and decoded source positions', () => {
+    const text = '<?xml version="1.0" encoding="ISO-8859-1"?>\r\n<ré value="café">\u0080\u0091\u009f</ré>';
+    const bytes = Buffer.from(text, 'latin1');
+    expect(decodeMetadataXml(bytes)).toBe(text);
+    const doc = parseOrderedSyntax(bytes, 'urn:latin1', {metadataEncoding: true});
+    expect(doc.root.name.local).toBe('ré');
+    expect(syntaxAttribute(doc.root, 'value')).toBe('café');
+    expect(doc.root.children[0]).toMatchObject({value: '\u0080\u0091\u009f'});
+    expect(doc.root.source.start).toEqual({offset: text.indexOf('<ré'), line: 2, column: 1});
+    expect(doc.digest).toBe(createHash('sha256').update(bytes).digest('hex'));
+    expect(() => parseOrderedSyntax(bytes, 'urn:payload')).toThrow();
+  });
+
+  it('accepts each BOM-marked UTF16 order and refuses malformed or conflicting metadata without fallback', () => {
+    const text = '<?xml version="1.0" encoding="UTF-16"?><ré>café</ré>';
+    const le = Buffer.concat([Buffer.from([255, 254]), Buffer.from(text, 'utf16le')]);
+    const be = Buffer.from(le).swap16();
+    for (const bytes of [le, be]) expect(decodeMetadataXml(bytes)).toBe(text);
+    for (const bytes of [
+      Buffer.from('<r>é</r>', 'latin1'),
+      Buffer.from('<?xml version="1.0" encoding="windows-1252"?><r/>'),
+      Buffer.concat([Buffer.from([239, 187, 191]), Buffer.from('<?xml version="1.0" encoding="ISO-8859-1"?><r/>')]),
+      Buffer.concat([Buffer.from([255, 254]), Buffer.from('<?xml version="1.0" encoding="UTF-16BE"?><r/>', 'utf16le')]),
+      Buffer.concat([le, Buffer.from([0])]),
+      Buffer.concat([Buffer.from([255, 254]), Buffer.from('<r>\ud800</r>', 'utf16le')]),
+      Buffer.concat([Buffer.from([239, 187, 191, 239, 187, 191]), Buffer.from('<r/>')]),
+    ]) expect(() => decodeMetadataXml(bytes)).toThrow();
+    for (const xml of ['<!DOCTYPE ré [<!ENTITY e "café">]><ré>&e;</ré>', '<ré>&unknown;</ré>']) {
+      expect(() => parseOrderedSyntax(Buffer.from('<?xml version="1.0" encoding="ISO-8859-1"?>' + xml, 'latin1'), 'urn:metadata', {metadataEncoding: true})).toThrow();
+    }
+  });
+
   it("retains compositor interleaving, local scope, attributes, text and inherited base", () => {
     const doc = load("xsd/syntax/ordered-namespaces.xsd");
     const types = syntaxElements(doc.root, XSD_NAMESPACE, "complexType");

@@ -7,6 +7,7 @@ import {execFileSync} from 'node:child_process';
 import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, realpath, appendFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {runOwnedNode} from './ownedNodeProcess.js';
 
 export const CHECKED_GATEWAY_STAGE_TIMEOUT_MS = 240_000;
@@ -127,6 +128,42 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     const result: unknown = JSON.parse(executed.stdout);
     expect(result).toMatchObject({kind: 'checked-gateway-installed', originalCheckoutReadable: false});
     await writeFile(path.join(evidence, 'wire.log'), executed.stdout + executed.stderr);
+    const encodingFixture = path.join(root, 'test/conformance/fixtures/assessment/metadata-encoding');
+    const metadata = await readFile(path.join(encodingFixture, 'service.wsdl'), 'utf8');
+    const values = await readFile(path.join(encodingFixture, 'values.xsd'), 'utf8');
+    const encode = (xml: string, encoding: 'latin1' | 'utf16le' | 'utf16be'): Buffer => {
+      const declared = xml.replace('encoding="UTF-8"', `encoding="${encoding === 'latin1' ? 'ISO-8859-1' : 'UTF-16'}"`);
+      if (encoding === 'latin1') return Buffer.from(declared, 'latin1');
+      const bytes = Buffer.from(declared, 'utf16le');
+      return encoding === 'utf16le' ? Buffer.concat([Buffer.from([0xff, 0xfe]), bytes])
+        : Buffer.concat([Buffer.from([0xfe, 0xff]), bytes.swap16()]);
+    };
+    // @why Every root and import byte form carries an independently asserted non-ASCII contract operand.
+    for (const [rootEncoding, importEncoding] of [['latin1', 'utf16le'], ['utf16le', 'utf16be'], ['utf16be', 'latin1']] as const) {
+      const mode = 'encoding-' + rootEncoding;
+      const importedName = mode + '.xsd';
+      const encodedSource = path.join(consumer, mode + '.wsdl');
+      const importedFile = path.join(consumer, importedName);
+      await writeFile(encodedSource, encode(metadata.replace('values.xsd', importedName), rootEncoding));
+      await writeFile(importedFile, encode(values, importEncoding));
+      await writeFile(config, JSON.stringify({...checkedComponents,
+        sourceResources: [{uri: pathToFileURL(importedFile).href, file: importedFile}]}));
+      const args = [...installedGenerate];
+      args[args.indexOf('--wsdl-source') + 1] = encodedSource;
+      await run(mode + ' installed CLI generation', args, tooling);
+      for (const name of [mode + '.wsdl', importedName]) {
+        expect(await readFile(path.join(project, 'client/source/files', name))).toEqual(await readFile(path.join(consumer, name)));
+      }
+      await run(mode + ' consumer typecheck', [npm, 'run', 'typecheck'], project);
+      await run(mode + ' consumer build', [npm, 'run', 'build'], project);
+      const checked = await run(mode + ' independent HTTP/SOAP contract', ['--permission', '--allow-child-process', ...networkPermission,
+        '--allow-fs-read=' + project, '--allow-fs-write=' + project,
+        path.join(project, 'qualification.ts'), fixture, mode], project);
+      expect(JSON.parse(checked.stdout)).toMatchObject({kind: 'checked-gateway-installed', variant: mode,
+        upstreamRequests: 1, refusals: 4, artifactRefusals: 2});
+      await writeFile(path.join(evidence, mode + '-wire.log'), checked.stdout + checked.stderr);
+    }
+    await writeFile(config, JSON.stringify(checkedComponents));
     const original = await readFile(source, 'utf8');
     for (const mode of ['optional', 'scalar', 'nil', 'keyed', 'facets', 'groups-default', 'groups-configured'] as const) {
       const grouped = mode.startsWith('groups-');

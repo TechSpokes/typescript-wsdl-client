@@ -14,7 +14,7 @@ P1 contract review accepted `7e40478`; implementation review accepted final head
 
 The [manifest](../test/conformance/readiness-corpus.json) now pins eight inputs and ten resource entries with origin, permission, digest, bytes and selection rationale. Weather, import, chameleon and shared recursion reuse [#272](https://github.com/TechSpokes/typescript-wsdl-client/issues/272)'s provenance work; existing conformance sources add repeated/deep composition. Forecast is authored in P2, separately from the reused-corpus baseline.
 
-Two inputs are synthetic, five are reference controls and one is authentic NOAA/NWS metadata. The [NOAA qualification report](noaa-ndfd-qualification.md) records permission, full byte/resource inventory and a native encoding refusal for one operation. This establishes source intake evidence, with no production SOAP compatibility or market coverage claim. No reduced tier is counted.
+The maintained corpus includes synthetic and reference controls plus authentic NOAA/NWS metadata. The [NOAA qualification report](noaa-ndfd-qualification.md) records permission, original-byte identity, all 12 operation identities and locationless-import component planning refusals after decoding. This establishes source intake evidence, with no production SOAP compatibility or market coverage claim; no reduced tier is counted.
 
 ```bash
 npm run assess:inventory -- --profile default

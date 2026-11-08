@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- fix(components): decode declared Latin1 and BOM-marked UTF-16 metadata per resource while preserving original source bytes.
+
 - test(verification): compose component SOAP test cancellation and cleanup, and verify installed public declaration navigation.
 
 - ci(test): omit the already audited reference subtree from Linux Node 24 standalone conformance.

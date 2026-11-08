@@ -50,7 +50,9 @@ soap.listen(0, '127.0.0.1'); await once(soap, 'listening');
 const address = soap.address(); assert.ok(address && typeof address !== 'string');
 const endpoint = `http://127.0.0.1:${address.port}/owned-forecast`;
 const source = path.join(root, 'client/source/files/' + (process.argv[3] ? process.argv[3] + '.wsdl' : 'forecast.wsdl'));
-const config = {localSource: source, fileRoots: [path.join(root, 'client')], sourceResources: [], sourceOrigins: [], endpoint, allowedEndpoints: [endpoint],
+const sourceConfig = process.argv[3]?.startsWith('encoding-') ? {} : {
+  localSource: source, fileRoots: [path.join(root, 'client')], sourceResources: [], sourceOrigins: []};
+const config = {...sourceConfig, endpoint, allowedEndpoints: [endpoint],
   host: '127.0.0.1', port: 0};
 let child: ChildProcess | undefined;
 let runtimeLog = '';
@@ -95,7 +97,55 @@ try {
     return {status: response.status, value: await response.json() as unknown};
   };
   const mode = process.argv[3];
-  if (mode?.startsWith('groups-')) {
+  if (mode?.startsWith('encoding-')) {
+    let artifactRefusals = 0;
+    const input = {city: 'Montréal', language: 'français'};
+    reply = '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="urn:checked:forecast"><s:Body>'
+      + '<t:GetForecastResponse language="français"><t:city>Montréal</t:city></t:GetForecastResponse></s:Body></s:Envelope>';
+    assert.deepEqual(await post(input), {status: 200, value: input});
+    assert.deepEqual(events(upstream[0]!.xml), {
+      names: ['{http://schemas.xmlsoap.org/soap/envelope/}Envelope', '{http://schemas.xmlsoap.org/soap/envelope/}Body',
+        '{urn:checked:forecast}GetForecast', '{urn:checked:forecast}city'], texts: ['Montréal'],
+    });
+    const attributes: string[] = [], parser = new SaxesParser({xmlns: true});
+    parser.on('opentag', tag => {
+      for (const attribute of Object.values(tag.attributes)) {
+        if (attribute.uri !== 'http://www.w3.org/2000/xmlns/') attributes.push(`{${attribute.uri}}${attribute.local}=${attribute.value}`);
+      }
+    });
+    parser.write(upstream[0]!.xml).close();
+    assert.deepEqual(attributes, ['{}language=français']);
+    assert.equal(upstream[0]!.action, '"urn:checked:GetForecast"');
+    assert.equal(upstream[0]!.contentType, 'text/xml; charset=utf-8');
+    assert.equal(upstream[0]!.method, 'POST'); assert.equal(upstream[0]!.path, '/owned-forecast');
+    for (const invalid of [{...input, city: 'Montreal'}, {...input, language: 'francais'}]) {
+      assert.equal((await post(invalid)).status, 400); refusals++;
+    }
+    assert.equal(upstream.length, 1, 'Both imported and root non-ASCII operands must reject before SOAP');
+    const imported = path.join(root, 'client/source/files/' + mode + '.xsd');
+    for (const file of [source, imported]) {
+      const original = await readFile(file);
+      const encoding = original[0] === 0xff ? 'utf-16le' : original[0] === 0xfe ? 'utf-16be' : undefined;
+      // @why An equivalent Unicode document in different original bytes must never satisfy the retained artifact identity.
+      const text = encoding ? new TextDecoder(encoding, {fatal: true}).decode(original) : original.toString('latin1');
+      const equivalent = Buffer.from(text.replace(/encoding="(?:UTF-16|ISO-8859-1)"/, 'encoding="UTF-8"'));
+      assert.notDeepEqual(equivalent, original);
+      await writeFile(file, equivalent);
+      try {
+        await assert.rejects(start(), /digest|source|snapshot/i); refusals++;
+        url = await start({localSource: source, fileRoots: [path.join(root, 'client')],
+          sourceResources: [{uri: pathToFileURL(imported).href, file: imported}], sourceOrigins: []});
+        const stale = await post(input);
+        assert.equal(stale.status, 500);
+        assert.equal((stale.value as {kind: string}).kind, 'incompatible-artifact'); artifactRefusals++;
+      }
+      finally {await writeFile(file, original);}
+      assert.equal(upstream.length, 1, 'Stale original bytes must refuse before SOAP');
+    }
+    process.stdout.write(JSON.stringify({kind: 'checked-gateway-installed', originalCheckoutReadable: false,
+      variant: mode, calls, refusals, artifactRefusals, upstreamRequests: upstream.length,
+      scope: 'declared Latin1/BOM UTF-16 mixed metadata; independent fixed/enumeration values and equivalent-XML stale-byte controls'}) + '\n');
+  } else if (mode?.startsWith('groups-')) {
     const namespace='urn:checked:forecast',soapNs='http://schemas.xmlsoap.org/soap/envelope/';
     const envelope=(content:string)=>`<s:Envelope xmlns:s="${soapNs}" xmlns:t="${namespace}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><s:Body>${content}</s:Body></s:Envelope>`;
     const key=mode==='groups-configured'?'$payment':'$choice';
