@@ -34,7 +34,7 @@ jobs:
           NPM_CACHE_RESTORED: ${{ steps.node.outputs.cache-hit }}
       - name: Standalone conformance
         if: matrix.node == 24
-        run: npm run test:conformance
+        run: npm run test:conformance -- --exclude "test/conformance/reference/**"
       - name: Installed timing evidence
         uses: actions/upload-artifact@v6
         if: always()

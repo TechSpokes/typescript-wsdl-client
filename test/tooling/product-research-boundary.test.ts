@@ -2,6 +2,8 @@ import {execFileSync} from 'node:child_process';
 import {readFileSync, readdirSync} from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import * as yaml from 'js-yaml';
+import {discoverReferenceTests} from '../../scripts/semantic-reference.js';
 import {describe, expect, it} from 'vitest';
 
 function sources(directory: string): string[] {
@@ -50,5 +52,29 @@ describe('product and research boundary', () => {
     for (const name of ['ci', 'ci:github', 'ci:github:node26', 'release:publish-check']) inspect(name);
     expect(scripts['test:github']).toContain('test/tooling');
     expect(scripts['ci:github:node26']).toContain('test/tooling');
+  });
+
+  it('omits only the already audited reference subtree from hosted standalone conformance', () => {
+    const workflow = yaml.load(readFileSync('.github/workflows/node-reference.yml', 'utf8')) as {
+      jobs: Record<string, {steps: {name?: string; run?: string; if?: string}[]}>;
+    };
+    const step = workflow.jobs.linux!.steps.find(step => step.name === 'Standalone conformance')!;
+    expect(step.if).toBe('matrix.node == 24');
+    expect(step.run).toBe('npm run test:conformance -- --exclude "test/conformance/reference/**"');
+    const collect = (args: string[]) => (JSON.parse(execFileSync(process.execPath,
+      ['node_modules/vitest/vitest.mjs', 'list', 'test/conformance', '--filesOnly', '--json', ...args],
+      {encoding: 'utf8'})) as {file: string}[])
+      .map(row => path.relative(process.cwd(), row.file).replaceAll('\\', '/')).sort();
+    const all = collect([]), hosted = collect(['--exclude', 'test/conformance/reference/**']);
+    expect(all.filter(file => !hosted.includes(file))).toEqual(discoverReferenceTests());
+    expect(hosted).toEqual(all.filter(file => !file.startsWith('test/conformance/reference/')));
+    expect(hosted).toContain('test/conformance/conformance.test.ts');
+    const suite = readFileSync('test/conformance/conformance.test.ts', 'utf8');
+    for (const stage of ['Contract', 'Compile', 'Client', 'OpenApi', 'Gateway', 'GeneratedTest', 'App'])
+      expect(suite).toContain(`register${stage}Cases();`);
+    const scripts = (JSON.parse(readFileSync('package.json', 'utf8')) as {scripts: Record<string, string>}).scripts;
+    expect(scripts['test']).toBe('vitest run');
+    expect(scripts['test:conformance']).toBe('vitest run test/conformance --reporter=verbose');
+    expect(scripts['ci:github']).toContain('npm run test:reference');
   });
 });
