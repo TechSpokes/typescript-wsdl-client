@@ -144,7 +144,7 @@ void [request, shape, empty, exact, message];
     await writeFile(path.join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions: {strict: true, exactOptionalPropertyTypes: true, target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', outDir: 'compiled', types: []}, include: variants.map(v => v.name + '.ts').concat('usage.ts')}));
     await run(['--permission', '--allow-fs-read=' + consumer, '--allow-fs-write=' + consumer,
       path.join(consumer, 'node_modules/typescript/bin/tsc'), '-p', path.join(consumer, 'tsconfig.json')]);
-    const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net=127.0.0.1'] : [];
+    const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
     const executed = await run(['--permission', ...networkPermission, '--allow-fs-read=' + consumer, '--allow-fs-write=' + consumer, path.join(consumer, 'process.ts'), fixture]);
     expect(JSON.parse(executed.stdout)).toMatchObject({kind: 'generated-installed-soap', admitted: false});
     await writeFile(path.join(evidence, 'consumer.log'), executed.stdout + executed.stderr);

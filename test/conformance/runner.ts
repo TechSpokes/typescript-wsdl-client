@@ -1,4 +1,3 @@
-import {execFileSync} from "node:child_process";
 import {createRequire} from "node:module";
 import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {dirname, join, resolve} from "node:path";
@@ -18,17 +17,22 @@ import {WsdlCompilationError} from "../../src/util/errors.js";
 import {deriveClientName} from "../../src/util/tools.js";
 import {fixturesRoot, readFileUnder, resolveUnder, validateConformanceFixtureGraph} from "./fixturePolicy.js";
 import type {AppArtifacts, CapabilityCase, GatewayArtifacts, GeneratedTestsArtifacts} from "./types.js";
+import {runOwnedNode} from "../helpers/ownedNodeProcess.js";
 
 const require = createRequire(import.meta.url);
 const conformanceDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(conformanceDir, "..", "..");
 const conformanceTempRoot = join(repoRoot, "tmp", "conformance");
+// @why #440: retain the former 30-second case budget per child; registrations compose command counts and cleanup headroom.
+export const CONFORMANCE_COMMAND_TIMEOUT_MS = 30_000;
+export const CONFORMANCE_CLEANUP_TIMEOUT_MS = 30_000;
 
 export function fixturePathFor(capability: CapabilityCase): string {
   return resolveUnder(fixturesRoot, capability.fixture);
 }
 
-export async function runCompileCase(capability: CapabilityCase): Promise<void> {
+export async function runCompileCase(capability: CapabilityCase, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   const fixturePath = fixturePathFor(capability);
   if (!existsSync(fixturePath)) {
     throw new Error(`Missing conformance fixture for ${capability.id}: ${fixturePath}`);
@@ -42,7 +46,7 @@ export async function runCompileCase(capability: CapabilityCase): Promise<void> 
 
   try {
     if (capability.compile.outcome === "success") {
-      const compiled = await compileSuccess(capability, outDir);
+      const compiled = await compileSuccess(capability, outDir, signal);
       assertNames("type", capability.compile.typeNames, compiled.types.map(type => type.name));
       assertNames("alias", capability.compile.aliasNames, compiled.aliases.map(alias => alias.name));
       assertNames("operation", capability.compile.operationNames, compiled.operations.map(op => op.name));
@@ -52,8 +56,9 @@ export async function runCompileCase(capability: CapabilityCase): Promise<void> 
     }
 
     try {
-      await compileSuccess(capability, outDir);
+      await compileSuccess(capability, outDir, signal);
     } catch (error) {
+      signal?.throwIfAborted();
       assertExpectedError(capability, error);
       return;
     }
@@ -64,7 +69,8 @@ export async function runCompileCase(capability: CapabilityCase): Promise<void> 
   }
 }
 
-export async function runClientCase(capability: CapabilityCase): Promise<void> {
+export async function runClientCase(capability: CapabilityCase, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   if (!capability.client) {
     throw new Error(`${capability.id} has no client expectation.`);
   }
@@ -77,7 +83,7 @@ export async function runClientCase(capability: CapabilityCase): Promise<void> {
   const clientDir = join(outDir, "client");
 
   try {
-    const compiled = await compileSuccess(capability, outDir);
+    const compiled = await compileSuccess(capability, outDir, signal);
     const files = {
       client: join(clientDir, "client.ts"),
       operations: join(clientDir, "operations.ts"),
@@ -92,7 +98,7 @@ export async function runClientCase(capability: CapabilityCase): Promise<void> {
     generateUtils(files.utils, compiled);
     generateOperations(files.operations, compiled);
     writeGeneratedTsconfig(outDir, false);
-    runTypeScript(outDir, join(outDir, "tsconfig.json"));
+    await runTypeScript(outDir, join(outDir, "tsconfig.json"), signal);
 
     for (const expected of capability.client.sourceIncludes ?? []) {
       const source = readFileSync(files[expected.file], "utf8");
@@ -112,7 +118,8 @@ export async function runClientCase(capability: CapabilityCase): Promise<void> {
   }
 }
 
-export async function runOpenApiCase(capability: CapabilityCase): Promise<void> {
+export async function runOpenApiCase(capability: CapabilityCase, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   if (!capability.openapi) {
     throw new Error(`${capability.id} has no OpenAPI expectation.`);
   }
@@ -125,13 +132,14 @@ export async function runOpenApiCase(capability: CapabilityCase): Promise<void> 
   const openapiFile = join(outDir, "openapi.json");
 
   try {
-    const compiled = await compileSuccess(capability, outDir);
+    const compiled = await compileSuccess(capability, outDir, signal);
     const result = await generateOpenAPI({
       compiledCatalog: compiled,
       format: "json",
       outFile: openapiFile,
       skipValidate: false,
     });
+    signal?.throwIfAborted();
 
     capability.openapi.assert?.({
       compiled,
@@ -144,7 +152,8 @@ export async function runOpenApiCase(capability: CapabilityCase): Promise<void> 
   }
 }
 
-export async function runGatewayCase(capability: CapabilityCase): Promise<void> {
+export async function runGatewayCase(capability: CapabilityCase, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   if (!capability.gateway) {
     throw new Error(`${capability.id} has no gateway expectation.`);
   }
@@ -156,7 +165,7 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
   const outDir = createConformanceTempDir(capability, "gateway");
 
   try {
-    const project = await generateGatewayProject(capability, outDir);
+    const project = await generateGatewayProject(capability, outDir, signal);
 
     for (const expected of capability.gateway.sourceIncludes ?? []) {
       const source = readFileUnder(project.gatewayDir, expected.file);
@@ -176,6 +185,7 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
     };
 
     await capability.gateway.assert?.(artifacts);
+    signal?.throwIfAborted();
 
     for (const request of capability.gateway.requests ?? []) {
       const route = routeFor(project.doc, request.operationId);
@@ -218,7 +228,8 @@ export async function runGatewayCase(capability: CapabilityCase): Promise<void> 
   }
 }
 
-export async function runGeneratedTestsCase(capability: CapabilityCase): Promise<void> {
+export async function runGeneratedTestsCase(capability: CapabilityCase, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   if (!capability.generatedTests) {
     throw new Error(`${capability.id} has no generated-test expectation.`);
   }
@@ -231,7 +242,7 @@ export async function runGeneratedTestsCase(capability: CapabilityCase): Promise
   const testDir = join(outDir, "tests");
 
   try {
-    const project = await generateGatewayProject(capability, outDir);
+    const project = await generateGatewayProject(capability, outDir, signal);
 
     await generateTests({
       testDir,
@@ -242,7 +253,7 @@ export async function runGeneratedTestsCase(capability: CapabilityCase): Promise
       force: true,
     });
 
-    runGeneratedVitest(outDir, join(testDir, "vitest.config.ts"));
+    await runGeneratedVitest(outDir, join(testDir, "vitest.config.ts"), signal);
 
     for (const expected of capability.generatedTests.sourceIncludes ?? []) {
       const source = readFileUnder(testDir, expected.file);
@@ -262,12 +273,14 @@ export async function runGeneratedTestsCase(capability: CapabilityCase): Promise
     };
 
     await capability.generatedTests.assert?.(artifacts);
+    signal?.throwIfAborted();
   } finally {
     rmSync(outDir, {recursive: true, force: true});
   }
 }
 
-export async function runAppCase(capability: CapabilityCase): Promise<void> {
+export async function runAppCase(capability: CapabilityCase, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
   if (!capability.app) {
     throw new Error(`${capability.id} has no app expectation.`);
   }
@@ -280,7 +293,7 @@ export async function runAppCase(capability: CapabilityCase): Promise<void> {
   const appDir = join(outDir, "app");
 
   try {
-    const project = await generateGatewayProject(capability, outDir);
+    const project = await generateGatewayProject(capability, outDir, signal);
 
     await generateApp({
       appDir,
@@ -292,7 +305,7 @@ export async function runAppCase(capability: CapabilityCase): Promise<void> {
       force: true,
     });
 
-    runTypeScript(appDir, join(appDir, "tsconfig.json"));
+    await runTypeScript(appDir, join(appDir, "tsconfig.json"), signal);
 
     for (const expected of capability.app.sourceIncludes ?? []) {
       const source = readFileUnder(appDir, expected.file);
@@ -312,15 +325,18 @@ export async function runAppCase(capability: CapabilityCase): Promise<void> {
     };
 
     await capability.app.assert?.(artifacts);
+    signal?.throwIfAborted();
   } finally {
     rmSync(outDir, {recursive: true, force: true});
   }
 }
 
-async function compileSuccess(capability: CapabilityCase, outDir: string): Promise<CompiledCatalog> {
+async function compileSuccess(capability: CapabilityCase, outDir: string, signal?: AbortSignal): Promise<CompiledCatalog> {
+  signal?.throwIfAborted();
   const fixturePath = fixturePathFor(capability);
   validateConformanceFixtureGraph(fixturePath);
   const wsdlCatalog = await loadWsdl(fixturePath);
+  signal?.throwIfAborted();
   const options = resolveCompilerOptions(
     capability.compilerOptions ?? {},
     {
@@ -372,7 +388,7 @@ function writeGeneratedTsconfig(outDir: string, includeGateway: boolean): void {
   );
 }
 
-async function generateGatewayProject(capability: CapabilityCase, outDir: string): Promise<{
+async function generateGatewayProject(capability: CapabilityCase, outDir: string, signal?: AbortSignal): Promise<{
   clientDir: string;
   gatewayDir: string;
   openapiFile: string;
@@ -384,7 +400,7 @@ async function generateGatewayProject(capability: CapabilityCase, outDir: string
   const gatewayDir = join(outDir, "gateway");
   const openapiFile = join(outDir, "openapi.json");
   const catalogFile = join(clientDir, "catalog.json");
-  const compiled = await compileSuccess(capability, outDir);
+  const compiled = await compileSuccess(capability, outDir, signal);
   const clientFiles = {
     client: join(clientDir, "client.ts"),
     operations: join(clientDir, "operations.ts"),
@@ -418,7 +434,7 @@ async function generateGatewayProject(capability: CapabilityCase, outDir: string
   });
 
   writeGeneratedTsconfig(outDir, true);
-  runTypeScript(outDir, join(outDir, "tsconfig.json"));
+  await runTypeScript(outDir, join(outDir, "tsconfig.json"), signal);
 
   return {
     clientDir,
@@ -430,31 +446,29 @@ async function generateGatewayProject(capability: CapabilityCase, outDir: string
   };
 }
 
-function runTypeScript(cwd: string, projectFile: string): void {
+async function runTypeScript(cwd: string, projectFile: string, signal?: AbortSignal): Promise<void> {
   try {
-    execFileSync(
-      process.execPath,
+    await runOwnedNode(
       [require.resolve("typescript/bin/tsc"), "-p", projectFile],
-      {cwd, encoding: "utf8", stdio: "pipe"},
+      {cwd, signal, timeoutMs: CONFORMANCE_COMMAND_TIMEOUT_MS, maxBuffer: 1024 * 1024},
     );
   } catch (error) {
     const typed = error as {stdout?: string; stderr?: string};
-    throw new Error(`Generated TypeScript check failed:\n${typed.stdout ?? ""}${typed.stderr ?? ""}`);
+    throw new Error(`Generated TypeScript check failed: ${String(error)}\n${typed.stdout ?? ""}${typed.stderr ?? ""}`, {cause: error});
   }
 }
 
-function runGeneratedVitest(cwd: string, configFile: string): void {
+async function runGeneratedVitest(cwd: string, configFile: string, signal?: AbortSignal): Promise<void> {
   const reportPath = join(cwd, ".vitest-report.json");
   rmSync(reportPath, {force: true});
   try {
-    execFileSync(
-      process.execPath,
+    await runOwnedNode(
       [join(dirname(require.resolve("vitest/package.json")), "vitest.mjs"), "run", "--config", configFile, "--reporter=json", "--outputFile", reportPath],
-      {cwd, encoding: "utf8", stdio: "pipe"},
+      {cwd, signal, timeoutMs: CONFORMANCE_COMMAND_TIMEOUT_MS, maxBuffer: 1024 * 1024},
     );
   } catch (error) {
     const typed = error as {stdout?: string; stderr?: string; message?: string};
-    throw new Error(`Generated Vitest check failed:\n${typed.stdout ?? ""}${typed.stderr ?? typed.message ?? ""}`);
+    throw new Error(`Generated Vitest check failed: ${String(error)}\n${typed.stdout ?? ""}${typed.stderr ?? typed.message ?? ""}`, {cause: error});
   }
 
   const output = readFileSync(reportPath, "utf8");

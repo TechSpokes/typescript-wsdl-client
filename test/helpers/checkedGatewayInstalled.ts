@@ -11,8 +11,9 @@ import {runOwnedNode} from './ownedNodeProcess.js';
 
 export const CHECKED_GATEWAY_STAGE_TIMEOUT_MS = 240_000;
 export const CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS = 60_000;
-// @why Base and variant commands have individual four-minute limits, including group inventory regeneration.
-export const CHECKED_GATEWAY_WORKFLOW_TIMEOUT_MS = (10 + 7 * 5) * CHECKED_GATEWAY_STAGE_TIMEOUT_MS + CHECKED_GATEWAY_CLEANUP_TIMEOUT_MS;
+// @why #440: roughly three times the observed 353-second Windows workflow plus cleanup; below the 30/45-minute job caps.
+// @constraints This shared workflow ceiling composes with four-minute commands; their maxima are not all simultaneously available.
+export const CHECKED_GATEWAY_WORKFLOW_TIMEOUT_MS = 20 * 60_000;
 /**
  * Packs the candidate and exercises only installed public generation and runtime entry points.
  * @param signal Caller cancellation; active owned command trees close before cleanup resolves.
@@ -119,7 +120,7 @@ export async function qualifyCheckedGatewayInstalled(signal?: AbortSignal): Prom
     }
     await copyFile(path.join(root, 'test/helpers/checkedGatewayInstalledProcess.ts'), path.join(project, 'qualification.ts'));
     await copyFile(path.join(root, 'test/helpers/ownedParentGuard.ts'), path.join(project, 'parent-guard.ts'));
-    const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net=127.0.0.1'] : [];
+    const networkPermission = process.allowedNodeEnvironmentFlags.has('--allow-net') ? ['--allow-net'] : [];
     const executed = await run('independent HTTP/SOAP contract and controls', ['--permission', '--allow-child-process', ...networkPermission,
       '--allow-fs-read=' + project, '--allow-fs-write=' + project,
       path.join(project, 'qualification.ts'), fixture], project);
