@@ -7,6 +7,7 @@ import {once} from 'node:events';
 import {SaxesParser} from 'saxes';
 import {runOwnedNode} from './ownedNodeProcess.js';
 import type {InstalledIntakeTooling} from './installedIntakeTooling.js';
+import {installIntakeProject} from './installedIntakeTooling.js';
 import type {CheckedComponentPlan} from '../../src/index.js';
 
 export async function qualifyUrlIntakeInstalled(shared: InstalledIntakeTooling, signal: AbortSignal): Promise<void> {
@@ -69,7 +70,7 @@ export async function qualifyUrlIntakeInstalled(shared: InstalledIntakeTooling, 
     for (const query of [1, 2]) documents.set('/model/nested/leaf?xsd=' + query,
       `<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:conformance:import-relative-types:types"><xs:include schemaLocation="common?shared=1"/><xs:simpleType name="Unused${query}"><xs:restriction base="xs:string"/></xs:simpleType></xs:schema>`);
     documents.set('/model/nested/common?shared=1', '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:conformance:import-relative-types:types"><xs:simpleType name="Shared"><xs:restriction base="xs:string"/></xs:simpleType></xs:schema>');
-    const {tooling, tarball, cli} = shared;
+    const {tooling, cli} = shared;
     const api = ['--input-type=module', '-e', 'import {planCheckedComponents} from "@techspokes/typescript-wsdl-client"; console.log(JSON.stringify(await planCheckedComponents(process.argv[1],JSON.parse(process.argv[2]))));'];
     const plan = async (label: string, choices = {}, source = origin + '/start') => JSON.parse((await run(label, [...api, source, JSON.stringify(choices)], tooling)).stdout) as CheckedComponentPlan;
     const metadataBefore = metadata.length;
@@ -105,7 +106,7 @@ export async function qualifyUrlIntakeInstalled(shared: InstalledIntakeTooling, 
       await run(mode + '-generate', args, tooling); expect(calls).toHaveLength(0);
       await writeFile(path.join(logs, mode + '-artifacts.json'), JSON.stringify((await readdir(project, {recursive: true})).sort(), null, 2));
       for (const file of ['inventory.json', 'source-resources.json']) await copyFile(path.join(project, 'client', file), path.join(logs, mode + '-' + file));
-      await run(mode + '-install', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], project);
+      await installIntakeProject(shared, project, logs, env, run, mode + '-install');
       for (const command of ['typecheck', 'test', 'build']) await run(mode + '-' + command, [npm, 'run', command], project);
       expect(calls).toHaveLength(0);
       await copyFile(certFile, path.join(project, 'test-cert.pem'));

@@ -3,6 +3,7 @@ import {mkdtemp, mkdir, writeFile, readFile, copyFile, rm, appendFile, readdir} 
 import path from 'node:path';
 import {runOwnedNode} from './ownedNodeProcess.js';
 import type {InstalledIntakeTooling} from './installedIntakeTooling.js';
+import {installIntakeProject} from './installedIntakeTooling.js';
 import type {CheckedComponentPlan} from '../../src/index.js';
 
 export async function qualifyLocalIntakeInstalled(shared: InstalledIntakeTooling, signal: AbortSignal): Promise<void> {
@@ -28,7 +29,7 @@ export async function qualifyLocalIntakeInstalled(shared: InstalledIntakeTooling
     }
   };
   try {
-    const {tooling, tarball, cli} = shared;
+    const {tooling, cli} = shared;
     const inputs = path.join(consumer, 'inputs'); await mkdir(inputs);
     const source = path.join(inputs, 'source.wsdl'), missing = path.join(inputs, 'missing.wsdl'), dependency = path.join(inputs, 'import-relative-types-types.xsd');
     await copyFile('test/conformance/fixtures/xsd/imports/import-relative-types.wsdl', source);
@@ -70,7 +71,7 @@ export async function qualifyLocalIntakeInstalled(shared: InstalledIntakeTooling
       const artifacts = (await readdir(project, {recursive: true, withFileTypes: true})).filter(entry => entry.isFile())
         .map(entry => path.relative(project, path.join(entry.parentPath, entry.name)).replaceAll('\\', '/')).sort();
       await writeFile(path.join(runEvidence, mode + '-artifacts.json'), JSON.stringify(artifacts, null, 2) + '\n');
-      await run(mode + '-install', [npm, 'install', '--ignore-scripts', '--no-audit', '--no-fund', tarball], project);
+      await installIntakeProject(shared, project, runEvidence, env, run, mode + '-install');
       for (const command of ['typecheck', 'test', 'build']) {
         const result = await run(mode + '-' + command, [npm, 'run', command], project);
         await writeFile(path.join(runEvidence, mode + '-' + command + '.log'), result.stdout + result.stderr);

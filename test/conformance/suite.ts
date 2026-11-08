@@ -2,7 +2,7 @@ import {existsSync} from "node:fs";
 import {describe, expect, test} from "vitest";
 import {fixturesRoot, isWithinRoot, validateAllConformanceFixtureGraphs} from "./fixturePolicy.js";
 import {capabilities} from "./registry.js";
-import {fixturePathFor, runAppCase, runClientCase, runCompileCase, runGatewayCase, runGeneratedTestsCase, runOpenApiCase} from "./runner.js";
+import {CONFORMANCE_CLEANUP_TIMEOUT_MS, CONFORMANCE_COMMAND_TIMEOUT_MS, fixturePathFor, runAppCase, runClientCase, runCompileCase, runGatewayCase, runGeneratedTestsCase, runOpenApiCase} from "./runner.js";
 
 const runnableCapabilities = capabilities.filter(capability => capability.compile.outcome !== "research");
 const downstreamCapabilities = capabilities.filter(capability =>
@@ -64,8 +64,10 @@ export function registerContractCases(): void {
 export function registerCompileCases(): void {
   describe("WSDL compile conformance", () => {
     for (const capability of runnableCapabilities) {
-      test(`${capability.id} satisfies its compile expectation`, async () => {
-        await runCompileCase(capability);
+      test(`${capability.id} satisfies its compile expectation`, async context => {
+        const work = runCompileCase(capability, context.signal);
+        context.onTestFinished(async () => {await work.catch(() => undefined);}, CONFORMANCE_CLEANUP_TIMEOUT_MS);
+        await work;
       });
     }
   });
@@ -74,9 +76,11 @@ export function registerCompileCases(): void {
 export function registerClientCases(): void {
   describe("WSDL client conformance", () => {
     for (const capability of downstreamCapabilities) {
-      test(`${capability.id} satisfies its client expectation`, async () => {
-        await runClientCase(capability);
-      });
+      test(`${capability.id} satisfies its client expectation`, async context => {
+        const work = runClientCase(capability, context.signal);
+        context.onTestFinished(async () => {await work.catch(() => undefined);}, CONFORMANCE_CLEANUP_TIMEOUT_MS);
+        await work;
+      }, CONFORMANCE_COMMAND_TIMEOUT_MS + CONFORMANCE_CLEANUP_TIMEOUT_MS);
     }
   });
 }
@@ -84,8 +88,10 @@ export function registerClientCases(): void {
 export function registerOpenApiCases(): void {
   describe("WSDL OpenAPI conformance", () => {
     for (const capability of downstreamCapabilities) {
-      test(`${capability.id} satisfies its OpenAPI expectation`, async () => {
-        await runOpenApiCase(capability);
+      test(`${capability.id} satisfies its OpenAPI expectation`, async context => {
+        const work = runOpenApiCase(capability, context.signal);
+        context.onTestFinished(async () => {await work.catch(() => undefined);}, CONFORMANCE_CLEANUP_TIMEOUT_MS);
+        await work;
       });
     }
   });
@@ -94,9 +100,11 @@ export function registerOpenApiCases(): void {
 export function registerGatewayCases(): void {
   describe("WSDL gateway conformance", () => {
     for (const capability of downstreamCapabilities) {
-      test(`${capability.id} satisfies its gateway expectation`, async () => {
-        await runGatewayCase(capability);
-      });
+      test(`${capability.id} satisfies its gateway expectation`, async context => {
+        const work = runGatewayCase(capability, context.signal);
+        context.onTestFinished(async () => {await work.catch(() => undefined);}, CONFORMANCE_CLEANUP_TIMEOUT_MS);
+        await work;
+      }, CONFORMANCE_COMMAND_TIMEOUT_MS + CONFORMANCE_CLEANUP_TIMEOUT_MS);
     }
   });
 }
@@ -104,9 +112,11 @@ export function registerGatewayCases(): void {
 export function registerGeneratedTestCases(): void {
   describe("WSDL generated-test conformance", () => {
     for (const capability of downstreamCapabilities) {
-      test(`${capability.id} satisfies its generated-test expectation`, async () => {
-        await runGeneratedTestsCase(capability);
-      });
+      test(`${capability.id} satisfies its generated-test expectation`, async context => {
+        const work = runGeneratedTestsCase(capability, context.signal);
+        context.onTestFinished(async () => {await work.catch(() => undefined);}, CONFORMANCE_CLEANUP_TIMEOUT_MS);
+        await work;
+      }, 2 * CONFORMANCE_COMMAND_TIMEOUT_MS + CONFORMANCE_CLEANUP_TIMEOUT_MS);
     }
   });
 }
@@ -114,9 +124,11 @@ export function registerGeneratedTestCases(): void {
 export function registerAppCases(): void {
   describe("WSDL app conformance", () => {
     for (const capability of downstreamCapabilities) {
-      test(`${capability.id} satisfies its app expectation`, async () => {
-        await runAppCase(capability);
-      });
+      test(`${capability.id} satisfies its app expectation`, async context => {
+        const work = runAppCase(capability, context.signal);
+        context.onTestFinished(async () => {await work.catch(() => undefined);}, CONFORMANCE_CLEANUP_TIMEOUT_MS);
+        await work;
+      }, 2 * CONFORMANCE_COMMAND_TIMEOUT_MS + CONFORMANCE_CLEANUP_TIMEOUT_MS);
     }
   });
 }
