@@ -151,6 +151,8 @@ When `--init-app` is used and `--openapi-servers` is not provided, servers defau
 
 ### Test Suite Flags
 
+Legacy tests need consumer test/runtime dependencies and use their emitted Vitest config. Checked tests require app generation and use the checked app's scripts; see [consumer testing guidance](testing.md#for-consumer-projects) for complete setup/run examples and coverage limits. Existing scaffold files are preserved unless their force option is selected.
+
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--test-dir` | (none) | Generate Vitest test suite in this directory (requires client, gateway) |

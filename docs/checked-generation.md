@@ -21,6 +21,8 @@ The generated project includes `client/inventory.json`, copied WSDL/XSD sources 
 
 ## Check and start the generated project
 
+Run from the generated app directory below. Its package supplies test/typecheck dependencies and scripts; scaffold tests check health, selected OpenAPI and invalid-input refusal without upstream SOAP dispatch. See [consumer testing guidance](testing.md#for-consumer-projects) for emitted configuration, customization protection and independent verification boundaries.
+
 ```powershell
 Set-Location .generated/forecast
 npm install

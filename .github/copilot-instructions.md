@@ -118,9 +118,13 @@ When changing CLI behavior, keep flag names consistent with README (lowercase, h
 
 ## Testing
 
-The project uses Vitest for three layers of testing: unit tests (pure functions), snapshot tests (generated output baselines), and integration tests (gateway routes via Fastify inject with mock clients).
+Tests verify observable contracts and regressions and help diagnose changes. Choose the smallest meaningful check by scope and cost: unit-folder tests include compilation and large-input workflows; snapshots are an assertion technique. Mock gateway checks do not replace representative installed and independent XML/SOAP wire evidence.
+
+Vitest runs `fast` before bounded `workflows`; consult [Test Architecture](../docs/testing.md#test-architecture) for the actual grouping, worker bounds, test/hook allowances and explicit longer overrides. Safety cutoffs and slow-test reporting are separate from performance acceptance and product runtime limits.
 
 ### Test commands
+
+Prefer guarded public commands over internal `:run` targets. The guard coordinates owners across worktrees and retains attempt evidence; direct Vitest, watch, stage, reference and hosted commands are not all protected. Use [Running Tests](../docs/testing.md#running-tests) for focused/debug examples and [verification orchestration](../docs/testing.md#verification-orchestration) for progress, cancellation, stale-lock recovery and evidence reuse.
 
 Inspect `"scripts"` in `package.json` for the full list. Key commands:
 - `npm test`: all product Vitest tests, including independent reference and conformance evidence.
@@ -161,7 +165,7 @@ Follow `docs/decisions/004-product-research-boundary.md` when classifying valida
 
 Local `ci` runs the reference launcher once and excludes reference files only from its subsequent broad Vitest invocation. Plain `npm test` remains complete for product tests; hosted installed-product and platform checks retain Linux/Windows and Node 24/26 coverage. Keep current contracts in `docs/` and historical investigation/handoff material in `research/docs/`; no fixed document length or universal research-completion target is a release gate.
 
-Full conformance generates consumer-style projects and launches nested TypeScript and Vitest processes. Allow at least six minutes on Windows; a normal run currently takes about three to four minutes and can be quiet during a nested process. Use the narrowest stage script while developing, inspect the active process before diagnosing a stall, and keep `test:conformance` as the complete release-relevant command.
+Full conformance generates consumer-style projects and launches nested TypeScript and Vitest processes. Allow at least six minutes on Windows with measured headroom for current load; quiet output does not establish a stall. Use the narrowest stage script while developing and keep `test:conformance` as the complete release-relevant command. Consumer agents follow [For Consumer Projects](../docs/testing.md#for-consumer-projects), without inheriting repository scripts, configuration or locks.
 
 ### Verification orchestration
 
@@ -172,6 +176,8 @@ Run required standalone conformance and final CI sequentially, preserving both r
 Parallelize checks only when their outputs, process ownership and machine capacity are independent. Separate worktrees protect files, not CPU or memory; fixed progress/report paths still have one writer per checkout. Await owned children and cleanup before reusing outputs or starting a replacement run.
 
 Independent reviewers should reuse candidate evidence and coordinate additional expensive checks with its verification owner; review independence does not require simultaneous duplicate execution.
+
+A fresh reviewer reads the coherent diff and relevant results, then approves or returns actionable findings. No copied source snapshots, review-report files or repeated unchanged reviews are required.
 
 Distinguish an outer command allowance, a test or batch watchdog, a child-stage deadline, cancellation/cleanup and product resource limits. A watchdog expiry is a failed verification attempt even if recorded product assertions passed; retain that evidence and inspect active work, contention and deadline composition before classifying a product regression.
 

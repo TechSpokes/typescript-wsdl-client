@@ -76,3 +76,7 @@ Use `--client-choice-mode union` when a project wants stricter generated models 
 ## Validation
 
 After generation, run the consumer project's typecheck and tests. For gateway work, add route tests around the generated plugin with a typed mock operations' implementation.
+
+Load `references/testing.md` for complete legacy and checked setup/run examples, emitted configuration and customization ownership. Legacy tests emit their own Vitest config but need consumer dependencies; the checked app supplies its own test/typecheck scripts and scaffold checks. Use existing project commands where appropriate, without adopting generator-repository locks or CI.
+
+Keep independent SOAP wire expectations and provider/business acceptance separate from generated mock/scaffold checks. Preserve customized test/app scaffolds when regenerating; use their force options only for deliberate replacement after reviewing local changes.

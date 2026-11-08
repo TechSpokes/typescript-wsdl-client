@@ -48,7 +48,7 @@ Regenerate the app from configuration instead of patching scaffold internals whe
 
 ## Tests
 
-Generated tests use the operations interface to avoid live SOAP calls. Consumer tests should mock SOAP responses at the operation boundary and assert HTTP behavior through Fastify injection or the project's HTTP test stack.
+Legacy generated tests use the operations interface to avoid live SOAP calls. Checked app scaffold checks cover health, OpenAPI and invalid-input refusal without upstream dispatch. Consumer tests can mock operation responses and assert HTTP behavior through Fastify injection or their existing HTTP stack; independent SOAP wire and provider/business acceptance remain separate. Load `references/testing.md` for setup and run commands.
 
 ## Regeneration Boundary
 

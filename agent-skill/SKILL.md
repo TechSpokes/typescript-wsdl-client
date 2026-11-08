@@ -18,6 +18,8 @@ Use this skill in a consumer project that depends on `@techspokes/typescript-wsd
 6. Regenerate generated output from the WSDL source or `catalog.json` instead of editing generated files by hand.
 7. Validate generated output with the consumer project's TypeScript build and tests.
 
+For testing setup, load `references/testing.md` and choose legacy mock-route tests or checked app scaffold checks. Use consumer scripts and configuration; this package does not install the generator repository's test commands, Vitest projects or verification lock. Generated checks do not replace independent SOAP wire and provider/business acceptance.
+
 ## Missing Input Discovery
 
 Inspect the consumer project for WSDL files, XSD imports, existing `catalog.json` files, generator configuration, and established output paths before asking for input.

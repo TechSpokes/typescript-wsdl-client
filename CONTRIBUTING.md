@@ -136,14 +136,16 @@ Large generated source blocks should live in packaged runtime templates, not in 
 
 ## Testing Strategy
 
-The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integration tests, plus smoke tests for end-to-end CLI validation.
+Tests verify observable contracts and regressions, diagnose failures and support confident changes. Choose the smallest meaningful check by behavior and resource cost; unit-folder tests can compile or load large inputs, and snapshots are an assertion technique. Mock integration, independent XML/SOAP reference evidence and installed-consumer qualification cover different boundaries.
+
+Vitest runs `fast` before the bounded `workflows` project. Use the detailed [Testing Guide](docs/testing.md#test-architecture) for worker/test/hook defaults, explicit longer overrides and focused/debug examples; those repository settings do not apply to [consumer projects](docs/testing.md#for-consumer-projects).
 
 ### Test Commands
 
 - `npm test`: run all product Vitest tests, including independent reference and conformance tests
-- `npm run test:unit`: unit tests for utilities and parsers
+- `npm run test:unit`: unit-folder checks, including compilation and resource workflows
 - `npm run test:snap`: snapshot tests for generated code
-- `npm run test:integration`: gateway handler integration tests
+- `npm run test:integration`: integration workflows, including installed qualification
 - `npm run test:conformance`: complete WSDL capability conformance tests
 - `npm run test:conformance:<stage>`: one contracts, compile, client, OpenAPI, gateway, generated-test, or app evidence layer
 - `npm run test:watch`: watch mode during development
@@ -151,51 +153,35 @@ The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integrati
 - `npm run test:corpus`: selected public corpus evidence and installed-package checks
 - `npm run research:ci`: optional research typechecks, documentation and tests
 
-Run `npm run ci` for complete product validation before delivery. It runs the reference launcher once, then excludes those files only from its subsequent broad Vitest command; `npm test` remains complete for the product suite.
+Run `npm run ci` for complete product validation before delivery when required by the change. It runs the reference launcher once, then excludes those files only from its subsequent broad Vitest command; `npm test` remains complete for the product suite. Documentation-only work can use focused docs/skill validation and matching implementation evidence; required automatic hosted checks and merge protections still apply.
 
 Use the [verification orchestration guide](docs/testing.md#verification-orchestration) to assign final-gate and evidence ownership. Full CI already discovers conformance and installed tests; run separately required conformance sequentially with CI, and coordinate expensive checks across agents and worktrees before adding another overlapping run.
 
 Research lives under `research/` and is separate from product checks and release gates. Use the [research guide](research/README.md) for commands and unresolved work; preserve product regression and independent XML/HTTP evidence when changing shared fixtures or compiler internals.
 
-Full conformance generates and validates several consumer-style projects, so it normally takes about three to four minutes on the maintained Windows environment. Allow at least six minutes, check the active process before treating a quiet nested TypeScript or Vitest run as stalled, and use the narrowest stage command while developing.
+Full conformance generates and validates several consumer-style projects. Allow at least six minutes with measured headroom for current load, inspect progress before treating quiet nested work as stalled, and use the narrowest stage command while developing.
 
 ### Qualification timeouts and progress
 
-Test watchdogs are harness safeguards, not performance assertions unless a test explicitly checks latency. A batch allowance must account for its sequential work; a shared workstation may also be compiling or testing other repositories.
+Test watchdogs are safeguards, not performance assertions unless a test explicitly checks latency. Slow-test reporting and product byte/I/O/SOAP limits remain separate; a batch allowance must cover sequential work and cleanup under current load.
 
-The PW01 schema batch retains its mapped method ID, 38 cases, individual five-second worker deadline, heap/input caps and all assertions. Its outer watchdog allows the sum of those worker budgets plus preparation/cleanup time. Each case reports start, completion and elapsed time; cancelled or incomplete observation reports are labelled accordingly. Worker cancellation is operational and waits for worker termination.
-
-Installed checked-gateway qualification retains each command's four-minute deadline and output bound. Its separate workflow watchdog and cleanup allowance bound the sequential qualification; individual command maxima are not all simultaneously available within that workflow ceiling.
-
-Stage records in `tmp/conformance/checked-gateway-installed/progress.ndjson` identify the candidate, current stage, elapsed time and outcome. Cancellation stops the owned command tree and waits for cleanup; failed attempts remain failed, and the enclosing hosted job budget still applies.
+Guarded attempts print their evidence directory with context, log and outcome, plus relocated gateway progress and schema-loading measurements. Other writers and unguarded runs can retain fixed paths; follow [verification orchestration](docs/testing.md#verification-orchestration) for exact locations, progress inspection, preserved failures and safe stale-lock recovery.
 
 ### Shared workstations
 
-Qualification commands are trusted helpers that await their children on normal completion. The test-owned gateway also exits when its parent IPC connection closes. A failed command or lost Windows tree-cleanup authority remains a failure; inherited pipes cannot extend the wait indefinitely. This is not a sandbox for arbitrary detached programs.
+Prefer guarded public commands over internal `:run` targets. A shared live owner prevents overlapping guarded runs across worktrees; direct Vitest, watch, stage, reference and hosted commands are not all guarded. Neither the wrapper nor Vitest worker bounds reserve machine capacity, so coordinate expensive work with one owner and await cancellation/cleanup before replacement.
 
-Vitest's [`maxWorkers`](https://vitest.dev/config/maxworkers) is a per-run concurrency ceiling, not a reservation of idle CPUs or a machine-wide scheduler. Choose it with other active builds/tests in mind; a CPU percentage alone cannot establish memory headroom. Keep failures and resource observations visible when adjusting it, and preserve the individual safety limits.
-
-```bash
-npm test -- --maxWorkers=4
-```
-
-The installed Vitest version also accepts `VITEST_MAX_WORKERS` for the complete CI script and its nested test invocations. Set it only in the terminal running that job; repository defaults and hosted job policy need not change.
-
-```powershell
-$env:VITEST_MAX_WORKERS = '4'
-npm run ci
-Remove-Item Env:VITEST_MAX_WORKERS
-```
+Reuse matching results with candidate, command, environment and limits. A fresh independent reviewer reads the coherent diff and results and approves or returns actionable findings; coordinate any expensive reproduction with the verification owner.
 
 ### Test Structure
 
 ```text
 test/
-  unit/                  Pure function tests
+  unit/                  Utility, compiler, filesystem and resource checks
   snapshot/              Generated output baselines
   integration/           Gateway, streaming, and generated-test integration tests
   conformance/           Fixture-backed WSDL capability evidence
-  research/              Exploratory probes kept out of the default test suite
+  tooling/               Repository automation contracts
   helpers/               Shared test utilities
 ```
 
@@ -232,13 +218,13 @@ Repository automation keeps disposable output classified under `tmp/` so smoke a
 - `tmp/conformance/`: conformance mini-projects that need repository-local module resolution
 - `tmp/test-generation/`: generated-test integration spikes
 
-Consumer-facing examples use `.generated/`, which is git-ignored and separate from repository automation. `npm run smoke:reset` removes only `tmp/smoke/`; use `npm run clean:tmp` when the entire automation workspace should be removed.
+Consumer-facing examples use `.generated/`, which is git-ignored and separate from repository automation. `npm run smoke:reset` removes only `tmp/smoke/`; inspect ownership and preserve failed evidence before cleanup, and remove only task-owned outputs. Never use broad `tmp/` cleanup to recover a verification lock.
 
 ### CI Pipeline
 
 `npm run ci` runs clean, build, typecheck, agent skill validation, npm package validation, documentation validation, Vitest, and the smoke pipeline.
 
-This verifies the source compiles, tests pass, conformance rows stay covered through broad Vitest discovery, the CLI works, generated output compiles, package contents are valid, Markdown links and TypeScript fenced snippets resolve, the agent skill packages cleanly, and type contracts stay aligned.
+This verifies compilation, broad tests including conformance and installed workflows, CLI smoke, package contents and extracted skill validity. Documentation checks validate selected structure and links; they do not semantically typecheck fenced examples or establish that shell commands are runnable. Review snippets against actual scripts, emitted files and prerequisites.
 
 ## Repository Health Checks
 

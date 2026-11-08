@@ -195,7 +195,7 @@ const app = Fastify();
 await app.register(weatherGateway, { client: mockClient, prefix: "/v1/weather" });
 ```
 
-See [Testing Guide](docs/testing.md) for integration test patterns and mock examples.
+See [consumer testing guidance](docs/testing.md#for-consumer-projects) for legacy and checked setup, generated tests and mock examples.
 
 ## Commands
 
@@ -227,7 +227,7 @@ See [CLI Reference](docs/cli-reference.md) for all flags and examples.
 | [Configuration](docs/configuration.md) | Gateway security, upstream SOAP security, tags, operation overrides |
 | [Migration Playbook](docs/migration-playbook.md) | End-to-end SOAP modernization guide |
 | [Gateway Guide](docs/gateway-guide.md) | Fastify integration, inbound enforcement, and error handling |
-| [Testing Guide](docs/testing.md) | Testing patterns and mock client examples |
+| [Testing Guide](docs/testing.md) | Consumer tests and separate maintainer verification guidance |
 | [Production Guide](docs/production.md) | CI/CD, validation, logging |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging |
 | [Programmatic API](docs/api-reference.md) | TypeScript functions for build tools |
