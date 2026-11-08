@@ -72,11 +72,9 @@
       "source": "docs/testing.md",
       "output": "references/testing.md",
       "sections": [
-        "## Test Architecture",
-        "## Running Tests",
-        "## Integration Tests",
+        "## For Consumer Projects",
         "## Generated Test Suite",
-        "## For Consumer Projects"
+        "## Integration Tests"
       ],
       "linkPolicy": "rewrite",
       "required": true

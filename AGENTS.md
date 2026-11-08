@@ -53,11 +53,15 @@ This is a TypeScript code generator that transforms WSDL/XSD SOAP service defini
 
 Run `npm test` for all Vitest tests, including unit, snapshot, integration, and conformance suites. Run `npm run ci` for the complete CI pipeline. When modifying generators, update snapshot baselines with `npx vitest run test/snapshot -u` and review the diff. See `test/integration/gateway-routes.test.ts` for the mock client reference implementation.
 
+Choose the smallest meaningful check by behavior and cost: unit-folder tests can compile or load large inputs, and snapshots are an assertion technique. Vitest runs `fast` before bounded `workflows`; installed and independent reference checks qualify boundaries mocks do not. See [Test Architecture](docs/testing.md#test-architecture) for configuration and [Running Tests](docs/testing.md#running-tests) for focused/debug commands.
+
+Prefer guarded public commands over internal `:run` targets. The guard shares a live owner across worktrees and retains per-attempt evidence; direct Vitest, watch, stage and reference commands are not all guarded. Inspect processes before stale-lock recovery, await owned cleanup and preserve failed evidence; follow the detailed guide rather than bypassing ownership protection.
+
 Run `npm run test:conformance` when modifying WSDL capability rows, conformance fixtures, runner helpers, or public support claims. `npm test` and `npm run ci` must keep broad Vitest discovery so conformance remains covered. GitHub push and PR CI intentionally stays faster and does not replace local release preflight.
 
 Assign one owner to final verification. Inspect script coverage before launching overlapping gates; run required standalone conformance and full CI sequentially, and do not overlap an installed qualification already included in CI. Separate worktrees isolate files but still share machine capacity. Follow [verification orchestration](docs/testing.md#verification-orchestration) for evidence ownership, deadlines and failure classification.
 
-Full conformance generates and validates consumer-style client, OpenAPI, gateway, generated-test, and app projects. It takes about three to four minutes on the maintained Windows environment and may stay quiet while nested TypeScript or Vitest processes run. Use a command timeout of at least six minutes, check the active process before treating a quiet run as stalled, and use the narrowest `test:conformance:<stage>` script during development.
+Full conformance generates and validates consumer-style client, OpenAPI, gateway, generated-test, and app projects and can stay quiet during nested processes. Allow at least six minutes with measured headroom for current load, inspect progress before diagnosing a stall, and use the narrowest `test:conformance:<stage>` script during development. Consumer-project agents should use [consumer testing guidance](docs/testing.md#for-consumer-projects), not repository commands or locks.
 
 ## Must-read documents
 

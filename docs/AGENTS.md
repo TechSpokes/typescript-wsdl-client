@@ -24,7 +24,8 @@ This directory contains human-maintained reference documentation for `@techspoke
 
 - Use fenced code blocks for CLI examples and inline code for flag names (`` `--flag-name` ``).
 - Keep language direct and task-oriented.
-- `architecture.md` targets contributors; all other documents target users.
+- `architecture.md` targets contributors; `testing.md` separates repository maintenance from consumer testing.
+- Route consumers to `testing.md#for-consumer-projects`; keep maintainer commands out of consumer skill extraction.
 
 ### Adding a new document
 
@@ -40,7 +41,7 @@ This directory contains human-maintained reference documentation for `@techspoke
 
 ## Context
 
-The `docs/` directory was introduced in v0.8.x to move detailed reference material out of the root README. `architecture.md` covers the internal pipeline for contributors; the remaining documents serve end users integrating with or deploying generated code.
+The `docs/` directory was introduced in v0.8.x to move detailed reference material out of the root README. `architecture.md` covers the internal pipeline for contributors; `testing.md` serves both maintainers and consumers through separate sections. Other guides declare their audience and should keep repository-only procedures distinct from consumer instructions.
 
 ## References
 

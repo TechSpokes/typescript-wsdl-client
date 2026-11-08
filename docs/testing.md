@@ -4,23 +4,19 @@ Guide to running and writing tests for wsdl-tsc development and for testing gene
 
 See [README](../README.md) for quick start and [CONTRIBUTING](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/CONTRIBUTING.md) for development setup.
 
-Generated test files receive an [editable scaffold preamble](generated-code.md#generated-preambles-and-eslint). Remove its ESLint suppression when adopting the tests as maintained source; existing files are preserved unless `--force-test` is used. Full local CI includes `package:smoke`, which installs a tarball outside the checkout and validates generation, consumer compilation, and generated tests.
+Consumer projects should start at [For Consumer Projects](#for-consumer-projects), then choose the legacy [Generated Test Suite](#generated-test-suite) or checked scaffold workflow. The repository-maintenance sections below require a clone and its development dependencies; installing the npm package does not install repository scripts, Vitest projects or the shared verification lock.
 
 ## Test Architecture
 
-Tests protect behavior at several scopes; their execution cost also determines how they run:
+Repository tests verify observable contracts and regressions, diagnose behavior and support confident changes. Choose the smallest meaningful check, retaining representative installed-package and independent SOAP wire/reference checks when those boundaries matter.
 
-1. Unit tests: Pure function tests for utilities, parsers, and type mapping
-2. Snapshot tests: Baseline comparisons for all generated pipeline output
-3. Integration tests: End-to-end gateway tests using Fastify's `inject()` with mock clients
+Scope and resource cost are separate. `test/unit/tools.test.ts` exercises small utility contracts, while `test/unit/client-choice-union-types.test.ts` launches TypeScript compilation and `test/unit/schema-loading-budgets.test.ts` exercises large inputs. A unit-folder label does not imply pure or inexpensive execution; snapshots are an assertion technique, used here to compare generated output baselines.
 
-Tests use [Vitest](https://vitest.dev/). Full conformance and installed-consumer qualification launch nested builds and processes and can take several minutes.
+Tests use [Vitest](https://vitest.dev/). Mock gateway integration uses Fastify injection, while conformance builds consumer-style projects and installed qualification installs tarballs and runs generated projects. Independent reference tests check XML/schema and SOAP wire observations against separately specified expectations; mocks alone cannot establish those contracts.
 
-The main Vitest configuration runs the fast project first with half the available workers and a 30-second safety allowance. The workflows project then runs integration, conformance and named expensive unit files with two workers and a two-minute default allowance; existing longer workflow allowances remain effective. Standalone capability stages use the same two-worker, two-minute policy. These are safety allowances, not product performance requirements.
+The [main configuration](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/vitest.config.ts) runs `fast` first with half the available workers and a 30-second default test allowance; it leaves the fast hook allowance at Vitest's default (10 seconds). `workflows` follows with two workers and two-minute test/hook defaults for all integration, conformance and named expensive unit files. The [stage configuration](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/vitest.conformance.config.ts) uses two workers and two-minute test/hook defaults; explicit longer test and cleanup-hook overrides, such as installed checked-gateway qualification, remain effective.
 
-Split independent behaviors when doing so improves diagnosis without duplicating expensive setup. Give irreducible workflows headroom for machine load and report slow execution separately from correctness. For interactive investigation use `npm test -- <file> --test-timeout=0 --no-file-parallelism`; normal verification retains bounded execution.
-
-`npm test`, `npm run ci`, `npm run test:unit`, `npm run test:integration`, `npm run test:corpus`, `npm run test:installed` and `npm run test:conformance` refuse overlapping owners across worktrees of this repository. Their `:run` scripts are internal unguarded targets. Each guarded attempt records context, output and outcome below `tmp/conformance/verification/`; gateway and schema-loading reports use that attempt directory. A stopped owner leaves a diagnostic lock which must be inspected before removal.
+These are safety cutoffs, not performance acceptance criteria. Report slow tests separately; legitimate expensive work needs measured headroom, potentially several times ordinary runtime under load. Split independent behaviors for diagnosis without multiplying costly installation or setup, and preserve product byte, I/O and SOAP limits as separate contracts.
 
 ## Running Tests
 
@@ -30,6 +26,7 @@ npm run test:unit     # Unit tests only
 npm run test:snap     # Snapshot tests only
 npm run test:integration  # Integration tests only
 npm run test:conformance  # WSDL capability conformance tests only
+npm run test:installed    # Installed consumer qualification
 npm run test:watch    # Watch mode for development
 ```
 
@@ -39,6 +36,22 @@ For the full CI pipeline including smoke tests:
 npm run ci
 ```
 
+Use a file and test-name filter for a focused check, or select a delivered project:
+
+```bash
+npm test -- test/unit/tools.test.ts -t pascal
+npm test -- --project fast
+npm run test:conformance:gateway
+```
+
+For interactive debugging, disabling the individual test timeout does not disable hook deadlines or the guarded wrapper's 45-minute outer deadline:
+
+```bash
+npm test -- test/unit/tools.test.ts --test-timeout=0 --no-file-parallelism
+```
+
+Prefer the guarded public commands: `npm test`, `npm run ci`, `npm run test:unit`, `npm run test:integration`, `npm run test:corpus`, `npm run test:installed` and `npm run test:conformance`. Their corresponding `:run` targets are internal, unguarded implementation commands. Direct Vitest, `test:snap`, watch, capability-stage, reference, platform and hosted CI commands are not all wrapped; the guard is not a machine-wide scheduler.
+
 ### Verification orchestration
 
 Inspect the current scripts before choosing commands. `ci` runs the reference launcher, build/typechecks, package/docs validation, broad Vitest including conformance and installed tests, smoke generation and installed package smoke. `test:installed`, `test:corpus` and standalone conformance overlap parts of that coverage; hosted quick and compatibility jobs are narrower signals.
@@ -47,7 +60,15 @@ Use focused tests during development, then give one owner responsibility for fin
 
 Read-only inspection and genuinely independent bounded checks may run in parallel when capacity permits. Coordinate expensive builds, package installs and qualification across agents and worktrees because they share CPU and memory. A worktree isolates its files but does not reserve machine resources.
 
-Each evidence directory needs one active writer. For example, installed gateway qualification replaces `tmp/conformance/checked-gateway-installed/progress.ndjson`, and schema loading writes `tmp/conformance/schema-loading/measurements.json`. Preserve failed-run logs before another run reuses those paths; wait for owned process termination and cleanup before replacement, and remove only task-owned outputs after delivery.
+The [verification wrapper](https://github.com/TechSpokes/typescript-wsdl-client/blob/main/scripts/run-verification.ts) shares an owner across worktrees through `tmp/conformance/verification/active.json` beneath the common Git directory's parent. A live owner causes refusal; wait for it or ask its coordinator to cancel and await owned-child cleanup. Quiet output or an expired tool wait does not authorize replacing a run.
+
+Each guarded attempt prints its unique `attempt-*` directory and records `context.json`, `command.log` and `result.json`. Gateway qualification writes `checked-gateway-installed/progress.ndjson` there; schema loading writes `schema-loading/measurements.json` there. CI also copies a newly written `tmp/conformance/product-tests.json` into the attempt directory; interrupted runs may leave incomplete evidence.
+
+Other writers and unguarded invocations can still use fixed paths, including gateway/schema-loading fallback paths under `tmp/conformance/` and the hosted `installed-tests.json` report. Do not assume all evidence is immutable. Preserve failed evidence before paths are reused, wait for termination and cleanup, and remove only task-owned outputs after delivery.
+
+For a stale lock, read the specific `active.json` owner's PID, command and working directory, then inspect actual process state, including possible PID reuse and surviving owned children. Only after confirming the owner has stopped and cleanup is complete, remove that specific lock and start a deliberate replacement. There is no automatic stale-lock reclamation; never remove a live owner's lock, kill unrelated work or broadly clean `tmp/` to recover.
+
+Record the candidate, command, environment and evidence limits when reusing matching results. A fresh independent reviewer reads the coherent diff and relevant results, then approves or returns actionable findings; coordinate additional expensive checks through the verification owner. Copied source snapshots, review-report files and repeated unchanged reviews are unnecessary.
 
 #### Deadlines and failures
 
@@ -63,7 +84,7 @@ Correct the identified cause before a deliberate rerun. Keep the failed attempt 
 
 ## Node Support Policy
 
-The package supports Node.js >= 24.0.0. CI runs the complete project check on Node 24 and Node 26 so the supported floor and current Node line are both covered.
+The package supports Node.js >= 24.0.0. Hosted CI runs quick checks on Node 24 and a narrower compatibility smoke on Node 26. Separate installed-product jobs cover Linux and Windows on both lines, with platform checks, Windows reference/feasibility checks and standalone Linux Node 24 conformance; these signals complement broad local CI and do not replace release preflight.
 
 ## Temporary Workspaces
 
@@ -79,7 +100,7 @@ Keep new repository-owned temporary writers under the closest existing subfolder
 
 ## Unit Tests
 
-Unit tests cover pure functions with no I/O or side effects:
+The unit directory includes small function checks, filesystem work, compilation and resource workflows. Select by the behavior and actual setup, not the folder name:
 
 - `tools.test.ts`: `pascal()`, `resolveQName()`, `explodePascal()`, `pascalToSnakeCase()`, `normalizeArray()`, `getChildrenWithLocalName()`, `getFirstWithLocalName()`
 - `casing.test.ts`: `toPathSegment()` with kebab, asis, and lower styles
@@ -132,7 +153,7 @@ Always review the diff before committing updated snapshots.
 
 ## Integration Tests
 
-Integration tests verify the generated gateway works end-to-end by:
+For manual legacy gateway tests, the mock pattern below checks HTTP route behavior without proving live SOAP interoperability:
 
 1. Running the pipeline in `beforeAll` to generate gateway code
 2. Dynamically importing the generated plugin
@@ -141,7 +162,7 @@ Integration tests verify the generated gateway works end-to-end by:
 
 ### Mock Client Pattern
 
-The generated `operations.ts` provides a typed interface for creating test doubles:
+The legacy generated `operations.ts` provides a typed interface for creating test doubles. The following fragments assume the Weather fixture's generated client and gateway; adapt imports and operation names to your consumer project:
 
 ```typescript
 import type { WeatherOperations } from "../client/operations.js";
@@ -152,6 +173,7 @@ function createMockClient(): WeatherOperations {
       response: {
         GetCityWeatherByZIPResult: {
           Success: true,
+          WeatherID: 0,
           ResponseText: "City Found",
           State: "NY",
           City: "New York",
@@ -165,7 +187,7 @@ function createMockClient(): WeatherOperations {
         GetCityForecastByZIPResult: {
           Success: true,
           ResponseText: "Forecast Found",
-          // Use SOAP wrapper shape — unwrapArrayWrappers() handles conversion
+          // Use SOAP wrapper shape; unwrapArrayWrappers() handles conversion
           ForecastResult: { Forecast: [] },
         },
       },
@@ -173,7 +195,7 @@ function createMockClient(): WeatherOperations {
     }),
     GetWeatherInformation: async (args) => ({
       response: {
-        // Use SOAP wrapper shape — unwrapArrayWrappers() handles conversion
+        // Use SOAP wrapper shape; unwrapArrayWrappers() handles conversion
         GetWeatherInformationResult: { WeatherDescription: [] },
       },
       headers: {},
@@ -182,9 +204,11 @@ function createMockClient(): WeatherOperations {
 }
 ```
 
-Each method returns the same `{ response, headers }` shape as the real SOAP client. Use the wrapper object structure matching TypeScript types — the generated `unwrapArrayWrappers()` function handles conversion to the flat array shape expected by JSON schemas.
+Each method returns the same `{ response, headers }` shape as the real SOAP client. Use the wrapper object structure matching TypeScript types; the generated `unwrapArrayWrappers()` function handles conversion to the flat array shape expected by JSON schemas.
 
 ### Using the Mock with Fastify
+
+This fragment assumes your test imports `expect` and the generated `weatherGateway` plugin and defines `createMockClient()` above. Close the Fastify instance in test cleanup.
 
 ```typescript
 import Fastify from "fastify";
@@ -208,7 +232,7 @@ expect(res.json().status).toBe("SUCCESS");
 
 ### Dynamic Import of Generated Code
 
-Integration tests dynamically import generated `.ts` files from temp directories. This works because Vitest's Vite module resolution handles TypeScript imports, JSON import attributes, and bare specifiers from the project's `node_modules`:
+When generating into a temporary directory during a test, Vitest's Vite module resolution handles TypeScript imports, JSON import attributes and bare specifiers from the project's `node_modules`. This fragment assumes `join`, `outDir` and the generated gateway directory are already defined:
 
 ```typescript
 import { pathToFileURL } from "node:url";
@@ -244,9 +268,18 @@ Connection and timeout errors carry an object in `details`, matching the error s
 
 ## Generated Test Suite
 
-The `--test-dir` flag generates a complete, runnable Vitest test suite that validates all generated gateway artifacts out of the box. This is the recommended way to verify generated code in consumer projects.
+For legacy generation, `--test-dir` emits runnable Vitest mock-route and runtime checks. They verify generated HTTP behavior against generated fixtures, not all service semantics. For checked generation use the separate [consumer workflow](#for-consumer-projects).
 
 ### Generating Tests
+
+Run from an ESM consumer project on Node.js >= 24 with an existing `package.json` and your local `service.wsdl` plus its schema dependencies. Install generator, test and runtime dependencies there; the package does not supply this repository's npm scripts:
+
+```bash
+npm install --save-dev @techspokes/typescript-wsdl-client typescript @types/node vitest
+npm install soap fastify fastify-plugin saxes
+```
+
+Generate matched artifacts with explicit paths:
 
 ```bash
 npx wsdl-tsc pipeline \
@@ -280,13 +313,21 @@ npx wsdl-tsc pipeline \
 
 ### Running Generated Tests
 
+From the same consumer project root:
+
 ```bash
 npx vitest run --config ./.generated/tests/vitest.config.ts
 ```
 
+The emitted config roots discovery at the test directory, includes `gateway/**/*.test.ts` and `runtime/**/*.test.ts`, and sets a 30-second test timeout. It does not emit this repository's `fast`/`workflows` projects, worker bounds or lock. Adapt runner allowances to your workload, and run your project's TypeScript check with generated client/gateway files included; Vitest execution alone does not typecheck them.
+
+An optional legacy app scaffold supplies `start` and `dev`, not `test` or `typecheck`, and does not add Vitest. Install test dependencies where the test files can resolve them and use the explicit config command above or your existing project scripts. See [TypeScript Configuration](troubleshooting.md#typescript-configuration) for consumer compiler setup.
+
 ### Skip-if-Exists Behavior
 
-Test files that already exist are skipped by default. This allows you to customize generated tests without losing changes on regeneration. Use `--force-test` to overwrite all test files.
+Test files that already exist are skipped by default. Customize them as consumer-owned scaffolds; `--force-test` deliberately overwrites existing emitted files. Preserve customizations before refreshing tests after contract changes; skipped files are not automatically updated to match regenerated artifacts.
+
+Generated test files receive an [editable scaffold preamble](generated-code.md#generated-preambles-and-eslint). Remove its ESLint suppression when adopting the tests as maintained source, and keep maintained tests outside disposable or globally ignored output. Regenerate client/gateway artifacts from inputs and configuration; app scaffolds have separate `--force-init` protection.
 
 ### Mock Client
 
@@ -297,7 +338,7 @@ import { createMockClient } from "./helpers/mock-client.js";
 
 const client = createMockClient({
   GetCityWeatherByZIP: async () => ({
-    response: { GetCityWeatherByZIPResult: { Success: false, WeatherID: 0 } },
+    response: { GetCityWeatherByZIPResult: { Success: false, WeatherID: 0, ResponseText: "Not found" } },
     headers: {},
   }),
 });
@@ -305,7 +346,7 @@ const client = createMockClient({
 
 Mock responses use the pre-unwrap SOAP wrapper shape. The generated `unwrapArrayWrappers()` function handles conversion at runtime.
 
-For operations opted in via `--stream-config`, the mock returns `records: AsyncIterable<RecordType>` via a small `asyncIterableOf` helper. Generated happy-path tests assert on the configured content type; NDJSON tests parse record lines, and JSON array tests parse the response body once as an array. Override a stream op with a multi-record iterable to exercise downstream backpressure:
+For operations opted in via `--stream-config`, the mock returns `records: AsyncIterable<RecordType>` via a small `asyncIterableOf` helper. Generated happy-path tests assert on the configured content type; NDJSON tests parse record lines, and JSON array tests parse the response body once as an array. The following contextual fragment assumes your generated helper has a `UnitDescriptiveInfoStream` operation with `Id`/`Name` records; a multi-record iterable exercises record handling, while backpressure needs a separate slow-consumer check:
 
 ```typescript
 const client = createMockClient({
@@ -321,18 +362,35 @@ const client = createMockClient({
 
 ## For Consumer Projects
 
-If you're using wsdl-tsc as a dependency and want to test your integration:
+Choose tests for your integration's observable contracts and regressions. Start with the smallest meaningful check in your project's existing runner; using this generator does not require adopting the generator repository's CI or test configuration. The npm-shipped guide contains maintainer sections for reference, but repository scripts, shared locks and release gates do not apply to consumer projects.
 
-1. Generate code with `npx wsdl-tsc pipeline --test-dir ./tests` to get a ready-to-run test suite
-2. Run `npx vitest run --config ./tests/vitest.config.ts` to verify everything works
-3. Customize generated tests as needed (they won't be overwritten on regeneration)
+### Choose legacy or checked generation
 
-Alternatively, write tests manually:
+Legacy is the default. Follow [Generated Test Suite](#generated-test-suite) for complete dependency, WSDL, output and run commands. For manual tests, generate the same client/gateway outputs, import the operations interface, inject a typed mock into the gateway plugin and assert HTTP responses with Fastify injection or your existing HTTP stack; see [Integration Tests](#integration-tests) for contextual Weather fragments.
 
-1. Generate code with `npx wsdl-tsc pipeline`
-2. Import the operations interface from `operations.ts`
-3. Create a mock client implementing the interface
-4. Register the generated gateway plugin with your mock client
-5. Use Fastify's `inject()` to test routes without a running server
+The legacy operations interface is a TypeScript seam without a runtime `soap` import; executing the real client still needs `soap`. Keep useful mock response and streaming scenarios when integrating tests into another runner.
 
-The operations interface is the recommended seam for dependency injection and testing. It's a pure TypeScript interface with no runtime dependencies on the `soap` package.
+For opt-in `checked-components-v1`, use Node.js >= 24 and a consumer project with the generator installed as a development dependency. This complete example uses the bundled synthetic contract and places client, gateway, OpenAPI and tests inside the generated app:
+
+```bash
+npm install --save-dev @techspokes/typescript-wsdl-client
+npx wsdl-tsc pipeline --model checked-components-v1 --wsdl-source node_modules/@techspokes/typescript-wsdl-client/docs/examples/checked-forecast.wsdl --client-dir .generated/forecast/client --openapi-file .generated/forecast/openapi.json --gateway-dir .generated/forecast/gateway --gateway-service-name forecast --gateway-version-prefix v1 --init-app --app-dir .generated/forecast --test-dir .generated/forecast/test
+cd .generated/forecast
+npm install
+npm run typecheck
+npm test
+```
+
+Checked tests require app generation and emit `test/checked-scaffold.test.ts` at these paths, without a separate Vitest config. The checked app's package provides Vitest, TypeScript and runtime dependencies plus `typecheck`, `test`, `build` and `start` scripts; `npm test` runs `vitest run` with normal consumer discovery/defaults. It does not inherit this repository's project groups or lock. See [checked generation](checked-generation.md#check-and-start-the-generated-project) for build/start steps and how to substitute your source.
+
+### What generated checks establish
+
+Legacy mock checks exercise route validation, envelopes, error serialization and runtime helpers. Checked scaffold checks exercise health, selected OpenAPI and invalid-request refusal without upstream dispatch, using a loopback placeholder and empty endpoint restrictions. Neither proves independent SOAP wire compatibility, provider behavior or business acceptance, and neither authorizes production transactions.
+
+Add independent expected request/response and fault fixtures for owned test services where SOAP interoperability matters, then obtain provider/business acceptance separately. Do not derive every expected answer from the same generated implementation. Choose authorized endpoints and operations before making real calls; the bundled checked contract has no running backend.
+
+### Regeneration and customization
+
+Keep generator/runtime versions, source snapshots, client, gateway and OpenAPI artifacts matched. Test and app scaffolds preserve existing files unless `--force-test` or `--force-init` respectively is selected; inspect and merge intended changes rather than bypassing protection. Remove the editable scaffold's ESLint suppression when adopting maintained source, and retain maintained tests outside disposable generated output.
+
+Run the consumer project's typecheck and tests after regeneration. Reuse matching evidence with its source/artifact identity, command, environment and limits; a passing scaffold test is only evidence for the behavior it exercises.

@@ -297,10 +297,11 @@ import type { WeatherOperations } from "./client/operations.js";
 
 const mock: WeatherOperations = {
   GetCityWeatherByZIP: async (args) => ({
-    response: { GetCityWeatherByZIPResult: { Success: true } },
+    response: { GetCityWeatherByZIPResult: { Success: true, WeatherID: 0 } },
     headers: {},
   }),
-  // ...other operations
+  GetCityForecastByZIP: async () => ({ response: {}, headers: {} }),
+  GetWeatherInformation: async () => ({ response: {}, headers: {} }),
 };
 ```
 
@@ -310,6 +311,6 @@ The gateway plugin accepts any `WeatherOperations` implementation, so you can pa
 app.register(weatherGateway, { client: mock });
 ```
 
-For stream operations, mock implementations return an async-iterable `records` field. See the [Testing Guide](testing.md) for the full pattern with async generators.
+For stream operations, mock implementations return an async-iterable `records` field. See [generated test mocks](testing.md#mock-client) for the full pattern with async generators.
 
-See [Testing Guide](testing.md) for full integration test patterns.
+See [consumer testing guidance](testing.md#for-consumer-projects) for setup, legacy and checked test commands, ownership and verification limits.

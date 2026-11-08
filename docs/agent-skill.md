@@ -38,6 +38,8 @@ Fluid references are generated from maintained repository docs during validation
 
 Do not maintain `agent-skill/references/` by hand. The package scripts generate packaged references under `dist/`.
 
+The extracted testing reference selects consumer setup, legacy mock patterns, generated tests and checked scaffold guidance from [Testing Guide](testing.md#for-consumer-projects). Maintainer-only Vitest grouping, repository commands, shared locks, evidence and release procedures stay outside that extraction. The npm package also ships the full guide with explicit audience routes; installation does not supply repository testing infrastructure.
+
 ## Installation
 
 Download the release ZIP from the GitHub draft or published release, extract it, and run the installer from the extracted skill folder:
