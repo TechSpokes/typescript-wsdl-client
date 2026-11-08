@@ -21,26 +21,30 @@ const requiredFiles = [
   'docs/examples/checked-forecast.wsdl', 'docs/agent-skill.md',
   'src/generation/preambles/typescript.preamble',
   'src/generation/preambles/app/typescript.preamble',
+  'src/generation/preambles/direct-client/typescript.preamble',
   'src/generation/preambles/test/typescript.preamble',
   'src/runtime/appSecurity.tpl.txt', 'src/runtime/checkedGatewayHost.tpl.txt',
-  'src/runtime/clientStreamMethods.tpl.txt', 'src/runtime/jsonArray.ts',
-  'src/runtime/ndjson.ts', 'src/runtime/operationsStreamHelper.tpl.txt', 'src/runtime/streamXml.ts',
+  'src/runtime/clientStreamMethods.tpl.txt',
+  'src/runtime/operationsStreamHelper.tpl.txt', 'src/runtime/streamXml.ts',
   'README.md', 'LICENSE', 'package.json', 'llms.txt',
 ];
-const forbidden = /^(?:agent-skill|scripts|test|research|tmp|\.github|\.idea|node_modules)\/|^dist\/(?:assets|agent-skill)\/|^docs\/(?:content-model-|roadmap\/|releases\/|decisions\/|architecture\.md|reference-validation\.md|checked-consolidation-acceptance\.md|noaa-ndfd-qualification\.md)/;
+const forbidden = /^(?:agent-skill|scripts|test|research|tmp|\.github|\.idea|node_modules)\/|^dist\/(?:assets|agent-skill|runtime)\/|\.d\.ts\.map$|^src\/runtime\/(?:jsonArray|ndjson)\.ts$|^docs\/(?:content-model-|roadmap\/|releases\/|decisions\/|architecture\.md|reference-validation\.md|checked-consolidation-acceptance\.md|noaa-ndfd-qualification\.md)/;
 
 /**
  * Rejects missing runtime resources, development material and broken consumer navigation.
  * @param files Paths from the exact npm pack result.
- * @param readText Reads a packaged Markdown file from the candidate tree.
+ * @param readText Reads packaged documentation and declarations from the candidate tree.
  * @returns Nothing when required resources and package-local links are present.
- * @throws Error When development files leak, required resources are missing or a local link leaves the package.
+ * @throws Error When files leak, resources are missing, declaration maps dangle or a local link leaves the package.
  */
 export function validatePackageFiles(files: readonly string[], readText: (file: string) => string): void {
   const published = new Set(files);
   const errors: string[] = [];
   for (const file of files) if (forbidden.test(file)) errors.push(`Forbidden package file: ${file}`);
   for (const file of requiredFiles) if (!published.has(file)) errors.push(`Required package file is missing: ${file}`);
+  for (const file of files.filter(file => file.endsWith('.d.ts'))) {
+    if (/^\/\/[#@]\s*sourceMappingURL=/m.test(readText(file))) errors.push(`Declaration map footer is not supported: ${file}`);
+  }
   errors.push(...findMissingPackageLinks(files, readText));
   if (errors.length) throw new Error(errors.join('\n'));
 }

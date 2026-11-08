@@ -2,11 +2,9 @@
  * Helpers to load wsdl-tsc's own runtime modules as source text, for embedding
  * into generated client and gateway output.
  *
- * The runtime modules live at `src/runtime/*.ts` and are published alongside
- * `dist/` via the `files` field in package.json. Resolving via
- * `import.meta.url` works both in dev (tsx runs the .ts directly from src/) and
- * in a published install (generator code lives under dist/, and `../../src/runtime/…`
- * climbs to the package root where the source .ts files sit beside `dist/`).
+ * @constraints Only generation resources are published: raw streamXml.ts and runtime templates.
+ * @see package.json The files allowlist retains these resources beside dist/ for installed generation.
+ * @since Unreleased
  */
 import fs from "node:fs";
 import path from "node:path";

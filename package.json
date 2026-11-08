@@ -51,7 +51,7 @@
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
-    "dist/**/*.d.ts.map",
+    "!dist/runtime/**",
     "docs/start-here.md",
     "docs/cli-reference.md",
     "docs/configuration.md",
@@ -76,7 +76,7 @@
     "README.md",
     "LICENSE",
     "llms.txt",
-    "src/runtime/*.ts",
+    "src/runtime/streamXml.ts",
     "src/runtime/*.tpl.txt",
     "src/generation/preambles/**/*.preamble"
   ],
