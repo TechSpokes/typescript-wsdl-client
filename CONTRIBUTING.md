@@ -153,6 +153,8 @@ The project uses [Vitest](https://vitest.dev/) for unit, snapshot, and integrati
 
 Run `npm run ci` for complete product validation before delivery. It runs the reference launcher once, then excludes those files only from its subsequent broad Vitest command; `npm test` remains complete for the product suite.
 
+Use the [verification orchestration guide](docs/testing.md#verification-orchestration) to assign final-gate and evidence ownership. Full CI already discovers conformance and installed tests; run separately required conformance sequentially with CI, and coordinate expensive checks across agents and worktrees before adding another overlapping run.
+
 Research lives under `research/` and is separate from product checks and release gates. Use the [research guide](research/README.md) for commands and unresolved work; preserve product regression and independent XML/HTTP evidence when changing shared fixtures or compiler internals.
 
 Full conformance generates and validates several consumer-style projects, so it normally takes about three to four minutes on the maintained Windows environment. Allow at least six minutes, check the active process before treating a quiet nested TypeScript or Vitest run as stalled, and use the narrowest stage command while developing.
@@ -163,7 +165,9 @@ Test watchdogs are harness safeguards, not performance assertions unless a test 
 
 The PW01 schema batch retains its mapped method ID, 38 cases, individual five-second worker deadline, heap/input caps and all assertions. Its outer watchdog allows the sum of those worker budgets plus preparation/cleanup time. Each case reports start, completion and elapsed time; cancelled or incomplete observation reports are labelled accordingly. Worker cancellation is operational and waits for worker termination.
 
-Installed checked-gateway qualification similarly retains each command's four-minute deadline and output bound. Its batch watchdog covers the 26 bounded commands plus cleanup rather than imposing a five-minute deadline on the whole workflow. Stage records in `tmp/conformance/checked-gateway-installed/progress.ndjson` identify the candidate, current stage, elapsed time and outcome. Cancellation stops the owned command tree and waits for cleanup; failed attempts remain failed. The enclosing hosted job budget still applies.
+Installed checked-gateway qualification retains each command's four-minute deadline and output bound. Its separate workflow watchdog and cleanup allowance bound the sequential qualification; individual command maxima are not all simultaneously available within that workflow ceiling.
+
+Stage records in `tmp/conformance/checked-gateway-installed/progress.ndjson` identify the candidate, current stage, elapsed time and outcome. Cancellation stops the owned command tree and waits for cleanup; failed attempts remain failed, and the enclosing hosted job budget still applies.
 
 ### Shared workstations
 
