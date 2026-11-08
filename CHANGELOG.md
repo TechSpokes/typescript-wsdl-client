@@ -9,6 +9,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- perf(test): reuse equivalent intake dependency locks and align installed-consumer caches with hosted timing evidence.
 - fix(test): compose portable and conformance command deadlines, cancellation and owned cleanup.
 - fix(cli): explain checked planning refusals and actual selection choices without dumping stacks or reports unless DEBUG=wsdl-tsc is set.
 - chore(validation): separate optional research from product checks while retaining independent reference, installed-consumer and platform coverage.

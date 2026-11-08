@@ -7,6 +7,8 @@ on:
 
 jobs:
   quick:
+    env:
+      npm_config_cache: ${{ github.workspace }}/tmp/cache/npm
     name: quick checks (Node 24)
     runs-on: ubuntu-latest
     permissions:
@@ -23,6 +25,8 @@ jobs:
       - run: npm run ci:github
 
   node-compat:
+    env:
+      npm_config_cache: ${{ github.workspace }}/tmp/cache/npm
     name: compatibility smoke (Node 26)
     runs-on: ubuntu-latest
     permissions:
