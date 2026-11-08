@@ -9,6 +9,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+- test(verification): compose component SOAP test cancellation and cleanup, and verify installed public declaration navigation.
+
 - ci(test): omit the already audited reference subtree from Linux Node 24 standalone conformance.
 - chore(package): omit unresolved declaration maps and unused runtime copies while retaining declarations and generation resources.
 - perf(test): reuse equivalent intake dependency locks and align installed-consumer caches with hosted timing evidence.

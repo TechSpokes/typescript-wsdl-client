@@ -29,6 +29,10 @@ const p = 'http://schemas.xmlsoap.org/ws/2004/09/policy', s = 'http://schemas.xm
 const policy = `<p:Policy xmlns:p="${p}" xmlns:s="${s}"><s:TransportBinding><p:Policy><s:TransportToken><p:Policy><s:HttpsToken RequireClientCertificate="false"/></p:Policy></s:TransportToken><s:AlgorithmSuite><p:Policy><s:Basic256/></p:Policy></s:AlgorithmSuite><s:Layout><p:Policy><s:Strict/></p:Policy></s:Layout></p:Policy></s:TransportBinding></p:Policy>`;
 const reply = `<soap:Envelope xmlns:soap="${soap}"><soap:Body><r:SubmitImportedResponse xmlns:r="${ns}"><r:accepted>1</r:accepted></r:SubmitImportedResponse></soap:Body></soap:Envelope>`;
 const input = {payload: {name: 'synthetic & owned'}};
+const COMPILER_TIMEOUT_MS = 60_000;
+const SETTLEMENT_TIMEOUT_MS = 60_000;
+// @why The generated compiler has its own deadline; generation, exchanges and cleanup need separate headroom.
+const GENERATED_EXCHANGE_TIMEOUT_MS = COMPILER_TIMEOUT_MS + SETTLEMENT_TIMEOUT_MS;
 let directory: string, original: string, schema: string, cert: string, key: string;
 beforeAll(async () => {
   await mkdir('tmp/conformance/component-soap', {recursive: true});
@@ -60,7 +64,8 @@ function mapping(contract: DirectOperationContract) {
 async function owned<T>(secure: boolean, bytes: string | undefined, work: (state: {
   options: ComponentSoapOptions; requests: {xml: string; action?: string}[]; received: Promise<void>; sockets: Set<Socket>;
   setResponse: (xml: string) => void;
-}) => Promise<T>): Promise<T> {
+}) => Promise<T>, signal?: AbortSignal): Promise<T> {
+  signal?.throwIfAborted();
   const requests: {xml: string; action?: string}[] = [], sockets = new Set<Socket>();
   let received!: () => void;
   const receivedPromise = new Promise<void>(resolve => {received = resolve;});
@@ -79,7 +84,7 @@ async function owned<T>(secure: boolean, bytes: string | undefined, work: (state
   const endpoint = `${secure ? 'https' : 'http'}://127.0.0.1:${address.port}/owned`;
   try {
     return await work({options: {service: {namespace: ns, local: 'ImportService'}, port: 'ImportPort', endpoint,
-      allowEndpoint: url => url.href === endpoint, ...(secure ? {ca: cert} : {})}, requests, received: receivedPromise, sockets,
+      allowEndpoint: url => url.href === endpoint, ...(secure ? {ca: cert} : {}), ...(signal ? {signal} : {})}, requests, received: receivedPromise, sockets,
       setResponse: xml => {bytes = xml;}});
   } finally {for (const socket of sockets) socket.destroy(); server.close(); await once(server, 'close');}
 }
@@ -99,7 +104,8 @@ describe('component SOAP exchange through the existing dependency and native che
       expect(server.requests).toHaveLength(1);
     });
   });
-  it('uses the package-root checked runtime with physical imported sources and refuses artifact/source drift', async () => {
+  it('uses the package-root checked runtime with physical imported sources and refuses artifact/source drift', context => {
+    const work = (async () => {
     const root = await mkdtemp(path.join(directory, 'runtime-')), file = path.join(root, 'source.wsdl');
     const dependency = path.join(root, 'import-relative-types-types.xsd');
     await writeFile(file, original.replace('<soap:binding style=', policy + '<soap:binding style='));
@@ -126,7 +132,10 @@ describe('component SOAP exchange through the existing dependency and native che
       const config = path.join(root, 'tsconfig.json');
       await writeFile(config, JSON.stringify({extends: path.resolve('tsconfig.json'), compilerOptions: {noEmit: true,
         rootDir: process.cwd(), paths: {'@techspokes/typescript-wsdl-client': [path.resolve('src/index.ts')]}}, include: ['client/*.ts', 'gateway/*.ts']}));
-      await runOwnedNode([path.resolve('node_modules/typescript/bin/tsc'), '-p', config], {cwd: process.cwd(), timeoutMs: 60_000});
+      const compileStart = performance.now();
+      await runOwnedNode([path.resolve('node_modules/typescript/bin/tsc'), '-p', config], {cwd: process.cwd(), timeoutMs: COMPILER_TIMEOUT_MS, signal: context.signal});
+      console.info(`[component SOAP] generated TypeScript completed in ${Math.round(performance.now() - compileStart)}ms`);
+      context.signal.throwIfAborted();
       const plugin = (await import(pathToFileURL(path.join(gatewayDir, 'plugin.ts')).href)).default as FastifyPluginAsync<{clientOptions: typeof options}>;
       const gateway = Fastify();
       let observedHostBody: unknown;
@@ -138,7 +147,7 @@ describe('component SOAP exchange through the existing dependency and native che
       try {
         await gateway.register(plugin, {clientOptions: options});
         const url = await gateway.listen({host: '127.0.0.1', port: 0});
-        const post = (route: string, value: unknown) => fetch(url + route, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(value)});
+        const post = (route: string, value: unknown) => fetch(url + route, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(value), signal: context.signal});
         const response = await post('/v1/import/submit', input);
         expect(response.status).toBe(200); expect(await response.json()).toEqual({accepted: true});
         server.setResponse(reply.replace('>1<', '>TRUE<'));
@@ -161,8 +170,11 @@ describe('component SOAP exchange through the existing dependency and native che
       await writeFile(dependency, schema + '\n');
       expect(await execute(input)).toMatchObject({kind: 'incompatible-artifact', rule: 'local-source-changed'});
       expect(server.requests).toHaveLength(3);
-    });
-  });
+    }, context.signal);
+    })();
+    context.onTestFinished(async () => {await work.catch(() => undefined);}, SETTLEMENT_TIMEOUT_MS);
+    return work;
+  }, GENERATED_EXCHANGE_TIMEOUT_MS);
 
   it.each([false, true])('executes imported nested values with literal wire expectations (HTTPS=%s)', async secure => {
     const contract = await selected(secure ? policy : undefined), map = mapping(contract);

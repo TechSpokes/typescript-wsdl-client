@@ -92,6 +92,8 @@ try {
   const appPackage = JSON.parse(fs.readFileSync(path.join(consumer, ".generated/app/package.json"), "utf8"));
   npm(["install", ...Object.keys(appPackage.dependencies).map(exact)]);
   npm(["install", "--save-dev", ...["typescript", "@types/node", "vitest"].map(exact)]);
+  fs.copyFileSync(path.join(root, "test/helpers/installedDeclarationNavigation.ts"), path.join(consumer, "declaration-navigation.ts"));
+  run(["declaration-navigation.ts"]);
   write(".generated/occurrence/usage.ts", [
     'import type {Addresses, OptionalAddresses, SubmitOccurrence} from "./types.js";',
     'const addresses: Addresses = {address: [{street: "First"}, {street: "Second"}]};',
